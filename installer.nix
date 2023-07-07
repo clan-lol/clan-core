@@ -20,6 +20,7 @@
       echo "ssh://root:$(cat /var/shared/root-password)@$(cat /var/shared/onion-hostname)"
     fi
   '';
-  # TODO find a place to put this
-  # isoImage.squashfsCompression = "zstd -Xcompression-level 1";
+  formatConfigs.install-iso = {
+    isoImage.squashfsCompression = "zstd -Xcompression-level 1";
+  };
 }
