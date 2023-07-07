@@ -43,16 +43,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1688460648,
+        "lastModified": 1688738567,
         "narHash": "sha256-yax5BYOfpE0+95kyJmEcfKEdZBaFvCENDogBB4VQB3Q=",
-        "owner": "davhau",
+        "owner": "nix-community",
         "repo": "nixos-generators",
-        "rev": "34bbb3e12b75576f61770e995ea9a1cac0c36c25",
+        "rev": "9191c85aab6b1a7ad395c13d340f2aa0e3ddf552",
         "type": "github"
       },
       "original": {
-        "owner": "davhau",
-        "ref": "all-formats",
+        "owner": "nix-community",
         "repo": "nixos-generators",
         "type": "github"
       }
