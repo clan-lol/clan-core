@@ -7,6 +7,8 @@
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs@{ flake-parts, ... }:
@@ -14,6 +16,7 @@
       systems = lib.systems.flakeExposed;
       imports = [
         ./flake-parts/packages.nix
+        ./flake-parts/formatting.nix
       ];
       flake = {
         nixosConfigurations.installer = lib.nixosSystem {
