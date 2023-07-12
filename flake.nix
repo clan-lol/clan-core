@@ -13,7 +13,7 @@
     flake-parts.lib.mkFlake { inherit inputs; } ({ lib, config, self, ... }: {
       systems = lib.systems.flakeExposed;
       imports = [
-        ./packages.nix
+        ./flake-parts/packages.nix
       ];
       flake = {
         nixosConfigurations.installer = lib.nixosSystem {
