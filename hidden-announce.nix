@@ -1,5 +1,9 @@
-{ config, lib, pkgs, ... }:
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   options.hidden-announce = {
     enable = lib.mkEnableOption "hidden-announce";
     script = lib.mkOption {
@@ -17,18 +21,20 @@
       enable = true;
       relay.onionServices.hidden-ssh = {
         version = 3;
-        map = [{
-          port = 22;
-          target.port = 22;
-        }];
+        map = [
+          {
+            port = 22;
+            target.port = 22;
+          }
+        ];
       };
       client.enable = true;
     };
     systemd.services.hidden-ssh-announce = {
       description = "irc announce hidden ssh";
-      after = [ "tor.service" "network-online.target" ];
-      wants = [ "tor.service" ];
-      wantedBy = [ "multi-user.target" ];
+      after = ["tor.service" "network-online.target"];
+      wants = ["tor.service"];
+      wantedBy = ["multi-user.target"];
       serviceConfig = {
         # ${pkgs.tor}/bin/torify
         ExecStart = pkgs.writers.writeDash "announce-hidden-service" ''
