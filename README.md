@@ -1,3 +1,6 @@
-# clan.lol baseos
+# clan.lol core
 
-This will become a collection of nixosModules and image builders we use to test, distribute and develop clan.lol
+This is the monorepo of the clan.lol project
+
+In here are all the packages we use, all the nixosModules we use/expose, the CLI and tests for everything.
+Not in here is the deployed infrastructure, which is in clan-infra.
