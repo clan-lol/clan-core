@@ -9,7 +9,7 @@ include = ["clan.py"]
 name = "clan"
 description = "cLAN CLI tool"
 dynamic = ["version"]
-scripts = {clan = "clan:my_cli"}
+scripts = {clan = "clan:clan"}
 
 [tool.pytest.ini_options]
 addopts = "--cov . --cov-report term --cov-fail-under=100 --no-cov-on-fail"

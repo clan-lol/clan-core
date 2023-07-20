@@ -69,54 +69,58 @@ def git(args: argparse.Namespace) -> None:
         ] + args.git_args
     )
 
+# takes a (sub)parser and configures it
+def make_parser(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "-f",
+        "--folder",
+        help="the folder where the clan is defined, default to the current folder",
+        default=os.environ["PWD"],
+    )
+    subparser = parser.add_subparsers(
+        title="command",
+        description="the command to run",
+        help="the command to run",
+        required=True,
+    )
 
-parser = argparse.ArgumentParser(description="clan-admin")
-parser.add_argument(
-    "-f",
-    "--folder",
-    help="the folder where the clan is defined, default to the current folder",
-    default=os.environ["PWD"],
-)
-subparser = parser.add_subparsers(
-    title="command",
-    description="the command to run",
-    help="the command to run",
-    required=True,
-)
+    parser_create = subparser.add_parser("create", help="create a new clan")
+    parser_create.set_defaults(func=create)
 
-parser_create = subparser.add_parser("create", help="create a new clan")
-parser_create.set_defaults(func=create)
+    parser_edit = subparser.add_parser("edit", help="edit a clan")
+    parser_edit.set_defaults(func=edit)
 
-parser_edit = subparser.add_parser("edit", help="edit a clan")
-parser_edit.set_defaults(func=edit)
+    parser_rebuild = subparser.add_parser(
+        "rebuild", help="build configuration of a clan and push it to the target"
+    )
+    parser_rebuild.add_argument(
+        "--host", help="specify single host to rebuild", default=None
+    )
+    parser_rebuild.set_defaults(func=rebuild)
 
-parser_rebuild = subparser.add_parser(
-    "rebuild", help="build configuration of a clan and push it to the target"
-)
-parser_rebuild.add_argument(
-    "--host", help="specify single host to rebuild", default=None
-)
-parser_rebuild.set_defaults(func=rebuild)
+    parser_destroy = subparser.add_parser(
+        "destroy", help="destroy a clan, including all the machines"
+    )
+    parser_destroy.add_argument(
+        "--yes", help="specify single host to rebuild", action="store_true"
+    )
+    parser_destroy.set_defaults(func=destroy)
 
-parser_destroy = subparser.add_parser(
-    "destroy", help="destroy a clan, including all the machines"
-)
-parser_destroy.add_argument(
-    "--yes", help="specify single host to rebuild", action="store_true"
-)
-parser_destroy.set_defaults(func=destroy)
+    parser_backup = subparser.add_parser(
+        "backup", help="backup all the state of all machines in a clan or just a single one"
+    )
+    parser_backup.add_argument(
+        "--host", help="specify single host to rebuild", default=None
+    )
+    parser_backup.set_defaults(func=backup)
 
-parser_backup = subparser.add_parser(
-    "backup", help="backup all the state of all machines in a clan or just a single one"
-)
-parser_backup.add_argument(
-    "--host", help="specify single host to rebuild", default=None
-)
-parser_backup.set_defaults(func=backup)
+    parser_git = subparser.add_parser("git", help="control the clan repo via git")
+    parser_git.add_argument("git_args", nargs="*")
+    parser_git.set_defaults(func=git)
 
-parser_git = subparser.add_parser("git", help="control the clan repo via git")
-parser_git.add_argument("git_args", nargs="*")
-parser_git.set_defaults(func=git)
 
-args = parser.parse_args()
-args.func(args)
+# entry point if this file is executed directly
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="clan-admin")
+    args = parser.parse_args()
+    args.func(args)

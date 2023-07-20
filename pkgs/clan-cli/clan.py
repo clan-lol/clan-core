@@ -1,24 +1,15 @@
 # !/usr/bin/env python3
-import subprocess
-import sys
+import argparse
+
+import clan_admin
 
 
-def showhelp() -> None:
-    print('''
-    usage:
-    clan admin ...
-    clan join ...
-    clan delete ...
-    ''')
+# this will be the entrypoint under /bin/clan (see pyproject.toml config)
+def clan() -> None:
+    parser = argparse.ArgumentParser(description="cLAN tool")
+    subparsers = parser.add_subparsers()
 
+    # init clan admin
+    parser_admin = subparsers.add_parser("admin")
+    clan_admin.make_parser(parser_admin)
 
-try:
-    cmd = f'clan-{sys.argv[1]}'
-except:  # noqa
-    showhelp()
-
-try:
-    subprocess.Popen([cmd] + sys.argv[2:])
-except FileNotFoundError:
-    print(f'command {cmd} not found')
-    exit(2)
