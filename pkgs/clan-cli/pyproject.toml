@@ -32,6 +32,10 @@ ignore_missing_imports = true
 module = "pytest.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "argcomplete.*"
+ignore_missing_imports = true
+
 [tool.ruff]
 line-length = 88
 

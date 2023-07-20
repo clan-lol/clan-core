@@ -1,20 +1,21 @@
-{
-  pkgs ? import <nixpkgs> {},
-
-  lib ? pkgs.lib,
-  python3 ? pkgs.python3,
-  ruff ? pkgs.ruff,
-  runCommand ? pkgs.runCommand,
-}: let
+{ pkgs ? import <nixpkgs> { }
+, lib ? pkgs.lib
+, python3 ? pkgs.python3
+, ruff ? pkgs.ruff
+, runCommand ? pkgs.runCommand
+, installShellFiles ? pkgs.installShellFiles
+,
+}:
+let
   pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
   name = pyproject.project.name;
 
   src = lib.cleanSource ./.;
 
   dependencies = lib.attrValues {
-    # inherit (python3.pkgs)
-    #   some-package
-    #   ;
+    inherit (python3.pkgs)
+      argcomplete
+      ;
   };
 
   devDependencies = lib.attrValues {
@@ -34,15 +35,22 @@
     format = "pyproject";
     nativeBuildInputs = [
       python3.pkgs.setuptools
+      installShellFiles
     ];
     propagatedBuildInputs =
       dependencies
       ++ [ ];
     passthru.tests = { inherit check; };
     passthru.devDependencies = devDependencies;
+    postInstall = ''
+      installShellCompletion --bash --name clan \
+        <(${python3.pkgs.argcomplete}/bin/register-python-argcomplete --shell bash clan)
+      installShellCompletion --fish --name clan.fish \
+        <(${python3.pkgs.argcomplete}/bin/register-python-argcomplete --shell fish clan)
+    '';
   };
 
-  checkPython = python3.withPackages (ps: devDependencies);
+  checkPython = python3.withPackages (ps: devDependencies ++ dependencies);
 
   check = runCommand "${name}-check" { } ''
     cp -r ${src} ./src

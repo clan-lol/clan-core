@@ -1,6 +1,8 @@
 # !/usr/bin/env python3
 import argparse
 
+import argcomplete
+
 import clan_admin
 
 
@@ -12,4 +14,6 @@ def clan() -> None:
     # init clan admin
     parser_admin = subparsers.add_parser("admin")
     clan_admin.make_parser(parser_admin)
+    argcomplete.autocomplete(parser)
+    parser.parse_args()
 
