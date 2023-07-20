@@ -1,9 +1,9 @@
 # !/usr/bin/env python3
-import sys
 import subprocess
+import sys
 
 
-def showhelp():
+def showhelp() -> None:
     print('''
     usage:
     clan admin ...
