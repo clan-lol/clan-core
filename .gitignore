@@ -1,1 +1,10 @@
+.direnv
 result*
+
+# python
+__pycache__
+.coverage
+.mypy_cache
+.pytest_cache
+.pythonenv
+.ruff_cache

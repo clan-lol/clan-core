@@ -22,6 +22,7 @@
       imports = [
         ./flake-parts/packages.nix
         ./flake-parts/formatting.nix
+        ./templates/python-project/flake-module.nix
       ];
       flake = {
         nixosConfigurations.installer = lib.nixosSystem {
