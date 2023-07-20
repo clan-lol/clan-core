@@ -1,7 +1,10 @@
 {
   pkgs ? import <nixpkgs> {},
+
   lib ? pkgs.lib,
   python3 ? pkgs.python3,
+  ruff ? pkgs.ruff,
+  runCommand ? pkgs.runCommand,
 }: let
   pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
   name = pyproject.project.name;
@@ -39,13 +42,13 @@
 
   checkPython = python3.withPackages (ps: devDependencies);
 
-  check = pkgs.runCommand "${name}-check" {} ''
+  check = runCommand "${name}-check" {} ''
     cp -r ${src} ./src
     chmod +w -R ./src
     cd src
     export PYTHONPATH=.
     echo -e "\x1b[32m## run ruff\x1b[0m"
-    ${pkgs.ruff}/bin/ruff check .
+    ${ruff}/bin/ruff check .
     echo -e "\x1b[32m## run mypy\x1b[0m"
     ${checkPython}/bin/mypy .
     echo -e "\x1b[32m## run pytest\x1b[0m"
