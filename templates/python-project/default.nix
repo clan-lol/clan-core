@@ -24,6 +24,8 @@
       mypy
       pytest
       pytest-cov
+      setuptools
+      wheel
       ;
   };
 
