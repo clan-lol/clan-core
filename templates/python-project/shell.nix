@@ -15,6 +15,9 @@
         ps.pip
       ]
   );
+  checkScript = pkgs.writeScriptBin "check" ''
+    nix build -f . tests.check -L "$@"
+  '';
   devShell = pkgs.mkShell {
     packages = [
       pkgs.ruff
@@ -37,7 +40,7 @@
           --editable $repo_root && \
           cp -a pyproject.toml $tmp_path/pyproject.toml
       fi
-      export PATH="$tmp_path/bin:$PATH"
+      export PATH="$tmp_path/bin:${checkScript}/bin:$PATH"
       export PYTHONPATH="$repo_root:$tmp_path/${pythonWithDeps.sitePackages}"
     '';
   };
