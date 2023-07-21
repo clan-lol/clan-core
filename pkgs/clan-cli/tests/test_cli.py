@@ -4,7 +4,8 @@ import clan_cli
 import pytest
 
 
-def test_no_args(capsys: pytest.CaptureFixture) -> None:
+def test_no_args(capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "argv", [""])
     clan_cli.main()
     captured = capsys.readouterr()
     assert captured.out.startswith("usage:")

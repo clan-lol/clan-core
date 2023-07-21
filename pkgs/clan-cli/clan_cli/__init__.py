@@ -7,7 +7,7 @@ from . import admin
 has_argcomplete = True
 try:
     import argcomplete
-except ImportError:
+except ImportError:  # pragma: no cover
     has_argcomplete = False
 
 
@@ -25,5 +25,5 @@ def main() -> None:
         parser.print_help()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
