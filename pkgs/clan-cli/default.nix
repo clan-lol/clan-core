@@ -41,7 +41,7 @@ let
     propagatedBuildInputs =
       dependencies
       ++ [ ];
-    passthru.tests = { inherit check; };
+    passthru.tests = { inherit clan-tests clan-mypy; };
     passthru.devDependencies = devDependencies;
     postInstall = ''
       installShellCompletion --bash --name clan \
@@ -53,16 +53,19 @@ let
 
   checkPython = python3.withPackages (_ps: devDependencies ++ dependencies);
 
-  check = runCommand "${name}-check" { } ''
+  clan-mypy = runCommand "${name}-mypy" { } ''
     cp -r ${src} ./src
     chmod +w -R ./src
     cd src
-    export PYTHONPATH=.
-    echo -e "\x1b[32m## run ruff\x1b[0m"
-    ${ruff}/bin/ruff check .
-    echo -e "\x1b[32m## run mypy\x1b[0m"
     ${checkPython}/bin/mypy .
-    echo -e "\x1b[32m## run pytest\x1b[0m"
+    touch $out
+  '';
+
+  clan-tests = runCommand "${name}-tests" { } ''
+    cp -r ${src} ./src
+    chmod +w -R ./src
+    cd src
+    find .
     ${checkPython}/bin/pytest
     touch $out
   '';
