@@ -14,7 +14,6 @@
   outputs = inputs @ { flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } ({ lib
                                                  , config
-                                                 , self
                                                  , ...
                                                  }: {
       systems = lib.systems.flakeExposed;
