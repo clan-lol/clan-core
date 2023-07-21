@@ -14,7 +14,6 @@
   outputs = inputs @ { flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } ({ lib
                                                  , config
-                                                 , self
                                                  , ...
                                                  }: {
       systems = lib.systems.flakeExposed;
@@ -22,6 +21,7 @@
         ./flake-parts/packages.nix
         ./flake-parts/formatting.nix
         ./templates/python-project/flake-module.nix
+        ./pkgs/clan-cli/flake-module.nix
       ];
       flake = {
         nixosConfigurations.installer = lib.nixosSystem {

@@ -42,7 +42,7 @@ let
     passthru.devDependencies = devDependencies;
   };
 
-  checkPython = python3.withPackages (ps: devDependencies ++ dependencies);
+  checkPython = python3.withPackages (_ps: devDependencies ++ dependencies);
 
   check = runCommand "${name}-check" { } ''
     cp -r ${src} ./src
