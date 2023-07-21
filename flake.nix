@@ -21,13 +21,6 @@
         ./pkgs/clan-cli/flake-module.nix
       ];
       flake = {
-        nixosConfigurations.installer = lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            config.flake.nixosModules.installer
-            inputs.nixos-generators.nixosModules.all-formats
-          ];
-        };
         nixosModules = {
           installer = {
             imports = [
