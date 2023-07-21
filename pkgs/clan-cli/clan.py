@@ -2,7 +2,11 @@
 import argparse
 import sys
 
-import argcomplete
+has_argcomplete = True
+try:
+    import argcomplete
+except ImportError:
+    has_argcomplete = False
 
 import clan_admin
 
@@ -15,7 +19,8 @@ def clan() -> None:
     # init clan admin
     parser_admin = subparsers.add_parser("admin")
     clan_admin.make_parser(parser_admin)
-    argcomplete.autocomplete(parser)
+    if has_argcomplete:
+        argcomplete.autocomplete(parser)
     parser.parse_args()
     if len(sys.argv) == 1:
         parser.print_help()
