@@ -117,13 +117,3 @@ def make_parser(parser: argparse.ArgumentParser) -> None:
     parser_git = subparser.add_parser("git", help="control the clan repo via git")
     parser_git.add_argument("git_args", nargs="*")
     parser_git.set_defaults(func=git)
-
-
-def clan_admin() -> None: # pragma: no cover
-    parser = argparse.ArgumentParser(description="clan-admin")
-    args = parser.parse_args()
-    args.func(args)
-
-# entry point if this file is executed directly
-if __name__ == "__main__": # pragma: no cover
-    clan_admin()
