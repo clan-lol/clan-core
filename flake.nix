@@ -22,6 +22,7 @@
       imports = [
         ./flake-parts/packages.nix
         ./flake-parts/formatting.nix
+        ./templates/flake-module.nix
         ./templates/python-project/flake-module.nix
         ./pkgs/clan-cli/flake-module.nix
       ];
