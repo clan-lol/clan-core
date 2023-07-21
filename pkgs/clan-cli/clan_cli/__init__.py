@@ -2,13 +2,13 @@
 import argparse
 import sys
 
+from . import admin
+
 has_argcomplete = True
 try:
     import argcomplete
 except ImportError:
     has_argcomplete = False
-
-from . import admin
 
 
 # this will be the entrypoint under /bin/clan (see pyproject.toml config)
@@ -23,6 +23,7 @@ def main() -> None:
     parser.parse_args()
     if len(sys.argv) == 1:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()

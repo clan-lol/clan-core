@@ -34,7 +34,7 @@ def edit(args: argparse.Namespace) -> None:  # pragma: no cover
         )
 
 
-def rebuild(args: argparse.Namespace) -> None: # pragma: no cover
+def rebuild(args: argparse.Namespace) -> None:  # pragma: no cover
     # TODO get clients from zerotier cli?
     if args.host:
         print(f"would redeploy {args.host} from clan {args.folder}")
@@ -42,7 +42,7 @@ def rebuild(args: argparse.Namespace) -> None: # pragma: no cover
         print(f"would redeploy all hosts from clan {args.folder}")
 
 
-def destroy(args: argparse.Namespace) -> None: # pragma: no cover
+def destroy(args: argparse.Namespace) -> None:  # pragma: no cover
     # TODO get clan folder & hosts from somwhere (maybe ~/.config/clan/$name /)
     # send some kind of kill signal, then remove the folder
     if args.yes:
@@ -53,21 +53,23 @@ def destroy(args: argparse.Namespace) -> None: # pragma: no cover
         )
 
 
-def backup(args: argparse.Namespace) -> None: # pragma: no cover
+def backup(args: argparse.Namespace) -> None:  # pragma: no cover
     if args.host:
         print(f"would backup {args.host} from clan {args.folder}")
     else:
         print(f"would backup all hosts from clan {args.folder}")
 
 
-def git(args: argparse.Namespace) -> None: # pragma: no cover
+def git(args: argparse.Namespace) -> None:  # pragma: no cover
     subprocess.Popen(
         [
             "git",
             "-C",
             args.folder,
-        ] + args.git_args
+        ]
+        + args.git_args
     )
+
 
 # takes a (sub)parser and configures it
 def register_parser(parser: argparse.ArgumentParser) -> None:
@@ -107,7 +109,8 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
     parser_destroy.set_defaults(func=destroy)
 
     parser_backup = subparser.add_parser(
-        "backup", help="backup all the state of all machines in a clan or just a single one"
+        "backup",
+        help="backup all the state of all machines in a clan or just a single one",
     )
     parser_backup.add_argument(
         "--host", help="specify single host to rebuild", default=None
