@@ -13,7 +13,12 @@
 
   outputs = inputs @ { flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } ({ lib, config, ... }: {
-      systems = lib.systems.flakeExposed;
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
       imports = [
         ./flake-parts/packages.nix
         ./flake-parts/formatting.nix
