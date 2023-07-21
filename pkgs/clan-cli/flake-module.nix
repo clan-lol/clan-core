@@ -7,6 +7,6 @@
     in
     {
       packages.${name} = package;
-      checks.${name} = package.tests.check;
+      checks = package.tests;
     };
 }

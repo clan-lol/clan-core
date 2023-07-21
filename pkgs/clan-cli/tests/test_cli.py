@@ -1,11 +1,11 @@
 import sys
 
-import clan
+import clan_cli
 import pytest
 
 
 def test_no_args(capsys):
-    clan.clan()
+    clan_cli.main()
     captured = capsys.readouterr()
     assert captured.out.startswith("usage:")
 
@@ -13,6 +13,6 @@ def test_no_args(capsys):
 def test_help(capsys, monkeypatch):
     monkeypatch.setattr(sys, "argv", ["", "--help"])
     with pytest.raises(SystemExit):
-        clan.clan()
+        clan_cli.main()
     captured = capsys.readouterr()
     assert captured.out.startswith("usage:")
