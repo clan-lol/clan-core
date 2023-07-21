@@ -70,7 +70,7 @@ def git(args: argparse.Namespace) -> None: # pragma: no cover
     )
 
 # takes a (sub)parser and configures it
-def make_parser(parser: argparse.ArgumentParser) -> None:
+def register_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "-f",
         "--folder",

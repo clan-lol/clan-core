@@ -2,14 +2,11 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-include = ["clan.py"]
-
 [project]
 name = "clan"
 description = "cLAN CLI tool"
 dynamic = ["version"]
-scripts = {clan = "clan:clan"}
+scripts = {clan = "clan_cli:main"}
 
 [tool.pytest.ini_options]
 addopts = "--cov . --cov-report term --cov-fail-under=100 --no-cov-on-fail"
