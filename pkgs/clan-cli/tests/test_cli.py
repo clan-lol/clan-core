@@ -1,8 +1,7 @@
 import sys
 
-import pytest
-
 import clan
+import pytest
 
 
 def test_no_args(capsys):
