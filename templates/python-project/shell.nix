@@ -14,7 +14,7 @@ let
     ]
   );
   checkScript = pkgs.writeScriptBin "check" ''
-    nix build -f . tests.check -L "$@"
+    nix build -f . tests -L "$@"
   '';
   devShell = pkgs.mkShell {
     packages = [
