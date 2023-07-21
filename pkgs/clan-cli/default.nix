@@ -65,8 +65,7 @@ let
     cp -r ${src} ./src
     chmod +w -R ./src
     cd src
-    find .
-    ${checkPython}/bin/pytest
+    ${checkPython}/bin/python -m pytest ./tests
     touch $out
   '';
 
