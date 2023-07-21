@@ -25,6 +25,7 @@ let
       mypy
       pytest
       pytest-cov
+      pytest-subprocess
       setuptools
       wheel
       ;

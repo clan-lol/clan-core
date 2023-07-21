@@ -1,5 +1,6 @@
 # !/usr/bin/env python3
 import argparse
+import sys
 
 import argcomplete
 
@@ -16,4 +17,5 @@ def clan() -> None:
     clan_admin.make_parser(parser_admin)
     argcomplete.autocomplete(parser)
     parser.parse_args()
-
+    if len(sys.argv) == 1:
+        parser.print_help()

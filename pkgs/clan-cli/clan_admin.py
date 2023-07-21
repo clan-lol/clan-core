@@ -2,6 +2,7 @@
 import argparse
 import os
 import subprocess
+import sys
 
 
 def create(args: argparse.Namespace) -> None:
@@ -18,7 +19,7 @@ def create(args: argparse.Namespace) -> None:
     )
 
 
-def edit(args: argparse.Namespace) -> None:
+def edit(args: argparse.Namespace) -> None:  # pragma: no cover
     # TODO add some cli options to change certain options without relying on a text editor
     clan_flake = f"{args.folder}/flake.nix"
     if os.path.isfile(clan_flake):
@@ -30,11 +31,11 @@ def edit(args: argparse.Namespace) -> None:
         )
     else:
         print(
-            f"{args.folder} has no flake.nix, so it does not seem to be the clan root folder"
+            f"{args.folder} has no flake.nix, so it does not seem to be the clan root folder",
         )
 
 
-def rebuild(args: argparse.Namespace) -> None:
+def rebuild(args: argparse.Namespace) -> None: # pragma: no cover
     # TODO get clients from zerotier cli?
     if args.host:
         print(f"would redeploy {args.host} from clan {args.folder}")
@@ -42,7 +43,7 @@ def rebuild(args: argparse.Namespace) -> None:
         print(f"would redeploy all hosts from clan {args.folder}")
 
 
-def destroy(args: argparse.Namespace) -> None:
+def destroy(args: argparse.Namespace) -> None: # pragma: no cover
     # TODO get clan folder & hosts from somwhere (maybe ~/.config/clan/$name /)
     # send some kind of kill signal, then remove the folder
     if args.yes:
@@ -53,14 +54,14 @@ def destroy(args: argparse.Namespace) -> None:
         )
 
 
-def backup(args: argparse.Namespace) -> None:
+def backup(args: argparse.Namespace) -> None: # pragma: no cover
     if args.host:
         print(f"would backup {args.host} from clan {args.folder}")
     else:
         print(f"would backup all hosts from clan {args.folder}")
 
 
-def git(args: argparse.Namespace) -> None:
+def git(args: argparse.Namespace) -> None: # pragma: no cover
     subprocess.Popen(
         [
             "git",
@@ -119,8 +120,11 @@ def make_parser(parser: argparse.ArgumentParser) -> None:
     parser_git.set_defaults(func=git)
 
 
-# entry point if this file is executed directly
-if __name__ == "__main__":
+def clan_admin() -> None: # pragma: no cover
     parser = argparse.ArgumentParser(description="clan-admin")
     args = parser.parse_args()
     args.func(args)
+
+# entry point if this file is executed directly
+if __name__ == "__main__": # pragma: no cover
+    clan_admin()

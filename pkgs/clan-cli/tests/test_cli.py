@@ -1,16 +1,19 @@
 import sys
 
-import my_tool
+import pytest
+
+import clan
 
 
 def test_no_args(capsys):
-    my_tool.my_cli()
+    clan.clan()
     captured = capsys.readouterr()
     assert captured.out.startswith("usage:")
 
 
-def test_version(capsys, monkeypatch):
-    monkeypatch.setattr(sys, "argv", ["", "--version"])
-    my_tool.my_cli()
+def test_help(capsys, monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["", "--help"])
+    with pytest.raises(SystemExit):
+        clan.clan()
     captured = capsys.readouterr()
-    assert captured.out.startswith("Version:")
+    assert captured.out.startswith("usage:")
