@@ -11,13 +11,12 @@
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs @ {flake-parts, ...}:
-    flake-parts.lib.mkFlake {inherit inputs;} ({
-      lib,
-      config,
-      self,
-      ...
-    }: {
+  outputs = inputs @ { flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } ({ lib
+                                                 , config
+                                                 , self
+                                                 , ...
+                                                 }: {
       systems = lib.systems.flakeExposed;
       imports = [
         ./flake-parts/packages.nix

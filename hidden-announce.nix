@@ -1,8 +1,7 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }: {
   options.hidden-announce = {
     enable = lib.mkEnableOption "hidden-announce";
@@ -32,9 +31,9 @@
     };
     systemd.services.hidden-ssh-announce = {
       description = "irc announce hidden ssh";
-      after = ["tor.service" "network-online.target"];
-      wants = ["tor.service"];
-      wantedBy = ["multi-user.target"];
+      after = [ "tor.service" "network-online.target" ];
+      wants = [ "tor.service" ];
+      wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         # ${pkgs.tor}/bin/torify
         ExecStart = pkgs.writers.writeDash "announce-hidden-service" ''

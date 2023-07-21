@@ -1,11 +1,11 @@
-{
-  pkgs ? import <nixpkgs> {},
-
-  lib ? pkgs.lib,
-  python3 ? pkgs.python3,
-  ruff ? pkgs.ruff,
-  runCommand ? pkgs.runCommand,
-}: let
+{ pkgs ? import <nixpkgs> { }
+, lib ? pkgs.lib
+, python3 ? pkgs.python3
+, ruff ? pkgs.ruff
+, runCommand ? pkgs.runCommand
+,
+}:
+let
   pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
   name = pyproject.project.name;
 
@@ -37,14 +37,14 @@
     ];
     propagatedBuildInputs =
       dependencies
-      ++ [];
-    passthru.tests = {inherit check;};
+      ++ [ ];
+    passthru.tests = { inherit check; };
     passthru.devDependencies = devDependencies;
   };
 
   checkPython = python3.withPackages (ps: devDependencies ++ dependencies);
 
-  check = runCommand "${name}-check" {} ''
+  check = runCommand "${name}-check" { } ''
     cp -r ${src} ./src
     chmod +w -R ./src
     cd src
@@ -59,4 +59,4 @@
   '';
 
 in
-  package
+package
