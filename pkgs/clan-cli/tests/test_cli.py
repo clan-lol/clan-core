@@ -4,7 +4,7 @@ import clan_cli
 import pytest
 
 
-def test_no_args(capsys):
+def test_no_args(capsys: pytest.CaptureFixture) -> None:
     clan_cli.main()
     captured = capsys.readouterr()
     assert captured.out.startswith("usage:")
