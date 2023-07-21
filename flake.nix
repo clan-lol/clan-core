@@ -12,10 +12,7 @@
   };
 
   outputs = inputs @ { flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } ({ lib
-                                                 , config
-                                                 , ...
-                                                 }: {
+    flake-parts.lib.mkFlake { inherit inputs; } ({ lib, config, ... }: {
       systems = lib.systems.flakeExposed;
       imports = [
         ./flake-parts/packages.nix
