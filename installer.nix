@@ -1,8 +1,7 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }: {
   systemd.tmpfiles.rules = [
     "d /var/shared 0777 root root - -"

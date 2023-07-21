@@ -1,7 +1,8 @@
-{
-  pkgs ? import <nixpkgs> {},
-  system ? builtins.currentSystem,
-}: let
+{ pkgs ? import <nixpkgs> { }
+, system ? builtins.currentSystem
+,
+}:
+let
   lib = pkgs.lib;
   python3 = pkgs.python3;
   package = import ./default.nix {
@@ -9,11 +10,11 @@
   };
   pythonWithDeps = python3.withPackages (
     ps:
-      package.propagatedBuildInputs
-      ++ package.devDependencies
-      ++ [
-        ps.pip
-      ]
+    package.propagatedBuildInputs
+    ++ package.devDependencies
+    ++ [
+      ps.pip
+    ]
   );
   checkScript = pkgs.writeScriptBin "check" ''
     nix build -f . tests.check -L "$@"
@@ -43,4 +44,4 @@
     '';
   };
 in
-  devShell
+devShell
