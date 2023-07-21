@@ -1,10 +1,13 @@
 import sys
 
-import clan_cli
 import pytest
 
+import clan_cli
 
-def test_no_args(capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch) -> None:
+
+def test_no_args(
+    capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setattr(sys, "argv", [""])
     clan_cli.main()
     captured = capsys.readouterr()

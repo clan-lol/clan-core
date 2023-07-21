@@ -12,8 +12,13 @@
   };
 
   outputs = inputs @ { flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } ({ lib, config, ... }: {
-      systems = lib.systems.flakeExposed;
+    flake-parts.lib.mkFlake { inherit inputs; } ({ ... }: {
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
       imports = [
         ./flake-parts/packages.nix
         ./flake-parts/formatting.nix
@@ -21,13 +26,6 @@
         ./pkgs/clan-cli/flake-module.nix
       ];
       flake = {
-        nixosConfigurations.installer = lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            config.flake.nixosModules.installer
-            inputs.nixos-generators.nixosModules.all-formats
-          ];
-        };
         nixosModules = {
           installer = {
             imports = [
