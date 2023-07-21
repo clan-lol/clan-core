@@ -10,7 +10,7 @@ def test_no_args(capsys):
     assert captured.out.startswith("usage:")
 
 
-def test_help(capsys, monkeypatch):
+def test_help(capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sys, "argv", ["", "--help"])
     with pytest.raises(SystemExit):
         clan_cli.main()

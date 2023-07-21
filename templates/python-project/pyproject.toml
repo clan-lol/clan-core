@@ -20,9 +20,6 @@ warn_redundant_casts = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
 no_implicit_optional = true
-exclude = [
-  "tests"
-]
 
 [[tool.mypy.overrides]]
 module = "setuptools.*"
