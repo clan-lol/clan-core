@@ -20,9 +20,13 @@ def main() -> None:
     admin.register_parser(parser_admin)
     if has_argcomplete:
         argcomplete.autocomplete(parser)
-    parser.parse_args()
+
     if len(sys.argv) == 1:
         parser.print_help()
+
+    args = parser.parse_args()
+    if hasattr(args, "func"):
+        args.func(args)
 
 
 if __name__ == "__main__":  # pragma: no cover
