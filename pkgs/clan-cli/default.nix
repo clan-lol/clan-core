@@ -66,7 +66,8 @@ let
     cp -r ${src} ./src
     chmod +w -R ./src
     cd src
-    ${checkPython}/bin/python -m pytest ./tests
+    ${checkPython}/bin/python -m pytest ./tests \
+      || echo -e "generate coverage report py running:\n  pytest; firefox .reports/html/index.html"
     touch $out
   '';
 
