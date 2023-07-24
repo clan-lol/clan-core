@@ -3,11 +3,11 @@
 , pkgs
 , ...
 }: {
-  options.hidden-announce = {
-    enable = lib.mkEnableOption "hidden-announce";
+  options.hidden-ssh-announce = {
+    enable = lib.mkEnableOption "hidden-ssh-announce";
     script = lib.mkOption {
       type = lib.types.package;
-      default = pkgs.writers.writeDash "test-output";
+      default = pkgs.writers.writeDash "test-output" "echo $1";
       description = ''
         script to run when the hidden tor service was started and they hostname is known.
         takes the hostname as $1
@@ -15,7 +15,8 @@
     };
   };
 
-  config = lib.mkIf config.hidden-announce.enable {
+  config = lib.mkIf config.hidden-ssh-announce.enable {
+    services.openssh.enable = true;
     services.tor = {
       enable = true;
       relay.onionServices.hidden-ssh = {
@@ -43,7 +44,7 @@
             sleep 1
           done
 
-          ${config.hidden-announce.script} "$(cat ${config.services.tor.settings.DataDirectory}/onion/hidden-ssh/hostname)"
+          ${config.hidden-ssh-announce.script} "$(cat ${config.services.tor.settings.DataDirectory}/onion/hidden-ssh/hostname)"
         '';
         PrivateTmp = "true";
         User = "tor";

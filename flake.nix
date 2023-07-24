@@ -31,12 +31,12 @@
           installer = {
             imports = [
               ./installer.nix
-              ./hidden-announce.nix
+              ./hidden-ssh-announce.nix
             ];
           };
           hidden-announce = {
             imports = [
-              ./hidden-announce.nix
+              ./hidden-ssh-announce.nix
             ];
           };
         };
