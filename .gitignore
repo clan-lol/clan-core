@@ -8,3 +8,4 @@ __pycache__
 .pytest_cache
 .pythonenv
 .ruff_cache
+htmlcov
