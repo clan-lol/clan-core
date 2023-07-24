@@ -49,6 +49,7 @@ let
       installShellCompletion --fish --name clan.fish \
         <(${python3.pkgs.argcomplete}/bin/register-python-argcomplete --shell fish clan)
     '';
+    meta.mainProgram = "clan";
   };
 
   checkPython = python3.withPackages (_ps: devDependencies ++ dependencies);
