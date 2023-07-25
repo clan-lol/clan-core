@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from . import admin
+from . import admin, ssh
 
 has_argcomplete = True
 try:
@@ -18,11 +18,19 @@ def main() -> None:
 
     parser_admin = subparsers.add_parser("admin")
     admin.register_parser(parser_admin)
+
+    parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
+    ssh.register_parser(parser_ssh)
+
     if has_argcomplete:
         argcomplete.autocomplete(parser)
-    parser.parse_args()
+
     if len(sys.argv) == 1:
         parser.print_help()
+
+    args = parser.parse_args()
+    if hasattr(args, "func"):
+        args.func(args)  # pragma: no cover
 
 
 if __name__ == "__main__":  # pragma: no cover

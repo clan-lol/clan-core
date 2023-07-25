@@ -9,7 +9,7 @@ dynamic = ["version"]
 scripts = {clan = "clan_cli:main"}
 
 [tool.pytest.ini_options]
-addopts = "--cov . --cov-report term --cov-fail-under=100 --no-cov-on-fail"
+addopts = "--cov . --cov-report term --cov-report html:.reports/html --cov-fail-under=100 --no-cov-on-fail"
 
 [tool.mypy]
 python_version = "3.10"

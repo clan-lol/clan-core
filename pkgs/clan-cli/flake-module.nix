@@ -7,6 +7,7 @@
     in
     {
       packages.${name} = package;
+      packages.default = package;
       checks = package.tests;
     };
 }

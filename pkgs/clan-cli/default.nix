@@ -41,7 +41,7 @@ let
     propagatedBuildInputs =
       dependencies
       ++ [ ];
-    passthru.tests = { inherit clan-tests clan-mypy; };
+    passthru.tests = { inherit clan-black clan-mypy clan-pytest clan-ruff; };
     passthru.devDependencies = devDependencies;
     postInstall = ''
       installShellCompletion --bash --name clan \
@@ -49,9 +49,18 @@ let
       installShellCompletion --fish --name clan.fish \
         <(${python3.pkgs.argcomplete}/bin/register-python-argcomplete --shell fish clan)
     '';
+    meta.mainProgram = "clan";
   };
 
   checkPython = python3.withPackages (_ps: devDependencies ++ dependencies);
+
+  clan-black = runCommand "${name}-black" { } ''
+    cp -r ${src} ./src
+    chmod +w -R ./src
+    cd src
+    ${checkPython}/bin/black --check .
+    touch $out
+  '';
 
   clan-mypy = runCommand "${name}-mypy" { } ''
     cp -r ${src} ./src
@@ -61,11 +70,20 @@ let
     touch $out
   '';
 
-  clan-tests = runCommand "${name}-tests" { } ''
+  clan-pytest = runCommand "${name}-tests" { } ''
     cp -r ${src} ./src
     chmod +w -R ./src
     cd src
-    ${checkPython}/bin/python -m pytest ./tests
+    ${checkPython}/bin/python -m pytest ./tests \
+      || echo -e "generate coverage report py running:\n  pytest; firefox .reports/html/index.html"
+    touch $out
+  '';
+
+  clan-ruff = runCommand "${name}-ruff" { } ''
+    cp -r ${src} ./src
+    chmod +w -R ./src
+    cd src
+    ${pkgs.ruff}/bin/ruff check .
     touch $out
   '';
 
