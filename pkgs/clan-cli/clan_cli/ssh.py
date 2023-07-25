@@ -36,7 +36,7 @@ def ssh(
     subprocess.run(cmd)
 
 
-def qrcode_scan(pictureFile: str) -> str:  # pragma: no cover
+def qrcode_scan(pictureFile: str) -> str:
     return (
         subprocess.run(
             [
