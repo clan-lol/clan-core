@@ -36,20 +36,25 @@ def ssh(
     subprocess.run(cmd)
 
 
-def qrcode_scan(pictureFile: str) -> dict:  # pragma: no cover
-    subprocess.Popen(
-        [
-            "nix",
-            "shell",
-            "nixpkgs#zbar",
-            "-c",
-            "zbarimg",
-            "--quiet",
-            "--raw",
-            pictureFile,
-        ],
-        stdout=subprocess.PIPE,
-    ).stdout.read()
+def qrcode_scan(pictureFile: str) -> str:  # pragma: no cover
+    return (
+        subprocess.run(
+            [
+                "nix",
+                "shell",
+                "nixpkgs#zbar",
+                "-c",
+                "zbarimg",
+                "--quiet",
+                "--raw",
+                pictureFile,
+            ],
+            stdout=subprocess.PIPE,
+            check=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
 
 
 def main(args: argparse.Namespace) -> None:  # pragma: no cover
@@ -60,7 +65,6 @@ def main(args: argparse.Namespace) -> None:  # pragma: no cover
     elif args.png:
         ssh_data = json.loads(qrcode_scan(args.png))
         ssh(host=ssh_data["address"], password=ssh_data["password"])
-
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:

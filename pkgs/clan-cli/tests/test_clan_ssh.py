@@ -1,20 +1,18 @@
-import argparse
-import json
-import tempfile
-import pytest
 import sys
 from typing import Union
 
+import pytest
 import pytest_subprocess.fake_process
 from pytest_subprocess import utils
 
 import clan_cli.ssh
 
+
 def test_no_args(
     capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(sys, "argv", ["", "ssh"])
-    with pytest.raises(SystemExit) as pytest_wrapped_e:
+    with pytest.raises(SystemExit):
         clan_cli.main()
     captured = capsys.readouterr()
     assert captured.err.startswith("usage:")
@@ -59,3 +57,10 @@ def test_ssh_with_pass(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
         password="XXX",
     )
     assert fp.call_count(cmd) == 1
+
+
+def test_qrcode_scan(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
+    cmd: list[Union[str, utils.Any]] = [fp.any()]
+    fp.register(cmd, stdout="https://test.test")
+    result = clan_cli.ssh.qrcode_scan("test.png")
+    assert result == "https://test.test"
