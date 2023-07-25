@@ -4,11 +4,15 @@
 , ruff ? pkgs.ruff
 , runCommand ? pkgs.runCommand
 , installShellFiles ? pkgs.installShellFiles
-,
+, zerotierone ? pkgs.zerotierone
+, bubblewrap ? pkgs.bubblewrap
 }:
 let
   pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
   name = pyproject.project.name;
+  # Override license so that we can build zerotierone without 
+  # having to re-import nixpkgs.
+  zerotierone' = zerotierone.overrideAttrs (_old: { meta = { }; });
 
   src = lib.cleanSource ./.;
 
@@ -41,8 +45,13 @@ let
     propagatedBuildInputs =
       dependencies
       ++ [ ];
-    passthru.tests = { inherit clan-black clan-mypy clan-pytest clan-ruff; };
+    passthru.tests = { inherit clan-mypy clan-pytest; };
     passthru.devDependencies = devDependencies;
+
+    makeWrapperArgs = [
+      "--set CLAN_NIXPKGS ${pkgs.path}"
+    ];
+
     postInstall = ''
       installShellCompletion --bash --name clan \
         <(${python3.pkgs.argcomplete}/bin/register-python-argcomplete --shell bash clan)
@@ -54,14 +63,6 @@ let
 
   checkPython = python3.withPackages (_ps: devDependencies ++ dependencies);
 
-  clan-black = runCommand "${name}-black" { } ''
-    cp -r ${src} ./src
-    chmod +w -R ./src
-    cd src
-    ${checkPython}/bin/black --check .
-    touch $out
-  '';
-
   clan-mypy = runCommand "${name}-mypy" { } ''
     cp -r ${src} ./src
     chmod +w -R ./src
@@ -70,22 +71,15 @@ let
     touch $out
   '';
 
-  clan-pytest = runCommand "${name}-tests" { } ''
+  clan-pytest = runCommand "${name}-tests"
+    {
+      nativeBuildInputs = [ zerotierone' bubblewrap ];
+    } ''
     cp -r ${src} ./src
     chmod +w -R ./src
     cd src
-    ${checkPython}/bin/python -m pytest ./tests \
-      || echo -e "generate coverage report py running:\n  pytest; firefox .reports/html/index.html"
+    ${checkPython}/bin/python -m pytest ./tests
     touch $out
   '';
-
-  clan-ruff = runCommand "${name}-ruff" { } ''
-    cp -r ${src} ./src
-    chmod +w -R ./src
-    cd src
-    ${pkgs.ruff}/bin/ruff check .
-    touch $out
-  '';
-
 in
 package
