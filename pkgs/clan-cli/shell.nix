@@ -24,6 +24,7 @@ let
       pythonWithDeps
     ];
     # sets up an editable install and add enty points to $PATH
+    CLAN_NIXPKGS = pkgs.path;
     shellHook = ''
       tmp_path=$(realpath ./.pythonenv)
       repo_root=$(realpath .)

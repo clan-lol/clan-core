@@ -4,11 +4,15 @@
 , ruff ? pkgs.ruff
 , runCommand ? pkgs.runCommand
 , installShellFiles ? pkgs.installShellFiles
-,
+, zerotierone ? pkgs.zerotierone
+, bubblewrap ? pkgs.bubblewrap
 }:
 let
   pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
   name = pyproject.project.name;
+  # Override license so that we can build zerotierone without 
+  # having to re-import nixpkgs.
+  zerotierone' = zerotierone.overrideAttrs (_old: { meta = { }; });
 
   src = lib.cleanSource ./.;
 
@@ -43,6 +47,11 @@ let
       ++ [ ];
     passthru.tests = { inherit clan-mypy clan-pytest; };
     passthru.devDependencies = devDependencies;
+
+    makeWrapperArgs = [
+      "--set CLAN_NIXPKGS ${pkgs.path}"
+    ];
+
     postInstall = ''
       installShellCompletion --bash --name clan \
         <(${python3.pkgs.argcomplete}/bin/register-python-argcomplete --shell bash clan)
@@ -62,7 +71,10 @@ let
     touch $out
   '';
 
-  clan-pytest = runCommand "${name}-tests" { } ''
+  clan-pytest = runCommand "${name}-tests"
+    {
+      nativeBuildInputs = [ zerotierone' bubblewrap ];
+    } ''
     cp -r ${src} ./src
     chmod +w -R ./src
     cd src
