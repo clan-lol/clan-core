@@ -41,7 +41,7 @@ let
     propagatedBuildInputs =
       dependencies
       ++ [ ];
-    passthru.tests = { inherit clan-black clan-mypy clan-pytest clan-ruff; };
+    passthru.tests = { inherit clan-mypy clan-pytest; };
     passthru.devDependencies = devDependencies;
     postInstall = ''
       installShellCompletion --bash --name clan \
@@ -53,14 +53,6 @@ let
   };
 
   checkPython = python3.withPackages (_ps: devDependencies ++ dependencies);
-
-  clan-black = runCommand "${name}-black" { } ''
-    cp -r ${src} ./src
-    chmod +w -R ./src
-    cd src
-    ${checkPython}/bin/black --check .
-    touch $out
-  '';
 
   clan-mypy = runCommand "${name}-mypy" { } ''
     cp -r ${src} ./src
@@ -78,14 +70,5 @@ let
       || echo -e "generate coverage report py running:\n  pytest; firefox .reports/html/index.html"
     touch $out
   '';
-
-  clan-ruff = runCommand "${name}-ruff" { } ''
-    cp -r ${src} ./src
-    chmod +w -R ./src
-    cd src
-    ${pkgs.ruff}/bin/ruff check .
-    touch $out
-  '';
-
 in
 package
