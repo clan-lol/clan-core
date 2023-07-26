@@ -8,14 +8,8 @@
 
   outputs = inputs @ { flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-
-      systems = builtins.fromJSON (builtins.readFile ./systems.json);
-
-      imports =
-        let
-          relPaths = builtins.fromJSON (builtins.readFile ./imports.json);
-          paths = map (path: ./. + path) relPaths;
-        in
-        paths;
+      imports = [
+        ./clan-flake-module.nix
+      ];
     };
 }
