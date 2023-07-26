@@ -86,8 +86,9 @@ class ZerotierController:
 def zerotier_controller() -> Iterator[ZerotierController]:
     # This check could be racy but it's unlikely in practice
     controller_port = find_free_port(range(10000, 65535))
+    cmd = nix_shell(["bash", "zerotierone"], ["bash", "-c", "command -v zerotier-one"])
     res = subprocess.run(
-        nix_shell(["bash", "zerotierone"], ["bash", "-c", "command -v zerotier-one"]),
+        cmd,
         check=True,
         text=True,
         stdout=subprocess.PIPE,

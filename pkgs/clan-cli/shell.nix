@@ -1,10 +1,9 @@
-{ pkgs }:
+{ self, clan, pkgs }:
 let
-  package = pkgs.callPackage ./default.nix { };
   pythonWithDeps = pkgs.python3.withPackages (
     ps:
-    package.propagatedBuildInputs
-    ++ package.devDependencies
+    clan.propagatedBuildInputs
+    ++ clan.devDependencies
     ++ [
       ps.pip
     ]
@@ -19,7 +18,7 @@ pkgs.mkShell {
     pythonWithDeps
   ];
   # sets up an editable install and add enty points to $PATH
-  CLAN_NIXPKGS = pkgs.path;
+  CLAN_FLAKE = self;
   shellHook = ''
     tmp_path=$(realpath ./.pythonenv)
     repo_root=$(realpath .)

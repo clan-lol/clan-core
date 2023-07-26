@@ -6,13 +6,11 @@
 , installShellFiles
 , zerotierone
 , bubblewrap
+, self
 }:
 let
   pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
   name = pyproject.project.name;
-  # Override license so that we can build zerotierone without 
-  # having to re-import nixpkgs.
-  zerotierone' = zerotierone.overrideAttrs (_old: { meta = { }; });
 
   src = lib.cleanSource ./.;
 
@@ -49,7 +47,7 @@ let
     passthru.devDependencies = devDependencies;
 
     makeWrapperArgs = [
-      "--set CLAN_NIXPKGS ${pkgs.path}"
+      "--set CLAN_FLAKE ${self}"
     ];
 
     postInstall = ''
@@ -73,7 +71,7 @@ let
 
   clan-pytest = runCommand "${name}-tests"
     {
-      nativeBuildInputs = [ zerotierone' bubblewrap ];
+      nativeBuildInputs = [ zerotierone bubblewrap ];
     } ''
     cp -r ${src} ./src
     chmod +w -R ./src
