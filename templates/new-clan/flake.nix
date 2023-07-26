@@ -1,13 +1,9 @@
 {
-  description = "";
+  description = "<Put your description here>";
 
   inputs = {
+    clan-core.url = "git+https://git.clan.lol/clan/clan-core";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
-    nixpkgs.url = "nixpkgs/nixos-unstable";
   };
 
   outputs = inputs @ { flake-parts, ... }:
