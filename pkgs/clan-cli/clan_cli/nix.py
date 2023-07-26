@@ -2,9 +2,9 @@ import os
 
 
 def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
-    nixpkgs = os.environ.get("CLAN_NIXPKGS")
+    flake = os.environ.get("CLAN_FLAKE")
     # in unittest we will have all binaries provided
-    if nixpkgs is None:
+    if flake is None:
         return cmd
-    wrapped_packages = [f"path:{nixpkgs}#{p}" for p in packages]
+    wrapped_packages = [f"path:{flake}#{p}" for p in packages]
     return ["nix", "shell"] + wrapped_packages + ["-c"] + cmd

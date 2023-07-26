@@ -33,14 +33,14 @@ def mock_env(**environ: str) -> Iterator[None]:
 
 # using fp fixture from pytest-subprocess
 def test_ssh_no_pass(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
-    with mock_env(CLAN_NIXPKGS="/mocked-nixpkgs"):
+    with mock_env(CLAN_FLAKE="/mocked-flake"):
         host = "somehost"
         user = "user"
         cmd: list[Union[str, utils.Any]] = [
             "nix",
             "shell",
-            "path:/mocked-nixpkgs#tor",
-            "path:/mocked-nixpkgs#openssh",
+            "path:/mocked-flake#tor",
+            "path:/mocked-flake#openssh",
             "-c",
             "torify",
             "ssh",
@@ -60,15 +60,15 @@ def test_ssh_no_pass(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
 
 
 def test_ssh_with_pass(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
-    with mock_env(CLAN_NIXPKGS="/mocked-nixpkgs"):
+    with mock_env(CLAN_FLAKE="/mocked-flake"):
         host = "somehost"
         user = "user"
         cmd: list[Union[str, utils.Any]] = [
             "nix",
             "shell",
-            "path:/mocked-nixpkgs#tor",
-            "path:/mocked-nixpkgs#openssh",
-            "path:/mocked-nixpkgs#sshpass",
+            "path:/mocked-flake#tor",
+            "path:/mocked-flake#openssh",
+            "path:/mocked-flake#sshpass",
             "-c",
             "torify",
             "sshpass",
