@@ -1,5 +1,4 @@
 import json
-import os
 import socket
 import subprocess
 import time
@@ -8,6 +7,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Iterator, Optional
+
+from ..nix import nix_shell
 
 
 def try_bind_port(port: int) -> bool:
@@ -34,16 +35,6 @@ def find_free_port(port_range: range) -> int:
         if try_bind_port(port):
             return port
     raise Exception("cannot find a free port")
-
-
-CLAN_NIXPKGS = os.environ.get("CLAN_NIXPKGS")
-
-
-def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
-    # in unittest we will have all binaries provided
-    if CLAN_NIXPKGS is None:
-        return cmd
-    return ["nix", "shell", "-f", CLAN_NIXPKGS] + packages + ["-c"] + cmd
 
 
 class ZerotierController:
