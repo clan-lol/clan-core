@@ -1,11 +1,11 @@
-{ pkgs ? import <nixpkgs> { }
-, lib ? pkgs.lib
-, python3 ? pkgs.python3
-, ruff ? pkgs.ruff
-, runCommand ? pkgs.runCommand
-, installShellFiles ? pkgs.installShellFiles
-, zerotierone ? pkgs.zerotierone
-, bubblewrap ? pkgs.bubblewrap
+{ pkgs
+, lib
+, python3
+, ruff
+, runCommand
+, installShellFiles
+, zerotierone
+, bubblewrap
 }:
 let
   pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);

@@ -1,5 +1,7 @@
+import os
 import sys
-from typing import Union
+from contextlib import contextmanager
+from typing import Iterator, Union
 
 import pytest
 import pytest_subprocess.fake_process
@@ -18,45 +20,72 @@ def test_no_args(
     assert captured.err.startswith("usage:")
 
 
+@contextmanager
+def mock_env(**environ: str) -> Iterator[None]:
+    original_environ = dict(os.environ)
+    os.environ.update(environ)
+    try:
+        yield
+    finally:
+        os.environ.clear()
+        os.environ.update(original_environ)
+
+
 # using fp fixture from pytest-subprocess
 def test_ssh_no_pass(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
-    host = "somehost"
-    user = "user"
-    cmd: list[Union[str, utils.Any]] = [
-        "torify",
-        "ssh",
-        "-o",
-        "UserKnownHostsFile=/dev/null",
-        "-o",
-        "StrictHostKeyChecking=no",
-        f"{user}@{host}",
-        fp.any(),
-    ]
-    fp.register(cmd)
-    clan_cli.ssh.ssh(
-        host=host,
-        user=user,
-    )
-    assert fp.call_count(cmd) == 1
+    with mock_env(CLAN_NIXPKGS="/mocked-nixpkgs"):
+        host = "somehost"
+        user = "user"
+        cmd: list[Union[str, utils.Any]] = [
+            "nix",
+            "shell",
+            "-f",
+            "/mocked-nixpkgs",
+            "tor",
+            "openssh",
+            "-c",
+            "torify",
+            "ssh",
+            "-o",
+            "UserKnownHostsFile=/dev/null",
+            "-o",
+            "StrictHostKeyChecking=no",
+            f"{user}@{host}",
+            fp.any(),
+        ]
+        fp.register(cmd)
+        clan_cli.ssh.ssh(
+            host=host,
+            user=user,
+        )
+        assert fp.call_count(cmd) == 1
 
 
 def test_ssh_with_pass(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
-    host = "somehost"
-    user = "user"
-    cmd: list[Union[str, utils.Any]] = [
-        "nix",
-        "shell",
-        "nixpkgs#sshpass",
-        "-c",
-        fp.any(),
-    ]
-    fp.register(cmd)
-    clan_cli.ssh.ssh(
-        host=host,
-        user=user,
-        password="XXX",
-    )
-    assert fp.call_count(cmd) == 1
+    with mock_env(CLAN_NIXPKGS="/mocked-nixpkgs"):
+        host = "somehost"
+        user = "user"
+        cmd: list[Union[str, utils.Any]] = [
+            "nix",
+            "shell",
+            "-f",
+            "/mocked-nixpkgs",
+            "tor",
+            "openssh",
+            "sshpass",
+            "-c",
+            "torify",
+            "sshpass",
+            "-p",
+            fp.any(),
+        ]
+        fp.register(cmd)
+        clan_cli.ssh.ssh(
+            host=host,
+            user=user,
+            password="XXX",
+        )
+        assert fp.call_count(cmd) == 1
 
 
 def test_qrcode_scan(fp: pytest_subprocess.fake_process.FakeProcess) -> None:

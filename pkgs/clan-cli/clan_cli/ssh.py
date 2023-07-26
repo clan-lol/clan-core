@@ -3,6 +3,8 @@ import json
 import subprocess
 from typing import Optional
 
+from .nix import nix_shell
+
 
 def ssh(
     host: str,
@@ -10,15 +12,10 @@ def ssh(
     password: Optional[str] = None,
     ssh_args: list[str] = [],
 ) -> None:
-    nix_shell_args = []
+    packages = ["tor", "openssh"]
     password_args = []
     if password:
-        nix_shell_args = [
-            "nix",
-            "shell",
-            "nixpkgs#sshpass",
-            "-c",
-        ]
+        packages.append("sshpass")
         password_args = [
             "sshpass",
             "-p",
@@ -32,23 +29,22 @@ def ssh(
         "StrictHostKeyChecking=no",
         f"{user}@{host}",
     ]
-    cmd = nix_shell_args + ["torify"] + password_args + _ssh_args
+    cmd = nix_shell(packages, ["torify"] + password_args + _ssh_args)
     subprocess.run(cmd)
 
 
 def qrcode_scan(pictureFile: str) -> str:
     return (
         subprocess.run(
-            [
-                "nix",
-                "shell",
-                "nixpkgs#zbar",
-                "-c",
-                "zbarimg",
-                "--quiet",
-                "--raw",
-                pictureFile,
-            ],
+            nix_shell(
+                ["zbar"],
+                [
+                    "zbarimg",
+                    "--quiet",
+                    "--raw",
+                    pictureFile,
+                ],
+            ),
             stdout=subprocess.PIPE,
             check=True,
         )
