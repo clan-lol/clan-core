@@ -19,10 +19,10 @@
         sshpass
         zbar
         tor;
-
       # Override license so that we can build zerotierone without 
       # having to re-import nixpkgs.
       zerotierone = pkgs.zerotierone.overrideAttrs (_old: { meta = { }; });
+      ## End optional dependencies
     };
     checks = self'.packages.clan.tests;
   };
