@@ -28,13 +28,13 @@
         nixosModules = {
           installer = {
             imports = [
-              ./installer.nix
-              ./hidden-ssh-announce.nix
+              ./modules/installer.nix
+              ./modules/hidden-ssh-announce.nix
             ];
           };
           hidden-announce = {
             imports = [
-              ./hidden-ssh-announce.nix
+              ./modules/hidden-ssh-announce.nix
             ];
           };
         };
