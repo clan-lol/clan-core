@@ -1,13 +1,13 @@
-import os
 import sys
-from contextlib import contextmanager
-from typing import Iterator, Union
+from typing import Union
 
 import pytest
 import pytest_subprocess.fake_process
 from pytest_subprocess import utils
 
 import clan_cli.ssh
+
+from .environment import mock_env
 
 
 def test_no_args(
@@ -18,17 +18,6 @@ def test_no_args(
         clan_cli.main()
     captured = capsys.readouterr()
     assert captured.err.startswith("usage:")
-
-
-@contextmanager
-def mock_env(**environ: str) -> Iterator[None]:
-    original_environ = dict(os.environ)
-    os.environ.update(environ)
-    try:
-        yield
-    finally:
-        os.environ.clear()
-        os.environ.update(original_environ)
 
 
 # using fp fixture from pytest-subprocess
