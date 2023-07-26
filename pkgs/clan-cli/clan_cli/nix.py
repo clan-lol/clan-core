@@ -6,4 +6,5 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     # in unittest we will have all binaries provided
     if nixpkgs is None:
         return cmd
-    return ["nix", "shell", "-f", nixpkgs] + packages + ["-c"] + cmd
+    wrapped_packages = [f"path:{nixpkgs}#{p}" for p in packages]
+    return ["nix", "shell"] + wrapped_packages + ["-c"] + cmd
