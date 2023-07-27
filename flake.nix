@@ -18,8 +18,10 @@
         "aarch64-linux"
       ];
       imports = [
-        ./flake-parts/packages.nix
         ./flake-parts/formatting.nix
+        ./flake-parts/modules.nix
+        ./flake-parts/packages.nix
+        ./flake-parts/writers
         ./templates/flake-module.nix
         ./templates/python-project/flake-module.nix
         ./pkgs/clan-cli/flake-module.nix
@@ -28,13 +30,13 @@
         nixosModules = {
           installer = {
             imports = [
-              ./installer.nix
-              ./hidden-ssh-announce.nix
+              ./modules/installer.nix
+              ./modules/hidden-ssh-announce.nix
             ];
           };
           hidden-announce = {
             imports = [
-              ./hidden-ssh-announce.nix
+              ./modules/hidden-ssh-announce.nix
             ];
           };
         };
