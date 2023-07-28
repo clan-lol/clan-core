@@ -2,18 +2,19 @@ import os
 import sys
 from pathlib import Path
 
+from .errors import ClanError
+
 
 def get_clan_flake_toplevel() -> Path:
     """Returns the path to the toplevel of the clan flake"""
-    initial_path = Path(os.getcwd())
-    path = Path(initial_path)
-    while path.parent == path:
-        project_files = [".clan-flake"]
-        for project_file in project_files:
+    for project_file in [".clan-flake", ".git", ".hg", ".svn", "flake.nix"]:
+        initial_path = Path(os.getcwd())
+        path = Path(initial_path)
+        while path.parent == path:
             if (path / project_file).exists():
                 return path
-        path = path.parent
-    return initial_path
+            path = path.parent
+    raise ClanError("Could not find clan flake toplevel directory")
 
 
 def user_data_dir() -> Path:
