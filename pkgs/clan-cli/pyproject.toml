@@ -13,6 +13,8 @@ packages = [ "clan_cli" ]
 
 [tool.pytest.ini_options]
 addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail"
+norecursedirs = "tests/helpers"
+
 
 [tool.mypy]
 python_version = "3.10"

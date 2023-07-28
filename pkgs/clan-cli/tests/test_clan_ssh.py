@@ -3,11 +3,10 @@ from typing import Union
 
 import pytest
 import pytest_subprocess.fake_process
+from environment import mock_env
 from pytest_subprocess import utils
 
 import clan_cli.ssh
-
-from .environment import mock_env
 
 
 def test_no_args(
