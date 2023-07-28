@@ -18,9 +18,12 @@
         "aarch64-linux"
       ];
       imports = [
+        ./flake-parts/devShells
         ./flake-parts/formatting.nix
+        ./flake-parts/merge-after-ci
         ./flake-parts/modules.nix
         ./flake-parts/packages.nix
+        ./flake-parts/tea-create-pr
         ./flake-parts/writers
         ./templates/flake-module.nix
         ./templates/python-project/flake-module.nix
