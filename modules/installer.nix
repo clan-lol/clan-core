@@ -28,9 +28,9 @@
           password: $password, address: $address
         }' > /var/shared/login.info
       cat /var/shared/login.info |
-        ${pkgs.qrencode}/bin/qrencode -t utf8 > /var/shared/qrcode.utf8
+        ${pkgs.qrencode}/bin/qrencode -t utf8 -o /var/shared/qrcode.utf8
       cat /var/shared/login.info |
-        ${pkgs.qrencode}/bin/qrencode -t png > /var/shared/qrcode.png
+        ${pkgs.qrencode}/bin/qrencode -t png -o /var/shared/qrcode.png
     '';
   };
   services.getty.autologinUser = lib.mkForce "root";
