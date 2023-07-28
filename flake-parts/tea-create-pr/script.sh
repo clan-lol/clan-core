@@ -4,6 +4,7 @@ set -euo pipefail
 remoteName="${1:-origin}"
 targetBranch="${2:-main}"
 shift && shift
+TMPDIR="$(mktemp -d)"
 currentBranch="$(git rev-parse --abbrev-ref HEAD)"
 user="$(tea login list -o simple | cut -d" " -f4)"
 tempRemoteBranch="$user-$currentBranch"
