@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+remoteName="${1:-origin}"
+targetBranch="${2:-main}"
+shift && shift
+currentBranch="$(git rev-parse --abbrev-ref HEAD)"
+user="$(tea login list -o simple | cut -d" " -f4)"
+tempRemoteBranch="$user-$currentBranch"
+
+git log --reverse --pretty="format:%s%n%n%b%n%n" "$remoteName/$targetBranch..HEAD" > "$TMPDIR"/commit-msg
+
+$EDITOR "$TMPDIR"/commit-msg
+
+COMMIT_MSG=$(cat "$TMPDIR"/commit-msg)
+
+firstLine=$(echo "$COMMIT_MSG" | head -n1)
+rest=$(echo "$COMMIT_MSG" | tail -n+2)
+
+if [[ "$firstLine" == "$rest" ]]; then
+  rest=""
+fi
+
+git push "$remoteName" HEAD:refs/heads/"$tempRemoteBranch"
+
+tea pr create \
+  --title "$firstLine" \
+  --description "$rest" \
+  --head "$tempRemoteBranch" \
+  --base "$targetBranch" \
+  "$@"
