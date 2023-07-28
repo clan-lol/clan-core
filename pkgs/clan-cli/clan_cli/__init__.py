@@ -30,7 +30,11 @@ def main() -> None:
 
     args = parser.parse_args()
     if hasattr(args, "func"):
-        args.func(args)  # pragma: no cover
+        try:
+            args.func(args)
+        except ClanError as e:
+            print(f"{sys.argv[0]}: {e}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":  # pragma: no cover
