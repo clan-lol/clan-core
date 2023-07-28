@@ -10,7 +10,7 @@ def get_clan_flake_toplevel() -> Path:
     for project_file in [".clan-flake", ".git", ".hg", ".svn", "flake.nix"]:
         initial_path = Path(os.getcwd())
         path = Path(initial_path)
-        while path.parent == path:
+        while path.parent != path:
             if (path / project_file).exists():
                 return path
             path = path.parent
