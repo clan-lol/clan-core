@@ -1,12 +1,15 @@
 [build-system]
-requires = ["setuptools"]
+requires = [ "setuptools" ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "clan"
 description = "cLAN CLI tool"
-dynamic = ["version"]
-scripts = {clan = "clan_cli:main"}
+dynamic = [ "version" ]
+scripts = { clan = "clan_cli:main" }
+
+[tool.setuptools]
+packages = [ "clan_cli" ]
 
 [tool.pytest.ini_options]
 addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail"
@@ -33,13 +36,13 @@ ignore_missing_imports = true
 [tool.ruff]
 line-length = 88
 
-select = ["E", "F", "I"]
+select = [ "E", "F", "I" ]
 ignore = [ "E501" ]
 
 [tool.black]
 line-length = 88
-target-version = ['py310']
-include = '\.pyi?$'
+target-version = [ "py310" ]
+include = "\\.pyi?$"
 exclude = '''
 /(
     \.git
