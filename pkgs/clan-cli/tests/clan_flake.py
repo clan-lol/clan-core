@@ -12,4 +12,4 @@ def clan_flake(temporary_dir: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator
     (flake / ".clan-flake").touch()
     monkeypatch.chdir(flake)
     with mock_env(HOME=str(temporary_dir)):
-        yield temporary_dir
+        yield flake
