@@ -11,6 +11,7 @@
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+    pre-commit-hooks-nix.url = "github:cachix/pre-commit-hooks.nix";
   };
 
   outputs = inputs @ { flake-parts, ... }:
