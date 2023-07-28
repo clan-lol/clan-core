@@ -20,6 +20,7 @@
   hidden-ssh-announce = {
     enable = true;
     script = pkgs.writers.writeDash "write-hostname" ''
+      set -efu
       mkdir -p /var/shared
       echo "$1" > /var/shared/onion-hostname
       ${pkgs.jq}/bin/jq -nc \
@@ -28,15 +29,16 @@
           password: $password, address: $address
         }' > /var/shared/login.info
       cat /var/shared/login.info |
-        ${pkgs.qrencode}/bin/qrencode -t utf8 > /var/shared/qrcode.utf8
+        ${pkgs.qrencode}/bin/qrencode -t utf8 -o /var/shared/qrcode.utf8
       cat /var/shared/login.info |
-        ${pkgs.qrencode}/bin/qrencode -t png > /var/shared/qrcode.png
+        ${pkgs.qrencode}/bin/qrencode -t png -o /var/shared/qrcode.png
     '';
   };
   services.getty.autologinUser = lib.mkForce "root";
   programs.bash.interactiveShellInit = ''
     if [ "$(tty)" = "/dev/tty1" ]; then
-      until test -e /var/shared/qrcode.utf8; do sleep 1; done
+      echo 'waiting for tor to generate the hidden service'
+      until test -e /var/shared/qrcode.utf8; do echo .; sleep 1; done
       cat /var/shared/qrcode.utf8
     fi
   '';
