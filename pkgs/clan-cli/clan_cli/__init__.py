@@ -3,11 +3,12 @@ import argparse
 import sys
 
 from . import admin, ssh
+from .errors import ClanError
 
 has_argcomplete = True
 try:
     import argcomplete
-except ImportError:  # pragma: no cover
+except ImportError:
     has_argcomplete = False
 
 
@@ -37,5 +38,5 @@ def main() -> None:
             sys.exit(1)
 
 
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == "__main__":
     main()
