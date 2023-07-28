@@ -20,6 +20,7 @@
   hidden-ssh-announce = {
     enable = true;
     script = pkgs.writers.writeDash "write-hostname" ''
+      set -efu
       mkdir -p /var/shared
       echo "$1" > /var/shared/onion-hostname
       ${pkgs.jq}/bin/jq -nc \
