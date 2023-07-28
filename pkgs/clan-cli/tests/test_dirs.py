@@ -12,3 +12,11 @@ def test_get_clan_flake_toplevel(
     monkeypatch.chdir(temporary_dir)
     with pytest.raises(ClanError):
         get_clan_flake_toplevel()
+    (temporary_dir / ".git").touch()
+    assert get_clan_flake_toplevel() == temporary_dir
+
+    subdir = temporary_dir / "subdir"
+    subdir.mkdir()
+    monkeypatch.chdir(subdir)
+    (subdir / ".clan-flake").touch()
+    assert get_clan_flake_toplevel() == subdir
