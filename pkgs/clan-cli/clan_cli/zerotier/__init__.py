@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Iterator, Optional
 
+from ..errors import ClanError
 from ..nix import nix_shell
 
 
@@ -30,11 +31,11 @@ def try_connect_port(port: int) -> bool:
     return result == 0
 
 
-def find_free_port(port_range: range) -> int:
+def find_free_port(port_range: range) -> Optional[int]:
     for port in port_range:
         if try_bind_port(port):
             return port
-    raise Exception("cannot find a free port")
+    return None
 
 
 class ZerotierController:
@@ -86,6 +87,8 @@ class ZerotierController:
 def zerotier_controller() -> Iterator[ZerotierController]:
     # This check could be racy but it's unlikely in practice
     controller_port = find_free_port(range(10000, 65535))
+    if controller_port is None:
+        raise ClanError("cannot find a free port for zerotier controller")
     cmd = nix_shell(["bash", "zerotierone"], ["bash", "-c", "command -v zerotier-one"])
     res = subprocess.run(
         cmd,
@@ -95,10 +98,10 @@ def zerotier_controller() -> Iterator[ZerotierController]:
     )
     zerotier_exe = res.stdout.strip()
     if zerotier_exe is None:
-        raise Exception("cannot find zerotier-one executable")
+        raise ClanError("cannot find zerotier-one executable")
 
     if not zerotier_exe.startswith("/nix/store"):
-        raise Exception(
+        raise ClanError(
             f"zerotier-one executable needs to come from /nix/store: {zerotier_exe}"
         )
 
@@ -136,7 +139,7 @@ def zerotier_controller() -> Iterator[ZerotierController]:
                 while not try_connect_port(controller_port):
                     status = p.poll()
                     if status is not None:
-                        raise Exception(
+                        raise ClanError(
                             f"zerotier-one has been terminated unexpected with {status}"
                         )
                     time.sleep(0.1)
