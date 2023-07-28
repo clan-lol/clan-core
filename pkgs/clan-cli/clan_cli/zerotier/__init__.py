@@ -62,7 +62,7 @@ class ZerotierController:
         resp = urllib.request.urlopen(req)
         return json.load(resp)
 
-    def status(self) -> dict[str, Any]:  # pragma: no cover
+    def status(self) -> dict[str, Any]:
         return self._http_request("/status")
 
     def create_network(self, data: dict[str, Any] = {}) -> dict[str, Any]:
@@ -75,9 +75,7 @@ class ZerotierController:
     def get_network(self, id: str) -> dict[str, Any]:
         return self._http_request(f"/controller/network/{id}")
 
-    def update_network(
-        self, id: str, new_config: dict[str, Any]
-    ) -> dict[str, Any]:  # pragma: no cover
+    def update_network(self, id: str, new_config: dict[str, Any]) -> dict[str, Any]:
         return self._http_request(
             f"/controller/network/{id}", method="POST", data=new_config
         )

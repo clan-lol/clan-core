@@ -3,11 +3,12 @@ import argparse
 import sys
 
 from . import admin, ssh
+from .errors import ClanError
 
 has_argcomplete = True
 try:
     import argcomplete
-except ImportError:  # pragma: no cover
+except ImportError:
     has_argcomplete = False
 
 
@@ -30,8 +31,12 @@ def main() -> None:
 
     args = parser.parse_args()
     if hasattr(args, "func"):
-        args.func(args)  # pragma: no cover
+        try:
+            args.func(args)
+        except ClanError as e:
+            print(f"{sys.argv[0]}: {e}")
+            sys.exit(1)
 
 
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == "__main__":
     main()

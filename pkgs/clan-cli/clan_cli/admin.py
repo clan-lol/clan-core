@@ -18,7 +18,7 @@ def create(args: argparse.Namespace) -> None:
     )
 
 
-def edit(args: argparse.Namespace) -> None:  # pragma: no cover
+def edit(args: argparse.Namespace) -> None:
     # TODO add some cli options to change certain options without relying on a text editor
     clan_flake = f"{args.folder}/flake.nix"
     if os.path.isfile(clan_flake):
@@ -34,7 +34,7 @@ def edit(args: argparse.Namespace) -> None:  # pragma: no cover
         )
 
 
-def rebuild(args: argparse.Namespace) -> None:  # pragma: no cover
+def rebuild(args: argparse.Namespace) -> None:
     # TODO get clients from zerotier cli?
     if args.host:
         print(f"would redeploy {args.host} from clan {args.folder}")
@@ -42,7 +42,7 @@ def rebuild(args: argparse.Namespace) -> None:  # pragma: no cover
         print(f"would redeploy all hosts from clan {args.folder}")
 
 
-def destroy(args: argparse.Namespace) -> None:  # pragma: no cover
+def destroy(args: argparse.Namespace) -> None:
     # TODO get clan folder & hosts from somwhere (maybe ~/.config/clan/$name /)
     # send some kind of kill signal, then remove the folder
     if args.yes:
@@ -53,14 +53,14 @@ def destroy(args: argparse.Namespace) -> None:  # pragma: no cover
         )
 
 
-def backup(args: argparse.Namespace) -> None:  # pragma: no cover
+def backup(args: argparse.Namespace) -> None:
     if args.host:
         print(f"would backup {args.host} from clan {args.folder}")
     else:
         print(f"would backup all hosts from clan {args.folder}")
 
 
-def git(args: argparse.Namespace) -> None:  # pragma: no cover
+def git(args: argparse.Namespace) -> None:
     subprocess.Popen(
         [
             "git",

@@ -53,7 +53,7 @@ def qrcode_scan(pictureFile: str) -> str:
     )
 
 
-def main(args: argparse.Namespace) -> None:  # pragma: no cover
+def main(args: argparse.Namespace) -> None:
     if args.json:
         with open(args.json) as file:
             ssh_data = json.load(file)
