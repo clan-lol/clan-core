@@ -18,6 +18,7 @@
         "aarch64-linux"
       ];
       imports = [
+        ./flake-parts/devShells
         ./flake-parts/formatting.nix
         ./flake-parts/modules.nix
         ./flake-parts/packages.nix
