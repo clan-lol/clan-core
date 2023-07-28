@@ -6,11 +6,12 @@
         modules = [
           self.nixosModules.installer
           self.inputs.nixos-generators.nixosModules.all-formats
+          self.inputs.disko.nixosModules.disko
         ];
       };
     in
     {
-      install-iso = installer.config.formats.install-iso;
+      install-iso = self.inputs.disko.lib.lib.makeDiskImage { nixosConfig = installer; };
       install-vm-nogui = installer.config.formats.vm-nogui;
       install-vm = installer.config.formats.vm;
     };
