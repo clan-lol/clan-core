@@ -21,7 +21,7 @@ if [[ "$firstLine" == "$rest" ]]; then
   rest=""
 fi
 
-git push "$remoteName" HEAD:refs/heads/"$tempRemoteBranch"
+git push -u "$remoteName" HEAD:refs/heads/"$tempRemoteBranch"
 
 tea pr create \
   --title "$firstLine" \
