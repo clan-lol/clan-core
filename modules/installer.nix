@@ -1,9 +1,15 @@
 { lib
 , pkgs
+, modulesPath
 , ...
 }: {
   systemd.tmpfiles.rules = [
     "d /var/shared 0777 root root - -"
+  ];
+  imports = [
+    (modulesPath + "/profiles/installation-device.nix")
+    (modulesPath + "/profiles/all-hardware.nix")
+    (modulesPath + "/profiles/base.nix")
   ];
   services.openssh.settings.PermitRootLogin = "yes";
   system.activationScripts.root-password = ''
@@ -34,7 +40,41 @@
       cat /var/shared/qrcode.utf8
     fi
   '';
-  formatConfigs.install-iso = {
-    isoImage.squashfsCompression = "zstd -Xcompression-level 1";
+  boot.loader.grub.efiInstallAsRemovable = true;
+  boot.loader.grub.efiSupport = true;
+  disko.devices = {
+    disk = {
+      stick = {
+        type = "disk";
+        device = "/vda";
+        imageSize = "3G";
+        content = {
+          type = "gpt";
+          partitions = {
+            boot = {
+              size = "1M";
+              type = "EF02"; # for grub MBR
+            };
+            ESP = {
+              size = "100M";
+              type = "EF00";
+              content = {
+                type = "filesystem";
+                format = "vfat";
+                mountpoint = "/boot";
+              };
+            };
+            root = {
+              size = "100%";
+              content = {
+                type = "filesystem";
+                format = "ext4";
+                mountpoint = "/";
+              };
+            };
+          };
+        };
+      };
+    };
   };
 }
