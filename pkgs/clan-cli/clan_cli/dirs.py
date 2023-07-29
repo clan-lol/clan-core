@@ -17,10 +17,10 @@ def get_clan_flake_toplevel() -> Path:
     raise ClanError("Could not find clan flake toplevel directory")
 
 
-def user_data_dir() -> Path:
+def user_config_dir() -> Path:
     if sys.platform == "win32":
-        raise NotImplementedError("Windows is not supported")
+        return Path(os.getenv("APPDATA", os.path.expanduser("~\\AppData\\Roaming\\")))
     elif sys.platform == "darwin":
         return Path(os.path.expanduser("~/Library/Application Support/"))
     else:
-        return Path(os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share")))
+        return Path(os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config")))
