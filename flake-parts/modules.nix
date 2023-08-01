@@ -7,4 +7,5 @@
     writers = ./writers;
   };
   flake.nixosModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ../nixosModules);
+  flake.clanModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ../clanModules);
 }
