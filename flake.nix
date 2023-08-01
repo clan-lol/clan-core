@@ -25,27 +25,14 @@
         ./flake-parts/formatting.nix
         ./flake-parts/merge-after-ci
         ./flake-parts/modules.nix
+        ./flake-parts/nixosModules.nix
         ./flake-parts/packages.nix
         ./flake-parts/tea-create-pr
         ./flake-parts/writers
         ./templates/flake-module.nix
         ./templates/python-project/flake-module.nix
         ./pkgs/clan-cli/flake-module.nix
+        ./lib/flake-module.nix
       ];
-      flake = {
-        nixosModules = {
-          installer = {
-            imports = [
-              ./modules/installer.nix
-              ./modules/hidden-ssh-announce.nix
-            ];
-          };
-          hidden-announce = {
-            imports = [
-              ./modules/hidden-ssh-announce.nix
-            ];
-          };
-        };
-      };
     });
 }
