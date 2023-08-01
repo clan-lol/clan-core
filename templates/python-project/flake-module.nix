@@ -1,10 +1,16 @@
-{
-  perSystem = { pkgs, ... }:
+{ self, ... }: {
+  perSystem = { self', pkgs, ... }:
     let
-      package = pkgs.callPackage ./default.nix { };
+      name = "python-template";
     in
     {
-      # packages.${name} = package;
-      checks.python-template = package.tests.check;
+      packages.${name} = pkgs.callPackage ./default.nix { };
+
+      devShells.${name} = pkgs.callPackage ./shell.nix {
+        inherit self;
+        package = (self'.packages.${name});
+      };
+
+      checks.python-template = self'.packages.${name}.tests.check;
     };
 }

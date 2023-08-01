@@ -1,11 +1,6 @@
-{ pkgs ? import <nixpkgs> { } }:
+{ package, pkgs, ... }:
 let
-  lib = pkgs.lib;
-  python3 = pkgs.python3;
-  package = import ./default.nix {
-    inherit lib python3;
-  };
-  pythonWithDeps = python3.withPackages (
+  pythonWithDeps = pkgs.python3.withPackages (
     ps:
     package.propagatedBuildInputs
     ++ package.devDependencies
