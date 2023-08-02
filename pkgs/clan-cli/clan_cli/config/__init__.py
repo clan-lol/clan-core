@@ -1,6 +1,8 @@
 # !/usr/bin/env python3
 import argparse
 import json
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -15,20 +17,40 @@ class Kwargs:
         self.choices: Optional[list] = None
 
 
+def schema_from_module_file(
+    file: Union[str, Path] = "./tests/config/example-interface.nix",
+) -> dict:
+    absolute_path = Path(file).absolute()
+    # define a nix expression that loads the given module file using lib.evalModules
+    nix_expr = f"""
+        let
+            lib = import <nixpkgs/lib>;
+            slib = import {__file__}/../schema-lib.nix {{inherit lib;}};
+        in
+            slib.parseModule {absolute_path}
+    """
+    # run the nix expression and parse the output as json
+    return json.loads(
+        subprocess.check_output(
+            ["nix", "eval", "--impure", "--json", "--expr", nix_expr]
+        )
+    )
+
+
 # takes a (sub)parser and configures it
 def register_parser(
     parser: Optional[argparse.ArgumentParser] = None,
-    schema: Union[dict, str, Path] = "./tests/config/example-schema.json",
+    schema: Union[dict, str, Path] = "./tests/config/example-interface.nix",
 ) -> dict:
-    if not isinstance(schema, dict):
+    # check if schema is a .nix file and load it in that case
+    if isinstance(schema, str) and schema.endswith(".nix"):
+        schema = schema_from_module_file(schema)
+    elif not isinstance(schema, dict):
         with open(str(schema)) as f:
             schema: dict = json.load(f)
     assert "type" in schema and schema["type"] == "object"
 
     required_set = set(schema.get("required", []))
-
-    if parser is None:
-        parser = argparse.ArgumentParser(description=schema.get("description"))
 
     type_map = {
         "array": list,
@@ -37,6 +59,9 @@ def register_parser(
         "number": float,
         "string": str,
     }
+
+    if parser is None:
+        parser = argparse.ArgumentParser(description=schema.get("description"))
 
     subparsers = parser.add_subparsers(
         title="more options",
@@ -92,8 +117,18 @@ def register_parser(
         parser.add_argument(name, **vars(kwargs))
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
-    register_parser(parser)
-    args = parser.parse_args()
-    print(args)
+    parser.add_argument(
+        "schema",
+        help="The schema to use for the configuration",
+        type=str,
+    )
+    args = parser.parse_args(sys.argv[1:2])
+    schema = args.schema
+    register_parser(schema=schema, parser=parser)
+    parser.parse_args(sys.argv[2:])
+
+
+if __name__ == "__main__":
+    main()

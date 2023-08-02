@@ -19,6 +19,15 @@ let
 in
 rec {
 
+  # parses a nixos module to a jsonschema
+  parseModule = module:
+    let
+      evaled = lib.evalModules {
+        modules = [ module ];
+      };
+    in
+    parseOptions evaled.options;
+
   # parses a set of evaluated nixos options to a jsonschema
   parseOptions = options':
     let
