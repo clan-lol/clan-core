@@ -31,21 +31,7 @@
         ./templates/flake-module.nix
         ./templates/python-project/flake-module.nix
         ./pkgs/clan-cli/flake-module.nix
+        ./lib/flake-module.nix
       ];
-      flake = {
-        nixosModules = {
-          installer = {
-            imports = [
-              ./modules/installer.nix
-              ./modules/hidden-ssh-announce.nix
-            ];
-          };
-          hidden-announce = {
-            imports = [
-              ./modules/hidden-ssh-announce.nix
-            ];
-          };
-        };
-      };
     });
 }

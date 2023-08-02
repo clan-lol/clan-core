@@ -5,6 +5,7 @@
         system = "x86_64-linux";
         modules = [
           self.nixosModules.installer
+          self.nixosModules.hidden-ssh-announce
           self.inputs.nixos-generators.nixosModules.all-formats
           self.inputs.disko.nixosModules.disko
         ];
