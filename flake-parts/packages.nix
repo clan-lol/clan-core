@@ -7,6 +7,7 @@ let
       self.nixosModules.hidden-ssh-announce
       self.inputs.nixos-generators.nixosModules.all-formats
       self.inputs.disko.nixosModules.disko
+      ({ config, ... }: { system.stateVersion = config.system.nixos.version; })
     ];
   };
 in
