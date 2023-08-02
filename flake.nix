@@ -25,7 +25,6 @@
         ./flake-parts/formatting.nix
         ./flake-parts/merge-after-ci
         ./flake-parts/modules.nix
-        ./flake-parts/nixosModules.nix
         ./flake-parts/packages.nix
         ./flake-parts/tea-create-pr
         ./flake-parts/writers
