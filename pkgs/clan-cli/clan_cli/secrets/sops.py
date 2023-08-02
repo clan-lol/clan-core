@@ -39,7 +39,7 @@ def get_user_name(user: str) -> str:
     """Ask the user for their name until a unique one is provided."""
     while True:
         name = input(
-            f"Enter your user name for which the key will be stored as [{user}]: "
+            f"Enter your user name for which your sops key will be stored in the repository [default: {user}]: "
         )
         if name:
             user = name
