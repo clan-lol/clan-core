@@ -1,6 +1,7 @@
 import argparse
 import getpass
 import os
+import shutil
 import subprocess
 import sys
 from io import StringIO
@@ -43,16 +44,15 @@ def encrypt_secret(key: SopsKey, secret: Path, value: IO[str]) -> None:
 
 
 def set_command(args: argparse.Namespace) -> None:
-    secret: str = args.secret
     key = ensure_sops_key()
     secret_value = os.environ.get("SOPS_NIX_SECRET")
     if secret_value:
-        encrypt_secret(key, sops_secrets_folder() / secret, StringIO(secret_value))
+        encrypt_secret(key, sops_secrets_folder() / args.secret, StringIO(secret_value))
     elif tty.is_interactive():
         secret = getpass.getpass(prompt="Paste your secret: ")
-        encrypt_secret(key, sops_secrets_folder() / secret, StringIO(secret))
+        encrypt_secret(key, sops_secrets_folder() / args.secret, StringIO(secret))
     else:
-        encrypt_secret(key, sops_secrets_folder() / secret, sys.stdin)
+        encrypt_secret(key, sops_secrets_folder() / args.secret, sys.stdin)
 
 
 def remove_command(args: argparse.Namespace) -> None:
@@ -60,7 +60,7 @@ def remove_command(args: argparse.Namespace) -> None:
     path = sops_secrets_folder() / secret
     if not path.exists():
         raise ClanError(f"Secret '{secret}' does not exist")
-    path.unlink()
+    shutil.rmtree(path)
 
 
 def add_secret_argument(parser: argparse.ArgumentParser) -> None:

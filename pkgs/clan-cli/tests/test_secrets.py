@@ -114,7 +114,17 @@ def test_secrets(
     with mock_env(
         SOPS_NIX_SECRET="foo", SOPS_AGE_KEY_FILE=str(clan_flake / ".." / "age.key")
     ):
-        cli.run(["set", "nonexisting"])
+        cli.run(["set", "key"])
         capsys.readouterr()
-        cli.run(["get", "nonexisting"])
+        cli.run(["get", "key"])
         assert capsys.readouterr().out == "foo"
+
+        capsys.readouterr()  # empty the buffer
+        cli.run(["list"])
+        assert capsys.readouterr().out == "key\n"
+
+    cli.run(["remove", "key"])
+
+    capsys.readouterr()  # empty the buffer
+    cli.run(["list"])
+    assert capsys.readouterr().out == ""
