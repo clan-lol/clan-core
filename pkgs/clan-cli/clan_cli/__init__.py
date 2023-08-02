@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from . import admin, ssh
+from . import admin, secrets, ssh
 from .errors import ClanError
 
 has_argcomplete = True
@@ -22,6 +22,9 @@ def main() -> None:
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
     ssh.register_parser(parser_ssh)
+
+    parser_secrets = subparsers.add_parser("secrets", help="manage secrets")
+    secrets.register_parser(parser_secrets)
 
     if has_argcomplete:
         argcomplete.autocomplete(parser)

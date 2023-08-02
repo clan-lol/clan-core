@@ -18,7 +18,9 @@
         openssh
         sshpass
         zbar
-        tor;
+        tor
+        sops
+        age;
       # Override license so that we can build zerotierone without 
       # having to re-import nixpkgs.
       zerotierone = pkgs.zerotierone.overrideAttrs (_old: { meta = { }; });

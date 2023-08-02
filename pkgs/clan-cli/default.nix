@@ -6,6 +6,8 @@
 , installShellFiles
 , zerotierone
 , bubblewrap
+, sops
+, age
 , self
 }:
 let
@@ -71,7 +73,7 @@ let
 
   clan-pytest = runCommand "${name}-tests"
     {
-      nativeBuildInputs = [ zerotierone bubblewrap ];
+      nativeBuildInputs = [ zerotierone bubblewrap sops age ];
     } ''
     cp -r ${src} ./src
     chmod +w -R ./src
