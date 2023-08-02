@@ -38,6 +38,8 @@
       includes = [ "*.py" ];
     };
 
+    # we already run treefmt in ci
+    pre-commit.check.enable = false;
     # activated in devShells via inputsFrom = [config.pre-commit.devShell];
     pre-commit.settings.hooks.format-all = {
       name = "format-all";
