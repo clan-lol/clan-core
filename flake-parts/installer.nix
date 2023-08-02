@@ -1,6 +1,7 @@
 { self, lib, ... }:
 let
   installer = lib.nixosSystem {
+    pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
     system = "x86_64-linux";
     modules = [
       self.nixosModules.installer
