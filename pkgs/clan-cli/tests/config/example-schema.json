@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "default": "John Doe",
+      "description": "The name of the user"
+    },
+    "age": {
+      "type": "integer",
+      "default": 42,
+      "description": "The age of the user"
+    },
+    "isAdmin": {
+      "type": "boolean",
+      "default": false,
+      "description": "Is the user an admin?"
+    },
+    "kernelModules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "nvme",
+        "xhci_pci",
+        "ahci"
+      ],
+      "description": "A list of enabled kernel modules"
+    },
+    "userIds": {
+      "type": "object",
+      "default": {
+        "horst": 1,
+        "peter": 2,
+        "albrecht": 3
+      },
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "description": "Some attributes"
+    },
+    "services": {
+      "type": "object",
+      "properties": {
+        "opt": {
+          "type": "string",
+          "default": "foo",
+          "description": "A submodule option"
+        }
+      }
+    }
+  }
+}

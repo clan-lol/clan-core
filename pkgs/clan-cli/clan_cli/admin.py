@@ -18,22 +18,6 @@ def create(args: argparse.Namespace) -> None:
     )
 
 
-def edit(args: argparse.Namespace) -> None:
-    # TODO add some cli options to change certain options without relying on a text editor
-    clan_flake = f"{args.folder}/flake.nix"
-    if os.path.isfile(clan_flake):
-        subprocess.Popen(
-            [
-                os.environ["EDITOR"],
-                clan_flake,
-            ]
-        )
-    else:
-        print(
-            f"{args.folder} has no flake.nix, so it does not seem to be the clan root folder",
-        )
-
-
 def rebuild(args: argparse.Namespace) -> None:
     # TODO get clients from zerotier cli?
     if args.host:
@@ -88,9 +72,6 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
 
     parser_create = subparser.add_parser("create", help="create a new clan")
     parser_create.set_defaults(func=create)
-
-    parser_edit = subparser.add_parser("edit", help="edit a clan")
-    parser_edit.set_defaults(func=edit)
 
     parser_rebuild = subparser.add_parser(
         "rebuild", help="build configuration of a clan and push it to the target"
