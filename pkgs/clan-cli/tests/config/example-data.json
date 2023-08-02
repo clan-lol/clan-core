@@ -1,0 +1,17 @@
+{
+  "name": "John Doe",
+  "age": 42,
+  "isAdmin": false,
+  "kernelModules": [
+    "usbhid",
+    "usb_storage"
+  ],
+  "userIds": {
+    "mic92": 1,
+    "lassulus": 2,
+    "davhau": 3
+  },
+  "services": {
+    "opt": "this option doesn't make sense"
+  }
+}

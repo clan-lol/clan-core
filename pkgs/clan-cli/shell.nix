@@ -15,6 +15,7 @@ in
 pkgs.mkShell {
   packages = [
     pkgs.ruff
+    self.inputs.nix-unit.packages.${pkgs.system}.nix-unit
     pythonWithDeps
   ];
   # sets up an editable install and add enty points to $PATH
