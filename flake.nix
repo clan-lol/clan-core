@@ -25,10 +25,8 @@
         ./templates/flake-module.nix
         ./templates/python-project/flake-module.nix
         ./pkgs/clan-cli/flake-module.nix
-        ./pkgs/nix-unit/flake-module.nix
         ./pkgs/installer/flake-module.nix
-        ./pkgs/tea-create-pr
-        ./pkgs/merge-after-ci
+        ./pkgs/flake-module.nix
         ./lib/flake-module.nix
         ({ self, lib, ... }: {
           flake.nixosModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ./nixosModules);
