@@ -77,5 +77,8 @@ python3.pkgs.buildPythonPackage {
     installShellCompletion --fish --name clan.fish \
       <(${argcomplete}/bin/register-python-argcomplete --shell fish clan)
   '';
+  checkPhase = ''
+    PYTHONPATH= $out/bin/clan --help
+  '';
   meta.mainProgram = "clan";
 }
