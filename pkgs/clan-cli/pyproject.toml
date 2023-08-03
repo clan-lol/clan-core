@@ -6,10 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "clan"
 description = "cLAN CLI tool"
 dynamic = [ "version" ]
-scripts = { clan = "clan_cli:main" }
+scripts = { clan = "clan_cli.cli:main" }
 
-[tool.setuptools]
-packages = [ "clan_cli" ]
+[tool.setuptools.packages]
+find = {}
 
 [tool.pytest.ini_options]
 addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail"
