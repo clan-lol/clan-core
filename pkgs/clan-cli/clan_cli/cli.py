@@ -24,8 +24,8 @@ def main() -> None:
     parser_config = subparsers.add_parser("config")
     try:
         config.register_parser(parser_config)
-    except subprocess.CalledProcessError:
-        warn("The config command does not in the nix sandbox")
+    except subprocess.CalledProcessError as e:
+        warn(f"The config command does not work in the nix sandbox: {e}")
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
     ssh.register_parser(parser_ssh)
