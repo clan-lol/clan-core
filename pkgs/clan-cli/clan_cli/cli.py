@@ -1,8 +1,10 @@
 import argparse
+import subprocess
 import sys
 
 from . import admin, config, secrets, ssh
 from .errors import ClanError
+from .tty import warn
 
 has_argcomplete = True
 try:
@@ -20,7 +22,10 @@ def main() -> None:
     admin.register_parser(parser_admin)
 
     parser_config = subparsers.add_parser("config")
-    config.register_parser(parser_config)
+    try:
+        config.register_parser(parser_config)
+    except subprocess.CalledProcessError:
+        warn("The config command does not in the nix sandbox")
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
     ssh.register_parser(parser_ssh)
