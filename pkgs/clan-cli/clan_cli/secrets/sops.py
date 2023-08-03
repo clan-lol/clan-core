@@ -74,7 +74,7 @@ def ensure_user(pub_key: str) -> SopsKey:
         username = get_user_name(username)
 
     # Add the public key for the user
-    add_key(users_folder / username, pub_key, False)
+    write_key(users_folder / username, pub_key, False)
 
     return key
 
@@ -126,7 +126,7 @@ def encrypt_file(secret_path: Path, content: IO[str], keys: list[str]) -> None:
                 pass
 
 
-def add_key(path: Path, publickey: str, overwrite: bool) -> None:
+def write_key(path: Path, publickey: str, overwrite: bool) -> None:
     path.mkdir(parents=True, exist_ok=True)
     try:
         flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC

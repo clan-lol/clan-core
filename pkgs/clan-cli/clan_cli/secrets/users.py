@@ -2,7 +2,7 @@ import argparse
 
 from . import secrets
 from .folders import list_objects, remove_object, sops_users_folder
-from .sops import add_key
+from .sops import write_key
 from .types import (
     VALID_SECRET_NAME,
     public_or_private_age_key_type,
@@ -12,7 +12,7 @@ from .types import (
 
 
 def add_user(name: str, key: str, force: bool) -> None:
-    add_key(sops_users_folder() / name, key, force)
+    write_key(sops_users_folder() / name, key, force)
 
 
 def list_command(args: argparse.Namespace) -> None:
