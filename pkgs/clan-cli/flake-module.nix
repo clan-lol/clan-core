@@ -5,7 +5,7 @@
       inherit (self'.packages) clan;
     };
     packages = {
-      clan = pkgs.callPackage ./default.nix {
+      clan = pkgs.python3.pkgs.callPackage ./default.nix {
         inherit self;
         zerotierone = self'.packages.zerotierone;
       };

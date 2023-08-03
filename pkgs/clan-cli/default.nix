@@ -1,5 +1,4 @@
-{ pkgs
-, lib
+{ lib
 , python3
 , ruff
 , runCommand
@@ -8,78 +7,75 @@
 , bubblewrap
 , sops
 , age
+, black
+, nix
+, mypy
+, setuptools
 , self
+, argcomplete
+, pytest
+, pytest-cov
+, pytest-subprocess
+, wheel
 }:
 let
-  pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
-  name = pyproject.project.name;
+  dependencies = [ argcomplete ];
 
-  src = lib.cleanSource ./.;
+  testDependencies = [
+    pytest
+    pytest-cov
+    pytest-subprocess
+    mypy
+  ];
 
-  dependencies = lib.attrValues {
-    inherit (python3.pkgs)
-      argcomplete
-      ;
-  };
-
-  devDependencies = lib.attrValues {
-    inherit (pkgs) ruff;
-    inherit (python3.pkgs)
-      black
-      mypy
-      pytest
-      pytest-cov
-      pytest-subprocess
-      setuptools
-      wheel
-      ;
-  };
-
-  package = python3.pkgs.buildPythonPackage {
-    inherit name src;
-    format = "pyproject";
-    nativeBuildInputs = [
-      python3.pkgs.setuptools
-      installShellFiles
-    ];
-    propagatedBuildInputs =
-      dependencies
-      ++ [ ];
-    passthru.tests = { inherit clan-mypy clan-pytest; };
-    passthru.devDependencies = devDependencies;
-
-    makeWrapperArgs = [
-      "--set CLAN_FLAKE ${self}"
-    ];
-
-    postInstall = ''
-      installShellCompletion --bash --name clan \
-        <(${python3.pkgs.argcomplete}/bin/register-python-argcomplete --shell bash clan)
-      installShellCompletion --fish --name clan.fish \
-        <(${python3.pkgs.argcomplete}/bin/register-python-argcomplete --shell fish clan)
-    '';
-    meta.mainProgram = "clan";
-  };
-
-  checkPython = python3.withPackages (_ps: devDependencies ++ dependencies);
-
-  clan-mypy = runCommand "${name}-mypy" { } ''
-    cp -r ${src} ./src
-    chmod +w -R ./src
-    cd src
-    ${checkPython}/bin/mypy .
-    touch $out
-  '';
-
-  clan-pytest = runCommand "${name}-tests"
-    {
-      nativeBuildInputs = [ zerotierone bubblewrap sops age ];
-    } ''
-    cp -r ${src} ./src
-    chmod +w -R ./src
-    cd src
-    ${checkPython}/bin/python -m pytest ./tests
-    touch $out
-  '';
+  checkPython = python3.withPackages (_ps: dependencies ++ testDependencies);
 in
-package
+python3.pkgs.buildPythonPackage {
+  name = "clan";
+  src = lib.cleanSource ./.;
+  format = "pyproject";
+  nativeBuildInputs = [
+    setuptools
+    installShellFiles
+  ];
+  propagatedBuildInputs = dependencies;
+
+  passthru.tests = {
+    clan-mypy = runCommand "clan-mypy" { } ''
+      cp -r ${./.} ./src
+      chmod +w -R ./src
+      cd src
+      ${checkPython}/bin/mypy .
+      touch $out
+    '';
+    clan-pytest = runCommand "clan-tests"
+      {
+        nativeBuildInputs = [ age zerotierone bubblewrap sops nix ];
+      } ''
+      cp -r ${./.} ./src
+      chmod +w -R ./src
+      cd src
+      ${checkPython}/bin/python -m pytest ./tests
+      touch $out
+    '';
+  };
+
+  passthru.devDependencies = [
+    ruff
+    black
+    setuptools
+    wheel
+  ] ++ testDependencies;
+
+  makeWrapperArgs = [
+    "--set CLAN_FLAKE ${self}"
+  ];
+
+  postInstall = ''
+    installShellCompletion --bash --name clan \
+      <(${argcomplete}/bin/register-python-argcomplete --shell bash clan)
+    installShellCompletion --fish --name clan.fish \
+      <(${argcomplete}/bin/register-python-argcomplete --shell fish clan)
+  '';
+  meta.mainProgram = "clan";
+}
