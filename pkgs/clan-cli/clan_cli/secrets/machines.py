@@ -1,7 +1,8 @@
 import argparse
 
 from . import secrets
-from .folders import add_key, list_objects, remove_object, sops_machines_folder
+from .folders import list_objects, remove_object, sops_machines_folder
+from .sops import add_key
 from .types import (
     machine_name_type,
     public_or_private_age_key_type,

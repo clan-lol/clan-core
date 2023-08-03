@@ -12,10 +12,6 @@
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     pre-commit-hooks-nix.url = "github:cachix/pre-commit-hooks.nix";
-    nix-unit.url = "github:adisbladis/nix-unit";
-    nix-unit.inputs.flake-parts.follows = "flake-parts";
-    nix-unit.inputs.nixpkgs.follows = "nixpkgs";
-    nix-unit.inputs.treefmt-nix.follows = "treefmt-nix";
   };
 
   outputs = inputs @ { flake-parts, ... }:
@@ -35,6 +31,7 @@
         ./templates/flake-module.nix
         ./templates/python-project/flake-module.nix
         ./pkgs/clan-cli/flake-module.nix
+        ./pkgs/nix-unit/flake-module.nix
         ./lib/flake-module.nix
       ];
     });

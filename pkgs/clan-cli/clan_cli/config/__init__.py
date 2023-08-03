@@ -4,12 +4,14 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional, Type, Union
+
+from clan_cli.errors import ClanError
 
 
 class Kwargs:
-    def __init__(self):
-        self.type = None
+    def __init__(self) -> None:
+        self.type: Optional[Type] = None
         self.default: Any = None
         self.required: bool = False
         self.help: Optional[str] = None
@@ -19,7 +21,7 @@ class Kwargs:
 
 def schema_from_module_file(
     file: Union[str, Path] = "./tests/config/example-interface.nix",
-) -> dict:
+) -> dict[str, Any]:
     absolute_path = Path(file).absolute()
     # define a nix expression that loads the given module file using lib.evalModules
     nix_expr = f"""
@@ -37,22 +39,31 @@ def schema_from_module_file(
     )
 
 
-# takes a (sub)parser and configures it
 def register_parser(
-    parser: Optional[argparse.ArgumentParser] = None,
-    schema: Union[dict, str, Path] = "./tests/config/example-interface.nix",
-) -> dict:
+    parser: argparse.ArgumentParser,
+    file: Path = Path("./tests/config/example-interface.nix"),
+) -> None:
+    if file.name.endswith(".nix"):
+        schema = schema_from_module_file(file)
+    else:
+        schema = json.loads(file.read_text())
+    return _register_parser(parser, schema)
+
+
+# takes a (sub)parser and configures it
+def _register_parser(
+    parser: Optional[argparse.ArgumentParser],
+    schema: dict[str, Any],
+) -> None:
     # check if schema is a .nix file and load it in that case
-    if isinstance(schema, str) and schema.endswith(".nix"):
-        schema = schema_from_module_file(schema)
-    elif not isinstance(schema, dict):
-        with open(str(schema)) as f:
-            schema: dict = json.load(f)
-    assert "type" in schema and schema["type"] == "object"
+    if "type" not in schema:
+        raise ClanError("Schema has no type")
+    if schema["type"] != "object":
+        raise ClanError("Schema is not an object")
 
     required_set = set(schema.get("required", []))
 
-    type_map = {
+    type_map: dict[str, Type] = {
         "array": list,
         "boolean": bool,
         "integer": int,
@@ -60,8 +71,7 @@ def register_parser(
         "string": str,
     }
 
-    if parser is None:
-        parser = argparse.ArgumentParser(description=schema.get("description"))
+    parser = argparse.ArgumentParser(description=schema.get("description"))
 
     subparsers = parser.add_subparsers(
         title="more options",
@@ -72,11 +82,12 @@ def register_parser(
 
     for name, value in schema.get("properties", {}).items():
         assert isinstance(value, dict)
+        type_ = value.get("type")
 
         # TODO: add support for nested objects
-        if value.get("type") == "object":
+        if type_ == "object":
             subparser = subparsers.add_parser(name, help=value.get("description"))
-            register_parser(parser=subparser, schema=value)
+            _register_parser(parser=subparser, schema=value)
             continue
         # elif value.get("type") == "array":
         #     subparser = parser.add_subparsers(dest=name)
@@ -92,22 +103,25 @@ def register_parser(
 
         if "enum" in value:
             enum_list = value["enum"]
-            assert len(enum_list) > 0, "Enum List is Empty"
+            if len(enum_list) == 0:
+                raise ClanError("Enum List is Empty")
             arg_type = type(enum_list[0])
-            assert all(
-                arg_type is type(item) for item in enum_list
-            ), f"Items in [{enum_list}] with Different Types"
+            if not all(arg_type is type(item) for item in enum_list):
+                raise ClanError(f"Items in [{enum_list}] with Different Types")
 
             kwargs.type = arg_type
             kwargs.choices = enum_list
-        else:
-            kwargs.type = type_map[value.get("type")]
+        elif type_ in type_map:
+            kwargs.type = type_map[type_]
             del kwargs.choices
+        else:
+            raise ClanError(f"Unsupported Type '{type_}' in schema")
 
         name = f"--{name}"
 
         if kwargs.type is bool:
-            assert not kwargs.default, "boolean have to be False in default"
+            if kwargs.default:
+                raise ClanError("Boolean have to be False in default")
             kwargs.default = False
             kwargs.action = "store_true"
             del kwargs.type
@@ -117,7 +131,7 @@ def register_parser(
         parser.add_argument(name, **vars(kwargs))
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "schema",
@@ -125,8 +139,7 @@ def main():
         type=str,
     )
     args = parser.parse_args(sys.argv[1:2])
-    schema = args.schema
-    register_parser(schema=schema, parser=parser)
+    register_parser(parser, args.schema)
     parser.parse_args(sys.argv[2:])
 
 
