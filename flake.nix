@@ -20,18 +20,20 @@
         "aarch64-linux"
       ];
       imports = [
-        ./flake-parts/devShells
-        ./flake-parts/formatting.nix
-        ./flake-parts/merge-after-ci
-        ./flake-parts/modules.nix
-        ./flake-parts/installer.nix
-        ./flake-parts/tea-create-pr
-        ./flake-parts/writers
+        ./devShell.nix
+        ./formatter.nix
         ./templates/flake-module.nix
         ./templates/python-project/flake-module.nix
         ./pkgs/clan-cli/flake-module.nix
         ./pkgs/nix-unit/flake-module.nix
+        ./pkgs/installer/flake-module.nix
+        ./pkgs/tea-create-pr
+        ./pkgs/merge-after-ci
         ./lib/flake-module.nix
+        ({ self, lib, ... }: {
+          flake.nixosModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ./nixosModules);
+          flake.clanModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ./clanModules);
+        })
       ];
     });
 }
