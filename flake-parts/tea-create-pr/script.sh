@@ -21,8 +21,7 @@ rest=$(echo "$COMMIT_MSG" | tail -n+2)
 if [[ "$firstLine" == "$rest" ]]; then
   rest=""
 fi
-
-git push -u "$remoteName" HEAD:refs/heads/"$tempRemoteBranch"
+git push --force -u "$remoteName" HEAD:refs/heads/"$tempRemoteBranch"
 
 tea pr create \
   --title "$firstLine" \
