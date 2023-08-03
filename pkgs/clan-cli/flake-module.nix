@@ -1,5 +1,5 @@
 { self, ... }: {
-  perSystem = { inputs', self', pkgs, ... }: {
+  perSystem = { self', pkgs, ... }: {
     devShells.clan = pkgs.callPackage ./shell.nix {
       inherit self;
       inherit (self'.packages) clan;
@@ -25,27 +25,30 @@
       ## End optional dependencies
     };
 
-    # check if the `clan config` example jsonschema and data is valid
-    checks.clan-config-example-schema-valid = pkgs.runCommand "clan-config-example-schema-valid" { } ''
-      echo "Checking that example-schema.json is valid"
-      ${pkgs.check-jsonschema}/bin/check-jsonschema \
-        --check-metaschema ${./.}/tests/config/example-schema.json
+    checks = self'.packages.clan.tests // {
+      # check if the `clan config` example jsonschema and data is valid
+      clan-config-example-schema-valid = pkgs.runCommand "clan-config-example-schema-valid" { } ''
+        echo "Checking that example-schema.json is valid"
+        ${pkgs.check-jsonschema}/bin/check-jsonschema \
+          --check-metaschema ${./.}/tests/config/example-schema.json
 
-      echo "Checking that example-data.json is valid according to example-schema.json"
-      ${pkgs.check-jsonschema}/bin/check-jsonschema \
-        --schemafile ${./.}/tests/config/example-schema.json \
-        ${./.}/tests/config/example-data.json
+        echo "Checking that example-data.json is valid according to example-schema.json"
+        ${pkgs.check-jsonschema}/bin/check-jsonschema \
+          --schemafile ${./.}/tests/config/example-schema.json \
+          ${./.}/tests/config/example-data.json
 
-      touch $out
-    '';
+        touch $out
+      '';
 
-    # check if the `clan config` nix jsonschema converter unit tests succeed
-    checks.clan-config-nix-unit-tests = pkgs.runCommand "clan-edit-unit-tests" { } ''
-      export NIX_PATH=nixpkgs=${pkgs.path}
-      ${inputs'.nix-unit.packages.nix-unit}/bin/nix-unit \
-        ${./.}/tests/config/test.nix \
-        --eval-store $(realpath .)
-      touch $out
-    '';
+      # check if the `clan config` nix jsonschema converter unit tests succeed
+      clan-config-nix-unit-tests = pkgs.runCommand "clan-edit-unit-tests" { } ''
+        export NIX_PATH=nixpkgs=${pkgs.path}
+        ${self'.packages.nix-unit}/bin/nix-unit \
+          ${./.}/tests/config/test.nix \
+          --eval-store $(realpath .)
+        touch $out
+      '';
+    };
   };
+
 }
