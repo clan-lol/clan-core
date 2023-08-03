@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -7,8 +8,9 @@ from typing import IO
 
 from .. import tty
 from ..dirs import user_config_dir
+from ..errors import ClanError
 from ..nix import nix_shell
-from .folders import add_key, read_key, sops_users_folder
+from .folders import sops_users_folder
 
 
 class SopsKey:
@@ -122,3 +124,32 @@ def encrypt_file(secret_path: Path, content: IO[str], keys: list[str]) -> None:
                 os.remove(f.name)
             except OSError:
                 pass
+
+
+def add_key(path: Path, publickey: str, overwrite: bool) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+    try:
+        flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
+        if not overwrite:
+            flags |= os.O_EXCL
+        fd = os.open(path / "key.json", flags)
+    except FileExistsError:
+        raise ClanError(f"{path.name} already exists in {path}")
+    with os.fdopen(fd, "w") as f:
+        json.dump({"publickey": publickey, "type": "age"}, f, indent=2)
+
+
+def read_key(path: Path) -> str:
+    with open(path / "key.json") as f:
+        try:
+            key = json.load(f)
+        except json.JSONDecodeError as e:
+            raise ClanError(f"Failed to decode {path.name}: {e}")
+    if key["type"] != "age":
+        raise ClanError(
+            f"{path.name} is not an age key but {key['type']}. This is not supported"
+        )
+    publickey = key.get("publickey")
+    if not publickey:
+        raise ClanError(f"{path.name} does not contain a public key")
+    return publickey
