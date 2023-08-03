@@ -2,7 +2,7 @@ import argparse
 
 from . import secrets
 from .folders import list_objects, remove_object, sops_machines_folder
-from .sops import add_key
+from .sops import write_key
 from .types import (
     machine_name_type,
     public_or_private_age_key_type,
@@ -16,7 +16,7 @@ def list_command(args: argparse.Namespace) -> None:
 
 
 def add_command(args: argparse.Namespace) -> None:
-    add_key(sops_machines_folder() / args.machine, args.key, args.force)
+    write_key(sops_machines_folder() / args.machine, args.key, args.force)
 
 
 def remove_command(args: argparse.Namespace) -> None:
