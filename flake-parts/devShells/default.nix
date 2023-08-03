@@ -7,7 +7,6 @@
     }: {
       devShells.default = pkgs.mkShell {
         inputsFrom = [
-          config.pre-commit.devShell
           config.treefmt.build.devShell
         ];
         packages = [
@@ -15,6 +14,9 @@
           self'.packages.tea-create-pr
           self'.packages.merge-after-ci
         ];
+        shellHook = ''
+          ln -sf ../../scripts/pre-commit .git/hooks/pre-commit
+        '';
       };
     };
 }
