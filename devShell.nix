@@ -11,6 +11,7 @@
         ];
         packages = [
           pkgs.tea
+          pkgs.nodejs_20
           self'.packages.tea-create-pr
           self'.packages.merge-after-ci
         ];
