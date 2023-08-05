@@ -3,6 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    floco.url = "github:aakropotkin/floco";
+    floco.inputs.nixpkgs.follows = "nixpkgs";
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
     nixos-generators.url = "github:nix-community/nixos-generators";
@@ -24,9 +26,13 @@
         ./formatter.nix
         ./templates/flake-module.nix
         ./templates/python-project/flake-module.nix
+
+        ./pkgs/flake-module.nix
+
         ./pkgs/clan-cli/flake-module.nix
         ./pkgs/installer/flake-module.nix
-        ./pkgs/flake-module.nix
+        ./pkgs/ui/flake-module.nix
+
         ./lib/flake-module.nix
         ({ self, lib, ... }: {
           flake.nixosModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ./nixosModules);
