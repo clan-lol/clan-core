@@ -27,6 +27,99 @@
           version = "5.2.0";
         };
       };
+      "@babel/code-frame" = {
+        "7.22.5" = {
+          depInfo = {
+            "@babel/highlight" = {
+              descriptor = "^7.22.5";
+              pin = "7.22.5";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-uCKuAXmLH50gXpDMkLYjCR2hFy/jhma3V1+vi2Uqn3s=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@babel/code-frame/-/code-frame-7.22.5.tgz";
+          };
+          ident = "@babel/code-frame";
+          ltype = "file";
+          version = "7.22.5";
+        };
+      };
+      "@babel/helper-module-imports" = {
+        "7.22.5" = {
+          depInfo = {
+            "@babel/types" = {
+              descriptor = "^7.22.5";
+              pin = "7.22.5";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-NAdh8sPfR2kgM02DlsTquAdlvquMkENNvTjgwy17BJY=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@babel/helper-module-imports/-/helper-module-imports-7.22.5.tgz";
+          };
+          ident = "@babel/helper-module-imports";
+          ltype = "file";
+          version = "7.22.5";
+        };
+      };
+      "@babel/helper-string-parser" = {
+        "7.22.5" = {
+          fetchInfo = {
+            narHash = "sha256-y/0Rkr/gxq9LKZTCgIy7cdlN/UnU+3GDYvOJS2YKtEQ=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@babel/helper-string-parser/-/helper-string-parser-7.22.5.tgz";
+          };
+          ident = "@babel/helper-string-parser";
+          ltype = "file";
+          treeInfo = { };
+          version = "7.22.5";
+        };
+      };
+      "@babel/helper-validator-identifier" = {
+        "7.22.5" = {
+          fetchInfo = {
+            narHash = "sha256-OpTn+OSCkxiO2tihG7FejNDie/keO2otD2n2U1TmUDE=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.22.5.tgz";
+          };
+          ident = "@babel/helper-validator-identifier";
+          ltype = "file";
+          treeInfo = { };
+          version = "7.22.5";
+        };
+      };
+      "@babel/highlight" = {
+        "7.22.5" = {
+          depInfo = {
+            "@babel/helper-validator-identifier" = {
+              descriptor = "^7.22.5";
+              pin = "7.22.5";
+              runtime = true;
+            };
+            chalk = {
+              descriptor = "^2.0.0";
+              pin = "2.4.2";
+              runtime = true;
+            };
+            js-tokens = {
+              descriptor = "^4.0.0";
+              pin = "4.0.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-0ARPF9bJtB4Ya2ENJfI84wIR1dCIcNGAwMIZZ3Q4doE=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@babel/highlight/-/highlight-7.22.5.tgz";
+          };
+          ident = "@babel/highlight";
+          ltype = "file";
+          version = "7.22.5";
+        };
+      };
       "@babel/runtime" = {
         "7.22.6" = {
           depInfo = {
@@ -44,6 +137,416 @@
           ident = "@babel/runtime";
           ltype = "file";
           version = "7.22.6";
+        };
+      };
+      "@babel/types" = {
+        "7.22.5" = {
+          depInfo = {
+            "@babel/helper-string-parser" = {
+              descriptor = "^7.22.5";
+              pin = "7.22.5";
+              runtime = true;
+            };
+            "@babel/helper-validator-identifier" = {
+              descriptor = "^7.22.5";
+              pin = "7.22.5";
+              runtime = true;
+            };
+            to-fast-properties = {
+              descriptor = "^2.0.0";
+              pin = "2.0.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-uJLo1+PUZWG29sV00UnJyCBD3e58MS1xav/nu8bVyKQ=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@babel/types/-/types-7.22.5.tgz";
+          };
+          ident = "@babel/types";
+          ltype = "file";
+          version = "7.22.5";
+        };
+      };
+      "@emotion/babel-plugin" = {
+        "11.11.0" = {
+          depInfo = {
+            "@babel/helper-module-imports" = {
+              descriptor = "^7.16.7";
+              pin = "7.22.5";
+              runtime = true;
+            };
+            "@babel/runtime" = {
+              descriptor = "^7.18.3";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            "@emotion/hash" = {
+              descriptor = "^0.9.1";
+              pin = "0.9.1";
+              runtime = true;
+            };
+            "@emotion/memoize" = {
+              descriptor = "^0.8.1";
+              pin = "0.8.1";
+              runtime = true;
+            };
+            "@emotion/serialize" = {
+              descriptor = "^1.1.2";
+              pin = "1.1.2";
+              runtime = true;
+            };
+            babel-plugin-macros = {
+              descriptor = "^3.1.0";
+              pin = "3.1.0";
+              runtime = true;
+            };
+            convert-source-map = {
+              descriptor = "^1.5.0";
+              pin = "1.9.0";
+              runtime = true;
+            };
+            escape-string-regexp = {
+              descriptor = "^4.0.0";
+              pin = "4.0.0";
+              runtime = true;
+            };
+            find-root = {
+              descriptor = "^1.1.0";
+              pin = "1.1.0";
+              runtime = true;
+            };
+            source-map = {
+              descriptor = "^0.5.7";
+              pin = "0.5.7";
+              runtime = true;
+            };
+            stylis = {
+              descriptor = "4.2.0";
+              pin = "4.2.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-Ilo7GVRDjN2dnTTUq56yaE24jM28bNwvhpAcpERkwKc=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/babel-plugin/-/babel-plugin-11.11.0.tgz";
+          };
+          ident = "@emotion/babel-plugin";
+          ltype = "file";
+          version = "11.11.0";
+        };
+      };
+      "@emotion/cache" = {
+        "11.11.0" = {
+          depInfo = {
+            "@emotion/memoize" = {
+              descriptor = "^0.8.1";
+              pin = "0.8.1";
+              runtime = true;
+            };
+            "@emotion/sheet" = {
+              descriptor = "^1.2.2";
+              pin = "1.2.2";
+              runtime = true;
+            };
+            "@emotion/utils" = {
+              descriptor = "^1.2.1";
+              pin = "1.2.1";
+              runtime = true;
+            };
+            "@emotion/weak-memoize" = {
+              descriptor = "^0.3.1";
+              pin = "0.3.1";
+              runtime = true;
+            };
+            stylis = {
+              descriptor = "4.2.0";
+              pin = "4.2.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-k65/sP2bhz+nfO3GaRggfIjjOHjjQrFlCZxAyr2Jaug=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/cache/-/cache-11.11.0.tgz";
+          };
+          ident = "@emotion/cache";
+          ltype = "file";
+          version = "11.11.0";
+        };
+      };
+      "@emotion/hash" = {
+        "0.9.1" = {
+          fetchInfo = {
+            narHash = "sha256-Qs/IZvsViULTvbwX21HS7aOGJhzqhlFWKNQsbSR4CZ0=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/hash/-/hash-0.9.1.tgz";
+          };
+          ident = "@emotion/hash";
+          ltype = "file";
+          treeInfo = { };
+          version = "0.9.1";
+        };
+      };
+      "@emotion/is-prop-valid" = {
+        "1.2.1" = {
+          depInfo = {
+            "@emotion/memoize" = {
+              descriptor = "^0.8.1";
+              pin = "0.8.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-We6aMrfU6pWiQ8jkB8+C4rm7kXUMrk77pg6iZSlxnz8=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/is-prop-valid/-/is-prop-valid-1.2.1.tgz";
+          };
+          ident = "@emotion/is-prop-valid";
+          ltype = "file";
+          version = "1.2.1";
+        };
+      };
+      "@emotion/memoize" = {
+        "0.8.1" = {
+          fetchInfo = {
+            narHash = "sha256-+K3MxkAdKfq3r1/bvSWKm5T91pYtPRSwU3BxcP+UwbU=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/memoize/-/memoize-0.8.1.tgz";
+          };
+          ident = "@emotion/memoize";
+          ltype = "file";
+          treeInfo = { };
+          version = "0.8.1";
+        };
+      };
+      "@emotion/react" = {
+        "11.11.1" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.18.3";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            "@emotion/babel-plugin" = {
+              descriptor = "^11.11.0";
+              pin = "11.11.0";
+              runtime = true;
+            };
+            "@emotion/cache" = {
+              descriptor = "^11.11.0";
+              pin = "11.11.0";
+              runtime = true;
+            };
+            "@emotion/serialize" = {
+              descriptor = "^1.1.2";
+              pin = "1.1.2";
+              runtime = true;
+            };
+            "@emotion/use-insertion-effect-with-fallbacks" = {
+              descriptor = "^1.0.1";
+              pin = "1.0.1";
+              runtime = true;
+            };
+            "@emotion/utils" = {
+              descriptor = "^1.2.1";
+              pin = "1.2.1";
+              runtime = true;
+            };
+            "@emotion/weak-memoize" = {
+              descriptor = "^0.3.1";
+              pin = "0.3.1";
+              runtime = true;
+            };
+            hoist-non-react-statics = {
+              descriptor = "^3.3.1";
+              pin = "3.3.2";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-ZvH518HQiG5oe8HqovFSq5tDszQ3II0LJuPhc1Vw3D4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/react/-/react-11.11.1.tgz";
+          };
+          ident = "@emotion/react";
+          ltype = "file";
+          peerInfo = {
+            "@types/react" = {
+              descriptor = "*";
+              optional = true;
+            };
+            react = {
+              descriptor = ">=16.8.0";
+            };
+          };
+          version = "11.11.1";
+        };
+      };
+      "@emotion/serialize" = {
+        "1.1.2" = {
+          depInfo = {
+            "@emotion/hash" = {
+              descriptor = "^0.9.1";
+              pin = "0.9.1";
+              runtime = true;
+            };
+            "@emotion/memoize" = {
+              descriptor = "^0.8.1";
+              pin = "0.8.1";
+              runtime = true;
+            };
+            "@emotion/unitless" = {
+              descriptor = "^0.8.1";
+              pin = "0.8.1";
+              runtime = true;
+            };
+            "@emotion/utils" = {
+              descriptor = "^1.2.1";
+              pin = "1.2.1";
+              runtime = true;
+            };
+            csstype = {
+              descriptor = "^3.0.2";
+              pin = "3.1.2";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-IquvCNrJ11jaPXqMWqVpyVIm3dbiHC2AgUEZ5Zu6kqw=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/serialize/-/serialize-1.1.2.tgz";
+          };
+          ident = "@emotion/serialize";
+          ltype = "file";
+          version = "1.1.2";
+        };
+      };
+      "@emotion/sheet" = {
+        "1.2.2" = {
+          fetchInfo = {
+            narHash = "sha256-dsxUUek0zrKIwmApTAfPn/hrrLhvvVGtTWfW0MY8exA=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/sheet/-/sheet-1.2.2.tgz";
+          };
+          ident = "@emotion/sheet";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.2.2";
+        };
+      };
+      "@emotion/styled" = {
+        "11.11.0" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.18.3";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            "@emotion/babel-plugin" = {
+              descriptor = "^11.11.0";
+              pin = "11.11.0";
+              runtime = true;
+            };
+            "@emotion/is-prop-valid" = {
+              descriptor = "^1.2.1";
+              pin = "1.2.1";
+              runtime = true;
+            };
+            "@emotion/serialize" = {
+              descriptor = "^1.1.2";
+              pin = "1.1.2";
+              runtime = true;
+            };
+            "@emotion/use-insertion-effect-with-fallbacks" = {
+              descriptor = "^1.0.1";
+              pin = "1.0.1";
+              runtime = true;
+            };
+            "@emotion/utils" = {
+              descriptor = "^1.2.1";
+              pin = "1.2.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-TGTWxQ9dt7yya8O8Dy+EOPtM8vWn+P2kVf2fX4dWwn0=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/styled/-/styled-11.11.0.tgz";
+          };
+          ident = "@emotion/styled";
+          ltype = "file";
+          peerInfo = {
+            "@emotion/react" = {
+              descriptor = "^11.0.0-rc.0";
+            };
+            "@types/react" = {
+              descriptor = "*";
+              optional = true;
+            };
+            react = {
+              descriptor = ">=16.8.0";
+            };
+          };
+          version = "11.11.0";
+        };
+      };
+      "@emotion/unitless" = {
+        "0.8.1" = {
+          fetchInfo = {
+            narHash = "sha256-B2djXKZlVIEqf+5TAsGmbeniZgW8903trkistFmAXs4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/unitless/-/unitless-0.8.1.tgz";
+          };
+          ident = "@emotion/unitless";
+          ltype = "file";
+          treeInfo = { };
+          version = "0.8.1";
+        };
+      };
+      "@emotion/use-insertion-effect-with-fallbacks" = {
+        "1.0.1" = {
+          fetchInfo = {
+            narHash = "sha256-EUTtLsRTFBboZtLqzTVd2S8BPlUide0xLLi1JbwR1nk=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/use-insertion-effect-with-fallbacks/-/use-insertion-effect-with-fallbacks-1.0.1.tgz";
+          };
+          ident = "@emotion/use-insertion-effect-with-fallbacks";
+          ltype = "file";
+          peerInfo = {
+            react = {
+              descriptor = ">=16.8.0";
+            };
+          };
+          treeInfo = { };
+          version = "1.0.1";
+        };
+      };
+      "@emotion/utils" = {
+        "1.2.1" = {
+          fetchInfo = {
+            narHash = "sha256-xTPhx8GzQJhjmY545XGgZLcq1dGBe0Q21XI4xtQYF1k=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/utils/-/utils-1.2.1.tgz";
+          };
+          ident = "@emotion/utils";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.2.1";
+        };
+      };
+      "@emotion/weak-memoize" = {
+        "0.3.1" = {
+          fetchInfo = {
+            narHash = "sha256-cH/YHQ7TsSbX34aywA+fYK0JbTisNMPqqYkt7t7JFI4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@emotion/weak-memoize/-/weak-memoize-0.3.1.tgz";
+          };
+          ident = "@emotion/weak-memoize";
+          ltype = "file";
+          treeInfo = { };
+          version = "0.3.1";
         };
       };
       "@eslint-community/eslint-utils" = {
@@ -311,6 +814,398 @@
           ident = "@jridgewell/trace-mapping";
           ltype = "file";
           version = "0.3.18";
+        };
+      };
+      "@mui/base" = {
+        "5.0.0-beta.9" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.22.6";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            "@emotion/is-prop-valid" = {
+              descriptor = "^1.2.1";
+              pin = "1.2.1";
+              runtime = true;
+            };
+            "@mui/types" = {
+              descriptor = "^7.2.4";
+              pin = "7.2.4";
+              runtime = true;
+            };
+            "@mui/utils" = {
+              descriptor = "^5.14.3";
+              pin = "5.14.3";
+              runtime = true;
+            };
+            "@popperjs/core" = {
+              descriptor = "^2.11.8";
+              pin = "2.11.8";
+              runtime = true;
+            };
+            clsx = {
+              descriptor = "^2.0.0";
+              pin = "2.0.0";
+              runtime = true;
+            };
+            prop-types = {
+              descriptor = "^15.8.1";
+              pin = "15.8.1";
+              runtime = true;
+            };
+            react-is = {
+              descriptor = "^18.2.0";
+              pin = "18.2.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-Suep8N4x6DpaX0Wusl362/m6EvtyMR7BjLC5YLWR3QA=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@mui/base/-/base-5.0.0-beta.9.tgz";
+          };
+          ident = "@mui/base";
+          ltype = "file";
+          peerInfo = {
+            "@types/react" = {
+              descriptor = "^17.0.0 || ^18.0.0";
+              optional = true;
+            };
+            react = {
+              descriptor = "^17.0.0 || ^18.0.0";
+            };
+            react-dom = {
+              descriptor = "^17.0.0 || ^18.0.0";
+            };
+          };
+          version = "5.0.0-beta.9";
+        };
+      };
+      "@mui/core-downloads-tracker" = {
+        "5.14.3" = {
+          fetchInfo = {
+            narHash = "sha256-30BAculPhVukw8jUtExzAlILo3NcHybYt3U5KF/hyJ8=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@mui/core-downloads-tracker/-/core-downloads-tracker-5.14.3.tgz";
+          };
+          ident = "@mui/core-downloads-tracker";
+          ltype = "file";
+          treeInfo = { };
+          version = "5.14.3";
+        };
+      };
+      "@mui/material" = {
+        "5.14.3" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.22.6";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            "@mui/base" = {
+              descriptor = "5.0.0-beta.9";
+              pin = "5.0.0-beta.9";
+              runtime = true;
+            };
+            "@mui/core-downloads-tracker" = {
+              descriptor = "^5.14.3";
+              pin = "5.14.3";
+              runtime = true;
+            };
+            "@mui/system" = {
+              descriptor = "^5.14.3";
+              pin = "5.14.3";
+              runtime = true;
+            };
+            "@mui/types" = {
+              descriptor = "^7.2.4";
+              pin = "7.2.4";
+              runtime = true;
+            };
+            "@mui/utils" = {
+              descriptor = "^5.14.3";
+              pin = "5.14.3";
+              runtime = true;
+            };
+            "@types/react-transition-group" = {
+              descriptor = "^4.4.6";
+              pin = "4.4.6";
+              runtime = true;
+            };
+            clsx = {
+              descriptor = "^2.0.0";
+              pin = "2.0.0";
+              runtime = true;
+            };
+            csstype = {
+              descriptor = "^3.1.2";
+              pin = "3.1.2";
+              runtime = true;
+            };
+            prop-types = {
+              descriptor = "^15.8.1";
+              pin = "15.8.1";
+              runtime = true;
+            };
+            react-is = {
+              descriptor = "^18.2.0";
+              pin = "18.2.0";
+              runtime = true;
+            };
+            react-transition-group = {
+              descriptor = "^4.4.5";
+              pin = "4.4.5";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-Y6AZHlT1m8eWr9Kr6wGuFeIibb2KGXsC2NDBYbIIBiU=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@mui/material/-/material-5.14.3.tgz";
+          };
+          ident = "@mui/material";
+          ltype = "file";
+          peerInfo = {
+            "@emotion/react" = {
+              descriptor = "^11.5.0";
+              optional = true;
+            };
+            "@emotion/styled" = {
+              descriptor = "^11.3.0";
+              optional = true;
+            };
+            "@types/react" = {
+              descriptor = "^17.0.0 || ^18.0.0";
+              optional = true;
+            };
+            react = {
+              descriptor = "^17.0.0 || ^18.0.0";
+            };
+            react-dom = {
+              descriptor = "^17.0.0 || ^18.0.0";
+            };
+          };
+          version = "5.14.3";
+        };
+      };
+      "@mui/private-theming" = {
+        "5.13.7" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.22.5";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            "@mui/utils" = {
+              descriptor = "^5.13.7";
+              pin = "5.14.3";
+              runtime = true;
+            };
+            prop-types = {
+              descriptor = "^15.8.1";
+              pin = "15.8.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-zCpU+Y9Q3ny/bafKVlPmCH9GN5XQErv1CpsXkVVgIO4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@mui/private-theming/-/private-theming-5.13.7.tgz";
+          };
+          ident = "@mui/private-theming";
+          ltype = "file";
+          peerInfo = {
+            "@types/react" = {
+              descriptor = "^17.0.0 || ^18.0.0";
+              optional = true;
+            };
+            react = {
+              descriptor = "^17.0.0 || ^18.0.0";
+            };
+          };
+          version = "5.13.7";
+        };
+      };
+      "@mui/styled-engine" = {
+        "5.13.2" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.21.0";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            "@emotion/cache" = {
+              descriptor = "^11.11.0";
+              pin = "11.11.0";
+              runtime = true;
+            };
+            csstype = {
+              descriptor = "^3.1.2";
+              pin = "3.1.2";
+              runtime = true;
+            };
+            prop-types = {
+              descriptor = "^15.8.1";
+              pin = "15.8.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-1caHo5vUZbH7CWfnvIkon2Jrrfl8ar5NfKOGghrGCvs=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@mui/styled-engine/-/styled-engine-5.13.2.tgz";
+          };
+          ident = "@mui/styled-engine";
+          ltype = "file";
+          peerInfo = {
+            "@emotion/react" = {
+              descriptor = "^11.4.1";
+              optional = true;
+            };
+            "@emotion/styled" = {
+              descriptor = "^11.3.0";
+              optional = true;
+            };
+            react = {
+              descriptor = "^17.0.0 || ^18.0.0";
+            };
+          };
+          version = "5.13.2";
+        };
+      };
+      "@mui/system" = {
+        "5.14.3" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.22.6";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            "@mui/private-theming" = {
+              descriptor = "^5.13.7";
+              pin = "5.13.7";
+              runtime = true;
+            };
+            "@mui/styled-engine" = {
+              descriptor = "^5.13.2";
+              pin = "5.13.2";
+              runtime = true;
+            };
+            "@mui/types" = {
+              descriptor = "^7.2.4";
+              pin = "7.2.4";
+              runtime = true;
+            };
+            "@mui/utils" = {
+              descriptor = "^5.14.3";
+              pin = "5.14.3";
+              runtime = true;
+            };
+            clsx = {
+              descriptor = "^2.0.0";
+              pin = "2.0.0";
+              runtime = true;
+            };
+            csstype = {
+              descriptor = "^3.1.2";
+              pin = "3.1.2";
+              runtime = true;
+            };
+            prop-types = {
+              descriptor = "^15.8.1";
+              pin = "15.8.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-hi5oTDzdzIuy20VDdOYi3aePdWDY/kzYaL9cDUYE5Rk=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@mui/system/-/system-5.14.3.tgz";
+          };
+          ident = "@mui/system";
+          ltype = "file";
+          peerInfo = {
+            "@emotion/react" = {
+              descriptor = "^11.5.0";
+              optional = true;
+            };
+            "@emotion/styled" = {
+              descriptor = "^11.3.0";
+              optional = true;
+            };
+            "@types/react" = {
+              descriptor = "^17.0.0 || ^18.0.0";
+              optional = true;
+            };
+            react = {
+              descriptor = "^17.0.0 || ^18.0.0";
+            };
+          };
+          version = "5.14.3";
+        };
+      };
+      "@mui/types" = {
+        "7.2.4" = {
+          fetchInfo = {
+            narHash = "sha256-vtMIrL4OoMnfvIlXr96iQ9+HB8uO9YY4eqaqcDLCiyo=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@mui/types/-/types-7.2.4.tgz";
+          };
+          ident = "@mui/types";
+          ltype = "file";
+          peerInfo = {
+            "@types/react" = {
+              descriptor = "*";
+              optional = true;
+            };
+          };
+          treeInfo = { };
+          version = "7.2.4";
+        };
+      };
+      "@mui/utils" = {
+        "5.14.3" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.22.6";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            "@types/prop-types" = {
+              descriptor = "^15.7.5";
+              pin = "15.7.5";
+              runtime = true;
+            };
+            "@types/react-is" = {
+              descriptor = "^18.2.1";
+              pin = "18.2.1";
+              runtime = true;
+            };
+            prop-types = {
+              descriptor = "^15.8.1";
+              pin = "15.8.1";
+              runtime = true;
+            };
+            react-is = {
+              descriptor = "^18.2.0";
+              pin = "18.2.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-Nn8vRnyP4cQcZAdM2922Lff2UwoSWuyVf/C+W/GLvTc=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@mui/utils/-/utils-5.14.3.tgz";
+          };
+          ident = "@mui/utils";
+          ltype = "file";
+          peerInfo = {
+            react = {
+              descriptor = "^17.0.0 || ^18.0.0";
+            };
+          };
+          version = "5.14.3";
         };
       };
       "@next/env" = {
@@ -639,6 +1534,19 @@
           version = "2.4.2";
         };
       };
+      "@popperjs/core" = {
+        "2.11.8" = {
+          fetchInfo = {
+            narHash = "sha256-jS4xEBxSW+1dOEArwszzst82cxfP/bM/EZyj+WaeNfk=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@popperjs/core/-/core-2.11.8.tgz";
+          };
+          ident = "@popperjs/core";
+          ltype = "file";
+          treeInfo = { };
+          version = "2.11.8";
+        };
+      };
       "@rushstack/eslint-patch" = {
         "1.3.2" = {
           fetchInfo = {
@@ -695,6 +1603,19 @@
           ltype = "file";
           treeInfo = { };
           version = "20.4.7";
+        };
+      };
+      "@types/parse-json" = {
+        "4.0.0" = {
+          fetchInfo = {
+            narHash = "sha256-xZ8I656yZfg8U8CJFzcyJ1vRoa3zUsB/xti1O/x8fPU=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/parse-json/-/parse-json-4.0.0.tgz";
+          };
+          ident = "@types/parse-json";
+          ltype = "file";
+          treeInfo = { };
+          version = "4.0.0";
         };
       };
       "@types/prop-types" = {
@@ -756,6 +1677,44 @@
           ident = "@types/react-dom";
           ltype = "file";
           version = "18.2.7";
+        };
+      };
+      "@types/react-is" = {
+        "18.2.1" = {
+          depInfo = {
+            "@types/react" = {
+              descriptor = "*";
+              pin = "18.2.18";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-1xm0n6dI9PDdsr0XpeGmf6ENbr8R/T7Svpz8xwRGnHo=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/react-is/-/react-is-18.2.1.tgz";
+          };
+          ident = "@types/react-is";
+          ltype = "file";
+          version = "18.2.1";
+        };
+      };
+      "@types/react-transition-group" = {
+        "4.4.6" = {
+          depInfo = {
+            "@types/react" = {
+              descriptor = "*";
+              pin = "18.2.18";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-RaUiVT0OsMFyS9eFMPm2U5H1XFTFSAUX+7sHcX0dBC4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/react-transition-group/-/react-transition-group-4.4.6.tgz";
+          };
+          ident = "@types/react-transition-group";
+          ltype = "file";
+          version = "4.4.6";
         };
       };
       "@types/scheduler" = {
@@ -1014,6 +1973,23 @@
         };
       };
       ansi-styles = {
+        "3.2.1" = {
+          depInfo = {
+            color-convert = {
+              descriptor = "^1.9.0";
+              pin = "1.9.3";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-3VeRGkKqu2VUHvybLgjuzuTVZIYL6b4bwCEAhRF/Fzw=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/ansi-styles/-/ansi-styles-3.2.1.tgz";
+          };
+          ident = "ansi-styles";
+          ltype = "file";
+          version = "3.2.1";
+        };
         "4.3.0" = {
           depInfo = {
             color-convert = {
@@ -1492,6 +2468,35 @@
           version = "3.2.1";
         };
       };
+      babel-plugin-macros = {
+        "3.1.0" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.12.5";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            cosmiconfig = {
+              descriptor = "^7.0.0";
+              pin = "7.1.0";
+              runtime = true;
+            };
+            resolve = {
+              descriptor = "^1.19.0";
+              pin = "1.22.4";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-iQ2TOwutifOLnyoUkOPUwHtd4Wq79eGpyFUqJZ2GUNY=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/babel-plugin-macros/-/babel-plugin-macros-3.1.0.tgz";
+          };
+          ident = "babel-plugin-macros";
+          ltype = "file";
+          version = "3.1.0";
+        };
+      };
       balanced-match = {
         "1.0.2" = {
           fetchInfo = {
@@ -1734,6 +2739,33 @@
         };
       };
       chalk = {
+        "2.4.2" = {
+          depInfo = {
+            ansi-styles = {
+              descriptor = "^3.2.1";
+              pin = "3.2.1";
+              runtime = true;
+            };
+            escape-string-regexp = {
+              descriptor = "^1.0.5";
+              pin = "1.0.5";
+              runtime = true;
+            };
+            supports-color = {
+              descriptor = "^5.3.0";
+              pin = "5.5.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-epyiOfJKhuYWuMNymawywjS+lFfsQvbhON+b8du38TQ=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/chalk/-/chalk-2.4.2.tgz";
+          };
+          ident = "chalk";
+          ltype = "file";
+          version = "2.4.2";
+        };
         "4.1.2" = {
           depInfo = {
             ansi-styles = {
@@ -1812,6 +2844,19 @@
           version = "3.5.3";
         };
       };
+      classnames = {
+        "2.3.2" = {
+          fetchInfo = {
+            narHash = "sha256-PM4QE/Ym1xswnjd2ial3mPOOMy/6bOxa1zU07RyvJR8=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/classnames/-/classnames-2.3.2.tgz";
+          };
+          ident = "classnames";
+          ltype = "file";
+          treeInfo = { };
+          version = "2.3.2";
+        };
+      };
       client-only = {
         "0.0.1" = {
           fetchInfo = {
@@ -1825,7 +2870,37 @@
           version = "0.0.1";
         };
       };
+      clsx = {
+        "2.0.0" = {
+          fetchInfo = {
+            narHash = "sha256-p5l3z48Wal/uauFo+vlLuGF1h0go8ImS6BrVOJnG6kM=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/clsx/-/clsx-2.0.0.tgz";
+          };
+          ident = "clsx";
+          ltype = "file";
+          treeInfo = { };
+          version = "2.0.0";
+        };
+      };
       color-convert = {
+        "1.9.3" = {
+          depInfo = {
+            color-name = {
+              descriptor = "1.1.3";
+              pin = "1.1.3";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-o/p0tqrXMvGg2VduYwUNx05gEWI11GuHgyq9nrd6khM=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/color-convert/-/color-convert-1.9.3.tgz";
+          };
+          ident = "color-convert";
+          ltype = "file";
+          version = "1.9.3";
+        };
         "2.0.1" = {
           depInfo = {
             color-name = {
@@ -1845,6 +2920,17 @@
         };
       };
       color-name = {
+        "1.1.3" = {
+          fetchInfo = {
+            narHash = "sha256-Z7+qlowBfxZNeitMCENEfKBRnaxqLWi4+ms5SIKafc0=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/color-name/-/color-name-1.1.3.tgz";
+          };
+          ident = "color-name";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.1.3";
+        };
         "1.1.4" = {
           fetchInfo = {
             narHash = "sha256-mAOvtcDAZ05q6KP5tRgaO5D4jeb+/AcbIE1Z2nBG1uk=";
@@ -1881,6 +2967,58 @@
           ltype = "file";
           treeInfo = { };
           version = "0.0.1";
+        };
+      };
+      convert-source-map = {
+        "1.9.0" = {
+          fetchInfo = {
+            narHash = "sha256-9zjFbAgTFN8PnaoIBuarc6354vYjJomgtng2vak3ERQ=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/convert-source-map/-/convert-source-map-1.9.0.tgz";
+          };
+          ident = "convert-source-map";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.9.0";
+        };
+      };
+      cosmiconfig = {
+        "7.1.0" = {
+          depInfo = {
+            "@types/parse-json" = {
+              descriptor = "^4.0.0";
+              pin = "4.0.0";
+              runtime = true;
+            };
+            import-fresh = {
+              descriptor = "^3.2.1";
+              pin = "3.3.0";
+              runtime = true;
+            };
+            parse-json = {
+              descriptor = "^5.0.0";
+              pin = "5.2.0";
+              runtime = true;
+            };
+            path-type = {
+              descriptor = "^4.0.0";
+              pin = "4.0.0";
+              runtime = true;
+            };
+            yaml = {
+              descriptor = "^1.10.0";
+              pin = "1.10.2";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-Rsy6y20bwlt3wOjULRA1aWGNxF313vGryr/6B8xTz7I=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/cosmiconfig/-/cosmiconfig-7.1.0.tgz";
+          };
+          ident = "cosmiconfig";
+          ltype = "file";
+          version = "7.1.0";
         };
       };
       cross-spawn = {
@@ -2200,6 +3338,30 @@
           version = "3.0.0";
         };
       };
+      dom-helpers = {
+        "5.2.1" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.8.7";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            csstype = {
+              descriptor = "^3.0.2";
+              pin = "3.1.2";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-DkzZGz1U902BcMC2nssAs+hULM4tJ17H+3dVUzwMopg=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/dom-helpers/-/dom-helpers-5.2.1.tgz";
+          };
+          ident = "dom-helpers";
+          ltype = "file";
+          version = "5.2.1";
+        };
+      };
       electron-to-chromium = {
         "1.4.485" = {
           fetchInfo = {
@@ -2248,6 +3410,25 @@
           ident = "enhanced-resolve";
           ltype = "file";
           version = "5.15.0";
+        };
+      };
+      error-ex = {
+        "1.3.2" = {
+          depInfo = {
+            is-arrayish = {
+              descriptor = "^0.2.1";
+              pin = "0.2.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-daqjq1BAM46eXv0Nt+56+SGe+PTSy7sK4X6E66WwGSw=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/error-ex/-/error-ex-1.3.2.tgz";
+          };
+          ident = "error-ex";
+          ltype = "file";
+          version = "1.3.2";
         };
       };
       es-abstract = {
@@ -2550,6 +3731,17 @@
         };
       };
       escape-string-regexp = {
+        "1.0.5" = {
+          fetchInfo = {
+            narHash = "sha256-jI2WTcziWydQXDepnqeq9ZLmmJeODhVO2w1qLvZc90Q=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz";
+          };
+          ident = "escape-string-regexp";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.0.5";
+        };
         "4.0.0" = {
           fetchInfo = {
             narHash = "sha256-d7WCjjMj36VTWLhrU8YwNOQ0ed2OBaAQBxvuLKvsONc=";
@@ -3651,6 +4843,19 @@
           version = "7.0.1";
         };
       };
+      find-root = {
+        "1.1.0" = {
+          fetchInfo = {
+            narHash = "sha256-grIQ6Ml6cBttYVMYj34V1G9PrquEAh5ygziquXEkSTE=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/find-root/-/find-root-1.1.0.tgz";
+          };
+          ident = "find-root";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.1.0";
+        };
+      };
       find-up = {
         "5.0.0" = {
           depInfo = {
@@ -4260,6 +5465,17 @@
         };
       };
       has-flag = {
+        "3.0.0" = {
+          fetchInfo = {
+            narHash = "sha256-6FPI3mvzeaWOqNs71lre0tBCY/xdSo+7lBMqw1c9lM4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/has-flag/-/has-flag-3.0.0.tgz";
+          };
+          ident = "has-flag";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.0.0";
+        };
         "4.0.0" = {
           fetchInfo = {
             narHash = "sha256-vPSUFfMlEN5g/4ID+ZlkxJd2xcrLd2zb1zB0uEfVeKE=";
@@ -4334,6 +5550,25 @@
           ident = "has-tostringtag";
           ltype = "file";
           version = "1.0.0";
+        };
+      };
+      hoist-non-react-statics = {
+        "3.3.2" = {
+          depInfo = {
+            react-is = {
+              descriptor = "^16.7.0";
+              pin = "16.13.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-eZiFEkmy/HthIpyyfuVH6yWBrq2Ot6tD5yRndqHMoUM=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/hoist-non-react-statics/-/hoist-non-react-statics-3.3.2.tgz";
+          };
+          ident = "hoist-non-react-statics";
+          ltype = "file";
+          version = "3.3.2";
         };
       };
       human-signals = {
@@ -4503,6 +5738,19 @@
           ident = "is-array-buffer";
           ltype = "file";
           version = "3.0.2";
+        };
+      };
+      is-arrayish = {
+        "0.2.1" = {
+          fetchInfo = {
+            narHash = "sha256-wvuJg92GZxDL9IffjN5ttz8DRki65ZgZoM3Mr1V9IyM=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/is-arrayish/-/is-arrayish-0.2.1.tgz";
+          };
+          ident = "is-arrayish";
+          ltype = "file";
+          treeInfo = { };
+          version = "0.2.1";
         };
       };
       is-bigint = {
@@ -5009,6 +6257,19 @@
           version = "4.1.0";
         };
       };
+      json-parse-even-better-errors = {
+        "2.3.1" = {
+          fetchInfo = {
+            narHash = "sha256-JLmbiGbR2cXNIiFjyKZj8WvbNwUEVpADUgztOocgA1s=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/json-parse-even-better-errors/-/json-parse-even-better-errors-2.3.1.tgz";
+          };
+          ident = "json-parse-even-better-errors";
+          ltype = "file";
+          treeInfo = { };
+          version = "2.3.1";
+        };
+      };
       json-schema-traverse = {
         "0.4.1" = {
           fetchInfo = {
@@ -5372,6 +6633,21 @@
       my-app = {
         "0.1.0" = {
           depInfo = {
+            "@emotion/react" = {
+              descriptor = "^11.11.1";
+              pin = "11.11.1";
+              runtime = true;
+            };
+            "@emotion/styled" = {
+              descriptor = "^11.11.0";
+              pin = "11.11.0";
+              runtime = true;
+            };
+            "@mui/material" = {
+              descriptor = "^5.14.3";
+              pin = "5.14.3";
+              runtime = true;
+            };
             "@types/node" = {
               descriptor = "20.4.7";
               pin = "20.4.7";
@@ -5390,6 +6666,11 @@
             autoprefixer = {
               descriptor = "10.4.14";
               pin = "10.4.14";
+              runtime = true;
+            };
+            classnames = {
+              descriptor = "^2.3.2";
+              pin = "2.3.2";
               runtime = true;
             };
             eslint = {
@@ -5446,8 +6727,86 @@
             "node_modules/@alloc/quick-lru" = {
               key = "@alloc/quick-lru/5.2.0";
             };
+            "node_modules/@babel/code-frame" = {
+              key = "@babel/code-frame/7.22.5";
+            };
+            "node_modules/@babel/helper-module-imports" = {
+              key = "@babel/helper-module-imports/7.22.5";
+            };
+            "node_modules/@babel/helper-string-parser" = {
+              key = "@babel/helper-string-parser/7.22.5";
+            };
+            "node_modules/@babel/helper-validator-identifier" = {
+              key = "@babel/helper-validator-identifier/7.22.5";
+            };
+            "node_modules/@babel/highlight" = {
+              key = "@babel/highlight/7.22.5";
+            };
+            "node_modules/@babel/highlight/node_modules/ansi-styles" = {
+              key = "ansi-styles/3.2.1";
+            };
+            "node_modules/@babel/highlight/node_modules/chalk" = {
+              key = "chalk/2.4.2";
+            };
+            "node_modules/@babel/highlight/node_modules/color-convert" = {
+              key = "color-convert/1.9.3";
+            };
+            "node_modules/@babel/highlight/node_modules/color-name" = {
+              key = "color-name/1.1.3";
+            };
+            "node_modules/@babel/highlight/node_modules/escape-string-regexp" = {
+              key = "escape-string-regexp/1.0.5";
+            };
+            "node_modules/@babel/highlight/node_modules/has-flag" = {
+              key = "has-flag/3.0.0";
+            };
+            "node_modules/@babel/highlight/node_modules/supports-color" = {
+              key = "supports-color/5.5.0";
+            };
             "node_modules/@babel/runtime" = {
               key = "@babel/runtime/7.22.6";
+            };
+            "node_modules/@babel/types" = {
+              key = "@babel/types/7.22.5";
+            };
+            "node_modules/@emotion/babel-plugin" = {
+              key = "@emotion/babel-plugin/11.11.0";
+            };
+            "node_modules/@emotion/cache" = {
+              key = "@emotion/cache/11.11.0";
+            };
+            "node_modules/@emotion/hash" = {
+              key = "@emotion/hash/0.9.1";
+            };
+            "node_modules/@emotion/is-prop-valid" = {
+              key = "@emotion/is-prop-valid/1.2.1";
+            };
+            "node_modules/@emotion/memoize" = {
+              key = "@emotion/memoize/0.8.1";
+            };
+            "node_modules/@emotion/react" = {
+              key = "@emotion/react/11.11.1";
+            };
+            "node_modules/@emotion/serialize" = {
+              key = "@emotion/serialize/1.1.2";
+            };
+            "node_modules/@emotion/sheet" = {
+              key = "@emotion/sheet/1.2.2";
+            };
+            "node_modules/@emotion/styled" = {
+              key = "@emotion/styled/11.11.0";
+            };
+            "node_modules/@emotion/unitless" = {
+              key = "@emotion/unitless/0.8.1";
+            };
+            "node_modules/@emotion/use-insertion-effect-with-fallbacks" = {
+              key = "@emotion/use-insertion-effect-with-fallbacks/1.0.1";
+            };
+            "node_modules/@emotion/utils" = {
+              key = "@emotion/utils/1.2.1";
+            };
+            "node_modules/@emotion/weak-memoize" = {
+              key = "@emotion/weak-memoize/0.3.1";
             };
             "node_modules/@eslint-community/eslint-utils" = {
               key = "@eslint-community/eslint-utils/4.4.0";
@@ -5487,6 +6846,39 @@
             };
             "node_modules/@jridgewell/trace-mapping/node_modules/@jridgewell/sourcemap-codec" = {
               key = "@jridgewell/sourcemap-codec/1.4.14";
+            };
+            "node_modules/@mui/base" = {
+              key = "@mui/base/5.0.0-beta.9";
+            };
+            "node_modules/@mui/base/node_modules/react-is" = {
+              key = "react-is/18.2.0";
+            };
+            "node_modules/@mui/core-downloads-tracker" = {
+              key = "@mui/core-downloads-tracker/5.14.3";
+            };
+            "node_modules/@mui/material" = {
+              key = "@mui/material/5.14.3";
+            };
+            "node_modules/@mui/material/node_modules/react-is" = {
+              key = "react-is/18.2.0";
+            };
+            "node_modules/@mui/private-theming" = {
+              key = "@mui/private-theming/5.13.7";
+            };
+            "node_modules/@mui/styled-engine" = {
+              key = "@mui/styled-engine/5.13.2";
+            };
+            "node_modules/@mui/system" = {
+              key = "@mui/system/5.14.3";
+            };
+            "node_modules/@mui/types" = {
+              key = "@mui/types/7.2.4";
+            };
+            "node_modules/@mui/utils" = {
+              key = "@mui/utils/5.14.3";
+            };
+            "node_modules/@mui/utils/node_modules/react-is" = {
+              key = "react-is/18.2.0";
             };
             "node_modules/@next/env" = {
               key = "@next/env/13.4.12";
@@ -5542,6 +6934,9 @@
             "node_modules/@pkgr/utils" = {
               key = "@pkgr/utils/2.4.2";
             };
+            "node_modules/@popperjs/core" = {
+              key = "@popperjs/core/2.11.8";
+            };
             "node_modules/@rushstack/eslint-patch" = {
               key = "@rushstack/eslint-patch/1.3.2";
             };
@@ -5554,6 +6949,9 @@
             "node_modules/@types/node" = {
               key = "@types/node/20.4.7";
             };
+            "node_modules/@types/parse-json" = {
+              key = "@types/parse-json/4.0.0";
+            };
             "node_modules/@types/prop-types" = {
               key = "@types/prop-types/15.7.5";
             };
@@ -5562,6 +6960,12 @@
             };
             "node_modules/@types/react-dom" = {
               key = "@types/react-dom/18.2.7";
+            };
+            "node_modules/@types/react-is" = {
+              key = "@types/react-is/18.2.1";
+            };
+            "node_modules/@types/react-transition-group" = {
+              key = "@types/react-transition-group/4.4.6";
             };
             "node_modules/@types/scheduler" = {
               key = "@types/scheduler/0.16.3";
@@ -5650,6 +7054,9 @@
             "node_modules/axobject-query" = {
               key = "axobject-query/3.2.1";
             };
+            "node_modules/babel-plugin-macros" = {
+              key = "babel-plugin-macros/3.1.0";
+            };
             "node_modules/balanced-match" = {
               key = "balanced-match/1.0.2";
             };
@@ -5698,8 +7105,14 @@
             "node_modules/chokidar/node_modules/glob-parent" = {
               key = "glob-parent/5.1.2";
             };
+            "node_modules/classnames" = {
+              key = "classnames/2.3.2";
+            };
             "node_modules/client-only" = {
               key = "client-only/0.0.1";
+            };
+            "node_modules/clsx" = {
+              key = "clsx/2.0.0";
             };
             "node_modules/color-convert" = {
               key = "color-convert/2.0.1";
@@ -5712,6 +7125,15 @@
             };
             "node_modules/concat-map" = {
               key = "concat-map/0.0.1";
+            };
+            "node_modules/convert-source-map" = {
+              key = "convert-source-map/1.9.0";
+            };
+            "node_modules/cosmiconfig" = {
+              key = "cosmiconfig/7.1.0";
+            };
+            "node_modules/cosmiconfig/node_modules/yaml" = {
+              key = "yaml/1.10.2";
             };
             "node_modules/cross-spawn" = {
               key = "cross-spawn/7.0.3";
@@ -5758,6 +7180,9 @@
             "node_modules/doctrine" = {
               key = "doctrine/3.0.0";
             };
+            "node_modules/dom-helpers" = {
+              key = "dom-helpers/5.2.1";
+            };
             "node_modules/electron-to-chromium" = {
               key = "electron-to-chromium/1.4.485";
             };
@@ -5766,6 +7191,9 @@
             };
             "node_modules/enhanced-resolve" = {
               key = "enhanced-resolve/5.15.0";
+            };
+            "node_modules/error-ex" = {
+              key = "error-ex/1.3.2";
             };
             "node_modules/es-abstract" = {
               key = "es-abstract/1.22.1";
@@ -5893,6 +7321,9 @@
             "node_modules/fill-range" = {
               key = "fill-range/7.0.1";
             };
+            "node_modules/find-root" = {
+              key = "find-root/1.1.0";
+            };
             "node_modules/find-up" = {
               key = "find-up/5.0.0";
             };
@@ -5984,6 +7415,9 @@
             "node_modules/has-tostringtag" = {
               key = "has-tostringtag/1.0.0";
             };
+            "node_modules/hoist-non-react-statics" = {
+              key = "hoist-non-react-statics/3.3.2";
+            };
             "node_modules/human-signals" = {
               key = "human-signals/4.3.1";
             };
@@ -6007,6 +7441,9 @@
             };
             "node_modules/is-array-buffer" = {
               key = "is-array-buffer/3.0.2";
+            };
+            "node_modules/is-arrayish" = {
+              key = "is-arrayish/0.2.1";
             };
             "node_modules/is-bigint" = {
               key = "is-bigint/1.0.4";
@@ -6091,6 +7528,9 @@
             };
             "node_modules/js-yaml" = {
               key = "js-yaml/4.1.0";
+            };
+            "node_modules/json-parse-even-better-errors" = {
+              key = "json-parse-even-better-errors/2.3.1";
             };
             "node_modules/json-schema-traverse" = {
               key = "json-schema-traverse/0.4.1";
@@ -6233,6 +7673,9 @@
             "node_modules/parent-module" = {
               key = "parent-module/1.0.1";
             };
+            "node_modules/parse-json" = {
+              key = "parse-json/5.2.0";
+            };
             "node_modules/path-exists" = {
               key = "path-exists/4.0.0";
             };
@@ -6301,6 +7744,9 @@
             };
             "node_modules/react-is" = {
               key = "react-is/16.13.1";
+            };
+            "node_modules/react-transition-group" = {
+              key = "react-transition-group/4.4.5";
             };
             "node_modules/read-cache" = {
               key = "read-cache/1.0.0";
@@ -6383,6 +7829,9 @@
             "node_modules/slash" = {
               key = "slash/3.0.0";
             };
+            "node_modules/source-map" = {
+              key = "source-map/0.5.7";
+            };
             "node_modules/source-map-js" = {
               key = "source-map-js/1.0.2";
             };
@@ -6416,6 +7865,9 @@
             "node_modules/styled-jsx" = {
               key = "styled-jsx/5.1.1";
             };
+            "node_modules/stylis" = {
+              key = "stylis/4.2.0";
+            };
             "node_modules/sucrase" = {
               key = "sucrase/3.34.0";
             };
@@ -6448,6 +7900,9 @@
             };
             "node_modules/titleize" = {
               key = "titleize/3.0.0";
+            };
+            "node_modules/to-fast-properties" = {
+              key = "to-fast-properties/2.0.0";
             };
             "node_modules/to-regex-range" = {
               key = "to-regex-range/5.0.1";
@@ -7223,6 +8678,40 @@
           version = "1.0.1";
         };
       };
+      parse-json = {
+        "5.2.0" = {
+          depInfo = {
+            "@babel/code-frame" = {
+              descriptor = "^7.0.0";
+              pin = "7.22.5";
+              runtime = true;
+            };
+            error-ex = {
+              descriptor = "^1.3.1";
+              pin = "1.3.2";
+              runtime = true;
+            };
+            json-parse-even-better-errors = {
+              descriptor = "^2.3.0";
+              pin = "2.3.1";
+              runtime = true;
+            };
+            lines-and-columns = {
+              descriptor = "^1.1.6";
+              pin = "1.2.4";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-hxVxyGV3iUu2t/nGE+bdgp9C38FU/lZU2iPbtazHLy4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/parse-json/-/parse-json-5.2.0.tgz";
+          };
+          ident = "parse-json";
+          ltype = "file";
+          version = "5.2.0";
+        };
+      };
       path-exists = {
         "4.0.0" = {
           fetchInfo = {
@@ -7687,6 +9176,59 @@
           ltype = "file";
           treeInfo = { };
           version = "16.13.1";
+        };
+        "18.2.0" = {
+          fetchInfo = {
+            narHash = "sha256-eSOGsY/IVNB/U36bUYaUctK4n5DEM9hmzm1keaypG2c=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/react-is/-/react-is-18.2.0.tgz";
+          };
+          ident = "react-is";
+          ltype = "file";
+          treeInfo = { };
+          version = "18.2.0";
+        };
+      };
+      react-transition-group = {
+        "4.4.5" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.5.5";
+              pin = "7.22.6";
+              runtime = true;
+            };
+            dom-helpers = {
+              descriptor = "^5.0.1";
+              pin = "5.2.1";
+              runtime = true;
+            };
+            loose-envify = {
+              descriptor = "^1.4.0";
+              pin = "1.4.0";
+              runtime = true;
+            };
+            prop-types = {
+              descriptor = "^15.6.2";
+              pin = "15.8.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-rxK890I79kcB9FwueWOWluR5hIg7XFq0nvxWwRA30e0=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/react-transition-group/-/react-transition-group-4.4.5.tgz";
+          };
+          ident = "react-transition-group";
+          ltype = "file";
+          peerInfo = {
+            react = {
+              descriptor = ">=16.6.0";
+            };
+            react-dom = {
+              descriptor = ">=16.6.0";
+            };
+          };
+          version = "4.4.5";
         };
       };
       read-cache = {
@@ -8156,6 +9698,19 @@
           version = "4.0.0";
         };
       };
+      source-map = {
+        "0.5.7" = {
+          fetchInfo = {
+            narHash = "sha256-TfLkcoel84umresRhkiSAJkWIZ9bCfn9ZA9cZk8qGRU=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/source-map/-/source-map-0.5.7.tgz";
+          };
+          ident = "source-map";
+          ltype = "file";
+          treeInfo = { };
+          version = "0.5.7";
+        };
+      };
       source-map-js = {
         "1.0.2" = {
           fetchInfo = {
@@ -8424,6 +9979,19 @@
           version = "5.1.1";
         };
       };
+      stylis = {
+        "4.2.0" = {
+          fetchInfo = {
+            narHash = "sha256-uBRk2Ja5qhHSROWOjmJ6+K/k2NNHGK37SD7nuKxR6F4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/stylis/-/stylis-4.2.0.tgz";
+          };
+          ident = "stylis";
+          ltype = "file";
+          treeInfo = { };
+          version = "4.2.0";
+        };
+      };
       sucrase = {
         "3.34.0" = {
           binInfo = {
@@ -8480,6 +10048,23 @@
         };
       };
       supports-color = {
+        "5.5.0" = {
+          depInfo = {
+            has-flag = {
+              descriptor = "^3.0.0";
+              pin = "3.0.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-CFEl8ukJUaXQ4RzTSFYfqd09tqgYfgJuU/Kem/DkKe4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/supports-color/-/supports-color-5.5.0.tgz";
+          };
+          ident = "supports-color";
+          ltype = "file";
+          version = "5.5.0";
+        };
         "7.2.0" = {
           depInfo = {
             has-flag = {
@@ -8740,6 +10325,19 @@
           ltype = "file";
           treeInfo = { };
           version = "3.0.0";
+        };
+      };
+      to-fast-properties = {
+        "2.0.0" = {
+          fetchInfo = {
+            narHash = "sha256-REHa011PYD77WKQpm3pDqs8+640POdK6iqwfEhljtzk=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/to-fast-properties/-/to-fast-properties-2.0.0.tgz";
+          };
+          ident = "to-fast-properties";
+          ltype = "file";
+          treeInfo = { };
+          version = "2.0.0";
         };
       };
       to-regex-range = {
@@ -9304,6 +10902,17 @@
         };
       };
       yaml = {
+        "1.10.2" = {
+          fetchInfo = {
+            narHash = "sha256-JPai4yAf+MK8wsaF0gmRNcCD2HiF2sBzf/YHgnjpWEs=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/yaml/-/yaml-1.10.2.tgz";
+          };
+          ident = "yaml";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.10.2";
+        };
         "2.3.1" = {
           fetchInfo = {
             narHash = "sha256-1t99bBjM6mNzwLZ7r52s4M818bVZiZSyoaX25kELdZc=";
