@@ -13,7 +13,7 @@ def create(args: argparse.Namespace) -> None:
             "flake",
             "init",
             "-t",
-            "git+https://git.clan.lol/clan/clan-core#clan-template",
+            "git+https://git.clan.lol/clan/clan-core#new-clan",
         ]
     )
 
