@@ -19,6 +19,8 @@ pkgs.mkShell {
       echo "floco ok: node_modules updated"
     fi
 
+    ln -sf ${pkgs.roboto}/share/fonts ./src/fonts
+
     export PATH="$PATH:$(realpath ./node_modules)/.bin"
   '';
 }
