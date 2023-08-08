@@ -53,7 +53,7 @@ def list_directory(directory: Path) -> str:
         return "{directory} does not exist"
     msg = f"\n{directory} contains:"
     for f in directory.iterdir():
-        msg += f"\n  {f}"
+        msg += f"\n  {f.name}"
     return msg
 
 
