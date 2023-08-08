@@ -122,6 +122,11 @@ def test_secrets(clan_flake: Path, capsys: pytest.CaptureFixture) -> None:
         capsys.readouterr()
         cli.run(["get", "key"])
         assert capsys.readouterr().out == "foo"
+        capsys.readouterr()
+        cli.run(["users", "list"])
+        users = capsys.readouterr().out.rstrip().split("\n")
+        assert len(users) == 1, f"users: {users}"
+        owner = users[0]
 
         capsys.readouterr()  # empty the buffer
         cli.run(["list"])
@@ -147,7 +152,11 @@ def test_secrets(clan_flake: Path, capsys: pytest.CaptureFixture) -> None:
         with pytest.raises(ClanError):  # does not exist yet
             cli.run(["groups", "add-secret", "admin-group", "key"])
         cli.run(["groups", "add-user", "admin-group", "user1"])
+        cli.run(["groups", "add-user", "admin-group", owner])
         cli.run(["groups", "add-secret", "admin-group", "key"])
+
+        capsys.readouterr()  # empty the buffer
+        cli.run(["set", "--group", "admin-group", "key2"])
 
         with mock_env(SOPS_AGE_KEY=PRIVKEY_2, SOPS_AGE_KEY_FILE=""):
             capsys.readouterr()
@@ -156,6 +165,7 @@ def test_secrets(clan_flake: Path, capsys: pytest.CaptureFixture) -> None:
         cli.run(["groups", "remove-secret", "admin-group", "key"])
 
     cli.run(["remove", "key"])
+    cli.run(["remove", "key2"])
 
     capsys.readouterr()  # empty the buffer
     cli.run(["list"])
@@ -169,7 +179,8 @@ def test_import_sops(
 
     with mock_env(SOPS_AGE_KEY=PRIVKEY_2):
         cli.run(["machines", "add", "machine1", PUBKEY])
-        cli.run(["users", "add", "user1", PUBKEY_3])
+        cli.run(["users", "add", "user1", PUBKEY_2])
+        cli.run(["users", "add", "user2", PUBKEY_3])
 
         # To edit:
         # SOPS_AGE_KEY=AGE-SECRET-KEY-1U5ENXZQAY62NC78Y2WC0SEGRRMAEEKH79EYY5TH4GPFWJKEAY0USZ6X7YQ sops --age age14tva0txcrl0zes05x7gkx56qd6wd9q3nwecjac74xxzz4l47r44sv3fz62 ./data/secrets.yaml
@@ -183,6 +194,11 @@ def test_import_sops(
                 str(test_root.joinpath("data", "secrets.yaml")),
             ]
         )
+        capsys.readouterr()
+        cli.run(["users", "list"])
+        users = sorted(capsys.readouterr().out.rstrip().split())
+        assert users == ["user1", "user2"]
+
         capsys.readouterr()
         cli.run(["get", "secret-key"])
         assert capsys.readouterr().out == "secret-value"
