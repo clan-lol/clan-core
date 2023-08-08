@@ -3,7 +3,7 @@ requires = [ "setuptools" ]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "clan"
+name = "clan-cli"
 description = "cLAN CLI tool"
 dynamic = [ "version" ]
 scripts = { clan = "clan_cli:main" }
