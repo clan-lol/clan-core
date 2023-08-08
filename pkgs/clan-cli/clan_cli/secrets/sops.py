@@ -138,14 +138,17 @@ def encrypt_file(
     folder.mkdir(parents=True, exist_ok=True)
 
     # hopefully /tmp is written to an in-memory file to avoid leaking secrets
-    with NamedTemporaryFile(delete=False) as f:
+    with NamedTemporaryFile(delete=False) as dummy_manifest_file, NamedTemporaryFile(
+        delete=False
+    ) as f:
         try:
             with open(f.name, "w") as fd:
                 if isinstance(content, str):
                     fd.write(content)
                 else:
                     shutil.copyfileobj(content, fd)
-            args = ["sops"]
+            # we pass an empty manifest to pick up existing configuration of the user
+            args = ["sops", "--config", dummy_manifest_file.name]
             for key in keys:
                 args.extend(["--age", key])
             args.extend(["-i", "--encrypt", str(f.name)])
