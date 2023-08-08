@@ -1,4 +1,7 @@
-{ ... }: {
+{
+  imports = [
+    ./python-project/flake-module.nix
+  ];
   flake.templates = {
     new-clan = {
       description = "Initialize a new clan flake";

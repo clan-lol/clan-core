@@ -1,4 +1,10 @@
 { ... }: {
+  imports = [
+    ./clan-cli/flake-module.nix
+    ./installer/flake-module.nix
+    ./ui/flake-module.nix
+  ];
+
   perSystem = { pkgs, config, ... }: {
     packages = {
       tea-create-pr = pkgs.callPackage ./tea-create-pr { };
