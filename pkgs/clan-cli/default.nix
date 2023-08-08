@@ -31,7 +31,7 @@ let
   checkPython = python3.withPackages (_ps: dependencies ++ testDependencies);
 in
 python3.pkgs.buildPythonPackage {
-  name = "clan";
+  name = "clan-cli";
   src = lib.cleanSource ./.;
   format = "pyproject";
   nativeBuildInputs = [
