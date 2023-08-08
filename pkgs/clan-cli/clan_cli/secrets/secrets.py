@@ -123,7 +123,8 @@ def allow_member(group_folder: Path, source_folder: Path, name: str) -> None:
                 f"Cannot add user {name}. {user_target} exists but is not a symlink"
             )
         os.remove(user_target)
-    user_target.symlink_to(source)
+
+    user_target.symlink_to(os.path.relpath(source, user_target.parent))
     update_keys(group_folder.parent, collect_keys_for_path(group_folder.parent))
 
 
