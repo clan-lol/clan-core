@@ -29,12 +29,12 @@ def remove_command(args: argparse.Namespace) -> None:
 
 def add_secret_command(args: argparse.Namespace) -> None:
     secrets.allow_member(
-        secrets.groups_folder(args.group), sops_users_folder(), args.group
+        secrets.users_folder(args.secret), sops_users_folder(), args.user
     )
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    secrets.disallow_member(secrets.groups_folder(args.group), args.group)
+    secrets.disallow_member(secrets.users_folder(args.secret), args.user)
 
 
 def register_users_parser(parser: argparse.ArgumentParser) -> None:
@@ -74,21 +74,10 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
     )
     add_secret_parser.set_defaults(func=add_secret_command)
 
-    add_secret_parser = subparser.add_parser(
-        "add-secret", help="allow a machine to access a secret"
-    )
-    add_secret_parser.add_argument(
-        "user", help="the name of the group", type=user_name_type
-    )
-    add_secret_parser.add_argument(
-        "secret", help="the name of the secret", type=secret_name_type
-    )
-    add_secret_parser.set_defaults(func=add_secret_command)
-
     remove_secret_parser = subparser.add_parser(
         "remove-secret", help="remove a user's access to a secret"
     )
-    add_secret_parser.add_argument(
+    remove_secret_parser.add_argument(
         "user", help="the name of the group", type=user_name_type
     )
     remove_secret_parser.add_argument(

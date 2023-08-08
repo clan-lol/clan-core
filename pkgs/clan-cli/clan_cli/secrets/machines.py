@@ -25,12 +25,12 @@ def remove_command(args: argparse.Namespace) -> None:
 
 def add_secret_command(args: argparse.Namespace) -> None:
     secrets.allow_member(
-        secrets.machines_folder(args.group), sops_machines_folder(), args.machine
+        secrets.machines_folder(args.secret), sops_machines_folder(), args.machine
     )
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    secrets.disallow_member(secrets.machines_folder(args.group), args.machine)
+    secrets.disallow_member(secrets.machines_folder(args.secret), args.machine)
 
 
 def register_machines_parser(parser: argparse.ArgumentParser) -> None:
