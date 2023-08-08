@@ -48,10 +48,21 @@ def list_command(args: argparse.Namespace) -> None:
                     print(f)
 
 
+def list_directory(directory: Path) -> str:
+    if not directory.exists():
+        return "{directory} does not exist"
+    msg = f"\n{directory} contains:"
+    for f in directory.iterdir():
+        msg += f"\n  {f}"
+    return msg
+
+
 def add_member(group_folder: Path, source_folder: Path, name: str) -> None:
     source = source_folder / name
     if not source.exists():
-        raise ClanError(f"{name} does not exist in {source_folder}")
+        msg = f"{name} does not exist in {source_folder}"
+        msg += list_directory(source_folder)
+        raise ClanError(msg)
     group_folder.mkdir(parents=True, exist_ok=True)
     user_target = group_folder / name
     if user_target.exists():
@@ -66,7 +77,9 @@ def add_member(group_folder: Path, source_folder: Path, name: str) -> None:
 def remove_member(group_folder: Path, name: str) -> None:
     target = group_folder / name
     if not target.exists():
-        raise ClanError(f"{name} does not exist in group in {group_folder}")
+        msg = f"{name} does not exist in group in {group_folder}"
+        msg += list_directory(group_folder)
+        raise ClanError(msg)
     os.remove(target)
 
     if len(os.listdir(group_folder)) == 0:
