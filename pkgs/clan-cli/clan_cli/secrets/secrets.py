@@ -2,17 +2,15 @@ import argparse
 import getpass
 import os
 import shutil
-import subprocess
 import sys
 from io import StringIO
 from pathlib import Path
-from typing import IO
+from typing import IO, Union
 
 from .. import tty
 from ..errors import ClanError
-from ..nix import nix_shell
 from .folders import list_objects, sops_secrets_folder, sops_users_folder
-from .sops import SopsKey, encrypt_file, ensure_sops_key, read_key, update_keys
+from .sops import decrypt_file, encrypt_file, ensure_sops_key, read_key, update_keys
 from .types import VALID_SECRET_NAME, secret_name_type
 
 
@@ -28,12 +26,11 @@ def get_command(args: argparse.Namespace) -> None:
     secret_path = sops_secrets_folder() / secret / "secret"
     if not secret_path.exists():
         raise ClanError(f"Secret '{secret}' does not exist")
-    cmd = nix_shell(["sops"], ["sops", "--decrypt", str(secret_path)])
-    res = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
-    print(res.stdout, end="")
+    print(decrypt_file(secret_path), end="")
 
 
-def encrypt_secret(key: SopsKey, secret: Path, value: IO[str]) -> None:
+def encrypt_secret(secret: Path, value: Union[IO[str], str]) -> None:
+    key = ensure_sops_key()
     keys = set([key.pubkey])
     for kind in ["users", "machines", "groups"]:
         if not (sops_secrets_folder() / kind).is_dir():
@@ -42,20 +39,19 @@ def encrypt_secret(key: SopsKey, secret: Path, value: IO[str]) -> None:
         keys.add(k)
     encrypt_file(secret / "secret", value, list(sorted(keys)))
 
+    # make sure we add ourselves to the key
+    allow_member(users_folder(secret.name), sops_users_folder(), key.username)
+
 
 def set_command(args: argparse.Namespace) -> None:
-    key = ensure_sops_key()
     secret_value = os.environ.get("SOPS_NIX_SECRET")
     if secret_value:
-        encrypt_secret(key, sops_secrets_folder() / args.secret, StringIO(secret_value))
+        encrypt_secret(sops_secrets_folder() / args.secret, StringIO(secret_value))
     elif tty.is_interactive():
         secret = getpass.getpass(prompt="Paste your secret: ")
-        encrypt_secret(key, sops_secrets_folder() / args.secret, StringIO(secret))
+        encrypt_secret(sops_secrets_folder() / args.secret, StringIO(secret))
     else:
-        encrypt_secret(key, sops_secrets_folder() / args.secret, sys.stdin)
-
-    # make sure we add ourselves to the key
-    allow_member(users_folder(args.secret), sops_users_folder(), key.username)
+        encrypt_secret(sops_secrets_folder() / args.secret, sys.stdin)
 
 
 def remove_command(args: argparse.Namespace) -> None:
