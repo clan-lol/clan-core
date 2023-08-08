@@ -1,9 +1,9 @@
-{ self, clan, pkgs }:
+{ self, clan-cli, pkgs }:
 let
   pythonWithDeps = pkgs.python3.withPackages (
     ps:
-    clan.propagatedBuildInputs
-    ++ clan.devDependencies
+    clan-cli.propagatedBuildInputs
+    ++ clan-cli.devDependencies
     ++ [
       ps.pip
     ]
