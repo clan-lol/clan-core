@@ -5,7 +5,7 @@ import subprocess
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import IO, Iterator
+from typing import IO, Iterator, Union
 
 from .. import tty
 from ..dirs import user_config_dir
@@ -131,7 +131,9 @@ def update_keys(secret_path: Path, keys: list[str]) -> None:
         subprocess.run(cmd, check=True)
 
 
-def encrypt_file(secret_path: Path, content: IO[str], keys: list[str]) -> None:
+def encrypt_file(
+    secret_path: Path, content: Union[IO[str], str], keys: list[str]
+) -> None:
     folder = secret_path.parent
     folder.mkdir(parents=True, exist_ok=True)
 
@@ -139,7 +141,10 @@ def encrypt_file(secret_path: Path, content: IO[str], keys: list[str]) -> None:
     with NamedTemporaryFile(delete=False) as f:
         try:
             with open(f.name, "w") as fd:
-                shutil.copyfileobj(content, fd)
+                if isinstance(content, str):
+                    fd.write(content)
+                else:
+                    shutil.copyfileobj(content, fd)
             args = ["sops"]
             for key in keys:
                 args.extend(["--age", key])
@@ -155,6 +160,12 @@ def encrypt_file(secret_path: Path, content: IO[str], keys: list[str]) -> None:
                 os.remove(f.name)
             except OSError:
                 pass
+
+
+def decrypt_file(secret_path: Path) -> str:
+    cmd = nix_shell(["sops"], ["sops", "--decrypt", str(secret_path)])
+    res = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
+    return res.stdout
 
 
 def write_key(path: Path, publickey: str, overwrite: bool) -> None:
