@@ -104,9 +104,7 @@ def test_groups(clan_flake: Path, capsys: pytest.CaptureFixture) -> None:
     assert len(groups) == 0
 
 
-def test_secrets(
-    clan_flake: Path, capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_secrets(clan_flake: Path, capsys: pytest.CaptureFixture) -> None:
     cli = SecretCli()
     capsys.readouterr()  # empty the buffer
     cli.run(["list"])
@@ -159,3 +157,17 @@ def test_secrets(
     capsys.readouterr()  # empty the buffer
     cli.run(["list"])
     assert capsys.readouterr().out == ""
+
+
+def test_import_sops(
+    test_root: Path, clan_flake: Path, capsys: pytest.CaptureFixture
+) -> None:
+    cli = SecretCli()
+
+    with mock_env(SOPS_AGE_KEY=PRIVKEY_2):
+        # To edit:
+        # SOPS_AGE_KEY=AGE-SECRET-KEY-1U5ENXZQAY62NC78Y2WC0SEGRRMAEEKH79EYY5TH4GPFWJKEAY0USZ6X7YQ sops --age age14tva0txcrl0zes05x7gkx56qd6wd9q3nwecjac74xxzz4l47r44sv3fz62 ./data/secrets.yaml
+        cli.run(["import-sops", str(test_root.joinpath("data", "secrets.yaml"))])
+        capsys.readouterr()
+        cli.run(["get", "secret-key"])
+        assert capsys.readouterr().out == "secret-value"

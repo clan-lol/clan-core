@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ..errors import ClanError
 from ..nix import nix_shell
-from .secrets import encrypt_secret
+from .secrets import encrypt_secret, sops_secrets_folder
 
 
 def import_sops(args: argparse.Namespace) -> None:
@@ -34,18 +34,19 @@ def import_sops(args: argparse.Namespace) -> None:
                     f"WARNING: {k} is not a string but {type(v)}, skipping",
                     file=sys.stderr,
                 )
-            encrypt_secret(k, v)
+                continue
+            encrypt_secret(sops_secrets_folder() / k, v)
 
 
 def register_import_sops_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
+        "--input_type",
+        type=str,
+        help="the input type of the sops file (yaml, json, ...)",
+    )
+    parser.add_argument(
         "sops_file",
         type=str,
         help="the sops file to import (- for stdin)",
-    )
-    parser.add_argument(
-        "input_type",
-        type=str,
-        help="the input type of the sops file (yaml, json, ...)",
     )
     parser.set_defaults(func=import_sops)
