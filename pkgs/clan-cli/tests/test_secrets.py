@@ -26,6 +26,9 @@ PRIVKEY = "AGE-SECRET-KEY-1KF8E3SR3TTGL6M476SKF7EEMR4H9NF7ZWYSLJUAK8JX276JC7KUSS
 PUBKEY_2 = "age14tva0txcrl0zes05x7gkx56qd6wd9q3nwecjac74xxzz4l47r44sv3fz62"
 PRIVKEY_2 = "AGE-SECRET-KEY-1U5ENXZQAY62NC78Y2WC0SEGRRMAEEKH79EYY5TH4GPFWJKEAY0USZ6X7YQ"
 
+PUBKEY_3 = "age1dhuh9xtefhgpr2sjjf7gmp9q2pr37z92rv4wsadxuqdx48989g7qj552qp"
+PRIVKEY_3 = "AGE-SECRET-KEY-169N3FT32VNYQ9WYJMLUSVTMA0TTZGVJF7YZWS8AHTWJ5RR9VGR7QCD8SKF"
+
 
 def _test_identities(
     what: str, clan_flake: Path, capsys: pytest.CaptureFixture
@@ -110,11 +113,11 @@ def test_secrets(clan_flake: Path, capsys: pytest.CaptureFixture) -> None:
     cli.run(["list"])
     assert capsys.readouterr().out == ""
 
-    with pytest.raises(ClanError):  # does not exist yet
-        cli.run(["get", "nonexisting"])
     with mock_env(
         SOPS_NIX_SECRET="foo", SOPS_AGE_KEY_FILE=str(clan_flake / ".." / "age.key")
     ):
+        with pytest.raises(ClanError):  # does not exist yet
+            cli.run(["get", "nonexisting"])
         cli.run(["set", "key"])
         capsys.readouterr()
         cli.run(["get", "key"])
@@ -165,9 +168,21 @@ def test_import_sops(
     cli = SecretCli()
 
     with mock_env(SOPS_AGE_KEY=PRIVKEY_2):
+        cli.run(["machines", "add", "machine1", PUBKEY])
+        cli.run(["users", "add", "user1", PUBKEY_3])
+
         # To edit:
         # SOPS_AGE_KEY=AGE-SECRET-KEY-1U5ENXZQAY62NC78Y2WC0SEGRRMAEEKH79EYY5TH4GPFWJKEAY0USZ6X7YQ sops --age age14tva0txcrl0zes05x7gkx56qd6wd9q3nwecjac74xxzz4l47r44sv3fz62 ./data/secrets.yaml
-        cli.run(["import-sops", str(test_root.joinpath("data", "secrets.yaml"))])
+        cli.run(
+            [
+                "import-sops",
+                "--user",
+                "user1",
+                "--machine",
+                "machine1",
+                str(test_root.joinpath("data", "secrets.yaml")),
+            ]
+        )
         capsys.readouterr()
         cli.run(["get", "secret-key"])
         assert capsys.readouterr().out == "secret-value"
