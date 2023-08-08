@@ -3,7 +3,6 @@ import getpass
 import os
 import shutil
 import sys
-from io import StringIO
 from pathlib import Path
 from typing import IO, Union
 
@@ -171,14 +170,19 @@ def get_command(args: argparse.Namespace) -> None:
 
 
 def set_command(args: argparse.Namespace) -> None:
-    secret_value = os.environ.get("SOPS_NIX_SECRET")
-    if secret_value:
-        encrypt_secret(sops_secrets_folder() / args.secret, StringIO(secret_value))
+    env_value = os.environ.get("SOPS_NIX_SECRET")
+    secret_value: Union[str, IO[str]] = sys.stdin
+    if env_value:
+        secret_value = env_value
     elif tty.is_interactive():
-        secret = getpass.getpass(prompt="Paste your secret: ")
-        encrypt_secret(sops_secrets_folder() / args.secret, StringIO(secret))
-    else:
-        encrypt_secret(sops_secrets_folder() / args.secret, sys.stdin)
+        secret_value = getpass.getpass(prompt="Paste your secret: ")
+    encrypt_secret(
+        sops_secrets_folder() / args.secret,
+        secret_value,
+        args.user,
+        args.machine,
+        args.group,
+    )
 
 
 def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
@@ -191,6 +195,27 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
 
     parser_set = subparser.add_parser("set", help="set a secret")
     add_secret_argument(parser_set)
+    parser_set.add_argument(
+        "--group",
+        type=str,
+        action="append",
+        default=[],
+        help="the group to import the secrets to",
+    )
+    parser_set.add_argument(
+        "--machine",
+        type=str,
+        action="append",
+        default=[],
+        help="the machine to import the secrets to",
+    )
+    parser_set.add_argument(
+        "--user",
+        type=str,
+        action="append",
+        default=[],
+        help="the user to import the secrets to",
+    )
     parser_set.set_defaults(func=set_command)
 
     parser_delete = subparser.add_parser("remove", help="remove a secret")
