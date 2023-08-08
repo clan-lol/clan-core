@@ -15,7 +15,7 @@
           self'.packages.merge-after-ci
         ];
         shellHook = ''
-          ln -sf ../../scripts/pre-commit .git/hooks/pre-commit
+          ln -sf ../../scripts/pre-commit "$(git rev-parse --show-toplevel)/.git/hooks/pre-commit"
         '';
       };
     };
