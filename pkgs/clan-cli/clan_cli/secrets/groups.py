@@ -102,12 +102,12 @@ def add_group_argument(parser: argparse.ArgumentParser) -> None:
 
 def add_secret_command(args: argparse.Namespace) -> None:
     secrets.allow_member(
-        secrets.groups_folder(args.group), sops_machines_folder(), args.group
+        secrets.groups_folder(args.secret), sops_groups_folder(), args.group
     )
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    secrets.disallow_member(secrets.groups_folder(args.group), args.group)
+    secrets.disallow_member(secrets.groups_folder(args.secret), args.group)
 
 
 def register_groups_parser(parser: argparse.ArgumentParser) -> None:
