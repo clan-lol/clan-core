@@ -17,4 +17,30 @@ in
     expr = slib.parseOptions evaledOptions;
     expected = builtins.fromJSON (builtins.readFile ./example-schema.json);
   };
+
+  testParseNestedOptions =
+    let
+      evaled = lib.evalModules {
+        modules = [{
+          options.foo.bar = lib.mkOption {
+            type = lib.types.bool;
+          };
+        }];
+      };
+    in
+    {
+      expr = slib.parseOptions evaled.options;
+      expected = {
+        properties = {
+          foo = {
+            properties = {
+              bar = { type = "boolean"; };
+            };
+            required = [ "bar" ];
+            type = "object";
+          };
+        };
+        type = "object";
+      };
+    };
 }
