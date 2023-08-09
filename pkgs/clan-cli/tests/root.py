@@ -6,7 +6,7 @@ TEST_ROOT = Path(__file__).parent.resolve()
 PROJECT_ROOT = TEST_ROOT.parent
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def project_root() -> Path:
     """
     Root directory of the tests
@@ -14,7 +14,7 @@ def project_root() -> Path:
     return PROJECT_ROOT
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_root() -> Path:
     """
     Root directory of the tests
