@@ -23,8 +23,20 @@ def list_machines() -> list[str]:
     return list_objects(sops_machines_folder(), lambda x: validate_hostname(x))
 
 
+def add_secret(machine: str, secret: str) -> None:
+    secrets.allow_member(
+        secrets.machines_folder(secret), sops_machines_folder(), machine
+    )
+
+
+def remove_secret(machine: str, secret: str) -> None:
+    secrets.disallow_member(secrets.machines_folder(secret), machine)
+
+
 def list_command(args: argparse.Namespace) -> None:
-    print("\n".join(list_machines()))
+    lst = list_machines()
+    if len(lst) > 0:
+        print("\n".join(lst))
 
 
 def add_command(args: argparse.Namespace) -> None:
@@ -32,17 +44,15 @@ def add_command(args: argparse.Namespace) -> None:
 
 
 def remove_command(args: argparse.Namespace) -> None:
-    remove_object(sops_machines_folder(), args.machine)
+    remove_machine(args.machine)
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
-    secrets.allow_member(
-        secrets.machines_folder(args.secret), sops_machines_folder(), args.machine
-    )
+    add_secret(args.machine, args.secret)
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    secrets.disallow_member(secrets.machines_folder(args.secret), args.machine)
+    remove_secret(args.machine, args.secret)
 
 
 def register_machines_parser(parser: argparse.ArgumentParser) -> None:

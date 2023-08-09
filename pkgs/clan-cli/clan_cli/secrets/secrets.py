@@ -178,7 +178,9 @@ def list_secrets() -> list[str]:
 
 
 def list_command(args: argparse.Namespace) -> None:
-    print("\n".join(list_secrets()))
+    lst = list_secrets()
+    if len(lst) > 0:
+        print("\n".join(lst))
 
 
 def get_command(args: argparse.Namespace) -> None:
