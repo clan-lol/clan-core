@@ -56,7 +56,13 @@ rec {
         inherit (option) description;
       };
     in
-    if option._type != "option"
+
+    # handle nested options (not a submodule)
+    if ! option ? _type
+    then parseOptions option
+
+    # throw if not an option
+    else if option._type != "option"
     then throw "parseOption: not an option"
 
     # parse nullOr
