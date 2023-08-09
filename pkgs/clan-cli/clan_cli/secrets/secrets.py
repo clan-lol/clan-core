@@ -19,6 +19,39 @@ from .sops import decrypt_file, encrypt_file, ensure_sops_key, read_key, update_
 from .types import VALID_SECRET_NAME, secret_name_type
 
 
+def collect_keys_for_type(folder: Path) -> set[str]:
+    if not folder.exists():
+        return set()
+    keys = set()
+    for p in folder.iterdir():
+        if not p.is_symlink():
+            continue
+        try:
+            target = p.resolve()
+        except FileNotFoundError:
+            tty.warn(f"Ignoring broken symlink {p}")
+            continue
+        kind = target.parent.name
+        if folder.name != kind:
+            tty.warn(f"Expected {p} to point to {folder} but points to {target.parent}")
+            continue
+        keys.add(read_key(target))
+    return keys
+
+
+def collect_keys_for_path(path: Path) -> set[str]:
+    keys = set([])
+    keys.update(collect_keys_for_type(path / "machines"))
+    keys.update(collect_keys_for_type(path / "users"))
+    groups = path / "groups"
+    if not groups.is_dir():
+        return keys
+    for group in groups.iterdir():
+        keys.update(collect_keys_for_type(group / "machines"))
+        keys.update(collect_keys_for_type(group / "users"))
+    return keys
+
+
 def encrypt_secret(
     secret: Path,
     value: Union[IO[str], str],
@@ -40,11 +73,7 @@ def encrypt_secret(
     for group in add_groups:
         allow_member(groups_folder(secret.name), sops_groups_folder(), group, False)
 
-    for kind in ["users", "machines", "groups"]:
-        if not (sops_secrets_folder() / kind).is_dir():
-            continue
-        k = read_key(sops_secrets_folder() / kind)
-        keys.add(k)
+    keys = collect_keys_for_path(secret)
 
     if key.pubkey not in keys:
         keys.add(key.pubkey)
@@ -79,39 +108,6 @@ def groups_folder(group: str) -> Path:
     return sops_secrets_folder() / group / "groups"
 
 
-def collect_keys_for_type(folder: Path) -> list[str]:
-    if not folder.exists():
-        return []
-    keys = []
-    for p in folder.iterdir():
-        if not p.is_symlink():
-            continue
-        try:
-            target = p.resolve()
-        except FileNotFoundError:
-            tty.warn(f"Ignoring broken symlink {p}")
-            continue
-        kind = target.parent.name
-        if folder.name != kind:
-            tty.warn(f"Expected {p} to point to {folder} but points to {target.parent}")
-            continue
-        keys.append(read_key(target))
-    return keys
-
-
-def collect_keys_for_path(path: Path) -> list[str]:
-    keys = []
-    keys += collect_keys_for_type(path / "machines")
-    keys += collect_keys_for_type(path / "users")
-    groups = path / "groups"
-    if not groups.is_dir():
-        return keys
-    for group in groups.iterdir():
-        keys += collect_keys_for_type(group / "machines")
-        keys += collect_keys_for_type(group / "users")
-    return keys
-
-
 def allow_member(
     group_folder: Path, source_folder: Path, name: str, do_update_keys: bool = True
 ) -> None:
@@ -129,7 +125,10 @@ def allow_member(
 
     user_target.symlink_to(os.path.relpath(source, user_target.parent))
     if do_update_keys:
-        update_keys(group_folder.parent, collect_keys_for_path(group_folder.parent))
+        update_keys(
+            group_folder.parent,
+            list(sorted(collect_keys_for_path(group_folder.parent))),
+        )
 
 
 def disallow_member(group_folder: Path, name: str) -> None:
@@ -151,7 +150,9 @@ def disallow_member(group_folder: Path, name: str) -> None:
     if len(os.listdir(group_folder.parent)) == 0:
         os.rmdir(group_folder.parent)
 
-    update_keys(target.parent.parent, collect_keys_for_path(group_folder.parent))
+    update_keys(
+        target.parent.parent, list(sorted(collect_keys_for_path(group_folder.parent)))
+    )
 
 
 def list_command(args: argparse.Namespace) -> None:
