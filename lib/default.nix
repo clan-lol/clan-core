@@ -12,5 +12,5 @@
       )
       (builtins.readDir folder);
 
-  jsonschema = import ./jsonschema.nix { inherit lib; };
+  jsonschema = import ./jsonschema { inherit lib; };
 }

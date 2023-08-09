@@ -1,7 +1,7 @@
 # tests for the nixos options to jsonschema converter
 # run these tests via `nix-unit ./test.nix`
 { lib ? (import <nixpkgs> { }).lib
-, slib ? import ../../../../lib/jsonschema.nix { inherit lib; }
+, slib ? import ./. { inherit lib; }
 }:
 let
   description = "Test Description";

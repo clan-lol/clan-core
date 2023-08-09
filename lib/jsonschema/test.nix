@@ -1,6 +1,6 @@
 # run these tests via `nix-unit ./test.nix`
 { lib ? (import <nixpkgs> { }).lib
-, slib ? import ../../clan_cli/config/schema-lib.nix { inherit lib; }
+, slib ? import ./. { inherit lib; }
 }:
 {
   parseOption = import ./test_parseOption.nix { inherit lib slib; };
