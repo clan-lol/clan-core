@@ -1,0 +1,5 @@
+{
+  imports = [
+    ./schema.nix
+  ];
+}
