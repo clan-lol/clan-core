@@ -84,12 +84,15 @@ def encrypt_secret(
     encrypt_file(secret / "secret", value, list(sorted(keys)))
 
 
-def remove_command(args: argparse.Namespace) -> None:
-    secret: str = args.secret
+def remove_secret(secret: str) -> None:
     path = sops_secrets_folder() / secret
     if not path.exists():
         raise ClanError(f"Secret '{secret}' does not exist")
     shutil.rmtree(path)
+
+
+def remove_command(args: argparse.Namespace) -> None:
+    remove_secret(args.secret)
 
 
 def add_secret_argument(parser: argparse.ArgumentParser) -> None:
@@ -168,10 +171,16 @@ def disallow_member(group_folder: Path, name: str) -> None:
     )
 
 
-def list_command(args: argparse.Namespace) -> None:
-    list_objects(
+def list_secrets() -> list[str]:
+    return list_objects(
         sops_secrets_folder(), lambda n: VALID_SECRET_NAME.match(n) is not None
     )
+
+
+def list_command(args: argparse.Namespace) -> None:
+    lst = list_secrets()
+    if len(lst) > 0:
+        print("\n".join(lst))
 
 
 def get_command(args: argparse.Namespace) -> None:

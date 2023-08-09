@@ -19,12 +19,24 @@ def remove_user(name: str) -> None:
     remove_object(sops_users_folder(), name)
 
 
-def list_users() -> None:
-    list_objects(sops_users_folder(), lambda n: VALID_SECRET_NAME.match(n) is not None)
+def list_users() -> list[str]:
+    return list_objects(
+        sops_users_folder(), lambda n: VALID_SECRET_NAME.match(n) is not None
+    )
+
+
+def add_secret(user: str, secret: str) -> None:
+    secrets.allow_member(secrets.users_folder(secret), sops_users_folder(), user)
+
+
+def remove_secret(user: str, secret: str) -> None:
+    secrets.disallow_member(secrets.users_folder(secret), user)
 
 
 def list_command(args: argparse.Namespace) -> None:
-    list_users()
+    lst = list_users()
+    if len(lst) > 0:
+        print("\n".join(lst))
 
 
 def add_command(args: argparse.Namespace) -> None:
@@ -36,13 +48,11 @@ def remove_command(args: argparse.Namespace) -> None:
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
-    secrets.allow_member(
-        secrets.users_folder(args.secret), sops_users_folder(), args.user
-    )
+    add_secret(args.user, args.secret)
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    secrets.disallow_member(secrets.users_folder(args.secret), args.user)
+    remove_secret(args.user, args.secret)
 
 
 def register_users_parser(parser: argparse.ArgumentParser) -> None:

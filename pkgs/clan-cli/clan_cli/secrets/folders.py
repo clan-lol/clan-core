@@ -24,12 +24,14 @@ sops_machines_folder = gen_sops_subfolder("machines")
 sops_groups_folder = gen_sops_subfolder("groups")
 
 
-def list_objects(path: Path, is_valid: Callable[[str], bool]) -> None:
+def list_objects(path: Path, is_valid: Callable[[str], bool]) -> list[str]:
+    objs: list[str] = []
     if not path.exists():
-        return
+        return objs
     for f in os.listdir(path):
         if is_valid(f):
-            print(f)
+            objs.append(f)
+    return objs
 
 
 def remove_object(path: Path, name: str) -> None:
