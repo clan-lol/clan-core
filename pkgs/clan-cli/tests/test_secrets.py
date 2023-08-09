@@ -128,7 +128,7 @@ def test_secrets(
         cli.run(["machines", "add", "machine1", test_keys[0].pubkey])
         cli.run(["machines", "add-secret", "machine1", "key"])
 
-        with mock_env(SOPS_AGE_KEY=test_keys[1].privkey, SOPS_AGE_KEY_FILE=""):
+        with mock_env(SOPS_AGE_KEY=test_keys[0].privkey, SOPS_AGE_KEY_FILE=""):
             capsys.readouterr()
             cli.run(["get", "key"])
             assert capsys.readouterr().out == "foo"
