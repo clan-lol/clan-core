@@ -3,7 +3,7 @@ import json
 import subprocess
 from typing import Optional
 
-from .nix import nix_shell
+from ..nix import nix_shell
 
 
 def ssh(

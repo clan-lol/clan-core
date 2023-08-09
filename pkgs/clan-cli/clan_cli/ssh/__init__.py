@@ -144,7 +144,7 @@ class HostKeyCheck(Enum):
     NONE = 2
 
 
-class DeployHost:
+class Host:
     def __init__(
         self,
         host: str,
@@ -158,7 +158,7 @@ class DeployHost:
         verbose_ssh: bool = False,
     ) -> None:
         """
-        Creates a DeployHost
+        Creates a Host
         @host the hostname to connect to via ssh
         @port the port to connect to via ssh
         @forward_agent: wheter to forward ssh agent
@@ -495,7 +495,7 @@ T = TypeVar("T")
 
 
 class HostResult(Generic[T]):
-    def __init__(self, host: DeployHost, result: Union[T, Exception]) -> None:
+    def __init__(self, host: Host, result: Union[T, Exception]) -> None:
         self.host = host
         self._result = result
 
@@ -518,12 +518,12 @@ class HostResult(Generic[T]):
         return self._result
 
 
-DeployResults = List[HostResult[subprocess.CompletedProcess[str]]]
+Results = List[HostResult[subprocess.CompletedProcess[str]]]
 
 
 def _worker(
-    func: Callable[[DeployHost], T],
-    host: DeployHost,
+    func: Callable[[Host], T],
+    host: Host,
     results: List[HostResult[T]],
     idx: int,
 ) -> None:
@@ -534,15 +534,15 @@ def _worker(
         results[idx] = HostResult(host, e)
 
 
-class DeployGroup:
-    def __init__(self, hosts: List[DeployHost]) -> None:
+class Group:
+    def __init__(self, hosts: List[Host]) -> None:
         self.hosts = hosts
 
     def _run_local(
         self,
         cmd: Union[str, List[str]],
-        host: DeployHost,
-        results: DeployResults,
+        host: Host,
+        results: Results,
         stdout: FILE = None,
         stderr: FILE = None,
         extra_env: Dict[str, str] = {},
@@ -569,8 +569,8 @@ class DeployGroup:
     def _run_remote(
         self,
         cmd: Union[str, List[str]],
-        host: DeployHost,
-        results: DeployResults,
+        host: Host,
+        results: Results,
         stdout: FILE = None,
         stderr: FILE = None,
         extra_env: Dict[str, str] = {},
@@ -621,8 +621,8 @@ class DeployGroup:
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
-    ) -> DeployResults:
-        results: DeployResults = []
+    ) -> Results:
+        results: Results = []
         threads = []
         for host in self.hosts:
             fn = self._run_local if local else self._run_remote
@@ -662,7 +662,7 @@ class DeployGroup:
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
-    ) -> DeployResults:
+    ) -> Results:
         """
         Command to run on the remote host via ssh
         @stdout if not None stdout of the command will be redirected to this file i.e. stdout=subprocss.PIPE
@@ -671,7 +671,7 @@ class DeployGroup:
         @verbose_ssh: Enables verbose logging on ssh connections
         @timeout: Timeout in seconds for the command to complete
 
-        @return a lists of tuples containing DeployNode and the result of the command for this DeployNode
+        @return a lists of tuples containing Host and the result of the command for this Host
         """
         return self._run(
             cmd,
@@ -693,7 +693,7 @@ class DeployGroup:
         cwd: Union[None, str, Path] = None,
         check: bool = True,
         timeout: float = math.inf,
-    ) -> DeployResults:
+    ) -> Results:
         """
         Command to run locally for each host in the group in parallel
         @cmd the commmand to run
@@ -703,7 +703,7 @@ class DeployGroup:
         @extra_env environment variables to override whe running the command
         @timeout: Timeout in seconds for the command to complete
 
-        @return a lists of tuples containing DeployNode and the result of the command for this DeployNode
+        @return a lists of tuples containing Host and the result of the command for this Host
         """
         return self._run(
             cmd,
@@ -717,7 +717,7 @@ class DeployGroup:
         )
 
     def run_function(
-        self, func: Callable[[DeployHost], T], check: bool = True
+        self, func: Callable[[Host], T], check: bool = True
     ) -> List[HostResult[T]]:
         """
         Function to run for each host in the group in parallel
@@ -745,9 +745,9 @@ class DeployGroup:
             self._reraise_errors(results)
         return results
 
-    def filter(self, pred: Callable[[DeployHost], bool]) -> "DeployGroup":
-        """Return a new DeployGroup with the results filtered by the predicate"""
-        return DeployGroup(list(filter(pred, self.hosts)))
+    def filter(self, pred: Callable[[Host], bool]) -> "Group":
+        """Return a new Group with the results filtered by the predicate"""
+        return Group(list(filter(pred, self.hosts)))
 
 
 @overload
