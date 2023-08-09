@@ -22,6 +22,7 @@
         "aarch64-linux"
       ];
       imports = [
+        # ./checks/flake-module.nix
         ./devShell.nix
         ./formatter.nix
         ./templates/flake-module.nix
