@@ -15,8 +15,16 @@ def add_user(name: str, key: str, force: bool) -> None:
     write_key(sops_users_folder() / name, key, force)
 
 
-def list_command(args: argparse.Namespace) -> None:
+def remove_user(name: str) -> None:
+    remove_object(sops_users_folder(), name)
+
+
+def list_users() -> None:
     list_objects(sops_users_folder(), lambda n: VALID_SECRET_NAME.match(n) is not None)
+
+
+def list_command(args: argparse.Namespace) -> None:
+    list_users()
 
 
 def add_command(args: argparse.Namespace) -> None:
@@ -24,7 +32,7 @@ def add_command(args: argparse.Namespace) -> None:
 
 
 def remove_command(args: argparse.Namespace) -> None:
-    remove_object(sops_users_folder(), args.user)
+    remove_user(args.user)
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
