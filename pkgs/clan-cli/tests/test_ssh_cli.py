@@ -6,7 +6,8 @@ import pytest_subprocess.fake_process
 from environment import mock_env
 from pytest_subprocess import utils
 
-import clan_cli.ssh
+import clan_cli
+from clan_cli.ssh import cli
 
 
 def test_no_args(
@@ -40,7 +41,7 @@ def test_ssh_no_pass(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
             fp.any(),
         ]
         fp.register(cmd)
-        clan_cli.ssh.ssh(
+        cli.ssh(
             host=host,
             user=user,
         )
@@ -64,7 +65,7 @@ def test_ssh_with_pass(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
             fp.any(),
         ]
         fp.register(cmd)
-        clan_cli.ssh.ssh(
+        cli.ssh(
             host=host,
             user=user,
             password="XXX",
@@ -75,5 +76,5 @@ def test_ssh_with_pass(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
 def test_qrcode_scan(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
     cmd: list[Union[str, utils.Any]] = [fp.any()]
     fp.register(cmd, stdout="https://test.test")
-    result = clan_cli.ssh.qrcode_scan("test.png")
+    result = cli.qrcode_scan("test.png")
     assert result == "https://test.test"

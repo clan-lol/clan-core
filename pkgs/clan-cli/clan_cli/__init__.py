@@ -1,8 +1,9 @@
 import argparse
 import sys
 
-from . import admin, secrets, ssh
+from . import admin, secrets
 from .errors import ClanError
+from .ssh import cli as ssh_cli
 
 has_argcomplete = True
 try:
@@ -27,7 +28,7 @@ def main() -> None:
     #    warn(f"The config command does not work in the nix sandbox: {e}")
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
-    ssh.register_parser(parser_ssh)
+    ssh_cli.register_parser(parser_ssh)
 
     parser_secrets = subparsers.add_parser("secrets", help="manage secrets")
     secrets.register_parser(parser_secrets)
