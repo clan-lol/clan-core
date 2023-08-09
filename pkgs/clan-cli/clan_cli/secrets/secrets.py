@@ -183,13 +183,16 @@ def list_command(args: argparse.Namespace) -> None:
         print("\n".join(lst))
 
 
-def get_command(args: argparse.Namespace) -> None:
-    secret: str = args.secret
+def decrypt_secret(secret: str) -> str:
     ensure_sops_key()
     secret_path = sops_secrets_folder() / secret / "secret"
     if not secret_path.exists():
         raise ClanError(f"Secret '{secret}' does not exist")
-    print(decrypt_file(secret_path), end="")
+    return decrypt_file(secret_path)
+
+
+def get_command(args: argparse.Namespace) -> None:
+    print(decrypt_secret(args.secret), end="")
 
 
 def set_command(args: argparse.Namespace) -> None:
