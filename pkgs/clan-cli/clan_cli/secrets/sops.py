@@ -138,9 +138,7 @@ def encrypt_file(
     folder.mkdir(parents=True, exist_ok=True)
 
     # hopefully /tmp is written to an in-memory file to avoid leaking secrets
-    with NamedTemporaryFile(delete=False) as dummy_manifest_file, NamedTemporaryFile(
-        delete=False
-    ) as f:
+    with sops_manifest(keys) as manifest, NamedTemporaryFile(delete=False) as f:
         try:
             with open(f.name, "w") as fd:
                 if isinstance(content, str):
@@ -148,9 +146,7 @@ def encrypt_file(
                 else:
                     shutil.copyfileobj(content, fd)
             # we pass an empty manifest to pick up existing configuration of the user
-            args = ["sops", "--config", dummy_manifest_file.name]
-            for key in keys:
-                args.extend(["--age", key])
+            args = ["sops", "--config", str(manifest)]
             args.extend(["-i", "--encrypt", str(f.name)])
             cmd = nix_shell(["sops"], args)
             subprocess.run(cmd, check=True)
