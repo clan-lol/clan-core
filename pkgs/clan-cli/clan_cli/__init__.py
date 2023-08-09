@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from . import admin, secrets
+from . import admin, config, secrets
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
@@ -20,12 +20,8 @@ def main() -> None:
     parser_admin = subparsers.add_parser("admin")
     admin.register_parser(parser_admin)
 
-    # Currently broken
-    # parser_config = subparsers.add_parser("config")
-    # try:
-    #    config.register_parser(parser_config)
-    # except subprocess.CalledProcessError as e:
-    #    warn(f"The config command does not work in the nix sandbox: {e}")
+    parser_config = subparsers.add_parser("config")
+    config.register_parser(parser_config)
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
     ssh_cli.register_parser(parser_ssh)

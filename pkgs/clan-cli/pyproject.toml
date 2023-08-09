@@ -8,8 +8,8 @@ description = "cLAN CLI tool"
 dynamic = [ "version" ]
 scripts = { clan = "clan_cli:main" }
 
-[tool.setuptools.packages]
-find = {}
+[tool.setuptools.package-data]
+clan_cli = ["config/jsonschema/*"]
 
 [tool.pytest.ini_options]
 addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail"

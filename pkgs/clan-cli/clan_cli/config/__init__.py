@@ -1,7 +1,6 @@
 # !/usr/bin/env python3
 import argparse
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -9,7 +8,7 @@ from typing import Any, Optional, Type, Union
 
 from clan_cli.errors import ClanError
 
-CLAN_FLAKE = os.getenv("CLAN_FLAKE")
+script_dir = Path(__file__).parent
 
 
 class Kwargs:
@@ -23,14 +22,14 @@ class Kwargs:
 
 
 def schema_from_module_file(
-    file: Union[str, Path] = "./tests/config/example-interface.nix",
+    file: Union[str, Path] = f"{script_dir}/jsonschema/example-schema.json",
 ) -> dict[str, Any]:
     absolute_path = Path(file).absolute()
     # define a nix expression that loads the given module file using lib.evalModules
     nix_expr = f"""
         let
             lib = import <nixpkgs/lib>;
-            slib = import {CLAN_FLAKE}/lib/jsonschema.nix {{inherit lib;}};
+            slib = import {script_dir}/jsonschema {{inherit lib;}};
         in
             slib.parseModule {absolute_path}
     """
@@ -44,7 +43,7 @@ def schema_from_module_file(
 
 def register_parser(
     parser: argparse.ArgumentParser,
-    file: Path = Path("./tests/config/example-interface.nix"),
+    file: Path = Path(f"{script_dir}/jsonschema/example-schema.json"),
 ) -> None:
     if file.name.endswith(".nix"):
         schema = schema_from_module_file(file)
@@ -74,7 +73,8 @@ def _register_parser(
         "string": str,
     }
 
-    parser = argparse.ArgumentParser(description=schema.get("description"))
+    if parser is None:
+        parser = argparse.ArgumentParser(description=schema.get("description"))
 
     subparsers = parser.add_subparsers(
         title="more options",

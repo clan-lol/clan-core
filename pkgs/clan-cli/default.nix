@@ -40,11 +40,16 @@ python3.pkgs.buildPythonPackage {
   ];
   propagatedBuildInputs = dependencies;
 
+  preBuild = ''
+    rm ./clan_cli/config/jsonschema
+    cp -r ${self}/lib/jsonschema ./clan_cli/config/jsonschema
+  '';
+
   passthru.tests = {
     clan-mypy = runCommand "clan-mypy" { } ''
-      cp -r ${./.} ./src
-      chmod +w -R ./src
-      cd src
+      cp -r ${self} ./flake
+      chmod +w -R ./flake
+      cd ./flake/pkgs/clan-cli
       ${checkPython}/bin/mypy .
       touch $out
     '';
@@ -52,9 +57,9 @@ python3.pkgs.buildPythonPackage {
       {
         nativeBuildInputs = [ age zerotierone bubblewrap sops nix ];
       } ''
-      cp -r ${./.} ./src
-      chmod +w -R ./src
-      cd src
+      cp -r ${self} ./flake
+      chmod +w -R ./flake
+      cd ./flake/pkgs/clan-cli
       ${checkPython}/bin/python -m pytest ./tests
       touch $out
     '';
