@@ -11,12 +11,24 @@ from .types import (
 )
 
 
+def add_machine(name: str, key: str, force: bool) -> None:
+    write_key(sops_machines_folder() / name, key, force)
+
+
+def remove_machine(name: str) -> None:
+    remove_object(sops_machines_folder(), name)
+
+
+def list_machines() -> list[str]:
+    return list_objects(sops_machines_folder(), lambda x: validate_hostname(x))
+
+
 def list_command(args: argparse.Namespace) -> None:
-    list_objects(sops_machines_folder(), lambda x: validate_hostname(x))
+    print("\n".join(list_machines()))
 
 
 def add_command(args: argparse.Namespace) -> None:
-    write_key(sops_machines_folder() / args.machine, args.key, args.force)
+    add_machine(args.machine, args.key, args.force)
 
 
 def remove_command(args: argparse.Namespace) -> None:

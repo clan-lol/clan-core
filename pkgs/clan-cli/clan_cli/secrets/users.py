@@ -19,12 +19,14 @@ def remove_user(name: str) -> None:
     remove_object(sops_users_folder(), name)
 
 
-def list_users() -> None:
-    list_objects(sops_users_folder(), lambda n: VALID_SECRET_NAME.match(n) is not None)
+def list_users() -> list[str]:
+    return list_objects(
+        sops_users_folder(), lambda n: VALID_SECRET_NAME.match(n) is not None
+    )
 
 
 def list_command(args: argparse.Namespace) -> None:
-    list_users()
+    print("\n".join(list_users()))
 
 
 def add_command(args: argparse.Namespace) -> None:
