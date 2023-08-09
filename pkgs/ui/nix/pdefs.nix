@@ -895,6 +895,37 @@
           version = "5.14.3";
         };
       };
+      "@mui/icons-material" = {
+        "5.14.3" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.22.6";
+              pin = "7.22.6";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-wmY7EzOahWuCF2g5vpcOeFZ8+iJKwyFLHsQiXh1R2jY=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@mui/icons-material/-/icons-material-5.14.3.tgz";
+          };
+          ident = "@mui/icons-material";
+          ltype = "file";
+          peerInfo = {
+            "@mui/material" = {
+              descriptor = "^5.0.0";
+            };
+            "@types/react" = {
+              descriptor = "^17.0.0 || ^18.0.0";
+              optional = true;
+            };
+            react = {
+              descriptor = "^17.0.0 || ^18.0.0";
+            };
+          };
+          version = "5.14.3";
+        };
+      };
       "@mui/material" = {
         "5.14.3" = {
           depInfo = {
@@ -6643,6 +6674,11 @@
               pin = "11.11.0";
               runtime = true;
             };
+            "@mui/icons-material" = {
+              descriptor = "^5.14.3";
+              pin = "5.14.3";
+              runtime = true;
+            };
             "@mui/material" = {
               descriptor = "^5.14.3";
               pin = "5.14.3";
@@ -6692,6 +6728,14 @@
               descriptor = "8.4.27";
               pin = "8.4.27";
               runtime = true;
+            };
+            prettier = {
+              descriptor = "^3.0.1";
+              pin = "3.0.1";
+            };
+            prettier-plugin-tailwindcss = {
+              descriptor = "^0.4.1";
+              pin = "0.4.1";
             };
             react = {
               descriptor = "18.2.0";
@@ -6855,6 +6899,9 @@
             };
             "node_modules/@mui/core-downloads-tracker" = {
               key = "@mui/core-downloads-tracker/5.14.3";
+            };
+            "node_modules/@mui/icons-material" = {
+              key = "@mui/icons-material/5.14.3";
             };
             "node_modules/@mui/material" = {
               key = "@mui/material/5.14.3";
@@ -7726,6 +7773,14 @@
             };
             "node_modules/prelude-ls" = {
               key = "prelude-ls/1.2.1";
+            };
+            "node_modules/prettier" = {
+              dev = true;
+              key = "prettier/3.0.1";
+            };
+            "node_modules/prettier-plugin-tailwindcss" = {
+              dev = true;
+              key = "prettier-plugin-tailwindcss/0.4.1";
             };
             "node_modules/prop-types" = {
               key = "prop-types/15.8.1";
@@ -9060,6 +9115,102 @@
           ltype = "file";
           treeInfo = { };
           version = "1.2.1";
+        };
+      };
+      prettier = {
+        "3.0.1" = {
+          binInfo = {
+            binPairs = {
+              prettier = "bin/prettier.cjs";
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-rgaO4WYmjoHtlOu8SnOau8b/O9lIEDtt26ovEY7qseY=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/prettier/-/prettier-3.0.1.tgz";
+          };
+          ident = "prettier";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.0.1";
+        };
+      };
+      prettier-plugin-tailwindcss = {
+        "0.4.1" = {
+          fetchInfo = {
+            narHash = "sha256-39DJn6lvrLmDYTN/lXXuWzMC9pLI4+HNrhnHlYuOMRM=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/prettier-plugin-tailwindcss/-/prettier-plugin-tailwindcss-0.4.1.tgz";
+          };
+          ident = "prettier-plugin-tailwindcss";
+          ltype = "file";
+          peerInfo = {
+            "@ianvs/prettier-plugin-sort-imports" = {
+              descriptor = "*";
+              optional = true;
+            };
+            "@prettier/plugin-pug" = {
+              descriptor = "*";
+              optional = true;
+            };
+            "@shopify/prettier-plugin-liquid" = {
+              descriptor = "*";
+              optional = true;
+            };
+            "@shufo/prettier-plugin-blade" = {
+              descriptor = "*";
+              optional = true;
+            };
+            "@trivago/prettier-plugin-sort-imports" = {
+              descriptor = "*";
+              optional = true;
+            };
+            prettier = {
+              descriptor = "^2.2 || ^3.0";
+            };
+            prettier-plugin-astro = {
+              descriptor = "*";
+              optional = true;
+            };
+            prettier-plugin-css-order = {
+              descriptor = "*";
+              optional = true;
+            };
+            prettier-plugin-import-sort = {
+              descriptor = "*";
+              optional = true;
+            };
+            prettier-plugin-jsdoc = {
+              descriptor = "*";
+              optional = true;
+            };
+            prettier-plugin-marko = {
+              descriptor = "*";
+              optional = true;
+            };
+            prettier-plugin-organize-attributes = {
+              descriptor = "*";
+              optional = true;
+            };
+            prettier-plugin-organize-imports = {
+              descriptor = "*";
+              optional = true;
+            };
+            prettier-plugin-style-order = {
+              descriptor = "*";
+              optional = true;
+            };
+            prettier-plugin-svelte = {
+              descriptor = "*";
+              optional = true;
+            };
+            prettier-plugin-twig-melody = {
+              descriptor = "*";
+              optional = true;
+            };
+          };
+          treeInfo = { };
+          version = "0.4.1";
         };
       };
       prop-types = {

@@ -15,8 +15,28 @@ def add_user(name: str, key: str, force: bool) -> None:
     write_key(sops_users_folder() / name, key, force)
 
 
+def remove_user(name: str) -> None:
+    remove_object(sops_users_folder(), name)
+
+
+def list_users() -> list[str]:
+    return list_objects(
+        sops_users_folder(), lambda n: VALID_SECRET_NAME.match(n) is not None
+    )
+
+
+def add_secret(user: str, secret: str) -> None:
+    secrets.allow_member(secrets.users_folder(secret), sops_users_folder(), user)
+
+
+def remove_secret(user: str, secret: str) -> None:
+    secrets.disallow_member(secrets.users_folder(secret), user)
+
+
 def list_command(args: argparse.Namespace) -> None:
-    list_objects(sops_users_folder(), lambda n: VALID_SECRET_NAME.match(n) is not None)
+    lst = list_users()
+    if len(lst) > 0:
+        print("\n".join(lst))
 
 
 def add_command(args: argparse.Namespace) -> None:
@@ -24,17 +44,15 @@ def add_command(args: argparse.Namespace) -> None:
 
 
 def remove_command(args: argparse.Namespace) -> None:
-    remove_object(sops_users_folder(), args.user)
+    remove_user(args.user)
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
-    secrets.allow_member(
-        secrets.groups_folder(args.group), sops_users_folder(), args.group
-    )
+    add_secret(args.user, args.secret)
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    secrets.disallow_member(secrets.groups_folder(args.group), args.group)
+    remove_secret(args.user, args.secret)
 
 
 def register_users_parser(parser: argparse.ArgumentParser) -> None:
@@ -74,21 +92,10 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
     )
     add_secret_parser.set_defaults(func=add_secret_command)
 
-    add_secret_parser = subparser.add_parser(
-        "add-secret", help="allow a machine to access a secret"
-    )
-    add_secret_parser.add_argument(
-        "user", help="the name of the group", type=user_name_type
-    )
-    add_secret_parser.add_argument(
-        "secret", help="the name of the secret", type=secret_name_type
-    )
-    add_secret_parser.set_defaults(func=add_secret_command)
-
     remove_secret_parser = subparser.add_parser(
         "remove-secret", help="remove a user's access to a secret"
     )
-    add_secret_parser.add_argument(
+    remove_secret_parser.add_argument(
         "user", help="the name of the group", type=user_name_type
     )
     remove_secret_parser.add_argument(

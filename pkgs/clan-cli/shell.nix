@@ -1,15 +1,15 @@
-{ self, clan, pkgs }:
+{ self, clan-cli, pkgs }:
 let
   pythonWithDeps = pkgs.python3.withPackages (
     ps:
-    clan.propagatedBuildInputs
-    ++ clan.devDependencies
+    clan-cli.propagatedBuildInputs
+    ++ clan-cli.devDependencies
     ++ [
       ps.pip
     ]
   );
   checkScript = pkgs.writeScriptBin "check" ''
-    nix build -f . tests -L "$@"
+    nix build .#checks.${pkgs.system}.{treefmt,clan-mypy,clan-pytest} -L "$@"
   '';
 in
 pkgs.mkShell {

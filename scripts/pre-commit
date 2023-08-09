@@ -18,7 +18,7 @@ log() {
 }
 
 # If the commit has no files, skip everything as there is nothing to format
-if [[ ${#commit_files} = 0 ]]; then
+if [[ -z ${commit_files+x} ]] || [[ ${#commit_files} = 0 ]]; then
     log "no files to format"
     exit 0
 fi

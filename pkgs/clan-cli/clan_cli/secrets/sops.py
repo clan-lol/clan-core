@@ -2,9 +2,10 @@ import json
 import os
 import shutil
 import subprocess
+from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import IO
+from typing import IO, Iterator, Union
 
 from .. import tty
 from ..dirs import user_config_dir
@@ -14,8 +15,9 @@ from .folders import sops_users_folder
 
 
 class SopsKey:
-    def __init__(self, pubkey: str) -> None:
+    def __init__(self, pubkey: str, username: str) -> None:
         self.pubkey = pubkey
+        self.username = username
 
 
 def get_public_key(privkey: str) -> str:
@@ -51,7 +53,7 @@ def get_user_name(user: str) -> str:
 
 
 def ensure_user(pub_key: str) -> SopsKey:
-    key = SopsKey(pub_key)
+    key = SopsKey(pub_key, username="")
     users_folder = sops_users_folder()
 
     # Check if the public key already exists for any user
@@ -60,6 +62,7 @@ def ensure_user(pub_key: str) -> SopsKey:
             if not user.is_dir():
                 continue
             if read_key(user) == pub_key:
+                key.username = user.name
                 return key
 
     # Find a unique user name if the public key is not found
@@ -75,6 +78,8 @@ def ensure_user(pub_key: str) -> SopsKey:
 
     # Add the public key for the user
     write_key(users_folder / username, pub_key, False)
+
+    key.username = username
 
     return key
 
@@ -100,18 +105,48 @@ def ensure_sops_key() -> SopsKey:
     return ensure_user(get_public_key(path.read_text()))
 
 
-def encrypt_file(secret_path: Path, content: IO[str], keys: list[str]) -> None:
+@contextmanager
+def sops_manifest(keys: list[str]) -> Iterator[Path]:
+    with NamedTemporaryFile(delete=False, mode="w") as manifest:
+        json.dump(
+            dict(creation_rules=[dict(key_groups=[dict(age=keys)])]), manifest, indent=2
+        )
+        manifest.flush()
+        yield Path(manifest.name)
+
+
+def update_keys(secret_path: Path, keys: list[str]) -> None:
+    with sops_manifest(keys) as manifest:
+        cmd = nix_shell(
+            ["sops"],
+            [
+                "sops",
+                "--config",
+                str(manifest),
+                "updatekeys",
+                "--yes",
+                str(secret_path / "secret"),
+            ],
+        )
+        subprocess.run(cmd, check=True)
+
+
+def encrypt_file(
+    secret_path: Path, content: Union[IO[str], str], keys: list[str]
+) -> None:
     folder = secret_path.parent
     folder.mkdir(parents=True, exist_ok=True)
 
     # hopefully /tmp is written to an in-memory file to avoid leaking secrets
-    with NamedTemporaryFile(delete=False) as f:
+    with sops_manifest(keys) as manifest, NamedTemporaryFile(delete=False) as f:
         try:
             with open(f.name, "w") as fd:
-                shutil.copyfileobj(content, fd)
-            args = ["sops"]
-            for key in keys:
-                args.extend(["--age", key])
+                if isinstance(content, str):
+                    fd.write(content)
+                else:
+                    shutil.copyfileobj(content, fd)
+            # we pass an empty manifest to pick up existing configuration of the user
+            args = ["sops", "--config", str(manifest)]
             args.extend(["-i", "--encrypt", str(f.name)])
             cmd = nix_shell(["sops"], args)
             subprocess.run(cmd, check=True)
@@ -124,6 +159,12 @@ def encrypt_file(secret_path: Path, content: IO[str], keys: list[str]) -> None:
                 os.remove(f.name)
             except OSError:
                 pass
+
+
+def decrypt_file(secret_path: Path) -> str:
+    cmd = nix_shell(["sops"], ["sops", "--decrypt", str(secret_path)])
+    res = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
+    return res.stdout
 
 
 def write_key(path: Path, publickey: str, overwrite: bool) -> None:

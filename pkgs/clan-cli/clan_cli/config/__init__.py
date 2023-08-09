@@ -1,12 +1,15 @@
 # !/usr/bin/env python3
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Optional, Type, Union
 
 from clan_cli.errors import ClanError
+
+CLAN_FLAKE = os.getenv("CLAN_FLAKE")
 
 
 class Kwargs:
@@ -27,7 +30,7 @@ def schema_from_module_file(
     nix_expr = f"""
         let
             lib = import <nixpkgs/lib>;
-            slib = import {__file__}/../schema-lib.nix {{inherit lib;}};
+            slib = import {CLAN_FLAKE}/lib/jsonschema.nix {{inherit lib;}};
         in
             slib.parseModule {absolute_path}
     """

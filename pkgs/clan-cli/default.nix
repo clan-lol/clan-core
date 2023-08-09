@@ -31,7 +31,7 @@ let
   checkPython = python3.withPackages (_ps: dependencies ++ testDependencies);
 in
 python3.pkgs.buildPythonPackage {
-  name = "clan";
+  name = "clan-cli";
   src = lib.cleanSource ./.;
   format = "pyproject";
   nativeBuildInputs = [
@@ -79,6 +79,11 @@ python3.pkgs.buildPythonPackage {
   '';
   checkPhase = ''
     PYTHONPATH= $out/bin/clan --help
+    if grep --include \*.py -Rq "breakpoint()" $out; then
+      echo "breakpoint() found in $out:"
+      grep --include \*.py -Rn "breakpoint()" $out
+      exit 1
+    fi
   '';
   meta.mainProgram = "clan";
 }

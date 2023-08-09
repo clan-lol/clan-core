@@ -22,16 +22,12 @@
         "aarch64-linux"
       ];
       imports = [
+        # ./checks/flake-module.nix
         ./devShell.nix
         ./formatter.nix
         ./templates/flake-module.nix
-        ./templates/python-project/flake-module.nix
 
         ./pkgs/flake-module.nix
-
-        ./pkgs/clan-cli/flake-module.nix
-        ./pkgs/installer/flake-module.nix
-        ./pkgs/ui/flake-module.nix
 
         ./lib/flake-module.nix
         ({ self, lib, ... }: {
