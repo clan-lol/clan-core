@@ -9,7 +9,7 @@ let
     ]
   );
   checkScript = pkgs.writeScriptBin "check" ''
-    nix build -f . tests -L "$@"
+    nix build .#checks.${pkgs.system}.{treefmt,clan-mypy,clan-pytest} -L "$@"
   '';
 in
 pkgs.mkShell {
