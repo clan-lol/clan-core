@@ -79,7 +79,7 @@ python3.pkgs.buildPythonPackage {
   '';
   checkPhase = ''
     PYTHONPATH= $out/bin/clan --help
-    if grep --include \*.py -q "breakpoint()" $out; then
+    if grep --include \*.py -Rq "breakpoint()" $out; then
       echo "breakpoint() found in $out:"
       grep --include \*.py -Rn "breakpoint()" $out
       exit 1
