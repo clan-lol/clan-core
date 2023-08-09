@@ -29,10 +29,19 @@ let
   ];
 
   checkPython = python3.withPackages (_ps: dependencies ++ testDependencies);
+
+  # - vendor the jsonschema nix lib (copy instead of symlink).
+  # - lib.cleanSource prevents unnecessary rebuilds when `self` changes.
+  source = runCommand "clan-cli-source" { } ''
+    cp -r ${lib.cleanSource ./.} $out
+    chmod -R +w $out
+    rm $out/clan_cli/config/jsonschema
+    cp -r ${lib.cleanSource (self + /lib/jsonschema)} $out/clan_cli/config/jsonschema
+  '';
 in
 python3.pkgs.buildPythonPackage {
   name = "clan-cli";
-  src = lib.cleanSource ./.;
+  src = source;
   format = "pyproject";
   nativeBuildInputs = [
     setuptools
@@ -40,16 +49,11 @@ python3.pkgs.buildPythonPackage {
   ];
   propagatedBuildInputs = dependencies;
 
-  preBuild = ''
-    rm ./clan_cli/config/jsonschema
-    cp -r ${self}/lib/jsonschema ./clan_cli/config/jsonschema
-  '';
-
   passthru.tests = {
     clan-mypy = runCommand "clan-mypy" { } ''
-      cp -r ${self} ./flake
-      chmod +w -R ./flake
-      cd ./flake/pkgs/clan-cli
+      cp -r ${source} ./src
+      chmod +w -R ./src
+      cd ./src
       ${checkPython}/bin/mypy .
       touch $out
     '';
@@ -57,9 +61,9 @@ python3.pkgs.buildPythonPackage {
       {
         nativeBuildInputs = [ age zerotierone bubblewrap sops nix ];
       } ''
-      cp -r ${self} ./flake
-      chmod +w -R ./flake
-      cd ./flake/pkgs/clan-cli
+      cp -r ${source} ./src
+      chmod +w -R ./src
+      cd ./src
       ${checkPython}/bin/python -m pytest ./tests
       touch $out
     '';
