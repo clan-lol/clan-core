@@ -8,6 +8,9 @@ description = "cLAN CLI tool"
 dynamic = [ "version" ]
 scripts = { clan = "clan_cli:main" }
 
+[tool.setuptools.packages.find]
+where = []
+
 [tool.setuptools.package-data]
 clan_cli = ["config/jsonschema/*"]
 
