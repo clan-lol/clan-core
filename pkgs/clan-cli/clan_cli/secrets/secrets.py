@@ -81,7 +81,6 @@ def encrypt_secret(
             users_folder(secret.name), sops_users_folder(), key.username, False
         )
 
-    breakpoint()
     encrypt_file(secret / "secret", value, list(sorted(keys)))
 
 
