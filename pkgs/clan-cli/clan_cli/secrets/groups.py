@@ -23,29 +23,51 @@ def users_folder(group: str) -> Path:
     return sops_groups_folder() / group / "users"
 
 
-# TODO: make this a tree
-def list_command(args: argparse.Namespace) -> None:
+class Group:
+    def __init__(self, name: str, machines: list[str], users: list[str]) -> None:
+        self.name = name
+        self.machines = machines
+        self.users = users
+
+
+def list_groups() -> list[Group]:
+    groups: list[Group] = []
     folder = sops_groups_folder()
     if not folder.exists():
-        return
+        return groups
 
-    for group in os.listdir(folder):
-        group_folder = folder / group
+    for name in os.listdir(folder):
+        group_folder = folder / name
         if not group_folder.is_dir():
             continue
-        print(group)
-        machines = machines_folder(group)
-        if machines.is_dir():
-            print("machines:")
-            for f in machines.iterdir():
+        machines_path = machines_folder(name)
+        machines = []
+        if machines_path.is_dir():
+            for f in machines_path.iterdir():
                 if validate_hostname(f.name):
-                    print(f.name)
-        users = users_folder(group)
-        if users.is_dir():
-            print("users:")
-            for f in users.iterdir():
+                    machines.append(f.name)
+        users_path = users_folder(name)
+        users = []
+        if users_path.is_dir():
+            for f in users_path.iterdir():
                 if VALID_USER_NAME.match(f.name):
-                    print(f)
+                    users.append(f.name)
+        groups.append(Group(name, machines, users))
+    return groups
+
+
+def list_command(args: argparse.Namespace) -> None:
+    for group in list_groups():
+        print(group.name)
+        if group.machines:
+            print("machines:")
+            for machine in group.machines:
+                print(f"  {machine}")
+        if group.users:
+            print("users:")
+            for user in group.users:
+                print(f"  {user}")
+        print()
 
 
 def list_directory(directory: Path) -> str:
@@ -89,38 +111,56 @@ def remove_member(group_folder: Path, name: str) -> None:
         os.rmdir(group_folder.parent)
 
 
+def add_user(group: str, name: str) -> None:
+    add_member(users_folder(group), sops_users_folder(), name)
+
+
 def add_user_command(args: argparse.Namespace) -> None:
-    add_member(users_folder(args.group), sops_users_folder(), args.user)
+    add_user(args.group, args.user)
+
+
+def remove_user(group: str, name: str) -> None:
+    remove_member(users_folder(group), name)
 
 
 def remove_user_command(args: argparse.Namespace) -> None:
-    remove_member(users_folder(args.group), args.user)
+    remove_user(args.group, args.user)
+
+
+def add_machine(group: str, name: str) -> None:
+    add_member(machines_folder(group), sops_machines_folder(), name)
 
 
 def add_machine_command(args: argparse.Namespace) -> None:
-    add_member(
-        machines_folder(args.group),
-        sops_machines_folder(),
-        args.machine,
-    )
+    add_machine(args.group, args.machine)
+
+
+def remove_machine(group: str, name: str) -> None:
+    remove_member(machines_folder(group), name)
 
 
 def remove_machine_command(args: argparse.Namespace) -> None:
-    remove_member(machines_folder(args.group), args.machine)
+    remove_machine(args.group, args.machine)
 
 
 def add_group_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("group", help="the name of the secret", type=group_name_type)
 
 
+def add_secret(group: str, name: str) -> None:
+    secrets.allow_member(secrets.groups_folder(name), sops_groups_folder(), group)
+
+
 def add_secret_command(args: argparse.Namespace) -> None:
-    secrets.allow_member(
-        secrets.groups_folder(args.secret), sops_groups_folder(), args.group
-    )
+    add_secret(args.group, args.secret)
+
+
+def remove_secret(group: str, name: str) -> None:
+    secrets.disallow_member(secrets.groups_folder(name), group)
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    secrets.disallow_member(secrets.groups_folder(args.secret), args.group)
+    remove_secret(args.group, args.secret)
 
 
 def register_groups_parser(parser: argparse.ArgumentParser) -> None:
