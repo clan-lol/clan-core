@@ -6,21 +6,21 @@ from environment import mock_env
 from secret_cli import SecretCli
 
 if TYPE_CHECKING:
-    from test_keys import KeyPair
+    from age_keys import KeyPair
 
 
 def test_import_sops(
     test_root: Path,
     clan_flake: Path,
     capsys: pytest.CaptureFixture,
-    test_keys: list["KeyPair"],
+    age_keys: list["KeyPair"],
 ) -> None:
     cli = SecretCli()
 
-    with mock_env(SOPS_AGE_KEY=test_keys[1].privkey):
-        cli.run(["machines", "add", "machine1", test_keys[0].pubkey])
-        cli.run(["users", "add", "user1", test_keys[1].pubkey])
-        cli.run(["users", "add", "user2", test_keys[2].pubkey])
+    with mock_env(SOPS_AGE_KEY=age_keys[1].privkey):
+        cli.run(["machines", "add", "machine1", age_keys[0].pubkey])
+        cli.run(["users", "add", "user1", age_keys[1].pubkey])
+        cli.run(["users", "add", "user2", age_keys[2].pubkey])
         cli.run(["groups", "add-user", "group1", "user1"])
         cli.run(["groups", "add-user", "group1", "user2"])
 

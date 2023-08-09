@@ -24,7 +24,7 @@ KEYS = [
 
 
 @pytest.fixture
-def test_keys() -> list[KeyPair]:
+def age_keys() -> list[KeyPair]:
     """
     Root directory of the tests
     """

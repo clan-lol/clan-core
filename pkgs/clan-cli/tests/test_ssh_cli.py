@@ -6,6 +6,7 @@ import pytest_subprocess.fake_process
 from environment import mock_env
 from pytest_subprocess import utils
 
+import clan_cli
 from clan_cli.ssh import cli
 
 

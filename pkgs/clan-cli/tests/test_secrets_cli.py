@@ -9,22 +9,22 @@ from secret_cli import SecretCli
 from clan_cli.errors import ClanError
 
 if TYPE_CHECKING:
-    from test_keys import KeyPair
+    from age_keys import KeyPair
 
 
 def _test_identities(
     what: str,
     clan_flake: Path,
     capsys: pytest.CaptureFixture,
-    test_keys: list["KeyPair"],
+    age_keys: list["KeyPair"],
 ) -> None:
     cli = SecretCli()
     sops_folder = clan_flake / "sops"
 
-    cli.run([what, "add", "foo", test_keys[0].pubkey])
+    cli.run([what, "add", "foo", age_keys[0].pubkey])
     assert (sops_folder / what / "foo" / "key.json").exists()
     with pytest.raises(ClanError):
-        cli.run([what, "add", "foo", test_keys[0].pubkey])
+        cli.run([what, "add", "foo", age_keys[0].pubkey])
 
     cli.run(
         [
@@ -32,7 +32,7 @@ def _test_identities(
             "add",
             "-f",
             "foo",
-            test_keys[0].privkey,
+            age_keys[0].privkey,
         ]
     )
     capsys.readouterr()  # empty the buffer
@@ -54,19 +54,19 @@ def _test_identities(
 
 
 def test_users(
-    clan_flake: Path, capsys: pytest.CaptureFixture, test_keys: list["KeyPair"]
+    clan_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
-    _test_identities("users", clan_flake, capsys, test_keys)
+    _test_identities("users", clan_flake, capsys, age_keys)
 
 
 def test_machines(
-    clan_flake: Path, capsys: pytest.CaptureFixture, test_keys: list["KeyPair"]
+    clan_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
-    _test_identities("machines", clan_flake, capsys, test_keys)
+    _test_identities("machines", clan_flake, capsys, age_keys)
 
 
 def test_groups(
-    clan_flake: Path, capsys: pytest.CaptureFixture, test_keys: list["KeyPair"]
+    clan_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
     cli = SecretCli()
     capsys.readouterr()  # empty the buffer
@@ -77,13 +77,13 @@ def test_groups(
         cli.run(["groups", "add-machine", "group1", "machine1"])
     with pytest.raises(ClanError):  # user does not exist yet
         cli.run(["groups", "add-user", "groupb1", "user1"])
-    cli.run(["machines", "add", "machine1", test_keys[0].pubkey])
+    cli.run(["machines", "add", "machine1", age_keys[0].pubkey])
     cli.run(["groups", "add-machine", "group1", "machine1"])
 
     # Should this fail?
     cli.run(["groups", "add-machine", "group1", "machine1"])
 
-    cli.run(["users", "add", "user1", test_keys[0].pubkey])
+    cli.run(["users", "add", "user1", age_keys[0].pubkey])
     cli.run(["groups", "add-user", "group1", "user1"])
 
     capsys.readouterr()  # empty the buffer
@@ -99,7 +99,7 @@ def test_groups(
 
 
 def test_secrets(
-    clan_flake: Path, capsys: pytest.CaptureFixture, test_keys: list["KeyPair"]
+    clan_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
     cli = SecretCli()
     capsys.readouterr()  # empty the buffer
@@ -125,18 +125,18 @@ def test_secrets(
         cli.run(["list"])
         assert capsys.readouterr().out == "key\n"
 
-        cli.run(["machines", "add", "machine1", test_keys[0].pubkey])
+        cli.run(["machines", "add", "machine1", age_keys[0].pubkey])
         cli.run(["machines", "add-secret", "machine1", "key"])
 
-        with mock_env(SOPS_AGE_KEY=test_keys[0].privkey, SOPS_AGE_KEY_FILE=""):
+        with mock_env(SOPS_AGE_KEY=age_keys[0].privkey, SOPS_AGE_KEY_FILE=""):
             capsys.readouterr()
             cli.run(["get", "key"])
             assert capsys.readouterr().out == "foo"
         cli.run(["machines", "remove-secret", "machine1", "key"])
 
-        cli.run(["users", "add", "user1", test_keys[1].pubkey])
+        cli.run(["users", "add", "user1", age_keys[1].pubkey])
         cli.run(["users", "add-secret", "user1", "key"])
-        with mock_env(SOPS_AGE_KEY=test_keys[1].privkey, SOPS_AGE_KEY_FILE=""):
+        with mock_env(SOPS_AGE_KEY=age_keys[1].privkey, SOPS_AGE_KEY_FILE=""):
             capsys.readouterr()
             cli.run(["get", "key"])
             assert capsys.readouterr().out == "foo"
@@ -151,7 +151,7 @@ def test_secrets(
         capsys.readouterr()  # empty the buffer
         cli.run(["set", "--group", "admin-group", "key2"])
 
-        with mock_env(SOPS_AGE_KEY=test_keys[1].privkey, SOPS_AGE_KEY_FILE=""):
+        with mock_env(SOPS_AGE_KEY=age_keys[1].privkey, SOPS_AGE_KEY_FILE=""):
             capsys.readouterr()
             cli.run(["get", "key"])
             assert capsys.readouterr().out == "foo"
