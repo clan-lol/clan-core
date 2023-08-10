@@ -5,11 +5,13 @@ import time
 from pathlib import Path
 from sys import platform
 from tempfile import TemporaryDirectory
-from typing import Iterator, Optional
+from typing import TYPE_CHECKING, Iterator, Optional
 
 import pytest
-from command import Command
-from ports import Ports
+
+if TYPE_CHECKING:
+    from command import Command
+    from ports import Ports
 
 
 class Sshd:
@@ -76,7 +78,7 @@ def sshd_config(project_root: Path, test_root: Path) -> Iterator[SshdConfig]:
 
 
 @pytest.fixture
-def sshd(sshd_config: SshdConfig, command: Command, ports: Ports) -> Iterator[Sshd]:
+def sshd(sshd_config: SshdConfig, command: "Command", ports: "Ports") -> Iterator[Sshd]:
     port = ports.allocate(1)
     sshd = shutil.which("sshd")
     assert sshd is not None, "no sshd binary found"
