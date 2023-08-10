@@ -16,6 +16,8 @@
 , pytest
 , pytest-cov
 , pytest-subprocess
+, openssh
+, stdenv
 , wheel
 }:
 let
@@ -26,6 +28,8 @@ let
     pytest-cov
     pytest-subprocess
     mypy
+    openssh
+    stdenv.cc
   ];
 
   checkPython = python3.withPackages (_ps: dependencies ++ testDependencies);
@@ -59,7 +63,7 @@ python3.pkgs.buildPythonPackage {
     '';
     clan-pytest = runCommand "clan-tests"
       {
-        nativeBuildInputs = [ age zerotierone bubblewrap sops nix ];
+        nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh stdenv.cc ];
       } ''
       cp -r ${source} ./src
       chmod +w -R ./src
