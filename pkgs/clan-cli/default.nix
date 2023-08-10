@@ -1,26 +1,27 @@
-{ python3
-, ruff
-, runCommand
-, installShellFiles
-, zerotierone
-, bubblewrap
-, sops
-, age
-, black
-, nix
-, mypy
-, setuptools
-, self
+{ age
 , argcomplete
+, black
+, bubblewrap
+, installShellFiles
+, jsonschema
+, mypy
+, nix
+, openssh
 , pytest
 , pytest-cov
 , pytest-subprocess
-, openssh
+, python3
+, ruff
+, runCommand
+, self
+, setuptools
+, sops
 , stdenv
 , wheel
+, zerotierone
 }:
 let
-  dependencies = [ argcomplete ];
+  dependencies = [ argcomplete jsonschema ];
 
   testDependencies = [
     pytest
