@@ -4,12 +4,12 @@ import subprocess
 
 from sshd import Sshd
 
-from clan_cli.ssh import Group, Host, HostKeyCheck
+from clan_cli.ssh import Host, HostGroup, HostKeyCheck
 
 
-def deploy_group(sshd: Sshd) -> Group:
+def deploy_group(sshd: Sshd) -> HostGroup:
     login = pwd.getpwuid(os.getuid()).pw_name
-    return Group(
+    return HostGroup(
         [
             Host(
                 "127.0.0.1",

@@ -534,7 +534,7 @@ def _worker(
         results[idx] = HostResult(host, e)
 
 
-class Group:
+class HostGroup:
     def __init__(self, hosts: List[Host]) -> None:
         self.hosts = hosts
 
@@ -745,9 +745,9 @@ class Group:
             self._reraise_errors(results)
         return results
 
-    def filter(self, pred: Callable[[Host], bool]) -> "Group":
+    def filter(self, pred: Callable[[Host], bool]) -> "HostGroup":
         """Return a new Group with the results filtered by the predicate"""
-        return Group(list(filter(pred, self.hosts)))
+        return HostGroup(list(filter(pred, self.hosts)))
 
 
 @overload
