@@ -1,5 +1,4 @@
-{ lib
-, python3
+{ python3
 , ruff
 , runCommand
 , installShellFiles
@@ -37,10 +36,10 @@ let
   # - vendor the jsonschema nix lib (copy instead of symlink).
   # - lib.cleanSource prevents unnecessary rebuilds when `self` changes.
   source = runCommand "clan-cli-source" { } ''
-    cp -r ${lib.cleanSource ./.} $out
+    cp -r ${./.} $out
     chmod -R +w $out
     rm $out/clan_cli/config/jsonschema
-    cp -r ${lib.cleanSource (self + /lib/jsonschema)} $out/clan_cli/config/jsonschema
+    cp -r ${self + /lib/jsonschema} $out/clan_cli/config/jsonschema
   '';
 in
 python3.pkgs.buildPythonPackage {
