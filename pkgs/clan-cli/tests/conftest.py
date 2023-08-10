@@ -11,4 +11,5 @@ pytest_plugins = [
     "sshd",
     "command",
     "ports",
+    "host_group",
 ]

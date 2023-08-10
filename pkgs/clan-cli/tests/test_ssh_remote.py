@@ -1,89 +1,63 @@
-import os
-import pwd
 import subprocess
 
-from sshd import Sshd
-
-from clan_cli.ssh import Host, HostGroup, HostKeyCheck
+from clan_cli.ssh import Host, HostGroup
 
 
-def deploy_group(sshd: Sshd) -> HostGroup:
-    login = pwd.getpwuid(os.getuid()).pw_name
-    return HostGroup(
-        [
-            Host(
-                "127.0.0.1",
-                port=sshd.port,
-                user=login,
-                key=sshd.key,
-                host_key_check=HostKeyCheck.NONE,
-            )
-        ]
-    )
-
-
-def test_run(sshd: Sshd) -> None:
-    g = deploy_group(sshd)
-    proc = g.run("echo hello", stdout=subprocess.PIPE)
+def test_run(host_group: HostGroup) -> None:
+    proc = host_group.run("echo hello", stdout=subprocess.PIPE)
     assert proc[0].result.stdout == "hello\n"
 
 
-def test_run_environment(sshd: Sshd) -> None:
-    g = deploy_group(sshd)
-    p1 = g.run("echo $env_var", stdout=subprocess.PIPE, extra_env=dict(env_var="true"))
+def test_run_environment(host_group: HostGroup) -> None:
+    p1 = host_group.run(
+        "echo $env_var", stdout=subprocess.PIPE, extra_env=dict(env_var="true")
+    )
     assert p1[0].result.stdout == "true\n"
-    p2 = g.run(["env"], stdout=subprocess.PIPE, extra_env=dict(env_var="true"))
+    p2 = host_group.run(["env"], stdout=subprocess.PIPE, extra_env=dict(env_var="true"))
     assert "env_var=true" in p2[0].result.stdout
 
 
-def test_run_no_shell(sshd: Sshd) -> None:
-    g = deploy_group(sshd)
-    proc = g.run(["echo", "$hello"], stdout=subprocess.PIPE)
+def test_run_no_shell(host_group: HostGroup) -> None:
+    proc = host_group.run(["echo", "$hello"], stdout=subprocess.PIPE)
     assert proc[0].result.stdout == "$hello\n"
 
 
-def test_run_function(sshd: Sshd) -> None:
+def test_run_function(host_group: HostGroup) -> None:
     def some_func(h: Host) -> bool:
         p = h.run("echo hello", stdout=subprocess.PIPE)
         return p.stdout == "hello\n"
 
-    g = deploy_group(sshd)
-    res = g.run_function(some_func)
+    res = host_group.run_function(some_func)
     assert res[0].result
 
 
-def test_timeout(sshd: Sshd) -> None:
-    g = deploy_group(sshd)
+def test_timeout(host_group: HostGroup) -> None:
     try:
-        g.run_local("sleep 10", timeout=0.01)
+        host_group.run_local("sleep 10", timeout=0.01)
     except Exception:
         pass
     else:
         assert False, "should have raised TimeoutExpired"
 
 
-def test_run_exception(sshd: Sshd) -> None:
-    g = deploy_group(sshd)
-
-    r = g.run("exit 1", check=False)
+def test_run_exception(host_group: HostGroup) -> None:
+    r = host_group.run("exit 1", check=False)
     assert r[0].result.returncode == 1
 
     try:
-        g.run("exit 1")
+        host_group.run("exit 1")
     except Exception:
         pass
     else:
         assert False, "should have raised Exception"
 
 
-def test_run_function_exception(sshd: Sshd) -> None:
+def test_run_function_exception(host_group: HostGroup) -> None:
     def some_func(h: Host) -> subprocess.CompletedProcess[str]:
         return h.run_local("exit 1")
 
-    g = deploy_group(sshd)
-
     try:
-        g.run_function(some_func)
+        host_group.run_function(some_func)
     except Exception:
         pass
     else:
