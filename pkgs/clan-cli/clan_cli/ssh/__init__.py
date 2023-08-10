@@ -156,6 +156,7 @@ class Host:
         host_key_check: HostKeyCheck = HostKeyCheck.STRICT,
         meta: Dict[str, Any] = {},
         verbose_ssh: bool = False,
+        ssh_options: dict[str, str] = {},
     ) -> None:
         """
         Creates a Host
@@ -179,6 +180,7 @@ class Host:
         self.host_key_check = host_key_check
         self.meta = meta
         self.verbose_ssh = verbose_ssh
+        self.ssh_options = ssh_options
 
     def _prefix_output(
         self,
@@ -451,6 +453,10 @@ class Host:
             ssh_target = self.host
 
         ssh_opts = ["-A"] if self.forward_agent else []
+
+        for k, v in self.ssh_options.items():
+            ssh_opts.extend(["-o", f"{k}={shlex.quote(v)}"])
+
         if self.port:
             ssh_opts.extend(["-p", str(self.port)])
         if self.key:

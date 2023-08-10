@@ -15,7 +15,7 @@ def clan_flake(temporary_dir: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator
 {
     description = "A flake for testing clan";
     inputs = {};
-    outputs = { self, nixpkgs }: {};
+    outputs = { self }: {};
 }
 """
     )

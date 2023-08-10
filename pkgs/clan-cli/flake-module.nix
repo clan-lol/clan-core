@@ -20,6 +20,7 @@
         zbar
         tor
         age
+        rsync
         sops;
       # Override license so that we can build zerotierone without
       # having to re-import nixpkgs.
