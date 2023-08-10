@@ -162,7 +162,10 @@ def encrypt_file(
 
 
 def decrypt_file(secret_path: Path) -> str:
-    cmd = nix_shell(["sops"], ["sops", "--decrypt", str(secret_path)])
+    with sops_manifest([]) as manifest:
+        cmd = nix_shell(
+            ["sops"], ["sops", "--config", str(manifest), "--decrypt", str(secret_path)]
+        )
     res = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
     return res.stdout
 
