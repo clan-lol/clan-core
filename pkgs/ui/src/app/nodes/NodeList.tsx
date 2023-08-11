@@ -27,47 +27,53 @@ import Stack from '@mui/material/Stack/Stack';
 import ModeIcon from '@mui/icons-material/Mode';
 import ClearIcon from '@mui/icons-material/Clear';
 import Fade from '@mui/material/Fade/Fade';
+import NodePieChart, { PieData } from './NodePieChart';
+import Grid2 from '@mui/material/Unstable_Grid2'; // Grid version 2
+import { Card, CardContent, Container, FormGroup, useTheme } from '@mui/material';
+import hexRgb from 'hex-rgb';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
-interface Data {
+
+export interface TableData {
   name: string;
   id: string;
-  status: boolean;
+  status: NodeStatus;
   last_seen: number;
 }
 
-function createData(
-  name: string,
-  id: string,
-  status: boolean,
-  last_seen: number,
-
-): Data {
-  if (status && last_seen > 0) {
-    console.error("Last seen should be 0 if status is true");
-  }
-
-  return {
-    name,
-    id,
-    status,
-    last_seen: last_seen,
-  };
+export enum NodeStatus {
+  Online,
+  Offline,
+  Pending,
 }
 
-const rows = [
-  createData('Matchbox', "42:0:f21:6916:e333:c47e:4b5c:e74c", true, 0),
-  createData('Ahorn', "42:0:3c46:b51c:b34d:b7e1:3b02:8d24", true, 0),
-  createData('Yellow', "42:0:3c46:98ac:9c80:4f25:50e3:1d8f", false, 16.0),
-  createData('Rauter', "42:0:61ea:b777:61ea:803:f885:3523", false, 6.0),
-  createData('Porree', "42:0:e644:4499:d034:895e:34c8:6f9a", false, 13),
-  createData('Helsinki', "42:0:3c46:fd4a:acf9:e971:6036:8047", true, 0),
-  createData('Kelle', "42:0:3c46:362d:a9aa:4996:c78e:839a", true, 0),
-  createData('Shodan', "42:0:3c46:6745:adf4:a844:26c4:bf91", true, 0.0),
-  createData('Qubasa', "42:0:3c46:123e:bbea:3529:db39:6764", false, 7.0),
-  createData('Green', "42:0:a46e:5af:632c:d2fe:a71d:cde0", false, 2),
-  createData('Gum', "42:0:e644:238d:3e46:c884:6ec5:16c", false, 0),
-  createData('Xu', "42:0:ca48:c2c2:19fb:a0e9:95b9:794f", true, 0),
-  createData('Zaatar', "42:0:3c46:156e:10b6:3bd6:6e82:b2cd", true, 0),
+
+interface HeadCell {
+  disablePadding: boolean;
+  id: keyof TableData;
+  label: string;
+  alignRight: boolean;
+}
+
+const headCells: readonly HeadCell[] = [
+  {
+    id: 'name',
+    alignRight: false,
+    disablePadding: false,
+    label: 'DISPLAY NAME & ID',
+  },
+  {
+    id: 'status',
+    alignRight: false,
+    disablePadding: false,
+    label: 'STATUS',
+  },
+  {
+    id: 'last_seen',
+    alignRight: false,
+    disablePadding: false,
+    label: 'LAST SEEN',
+  },
 ];
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
@@ -110,36 +116,10 @@ function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) 
   return stabilizedThis.map((el) => el[0]);
 }
 
-interface HeadCell {
-  disablePadding: boolean;
-  id: keyof Data;
-  label: string;
-  alignRight: boolean;
-}
 
-const headCells: readonly HeadCell[] = [
-  {
-    id: 'name',
-    alignRight: false,
-    disablePadding: false,
-    label: 'Display Name & ID',
-  },
-  {
-    id: 'status',
-    alignRight: false,
-    disablePadding: false,
-    label: 'Status',
-  },
-  {
-    id: 'last_seen',
-    alignRight: false,
-    disablePadding: false,
-    label: 'Last Seen',
-  },
-];
 
 interface EnhancedTableProps {
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof Data) => void;
+  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof TableData) => void;
   order: Order;
   orderBy: string;
   rowCount: number;
@@ -149,7 +129,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   const { order, orderBy, onRequestSort } =
     props;
   const createSortHandler =
-    (property: keyof Data) => (event: React.MouseEvent<unknown>) => {
+    (property: keyof TableData) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
     };
 
@@ -182,10 +162,161 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
+
+
 interface EnhancedTableToolbarProps {
   selected: string | undefined;
+  tableData: TableData[];
   onClear: () => void;
 }
+function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
+  const { selected, onClear, tableData } = props;
+  const theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.down('lg'));
+  const isSelected = selected != undefined;
+  const [debug, setDebug] = React.useState<boolean>(false);
+  const debugSx = debug ? {
+    '--Grid-borderWidth': '1px',
+    borderTop: 'var(--Grid-borderWidth) solid',
+    borderLeft: 'var(--Grid-borderWidth) solid',
+    borderColor: 'divider',
+    '& > div': {
+      borderRight: 'var(--Grid-borderWidth) solid',
+      borderBottom: 'var(--Grid-borderWidth) solid',
+      borderColor: 'divider',
+    }
+  } : {};
+
+  const pieData = React.useMemo(() => {
+    const online = tableData.filter((row) => row.status === NodeStatus.Online).length;
+    const offline = tableData.filter((row) => row.status === NodeStatus.Offline).length;
+    const pending = tableData.filter((row) => row.status === NodeStatus.Pending).length;
+
+    return [
+      { name: 'Online', value: online, color: '#2E7D32' },
+      { name: 'Offline', value: offline, color: '#db3927' },
+      { name: 'Pending', value: pending, color: '#FFBB28' },
+    ];
+  }, [tableData]);
+
+  const cardData = React.useMemo(() => {
+    let copy = pieData.filter((pieItem) => pieItem.value > 0);
+    const elem = { name: 'Total', value: copy.reduce((a, b) => a + b.value, 0), color: '#000000' };
+    copy.push(elem);
+    return copy;
+  }, [pieData]);
+
+  const cardStack = (
+    <Stack
+      sx={{ ...debugSx, paddingTop: 6 }}
+      height={350}
+      id="cardBox"
+      display="flex"
+      flexDirection="column"
+      justifyContent="flex-start"
+      flexWrap="wrap">
+      {cardData.map((pieItem) => (
+        <Card key={pieItem.name} sx={{ marginBottom: 2, marginRight: 2, width: 110, height: 110, backgroundColor: hexRgb(pieItem.color, { format: 'css', alpha: 0.18 }) }}>
+          <CardContent >
+            <Typography variant="h4" component="div" gutterBottom={true} textAlign="center">
+              {pieItem.value}
+            </Typography>
+            <Typography sx={{ mb: 1.5 }} color="text.secondary" textAlign="center">
+              {pieItem.name}
+            </Typography>
+
+          </CardContent>
+        </Card>
+      ))}
+    </Stack>
+  );
+
+  const selectedToolbar = (
+    <Toolbar
+      sx={{
+        pl: { sm: 2 },
+        pr: { xs: 1, sm: 1 },
+        bgcolor: (theme) =>
+          alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+      }}>
+      <Tooltip title="Clear">
+        <IconButton onClick={onClear}>
+          <ClearIcon />
+        </IconButton>
+      </Tooltip>
+      <Typography
+        sx={{ flex: '1 1 100%' }}
+        color="inherit"
+        style={{ fontSize: 18, marginBottom: 3, marginLeft: 3 }}
+        component="div"
+      >
+        {selected} selected
+      </Typography>
+      <Tooltip title="Edit">
+        <IconButton>
+          <ModeIcon />
+        </IconButton>
+      </Tooltip>
+    </Toolbar >
+  );
+
+  const unselectedToolbar = (
+    <Toolbar
+      sx={{
+        pl: { sm: 2 },
+        pr: { xs: 1, sm: 1 },
+      }}
+    >
+      <Box sx={{ flex: '1 1 100%' }} ></Box>
+      <Tooltip title="Filter list">
+        <IconButton>
+          <FilterListIcon />
+        </IconButton>
+      </Tooltip>
+    </Toolbar >
+  );
+
+
+  return (
+    <Grid2 container spacing={1} sx={debugSx}>
+      <Grid2 xs={6}>
+        <Typography
+          sx={{ marginLeft: 3, marginTop: 1 }}
+          variant="h6"
+          id="tableTitle"
+          component="div"
+        >
+          NODES
+        </Typography>
+      </Grid2>
+      {/* Debug Controls */}
+      <Grid2 xs={6} justifyContent="right" display="flex">
+        <FormGroup>
+          <FormControlLabel control={<Switch onChange={() => { setDebug(!debug) }} checked={debug} />} label="Debug" />
+        </FormGroup>
+      </Grid2>
+
+      {/* Pie Chart Grid */}
+      <Grid2 lg={6} sm={12} display="flex" justifyContent="center" alignItems="center">
+        <Box height={350} width={400}>
+          <NodePieChart data={pieData} showLabels={matches} />
+        </Box>
+      </Grid2>
+
+      {/* Card Stack Grid */}
+      <Grid2 lg={6} display="flex" sx={{ display: { lg: 'flex', sm: 'none' } }} >
+        {cardStack}
+      </Grid2>
+
+      {/*Toolbar Grid */}
+      <Grid2 xs={12}>
+        {isSelected ? selectedToolbar : unselectedToolbar}
+      </Grid2>
+
+    </Grid2>
+  );
+}
+
 
 function renderLastSeen(last_seen: number) {
   return (
@@ -208,98 +339,47 @@ function renderName(name: string, id: string) {
   );
 }
 
-function renderStatus(status: boolean) {
-  if (status) {
-    return (
-      <Stack direction="row" alignItems="center" gap={1}>
-        <CircleIcon color="success" style={{ fontSize: 15 }} />
-        <Typography component="div" align="left" variant="body1">
-          Online
-        </Typography>
-      </Stack>
-    );
+function renderStatus(status: NodeStatus) {
+  switch (status) {
+    case NodeStatus.Online:
+      return (
+        <Stack direction="row" alignItems="center" gap={1}>
+          <CircleIcon color="success" style={{ fontSize: 15 }} />
+          <Typography component="div" align="left" variant="body1">
+            Online
+          </Typography>
+        </Stack>
+      );
+
+    case NodeStatus.Offline:
+      return (
+        <Stack direction="row" alignItems="center" gap={1}>
+          <CircleIcon color="error" style={{ fontSize: 15 }} />
+          <Typography component="div" align="left" variant="body1">
+            Offline
+          </Typography>
+        </Stack>
+      );
+    case NodeStatus.Pending:
+      return (
+        <Stack direction="row" alignItems="center" gap={1}>
+          <CircleIcon color="warning" style={{ fontSize: 15 }} />
+          <Typography component="div" align="left" variant="body1">
+            Pending
+          </Typography>
+        </Stack>
+      );
   }
-  return (
-    <Stack direction="row" alignItems="center" gap={1}>
-      <CircleIcon color="error" style={{ fontSize: 15 }} />
-      <Typography component="div" align="left" variant="body1">
-        Offline
-      </Typography>
-    </Stack>
-  );
 }
 
-function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const { selected, onClear } = props;
-  const somethingSelected = selected !== undefined;
-
-  const handleSomethingSelected = () => {
-
-    if (somethingSelected) {
-      return (
-
-        <Toolbar
-          sx={{
-            pl: { sm: 2 },
-            pr: { xs: 1, sm: 1 },
-            bgcolor: (theme) =>
-              alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-          }}>
-          <Tooltip title="Clear">
-            <IconButton onClick={onClear}>
-              <ClearIcon />
-            </IconButton>
-          </Tooltip>
-          <Typography
-            sx={{ flex: '1 1 100%' }}
-            color="inherit"
-            style={{ fontSize: 18, marginBottom: 2.5, marginLeft: 3 }}
-            component="div"
-          >
-            {selected} selected
-          </Typography>
-          <Tooltip title="Edit">
-            <IconButton>
-              <ModeIcon />
-            </IconButton>
-          </Tooltip>
-        </Toolbar >
-
-
-      );
-    } else {
-      return (
-
-        <Toolbar
-          sx={{
-            pl: { sm: 2 },
-            pr: { xs: 1, sm: 1 }
-          }}>
-          <Typography
-            sx={{ flex: '1 1 100%' }}
-            variant="h6"
-            id="tableTitle"
-            component="div"
-          >
-            Nodes
-          </Typography>
-          <Tooltip title="Filter list">
-            <IconButton>
-              <FilterListIcon />
-            </IconButton>
-          </Tooltip>
-        </Toolbar >
-
-      );
-    }
-  };
-
-  return handleSomethingSelected();
+export interface NodeTableProps {
+  tableData: TableData[]
 }
 
-export default function EnhancedTable() {
+export default function NodeTable(props: NodeTableProps) {
+  let {tableData} = props;
   const [order, setOrder] = React.useState<Order>('asc');
-  const [orderBy, setOrderBy] = React.useState<keyof Data>('status');
+  const [orderBy, setOrderBy] = React.useState<keyof TableData>('status');
   const [selected, setSelected] = React.useState<string | undefined>(undefined);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
@@ -307,7 +387,7 @@ export default function EnhancedTable() {
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof Data,
+    property: keyof TableData,
   ) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -315,7 +395,8 @@ export default function EnhancedTable() {
   };
 
   const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-    if (selected === name) {
+    // Speed optimization. We compare string pointers here instead of the string content.
+    if (selected == name) {
       setSelected(undefined);
     } else {
       setSelected(name);
@@ -331,106 +412,93 @@ export default function EnhancedTable() {
     setPage(0);
   };
 
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
-
-  // TODO: Make a number to increase comparison speed and ui performance
-  const isSelected = (name: string) => name === selected;
+  // Speed optimization. We compare string pointers here instead of the string content.
+  const isSelected = (name: string) => name == selected;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tableData.length) : 0;
 
   const visibleRows = React.useMemo(
     () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
+      stableSort(tableData, getComparator(order, orderBy)).slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage,
       ),
-    [order, orderBy, page, rowsPerPage],
+    [order, orderBy, page, rowsPerPage, tableData],
   );
 
-  return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }} id="test">
-        <EnhancedTableToolbar selected={selected} onClear={() => setSelected(undefined)} />
-        <TableContainer>
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size={dense ? 'small' : 'medium'}
-          >
-            <EnhancedTableHead
-              order={order}
-              orderBy={orderBy}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-            />
-            <TableBody>
-              {visibleRows.map((row, index) => {
-                const isItemSelected = isSelected(row.name);
-                const labelId = `enhanced-table-checkbox-${index}`;
 
-                return (
-                  <TableRow
-                    hover
-                    onClick={(event) => handleClick(event, row.name)}
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.name}
-                    selected={isItemSelected}
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    {/* <TableCell padding="checkbox">
-                      <Checkbox
-                        color="primary"
-                        checked={isItemSelected}
-                        inputProps={{
-                          'aria-labelledby': labelId,
-                        }}
-                      />
-                    </TableCell> */}
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
+
+  return (
+    <Paper elevation={1} sx={{ margin: 5 }}>
+      <Box sx={{ width: '100%' }}>
+        <Paper sx={{ width: '100%', mb: 2 }}>
+          <EnhancedTableToolbar tableData={tableData} selected={selected} onClear={() => setSelected(undefined)} />
+          <TableContainer>
+            <Table
+              sx={{ minWidth: 750 }}
+              aria-labelledby="tableTitle"
+              size={dense ? 'small' : 'medium'}
+            >
+              <EnhancedTableHead
+                order={order}
+                orderBy={orderBy}
+                onRequestSort={handleRequestSort}
+                rowCount={tableData.length}
+              />
+              <TableBody>
+                {visibleRows.map((row, index) => {
+                  const isItemSelected = isSelected(row.name);
+                  const labelId = `enhanced-table-checkbox-${index}`;
+
+                  return (
+                    <TableRow
+                      hover
+                      onClick={(event) => handleClick(event, row.name)}
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={row.name}
+                      selected={isItemSelected}
+                      sx={{ cursor: 'pointer' }}
                     >
-                      {renderName(row.name, row.id)}
-                    </TableCell>
-                    <TableCell align="right">{renderStatus(row.status)}</TableCell>
-                    <TableCell align="right">{renderLastSeen(row.last_seen)}</TableCell>
+                      <TableCell
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                      >
+                        {renderName(row.name, row.id)}
+                      </TableCell>
+                      <TableCell align="right">{renderStatus(row.status)}</TableCell>
+                      <TableCell align="right">{renderLastSeen(row.last_seen)}</TableCell>
+                    </TableRow>
+                  );
+                })}
+                {emptyRows > 0 && (
+                  <TableRow
+                    style={{
+                      height: (dense ? 33 : 53) * emptyRows,
+                    }}
+                  >
+                    <TableCell colSpan={6} />
                   </TableRow>
-                );
-              })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: (dense ? 33 : 53) * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        {/* TODO: This creates the error Warning: Prop `id` did not match. Server: ":RspmmcqH1:" Client: ":R3j6qpj9H1:" */}
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
-    </Box>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          {/* TODO: This creates the error Warning: Prop `id` did not match. Server: ":RspmmcqH1:" Client: ":R3j6qpj9H1:" */}
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={tableData.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+      </Box>
+    </Paper>
   );
 }

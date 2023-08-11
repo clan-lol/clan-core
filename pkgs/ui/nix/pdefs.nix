@@ -1610,6 +1610,141 @@
           version = "0.5.1";
         };
       };
+      "@types/d3-array" = {
+        "3.0.5" = {
+          fetchInfo = {
+            narHash = "sha256-3VqHxw1kZfF0yksBb2gZDXbAcu3t2ZxKCtCl4ZMDpYw=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/d3-array/-/d3-array-3.0.5.tgz";
+          };
+          ident = "@types/d3-array";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.0.5";
+        };
+      };
+      "@types/d3-color" = {
+        "3.1.0" = {
+          fetchInfo = {
+            narHash = "sha256-gSpAzjDJ2OFuEy50u/co7g0dh0xy4d0eHxO5ITyyPuA=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/d3-color/-/d3-color-3.1.0.tgz";
+          };
+          ident = "@types/d3-color";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.1.0";
+        };
+      };
+      "@types/d3-ease" = {
+        "3.0.0" = {
+          fetchInfo = {
+            narHash = "sha256-uE2jMNzdONG18pmITFEumZiZn/ZCaxdz+jWtBCi86rU=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/d3-ease/-/d3-ease-3.0.0.tgz";
+          };
+          ident = "@types/d3-ease";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.0.0";
+        };
+      };
+      "@types/d3-interpolate" = {
+        "3.0.1" = {
+          depInfo = {
+            "@types/d3-color" = {
+              descriptor = "*";
+              pin = "3.1.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-SGGIxRybD9g8UNPEpKwabOk1t4m7+Fmyx90FK5EZbFc=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/d3-interpolate/-/d3-interpolate-3.0.1.tgz";
+          };
+          ident = "@types/d3-interpolate";
+          ltype = "file";
+          version = "3.0.1";
+        };
+      };
+      "@types/d3-path" = {
+        "3.0.0" = {
+          fetchInfo = {
+            narHash = "sha256-nGfh3ICPwaWi/BROv3FbfjtoTH5Y38lCCc8yLoge0P0=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/d3-path/-/d3-path-3.0.0.tgz";
+          };
+          ident = "@types/d3-path";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.0.0";
+        };
+      };
+      "@types/d3-scale" = {
+        "4.0.3" = {
+          depInfo = {
+            "@types/d3-time" = {
+              descriptor = "*";
+              pin = "3.0.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-4tobC8+az2jlyuW/CIDjfGVw8wNNPUglbxJogRnQWyI=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/d3-scale/-/d3-scale-4.0.3.tgz";
+          };
+          ident = "@types/d3-scale";
+          ltype = "file";
+          version = "4.0.3";
+        };
+      };
+      "@types/d3-shape" = {
+        "3.1.1" = {
+          depInfo = {
+            "@types/d3-path" = {
+              descriptor = "*";
+              pin = "3.0.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-ay+PgE+eOuS6tgb9sZQLBNfHRPeemdXyy4BsfOeeXRw=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/d3-shape/-/d3-shape-3.1.1.tgz";
+          };
+          ident = "@types/d3-shape";
+          ltype = "file";
+          version = "3.1.1";
+        };
+      };
+      "@types/d3-time" = {
+        "3.0.0" = {
+          fetchInfo = {
+            narHash = "sha256-bUFsKe+dR2yzv7aFF/AjL079CyRI7Wib038mtxnoRZU=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/d3-time/-/d3-time-3.0.0.tgz";
+          };
+          ident = "@types/d3-time";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.0.0";
+        };
+      };
+      "@types/d3-timer" = {
+        "3.0.0" = {
+          fetchInfo = {
+            narHash = "sha256-ntGqK9FRoPY1ID8yERaEF5/2ZPxs8VzNINzpBONlTD8=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@types/d3-timer/-/d3-timer-3.0.0.tgz";
+          };
+          ident = "@types/d3-timer";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.0.0";
+        };
+      };
       "@types/json5" = {
         "0.0.29" = {
           fetchInfo = {
@@ -3081,6 +3216,19 @@
           version = "7.0.3";
         };
       };
+      css-unit-converter = {
+        "1.1.2" = {
+          fetchInfo = {
+            narHash = "sha256-I10yAK53iZh+q28Lwi8JPLvY1i0Klu6iL3TaGXg+MRI=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/css-unit-converter/-/css-unit-converter-1.1.2.tgz";
+          };
+          ident = "css-unit-converter";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.1.2";
+        };
+      };
       cssesc = {
         "3.0.0" = {
           binInfo = {
@@ -3110,6 +3258,205 @@
           ltype = "file";
           treeInfo = { };
           version = "3.1.2";
+        };
+      };
+      d3-array = {
+        "3.2.4" = {
+          depInfo = {
+            internmap = {
+              descriptor = "1 - 2";
+              pin = "2.0.3";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-7a2tClggGoqMHCndF0b38YTlWQJuCgCIsRr+HbTbpyU=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-array/-/d3-array-3.2.4.tgz";
+          };
+          ident = "d3-array";
+          ltype = "file";
+          version = "3.2.4";
+        };
+      };
+      d3-color = {
+        "3.1.0" = {
+          fetchInfo = {
+            narHash = "sha256-cT/t1XDkpwm9iza8haFGE4qVg6vqO856ubqZrrjGpT0=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-color/-/d3-color-3.1.0.tgz";
+          };
+          ident = "d3-color";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.1.0";
+        };
+      };
+      d3-ease = {
+        "3.0.1" = {
+          fetchInfo = {
+            narHash = "sha256-7+6k/QrZVbq9NO/rMs21kXiHkC+xDzcUGDLeuN6dxTg=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-ease/-/d3-ease-3.0.1.tgz";
+          };
+          ident = "d3-ease";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.0.1";
+        };
+      };
+      d3-format = {
+        "3.1.0" = {
+          fetchInfo = {
+            narHash = "sha256-1/gxbah6XA1hcfviytziQMqLW8ylHOBOJODyW0FXp6I=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-format/-/d3-format-3.1.0.tgz";
+          };
+          ident = "d3-format";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.1.0";
+        };
+      };
+      d3-interpolate = {
+        "3.0.1" = {
+          depInfo = {
+            d3-color = {
+              descriptor = "1 - 3";
+              pin = "3.1.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-NRAs5hu5J/3p386YELCBth0Hzhrxg2WK/OXTy3jUfyc=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-interpolate/-/d3-interpolate-3.0.1.tgz";
+          };
+          ident = "d3-interpolate";
+          ltype = "file";
+          version = "3.0.1";
+        };
+      };
+      d3-path = {
+        "3.1.0" = {
+          fetchInfo = {
+            narHash = "sha256-MS70PBjwXw68XDWlu+LUvIjKOQ0EBIp7f2kUlMqyq64=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-path/-/d3-path-3.1.0.tgz";
+          };
+          ident = "d3-path";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.1.0";
+        };
+      };
+      d3-scale = {
+        "4.0.2" = {
+          depInfo = {
+            d3-array = {
+              descriptor = "2.10.0 - 3";
+              pin = "3.2.4";
+              runtime = true;
+            };
+            d3-format = {
+              descriptor = "1 - 3";
+              pin = "3.1.0";
+              runtime = true;
+            };
+            d3-interpolate = {
+              descriptor = "1.2.0 - 3";
+              pin = "3.0.1";
+              runtime = true;
+            };
+            d3-time = {
+              descriptor = "2.1.1 - 3";
+              pin = "3.1.0";
+              runtime = true;
+            };
+            d3-time-format = {
+              descriptor = "2 - 4";
+              pin = "4.1.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-a9K9gRjZnm8R0QyyyAgcnLJOlu0N4fAkWKVx3xGa5Fg=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-scale/-/d3-scale-4.0.2.tgz";
+          };
+          ident = "d3-scale";
+          ltype = "file";
+          version = "4.0.2";
+        };
+      };
+      d3-shape = {
+        "3.2.0" = {
+          depInfo = {
+            d3-path = {
+              descriptor = "^3.1.0";
+              pin = "3.1.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-uvrlf0GVmS99lkTC+14bLDkXbq4vWZT/EemJXo6wjx4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-shape/-/d3-shape-3.2.0.tgz";
+          };
+          ident = "d3-shape";
+          ltype = "file";
+          version = "3.2.0";
+        };
+      };
+      d3-time = {
+        "3.1.0" = {
+          depInfo = {
+            d3-array = {
+              descriptor = "2 - 3";
+              pin = "3.2.4";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-AHbVxhUy2vSTYIV7o7WQUpW3WtDORQIfMIUxHRoxkc0=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-time/-/d3-time-3.1.0.tgz";
+          };
+          ident = "d3-time";
+          ltype = "file";
+          version = "3.1.0";
+        };
+      };
+      d3-time-format = {
+        "4.1.0" = {
+          depInfo = {
+            d3-time = {
+              descriptor = "1 - 3";
+              pin = "3.1.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-B53Zo8Z7SzCKn02OuYzyf5DXrwi5xsHUQ0y84zno2EA=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-time-format/-/d3-time-format-4.1.0.tgz";
+          };
+          ident = "d3-time-format";
+          ltype = "file";
+          version = "4.1.0";
+        };
+      };
+      d3-timer = {
+        "3.0.1" = {
+          fetchInfo = {
+            narHash = "sha256-LIzG59UnvctMfBueRcKBCghSO/efxX9l99TkSMwESI8=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/d3-timer/-/d3-timer-3.0.1.tgz";
+          };
+          ident = "d3-timer";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.0.1";
         };
       };
       damerau-levenshtein = {
@@ -3165,6 +3512,19 @@
             };
           };
           version = "4.3.4";
+        };
+      };
+      "decimal.js-light" = {
+        "2.5.1" = {
+          fetchInfo = {
+            narHash = "sha256-mD+h3ijncUVG76e+0Sfvm4AYTWobMiUbGBGXV39QpOw=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/decimal.js-light/-/decimal.js-light-2.5.1.tgz";
+          };
+          ident = "decimal.js-light";
+          ltype = "file";
+          treeInfo = { };
+          version = "2.5.1";
         };
       };
       deep-is = {
@@ -3370,6 +3730,23 @@
         };
       };
       dom-helpers = {
+        "3.4.0" = {
+          depInfo = {
+            "@babel/runtime" = {
+              descriptor = "^7.1.2";
+              pin = "7.22.6";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-H5Z8Ob0gDAHLKNudp6HKQIEVPJTIjQvrb2dtkLDkMTw=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/dom-helpers/-/dom-helpers-3.4.0.tgz";
+          };
+          ident = "dom-helpers";
+          ltype = "file";
+          version = "3.4.0";
+        };
         "5.2.1" = {
           depInfo = {
             "@babel/runtime" = {
@@ -4623,6 +5000,19 @@
           version = "2.0.3";
         };
       };
+      eventemitter3 = {
+        "4.0.7" = {
+          fetchInfo = {
+            narHash = "sha256-q8SENFH3M30q8hIpoQjEGGg1uMzj/O6phLhdaucBrKA=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/eventemitter3/-/eventemitter3-4.0.7.tgz";
+          };
+          ident = "eventemitter3";
+          ltype = "file";
+          treeInfo = { };
+          version = "4.0.7";
+        };
+      };
       execa = {
         "5.1.1" = {
           depInfo = {
@@ -4750,6 +5140,19 @@
           ltype = "file";
           treeInfo = { };
           version = "3.1.3";
+        };
+      };
+      fast-equals = {
+        "5.0.1" = {
+          fetchInfo = {
+            narHash = "sha256-GB8ciw0PXHlpTfNtY63zTEm0F/SvE7K13jsYl7jUWjQ=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/fast-equals/-/fast-equals-5.0.1.tgz";
+          };
+          ident = "fast-equals";
+          ltype = "file";
+          treeInfo = { };
+          version = "5.0.1";
         };
       };
       fast-glob = {
@@ -5583,6 +5986,19 @@
           version = "1.0.0";
         };
       };
+      hex-rgb = {
+        "5.0.0" = {
+          fetchInfo = {
+            narHash = "sha256-FpFp2XMjtLx7WBUJq5FS0g1QepJC7GhVljkQS3a+nyE=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/hex-rgb/-/hex-rgb-5.0.0.tgz";
+          };
+          ident = "hex-rgb";
+          ltype = "file";
+          treeInfo = { };
+          version = "5.0.0";
+        };
+      };
       hoist-non-react-statics = {
         "3.3.2" = {
           depInfo = {
@@ -5740,6 +6156,19 @@
           ident = "internal-slot";
           ltype = "file";
           version = "1.0.5";
+        };
+      };
+      internmap = {
+        "2.0.3" = {
+          fetchInfo = {
+            narHash = "sha256-KIR9V1DKo0L+A86SoyglogHN3+BJNc/AHV5nKZys7yY=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/internmap/-/internmap-2.0.3.tgz";
+          };
+          ident = "internmap";
+          ltype = "file";
+          treeInfo = { };
+          version = "2.0.3";
         };
       };
       is-array-buffer = {
@@ -6486,6 +6915,19 @@
           version = "6.0.0";
         };
       };
+      lodash = {
+        "4.17.21" = {
+          fetchInfo = {
+            narHash = "sha256-amyN064Yh6psvOfLgcpktd5dRNQStUYHHoIqiI6DMek=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz";
+          };
+          ident = "lodash";
+          ltype = "file";
+          treeInfo = { };
+          version = "4.17.21";
+        };
+      };
       "lodash.merge" = {
         "4.6.2" = {
           fetchInfo = {
@@ -6719,6 +7161,11 @@
               pin = "13.4.12";
               runtime = true;
             };
+            hex-rgb = {
+              descriptor = "^5.0.0";
+              pin = "5.0.0";
+              runtime = true;
+            };
             next = {
               descriptor = "13.4.12";
               pin = "13.4.12";
@@ -6745,6 +7192,11 @@
             react-dom = {
               descriptor = "18.2.0";
               pin = "18.2.0";
+              runtime = true;
+            };
+            recharts = {
+              descriptor = "^2.7.3";
+              pin = "2.7.3";
               runtime = true;
             };
             tailwindcss = {
@@ -6990,6 +7442,33 @@
             "node_modules/@swc/helpers" = {
               key = "@swc/helpers/0.5.1";
             };
+            "node_modules/@types/d3-array" = {
+              key = "@types/d3-array/3.0.5";
+            };
+            "node_modules/@types/d3-color" = {
+              key = "@types/d3-color/3.1.0";
+            };
+            "node_modules/@types/d3-ease" = {
+              key = "@types/d3-ease/3.0.0";
+            };
+            "node_modules/@types/d3-interpolate" = {
+              key = "@types/d3-interpolate/3.0.1";
+            };
+            "node_modules/@types/d3-path" = {
+              key = "@types/d3-path/3.0.0";
+            };
+            "node_modules/@types/d3-scale" = {
+              key = "@types/d3-scale/4.0.3";
+            };
+            "node_modules/@types/d3-shape" = {
+              key = "@types/d3-shape/3.1.1";
+            };
+            "node_modules/@types/d3-time" = {
+              key = "@types/d3-time/3.0.0";
+            };
+            "node_modules/@types/d3-timer" = {
+              key = "@types/d3-timer/3.0.0";
+            };
             "node_modules/@types/json5" = {
               key = "@types/json5/0.0.29";
             };
@@ -7185,17 +7664,56 @@
             "node_modules/cross-spawn" = {
               key = "cross-spawn/7.0.3";
             };
+            "node_modules/css-unit-converter" = {
+              key = "css-unit-converter/1.1.2";
+            };
             "node_modules/cssesc" = {
               key = "cssesc/3.0.0";
             };
             "node_modules/csstype" = {
               key = "csstype/3.1.2";
             };
+            "node_modules/d3-array" = {
+              key = "d3-array/3.2.4";
+            };
+            "node_modules/d3-color" = {
+              key = "d3-color/3.1.0";
+            };
+            "node_modules/d3-ease" = {
+              key = "d3-ease/3.0.1";
+            };
+            "node_modules/d3-format" = {
+              key = "d3-format/3.1.0";
+            };
+            "node_modules/d3-interpolate" = {
+              key = "d3-interpolate/3.0.1";
+            };
+            "node_modules/d3-path" = {
+              key = "d3-path/3.1.0";
+            };
+            "node_modules/d3-scale" = {
+              key = "d3-scale/4.0.2";
+            };
+            "node_modules/d3-shape" = {
+              key = "d3-shape/3.2.0";
+            };
+            "node_modules/d3-time" = {
+              key = "d3-time/3.1.0";
+            };
+            "node_modules/d3-time-format" = {
+              key = "d3-time-format/4.1.0";
+            };
+            "node_modules/d3-timer" = {
+              key = "d3-timer/3.0.1";
+            };
             "node_modules/damerau-levenshtein" = {
               key = "damerau-levenshtein/1.0.8";
             };
             "node_modules/debug" = {
               key = "debug/4.3.4";
+            };
+            "node_modules/decimal.js-light" = {
+              key = "decimal.js-light/2.5.1";
             };
             "node_modules/deep-is" = {
               key = "deep-is/0.1.4";
@@ -7341,11 +7859,17 @@
             "node_modules/esutils" = {
               key = "esutils/2.0.3";
             };
+            "node_modules/eventemitter3" = {
+              key = "eventemitter3/4.0.7";
+            };
             "node_modules/execa" = {
               key = "execa/7.2.0";
             };
             "node_modules/fast-deep-equal" = {
               key = "fast-deep-equal/3.1.3";
+            };
+            "node_modules/fast-equals" = {
+              key = "fast-equals/5.0.1";
             };
             "node_modules/fast-glob" = {
               key = "fast-glob/3.3.1";
@@ -7462,6 +7986,9 @@
             "node_modules/has-tostringtag" = {
               key = "has-tostringtag/1.0.0";
             };
+            "node_modules/hex-rgb" = {
+              key = "hex-rgb/5.0.0";
+            };
             "node_modules/hoist-non-react-statics" = {
               key = "hoist-non-react-statics/3.3.2";
             };
@@ -7485,6 +8012,9 @@
             };
             "node_modules/internal-slot" = {
               key = "internal-slot/1.0.5";
+            };
+            "node_modules/internmap" = {
+              key = "internmap/2.0.3";
             };
             "node_modules/is-array-buffer" = {
               key = "is-array-buffer/3.0.2";
@@ -7608,6 +8138,9 @@
             };
             "node_modules/locate-path" = {
               key = "locate-path/6.0.0";
+            };
+            "node_modules/lodash" = {
+              key = "lodash/4.17.21";
             };
             "node_modules/lodash.merge" = {
               key = "lodash.merge/4.6.2";
@@ -7800,6 +8333,21 @@
             "node_modules/react-is" = {
               key = "react-is/16.13.1";
             };
+            "node_modules/react-lifecycles-compat" = {
+              key = "react-lifecycles-compat/3.0.4";
+            };
+            "node_modules/react-resize-detector" = {
+              key = "react-resize-detector/8.1.0";
+            };
+            "node_modules/react-smooth" = {
+              key = "react-smooth/2.0.3";
+            };
+            "node_modules/react-smooth/node_modules/dom-helpers" = {
+              key = "dom-helpers/3.4.0";
+            };
+            "node_modules/react-smooth/node_modules/react-transition-group" = {
+              key = "react-transition-group/2.9.0";
+            };
             "node_modules/react-transition-group" = {
               key = "react-transition-group/4.4.5";
             };
@@ -7808,6 +8356,18 @@
             };
             "node_modules/readdirp" = {
               key = "readdirp/3.6.0";
+            };
+            "node_modules/recharts" = {
+              key = "recharts/2.7.3";
+            };
+            "node_modules/recharts-scale" = {
+              key = "recharts-scale/0.4.5";
+            };
+            "node_modules/reduce-css-calc" = {
+              key = "reduce-css-calc/2.1.8";
+            };
+            "node_modules/reduce-css-calc/node_modules/postcss-value-parser" = {
+              key = "postcss-value-parser/3.3.1";
             };
             "node_modules/regenerator-runtime" = {
               key = "regenerator-runtime/0.13.11";
@@ -8012,6 +8572,9 @@
             };
             "node_modules/util-deprecate" = {
               key = "util-deprecate/1.0.2";
+            };
+            "node_modules/victory-vendor" = {
+              key = "victory-vendor/36.6.11";
             };
             "node_modules/watchpack" = {
               key = "watchpack/2.4.0";
@@ -9092,6 +9655,17 @@
         };
       };
       postcss-value-parser = {
+        "3.3.1" = {
+          fetchInfo = {
+            narHash = "sha256-pYN/lUhJz7K+hIgMd/Njg8X3o1npAFaVSfbv4Ysz7oI=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/postcss-value-parser/-/postcss-value-parser-3.3.1.tgz";
+          };
+          ident = "postcss-value-parser";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.3.1";
+        };
         "4.2.0" = {
           fetchInfo = {
             narHash = "sha256-5QJdBMm9vf0MTlnK3ayj0dJ9ij+TajeCZbsesvPXxug=";
@@ -9340,7 +9914,122 @@
           version = "18.2.0";
         };
       };
+      react-lifecycles-compat = {
+        "3.0.4" = {
+          fetchInfo = {
+            narHash = "sha256-XHLO6U5lwgBNKcuglPA22YDxh65I5OrvzJUAYXbophs=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz";
+          };
+          ident = "react-lifecycles-compat";
+          ltype = "file";
+          treeInfo = { };
+          version = "3.0.4";
+        };
+      };
+      react-resize-detector = {
+        "8.1.0" = {
+          depInfo = {
+            lodash = {
+              descriptor = "^4.17.21";
+              pin = "4.17.21";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-eJLM8qrCEqXas4OIMV4K7xE4PABkNA+CBNbHo7OTeJE=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/react-resize-detector/-/react-resize-detector-8.1.0.tgz";
+          };
+          ident = "react-resize-detector";
+          ltype = "file";
+          peerInfo = {
+            react = {
+              descriptor = "^16.0.0 || ^17.0.0 || ^18.0.0";
+            };
+            react-dom = {
+              descriptor = "^16.0.0 || ^17.0.0 || ^18.0.0";
+            };
+          };
+          version = "8.1.0";
+        };
+      };
+      react-smooth = {
+        "2.0.3" = {
+          depInfo = {
+            fast-equals = {
+              descriptor = "^5.0.0";
+              pin = "5.0.1";
+              runtime = true;
+            };
+            react-transition-group = {
+              descriptor = "2.9.0";
+              pin = "2.9.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-G/FZfs/lgqomfdB9q9tjoaVNwnMGX8osCOLjoRc6oyI=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/react-smooth/-/react-smooth-2.0.3.tgz";
+          };
+          ident = "react-smooth";
+          ltype = "file";
+          peerInfo = {
+            prop-types = {
+              descriptor = "^15.6.0";
+            };
+            react = {
+              descriptor = "^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0";
+            };
+            react-dom = {
+              descriptor = "^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0";
+            };
+          };
+          version = "2.0.3";
+        };
+      };
       react-transition-group = {
+        "2.9.0" = {
+          depInfo = {
+            dom-helpers = {
+              descriptor = "^3.4.0";
+              pin = "3.4.0";
+              runtime = true;
+            };
+            loose-envify = {
+              descriptor = "^1.4.0";
+              pin = "1.4.0";
+              runtime = true;
+            };
+            prop-types = {
+              descriptor = "^15.6.2";
+              pin = "15.8.1";
+              runtime = true;
+            };
+            react-lifecycles-compat = {
+              descriptor = "^3.0.4";
+              pin = "3.0.4";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-zvvpBDdYSkf3ApCuY/k9uvRXLjRuVekmrgTLo3zLOQ4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/react-transition-group/-/react-transition-group-2.9.0.tgz";
+          };
+          ident = "react-transition-group";
+          ltype = "file";
+          peerInfo = {
+            react = {
+              descriptor = ">=15.0.0";
+            };
+            react-dom = {
+              descriptor = ">=15.0.0";
+            };
+          };
+          version = "2.9.0";
+        };
         "4.4.5" = {
           depInfo = {
             "@babel/runtime" = {
@@ -9418,6 +10107,119 @@
           ident = "readdirp";
           ltype = "file";
           version = "3.6.0";
+        };
+      };
+      recharts = {
+        "2.7.3" = {
+          depInfo = {
+            classnames = {
+              descriptor = "^2.2.5";
+              pin = "2.3.2";
+              runtime = true;
+            };
+            eventemitter3 = {
+              descriptor = "^4.0.1";
+              pin = "4.0.7";
+              runtime = true;
+            };
+            lodash = {
+              descriptor = "^4.17.19";
+              pin = "4.17.21";
+              runtime = true;
+            };
+            react-is = {
+              descriptor = "^16.10.2";
+              pin = "16.13.1";
+              runtime = true;
+            };
+            react-resize-detector = {
+              descriptor = "^8.0.4";
+              pin = "8.1.0";
+              runtime = true;
+            };
+            react-smooth = {
+              descriptor = "^2.0.2";
+              pin = "2.0.3";
+              runtime = true;
+            };
+            recharts-scale = {
+              descriptor = "^0.4.4";
+              pin = "0.4.5";
+              runtime = true;
+            };
+            reduce-css-calc = {
+              descriptor = "^2.1.8";
+              pin = "2.1.8";
+              runtime = true;
+            };
+            victory-vendor = {
+              descriptor = "^36.6.8";
+              pin = "36.6.11";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-Rb3A7lTS0oCO/Gp/DcGf38UL3orV7aCfavnVdpKbHEM=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/recharts/-/recharts-2.7.3.tgz";
+          };
+          ident = "recharts";
+          ltype = "file";
+          peerInfo = {
+            prop-types = {
+              descriptor = "^15.6.0";
+            };
+            react = {
+              descriptor = "^16.0.0 || ^17.0.0 || ^18.0.0";
+            };
+            react-dom = {
+              descriptor = "^16.0.0 || ^17.0.0 || ^18.0.0";
+            };
+          };
+          version = "2.7.3";
+        };
+      };
+      recharts-scale = {
+        "0.4.5" = {
+          depInfo = {
+            "decimal.js-light" = {
+              descriptor = "^2.4.1";
+              pin = "2.5.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-dFsJKknOkkuwpPDqF5iFbbjhVVO9FT/cIzSCberRPdQ=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/recharts-scale/-/recharts-scale-0.4.5.tgz";
+          };
+          ident = "recharts-scale";
+          ltype = "file";
+          version = "0.4.5";
+        };
+      };
+      reduce-css-calc = {
+        "2.1.8" = {
+          depInfo = {
+            css-unit-converter = {
+              descriptor = "^1.1.1";
+              pin = "1.1.2";
+              runtime = true;
+            };
+            postcss-value-parser = {
+              descriptor = "^3.3.0";
+              pin = "3.3.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-kMSRxzkJThER3joDq68H++0FIEafFYMVzx5+J3sAGbI=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/reduce-css-calc/-/reduce-css-calc-2.1.8.tgz";
+          };
+          ident = "reduce-css-calc";
+          ltype = "file";
+          version = "2.1.8";
         };
       };
       regenerator-runtime = {
@@ -10898,6 +11700,90 @@
           ltype = "file";
           treeInfo = { };
           version = "1.0.2";
+        };
+      };
+      victory-vendor = {
+        "36.6.11" = {
+          depInfo = {
+            "@types/d3-array" = {
+              descriptor = "^3.0.3";
+              pin = "3.0.5";
+              runtime = true;
+            };
+            "@types/d3-ease" = {
+              descriptor = "^3.0.0";
+              pin = "3.0.0";
+              runtime = true;
+            };
+            "@types/d3-interpolate" = {
+              descriptor = "^3.0.1";
+              pin = "3.0.1";
+              runtime = true;
+            };
+            "@types/d3-scale" = {
+              descriptor = "^4.0.2";
+              pin = "4.0.3";
+              runtime = true;
+            };
+            "@types/d3-shape" = {
+              descriptor = "^3.1.0";
+              pin = "3.1.1";
+              runtime = true;
+            };
+            "@types/d3-time" = {
+              descriptor = "^3.0.0";
+              pin = "3.0.0";
+              runtime = true;
+            };
+            "@types/d3-timer" = {
+              descriptor = "^3.0.0";
+              pin = "3.0.0";
+              runtime = true;
+            };
+            d3-array = {
+              descriptor = "^3.1.6";
+              pin = "3.2.4";
+              runtime = true;
+            };
+            d3-ease = {
+              descriptor = "^3.0.1";
+              pin = "3.0.1";
+              runtime = true;
+            };
+            d3-interpolate = {
+              descriptor = "^3.0.1";
+              pin = "3.0.1";
+              runtime = true;
+            };
+            d3-scale = {
+              descriptor = "^4.0.2";
+              pin = "4.0.2";
+              runtime = true;
+            };
+            d3-shape = {
+              descriptor = "^3.1.0";
+              pin = "3.2.0";
+              runtime = true;
+            };
+            d3-time = {
+              descriptor = "^3.0.0";
+              pin = "3.1.0";
+              runtime = true;
+            };
+            d3-timer = {
+              descriptor = "^3.0.1";
+              pin = "3.0.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-n2h/WOevG6dVWXLReuRm5bJEFdDKSw2db5ea4HzVIlU=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/victory-vendor/-/victory-vendor-36.6.11.tgz";
+          };
+          ident = "victory-vendor";
+          ltype = "file";
+          version = "36.6.11";
         };
       };
       watchpack = {
