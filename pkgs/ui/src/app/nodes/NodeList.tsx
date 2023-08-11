@@ -200,10 +200,13 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   }, [tableData]);
 
   const cardData = React.useMemo(() => {
-    let copy = pieData.filter((pieItem) => pieItem.value > 0);
-    const elem = { name: 'Total', value: copy.reduce((a, b) => a + b.value, 0), color: '#000000' };
-    copy.push(elem);
-    return copy;
+    return pieData.filter((pieItem) => pieItem.value > 0).concat(
+      {
+        name: 'Total',
+        value: pieData.reduce((a, b) => a + b.value, 0),
+        color: '#000000'
+      }
+    );
   }, [pieData]);
 
   const cardStack = (
@@ -279,7 +282,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 
   return (
     <Grid2 container spacing={1} sx={debugSx}>
-      <Grid2 xs={6}>
+      <Grid2 key="Header" xs={6}>
         <Typography
           sx={{ marginLeft: 3, marginTop: 1 }}
           variant="h6"
@@ -290,26 +293,26 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Typography>
       </Grid2>
       {/* Debug Controls */}
-      <Grid2 xs={6} justifyContent="right" display="flex">
+      <Grid2 key="Debug-Controls" xs={6} justifyContent="right" display="flex">
         <FormGroup>
           <FormControlLabel control={<Switch onChange={() => { setDebug(!debug) }} checked={debug} />} label="Debug" />
         </FormGroup>
       </Grid2>
 
       {/* Pie Chart Grid */}
-      <Grid2 lg={6} sm={12} display="flex" justifyContent="center" alignItems="center">
+      <Grid2 key="PieChart" lg={6} sm={12} display="flex" justifyContent="center" alignItems="center">
         <Box height={350} width={400}>
           <NodePieChart data={pieData} showLabels={matches} />
         </Box>
       </Grid2>
 
       {/* Card Stack Grid */}
-      <Grid2 lg={6} display="flex" sx={{ display: { lg: 'flex', sm: 'none' } }} >
+      <Grid2 key="CardStack" lg={6} display="flex" sx={{ display: { lg: 'flex', sm: 'none' } }} >
         {cardStack}
       </Grid2>
 
       {/*Toolbar Grid */}
-      <Grid2 xs={12}>
+      <Grid2 key="Toolbar" xs={12}>
         {isSelected ? selectedToolbar : unselectedToolbar}
       </Grid2>
 
@@ -377,7 +380,7 @@ export interface NodeTableProps {
 }
 
 export default function NodeTable(props: NodeTableProps) {
-  let {tableData} = props;
+  let { tableData } = props;
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof TableData>('status');
   const [selected, setSelected] = React.useState<string | undefined>(undefined);
