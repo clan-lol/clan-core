@@ -1,12 +1,21 @@
+import argparse
 import os
 import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import pytest
 from environment import mock_env
 from host_group import HostGroup
 
-from clan_cli.update import deploy_nixos
+from clan_cli.update import deploy_nixos, register_parser
+
+
+def test_cli() -> None:
+    parser = argparse.ArgumentParser()
+    register_parser(parser)
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--help"])
 
 
 def test_update(clan_flake: Path, host_group: HostGroup) -> None:
