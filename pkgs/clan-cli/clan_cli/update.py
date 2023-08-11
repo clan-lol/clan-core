@@ -86,11 +86,12 @@ def deploy_nixos(hosts: HostGroup) -> None:
 
 # FIXME: we want some kind of inventory here.
 def update(args: argparse.Namespace) -> None:
-    deploy_nixos(
-        HostGroup(
-            [Host(args.host, user=args.user, meta=dict(flake_attr=args.flake_attr))]
-        )
-    )
+    meta = {}
+    if args.flake_uri:
+        meta["flake_uri"] = args.flake_uri
+    if args.flake_attr:
+        meta["flake_attr"] = args.flake_attr
+    deploy_nixos(HostGroup([Host(args.host, user=args.user, meta=meta)]))
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:
