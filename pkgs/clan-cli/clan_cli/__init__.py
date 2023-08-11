@@ -17,10 +17,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="cLAN tool")
     subparsers = parser.add_subparsers()
 
-    parser_admin = subparsers.add_parser("admin")
+    parser_admin = subparsers.add_parser("admin", help="administrate a clan")
     admin.register_parser(parser_admin)
 
-    parser_config = subparsers.add_parser("config")
+    parser_config = subparsers.add_parser("config", help="set nixos configuration")
     config.register_parser(parser_config)
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
