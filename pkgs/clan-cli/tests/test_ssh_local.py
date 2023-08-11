@@ -1,6 +1,6 @@
 import subprocess
 
-from clan_cli.ssh import Group, Host, run
+from clan_cli.ssh import Host, HostGroup, run
 
 
 def test_run() -> None:
@@ -20,7 +20,7 @@ def test_run_failure() -> None:
         assert False, "Command should have raised an error"
 
 
-hosts = Group([Host("some_host")])
+hosts = HostGroup([Host("some_host")])
 
 
 def test_run_environment() -> None:

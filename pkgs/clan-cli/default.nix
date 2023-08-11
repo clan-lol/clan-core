@@ -19,6 +19,7 @@
 , stdenv
 , wheel
 , zerotierone
+, rsync
 }:
 let
   dependencies = [ argcomplete jsonschema ];
@@ -63,12 +64,12 @@ python3.pkgs.buildPythonPackage {
     '';
     clan-pytest = runCommand "clan-tests"
       {
-        nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh stdenv.cc ];
+        nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh rsync stdenv.cc ];
       } ''
       cp -r ${source} ./src
       chmod +w -R ./src
       cd ./src
-      ${checkPython}/bin/python -m pytest ./tests
+      NIX_STATE_DIR=$TMPDIR/nix ${checkPython}/bin/python -m pytest -s ./tests
       touch $out
     '';
   };
