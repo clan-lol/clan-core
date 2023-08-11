@@ -96,9 +96,9 @@ def update(args: argparse.Namespace) -> None:
 def register_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_mutually_exclusive_group(required=True)
     # TODO pass all args we don't parse into ssh_args, currently it fails if arg starts with -
-    parser.add_argument("--flake-uri", type=str, default=".#", desc="nix flake uri")
+    parser.add_argument("--flake-uri", type=str, default=".#", help="nix flake uri")
     parser.add_argument(
-        "--flake-attr", type=str, description="nixos configuration in the flake"
+        "--flake-attr", type=str, help="nixos configuration in the flake"
     )
     parser.add_argument("--user", type=str, default="root")
     parser.add_argument("host", type=str)

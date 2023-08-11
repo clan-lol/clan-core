@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from . import admin, config, secrets
+from . import admin, config, secrets, update
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
@@ -28,6 +28,11 @@ def main() -> None:
 
     parser_secrets = subparsers.add_parser("secrets", help="manage secrets")
     secrets.register_parser(parser_secrets)
+
+    parser_update = subparsers.add_parser(
+        "update", help="update the machines in the clan"
+    )
+    update.register_parser(parser_update)
 
     if has_argcomplete:
         argcomplete.autocomplete(parser)
