@@ -16,8 +16,8 @@ import { StyledEngineProvider } from "@mui/material/styles";
 import { darkTheme, lightTheme } from "./theme/themes";
 import { Sidebar } from "@/components/sidebar";
 import MenuIcon from "@mui/icons-material/Menu";
-import { ChevronLeft } from "@mui/icons-material";
 import Image from "next/image";
+import { tw } from "@/utils/tailwind";
 
 const roboto = localFont({
   src: [
@@ -28,6 +28,9 @@ const roboto = localFont({
     },
   ],
 });
+
+// add negative margin for smooth transition to fill the space of the sidebar
+const translate = tw`lg:-ml-64 -ml-14`;
 
 export default function RootLayout({
   children,
@@ -65,8 +68,12 @@ export default function RootLayout({
                 show={showSidebar}
                 onClose={() => setShowSidebar(false)}
               />
-              <div className="flex flex-col w-full h-full">
-                <div className="static min-h-10 top-0 mb-2 py-2">
+              <div
+                className={tw`${
+                  !showSidebar && translate
+                } flex h-full w-full flex-col transition-[margin] ease-in-out duration-150`}
+              >
+                <div className="min-h-10 static top-0 mb-2 py-2">
                   <div className="grid grid-cols-3">
                     <div className="col-span-1">
                       <IconButton
@@ -76,7 +83,7 @@ export default function RootLayout({
                         {!showSidebar && <MenuIcon />}
                       </IconButton>
                     </div>
-                    <div className="col-span-1 block lg:hidden w-full text-center font-semibold text-white ">
+                    <div className="col-span-1 block w-full text-center font-semibold text-white lg:hidden ">
                       <Image
                         src="/logo.svg"
                         alt="Clan Logo"
