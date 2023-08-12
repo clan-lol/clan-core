@@ -1,38 +1,43 @@
-"use client"
+"use client";
 
-import * as React from 'react';
-import { alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import { visuallyHidden } from '@mui/utils';
-import CircleIcon from '@mui/icons-material/Circle';
-import Stack from '@mui/material/Stack/Stack';
-import ModeIcon from '@mui/icons-material/Mode';
-import ClearIcon from '@mui/icons-material/Clear';
-import Fade from '@mui/material/Fade/Fade';
-import NodePieChart, { PieData } from './NodePieChart';
-import Grid2 from '@mui/material/Unstable_Grid2'; // Grid version 2
-import { Card, CardContent, Container, FormGroup, useTheme } from '@mui/material';
-import hexRgb from 'hex-rgb';
-import useMediaQuery from '@mui/material/useMediaQuery';
-
+import * as React from "react";
+import { alpha } from "@mui/material/styles";
+import Box from "@mui/material/Box";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
+import TableSortLabel from "@mui/material/TableSortLabel";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
+import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
+import DeleteIcon from "@mui/icons-material/Delete";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import { visuallyHidden } from "@mui/utils";
+import CircleIcon from "@mui/icons-material/Circle";
+import Stack from "@mui/material/Stack/Stack";
+import ModeIcon from "@mui/icons-material/Mode";
+import ClearIcon from "@mui/icons-material/Clear";
+import Fade from "@mui/material/Fade/Fade";
+import NodePieChart, { PieData } from "./NodePieChart";
+import Grid2 from "@mui/material/Unstable_Grid2"; // Grid version 2
+import {
+  Card,
+  CardContent,
+  Container,
+  FormGroup,
+  useTheme,
+} from "@mui/material";
+import hexRgb from "hex-rgb";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 export interface TableData {
   name: string;
@@ -47,7 +52,6 @@ export enum NodeStatus {
   Pending,
 }
 
-
 interface HeadCell {
   disablePadding: boolean;
   id: keyof TableData;
@@ -57,22 +61,22 @@ interface HeadCell {
 
 const headCells: readonly HeadCell[] = [
   {
-    id: 'name',
+    id: "name",
     alignRight: false,
     disablePadding: false,
-    label: 'DISPLAY NAME & ID',
+    label: "DISPLAY NAME & ID",
   },
   {
-    id: 'status',
+    id: "status",
     alignRight: false,
     disablePadding: false,
-    label: 'STATUS',
+    label: "STATUS",
   },
   {
-    id: 'last_seen',
+    id: "last_seen",
     alignRight: false,
     disablePadding: false,
-    label: 'LAST SEEN',
+    label: "LAST SEEN",
   },
 ];
 
@@ -86,7 +90,7 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   return 0;
 }
 
-type Order = 'asc' | 'desc';
+type Order = "asc" | "desc";
 
 function getComparator<Key extends keyof any>(
   order: Order,
@@ -95,7 +99,7 @@ function getComparator<Key extends keyof any>(
   a: { [key in Key]: number | string | boolean },
   b: { [key in Key]: number | string | boolean },
 ) => number {
-  return order === 'desc'
+  return order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
@@ -104,7 +108,10 @@ function getComparator<Key extends keyof any>(
 // stableSort() brings sort stability to non-modern browsers (notably IE11). If you
 // only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
 // with exampleArray.slice().sort(exampleComparator)
-function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) {
+function stableSort<T>(
+  array: readonly T[],
+  comparator: (a: T, b: T) => number,
+) {
   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
@@ -116,18 +123,18 @@ function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) 
   return stabilizedThis.map((el) => el[0]);
 }
 
-
-
 interface EnhancedTableProps {
-  onRequestSort: (event: React.MouseEvent<unknown>, property: keyof TableData) => void;
+  onRequestSort: (
+    event: React.MouseEvent<unknown>,
+    property: keyof TableData,
+  ) => void;
   order: Order;
   orderBy: string;
   rowCount: number;
 }
 
 function EnhancedTableHead(props: EnhancedTableProps) {
-  const { order, orderBy, onRequestSort } =
-    props;
+  const { order, orderBy, onRequestSort } = props;
   const createSortHandler =
     (property: keyof TableData) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
@@ -139,19 +146,19 @@ function EnhancedTableHead(props: EnhancedTableProps) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.alignRight ? 'right' : 'left'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
+            align={headCell.alignRight ? "right" : "left"}
+            padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
+              direction={orderBy === headCell.id ? order : "asc"}
               onClick={createSortHandler(headCell.id)}
             >
               {headCell.label}
               {orderBy === headCell.id ? (
                 <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  {order === "desc" ? "sorted descending" : "sorted ascending"}
                 </Box>
               ) : null}
             </TableSortLabel>
@@ -162,8 +169,6 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   );
 }
 
-
-
 interface EnhancedTableToolbarProps {
   selected: string | undefined;
   tableData: TableData[];
@@ -172,41 +177,49 @@ interface EnhancedTableToolbarProps {
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   const { selected, onClear, tableData } = props;
   const theme = useTheme();
-  const matches = useMediaQuery(theme.breakpoints.down('lg'));
+  const matches = useMediaQuery(theme.breakpoints.down("lg"));
   const isSelected = selected != undefined;
   const [debug, setDebug] = React.useState<boolean>(false);
-  const debugSx = debug ? {
-    '--Grid-borderWidth': '1px',
-    borderTop: 'var(--Grid-borderWidth) solid',
-    borderLeft: 'var(--Grid-borderWidth) solid',
-    borderColor: 'divider',
-    '& > div': {
-      borderRight: 'var(--Grid-borderWidth) solid',
-      borderBottom: 'var(--Grid-borderWidth) solid',
-      borderColor: 'divider',
-    }
-  } : {};
+  const debugSx = debug
+    ? {
+        "--Grid-borderWidth": "1px",
+        borderTop: "var(--Grid-borderWidth) solid",
+        borderLeft: "var(--Grid-borderWidth) solid",
+        borderColor: "divider",
+        "& > div": {
+          borderRight: "var(--Grid-borderWidth) solid",
+          borderBottom: "var(--Grid-borderWidth) solid",
+          borderColor: "divider",
+        },
+      }
+    : {};
 
   const pieData = React.useMemo(() => {
-    const online = tableData.filter((row) => row.status === NodeStatus.Online).length;
-    const offline = tableData.filter((row) => row.status === NodeStatus.Offline).length;
-    const pending = tableData.filter((row) => row.status === NodeStatus.Pending).length;
+    const online = tableData.filter(
+      (row) => row.status === NodeStatus.Online,
+    ).length;
+    const offline = tableData.filter(
+      (row) => row.status === NodeStatus.Offline,
+    ).length;
+    const pending = tableData.filter(
+      (row) => row.status === NodeStatus.Pending,
+    ).length;
 
     return [
-      { name: 'Online', value: online, color: '#2E7D32' },
-      { name: 'Offline', value: offline, color: '#db3927' },
-      { name: 'Pending', value: pending, color: '#FFBB28' },
+      { name: "Online", value: online, color: "#2E7D32" },
+      { name: "Offline", value: offline, color: "#db3927" },
+      { name: "Pending", value: pending, color: "#FFBB28" },
     ];
   }, [tableData]);
 
   const cardData = React.useMemo(() => {
-    return pieData.filter((pieItem) => pieItem.value > 0).concat(
-      {
-        name: 'Total',
+    return pieData
+      .filter((pieItem) => pieItem.value > 0)
+      .concat({
+        name: "Total",
         value: pieData.reduce((a, b) => a + b.value, 0),
-        color: '#000000'
-      }
-    );
+        color: "#000000",
+      });
   }, [pieData]);
 
   const cardStack = (
@@ -217,17 +230,38 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       display="flex"
       flexDirection="column"
       justifyContent="flex-start"
-      flexWrap="wrap">
+      flexWrap="wrap"
+    >
       {cardData.map((pieItem) => (
-        <Card key={pieItem.name} sx={{ marginBottom: 2, marginRight: 2, width: 110, height: 110, backgroundColor: hexRgb(pieItem.color, { format: 'css', alpha: 0.18 }) }}>
-          <CardContent >
-            <Typography variant="h4" component="div" gutterBottom={true} textAlign="center">
+        <Card
+          key={pieItem.name}
+          sx={{
+            marginBottom: 2,
+            marginRight: 2,
+            width: 110,
+            height: 110,
+            backgroundColor: hexRgb(pieItem.color, {
+              format: "css",
+              alpha: 0.18,
+            }),
+          }}
+        >
+          <CardContent>
+            <Typography
+              variant="h4"
+              component="div"
+              gutterBottom={true}
+              textAlign="center"
+            >
               {pieItem.value}
             </Typography>
-            <Typography sx={{ mb: 1.5 }} color="text.secondary" textAlign="center">
+            <Typography
+              sx={{ mb: 1.5 }}
+              color="text.secondary"
+              textAlign="center"
+            >
               {pieItem.name}
             </Typography>
-
           </CardContent>
         </Card>
       ))}
@@ -240,15 +274,19 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         pl: { sm: 2 },
         pr: { xs: 1, sm: 1 },
         bgcolor: (theme) =>
-          alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-      }}>
+          alpha(
+            theme.palette.primary.main,
+            theme.palette.action.activatedOpacity,
+          ),
+      }}
+    >
       <Tooltip title="Clear">
         <IconButton onClick={onClear}>
           <ClearIcon />
         </IconButton>
       </Tooltip>
       <Typography
-        sx={{ flex: '1 1 100%' }}
+        sx={{ flex: "1 1 100%" }}
         color="inherit"
         style={{ fontSize: 18, marginBottom: 3, marginLeft: 3 }}
         component="div"
@@ -260,7 +298,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
           <ModeIcon />
         </IconButton>
       </Tooltip>
-    </Toolbar >
+    </Toolbar>
   );
 
   const unselectedToolbar = (
@@ -270,15 +308,14 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         pr: { xs: 1, sm: 1 },
       }}
     >
-      <Box sx={{ flex: '1 1 100%' }} ></Box>
+      <Box sx={{ flex: "1 1 100%" }}></Box>
       <Tooltip title="Filter list">
         <IconButton>
           <FilterListIcon />
         </IconButton>
       </Tooltip>
-    </Toolbar >
+    </Toolbar>
   );
-
 
   return (
     <Grid2 container spacing={1} sx={debugSx}>
@@ -295,19 +332,41 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       {/* Debug Controls */}
       <Grid2 key="Debug-Controls" xs={6} justifyContent="right" display="flex">
         <FormGroup>
-          <FormControlLabel control={<Switch onChange={() => { setDebug(!debug) }} checked={debug} />} label="Debug" />
+          <FormControlLabel
+            control={
+              <Switch
+                onChange={() => {
+                  setDebug(!debug);
+                }}
+                checked={debug}
+              />
+            }
+            label="Debug"
+          />
         </FormGroup>
       </Grid2>
 
       {/* Pie Chart Grid */}
-      <Grid2 key="PieChart" lg={6} sm={12} display="flex" justifyContent="center" alignItems="center">
+      <Grid2
+        key="PieChart"
+        lg={6}
+        sm={12}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+      >
         <Box height={350} width={400}>
           <NodePieChart data={pieData} showLabels={matches} />
         </Box>
       </Grid2>
 
       {/* Card Stack Grid */}
-      <Grid2 key="CardStack" lg={6} display="flex" sx={{ display: { lg: 'flex', sm: 'none' } }} >
+      <Grid2
+        key="CardStack"
+        lg={6}
+        display="flex"
+        sx={{ display: { lg: "flex", sm: "none" } }}
+      >
         {cardStack}
       </Grid2>
 
@@ -315,11 +374,9 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       <Grid2 key="Toolbar" xs={12}>
         {isSelected ? selectedToolbar : unselectedToolbar}
       </Grid2>
-
     </Grid2>
   );
 }
-
 
 function renderLastSeen(last_seen: number) {
   return (
@@ -376,13 +433,13 @@ function renderStatus(status: NodeStatus) {
 }
 
 export interface NodeTableProps {
-  tableData: TableData[]
+  tableData: TableData[];
 }
 
 export default function NodeTable(props: NodeTableProps) {
   let { tableData } = props;
-  const [order, setOrder] = React.useState<Order>('asc');
-  const [orderBy, setOrderBy] = React.useState<keyof TableData>('status');
+  const [order, setOrder] = React.useState<Order>("asc");
+  const [orderBy, setOrderBy] = React.useState<keyof TableData>("status");
   const [selected, setSelected] = React.useState<string | undefined>(undefined);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
@@ -392,8 +449,8 @@ export default function NodeTable(props: NodeTableProps) {
     event: React.MouseEvent<unknown>,
     property: keyof TableData,
   ) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
 
@@ -410,7 +467,9 @@ export default function NodeTable(props: NodeTableProps) {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -431,18 +490,20 @@ export default function NodeTable(props: NodeTableProps) {
     [order, orderBy, page, rowsPerPage, tableData],
   );
 
-
-
   return (
     <Paper elevation={1} sx={{ margin: 5 }}>
-      <Box sx={{ width: '100%' }}>
-        <Paper sx={{ width: '100%', mb: 2 }}>
-          <EnhancedTableToolbar tableData={tableData} selected={selected} onClear={() => setSelected(undefined)} />
+      <Box sx={{ width: "100%" }}>
+        <Paper sx={{ width: "100%", mb: 2 }}>
+          <EnhancedTableToolbar
+            tableData={tableData}
+            selected={selected}
+            onClear={() => setSelected(undefined)}
+          />
           <TableContainer>
             <Table
               sx={{ minWidth: 750 }}
               aria-labelledby="tableTitle"
-              size={dense ? 'small' : 'medium'}
+              size={dense ? "small" : "medium"}
             >
               <EnhancedTableHead
                 order={order}
@@ -464,17 +525,17 @@ export default function NodeTable(props: NodeTableProps) {
                       tabIndex={-1}
                       key={row.name}
                       selected={isItemSelected}
-                      sx={{ cursor: 'pointer' }}
+                      sx={{ cursor: "pointer" }}
                     >
-                      <TableCell
-                        component="th"
-                        id={labelId}
-                        scope="row"
-                      >
+                      <TableCell component="th" id={labelId} scope="row">
                         {renderName(row.name, row.id)}
                       </TableCell>
-                      <TableCell align="right">{renderStatus(row.status)}</TableCell>
-                      <TableCell align="right">{renderLastSeen(row.last_seen)}</TableCell>
+                      <TableCell align="right">
+                        {renderStatus(row.status)}
+                      </TableCell>
+                      <TableCell align="right">
+                        {renderLastSeen(row.last_seen)}
+                      </TableCell>
                     </TableRow>
                   );
                 })}
