@@ -1,5 +1,22 @@
 # cLan - awesome UI
 
+## Prettier
+
+To use prettier and the plugins using vscode/vscodium the `prettier.config.js` needs to be at the root level of the editor's file explorer
+
+`cd clan-core/pkgs/ui && code .`
+
+When inspecting `OUTPUT > Prettier` the config should've been loaded:
+
+```sh
+["INFO" - 1:47:43 PM] Formatting completed in 48ms.
+["INFO" - 1:48:07 PM] Using config file at '.../clan-core/pkgs/ui/prettier.config.cjs'
+```
+
+If you have enabled `formatOnSave` the tailwind classes should get sorted into the officially recommended order.
+
+`prettier -w ./src/ --config prettier.config.cjs`
+
 ## Commands
 
 After changing dependencies with
@@ -17,4 +34,3 @@ To sort classnames manually:
 
 `cd /clan-core/pkgs/ui/`
 
-`prettier -w ./src/ --config pconf.cjs`

@@ -71,7 +71,7 @@ export default function RootLayout({
               <div
                 className={tw`${
                   !showSidebar && translate
-                } flex h-full w-full flex-col transition-[margin] ease-in-out duration-150`}
+                } flex h-full w-full flex-col overflow-y-scroll transition-[margin] duration-150 ease-in-out`}
               >
                 <div className="min-h-10 static top-0 mb-2 py-2">
                   <div className="grid grid-cols-3">
@@ -96,7 +96,7 @@ export default function RootLayout({
                 </div>
 
                 <div className="px-1">
-                  <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+                  <div className="relative flex flex-1 flex-col overflow-x-hidden">
                     <main>{children}</main>
                   </div>
                 </div>

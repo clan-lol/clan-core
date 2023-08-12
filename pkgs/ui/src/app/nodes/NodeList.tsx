@@ -38,19 +38,7 @@ import {
 } from "@mui/material";
 import hexRgb from "hex-rgb";
 import useMediaQuery from "@mui/material/useMediaQuery";
-
-export interface TableData {
-  name: string;
-  id: string;
-  status: NodeStatus;
-  last_seen: number;
-}
-
-export enum NodeStatus {
-  Online,
-  Offline,
-  Pending,
-}
+import { NodeStatus, TableData } from "@/data/nodeData";
 
 interface HeadCell {
   disablePadding: boolean;
