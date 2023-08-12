@@ -63,8 +63,8 @@ const menuEntries: MenuEntry[] = [
   },
 ];
 
-const hideSidebar = tw`-translate-x-12 absolute lg:-translate-x-64`;
-const showSidebar = tw`lg:translate-x-0 static`;
+const hideSidebar = tw`-translate-x-14 lg:-translate-x-64`;
+const showSidebar = tw`lg:translate-x-0`;
 
 interface SidebarProps {
   show: boolean;
@@ -76,7 +76,7 @@ export function Sidebar(props: SidebarProps) {
     <aside
       className={tw`${
         show ? showSidebar : hideSidebar
-      } z-9999 dark:bg-boxdark left-0 top-0 flex h-screen w-12 flex-col overflow-x-hidden overflow-y-hidden bg-zinc-950 lg:w-64 transition ease-in-out duration-150`}
+      } z-9999 dark:bg-boxdark static left-0 top-0 flex h-screen w-14 flex-col overflow-x-hidden overflow-y-hidden bg-zinc-950 transition duration-150 ease-in-out lg:w-64`}
     >
       <div className="py-5.5 lg:py-6.5 flex items-center justify-between gap-2 overflow-hidden px-0 lg:px-6">
         <div className="mt-8 hidden w-full text-center font-semibold text-white lg:block">
@@ -91,15 +91,15 @@ export function Sidebar(props: SidebarProps) {
       </div>
       <Divider
         flexItem
-        className="mx-8 mb-4 mt-9 bg-zinc-600 hidden lg:block"
+        className="mx-8 mb-4 mt-9 hidden bg-zinc-600 lg:block"
       />
-      <div className="w-full flex justify-center">
+      <div className="flex w-full justify-center">
         <IconButton size="large" className="text-white" onClick={onClose}>
           <ChevronLeftIcon fontSize="inherit" />
         </IconButton>
       </div>
       <div className="flex flex-col overflow-hidden overflow-y-auto">
-        <List className="mb-14 px-0 pb-4 text-white lg:px-4 lg:mt-1">
+        <List className="mb-14 px-0 pb-4 text-white lg:mt-1 lg:px-4">
           {menuEntries.map((menuEntry, idx) => {
             return (
               <ListItem
@@ -131,7 +131,7 @@ export function Sidebar(props: SidebarProps) {
           })}
         </List>
 
-        <Divider flexItem className="mx-8 my-10 bg-zinc-600 hidden lg:block" />
+        <Divider flexItem className="mx-8 my-10 hidden bg-zinc-600 lg:block" />
         <div className="max-w-60 shadow-default mx-auto mb-8 hidden w-full rounded-sm px-4 py-6 text-center align-bottom lg:block">
           <h3 className="mb-1 w-full font-semibold text-white">
             Clan.lol Admin
