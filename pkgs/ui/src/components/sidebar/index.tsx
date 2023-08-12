@@ -76,7 +76,7 @@ export function Sidebar(props: SidebarProps) {
     <aside
       className={tw`${
         show ? showSidebar : hideSidebar
-      } z-9999 dark:bg-boxdark static left-0 top-0 flex h-screen w-14 flex-col overflow-x-hidden overflow-y-hidden bg-zinc-950 transition duration-150 ease-in-out lg:w-64`}
+      } z-9999 dark:bg-boxdark static  left-0 top-0 flex h-screen w-14 flex-col overflow-x-hidden overflow-y-hidden bg-zinc-950 transition duration-150 ease-in-out lg:w-64`}
     >
       <div className="py-5.5 lg:py-6.5 flex items-center justify-between gap-2 overflow-hidden px-0 lg:px-6">
         <div className="mt-8 hidden w-full text-center font-semibold text-white lg:block">
