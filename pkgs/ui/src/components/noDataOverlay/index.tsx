@@ -34,7 +34,7 @@ interface NoDataOverlayProps {
 export function NoDataOverlay(props: NoDataOverlayProps) {
   const { label } = props;
   return (
-    <StyledGridOverlay>
+    <StyledGridOverlay className="block p-2">
       <svg
         width="120"
         height="100"

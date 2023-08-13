@@ -96,7 +96,7 @@ export default function RootLayout({
                 </div>
 
                 <div className="px-1">
-                  <div className="relative flex flex-1 flex-col overflow-x-hidden">
+                  <div className="relative flex h-full flex-1 flex-col">
                     <main>{children}</main>
                   </div>
                 </div>
