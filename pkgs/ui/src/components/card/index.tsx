@@ -8,7 +8,7 @@ interface DashboardCardProps {
 const DashboardCard = (props: DashboardCardProps) => {
   const { children, title } = props;
   return (
-    <div className="h-full w-full bg-slate-50 shadow-sm shadow-slate-500">
+    <div className="h-full w-full border border-solid border-slate-100 bg-slate-50 shadow-sm shadow-slate-400">
       <div className="h-full w-full px-3 py-2">
         <Typography variant="h6" color={"secondary"}>
           {title}
