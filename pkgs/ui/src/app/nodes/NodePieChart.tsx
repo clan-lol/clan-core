@@ -37,6 +37,20 @@ export default function NodePieChart(props: Props) {
             dataKey="value"
             nameKey="name"
             label={showLabels}
+            legendType="circle"
+            cx="50%"
+            cy="50%"
+            startAngle={0}
+            endAngle={360}
+            paddingAngle={0}
+            labelLine={true}
+            hide={false}
+            minAngle={0}
+            isAnimationActive={true}
+            animationBegin={0}
+            animationDuration={1000}
+            animationEasing="ease-in"
+            blendStroke={true}
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />

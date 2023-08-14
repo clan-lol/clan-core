@@ -194,9 +194,9 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     ).length;
 
     return [
-      { name: "Online", value: online, color: "#2E7D32" },
-      { name: "Offline", value: offline, color: "#db3927" },
-      { name: "Pending", value: pending, color: "#FFBB28" },
+      { name: "Online", value: online, color: theme.palette.success.main },
+      { name: "Offline", value: offline, color: theme.palette.error.main },
+      { name: "Pending", value: pending, color: theme.palette.warning.main },
     ];
   }, [tableData]);
 
@@ -230,7 +230,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             height: 110,
             backgroundColor: hexRgb(pieItem.color, {
               format: "css",
-              alpha: 0.18,
+              alpha: 0.25,
             }),
           }}
         >
@@ -338,7 +338,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       <Grid2
         key="PieChart"
         lg={6}
-        sm={12}
+        xs={12}
         display="flex"
         justifyContent="center"
         alignItems="center"
@@ -353,7 +353,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         key="CardStack"
         lg={6}
         display="flex"
-        sx={{ display: { lg: "flex", sm: "none" } }}
+        sx={{ display: { lg: "flex", xs: "none" } }}
       >
         {cardStack}
       </Grid2>
@@ -426,6 +426,10 @@ export interface NodeTableProps {
 
 export default function NodeTable(props: NodeTableProps) {
   let { tableData } = props;
+
+  const theme = useTheme();
+  const is_xs = useMediaQuery(theme.breakpoints.only("xs"));
+
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof TableData>("status");
   const [selected, setSelected] = React.useState<string | undefined>(undefined);
@@ -479,7 +483,7 @@ export default function NodeTable(props: NodeTableProps) {
   );
 
   return (
-    <Paper elevation={1} sx={{ margin: 5 }}>
+
       <Box sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
           <EnhancedTableToolbar
@@ -542,6 +546,7 @@ export default function NodeTable(props: NodeTableProps) {
           {/* TODO: This creates the error Warning: Prop `id` did not match. Server: ":RspmmcqH1:" Client: ":R3j6qpj9H1:" */}
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
+            labelRowsPerPage={is_xs ? "Rows" : "Rows per page:"}
             component="div"
             count={tableData.length}
             rowsPerPage={rowsPerPage}
@@ -551,6 +556,6 @@ export default function NodeTable(props: NodeTableProps) {
           />
         </Paper>
       </Box>
-    </Paper>
+
   );
 }
