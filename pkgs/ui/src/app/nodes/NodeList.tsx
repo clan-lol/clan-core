@@ -41,7 +41,7 @@ import {
 } from "@mui/material";
 import hexRgb from "hex-rgb";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { NodeStatus, TableData } from "@/data/nodeData";
+import { NodeStatus, NodeStatusKeys, TableData } from "@/data/nodeData";
 
 interface HeadCell {
   disablePadding: boolean;
@@ -379,7 +379,7 @@ function Row(props: {
   selected: string | undefined;
   setSelected: (a: string | undefined) => void;
 }) {
-  function renderStatus(status: NodeStatus) {
+  function renderStatus(status: NodeStatusKeys) {
     switch (status) {
       case NodeStatus.Online:
         return (
