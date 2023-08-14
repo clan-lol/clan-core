@@ -347,7 +347,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell id="dropdown"  colSpan={1} />
+        <TableCell id="dropdown" colSpan={1} />
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -427,9 +427,23 @@ function Row(props: {
     }
   };
 
+  const debug = true;
+  const debugSx = debug
+    ? {
+        "--Grid-borderWidth": "1px",
+        borderTop: "var(--Grid-borderWidth) solid",
+        borderLeft: "var(--Grid-borderWidth) solid",
+        borderColor: "divider",
+        "& > div": {
+          borderRight: "var(--Grid-borderWidth) solid",
+          borderBottom: "var(--Grid-borderWidth) solid",
+          borderColor: "divider",
+        },
+      }
+    : {};
+
   return (
     <React.Fragment>
-
       {/* Rendered Row */}
       <TableRow
         hover
@@ -440,7 +454,7 @@ function Row(props: {
         selected={isSelected}
         sx={{ cursor: "pointer" }}
       >
-        <TableCell  padding="none">
+        <TableCell padding="none">
           <IconButton
             aria-label="expand row"
             size="small"
@@ -449,7 +463,11 @@ function Row(props: {
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
-        <TableCell component="th" scope="row"   onClick={(event) => handleClick(event, row.name)}>
+        <TableCell
+          component="th"
+          scope="row"
+          onClick={(event) => handleClick(event, row.name)}
+        >
           <Stack>
             <Typography component="div" align="left" variant="body1">
               {row.name}
@@ -464,8 +482,16 @@ function Row(props: {
             </Typography>
           </Stack>
         </TableCell>
-        <TableCell align="right" onClick={(event) => handleClick(event, row.name)}>{renderStatus(row.status)}</TableCell>
-        <TableCell align="right" onClick={(event) => handleClick(event, row.name)}>
+        <TableCell
+          align="right"
+          onClick={(event) => handleClick(event, row.name)}
+        >
+          {renderStatus(row.status)}
+        </TableCell>
+        <TableCell
+          align="right"
+          onClick={(event) => handleClick(event, row.name)}
+        >
           <Typography component="div" align="left" variant="body1">
             {row.last_seen} days ago
           </Typography>
@@ -478,26 +504,17 @@ function Row(props: {
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <Typography variant="h6" gutterBottom component="div">
-                History
+                Metadata
               </Typography>
-              <Table size="small" aria-label="purchases">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Customer</TableCell>
-                    <TableCell align="right">Amount</TableCell>
-                    <TableCell align="right">Total price ($)</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  <TableRow key="test1">
-                    <TableCell>Test1</TableCell>
-                    <TableCell>Test2</TableCell>
-                    <TableCell align="right">Test</TableCell>
-                    <TableCell align="right">Test</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+              <Grid2 container spacing={2} paddingLeft={0}>
+                <Grid2 xs={6} style={{ ...debugSx }} justifyContent="left"  display="flex" paddingRight={3}>
+                  <Box >Hello1</Box>
+                </Grid2>
+                <Grid2 xs={6} style={{ ...debugSx }} paddingLeft={4}>
+                  <Box>Hello2</Box>
+                </Grid2>
+
+              </Grid2>
             </Box>
           </Collapse>
         </TableCell>

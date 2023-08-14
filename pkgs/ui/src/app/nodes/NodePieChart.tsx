@@ -37,7 +37,7 @@ export default function NodePieChart(props: Props) {
             dataKey="value"
             nameKey="name"
             label={showLabels}
-            legendType="circle"
+            legendType="square"
             cx="50%"
             cy="50%"
             startAngle={0}
