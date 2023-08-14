@@ -8,6 +8,7 @@ import {
   IconButton,
   ThemeProvider,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { ChangeEvent, useState } from "react";
 
@@ -38,8 +39,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const userPrefersDarkmode = useMediaQuery("(prefers-color-scheme: dark)");
+  const theme = useTheme();
+  const is_small = useMediaQuery(theme.breakpoints.down("sm"));
+
   let [useDarkTheme, setUseDarkTheme] = useState(false);
   let [showSidebar, setShowSidebar] = useState(true);
+
+  // If the screen is small, hide the sidebar
+  React.useEffect(() => {
+    if (is_small) {
+      setShowSidebar(false);
+    } else {
+      setShowSidebar(true);
+    }
+  }, [is_small]);
+
   React.useEffect(() => {
     if (useDarkTheme !== userPrefersDarkmode) {
       // Enable dark theme if the user prefers dark mode

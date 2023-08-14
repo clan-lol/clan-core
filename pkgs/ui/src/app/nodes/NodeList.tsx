@@ -27,18 +27,21 @@ import Stack from "@mui/material/Stack/Stack";
 import ModeIcon from "@mui/icons-material/Mode";
 import ClearIcon from "@mui/icons-material/Clear";
 import Fade from "@mui/material/Fade/Fade";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import NodePieChart, { PieData } from "./NodePieChart";
 import Grid2 from "@mui/material/Unstable_Grid2"; // Grid version 2
 import {
   Card,
   CardContent,
+  Collapse,
   Container,
   FormGroup,
   useTheme,
 } from "@mui/material";
 import hexRgb from "hex-rgb";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { NodeStatus, TableData } from "@/data/nodeData";
+import { NodeStatus, NodeStatusKeys, TableData } from "@/data/nodeData";
 
 interface HeadCell {
   disablePadding: boolean;
@@ -111,52 +114,6 @@ function stableSort<T>(
   return stabilizedThis.map((el) => el[0]);
 }
 
-interface EnhancedTableProps {
-  onRequestSort: (
-    event: React.MouseEvent<unknown>,
-    property: keyof TableData,
-  ) => void;
-  order: Order;
-  orderBy: string;
-  rowCount: number;
-}
-
-function EnhancedTableHead(props: EnhancedTableProps) {
-  const { order, orderBy, onRequestSort } = props;
-  const createSortHandler =
-    (property: keyof TableData) => (event: React.MouseEvent<unknown>) => {
-      onRequestSort(event, property);
-    };
-
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.alignRight ? "right" : "left"}
-            padding={headCell.disablePadding ? "none" : "normal"}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
-
 interface EnhancedTableToolbarProps {
   selected: string | undefined;
   tableData: TableData[];
@@ -194,9 +151,9 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     ).length;
 
     return [
-      { name: "Online", value: online, color: "#2E7D32" },
-      { name: "Offline", value: offline, color: "#db3927" },
-      { name: "Pending", value: pending, color: "#FFBB28" },
+      { name: "Online", value: online, color: theme.palette.success.main },
+      { name: "Offline", value: offline, color: theme.palette.error.main },
+      { name: "Pending", value: pending, color: theme.palette.warning.main },
     ];
   }, [tableData]);
 
@@ -230,7 +187,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
             height: 110,
             backgroundColor: hexRgb(pieItem.color, {
               format: "css",
-              alpha: 0.18,
+              alpha: 0.25,
             }),
           }}
         >
@@ -337,8 +294,8 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       {/* Pie Chart Grid */}
       <Grid2
         key="PieChart"
-        lg={6}
-        sm={12}
+        md={6}
+        xs={12}
         display="flex"
         justifyContent="center"
         alignItems="center"
@@ -353,7 +310,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         key="CardStack"
         lg={6}
         display="flex"
-        sx={{ display: { lg: "flex", sm: "none" } }}
+        sx={{ display: { lg: "flex", xs: "none", md: "flex" } }}
       >
         {cardStack}
       </Grid2>
@@ -366,66 +323,212 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-function renderLastSeen(last_seen: number) {
-  return (
-    <Typography component="div" align="left" variant="body1">
-      {last_seen} days ago
-    </Typography>
-  );
-}
-
-function renderName(name: string, id: string) {
-  return (
-    <Stack>
-      <Typography component="div" align="left" variant="body1">
-        {name}
-      </Typography>
-      <Typography color="grey" component="div" align="left" variant="body2">
-        {id}
-      </Typography>
-    </Stack>
-  );
-}
-
-function renderStatus(status: NodeStatus) {
-  switch (status) {
-    case NodeStatus.Online:
-      return (
-        <Stack direction="row" alignItems="center" gap={1}>
-          <CircleIcon color="success" style={{ fontSize: 15 }} />
-          <Typography component="div" align="left" variant="body1">
-            Online
-          </Typography>
-        </Stack>
-      );
-
-    case NodeStatus.Offline:
-      return (
-        <Stack direction="row" alignItems="center" gap={1}>
-          <CircleIcon color="error" style={{ fontSize: 15 }} />
-          <Typography component="div" align="left" variant="body1">
-            Offline
-          </Typography>
-        </Stack>
-      );
-    case NodeStatus.Pending:
-      return (
-        <Stack direction="row" alignItems="center" gap={1}>
-          <CircleIcon color="warning" style={{ fontSize: 15 }} />
-          <Typography component="div" align="left" variant="body1">
-            Pending
-          </Typography>
-        </Stack>
-      );
-  }
-}
-
 export interface NodeTableProps {
   tableData: TableData[];
 }
 
+interface EnhancedTableProps {
+  onRequestSort: (
+    event: React.MouseEvent<unknown>,
+    property: keyof TableData,
+  ) => void;
+  order: Order;
+  orderBy: string;
+  rowCount: number;
+}
+
+function EnhancedTableHead(props: EnhancedTableProps) {
+  const { order, orderBy, onRequestSort } = props;
+  const createSortHandler =
+    (property: keyof TableData) => (event: React.MouseEvent<unknown>) => {
+      onRequestSort(event, property);
+    };
+
+  return (
+    <TableHead>
+      <TableRow>
+        <TableCell id="dropdown" colSpan={1} />
+        {headCells.map((headCell) => (
+          <TableCell
+            key={headCell.id}
+            align={headCell.alignRight ? "right" : "left"}
+            padding={headCell.disablePadding ? "none" : "normal"}
+            sortDirection={orderBy === headCell.id ? order : false}
+          >
+            <TableSortLabel
+              active={orderBy === headCell.id}
+              direction={orderBy === headCell.id ? order : "asc"}
+              onClick={createSortHandler(headCell.id)}
+            >
+              {headCell.label}
+              {orderBy === headCell.id ? (
+                <Box component="span" sx={visuallyHidden}>
+                  {order === "desc" ? "sorted descending" : "sorted ascending"}
+                </Box>
+              ) : null}
+            </TableSortLabel>
+          </TableCell>
+        ))}
+      </TableRow>
+    </TableHead>
+  );
+}
+
+function Row(props: {
+  row: TableData;
+  selected: string | undefined;
+  setSelected: (a: string | undefined) => void;
+}) {
+  function renderStatus(status: NodeStatusKeys) {
+    switch (status) {
+      case NodeStatus.Online:
+        return (
+          <Stack direction="row" alignItems="center" gap={1}>
+            <CircleIcon color="success" style={{ fontSize: 15 }} />
+            <Typography component="div" align="left" variant="body1">
+              Online
+            </Typography>
+          </Stack>
+        );
+
+      case NodeStatus.Offline:
+        return (
+          <Stack direction="row" alignItems="center" gap={1}>
+            <CircleIcon color="error" style={{ fontSize: 15 }} />
+            <Typography component="div" align="left" variant="body1">
+              Offline
+            </Typography>
+          </Stack>
+        );
+      case NodeStatus.Pending:
+        return (
+          <Stack direction="row" alignItems="center" gap={1}>
+            <CircleIcon color="warning" style={{ fontSize: 15 }} />
+            <Typography component="div" align="left" variant="body1">
+              Pending
+            </Typography>
+          </Stack>
+        );
+    }
+  }
+
+  const { row, selected, setSelected } = props;
+  const [open, setOpen] = React.useState(false);
+  //const labelId = `enhanced-table-checkbox-${index}`;
+
+  // Speed optimization. We compare string pointers here instead of the string content.
+  const isSelected = selected == row.name;
+
+  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
+    if (isSelected) {
+      setSelected(undefined);
+    } else {
+      setSelected(name);
+    }
+  };
+
+  const debug = true;
+  const debugSx = debug
+    ? {
+        "--Grid-borderWidth": "1px",
+        borderTop: "var(--Grid-borderWidth) solid",
+        borderLeft: "var(--Grid-borderWidth) solid",
+        borderColor: "divider",
+        "& > div": {
+          borderRight: "var(--Grid-borderWidth) solid",
+          borderBottom: "var(--Grid-borderWidth) solid",
+          borderColor: "divider",
+        },
+      }
+    : {};
+
+  return (
+    <React.Fragment>
+      {/* Rendered Row */}
+      <TableRow
+        hover
+        role="checkbox"
+        aria-checked={isSelected}
+        tabIndex={-1}
+        key={row.name}
+        selected={isSelected}
+        sx={{ cursor: "pointer" }}
+      >
+        <TableCell padding="none">
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+          </IconButton>
+        </TableCell>
+        <TableCell
+          component="th"
+          scope="row"
+          onClick={(event) => handleClick(event, row.name)}
+        >
+          <Stack>
+            <Typography component="div" align="left" variant="body1">
+              {row.name}
+            </Typography>
+            <Typography
+              color="grey"
+              component="div"
+              align="left"
+              variant="body2"
+            >
+              {row.id}
+            </Typography>
+          </Stack>
+        </TableCell>
+        <TableCell
+          align="right"
+          onClick={(event) => handleClick(event, row.name)}
+        >
+          {renderStatus(row.status)}
+        </TableCell>
+        <TableCell
+          align="right"
+          onClick={(event) => handleClick(event, row.name)}
+        >
+          <Typography component="div" align="left" variant="body1">
+            {row.last_seen} days ago
+          </Typography>
+        </TableCell>
+      </TableRow>
+
+      {/* Row Expansion */}
+      <TableRow>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ margin: 1 }}>
+              <Typography variant="h6" gutterBottom component="div">
+                Metadata
+              </Typography>
+              <Grid2 container spacing={2} paddingLeft={0}>
+                <Grid2 xs={6} style={{ ...debugSx }} justifyContent="left"  display="flex" paddingRight={3}>
+                  <Box >Hello1</Box>
+                </Grid2>
+                <Grid2 xs={6} style={{ ...debugSx }} paddingLeft={4}>
+                  <Box>Hello2</Box>
+                </Grid2>
+
+              </Grid2>
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </React.Fragment>
+  );
+}
+
 export default function NodeTable(props: NodeTableProps) {
   let { tableData } = props;
+
+  const theme = useTheme();
+  const is_xs = useMediaQuery(theme.breakpoints.only("xs"));
+
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof TableData>("status");
   const [selected, setSelected] = React.useState<string | undefined>(undefined);
@@ -442,15 +545,6 @@ export default function NodeTable(props: NodeTableProps) {
     setOrderBy(property);
   };
 
-  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-    // Speed optimization. We compare string pointers here instead of the string content.
-    if (selected == name) {
-      setSelected(undefined);
-    } else {
-      setSelected(name);
-    }
-  };
-
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -461,9 +555,6 @@ export default function NodeTable(props: NodeTableProps) {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  // Speed optimization. We compare string pointers here instead of the string content.
-  const isSelected = (name: string) => name == selected;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -479,78 +570,62 @@ export default function NodeTable(props: NodeTableProps) {
   );
 
   return (
-    <Paper elevation={1} sx={{ margin: 5 }}>
-      <Box sx={{ width: "100%" }}>
-        <Paper sx={{ width: "100%", mb: 2 }}>
-          <EnhancedTableToolbar
-            tableData={tableData}
-            selected={selected}
-            onClear={() => setSelected(undefined)}
-          />
-          <TableContainer>
-            <Table
-              sx={{ minWidth: 750 }}
-              aria-labelledby="tableTitle"
-              size={dense ? "small" : "medium"}
-            >
-              <EnhancedTableHead
-                order={order}
-                orderBy={orderBy}
-                onRequestSort={handleRequestSort}
-                rowCount={tableData.length}
-              />
-              <TableBody>
-                {visibleRows.map((row, index) => {
-                  const isItemSelected = isSelected(row.name);
-                  const labelId = `enhanced-table-checkbox-${index}`;
+    <Box sx={{ width: "100%" }}>
+      <Paper sx={{ width: "100%", mb: 2 }}>
+        <EnhancedTableToolbar
+          tableData={tableData}
+          selected={selected}
+          onClear={() => setSelected(undefined)}
+        />
+        <TableContainer>
+          <Table
+            sx={{ minWidth: 750 }}
+            aria-labelledby="tableTitle"
+            size={dense ? "small" : "medium"}
+          >
+            <EnhancedTableHead
+              order={order}
+              orderBy={orderBy}
+              onRequestSort={handleRequestSort}
+              rowCount={tableData.length}
+            />
+            <TableBody>
+              {visibleRows.map((row, index) => {
+                const labelId = `enhanced-table-checkbox-${index}`;
 
-                  return (
-                    <TableRow
-                      hover
-                      onClick={(event) => handleClick(event, row.name)}
-                      role="checkbox"
-                      aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      key={row.name}
-                      selected={isItemSelected}
-                      sx={{ cursor: "pointer" }}
-                    >
-                      <TableCell component="th" id={labelId} scope="row">
-                        {renderName(row.name, row.id)}
-                      </TableCell>
-                      <TableCell align="right">
-                        {renderStatus(row.status)}
-                      </TableCell>
-                      <TableCell align="right">
-                        {renderLastSeen(row.last_seen)}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-                {emptyRows > 0 && (
-                  <TableRow
-                    style={{
-                      height: (dense ? 33 : 53) * emptyRows,
-                    }}
-                  >
-                    <TableCell colSpan={6} />
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          {/* TODO: This creates the error Warning: Prop `id` did not match. Server: ":RspmmcqH1:" Client: ":R3j6qpj9H1:" */}
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={tableData.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
-        </Paper>
-      </Box>
-    </Paper>
+                return (
+                  <Row
+                    key={row.id}
+                    row={row}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                );
+              })}
+              {emptyRows > 0 && (
+                <TableRow
+                  style={{
+                    height: (dense ? 33 : 53) * emptyRows,
+                  }}
+                >
+                  <TableCell colSpan={6} />
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        {/* TODO: This creates the error Warning: Prop `id` did not match. Server: ":RspmmcqH1:" Client: ":R3j6qpj9H1:" */}
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          labelRowsPerPage={is_xs ? "Rows" : "Rows per page:"}
+          component="div"
+          count={tableData.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Paper>
+    </Box>
   );
 }

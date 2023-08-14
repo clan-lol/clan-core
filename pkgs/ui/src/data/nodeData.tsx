@@ -1,20 +1,22 @@
 export interface TableData {
   name: string;
   id: string;
-  status: NodeStatus;
+  status: NodeStatusKeys;
   last_seen: number;
 }
 
-export enum NodeStatus {
-  Online,
-  Offline,
-  Pending,
+export const NodeStatus = {
+  Online: "Online",
+  Offline: "Offline",
+  Pending: "Pending",
 }
+
+export type NodeStatusKeys = typeof NodeStatus[keyof typeof NodeStatus];
 
 function createData(
   name: string,
   id: string,
-  status: NodeStatus,
+  status: NodeStatusKeys,
   last_seen: number,
 ): TableData {
   return {
