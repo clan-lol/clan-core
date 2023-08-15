@@ -3,7 +3,6 @@
 , black
 , bubblewrap
 , installShellFiles
-, jsonschema
 , mypy
 , nix
 , openssh
@@ -22,7 +21,7 @@
 , rsync
 }:
 let
-  dependencies = [ argcomplete jsonschema ];
+  dependencies = [ argcomplete ];
 
   testDependencies = [
     pytest
