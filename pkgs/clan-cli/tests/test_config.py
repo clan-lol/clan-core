@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 
 from clan_cli import config
+from clan_cli.config import parsing
 
 example_schema = f"{Path(config.__file__).parent}/jsonschema/example-schema.json"
 
@@ -65,7 +66,7 @@ def test_walk_jsonschema_all_types() -> None:
         "number": float,
         "string": str,
     }
-    assert config.options_types_from_schema(schema) == expected
+    assert config.parsing.options_types_from_schema(schema) == expected
 
 
 def test_walk_jsonschema_nested() -> None:
@@ -87,7 +88,7 @@ def test_walk_jsonschema_nested() -> None:
         "name.first": str,
         "name.last": str,
     }
-    assert config.options_types_from_schema(schema) == expected
+    assert config.parsing.options_types_from_schema(schema) == expected
 
 
 # test walk_jsonschema with dynamic attributes (e.g. "additionalProperties")
@@ -106,4 +107,44 @@ def test_walk_jsonschema_dynamic_attrs() -> None:
         "age": int,
         "users.<name>": str,  # <name> is a placeholder for any string
     }
-    assert config.options_types_from_schema(schema) == expected
+    assert config.parsing.options_types_from_schema(schema) == expected
+
+
+def test_type_from_schema_path_simple() -> None:
+    schema = dict(
+        type="boolean",
+    )
+    assert parsing.type_from_schema_path(schema, []) == bool
+
+
+def test_type_from_schema_path_nested() -> None:
+    schema = dict(
+        type="object",
+        properties=dict(
+            name=dict(
+                type="object",
+                properties=dict(
+                    first=dict(type="string"),
+                    last=dict(type="string"),
+                ),
+            ),
+            age=dict(type="integer"),
+        ),
+    )
+    assert parsing.type_from_schema_path(schema, ["age"]) == int
+    assert parsing.type_from_schema_path(schema, ["name", "first"]) == str
+
+
+def test_type_from_schema_path_dynamic_attrs() -> None:
+    schema = dict(
+        type="object",
+        properties=dict(
+            age=dict(type="integer"),
+            users=dict(
+                type="object",
+                additionalProperties=dict(type="string"),
+            ),
+        ),
+    )
+    assert parsing.type_from_schema_path(schema, ["age"]) == int
+    assert parsing.type_from_schema_path(schema, ["users", "foo"]) == str
