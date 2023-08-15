@@ -9,7 +9,7 @@ import pytest
 from clan_cli import config
 from clan_cli.config import parsing
 
-example_schema = f"{Path(config.__file__).parent}/jsonschema/example-schema.json"
+example_schema = f"{Path(config.__file__).parent}/jsonschema/options.json"
 
 
 # use pytest.parametrize

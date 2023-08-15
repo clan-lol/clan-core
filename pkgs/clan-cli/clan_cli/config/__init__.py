@@ -7,9 +7,25 @@ from typing import Any, Optional, Type
 
 from clan_cli.errors import ClanError
 
-from . import parsing
-
 script_dir = Path(__file__).parent
+
+
+# nixos option type description to python type
+def map_type(type: str) -> Type:
+    if type == "boolean":
+        return bool
+    elif type in ["integer", "signed integer"]:
+        return int
+    elif type == "string":
+        return str
+    elif type.startswith("attribute set of"):
+        subtype = type.removeprefix("attribute set of ")
+        return dict[str, map_type(subtype)]  # type: ignore
+    elif type.startswith("list of"):
+        subtype = type.removeprefix("list of ")
+        return list[map_type(subtype)]  # type: ignore
+    else:
+        raise ClanError(f"Unknown type {type}")
 
 
 class Kwargs:
@@ -30,31 +46,66 @@ class AllContainer(list):
         return True
 
 
-def process_args(args: argparse.Namespace, schema: dict) -> None:
-    option = args.option
-    value_arg = args.value
-
+def process_args(option: str, value: Any, options: dict) -> None:
     option_path = option.split(".")
+
+    # if the option cannot be found, then likely the type is attrs and we need to
+    # find the parent option
+    if option not in options:
+        if len(option_path) == 1:
+            raise ClanError(f"Option {option} not found")
+        option_parent = option_path[:-1]
+        attr = option_path[-1]
+        return process_args(
+            option=".".join(option_parent),
+            value={attr: value},
+            options=options,
+        )
+
+    target_type = map_type(options[option]["type"])
+
     # construct a nested dict from the option path and set the value
     result: dict[str, Any] = {}
     current = result
     for part in option_path[:-1]:
         current[part] = {}
         current = current[part]
-    current[option_path[-1]] = value_arg
+    current[option_path[-1]] = value
 
-    # validate the result against the schema and cast the value to the expected type
-    schema_type = parsing.type_from_schema_path(schema, option_path)
+    # value is always a list, as the arg parser cannot know the type upfront
+    # and therefore always allows multiple arguments.
+    def cast(value: Any, type: Type) -> Any:
+        try:
+            # handle bools
+            if isinstance(type(), bool):
+                if value == "true":
+                    return True
+                elif value == "false":
+                    return False
+                else:
+                    raise ClanError(f"Invalid value {value} for boolean")
+            # handle lists
+            elif isinstance(type(), list):
+                subtype = type.__args__[0]
+                return [cast([x], subtype) for x in value]
+            # handle dicts
+            elif isinstance(type(), dict):
+                if not isinstance(value, dict):
+                    raise ClanError(
+                        f"Cannot set {option} directly. Specify a suboption like {option}.<name>"
+                    )
+                subtype = type.__args__[1]
+                return {k: cast(v, subtype) for k, v in value.items()}
+            else:
+                if len(value) > 1:
+                    raise ClanError(f"Too many values for {option}")
+                return type(value[0])
+        except ValueError:
+            raise ClanError(
+                f"Invalid type for option {option} (expected {type.__name__})"
+            )
 
-    # we use nargs="+", so we need to unwrap non-list values
-    if isinstance(schema_type(), list):
-        subtype = schema_type.__args__[0]
-        casted = [subtype(x) for x in value_arg]
-    elif isinstance(schema_type(), dict):
-        subtype = schema_type.__args__[1]
-        raise ClanError("Dicts are not supported")
-    else:
-        casted = schema_type(value_arg[0])
+    casted = cast(value, target_type)
 
     current[option_path[-1]] = casted
 
@@ -64,34 +115,28 @@ def process_args(args: argparse.Namespace, schema: dict) -> None:
 
 def register_parser(
     parser: argparse.ArgumentParser,
-    file: Path = Path(f"{script_dir}/jsonschema/example-schema.json"),
+    file: Path = Path(f"{script_dir}/jsonschema/options.json"),
 ) -> None:
-    if file.name.endswith(".nix"):
-        schema = parsing.schema_from_module_file(file)
-    else:
-        schema = json.loads(file.read_text())
-    return _register_parser(parser, schema)
+    options = json.loads(file.read_text())
+    return _register_parser(parser, options)
 
 
 # takes a (sub)parser and configures it
 def _register_parser(
     parser: Optional[argparse.ArgumentParser],
-    schema: dict[str, Any],
+    options: dict[str, Any],
 ) -> None:
-    # check if schema is a .nix file and load it in that case
-    if "type" not in schema:
-        raise ClanError("Schema has no type")
-    if schema["type"] != "object":
-        raise ClanError("Schema is not an object")
-
     if parser is None:
-        parser = argparse.ArgumentParser(description=schema.get("description"))
-
-    # get all possible options from the schema
-    options = parsing.options_types_from_schema(schema)
+        parser = argparse.ArgumentParser(
+            description="Set or show NixOS options",
+        )
 
     # inject callback function to process the input later
-    parser.set_defaults(func=lambda args: process_args(args, schema=schema))
+    parser.set_defaults(
+        func=lambda args: process_args(
+            option=args.option, value=args.value, options=options
+        )
+    )
 
     # add single positional argument for the option (e.g. "foo.bar")
     parser.add_argument(

@@ -1,0 +1,104 @@
+{
+  "age": {
+    "declarations": [
+      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "default": {
+      "_type": "literalExpression",
+      "text": "42"
+    },
+    "description": "The age of the user",
+    "loc": [
+      "age"
+    ],
+    "readOnly": false,
+    "type": "signed integer"
+  },
+  "isAdmin": {
+    "declarations": [
+      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "default": {
+      "_type": "literalExpression",
+      "text": "false"
+    },
+    "description": "Is the user an admin?",
+    "loc": [
+      "isAdmin"
+    ],
+    "readOnly": false,
+    "type": "boolean"
+  },
+  "kernelModules": {
+    "declarations": [
+      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "default": {
+      "_type": "literalExpression",
+      "text": "[\n  \"nvme\"\n  \"xhci_pci\"\n  \"ahci\"\n]"
+    },
+    "description": "A list of enabled kernel modules",
+    "loc": [
+      "kernelModules"
+    ],
+    "readOnly": false,
+    "type": "list of string"
+  },
+  "name": {
+    "declarations": [
+      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "default": {
+      "_type": "literalExpression",
+      "text": "\"John Doe\""
+    },
+    "description": "The name of the user",
+    "loc": [
+      "name"
+    ],
+    "readOnly": false,
+    "type": "string"
+  },
+  "services": {
+    "declarations": [
+      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "description": null,
+    "loc": [
+      "services"
+    ],
+    "readOnly": false,
+    "type": "submodule"
+  },
+  "services.opt": {
+    "declarations": [
+      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "default": {
+      "_type": "literalExpression",
+      "text": "\"foo\""
+    },
+    "description": "A submodule option",
+    "loc": [
+      "services",
+      "opt"
+    ],
+    "readOnly": false,
+    "type": "string"
+  },
+  "userIds": {
+    "declarations": [
+      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "default": {
+      "_type": "literalExpression",
+      "text": "{\n  albrecht = 3;\n  horst = 1;\n  peter = 2;\n}"
+    },
+    "description": "Some attributes",
+    "loc": [
+      "userIds"
+    ],
+    "readOnly": false,
+    "type": "attribute set of signed integer"
+  }
+}
