@@ -2,7 +2,7 @@ import { Typography } from "@mui/material";
 import { ReactNode } from "react";
 
 interface DashboardCardProps {
-  title: string;
+  title: ReactNode;
   children?: ReactNode;
 }
 const DashboardCard = (props: DashboardCardProps) => {

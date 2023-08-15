@@ -11,7 +11,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { ChangeEvent, useState } from "react";
-
+import { Toaster } from "react-hot-toast";
 import { StyledEngineProvider } from "@mui/material/styles";
 
 import { darkTheme, lightTheme } from "./theme/themes";
@@ -77,6 +77,7 @@ export default function RootLayout({
         <ThemeProvider theme={useDarkTheme ? darkTheme : lightTheme}>
           <body id="__next" className={roboto.className}>
             <CssBaseline />
+            <Toaster />
             <div className="flex h-screen overflow-hidden">
               <Sidebar
                 show={showSidebar}
