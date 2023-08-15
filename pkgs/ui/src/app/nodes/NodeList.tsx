@@ -33,6 +33,7 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import NodePieChart, { PieData } from "./NodePieChart";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
+import Link from "next/link";
 
 import Grid2 from "@mui/material/Unstable_Grid2"; // Grid version 2
 import {
@@ -118,7 +119,8 @@ function stableSort<T>(
   return stabilizedThis.map((el) => el[0]);
 }
 
-function BasicSpeedDial() {
+function CrudSpeedDial(props: {selected: string | undefined}) {
+  const { selected } = props;
   const [open, setOpen] = React.useState(false);
 
   function handleClose(event: any, reason: CloseReason) {
@@ -133,19 +135,22 @@ function BasicSpeedDial() {
     }
   }
 
+ const isSomethingSelected = selected != undefined;
+
   return (
     <Box
       sx={{
         transform: "translateZ(0px)",
         flexGrow: 1,
         position: "fixed",
-        right: 10,
-        top: 10,
+        right: 20,
+        top: 15,
         margin: 0,
         zIndex: 9000,
       }}
     >
       <SpeedDial
+        color="secondary"
         ariaLabel="SpeedDial basic example"
         icon={<SpeedDialIcon />}
         direction="down"
@@ -153,12 +158,29 @@ function BasicSpeedDial() {
         onOpen={handleOpen}
         open={open}
       >
-        <SpeedDialAction key="Edit" icon={<EditIcon />} tooltipTitle="Edit" />
-        <SpeedDialAction key="Add" icon={<AddIcon />} tooltipTitle="Add" />
+        <SpeedDialAction
+          key="Add"
+          icon={
+            <Link href="/nodes/add">
+              <AddIcon color="action" />
+            </Link>
+          }
+          tooltipTitle="Add"
+        />
+
         <SpeedDialAction
           key="Delete"
-          icon={<DeleteIcon />}
+          icon={<DeleteIcon color={isSomethingSelected ? "action" : "disabled"} />}
           tooltipTitle="Delete"
+        />
+        <SpeedDialAction
+          key="Edit"
+          icon={
+          <Link href="/nodes/edit">
+            <EditIcon color={isSomethingSelected ? "action" : "disabled"} />
+          </Link>
+          }
+          tooltipTitle="Edit"
         />
       </SpeedDial>
     </Box>
@@ -267,7 +289,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 
   return (
     <Grid2 container spacing={1} sx={debugSx}>
-      <BasicSpeedDial />
+      <CrudSpeedDial selected={selected}/>
       <Grid2 key="Header" xs={6}>
         <Typography
           sx={{ marginLeft: 3, marginTop: 1 }}
