@@ -119,7 +119,7 @@ function stableSort<T>(
   return stabilizedThis.map((el) => el[0]);
 }
 
-function CrudSpeedDial(props: {selected: string | undefined}) {
+function CrudSpeedDial(props: { selected: string | undefined }) {
   const { selected } = props;
   const [open, setOpen] = React.useState(false);
 
@@ -135,7 +135,19 @@ function CrudSpeedDial(props: {selected: string | undefined}) {
     }
   }
 
- const isSomethingSelected = selected != undefined;
+  const isSomethingSelected = selected != undefined;
+
+  function editDial() {
+    if (isSomethingSelected) {
+      return (
+        <Link href="/nodes/edit" style={{marginTop: 7.5}}>
+          <EditIcon color="action" />
+        </Link>
+      );
+    } else {
+      return <EditIcon color="disabled" />;
+    }
+  }
 
   return (
     <Box
@@ -161,7 +173,7 @@ function CrudSpeedDial(props: {selected: string | undefined}) {
         <SpeedDialAction
           key="Add"
           icon={
-            <Link href="/nodes/add">
+            <Link href="/nodes/add" style={{marginTop: 7.5}}>
               <AddIcon color="action" />
             </Link>
           }
@@ -170,18 +182,12 @@ function CrudSpeedDial(props: {selected: string | undefined}) {
 
         <SpeedDialAction
           key="Delete"
-          icon={<DeleteIcon color={isSomethingSelected ? "action" : "disabled"} />}
+          icon={
+            <DeleteIcon color={isSomethingSelected ? "action" : "disabled"} />
+          }
           tooltipTitle="Delete"
         />
-        <SpeedDialAction
-          key="Edit"
-          icon={
-          <Link href="/nodes/edit">
-            <EditIcon color={isSomethingSelected ? "action" : "disabled"} />
-          </Link>
-          }
-          tooltipTitle="Edit"
-        />
+        <SpeedDialAction key="Edit" icon={editDial()} tooltipTitle="Edit" />
       </SpeedDial>
     </Box>
   );
@@ -289,7 +295,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 
   return (
     <Grid2 container spacing={1} sx={debugSx}>
-      <CrudSpeedDial selected={selected}/>
+      <CrudSpeedDial selected={selected} />
       <Grid2 key="Header" xs={6}>
         <Typography
           sx={{ marginLeft: 3, marginTop: 1 }}
