@@ -14,22 +14,26 @@ import TableSortLabel from "@mui/material/TableSortLabel";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import SpeedDial, { CloseReason, OpenReason } from "@mui/material/SpeedDial";
+import SpeedDialIcon from "@mui/material/SpeedDialIcon";
+import SpeedDialAction from "@mui/material/SpeedDialAction";
 import { visuallyHidden } from "@mui/utils";
 import CircleIcon from "@mui/icons-material/Circle";
 import Stack from "@mui/material/Stack/Stack";
-import ModeIcon from "@mui/icons-material/Mode";
-import ClearIcon from "@mui/icons-material/Clear";
-import Fade from "@mui/material/Fade/Fade";
+import EditIcon from "@mui/icons-material/ModeEdit";
+import SearchIcon from "@mui/icons-material/Search";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import NodePieChart, { PieData } from "./NodePieChart";
+import Fab from "@mui/material/Fab";
+import AddIcon from "@mui/icons-material/Add";
+
 import Grid2 from "@mui/material/Unstable_Grid2"; // Grid version 2
 import {
   Card,
@@ -114,6 +118,53 @@ function stableSort<T>(
   return stabilizedThis.map((el) => el[0]);
 }
 
+function BasicSpeedDial() {
+  const [open, setOpen] = React.useState(false);
+
+  function handleClose(event: any, reason: CloseReason) {
+    if (reason === "toggle" || reason === "escapeKeyDown") {
+      setOpen(false);
+    }
+  }
+
+  function handleOpen(event: any, reason: OpenReason) {
+    if (reason === "toggle") {
+      setOpen(true);
+    }
+  }
+
+  return (
+    <Box
+      sx={{
+        transform: "translateZ(0px)",
+        flexGrow: 1,
+        position: "fixed",
+        right: 10,
+        top: 10,
+        margin: 0,
+        zIndex: 9000,
+      }}
+    >
+      <SpeedDial
+        ariaLabel="SpeedDial basic example"
+        icon={<SpeedDialIcon />}
+        direction="down"
+        onClose={handleClose}
+        onOpen={handleOpen}
+        open={open}
+      >
+        <SpeedDialAction key="Edit" icon={<EditIcon />} tooltipTitle="Edit" />
+        <SpeedDialAction key="Add" icon={<AddIcon />} tooltipTitle="Add" />
+        <SpeedDialAction
+          key="Delete"
+          icon={<DeleteIcon />}
+          tooltipTitle="Delete"
+        />
+      </SpeedDial>
+    </Box>
+  );
+}
+
 interface EnhancedTableToolbarProps {
   selected: string | undefined;
   tableData: TableData[];
@@ -122,7 +173,8 @@ interface EnhancedTableToolbarProps {
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   const { selected, onClear, tableData } = props;
   const theme = useTheme();
-  const matches = useMediaQuery(theme.breakpoints.down("lg"));
+  const is_lg = useMediaQuery(theme.breakpoints.down("lg"));
+  const is_sm = useMediaQuery(theme.breakpoints.down("sm"));
   const isSelected = selected != undefined;
   const [debug, setDebug] = React.useState<boolean>(false);
   const debugSx = debug
@@ -213,57 +265,9 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     </Stack>
   );
 
-  const selectedToolbar = (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        bgcolor: (theme) =>
-          alpha(
-            theme.palette.primary.main,
-            theme.palette.action.activatedOpacity,
-          ),
-      }}
-    >
-      <Tooltip title="Clear">
-        <IconButton onClick={onClear}>
-          <ClearIcon />
-        </IconButton>
-      </Tooltip>
-      <Typography
-        sx={{ flex: "1 1 100%" }}
-        color="inherit"
-        style={{ fontSize: 18, marginBottom: 3, marginLeft: 3 }}
-        component="div"
-      >
-        {selected} selected
-      </Typography>
-      <Tooltip title="Edit">
-        <IconButton>
-          <ModeIcon />
-        </IconButton>
-      </Tooltip>
-    </Toolbar>
-  );
-
-  const unselectedToolbar = (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-      }}
-    >
-      <Box sx={{ flex: "1 1 100%" }}></Box>
-      <Tooltip title="Filter list">
-        <IconButton>
-          <FilterListIcon />
-        </IconButton>
-      </Tooltip>
-    </Toolbar>
-  );
-
   return (
     <Grid2 container spacing={1} sx={debugSx}>
+      <BasicSpeedDial />
       <Grid2 key="Header" xs={6}>
         <Typography
           sx={{ marginLeft: 3, marginTop: 1 }}
@@ -275,7 +279,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         </Typography>
       </Grid2>
       {/* Debug Controls */}
-      <Grid2 key="Debug-Controls" xs={6} justifyContent="right" display="flex">
+      <Grid2 key="Debug-Controls" xs={6} justifyContent="left" display="flex">
         <FormGroup>
           <FormControlLabel
             control={
@@ -301,7 +305,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
         alignItems="center"
       >
         <Box height={350} width={400}>
-          <NodePieChart data={pieData} showLabels={matches} />
+          <NodePieChart data={pieData} showLabels={is_lg} />
         </Box>
       </Grid2>
 
@@ -317,7 +321,18 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 
       {/*Toolbar Grid */}
       <Grid2 key="Toolbar" xs={12}>
-        {isSelected ? selectedToolbar : unselectedToolbar}
+        <Toolbar
+          sx={{
+            pl: { sm: 2 },
+            pr: { xs: 1, sm: 1 },
+          }}
+        >
+          <Tooltip title="Filter list">
+            <IconButton>
+              <SearchIcon />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
       </Grid2>
     </Grid2>
   );
@@ -507,13 +522,18 @@ function Row(props: {
                 Metadata
               </Typography>
               <Grid2 container spacing={2} paddingLeft={0}>
-                <Grid2 xs={6} style={{ ...debugSx }} justifyContent="left"  display="flex" paddingRight={3}>
-                  <Box >Hello1</Box>
+                <Grid2
+                  xs={6}
+                  style={{ ...debugSx }}
+                  justifyContent="left"
+                  display="flex"
+                  paddingRight={3}
+                >
+                  <Box>Hello1</Box>
                 </Grid2>
-                <Grid2 xs={6} style={{ ...debugSx }} paddingLeft={4}>
+                <Grid2 xs={6} style={{ ...debugSx }} paddingLeft={6}>
                   <Box>Hello2</Box>
                 </Grid2>
-
               </Grid2>
             </Box>
           </Collapse>
