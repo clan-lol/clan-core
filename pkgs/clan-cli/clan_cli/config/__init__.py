@@ -1,9 +1,11 @@
 # !/usr/bin/env python3
 import argparse
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Optional, Type
+from typing import Any, Optional, Type, Union
 
 from clan_cli.errors import ClanError
 
@@ -14,7 +16,11 @@ script_dir = Path(__file__).parent
 def map_type(type: str) -> Type:
     if type == "boolean":
         return bool
-    elif type in ["integer", "signed integer"]:
+    elif type in [
+        "integer",
+        "signed integer",
+        "16 bit unsigned integer; between 0 and 65535 (both inclusive)",
+    ]:
         return int
     elif type == "string":
         return str
@@ -28,14 +34,19 @@ def map_type(type: str) -> Type:
         raise ClanError(f"Unknown type {type}")
 
 
-class Kwargs:
-    def __init__(self) -> None:
-        self.type: Optional[Type] = None
-        self.default: Any = None
-        self.required: bool = False
-        self.help: Optional[str] = None
-        self.action: Optional[str] = None
-        self.choices: Optional[list] = None
+# merge two dicts recursively
+def merge(a: dict, b: dict, path: list[str] = []) -> dict:
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                merge(a[key], b[key], path + [str(key)])
+            elif isinstance(a[key], list) and isinstance(b[key], list):
+                a[key].extend(b[key])
+            elif a[key] != b[key]:
+                raise Exception("Conflict at " + ".".join(path + [str(key)]))
+        else:
+            a[key] = b[key]
+    return a
 
 
 # A container inheriting from list, but overriding __contains__ to return True
@@ -46,20 +57,57 @@ class AllContainer(list):
         return True
 
 
-def process_args(option: str, value: Any, options: dict) -> None:
+# value is always a list, as the arg parser cannot know the type upfront
+# and therefore always allows multiple arguments.
+def cast(value: Any, type: Type, opt_description: str) -> Any:
+    try:
+        # handle bools
+        if isinstance(type(), bool):
+            if value[0] in ["true", "True", "yes", "y", "1"]:
+                return True
+            elif value[0] in ["false", "False", "no", "n", "0"]:
+                return False
+            else:
+                raise ClanError(f"Invalid value {value} for boolean")
+        # handle lists
+        elif isinstance(type(), list):
+            subtype = type.__args__[0]
+            return [cast([x], subtype, opt_description) for x in value]
+        # handle dicts
+        elif isinstance(type(), dict):
+            if not isinstance(value, dict):
+                raise ClanError(
+                    f"Cannot set {opt_description} directly. Specify a suboption like {opt_description}.<name>"
+                )
+            subtype = type.__args__[1]
+            return {k: cast(v, subtype, opt_description) for k, v in value.items()}
+        else:
+            if len(value) > 1:
+                raise ClanError(f"Too many values for {opt_description}")
+            return type(value[0])
+    except ValueError:
+        raise ClanError(
+            f"Invalid type for option {opt_description} (expected {type.__name__})"
+        )
+
+
+def process_args(
+    option: str, value: Any, options: dict, option_description: str = ""
+) -> None:
     option_path = option.split(".")
 
     # if the option cannot be found, then likely the type is attrs and we need to
     # find the parent option
     if option not in options:
         if len(option_path) == 1:
-            raise ClanError(f"Option {option} not found")
+            raise ClanError(f"Option {option_description} not found")
         option_parent = option_path[:-1]
         attr = option_path[-1]
         return process_args(
             option=".".join(option_parent),
             value={attr: value},
             options=options,
+            option_description=option,
         )
 
     target_type = map_type(options[option]["type"])
@@ -72,52 +120,48 @@ def process_args(option: str, value: Any, options: dict) -> None:
         current = current[part]
     current[option_path[-1]] = value
 
-    # value is always a list, as the arg parser cannot know the type upfront
-    # and therefore always allows multiple arguments.
-    def cast(value: Any, type: Type) -> Any:
-        try:
-            # handle bools
-            if isinstance(type(), bool):
-                if value == "true":
-                    return True
-                elif value == "false":
-                    return False
-                else:
-                    raise ClanError(f"Invalid value {value} for boolean")
-            # handle lists
-            elif isinstance(type(), list):
-                subtype = type.__args__[0]
-                return [cast([x], subtype) for x in value]
-            # handle dicts
-            elif isinstance(type(), dict):
-                if not isinstance(value, dict):
-                    raise ClanError(
-                        f"Cannot set {option} directly. Specify a suboption like {option}.<name>"
-                    )
-                subtype = type.__args__[1]
-                return {k: cast(v, subtype) for k, v in value.items()}
-            else:
-                if len(value) > 1:
-                    raise ClanError(f"Too many values for {option}")
-                return type(value[0])
-        except ValueError:
-            raise ClanError(
-                f"Invalid type for option {option} (expected {type.__name__})"
-            )
-
-    casted = cast(value, target_type)
+    casted = cast(value, target_type, option)
 
     current[option_path[-1]] = casted
 
-    # print the result as json
-    print(json.dumps(result, indent=2))
+    # check if there is an existing config file
+    if os.path.exists("clan-settings.json"):
+        with open("clan-settings.json") as f:
+            current_config = json.load(f)
+    else:
+        current_config = {}
+    # merge and save the new config file
+    new_config = merge(current_config, result)
+    with open("clan-settings.json", "w") as f:
+        json.dump(new_config, f, indent=2)
+    print("New config:")
+    print(json.dumps(new_config, indent=2))
 
 
 def register_parser(
     parser: argparse.ArgumentParser,
-    file: Path = Path(f"{script_dir}/jsonschema/options.json"),
+    optionsFile: Optional[Union[str, Path]] = os.environ.get("CLAN_OPTIONS_FILE"),
 ) -> None:
-    options = json.loads(file.read_text())
+    if not optionsFile:
+        # use nix eval to evaluate .#clanOptions
+        # this will give us the evaluated config with the options attribute
+        proc = subprocess.run(
+            [
+                "nix",
+                "eval",
+                "--raw",
+                ".#clanOptions",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        file = proc.stdout.strip()
+        with open(file) as f:
+            options = json.load(f)
+    else:
+        with open(optionsFile) as f:
+            options = json.load(f)
     return _register_parser(parser, options)
 
 

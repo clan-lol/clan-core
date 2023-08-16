@@ -9,7 +9,7 @@ import pytest
 from clan_cli import config
 from clan_cli.config import parsing
 
-example_schema = f"{Path(config.__file__).parent}/jsonschema/options.json"
+example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 
 
 # use pytest.parametrize
@@ -34,7 +34,7 @@ def test_set_some_option(
     # monkeypatch sys.argv
     monkeypatch.setattr(sys, "argv", [""] + argv)
     parser = argparse.ArgumentParser()
-    config.register_parser(parser=parser, file=Path(example_schema))
+    config.register_parser(parser=parser, optionsFile=Path(example_options))
     args = parser.parse_args()
     args.func(args)
     captured = capsys.readouterr()
@@ -148,3 +148,8 @@ def test_type_from_schema_path_dynamic_attrs() -> None:
     )
     assert parsing.type_from_schema_path(schema, ["age"]) == int
     assert parsing.type_from_schema_path(schema, ["users", "foo"]) == str
+
+
+# test the cast function with simple types
+def test_cast_simple() -> None:
+    assert config.cast(["true"], bool, "foo-option") is True

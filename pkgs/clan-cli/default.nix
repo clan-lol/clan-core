@@ -47,6 +47,9 @@ python3.pkgs.buildPythonPackage {
   name = "clan-cli";
   src = source;
   format = "pyproject";
+
+  CLAN_OPTIONS_FILE = ./clan_cli/config/jsonschema/options.json;
+
   nativeBuildInputs = [
     setuptools
     installShellFiles
