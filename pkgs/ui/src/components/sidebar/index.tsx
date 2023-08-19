@@ -78,7 +78,7 @@ export function Sidebar(props: SidebarProps) {
         show ? showSidebar : hideSidebar
       } z-9999 dark:bg-boxdark static  left-0 top-0 flex h-screen w-14 flex-col overflow-x-hidden overflow-y-hidden bg-zinc-950 transition duration-150 ease-in-out lg:w-64`}
     >
-      <div className="py-5.5 lg:py-6.5 flex items-center justify-between gap-2 overflow-hidden px-0 lg:px-6">
+      <div className="flex items-center justify-between gap-2 overflow-hidden px-0 py-5 lg:p-6">
         <div className="mt-8 hidden w-full text-center font-semibold text-white lg:block">
           <Image
             src="/logo.svg"
@@ -132,15 +132,15 @@ export function Sidebar(props: SidebarProps) {
         </List>
 
         <Divider flexItem className="mx-8 my-10 hidden bg-zinc-600 lg:block" />
-        <div className="max-w-60 shadow-default mx-auto mb-8 hidden w-full rounded-sm px-4 py-6 text-center align-bottom lg:block">
-          <h3 className="mb-1 w-full font-semibold text-white">
+        <div className="mx-auto mb-8 hidden w-full max-w-xs rounded-sm px-4 py-6 text-center align-bottom shadow-sm lg:block">
+          <h3 className="mb-2 w-full font-semibold text-white">
             Clan.lol Admin
           </h3>
           <a
             href=""
             target="_blank"
             rel="nofollow"
-            className="bg-primary w-full rounded-md p-2 text-center text-white hover:bg-opacity-95"
+            className="inline-block w-full rounded-md p-2 text-center text-white hover:text-violet-400/95"
           >
             Donate
           </a>
