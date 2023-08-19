@@ -12,9 +12,11 @@ interface DashboardCardProps {
   sx?: string;
 }
 const DashboardCard = (props: DashboardCardProps) => {
-  const { children, rowSpan = 1, sx = "" } = props;
+  const { children, rowSpan, sx = "" } = props;
   return (
-    <div className={tw`col-span-full row-span-${rowSpan} xl:col-span-1 ${sx}`}>
+    <div
+      className={tw`col-span-full row-span-${rowSpan || 1} xl:col-span-1 ${sx}`}
+    >
       {children}
     </div>
   );
@@ -30,28 +32,10 @@ const DashboardPanel = (props: DashboardPanelProps) => {
   );
 };
 
-interface SplitDashboardCardProps {
-  children?: React.ReactNode[];
-}
-const SplitDashboardCard = (props: SplitDashboardCardProps) => {
-  const { children } = props;
-  return (
-    <div className="col-span-full row-span-1 lg:col-span-1">
-      <div className="grid h-full grid-cols-1 gap-4">
-        {children?.map((row, idx) => (
-          <div key={idx} className="col-span-full row-span-1  ">
-            {row}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 export default function Dashboard() {
   return (
     <div className="flex h-screen w-full">
-      <div className="grid w-full auto-cols-min grid-flow-row auto-rows-min grid-cols-1 grid-rows-none gap-4 xl:grid-cols-2 2xl:grid-cols-3 ">
+      <div className="grid w-full auto-rows-max grid-cols-1 grid-rows-none gap-4 xl:grid-cols-2 2xl:grid-cols-3 ">
         <DashboardCard rowSpan={2}>
           <NetworkOverview />
         </DashboardCard>

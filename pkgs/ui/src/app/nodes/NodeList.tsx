@@ -235,7 +235,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       { name: "Offline", value: offline, color: theme.palette.error.main },
       { name: "Pending", value: pending, color: theme.palette.warning.main },
     ];
-  }, [tableData]);
+  }, [tableData, theme]);
 
   const cardData = React.useMemo(() => {
     return pieData

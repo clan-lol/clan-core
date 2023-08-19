@@ -18,7 +18,7 @@ const AppCard = (props: AppCardProps) => {
        align-middle shadow-md ring-2 ring-inset ring-violet-500 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-300"
     >
       <div className="flex w-full flex-col justify-center">
-        <div className="h-22 w-22 my-1 flex items-center justify-center self-center overflow-visible p-1">
+        <div className="my-1 flex h-[22] w-[22] items-center justify-center self-center overflow-visible p-1">
           <Image
             src={iconPath}
             alt={`${name}-app-icon`}

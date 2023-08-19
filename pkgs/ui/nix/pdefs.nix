@@ -4706,6 +4706,35 @@
           version = "5.0.0-canary-7118f5dd7-20230705";
         };
       };
+      eslint-plugin-tailwindcss = {
+        "3.13.0" = {
+          depInfo = {
+            fast-glob = {
+              descriptor = "^3.2.5";
+              pin = "3.3.1";
+              runtime = true;
+            };
+            postcss = {
+              descriptor = "^8.4.4";
+              pin = "8.4.27";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-rWd+p9Sa4jcjEo886w2NAIy5AYjccC2pQXuGyPKtGw0=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/eslint-plugin-tailwindcss/-/eslint-plugin-tailwindcss-3.13.0.tgz";
+          };
+          ident = "eslint-plugin-tailwindcss";
+          ltype = "file";
+          peerInfo = {
+            tailwindcss = {
+              descriptor = "^3.3.2";
+            };
+          };
+          version = "3.13.0";
+        };
+      };
       eslint-scope = {
         "7.2.2" = {
           depInfo = {
@@ -6686,6 +6715,10 @@
               descriptor = "13.4.12";
               pin = "13.4.12";
             };
+            eslint-plugin-tailwindcss = {
+              descriptor = "^3.13.0";
+              pin = "3.13.0";
+            };
             hex-rgb = {
               descriptor = "^5.0.0";
               pin = "5.0.0";
@@ -7427,6 +7460,10 @@
             "node_modules/eslint-plugin-react/node_modules/semver" = {
               dev = true;
               key = "semver/6.3.1";
+            };
+            "node_modules/eslint-plugin-tailwindcss" = {
+              dev = true;
+              key = "eslint-plugin-tailwindcss/3.13.0";
             };
             "node_modules/eslint-scope" = {
               dev = true;

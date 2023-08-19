@@ -62,6 +62,9 @@ in
       built.override.preBuild = ''
         export HOME=./home
         ln -s ${pkgs.roboto}/share/fonts ./src/fonts
+
+        echo "----------- RUNNING LINT ------------"
+        next lint --max-warnings 0
       '';
 
       built.tree =

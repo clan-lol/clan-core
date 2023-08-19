@@ -88,7 +88,7 @@ export default function RootLayout({
                   !showSidebar && translate
                 } flex h-full w-full flex-col overflow-y-scroll transition-[margin] duration-150 ease-in-out`}
               >
-                <div className="min-h-10 static top-0 mb-2 py-2">
+                <div className="static top-0 mb-2 py-2">
                   <div className="grid grid-cols-3">
                     <div className="col-span-1">
                       <IconButton
