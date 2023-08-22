@@ -18,6 +18,9 @@ writeShellApplication {
     tea-create-pr
   ];
   text = ''
-    bash ${./script.sh} "$@"
+    remoteName="''${1:-origin}"
+    targetBranch="''${2:-main}"
+    shift && shift
+    tea-create-pr "$remoteName" "$targetBranch" --assignees clan-bot "$@"
   '';
 }
