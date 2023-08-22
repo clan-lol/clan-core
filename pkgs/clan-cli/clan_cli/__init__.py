@@ -1,15 +1,21 @@
 import argparse
 import sys
 
-from . import admin, config, secrets, update
+from . import admin, secrets, update
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
-has_argcomplete = True
+argcomplete = None
 try:
     import argcomplete
 except ImportError:
-    has_argcomplete = False
+    pass
+
+config = None
+try:
+    from . import config
+except ImportError:  # jsonschema not installed
+    pass
 
 
 # this will be the entrypoint under /bin/clan (see pyproject.toml config)
@@ -20,8 +26,9 @@ def main() -> None:
     parser_admin = subparsers.add_parser("admin", help="administrate a clan")
     admin.register_parser(parser_admin)
 
-    parser_config = subparsers.add_parser("config", help="set nixos configuration")
-    config.register_parser(parser_config)
+    if config:
+        parser_config = subparsers.add_parser("config", help="set nixos configuration")
+        config.register_parser(parser_config)
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
     ssh_cli.register_parser(parser_ssh)
@@ -34,7 +41,7 @@ def main() -> None:
     )
     update.register_parser(parser_update)
 
-    if has_argcomplete:
+    if argcomplete:
         argcomplete.autocomplete(parser)
 
     if len(sys.argv) == 1:
