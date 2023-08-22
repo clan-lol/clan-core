@@ -92,7 +92,7 @@ def cast(value: Any, type: Type, opt_description: str) -> Any:
 
 
 def process_args(
-    option: str, value: Any, options: dict, option_description: str = ""
+    option: str, value: Any, options: dict, out_file: Path, option_description: str = ""
 ) -> None:
     option_path = option.split(".")
 
@@ -107,6 +107,7 @@ def process_args(
             option=".".join(option_parent),
             value={attr: value},
             options=options,
+            out_file=out_file,
             option_description=option,
         )
 
@@ -125,14 +126,14 @@ def process_args(
     current[option_path[-1]] = casted
 
     # check if there is an existing config file
-    if os.path.exists("clan-settings.json"):
-        with open("clan-settings.json") as f:
+    if os.path.exists(out_file):
+        with open(out_file) as f:
             current_config = json.load(f)
     else:
         current_config = {}
     # merge and save the new config file
     new_config = merge(current_config, result)
-    with open("clan-settings.json", "w") as f:
+    with open(out_file, "w") as f:
         json.dump(new_config, f, indent=2)
     print("New config:")
     print(json.dumps(new_config, indent=2))
@@ -178,8 +179,20 @@ def _register_parser(
     # inject callback function to process the input later
     parser.set_defaults(
         func=lambda args: process_args(
-            option=args.option, value=args.value, options=options
+            option=args.option,
+            value=args.value,
+            options=options,
+            out_file=args.out_file,
         )
+    )
+
+    # add argument to pass output file
+    parser.add_argument(
+        "--out-file",
+        "-o",
+        help="Output file",
+        type=Path,
+        default=Path("clan-settings.json"),
     )
 
     # add single positional argument for the option (e.g. "foo.bar")
