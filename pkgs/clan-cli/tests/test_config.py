@@ -37,7 +37,7 @@ def test_set_some_option(
     with tempfile.NamedTemporaryFile() as out_file:
         with open(out_file.name, "w") as f:
             json.dump({}, f)
-        monkeypatch.setattr(sys, "argv", ["", "--out-file", out_file.name] + argv)
+        monkeypatch.setattr(sys, "argv", ["", "--settings-file", out_file.name] + argv)
         parser = argparse.ArgumentParser()
         config._register_parser(
             parser=parser,

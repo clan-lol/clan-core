@@ -27,11 +27,12 @@
         ./formatter.nix
         ./templates/flake-module.nix
 
+        ./flakeModules/clan-config.nix
+
         ./pkgs/flake-module.nix
 
         ./lib/flake-module.nix
         ({ self, lib, ... }: {
-          flake.flakeModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ./flakeModules);
           flake.clanModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ./clanModules);
           flake.nixosModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ./nixosModules);
         })
