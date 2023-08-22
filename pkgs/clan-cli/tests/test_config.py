@@ -1,6 +1,7 @@
 import argparse
 import json
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -9,7 +10,7 @@ import pytest
 from clan_cli import config
 from clan_cli.config import parsing
 
-example_schema = f"{Path(config.__file__).parent}/jsonschema/options.json"
+example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 
 
 # use pytest.parametrize
@@ -32,15 +33,20 @@ def test_set_some_option(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # monkeypatch sys.argv
-    monkeypatch.setattr(sys, "argv", [""] + argv)
-    parser = argparse.ArgumentParser()
-    config.register_parser(parser=parser, file=Path(example_schema))
-    args = parser.parse_args()
-    args.func(args)
-    captured = capsys.readouterr()
-    print(captured.out)
-    json_out = json.loads(captured.out)
-    assert json_out == expected
+    # create temporary file for out_file
+    with tempfile.NamedTemporaryFile() as out_file:
+        with open(out_file.name, "w") as f:
+            json.dump({}, f)
+        monkeypatch.setattr(sys, "argv", ["", "--out-file", out_file.name] + argv)
+        parser = argparse.ArgumentParser()
+        config._register_parser(
+            parser=parser,
+            options=json.loads(Path(example_options).read_text()),
+        )
+        args = parser.parse_args()
+        args.func(args)
+        json_out = json.loads(open(out_file.name).read())
+        assert json_out == expected
 
 
 def test_walk_jsonschema_all_types() -> None:
@@ -148,3 +154,8 @@ def test_type_from_schema_path_dynamic_attrs() -> None:
     )
     assert parsing.type_from_schema_path(schema, ["age"]) == int
     assert parsing.type_from_schema_path(schema, ["users", "foo"]) == str
+
+
+# test the cast function with simple types
+def test_cast_simple() -> None:
+    assert config.cast(["true"], bool, "foo-option") is True

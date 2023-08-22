@@ -21,6 +21,10 @@
 , rsync
 }:
 let
+  # This provides dummy options for testing clan config and prevents it from
+  # evaluating the flake .#
+  CLAN_OPTIONS_FILE = ./clan_cli/config/jsonschema/options.json;
+
   dependencies = [ argcomplete ];
 
   testDependencies = [
@@ -47,6 +51,9 @@ python3.pkgs.buildPythonPackage {
   name = "clan-cli";
   src = source;
   format = "pyproject";
+
+  inherit CLAN_OPTIONS_FILE;
+
   nativeBuildInputs = [
     setuptools
     installShellFiles
@@ -55,6 +62,7 @@ python3.pkgs.buildPythonPackage {
 
   passthru.tests = {
     clan-mypy = runCommand "clan-mypy" { } ''
+      export CLAN_OPTIONS_FILE="${CLAN_OPTIONS_FILE}"
       cp -r ${source} ./src
       chmod +w -R ./src
       cd ./src
@@ -65,6 +73,7 @@ python3.pkgs.buildPythonPackage {
       {
         nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh rsync stdenv.cc ];
       } ''
+      export CLAN_OPTIONS_FILE="${CLAN_OPTIONS_FILE}"
       cp -r ${source} ./src
       chmod +w -R ./src
       cd ./src
