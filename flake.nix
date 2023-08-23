@@ -7,6 +7,9 @@
     floco.inputs.nixpkgs.follows = "nixpkgs";
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "sops-nix";
+    sops-nix.inputs.nixpkgs-stable.follows = "";
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -32,9 +35,9 @@
         ./pkgs/flake-module.nix
 
         ./lib/flake-module.nix
+        ./nixosModules/flake-module.nix
         ({ self, lib, ... }: {
           flake.clanModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ./clanModules);
-          flake.nixosModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ./nixosModules);
         })
       ];
     });

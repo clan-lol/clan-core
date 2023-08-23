@@ -1,15 +1,17 @@
 import argparse
 import sys
+from types import ModuleType
+from typing import Optional
 
 from . import admin, config, secrets, update
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
-has_argcomplete = True
+argcomplete: Optional[ModuleType] = None
 try:
-    import argcomplete
+    import argcomplete  # type: ignore[no-redef]
 except ImportError:
-    has_argcomplete = False
+    pass
 
 
 # this will be the entrypoint under /bin/clan (see pyproject.toml config)
@@ -34,7 +36,7 @@ def main() -> None:
     )
     update.register_parser(parser_update)
 
-    if has_argcomplete:
+    if argcomplete:
         argcomplete.autocomplete(parser)
 
     if len(sys.argv) == 1:
