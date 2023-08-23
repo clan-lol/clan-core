@@ -3,9 +3,9 @@ import sys
 from types import ModuleType
 from typing import Optional
 
-from . import admin, secrets, update
+from . import admin, secrets, update, webui
 
-# from . import admin, config, secrets, update
+# from . import admin, config, secrets, update, webui
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
@@ -38,6 +38,9 @@ def main() -> None:
         "update", help="update the machines in the clan"
     )
     update.register_parser(parser_update)
+
+    parser_webui = subparsers.add_parser("webui", help="start webui")
+    webui.register_parser(parser_webui)
 
     if argcomplete:
         argcomplete.autocomplete(parser)

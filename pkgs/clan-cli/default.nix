@@ -1,6 +1,7 @@
 { age
 , argcomplete
-, black
+, fastapi
+, uvicorn
 , bubblewrap
 , installShellFiles
 , nix
@@ -9,7 +10,6 @@
 , pytest-cov
 , pytest-subprocess
 , python3
-, ruff
 , runCommand
 , self
 , setuptools
@@ -24,7 +24,11 @@ let
   # evaluating the flake .#
   CLAN_OPTIONS_FILE = ./clan_cli/config/jsonschema/options.json;
 
-  dependencies = [ argcomplete ];
+  dependencies = [
+    argcomplete # optional dependency: if not enabled, shell completion will not work
+    fastapi
+    uvicorn # optional dependencies: if not enabled, webui subcommand will not work
+  ];
 
   testDependencies = [
     pytest
@@ -71,13 +75,11 @@ python3.pkgs.buildPythonPackage {
   '';
 
   passthru.devDependencies = [
-    ruff
-    black
     setuptools
     wheel
   ] ++ testDependencies;
 
-  passthru.testDependencies = testDependencies;
+  passthru.testDependencies = dependencies ++ testDependencies;
 
   makeWrapperArgs = [
     "--set CLAN_FLAKE ${self}"

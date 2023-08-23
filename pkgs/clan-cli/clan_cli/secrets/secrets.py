@@ -211,6 +211,10 @@ def set_command(args: argparse.Namespace) -> None:
     )
 
 
+def rename_command(args: argparse.Namespace) -> None:
+    pass
+
+
 def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
     parser_list = subparser.add_parser("list", help="list secrets")
     parser_list.set_defaults(func=list_command)
@@ -244,6 +248,13 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
     )
     parser_set.set_defaults(func=set_command)
 
-    parser_delete = subparser.add_parser("remove", help="remove a secret")
-    add_secret_argument(parser_delete)
-    parser_delete.set_defaults(func=remove_command)
+    parser_rename = subparser.add_parser("rename", help="rename a secret")
+    add_secret_argument(parser_rename)
+    parser_rename.add_argument(
+        "new_name", help="the new name of the secret", type=secret_name_type
+    )
+    parser_rename.set_defaults(func=rename_command)
+
+    parser_remove = subparser.add_parser("remove", help="remove a secret")
+    add_secret_argument(parser_remove)
+    parser_remove.set_defaults(func=remove_command)
