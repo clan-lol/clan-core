@@ -119,7 +119,29 @@
         "floco": "floco",
         "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs",
+        "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix"
+      }
+    },
+    "sops-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "sops-nix"
+        ],
+        "nixpkgs-stable": []
+      },
+      "locked": {
+        "lastModified": 1692500916,
+        "narHash": "sha256-iKADqEOHmyi+LCJ5LzWcM2zH0DP3WHFETjX98blH0tE=",
+        "owner": "Mic92",
+        "repo": "sops-nix",
+        "rev": "4f0f113b7dbcb92edb9c901515fcab0b91c6def7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Mic92",
+        "repo": "sops-nix",
+        "type": "github"
       }
     },
     "treefmt-nix": {
