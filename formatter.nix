@@ -5,11 +5,17 @@
   imports = [
     inputs.treefmt-nix.flakeModule
   ];
-  perSystem = { pkgs, ... }: {
+  perSystem = { self', pkgs, ... }: {
     treefmt.projectRootFile = "flake.nix";
     treefmt.flakeCheck = true;
     treefmt.flakeFormatter = true;
     treefmt.programs.shellcheck.enable = true;
+
+    treefmt.programs.mypy.enable = true;
+    treefmt.programs.mypy.directories = {
+      "pkgs/clan-cli".extraPythonPackages = self'.packages.clan-cli.testDependencies;
+    };
+
     treefmt.settings.formatter.nix = {
       command = "sh";
       options = [
@@ -38,4 +44,3 @@
     };
   };
 }
-

@@ -1,20 +1,16 @@
 import argparse
 import sys
+from types import ModuleType
+from typing import Optional
 
-from . import admin, secrets, update
+from . import admin, config, secrets, update
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
-argcomplete = None
+argcomplete: Optional[ModuleType] = None
 try:
-    import argcomplete
+    import argcomplete  # type: ignore[no-redef]
 except ImportError:
-    pass
-
-config = None
-try:
-    from . import config
-except ImportError:  # jsonschema not installed
     pass
 
 
@@ -26,9 +22,8 @@ def main() -> None:
     parser_admin = subparsers.add_parser("admin", help="administrate a clan")
     admin.register_parser(parser_admin)
 
-    if config:
-        parser_config = subparsers.add_parser("config", help="set nixos configuration")
-        config.register_parser(parser_config)
+    parser_config = subparsers.add_parser("config", help="set nixos configuration")
+    config.register_parser(parser_config)
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
     ssh_cli.register_parser(parser_ssh)

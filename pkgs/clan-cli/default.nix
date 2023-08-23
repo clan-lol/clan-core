@@ -3,7 +3,6 @@
 , black
 , bubblewrap
 , installShellFiles
-, mypy
 , nix
 , openssh
 , pytest
@@ -31,7 +30,6 @@ let
     pytest
     pytest-cov
     pytest-subprocess
-    mypy
     openssh
     stdenv.cc
   ];
@@ -60,27 +58,17 @@ python3.pkgs.buildPythonPackage {
   ];
   propagatedBuildInputs = dependencies;
 
-  passthru.tests = {
-    clan-mypy = runCommand "clan-mypy" { } ''
-      export CLAN_OPTIONS_FILE="${CLAN_OPTIONS_FILE}"
-      cp -r ${source} ./src
-      chmod +w -R ./src
-      cd ./src
-      ${checkPython}/bin/mypy .
-      touch $out
-    '';
-    clan-pytest = runCommand "clan-tests"
-      {
-        nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh rsync stdenv.cc ];
-      } ''
-      export CLAN_OPTIONS_FILE="${CLAN_OPTIONS_FILE}"
-      cp -r ${source} ./src
-      chmod +w -R ./src
-      cd ./src
-      NIX_STATE_DIR=$TMPDIR/nix ${checkPython}/bin/python -m pytest -s ./tests
-      touch $out
-    '';
-  };
+  passthru.tests.clan-pytest = runCommand "clan-tests"
+    {
+      nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh rsync stdenv.cc ];
+    } ''
+    export CLAN_OPTIONS_FILE="${CLAN_OPTIONS_FILE}"
+    cp -r ${source} ./src
+    chmod +w -R ./src
+    cd ./src
+    NIX_STATE_DIR=$TMPDIR/nix ${checkPython}/bin/python -m pytest -s ./tests
+    touch $out
+  '';
 
   passthru.devDependencies = [
     ruff
@@ -88,6 +76,8 @@ python3.pkgs.buildPythonPackage {
     setuptools
     wheel
   ] ++ testDependencies;
+
+  passthru.testDependencies = testDependencies;
 
   makeWrapperArgs = [
     "--set CLAN_FLAKE ${self}"
