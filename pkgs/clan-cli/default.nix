@@ -1,6 +1,5 @@
 { age
 , argcomplete
-, black
 , bubblewrap
 , installShellFiles
 , nix
@@ -9,7 +8,6 @@
 , pytest-cov
 , pytest-subprocess
 , python3
-, ruff
 , runCommand
 , self
 , setuptools
@@ -71,8 +69,6 @@ python3.pkgs.buildPythonPackage {
   '';
 
   passthru.devDependencies = [
-    ruff
-    black
     setuptools
     wheel
   ] ++ testDependencies;
