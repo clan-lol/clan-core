@@ -3,7 +3,9 @@ import sys
 from types import ModuleType
 from typing import Optional
 
-from . import admin, config, secrets, update
+from . import admin, secrets, update
+
+# from . import admin, config, secrets, update
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
@@ -22,8 +24,9 @@ def main() -> None:
     parser_admin = subparsers.add_parser("admin", help="administrate a clan")
     admin.register_parser(parser_admin)
 
-    parser_config = subparsers.add_parser("config", help="set nixos configuration")
-    config.register_parser(parser_config)
+    # DISABLED: this currently crashes if a flake does not define .#clanOptions
+    # parser_config = subparsers.add_parser("config", help="set nixos configuration")
+    # config.register_parser(parser_config)
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
     ssh_cli.register_parser(parser_ssh)
