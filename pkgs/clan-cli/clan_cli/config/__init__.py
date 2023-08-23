@@ -124,6 +124,7 @@ def process_args(
     value: Any,
     options: dict,
     settings_file: Path,
+    quiet: bool = False,
     option_description: str = "",
 ) -> None:
     if value == []:
@@ -144,6 +145,7 @@ def process_args(
             value={attr: value},
             options=options,
             settings_file=settings_file,
+            quiet=quiet,
             option_description=option,
         )
 
@@ -170,9 +172,10 @@ def process_args(
     new_config = merge(current_config, result)
     with open(settings_file, "w") as f:
         json.dump(new_config, f, indent=2)
-    new_value = read_option(option)
-    print(f"New Value for {option}:")
-    print(new_value)
+    if not quiet:
+        new_value = read_option(option)
+        print(f"New Value for {option}:")
+        print(new_value)
 
 
 def register_parser(
@@ -218,8 +221,17 @@ def _register_parser(
             option=args.option,
             value=args.value,
             options=options,
+            quiet=args.quiet,
             settings_file=args.settings_file,
         )
+    )
+
+    # add --quiet option
+    parser.add_argument(
+        "--quiet",
+        "-q",
+        help="Suppress output",
+        action="store_true",
     )
 
     # add argument to pass output file

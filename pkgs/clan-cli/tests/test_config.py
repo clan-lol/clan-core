@@ -29,7 +29,6 @@ example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 def test_set_some_option(
     argv: list[str],
     expected: dict[str, Any],
-    capsys: pytest.CaptureFixture,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # monkeypatch sys.argv
@@ -37,7 +36,9 @@ def test_set_some_option(
     with tempfile.NamedTemporaryFile() as out_file:
         with open(out_file.name, "w") as f:
             json.dump({}, f)
-        monkeypatch.setattr(sys, "argv", ["", "--settings-file", out_file.name] + argv)
+        monkeypatch.setattr(
+            sys, "argv", ["", "--quiet", "--settings-file", out_file.name] + argv
+        )
         parser = argparse.ArgumentParser()
         config._register_parser(
             parser=parser,
