@@ -43,7 +43,7 @@ def merge(a: dict, b: dict, path: list[str] = []) -> dict:
             elif isinstance(a[key], list) and isinstance(b[key], list):
                 a[key].extend(b[key])
             elif a[key] != b[key]:
-                raise Exception("Conflict at " + ".".join(path + [str(key)]))
+                a[key] = b[key]
         else:
             a[key] = b[key]
     return a
@@ -91,13 +91,50 @@ def cast(value: Any, type: Type, opt_description: str) -> Any:
         )
 
 
+def read_option(option: str) -> str:
+    # use nix eval to read from .#nixosConfigurations.default.config.{option}
+    # this will give us the evaluated config with the options attribute
+    proc = subprocess.run(
+        [
+            "nix",
+            "eval",
+            "--json",
+            f".#nixosConfigurations.default.config.{option}",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        print(proc.stderr, file=sys.stderr)
+        raise ClanError(f"Failed to read option {option}:\n{proc.stderr}")
+    value = json.loads(proc.stdout)
+    # print the value so that the output can be copied and fed as an input.
+    # for example a list should be displayed as space separated values surrounded by quotes.
+    if isinstance(value, list):
+        out = " ".join([json.dumps(x) for x in value])
+    elif isinstance(value, dict):
+        out = json.dumps(value, indent=2)
+    else:
+        out = json.dumps(value, indent=2)
+    return out
+
+
 def process_args(
-    option: str, value: Any, options: dict, out_file: Path, option_description: str = ""
+    option: str,
+    value: Any,
+    options: dict,
+    settings_file: Path,
+    quiet: bool = False,
+    option_description: str = "",
 ) -> None:
+    if value == []:
+        print(read_option(option))
+        return
+
     option_path = option.split(".")
 
     # if the option cannot be found, then likely the type is attrs and we need to
-    # find the parent option
+    # find the parent option.
     if option not in options:
         if len(option_path) == 1:
             raise ClanError(f"Option {option_description} not found")
@@ -107,11 +144,13 @@ def process_args(
             option=".".join(option_parent),
             value={attr: value},
             options=options,
-            out_file=out_file,
+            settings_file=settings_file,
+            quiet=quiet,
             option_description=option,
         )
 
     target_type = map_type(options[option]["type"])
+    casted = cast(value, target_type, option)
 
     # construct a nested dict from the option path and set the value
     result: dict[str, Any] = {}
@@ -121,22 +160,22 @@ def process_args(
         current = current[part]
     current[option_path[-1]] = value
 
-    casted = cast(value, target_type, option)
-
     current[option_path[-1]] = casted
 
     # check if there is an existing config file
-    if os.path.exists(out_file):
-        with open(out_file) as f:
+    if os.path.exists(settings_file):
+        with open(settings_file) as f:
             current_config = json.load(f)
     else:
         current_config = {}
     # merge and save the new config file
     new_config = merge(current_config, result)
-    with open(out_file, "w") as f:
+    with open(settings_file, "w") as f:
         json.dump(new_config, f, indent=2)
-    print("New config:")
-    print(json.dumps(new_config, indent=2))
+    if not quiet:
+        new_value = read_option(option)
+        print(f"New Value for {option}:")
+        print(new_value)
 
 
 def register_parser(
@@ -182,13 +221,22 @@ def _register_parser(
             option=args.option,
             value=args.value,
             options=options,
-            out_file=args.out_file,
+            quiet=args.quiet,
+            settings_file=args.settings_file,
         )
+    )
+
+    # add --quiet option
+    parser.add_argument(
+        "--quiet",
+        "-q",
+        help="Suppress output",
+        action="store_true",
     )
 
     # add argument to pass output file
     parser.add_argument(
-        "--out-file",
+        "--settings-file",
         "-o",
         help="Output file",
         type=Path,
@@ -198,8 +246,6 @@ def _register_parser(
     # add single positional argument for the option (e.g. "foo.bar")
     parser.add_argument(
         "option",
-        # force this arg to be set
-        nargs="?",
         help="Option to configure",
         type=str,
         choices=AllContainer(list(options.keys())),
@@ -209,7 +255,7 @@ def _register_parser(
     parser.add_argument(
         "value",
         # force this arg to be set
-        nargs="+",
+        nargs="*",
         help="Value to set",
     )
 
