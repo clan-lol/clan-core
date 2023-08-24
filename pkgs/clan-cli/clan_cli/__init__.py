@@ -16,8 +16,7 @@ except ImportError:
     pass
 
 
-# this will be the entrypoint under /bin/clan (see pyproject.toml config)
-def main() -> None:
+def parse_args(args: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="cLAN tool")
     subparsers = parser.add_subparsers()
 
@@ -48,13 +47,18 @@ def main() -> None:
     if len(sys.argv) == 1:
         parser.print_help()
 
-    args = parser.parse_args()
-    if hasattr(args, "func"):
-        try:
-            args.func(args)
-        except ClanError as e:
-            print(f"{sys.argv[0]}: {e}")
-            sys.exit(1)
+    return parser.parse_args(args)
+
+
+# this will be the entrypoint under /bin/clan (see pyproject.toml config)
+def main() -> None:
+    args = parse_args(sys.argv[1:])
+    assert hasattr(args, "func")
+    try:
+        args.func(args)
+    except ClanError as e:
+        print(f"{sys.argv[0]}: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
