@@ -8,4 +8,4 @@ jobs:
     runs-on: nix
     steps:
       - uses: actions/checkout@v3
-      - run: nix flake check --keep-going -L
+      - run: bash ./scripts/ci
