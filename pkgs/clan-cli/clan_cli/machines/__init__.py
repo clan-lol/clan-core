@@ -22,8 +22,8 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
     create_parser = subparser.add_parser("create", help="Create a machine")
     register_create_parser(create_parser)
 
-    delete_parser = subparser.add_parser("delete", help="Delete a machine")
-    register_delete_parser(delete_parser)
+    remove_parser = subparser.add_parser("remove", help="Remove a machine")
+    register_delete_parser(remove_parser)
 
     list_parser = subparser.add_parser("list", help="List machines")
     register_list_parser(list_parser)
