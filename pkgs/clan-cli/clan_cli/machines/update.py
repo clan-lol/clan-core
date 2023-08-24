@@ -2,7 +2,7 @@ import argparse
 import json
 import subprocess
 
-from .ssh import Host, HostGroup, HostKeyCheck
+from ..ssh import Host, HostGroup, HostKeyCheck
 
 
 def deploy_nixos(hosts: HostGroup) -> None:
@@ -94,7 +94,7 @@ def update(args: argparse.Namespace) -> None:
     deploy_nixos(HostGroup([Host(args.host, user=args.user, meta=meta)]))
 
 
-def register_parser(parser: argparse.ArgumentParser) -> None:
+def register_update_parser(parser: argparse.ArgumentParser) -> None:
     # TODO pass all args we don't parse into ssh_args, currently it fails if arg starts with -
     parser.add_argument("--flake-uri", type=str, default=".#", help="nix flake uri")
     parser.add_argument(

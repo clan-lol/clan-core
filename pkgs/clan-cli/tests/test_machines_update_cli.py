@@ -8,12 +8,12 @@ import pytest
 from environment import mock_env
 from host_group import HostGroup
 
-from clan_cli.update import deploy_nixos, register_parser
+from clan_cli.machines.update import deploy_nixos, register_update_parser
 
 
 def test_cli() -> None:
     parser = argparse.ArgumentParser()
-    register_parser(parser)
+    register_update_parser(parser)
     with pytest.raises(SystemExit):
         parser.parse_args(["--help"])
 
