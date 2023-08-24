@@ -10,6 +10,10 @@
     treefmt.flakeCheck = true;
     treefmt.flakeFormatter = true;
     treefmt.programs.shellcheck.enable = true;
+    treefmt.programs.prettier.enable = true;
+    treefmt.programs.prettier.settings.plugins = [
+      "${self'.packages.prettier-plugin-tailwindcss}/lib/node_modules/prettier-plugin-tailwindcss/dist/index.mjs"
+    ];
 
     treefmt.programs.mypy.enable = true;
     treefmt.programs.mypy.directories = {
@@ -29,6 +33,7 @@
         "--" # this argument is ignored by bash
       ];
       includes = [ "*.nix" ];
+      excludes = [ "pkgs/node-packages/*.nix" ];
     };
     treefmt.settings.formatter.python = {
       command = "sh";
