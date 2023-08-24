@@ -3,15 +3,14 @@ import os
 from pathlib import Path
 
 from ..errors import ClanError
+from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
 from .folders import sops_groups_folder, sops_machines_folder, sops_users_folder
 from .types import (
     VALID_USER_NAME,
     group_name_type,
-    machine_name_type,
     secret_name_type,
     user_name_type,
-    validate_hostname,
 )
 
 

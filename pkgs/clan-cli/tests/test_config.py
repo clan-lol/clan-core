@@ -1,11 +1,10 @@
-import argparse
 import json
-import sys
 import tempfile
 from pathlib import Path
 from typing import Any
 
 import pytest
+from cli import Cli
 
 from clan_cli import config
 from clan_cli.config import parsing
@@ -15,7 +14,7 @@ example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 
 # use pytest.parametrize
 @pytest.mark.parametrize(
-    "argv,expected",
+    "args,expected",
     [
         (["name", "DavHau"], {"name": "DavHau"}),
         (
@@ -27,25 +26,18 @@ example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
     ],
 )
 def test_set_some_option(
-    argv: list[str],
+    args: list[str],
     expected: dict[str, Any],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    # monkeypatch sys.argv
+    monkeypatch.setenv("CLAN_OPTIONS_FILE", example_options)
+
     # create temporary file for out_file
     with tempfile.NamedTemporaryFile() as out_file:
         with open(out_file.name, "w") as f:
             json.dump({}, f)
-        monkeypatch.setattr(
-            sys, "argv", ["", "--quiet", "--settings-file", out_file.name] + argv
-        )
-        parser = argparse.ArgumentParser()
-        config._register_parser(
-            parser=parser,
-            options=json.loads(Path(example_options).read_text()),
-        )
-        args = parser.parse_args()
-        args.func(args)
+        cli = Cli()
+        cli.run(["config", "--quiet", "--settings-file", out_file.name] + args)
         json_out = json.loads(open(out_file.name).read())
         assert json_out == expected
 

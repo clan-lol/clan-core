@@ -1,22 +1,10 @@
-import sys
-
 import pytest
-
-import clan_cli
-
-
-def test_no_args(
-    capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setattr(sys, "argv", [""])
-    clan_cli.main()
-    captured = capsys.readouterr()
-    assert captured.out.startswith("usage:")
+from cli import Cli
 
 
-def test_help(capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(sys, "argv", ["", "--help"])
+def test_help(capsys: pytest.CaptureFixture) -> None:
+    cli = Cli()
     with pytest.raises(SystemExit):
-        clan_cli.main()
+        cli.run(["--help"])
     captured = capsys.readouterr()
     assert captured.out.startswith("usage:")

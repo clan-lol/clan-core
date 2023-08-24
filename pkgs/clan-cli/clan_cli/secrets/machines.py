@@ -1,13 +1,12 @@
 import argparse
 
+from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
 from .folders import list_objects, remove_object, sops_machines_folder
 from .sops import write_key
 from .types import (
-    machine_name_type,
     public_or_private_age_key_type,
     secret_name_type,
-    validate_hostname,
 )
 
 

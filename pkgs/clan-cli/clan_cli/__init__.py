@@ -1,11 +1,10 @@
 import argparse
+import os
 import sys
 from types import ModuleType
 from typing import Optional
 
-from . import admin, machines, secrets, webui
-
-# from . import admin, config, secrets, update, webui
+from . import admin, config, machines, secrets, webui
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
@@ -16,17 +15,17 @@ except ImportError:
     pass
 
 
-# this will be the entrypoint under /bin/clan (see pyproject.toml config)
-def main() -> None:
-    parser = argparse.ArgumentParser(description="cLAN tool")
+def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog=prog, description="cLAN tool")
     subparsers = parser.add_subparsers()
 
     parser_admin = subparsers.add_parser("admin", help="administrate a clan")
     admin.register_parser(parser_admin)
 
     # DISABLED: this currently crashes if a flake does not define .#clanOptions
-    # parser_config = subparsers.add_parser("config", help="set nixos configuration")
-    # config.register_parser(parser_config)
+    if os.environ.get("CLAN_OPTIONS_FILE") is not None:
+        parser_config = subparsers.add_parser("config", help="set nixos configuration")
+        config.register_parser(parser_config)
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
     ssh_cli.register_parser(parser_ssh)
@@ -47,14 +46,20 @@ def main() -> None:
 
     if len(sys.argv) == 1:
         parser.print_help()
+    return parser
 
+
+# this will be the entrypoint under /bin/clan (see pyproject.toml config)
+def main() -> None:
+    parser = create_parser()
     args = parser.parse_args()
-    if hasattr(args, "func"):
-        try:
-            args.func(args)
-        except ClanError as e:
-            print(f"{sys.argv[0]}: {e}")
-            sys.exit(1)
+    if not hasattr(args, "func"):
+        return
+    try:
+        args.func(args)
+    except ClanError as e:
+        print(f"{sys.argv[0]}: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
