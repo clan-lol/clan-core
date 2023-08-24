@@ -3,7 +3,7 @@ import sys
 from types import ModuleType
 from typing import Optional
 
-from . import admin, secrets, update, webui
+from . import admin, machines, secrets, webui
 
 # from . import admin, config, secrets, update, webui
 from .errors import ClanError
@@ -34,10 +34,10 @@ def main() -> None:
     parser_secrets = subparsers.add_parser("secrets", help="manage secrets")
     secrets.register_parser(parser_secrets)
 
-    parser_update = subparsers.add_parser(
-        "update", help="update the machines in the clan"
+    parser_machine = subparsers.add_parser(
+        "machines", help="Manage machines and their configuration"
     )
-    update.register_parser(parser_update)
+    machines.register_parser(parser_machine)
 
     parser_webui = subparsers.add_parser("webui", help="start webui")
     webui.register_parser(parser_webui)
