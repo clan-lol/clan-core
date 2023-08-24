@@ -1,11 +1,10 @@
 import argparse
+import os
 import sys
 from types import ModuleType
 from typing import Optional
 
-from . import admin, machines, secrets, webui
-
-# from . import admin, config, secrets, update, webui
+from . import admin, config, machines, secrets, webui
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
@@ -24,8 +23,9 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     admin.register_parser(parser_admin)
 
     # DISABLED: this currently crashes if a flake does not define .#clanOptions
-    # parser_config = subparsers.add_parser("config", help="set nixos configuration")
-    # config.register_parser(parser_config)
+    if os.environ.get("CLAN_OPTIONS_FILE") is not None:
+        parser_config = subparsers.add_parser("config", help="set nixos configuration")
+        config.register_parser(parser_config)
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
     ssh_cli.register_parser(parser_ssh)
