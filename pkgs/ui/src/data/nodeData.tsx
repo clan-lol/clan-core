@@ -9,9 +9,9 @@ export const NodeStatus = {
   Online: "Online",
   Offline: "Offline",
   Pending: "Pending",
-}
+};
 
-export type NodeStatusKeys = typeof NodeStatus[keyof typeof NodeStatus];
+export type NodeStatusKeys = (typeof NodeStatus)[keyof typeof NodeStatus];
 
 function createData(
   name: string,

@@ -8,8 +8,8 @@ import { StrictMode } from "react";
 
 export default function Page() {
   return (
-      <StrictMode>
+    <StrictMode>
       <NodeList tableData={tableData} />
-      </StrictMode>
+    </StrictMode>
   );
 }

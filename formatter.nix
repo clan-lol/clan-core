@@ -14,6 +14,10 @@
     treefmt.programs.prettier.settings.plugins = [
       "${self'.packages.prettier-plugin-tailwindcss}/lib/node_modules/prettier-plugin-tailwindcss/dist/index.mjs"
     ];
+    treefmt.settings.formatter.prettier.excludes = [
+      "secrets.yaml"
+      "key.json"
+    ];
 
     treefmt.programs.mypy.enable = true;
     treefmt.programs.mypy.directories = {

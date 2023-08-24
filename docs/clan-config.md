@@ -13,6 +13,7 @@ clan.url = "git+https://git.clan.lol/clan/clan-core";
 ```
 
 and inside the mkFlake:
+
 ```
 imports = [
   inputs.clan.flakeModules.clan-config
@@ -20,12 +21,14 @@ imports = [
 ```
 
 Add an empty config file and add it to git
+
 ```command
 echo "{}" > ./clan-settings.json
 git add ./clan-settings.json
 ```
 
 Import the clan-config module into your nixos configuration:
+
 ```nix
 {
   imports = [
@@ -39,6 +42,7 @@ Import the clan-config module into your nixos configuration:
 ```
 
 Make sure your nixos configuration is set a default
+
 ```nix
 {self, ...}: {
   flake.nixosConfigurations.default = self.nixosConfigurations.my-machine;

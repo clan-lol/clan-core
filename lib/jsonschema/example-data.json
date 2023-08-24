@@ -2,10 +2,7 @@
   "name": "John Doe",
   "age": 42,
   "isAdmin": false,
-  "kernelModules": [
-    "usbhid",
-    "usb_storage"
-  ],
+  "kernelModules": ["usbhid", "usb_storage"],
   "userIds": {
     "mic92": 1,
     "lassulus": 2,

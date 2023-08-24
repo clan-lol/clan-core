@@ -140,7 +140,7 @@ function CrudSpeedDial(props: { selected: string | undefined }) {
   function editDial() {
     if (isSomethingSelected) {
       return (
-        <Link href="/nodes/edit" style={{marginTop: 7.5}}>
+        <Link href="/nodes/edit" style={{ marginTop: 7.5 }}>
           <EditIcon color="action" />
         </Link>
       );
@@ -173,7 +173,7 @@ function CrudSpeedDial(props: { selected: string | undefined }) {
         <SpeedDialAction
           key="Add"
           icon={
-            <Link href="/nodes/add" style={{marginTop: 7.5}}>
+            <Link href="/nodes/add" style={{ marginTop: 7.5 }}>
               <AddIcon color="action" />
             </Link>
           }

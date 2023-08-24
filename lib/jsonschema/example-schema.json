@@ -21,11 +21,7 @@
       "items": {
         "type": "string"
       },
-      "default": [
-        "nvme",
-        "xhci_pci",
-        "ahci"
-      ],
+      "default": ["nvme", "xhci_pci", "ahci"],
       "description": "A list of enabled kernel modules"
     },
     "userIds": {
