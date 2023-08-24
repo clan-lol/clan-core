@@ -4,17 +4,8 @@ import urllib.request
 import webbrowser
 from threading import Thread
 
-from fastapi import FastAPI
-
 # XXX: can we dynamically load this using nix develop?
 from uvicorn import run
-
-app = FastAPI()
-
-
-@app.get("/health")
-async def read_root() -> str:
-    return "OK"
 
 
 def defer_open_browser(base_url: str) -> None:
@@ -33,7 +24,7 @@ def start_server(args: argparse.Namespace) -> None:
             target=defer_open_browser, args=(f"http://[{args.host}]:{args.port}",)
         ).start()
     run(
-        "clan_cli.webui.server:app",
+        "clan_cli.webui.app:app",
         host=args.host,
         port=args.port,
         log_level=args.log_level,

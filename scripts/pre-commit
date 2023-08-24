@@ -46,7 +46,7 @@ git stash push --quiet --keep-index --message "treefmt pre-commit"
 trap restore_stash EXIT
 
 # Run treefmt on the files in the index and record the result.
-nix fmt -- --no-cache --quiet "${commit_files[@]}"
+nix fmt -- --no-cache "${commit_files[@]}"
 
 # Check if there is a diff
 git diff --name-only --exit-code
