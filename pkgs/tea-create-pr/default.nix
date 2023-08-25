@@ -14,7 +14,5 @@ writeShellApplication {
     tea
     openssh
   ];
-  text = ''
-    bash ${./script.sh} "$@"
-  '';
+  text = builtins.readFile ./script.sh;
 }
