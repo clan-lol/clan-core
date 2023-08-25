@@ -1,4 +1,4 @@
-{ lib, config, pkgs, ... }:
+{ lib, config, pkgs, clanPkgs, ... }:
 let
 
   pjs =
@@ -27,19 +27,27 @@ let
     "aarch64-darwin" = "@next/swc-darwin-arm64";
   }.${config.floco.settings.system};
 
-  # '
-  #           "@next/swc-darwin-arm64": "13.4.12",
-  #         "@next/swc-darwin-x64": "13.4.12",
+  esbuildVersions = lib.filterAttrs (name: _attrs: name == "esbuild") config.floco.pdefs;
+  highestEsbuildVersion = lib.last (builtins.attrNames esbuildVersions.esbuild);
 
-  #         "@next/swc-linux-arm64-gnu": "13.4.12",
-  #         "@next/swc-linux-arm64-musl": "13.4.12",
-
-  #         "@next/swc-linux-x64-gnu": "13.4.12",
-  #         "@next/swc-linux-x64-musl": "13.4.12",
+  esbuildArch = {
+    # esbuild-linux-64
+    "x86_64-linux" = "esbuild-linux-64";
+    "x86_64-darwin" = "esbuild-darwin-64";
+    "aarch64-darwin" = "esbuild-darwin-arm64";
+  }.${config.floco.settings.system};
 
 in
 {
-
+  config.floco.packages.esbuild =
+    builtins.mapAttrs
+      (
+        version: _attrs: {
+          installed.override.copyTree = true;
+          installed.tree = config.floco.packages.${esbuildArch}.${version}.global;
+        }
+      )
+      esbuildVersions.esbuild;
   # ---------------------------------------------------------------------------- #
 
   config.floco.packages.${ident}.${version} =
@@ -61,7 +69,13 @@ in
       # nextjs chaches some stuff in $HOME
       built.override.preBuild = ''
         export HOME=./home
-        ln -s ${pkgs.roboto}/share/fonts ./src/fonts
+
+
+        echo "----------- GENERATE API TS ------------"
+        cp ${clanPkgs.clan-openapi}/openapi.json .
+        ./node_modules/.bin/orval
+
+        ln -fs ${pkgs.roboto}/share/fonts ./src/
 
         echo "----------- RUNNING LINT ------------"
         next lint --max-warnings 0
@@ -75,6 +89,12 @@ in
               // {
                 "node_modules/${swcArch}" = {
                   key = "${swcArch}/${nextVersion}";
+                  link = false;
+                  optional = false;
+                  dev = true;
+                };
+                "node_modules/${esbuildArch}" = {
+                  key = "${esbuildArch}/${highestEsbuildVersion}";
                   link = false;
                   optional = false;
                   dev = true;

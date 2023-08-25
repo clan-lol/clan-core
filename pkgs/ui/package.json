@@ -17,6 +17,7 @@
     "@mui/icons-material": "^5.14.3",
     "@mui/material": "^5.14.3",
     "autoprefixer": "10.4.14",
+    "axios": "^1.4.0",
     "classnames": "^2.3.2",
     "hex-rgb": "^5.0.0",
     "next": "13.4.12",
@@ -26,6 +27,7 @@
     "react-hook-form": "^7.45.4",
     "react-hot-toast": "^2.4.1",
     "recharts": "^2.7.3",
+    "swr": "^2.2.1",
     "tailwindcss": "3.3.3"
   },
   "devDependencies": {
@@ -33,9 +35,11 @@
     "@types/react": "18.2.18",
     "@types/react-dom": "18.2.7",
     "@types/w3c-web-usb": "^1.0.6",
-    "eslint": "8.46.0",
+    "esbuild": "^0.15.18",
+    "eslint": "^8.46.0",
     "eslint-config-next": "13.4.12",
     "eslint-plugin-tailwindcss": "^3.13.0",
+    "orval": "^6.17.0",
     "prettier": "^3.0.1",
     "prettier-plugin-tailwindcss": "^0.4.1",
     "typescript": "5.1.6"

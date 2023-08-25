@@ -1,6 +1,7 @@
 { floco ? builtins.getFlake "github:aakropotkin/floco"
 , system ? builtins.currentSystem
 , pkgs ? import <nixpkgs> { currentSystem = system; }
+, clanPkgs ? { }
 }:
 let
 
@@ -25,7 +26,7 @@ let
       ./nix/floco-cfg.nix
     ];
     specialArgs = {
-      inherit pkgs;
+      inherit pkgs clanPkgs;
     };
   };
 
