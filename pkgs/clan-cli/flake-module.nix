@@ -9,6 +9,7 @@
         inherit self;
         zerotierone = self'.packages.zerotierone;
       };
+      clan-openapi = self'.packages.clan-cli.clan-openapi;
       default = self'.packages.clan-cli;
 
       ## Optional dependencies for clan cli, we re-expose them here to make sure they all build.

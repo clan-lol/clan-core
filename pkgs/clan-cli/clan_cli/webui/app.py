@@ -1,8 +1,19 @@
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
 
 from .routers import health, machines, root
 
-app = FastAPI()
-app.include_router(health.router)
-app.include_router(machines.router)
-app.include_router(root.router)
+
+def setup_app() -> FastAPI:
+    app = FastAPI()
+    app.include_router(health.router)
+    app.include_router(machines.router)
+    app.include_router(root.router)
+
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            route.operation_id = route.name  # in this case, 'read_items'
+    return app
+
+
+app = setup_app()
