@@ -1,6 +1,7 @@
 .direnv
 result*
 pkgs/clan-cli/clan_cli/nixpkgs
+pkgs/clan-cli/clan_cli/webui/assets
 
 # python
 __pycache__

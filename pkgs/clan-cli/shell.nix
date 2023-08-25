@@ -1,4 +1,4 @@
-{ self, clan-cli, pkgs }:
+{ self, clan-cli, pkgs, ui-assets }:
 let
   pythonWithDeps = pkgs.python3.withPackages (
     ps:
@@ -26,8 +26,9 @@ pkgs.mkShell {
   shellHook = ''
     tmp_path=$(realpath ./.direnv)
                                       
-    rm -f clan_cli/nixpkgs
+    rm -f clan_cli/nixpkgs clan_cli/assets
     ln -sf ${clan-cli.nixpkgs} clan_cli/nixpkgs
+    ln -sf ${ui-assets} clan_cli/webui/assets
     
     export PATH="$tmp_path/bin:${checkScript}/bin:$PATH"
     export PYTHONPATH="$PYTHONPATH:$(pwd)"

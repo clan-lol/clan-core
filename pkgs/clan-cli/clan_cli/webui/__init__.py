@@ -24,6 +24,18 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         "--no-open", action="store_true", help="Don't open the browser", default=False
     )
     parser.add_argument(
+        "--dev", action="store_true", help="Run in development mode", default=False
+    )
+    parser.add_argument(
+        "--dev-port",
+        type=int,
+        default=3000,
+        help="Port to listen on for the dev server",
+    )
+    parser.add_argument(
+        "--dev-host", type=str, default="localhost", help="Host to listen on"
+    )
+    parser.add_argument(
         "--reload", action="store_true", help="Don't reload on changes", default=False
     )
     parser.add_argument(
