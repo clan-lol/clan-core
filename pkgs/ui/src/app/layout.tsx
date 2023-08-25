@@ -19,6 +19,7 @@ import { Sidebar } from "@/components/sidebar";
 import MenuIcon from "@mui/icons-material/Menu";
 import Image from "next/image";
 import { tw } from "@/utils/tailwind";
+import axios from "axios";
 
 const roboto = localFont({
   src: [
@@ -29,6 +30,8 @@ const roboto = localFont({
     },
   ],
 });
+
+axios.defaults.baseURL = "http://localhost:2979";
 
 // add negative margin for smooth transition to fill the space of the sidebar
 const translate = tw`lg:-ml-64 -ml-14`;
