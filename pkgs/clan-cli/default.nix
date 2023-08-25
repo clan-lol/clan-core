@@ -73,6 +73,13 @@ python3.pkgs.buildPythonPackage {
     NIX_STATE_DIR=$TMPDIR/nix ${checkPython}/bin/python -m pytest -s ./tests
     touch $out
   '';
+  passthru.clan-openapi = runCommand "clan-openapi" { } ''
+    cp -r ${source} ./src
+    chmod +w -R ./src
+    cd ./src
+    ${checkPython}/bin/python ./bin/gen-openapi --out $out/openapi.json --app-dir . clan_cli.webui.app:app
+    touch $out
+  '';
 
   passthru.devDependencies = [
     setuptools
