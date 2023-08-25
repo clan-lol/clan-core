@@ -1,52 +1,22 @@
-from enum import Enum
 from typing import Annotated
 
 from fastapi import APIRouter, Body
-from pydantic import BaseModel, Field
 
 from ...machines.create import create_machine as _create_machine
 from ...machines.list import list_machines as _list_machines
+from ..schemas import (
+    Config,
+    ConfigResponse,
+    Machine,
+    MachineCreate,
+    MachineResponse,
+    MachinesResponse,
+    Schema,
+    SchemaResponse,
+    Status,
+)
 
 router = APIRouter()
-
-
-class Status(Enum):
-    ONLINE = "online"
-    OFFLINE = "offline"
-    UNKNOWN = "unknown"
-
-
-class Machine(BaseModel):
-    name: str
-    status: Status
-
-
-class MachineCreate(BaseModel):
-    name: str
-
-
-class MachinesResponse(BaseModel):
-    machines: list[Machine]
-
-
-class MachineResponse(BaseModel):
-    machine: Machine
-
-
-class Config(BaseModel):
-    pass
-
-
-class ConfigResponse(BaseModel):
-    config: Config
-
-
-class Schema(BaseModel):
-    pass
-
-
-class SchemaResponse(BaseModel):
-    schema_: Schema = Field(alias="schema")
 
 
 @router.get("/api/machines")
