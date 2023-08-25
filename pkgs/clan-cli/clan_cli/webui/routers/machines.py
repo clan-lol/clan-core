@@ -2,6 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body
 
+from ...config.machine import schema_for_machine
 from ...machines.create import create_machine as _create_machine
 from ...machines.list import list_machines as _list_machines
 from ..schemas import (
@@ -11,7 +12,6 @@ from ..schemas import (
     MachineCreate,
     MachineResponse,
     MachinesResponse,
-    Schema,
     SchemaResponse,
     Status,
 )
@@ -54,5 +54,5 @@ async def set_machine_config(
 
 @router.get("/api/machines/{name}/schema")
 async def get_machine_schema(name: str) -> SchemaResponse:
-    print("TODO")
-    return SchemaResponse(schema=Schema())
+    schema = schema_for_machine(name)
+    return SchemaResponse(schema=schema)

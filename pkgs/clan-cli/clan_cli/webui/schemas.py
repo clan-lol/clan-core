@@ -34,9 +34,5 @@ class ConfigResponse(BaseModel):
     config: Config
 
 
-class Schema(BaseModel):
-    pass
-
-
 class SchemaResponse(BaseModel):
-    schema_: Schema = Field(alias="schema")
+    schema_: dict = Field(alias="schema")
