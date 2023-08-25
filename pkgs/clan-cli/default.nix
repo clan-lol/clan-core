@@ -18,6 +18,7 @@
 , wheel
 , zerotierone
 , rsync
+, pkgs
 }:
 let
   # This provides dummy options for testing clan config and prevents it from
@@ -55,6 +56,8 @@ python3.pkgs.buildPythonPackage {
   format = "pyproject";
 
   inherit CLAN_OPTIONS_FILE;
+  # This is required for the python tests, where some nix libs depend on nixpkgs
+  CLAN_NIXPKGS = pkgs.path;
 
   nativeBuildInputs = [
     setuptools
@@ -65,6 +68,7 @@ python3.pkgs.buildPythonPackage {
   passthru.tests.clan-pytest = runCommand "clan-tests"
     {
       nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh rsync stdenv.cc ];
+      CLAN_NIXPKGS = pkgs.path;
     } ''
     export CLAN_OPTIONS_FILE="${CLAN_OPTIONS_FILE}"
     cp -r ${source} ./src

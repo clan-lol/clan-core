@@ -9,7 +9,7 @@ let
     ]
   );
   checkScript = pkgs.writeScriptBin "check" ''
-    nix build .#checks.${pkgs.system}.{treefmt,clan-mypy,clan-pytest} -L "$@"
+    nix build .#checks.${pkgs.system}.{treefmt,clan-pytest} -L "$@"
   '';
 in
 pkgs.mkShell {
@@ -18,8 +18,10 @@ pkgs.mkShell {
     self.packages.${pkgs.system}.nix-unit
     pythonWithDeps
   ];
-  # sets up an editable install and add enty points to $PATH
   CLAN_FLAKE = self;
+  # This is required for the python tests, where some nix libs depend on nixpkgs
+  CLAN_NIXPKGS = pkgs.path;
+  # sets up an editable install and add enty points to $PATH
   # This provides dummy options for testing clan config and prevents it from
   # evaluating the flake .#
   CLAN_OPTIONS_FILE = ./clan_cli/config/jsonschema/options.json;

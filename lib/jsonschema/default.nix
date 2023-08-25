@@ -1,4 +1,4 @@
-{ lib ? (import <nixpkgs> { }).lib }:
+{ lib ? import <nixpkgs/lib> }:
 let
 
   # from nixos type to jsonschema type
