@@ -19,12 +19,77 @@ function createData(
   status: NodeStatusKeys,
   last_seen: number,
 ): TableData {
+  if (status == NodeStatus.Online) {
+    last_seen = 0;
+  }
+
   return {
     name,
     id,
     status,
     last_seen: last_seen,
   };
+}
+
+// A function to generate random names
+function getRandomName(): string {
+  let names = [
+    "Alice",
+    "Bob",
+    "Charlie",
+    "David",
+    "Eve",
+    "Frank",
+    "Grace",
+    "Heidi",
+    "Ivan",
+    "Judy",
+    "Mallory",
+    "Oscar",
+    "Peggy",
+    "Sybil",
+    "Trent",
+    "Victor",
+    "Walter",
+    "Wendy",
+    "Zoe",
+  ];
+  let index = Math.floor(Math.random() * names.length);
+  return names[index];
+}
+
+// A function to generate random IPv6 addresses
+function getRandomId(): string {
+  let hex = "0123456789abcdef";
+  let id = "";
+  for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 4; j++) {
+      let index = Math.floor(Math.random() * hex.length);
+      id += hex[index];
+    }
+    if (i < 7) {
+      id += ":";
+    }
+  }
+  return id;
+}
+
+// A function to generate random status keys
+function getRandomStatus(): NodeStatusKeys {
+  let statusKeys = [NodeStatus.Online, NodeStatus.Offline, NodeStatus.Pending];
+  let index = Math.floor(Math.random() * statusKeys.length);
+  return statusKeys[index];
+}
+
+// A function to generate random last seen values
+function getRandomLastSeen(status: NodeStatusKeys): number {
+  if (status === "online") {
+    return 0;
+  } else {
+    let min = 1; // One day ago
+    let max = 360; // One year ago
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
 }
 
 export const tableData = [
@@ -97,3 +162,19 @@ export const tableData = [
     0,
   ),
 ];
+
+// A function to execute the createData function with dummy data in a loop 100 times and return an array
+export function executeCreateData(): TableData[] {
+  let result: TableData[] = [];
+  for (let i = 0; i < 100; i++) {
+    // Generate dummy data
+    let name = getRandomName();
+    let id = getRandomId();
+    let status = getRandomStatus();
+    let last_seen = getRandomLastSeen(status);
+
+    // Call the createData function and push the result to the array
+    result.push(createData(name, id, status, last_seen));
+  }
+  return result;
+}

@@ -1,56 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
-import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import SpeedDial, { CloseReason, OpenReason } from "@mui/material/SpeedDial";
-import SpeedDialIcon from "@mui/material/SpeedDialIcon";
-import SpeedDialAction from "@mui/material/SpeedDialAction";
-import { visuallyHidden } from "@mui/utils";
 import CircleIcon from "@mui/icons-material/Circle";
 import Stack from "@mui/material/Stack/Stack";
-import EditIcon from "@mui/icons-material/ModeEdit";
-import SearchIcon from "@mui/icons-material/Search";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import NodePieChart, { PieData } from "./NodePieChart";
-import Fab from "@mui/material/Fab";
-import AddIcon from "@mui/icons-material/Add";
-import Link from "next/link";
 
 import Grid2 from "@mui/material/Unstable_Grid2"; // Grid version 2
-import {
-  Card,
-  CardContent,
-  Collapse,
-  Container,
-  FormGroup,
-  useTheme,
-} from "@mui/material";
-import hexRgb from "hex-rgb";
-import useMediaQuery from "@mui/material/useMediaQuery";
+import { Collapse } from "@mui/material";
 import { NodeStatus, NodeStatusKeys, TableData } from "@/data/nodeData";
-import StickySpeedDial from "./StickySpeedDial";
-import { jsx } from "@emotion/react";
 
-export default function Row(props: {
+export default function NodeRow(props: {
   row: TableData;
   selected: string | undefined;
   setSelected: (a: string | undefined) => void;
@@ -93,13 +58,13 @@ export default function Row(props: {
   //const labelId = `enhanced-table-checkbox-${index}`;
 
   // Speed optimization. We compare string pointers here instead of the string content.
-  const isSelected = selected == row.name;
+  const isSelected = selected == row.id;
 
-  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
+  const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
     if (isSelected) {
       setSelected(undefined);
     } else {
-      setSelected(name);
+      setSelected(id);
     }
   };
 
@@ -142,7 +107,7 @@ export default function Row(props: {
         <TableCell
           component="th"
           scope="row"
-          onClick={(event) => handleClick(event, row.name)}
+          onClick={(event) => handleClick(event, row.id)}
         >
           <Stack>
             <Typography component="div" align="left" variant="body1">
