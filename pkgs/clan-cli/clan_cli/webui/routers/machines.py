@@ -2,11 +2,14 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body
 
-from ...config.machine import schema_for_machine
+from ...config.machine import (
+    config_for_machine,
+    schema_for_machine,
+    set_config_for_machine,
+)
 from ...machines.create import create_machine as _create_machine
 from ...machines.list import list_machines as _list_machines
 from ..schemas import (
-    Config,
     ConfigResponse,
     Machine,
     MachineCreate,
@@ -41,14 +44,15 @@ async def get_machine(name: str) -> MachineResponse:
 
 @router.get("/api/machines/{name}/config")
 async def get_machine_config(name: str) -> ConfigResponse:
-    return ConfigResponse(config=Config())
+    config = config_for_machine(name)
+    return ConfigResponse(config=config)
 
 
 @router.put("/api/machines/{name}/config")
 async def set_machine_config(
-    name: str, config: Annotated[Config, Body()]
+    name: str, config: Annotated[dict, Body()]
 ) -> ConfigResponse:
-    print("TODO")
+    set_config_for_machine(name, config)
     return ConfigResponse(config=config)
 
 

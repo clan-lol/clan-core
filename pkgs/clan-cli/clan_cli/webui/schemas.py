@@ -26,12 +26,8 @@ class MachineResponse(BaseModel):
     machine: Machine
 
 
-class Config(BaseModel):
-    pass
-
-
 class ConfigResponse(BaseModel):
-    config: Config
+    config: dict
 
 
 class SchemaResponse(BaseModel):

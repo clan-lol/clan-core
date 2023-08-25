@@ -7,10 +7,36 @@ from typing import Optional
 from ..dirs import get_clan_flake_toplevel
 
 
+def config_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
+    # find the flake root
+    if flake is None:
+        flake = get_clan_flake_toplevel()
+    # read the config from a json file located at {flake}/machines/{machine_name}.json
+    config_path = flake / "machines" / f"{machine_name}.json"
+    if not config_path.exists():
+        raise Exception(
+            f"Machine {machine_name} does not exist in {flake / 'machines'}"
+        )
+    with open(config_path) as f:
+        return json.load(f)
+
+
+def set_config_for_machine(
+    machine_name: str, config: dict, flake: Optional[Path] = None
+) -> None:
+    # find the flake root
+    if flake is None:
+        flake = get_clan_flake_toplevel()
+    # write the config to a json file located at {flake}/machines/{machine_name}.json
+    config_path = flake / "machines" / f"{machine_name}.json"
+    with open(config_path, "w") as f:
+        json.dump(config, f)
+
+
 def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
     if flake is None:
         flake = get_clan_flake_toplevel()
-    # use nix eval to read from .#clanModules.<module_name>.options
+    # use nix eval to lib.evalModules .#clanModules.machine-{machine_name}
     proc = subprocess.run(
         [
             "nix",
