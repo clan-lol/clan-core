@@ -5,6 +5,6 @@
   };
 
   outputs = _inputs: {
-    clanModules.machine-machine1 = ./clanModules/machine1.nix;
+    nixosModules.machine-machine1 = ./nixosModules/machine1.nix;
   };
 }
