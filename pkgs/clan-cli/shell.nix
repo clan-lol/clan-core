@@ -39,7 +39,7 @@ pkgs.mkShell {
       --editable $repo_root
 
     export PATH="$tmp_path/bin:${checkScript}/bin:$PATH"
-    export PYTHONPATH="$repo_root:$tmp_path//python/${pythonWithDeps.sitePackages}:${pythonWithDeps}/${pythonWithDeps.sitePackages}"
+    export PYTHONPATH="$repo_root:$tmp_path/python/${pythonWithDeps.sitePackages}:${pythonWithDeps}/${pythonWithDeps.sitePackages}"
 
     export XDG_DATA_DIRS="$tmp_path/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
     export fish_complete_path="$tmp_path/share/fish/vendor_completions.d''${fish_complete_path:+:$fish_complete_path}"
