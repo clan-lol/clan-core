@@ -4,31 +4,36 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from fastapi import HTTPException
+
 from clan_cli.dirs import get_clan_flake_toplevel
+from clan_cli.machines.folders import machine_folder, machine_settings_file
 
 
-def config_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
-    # find the flake root
-    if flake is None:
-        flake = get_clan_flake_toplevel()
+def config_for_machine(machine_name: str) -> dict:
     # read the config from a json file located at {flake}/machines/{machine_name}.json
-    config_path = flake / "machines" / f"{machine_name}.json"
-    if not config_path.exists():
+    if not machine_folder(machine_name).exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Machine {machine_name} not found. Create the machine first`",
+        )
+    settings_path = machine_settings_file(machine_name)
+    if not settings_path.exists():
         return {}
-    with open(config_path) as f:
+    with open(settings_path) as f:
         return json.load(f)
 
 
-def set_config_for_machine(
-    machine_name: str, config: dict, flake: Optional[Path] = None
-) -> None:
-    # find the flake root
-    if flake is None:
-        flake = get_clan_flake_toplevel()
+def set_config_for_machine(machine_name: str, config: dict) -> None:
     # write the config to a json file located at {flake}/machines/{machine_name}.json
-    config_path = flake / "machines" / f"{machine_name}.json"
-    config_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(config_path, "w") as f:
+    if not machine_folder(machine_name).exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"Machine {machine_name} not found. Create the machine first`",
+        )
+    settings_path = machine_settings_file(machine_name)
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(settings_path, "w") as f:
         json.dump(config, f)
 
 
