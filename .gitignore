@@ -1,6 +1,5 @@
 .direnv
 result*
-.pre-commit-config.yaml
 
 # python
 __pycache__
