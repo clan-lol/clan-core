@@ -7,7 +7,7 @@ import subprocess
 def create(args: argparse.Namespace) -> None:
     os.makedirs(args.folder, exist_ok=True)
     # TODO create clan template in flake
-    subprocess.Popen(
+    subprocess.run(
         [
             "nix",
             "flake",
@@ -15,17 +15,6 @@ def create(args: argparse.Namespace) -> None:
             "-t",
             "git+https://git.clan.lol/clan/clan-core#new-clan",
         ]
-    )
-
-
-def git(args: argparse.Namespace) -> None:
-    subprocess.Popen(
-        [
-            "git",
-            "-C",
-            args.folder,
-        ]
-        + args.git_args
     )
 
 
@@ -46,7 +35,3 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
 
     parser_create = subparser.add_parser("create", help="create a new clan")
     parser_create.set_defaults(func=create)
-
-    parser_git = subparser.add_parser("git", help="control the clan repo via git")
-    parser_git.add_argument("git_args", nargs="*")
-    parser_git.set_defaults(func=git)

@@ -1,4 +1,7 @@
 { self, ... }: {
+  imports = [
+    ./integration/flake-module.nix
+  ];
   perSystem = { pkgs, lib, self', ... }: {
     checks =
       let
