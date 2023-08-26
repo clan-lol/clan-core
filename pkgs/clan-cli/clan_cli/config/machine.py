@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from ..dirs import get_clan_flake_toplevel
+from clan_cli.dirs import get_clan_flake_toplevel
 
 
 def config_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
@@ -14,9 +14,7 @@ def config_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
     # read the config from a json file located at {flake}/machines/{machine_name}.json
     config_path = flake / "machines" / f"{machine_name}.json"
     if not config_path.exists():
-        raise Exception(
-            f"Machine {machine_name} does not exist in {flake / 'machines'}"
-        )
+        return {}
     with open(config_path) as f:
         return json.load(f)
 
@@ -29,6 +27,7 @@ def set_config_for_machine(
         flake = get_clan_flake_toplevel()
     # write the config to a json file located at {flake}/machines/{machine_name}.json
     config_path = flake / "machines" / f"{machine_name}.json"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
     with open(config_path, "w") as f:
         json.dump(config, f)
 
