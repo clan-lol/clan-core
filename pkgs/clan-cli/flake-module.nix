@@ -2,12 +2,12 @@
   perSystem = { self', pkgs, ... }: {
     devShells.clan-cli = pkgs.callPackage ./shell.nix {
       inherit self;
-      inherit (self'.packages) clan-cli;
+      inherit (self'.packages) clan-cli ui-assets;
     };
     packages = {
       clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
         inherit self;
-        zerotierone = self'.packages.zerotierone;
+        inherit (self'.packages) ui-assets zerotierone;
       };
       clan-openapi = self'.packages.clan-cli.clan-openapi;
       default = self'.packages.clan-cli;

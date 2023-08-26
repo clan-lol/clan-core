@@ -19,6 +19,7 @@
 , zerotierone
 , rsync
 , pkgs
+, ui-assets
 }:
 let
   # This provides dummy options for testing clan config and prevents it from
@@ -49,6 +50,7 @@ let
     rm $out/clan_cli/config/jsonschema
     cp -r ${self + /lib/jsonschema} $out/clan_cli/config/jsonschema
     ln -s ${nixpkgs} $out/clan_cli/nixpkgs
+    ln -s ${ui-assets} $out/clan_cli/webui/assets
   '';
   nixpkgs = runCommand "nixpkgs" { } ''
     mkdir -p $out/unfree
