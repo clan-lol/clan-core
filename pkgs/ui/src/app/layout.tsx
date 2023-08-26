@@ -20,6 +20,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Image from "next/image";
 import { tw } from "@/utils/tailwind";
 import axios from "axios";
+import { MachineContextProvider } from "@/components/hooks/useMachines";
 
 const roboto = localFont({
   src: [
@@ -81,45 +82,47 @@ export default function RootLayout({
           <body id="__next" className={roboto.className}>
             <CssBaseline />
             <Toaster />
-            <div className="flex h-screen overflow-hidden">
-              <Sidebar
-                show={showSidebar}
-                onClose={() => setShowSidebar(false)}
-              />
-              <div
-                className={tw`${
-                  !showSidebar && translate
-                } flex h-full w-full flex-col overflow-y-scroll transition-[margin] duration-150 ease-in-out`}
-              >
-                <div className="static top-0 mb-2 py-2">
-                  <div className="grid grid-cols-3">
-                    <div className="col-span-1">
-                      <IconButton
-                        hidden={true}
-                        onClick={() => setShowSidebar((c) => !c)}
-                      >
-                        {!showSidebar && <MenuIcon />}
-                      </IconButton>
-                    </div>
-                    <div className="col-span-1 block w-full text-center font-semibold text-white lg:hidden ">
-                      <Image
-                        src="/logo.svg"
-                        alt="Clan Logo"
-                        width={58}
-                        height={58}
-                        priority
-                      />
+            <MachineContextProvider>
+              <div className="flex h-screen overflow-hidden">
+                <Sidebar
+                  show={showSidebar}
+                  onClose={() => setShowSidebar(false)}
+                />
+                <div
+                  className={tw`${
+                    !showSidebar && translate
+                  } flex h-full w-full flex-col overflow-y-scroll transition-[margin] duration-150 ease-in-out`}
+                >
+                  <div className="static top-0 mb-2 py-2">
+                    <div className="grid grid-cols-3">
+                      <div className="col-span-1">
+                        <IconButton
+                          hidden={true}
+                          onClick={() => setShowSidebar((c) => !c)}
+                        >
+                          {!showSidebar && <MenuIcon />}
+                        </IconButton>
+                      </div>
+                      <div className="col-span-1 block w-full text-center font-semibold text-white lg:hidden ">
+                        <Image
+                          src="/logo.svg"
+                          alt="Clan Logo"
+                          width={58}
+                          height={58}
+                          priority
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="px-1">
-                  <div className="relative flex h-full flex-1 flex-col">
-                    <main>{children}</main>
+                  <div className="px-1">
+                    <div className="relative flex h-full flex-1 flex-col">
+                      <main>{children}</main>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </MachineContextProvider>
           </body>
         </ThemeProvider>
       </StyledEngineProvider>

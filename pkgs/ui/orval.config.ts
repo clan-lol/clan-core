@@ -2,8 +2,8 @@ const config = {
   petstore: {
     output: {
       mode: "tags-split",
-      target: "api",
-      schemas: "api/model",
+      target: "src/api",
+      schemas: "src/api/model",
       client: "swr",
       // mock: true,
     },

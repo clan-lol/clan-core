@@ -29,7 +29,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { useListMachines } from "../../../../api/default/default";
+import { useListMachines } from "@/api/default/default";
 
 export async function generateStaticParams() {
   return [{ id: "1" }, { id: "2" }];

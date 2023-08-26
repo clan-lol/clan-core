@@ -13,9 +13,10 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
 import Grid2 from "@mui/material/Unstable_Grid2"; // Grid version 2
 import { Collapse } from "@mui/material";
+
 import { NodeStatus, NodeStatusKeys, TableData } from "@/data/nodeData";
 
-export default function NodeRow(props: {
+export function NodeRow(props: {
   row: TableData;
   selected: string | undefined;
   setSelected: (a: string | undefined) => void;
@@ -58,13 +59,13 @@ export default function NodeRow(props: {
   //const labelId = `enhanced-table-checkbox-${index}`;
 
   // Speed optimization. We compare string pointers here instead of the string content.
-  const isSelected = selected == row.id;
+  const isSelected = selected == row.name;
 
-  const handleClick = (event: React.MouseEvent<unknown>, id: string) => {
+  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
     if (isSelected) {
       setSelected(undefined);
     } else {
-      setSelected(id);
+      setSelected(name);
     }
   };
 
@@ -107,7 +108,7 @@ export default function NodeRow(props: {
         <TableCell
           component="th"
           scope="row"
-          onClick={(event) => handleClick(event, row.id)}
+          onClick={(event) => handleClick(event, row.name)}
         >
           <Stack>
             <Typography component="div" align="left" variant="body1">
@@ -119,7 +120,7 @@ export default function NodeRow(props: {
               align="left"
               variant="body2"
             >
-              {row.id}
+              {row.name}
             </Typography>
           </Stack>
         </TableCell>
