@@ -46,7 +46,7 @@ function getTemplate(params: { id: string }) {
 interface TemplateDetailProps {
   params: { id: string };
 }
-export function TemplateDetail({ params }: TemplateDetailProps) {
+export default function TemplateDetail({ params }: TemplateDetailProps) {
   const { data, isLoading } = useListMachines();
   console.log({ data, isLoading });
   const details = getTemplate(params);

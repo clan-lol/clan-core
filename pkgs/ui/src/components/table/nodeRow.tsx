@@ -108,7 +108,7 @@ export function NodeRow(props: {
         <TableCell
           component="th"
           scope="row"
-          onClick={(event) => handleClick(event, row.id)}
+          onClick={(event) => handleClick(event, row.name)}
         >
           <Stack>
             <Typography component="div" align="left" variant="body1">
@@ -120,7 +120,7 @@ export function NodeRow(props: {
               align="left"
               variant="body2"
             >
-              {row.id}
+              {row.name}
             </Typography>
           </Stack>
         </TableCell>
