@@ -77,7 +77,7 @@ python3.pkgs.buildPythonPackage {
   ];
   propagatedBuildInputs = dependencies;
 
-  passthru.tests.clan-pytest = runCommand "clan-tests"
+  passthru.tests.clan-pytest = runCommand "clan-pytest"
     {
       nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh rsync stdenv.cc ];
     } ''

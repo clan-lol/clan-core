@@ -55,7 +55,7 @@ def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
             let
                 flake = builtins.getFlake (toString {flake});
                 lib = import {nixpkgs()}/lib;
-                module = builtins.trace (builtins.attrNames flake) flake.nixosModules.machine-{machine_name};
+                module = flake.nixosModules.machine-{machine_name};
                 evaled = lib.evalModules {{
                     modules = [module];
                 }};
