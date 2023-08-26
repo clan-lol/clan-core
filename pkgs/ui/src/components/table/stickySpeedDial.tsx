@@ -1,57 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import SpeedDial, { CloseReason, OpenReason } from "@mui/material/SpeedDial";
 import SpeedDialIcon from "@mui/material/SpeedDialIcon";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
-import { visuallyHidden } from "@mui/utils";
-import CircleIcon from "@mui/icons-material/Circle";
-import Stack from "@mui/material/Stack/Stack";
 import EditIcon from "@mui/icons-material/ModeEdit";
-import SearchIcon from "@mui/icons-material/Search";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import NodePieChart, { PieData } from "./NodePieChart";
-import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import Link from "next/link";
 
-import Grid2 from "@mui/material/Unstable_Grid2"; // Grid version 2
-import {
-  Card,
-  CardContent,
-  Collapse,
-  Container,
-  FormGroup,
-  useTheme,
-} from "@mui/material";
-import hexRgb from "hex-rgb";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { NodeStatus, NodeStatusKeys, TableData } from "@/data/nodeData";
-import { jsx } from "@emotion/react";
-
-export default function StickySpeedDial(props: {
-  selected: string | undefined;
-}) {
+export function StickySpeedDial(props: { selected: string | undefined }) {
   const { selected } = props;
   const [open, setOpen] = React.useState(false);
 
@@ -72,7 +31,7 @@ export default function StickySpeedDial(props: {
   function editDial() {
     if (isSomethingSelected) {
       return (
-        <Link href="/nodes/edit" style={{ marginTop: 7.5 }}>
+        <Link href={`/machines/edit/${selected}`} style={{ marginTop: 7.5 }}>
           <EditIcon color="action" />
         </Link>
       );
@@ -105,7 +64,7 @@ export default function StickySpeedDial(props: {
         <SpeedDialAction
           key="Add"
           icon={
-            <Link href="/nodes/add" style={{ marginTop: 7.5 }}>
+            <Link href="/machines/add" style={{ marginTop: 7.5 }}>
               <AddIcon color="action" />
             </Link>
           }

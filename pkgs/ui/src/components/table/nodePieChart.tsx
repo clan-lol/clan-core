@@ -1,14 +1,7 @@
 import React from "react";
-import {
-  PieChart,
-  Pie,
-  Sector,
-  Cell,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
 import { useTheme } from "@mui/material/styles";
-import { Box, Color } from "@mui/material";
+import { Box } from "@mui/material";
 
 export interface PieData {
   name: string;
@@ -21,7 +14,7 @@ interface Props {
   showLabels?: boolean;
 }
 
-export default function NodePieChart(props: Props) {
+export function NodePieChart(props: Props) {
   const theme = useTheme();
   const { data, showLabels } = props;
 

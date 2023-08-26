@@ -38,8 +38,8 @@ const menuEntries: MenuEntry[] = [
   },
   {
     icon: <DevicesIcon />,
-    label: "Devices",
-    to: "/nodes",
+    label: "Machines",
+    to: "/machines",
   },
   {
     icon: <AppsIcon />,

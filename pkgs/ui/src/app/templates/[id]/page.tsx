@@ -29,7 +29,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { useListMachines } from "../../../../api/default/default";
+import { useListMachines } from "@api/default/default";
 
 export async function generateStaticParams() {
   return [{ id: "1" }, { id: "2" }];
@@ -46,7 +46,7 @@ function getTemplate(params: { id: string }) {
 interface TemplateDetailProps {
   params: { id: string };
 }
-export default function TemplateDetail({ params }: TemplateDetailProps) {
+export function TemplateDetail({ params }: TemplateDetailProps) {
   const { data, isLoading } = useListMachines();
   console.log({ data, isLoading });
   const details = getTemplate(params);

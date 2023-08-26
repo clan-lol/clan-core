@@ -10,7 +10,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import { visuallyHidden } from "@mui/utils";
-import NodeRow from "./NodeRow";
+import { NodeRow } from "./nodeRow";
 
 import { TableData } from "@/data/nodeData";
 
@@ -141,7 +141,7 @@ interface NodeTableContainerProps {
   setSelected: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
-export default function NodeTableContainer(props: NodeTableContainerProps) {
+export function NodeTableContainer(props: NodeTableContainerProps) {
   const { tableData, page, rowsPerPage, dense, selected, setSelected } = props;
   const [order, setOrder] = React.useState<NodeOrder>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof TableData>("status");
@@ -184,7 +184,7 @@ export default function NodeTableContainer(props: NodeTableContainerProps) {
           {visibleRows.map((row, index) => {
             return (
               <NodeRow
-                key={row.id}
+                key={row.name}
                 row={row}
                 selected={selected}
                 setSelected={setSelected}
