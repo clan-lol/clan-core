@@ -14,10 +14,15 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { TableData } from "@/data/nodeData";
 import EnhancedTableToolbar from "./EnhancedTableToolbar";
 import { table } from "console";
+import StickySpeedDial from "./StickySpeedDial";
 
-function SearchBar() {
-  const [search, setSearch] = React.useState<string | undefined>(undefined);
+export interface SearchBarProps {
+  search: string;
+  setSearch: React.Dispatch<React.SetStateAction<string>>;
+}
 
+function SearchBar(props: SearchBarProps) {
+  const { search, setSearch } = props;
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
@@ -47,6 +52,7 @@ export default function NodeTable(props: NodeTableProps) {
   const [selected, setSelected] = React.useState<string | undefined>(undefined);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [search, setSearch] = React.useState<string>("");
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -62,7 +68,10 @@ export default function NodeTable(props: NodeTableProps) {
   return (
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
-        <EnhancedTableToolbar tableData={tableData} selected={selected} />
+        <StickySpeedDial selected={selected} />
+        <EnhancedTableToolbar tableData={tableData}>
+          <SearchBar search={search} setSearch={setSearch} />
+        </EnhancedTableToolbar>
         <NodeTableContainer
           tableData={tableData}
           page={page}

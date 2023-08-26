@@ -182,8 +182,6 @@ export default function NodeTableContainer(props: NodeTableContainerProps) {
         />
         <TableBody>
           {visibleRows.map((row, index) => {
-            const labelId = `enhanced-table-checkbox-${index}`;
-
             return (
               <NodeRow
                 key={row.id}

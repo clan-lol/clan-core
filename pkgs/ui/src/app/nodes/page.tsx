@@ -3,13 +3,13 @@
 import NodeTable from "./NodeTable";
 
 import Box from "@mui/material/Box";
-import { tableData, executeCreateData } from "@/data/nodeData";
+import { tableData } from "@/data/nodeDataStatic";
 import { StrictMode } from "react";
 
 export default function Page() {
   return (
     <StrictMode>
-      <NodeTable tableData={executeCreateData()} />
+      <NodeTable tableData={tableData} />
     </StrictMode>
   );
 }

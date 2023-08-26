@@ -1,99 +1,26 @@
 "use client";
 
 import * as React from "react";
-import { alpha } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import SpeedDial, { CloseReason, OpenReason } from "@mui/material/SpeedDial";
-import SpeedDialIcon from "@mui/material/SpeedDialIcon";
-import SpeedDialAction from "@mui/material/SpeedDialAction";
-import { visuallyHidden } from "@mui/utils";
-import CircleIcon from "@mui/icons-material/Circle";
 import Stack from "@mui/material/Stack/Stack";
-import EditIcon from "@mui/icons-material/ModeEdit";
-import SearchIcon from "@mui/icons-material/Search";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import NodePieChart, { PieData } from "./NodePieChart";
-import Fab from "@mui/material/Fab";
-import AddIcon from "@mui/icons-material/Add";
-import Link from "next/link";
+import NodePieChart from "./NodePieChart";
 
 import Grid2 from "@mui/material/Unstable_Grid2"; // Grid version 2
-import {
-  Card,
-  CardContent,
-  Collapse,
-  Container,
-  FormGroup,
-  useTheme,
-} from "@mui/material";
+import { Card, CardContent, FormGroup, useTheme } from "@mui/material";
 import hexRgb from "hex-rgb";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { NodeStatus, NodeStatusKeys, TableData } from "@/data/nodeData";
-import StickySpeedDial from "./StickySpeedDial";
-import { jsx } from "@emotion/react";
+import { NodeStatus, TableData } from "@/data/nodeData";
 
 interface EnhancedTableToolbarProps {
-  selected: string | undefined;
   tableData: TableData[];
 }
 
-export default function EnhancedTableToolbar(
-  props: React.PropsWithChildren<EnhancedTableToolbarProps>,
-) {
-  const { selected, tableData } = props;
-  const theme = useTheme();
-  const is_lg = useMediaQuery(theme.breakpoints.down("lg"));
-  const [debug, setDebug] = React.useState<boolean>(false);
-
-  const debugSx = debug
-    ? {
-        "--Grid-borderWidth": "1px",
-        borderTop: "var(--Grid-borderWidth) solid",
-        borderLeft: "var(--Grid-borderWidth) solid",
-        borderColor: "divider",
-        "& > div": {
-          borderRight: "var(--Grid-borderWidth) solid",
-          borderBottom: "var(--Grid-borderWidth) solid",
-          borderColor: "divider",
-        },
-      }
-    : {};
-
-  const pieData = React.useMemo(() => {
-    const online = tableData.filter(
-      (row) => row.status === NodeStatus.Online,
-    ).length;
-    const offline = tableData.filter(
-      (row) => row.status === NodeStatus.Offline,
-    ).length;
-    const pending = tableData.filter(
-      (row) => row.status === NodeStatus.Pending,
-    ).length;
-
-    return [
-      { name: "Online", value: online, color: theme.palette.success.main },
-      { name: "Offline", value: offline, color: theme.palette.error.main },
-      { name: "Pending", value: pending, color: theme.palette.warning.main },
-    ];
-  }, [tableData, theme]);
+function PieCardData(props: { pieData: PieData[]; debugSx: any }) {
+  const { pieData, debugSx } = props;
 
   const cardData = React.useMemo(() => {
     return pieData
@@ -105,7 +32,7 @@ export default function EnhancedTableToolbar(
       });
   }, [pieData]);
 
-  const cardStack = (
+  return (
     <Stack
       sx={{ ...debugSx, paddingTop: 6 }}
       height={350}
@@ -150,10 +77,56 @@ export default function EnhancedTableToolbar(
       ))}
     </Stack>
   );
+}
+
+interface PieData {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export default function EnhancedTableToolbar(
+  props: React.PropsWithChildren<EnhancedTableToolbarProps>,
+) {
+  const { tableData } = props;
+  const theme = useTheme();
+  const is_lg = useMediaQuery(theme.breakpoints.down("lg"));
+  const [debug, setDebug] = React.useState<boolean>(false);
+
+  const debugSx = debug
+    ? {
+        "--Grid-borderWidth": "1px",
+        borderTop: "var(--Grid-borderWidth) solid",
+        borderLeft: "var(--Grid-borderWidth) solid",
+        borderColor: "divider",
+        "& > div": {
+          borderRight: "var(--Grid-borderWidth) solid",
+          borderBottom: "var(--Grid-borderWidth) solid",
+          borderColor: "divider",
+        },
+      }
+    : {};
+
+  const pieData: PieData[] = React.useMemo(() => {
+    const online = tableData.filter(
+      (row) => row.status === NodeStatus.Online,
+    ).length;
+    const offline = tableData.filter(
+      (row) => row.status === NodeStatus.Offline,
+    ).length;
+    const pending = tableData.filter(
+      (row) => row.status === NodeStatus.Pending,
+    ).length;
+
+    return [
+      { name: "Online", value: online, color: theme.palette.success.main },
+      { name: "Offline", value: offline, color: theme.palette.error.main },
+      { name: "Pending", value: pending, color: theme.palette.warning.main },
+    ];
+  }, [tableData, theme]);
 
   return (
     <Grid2 container spacing={1} sx={debugSx}>
-      <StickySpeedDial selected={selected} />
       <Grid2 key="Header" xs={6}>
         <Typography
           sx={{ marginLeft: 3, marginTop: 1 }}
@@ -202,7 +175,7 @@ export default function EnhancedTableToolbar(
         display="flex"
         sx={{ display: { lg: "flex", xs: "none", md: "flex" } }}
       >
-        {cardStack}
+        <PieCardData pieData={pieData} debugSx={debugSx} />
       </Grid2>
 
       {/*Toolbar Grid */}
