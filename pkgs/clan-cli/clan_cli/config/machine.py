@@ -6,7 +6,7 @@ from typing import Optional
 
 from fastapi import HTTPException
 
-from clan_cli.dirs import get_clan_flake_toplevel
+from clan_cli.dirs import get_clan_flake_toplevel, nixpkgs
 from clan_cli.machines.folders import machine_folder, machine_settings_file
 
 
@@ -40,7 +40,7 @@ def set_config_for_machine(machine_name: str, config: dict) -> None:
 def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
     if flake is None:
         flake = get_clan_flake_toplevel()
-    # use nix eval to lib.evalModules .#clanModules.machine-{machine_name}
+    # use nix eval to lib.evalModules .#nixosModules.machine-{machine_name}
     proc = subprocess.run(
         [
             "nix",
@@ -54,8 +54,8 @@ def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
             f"""
             let
                 flake = builtins.getFlake (toString {flake});
-                lib = flake.inputs.nixpkgs.lib;
-                module = builtins.trace (builtins.attrNames flake) flake.clanModules.machine-{machine_name};
+                lib = import {nixpkgs()}/lib;
+                module = builtins.trace (builtins.attrNames flake) flake.nixosModules.machine-{machine_name};
                 evaled = lib.evalModules {{
                     modules = [module];
                 }};
