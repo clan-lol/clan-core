@@ -9,3 +9,7 @@ def machines_folder() -> Path:
 
 def machine_folder(machine: str) -> Path:
     return machines_folder() / machine
+
+
+def machine_settings_file(machine: str) -> Path:
+    return machine_folder(machine) / "settings.json"
