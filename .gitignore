@@ -1,5 +1,6 @@
 .direnv
 result*
+pkgs/clan-cli/clan_cli/nixpkgs
 
 # python
 __pycache__

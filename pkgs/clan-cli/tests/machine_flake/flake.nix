@@ -1,7 +1,7 @@
 {
   inputs = {
     # this placeholder is replaced by the path to nixpkgs
-    nixpkgs.url = "__CLAN_NIXPKGS__";
+    nixpkgs.url = "__NIXPKGS__";
   };
 
   outputs = _inputs: {

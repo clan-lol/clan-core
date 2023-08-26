@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 from typing import Any, Iterator, Optional
 
 from ..errors import ClanError
-from ..nix import nix_shell
+from ..nix import nix_shell, unfree_nix_shell
 
 
 def try_bind_port(port: int) -> bool:
@@ -87,7 +87,10 @@ def zerotier_controller() -> Iterator[ZerotierController]:
     controller_port = find_free_port(range(10000, 65535))
     if controller_port is None:
         raise ClanError("cannot find a free port for zerotier controller")
-    cmd = nix_shell(["bash", "zerotierone"], ["bash", "-c", "command -v zerotier-one"])
+
+    cmd = unfree_nix_shell(
+        ["bash", "zerotierone"], ["bash", "-c", "command -v zerotier-one"]
+    )
     res = subprocess.run(
         cmd,
         check=True,
@@ -102,7 +105,6 @@ def zerotier_controller() -> Iterator[ZerotierController]:
         raise ClanError(
             f"zerotier-one executable needs to come from /nix/store: {zerotier_exe}"
         )
-
     with TemporaryDirectory() as d:
         tempdir = Path(d)
         home = tempdir / "zerotier-one"
