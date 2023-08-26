@@ -6,6 +6,8 @@ from typing import Generator
 
 import pytest
 
+from clan_cli.dirs import nixpkgs
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "helpers"))
 
 pytest_plugins = [
@@ -27,15 +29,8 @@ def monkeymodule() -> Generator[pytest.MonkeyPatch, None, None]:
         yield mp
 
 
-# fixture for the example flake located under ./example_flake
-# The flake is a template that is copied to a temporary location.
-# Variables like __CLAN_NIXPKGS__ are replaced with the value of the
-# CLAN_NIXPKGS environment variable.
 @pytest.fixture(scope="module")
 def machine_flake(monkeymodule: pytest.MonkeyPatch) -> Generator[Path, None, None]:
-    CLAN_NIXPKGS = os.environ.get("CLAN_NIXPKGS", "")
-    if CLAN_NIXPKGS == "":
-        raise Exception("CLAN_NIXPKGS not set")
     template = Path(__file__).parent / "machine_flake"
     # copy the template to a new temporary location
     with tempfile.TemporaryDirectory() as tmpdir_:
@@ -49,7 +44,7 @@ def machine_flake(monkeymodule: pytest.MonkeyPatch) -> Generator[Path, None, Non
         # provided by get_clan_flake_toplevel
         flake_nix = flake / "flake.nix"
         flake_nix.write_text(
-            flake_nix.read_text().replace("__CLAN_NIXPKGS__", CLAN_NIXPKGS)
+            flake_nix.read_text().replace("__NIXPKGS__", str(nixpkgs()))
         )
         # check that an empty config is returned if no json file exists
         monkeymodule.chdir(flake)

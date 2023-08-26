@@ -24,3 +24,19 @@ def user_config_dir() -> Path:
         return Path(os.path.expanduser("~/Library/Application Support/"))
     else:
         return Path(os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config")))
+
+
+def module_root() -> Path:
+    return Path(__file__).parent
+
+
+def flake_registry() -> Path:
+    return module_root() / "nixpkgs" / "flake-registry.json"
+
+
+def nixpkgs() -> Path:
+    return (module_root() / "nixpkgs" / "path").resolve()
+
+
+def unfree_nixpkgs() -> Path:
+    return module_root() / "nixpkgs" / "unfree"

@@ -18,29 +18,20 @@ pkgs.mkShell {
     self.packages.${pkgs.system}.nix-unit
     pythonWithDeps
   ];
-  CLAN_FLAKE = self;
-  # This is required for the python tests, where some nix libs depend on nixpkgs
-  CLAN_NIXPKGS = pkgs.path;
   # sets up an editable install and add enty points to $PATH
   # This provides dummy options for testing clan config and prevents it from
   # evaluating the flake .#
   CLAN_OPTIONS_FILE = ./clan_cli/config/jsonschema/options.json;
+  PYTHONPATH = "${pythonWithDeps}/${pythonWithDeps.sitePackages}";
   shellHook = ''
     tmp_path=$(realpath ./.direnv)
-    repo_root=$(realpath .)
-    mkdir -p "$tmp_path/python/${pythonWithDeps.sitePackages}"
-
-    ${pythonWithDeps.interpreter} -m pip install \
-      --quiet \
-      --disable-pip-version-check \
-      --no-index \
-      --no-build-isolation \
-      --prefix "$tmp_path/python" \
-      --editable $repo_root
-
+                                      
+    rm -f clan_cli/nixpkgs
+    ln -sf ${clan-cli.nixpkgs} clan_cli/nixpkgs
+    
     export PATH="$tmp_path/bin:${checkScript}/bin:$PATH"
-    export PYTHONPATH="$repo_root:$tmp_path/python/${pythonWithDeps.sitePackages}:${pythonWithDeps}/${pythonWithDeps.sitePackages}"
-
+    export PYTHONPATH="$PYTHONPATH:$(pwd)"
+    
     export XDG_DATA_DIRS="$tmp_path/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
     export fish_complete_path="$tmp_path/share/fish/vendor_completions.d''${fish_complete_path:+:$fish_complete_path}"
     mkdir -p \
