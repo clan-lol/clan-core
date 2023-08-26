@@ -1,0 +1,11 @@
+name: checks
+on:
+  pull_request:
+  push:
+    branches: main
+jobs:
+  test:
+    runs-on: nix
+    steps:
+      - uses: actions/checkout@v3
+      - run: bash ./scripts/ci
