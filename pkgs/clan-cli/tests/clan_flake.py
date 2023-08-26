@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Iterator
 
 import pytest
-from environment import mock_env
 
 
 @pytest.fixture
@@ -20,5 +19,5 @@ def clan_flake(temporary_dir: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator
 """
     )
     monkeypatch.chdir(flake)
-    with mock_env(HOME=str(temporary_dir)):
-        yield flake
+    monkeypatch.setenv("HOME", str(temporary_dir))
+    yield flake

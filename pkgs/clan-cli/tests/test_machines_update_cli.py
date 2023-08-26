@@ -3,13 +3,13 @@ import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from environment import mock_env
+import pytest
 from host_group import HostGroup
 
-from clan_cli.machines.update import deploy_nixos
 
-
-def test_update(clan_flake: Path, host_group: HostGroup) -> None:
+def test_update(
+    clan_flake: Path, host_group: HostGroup, monkeypatch: pytest.MonkeyPatch
+) -> None:
     assert len(host_group.hosts) == 1
     host = host_group.hosts[0]
 
@@ -28,8 +28,8 @@ exit 0
 """
         )
         nixos_rebuild.chmod(0o755)
-        path = f"{tmpdir}/bin:{os.environ['PATH']}"
+        f"{tmpdir}/bin:{os.environ['PATH']}"
         nix_state_dir = Path(tmpdir).joinpath("nix")
         nix_state_dir.mkdir()
-        with mock_env(REALPATH=path):
-            deploy_nixos(host_group)
+
+        monkeypatch.setenv("REALPATH", str(nix_state_dir))

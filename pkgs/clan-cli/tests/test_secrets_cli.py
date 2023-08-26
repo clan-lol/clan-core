@@ -1,10 +1,10 @@
 import os
+from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterator
 
 import pytest
 from cli import Cli
-from environment import mock_env
 
 from clan_cli.errors import ClanError
 
@@ -99,64 +99,77 @@ def test_groups(
     assert len(groups) == 0
 
 
+@contextmanager
+def use_key(key: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    old_key = os.environ["SOPS_AGE_KEY_FILE"]
+    monkeypatch.setenv("SOPS_AGE_KEY", key)
+    yield
+    monkeypatch.delenv("SOPS_AGE_KEY")
+    monkeypatch.setenv("SOPS_AGE_KEY_FILE", old_key)
+
+
 def test_secrets(
-    clan_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
+    clan_flake: Path,
+    capsys: pytest.CaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    age_keys: list["KeyPair"],
 ) -> None:
     cli = Cli()
     capsys.readouterr()  # empty the buffer
     cli.run(["secrets", "list"])
     assert capsys.readouterr().out == ""
 
-    with mock_env(
-        SOPS_NIX_SECRET="foo", SOPS_AGE_KEY_FILE=str(clan_flake / ".." / "age.key")
-    ):
-        with pytest.raises(ClanError):  # does not exist yet
-            cli.run(["secrets", "get", "nonexisting"])
-        cli.run(["secrets", "set", "key"])
+    monkeypatch.setenv("SOPS_NIX_SECRET", "foo")
+    monkeypatch.setenv("SOPS_AGE_KEY_FILE", str(clan_flake / ".." / "age.key"))
+
+    with pytest.raises(ClanError):  # does not exist yet
+        cli.run(["secrets", "get", "nonexisting"])
+    cli.run(["secrets", "set", "key"])
+    capsys.readouterr()
+    cli.run(["secrets", "get", "key"])
+    assert capsys.readouterr().out == "foo"
+    capsys.readouterr()
+    cli.run(["secrets", "users", "list"])
+    users = capsys.readouterr().out.rstrip().split("\n")
+    assert len(users) == 1, f"users: {users}"
+    owner = users[0]
+
+    capsys.readouterr()  # empty the buffer
+    cli.run(["secrets", "list"])
+    assert capsys.readouterr().out == "key\n"
+
+    cli.run(["secrets", "machines", "add", "machine1", age_keys[0].pubkey])
+    cli.run(["secrets", "machines", "add-secret", "machine1", "key"])
+
+    with use_key(age_keys[0].privkey, monkeypatch):
         capsys.readouterr()
         cli.run(["secrets", "get", "key"])
         assert capsys.readouterr().out == "foo"
-        capsys.readouterr()
-        cli.run(["secrets", "users", "list"])
-        users = capsys.readouterr().out.rstrip().split("\n")
-        assert len(users) == 1, f"users: {users}"
-        owner = users[0]
 
-        capsys.readouterr()  # empty the buffer
-        cli.run(["secrets", "list"])
-        assert capsys.readouterr().out == "key\n"
+    cli.run(["secrets", "machines", "remove-secret", "machine1", "key"])
 
-        cli.run(["secrets", "machines", "add", "machine1", age_keys[0].pubkey])
-        cli.run(["secrets", "machines", "add-secret", "machine1", "key"])
+    cli.run(["secrets", "users", "add", "user1", age_keys[1].pubkey])
+    cli.run(["secrets", "users", "add-secret", "user1", "key"])
+    capsys.readouterr()
+    with use_key(age_keys[1].privkey, monkeypatch):
+        cli.run(["secrets", "get", "key"])
+    assert capsys.readouterr().out == "foo"
+    cli.run(["secrets", "users", "remove-secret", "user1", "key"])
 
-        with mock_env(SOPS_AGE_KEY=age_keys[0].privkey, SOPS_AGE_KEY_FILE=""):
-            capsys.readouterr()
-            cli.run(["secrets", "get", "key"])
-            assert capsys.readouterr().out == "foo"
-        cli.run(["secrets", "machines", "remove-secret", "machine1", "key"])
-
-        cli.run(["secrets", "users", "add", "user1", age_keys[1].pubkey])
-        cli.run(["secrets", "users", "add-secret", "user1", "key"])
-        with mock_env(SOPS_AGE_KEY=age_keys[1].privkey, SOPS_AGE_KEY_FILE=""):
-            capsys.readouterr()
-            cli.run(["secrets", "get", "key"])
-            assert capsys.readouterr().out == "foo"
-        cli.run(["secrets", "users", "remove-secret", "user1", "key"])
-
-        with pytest.raises(ClanError):  # does not exist yet
-            cli.run(["secrets", "groups", "add-secret", "admin-group", "key"])
-        cli.run(["secrets", "groups", "add-user", "admin-group", "user1"])
-        cli.run(["secrets", "groups", "add-user", "admin-group", owner])
+    with pytest.raises(ClanError):  # does not exist yet
         cli.run(["secrets", "groups", "add-secret", "admin-group", "key"])
+    cli.run(["secrets", "groups", "add-user", "admin-group", "user1"])
+    cli.run(["secrets", "groups", "add-user", "admin-group", owner])
+    cli.run(["secrets", "groups", "add-secret", "admin-group", "key"])
 
-        capsys.readouterr()  # empty the buffer
-        cli.run(["secrets", "set", "--group", "admin-group", "key2"])
+    capsys.readouterr()  # empty the buffer
+    cli.run(["secrets", "set", "--group", "admin-group", "key2"])
 
-        with mock_env(SOPS_AGE_KEY=age_keys[1].privkey, SOPS_AGE_KEY_FILE=""):
-            capsys.readouterr()
-            cli.run(["secrets", "get", "key"])
-            assert capsys.readouterr().out == "foo"
-        cli.run(["secrets", "groups", "remove-secret", "admin-group", "key"])
+    with use_key(age_keys[1].privkey, monkeypatch):
+        capsys.readouterr()
+        cli.run(["secrets", "get", "key"])
+        assert capsys.readouterr().out == "foo"
+    cli.run(["secrets", "groups", "remove-secret", "admin-group", "key"])
 
     cli.run(["secrets", "remove", "key"])
     cli.run(["secrets", "remove", "key2"])
