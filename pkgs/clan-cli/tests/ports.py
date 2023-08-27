@@ -1,46 +1,55 @@
 #!/usr/bin/env python3
 
+import contextlib
 import socket
+from typing import Callable
 
 import pytest
 
-NEXT_PORT = 10000
+
+def _unused_port(socket_type: int) -> int:
+    """Find an unused localhost port from 1024-65535 and return it."""
+    with contextlib.closing(socket.socket(type=socket_type)) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
 
 
-def check_port(port: int) -> bool:
-    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    with tcp, udp:
-        try:
-            tcp.bind(("127.0.0.1", port))
-            udp.bind(("127.0.0.1", port))
-            return True
-        except socket.error:
-            return False
+PortFunction = Callable[[], int]
 
 
-def check_port_range(port_range: range) -> bool:
-    for port in port_range:
-        if not check_port(port):
-            return False
-    return True
+@pytest.fixture(scope="session")
+def unused_tcp_port() -> PortFunction:
+    """A function, producing different unused TCP ports."""
+    produced = set()
+
+    def factory() -> int:
+        """Return an unused port."""
+        port = _unused_port(socket.SOCK_STREAM)
+
+        while port in produced:
+            port = _unused_port(socket.SOCK_STREAM)
+
+        produced.add(port)
+
+        return port
+
+    return factory
 
 
-class Ports:
-    def allocate(self, num: int) -> int:
-        """
-        Allocates
-        """
-        global NEXT_PORT
-        while NEXT_PORT + num <= 65535:
-            start = NEXT_PORT
-            NEXT_PORT += num
-            if not check_port_range(range(start, NEXT_PORT)):
-                continue
-            return start
-        raise Exception("cannot find enough free port")
+@pytest.fixture(scope="session")
+def unused_udp_port() -> PortFunction:
+    """A function, producing different unused UDP ports."""
+    produced = set()
 
+    def factory() -> int:
+        """Return an unused port."""
+        port = _unused_port(socket.SOCK_DGRAM)
 
-@pytest.fixture
-def ports() -> Ports:
-    return Ports()
+        while port in produced:
+            port = _unused_port(socket.SOCK_DGRAM)
+
+        produced.add(port)
+
+        return port
+
+    return factory
