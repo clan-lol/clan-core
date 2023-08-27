@@ -1,6 +1,6 @@
 { self, ... }: {
   imports = [
-    ./integration/flake-module.nix
+    ./impure/flake-module.nix
   ];
   perSystem = { pkgs, lib, self', ... }: {
     checks =
