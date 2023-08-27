@@ -15,7 +15,7 @@ exclude = ["clan_cli.nixpkgs*"]
 clan_cli = [ "config/jsonschema/*", "webui/assets/**/*"]
 
 [tool.pytest.ini_options]
-addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail"
+addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --workers auto"
 norecursedirs = "tests/helpers"
 
 [tool.mypy]
