@@ -9,6 +9,7 @@
 , pytest
 , pytest-cov
 , pytest-subprocess
+, pytest-parallel
 , python3
 , runCommand
 , self
@@ -36,6 +37,7 @@ let
     pytest
     pytest-cov
     pytest-subprocess
+    pytest-parallel
     openssh
     stdenv.cc
   ];

@@ -11,7 +11,7 @@ import pytest
 
 if TYPE_CHECKING:
     from command import Command
-    from ports import Ports
+    from ports import PortFunction
 
 
 class Sshd:
@@ -104,8 +104,13 @@ exec {bash} -l "${{@}}"
 
 
 @pytest.fixture
-def sshd(sshd_config: SshdConfig, command: "Command", ports: "Ports") -> Iterator[Sshd]:
-    port = ports.allocate(1)
+def sshd(
+    sshd_config: SshdConfig, command: "Command", unused_tcp_port: "PortFunction"
+) -> Iterator[Sshd]:
+    import subprocess
+
+    subprocess.run(["echo", "hello"], check=True)
+    port = unused_tcp_port()
     sshd = shutil.which("sshd")
     assert sshd is not None, "no sshd binary found"
     env = {}

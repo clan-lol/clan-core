@@ -5,11 +5,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-from ports import Ports
+from ports import PortFunction
 
 
-def test_start_server(ports: Ports, temporary_dir: Path) -> None:
-    port = ports.allocate(1)
+def test_start_server(unused_tcp_port: PortFunction, temporary_dir: Path) -> None:
+    port = unused_tcp_port()
 
     fifo = temporary_dir / "fifo"
     os.mkfifo(fifo)
