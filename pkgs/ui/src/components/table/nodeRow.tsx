@@ -69,21 +69,6 @@ export function NodeRow(props: {
     }
   };
 
-  const debug = true;
-  const debugSx = debug
-    ? {
-        "--Grid-borderWidth": "1px",
-        borderTop: "var(--Grid-borderWidth) solid",
-        borderLeft: "var(--Grid-borderWidth) solid",
-        borderColor: "divider",
-        "& > div": {
-          borderRight: "var(--Grid-borderWidth) solid",
-          borderBottom: "var(--Grid-borderWidth) solid",
-          borderColor: "divider",
-        },
-      }
-    : {};
-
   return (
     <React.Fragment>
       {/* Rendered Row */}
@@ -120,7 +105,7 @@ export function NodeRow(props: {
               align="left"
               variant="body2"
             >
-              {row.name}
+              {row.id}
             </Typography>
           </Stack>
         </TableCell>
@@ -151,14 +136,13 @@ export function NodeRow(props: {
               <Grid2 container spacing={2} paddingLeft={0}>
                 <Grid2
                   xs={6}
-                  style={{ ...debugSx }}
                   justifyContent="left"
                   display="flex"
                   paddingRight={3}
                 >
                   <Box>Hello1</Box>
                 </Grid2>
-                <Grid2 xs={6} style={{ ...debugSx }} paddingLeft={6}>
+                <Grid2 xs={6} paddingLeft={6}>
                   <Box>Hello2</Box>
                 </Grid2>
               </Grid2>

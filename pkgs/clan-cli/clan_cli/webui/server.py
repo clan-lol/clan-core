@@ -63,4 +63,5 @@ def start_server(args: argparse.Namespace) -> None:
             port=args.port,
             log_level=args.log_level,
             reload=args.reload,
+            headers=[("Access-Control-Allow-Origin", "*")],
         )
