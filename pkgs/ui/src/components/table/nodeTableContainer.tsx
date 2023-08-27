@@ -184,7 +184,7 @@ export function NodeTableContainer(props: NodeTableContainerProps) {
           {visibleRows.map((row, index) => {
             return (
               <NodeRow
-                key={row.name}
+                key={row.id}
                 row={row}
                 selected={selected}
                 setSelected={setSelected}

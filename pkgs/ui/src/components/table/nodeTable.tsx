@@ -14,28 +14,7 @@ import { TableData } from "@/data/nodeData";
 import { EnhancedTableToolbar } from "./enhancedTableToolbar";
 import { StickySpeedDial } from "./stickySpeedDial";
 import { NodeTableContainer } from "./nodeTableContainer";
-export interface SearchBarProps {
-  search: string;
-  setSearch: Dispatch<SetStateAction<string>>;
-}
-
-function SearchBar(props: SearchBarProps) {
-  const { search, setSearch } = props;
-  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
-  };
-
-  return (
-    <label htmlFor="search">
-      <Tooltip title="Filter list">
-        <IconButton>
-          <SearchIcon />
-        </IconButton>
-      </Tooltip>
-      <input id="search" type="text" value={search} onChange={handleSearch} />
-    </label>
-  );
-}
+import { SearchBar } from "./searchBar";
 
 export interface NodeTableProps {
   tableData: TableData[];
