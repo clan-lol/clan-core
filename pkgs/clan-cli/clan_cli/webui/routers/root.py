@@ -13,7 +13,7 @@ router = APIRouter()
 async def root(path_name: str) -> Response:
     if path_name == "":
         path_name = "index.html"
-    filename = Path(os.path.normpath((asset_path() / path_name)))
+    filename = Path(os.path.normpath(asset_path() / path_name))
 
     if not filename.is_relative_to(asset_path()):
         # prevent directory traversal

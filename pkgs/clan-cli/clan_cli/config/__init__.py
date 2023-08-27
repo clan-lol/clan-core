@@ -180,9 +180,9 @@ def process_args(
 
 def register_parser(
     parser: argparse.ArgumentParser,
-    optionsFile: Optional[Union[str, Path]] = os.environ.get("CLAN_OPTIONS_FILE"),
+    options_file: Optional[Union[str, Path]] = os.environ.get("CLAN_OPTIONS_FILE"),
 ) -> None:
-    if not optionsFile:
+    if not options_file:
         # use nix eval to evaluate .#clanOptions
         # this will give us the evaluated config with the options attribute
         proc = subprocess.run(
@@ -200,7 +200,7 @@ def register_parser(
         with open(file) as f:
             options = json.load(f)
     else:
-        with open(optionsFile) as f:
+        with open(options_file) as f:
             options = json.load(f)
     return _register_parser(parser, options)
 
