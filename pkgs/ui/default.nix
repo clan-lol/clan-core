@@ -1,7 +1,7 @@
-{ floco ? builtins.getFlake "github:aakropotkin/floco"
-, system ? builtins.currentSystem
-, pkgs ? import <nixpkgs> { currentSystem = system; }
-, clanPkgs ? { }
+{ floco
+, system
+, pkgs
+, clanPkgs
 }:
 let
 
@@ -39,4 +39,3 @@ in
 {
   inherit pkg fmod;
 }
-

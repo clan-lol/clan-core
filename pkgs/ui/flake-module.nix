@@ -1,9 +1,9 @@
 { self, ... }:
 {
-  perSystem = { pkgs, system, ... }:
+  perSystem = { self', pkgs, ... }:
     let
       inherit (self.inputs) floco;
-      base = pkgs.callPackage ./default.nix { inherit floco system; clanPkgs = self.packages.${system}; };
+      base = pkgs.callPackage ./default.nix { inherit floco; clanPkgs = self'.packages; };
     in
     {
       packages = {
@@ -15,7 +15,7 @@
       devShells.ui = pkgs.callPackage ./shell.nix {
         inherit pkgs;
         inherit (base) fmod pkg;
-        clanPkgs = self.packages.${system};
+        clanPkgs = self'.packages;
       };
     };
 }
