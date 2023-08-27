@@ -37,7 +37,7 @@
       packages =
         integrationTests // {
           # a script that executes all other checks
-          checks-integration = pkgs.writeShellScriptBin "checks-integration" ''
+          checks-impure = pkgs.writeShellScriptBin "checks-impure" ''
             #!${pkgs.bash}/bin/bash
             set -euo pipefail
             ${lib.concatMapStringsSep "\n" (name: ''

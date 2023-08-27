@@ -8,4 +8,4 @@ jobs:
     runs-on: nix
     steps:
       - uses: actions/checkout@v3
-      - run: nix run .#checks-integration
+      - run: nix run .#checks-impure
