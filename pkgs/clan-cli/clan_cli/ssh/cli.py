@@ -33,7 +33,7 @@ def ssh(
     subprocess.run(cmd)
 
 
-def qrcode_scan(pictureFile: str) -> str:
+def qrcode_scan(picture_file: str) -> str:
     return (
         subprocess.run(
             nix_shell(
@@ -42,7 +42,7 @@ def qrcode_scan(pictureFile: str) -> str:
                     "zbarimg",
                     "--quiet",
                     "--raw",
-                    pictureFile,
+                    picture_file,
                 ],
             ),
             stdout=subprocess.PIPE,

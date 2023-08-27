@@ -50,7 +50,7 @@ class CommandFormatter(logging.Formatter):
         self.hostnames: List[str] = []
         self.hostname_color_offset = 1  # first host shouldn't get agressive red
 
-    def formatMessage(self, record: logging.LogRecord) -> str:
+    def format(self, record: logging.LogRecord) -> str:
         colorcode = 0
         if record.levelno == logging.ERROR:
             colorcode = 31  # red
@@ -68,7 +68,7 @@ class CommandFormatter(logging.Formatter):
         setattr(record, "prefix_color", prefix_color)
         setattr(record, "color_reset", color_reset)
 
-        return super().formatMessage(record)
+        return super().format(record)
 
     def hostname_colorcode(self, hostname: str) -> int:
         try:
