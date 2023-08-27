@@ -1,4 +1,4 @@
-name: checks-integration
+name: checks-impure
 on:
   pull_request:
   push:
@@ -8,4 +8,4 @@ jobs:
     runs-on: nix
     steps:
       - uses: actions/checkout@v3
-      - run: nix run .#checks-impure
+      - run: nix run .#impure-checks

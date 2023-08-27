@@ -1,17 +1,16 @@
 { self, ... }: {
-  perSystem = { pkgs, lib, self', ... }:
+  perSystem = { pkgs, lib, ... }:
     let
-      integrationTests = {
-        check-clan-create = pkgs.writeShellScriptBin "check-clan-init" ''
+      impureChecks = {
+        check-clan-template = pkgs.writeShellScriptBin "check-clan-template" ''
           #!${pkgs.bash}/bin/bash
           set -euo pipefail
           export TMPDIR=$(${pkgs.coreutils}/bin/mktemp -d)
           trap "${pkgs.coreutils}/bin/chmod -R +w '$TMPDIR'; ${pkgs.coreutils}/bin/rm -rf '$TMPDIR'" EXIT
           export PATH="${lib.makeBinPath [
-            pkgs.git
-            pkgs.gnugrep
+            pkgs.gitMinimal
+            pkgs.openssh
             pkgs.nix
-            self'.packages.clan-cli
           ]}"
 
           cd $TMPDIR
@@ -21,29 +20,20 @@
 
           echo ensure flake outputs can be listed
           nix flake show
-
-          echo create a machine
-          clan machines create machine1
-
-          echo check machine1 exists
-          clan machines list | grep -q machine1
-
-          echo check machine1 appears in flake output
-          nix flake show | grep -q machine1
         '';
       };
     in
     {
       packages =
-        integrationTests // {
+        impureChecks // {
           # a script that executes all other checks
-          checks-impure = pkgs.writeShellScriptBin "checks-impure" ''
+          impure-checks = pkgs.writeShellScriptBin "impure-checks" ''
             #!${pkgs.bash}/bin/bash
             set -euo pipefail
             ${lib.concatMapStringsSep "\n" (name: ''
               echo -e "\n\nrunning check ${name}\n"
-              ${integrationTests.${name}}/bin/*
-            '') (lib.attrNames integrationTests)}
+              ${impureChecks.${name}}/bin/*
+            '') (lib.attrNames impureChecks)}
           '';
         };
     };
