@@ -1,6 +1,6 @@
-{ self, clan-cli, pkgs, ui-assets }:
+{ nix-unit, clan-cli, ui-assets, python3, system, ruff, mkShell, writeScriptBin }:
 let
-  pythonWithDeps = pkgs.python3.withPackages (
+  pythonWithDeps = python3.withPackages (
     ps:
     clan-cli.propagatedBuildInputs
     ++ clan-cli.devDependencies
@@ -8,14 +8,14 @@ let
       ps.pip
     ]
   );
-  checkScript = pkgs.writeScriptBin "check" ''
-    nix build .#checks.${pkgs.system}.{treefmt,clan-pytest} -L "$@"
+  checkScript = writeScriptBin "check" ''
+    nix build .#checks.${system}.{treefmt,clan-pytest} -L "$@"
   '';
 in
-pkgs.mkShell {
+mkShell {
   packages = [
-    pkgs.ruff
-    self.packages.${pkgs.system}.nix-unit
+    ruff
+    nix-unit
     pythonWithDeps
   ];
   # sets up an editable install and add enty points to $PATH
