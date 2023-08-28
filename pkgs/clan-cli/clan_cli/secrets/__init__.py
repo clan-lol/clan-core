@@ -1,6 +1,7 @@
 # !/usr/bin/env python3
 import argparse
 
+from .generate import register_generate_parser
 from .groups import register_groups_parser
 from .import_sops import register_import_sops_parser
 from .machines import register_machines_parser
@@ -28,5 +29,10 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
 
     import_sops_parser = subparser.add_parser("import-sops", help="import a sops file")
     register_import_sops_parser(import_sops_parser)
+
+    parser_generate = subparser.add_parser(
+        "generate", help="generate secrets for machines if they don't exist yet"
+    )
+    register_generate_parser(parser_generate)
 
     register_secrets_parser(subparser)

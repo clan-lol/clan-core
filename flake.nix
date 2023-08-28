@@ -36,9 +36,7 @@
 
         ./lib/flake-module.nix
         ./nixosModules/flake-module.nix
-        ({ self, lib, ... }: {
-          flake.clanModules = lib.mapAttrs (_: nix: { imports = [ nix ]; }) (self.lib.findNixFiles ./clanModules);
-        })
+        ./nixosModules/clanCore/flake-module.nix
       ];
     });
 }
