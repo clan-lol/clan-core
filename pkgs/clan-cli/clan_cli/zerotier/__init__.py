@@ -1,3 +1,4 @@
+import argparse
 import json
 import socket
 import subprocess
@@ -42,7 +43,8 @@ class ZerotierController:
     def __init__(self, port: int, home: Path) -> None:
         self.port = port
         self.home = home
-        self.secret = (home / "authtoken.secret").read_text()
+        self.authtoken = (home / "authtoken.secret").read_text()
+        self.secret = (home / "identity.secret").read_text()
 
     def _http_request(
         self,
@@ -56,7 +58,7 @@ class ZerotierController:
         if data is not None:
             body = json.dumps(data).encode("ascii")
             headers["Content-Type"] = "application/json"
-        headers["X-ZT1-AUTH"] = self.secret
+        headers["X-ZT1-AUTH"] = self.authtoken
         url = f"http://127.0.0.1:{self.port}{path}"
         req = urllib.request.Request(url, headers=headers, method=method, data=body)
         resp = urllib.request.urlopen(req)
@@ -74,11 +76,6 @@ class ZerotierController:
 
     def get_network(self, id: str) -> dict[str, Any]:
         return self._http_request(f"/controller/network/{id}")
-
-    def update_network(self, id: str, new_config: dict[str, Any]) -> dict[str, Any]:
-        return self._http_request(
-            f"/controller/network/{id}", method="POST", data=new_config
-        )
 
 
 @contextmanager
@@ -117,6 +114,7 @@ def zerotier_controller() -> Iterator[ZerotierController]:
                 "/proc",
                 "--dev",
                 "/dev",
+                "--unshare-user",
                 "--uid",
                 "0",
                 "--gid",
@@ -151,19 +149,28 @@ def zerotier_controller() -> Iterator[ZerotierController]:
                 p.wait()
 
 
-class ZerotierNetwork:
-    def __init__(self, network_id: str) -> None:
-        self.network_id = network_id
-
-
 # TODO: allow merging more network configuration here
-def create_network(private: bool = False) -> ZerotierNetwork:
+def create_network() -> dict:
     with zerotier_controller() as controller:
         network = controller.create_network()
-        network_id = network["nwid"]
-        network = controller.get_network(network_id)
-        network["private"] = private
-        network["v6AssignMode"]["rfc4193"] = True
-        controller.update_network(network_id, network)
-        # TODO: persist home into sops?
-        return ZerotierNetwork(network_id)
+        return {
+            "secret": controller.secret,
+            "networkid": network["nwid"],
+        }
+
+
+def main(args: argparse.Namespace) -> None:
+    zerotier = create_network()
+    outpath = Path(args.outpath)
+    outpath.mkdir(parents=True, exist_ok=True)
+    with open(outpath / "network.id", "w+") as nwid_file:
+        nwid_file.write(zerotier["networkid"])
+    with open(outpath / "identity.secret", "w+") as secret_file:
+        secret_file.write(zerotier["secret"])
+
+
+def register_parser(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--outpath", help="directory to put the secret file to", required=True
+    )
+    parser.set_defaults(func=main)
