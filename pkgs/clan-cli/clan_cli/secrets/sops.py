@@ -22,9 +22,12 @@ class SopsKey:
 
 def get_public_key(privkey: str) -> str:
     cmd = nix_shell(["age"], ["age-keygen", "-y"])
-    res = subprocess.run(
-        cmd, input=privkey, check=True, stdout=subprocess.PIPE, text=True
-    )
+    try:
+        res = subprocess.run(cmd, input=privkey, stdout=subprocess.PIPE, text=True)
+    except subprocess.CalledProcessError as e:
+        raise ClanError(
+            "Failed to get public key for age private key. Is the key malformed?"
+        ) from e
     return res.stdout.strip()
 
 
@@ -100,7 +103,7 @@ def ensure_sops_key() -> SopsKey:
     subprocess.run(cmd, check=True)
 
     tty.info(
-        f"Generated age key at '{path}'. Please back it up on a secure location or you will lose access to your secrets."
+        f"Generated age key at '{path}' for your user. Please back it up on a secure location or you will lose access to your secrets."
     )
     return ensure_user(get_public_key(path.read_text()))
 
