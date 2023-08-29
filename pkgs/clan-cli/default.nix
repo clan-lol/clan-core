@@ -49,7 +49,7 @@ let
     cp -r ${./.} $out
     chmod -R +w $out
     rm $out/clan_cli/config/jsonschema
-    ln -s ${nixpkgs} $out/clan_cli/nixpkgs
+    ln -sTf ${nixpkgs} $out/clan_cli/nixpkgs
     cp -r ${../../lib/jsonschema} $out/clan_cli/config/jsonschema
     ln -s ${ui-assets} $out/clan_cli/webui/assets
   '';
