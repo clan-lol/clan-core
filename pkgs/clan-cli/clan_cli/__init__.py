@@ -4,7 +4,7 @@ import sys
 from types import ModuleType
 from typing import Optional
 
-from . import admin, config, machines, secrets, webui
+from . import admin, config, machines, secrets, webui, zerotier
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
@@ -40,6 +40,9 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
 
     parser_webui = subparsers.add_parser("webui", help="start webui")
     webui.register_parser(parser_webui)
+
+    parser_zerotier = subparsers.add_parser("zerotier", help="create zerotier network")
+    zerotier.register_parser(parser_zerotier)
 
     if argcomplete:
         argcomplete.autocomplete(parser)
