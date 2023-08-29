@@ -1,4 +1,5 @@
 { lib
+, self
 , inputs
 , ...
 }: {
@@ -6,7 +7,8 @@
     ./jsonschema/flake-module.nix
   ];
   flake.lib = import ./default.nix {
+    clan = self;
     inherit lib;
-    inherit (inputs) clan nixpkgs;
+    inherit (inputs) nixpkgs;
   };
 }
