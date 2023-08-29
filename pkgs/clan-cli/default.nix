@@ -49,7 +49,7 @@ let
     cp -r ${./.} $out
     chmod -R +w $out
     rm $out/clan_cli/config/jsonschema
-    ln -s ${nixpkgs} $out/clan_cli/nixpkgs
+    ln -sTf ${nixpkgs} $out/clan_cli/nixpkgs
     cp -r ${../../lib/jsonschema} $out/clan_cli/config/jsonschema
     ln -s ${ui-assets} $out/clan_cli/webui/assets
   '';
@@ -106,7 +106,7 @@ python3.pkgs.buildPythonPackage {
   passthru.testDependencies = dependencies ++ testDependencies;
 
   postInstall = ''
-    ln -s ${nixpkgs} $out/${python3.sitePackages}/nixpkgs
+    ln -sTf ${nixpkgs} $out/${python3.sitePackages}/clan_cli/nixpkgs
     installShellCompletion --bash --name clan \
       <(${argcomplete}/bin/register-python-argcomplete --shell bash clan)
     installShellCompletion --fish --name clan.fish \
