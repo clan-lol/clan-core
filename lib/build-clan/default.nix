@@ -15,7 +15,7 @@ let
     else { };
 
   nixosConfigurations = lib.mapAttrs
-    (name: _mod:
+    (name: _:
       nixpkgs.lib.nixosSystem {
         modules = [
           (machineSettings name)
@@ -23,6 +23,6 @@ let
         ] ++ lib.attrValues clan.clanModules;
         specialArgs = specialArgs;
       })
-    machinesDirs;
+    (machinesDirs // machines);
 in
 nixosConfigurations
