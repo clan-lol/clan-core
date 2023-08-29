@@ -1,4 +1,4 @@
-{ lib, clan, nixpkgs, ... }:
+{ lib, nixpkgs, ... }:
 {
   findNixFiles = folder:
     lib.mapAttrs'
@@ -14,5 +14,5 @@
 
   jsonschema = import ./jsonschema { inherit lib; };
 
-  buildClan = import ./build-clan { inherit lib clan nixpkgs; };
+  buildClan = import ./build-clan { inherit lib nixpkgs; };
 }
