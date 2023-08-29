@@ -39,12 +39,6 @@ let
 
 in
 {
-  imports =
-    let
-      relPaths = builtins.fromJSON (builtins.readFile ./imports.json);
-      paths = map (path: ./. + path) relPaths;
-    in
-    paths;
   flake.nixosModules = machineModulesGenerated;
   # generate nixosConfigurations for all machines under self.nixosModules.machines-{machine_name}
   flake.nixosConfigurations =
