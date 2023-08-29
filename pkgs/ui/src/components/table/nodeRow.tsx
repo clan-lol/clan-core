@@ -59,7 +59,7 @@ export function NodeRow(props: {
   //const labelId = `enhanced-table-checkbox-${index}`;
 
   // Speed optimization. We compare string pointers here instead of the string content.
-  const isSelected = selected == row.name;
+  const isSelected = selected == row.id;
 
   const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
     if (isSelected) {
@@ -93,7 +93,7 @@ export function NodeRow(props: {
         <TableCell
           component="th"
           scope="row"
-          onClick={(event) => handleClick(event, row.name)}
+          onClick={(event) => handleClick(event, row.id)}
         >
           <Stack>
             <Typography component="div" align="left" variant="body1">

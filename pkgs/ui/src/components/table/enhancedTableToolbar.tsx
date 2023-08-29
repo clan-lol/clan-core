@@ -67,15 +67,15 @@ export function EnhancedTableToolbar(
       </Grid2>
 
       {/*Toolbar Grid */}
-      <Grid2 key="Toolbar" xs={12}>
-        <Toolbar
-          sx={{
-            pl: { sm: 2 },
-            pr: { xs: 1, sm: 1 },
-          }}
-        >
-          {props.children}
-        </Toolbar>
+      <Grid2
+        key="Toolbar"
+        xs={12}
+        container
+        justifyContent="center"
+        alignItems="center"
+        sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 }, pt: { xs: 1, sm: 3 } }}
+      >
+        {props.children}
       </Grid2>
     </Grid2>
   );
