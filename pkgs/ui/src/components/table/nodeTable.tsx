@@ -15,6 +15,7 @@ import { EnhancedTableToolbar } from "./enhancedTableToolbar";
 import { StickySpeedDial } from "./stickySpeedDial";
 import { NodeTableContainer } from "./nodeTableContainer";
 import { SearchBar } from "./searchBar";
+import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 
 export interface NodeTableProps {
   tableData: TableData[];
@@ -29,7 +30,7 @@ export function NodeTable(props: NodeTableProps) {
   const [selected, setSelected] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [search, setSearch] = useState<string>("");
+  const [filteredList, setFilteredList] = useState<TableData[]>(tableData);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -45,10 +46,15 @@ export function NodeTable(props: NodeTableProps) {
       <Paper sx={{ width: "100%", mb: 2 }}>
         <StickySpeedDial selected={selected} />
         <EnhancedTableToolbar tableData={tableData}>
-          <SearchBar search={search} setSearch={setSearch} />
+          <Grid2 xs={12}>
+            <SearchBar
+              tableData={tableData}
+              setFilteredList={setFilteredList}
+            />
+          </Grid2>
         </EnhancedTableToolbar>
         <NodeTableContainer
-          tableData={tableData}
+          tableData={filteredList}
           page={page}
           rowsPerPage={rowsPerPage}
           dense={false}
@@ -60,7 +66,7 @@ export function NodeTable(props: NodeTableProps) {
           rowsPerPageOptions={[5, 10, 25]}
           labelRowsPerPage={is_xs ? "Rows" : "Rows per page:"}
           component="div"
-          count={tableData.length}
+          count={filteredList.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

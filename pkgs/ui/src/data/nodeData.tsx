@@ -31,6 +31,8 @@ function createData(
   };
 }
 
+var nameNumber = 0;
+
 // A function to generate random names
 function getRandomName(): string {
   let names = [
@@ -55,7 +57,7 @@ function getRandomName(): string {
     "Zoe",
   ];
   let index = Math.floor(Math.random() * names.length);
-  return names[index];
+  return names[index] + nameNumber++;
 }
 
 // A function to generate random IPv6 addresses
