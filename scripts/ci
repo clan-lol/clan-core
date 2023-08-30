@@ -26,7 +26,9 @@ fi
 
 rc=0
 
-for job in $(nix shell --inputs-from '.#' "nixpkgs#nix-eval-jobs" -c nix-eval-jobs "${args[@]}" | jq -r '. | @base64'); do
+nix shell --inputs-from '.#' "nixpkgs#nix-eval-jobs" -c nix-eval-jobs "${args[@]}" > "jobs.json"
+
+for job in $(jq -r '. | @base64' < "jobs.json"); do
   job=$(echo "$job" | base64 -d)
   attr=$(echo "$job" | jq -r .attr)
   echo "### $attr"

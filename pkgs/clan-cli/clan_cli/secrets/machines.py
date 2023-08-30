@@ -3,11 +3,8 @@ import argparse
 from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
 from .folders import list_objects, remove_object, sops_machines_folder
-from .sops import write_key
-from .types import (
-    public_or_private_age_key_type,
-    secret_name_type,
-)
+from .sops import read_key, write_key
+from .types import public_or_private_age_key_type, secret_name_type
 
 
 def add_machine(name: str, key: str, force: bool) -> None:
@@ -16,6 +13,10 @@ def add_machine(name: str, key: str, force: bool) -> None:
 
 def remove_machine(name: str) -> None:
     remove_object(sops_machines_folder(), name)
+
+
+def get_machine(name: str) -> str:
+    return read_key(sops_machines_folder() / name)
 
 
 def list_machines() -> list[str]:
@@ -40,6 +41,10 @@ def list_command(args: argparse.Namespace) -> None:
 
 def add_command(args: argparse.Namespace) -> None:
     add_machine(args.machine, args.key, args.force)
+
+
+def get_command(args: argparse.Namespace) -> None:
+    print(get_machine(args.machine))
 
 
 def remove_command(args: argparse.Namespace) -> None:
@@ -81,6 +86,12 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         type=public_or_private_age_key_type,
     )
     add_parser.set_defaults(func=add_command)
+
+    get_parser = subparser.add_parser("get", help="get a machine public key")
+    get_parser.add_argument(
+        "machine", help="the name of the machine", type=machine_name_type
+    )
+    get_parser.set_defaults(func=get_command)
 
     remove_parser = subparser.add_parser("remove", help="remove a machine")
     remove_parser.add_argument(

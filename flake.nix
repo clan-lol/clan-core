@@ -24,6 +24,7 @@
         "x86_64-linux"
         "aarch64-linux"
       ];
+      flake.clanModules = { };
       imports = [
         ./checks/flake-module.nix
         ./devShell.nix
@@ -36,7 +37,7 @@
 
         ./lib/flake-module.nix
         ./nixosModules/flake-module.nix
-        ./nixosModules/clanCore/flake-module.nix
+        ./nixosModules/core/flake-module.nix
       ];
     });
 }
