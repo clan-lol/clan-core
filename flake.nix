@@ -37,7 +37,7 @@
 
         ./lib/flake-module.nix
         ./nixosModules/flake-module.nix
-        ./nixosModules/clanCore/flake-module.nix
+        ./nixosModules/core/flake-module.nix
       ];
     });
 }

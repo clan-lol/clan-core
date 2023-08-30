@@ -15,7 +15,7 @@ def get_secret_script(machine: str) -> None:
             "--expr",
             "let f = builtins.getFlake (toString ./.); in "
             f"(f.nixosConfigurations.{machine}.extendModules "
-            "{ modules = [{ clanCore.clanDir = toString ./.; }]; })"
+            "{ modules = [{ clan.core.clanDir = toString ./.; }]; })"
             ".config.system.clan.generateSecrets",
         ],
         check=True,
