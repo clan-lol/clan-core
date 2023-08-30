@@ -1,6 +1,6 @@
 { self, inputs, lib, ... }: {
-  flake.nixosModules.clan.core = { pkgs, ... }: {
-    options.clan.core = {
+  flake.nixosModules.clanCore = { pkgs, ... }: {
+    options.clanCore = {
       clanDir = lib.mkOption {
         type = lib.types.str;
         description = ''
