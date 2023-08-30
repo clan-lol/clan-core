@@ -3,11 +3,12 @@
 
   nodes.machine = { self, config, ... }: {
     imports = [
-      self.nixosModules.secrets
+      (self.nixosModules.clanCore)
     ];
     environment.etc."secret".source = config.sops.secrets.foo.path;
     sops.age.keyFile = ./key.age;
-    clan.sops.sopsDirectory = ./sops;
+    clanCore.clanDir = "${./.}";
+    clanCore.machineName = "machine";
     networking.hostName = "machine";
   };
   testScript = ''
