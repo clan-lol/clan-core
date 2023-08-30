@@ -1,6 +1,6 @@
 { self, runCommand, check-jsonschema, pkgs, lib, ... }:
 let
-  clanModules = self.clanModules;
+  clanModules.clanCore = self.nixosModules.clanCore;
 
   baseModule = {
     imports =
@@ -16,7 +16,7 @@ let
         modules = [ module baseModule ];
       };
     in
-    evaled.options.clan.networking;
+    evaled.options.clan;
 
   clanModuleSchemas = lib.mapAttrs (_: module: self.lib.jsonschema.parseOptions (optionsFromModule module)) clanModules;
 
