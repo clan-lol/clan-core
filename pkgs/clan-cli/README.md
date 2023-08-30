@@ -27,3 +27,18 @@ To start a local developement environment instead, use the `--dev` flag:
 ```
 
 This will spawn two webserver, a python one to for the api and a nodejs one that rebuilds the ui on the fly.
+
+## Run locally single-threaded for debugging
+
+By default tests run in parallel using pytest-parallel.
+pytest-parallel however breaks `breakpoint()`. To disable it, use this:
+
+```console
+pytest --workers "" -s
+```
+
+You can also run a single test like this:
+
+```console
+pytest --workers "" -s tests/test_secrets_cli.py::test_users
+```
