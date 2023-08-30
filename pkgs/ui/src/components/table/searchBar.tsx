@@ -33,12 +33,13 @@ export function SearchBar(props: SearchBarProps) {
   const debouncedSearch = useDebounce(search, 250);
 
   // Define a function to handle the Esc key press
-  const handleEsc = (event: any) => {
+  function handleEsc(event: React.KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
+      console.log("Escape key pressed");
       setSearch("");
       setFilteredList(tableData);
     }
-  };
+  }
 
   useEffect(() => {
     if (debouncedSearch) {
@@ -65,6 +66,7 @@ export function SearchBar(props: SearchBarProps) {
     <Autocomplete
       freeSolo
       options={suggestions}
+      onKeyDown={handleEsc}
       onChange={(event, value) => {
         // do something with the selected value
         if (value === null) {
@@ -81,18 +83,17 @@ export function SearchBar(props: SearchBarProps) {
           label="Search"
           variant="outlined"
           value={search}
-          onKeyDown={handleEsc}
           onChange={handleInputChange}
           autoComplete="nickname"
           InputProps={{
             ...params.InputProps,
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton>
-                  <SearchIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
+            // endAdornment: (
+            //   <InputAdornment position="end">
+            //     <IconButton>
+            //       <SearchIcon />
+            //     </IconButton>
+            //   </InputAdornment>
+            // ),
           }}
         >
           {/* {suggestions.map((item, index) => (
