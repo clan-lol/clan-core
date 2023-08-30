@@ -2,7 +2,7 @@ import argparse
 
 from . import secrets
 from .folders import list_objects, remove_object, sops_users_folder
-from .sops import write_key
+from .sops import read_key, write_key
 from .types import (
     VALID_SECRET_NAME,
     public_or_private_age_key_type,
@@ -17,6 +17,10 @@ def add_user(name: str, key: str, force: bool) -> None:
 
 def remove_user(name: str) -> None:
     remove_object(sops_users_folder(), name)
+
+
+def get_user(name: str) -> str:
+    return read_key(sops_users_folder() / name)
 
 
 def list_users() -> list[str]:
@@ -41,6 +45,10 @@ def list_command(args: argparse.Namespace) -> None:
 
 def add_command(args: argparse.Namespace) -> None:
     add_user(args.user, args.key, args.force)
+
+
+def get_command(args: argparse.Namespace) -> None:
+    print(get_user(args.user))
 
 
 def remove_command(args: argparse.Namespace) -> None:
@@ -76,6 +84,10 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
         type=public_or_private_age_key_type,
     )
     add_parser.set_defaults(func=add_command)
+
+    get_parser = subparser.add_parser("get", help="get a user public key")
+    get_parser.add_argument("user", help="the name of the user", type=user_name_type)
+    get_parser.set_defaults(func=get_command)
 
     remove_parser = subparser.add_parser("remove", help="remove a user")
     remove_parser.add_argument("user", help="the name of the user", type=user_name_type)
