@@ -30,7 +30,7 @@ If `.clan-flake` is missing, `clan-cli` will instead search for other indicators
 
 ## Integrating with Existing NixOS Machines
 
-If you already manage NixOS machines using a flake, you can integrate them with the clan-core as shown in the example below:
+If you already manage NixOS machines using a flake, you can integrate them with the Clan Core as shown in the example below:
 
 ```nix
 {
@@ -58,4 +58,4 @@ In this configuration:
 
 - `description`: Provides a brief description of the flake.
 - `inputs.clan-core.url`: Specifies the Clan Core template's repository URL.
-- `nixosConfigurations`: Defines NixOS configurations, using Clan Core’s `buildClan` function to manage the machines.
+- `nixosConfigurations`: Defines NixOS configurations, using Clan Core's `buildClan` function to manage the machines.
