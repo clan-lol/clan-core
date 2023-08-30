@@ -5,4 +5,5 @@ In here are all the packages we use, all the nixosModules we use/expose, the CLI
 
 ## cLAN config tool
 
-Find the docs [here](/clan/clan-core/src/branch/main/docs/clan-config.md)
+- The quickstart guide can be found here: [here](/clan/clan-core/src/branch/main/docs/quickstart.md)
+- Find the docs [here](/clan/clan-core/src/branch/main/docs/clan-config.md)
