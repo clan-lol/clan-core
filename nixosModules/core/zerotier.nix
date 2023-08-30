@@ -41,13 +41,13 @@ in
   } // lib.mkIf cfg.controller.enable {
     # only the controller needs to have the key in the repo, the other clients can be dynamic
     # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
-    clanCore.secrets.zerotier = {
+    clan.core.secrets.zerotier = {
       facts."network.id" = { };
       secrets."identity.secret" = { };
       generator = ''
         TMPDIR=$(mktemp -d)
         trap 'rm -rf "$TMPDIR"' EXIT
-        ${config.clanCore.clanPkgs.clan-cli}/bin/clan zerotier --outpath "$TMPDIR"
+        ${config.clan.core.clanPkgs.clan-cli}/bin/clan zerotier --outpath "$TMPDIR"
         cp "$TMPDIR"/network.id "$facts"/network.id
         cp "$TMPDIR"/identity.secret "$secrets"/identity.secret
       '';
