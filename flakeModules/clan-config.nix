@@ -1,4 +1,4 @@
-{ ... } @ clanCore: {
+{ ... } @ core: {
   flake.flakeModules.clan-config = { self, inputs, ... }:
     let
 
@@ -29,12 +29,12 @@
       perSystem = { pkgs, ... }: {
         devShells.clan-config = pkgs.mkShell {
           packages = [
-            clanCore.config.flake.packages.${pkgs.system}.clan-cli
+            core.config.flake.packages.${pkgs.system}.clan-cli
           ];
           shellHook = ''
             export CLAN_OPTIONS_FILE=$(nix eval --raw .#clanOptions)
-            export XDG_DATA_DIRS="${clanCore.config.flake.packages.${pkgs.system}.clan-cli}/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
-            export fish_complete_path="${clanCore.config.flake.packages.${pkgs.system}.clan-cli}/share/fish/vendor_completions.d''${fish_complete_path:+:$fish_complete_path}"
+            export XDG_DATA_DIRS="${core.config.flake.packages.${pkgs.system}.clan-cli}/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
+            export fish_complete_path="${core.config.flake.packages.${pkgs.system}.clan-cli}/share/fish/vendor_completions.d''${fish_complete_path:+:$fish_complete_path}"
           '';
         };
       };
