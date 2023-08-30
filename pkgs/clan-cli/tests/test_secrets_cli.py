@@ -36,8 +36,13 @@ def _test_identities(
             age_keys[0].privkey,
         ]
     )
-    capsys.readouterr()  # empty the buffer
 
+    capsys.readouterr()  # empty the buffer
+    cli.run(["secrets", what, "get", "foo"])
+    out = capsys.readouterr()  # empty the buffer
+    assert age_keys[0].pubkey in out.out
+
+    capsys.readouterr()  # empty the buffer
     cli.run(["secrets", what, "list"])
     out = capsys.readouterr()  # empty the buffer
     assert "foo" in out.out
