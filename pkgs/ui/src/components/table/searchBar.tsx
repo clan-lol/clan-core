@@ -48,7 +48,7 @@ export function SearchBar(props: SearchBarProps) {
       });
       setFilteredList(filtered);
     }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, tableData, setFilteredList]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value === "") {
