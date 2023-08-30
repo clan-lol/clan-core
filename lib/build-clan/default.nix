@@ -1,4 +1,4 @@
-{ nixpkgs, lib }:
+{ nixpkgs, clan, lib }:
 { directory  # The directory containing the machines subdirectory
 , specialArgs ? { } # Extra arguments to pass to nixosSystem i.e. useful to make self available
 , machines ? { } # allows to include machine-specific modules i.e. machines.${name} = { ... }
@@ -18,6 +18,7 @@ let
     (name: _:
       nixpkgs.lib.nixosSystem {
         modules = [
+          clan.nixosModules.clanCore
           (machineSettings name)
           (machines.${name} or { })
         ];
