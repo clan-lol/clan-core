@@ -43,7 +43,7 @@ If you already manage NixOS machines using a flake, you can integrate them with 
       directory = ./.;
       machines = {
         turingmachine = {
-          nixpkgs.pkgs = nixpkgs.legacyPackages.aarch64-linux;
+          nixpkgs.hostPlatform = "x86_64-linux";
           imports = [
             ./configuration.nix
           ];
