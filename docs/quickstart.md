@@ -76,6 +76,7 @@ Absolutely, let's break down the migration step by step, explaining each action 
    ```nix
    nixosConfigurations = clan-core.lib.buildClan {
        directory = ./.;
+       specialArgs = {};
        machines = {
            example-desktop = {
                nixpkgs.hostPlatform = "x86_64-linux";

@@ -113,7 +113,7 @@ def groups_folder(group: str) -> Path:
 
 def list_directory(directory: Path) -> str:
     if not directory.exists():
-        return "{directory} does not exist"
+        return f"{directory} does not exist"
     msg = f"\n{directory} contains:"
     for f in directory.iterdir():
         msg += f"\n  {f.name}"
@@ -125,7 +125,7 @@ def allow_member(
 ) -> None:
     source = source_folder / name
     if not source.exists():
-        msg = f"{name} does not exist in {source_folder}"
+        msg = f"{name} does not exist in {source_folder}: "
         msg += list_directory(source_folder)
         raise ClanError(msg)
     group_folder.mkdir(parents=True, exist_ok=True)
@@ -148,7 +148,7 @@ def allow_member(
 def disallow_member(group_folder: Path, name: str) -> None:
     target = group_folder / name
     if not target.exists():
-        msg = f"{name} does not exist in group in {group_folder}"
+        msg = f"{name} does not exist in group in {group_folder}: "
         msg += list_directory(group_folder)
         raise ClanError(msg)
 
