@@ -35,7 +35,7 @@ export function SearchBar(props: SearchBarProps) {
   let { tableData, setFilteredList } = props;
   const [search, setSearch] = useState<string>("");
   const debouncedSearch = useDebounce(search, 250);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   // Define a function to handle the Esc key press
   function handleEsc(event: React.KeyboardEvent<HTMLDivElement>) {
