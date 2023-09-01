@@ -7,6 +7,10 @@ import {
   useEffect,
   useRef,
   useMemo,
+  ClassAttributes,
+  JSX,
+  Key,
+  LiHTMLAttributes,
 } from "react";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
@@ -31,13 +35,18 @@ export function SearchBar(props: SearchBarProps) {
   let { tableData, setFilteredList } = props;
   const [search, setSearch] = useState<string>("");
   const debouncedSearch = useDebounce(search, 250);
+  const [open, setOpen] = useState(true);
 
   // Define a function to handle the Esc key press
   function handleEsc(event: React.KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
-      console.log("Escape key pressed");
       setSearch("");
       setFilteredList(tableData);
+    }
+
+    // check if the key is Enter
+    if (event.key === "Enter") {
+      setOpen(false);
     }
   }
 
@@ -50,11 +59,12 @@ export function SearchBar(props: SearchBarProps) {
     }
   }, [debouncedSearch, tableData, setFilteredList]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value === "") {
+  const handleInputChange = (event: any, value: string) => {
+    if (value === "") {
       setFilteredList(tableData);
     }
-    setSearch(e.target.value);
+
+    setSearch(value);
   };
 
   const suggestions = useMemo(
@@ -65,16 +75,24 @@ export function SearchBar(props: SearchBarProps) {
   return (
     <Autocomplete
       freeSolo
+      autoComplete
       options={suggestions}
+      renderOption={(props: any, option: any) => {
+        return (
+          <li {...props} key={option}>
+            {option}
+          </li>
+        );
+      }}
       onKeyDown={handleEsc}
-      onChange={(event, value) => {
-        // do something with the selected value
-        if (value === null) {
-          setSearch("");
-          setFilteredList(tableData);
-        } else {
-          setSearch(value);
-        }
+      onInputChange={handleInputChange}
+      value={search}
+      open={open}
+      onOpen={() => {
+        setOpen(true);
+      }}
+      onClose={() => {
+        setOpen(false);
       }}
       renderInput={(params) => (
         <TextField
@@ -82,26 +100,18 @@ export function SearchBar(props: SearchBarProps) {
           fullWidth
           label="Search"
           variant="outlined"
-          value={search}
-          onChange={handleInputChange}
           autoComplete="nickname"
           InputProps={{
             ...params.InputProps,
-            // endAdornment: (
-            //   <InputAdornment position="end">
-            //     <IconButton>
-            //       <SearchIcon />
-            //     </IconButton>
-            //   </InputAdornment>
-            // ),
+            startAdornment: (
+              <InputAdornment position="start">
+                <IconButton>
+                  <SearchIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
           }}
-        >
-          {/* {suggestions.map((item, index) => (
-                <option key={index} onClick={() => handleSelect(item)}>
-                  {item}
-                </option>
-              ))} */}
-        </TextField>
+        ></TextField>
       )}
     />
   );
