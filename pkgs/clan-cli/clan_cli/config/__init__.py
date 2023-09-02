@@ -108,18 +108,15 @@ def options_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict
                 let
                     flake = builtins.getFlake (toString {flake});
                     lib = flake.inputs.nixpkgs.lib;
-                    module = flake.nixosModules.machine-{machine_name};
-                    evaled = lib.evalModules {{
-                        modules = [module];
-                    }};
+                    options = flake.nixosConfigurations.{machine_name}.options;
 
                     # this is actually system independent as it uses toFile
                     docs = flake.inputs.nixpkgs.legacyPackages.x86_64-linux.nixosOptionsDoc {{
-                        inherit (evaled) options;
+                        inherit options;
                     }};
-                    options = builtins.fromJSON (builtins.readFile docs.optionsJSON.options);
+                    opts = builtins.fromJSON (builtins.readFile docs.optionsJSON.options);
             in
-                options
+                opts
                 """,
             ],
         ),
