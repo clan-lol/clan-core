@@ -1,4 +1,5 @@
 import argparse
+import shutil
 
 from ..errors import ClanError
 from .folders import machine_folder
@@ -7,7 +8,7 @@ from .folders import machine_folder
 def delete_command(args: argparse.Namespace) -> None:
     folder = machine_folder(args.host)
     if folder.exists():
-        folder.rmdir()
+        shutil.rmtree(folder)
     else:
         raise ClanError(f"Machine {args.host} does not exist")
 
