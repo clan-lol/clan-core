@@ -5,9 +5,13 @@
         check-clan-template = pkgs.writeShellScriptBin "check-clan-template" ''
           #!${pkgs.bash}/bin/bash
           set -euo pipefail
+
           export TMPDIR=$(${pkgs.coreutils}/bin/mktemp -d)
           trap "${pkgs.coreutils}/bin/chmod -R +w '$TMPDIR'; ${pkgs.coreutils}/bin/rm -rf '$TMPDIR'" EXIT
+
           export PATH="${lib.makeBinPath [
+            pkgs.coreutils
+            pkgs.curl
             pkgs.gitMinimal
             pkgs.gnugrep
             pkgs.jq
@@ -35,6 +39,9 @@
 
           echo check machine1 appears in nixosConfigurations
           nix flake show --json | jq '.nixosConfigurations' | grep -q machine1
+
+          echo check machine1 jsonschema can be evaluated
+          nix eval .#nixosConfigurations.machine1.config.clanSchema
         '';
       };
     in
