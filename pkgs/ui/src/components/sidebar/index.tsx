@@ -1,4 +1,5 @@
 import {
+  Alert,
   Divider,
   Icon,
   IconButton,
@@ -7,6 +8,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Snackbar,
 } from "@mui/material";
 import Image from "next/image";
 import { ReactNode, useState } from "react";
@@ -21,11 +23,13 @@ import Link from "next/link";
 import { tw } from "@/utils/tailwind";
 
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import React from "react";
 
 type MenuEntry = {
   icon: ReactNode;
   label: string;
   to: string;
+  missing: boolean;
 } & {
   subMenuEntries?: MenuEntry[];
 };
@@ -35,31 +39,37 @@ const menuEntries: MenuEntry[] = [
     icon: <DashboardIcon />,
     label: "Dashoard",
     to: "/",
+    missing: false,
   },
   {
     icon: <DevicesIcon />,
     label: "Machines",
     to: "/machines",
+    missing: false,
   },
   {
     icon: <AppsIcon />,
     label: "Applications",
     to: "/applications",
+    missing: true,
   },
   {
     icon: <LanIcon />,
     label: "Network",
     to: "/network",
+    missing: true,
   },
   {
     icon: <DesignServicesIcon />,
     label: "Templates",
     to: "/templates",
+    missing: false,
   },
   {
     icon: <BackupIcon />,
     label: "Backups",
     to: "/backups",
+    missing: true,
   },
 ];
 
@@ -72,6 +82,23 @@ interface SidebarProps {
 }
 export function Sidebar(props: SidebarProps) {
   const { show, onClose } = props;
+
+  const [open, setOpen] = React.useState(false);
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string,
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
   return (
     <aside
       className={tw`${
@@ -110,7 +137,10 @@ export function Sidebar(props: SidebarProps) {
                 <ListItemButton
                   className="justify-center lg:justify-normal"
                   LinkComponent={Link}
-                  href={menuEntry.to}
+                  href={menuEntry.missing ? "" : menuEntry.to}
+                  onClickCapture={
+                    menuEntry.missing ? () => handleClick() : undefined
+                  }
                 >
                   <ListItemIcon
                     color="inherit"
@@ -131,6 +161,11 @@ export function Sidebar(props: SidebarProps) {
           })}
         </List>
 
+        <Snackbar open={open} autoHideDuration={2000} onClose={handleClose}>
+          <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
+            Site does not exist yet
+          </Alert>
+        </Snackbar>
         <Divider flexItem className="mx-8 my-10 hidden bg-zinc-600 lg:block" />
         <div className="mx-auto mb-8 hidden w-full max-w-xs rounded-sm px-4 py-6 text-center align-bottom shadow-sm lg:block">
           <h3 className="mb-2 w-full font-semibold text-white">
