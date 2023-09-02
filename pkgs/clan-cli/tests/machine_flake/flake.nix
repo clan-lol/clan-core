@@ -5,11 +5,12 @@
   };
 
   outputs = inputs: {
-    nixosModules.machine-machine1 = ./nixosModules/machine1.nix;
     nixosConfigurations.machine1 = inputs.nixpkgs.lib.nixosSystem {
       modules = [
-        inputs.self.nixosModules.machine-machine1
-        (builtins.fromJSON (builtins.readFile ./machines/machine1.json))
+        ./nixosModules/machine1.nix
+        (if builtins.pathExists ./machines/machine1.json
+        then builtins.fromJSON (builtins.readFile ./machines/machine1.json)
+        else { })
         { nixpkgs.hostPlatform = "x86_64-linux"; }
       ];
     };
