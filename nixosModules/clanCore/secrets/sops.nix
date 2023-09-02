@@ -45,13 +45,17 @@
     '';
     sops.secrets =
       let
+        secretsDir = config.clanCore.clanDir + "/sops/secrets";
         encryptedForThisMachine = name: type:
           let
-            symlink = config.clanCore.clanDir + "/sops/secrets/${name}/machines/${config.clanCore.machineName}";
+            symlink = secretsDir + "/${name}/machines/${config.clanCore.machineName}";
           in
           # WTF, nix bug, my symlink is in the nixos module detected as a directory also it works in the repl
           type == "directory" && (builtins.readFileType symlink == "directory" || builtins.readFileType symlink == "symlink");
-        secrets = lib.filterAttrs encryptedForThisMachine (builtins.readDir (config.clanCore.clanDir + "/sops/secrets"));
+        secrets =
+          if !builtins.pathExists secretsDir
+          then { }
+          else lib.filterAttrs encryptedForThisMachine (builtins.readDir secretsDir);
       in
       builtins.mapAttrs
         (name: _: {
