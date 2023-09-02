@@ -3,16 +3,19 @@
 */
 { lib, ... }: {
   options = {
+    # str
     name = lib.mkOption {
       type = lib.types.str;
       default = "John Doe";
       description = "The name of the user";
     };
+    # int
     age = lib.mkOption {
       type = lib.types.int;
       default = 42;
       description = "The age of the user";
     };
+    # bool
     isAdmin = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -28,6 +31,7 @@
         };
       };
     };
+    # attrs of int
     userIds = lib.mkOption {
       type = lib.types.attrsOf lib.types.int;
       description = "Some attributes";
@@ -37,6 +41,7 @@
         albrecht = 3;
       };
     };
+    # list of str
     kernelModules = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ "nvme" "xhci_pci" "ahci" ];
