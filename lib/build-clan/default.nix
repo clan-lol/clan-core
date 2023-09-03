@@ -23,7 +23,7 @@ let
           (machines.${name} or { })
           {
             clanCore.machineName = name;
-            clanCore.clanDir = directory;
+            clanCore.clanDir = builtins.toString directory;
             # TODO: remove this once we have a hardware-config mechanism
             nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
           }
