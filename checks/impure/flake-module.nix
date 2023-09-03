@@ -17,6 +17,7 @@
             pkgs.jq
             pkgs.openssh
             pkgs.nix
+            self'.packages.clan-cli
           ]}"
 
           cd $TMPDIR
@@ -32,10 +33,10 @@
           nix flake show
 
           echo create a machine
-          ${self'.packages.clan-cli}/bin/clan machines create machine1
+          clan machines create machine1
 
           echo check machine1 exists
-          ${self'.packages.clan-cli}/bin/clan machines list | grep -q machine1
+          clan machines list | grep -q machine1
 
           echo check machine1 appears in nixosConfigurations
           nix flake show --json | jq '.nixosConfigurations' | grep -q machine1
