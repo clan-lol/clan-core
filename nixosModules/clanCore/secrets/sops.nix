@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 {
   config = {
-    system.clan.generateSecrets = pkgs.writeScript "generate_secrets" ''
+    system.clan.generateSecrets = pkgs.writeScript "generate-secrets" ''
       #!/bin/sh
       set -efu
       set -x # remove for prod
