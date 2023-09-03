@@ -4,15 +4,12 @@
 , machines ? { } # allows to include machine-specific modules i.e. machines.${name} = { ... }
 }:
 let
-  machinesDirs =
-    if builtins.pathExists "${directory}/machines"
-    then builtins.readDir directory + /machines
-    else { };
+  machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (builtins.readDir (directory + /machines));
 
   machineSettings = machineName:
-    if builtins.pathExists "${directory}/machines/${machineName}/settings.json"
-    then builtins.fromJSON (builtins.readFile directory + /machines/${machineName}/settings.json)
-    else { };
+    lib.optionalAttrs (builtins.pathExists "${directory}/machines/${machineName}/settings.json")
+      builtins.fromJSON
+      (builtins.readFile (directory + /machines/${machineName}/settings.json));
 
   nixosConfigurations = lib.mapAttrs
     (name: _:
