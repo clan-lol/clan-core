@@ -21,11 +21,14 @@ let
           self.nixosModules.clanCore
           (machineSettings name)
           (machines.${name} or { })
-          { clanCore.clanDir = directory; }
-          # TODO: remove this once we have a hardware-config mechanism
-          { nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux"; }
+          {
+            clanCore.machineName = name;
+            clanCore.clanDir = directory;
+            # TODO: remove this once we have a hardware-config mechanism
+            nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+          }
         ];
-        specialArgs = specialArgs;
+        inherit specialArgs;
       })
     (machinesDirs // machines);
 in
