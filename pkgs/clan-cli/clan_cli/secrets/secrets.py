@@ -212,7 +212,13 @@ def set_command(args: argparse.Namespace) -> None:
 
 
 def rename_command(args: argparse.Namespace) -> None:
-    pass
+    old_path = sops_secrets_folder() / args.secret
+    new_path = sops_secrets_folder() / args.new_name
+    if not old_path.exists():
+        raise ClanError(f"Secret '{args.secret}' does not exist")
+    if new_path.exists():
+        raise ClanError(f"Secret '{args.new_name}' already exists")
+    os.rename(old_path, new_path)
 
 
 def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
@@ -250,9 +256,7 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
 
     parser_rename = subparser.add_parser("rename", help="rename a secret")
     add_secret_argument(parser_rename)
-    parser_rename.add_argument(
-        "new_name", help="the new name of the secret", type=secret_name_type
-    )
+    parser_rename.add_argument("new_name", type=str, help="the new name of the secret")
     parser_rename.set_defaults(func=rename_command)
 
     parser_remove = subparser.add_parser("remove", help="remove a secret")
