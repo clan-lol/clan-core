@@ -32,7 +32,7 @@ interface PureCustomConfigProps extends FormStepContentProps {
   initialValues: any;
 }
 export function CustomConfig(props: FormStepContentProps) {
-  const { formHooks, handleNext } = props;
+  const { formHooks } = props;
   const { data, isLoading, error } = useGetMachineSchema("mama");
   const schema = useMemo(() => {
     if (!isLoading && !error?.message && data?.data) {
@@ -66,7 +66,6 @@ export function CustomConfig(props: FormStepContentProps) {
       formHooks={formHooks}
       initialValues={initialValues}
       schema={schema}
-      handleNext={handleNext}
     />
   );
 }
@@ -101,7 +100,7 @@ function ErrorList<
 }
 
 function PureCustomConfig(props: PureCustomConfigProps) {
-  const { schema, initialValues, formHooks, handleNext } = props;
+  const { schema, initialValues, formHooks } = props;
   const { setValue, watch } = formHooks;
 
   console.log({ schema });

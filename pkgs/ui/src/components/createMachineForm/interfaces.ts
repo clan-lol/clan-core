@@ -18,7 +18,6 @@ export type FormStep = {
 
 export interface FormStepContentProps {
   formHooks: FormHooks;
-  handleNext: () => void;
 }
 
 export type FormStepContent = ReactElement<FormStepContentProps>;
