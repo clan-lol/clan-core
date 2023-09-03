@@ -59,7 +59,7 @@
       in
       builtins.mapAttrs
         (name: _: {
-          sopsFile = "${config.clanCore.clanDir}/sops/secrets/${name}/secret";
+          sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";
           format = "binary";
         })
         secrets;

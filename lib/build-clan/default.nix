@@ -6,12 +6,12 @@
 let
   machinesDirs =
     if builtins.pathExists "${directory}/machines"
-    then builtins.readDir "${directory}/machines"
+    then builtins.readDir directory + /machines
     else { };
 
   machineSettings = machineName:
     if builtins.pathExists "${directory}/machines/${machineName}/settings.json"
-    then builtins.fromJSON (builtins.readFile "${directory}/machines/${machineName}/settings.json")
+    then builtins.fromJSON (builtins.readFile directory + /machines/${machineName}/settings.json)
     else { };
 
   nixosConfigurations = lib.mapAttrs
