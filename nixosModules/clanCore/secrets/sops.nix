@@ -63,5 +63,7 @@
           format = "binary";
         })
         secrets;
+    # To get proper error messages about missing secrets we need a dummy secret file that is always present
+    sops.defaultSopsFile = lib.mkIf config.sops.validateSopsFiles (lib.mkDefault (builtins.toString (pkgs.writeText "dummy.yaml" "")));
   };
 }
