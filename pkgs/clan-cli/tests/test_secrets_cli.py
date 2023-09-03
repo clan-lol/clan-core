@@ -129,15 +129,17 @@ def test_secrets(
 
     with pytest.raises(ClanError):  # does not exist yet
         cli.run(["secrets", "get", "nonexisting"])
-    cli.run(["secrets", "set", "key"])
+    cli.run(["secrets", "set", "initialkey"])
     capsys.readouterr()
-    cli.run(["secrets", "get", "key"])
+    cli.run(["secrets", "get", "initialkey"])
     assert capsys.readouterr().out == "foo"
     capsys.readouterr()
     cli.run(["secrets", "users", "list"])
     users = capsys.readouterr().out.rstrip().split("\n")
     assert len(users) == 1, f"users: {users}"
     owner = users[0]
+
+    cli.run(["secrets", "rename", "initialkey", "key"])
 
     capsys.readouterr()  # empty the buffer
     cli.run(["secrets", "list"])
