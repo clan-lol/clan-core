@@ -11,7 +11,7 @@
     {
       # all machines managed by cLAN
       nixosConfigurations = clan-core.lib.buildClan {
-        directory = ./.;
+        directory = self;
       };
       # add the cLAN cli tool to the dev shell
       devShells.${system}.default = pkgs.mkShell {
