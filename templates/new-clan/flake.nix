@@ -3,10 +3,10 @@
 
   inputs.clan-core.url = "git+https://git.clan.lol/clan/clan-core";
 
-  outputs = { clan-core, nixpkgs, ... }:
+  outputs = { self, clan-core, ... }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pkgs = clan-core.inputs.nixpkgs.legacyPackages.${system};
     in
     {
       # all machines managed by cLAN
