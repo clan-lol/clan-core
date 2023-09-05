@@ -8,8 +8,8 @@ let
 
   machineSettings = machineName:
     lib.optionalAttrs (builtins.pathExists "${directory}/machines/${machineName}/settings.json")
-      builtins.fromJSON
-      (builtins.readFile (directory + /machines/${machineName}/settings.json));
+      (builtins.fromJSON
+        (builtins.readFile (directory + /machines/${machineName}/settings.json)));
 
   nixosConfigurations = lib.mapAttrs
     (name: _:
