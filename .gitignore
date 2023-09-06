@@ -1,6 +1,6 @@
 .direnv
 result*
-pkgs/clan-cli/clan_cli/nixpkgs
+pkgs/clan-cli/clan_cli/deps_flake
 pkgs/clan-cli/clan_cli/webui/assets
 
 # python
