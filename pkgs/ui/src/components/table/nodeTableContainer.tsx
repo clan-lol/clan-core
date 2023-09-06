@@ -14,6 +14,8 @@ import { NodeRow } from "./nodeRow";
 
 import { TableData } from "@/data/nodeData";
 
+import { useMediaQuery, useTheme } from "@mui/material";
+
 interface HeadCell {
   disablePadding: boolean;
   id: keyof TableData;
@@ -146,6 +148,9 @@ export function NodeTableContainer(props: NodeTableContainerProps) {
   const [order, setOrder] = React.useState<NodeOrder>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof TableData>("status");
 
+  const theme = useTheme();
+  const is_phone = useMediaQuery(theme.breakpoints.down("sm"));
+
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tableData.length) : 0;
@@ -169,11 +174,7 @@ export function NodeTableContainer(props: NodeTableContainerProps) {
   );
   return (
     <TableContainer>
-      <Table
-        sx={{ minWidth: 750 }}
-        aria-labelledby="tableTitle"
-        size={dense ? "small" : "medium"}
-      >
+      <Table aria-labelledby="tableTitle" size={dense ? "small" : "medium"}>
         <EnhancedTableHead
           order={order}
           orderBy={orderBy}
@@ -184,7 +185,7 @@ export function NodeTableContainer(props: NodeTableContainerProps) {
           {visibleRows.map((row, index) => {
             return (
               <NodeRow
-                key={row.id}
+                key={row.name}
                 row={row}
                 selected={selected}
                 setSelected={setSelected}

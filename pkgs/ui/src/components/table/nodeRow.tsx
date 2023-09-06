@@ -12,54 +12,56 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
 import Grid2 from "@mui/material/Unstable_Grid2"; // Grid version 2
-import { Collapse } from "@mui/material";
+import { Collapse, useMediaQuery, useTheme } from "@mui/material";
 
 import { NodeStatus, NodeStatusKeys, TableData } from "@/data/nodeData";
 
+function renderStatus(status: NodeStatusKeys) {
+  switch (status) {
+    case NodeStatus.Online:
+      return (
+        <Stack direction="row" alignItems="center" gap={1}>
+          <CircleIcon color="success" style={{ fontSize: 15 }} />
+          <Typography component="div" align="left" variant="body1">
+            Online
+          </Typography>
+        </Stack>
+      );
+
+    case NodeStatus.Offline:
+      return (
+        <Stack direction="row" alignItems="center" gap={1}>
+          <CircleIcon color="error" style={{ fontSize: 15 }} />
+          <Typography component="div" align="left" variant="body1">
+            Offline
+          </Typography>
+        </Stack>
+      );
+    case NodeStatus.Pending:
+      return (
+        <Stack direction="row" alignItems="center" gap={1}>
+          <CircleIcon color="warning" style={{ fontSize: 15 }} />
+          <Typography component="div" align="left" variant="body1">
+            Pending
+          </Typography>
+        </Stack>
+      );
+  }
+}
 export function NodeRow(props: {
   row: TableData;
   selected: string | undefined;
   setSelected: (a: string | undefined) => void;
 }) {
-  function renderStatus(status: NodeStatusKeys) {
-    switch (status) {
-      case NodeStatus.Online:
-        return (
-          <Stack direction="row" alignItems="center" gap={1}>
-            <CircleIcon color="success" style={{ fontSize: 15 }} />
-            <Typography component="div" align="left" variant="body1">
-              Online
-            </Typography>
-          </Stack>
-        );
-
-      case NodeStatus.Offline:
-        return (
-          <Stack direction="row" alignItems="center" gap={1}>
-            <CircleIcon color="error" style={{ fontSize: 15 }} />
-            <Typography component="div" align="left" variant="body1">
-              Offline
-            </Typography>
-          </Stack>
-        );
-      case NodeStatus.Pending:
-        return (
-          <Stack direction="row" alignItems="center" gap={1}>
-            <CircleIcon color="warning" style={{ fontSize: 15 }} />
-            <Typography component="div" align="left" variant="body1">
-              Pending
-            </Typography>
-          </Stack>
-        );
-    }
-  }
+  const theme = useTheme();
+  const is_phone = useMediaQuery(theme.breakpoints.down("md"));
 
   const { row, selected, setSelected } = props;
   const [open, setOpen] = React.useState(false);
   //const labelId = `enhanced-table-checkbox-${index}`;
 
   // Speed optimization. We compare string pointers here instead of the string content.
-  const isSelected = selected == row.id;
+  const isSelected = selected == row.name;
 
   const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
     if (isSelected) {
@@ -93,19 +95,11 @@ export function NodeRow(props: {
         <TableCell
           component="th"
           scope="row"
-          onClick={(event) => handleClick(event, row.id)}
+          onClick={(event) => handleClick(event, row.name)}
         >
           <Stack>
             <Typography component="div" align="left" variant="body1">
               {row.name}
-            </Typography>
-            <Typography
-              color="grey"
-              component="div"
-              align="left"
-              variant="body2"
-            >
-              {row.id}
             </Typography>
           </Stack>
         </TableCell>
@@ -120,7 +114,8 @@ export function NodeRow(props: {
           onClick={(event) => handleClick(event, row.name)}
         >
           <Typography component="div" align="left" variant="body1">
-            {row.last_seen} days ago
+            {String(row.last_seen).padStart(3, "0")}{" "}
+            {is_phone ? "days" : "days ago"}
           </Typography>
         </TableCell>
       </TableRow>
