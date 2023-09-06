@@ -28,18 +28,42 @@ example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 def test_set_some_option(
     args: list[str],
     expected: dict[str, Any],
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("CLAN_OPTIONS_FILE", example_options)
-
     # create temporary file for out_file
     with tempfile.NamedTemporaryFile() as out_file:
         with open(out_file.name, "w") as f:
             json.dump({}, f)
         cli = Cli()
-        cli.run(["config", "--quiet", "--settings-file", out_file.name] + args)
+        cli.run(
+            [
+                "config",
+                "--quiet",
+                "--options-file",
+                example_options,
+                "--settings-file",
+                out_file.name,
+            ]
+            + args
+        )
         json_out = json.loads(open(out_file.name).read())
         assert json_out == expected
+
+
+def test_configure_machine(
+    machine_flake: Path,
+    temporary_dir: Path,
+    capsys: pytest.CaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HOME", str(temporary_dir))
+    cli = Cli()
+    cli.run(["config", "-m", "machine1", "clan.jitsi.enable", "true"])
+    # clear the output buffer
+    capsys.readouterr()
+    # read a option value
+    cli.run(["config", "-m", "machine1", "clan.jitsi.enable"])
+    # read the output
+    assert capsys.readouterr().out == "true\n"
 
 
 def test_walk_jsonschema_all_types() -> None:

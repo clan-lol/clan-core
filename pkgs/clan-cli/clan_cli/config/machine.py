@@ -6,8 +6,9 @@ from typing import Optional
 
 from fastapi import HTTPException
 
-from clan_cli.dirs import get_clan_flake_toplevel, nixpkgs
+from clan_cli.dirs import get_clan_flake_toplevel, nixpkgs_source
 from clan_cli.machines.folders import machine_folder, machine_settings_file
+from clan_cli.nix import nix_eval
 
 
 def config_for_machine(machine_name: str) -> dict:
@@ -42,30 +43,27 @@ def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
         flake = get_clan_flake_toplevel()
     # use nix eval to lib.evalModules .#nixosModules.machine-{machine_name}
     proc = subprocess.run(
-        [
-            "nix",
-            "eval",
-            "--json",
-            "--impure",
-            "--show-trace",
-            "--extra-experimental-features",
-            "nix-command flakes",
-            "--expr",
-            f"""
-            let
-                flake = builtins.getFlake (toString {flake});
-                lib = import {nixpkgs()}/lib;
-                module = builtins.trace (builtins.attrNames flake) flake.nixosModules.machine-{machine_name};
-                evaled = lib.evalModules {{
-                    modules = [module];
-                }};
-                clanOptions = evaled.options.clan;
-                jsonschemaLib = import {Path(__file__).parent / "jsonschema"} {{ inherit lib; }};
-                jsonschema = jsonschemaLib.parseOptions clanOptions;
-            in
-                jsonschema
-            """,
-        ],
+        nix_eval(
+            flags=[
+                "--json",
+                "--impure",
+                "--show-trace",
+                "--extra-experimental-features",
+                "nix-command flakes",
+                "--expr",
+                f"""
+                let
+                    flake = builtins.getFlake (toString {flake});
+                    lib = import {nixpkgs_source()}/lib;
+                    options = flake.nixosConfigurations.{machine_name}.options;
+                    clanOptions = options.clan;
+                    jsonschemaLib = import {Path(__file__).parent / "jsonschema"} {{ inherit lib; }};
+                    jsonschema = jsonschemaLib.parseOptions clanOptions;
+                in
+                    jsonschema
+                """,
+            ],
+        ),
         capture_output=True,
         text=True,
     )

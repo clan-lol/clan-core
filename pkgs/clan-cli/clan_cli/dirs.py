@@ -30,11 +30,11 @@ def module_root() -> Path:
     return Path(__file__).parent
 
 
-def flake_registry() -> Path:
-    return module_root() / "nixpkgs" / "flake-registry.json"
+def nixpkgs_flake() -> Path:
+    return (module_root() / "nixpkgs").resolve()
 
 
-def nixpkgs() -> Path:
+def nixpkgs_source() -> Path:
     return (module_root() / "nixpkgs" / "path").resolve()
 
 

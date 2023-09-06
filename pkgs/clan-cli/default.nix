@@ -44,24 +44,36 @@ let
   checkPython = python3.withPackages (_ps: dependencies ++ testDependencies);
 
   # - vendor the jsonschema nix lib (copy instead of symlink).
-  # - lib.cleanSource prevents unnecessary rebuilds when `self` changes.
   source = runCommand "clan-cli-source" { } ''
     cp -r ${./.} $out
     chmod -R +w $out
     rm $out/clan_cli/config/jsonschema
-    ln -sTf ${nixpkgs} $out/clan_cli/nixpkgs
+    cp -r ${nixpkgs} $out/clan_cli/nixpkgs
     cp -r ${../../lib/jsonschema} $out/clan_cli/config/jsonschema
     ln -s ${ui-assets} $out/clan_cli/webui/assets
   '';
-  nixpkgs = runCommand "nixpkgs" { } ''
-    mkdir -p $out/unfree
-    cat > $out/unfree/default.nix <<EOF
-    import "${pkgs.path}" { config = { allowUnfree = true; overlays = []; }; }
+  nixpkgs = runCommand "nixpkgs" { nativeBuildInputs = [ pkgs.nix ]; } ''
+    mkdir $out
+    mkdir -p $out/unfree                                                                       
+    cat > $out/unfree/default.nix <<EOF                                                        
+    import "${pkgs.path}" { config = { allowUnfree = true; overlays = []; }; }                 
     EOF
-    cat > $out/flake-registry.json <<EOF
-    { "flakes": [{"exact":true,"from":{"id":"nixpkgs", "type": "indirect"},"to": {"path":"${pkgs.path}", "type":"path"}}], "version": 2}
+    cat > $out/flake.nix << EOF
+    {
+      description = "dependencies for the clan-cli";
+
+      inputs = {
+        nixpkgs.url = "nixpkgs";
+      };
+
+      outputs = _inputs: { };
+    }
     EOF
     ln -s ${pkgs.path} $out/path
+    nix flake lock $out \
+      --store ./. \
+      --experimental-features 'nix-command flakes' \
+      --override-input nixpkgs ${pkgs.path}
   '';
 in
 python3.pkgs.buildPythonPackage {
@@ -77,7 +89,7 @@ python3.pkgs.buildPythonPackage {
   ];
   propagatedBuildInputs = dependencies;
 
-  passthru.tests.clan-pytest = runCommand "clan-tests"
+  passthru.tests.clan-pytest = runCommand "clan-pytest"
     {
       nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh rsync stdenv.cc ];
     } ''
@@ -106,7 +118,7 @@ python3.pkgs.buildPythonPackage {
   passthru.testDependencies = dependencies ++ testDependencies;
 
   postInstall = ''
-    ln -sTf ${nixpkgs} $out/${python3.sitePackages}/clan_cli/nixpkgs
+    cp -r ${nixpkgs} $out/${python3.sitePackages}/clan_cli/nixpkgs
     installShellCompletion --bash --name clan \
       <(${argcomplete}/bin/register-python-argcomplete --shell bash clan)
     installShellCompletion --fish --name clan.fish \

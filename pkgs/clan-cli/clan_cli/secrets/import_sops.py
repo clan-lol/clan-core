@@ -36,7 +36,7 @@ def import_sops(args: argparse.Namespace) -> None:
                     file=sys.stderr,
                 )
                 continue
-            if (sops_secrets_folder() / k).exists():
+            if (sops_secrets_folder() / k / "secret").exists():
                 print(
                     f"WARNING: {k} already exists, skipping",
                     file=sys.stderr,

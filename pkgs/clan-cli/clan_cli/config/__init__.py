@@ -5,9 +5,11 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Optional, Type, Union
+from typing import Any, Optional, Type
 
+from clan_cli.dirs import get_clan_flake_toplevel
 from clan_cli.errors import ClanError
+from clan_cli.nix import nix_eval
 
 script_dir = Path(__file__).parent
 
@@ -91,16 +93,58 @@ def cast(value: Any, type: Type, opt_description: str) -> Any:
         )
 
 
-def read_option(option: str) -> str:
+def options_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
+    if flake is None:
+        flake = get_clan_flake_toplevel()
+    # use nix eval to lib.evalModules .#clanModules.machine-{machine_name}
+    proc = subprocess.run(
+        nix_eval(
+            flags=[
+                "--json",
+                "--show-trace",
+                "--impure",
+                "--expr",
+                f"""
+                let
+                    flake = builtins.getFlake (toString {flake});
+                    lib = flake.inputs.nixpkgs.lib;
+                    options = flake.nixosConfigurations.{machine_name}.options;
+
+                    # this is actually system independent as it uses toFile
+                    docs = flake.inputs.nixpkgs.legacyPackages.x86_64-linux.nixosOptionsDoc {{
+                        inherit options;
+                    }};
+                    opts = builtins.fromJSON (builtins.readFile docs.optionsJSON.options);
+            in
+                opts
+                """,
+            ],
+        ),
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        print(proc.stderr, file=sys.stderr)
+        raise Exception(
+            f"Failed to read options for machine {machine_name}:\n{proc.stderr}"
+        )
+    options = json.loads(proc.stdout)
+    return options
+
+
+def read_machine_option_value(machine_name: str, option: str) -> str:
     # use nix eval to read from .#nixosConfigurations.default.config.{option}
     # this will give us the evaluated config with the options attribute
     proc = subprocess.run(
-        [
-            "nix",
-            "eval",
-            "--json",
-            f".#nixosConfigurations.default.config.{option}",
-        ],
+        nix_eval(
+            flags=[
+                "--json",
+                "--show-trace",
+                "--extra-experimental-features",
+                "nix-command flakes",
+                f".#nixosConfigurations.{machine_name}.config.{option}",
+            ],
+        ),
         capture_output=True,
         text=True,
     )
@@ -119,18 +163,44 @@ def read_option(option: str) -> str:
     return out
 
 
-def process_args(
+def get_or_set_option(args: argparse.Namespace) -> None:
+    if args.value == []:
+        print(read_machine_option_value(args.machine, args.option))
+    else:
+        # load options
+        print(args.options_file)
+        if args.options_file is None:
+            options = options_for_machine(machine_name=args.machine)
+        else:
+            with open(args.options_file) as f:
+                options = json.load(f)
+        # compute settings json file location
+        if args.settings_file is None:
+            flake = get_clan_flake_toplevel()
+            settings_file = flake / "machines" / f"{args.machine}.json"
+        else:
+            settings_file = args.settings_file
+        # set the option with the given value
+        set_option(
+            option=args.option,
+            value=args.value,
+            options=options,
+            settings_file=settings_file,
+            option_description=args.option,
+        )
+        if not args.quiet:
+            new_value = read_machine_option_value(args.machine, args.option)
+            print(f"New Value for {args.option}:")
+            print(new_value)
+
+
+def set_option(
     option: str,
     value: Any,
     options: dict,
     settings_file: Path,
-    quiet: bool = False,
     option_description: str = "",
 ) -> None:
-    if value == []:
-        print(read_option(option))
-        return
-
     option_path = option.split(".")
 
     # if the option cannot be found, then likely the type is attrs and we need to
@@ -140,12 +210,11 @@ def process_args(
             raise ClanError(f"Option {option_description} not found")
         option_parent = option_path[:-1]
         attr = option_path[-1]
-        return process_args(
+        return set_option(
             option=".".join(option_parent),
             value={attr: value},
             options=options,
             settings_file=settings_file,
-            quiet=quiet,
             option_description=option,
         )
 
@@ -170,45 +239,14 @@ def process_args(
         current_config = {}
     # merge and save the new config file
     new_config = merge(current_config, result)
+    settings_file.parent.mkdir(parents=True, exist_ok=True)
     with open(settings_file, "w") as f:
         json.dump(new_config, f, indent=2)
-    if not quiet:
-        new_value = read_option(option)
-        print(f"New Value for {option}:")
-        print(new_value)
-
-
-def register_parser(
-    parser: argparse.ArgumentParser,
-    options_file: Optional[Union[str, Path]] = os.environ.get("CLAN_OPTIONS_FILE"),
-) -> None:
-    if not options_file:
-        # use nix eval to evaluate .#clanOptions
-        # this will give us the evaluated config with the options attribute
-        proc = subprocess.run(
-            [
-                "nix",
-                "eval",
-                "--raw",
-                ".#clanOptions",
-            ],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        file = proc.stdout.strip()
-        with open(file) as f:
-            options = json.load(f)
-    else:
-        with open(options_file) as f:
-            options = json.load(f)
-    return _register_parser(parser, options)
 
 
 # takes a (sub)parser and configures it
-def _register_parser(
+def register_parser(
     parser: Optional[argparse.ArgumentParser],
-    options: dict[str, Any],
 ) -> None:
     if parser is None:
         parser = argparse.ArgumentParser(
@@ -216,31 +254,35 @@ def _register_parser(
         )
 
     # inject callback function to process the input later
-    parser.set_defaults(
-        func=lambda args: process_args(
-            option=args.option,
-            value=args.value,
-            options=options,
-            quiet=args.quiet,
-            settings_file=args.settings_file,
-        )
-    )
+    parser.set_defaults(func=get_or_set_option)
 
-    # add --quiet option
+    # add --machine argument
     parser.add_argument(
-        "--quiet",
-        "-q",
-        help="Suppress output",
-        action="store_true",
+        "--machine",
+        "-m",
+        help="Machine to configure",
+        type=str,
+        default="default",
     )
 
-    # add argument to pass output file
+    # add --options-file argument
+    parser.add_argument(
+        "--options-file",
+        help="JSON file with options",
+        type=Path,
+    )
+
+    # add --settings-file argument
     parser.add_argument(
         "--settings-file",
-        "-o",
-        help="Output file",
+        help="JSON file with settings",
         type=Path,
-        default=Path("clan-settings.json"),
+    )
+    # add --quiet argument
+    parser.add_argument(
+        "--quiet",
+        help="Do not print the value",
+        action="store_true",
     )
 
     # add single positional argument for the option (e.g. "foo.bar")
@@ -248,7 +290,6 @@ def _register_parser(
         "option",
         help="Option to configure",
         type=str,
-        choices=AllContainer(list(options.keys())),
     )
 
     # add a single optional argument for the value
@@ -264,14 +305,8 @@ def main(argv: Optional[list[str]] = None) -> None:
     if argv is None:
         argv = sys.argv
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "schema",
-        help="The schema to use for the configuration",
-        type=Path,
-    )
-    args = parser.parse_args(argv[1:2])
-    register_parser(parser, args.schema)
-    parser.parse_args(argv[2:])
+    register_parser(parser)
+    parser.parse_args(argv[1:])
 
 
 if __name__ == "__main__":

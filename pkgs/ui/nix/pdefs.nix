@@ -254,7 +254,7 @@
         };
       };
       "@babel/runtime" = {
-        "7.22.10" = {
+        "7.22.11" = {
           depInfo = {
             regenerator-runtime = {
               descriptor = "^0.14.0";
@@ -263,13 +263,13 @@
             };
           };
           fetchInfo = {
-            narHash = "sha256-5ecEDXI/B/XZUtU3VFGYjC1yAMqmmoqb9Jyu03CI1rQ=";
+            narHash = "sha256-u4IYeznySCACZfl7/j6Fwdz0J5eRLYRntlijjEtZQb0=";
             type = "tarball";
-            url = "https://registry.npmjs.org/@babel/runtime/-/runtime-7.22.10.tgz";
+            url = "https://registry.npmjs.org/@babel/runtime/-/runtime-7.22.11.tgz";
           };
           ident = "@babel/runtime";
           ltype = "file";
-          version = "7.22.10";
+          version = "7.22.11";
         };
       };
       "@babel/types" = {
@@ -311,7 +311,7 @@
             };
             "@babel/runtime" = {
               descriptor = "^7.18.3";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             "@emotion/hash" = {
@@ -459,7 +459,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.18.3";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             "@emotion/babel-plugin" = {
@@ -574,7 +574,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.18.3";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             "@emotion/babel-plugin" = {
@@ -1104,7 +1104,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.22.6";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             "@emotion/is-prop-valid" = {
@@ -1119,7 +1119,7 @@
             };
             "@mui/utils" = {
               descriptor = "^5.14.5";
-              pin = "5.14.5";
+              pin = "5.14.7";
               runtime = true;
             };
             "@popperjs/core" = {
@@ -1183,7 +1183,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.22.6";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
           };
@@ -1214,7 +1214,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.22.6";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             "@mui/base" = {
@@ -1239,7 +1239,7 @@
             };
             "@mui/utils" = {
               descriptor = "^5.14.5";
-              pin = "5.14.5";
+              pin = "5.14.7";
               runtime = true;
             };
             "@types/react-transition-group" = {
@@ -1308,12 +1308,12 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.22.6";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             "@mui/utils" = {
               descriptor = "^5.14.5";
-              pin = "5.14.5";
+              pin = "5.14.7";
               runtime = true;
             };
             prop-types = {
@@ -1346,7 +1346,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.21.0";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             "@emotion/cache" = {
@@ -1393,7 +1393,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.22.6";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             "@mui/private-theming" = {
@@ -1413,7 +1413,7 @@
             };
             "@mui/utils" = {
               descriptor = "^5.14.5";
-              pin = "5.14.5";
+              pin = "5.14.7";
               runtime = true;
             };
             clsx = {
@@ -1479,11 +1479,11 @@
         };
       };
       "@mui/utils" = {
-        "5.14.5" = {
+        "5.14.7" = {
           depInfo = {
             "@babel/runtime" = {
-              descriptor = "^7.22.6";
-              pin = "7.22.10";
+              descriptor = "^7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             "@types/prop-types" = {
@@ -1508,9 +1508,9 @@
             };
           };
           fetchInfo = {
-            narHash = "sha256-mym+STz4KseB2TDlXB8qkcPKpvNQDU4r+9xTC99m84U=";
+            narHash = "sha256-bvWlZoYxVVHqprNjDYZQtl6vrpx6BZNUe/t8J+REcHk=";
             type = "tarball";
-            url = "https://registry.npmjs.org/@mui/utils/-/utils-5.14.5.tgz";
+            url = "https://registry.npmjs.org/@mui/utils/-/utils-5.14.7.tgz";
           };
           ident = "@mui/utils";
           ltype = "file";
@@ -1519,7 +1519,7 @@
               descriptor = "^17.0.0 || ^18.0.0";
             };
           };
-          version = "5.14.5";
+          version = "5.14.7";
         };
       };
       "@next/env" = {
@@ -2078,6 +2078,172 @@
           ltype = "file";
           treeInfo = { };
           version = "2.11.8";
+        };
+      };
+      "@rjsf/core" = {
+        "5.12.1" = {
+          depInfo = {
+            lodash = {
+              descriptor = "^4.17.21";
+              pin = "4.17.21";
+              runtime = true;
+            };
+            lodash-es = {
+              descriptor = "^4.17.21";
+              pin = "4.17.21";
+              runtime = true;
+            };
+            markdown-to-jsx = {
+              descriptor = "^7.3.2";
+              pin = "7.3.2";
+              runtime = true;
+            };
+            nanoid = {
+              descriptor = "^3.3.6";
+              pin = "3.3.6";
+              runtime = true;
+            };
+            prop-types = {
+              descriptor = "^15.8.1";
+              pin = "15.8.1";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-TYa/k9q0Au9+0l7qyLaa2XMyQ6bHZqRniGzzo7BFDWk=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@rjsf/core/-/core-5.12.1.tgz";
+          };
+          ident = "@rjsf/core";
+          ltype = "file";
+          peerInfo = {
+            "@rjsf/utils" = {
+              descriptor = "^5.8.x";
+            };
+            react = {
+              descriptor = "^16.14.0 || >=17";
+            };
+          };
+          version = "5.12.1";
+        };
+      };
+      "@rjsf/mui" = {
+        "5.12.1" = {
+          fetchInfo = {
+            narHash = "sha256-HS37nzO3SsWJycV8yvqrEjtcb9w8GxtivBBWArBhziU=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@rjsf/mui/-/mui-5.12.1.tgz";
+          };
+          ident = "@rjsf/mui";
+          ltype = "file";
+          peerInfo = {
+            "@emotion/react" = {
+              descriptor = "^11.7.0";
+            };
+            "@emotion/styled" = {
+              descriptor = "^11.6.0";
+            };
+            "@mui/icons-material" = {
+              descriptor = "^5.2.0";
+            };
+            "@mui/material" = {
+              descriptor = "^5.2.2";
+            };
+            "@rjsf/core" = {
+              descriptor = "^5.8.x";
+            };
+            "@rjsf/utils" = {
+              descriptor = "^5.8.x";
+            };
+            react = {
+              descriptor = ">=17";
+            };
+          };
+          treeInfo = { };
+          version = "5.12.1";
+        };
+      };
+      "@rjsf/utils" = {
+        "5.12.1" = {
+          depInfo = {
+            json-schema-merge-allof = {
+              descriptor = "^0.8.1";
+              pin = "0.8.1";
+              runtime = true;
+            };
+            jsonpointer = {
+              descriptor = "^5.0.1";
+              pin = "5.0.1";
+              runtime = true;
+            };
+            lodash = {
+              descriptor = "^4.17.21";
+              pin = "4.17.21";
+              runtime = true;
+            };
+            lodash-es = {
+              descriptor = "^4.17.21";
+              pin = "4.17.21";
+              runtime = true;
+            };
+            react-is = {
+              descriptor = "^18.2.0";
+              pin = "18.2.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-CR5Jmw9hCiLFWgoxBDdhuzItZz/Y60pAX0T0IxMQKJM=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@rjsf/utils/-/utils-5.12.1.tgz";
+          };
+          ident = "@rjsf/utils";
+          ltype = "file";
+          peerInfo = {
+            react = {
+              descriptor = "^16.14.0 || >=17";
+            };
+          };
+          version = "5.12.1";
+        };
+      };
+      "@rjsf/validator-ajv8" = {
+        "5.12.1" = {
+          depInfo = {
+            ajv = {
+              descriptor = "^8.12.0";
+              pin = "8.12.0";
+              runtime = true;
+            };
+            ajv-formats = {
+              descriptor = "^2.1.1";
+              pin = "2.1.1";
+              runtime = true;
+            };
+            lodash = {
+              descriptor = "^4.17.21";
+              pin = "4.17.21";
+              runtime = true;
+            };
+            lodash-es = {
+              descriptor = "^4.17.21";
+              pin = "4.17.21";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-w28JPlFA1Pnc3K/qBmPqwnlgQf6Pa/b7e7UY1zCvJjg=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/@rjsf/validator-ajv8/-/validator-ajv8-5.12.1.tgz";
+          };
+          ident = "@rjsf/validator-ajv8";
+          ltype = "file";
+          peerInfo = {
+            "@rjsf/utils" = {
+              descriptor = "^5.8.x";
+            };
+          };
+          version = "5.12.1";
         };
       };
       "@rollup/plugin-commonjs" = {
@@ -4627,7 +4793,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.12.5";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             cosmiconfig = {
@@ -5207,6 +5373,69 @@
           ltype = "file";
           treeInfo = { };
           version = "4.1.4";
+        };
+      };
+      compute-gcd = {
+        "1.2.1" = {
+          depInfo = {
+            "validate.io-array" = {
+              descriptor = "^1.0.3";
+              pin = "1.0.6";
+              runtime = true;
+            };
+            "validate.io-function" = {
+              descriptor = "^1.0.2";
+              pin = "1.0.2";
+              runtime = true;
+            };
+            "validate.io-integer-array" = {
+              descriptor = "^1.0.0";
+              pin = "1.0.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-d0KQIsd8wClVDFno5ovxwZeZrxT8Eds/EZeee1vP9tk=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/compute-gcd/-/compute-gcd-1.2.1.tgz";
+          };
+          ident = "compute-gcd";
+          ltype = "file";
+          version = "1.2.1";
+        };
+      };
+      compute-lcm = {
+        "1.1.2" = {
+          depInfo = {
+            compute-gcd = {
+              descriptor = "^1.2.1";
+              pin = "1.2.1";
+              runtime = true;
+            };
+            "validate.io-array" = {
+              descriptor = "^1.0.3";
+              pin = "1.0.6";
+              runtime = true;
+            };
+            "validate.io-function" = {
+              descriptor = "^1.0.2";
+              pin = "1.0.2";
+              runtime = true;
+            };
+            "validate.io-integer-array" = {
+              descriptor = "^1.0.0";
+              pin = "1.0.0";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-1KY8MWyNiiL/EbcaST1NDtJ/EVlphHN1zvMkEkEBUDA=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/compute-lcm/-/compute-lcm-1.1.2.tgz";
+          };
+          ident = "compute-lcm";
+          ltype = "file";
+          version = "1.1.2";
         };
       };
       concat-map = {
@@ -5834,7 +6063,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.1.2";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
           };
@@ -5851,7 +6080,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.8.7";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             csstype = {
@@ -7430,7 +7659,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.20.7";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             aria-query = {
@@ -9857,6 +10086,54 @@
           version = "2.3.1";
         };
       };
+      json-schema-compare = {
+        "0.2.2" = {
+          depInfo = {
+            lodash = {
+              descriptor = "^4.17.4";
+              pin = "4.17.21";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-C0qcy7sHg0SseMH51wBxWKNSOuMKIsdYJrKZiorAD6g=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/json-schema-compare/-/json-schema-compare-0.2.2.tgz";
+          };
+          ident = "json-schema-compare";
+          ltype = "file";
+          version = "0.2.2";
+        };
+      };
+      json-schema-merge-allof = {
+        "0.8.1" = {
+          depInfo = {
+            compute-lcm = {
+              descriptor = "^1.1.2";
+              pin = "1.1.2";
+              runtime = true;
+            };
+            json-schema-compare = {
+              descriptor = "^0.2.2";
+              pin = "0.2.2";
+              runtime = true;
+            };
+            lodash = {
+              descriptor = "^4.17.20";
+              pin = "4.17.21";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-XjBzD/iGKHCog9JktMJ7IV/hD3y/B7P7GPpCx+z3Ah4=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/json-schema-merge-allof/-/json-schema-merge-allof-0.8.1.tgz";
+          };
+          ident = "json-schema-merge-allof";
+          ltype = "file";
+          version = "0.8.1";
+        };
+      };
       json-schema-ref-parser = {
         "5.1.3" = {
           depInfo = {
@@ -10223,6 +10500,19 @@
           version = "4.17.21";
         };
       };
+      lodash-es = {
+        "4.17.21" = {
+          fetchInfo = {
+            narHash = "sha256-2l4E89z3xMFn6MP9E0rVVNFWnB1oUINVGzno0F9CL3g=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/lodash-es/-/lodash-es-4.17.21.tgz";
+          };
+          ident = "lodash-es";
+          ltype = "file";
+          treeInfo = { };
+          version = "4.17.21";
+        };
+      };
       "lodash.get" = {
         "4.4.2" = {
           fetchInfo = {
@@ -10400,6 +10690,24 @@
           ident = "magic-string";
           ltype = "file";
           version = "0.25.9";
+        };
+      };
+      markdown-to-jsx = {
+        "7.3.2" = {
+          fetchInfo = {
+            narHash = "sha256-9sSiMN7r0b//8QFL72wsY4tkOpztRB0yDqV+1RUN97Q=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/markdown-to-jsx/-/markdown-to-jsx-7.3.2.tgz";
+          };
+          ident = "markdown-to-jsx";
+          ltype = "file";
+          peerInfo = {
+            react = {
+              descriptor = ">= 0.14.0";
+            };
+          };
+          treeInfo = { };
+          version = "7.3.2";
         };
       };
       matcher = {
@@ -10582,6 +10890,26 @@
             "@mui/material" = {
               descriptor = "^5.14.3";
               pin = "5.14.5";
+              runtime = true;
+            };
+            "@rjsf/core" = {
+              descriptor = "^5.12.1";
+              pin = "5.12.1";
+              runtime = true;
+            };
+            "@rjsf/mui" = {
+              descriptor = "^5.12.1";
+              pin = "5.12.1";
+              runtime = true;
+            };
+            "@rjsf/validator-ajv8" = {
+              descriptor = "^5.12.1";
+              pin = "5.12.1";
+              runtime = true;
+            };
+            "@types/json-schema" = {
+              descriptor = "^7.0.12";
+              pin = "7.0.12";
               runtime = true;
             };
             "@types/node" = {
@@ -10810,7 +11138,7 @@
               key = "supports-color/5.5.0";
             };
             "node_modules/@babel/runtime" = {
-              key = "@babel/runtime/7.22.10";
+              key = "@babel/runtime/7.22.11";
             };
             "node_modules/@babel/types" = {
               key = "@babel/types/7.22.10";
@@ -10956,7 +11284,7 @@
               key = "@mui/types/7.2.4";
             };
             "node_modules/@mui/utils" = {
-              key = "@mui/utils/5.14.5";
+              key = "@mui/utils/5.14.7";
             };
             "node_modules/@next/env" = {
               key = "@next/env/13.4.12";
@@ -11048,6 +11376,24 @@
             };
             "node_modules/@popperjs/core" = {
               key = "@popperjs/core/2.11.8";
+            };
+            "node_modules/@rjsf/core" = {
+              key = "@rjsf/core/5.12.1";
+            };
+            "node_modules/@rjsf/mui" = {
+              key = "@rjsf/mui/5.12.1";
+            };
+            "node_modules/@rjsf/utils" = {
+              key = "@rjsf/utils/5.12.1";
+            };
+            "node_modules/@rjsf/validator-ajv8" = {
+              key = "@rjsf/validator-ajv8/5.12.1";
+            };
+            "node_modules/@rjsf/validator-ajv8/node_modules/ajv" = {
+              key = "ajv/8.12.0";
+            };
+            "node_modules/@rjsf/validator-ajv8/node_modules/json-schema-traverse" = {
+              key = "json-schema-traverse/1.0.0";
             };
             "node_modules/@rollup/plugin-commonjs" = {
               dev = true;
@@ -11256,7 +11602,6 @@
               key = "@types/estree/0.0.39";
             };
             "node_modules/@types/json-schema" = {
-              dev = true;
               key = "@types/json-schema/7.0.12";
             };
             "node_modules/@types/json5" = {
@@ -11334,15 +11679,12 @@
               key = "ajv/6.12.6";
             };
             "node_modules/ajv-formats" = {
-              dev = true;
               key = "ajv-formats/2.1.1";
             };
             "node_modules/ajv-formats/node_modules/ajv" = {
-              dev = true;
               key = "ajv/8.12.0";
             };
             "node_modules/ajv-formats/node_modules/json-schema-traverse" = {
-              dev = true;
               key = "json-schema-traverse/1.0.0";
             };
             "node_modules/ansi-colors" = {
@@ -11541,6 +11883,12 @@
             "node_modules/compare-versions" = {
               dev = true;
               key = "compare-versions/4.1.4";
+            };
+            "node_modules/compute-gcd" = {
+              key = "compute-gcd/1.2.1";
+            };
+            "node_modules/compute-lcm" = {
+              key = "compute-lcm/1.1.2";
             };
             "node_modules/concat-map" = {
               key = "concat-map/0.0.1";
@@ -11936,7 +12284,6 @@
               key = "execa/5.1.1";
             };
             "node_modules/fast-deep-equal" = {
-              dev = true;
               key = "fast-deep-equal/3.1.3";
             };
             "node_modules/fast-equals" = {
@@ -12323,6 +12670,12 @@
             "node_modules/json-parse-even-better-errors" = {
               key = "json-parse-even-better-errors/2.3.1";
             };
+            "node_modules/json-schema-compare" = {
+              key = "json-schema-compare/0.2.2";
+            };
+            "node_modules/json-schema-merge-allof" = {
+              key = "json-schema-merge-allof/0.8.1";
+            };
             "node_modules/json-schema-ref-parser" = {
               dev = true;
               key = "json-schema-ref-parser/5.1.3";
@@ -12364,7 +12717,6 @@
               key = "jsonpath-plus/7.1.0";
             };
             "node_modules/jsonpointer" = {
-              dev = true;
               key = "jsonpointer/5.0.1";
             };
             "node_modules/jsonschema" = {
@@ -12403,6 +12755,9 @@
             };
             "node_modules/lodash" = {
               key = "lodash/4.17.21";
+            };
+            "node_modules/lodash-es" = {
+              key = "lodash-es/4.17.21";
             };
             "node_modules/lodash.get" = {
               dev = true;
@@ -12450,6 +12805,9 @@
             "node_modules/magic-string" = {
               dev = true;
               key = "magic-string/0.25.9";
+            };
+            "node_modules/markdown-to-jsx" = {
+              key = "markdown-to-jsx/7.3.2";
             };
             "node_modules/matcher" = {
               dev = true;
@@ -12742,7 +13100,6 @@
               key = "proxy-from-env/1.1.0";
             };
             "node_modules/punycode" = {
-              dev = true;
               key = "punycode/2.3.0";
             };
             "node_modules/queue-microtask" = {
@@ -12822,7 +13179,6 @@
               key = "require-directory/2.1.1";
             };
             "node_modules/require-from-string" = {
-              dev = true;
               key = "require-from-string/2.0.2";
             };
             "node_modules/reserved" = {
@@ -13100,7 +13456,6 @@
               key = "update-browserslist-db/1.0.11";
             };
             "node_modules/uri-js" = {
-              dev = true;
               key = "uri-js/4.4.1";
             };
             "node_modules/urijs" = {
@@ -13120,6 +13475,21 @@
             "node_modules/validate-npm-package-name" = {
               dev = true;
               key = "validate-npm-package-name/3.0.0";
+            };
+            "node_modules/validate.io-array" = {
+              key = "validate.io-array/1.0.6";
+            };
+            "node_modules/validate.io-function" = {
+              key = "validate.io-function/1.0.2";
+            };
+            "node_modules/validate.io-integer" = {
+              key = "validate.io-integer/1.0.5";
+            };
+            "node_modules/validate.io-integer-array" = {
+              key = "validate.io-integer-array/1.0.0";
+            };
+            "node_modules/validate.io-number" = {
+              key = "validate.io-number/1.0.3";
             };
             "node_modules/validator" = {
               dev = true;
@@ -15143,7 +15513,7 @@
           depInfo = {
             "@babel/runtime" = {
               descriptor = "^7.5.5";
-              pin = "7.22.10";
+              pin = "7.22.11";
               runtime = true;
             };
             dom-helpers = {
@@ -17309,6 +17679,88 @@
           ident = "validate-npm-package-name";
           ltype = "file";
           version = "3.0.0";
+        };
+      };
+      "validate.io-array" = {
+        "1.0.6" = {
+          fetchInfo = {
+            narHash = "sha256-hTj+pWYWlZgbr1jdb6kfr7k2vnYZAyN8d1VwQdBITjg=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/validate.io-array/-/validate.io-array-1.0.6.tgz";
+          };
+          ident = "validate.io-array";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.0.6";
+        };
+      };
+      "validate.io-function" = {
+        "1.0.2" = {
+          fetchInfo = {
+            narHash = "sha256-MG3+IDs5WavAbTvbFkZczGZ/NfcAG3QP94E2r2bnchQ=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/validate.io-function/-/validate.io-function-1.0.2.tgz";
+          };
+          ident = "validate.io-function";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.0.2";
+        };
+      };
+      "validate.io-integer" = {
+        "1.0.5" = {
+          depInfo = {
+            "validate.io-number" = {
+              descriptor = "^1.0.3";
+              pin = "1.0.3";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-yf1eZKbJtm4w+AwPpBtwiCOgIk08joKjkqAmXDjPj3k=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/validate.io-integer/-/validate.io-integer-1.0.5.tgz";
+          };
+          ident = "validate.io-integer";
+          ltype = "file";
+          version = "1.0.5";
+        };
+      };
+      "validate.io-integer-array" = {
+        "1.0.0" = {
+          depInfo = {
+            "validate.io-array" = {
+              descriptor = "^1.0.3";
+              pin = "1.0.6";
+              runtime = true;
+            };
+            "validate.io-integer" = {
+              descriptor = "^1.0.4";
+              pin = "1.0.5";
+              runtime = true;
+            };
+          };
+          fetchInfo = {
+            narHash = "sha256-2yabi9Qb/A7B2T29xrl2nxTfgV97SCQe9eOl8GE36gQ=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/validate.io-integer-array/-/validate.io-integer-array-1.0.0.tgz";
+          };
+          ident = "validate.io-integer-array";
+          ltype = "file";
+          version = "1.0.0";
+        };
+      };
+      "validate.io-number" = {
+        "1.0.3" = {
+          fetchInfo = {
+            narHash = "sha256-tlQD45K0CSB8ih58xTdP8blRdYk1fzLWF3+2r8VEAXw=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/validate.io-number/-/validate.io-number-1.0.3.tgz";
+          };
+          ident = "validate.io-number";
+          ltype = "file";
+          treeInfo = { };
+          version = "1.0.3";
         };
       };
       validator = {

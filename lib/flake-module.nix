@@ -1,5 +1,6 @@
 { lib
 , inputs
+, self
 , ...
 }: {
   imports = [
@@ -7,6 +8,7 @@
   ];
   flake.lib = import ./default.nix {
     inherit lib;
-    inherit (inputs) nixpkgs clan;
+    inherit self;
+    inherit (inputs) nixpkgs;
   };
 }

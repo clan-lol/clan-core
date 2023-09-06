@@ -6,7 +6,7 @@ from typing import Generator
 
 import pytest
 
-from clan_cli.dirs import nixpkgs
+from clan_cli.dirs import nixpkgs_source
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "helpers"))
 
@@ -44,10 +44,8 @@ def machine_flake(monkeymodule: pytest.MonkeyPatch) -> Generator[Path, None, Non
         # provided by get_clan_flake_toplevel
         flake_nix = flake / "flake.nix"
         flake_nix.write_text(
-            flake_nix.read_text().replace("__NIXPKGS__", str(nixpkgs()))
+            flake_nix.read_text().replace("__NIXPKGS__", str(nixpkgs_source()))
         )
         # check that an empty config is returned if no json file exists
         monkeymodule.chdir(flake)
-        # monkeypatch get_clan_flake_toplevel to return the flake
-        monkeymodule.setattr("clan_cli.dirs.get_clan_flake_toplevel", lambda: flake)
         yield flake
