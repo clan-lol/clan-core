@@ -43,7 +43,7 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
             "--extra-experimental-features",
             "nix-command flakes",
             "--inputs-from",
-            ".#",
+            f"{str(nixpkgs())}",
         ]
         + wrapped_packages
         + ["-c"]
