@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from .dirs import nixpkgs, unfree_nixpkgs
+from .dirs import deps_flake, nixpkgs, unfree_nixpkgs
 
 
 def nix_eval(flags: list[str]) -> list[str]:
@@ -43,7 +43,7 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
             "--extra-experimental-features",
             "nix-command flakes",
             "--inputs-from",
-            f"{str(nixpkgs())}",
+            f"{str(deps_flake())}",
         ]
         + wrapped_packages
         + ["-c"]
