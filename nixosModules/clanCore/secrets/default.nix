@@ -68,6 +68,7 @@
       }));
   };
   imports = [
-    ./sops.nix # for now we have only one implementation, thats why we import it here and not in clanModules
+    ./sops.nix
+    ./password-store.nix
   ];
 }
