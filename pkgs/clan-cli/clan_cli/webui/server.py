@@ -1,6 +1,5 @@
 import argparse
 import logging
-import os
 import subprocess
 import time
 import urllib.request
@@ -27,11 +26,23 @@ def defer_open_browser(base_url: str) -> None:
 
 
 @contextmanager
-def spawn_node_dev_server() -> Iterator[None]:
+def spawn_node_dev_server(host: str, port: int) -> Iterator[None]:
     logger.info("Starting node dev server...")
     path = Path(__file__).parent.parent.parent.parent / "ui"
     with subprocess.Popen(
-        ["direnv", "exec", path, "npm", "run", "dev"],
+        [
+            "direnv",
+            "exec",
+            path,
+            "npm",
+            "run",
+            "dev",
+            "--",
+            "--hostname",
+            host,
+            "--port",
+            str(port),
+        ],
         cwd=path,
     ) as proc:
         try:
@@ -42,16 +53,21 @@ def spawn_node_dev_server() -> Iterator[None]:
 
 def start_server(args: argparse.Namespace) -> None:
     with ExitStack() as stack:
+        headers: list[tuple[str, str]] = []
         if args.dev:
-            os.environ["CLAN_WEBUI_ENV"] = "development"
-            os.environ["CLAN_WEBUI_DEV_PORT"] = str(args.dev_port)
-            os.environ["CLAN_WEBUI_DEV_HOST"] = args.dev_host
-
-            stack.enter_context(spawn_node_dev_server())
+            stack.enter_context(spawn_node_dev_server(args.dev_host, args.dev_port))
 
             open_url = f"http://{args.dev_host}:{args.dev_port}"
+            host = args.dev_host
+            if ":" in host:
+                host = f"[{host}]"
+            headers = [
+                (
+                    "Access-Control-Allow-Origin",
+                    f"http://{host}:{args.dev_port}",
+                )
+            ]
         else:
-            os.environ["CLAN_WEBUI_ENV"] = "production"
             open_url = f"http://[{args.host}]:{args.port}"
 
         if not args.no_open:
@@ -63,5 +79,5 @@ def start_server(args: argparse.Namespace) -> None:
             port=args.port,
             log_level=args.log_level,
             reload=args.reload,
-            headers=[("Access-Control-Allow-Origin", "*")],
+            headers=headers,
         )
