@@ -32,7 +32,7 @@ def module_root() -> Path:
 
 
 def deps_flake() -> Path:
-    return module_root() / "deps_flake"
+    return (module_root() / "deps_flake").resolve()
 
 
 def nixpkgs() -> Path:
