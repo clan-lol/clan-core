@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 from pathlib import Path
@@ -31,15 +30,12 @@ def module_root() -> Path:
     return Path(__file__).parent
 
 
-def deps_flake() -> Path:
-    return (module_root() / "deps_flake").resolve()
+def nixpkgs_flake() -> Path:
+    return (module_root() / "nixpkgs").resolve()
 
 
-def nixpkgs() -> Path:
-    # load the flake.lock json file from the deps_flake and return nodes.nixpkgs.path
-    with open(deps_flake() / "flake.lock") as f:
-        flake_lock = json.load(f)
-    return Path(flake_lock["nodes"]["nixpkgs"]["locked"]["path"])
+def nixpkgs_source() -> Path:
+    return (module_root() / "nixpkgs" / "path").resolve()
 
 
 def unfree_nixpkgs() -> Path:

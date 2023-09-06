@@ -27,7 +27,7 @@ mkShell {
     tmp_path=$(realpath ./.direnv)
 
     rm -f clan_cli/nixpkgs clan_cli/assets
-    ln -sf ${clan-cli.depsFlake} clan_cli/deps_flake
+    ln -sf ${clan-cli.nixpkgs} clan_cli/nixpkgs
     ln -sf ${ui-assets} clan_cli/webui/assets
 
     export PATH="$tmp_path/bin:${checkScript}/bin:$PATH"
