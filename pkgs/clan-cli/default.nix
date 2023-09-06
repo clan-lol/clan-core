@@ -44,19 +44,33 @@ let
   checkPython = python3.withPackages (_ps: dependencies ++ testDependencies);
 
   # - vendor the jsonschema nix lib (copy instead of symlink).
-  # - lib.cleanSource prevents unnecessary rebuilds when `self` changes.
   source = runCommand "clan-cli-source" { } ''
     cp -r ${./.} $out
     chmod -R +w $out
     rm $out/clan_cli/config/jsonschema
-    cp -r ${depsFlake} $out/clan_cli/deps_flake
+    cp -r ${nixpkgs} $out/clan_cli/nixpkgs
     cp -r ${../../lib/jsonschema} $out/clan_cli/config/jsonschema
     ln -s ${ui-assets} $out/clan_cli/webui/assets
   '';
-  depsFlake = runCommand "deps-flake" { } ''
+  nixpkgs = runCommand "nixpkgs" { nativeBuildInputs = [ pkgs.nix ]; } ''
     mkdir $out
-    cp ${./deps-flake.nix} $out/flake.nix
-    ${pkgs.nix}/bin/nix flake lock $out \
+    mkdir -p $out/unfree                                                                       
+    cat > $out/unfree/default.nix <<EOF                                                        
+    import "${pkgs.path}" { config = { allowUnfree = true; overlays = []; }; }                 
+    EOF
+    cat > $out/flake.nix << EOF
+    {
+      description = "dependencies for the clan-cli";
+
+      inputs = {
+        nixpkgs.url = "nixpkgs";
+      };
+
+      outputs = _inputs: { };
+    }
+    EOF
+    ln -s ${pkgs.path} $out/path
+    nix flake lock $out \
       --store ./. \
       --experimental-features 'nix-command flakes' \
       --override-input nixpkgs ${pkgs.path}
@@ -94,7 +108,7 @@ python3.pkgs.buildPythonPackage {
     ${checkPython}/bin/python ./bin/gen-openapi --out $out/openapi.json --app-dir . clan_cli.webui.app:app
     touch $out
   '';
-  passthru.depsFlake = depsFlake;
+  passthru.nixpkgs = nixpkgs;
 
   passthru.devDependencies = [
     setuptools
@@ -104,7 +118,7 @@ python3.pkgs.buildPythonPackage {
   passthru.testDependencies = dependencies ++ testDependencies;
 
   postInstall = ''
-    cp -r ${depsFlake} $out/${python3.sitePackages}/clan_cli/deps_flake
+    cp -r ${nixpkgs} $out/${python3.sitePackages}/clan_cli/nixpkgs
     installShellCompletion --bash --name clan \
       <(${argcomplete}/bin/register-python-argcomplete --shell bash clan)
     installShellCompletion --fish --name clan.fish \

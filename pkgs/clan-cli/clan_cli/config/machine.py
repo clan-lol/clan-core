@@ -6,7 +6,7 @@ from typing import Optional
 
 from fastapi import HTTPException
 
-from clan_cli.dirs import get_clan_flake_toplevel, nixpkgs
+from clan_cli.dirs import get_clan_flake_toplevel, nixpkgs_source
 from clan_cli.machines.folders import machine_folder, machine_settings_file
 from clan_cli.nix import nix_eval
 
@@ -54,7 +54,7 @@ def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
                 f"""
                 let
                     flake = builtins.getFlake (toString {flake});
-                    lib = import {nixpkgs()}/lib;
+                    lib = import {nixpkgs_source()}/lib;
                     options = flake.nixosConfigurations.{machine_name}.options;
                     clanOptions = options.clan;
                     jsonschemaLib = import {Path(__file__).parent / "jsonschema"} {{ inherit lib; }};
