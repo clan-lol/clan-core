@@ -1,5 +1,12 @@
 { config, lib, ... }:
 {
+  options.clanCore.secretStore = lib.mkOption {
+    type = lib.types.enum [ "sops" "password-store" "custom" ];
+    default = "sops";
+    description = ''
+      method to store secrets
+    '';
+  };
   options.clanCore.secrets = lib.mkOption {
     type = lib.types.attrsOf
       (lib.types.submodule (secret: {

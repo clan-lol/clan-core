@@ -21,7 +21,7 @@ let
   secrets = filterDir containsMachineOrGroups secretsDir;
 in
 {
-  config = {
+  config = lib.mkIf (config.clanCore.secretStore == "sops") {
     system.clan.generateSecrets = pkgs.writeScript "generate-secrets" ''
       #!/bin/sh
       set -efu
