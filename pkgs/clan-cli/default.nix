@@ -49,19 +49,17 @@ let
     cp -r ${./.} $out
     chmod -R +w $out
     rm $out/clan_cli/config/jsonschema
-    ln -sTf ${nixpkgs} $out/clan_cli/nixpkgs
+    cp -r ${depsFlake} $out/clan_cli/deps_flake
     cp -r ${../../lib/jsonschema} $out/clan_cli/config/jsonschema
     ln -s ${ui-assets} $out/clan_cli/webui/assets
   '';
-  nixpkgs = runCommand "nixpkgs" { } ''
-    mkdir -p $out/unfree
-    cat > $out/unfree/default.nix <<EOF
-    import "${pkgs.path}" { config = { allowUnfree = true; overlays = []; }; }
-    EOF
-    cat > $out/flake-registry.json <<EOF
-    { "flakes": [{"exact":true,"from":{"id":"nixpkgs", "type": "indirect"},"to": {"path":"${pkgs.path}", "type":"path"}}], "version": 2}
-    EOF
-    ln -s ${pkgs.path} $out/path
+  depsFlake = runCommand "deps-flake" { } ''
+    mkdir $out
+    cp ${./deps-flake.nix} $out/flake.nix
+    ${pkgs.nix}/bin/nix flake lock $out \
+      --store ./. \
+      --experimental-features 'nix-command flakes' \
+      --override-input nixpkgs ${pkgs.path}
   '';
 in
 python3.pkgs.buildPythonPackage {
@@ -96,7 +94,7 @@ python3.pkgs.buildPythonPackage {
     ${checkPython}/bin/python ./bin/gen-openapi --out $out/openapi.json --app-dir . clan_cli.webui.app:app
     touch $out
   '';
-  passthru.nixpkgs = nixpkgs;
+  passthru.depsFlake = depsFlake;
 
   passthru.devDependencies = [
     setuptools
@@ -106,7 +104,7 @@ python3.pkgs.buildPythonPackage {
   passthru.testDependencies = dependencies ++ testDependencies;
 
   postInstall = ''
-    ln -sTf ${nixpkgs} $out/${python3.sitePackages}/clan_cli/nixpkgs
+    cp -r ${depsFlake} $out/${python3.sitePackages}/clan_cli/deps_flake
     installShellCompletion --bash --name clan \
       <(${argcomplete}/bin/register-python-argcomplete --shell bash clan)
     installShellCompletion --fish --name clan.fish \
