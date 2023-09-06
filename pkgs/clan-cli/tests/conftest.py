@@ -48,6 +48,4 @@ def machine_flake(monkeymodule: pytest.MonkeyPatch) -> Generator[Path, None, Non
         )
         # check that an empty config is returned if no json file exists
         monkeymodule.chdir(flake)
-        # monkeypatch get_clan_flake_toplevel to return the flake
-        monkeymodule.setattr("clan_cli.dirs.get_clan_flake_toplevel", lambda: flake)
         yield flake
