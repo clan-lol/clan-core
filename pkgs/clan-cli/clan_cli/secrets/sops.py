@@ -7,11 +7,10 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import IO, Iterator, Union
 
-from .. import tty
 from ..dirs import user_config_dir
 from ..errors import ClanError
 from ..nix import nix_shell
-from .folders import sops_users_folder
+from .folders import sops_machines_folder, sops_users_folder
 
 
 class SopsKey:
@@ -31,15 +30,10 @@ def get_public_key(privkey: str) -> str:
     return res.stdout.strip()
 
 
-def get_unique_user(users_folder: Path, user: str) -> str:
-    """Return a unique path in the users_folder for the given user."""
-    i = 0
-    path = users_folder / user
-    while path.exists():
-        i += 1
-        user = user + str(i)
-        path = users_folder / user
-    return user
+def generate_private_key(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    cmd = nix_shell(["age"], ["age-keygen", "-o", str(path)])
+    subprocess.run(cmd, check=True)
 
 
 def get_user_name(user: str) -> str:
@@ -55,57 +49,42 @@ def get_user_name(user: str) -> str:
         print(f"{sops_users_folder() / user} already exists")
 
 
-def ensure_user(pub_key: str) -> SopsKey:
+def ensure_user_or_machine(pub_key: str) -> SopsKey:
     key = SopsKey(pub_key, username="")
-    users_folder = sops_users_folder()
+    folders = [sops_users_folder(), sops_machines_folder()]
+    for folder in folders:
+        if folder.exists():
+            for user in folder.iterdir():
+                if not user.is_dir():
+                    continue
+                if read_key(user) == pub_key:
+                    key.username = user.name
+                    return key
 
-    # Check if the public key already exists for any user
-    if users_folder.exists():
-        for user in users_folder.iterdir():
-            if not user.is_dir():
-                continue
-            if read_key(user) == pub_key:
-                key.username = user.name
-                return key
+    raise ClanError(
+        f"Your sops key is not yet added to the repository. Please add it with 'clan secrets users add youruser {pub_key}' (replace youruser with your user name)"
+    )
 
-    # Find a unique user name if the public key is not found
-    try:
-        loginname = os.getlogin()
-    except OSError:
-        loginname = os.environ.get("USER", "nobody")
-    username = get_unique_user(users_folder, loginname)
 
-    if tty.is_interactive():
-        # Ask the user for their name until a unique one is provided
-        username = get_user_name(username)
-
-    # Add the public key for the user
-    write_key(users_folder / username, pub_key, False)
-
-    key.username = username
-
-    return key
+def default_sops_key_path() -> Path:
+    raw_path = os.environ.get("SOPS_AGE_KEY_FILE")
+    if raw_path:
+        return Path(raw_path)
+    else:
+        return user_config_dir() / "sops" / "age" / "keys.txt"
 
 
 def ensure_sops_key() -> SopsKey:
     key = os.environ.get("SOPS_AGE_KEY")
     if key:
-        return ensure_user(get_public_key(key))
-    raw_path = os.environ.get("SOPS_AGE_KEY_FILE")
-    if raw_path:
-        path = Path(raw_path)
-    else:
-        path = user_config_dir() / "sops" / "age" / "keys.txt"
+        return ensure_user_or_machine(get_public_key(key))
+    path = default_sops_key_path()
     if path.exists():
-        return ensure_user(get_public_key(path.read_text()))
-    path.parent.mkdir(parents=True, exist_ok=True)
-    cmd = nix_shell(["age"], ["age-keygen", "-o", str(path)])
-    subprocess.run(cmd, check=True)
-
-    tty.info(
-        f"Generated age key at '{path}' for your user. Please back it up on a secure location or you will lose access to your secrets."
-    )
-    return ensure_user(get_public_key(path.read_text()))
+        return ensure_user_or_machine(get_public_key(path.read_text()))
+    else:
+        raise ClanError(
+            "No sops key found. Please generate one with 'clan secrets key generate'."
+        )
 
 
 @contextmanager

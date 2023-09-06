@@ -126,6 +126,12 @@ def test_secrets(
 
     monkeypatch.setenv("SOPS_NIX_SECRET", "foo")
     monkeypatch.setenv("SOPS_AGE_KEY_FILE", str(clan_flake / ".." / "age.key"))
+    cli.run(["secrets", "key", "generate"])
+    capsys.readouterr()  # empty the buffer
+    cli.run(["secrets", "key", "show"])
+    key = capsys.readouterr().out
+    assert key.startswith("age1")
+    cli.run(["secrets", "users", "add", "testuser", key])
 
     with pytest.raises(ClanError):  # does not exist yet
         cli.run(["secrets", "get", "nonexisting"])
@@ -151,6 +157,7 @@ def test_secrets(
     with use_key(age_keys[0].privkey, monkeypatch):
         capsys.readouterr()
         cli.run(["secrets", "get", "key"])
+
         assert capsys.readouterr().out == "foo"
 
     cli.run(["secrets", "machines", "remove-secret", "machine1", "key"])
