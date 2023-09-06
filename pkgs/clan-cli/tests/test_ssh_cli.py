@@ -7,7 +7,6 @@ import pytest_subprocess.fake_process
 from pytest_subprocess import utils
 
 import clan_cli
-from clan_cli.dirs import flake_registry
 from clan_cli.ssh import cli
 
 
@@ -34,10 +33,7 @@ def test_ssh_no_pass(
         "shell",
         "--extra-experimental-features",
         "nix-command flakes",
-        "--flake-registry",
-        str(flake_registry()),
-        "nixpkgs#tor",
-        "nixpkgs#openssh",
+        fp.any(),
         "-c",
         "torify",
         "ssh",
@@ -68,11 +64,7 @@ def test_ssh_with_pass(
         "shell",
         "--extra-experimental-features",
         "nix-command flakes",
-        "--flake-registry",
-        str(flake_registry()),
-        "nixpkgs#tor",
-        "nixpkgs#openssh",
-        "nixpkgs#sshpass",
+        fp.any(),
         "-c",
         "torify",
         "sshpass",

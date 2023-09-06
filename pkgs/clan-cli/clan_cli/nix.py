@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from .dirs import flake_registry, unfree_nixpkgs
+from .dirs import nixpkgs, unfree_nixpkgs
 
 
 def nix_eval(flags: list[str]) -> list[str]:
@@ -13,8 +13,9 @@ def nix_eval(flags: list[str]) -> list[str]:
                 "--show-trace",
                 "--extra-experimental-features",
                 "nix-command flakes",
-                "--flake-registry",
-                str(flake_registry()),
+                "--override-input",
+                "nixpkgs",
+                str(nixpkgs()),
                 # --store is required to prevent this error:
                 # error: cannot unlink '/nix/store/6xg259477c90a229xwmb53pdfkn6ig3g-default-builder.sh': Operation not permitted
                 "--store",
@@ -41,8 +42,8 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
             "shell",
             "--extra-experimental-features",
             "nix-command flakes",
-            "--flake-registry",
-            str(flake_registry()),
+            "--inputs-from",
+            ".#",
         ]
         + wrapped_packages
         + ["-c"]
