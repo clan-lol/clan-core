@@ -153,6 +153,9 @@ def test_secrets(
 
     cli.run(["secrets", "machines", "add", "machine1", age_keys[0].pubkey])
     cli.run(["secrets", "machines", "add-secret", "machine1", "key"])
+    capsys.readouterr()
+    cli.run(["secrets", "machines", "list"])
+    assert capsys.readouterr().out == "machine1\n"
 
     with use_key(age_keys[0].privkey, monkeypatch):
         capsys.readouterr()

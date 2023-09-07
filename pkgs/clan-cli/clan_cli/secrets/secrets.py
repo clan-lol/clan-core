@@ -172,9 +172,15 @@ def disallow_member(group_folder: Path, name: str) -> None:
 
 
 def list_secrets() -> list[str]:
-    return list_objects(
-        sops_secrets_folder(), lambda n: VALID_SECRET_NAME.match(n) is not None
-    )
+    path = sops_secrets_folder()
+
+    def validate(name: str) -> bool:
+        return (
+            VALID_SECRET_NAME.match(name) is not None
+            and (path / name / "secret").exists()
+        )
+
+    return list_objects(path, validate)
 
 
 def list_command(args: argparse.Namespace) -> None:
