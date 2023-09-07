@@ -242,21 +242,21 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
         type=str,
         action="append",
         default=[],
-        help="the group to import the secrets to",
+        help="the group to import the secrets to (can be repeated)",
     )
     parser_set.add_argument(
         "--machine",
         type=str,
         action="append",
         default=[],
-        help="the machine to import the secrets to",
+        help="the machine to import the secrets to (can be repeated)",
     )
     parser_set.add_argument(
         "--user",
         type=str,
         action="append",
         default=[],
-        help="the user to import the secrets to",
+        help="the user to import the secrets to (can be repeated)",
     )
     parser_set.set_defaults(func=set_command)
 
