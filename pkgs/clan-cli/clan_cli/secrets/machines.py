@@ -20,7 +20,12 @@ def get_machine(name: str) -> str:
 
 
 def list_machines() -> list[str]:
-    return list_objects(sops_machines_folder(), lambda x: validate_hostname(x))
+    path = sops_machines_folder()
+
+    def validate(name: str) -> bool:
+        return validate_hostname(name) and (path / name / "key.json").exists()
+
+    return list_objects(path, validate)
 
 
 def add_secret(machine: str, secret: str) -> None:

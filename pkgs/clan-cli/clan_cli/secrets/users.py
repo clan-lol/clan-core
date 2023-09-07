@@ -4,7 +4,7 @@ from . import secrets
 from .folders import list_objects, remove_object, sops_users_folder
 from .sops import read_key, write_key
 from .types import (
-    VALID_SECRET_NAME,
+    VALID_USER_NAME,
     public_or_private_age_key_type,
     secret_name_type,
     user_name_type,
@@ -24,9 +24,15 @@ def get_user(name: str) -> str:
 
 
 def list_users() -> list[str]:
-    return list_objects(
-        sops_users_folder(), lambda n: VALID_SECRET_NAME.match(n) is not None
-    )
+    path = sops_users_folder()
+
+    def validate(name: str) -> bool:
+        return (
+            VALID_USER_NAME.match(name) is not None
+            and (path / name / "key.json").exists()
+        )
+
+    return list_objects(path, validate)
 
 
 def add_secret(user: str, secret: str) -> None:
