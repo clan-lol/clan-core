@@ -55,8 +55,9 @@ def ensure_user_or_machine(pub_key: str) -> SopsKey:
     for folder in folders:
         if folder.exists():
             for user in folder.iterdir():
-                if not user.is_dir():
+                if not (user / "key.json").exists():
                     continue
+
                 if read_key(user) == pub_key:
                     key.username = user.name
                     return key
