@@ -4,8 +4,11 @@ import sys
 
 from clan_cli.errors import ClanError
 
+from ..dirs import get_clan_flake_toplevel
 
-def get_secret_script(machine: str) -> None:
+
+def generate_secrets(machine: str) -> None:
+    clan_flake = get_clan_flake_toplevel()
     proc = subprocess.run(
         [
             "nix",
@@ -13,12 +16,13 @@ def get_secret_script(machine: str) -> None:
             "--impure",
             "--print-out-paths",
             "--expr",
-            "let f = builtins.getFlake (toString ./.); in "
-            f"(f.nixosConfigurations.{machine}.extendModules "
-            "{ modules = [{ clanCore.clanDir = toString ./.; }]; })"
-            ".config.system.clan.generateSecrets",
+            f'let f = builtins.getFlake "{clan_flake}"; in '
+            "(f.nixosConfigurations."
+            f"{machine}"
+            ".extendModules { modules = [{ clanCore.clanDir = "
+            f"{clan_flake}"
+            "; }]; }).config.system.clan.generateSecrets",
         ],
-        check=True,
         capture_output=True,
         text=True,
     )
@@ -30,7 +34,6 @@ def get_secret_script(machine: str) -> None:
     print(secret_generator_script)
     secret_generator = subprocess.run(
         [secret_generator_script],
-        check=True,
     )
 
     if secret_generator.returncode != 0:
@@ -40,7 +43,7 @@ def get_secret_script(machine: str) -> None:
 
 
 def generate_command(args: argparse.Namespace) -> None:
-    get_secret_script(args.machine)
+    generate_secrets(args.machine)
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:
