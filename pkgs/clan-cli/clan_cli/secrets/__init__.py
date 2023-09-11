@@ -1,6 +1,7 @@
 # !/usr/bin/env python3
 import argparse
 
+from .deploy import register_deploy_parser
 from .generate import register_generate_parser
 from .groups import register_groups_parser
 from .import_sops import register_import_sops_parser
@@ -35,6 +36,9 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         "generate", help="generate secrets for machines if they don't exist yet"
     )
     register_generate_parser(parser_generate)
+
+    parser_deploy = subparser.add_parser("deploy", help="deploy secrets for machines")
+    register_deploy_parser(parser_deploy)
 
     parser_key = subparser.add_parser("key", help="create and show age keys")
     register_key_parser(parser_key)
