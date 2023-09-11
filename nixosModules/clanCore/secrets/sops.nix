@@ -64,6 +64,9 @@ in
         fi)
       '') "" config.clanCore.secrets}
     '';
+    system.clan.deploySecrets = pkgs.writeScript "deploy-secrets" ''
+      echo deployment is not needed for sops secret store, since the secrets are part of the flake
+    '';
     sops.secrets = builtins.mapAttrs
       (name: _: {
         sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";
