@@ -10,15 +10,13 @@ import CircleIcon from "@mui/icons-material/Circle";
 import Stack from "@mui/material/Stack/Stack";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-
 import Grid2 from "@mui/material/Unstable_Grid2"; // Grid version 2
-import { Collapse, useMediaQuery, useTheme } from "@mui/material";
+import { Collapse } from "@mui/material";
+import { Machine, Status } from "@/api/model";
 
-import { NodeStatus, NodeStatusKeys, TableData } from "@/data/nodeData";
-
-function renderStatus(status: NodeStatusKeys) {
+function renderStatus(status: Status) {
   switch (status) {
-    case NodeStatus.Online:
+    case Status.online:
       return (
         <Stack direction="row" alignItems="center" gap={1}>
           <CircleIcon color="success" style={{ fontSize: 15 }} />
@@ -28,7 +26,7 @@ function renderStatus(status: NodeStatusKeys) {
         </Stack>
       );
 
-    case NodeStatus.Offline:
+    case Status.offline:
       return (
         <Stack direction="row" alignItems="center" gap={1}>
           <CircleIcon color="error" style={{ fontSize: 15 }} />
@@ -37,7 +35,7 @@ function renderStatus(status: NodeStatusKeys) {
           </Typography>
         </Stack>
       );
-    case NodeStatus.Pending:
+    case Status.unknown:
       return (
         <Stack direction="row" alignItems="center" gap={1}>
           <CircleIcon color="warning" style={{ fontSize: 15 }} />
@@ -49,16 +47,12 @@ function renderStatus(status: NodeStatusKeys) {
   }
 }
 export function NodeRow(props: {
-  row: TableData;
+  row: Machine;
   selected: string | undefined;
   setSelected: (a: string | undefined) => void;
 }) {
-  const theme = useTheme();
-  const is_phone = useMediaQuery(theme.breakpoints.down("md"));
-
   const { row, selected, setSelected } = props;
   const [open, setOpen] = React.useState(false);
-  //const labelId = `enhanced-table-checkbox-${index}`;
 
   // Speed optimization. We compare string pointers here instead of the string content.
   const isSelected = selected == row.name;
@@ -108,15 +102,6 @@ export function NodeRow(props: {
           onClick={(event) => handleClick(event, row.name)}
         >
           {renderStatus(row.status)}
-        </TableCell>
-        <TableCell
-          align="right"
-          onClick={(event) => handleClick(event, row.name)}
-        >
-          <Typography component="div" align="left" variant="body1">
-            {String(row.last_seen).padStart(3, "0")}{" "}
-            {is_phone ? "days" : "days ago"}
-          </Typography>
         </TableCell>
       </TableRow>
 

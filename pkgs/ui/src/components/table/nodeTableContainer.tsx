@@ -12,13 +12,11 @@ import TableSortLabel from "@mui/material/TableSortLabel";
 import { visuallyHidden } from "@mui/utils";
 import { NodeRow } from "./nodeRow";
 
-import { TableData } from "@/data/nodeData";
-
-import { useMediaQuery, useTheme } from "@mui/material";
+import { Machine } from "@/api/model/machine";
 
 interface HeadCell {
   disablePadding: boolean;
-  id: keyof TableData;
+  id: keyof Machine;
   label: string;
   alignRight: boolean;
 }
@@ -28,19 +26,13 @@ const headCells: readonly HeadCell[] = [
     id: "name",
     alignRight: false,
     disablePadding: false,
-    label: "DISPLAY NAME & ID",
+    label: "DOMAIN NAME",
   },
   {
     id: "status",
     alignRight: false,
     disablePadding: false,
     label: "STATUS",
-  },
-  {
-    id: "last_seen",
-    alignRight: false,
-    disablePadding: false,
-    label: "LAST SEEN",
   },
 ];
 
@@ -90,7 +82,7 @@ function stableSort<T>(
 interface EnhancedTableProps {
   onRequestSort: (
     event: React.MouseEvent<unknown>,
-    property: keyof TableData,
+    property: keyof Machine,
   ) => void;
   order: NodeOrder;
   orderBy: string;
@@ -100,7 +92,7 @@ interface EnhancedTableProps {
 function EnhancedTableHead(props: EnhancedTableProps) {
   const { order, orderBy, onRequestSort } = props;
   const createSortHandler =
-    (property: keyof TableData) => (event: React.MouseEvent<unknown>) => {
+    (property: keyof Machine) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
     };
 
@@ -135,7 +127,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 }
 
 interface NodeTableContainerProps {
-  tableData: readonly TableData[];
+  tableData: readonly Machine[];
   page: number;
   rowsPerPage: number;
   dense: boolean;
@@ -146,10 +138,7 @@ interface NodeTableContainerProps {
 export function NodeTableContainer(props: NodeTableContainerProps) {
   const { tableData, page, rowsPerPage, dense, selected, setSelected } = props;
   const [order, setOrder] = React.useState<NodeOrder>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof TableData>("status");
-
-  const theme = useTheme();
-  const is_phone = useMediaQuery(theme.breakpoints.down("sm"));
+  const [orderBy, setOrderBy] = React.useState<keyof Machine>("status");
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -157,7 +146,7 @@ export function NodeTableContainer(props: NodeTableContainerProps) {
 
   const handleRequestSort = (
     event: React.MouseEvent<unknown>,
-    property: keyof TableData,
+    property: keyof Machine,
   ) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -185,7 +174,7 @@ export function NodeTableContainer(props: NodeTableContainerProps) {
           {visibleRows.map((row, index) => {
             return (
               <NodeRow
-                key={row.name}
+                key={index}
                 row={row}
                 selected={selected}
                 setSelected={setSelected}
