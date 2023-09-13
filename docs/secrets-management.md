@@ -27,6 +27,10 @@ user with your user name)
 
 Next, add your public key to the Clan flake repository:
 
+```console
+$ clan secrets users add <your_username> <your_public_key>
+```
+
 Doing so creates this structure in your Clan flake:
 
 ```
@@ -96,13 +100,13 @@ $ ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age
 By default, secrets are encrypted for your key. To specify which users and machines can access a secret:
 
 ```console
-clan secrets set --machine <machine1> --machine <machine2> --user <user1> --user <user2> <secret_name>
+$ clan secrets set --machine <machine1> --machine <machine2> --user <user1> --user <user2> <secret_name>
 ```
 
 You can add machines/users to existing secrets without modifying the secret:
 
 ```console
-clan secrets machines add-secret <machine_name> <secret_name>
+$ clan secrets machines add-secret <machine_name> <secret_name>
 ```
 
 ## 4. Utilizing Groups
@@ -114,17 +118,17 @@ For convenience, Clan CLI allows group creation to simplify access management. H
    Assign users to a new group, e.g., `admins`:
 
    ```console
-   clan secrets groups add admins <username>
+   $ clan secrets groups add admins <username>
    ```
 
 2. **Listing Groups**:
 
    ```console
-   clan secrets groups list
+   $ clan secrets groups list
    ```
 
 3. **Assigning Secrets to Groups**:
 
    ```console
-   clan secrets groups add-secret <group_name> <secret_name>
+   $ clan secrets groups add-secret <group_name> <secret_name>
    ```
