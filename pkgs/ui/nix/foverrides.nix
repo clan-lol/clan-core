@@ -35,6 +35,7 @@ let
     "x86_64-linux" = "esbuild-linux-64";
     "x86_64-darwin" = "esbuild-darwin-64";
     "aarch64-darwin" = "esbuild-darwin-arm64";
+    "aarch64-linux" = "esbuild-linux-arm64";
   }.${config.floco.settings.system};
 
 in
