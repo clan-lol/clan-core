@@ -14,7 +14,8 @@
           config.treefmt.build.wrapper
         ];
         shellHook = ''
-          ln -sf ../../scripts/pre-commit "$(git rev-parse --show-toplevel)/.git/hooks/pre-commit"
+          # no longer used
+          rm "$(git rev-parse --show-toplevel)/.git/hooks/pre-commit"
         '';
       };
     };
