@@ -1,7 +1,38 @@
+import json
 import os
 import tempfile
 
-from .dirs import nixpkgs_flake, nixpkgs_source, unfree_nixpkgs
+from .dirs import get_clan_flake_toplevel, nixpkgs_flake, nixpkgs_source, unfree_nixpkgs
+
+
+def nix_build_machine(machine: str, attr: list[str]) -> list[str]:
+    clan_flake = get_clan_flake_toplevel()
+    payload = json.dumps(
+        dict(
+            clan_flake=clan_flake,
+            machine=machine,
+            attr=attr,
+        )
+    )
+    return [
+        "nix",
+        "build",
+        "--impure",
+        "--print-out-paths",
+        "--expr",
+        f'let args = builtins.fromJSON "{payload}"; in '
+        """
+          let
+            flake = builtins.getFlake args.clan_flake;
+            config = flake.nixosConfigurations.${args.machine}.extendModules {
+              modules = [{
+                clanCore.clanDir = args.clan_flake;
+              }];
+            };
+          in
+             flake.inputs.nixpkgs.lib.getAttrFromPath args.attr config
+        """,
+    ]
 
 
 def nix_eval(flags: list[str]) -> list[str]:
