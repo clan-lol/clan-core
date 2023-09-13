@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import subprocess
 
 from ..ssh import Host, HostGroup, HostKeyCheck
@@ -10,32 +11,20 @@ def deploy_nixos(hosts: HostGroup) -> None:
     Deploy to all hosts in parallel
     """
 
-    flake_store_paths = {}
-    for h in hosts.hosts:
-        flake_uri = str(h.meta.get("flake_uri", ".#"))
-        if flake_uri not in flake_store_paths:
-            res = subprocess.run(
-                [
-                    "nix",
-                    "--extra-experimental-features",
-                    "nix-command flakes",
-                    "flake",
-                    "metadata",
-                    "--json",
-                    flake_uri,
-                ],
-                check=True,
-                text=True,
-                stdout=subprocess.PIPE,
-            )
-            data = json.loads(res.stdout)
-            flake_store_paths[flake_uri] = data["path"]
-
     def deploy(h: Host) -> None:
         target = f"{h.user or 'root'}@{h.host}"
-        flake_store_path = flake_store_paths[str(h.meta.get("flake_uri", ".#"))]
-        flake_path = str(h.meta.get("flake_path", "/etc/nixos"))
         ssh_arg = f"-p {h.port}" if h.port else ""
+        env = os.environ.copy()
+        env["NIX_SSHOPTS"] = ssh_arg
+        res = subprocess.run(
+            ["nix", "flake", "archive", "--to", f"ssh://{target}", "--json"],
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            env=env
+        )
+        data = json.loads(res.stdout)
+        path = data["path"]
 
         if h.host_key_check != HostKeyCheck.STRICT:
             ssh_arg += " -o StrictHostKeyChecking=no"
@@ -43,10 +32,6 @@ def deploy_nixos(hosts: HostGroup) -> None:
             ssh_arg += " -o UserKnownHostsFile=/dev/null"
 
         ssh_arg += " -i " + h.key if h.key else ""
-
-        h.run_local(
-            f"rsync --checksum -vaF --delete -e 'ssh {ssh_arg}' {flake_store_path}/ {target}:{flake_path}"
-        )
 
         flake_attr = h.meta.get("flake_attr", "")
         if flake_attr:
@@ -71,7 +56,7 @@ def deploy_nixos(hosts: HostGroup) -> None:
                 "--build-host",
                 "",
                 "--flake",
-                f"{flake_path}{flake_attr}",
+                f"{path}{flake_attr}",
             ]
         )
         if target_host:
