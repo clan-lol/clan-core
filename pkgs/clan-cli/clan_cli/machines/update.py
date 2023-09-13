@@ -4,6 +4,8 @@ import os
 import subprocess
 
 from ..ssh import Host, HostGroup, HostKeyCheck
+from ..secrets.deploy import deploy_secrets
+from ..secrets.generate import generate_secrets
 
 
 def deploy_nixos(hosts: HostGroup) -> None:
@@ -31,6 +33,9 @@ def deploy_nixos(hosts: HostGroup) -> None:
             ssh_arg += " -o UserKnownHostsFile=/dev/null"
 
         ssh_arg += " -i " + h.key if h.key else ""
+
+        generate_secrets(h.host)
+        deploy_secrets(h.host)
 
         flake_attr = h.meta.get("flake_attr", "")
         if flake_attr:
