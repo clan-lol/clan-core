@@ -145,6 +145,10 @@ def test_secrets(
     assert len(users) == 1, f"users: {users}"
     owner = users[0]
 
+    monkeypatch.setenv("EDITOR", "cat")
+    cli.run(["secrets", "set", "--edit", "initialkey"])
+    monkeypatch.delenv("EDITOR")
+
     cli.run(["secrets", "rename", "initialkey", "key"])
 
     capsys.readouterr()  # empty the buffer

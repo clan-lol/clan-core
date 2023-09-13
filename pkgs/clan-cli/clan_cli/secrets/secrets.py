@@ -4,7 +4,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import IO, Union
+from typing import IO
 
 from .. import tty
 from ..errors import ClanError
@@ -54,7 +54,7 @@ def collect_keys_for_path(path: Path) -> set[str]:
 
 def encrypt_secret(
     secret: Path,
-    value: Union[IO[str], str],
+    value: IO[str] | str | None,
     add_users: list[str] = [],
     add_machines: list[str] = [],
     add_groups: list[str] = [],
@@ -203,8 +203,10 @@ def get_command(args: argparse.Namespace) -> None:
 
 def set_command(args: argparse.Namespace) -> None:
     env_value = os.environ.get("SOPS_NIX_SECRET")
-    secret_value: Union[str, IO[str]] = sys.stdin
-    if env_value:
+    secret_value: str | IO[str] | None = sys.stdin
+    if args.edit:
+        secret_value = None
+    elif env_value:
         secret_value = env_value
     elif tty.is_interactive():
         secret_value = getpass.getpass(prompt="Paste your secret: ")
@@ -257,6 +259,13 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
         action="append",
         default=[],
         help="the user to import the secrets to (can be repeated)",
+    )
+    parser_set.add_argument(
+        "-e",
+        "--edit",
+        action="store_true",
+        default=False,
+        help="edit the secret with $EDITOR instead of pasting it",
     )
     parser_set.set_defaults(func=set_command)
 
