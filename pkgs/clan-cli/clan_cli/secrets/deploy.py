@@ -4,25 +4,20 @@ import sys
 
 from clan_cli.errors import ClanError
 
-from ..dirs import get_clan_flake_toplevel
+from ..nix import nix_build_machine
 
 
 def deploy_secrets(machine: str) -> None:
-    clan_flake = get_clan_flake_toplevel()
     proc = subprocess.run(
-        [
-            "nix",
-            "build",
-            "--impure",
-            "--print-out-paths",
-            "--expr",
-            f'let f = builtins.getFlake "{clan_flake}"; in '
-            "(f.nixosConfigurations."
-            f"{machine}"
-            ".extendModules { modules = [{ clanCore.clanDir = "
-            f"{clan_flake}"
-            "; }]; }).config.system.clan.deploySecrets",
-        ],
+        nix_build_machine(
+            machine=machine,
+            attr=[
+                "config",
+                "system",
+                "clan",
+                "deploySecrets",
+            ],
+        ),
         capture_output=True,
         text=True,
     )
@@ -32,7 +27,10 @@ def deploy_secrets(machine: str) -> None:
 
     secret_deploy_script = proc.stdout.strip()
     secret_deploy = subprocess.run(
-        [secret_deploy_script],
+        [
+            secret_deploy_script,
+            f"root@{machine}",
+        ],
     )
 
     if secret_deploy.returncode != 0:
