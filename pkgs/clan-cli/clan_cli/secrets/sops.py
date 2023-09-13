@@ -5,7 +5,7 @@ import subprocess
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import IO, Iterator, Union
+from typing import IO, Iterator
 
 from ..dirs import user_config_dir
 from ..errors import ClanError
@@ -115,33 +115,46 @@ def update_keys(secret_path: Path, keys: list[str]) -> None:
 
 
 def encrypt_file(
-    secret_path: Path, content: Union[IO[str], str], keys: list[str]
+    secret_path: Path, content: IO[str] | str | None, keys: list[str]
 ) -> None:
     folder = secret_path.parent
     folder.mkdir(parents=True, exist_ok=True)
 
-    # hopefully /tmp is written to an in-memory file to avoid leaking secrets
-    with sops_manifest(keys) as manifest, NamedTemporaryFile(delete=False) as f:
-        try:
-            with open(f.name, "w") as fd:
-                if isinstance(content, str):
-                    fd.write(content)
-                else:
-                    shutil.copyfileobj(content, fd)
-            # we pass an empty manifest to pick up existing configuration of the user
+    with sops_manifest(keys) as manifest:
+        if not content:
             args = ["sops", "--config", str(manifest)]
-            args.extend(["-i", "--encrypt", str(f.name)])
+            args.extend([str(secret_path)])
             cmd = nix_shell(["sops"], args)
-            subprocess.run(cmd, check=True)
-            # atomic copy of the encrypted file
-            with NamedTemporaryFile(dir=folder, delete=False) as f2:
-                shutil.copyfile(f.name, f2.name)
-                os.rename(f2.name, secret_path)
-        finally:
+            p = subprocess.run(cmd)
+            # returns 200 if the file is changed
+            if p.returncode != 0 and p.returncode != 200:
+                raise ClanError(
+                    f"Failed to encrypt {secret_path}: sops exited with {p.returncode}"
+                )
+            return
+
+        # hopefully /tmp is written to an in-memory file to avoid leaking secrets
+        with NamedTemporaryFile(delete=False) as f:
             try:
-                os.remove(f.name)
-            except OSError:
-                pass
+                with open(f.name, "w") as fd:
+                    if isinstance(content, str):
+                        fd.write(content)
+                    else:
+                        shutil.copyfileobj(content, fd)
+                # we pass an empty manifest to pick up existing configuration of the user
+                args = ["sops", "--config", str(manifest)]
+                args.extend(["-i", "--encrypt", str(f.name)])
+                cmd = nix_shell(["sops"], args)
+                subprocess.run(cmd, check=True)
+                # atomic copy of the encrypted file
+                with NamedTemporaryFile(dir=folder, delete=False) as f2:
+                    shutil.copyfile(f.name, f2.name)
+                    os.rename(f2.name, secret_path)
+            finally:
+                try:
+                    os.remove(f.name)
+                except OSError:
+                    pass
 
 
 def decrypt_file(secret_path: Path) -> str:
