@@ -1,26 +1,31 @@
 import json
 import os
 import tempfile
+from pathlib import Path
 
 from .dirs import get_clan_flake_toplevel, nixpkgs_flake, nixpkgs_source, unfree_nixpkgs
 
 
-def nix_build_machine(machine: str, attr: list[str]) -> list[str]:
-    clan_flake = get_clan_flake_toplevel()
+def nix_build_machine(
+    machine: str, attr: list[str], flake_url: Path | None = None
+) -> list[str]:
+    if flake_url is None:
+        flake_url = get_clan_flake_toplevel()
     payload = json.dumps(
         dict(
-            clan_flake=clan_flake,
+            clan_flake=flake_url,
             machine=machine,
             attr=attr,
         )
     )
+    escaped_payload = json.dumps(payload)
     return [
         "nix",
         "build",
         "--impure",
         "--print-out-paths",
         "--expr",
-        f'let args = builtins.fromJSON "{payload}"; in '
+        f"let args = builtins.fromJSON {escaped_payload}; in "
         """
           let
             flake = builtins.getFlake args.clan_flake;
