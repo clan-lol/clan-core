@@ -9,6 +9,8 @@ currentBranch="$(git rev-parse --abbrev-ref HEAD)"
 user="$(tea login list -o simple | cut -d" " -f4)"
 tempRemoteBranch="$user-$currentBranch"
 
+nix fmt -- --fail-on-change
+
 git log --reverse --pretty="format:%s%n%n%b%n%n" "$remoteName/$targetBranch..HEAD" > "$TMPDIR"/commit-msg
 
 $EDITOR "$TMPDIR"/commit-msg
