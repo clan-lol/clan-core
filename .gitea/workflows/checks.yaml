@@ -8,4 +8,4 @@ jobs:
     runs-on: nix
     steps:
       - uses: actions/checkout@v3
-      - run: bash ./scripts/ci
+      - run: nix run --refresh github:Mic92/nix-ci-build
