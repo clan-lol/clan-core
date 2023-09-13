@@ -27,6 +27,10 @@ user with your user name)
 
 Next, add your public key to the Clan flake repository:
 
+```console
+$ clan secrets users add <your_username> <your_public_key>
+```
+
 Doing so creates this structure in your Clan flake:
 
 ```
