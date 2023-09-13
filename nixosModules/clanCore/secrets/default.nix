@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 {
   options.clanCore.secretStore = lib.mkOption {
     type = lib.types.enum [ "sops" "password-store" "custom" ];
@@ -8,6 +8,7 @@
     '';
   };
   options.clanCore.secrets = lib.mkOption {
+    default = { };
     type = lib.types.attrsOf
       (lib.types.submodule (secret: {
         options = {
@@ -67,6 +68,10 @@
         };
       }));
   };
+  config.system.build.generateDeploySecrets = pkgs.writeScript "generate_deploy_secrets" ''
+    ${config.system.build.generateSecrets}
+    ${config.system.build.deploySecrets}
+  '';
   imports = [
     ./sops.nix
     ./password-store.nix
