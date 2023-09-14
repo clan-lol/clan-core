@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - Qubasa-main
 jobs:
   test:
     runs-on: nix
@@ -34,7 +33,7 @@ jobs:
               git config --global user.name "ui_assets[bot]"
               git commit -am "update ui-assets.nix"
               echo "Current branch: $GITHUB_REF_NAME"
-              git push origin HEAD:$GITHUB_REF_NAME
+              git push origin HEAD:$GITHUB_REF_NAME --force
             fi
           else
             echo "No UI files changed. Skipping asset build and push"
