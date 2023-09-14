@@ -4,7 +4,9 @@ import pytest
 from cli import Cli
 
 
-def test_machine_subcommands(clan_flake: Path, capsys: pytest.CaptureFixture) -> None:
+def test_machine_subcommands(
+    machine_flake: Path, capsys: pytest.CaptureFixture
+) -> None:
     cli = Cli()
     cli.run(["machines", "create", "machine1"])
 
