@@ -1,8 +1,8 @@
 name: assets
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 jobs:
   test:
     runs-on: nix
