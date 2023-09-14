@@ -4,19 +4,18 @@ import sys
 
 from clan_cli.errors import ClanError
 
-from ..nix import nix_build_machine
+from ..dirs import get_clan_flake_toplevel
+from ..nix import nix_build
 
 
 def upload_secrets(machine: str) -> None:
+    clan_dir = get_clan_flake_toplevel().as_posix()
+
     proc = subprocess.run(
-        nix_build_machine(
-            machine=machine,
-            attr=[
-                "config",
-                "system",
-                "clan",
-                "uploadSecrets",
-            ],
+        nix_build(
+            [
+                f'{clan_dir}#nixosConfigurations."{machine}".config.system.clan.uploadSecrets'
+            ]
         ),
         capture_output=True,
         text=True,

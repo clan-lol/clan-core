@@ -25,7 +25,8 @@ in
     system.clan.generateSecrets = pkgs.writeScript "generate-secrets" ''
       #!/bin/sh
       set -efu
-      set -x # remove for prod
+
+      test -d "$CLAN_DIR"
 
       PATH=$PATH:${lib.makeBinPath [
         config.clanCore.clanPkgs.clan-cli
@@ -55,7 +56,7 @@ in
 
           ${lib.concatMapStrings (fact: ''
             mkdir -p "$(dirname ${fact.path})"
-            cp "$facts"/${fact.name} ${fact.path}
+            cp "$facts"/${fact.name} "$CLAN_DIR"/${fact.path}
           '') (lib.attrValues v.facts)}
 
           ${lib.concatMapStrings (secret: ''

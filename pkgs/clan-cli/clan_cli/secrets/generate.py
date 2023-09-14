@@ -1,22 +1,24 @@
 import argparse
+import os
 import subprocess
 import sys
 
 from clan_cli.errors import ClanError
 
-from ..nix import nix_build_machine
+from ..dirs import get_clan_flake_toplevel
+from ..nix import nix_build
 
 
 def generate_secrets(machine: str) -> None:
+    clan_dir = get_clan_flake_toplevel().as_posix().strip()
+    env = os.environ.copy()
+    env["CLAN_DIR"] = clan_dir
+
     proc = subprocess.run(
-        nix_build_machine(
-            machine=machine,
-            attr=[
-                "config",
-                "system",
-                "clan",
-                "generateSecrets",
-            ],
+        nix_build(
+            [
+                f'path:{clan_dir}#nixosConfigurations."{machine}".config.system.clan.generateSecrets'
+            ]
         ),
         capture_output=True,
         text=True,
@@ -29,6 +31,7 @@ def generate_secrets(machine: str) -> None:
     print(secret_generator_script)
     secret_generator = subprocess.run(
         [secret_generator_script],
+        env=env,
     )
 
     if secret_generator.returncode != 0:

@@ -1,6 +1,6 @@
 { config, lib, pkgs, ... }:
 let
-  passwordstoreDir = "$HOME/.password-store";
+  passwordstoreDir = "\${PASSWORD_STORE_DIR:-$HOME/.password-store}";
 in
 {
   options.clan.password-store.targetDirectory = lib.mkOption {
@@ -14,8 +14,8 @@ in
     system.clan.generateSecrets = pkgs.writeScript "generate-secrets" ''
       #!/bin/sh
       set -efu
-      set -x # remove for prod
 
+      test -d "$CLAN_DIR"
       PATH=${lib.makeBinPath [
         pkgs.pass
       ]}:$PATH
@@ -36,7 +36,7 @@ in
 
           ${lib.concatMapStrings (fact: ''
             mkdir -p "$(dirname ${fact.path})"
-            cp "$facts"/${fact.name} ${fact.path}
+            cp "$facts"/${fact.name} "$CLAN_DIR"/${fact.path}
           '') (lib.attrValues v.facts)}
 
           ${lib.concatMapStrings (secret: ''
@@ -48,7 +48,6 @@ in
     system.clan.uploadSecrets = pkgs.writeScript "upload-secrets" ''
       #!/bin/sh
       set -efu
-      set -x # remove for prod
 
       target=$1
 
