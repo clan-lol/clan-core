@@ -14,12 +14,12 @@ if TYPE_CHECKING:
 
 def _test_identities(
     what: str,
-    machine_flake: Path,
+    clan_flake: Path,
     capsys: pytest.CaptureFixture,
     age_keys: list["KeyPair"],
 ) -> None:
     cli = Cli()
-    sops_folder = machine_flake / "sops"
+    sops_folder = clan_flake / "sops"
 
     cli.run(["secrets", what, "add", "foo", age_keys[0].pubkey])
     assert (sops_folder / what / "foo" / "key.json").exists()
@@ -60,19 +60,19 @@ def _test_identities(
 
 
 def test_users(
-    machine_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
+    clan_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
-    _test_identities("users", machine_flake, capsys, age_keys)
+    _test_identities("users", clan_flake, capsys, age_keys)
 
 
 def test_machines(
-    machine_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
+    clan_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
-    _test_identities("machines", machine_flake, capsys, age_keys)
+    _test_identities("machines", clan_flake, capsys, age_keys)
 
 
 def test_groups(
-    machine_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
+    clan_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
     cli = Cli()
     capsys.readouterr()  # empty the buffer
@@ -100,7 +100,7 @@ def test_groups(
 
     cli.run(["secrets", "groups", "remove-user", "group1", "user1"])
     cli.run(["secrets", "groups", "remove-machine", "group1", "machine1"])
-    groups = os.listdir(machine_flake / "sops" / "groups")
+    groups = os.listdir(clan_flake / "sops" / "groups")
     assert len(groups) == 0
 
 
@@ -114,7 +114,7 @@ def use_key(key: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 
 
 def test_secrets(
-    machine_flake: Path,
+    clan_flake: Path,
     capsys: pytest.CaptureFixture,
     monkeypatch: pytest.MonkeyPatch,
     age_keys: list["KeyPair"],
@@ -125,7 +125,7 @@ def test_secrets(
     assert capsys.readouterr().out == ""
 
     monkeypatch.setenv("SOPS_NIX_SECRET", "foo")
-    monkeypatch.setenv("SOPS_AGE_KEY_FILE", str(machine_flake / ".." / "age.key"))
+    monkeypatch.setenv("SOPS_AGE_KEY_FILE", str(clan_flake / ".." / "age.key"))
     cli.run(["secrets", "key", "generate"])
     capsys.readouterr()  # empty the buffer
     cli.run(["secrets", "key", "show"])
