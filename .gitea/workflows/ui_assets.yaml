@@ -29,11 +29,11 @@ jobs:
 
             # git push if we have a diff
             if [[ -n $(git diff) ]]; then
-              git config --global user.email "ui_assets[bot]@mail.clan.lol"
-              git config --global user.name "ui_assets[bot]"
+              git config --global user.email "clan-bot@clan.lol"
+              git config --global user.name "clan-bot"
               git commit -am "update ui-assets.nix"
               echo "Current branch: $GITHUB_REF_NAME"
-              git push origin HEAD:$GITHUB_REF_NAME --force
+              git push origin HEAD:$GITHUB_REF_NAME
             fi
           else
             echo "No UI files changed. Skipping asset build and push"
