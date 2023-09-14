@@ -8,13 +8,13 @@ from host_group import HostGroup
 
 
 def test_update(
-    machine_flake: Path, host_group: HostGroup, monkeypatch: pytest.MonkeyPatch
+    clan_flake: Path, host_group: HostGroup, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     assert len(host_group.hosts) == 1
     host = host_group.hosts[0]
 
     with TemporaryDirectory() as tmpdir:
-        host.meta["flake_uri"] = machine_flake
+        host.meta["flake_uri"] = clan_flake
         host.meta["flake_path"] = str(Path(tmpdir) / "rsync-target")
         host.ssh_options["SendEnv"] = "REALPATH"
         bin = Path(tmpdir).joinpath("bin")

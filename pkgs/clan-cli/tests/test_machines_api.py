@@ -3,7 +3,7 @@ from pathlib import Path
 from api import TestClient
 
 
-def test_machines(api: TestClient, machine_flake: Path) -> None:
+def test_machines(api: TestClient, clan_flake: Path) -> None:
     response = api.get("/api/machines")
     assert response.status_code == 200
     assert response.json() == {"machines": []}
@@ -21,7 +21,7 @@ def test_machines(api: TestClient, machine_flake: Path) -> None:
     assert response.json() == {"machines": [{"name": "test", "status": "unknown"}]}
 
 
-def test_configure_machine(api: TestClient, machine_flake: Path) -> None:
+def test_configure_machine(api: TestClient, clan_flake: Path) -> None:
     # ensure error 404 if machine does not exist when accessing the config
     response = api.get("/api/machines/machine1/config")
     assert response.status_code == 404

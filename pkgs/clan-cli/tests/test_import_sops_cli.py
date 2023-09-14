@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 def test_import_sops(
     test_root: Path,
-    machine_flake: Path,
+    clan_flake: Path,
     capsys: pytest.CaptureFixture,
     monkeypatch: pytest.MonkeyPatch,
     age_keys: list["KeyPair"],
