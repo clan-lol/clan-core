@@ -1,0 +1,44 @@
+name: assets
+on:
+  push:
+    branches:
+      - main
+      - Qubasa-main
+jobs:
+  test:
+    runs-on: nix
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get changed files using defaults
+        id: changed-files
+        uses: tj-actions/changed-files@v32
+        with:
+          fetch-depth: 2
+
+      - name: Check if UI files are in the list of modified files
+        run: |
+          set -xeuo pipefail
+          echo "Modified files: $MODIFIED_FILES"
+          if echo "$MODIFIED_FILES" | grep -q "pkgs/ui/" \
+          || echo "$MODIFIED_FILES" | grep -q ".gitea/workflows/ui_assets.yaml"; then
+
+            echo "UI files have changed"
+            ./pkgs/ui/nix/update-ui-assets.sh
+
+
+            # git push if we have a diff
+            if [[ -n $(git diff) ]]; then
+              git config --global user.email "ui_assets[bot]@mail.clan.lol"
+              git config --global user.name "ui_assets[bot]"
+              git commit -am "update ui-assets.nix"
+              echo "Current branch: $GITHUB_REF_NAME"
+              git push origin HEAD:$GITHUB_REF_NAME
+            fi
+          else
+            echo "No UI files changed. Skipping asset build and push"
+          fi
+        env:
+          MODIFIED_FILES: ${{ steps.changed-files.outputs.modified_files }}
+          GITEA_TOKEN: ${{ secrets.TEA_TOKEN_QUBASA }}
