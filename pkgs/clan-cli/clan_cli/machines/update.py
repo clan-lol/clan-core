@@ -1,6 +1,5 @@
 import argparse
 import json
-import os
 import subprocess
 
 from ..ssh import Host, HostGroup, HostKeyCheck
@@ -14,14 +13,11 @@ def deploy_nixos(hosts: HostGroup) -> None:
     def deploy(h: Host) -> None:
         target = f"{h.user or 'root'}@{h.host}"
         ssh_arg = f"-p {h.port}" if h.port else ""
-        env = os.environ.copy()
-        env["NIX_SSHOPTS"] = ssh_arg
-        res = subprocess.run(
+        res = h.run_local(
             ["nix", "flake", "archive", "--to", f"ssh://{target}", "--json"],
             check=True,
-            text=True,
             stdout=subprocess.PIPE,
-            env=env
+            extra_env=dict(NIX_SSHOPTS=ssh_arg),
         )
         data = json.loads(res.stdout)
         path = data["path"]
