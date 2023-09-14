@@ -22,6 +22,7 @@ def nix_build_machine(
     return [
         "nix",
         "build",
+        "--no-link",
         "--impure",
         "--print-out-paths",
         "--expr",
