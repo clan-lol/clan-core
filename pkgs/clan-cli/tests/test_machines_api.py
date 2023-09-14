@@ -3,7 +3,7 @@ from pathlib import Path
 from api import TestClient
 
 
-def test_machines(api: TestClient, clan_flake: Path) -> None:
+def test_machines(api: TestClient, machine_flake: Path) -> None:
     response = api.get("/api/machines")
     assert response.status_code == 200
     assert response.json() == {"machines": []}
