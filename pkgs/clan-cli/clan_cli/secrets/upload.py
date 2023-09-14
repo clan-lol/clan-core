@@ -1,11 +1,11 @@
 import argparse
+import json
 import subprocess
-import sys
 
 from clan_cli.errors import ClanError
 
 from ..dirs import get_clan_flake_toplevel
-from ..nix import nix_build
+from ..nix import nix_build, nix_eval
 
 
 def upload_secrets(machine: str) -> None:
@@ -17,18 +17,28 @@ def upload_secrets(machine: str) -> None:
                 f'{clan_dir}#nixosConfigurations."{machine}".config.system.clan.uploadSecrets'
             ]
         ),
-        capture_output=True,
+        stdout=subprocess.PIPE,
         text=True,
+        check=True,
     )
-    if proc.returncode != 0:
-        print(proc.stderr, file=sys.stderr)
-        raise ClanError(f"failed to upload secrets:\n{proc.stderr}")
+    host = json.loads(
+        subprocess.run(
+            nix_eval(
+                [
+                    f'{clan_dir}#nixosConfigurations."{machine}".config.clan.networking.deploymentAddress'
+                ]
+            ),
+            stdout=subprocess.PIPE,
+            text=True,
+            check=True,
+        ).stdout
+    )
 
     secret_upload_script = proc.stdout.strip()
     secret_upload = subprocess.run(
         [
             secret_upload_script,
-            f"root@{machine}",
+            host,
         ],
     )
 

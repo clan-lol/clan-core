@@ -2,10 +2,13 @@ import argparse
 import json
 import os
 import subprocess
+from typing import Optional
 
-from ..ssh import Host, HostGroup, HostKeyCheck
-from ..secrets.upload import upload_secrets
+from ..dirs import get_clan_flake_toplevel
+from ..nix import nix_eval
 from ..secrets.generate import generate_secrets
+from ..secrets.upload import upload_secrets
+from ..ssh import Host, HostGroup, HostKeyCheck
 
 
 def deploy_nixos(hosts: HostGroup) -> None:
@@ -22,7 +25,7 @@ def deploy_nixos(hosts: HostGroup) -> None:
             ["nix", "flake", "archive", "--to", f"ssh://{target}", "--json"],
             check=True,
             stdout=subprocess.PIPE,
-            extra_env=env
+            extra_env=env,
         )
         data = json.loads(res.stdout)
         path = data["path"]
@@ -75,20 +78,36 @@ def deploy_nixos(hosts: HostGroup) -> None:
 
 # FIXME: we want some kind of inventory here.
 def update(args: argparse.Namespace) -> None:
-    meta = {}
-    if args.flake_uri:
-        meta["flake_uri"] = args.flake_uri
-    if args.flake_attr:
-        meta["flake_attr"] = args.flake_attr
-    deploy_nixos(HostGroup([Host(args.host, user=args.user, meta=meta)]))
+    clan_dir = get_clan_flake_toplevel().as_posix()
+    host = json.loads(
+        subprocess.run(
+            nix_eval(
+                [
+                    f'{clan_dir}#nixosConfigurations."{args.machine}".config.clan.networking.deploymentAddress'
+                ]
+            ),
+            stdout=subprocess.PIPE,
+            check=True,
+            text=True,
+        ).stdout
+    )
+    parts = host.split("@")
+    user: Optional[str] = None
+    if len(parts) > 1:
+        user = parts[0]
+        hostname = parts[1]
+    else:
+        hostname = parts[0]
+    maybe_port = hostname.split(":")
+    port = None
+    if len(maybe_port) > 1:
+        hostname = maybe_port[0]
+        port = int(maybe_port[1])
+    print(f"deploying {host}")
+    deploy_nixos(HostGroup([Host(host=hostname, port=port, user=user)]))
 
 
 def register_update_parser(parser: argparse.ArgumentParser) -> None:
-    # TODO pass all args we don't parse into ssh_args, currently it fails if arg starts with -
-    parser.add_argument("--flake-uri", type=str, default=".#", help="nix flake uri")
-    parser.add_argument(
-        "--flake-attr", type=str, help="nixos configuration in the flake"
-    )
-    parser.add_argument("--user", type=str, default="root")
-    parser.add_argument("host", type=str)
+    parser.add_argument("--target-host", type=str, default="root")
+    parser.add_argument("machine", type=str)
     parser.set_defaults(func=update)
