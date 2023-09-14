@@ -58,9 +58,8 @@ in
         pkgs.pass
         pkgs.git
         pkgs.findutils
-        pkgs.openssh
         pkgs.rsync
-      ]}:$PATH
+      ]}:$PATH:${lib.getBin pkgs.openssh}
 
       if test -e ${passwordstoreDir}/.git; then
         local_pass_info=$(
