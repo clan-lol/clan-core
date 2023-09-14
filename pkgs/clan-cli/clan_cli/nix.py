@@ -10,10 +10,10 @@ def nix_build_machine(
     machine: str, attr: list[str], flake_url: Path | None = None
 ) -> list[str]:
     if flake_url is None:
-        flake_url = str(get_clan_flake_toplevel())
+        flake_url = get_clan_flake_toplevel()
     payload = json.dumps(
         dict(
-            clan_flake=flake_url,
+            clan_flake=flake_url.as_posix(),
             machine=machine,
             attr=attr,
         )
