@@ -7,7 +7,7 @@ in
     type = lib.types.path;
     default = "/etc/secrets";
     description = ''
-      The directory where the password store is deployed to.
+      The directory where the password store is uploaded to.
     '';
   };
   config = lib.mkIf (config.clanCore.secretStore == "password-store") {
@@ -45,7 +45,7 @@ in
         fi)
       '') "" config.clanCore.secrets}
     '';
-    system.clan.deploySecrets = pkgs.writeScript "deploy-secrets" ''
+    system.clan.uploadSecrets = pkgs.writeScript "upload-secrets" ''
       #!/bin/sh
       set -efu
       set -x # remove for prod

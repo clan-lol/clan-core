@@ -68,9 +68,9 @@
         };
       }));
   };
-  config.system.build.generateDeploySecrets = pkgs.writeScript "generate_deploy_secrets" ''
-    ${config.system.build.generateSecrets}
-    ${config.system.build.deploySecrets}
+  config.system.build.generateUploadSecrets = pkgs.writeScript "generate_upload_secrets" ''
+    ${config.system.clan.generateSecrets}
+    ${config.system.clan.uploadSecrets}
   '';
   imports = [
     ./sops.nix
