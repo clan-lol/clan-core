@@ -32,3 +32,16 @@ class ConfigResponse(BaseModel):
 
 class SchemaResponse(BaseModel):
     schema_: dict = Field(alias="schema")
+
+
+class VmConfig(BaseModel):
+    flake_url: str
+    flake_attr: str
+
+    cores: int
+    memory_size: int
+    graphics: bool
+
+
+class VmInspectResponse(BaseModel):
+    config: VmConfig
