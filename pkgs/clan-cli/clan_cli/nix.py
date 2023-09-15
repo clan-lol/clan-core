@@ -12,6 +12,8 @@ def nix_build(
         "build",
         "--no-link",
         "--print-out-paths",
+        "--extra-experimental-features",
+        "nix-command flakes",
     ] + flags
 
 
