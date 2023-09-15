@@ -41,29 +41,30 @@ def nix_build_machine(
 
 
 def nix_eval(flags: list[str]) -> list[str]:
-    if os.environ.get("IN_NIX_SANDBOX"):
-        with tempfile.TemporaryDirectory() as nix_store:
-            return [
-                "nix",
-                "eval",
-                "--show-trace",
-                "--extra-experimental-features",
-                "nix-command flakes",
-                "--override-input",
-                "nixpkgs",
-                str(nixpkgs_source()),
-                # --store is required to prevent this error:
-                # error: cannot unlink '/nix/store/6xg259477c90a229xwmb53pdfkn6ig3g-default-builder.sh': Operation not permitted
-                "--store",
-                nix_store,
-            ] + flags
-    return [
+    default_flags = [
         "nix",
         "eval",
         "--show-trace",
+        "--json",
         "--extra-experimental-features",
         "nix-command flakes",
-    ] + flags
+    ]
+    if os.environ.get("IN_NIX_SANDBOX"):
+        with tempfile.TemporaryDirectory() as nix_store:
+            return (
+                default_flags
+                + [
+                    "--override-input",
+                    "nixpkgs",
+                    str(nixpkgs_source()),
+                    # --store is required to prevent this error:
+                    # error: cannot unlink '/nix/store/6xg259477c90a229xwmb53pdfkn6ig3g-default-builder.sh': Operation not permitted
+                    "--store",
+                    nix_store,
+                ]
+                + flags
+            )
+    return default_flags + flags
 
 
 def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:

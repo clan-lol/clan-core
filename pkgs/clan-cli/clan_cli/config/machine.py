@@ -45,7 +45,6 @@ def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
     proc = subprocess.run(
         nix_eval(
             flags=[
-                "--json",
                 "--impure",
                 "--show-trace",
                 "--extra-experimental-features",
