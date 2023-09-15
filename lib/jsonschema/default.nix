@@ -7,6 +7,7 @@ let
     float = "number";
     int = "integer";
     str = "string";
+    path = "string"; # TODO add prober path checks
   };
 
   # remove _module attribute from options
@@ -99,6 +100,13 @@ rec {
     # parse string
     else if option.type.name == "str"
     # return jsonschema property definition for string
+    then default // description // {
+      type = "string";
+    }
+
+    # parse string
+    else if option.type.name == "path"
+    # return jsonschema property definition for path
     then default // description // {
       type = "string";
     }
