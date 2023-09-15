@@ -1,8 +1,6 @@
 {
-  inputs = {
-    # this placeholder is replaced by the path to nixpkgs
-    nixpkgs.url = "__NIXPKGS__";
-  };
+  # this placeholder is replaced by the path to nixpkgs
+  inputs.nixpkgs.url = "__NIXPKGS__";
 
   outputs = inputs: {
     nixosConfigurations.machine1 = inputs.nixpkgs.lib.nixosSystem {

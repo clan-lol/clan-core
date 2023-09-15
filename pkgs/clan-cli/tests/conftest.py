@@ -12,5 +12,5 @@ pytest_plugins = [
     "command",
     "ports",
     "host_group",
-    "clan_flake",
+    "test_flake",
 ]
