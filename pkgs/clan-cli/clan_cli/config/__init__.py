@@ -100,7 +100,6 @@ def options_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict
     proc = subprocess.run(
         nix_eval(
             flags=[
-                "--json",
                 "--show-trace",
                 "--impure",
                 "--expr",
@@ -138,7 +137,6 @@ def read_machine_option_value(machine_name: str, option: str) -> str:
     proc = subprocess.run(
         nix_eval(
             flags=[
-                "--json",
                 "--show-trace",
                 "--extra-experimental-features",
                 "nix-command flakes",
