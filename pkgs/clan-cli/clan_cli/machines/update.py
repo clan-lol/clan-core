@@ -5,7 +5,7 @@ import subprocess
 from typing import Optional
 
 from ..dirs import get_clan_flake_toplevel
-from ..nix import nix_eval
+from ..nix import nix_command, nix_eval
 from ..secrets.generate import generate_secrets
 from ..secrets.upload import upload_secrets
 from ..ssh import Host, HostGroup, HostKeyCheck
@@ -22,7 +22,7 @@ def deploy_nixos(hosts: HostGroup) -> None:
         env = os.environ.copy()
         env["NIX_SSHOPTS"] = ssh_arg
         res = h.run_local(
-            ["nix", "flake", "archive", "--to", f"ssh://{target}", "--json"],
+            nix_command(["flake", "archive", "--to", f"ssh://{target}", "--json"]),
             check=True,
             stdout=subprocess.PIPE,
             extra_env=env,

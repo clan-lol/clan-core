@@ -3,18 +3,22 @@ import argparse
 import os
 import subprocess
 
+from .nix import nix_command
+
 
 def create(args: argparse.Namespace) -> None:
     os.makedirs(args.folder, exist_ok=True)
     # TODO create clan template in flake
     subprocess.run(
-        [
-            "nix",
-            "flake",
-            "init",
-            "-t",
-            "git+https://git.clan.lol/clan/clan-core#new-clan",
-        ]
+        nix_command(
+            [
+                "flake",
+                "init",
+                "-t",
+                "git+https://git.clan.lol/clan/clan-core#new-clan",
+            ]
+        ),
+        check=True,
     )
 
 
@@ -24,7 +28,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         "-f",
         "--folder",
         help="the folder where the clan is defined, default to the current folder",
-        default=os.environ["PWD"],
+        default=os.getcwd(),
     )
     subparser = parser.add_subparsers(
         title="command",
