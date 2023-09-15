@@ -98,7 +98,8 @@ python3.pkgs.buildPythonPackage {
     chmod +w -R ./src
     cd ./src
 
-    NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1 ${checkPython}/bin/python -m pytest -s ./tests
+    export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1 
+    ${checkPython}/bin/python -m pytest -m "not impure" -s ./tests
     touch $out
   '';
   passthru.clan-openapi = runCommand "clan-openapi" { } ''

@@ -3,7 +3,7 @@ from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 
 from .assets import asset_path
-from .routers import health, machines, root
+from .routers import health, machines, root, vms
 
 
 def setup_app() -> FastAPI:
@@ -11,6 +11,8 @@ def setup_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(machines.router)
     app.include_router(root.router)
+    app.include_router(vms.router)
+    app.add_exception_handler(vms.NixBuildException, vms.nix_build_exception_handler)
 
     app.mount("/static", StaticFiles(directory=asset_path()), name="static")
 
