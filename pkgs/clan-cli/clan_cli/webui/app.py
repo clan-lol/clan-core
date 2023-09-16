@@ -1,7 +1,7 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
 
 from .assets import asset_path
 from .routers import health, machines, root, vms
@@ -9,6 +9,7 @@ from .routers import health, machines, root, vms
 origins = [
     "http://localhost:3000",
 ]
+
 
 def setup_app() -> FastAPI:
     app = FastAPI()
