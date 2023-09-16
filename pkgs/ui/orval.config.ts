@@ -1,5 +1,5 @@
 const config = {
-  petstore: {
+  clan: {
     output: {
       mode: "tags-split",
       target: "src/api",
