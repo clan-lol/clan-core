@@ -65,7 +65,8 @@ def start_server(args: argparse.Namespace) -> None:
                 (
                     "Access-Control-Allow-Origin",
                     f"http://{host}:{args.dev_port}",
-                )
+                ),
+                ("Access-Control-Allow-Methods", "HEAD, POST, GET, OPTIONS"),
             ]
         else:
             open_url = f"http://[{args.host}]:{args.port}"
