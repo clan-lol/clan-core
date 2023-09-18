@@ -24,12 +24,12 @@
         "x86_64-linux"
         "aarch64-linux"
       ];
-      flake.clanModules = { };
       imports = [
         ./checks/flake-module.nix
         ./devShell.nix
         ./formatter.nix
         ./templates/flake-module.nix
+        ./clanModules/flake-module.nix
 
         ./pkgs/flake-module.nix
 
