@@ -66,7 +66,14 @@ in
       '') "" config.clanCore.secrets}
     '';
     system.clan.uploadSecrets = pkgs.writeScript "upload-secrets" ''
-      echo upload is not needed for sops secret store, since the secrets are part of the flake
+      #!/bin/sh
+      set -efu
+
+      tmp_dir=$(mktemp -dt populate-pass.XXXXXXXX)
+      trap "rm -rf $tmp_dir" EXIT
+      clan secrets get ${config.clanCore.machineName}-age.key > "$tmp_dir/key.txt"
+
+      cat "$tmp_dir/key.txt" | ssh ${config.clan.networking.deploymentAddress} 'mkdir -p "$(dirname ${lib.escapeShellArg config.sops.age.keyFile})"; cat > ${lib.escapeShellArg config.sops.age.keyFile}'
     '';
     sops.secrets = builtins.mapAttrs
       (name: _: {
@@ -76,5 +83,6 @@ in
       secrets;
     # To get proper error messages about missing secrets we need a dummy secret file that is always present
     sops.defaultSopsFile = lib.mkIf config.sops.validateSopsFiles (lib.mkDefault (builtins.toString (pkgs.writeText "dummy.yaml" "")));
+    sops.age.keyFile = lib.mkDefault "/var/lib/sops-nix/key.txt";
   };
 }
