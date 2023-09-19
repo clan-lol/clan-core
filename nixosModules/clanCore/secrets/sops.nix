@@ -19,62 +19,33 @@ let
 
   groups = builtins.attrNames (filterDir (containsMachine groupsDir) groupsDir);
   secrets = filterDir containsMachineOrGroups secretsDir;
+  systems = [ "i686-linux" "x86_64-linux" "riscv64-linux" "aarch64-linux" "x86_64-darwin" ];
 in
 {
   config = lib.mkIf (config.clanCore.secretStore == "sops") {
-    system.clan.generateSecrets = pkgs.writeScript "generate-secrets" ''
-      #!/bin/sh
-      set -efu
-
-      test -d "$CLAN_DIR"
-
-      PATH=$PATH:${lib.makeBinPath [
-        config.clanCore.clanPkgs.clan-cli
-      ]}
-
-      # initialize secret store
-      if ! clan secrets machines list | grep -q ${config.clanCore.machineName}; then (
-        INITTMP=$(mktemp -d)
-        trap 'rm -rf "$INITTMP"' EXIT
-        ${pkgs.age}/bin/age-keygen -o "$INITTMP/secret" 2> "$INITTMP/public"
-        PUBKEY=$(cat "$INITTMP/public" | sed 's/.*: //')
-        clan secrets machines add ${config.clanCore.machineName} "$PUBKEY"
-        tail -1 "$INITTMP/secret" | clan secrets set --machine ${config.clanCore.machineName} ${config.clanCore.machineName}-age.key
-      ) fi
-
-      ${lib.foldlAttrs (acc: n: v: ''
-        ${acc}
-        # ${n}
-        # if any of the secrets are missing, we regenerate all connected facts/secrets
-        (if ! ${lib.concatMapStringsSep " && " (x: "clan secrets get ${config.clanCore.machineName}-${x.name} >/dev/null") (lib.attrValues v.secrets)}; then
-
-          facts=$(mktemp -d)
-          trap "rm -rf $facts" EXIT
-          secrets=$(mktemp -d)
-          trap "rm -rf $secrets" EXIT
-          ${v.generator}
-
-          ${lib.concatMapStrings (fact: ''
-            mkdir -p "$(dirname ${fact.path})"
-            cp "$facts"/${fact.name} "$CLAN_DIR"/${fact.path}
-          '') (lib.attrValues v.facts)}
-
-          ${lib.concatMapStrings (secret: ''
-            cat "$secrets"/${secret.name} | clan secrets set --machine ${config.clanCore.machineName} ${config.clanCore.machineName}-${secret.name}
-          '') (lib.attrValues v.secrets)}
-        fi)
-      '') "" config.clanCore.secrets}
-    '';
-    system.clan.uploadSecrets = pkgs.writeScript "upload-secrets" ''
-      #!/bin/sh
-      set -efu
-
-      tmp_dir=$(mktemp -dt populate-pass.XXXXXXXX)
-      trap "rm -rf $tmp_dir" EXIT
-      clan secrets get ${config.clanCore.machineName}-age.key > "$tmp_dir/key.txt"
-
-      cat "$tmp_dir/key.txt" | ssh ${config.clan.networking.deploymentAddress} 'mkdir -p "$(dirname ${lib.escapeShellArg config.sops.age.keyFile})"; cat > ${lib.escapeShellArg config.sops.age.keyFile}'
-    '';
+    system.clan = lib.genAttrs systems (system:
+      let
+        # Maybe use inputs.nixpkgs.legacyPackages here?
+        # don't reimport nixpkgs if we are on the same system (optimization)
+        pkgs' = if pkgs.hostPlatform.system == system then pkgs else import pkgs.path { system = system; };
+      in
+      {
+        generateSecrets = pkgs.writeScript "generate-secrets" ''
+          #!${pkgs'.python3}/bin/python
+          import json
+          from clan_cli.secrets.generate import generate_secrets_from_nix
+          args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; secret_submodules = config.clanCore.secrets; })})
+          generate_secrets_from_nix(**args)
+        '';
+        uploadSecrets = pkgs.writeScript "upload-secrets" ''
+          #!${pkgs'.python3}/bin/python
+          import json
+          from clan_cli.secrets.upload import upload_age_key_from_nix
+          # the second toJSON is needed to escape the string for the python
+          args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; deployment_address = config.clan.networking.deploymentAddress; age_key_file = config.sops.age.keyFile; })})
+          upload_age_key_from_nix(**args)
+        '';
+      });
     sops.secrets = builtins.mapAttrs
       (name: _: {
         sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";

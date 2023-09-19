@@ -11,6 +11,17 @@
       machines = {
         vm1 = { modulesPath, ... }: {
           imports = [ "${toString modulesPath}/virtualisation/qemu-vm.nix" ];
+          clan.networking.deploymentAddress = "__CLAN_DEPLOYMENT_ADDRESS__";
+          sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
+
+          clanCore.secrets.testpassword = {
+            generator = ''
+              echo "secret1" > "$secrets/secret1"
+              echo "fact1" > "$facts/fact1"
+            '';
+            secrets.secret1 = { };
+            facts.fact1 = { };
+          };
         };
       };
     };
