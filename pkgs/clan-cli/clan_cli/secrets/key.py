@@ -9,8 +9,8 @@ def generate_key() -> str:
     path = default_sops_key_path()
     if path.exists():
         raise ClanError(f"Key already exists at {path}")
-    generate_private_key(path)
-    pub_key = get_public_key(path.read_text())
+    priv_key, pub_key = generate_private_key()
+    path.write_text(priv_key)
     return pub_key
 
 
