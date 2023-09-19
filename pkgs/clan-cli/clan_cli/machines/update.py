@@ -2,13 +2,12 @@ import argparse
 import json
 import os
 import subprocess
-from typing import Optional
 
 from ..dirs import get_clan_flake_toplevel
 from ..nix import nix_command, nix_eval
 from ..secrets.generate import generate_secrets
 from ..secrets.upload import upload_secrets
-from ..ssh import Host, HostGroup, HostKeyCheck
+from ..ssh import Host, HostGroup, HostKeyCheck, parse_deployment_address
 
 
 def deploy_nixos(hosts: HostGroup) -> None:
@@ -78,11 +77,12 @@ def deploy_nixos(hosts: HostGroup) -> None:
 # FIXME: we want some kind of inventory here.
 def update(args: argparse.Namespace) -> None:
     clan_dir = get_clan_flake_toplevel().as_posix()
-    host = json.loads(
+    machine = args.machine
+    address = json.loads(
         subprocess.run(
             nix_eval(
                 [
-                    f'{clan_dir}#nixosConfigurations."{args.machine}".config.clan.networking.deploymentAddress'
+                    f'{clan_dir}#nixosConfigurations."{machine}".config.clan.networking.deploymentAddress'
                 ]
             ),
             stdout=subprocess.PIPE,
@@ -90,31 +90,9 @@ def update(args: argparse.Namespace) -> None:
             text=True,
         ).stdout
     )
-    parts = host.split("@")
-    user: Optional[str] = None
-    if len(parts) > 1:
-        user = parts[0]
-        hostname = parts[1]
-    else:
-        hostname = parts[0]
-    maybe_port = hostname.split(":")
-    port = None
-    if len(maybe_port) > 1:
-        hostname = maybe_port[0]
-        port = int(maybe_port[1])
-    print(f"deploying {host}")
-    deploy_nixos(
-        HostGroup(
-            [
-                Host(
-                    host=hostname,
-                    port=port,
-                    user=user,
-                    meta=dict(flake_attr=args.machine),
-                )
-            ]
-        )
-    )
+    host = parse_deployment_address(machine, address)
+    print(f"deploying {machine}")
+    deploy_nixos(HostGroup([host]))
 
 
 def register_update_parser(parser: argparse.ArgumentParser) -> None:
