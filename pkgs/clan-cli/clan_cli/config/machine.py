@@ -12,7 +12,7 @@ from clan_cli.nix import nix_eval
 
 
 def config_for_machine(machine_name: str) -> dict:
-    # read the config from a json file located at {flake}/machines/{machine_name}.json
+    # read the config from a json file located at {flake}/machines/{machine_name}/settings.json
     if not machine_folder(machine_name).exists():
         raise HTTPException(
             status_code=404,
@@ -26,7 +26,7 @@ def config_for_machine(machine_name: str) -> dict:
 
 
 def set_config_for_machine(machine_name: str, config: dict) -> None:
-    # write the config to a json file located at {flake}/machines/{machine_name}.json
+    # write the config to a json file located at {flake}/machines/{machine_name}/settings.json
     if not machine_folder(machine_name).exists():
         raise HTTPException(
             status_code=404,
