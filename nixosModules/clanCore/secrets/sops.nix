@@ -21,11 +21,12 @@ let
   secrets = filterDir containsMachineOrGroups secretsDir;
 in
 {
-  config = {
+  config = lib.mkIf (config.clanCore.secretStore == "sops") {
     system.clan.generateSecrets = pkgs.writeScript "generate-secrets" ''
       #!/bin/sh
       set -efu
-      set -x # remove for prod
+
+      test -d "$CLAN_DIR"
 
       PATH=$PATH:${lib.makeBinPath [
         config.clanCore.clanPkgs.clan-cli
@@ -55,7 +56,7 @@ in
 
           ${lib.concatMapStrings (fact: ''
             mkdir -p "$(dirname ${fact.path})"
-            cp "$facts"/${fact.name} ${fact.path}
+            cp "$facts"/${fact.name} "$CLAN_DIR"/${fact.path}
           '') (lib.attrValues v.facts)}
 
           ${lib.concatMapStrings (secret: ''
@@ -63,6 +64,9 @@ in
           '') (lib.attrValues v.secrets)}
         fi)
       '') "" config.clanCore.secrets}
+    '';
+    system.clan.uploadSecrets = pkgs.writeScript "upload-secrets" ''
+      echo upload is not needed for sops secret store, since the secrets are part of the flake
     '';
     sops.secrets = builtins.mapAttrs
       (name: _: {

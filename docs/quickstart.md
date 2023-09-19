@@ -43,6 +43,7 @@ Absolutely, let's break down the migration step by step, explaining each action 
    ```nix
    inputs.clan-core = {
      url = "git+https://git.clan.lol/clan/clan-core";
+     # Don't do this if your machines are on nixpkgs stable.
      inputs.nixpkgs.follows = "nixpkgs";
    };
    ```
@@ -75,7 +76,8 @@ Absolutely, let's break down the migration step by step, explaining each action 
 
    ```nix
    nixosConfigurations = clan-core.lib.buildClan {
-       directory = ./.;
+       # this needs to point at the repository root
+       directory = self;
        specialArgs = {};
        machines = {
            example-desktop = {

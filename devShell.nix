@@ -15,7 +15,7 @@
         ];
         shellHook = ''
           # no longer used
-          rm "$(git rev-parse --show-toplevel)/.git/hooks/pre-commit"
+          rm -f "$(git rev-parse --show-toplevel)/.git/hooks/pre-commit"
         '';
       };
     };

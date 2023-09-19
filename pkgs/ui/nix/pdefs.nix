@@ -10986,6 +10986,11 @@
               descriptor = "^0.4.1";
               pin = "0.4.1";
             };
+            pretty-bytes = {
+              descriptor = "^6.1.1";
+              pin = "6.1.1";
+              runtime = true;
+            };
             react = {
               descriptor = "18.2.0";
               pin = "18.2.0";
@@ -13085,6 +13090,9 @@
             "node_modules/prettier-plugin-tailwindcss" = {
               dev = true;
               key = "prettier-plugin-tailwindcss/0.4.1";
+            };
+            "node_modules/pretty-bytes" = {
+              key = "pretty-bytes/6.1.1";
             };
             "node_modules/printable-characters" = {
               dev = true;
@@ -15193,6 +15201,19 @@
           };
           treeInfo = { };
           version = "0.4.1";
+        };
+      };
+      pretty-bytes = {
+        "6.1.1" = {
+          fetchInfo = {
+            narHash = "sha256-ERXqMD/9tkPebbHVL3n/9EQRz7mFs5VYO6k/wo5JDzQ=";
+            type = "tarball";
+            url = "https://registry.npmjs.org/pretty-bytes/-/pretty-bytes-6.1.1.tgz";
+          };
+          ident = "pretty-bytes";
+          ltype = "file";
+          treeInfo = { };
+          version = "6.1.1";
         };
       };
       printable-characters = {

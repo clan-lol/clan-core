@@ -22,9 +22,6 @@
 , ui-assets
 }:
 let
-  # This provides dummy options for testing clan config and prevents it from
-  # evaluating the flake .#
-  CLAN_OPTIONS_FILE = ./clan_cli/config/jsonschema/options.json;
 
   dependencies = [
     argcomplete # optional dependency: if not enabled, shell completion will not work
@@ -54,9 +51,9 @@ let
   '';
   nixpkgs = runCommand "nixpkgs" { nativeBuildInputs = [ pkgs.nix ]; } ''
     mkdir $out
-    mkdir -p $out/unfree                                                                       
-    cat > $out/unfree/default.nix <<EOF                                                        
-    import "${pkgs.path}" { config = { allowUnfree = true; overlays = []; }; }                 
+    mkdir -p $out/unfree
+    cat > $out/unfree/default.nix <<EOF
+    import "${pkgs.path}" { config = { allowUnfree = true; overlays = []; }; }
     EOF
     cat > $out/flake.nix << EOF
     {
@@ -81,8 +78,6 @@ python3.pkgs.buildPythonPackage {
   src = source;
   format = "pyproject";
 
-  inherit CLAN_OPTIONS_FILE;
-
   nativeBuildInputs = [
     setuptools
     installShellFiles
@@ -93,12 +88,12 @@ python3.pkgs.buildPythonPackage {
     {
       nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh rsync stdenv.cc ];
     } ''
-    export CLAN_OPTIONS_FILE="${CLAN_OPTIONS_FILE}"
     cp -r ${source} ./src
     chmod +w -R ./src
     cd ./src
 
-    NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1 ${checkPython}/bin/python -m pytest -s ./tests
+    export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
+    ${checkPython}/bin/python -m pytest -m "not impure" -s ./tests
     touch $out
   '';
   passthru.clan-openapi = runCommand "clan-openapi" { } ''

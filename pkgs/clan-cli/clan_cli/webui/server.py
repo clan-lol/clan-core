@@ -62,10 +62,18 @@ def start_server(args: argparse.Namespace) -> None:
             if ":" in host:
                 host = f"[{host}]"
             headers = [
-                (
-                    "Access-Control-Allow-Origin",
-                    f"http://{host}:{args.dev_port}",
-                )
+                # (
+                #     "Access-Control-Allow-Origin",
+                #     f"http://{host}:{args.dev_port}",
+                # ),
+                # (
+                #     "Access-Control-Allow-Methods",
+                #     "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT"
+                # ),
+                # (
+                #     "Allow",
+                #     "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT"
+                # )
             ]
         else:
             open_url = f"http://[{args.host}]:{args.port}"

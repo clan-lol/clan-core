@@ -3,9 +3,11 @@
     imports = [
       ./secrets
       ./zerotier.nix
+      ./networking.nix
       inputs.sops-nix.nixosModules.sops
       # just some example options. Can be removed later
       ./bloatware
+      ./vm.nix
     ];
     options.clanSchema = lib.mkOption {
       type = lib.types.attrs;

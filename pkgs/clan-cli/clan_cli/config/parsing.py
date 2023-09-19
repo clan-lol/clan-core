@@ -3,7 +3,8 @@ import subprocess
 from pathlib import Path
 from typing import Any, Optional, Type, Union
 
-from clan_cli.errors import ClanError
+from ..errors import ClanError
+from ..nix import nix_eval
 
 script_dir = Path(__file__).parent
 
@@ -30,11 +31,9 @@ def schema_from_module_file(
             slib.parseModule {absolute_path}
     """
     # run the nix expression and parse the output as json
-    return json.loads(
-        subprocess.check_output(
-            ["nix", "eval", "--impure", "--json", "--expr", nix_expr]
-        )
-    )
+    cmd = nix_eval(["--expr", nix_expr])
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, check=True)
+    return json.loads(proc.stdout)
 
 
 def subtype_from_schema(schema: dict[str, Any]) -> Type:

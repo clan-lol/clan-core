@@ -50,7 +50,7 @@ def test_set_some_option(
 
 
 def test_configure_machine(
-    machine_flake: Path,
+    test_flake: Path,
     temporary_dir: Path,
     capsys: pytest.CaptureFixture,
     monkeypatch: pytest.MonkeyPatch,

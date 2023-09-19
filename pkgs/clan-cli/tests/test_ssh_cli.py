@@ -30,9 +30,8 @@ def test_ssh_no_pass(
         monkeypatch.delenv("IN_NIX_SANDBOX")
     cmd: list[Union[str, utils.Any]] = [
         "nix",
+        fp.any(),
         "shell",
-        "--extra-experimental-features",
-        "nix-command flakes",
         fp.any(),
         "-c",
         "torify",
@@ -61,9 +60,8 @@ def test_ssh_with_pass(
         monkeypatch.delenv("IN_NIX_SANDBOX")
     cmd: list[Union[str, utils.Any]] = [
         "nix",
+        fp.any(),
         "shell",
-        "--extra-experimental-features",
-        "nix-command flakes",
         fp.any(),
         "-c",
         "torify",

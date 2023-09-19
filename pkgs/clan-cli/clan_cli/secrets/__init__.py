@@ -7,6 +7,7 @@ from .import_sops import register_import_sops_parser
 from .key import register_key_parser
 from .machines import register_machines_parser
 from .secrets import register_secrets_parser
+from .upload import register_upload_parser
 from .users import register_users_parser
 
 
@@ -35,6 +36,9 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         "generate", help="generate secrets for machines if they don't exist yet"
     )
     register_generate_parser(parser_generate)
+
+    parser_upload = subparser.add_parser("upload", help="upload secrets for machines")
+    register_upload_parser(parser_upload)
 
     parser_key = subparser.add_parser("key", help="create and show age keys")
     register_key_parser(parser_key)

@@ -1,15 +1,13 @@
 {
-  inputs = {
-    # this placeholder is replaced by the path to nixpkgs
-    nixpkgs.url = "__NIXPKGS__";
-  };
+  # this placeholder is replaced by the path to nixpkgs
+  inputs.nixpkgs.url = "__NIXPKGS__";
 
   outputs = inputs: {
     nixosConfigurations.machine1 = inputs.nixpkgs.lib.nixosSystem {
       modules = [
         ./nixosModules/machine1.nix
-        (if builtins.pathExists ./machines/machine1.json
-        then builtins.fromJSON (builtins.readFile ./machines/machine1.json)
+        (if builtins.pathExists ./machines/machine1/settings.json
+        then builtins.fromJSON (builtins.readFile ./machines/machine1/settings.json)
         else { })
         {
           nixpkgs.hostPlatform = "x86_64-linux";

@@ -9,6 +9,7 @@ from typing import Any, Optional, Type
 
 from clan_cli.dirs import get_clan_flake_toplevel
 from clan_cli.errors import ClanError
+from clan_cli.machines.folders import machine_settings_file
 from clan_cli.nix import nix_eval
 
 script_dir = Path(__file__).parent
@@ -100,7 +101,6 @@ def options_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict
     proc = subprocess.run(
         nix_eval(
             flags=[
-                "--json",
                 "--show-trace",
                 "--impure",
                 "--expr",
@@ -138,7 +138,6 @@ def read_machine_option_value(machine_name: str, option: str) -> str:
     proc = subprocess.run(
         nix_eval(
             flags=[
-                "--json",
                 "--show-trace",
                 "--extra-experimental-features",
                 "nix-command flakes",
@@ -168,7 +167,6 @@ def get_or_set_option(args: argparse.Namespace) -> None:
         print(read_machine_option_value(args.machine, args.option))
     else:
         # load options
-        print(args.options_file)
         if args.options_file is None:
             options = options_for_machine(machine_name=args.machine)
         else:
@@ -176,8 +174,8 @@ def get_or_set_option(args: argparse.Namespace) -> None:
                 options = json.load(f)
         # compute settings json file location
         if args.settings_file is None:
-            flake = get_clan_flake_toplevel()
-            settings_file = flake / "machines" / f"{args.machine}.json"
+            get_clan_flake_toplevel()
+            settings_file = machine_settings_file(args.machine)
         else:
             settings_file = args.settings_file
         # set the option with the given value
@@ -288,7 +286,7 @@ def register_parser(
     # add single positional argument for the option (e.g. "foo.bar")
     parser.add_argument(
         "option",
-        help="Option to configure",
+        help="Option to read or set",
         type=str,
     )
 

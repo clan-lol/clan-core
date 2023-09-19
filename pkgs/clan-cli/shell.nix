@@ -6,6 +6,7 @@ let
     ++ clan-cli.devDependencies
     ++ [
       ps.pip
+      ps.ipdb
     ]
   );
   checkScript = writeScriptBin "check" ''
@@ -19,10 +20,9 @@ mkShell {
     pythonWithDeps
   ];
   # sets up an editable install and add enty points to $PATH
-  # This provides dummy options for testing clan config and prevents it from
-  # evaluating the flake .#
-  CLAN_OPTIONS_FILE = ./clan_cli/config/jsonschema/options.json;
   PYTHONPATH = "${pythonWithDeps}/${pythonWithDeps.sitePackages}";
+  PYTHONBREAKPOINT = "ipdb.set_trace";
+
   shellHook = ''
     tmp_path=$(realpath ./.direnv)
 
