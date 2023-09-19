@@ -2,6 +2,30 @@
   perSystem = { pkgs, lib, self', ... }:
     let
       impureChecks = {
+        clan-pytest-impure = pkgs.writeShellScriptBin "clan-pytest-impure" ''
+          #!${pkgs.bash}/bin/bash
+          set -euo pipefail
+
+          export TMPDIR=$(${pkgs.coreutils}/bin/mktemp -d)
+          trap "${pkgs.coreutils}/bin/chmod -R +w '$TMPDIR'; ${pkgs.coreutils}/bin/rm -rf '$TMPDIR'" EXIT
+
+          export PATH="${lib.makeBinPath [
+            pkgs.coreutils
+            pkgs.gitMinimal
+            pkgs.nix
+            self'.packages.clan-cli.checkPython
+          ]}"
+
+          export CLAN_CORE=$TMPDIR/CLAN_CORE
+          cp -r ${self} $CLAN_CORE
+          chmod +w -R $CLAN_CORE
+
+          cp -r ${self'.packages.clan-cli.src} $TMPDIR/src
+          chmod +w -R $TMPDIR/src
+          cd $TMPDIR/src
+
+          python -m pytest -m "impure" -s ./tests --workers "" "$@"
+        '';
         check-clan-template = pkgs.writeShellScriptBin "check-clan-template" ''
           #!${pkgs.bash}/bin/bash
           set -euo pipefail
@@ -55,7 +79,7 @@
             set -euo pipefail
             ${lib.concatMapStringsSep "\n" (name: ''
               echo -e "\n\nrunning check ${name}\n"
-              ${impureChecks.${name}}/bin/*
+              ${impureChecks.${name}}/bin/* "$@"
             '') (lib.attrNames impureChecks)}
           '';
         };

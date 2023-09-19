@@ -104,6 +104,7 @@ python3.pkgs.buildPythonPackage {
     touch $out
   '';
   passthru.nixpkgs = nixpkgs;
+  passthru.checkPython = checkPython;
 
   passthru.devDependencies = [
     setuptools
