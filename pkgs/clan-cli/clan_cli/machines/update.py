@@ -104,10 +104,20 @@ def update(args: argparse.Namespace) -> None:
         hostname = maybe_port[0]
         port = int(maybe_port[1])
     print(f"deploying {host}")
-    deploy_nixos(HostGroup([Host(host=hostname, port=port, user=user)]))
+    deploy_nixos(
+        HostGroup(
+            [
+                Host(
+                    host=hostname,
+                    port=port,
+                    user=user,
+                    meta=dict(flake_attr=args.machine),
+                )
+            ]
+        )
+    )
 
 
 def register_update_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--target-host", type=str, default="root")
     parser.add_argument("machine", type=str)
     parser.set_defaults(func=update)
