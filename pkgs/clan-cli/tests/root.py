@@ -1,10 +1,16 @@
+import os
 from pathlib import Path
 
 import pytest
 
 TEST_ROOT = Path(__file__).parent.resolve()
 PROJECT_ROOT = TEST_ROOT.parent
-CLAN_CORE = PROJECT_ROOT.parent.parent
+
+CLAN_CORE_ = os.environ.get("CLAN_CORE")
+if CLAN_CORE_:
+    CLAN_CORE = Path(CLAN_CORE_)
+else:
+    CLAN_CORE = PROJECT_ROOT.parent.parent
 
 
 @pytest.fixture(scope="session")
