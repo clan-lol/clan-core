@@ -286,7 +286,7 @@ def register_parser(
     # add single positional argument for the option (e.g. "foo.bar")
     parser.add_argument(
         "option",
-        help="Option to configure",
+        help="Option to read or set",
         type=str,
     )
 

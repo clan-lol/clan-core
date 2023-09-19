@@ -31,8 +31,6 @@
         ./formatter.nix
         ./templates/flake-module.nix
 
-        ./flakeModules/clan-config.nix
-
         ./pkgs/flake-module.nix
 
         ./lib/flake-module.nix
