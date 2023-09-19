@@ -5,6 +5,7 @@ on:
     branches: main
 jobs:
   test:
+    if: ${{ github.actor != 'clan-bot' }}
     runs-on: nix
     steps:
       - uses: actions/checkout@v3

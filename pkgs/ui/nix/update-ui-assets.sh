@@ -4,6 +4,7 @@ set -xeuo pipefail
 # GITEA_TOKEN
 if [[ -z "${GITEA_TOKEN:-}" ]]; then
   echo "GITEA_TOKEN is not set"
+  echo "Go to https://git.clan.lol/user/settings/applications and generate a token"
   exit 1
 fi
 
@@ -23,7 +24,9 @@ NAR_HASH=$(nix-prefetch-url --unpack file://<(cat "$tmpdir/assets.tar.gz"))
 
 
 url="https://git.clan.lol/api/packages/clan/generic/ui/$NAR_HASH/assets.tar.gz"
-curl -v --upload-file "$tmpdir/assets.tar.gz" -X PUT "$url?token=$GITEA_TOKEN"
+set +x
+curl --upload-file "$tmpdir/assets.tar.gz" -X PUT "$url?token=$GITEA_TOKEN"
+set -x
 
 TEST_URL=$(nix-prefetch-url --unpack "$url")
 if [[ $TEST_URL != "$NAR_HASH" ]]; then
@@ -39,5 +42,4 @@ fetchzip {
   sha256 = "$NAR_HASH";
 }
 EOF
-
 
