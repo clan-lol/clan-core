@@ -10869,7 +10869,7 @@
           version = "2.1.2";
         };
       };
-      my-app = {
+      clan-ui = {
         "0.1.0" = {
           depInfo = {
             "@emotion/react" = {
@@ -11032,7 +11032,7 @@
             };
           };
           fetchInfo = "path:..";
-          ident = "my-app";
+          ident = "clan-ui";
           lifecycle = {
             build = true;
           };
