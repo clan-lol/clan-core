@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Iterator
 
 import pytest
-from root import PROJECT_ROOT
+from root import CLAN_CORE
 
 from clan_cli.dirs import nixpkgs_source
 
@@ -46,9 +46,8 @@ def test_flake(monkeymodule: pytest.MonkeyPatch) -> Iterator[Path]:
 
 @pytest.fixture(scope="module")
 def test_flake_with_core(monkeymodule: pytest.MonkeyPatch) -> Iterator[Path]:
-    clan_core_flake = PROJECT_ROOT.parent.parent
-    if not (clan_core_flake / "flake.nix").exists():
+    if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
             "clan-core flake not found. This test requires the clan-core flake to be present"
         )
-    yield from create_flake(monkeymodule, "test_flake_with_core", clan_core_flake)
+    yield from create_flake(monkeymodule, "test_flake_with_core", CLAN_CORE)

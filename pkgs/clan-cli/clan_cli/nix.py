@@ -4,28 +4,35 @@ import tempfile
 from .dirs import nixpkgs_flake, nixpkgs_source, unfree_nixpkgs
 
 
+def nix_command(flags: list[str]) -> list[str]:
+    return ["nix", "--experimental-features", "nix-command flakes"] + flags
+
+
 def nix_build(
     flags: list[str],
 ) -> list[str]:
-    return [
-        "nix",
-        "build",
-        "--no-link",
-        "--print-out-paths",
-        "--extra-experimental-features",
-        "nix-command flakes",
-    ] + flags
+    return (
+        nix_command(
+            [
+                "build",
+                "--no-link",
+                "--print-out-paths",
+                "--extra-experimental-features",
+                "nix-command flakes",
+            ]
+        )
+        + flags
+    )
 
 
 def nix_eval(flags: list[str]) -> list[str]:
-    default_flags = [
-        "nix",
-        "eval",
-        "--show-trace",
-        "--json",
-        "--extra-experimental-features",
-        "nix-command flakes",
-    ]
+    default_flags = nix_command(
+        [
+            "eval",
+            "--show-trace",
+            "--json",
+        ]
+    )
     if os.environ.get("IN_NIX_SANDBOX"):
         with tempfile.TemporaryDirectory() as nix_store:
             return (
@@ -51,14 +58,13 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
         return cmd
     wrapped_packages = [f"nixpkgs#{p}" for p in packages]
     return (
-        [
-            "nix",
-            "shell",
-            "--extra-experimental-features",
-            "nix-command flakes",
-            "--inputs-from",
-            f"{str(nixpkgs_flake())}",
-        ]
+        nix_command(
+            [
+                "shell",
+                "--inputs-from",
+                f"{str(nixpkgs_flake())}",
+            ]
+        )
         + wrapped_packages
         + ["-c"]
         + cmd
@@ -69,14 +75,13 @@ def unfree_nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     if os.environ.get("IN_NIX_SANDBOX"):
         return cmd
     return (
-        [
-            "nix",
-            "shell",
-            "--extra-experimental-features",
-            "nix-command flakes",
-            "-f",
-            str(unfree_nixpkgs()),
-        ]
+        nix_command(
+            [
+                "shell",
+                "-f",
+                str(unfree_nixpkgs()),
+            ]
+        )
         + packages
         + ["-c"]
         + cmd
