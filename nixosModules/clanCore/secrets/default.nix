@@ -62,7 +62,8 @@
                   default = "machines/${config.clanCore.machineName}/facts/${fact.config._module.args.name}";
                 };
                 value = lib.mkOption {
-                  default = builtins.readFile "${config.clanCore.clanDir}/fact.config.path";
+                  defaultText = lib.literalExpression "\${config.clanCore.clanDir}/\${fact.config.path}";
+                  default = builtins.readFile "${config.clanCore.clanDir}/${fact.config.path}";
                 };
               };
             }));

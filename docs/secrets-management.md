@@ -86,7 +86,7 @@ $ clan secrets machines list
 For existing machines, add their keys:
 
 ```console
-$ clan secrets machine add <machine_name> <age_key>
+$ clan secrets machines add <machine_name> <age_key>
 ```
 
 To fetch an age key from an SSH host key:
