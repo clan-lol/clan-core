@@ -54,6 +54,8 @@ in
       secrets;
     # To get proper error messages about missing secrets we need a dummy secret file that is always present
     sops.defaultSopsFile = lib.mkIf config.sops.validateSopsFiles (lib.mkDefault (builtins.toString (pkgs.writeText "dummy.yaml" "")));
-    sops.age.keyFile = lib.mkDefault "/var/lib/sops-nix/key.txt";
+
+    sops.age.keyFile = lib.mkIf (builtins.pathExists (config.clanCore.clanDir + "/sops/secrets/${config.clanCore.machineName}-age.key/secret"))
+      (lib.mkDefault "/var/lib/sops-nix/key.txt");
   };
 }
