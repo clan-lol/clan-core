@@ -1,3 +1,4 @@
+{ lib, ... }:
 {
   perSystem = { self', pkgs, ... }: {
     devShells.clan-cli = pkgs.callPackage ./shell.nix {

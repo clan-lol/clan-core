@@ -19,33 +19,26 @@ let
 
   groups = builtins.attrNames (filterDir (containsMachine groupsDir) groupsDir);
   secrets = filterDir containsMachineOrGroups secretsDir;
-  systems = [ "i686-linux" "x86_64-linux" "riscv64-linux" "aarch64-linux" "x86_64-darwin" ];
 in
 {
   config = lib.mkIf (config.clanCore.secretStore == "sops") {
-    system.clan = lib.genAttrs systems (system:
-      let
-        # Maybe use inputs.nixpkgs.legacyPackages here?
-        # don't reimport nixpkgs if we are on the same system (optimization)
-        pkgs' = if pkgs.hostPlatform.system == system then pkgs else import pkgs.path { system = system; };
-      in
-      {
-        generateSecrets = pkgs.writeScript "generate-secrets" ''
-          #!${pkgs'.python3}/bin/python
-          import json
-          from clan_cli.secrets.generate import generate_secrets_from_nix
-          args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; secret_submodules = config.clanCore.secrets; })})
-          generate_secrets_from_nix(**args)
-        '';
-        uploadSecrets = pkgs.writeScript "upload-secrets" ''
-          #!${pkgs'.python3}/bin/python
-          import json
-          from clan_cli.secrets.upload import upload_age_key_from_nix
-          # the second toJSON is needed to escape the string for the python
-          args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; deployment_address = config.clan.networking.deploymentAddress; age_key_file = config.sops.age.keyFile; })})
-          upload_age_key_from_nix(**args)
-        '';
-      });
+    system.clan = {
+      generateSecrets = pkgs.writeScript "generate-secrets" ''
+        #!${pkgs.python3}/bin/python
+        import json
+        from clan_cli.secrets.sops_generate import generate_secrets_from_nix
+        args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; secret_submodules = config.clanCore.secrets; })})
+        generate_secrets_from_nix(**args)
+      '';
+      uploadSecrets = pkgs.writeScript "upload-secrets" ''
+        #!${pkgs.python3}/bin/python
+        import json
+        from clan_cli.secrets.sops_generate import upload_age_key_from_nix
+        # the second toJSON is needed to escape the string for the python
+        args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; deployment_address = config.clan.networking.deploymentAddress; age_key_file = config.sops.age.keyFile; })})
+        upload_age_key_from_nix(**args)
+      '';
+    };
     sops.secrets = builtins.mapAttrs
       (name: _: {
         sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";
