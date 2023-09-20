@@ -10,19 +10,6 @@
       clan-openapi = self'.packages.clan-cli.clan-openapi;
       default = self'.packages.clan-cli;
 
-      ## Optional dependencies for clan cli, we re-expose them here to make sure they all build.
-      inherit (pkgs)
-        age
-        bash
-        bubblewrap
-        git
-        openssh
-        rsync
-        sops
-        sshpass
-        tor
-        zbar
-        ;
       # Override license so that we can build zerotierone without
       # having to re-import nixpkgs.
       zerotierone = pkgs.zerotierone.overrideAttrs (_old: { meta = { }; });

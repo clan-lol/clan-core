@@ -8,13 +8,12 @@
 
           export TMPDIR=$(${pkgs.coreutils}/bin/mktemp -d)
           trap "${pkgs.coreutils}/bin/chmod -R +w '$TMPDIR'; ${pkgs.coreutils}/bin/rm -rf '$TMPDIR'" EXIT
-
-          export PATH="${lib.makeBinPath [
+          export PATH="${lib.makeBinPath ([
             pkgs.coreutils
             pkgs.gitMinimal
             pkgs.nix
             self'.packages.clan-cli.checkPython
-          ]}"
+          ] ++ self'.packages.clan-cli.pytestDependencies)}"
 
           export CLAN_CORE=$TMPDIR/CLAN_CORE
           cp -r ${self} $CLAN_CORE

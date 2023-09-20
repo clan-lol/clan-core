@@ -1,4 +1,5 @@
 { age
+, lib
 , argcomplete
 , fastapi
 , uvicorn
@@ -20,7 +21,11 @@
 , rsync
 , pkgs
 , ui-assets
-, lib
+, bash
+, sshpass
+, zbar
+, tor
+, git
 }:
 let
 
@@ -30,16 +35,35 @@ let
     uvicorn # optional dependencies: if not enabled, webui subcommand will not work
   ];
 
-  testDependencies = [
+  pytestDependencies = runtimeDependencies ++ dependencies ++ [
     pytest
     pytest-cov
     pytest-subprocess
     pytest-parallel
     openssh
+    git
     stdenv.cc
   ];
 
-  checkPython = python3.withPackages (_ps: dependencies ++ testDependencies);
+  # Optional dependencies for clan cli, we re-expose them here to make sure they all build.
+  runtimeDependencies = [
+    bash
+    nix
+    zerotierone
+    bubblewrap
+    openssh
+    sshpass
+    zbar
+    tor
+    age
+    rsync
+    sops
+    git
+  ];
+
+  runtimeDependenciesAsSet = builtins.listToAttrs (builtins.map (p: lib.nameValuePair (lib.getName p.name) p) runtimeDependencies);
+
+  checkPython = python3.withPackages (_ps: pytestDependencies);
 
   # - vendor the jsonschema nix lib (copy instead of symlink).
   source = runCommand "clan-cli-source" { } ''
@@ -73,6 +97,7 @@ let
       --experimental-features 'nix-command flakes' \
       --override-input nixpkgs ${pkgs.path}
   '';
+
 in
 python3.pkgs.buildPythonPackage {
   name = "clan-cli";
@@ -85,25 +110,24 @@ python3.pkgs.buildPythonPackage {
   ];
   propagatedBuildInputs = dependencies;
 
-  passthru.tests.clan-pytest = runCommand "clan-pytest"
-    {
-      nativeBuildInputs = [ age zerotierone bubblewrap sops nix openssh rsync stdenv.cc ];
-    } ''
-    cp -r ${source} ./src
-    chmod +w -R ./src
-    cd ./src
+  # also re-expose dependencies so we test them in CI
+  passthru.tests = (lib.mapAttrs' (n: lib.nameValuePair "package-${n}") runtimeDependenciesAsSet) // {
+    clan-pytest = runCommand "clan-pytest" { nativeBuildInputs = [ checkPython ] ++ pytestDependencies; } ''
+      cp -r ${source} ./src
+      chmod +w -R ./src
+      cd ./src
 
-    # git is needed for test_git.py
-    export PATH="${lib.makeBinPath [pkgs.git]}:$PATH"
-
-    export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
-    ${checkPython}/bin/python -m pytest -m "not impure" -s ./tests
-    touch $out
-  '';
+      export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
+      ${checkPython}/bin/python -m pytest -m "not impure" -s ./tests
+      touch $out
+    '';
+  };
   passthru.clan-openapi = runCommand "clan-openapi" { } ''
     cp -r ${source} ./src
     chmod +w -R ./src
     cd ./src
+    export PATH=${checkPython}/bin:$PATH
+
     ${checkPython}/bin/python ./bin/gen-openapi --out $out/openapi.json --app-dir . clan_cli.webui.app:app
     touch $out
   '';
@@ -113,9 +137,10 @@ python3.pkgs.buildPythonPackage {
   passthru.devDependencies = [
     setuptools
     wheel
-  ] ++ testDependencies;
+  ] ++ pytestDependencies;
 
-  passthru.testDependencies = dependencies ++ testDependencies;
+  passthru.pytestDependencies = pytestDependencies;
+  passthru.runtimeDependencies = runtimeDependencies;
 
   postInstall = ''
     cp -r ${nixpkgs} $out/${python3.sitePackages}/clan_cli/nixpkgs
