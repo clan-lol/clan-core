@@ -17,7 +17,7 @@
       ## End optional dependencies
     };
 
-    checks = self'.packages.clan-cli.tests;
+    checks = lib.mkDefault self'.packages.clan-cli.tests;
   };
 
 }
