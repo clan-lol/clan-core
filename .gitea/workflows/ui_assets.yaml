@@ -35,8 +35,8 @@ jobs:
               export PATH=$PATH:$DEPS
 
               # Setup git config
-              git config --global user.email "clan-bot@clan.lol"
-              git config --global user.name "clan-bot"
+              git config --global user.email "ui-asset-bot@clan.lol"
+              git config --global user.name "ui-asset-bot"
 
               ################################################
               #                                              #
