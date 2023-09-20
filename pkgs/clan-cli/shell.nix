@@ -26,7 +26,7 @@ mkShell {
   shellHook = ''
     tmp_path=$(realpath ./.direnv)
 
-    rm -f clan_cli/nixpkgs clan_cli/assets
+    rm -f clan_cli/nixpkgs clan_cli/webui/assets
     ln -sf ${clan-cli.nixpkgs} clan_cli/nixpkgs
     ln -sf ${ui-assets} clan_cli/webui/assets
 
