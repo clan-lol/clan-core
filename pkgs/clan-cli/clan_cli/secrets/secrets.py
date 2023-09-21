@@ -171,14 +171,15 @@ def disallow_member(group_folder: Path, name: str) -> None:
     )
 
 
+def has_secret(secret: str) -> bool:
+    return (sops_secrets_folder() / secret / "secret").exists()
+
+
 def list_secrets() -> list[str]:
     path = sops_secrets_folder()
 
     def validate(name: str) -> bool:
-        return (
-            VALID_SECRET_NAME.match(name) is not None
-            and (path / name / "secret").exists()
-        )
+        return VALID_SECRET_NAME.match(name) is not None and has_secret(name)
 
     return list_objects(path, validate)
 

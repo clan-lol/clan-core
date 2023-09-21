@@ -11,22 +11,44 @@ let
       (builtins.fromJSON
         (builtins.readFile (directory + /machines/${machineName}/settings.json)));
 
+  nixosConfiguration = { system ? "x86_64-linux", name }: nixpkgs.lib.nixosSystem {
+    modules = [
+      self.nixosModules.clanCore
+      (machineSettings name)
+      (machines.${name} or { })
+      {
+        clanCore.machineName = name;
+        clanCore.clanDir = directory;
+        # TODO: remove this once we have a hardware-config mechanism
+        nixpkgs.hostPlatform = lib.mkDefault system;
+      }
+    ];
+    inherit specialArgs;
+  };
+
   nixosConfigurations = lib.mapAttrs
     (name: _:
-      nixpkgs.lib.nixosSystem {
-        modules = [
-          self.nixosModules.clanCore
-          (machineSettings name)
-          (machines.${name} or { })
-          {
-            clanCore.machineName = name;
-            clanCore.clanDir = directory;
-            # TODO: remove this once we have a hardware-config mechanism
-            nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-          }
-        ];
-        inherit specialArgs;
-      })
+      nixosConfiguration { inherit name; })
     (machinesDirs // machines);
+
+  systems = [
+    "x86_64-linux"
+    "aarch64-linux"
+    "riscv64-linux"
+    "x86_64-darwin"
+    "aarch64-darwin"
+  ];
+
+  clanInternals = {
+    machines = lib.mapAttrs
+      (name: _:
+        (builtins.listToAttrs (map
+          (system:
+            lib.nameValuePair system (nixosConfiguration { inherit name system; })
+          )
+          systems))
+      )
+      (machinesDirs // machines);
+  };
 in
-nixosConfigurations
+{ inherit nixosConfigurations clanInternals; }

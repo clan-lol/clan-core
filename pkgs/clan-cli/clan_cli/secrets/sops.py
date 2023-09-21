@@ -30,10 +30,25 @@ def get_public_key(privkey: str) -> str:
     return res.stdout.strip()
 
 
-def generate_private_key(path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    cmd = nix_shell(["age"], ["age-keygen", "-o", str(path)])
-    subprocess.run(cmd, check=True)
+def generate_private_key() -> tuple[str, str]:
+    cmd = nix_shell(["age"], ["age-keygen"])
+    try:
+        proc = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
+        res = proc.stdout.strip()
+        pubkey = None
+        private_key = None
+        for line in res.splitlines():
+            if line.startswith("# public key:"):
+                pubkey = line.split(":")[1].strip()
+            if not line.startswith("#"):
+                private_key = line
+        if not pubkey:
+            raise ClanError("Could not find public key in age-keygen output")
+        if not private_key:
+            raise ClanError("Could not find private key in age-keygen output")
+        return private_key, pubkey
+    except subprocess.CalledProcessError as e:
+        raise ClanError("Failed to generate private sops key") from e
 
 
 def get_user_name(user: str) -> str:

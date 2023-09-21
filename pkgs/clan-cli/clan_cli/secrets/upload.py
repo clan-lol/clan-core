@@ -1,31 +1,36 @@
 import argparse
 import json
+import os
 import subprocess
 
-from clan_cli.errors import ClanError
-
-from ..dirs import get_clan_flake_toplevel
-from ..nix import nix_build, nix_eval
+from ..dirs import get_clan_flake_toplevel, module_root
+from ..errors import ClanError
+from ..nix import nix_build, nix_config, nix_eval
 
 
 def upload_secrets(machine: str) -> None:
     clan_dir = get_clan_flake_toplevel().as_posix()
+    config = nix_config()
+    system = config["system"]
 
     proc = subprocess.run(
         nix_build(
             [
-                f'{clan_dir}#nixosConfigurations."{machine}".config.system.clan.uploadSecrets'
+                f'{clan_dir}#clanInternals.machines."{machine}".{system}.config.system.clan.uploadSecrets'
             ]
         ),
         stdout=subprocess.PIPE,
         text=True,
         check=True,
     )
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(module_root().parent)  # TODO do this in the clanCore module
     host = json.loads(
         subprocess.run(
             nix_eval(
                 [
-                    f'{clan_dir}#nixosConfigurations."{machine}".config.clan.networking.deploymentAddress'
+                    f'{clan_dir}#clanInternals.machines."{machine}".{system}.config.clan.networking.deploymentAddress'
                 ]
             ),
             stdout=subprocess.PIPE,
@@ -40,6 +45,7 @@ def upload_secrets(machine: str) -> None:
             secret_upload_script,
             host,
         ],
+        env=env,
     )
 
     if secret_upload.returncode != 0:

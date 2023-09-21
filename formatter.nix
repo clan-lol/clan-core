@@ -21,7 +21,7 @@
 
     treefmt.programs.mypy.enable = true;
     treefmt.programs.mypy.directories = {
-      "pkgs/clan-cli".extraPythonPackages = self'.packages.clan-cli.testDependencies;
+      "pkgs/clan-cli".extraPythonPackages = self'.packages.clan-cli.pytestDependencies;
     };
 
     treefmt.settings.formatter.nix = {

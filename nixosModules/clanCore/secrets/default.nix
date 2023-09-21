@@ -18,14 +18,17 @@
             type = lib.types.str;
             default = secret.config._module.args.name;
             description = ''
-              namespace of the secret
+              Namespace of the secret
             '';
           };
           generator = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
+            type = lib.types.str;
             description = ''
-              script to generate the secret.
-              can be set to null. then the user has to provide the secret via the clan cli
+              Script to generate the secret.
+              The script will be called with the following variables:
+              - facts: path to a directory where facts can be stored
+              - secrets: path to a directory where secrets can be stored
+              The script is expected to generate all secrets and facts defined in the module.
             '';
           };
           secrets = lib.mkOption {
@@ -63,7 +66,11 @@
                 };
                 value = lib.mkOption {
                   defaultText = lib.literalExpression "\${config.clanCore.clanDir}/\${fact.config.path}";
-                  default = builtins.readFile "${config.clanCore.clanDir}/${fact.config.path}";
+                  default =
+                    if builtins.pathExists "${config.clanCore.clanDir}/${fact.config.path}" then
+                      builtins.readFile "${config.clanCore.clanDir}/${fact.config.path}"
+                    else
+                      "";
                 };
               };
             }));

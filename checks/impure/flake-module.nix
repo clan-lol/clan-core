@@ -6,32 +6,20 @@
           #!${pkgs.bash}/bin/bash
           set -euo pipefail
 
-          export TMPDIR=$(${pkgs.coreutils}/bin/mktemp -d)
-          trap "${pkgs.coreutils}/bin/chmod -R +w '$TMPDIR'; ${pkgs.coreutils}/bin/rm -rf '$TMPDIR'" EXIT
-
           export PATH="${lib.makeBinPath [
-            pkgs.coreutils
             pkgs.gitMinimal
             pkgs.nix
-            self'.packages.clan-cli.checkPython
           ]}"
-
-          export CLAN_CORE=$TMPDIR/CLAN_CORE
-          cp -r ${self} $CLAN_CORE
-          chmod +w -R $CLAN_CORE
-
-          cp -r ${self'.packages.clan-cli.src} $TMPDIR/src
-          chmod +w -R $TMPDIR/src
-          cd $TMPDIR/src
-
-          python -m pytest -m "impure" -s ./tests --workers "" "$@"
+          ROOT=$(git rev-parse --show-toplevel)
+          cd "$ROOT/pkgs/clan-cli"
+          nix develop "$ROOT#clan-cli" -c bash -c 'TMPDIR=/tmp python -m pytest -m impure -s ./tests'
         '';
         check-clan-template = pkgs.writeShellScriptBin "check-clan-template" ''
           #!${pkgs.bash}/bin/bash
-          set -euo pipefail
+          set -euox pipefail
 
-          export TMPDIR=$(${pkgs.coreutils}/bin/mktemp -d)
-          trap "${pkgs.coreutils}/bin/chmod -R +w '$TMPDIR'; ${pkgs.coreutils}/bin/rm -rf '$TMPDIR'" EXIT
+          export CLANTMP=$(${pkgs.coreutils}/bin/mktemp -d)
+          trap "${pkgs.coreutils}/bin/chmod -R +w '$CLANTMP'; ${pkgs.coreutils}/bin/rm -rf '$CLANTMP'" EXIT
 
           export PATH="${lib.makeBinPath [
             pkgs.coreutils
@@ -44,7 +32,7 @@
             self'.packages.clan-cli
           ]}"
 
-          cd $TMPDIR
+          cd $CLANTMP
 
           echo initialize new clan
           nix flake init -t ${self}#new-clan

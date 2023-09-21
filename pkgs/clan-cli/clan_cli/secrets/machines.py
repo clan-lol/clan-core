@@ -19,11 +19,15 @@ def get_machine(name: str) -> str:
     return read_key(sops_machines_folder() / name)
 
 
+def has_machine(name: str) -> bool:
+    return (sops_machines_folder() / name / "key.json").exists()
+
+
 def list_machines() -> list[str]:
     path = sops_machines_folder()
 
     def validate(name: str) -> bool:
-        return validate_hostname(name) and (path / name / "key.json").exists()
+        return validate_hostname(name) and has_machine(name)
 
     return list_objects(path, validate)
 

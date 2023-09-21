@@ -7,12 +7,13 @@
     let
       system = "x86_64-linux";
       pkgs = clan-core.inputs.nixpkgs.legacyPackages.${system};
+      clan = clan-core.lib.buildClan {
+        directory = self;
+      };
     in
     {
       # all machines managed by cLAN
-      nixosConfigurations = clan-core.lib.buildClan {
-        directory = self;
-      };
+      inherit (clan) nixosConfigurations clanInternals;
       # add the cLAN cli tool to the dev shell
       devShells.${system}.default = pkgs.mkShell {
         packages = [

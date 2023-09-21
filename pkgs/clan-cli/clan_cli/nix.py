@@ -1,5 +1,8 @@
+import json
 import os
+import subprocess
 import tempfile
+from typing import Any
 
 from .dirs import nixpkgs_flake, nixpkgs_source, unfree_nixpkgs
 
@@ -23,6 +26,16 @@ def nix_build(
         )
         + flags
     )
+
+
+def nix_config() -> dict[str, Any]:
+    cmd = nix_command(["show-config", "--json"])
+    proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
+    data = json.loads(proc.stdout)
+    config = {}
+    for key, value in data.items():
+        config[key] = value["value"]
+    return config
 
 
 def nix_eval(flags: list[str]) -> list[str]:

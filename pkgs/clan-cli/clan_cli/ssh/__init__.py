@@ -756,6 +756,36 @@ class HostGroup:
         return HostGroup(list(filter(pred, self.hosts)))
 
 
+def parse_deployment_address(machine_name: str, host: str) -> Host:
+    parts = host.split("@")
+    user: Optional[str] = None
+    if len(parts) > 1:
+        user = parts[0]
+        hostname = parts[1]
+    else:
+        hostname = parts[0]
+    maybe_options = hostname.split("?")
+    options: Dict[str, str] = {}
+    if len(maybe_options) > 1:
+        hostname = maybe_options[0]
+        for option in maybe_options[1].split("&"):
+            k, v = option.split("=")
+            options[k] = v
+    maybe_port = hostname.split(":")
+    port = None
+    if len(maybe_port) > 1:
+        hostname = maybe_port[0]
+        port = int(maybe_port[1])
+    return Host(
+        hostname,
+        user=user,
+        port=port,
+        command_prefix=machine_name,
+        meta=dict(flake_attr=machine_name),
+        ssh_options=options,
+    )
+
+
 @overload
 def run(
     cmd: Union[List[str], str],

@@ -1,26 +1,16 @@
-{ nix-unit, clan-cli, ui-assets, python3, system, ruff, mkShell, writeScriptBin }:
+{ nix-unit, clan-cli, ui-assets, system, mkShell, writeScriptBin, openssh }:
 let
-  pythonWithDeps = python3.withPackages (
-    ps:
-    clan-cli.propagatedBuildInputs
-    ++ clan-cli.devDependencies
-    ++ [
-      ps.pip
-      ps.ipdb
-    ]
-  );
   checkScript = writeScriptBin "check" ''
     nix build .#checks.${system}.{treefmt,clan-pytest} -L "$@"
   '';
 in
 mkShell {
   packages = [
-    ruff
     nix-unit
-    pythonWithDeps
+    openssh
+    clan-cli.checkPython
   ];
   # sets up an editable install and add enty points to $PATH
-  PYTHONPATH = "${pythonWithDeps}/${pythonWithDeps.sitePackages}";
   PYTHONBREAKPOINT = "ipdb.set_trace";
 
   shellHook = ''

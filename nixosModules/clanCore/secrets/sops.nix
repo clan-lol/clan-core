@@ -22,52 +22,23 @@ let
 in
 {
   config = lib.mkIf (config.clanCore.secretStore == "sops") {
-    system.clan.generateSecrets = pkgs.writeScript "generate-secrets" ''
-      #!/bin/sh
-      set -efu
-
-      test -d "$CLAN_DIR"
-
-      PATH=$PATH:${lib.makeBinPath [
-        config.clanCore.clanPkgs.clan-cli
-      ]}
-
-      # initialize secret store
-      if ! clan secrets machines list | grep -q ${config.clanCore.machineName}; then (
-        INITTMP=$(mktemp -d)
-        trap 'rm -rf "$INITTMP"' EXIT
-        ${pkgs.age}/bin/age-keygen -o "$INITTMP/secret" 2> "$INITTMP/public"
-        PUBKEY=$(cat "$INITTMP/public" | sed 's/.*: //')
-        clan secrets machines add ${config.clanCore.machineName} "$PUBKEY"
-        tail -1 "$INITTMP/secret" | clan secrets set --machine ${config.clanCore.machineName} ${config.clanCore.machineName}-age.key
-      ) fi
-
-      ${lib.foldlAttrs (acc: n: v: ''
-        ${acc}
-        # ${n}
-        # if any of the secrets are missing, we regenerate all connected facts/secrets
-        (if ! ${lib.concatMapStringsSep " && " (x: "clan secrets get ${config.clanCore.machineName}-${x.name} >/dev/null") (lib.attrValues v.secrets)}; then
-
-          facts=$(mktemp -d)
-          trap "rm -rf $facts" EXIT
-          secrets=$(mktemp -d)
-          trap "rm -rf $secrets" EXIT
-          ${v.generator}
-
-          ${lib.concatMapStrings (fact: ''
-            mkdir -p "$(dirname ${fact.path})"
-            cp "$facts"/${fact.name} "$CLAN_DIR"/${fact.path}
-          '') (lib.attrValues v.facts)}
-
-          ${lib.concatMapStrings (secret: ''
-            cat "$secrets"/${secret.name} | clan secrets set --machine ${config.clanCore.machineName} ${config.clanCore.machineName}-${secret.name}
-          '') (lib.attrValues v.secrets)}
-        fi)
-      '') "" config.clanCore.secrets}
-    '';
-    system.clan.uploadSecrets = pkgs.writeScript "upload-secrets" ''
-      echo upload is not needed for sops secret store, since the secrets are part of the flake
-    '';
+    system.clan = {
+      generateSecrets = pkgs.writeScript "generate-secrets" ''
+        #!${pkgs.python3}/bin/python
+        import json
+        from clan_cli.secrets.sops_generate import generate_secrets_from_nix
+        args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; secret_submodules = config.clanCore.secrets; })})
+        generate_secrets_from_nix(**args)
+      '';
+      uploadSecrets = pkgs.writeScript "upload-secrets" ''
+        #!${pkgs.python3}/bin/python
+        import json
+        from clan_cli.secrets.sops_generate import upload_age_key_from_nix
+        # the second toJSON is needed to escape the string for the python
+        args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; deployment_address = config.clan.networking.deploymentAddress; age_key_file = config.sops.age.keyFile; })})
+        upload_age_key_from_nix(**args)
+      '';
+    };
     sops.secrets = builtins.mapAttrs
       (name: _: {
         sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";
@@ -76,5 +47,8 @@ in
       secrets;
     # To get proper error messages about missing secrets we need a dummy secret file that is always present
     sops.defaultSopsFile = lib.mkIf config.sops.validateSopsFiles (lib.mkDefault (builtins.toString (pkgs.writeText "dummy.yaml" "")));
+
+    sops.age.keyFile = lib.mkIf (builtins.pathExists (config.clanCore.clanDir + "/sops/secrets/${config.clanCore.machineName}-age.key/secret"))
+      (lib.mkDefault "/var/lib/sops-nix/key.txt");
   };
 }
