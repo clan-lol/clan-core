@@ -2,10 +2,16 @@
 
 ## Clone the Clan Template
 
-To start a new project, execute the following command to clone the Clan Core template:
+1. To start a new project, execute the following command to add the clan cli to your shell:
 
 ```bash
-$ nix flake init -t git+https://git.clan.lol/clan/clan-core
+$ nix shell git+https://git.clan.lol/clan/clan-core
+```
+
+2. Than use the following command to clone the clan core template into the current directory:
+
+```
+$ clan create .
 ```
 
 This action will generate two primary files: `flake.nix` and `.clan-flake`.
@@ -23,6 +29,10 @@ drwxrwxrwt root  root  139 B  12 seconds ago ../
 
 The `.clan-flake` marker file serves an optional purpose: it helps the `clan-cli` utility locate the project's root directory.
 If `.clan-flake` is missing, `clan-cli` will instead search for other indicators like `.git`, `.hg`, `.svn`, or `flake.nix` to identify the project root.
+
+## Modifying the configuration
+
+After cloning the template the next step is to modify the `flake.nix` and follow the instructions in it to add more machines.
 
 ---
 
