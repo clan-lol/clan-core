@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.impure
-def test_upload_secret(
+def test_secrets_upload(
     monkeypatch: pytest.MonkeyPatch,
     test_flake_with_core: Path,
     host_group: HostGroup,

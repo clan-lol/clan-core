@@ -1,8 +1,9 @@
 import argparse
 import json
+import os
 import subprocess
 
-from ..dirs import get_clan_flake_toplevel
+from ..dirs import get_clan_flake_toplevel, module_root
 from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_eval
 
@@ -22,6 +23,9 @@ def upload_secrets(machine: str) -> None:
         text=True,
         check=True,
     )
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(module_root().parent)  # TODO do this in the clanCore module
     host = json.loads(
         subprocess.run(
             nix_eval(
@@ -41,6 +45,7 @@ def upload_secrets(machine: str) -> None:
             secret_upload_script,
             host,
         ],
+        env=env,
     )
 
     if secret_upload.returncode != 0:

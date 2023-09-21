@@ -59,6 +59,7 @@ def sshd_config(project_root: Path, test_root: Path) -> Iterator[SshdConfig]:
         MaxStartups 64:30:256
         AuthorizedKeysFile {host_key}.pub
         AcceptEnv REALPATH
+        PasswordAuthentication no
         """
         )
         login_shell = dir / "shell"
@@ -109,7 +110,6 @@ def sshd(
 ) -> Iterator[Sshd]:
     import subprocess
 
-    subprocess.run(["echo", "hello"], check=True)
     port = unused_tcp_port()
     sshd = shutil.which("sshd")
     assert sshd is not None, "no sshd binary found"
@@ -123,6 +123,7 @@ def sshd(
     )
 
     while True:
+        print(sshd_config.path)
         if (
             subprocess.run(
                 [
@@ -137,7 +138,7 @@ def sshd(
                     "-p",
                     str(port),
                     "true",
-                ]
+                ],
             ).returncode
             == 0
         ):
