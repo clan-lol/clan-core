@@ -20,6 +20,7 @@
 , rsync
 , pkgs
 , ui-assets
+, lib
 }:
 let
 
@@ -91,6 +92,9 @@ python3.pkgs.buildPythonPackage {
     cp -r ${source} ./src
     chmod +w -R ./src
     cd ./src
+
+    # git is needed for test_git.py
+    export PATH="${lib.makeBinPath [pkgs.git]}:$PATH"
 
     export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
     ${checkPython}/bin/python -m pytest -m "not impure" -s ./tests

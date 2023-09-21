@@ -7,6 +7,7 @@ from typing import Optional
 from fastapi import HTTPException
 
 from clan_cli.dirs import get_clan_flake_toplevel, nixpkgs_source
+from clan_cli.git import commit_file
 from clan_cli.machines.folders import machine_folder, machine_settings_file
 from clan_cli.nix import nix_eval
 
@@ -36,6 +37,7 @@ def set_config_for_machine(machine_name: str, config: dict) -> None:
     settings_path.parent.mkdir(parents=True, exist_ok=True)
     with open(settings_path, "w") as f:
         json.dump(config, f)
+    commit_file(settings_path)
 
 
 def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
