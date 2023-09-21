@@ -28,6 +28,7 @@ example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 def test_set_some_option(
     args: list[str],
     expected: dict[str, Any],
+    test_flake: Path,
 ) -> None:
     # create temporary file for out_file
     with tempfile.NamedTemporaryFile() as out_file:

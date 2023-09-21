@@ -9,6 +9,7 @@ from typing import Any, Optional, Type
 
 from clan_cli.dirs import get_clan_flake_toplevel
 from clan_cli.errors import ClanError
+from clan_cli.git import commit_file
 from clan_cli.machines.folders import machine_settings_file
 from clan_cli.nix import nix_eval
 
@@ -240,6 +241,10 @@ def set_option(
     settings_file.parent.mkdir(parents=True, exist_ok=True)
     with open(settings_file, "w") as f:
         json.dump(new_config, f, indent=2)
+        if settings_file.resolve().is_relative_to(get_clan_flake_toplevel()):
+            commit_file(
+                settings_file, commit_message=f"Set option {option_description}"
+            )
 
 
 # takes a (sub)parser and configures it
