@@ -19,6 +19,10 @@ from ..schemas import (
     Status,
 )
 
+# Logging setup
+import logging
+log = logging.getLogger(__name__)
+
 router = APIRouter()
 
 

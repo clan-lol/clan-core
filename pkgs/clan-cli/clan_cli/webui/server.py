@@ -7,12 +7,11 @@ import webbrowser
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from threading import Thread
-from typing import Iterator
+from typing import (Iterator, Dict, Any)
 
 # XXX: can we dynamically load this using nix develop?
 from uvicorn import run
 
-logger = logging.getLogger(__name__)
 
 
 def defer_open_browser(base_url: str) -> None:
@@ -87,5 +86,6 @@ def start_server(args: argparse.Namespace) -> None:
             port=args.port,
             log_level=args.log_level,
             reload=args.reload,
+            access_log=args.log_level == "debug",
             headers=headers,
         )
