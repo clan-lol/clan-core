@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, inputs, ... }:
 {
   perSystem = { self', pkgs, ... }: {
     devShells.clan-cli = pkgs.callPackage ./shell.nix {
@@ -7,6 +7,7 @@
     packages = {
       clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
         inherit (self'.packages) ui-assets zerotierone;
+        inherit (inputs) nixpkgs;
       };
       clan-openapi = self'.packages.clan-cli.clan-openapi;
       default = self'.packages.clan-cli;
