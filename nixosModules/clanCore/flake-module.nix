@@ -8,6 +8,7 @@
       # just some example options. Can be removed later
       ./bloatware
       ./vm.nix
+      ./options.nix
     ];
     options.clanSchema = lib.mkOption {
       type = lib.types.attrs;

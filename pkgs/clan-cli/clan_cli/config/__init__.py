@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -95,42 +96,25 @@ def cast(value: Any, type: Type, opt_description: str) -> Any:
         )
 
 
-def options_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
-    if flake is None:
-        flake = get_clan_flake_toplevel()
+def options_for_machine(machine_name: str) -> dict:
+    clan_dir = get_clan_flake_toplevel()
     # use nix eval to lib.evalModules .#clanModules.machine-{machine_name}
+    cmd = nix_eval(
+        flags=[
+            "--show-trace",
+            f"{clan_dir}#flake.nixosConfigurations.{machine_name}.config.clanCore.optionsNix",
+        ],
+    )
     proc = subprocess.run(
-        nix_eval(
-            flags=[
-                "--show-trace",
-                "--impure",
-                "--expr",
-                f"""
-                let
-                    flake = builtins.getFlake (toString {flake});
-                    lib = flake.inputs.nixpkgs.lib;
-                    options = flake.nixosConfigurations.{machine_name}.options;
-
-                    # this is actually system independent as it uses toFile
-                    docs = flake.inputs.nixpkgs.legacyPackages.x86_64-linux.nixosOptionsDoc {{
-                        inherit options;
-                    }};
-                    opts = builtins.fromJSON (builtins.readFile docs.optionsJSON.options);
-            in
-                opts
-                """,
-            ],
-        ),
+        cmd,
         capture_output=True,
         text=True,
     )
     if proc.returncode != 0:
-        print(proc.stderr, file=sys.stderr)
         raise Exception(
-            f"Failed to read options for machine {machine_name}:\n{proc.stderr}"
+            f"Failed to read options for machine {machine_name}:\n{shlex.join(cmd)} returned:\n{proc.stderr}"
         )
-    options = json.loads(proc.stdout)
-    return options
+    return json.loads(proc.stdout)
 
 
 def read_machine_option_value(machine_name: str, option: str) -> str:
