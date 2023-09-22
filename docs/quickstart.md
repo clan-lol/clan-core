@@ -73,19 +73,21 @@ Absolutely, let's break down the migration step by step, explaining each action 
    Previous configuration:
 
    ```nix
-   nixosConfigurations.example-desktop = nixpkgs.lib.nixosSystem {
-       system = "x86_64-linux";
-       modules = [
-           ./configuration.nix
-       ];
-       [...]
-   };
+   {
+       nixosConfigurations.example-desktop = nixpkgs.lib.nixosSystem {
+           system = "x86_64-linux";
+           modules = [
+               ./configuration.nix
+           ];
+           [...]
+       };
+   }
    ```
 
    After change:
 
    ```nix
-   nixosConfigurations = clan-core.lib.buildClan {
+   let clan = clan-core.lib.buildClan {
        # this needs to point at the repository root
        directory = self;
        specialArgs = {};
@@ -98,11 +100,13 @@ Absolutely, let's break down the migration step by step, explaining each action 
            };
        };
    };
+   in { inherit (clan) nixosConfigurations clanInternal; }
    ```
 
    - `nixosConfigurations`: Defines NixOS configurations, using Clan Core’s `buildClan` function to manage the machines.
    - Inside `machines`, a new machine configuration is defined (in this case, `example-desktop`).
    - Inside `example-desktop` which is the target machine hostname, `nixpkgs.hostPlatform` specifies the host platform as `x86_64-linux`.
+   - `clanInternals`: Is required to enable evaluation of the secret generation/upload script on every architecture
 
 4. **Rebuild and Switch**: Rebuild your NixOS configuration using the updated flake:
 
