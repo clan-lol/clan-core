@@ -30,6 +30,8 @@
       };
       clanPkgs = lib.mkOption {
         default = self.packages.${pkgs.system};
+        defaultText = "self.packages.${pkgs.system}";
+        internal = true;
       };
     };
     options.system.clan = lib.mkOption {
