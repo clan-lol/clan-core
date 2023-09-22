@@ -6,8 +6,16 @@ from .errors import ClanError
 
 
 def get_clan_flake_toplevel() -> Path:
+    return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
+
+
+def find_git_repo_root() -> Path:
+    return find_toplevel([".git"])
+
+
+def find_toplevel(top_level_files: list[str]) -> Path:
     """Returns the path to the toplevel of the clan flake"""
-    for project_file in [".clan-flake", ".git", ".hg", ".svn", "flake.nix"]:
+    for project_file in top_level_files:
         initial_path = Path(os.getcwd())
         path = Path(initial_path)
         while path.parent != path:
