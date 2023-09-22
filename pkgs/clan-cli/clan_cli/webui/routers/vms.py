@@ -2,7 +2,7 @@ import asyncio
 import json
 import shlex
 from typing import Annotated, AsyncIterator
-
+import logging
 
 from fastapi import APIRouter, Body, HTTPException, Request, status, logger
 from fastapi.encoders import jsonable_encoder
@@ -11,6 +11,8 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from ...nix import nix_build, nix_eval
 from ..schemas import VmConfig, VmInspectResponse
 
+# Logging setup
+log = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -94,6 +96,7 @@ command output:
 
 async def vm_build(vm: VmConfig) -> AsyncIterator[str]:
     cmd = nix_build_vm(vm.flake_attr, flake_url=vm.flake_url)
+    log.debug(f"Running command: {shlex.join(cmd)}")
     proc = await asyncio.create_subprocess_exec(
         cmd[0],
         *cmd[1:],

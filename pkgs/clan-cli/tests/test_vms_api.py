@@ -20,6 +20,7 @@ def test_inspect(api: TestClient, test_flake_with_core: Path) -> None:
 
 @pytest.mark.impure
 def test_create(api: TestClient, test_flake_with_core: Path) -> None:
+    print(f"flake_url: {test_flake_with_core} ")
     response = api.post(
         "/api/vms/create",
         json=dict(

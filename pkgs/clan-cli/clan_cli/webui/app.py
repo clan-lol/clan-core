@@ -11,6 +11,8 @@ from .routers import flake, health, machines, root, vms
 origins = [
     "http://localhost:3000",
 ]
+# Logging setup
+log = logging.getLogger(__name__)
 
 
 def setup_app() -> FastAPI:
@@ -37,6 +39,8 @@ def setup_app() -> FastAPI:
     return app
 
 
-custom_logger.register(logging.getLogger('uvicorn').level)
+#TODO: How do I get the log level from the command line in here?
+custom_logger.register(logging.DEBUG)
 app = setup_app()
-
+log.warn("log warn")
+log.debug("log debug")
