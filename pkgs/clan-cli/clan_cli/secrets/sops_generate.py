@@ -6,6 +6,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
+from clan_cli.nix import nix_shell
+
 from ..dirs import get_clan_flake_toplevel
 from ..errors import ClanError
 from ..ssh import parse_deployment_address
@@ -47,7 +49,8 @@ secrets={shlex.quote(str(secrets_dir))}
 {generator}
         """
         try:
-            subprocess.run(["bash", "-c", text], check=True)
+            cmd = nix_shell(["bash"], ["bash", "-c", text])
+            subprocess.run(cmd, check=True)
         except subprocess.CalledProcessError:
             msg = "failed to the following command:\n"
             msg += text
