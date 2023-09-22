@@ -132,3 +132,42 @@ For convenience, Clan CLI allows group creation to simplify access management. H
    ```console
    $ clan secrets groups add-secret <group_name> <secret_name>
    ```
+
+# NixOS integration
+
+A NixOS machine will automatically import all secrets that are encrypted for the
+current machine. At runtime it will use the host key to decrypt all secrets into
+a in-memory, non-persistent filesystem using
+[sops-nix](https://github.com/Mic92/sops-nix). In your nixos configuration you
+can get a path to secrets like this `config.sops.secrets.<name>.path`. Example:
+
+```nix
+{ config, ...}: {
+  sops.secrets.my-password.neededForUsers = true;
+
+  users.users.mic92 = {
+    isNormalUser = true;
+    passwordFile = config.sops.secrets.my-password.path;
+  };
+}
+```
+
+See the [readme](https://github.com/Mic92/sops-nix) of sops-nix for more
+examples.
+
+# Importing existing sops-based keys / sops-nix
+
+`clan secrets` stores each secrets in a single file, whereas [sops](https://github.com/Mic92/sops-nix)
+commonly allows to put all secrets in a yaml or json documents.
+
+If you already happend to use sops-nix, you can migrate by using the `clan secrets import-sops` command by importing these documents:
+
+```console
+% clan secrets import-sops --prefix matchbox- --group admins --machine matchbox nixos/matchbox/secrets/secrets.yaml
+```
+
+This will create secrets for each secret found in `nixos/matchbox/secrets/secrets.yaml` in a ./sops folder of your repository.
+Each member of the group `admins` will be able
+
+Since our clan secret module will auto-import secrets that are encrypted for a particular nixos machine,
+you can now remove `sops.secrets.<secrets> = { };` unless you need to specify more options for the secret like owner/group of the secret file.
