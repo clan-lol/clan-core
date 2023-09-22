@@ -52,6 +52,16 @@ def nix_build_vm(machine: str, flake_url: str) -> list[str]:
     )
 
 
+async def start_vm(vm_path: str) -> None:
+    proc = await asyncio.create_subprocess_exec(
+        vm_path,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+
+    await proc.wait()
+
+
 @router.post("/api/vms/inspect")
 async def inspect_vm(
     flake_url: Annotated[str, Body()], flake_attr: Annotated[str, Body()]
@@ -90,11 +100,15 @@ async def vm_build(vm: VmConfig) -> AsyncIterator[str]:
         stderr=asyncio.subprocess.PIPE,
     )
     assert proc.stdout is not None and proc.stderr is not None
+    vm_path = ""
     async for line in proc.stdout:
-        yield line.decode("utf-8", "ignore")
+        vm_path = f'{line.decode("utf-8", "ignore").strip()}/bin/run-nixos-vm'
+
+    await start_vm(vm_path)
     stderr = ""
     async for line in proc.stderr:
         stderr += line.decode("utf-8", "ignore")
+        yield line.decode("utf-8", "ignore")
     res = await proc.wait()
     if res != 0:
         raise NixBuildException(
