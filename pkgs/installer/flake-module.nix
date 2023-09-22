@@ -13,7 +13,7 @@ let
   };
 in
 {
-  flake.packages.x86_64-linux.install-iso = self.inputs.disko.lib.lib.makeDiskImage { nixosConfig = installer; };
+  flake.packages.x86_64-linux.install-iso = self.inputs.disko.lib.makeDiskImages { nixosConfig = installer; };
   flake.apps.x86_64-linux.install-vm.program = installer.config.formats.vm.outPath;
   flake.apps.x86_64-linux.install-vm-nogui.program = installer.config.formats.vm-nogui.outPath;
 }
