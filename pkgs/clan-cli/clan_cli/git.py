@@ -48,7 +48,7 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
     )
     # add the file to the git index
     try:
-        subprocess.run(cmd, cwd=repo_dir, check=True)
+        subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
         raise ClanError(
             f"Failed to add {file_path} to git repository {repo_dir}:\n{shlex.join(cmd)}\n exited with {e.returncode}"
@@ -80,7 +80,6 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
     try:
         subprocess.run(
             cmd,
-            cwd=repo_dir,
             check=True,
         )
     except subprocess.CalledProcessError as e:

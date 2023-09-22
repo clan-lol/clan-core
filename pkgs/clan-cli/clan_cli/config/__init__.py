@@ -231,10 +231,10 @@ def set_option(
     settings_file.parent.mkdir(parents=True, exist_ok=True)
     with open(settings_file, "w") as f:
         json.dump(new_config, f, indent=2)
-        if settings_file.resolve().is_relative_to(get_clan_flake_toplevel()):
-            commit_file(
-                settings_file, commit_message=f"Set option {option_description}"
-            )
+        print(file=f)  # add newline at the end of the file to make git happy
+
+    if settings_file.resolve().is_relative_to(get_clan_flake_toplevel()):
+        commit_file(settings_file, commit_message=f"Set option {option_description}")
 
 
 # takes a (sub)parser and configures it
