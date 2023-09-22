@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-from clan_cli.dirs import get_clan_flake_toplevel
+from clan_cli.dirs import find_git_repo_root
 from clan_cli.errors import ClanError
 from clan_cli.nix import nix_shell
 
@@ -15,7 +15,7 @@ def commit_file(
 ) -> None:
     # set default for repo_dir
     if repo_dir is None:
-        repo_dir = get_clan_flake_toplevel()
+        repo_dir = find_git_repo_root()
     # check that the file is in the git repository and exists
     if not Path(file_path).resolve().is_relative_to(repo_dir.resolve()):
         raise ClanError(f"File {file_path} is not in the git repository {repo_dir}")
@@ -43,7 +43,10 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
     # add the file to the git index
     subprocess.run(["git", "add", file_path], cwd=repo_dir, check=True)
     # commit only that file
-    cmd = nix_shell(["git"], ["git", "commit", "-m", commit_message, file_path.name])
+    cmd = nix_shell(
+        ["git"],
+        ["git", "commit", "-m", commit_message, str(file_path.relative_to(repo_dir))],
+    )
     subprocess.run(
         cmd,
         cwd=repo_dir,
