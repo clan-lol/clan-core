@@ -106,7 +106,10 @@ exec {bash} -l "${{@}}"
 
 @pytest.fixture
 def sshd(
-    sshd_config: SshdConfig, command: "Command", unused_tcp_port: "PortFunction"
+    sshd_config: SshdConfig,
+    command: "Command",
+    unused_tcp_port: "PortFunction",
+    monkeypatch: pytest.MonkeyPatch,
 ) -> Iterator[Sshd]:
     import subprocess
 
@@ -121,7 +124,7 @@ def sshd(
     proc = command.run(
         [sshd, "-f", str(sshd_config.path), "-D", "-p", str(port)], extra_env=env
     )
-
+    monkeypatch.delenv("SSH_AUTH_SOCK", raising=False)
     while True:
         print(sshd_config.path)
         if (
