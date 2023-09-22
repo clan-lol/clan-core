@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from typing import Optional
 
 from .errors import ClanError
 
@@ -9,8 +10,11 @@ def get_clan_flake_toplevel() -> Path:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
 
 
-def find_git_repo_root() -> Path:
-    return find_toplevel([".git"])
+def find_git_repo_root() -> Optional[Path]:
+    try:
+        return find_toplevel([".git"])
+    except ClanError:
+        return None
 
 
 def find_toplevel(top_level_files: list[str]) -> Path:
