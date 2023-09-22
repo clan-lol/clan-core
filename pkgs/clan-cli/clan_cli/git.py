@@ -54,6 +54,16 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
             f"Failed to add {file_path} to git repository {repo_dir}:\n{shlex.join(cmd)}\n exited with {e.returncode}"
         ) from e
 
+    # check if there is a diff
+    cmd = nix_shell(
+        ["git"],
+        ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code"],
+    )
+    result = subprocess.run(cmd, cwd=repo_dir)
+    # if there is no diff, return
+    if result.returncode == 0:
+        return
+
     # commit only that file
     cmd = nix_shell(
         ["git"],
