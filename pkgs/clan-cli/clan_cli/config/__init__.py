@@ -102,7 +102,7 @@ def options_for_machine(machine_name: str) -> dict:
     cmd = nix_eval(
         flags=[
             "--show-trace",
-            f"{clan_dir}#flake.nixosConfigurations.{machine_name}.config.clanCore.optionsNix",
+            f"{clan_dir}#nixosConfigurations.{machine_name}.config.clanCore.optionsNix",
         ],
     )
     proc = subprocess.run(
