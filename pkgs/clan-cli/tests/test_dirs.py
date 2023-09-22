@@ -11,7 +11,7 @@ def test_get_clan_flake_toplevel(
 ) -> None:
     monkeypatch.chdir(temporary_dir)
     with pytest.raises(ClanError):
-        get_clan_flake_toplevel()
+        print(get_clan_flake_toplevel())
     (temporary_dir / ".git").touch()
     assert get_clan_flake_toplevel() == temporary_dir
 

@@ -1,4 +1,4 @@
-{ lib, inputs, ... }:
+{ inputs, ... }:
 {
   perSystem = { self', pkgs, ... }: {
     devShells.clan-cli = pkgs.callPackage ./shell.nix {
@@ -18,7 +18,7 @@
       ## End optional dependencies
     };
 
-    checks = lib.mkDefault self'.packages.clan-cli.tests;
+    checks = self'.packages.clan-cli.tests;
   };
 
 }

@@ -113,7 +113,7 @@ python3.pkgs.buildPythonPackage {
   propagatedBuildInputs = dependencies;
 
   # also re-expose dependencies so we test them in CI
-  passthru.tests = (lib.mapAttrs' (n: lib.nameValuePair "package-${n}") runtimeDependenciesAsSet) // {
+  passthru.tests = (lib.mapAttrs' (n: lib.nameValuePair "clan-dep-${n}") runtimeDependenciesAsSet) // {
     clan-pytest = runCommand "clan-pytest" { nativeBuildInputs = [ checkPython ] ++ pytestDependencies; } ''
       cp -r ${source} ./src
       chmod +w -R ./src
