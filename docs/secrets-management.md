@@ -135,8 +135,25 @@ For convenience, Clan CLI allows group creation to simplify access management. H
 
 # NixOS integration
 
-A NixOS machine will automatically import all secrets that were encrypted for the same.
-At runtime it will
+A NixOS machine will automatically import all secrets that are encrypted for the
+current machine. At runtime it will use the host key to decrypt all secrets into
+a in-memory, non-persistent filesystem using
+[sops-nix](https://github.com/Mic92/sops-nix). In your nixos configuration you
+can get a path to secrets like this `config.sops.secrets.<name>.path`. Example:
+
+```nix
+{ config, ...}: {
+  sops.secrets.my-password.neededForUsers = true;
+
+  users.users.mic92 = {
+    isNormalUser = true;
+    passwordFile = config.sops.secrets.my-password.path;
+  };
+}
+```
+
+See the [readme](https://github.com/Mic92/sops-nix) of sops-nix for more
+examples.
 
 # Importing existing sops-based keys / sops-nix
 
