@@ -32,6 +32,8 @@ def test_commit_file_outside_git_raises_error(git_repo: Path) -> None:
         # commit the file
         with pytest.raises(ClanError):
             git.commit_file(Path(tmp.name), git_repo, "test commit")
+            # this should not fail but skip the commit
+            git.commit_file(Path(tmp.name), git_repo, "test commit")
 
 
 def test_commit_file_not_existing_raises_error(git_repo: Path) -> None:
