@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
+import logging
 
+from .. import custom_logger 
 from .assets import asset_path
 from .routers import flake, health, machines, root, vms
 
@@ -35,4 +37,6 @@ def setup_app() -> FastAPI:
     return app
 
 
+custom_logger.register(logging.getLogger('uvicorn').level)
 app = setup_app()
+

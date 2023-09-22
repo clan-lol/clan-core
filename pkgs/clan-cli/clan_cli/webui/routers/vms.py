@@ -3,15 +3,16 @@ import json
 import shlex
 from typing import Annotated, AsyncIterator
 
-from fastapi import APIRouter, Body, HTTPException, Request, status
+
+from fastapi import APIRouter, Body, HTTPException, Request, status, logger
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from ...nix import nix_build, nix_eval
 from ..schemas import VmConfig, VmInspectResponse
 
-router = APIRouter()
 
+router = APIRouter()
 
 class NixBuildException(HTTPException):
     def __init__(self, msg: str, loc: list = ["body", "flake_attr"]):
@@ -120,8 +121,10 @@ command output:
 {stderr}
             """
         )
+import logging
 
 
 @router.post("/api/vms/create")
 async def create_vm(vm: Annotated[VmConfig, Body()]) -> StreamingResponse:
     return StreamingResponse(vm_build(vm))
+
