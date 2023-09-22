@@ -12,7 +12,7 @@ class CustomFormatter(logging.Formatter):
 
     def format_str(color):
         reset = "\x1b[0m"
-        return f"%(asctime)s - %(name)s - {color} %(levelname)s {reset} - %(message)s (%(filename)s:%(lineno)d)"
+        return f"{color}%(levelname)s{reset}:(%(filename)s:%(lineno)d): %(message)s"
 
     FORMATS = {
         logging.DEBUG: format_str(blue),
@@ -36,7 +36,7 @@ class CustomFormatter(logging.Formatter):
 
 def register(level):
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(level)
     ch.setFormatter(CustomFormatter())
     logging.basicConfig(level=level, handlers=[ch])
 
