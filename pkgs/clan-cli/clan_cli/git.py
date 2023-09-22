@@ -1,3 +1,4 @@
+import shlex
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -41,15 +42,38 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
     :param commit_message: The commit message.
     :raises ClanError: If the file is not in the git repository.
     """
+    cmd = nix_shell(
+        ["git"],
+        ["git", "-C", str(repo_dir), "add", str(file_path)],
+    )
     # add the file to the git index
-    subprocess.run(["git", "add", file_path], cwd=repo_dir, check=True)
+    try:
+        subprocess.run(cmd, cwd=repo_dir, check=True)
+    except subprocess.CalledProcessError as e:
+        raise ClanError(
+            f"Failed to add {file_path} to git repository {repo_dir}:\n{shlex.join(cmd)}\n exited with {e.returncode}"
+        ) from e
+
     # commit only that file
     cmd = nix_shell(
         ["git"],
-        ["git", "commit", "-m", commit_message, str(file_path.relative_to(repo_dir))],
+        [
+            "git",
+            "-C",
+            str(repo_dir),
+            "commit",
+            "-m",
+            commit_message,
+            str(file_path.relative_to(repo_dir)),
+        ],
     )
-    subprocess.run(
-        cmd,
-        cwd=repo_dir,
-        check=True,
-    )
+    try:
+        subprocess.run(
+            cmd,
+            cwd=repo_dir,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise ClanError(
+            f"Failed to commit {file_path} to git repository {repo_dir}:\n{shlex.join(cmd)}\n exited with {e.returncode}"
+        ) from e
