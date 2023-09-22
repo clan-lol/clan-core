@@ -96,15 +96,15 @@ def cast(value: Any, type: Type, opt_description: str) -> Any:
         )
 
 
-def options_for_machine(machine_name: str) -> dict:
+def options_for_machine(machine_name: str, show_trace: bool = False) -> dict:
     clan_dir = get_clan_flake_toplevel()
-    # use nix eval to lib.evalModules .#clanModules.machine-{machine_name}
-    cmd = nix_eval(
-        flags=[
-            "--show-trace",
-            f"{clan_dir}#nixosConfigurations.{machine_name}.config.clanCore.optionsNix",
-        ],
+    flags = []
+    if show_trace:
+        flags.append("--show-trace")
+    flags.append(
+        f"{clan_dir}#nixosConfigurations.{machine_name}.config.clanCore.optionsNix"
     )
+    cmd = nix_eval(flags=flags)
     proc = subprocess.run(
         cmd,
         capture_output=True,
@@ -117,7 +117,9 @@ def options_for_machine(machine_name: str) -> dict:
     return json.loads(proc.stdout)
 
 
-def read_machine_option_value(machine_name: str, option: str) -> str:
+def read_machine_option_value(
+    machine_name: str, option: str, show_trace: bool = False
+) -> str:
     clan_dir = get_clan_flake_toplevel()
     # use nix eval to read from .#nixosConfigurations.default.config.{option}
     # this will give us the evaluated config with the options attribute
@@ -148,11 +150,13 @@ def read_machine_option_value(machine_name: str, option: str) -> str:
 
 def get_or_set_option(args: argparse.Namespace) -> None:
     if args.value == []:
-        print(read_machine_option_value(args.machine, args.option))
+        print(read_machine_option_value(args.machine, args.option, args.show_trace))
     else:
         # load options
         if args.options_file is None:
-            options = options_for_machine(machine_name=args.machine)
+            options = options_for_machine(
+                machine_name=args.machine, show_trace=args.show_trace
+            )
         else:
             with open(args.options_file) as f:
                 options = json.load(f)
@@ -169,6 +173,7 @@ def get_or_set_option(args: argparse.Namespace) -> None:
             options=options,
             settings_file=settings_file,
             option_description=args.option,
+            show_trace=args.show_trace,
         )
         if not args.quiet:
             new_value = read_machine_option_value(args.machine, args.option)
@@ -182,6 +187,7 @@ def set_option(
     options: dict,
     settings_file: Path,
     option_description: str = "",
+    show_trace: bool = False,
 ) -> None:
     option_path = option.split(".")
 
@@ -198,6 +204,7 @@ def set_option(
             options=options,
             settings_file=settings_file,
             option_description=option,
+            show_trace=show_trace,
         )
 
     target_type = map_type(options[option]["type"])
@@ -242,7 +249,6 @@ def register_parser(
     # inject callback function to process the input later
     parser.set_defaults(func=get_or_set_option)
 
-    # add --machine argument
     parser.add_argument(
         "--machine",
         "-m",
@@ -251,39 +257,40 @@ def register_parser(
         default="default",
     )
 
-    # add --options-file argument
+    parser.add_argument(
+        "--show-trace",
+        help="Show nix trace on evaluation error",
+        action="store_true",
+    )
+
     parser.add_argument(
         "--options-file",
         help="JSON file with options",
         type=Path,
     )
 
-    # add --settings-file argument
     parser.add_argument(
         "--settings-file",
         help="JSON file with settings",
         type=Path,
     )
-    # add --quiet argument
     parser.add_argument(
         "--quiet",
         help="Do not print the value",
         action="store_true",
     )
 
-    # add single positional argument for the option (e.g. "foo.bar")
     parser.add_argument(
         "option",
-        help="Option to read or set",
+        help="Option to read or set (e.g. foo.bar)",
         type=str,
     )
 
-    # add a single optional argument for the value
     parser.add_argument(
         "value",
         # force this arg to be set
         nargs="*",
-        help="Value to set",
+        help="option value to set (if omitted, the current value is printed)",
     )
 
 
