@@ -118,15 +118,14 @@ def options_for_machine(machine_name: str) -> dict:
 
 
 def read_machine_option_value(machine_name: str, option: str) -> str:
+    clan_dir = get_clan_flake_toplevel()
     # use nix eval to read from .#nixosConfigurations.default.config.{option}
     # this will give us the evaluated config with the options attribute
     proc = subprocess.run(
         nix_eval(
             flags=[
                 "--show-trace",
-                "--extra-experimental-features",
-                "nix-command flakes",
-                f".#nixosConfigurations.{machine_name}.config.{option}",
+                f"{clan_dir}#nixosConfigurations.{machine_name}.config.{option}",
             ],
         ),
         capture_output=True,
