@@ -16,9 +16,16 @@ except ImportError:
 
 def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog=prog, description="cLAN tool")
+
+    parser.add_argument(
+        "--debug",
+        help="Enable debug logging",
+        action="store_true",
+    )
+
     subparsers = parser.add_subparsers()
 
-    parser_create = subparsers.add_parser("create", help="create a clan flake")
+    parser_create = subparsers.add_parser("create", help="create a clan flake inside the current directory")
     create.register_parser(parser_create)
 
     parser_config = subparsers.add_parser("config", help="set nixos configuration")
@@ -58,6 +65,8 @@ def main() -> None:
     try:
         args.func(args)
     except ClanError as e:
+        if args.debug:
+            raise
         print(f"{sys.argv[0]}: {e}")
         sys.exit(1)
 
