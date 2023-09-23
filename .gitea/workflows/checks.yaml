@@ -9,4 +9,4 @@ jobs:
     runs-on: nix
     steps:
       - uses: actions/checkout@v3
-      - run: nix run --refresh github:Mic92/nix-fast-build/ae50c356c2f9e790f3d9d8e00bfa9f4b54f49bdd
+      - run: nix run --refresh github:Mic92/nix-fast-build -- --no-nom
