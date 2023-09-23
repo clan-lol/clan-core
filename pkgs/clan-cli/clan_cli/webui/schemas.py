@@ -1,7 +1,8 @@
 from enum import Enum
+from typing import List
 
 from pydantic import BaseModel, Field
-from typing import List
+
 
 class Status(Enum):
     ONLINE = "online"
@@ -47,9 +48,10 @@ class VmInspectResponse(BaseModel):
     config: VmConfig
 
 
-class FlakeAction(BaseModel): 
+class FlakeAction(BaseModel):
     id: str
     uri: str
+
 
 class FlakeResponse(BaseModel):
     content: str
