@@ -4,7 +4,7 @@ from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 
 from .assets import asset_path
-from .routers import health, machines, root, vms
+from .routers import flake, health, machines, root, vms
 
 origins = [
     "http://localhost:3000",
@@ -20,6 +20,7 @@ def setup_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.include_router(flake.router)
     app.include_router(health.router)
     app.include_router(machines.router)
     app.include_router(root.router)
