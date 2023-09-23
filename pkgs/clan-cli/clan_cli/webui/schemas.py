@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 from pydantic import BaseModel, Field
 
@@ -45,3 +46,13 @@ class VmConfig(BaseModel):
 
 class VmInspectResponse(BaseModel):
     config: VmConfig
+
+
+class FlakeAction(BaseModel):
+    id: str
+    uri: str
+
+
+class FlakeResponse(BaseModel):
+    content: str
+    actions: List[FlakeAction]
