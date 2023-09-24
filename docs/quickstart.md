@@ -1,22 +1,24 @@
 # Initializing a New Clan Project
 
-## Clone the Clan Template
+## Create a new Clan flake
 
 1. To start a new project, execute the following command to add the clan cli to your shell:
 
-```bash
+```shellSession
 $ nix shell git+https://git.clan.lol/clan/clan-core
 ```
 
-2. Than use the following command to clone the clan core template into the current directory:
+2. Then use the following commands to initialize a new clan-flake:
 
 ```
-$ clan create .
+$ mkdir ./my-flake
+$ cd ./my-flake
+$ clan create
 ```
 
 This action will generate two primary files: `flake.nix` and `.clan-flake`.
 
-```bash
+```shellSession
 $ ls -la
 drwx------ joerg users   5 B  a minute ago   ./
 drwxrwxrwt root  root  139 B  12 seconds ago ../
@@ -30,9 +32,29 @@ drwxrwxrwt root  root  139 B  12 seconds ago ../
 The `.clan-flake` marker file serves an optional purpose: it helps the `clan-cli` utility locate the project's root directory.
 If `.clan-flake` is missing, `clan-cli` will instead search for other indicators like `.git`, `.hg`, `.svn`, or `flake.nix` to identify the project root.
 
-## Modifying the configuration
+## Add your first machine
 
-After cloning the template the next step is to modify the `flake.nix` and follow the instructions in it to add more machines.
+```shellSession
+$ clan machines create my-machine
+$ clan machines list
+my-machine
+```
+
+## configure your machine
+
+In this example we crate a user named `my-user` that is allowed to login to the machine
+
+```shellSession
+$ clan config --machine my-machine users.users.my-user.hashedPassword $(mkpasswd)
+```
+
+## Test your machine config inside a VM
+
+```shellSession
+$ nix build .#nixosConfigurations.my-machine.config.system.build.vm
+...
+$ ./result/bin/run-nixos-vm
+```
 
 ---
 
@@ -48,7 +70,7 @@ Absolutely, let's break down the migration step by step, explaining each action 
    cp -r /etc/nixos ~/nixos-backup
    ```
 
-2. **Update Flake Inputs**: The patch adds a new input named `clan-core` to your `flake.nix`. This input points to a Git repository for Clan Core. Here's the addition:
+2. **Update Flake Inputs**: Add a new input for the `clan-core` dependency:
 
    ```nix
    inputs.clan-core = {
