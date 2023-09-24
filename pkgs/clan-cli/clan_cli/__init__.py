@@ -25,7 +25,9 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers()
 
-    parser_create = subparsers.add_parser("create", help="create a clan flake inside the current directory")
+    parser_create = subparsers.add_parser(
+        "create", help="create a clan flake inside the current directory"
+    )
     create.register_parser(parser_create)
 
     parser_config = subparsers.add_parser("config", help="set nixos configuration")

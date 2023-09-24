@@ -2,11 +2,12 @@
 import argparse
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Optional, Type
+from typing import Any, Optional, Tuple, Type
 
 from clan_cli.dirs import get_clan_flake_toplevel
 from clan_cli.errors import ClanError
@@ -181,6 +182,57 @@ def get_or_set_option(args: argparse.Namespace) -> None:
             print(new_value)
 
 
+def find_option(
+    option: str, value: Any, options: dict, option_description: Optional[str] = None
+) -> Tuple[str, Any]:
+    """
+    The option path specified by the user doesn't have to match exactly to an
+    entry in the options.json file. Examples
+
+    Example 1:
+        $ clan config services.openssh.settings.SomeSetting 42
+    This is a freeform option that does not appear in the options.json
+    The actual option is `services.openssh.settings`
+    And the value must be wrapped: {"SomeSettings": 42}
+
+    Example 2:
+        $ clan config users.users.my-user.name my-name
+    The actual option is `users.users.<name>.name`
+    """
+
+    # option description is used for error messages
+    if option_description is None:
+        option_description = option
+
+    option_path = option.split(".")
+
+    # fuzzy search the option paths, so when
+    #   specified option path: "foo.bar.baz.bum"
+    #   available option path: "foo.<name>.baz.<name>"
+    # we can still find the option
+    first = option_path[0]
+    regex = rf"({first}|<name>)"
+    for elem in option_path[1:]:
+        regex += rf"\.({elem}|<name>)"
+    for opt in options.keys():
+        if re.match(regex, opt):
+            return opt, value
+
+    # if the regex search did not find the option, start stripping the last
+    # element of the option path and find matching parent option
+    # (see examples above for why this is needed)
+    if len(option_path) == 1:
+        raise ClanError(f"Option {option_description} not found")
+    option_path_parent = option_path[:-1]
+    attr_prefix = option_path[-1]
+    return find_option(
+        option=".".join(option_path_parent),
+        value={attr_prefix: value},
+        options=options,
+        option_description=option_description,
+    )
+
+
 def set_option(
     option: str,
     value: Any,
@@ -189,23 +241,13 @@ def set_option(
     option_description: str = "",
     show_trace: bool = False,
 ) -> None:
+    option, value = find_option(
+        option=option,
+        value=value,
+        options=options,
+        option_description=option_description,
+    )
     option_path = option.split(".")
-
-    # if the option cannot be found, then likely the type is attrs and we need to
-    # find the parent option.
-    if option not in options:
-        if len(option_path) == 1:
-            raise ClanError(f"Option {option_description} not found")
-        option_parent = option_path[:-1]
-        attr = option_path[-1]
-        return set_option(
-            option=".".join(option_parent),
-            value={attr: value},
-            options=options,
-            settings_file=settings_file,
-            option_description=option,
-            show_trace=show_trace,
-        )
 
     target_type = map_type(options[option]["type"])
     casted = cast(value, target_type, option)
