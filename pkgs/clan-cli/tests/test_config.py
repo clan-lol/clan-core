@@ -177,3 +177,32 @@ def test_type_from_schema_path_dynamic_attrs() -> None:
 # test the cast function with simple types
 def test_cast_simple() -> None:
     assert config.cast(["true"], bool, "foo-option") is True
+
+
+@pytest.mark.parametrize(
+    "option,value,options,expected",
+    [
+        ("foo.bar", ["baz"], {"foo.bar": {"type": "str"}}, ("foo.bar", ["baz"])),
+        ("foo.bar", ["baz"], {"foo": {"type": "attrs"}}, ("foo", {"bar": ["baz"]})),
+        (
+            "users.users.my-user.name",
+            ["my-name"],
+            {"users.users.<name>.name": {"type": "str"}},
+            ("users.users.<name>.name", ["my-name"]),
+        ),
+        (
+            "foo.bar.baz.bum",
+            ["val"],
+            {"foo.<name>.baz": {"type": "attrs"}},
+            ("foo.<name>.baz", {"bum": ["val"]}),
+        ),
+        (
+            "userIds.DavHau",
+            ["42"],
+            {"userIds": {"type": "attrs"}},
+            ("userIds", {"DavHau": ["42"]}),
+        ),
+    ],
+)
+def test_find_option(option: str, value: list, options: dict, expected: tuple) -> None:
+    assert config.find_option(option, value, options) == expected
