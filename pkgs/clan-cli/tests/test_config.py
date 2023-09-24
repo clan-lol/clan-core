@@ -1,13 +1,14 @@
 import json
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import pytest
 from cli import Cli
 
 from clan_cli import config
 from clan_cli.config import parsing
+from clan_cli.errors import ClanError
 
 example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 
@@ -174,9 +175,28 @@ def test_type_from_schema_path_dynamic_attrs() -> None:
     assert parsing.type_from_schema_path(schema, ["users", "foo"]) == str
 
 
+def test_map_type() -> None:
+    with pytest.raises(ClanError):
+        config.map_type("foo")
+    assert config.map_type("string") == str
+    assert config.map_type("integer") == int
+    assert config.map_type("boolean") == bool
+    assert config.map_type("attribute set of string") == dict[str, str]
+    assert config.map_type("attribute set of integer") == dict[str, int]
+    assert config.map_type("null or string") == Optional[str]
+
+
 # test the cast function with simple types
-def test_cast_simple() -> None:
-    assert config.cast(["true"], bool, "foo-option") is True
+def test_cast() -> None:
+    assert config.cast(value=["true"], type=bool, opt_description="foo-option") is True
+    assert (
+        config.cast(value=["null"], type=Optional[str], opt_description="foo-option")
+        is None
+    )
+    assert (
+        config.cast(value=["bar"], type=Optional[str], opt_description="foo-option")
+        == "bar"
+    )
 
 
 @pytest.mark.parametrize(
