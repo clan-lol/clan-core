@@ -1,4 +1,5 @@
 import argparse
+import logging
 import subprocess
 import time
 import urllib.request
@@ -10,6 +11,8 @@ from typing import Iterator
 
 # XXX: can we dynamically load this using nix develop?
 from uvicorn import run
+
+log = logging.getLogger(__name__)
 
 
 def defer_open_browser(base_url: str) -> None:
@@ -24,7 +27,7 @@ def defer_open_browser(base_url: str) -> None:
 
 @contextmanager
 def spawn_node_dev_server(host: str, port: int) -> Iterator[None]:
-    logger.info("Starting node dev server...")
+    log.info("Starting node dev server...")
     path = Path(__file__).parent.parent.parent.parent / "ui"
     with subprocess.Popen(
         [

@@ -1,10 +1,11 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
-import logging
 
-from .. import custom_logger 
+from .. import custom_logger
 from .assets import asset_path
 from .routers import flake, health, machines, root, vms
 
@@ -39,7 +40,7 @@ def setup_app() -> FastAPI:
     return app
 
 
-#TODO: How do I get the log level from the command line in here?
+# TODO: How do I get the log level from the command line in here?
 custom_logger.register(logging.DEBUG)
 app = setup_app()
 
