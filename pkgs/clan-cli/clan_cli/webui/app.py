@@ -42,5 +42,9 @@ def setup_app() -> FastAPI:
 #TODO: How do I get the log level from the command line in here?
 custom_logger.register(logging.DEBUG)
 app = setup_app()
+
+for i in app.exception_handlers.items():
+    log.info(f"Registered exception handler: {i}")
+
 log.warn("log warn")
 log.debug("log debug")
