@@ -9,8 +9,8 @@
             "type": "python",
             "request": "launch",
             "module": "clan_cli.webui",
-            "justMyCode": true,
-            "args": [ "--reload", "--no-open", "--log-level", "debug" ]
+            "justMyCode": false,
+            "args": [ "--reload", "--no-open", "--log-level", "debug" ],
         }
     ]
 }

@@ -1,3 +1,5 @@
+# Logging setup
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Body
@@ -19,10 +21,7 @@ from ..schemas import (
     Status,
 )
 
-# Logging setup
-import logging
 log = logging.getLogger(__name__)
-
 router = APIRouter()
 
 
@@ -42,7 +41,7 @@ async def create_machine(machine: Annotated[MachineCreate, Body()]) -> MachineRe
 
 @router.get("/api/machines/{name}")
 async def get_machine(name: str) -> MachineResponse:
-    print("TODO")
+    log.error("TODO")
     return MachineResponse(machine=Machine(name=name, status=Status.UNKNOWN))
 
 

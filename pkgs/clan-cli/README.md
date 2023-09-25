@@ -29,28 +29,30 @@ To start a local developement environment instead, use the `--dev` flag:
 This will spawn two webserver, a python one to for the api and a nodejs one that rebuilds the ui on the fly.
 
 ## Run webui directly
+
 Useful for vscode run and debug option
+
 ```bash
 python -m clan_cli.webui --reload --no-open
 ```
 
 Add this `launch.json` to your .vscode directory to have working breakpoints in your vscode editor.
+
 ```json
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Clan Webui",
-            "type": "python",
-            "request": "launch",
-            "module": "clan_cli.webui",
-            "justMyCode": true,
-            "args": [ "--reload", "--no-open", "--log-level", "debug" ]
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Clan Webui",
+      "type": "python",
+      "request": "launch",
+      "module": "clan_cli.webui",
+      "justMyCode": true,
+      "args": ["--reload", "--no-open", "--log-level", "debug"]
+    }
+  ]
 }
 ```
-
 
 ## Run locally single-threaded for debugging
 

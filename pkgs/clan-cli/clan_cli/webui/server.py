@@ -1,5 +1,4 @@
 import argparse
-import logging
 import subprocess
 import time
 import urllib.request
@@ -7,11 +6,10 @@ import webbrowser
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from threading import Thread
-from typing import (Iterator, Dict, Any)
+from typing import Iterator
 
 # XXX: can we dynamically load this using nix develop?
 from uvicorn import run
-
 
 
 def defer_open_browser(base_url: str) -> None:

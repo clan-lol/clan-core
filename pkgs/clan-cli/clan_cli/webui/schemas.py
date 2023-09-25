@@ -43,6 +43,8 @@ class VmConfig(BaseModel):
     memory_size: int
     graphics: bool
 
+class VmCreateResponse(BaseModel):
+    uuid: str
 
 class VmInspectResponse(BaseModel):
     config: VmConfig
