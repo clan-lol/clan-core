@@ -28,8 +28,11 @@ def setup_app() -> FastAPI:
     app.include_router(flake.router)
     app.include_router(health.router)
     app.include_router(machines.router)
-    app.include_router(root.router)
     app.include_router(vms.router)
+
+    # Needs to be last in register. Because of wildcard route
+    app.include_router(root.router)
+
     app.add_exception_handler(vms.NixBuildException, vms.nix_build_exception_handler)
 
     app.mount("/static", StaticFiles(directory=asset_path()), name="static")
@@ -37,6 +40,7 @@ def setup_app() -> FastAPI:
     for route in app.routes:
         if isinstance(route, APIRoute):
             route.operation_id = route.name  # in this case, 'read_items'
+        log.debug(f"Registered route: {route}")
     return app
 
 
