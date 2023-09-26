@@ -3,7 +3,6 @@
 , argcomplete
 , fastapi
 , uvicorn
-, bubblewrap
 , installShellFiles
 , nix
 , openssh
@@ -18,6 +17,7 @@
 , stdenv
 , wheel
 , zerotierone
+, fakeroot
 , rsync
 , ui-assets
 , bash
@@ -52,7 +52,7 @@ let
     bash
     nix
     zerotierone
-    bubblewrap
+    fakeroot
     openssh
     sshpass
     zbar
