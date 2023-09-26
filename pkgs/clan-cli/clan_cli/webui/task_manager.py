@@ -7,14 +7,17 @@ import subprocess
 import threading
 from uuid import UUID, uuid4
 
+
 class CmdState:
     def __init__(self, proc: subprocess.Popen) -> None:
-        self.proc: subprocess.Process = proc
+        global LOOP
+        self.proc: subprocess.Popen = proc
         self.stdout: list[str] = []
         self.stderr: list[str] = []
-        self.output_pipe: asyncio.Queue = asyncio.Queue()
+        self.output: queue.SimpleQueue = queue.SimpleQueue()
         self.returncode: int | None = None
         self.done: bool = False
+
 
 class BaseTask(threading.Thread):
     def __init__(self, uuid: UUID) -> None:
@@ -35,63 +38,66 @@ class BaseTask(threading.Thread):
         cwd = os.getcwd()
         self.log.debug(f"Working directory: {cwd}")
         self.log.debug(f"Running command: {shlex.join(cmd)}")
-        process = subprocess.Popen(
+        p = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             encoding="utf-8",
+           # shell=True,
             cwd=cwd,
         )
-        state = CmdState(process)
-        self.procs.append(state)
+        self.procs.append(CmdState(p))
+        p_state = self.procs[-1]
 
-        while process.poll() is None:
+        while p.poll() is None:
             # Check if stderr is ready to be read from
-            rlist, _, _ = select.select([process.stderr, process.stdout], [], [], 0)
-            if process.stderr in rlist:
-                line = process.stderr.readline()
+            rlist, _, _ = select.select([p.stderr, p.stdout], [], [], 0)
+            if p.stderr in rlist:
+                line = p.stderr.readline()
                 if line != "":
-                    state.stderr.append(line.strip('\n'))
-                    state.output_pipe.put_nowait(line)
-            if process.stdout in rlist:
-                line = process.stdout.readline()
+                    p_state.stderr.append(line.strip("\n"))
+                    self.log.debug(f"stderr: {line}")
+                    p_state.output.put(line)
+
+            if p.stdout in rlist:
+                line = p.stdout.readline()
                 if line != "":
-                    state.stdout.append(line.strip('\n'))
-                    state.output_pipe.put_nowait(line)
+                    p_state.stdout.append(line.strip("\n"))
+                    self.log.debug(f"stdout: {line}")
+                    p_state.output.put(line)
 
-        state.returncode = process.returncode
-        state.done = True
+        p_state.returncode = p.returncode
+        p_state.output.put(None)
+        p_state.done = True
 
-        if process.returncode != 0:
-            raise RuntimeError(
-                f"Failed to run command: {shlex.join(cmd)}"
-            )
+        if p.returncode != 0:
+            raise RuntimeError(f"Failed to run command: {shlex.join(cmd)}")
 
         self.log.debug("Successfully ran command")
-        return state
+        return p_state
 
 
 class TaskPool:
     def __init__(self) -> None:
-        self.lock: threading.RLock = threading.RLock()
+       # self.lock: threading.RLock = threading.RLock()
         self.pool: dict[UUID, BaseTask] = {}
 
     def __getitem__(self, uuid: str | UUID) -> BaseTask:
-        with self.lock:
-            if type(uuid) is UUID:
-                return self.pool[uuid]
-            else:
-                uuid = UUID(uuid)
-                return self.pool[uuid]
+       # with self.lock:
+        if type(uuid) is UUID:
+            return self.pool[uuid]
+        else:
+            uuid = UUID(uuid)
+            return self.pool[uuid]
 
 
     def __setitem__(self, uuid: UUID, vm: BaseTask) -> None:
-        with self.lock:
-            if uuid in self.pool:
-                raise KeyError(f"VM with uuid {uuid} already exists")
-            if type(uuid) is not UUID:
-                raise TypeError("uuid must be of type UUID")
-            self.pool[uuid] = vm
+       # with self.lock:
+        if uuid in self.pool:
+            raise KeyError(f"VM with uuid {uuid} already exists")
+        if type(uuid) is not UUID:
+            raise TypeError("uuid must be of type UUID")
+        self.pool[uuid] = vm
 
 
 POOL: TaskPool = TaskPool()
@@ -108,6 +114,7 @@ def register_task(task: BaseTask, *kwargs) -> UUID:
         raise TypeError("task must be a subclass of BaseTask")
 
     uuid = uuid4()
+
     inst_task = task(uuid, *kwargs)
     POOL[uuid] = inst_task
     inst_task.start()

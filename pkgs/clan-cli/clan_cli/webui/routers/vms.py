@@ -2,12 +2,8 @@ import asyncio
 import json
 import logging
 import shlex
-import io
-import subprocess
-import pipes
-import threading
-from typing import Annotated, AsyncIterator
-from uuid import UUID, uuid4
+from typing import Annotated
+from uuid import UUID
 
 from fastapi import (
     APIRouter,
@@ -76,7 +72,7 @@ class BuildVmTask(BaseTask):
             vm_path = f"{''.join(proc.stdout[0])}/bin/run-nixos-vm"
             self.log.debug(f"vm_path: {vm_path}")
 
-            self.run_cmd(vm_path)
+            #self.run_cmd(vm_path)
             self.finished = True
         except Exception as e:
             self.failed = True
@@ -137,21 +133,24 @@ async def get_status(uuid: str) -> VmStatusResponse:
 
 @router.get("/api/vms/{uuid}/logs")
 async def get_logs(uuid: str) -> StreamingResponse:
-    async def stream_logs() -> AsyncIterator[str]:
+    def stream_logs():
+
         task = get_task(uuid)
 
         for proc in task.procs:
             if proc.done:
+                log.debug("stream logs and proc is done")
                 for line in proc.stderr:
-                    yield line
+                    yield line + "\n"
                 for line in proc.stdout:
-                    yield line
-            else:
-                while True:
-                    if proc.output_pipe.empty() and proc.done:
-                        break
-                    line = await proc.output_pipe.get()
-                    yield line
+                    yield line + "\n"
+                break
+            while True:
+                out = proc.output
+                line = out.get()
+                if line is None:
+                    break
+                yield line
 
     return StreamingResponse(
         content=stream_logs(),
