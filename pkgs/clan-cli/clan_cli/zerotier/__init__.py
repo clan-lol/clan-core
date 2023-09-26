@@ -107,26 +107,13 @@ def zerotier_controller() -> Iterator[ZerotierController]:
         home = tempdir / "zerotier-one"
         home.mkdir()
         cmd = nix_shell(
-            ["bubblewrap"],
+            ["fakeroot"],
             [
-                "bwrap",
-                "--proc",
-                "/proc",
-                "--dev",
-                "/dev",
-                "--unshare-user",
-                "--uid",
-                "0",
-                "--gid",
-                "0",
-                "--ro-bind",
-                "/nix",
-                "/nix",
-                "--bind",
-                str(home),
-                "/var/lib/zerotier-one",
+                "fakeroot",
+                "--",
                 zerotier_exe,
                 f"-p{controller_port}",
+                str(home),
             ],
         )
         with subprocess.Popen(cmd) as p:
