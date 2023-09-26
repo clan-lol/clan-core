@@ -24,15 +24,19 @@ def test_upload_secret(
     cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey])
     cli.run(["secrets", "generate", "vm1"])
     has_secret("vm1-age.key")
-    has_secret("vm1-secret1")
-    fact1 = machine_get_fact("vm1", "fact1")
-    assert fact1 == "fact1\n"
+    has_secret("vm1-zerotier-identity-secret")
+    network_id = machine_get_fact("vm1", "zerotier-network-id")
+    assert len(network_id) == 16
     age_key = sops_secrets_folder().joinpath("vm1-age.key").joinpath("secret")
-    secret1 = sops_secrets_folder().joinpath("vm1-secret1").joinpath("secret")
+    identity_secret = (
+        sops_secrets_folder()
+        .joinpath("vm1-zerotier-identity-secret")
+        .joinpath("secret")
+    )
     age_key_mtime = age_key.lstat().st_mtime_ns
-    secret1_mtime = secret1.lstat().st_mtime_ns
+    secret1_mtime = identity_secret.lstat().st_mtime_ns
 
     # test idempotency
     cli.run(["secrets", "generate", "vm1"])
     assert age_key.lstat().st_mtime_ns == age_key_mtime
-    assert secret1.lstat().st_mtime_ns == secret1_mtime
+    assert identity_secret.lstat().st_mtime_ns == secret1_mtime

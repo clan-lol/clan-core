@@ -3,6 +3,7 @@ let
   secretsDir = config.clanCore.clanDir + "/sops/secrets";
   groupsDir = config.clanCore.clanDir + "/sops/groups";
 
+
   # My symlink is in the nixos module detected as a directory also it works in the repl. Is this because of pure evaluation?
   containsSymlink = path:
     builtins.pathExists path && (builtins.readFileType path == "directory" || builtins.readFileType path == "symlink");
@@ -22,7 +23,10 @@ let
 in
 {
   config = lib.mkIf (config.clanCore.secretStore == "sops") {
+    clanCore.secretsDirectory = "/run/secrets";
+    clanCore.secretsPrefix = config.clanCore.machineName + "-";
     system.clan = {
+
       generateSecrets = pkgs.writeScript "generate-secrets" ''
         #!${pkgs.python3}/bin/python
         import json

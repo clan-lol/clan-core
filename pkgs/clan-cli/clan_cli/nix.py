@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 from typing import Any
 
-from .dirs import nixpkgs_flake, nixpkgs_source, unfree_nixpkgs
+from .dirs import nixpkgs_flake, nixpkgs_source
 
 
 def nix_command(flags: list[str]) -> list[str]:
@@ -79,23 +79,6 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
             ]
         )
         + wrapped_packages
-        + ["-c"]
-        + cmd
-    )
-
-
-def unfree_nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
-    if os.environ.get("IN_NIX_SANDBOX"):
-        return cmd
-    return (
-        nix_command(
-            [
-                "shell",
-                "-f",
-                str(unfree_nixpkgs()),
-            ]
-        )
-        + packages
         + ["-c"]
         + cmd
     )

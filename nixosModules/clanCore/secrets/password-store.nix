@@ -3,14 +3,8 @@ let
   passwordstoreDir = "\${PASSWORD_STORE_DIR:-$HOME/.password-store}";
 in
 {
-  options.clan.password-store.targetDirectory = lib.mkOption {
-    type = lib.types.path;
-    default = "/etc/secrets";
-    description = ''
-      The directory where the password store is uploaded to.
-    '';
-  };
   config = lib.mkIf (config.clanCore.secretStore == "password-store") {
+    clanCore.secretsDirectory = passwordstoreDir;
     system.clan.generateSecrets = pkgs.writeScript "generate-secrets" ''
       #!/bin/sh
       set -efu
