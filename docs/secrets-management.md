@@ -9,7 +9,7 @@ integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.
 
 To begin, generate a key pair:
 
-```console
+```shellSession
 $ clan secrets key generate
 ```
 
@@ -27,7 +27,7 @@ user with your user name)
 
 Next, add your public key to the Clan flake repository:
 
-```console
+```shellSession
 $ clan secrets users add <your_username> <your_public_key>
 ```
 
@@ -42,7 +42,7 @@ sops/
 
 Now, to set your first secret:
 
-```console
+```shellSession
 $ clan secrets set mysecret
 Paste your secret:
 ```
@@ -51,13 +51,13 @@ Note: As you type your secret, keypresses won't be displayed. Press Enter to sav
 
 Retrieve the stored secret:
 
-```console
+```shellSession
 $ clan secrets get mysecret
 ```
 
 And list all secrets like this:
 
-```console
+```shellSession
 $ clan secrets list
 ```
 
@@ -79,19 +79,19 @@ By default, secrets are encrypted with your key to ensure readability.
 
 New machines in Clan come with age keys stored in `./sops/machines/<machine_name>`. To list these machines:
 
-```console
+```shellSession
 $ clan secrets machines list
 ```
 
 For existing machines, add their keys:
 
-```console
+```shellSession
 $ clan secrets machines add <machine_name> <age_key>
 ```
 
 To fetch an age key from an SSH host key:
 
-```console
+```shellSession
 $ ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age
 ```
 
@@ -99,13 +99,13 @@ $ ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age
 
 By default, secrets are encrypted for your key. To specify which users and machines can access a secret:
 
-```console
+```shellSession
 $ clan secrets set --machine <machine1> --machine <machine2> --user <user1> --user <user2> <secret_name>
 ```
 
 You can add machines/users to existing secrets without modifying the secret:
 
-```console
+```shellSession
 $ clan secrets machines add-secret <machine_name> <secret_name>
 ```
 
@@ -117,19 +117,19 @@ For convenience, Clan CLI allows group creation to simplify access management. H
 
    Assign users to a new group, e.g., `admins`:
 
-   ```console
+   ```shellSession
    $ clan secrets groups add admins <username>
    ```
 
 2. **Listing Groups**:
 
-   ```console
+   ```shellSession
    $ clan secrets groups list
    ```
 
 3. **Assigning Secrets to Groups**:
 
-   ```console
+   ```shellSession
    $ clan secrets groups add-secret <group_name> <secret_name>
    ```
 
@@ -162,7 +162,7 @@ commonly allows to put all secrets in a yaml or json documents.
 
 If you already happend to use sops-nix, you can migrate by using the `clan secrets import-sops` command by importing these documents:
 
-```console
+```shellSession
 % clan secrets import-sops --prefix matchbox- --group admins --machine matchbox nixos/matchbox/secrets/secrets.yaml
 ```
 
