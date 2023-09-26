@@ -123,19 +123,17 @@ def read_machine_option_value(
     clan_dir = get_clan_flake_toplevel()
     # use nix eval to read from .#nixosConfigurations.default.config.{option}
     # this will give us the evaluated config with the options attribute
-    proc = subprocess.run(
-        nix_eval(
-            flags=[
-                "--show-trace",
-                f"{clan_dir}#nixosConfigurations.{machine_name}.config.{option}",
-            ],
-        ),
-        capture_output=True,
-        text=True,
+    cmd = nix_eval(
+        flags=[
+            "--show-trace",
+            f"{clan_dir}#nixosConfigurations.{machine_name}.config.{option}",
+        ],
     )
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
     if proc.returncode != 0:
-        print(proc.stderr, file=sys.stderr)
-        raise ClanError(f"Failed to read option {option}:\n{proc.stderr}")
+        raise ClanError(
+            f"Failed to read option {option}:\n{shlex.join(cmd)}\nexit with {proc.returncode}"
+        )
     value = json.loads(proc.stdout)
     # print the value so that the output can be copied and fed as an input.
     # for example a list should be displayed as space separated values surrounded by quotes.
