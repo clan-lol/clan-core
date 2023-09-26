@@ -2,7 +2,7 @@
   flake.nixosModules.clanCore = { pkgs, options, ... }: {
     imports = [
       ./secrets
-      ./zerotier.nix
+      ./zerotier
       ./networking.nix
       inputs.sops-nix.nixosModules.sops
       # just some example options. Can be removed later

@@ -9,8 +9,9 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Iterator, Optional
 
-from ..errors import ClanError
-from ..nix import nix_shell, unfree_nix_shell
+
+class ClanError(Exception):
+    pass
 
 
 def try_bind_port(port: int) -> bool:
@@ -85,37 +86,17 @@ def zerotier_controller() -> Iterator[ZerotierController]:
     if controller_port is None:
         raise ClanError("cannot find a free port for zerotier controller")
 
-    cmd = unfree_nix_shell(
-        ["bash", "zerotierone"], ["bash", "-c", "command -v zerotier-one"]
-    )
-    res = subprocess.run(
-        cmd,
-        check=True,
-        text=True,
-        stdout=subprocess.PIPE,
-    )
-    zerotier_exe = res.stdout.strip()
-    if zerotier_exe is None:
-        raise ClanError("cannot find zerotier-one executable")
-
-    if not zerotier_exe.startswith("/nix/store"):
-        raise ClanError(
-            f"zerotier-one executable needs to come from /nix/store: {zerotier_exe}"
-        )
     with TemporaryDirectory() as d:
         tempdir = Path(d)
         home = tempdir / "zerotier-one"
         home.mkdir()
-        cmd = nix_shell(
-            ["fakeroot"],
-            [
-                "fakeroot",
-                "--",
-                zerotier_exe,
-                f"-p{controller_port}",
-                str(home),
-            ],
-        )
+        cmd = [
+            "fakeroot",
+            "--",
+            "zerotier-one",
+            f"-p{controller_port}",
+            str(home),
+        ]
         with subprocess.Popen(cmd) as p:
             try:
                 print(
@@ -146,18 +127,16 @@ def create_network() -> dict:
         }
 
 
-def main(args: argparse.Namespace) -> None:
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("network_id")
+    parser.add_argument("identity_secret")
+    args = parser.parse_args()
+
     zerotier = create_network()
-    outpath = Path(args.outpath)
-    outpath.mkdir(parents=True, exist_ok=True)
-    with open(outpath / "network.id", "w+") as nwid_file:
-        nwid_file.write(zerotier["networkid"])
-    with open(outpath / "identity.secret", "w+") as secret_file:
-        secret_file.write(zerotier["secret"])
+    Path(args.network_id).write_text(zerotier["networkid"])
+    Path(args.identity_secret).write_text(zerotier["secret"])
 
 
-def register_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
-        "--outpath", help="directory to put the secret file to", required=True
-    )
-    parser.set_defaults(func=main)
+if __name__ == "__main__":
+    main()
