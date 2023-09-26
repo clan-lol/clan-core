@@ -45,7 +45,7 @@ in
 {
   options.clan.networking.zerotier = {
     networkId = lib.mkOption {
-      type = lib.nullOr lib.types.str;
+      type = lib.types.nullOr lib.types.str;
       default = null;
       description = ''
         zerotier networking id
