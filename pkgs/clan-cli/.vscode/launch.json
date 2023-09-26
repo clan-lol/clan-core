@@ -11,6 +11,7 @@
             "module": "clan_cli.webui",
             "justMyCode": false,
             "args": [ "--reload", "--no-open", "--log-level", "debug" ],
+
         }
     ]
 }
