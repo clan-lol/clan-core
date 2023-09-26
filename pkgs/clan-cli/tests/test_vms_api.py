@@ -31,14 +31,18 @@ def test_create(api: TestClient, test_flake_with_core: Path) -> None:
             graphics=True,
         ),
     )
-    assert response.status_code == 200, "Failed to inspect vm"
+    assert response.status_code == 200, "Failed to create vm"
 
     uuid = response.json()["uuid"]
     assert len(uuid) == 36
     assert uuid.count("-") == 4
 
     response = api.get(f"/api/vms/{uuid}/status")
+    assert response.status_code == 200, "Failed to get vm status"
+
+    response = api.get(f"/api/vms/{uuid}/logs")
+    print("=========LOGS==========")
     for line in response.stream:
         print(line)
 
-    assert response.status_code == 200, "Failed to get vm status"
+    assert response.status_code == 200, "Failed to get vm logs"
