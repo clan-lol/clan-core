@@ -10,8 +10,6 @@ mkShell {
     openssh
     clan-cli.checkPython
   ];
-  # sets up an editable install and add enty points to $PATH
-  PYTHONBREAKPOINT = "ipdb.set_trace";
 
   shellHook = ''
     tmp_path=$(realpath ./.direnv)

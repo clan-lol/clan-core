@@ -25,7 +25,6 @@
 , zbar
 , tor
 , git
-, ipdb
 , nixpkgs
 }:
 let
@@ -44,7 +43,6 @@ let
     openssh
     git
     stdenv.cc
-    ipdb # used for debugging
   ];
 
   # Optional dependencies for clan cli, we re-expose them here to make sure they all build.
