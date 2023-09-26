@@ -45,8 +45,8 @@ in
 {
   options.clan.networking.zerotier = {
     networkId = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
+      type = lib.types.str;
+      default = config.clanCore.secrets.zerotier.facts."zerotier-network-id".value;
       description = ''
         zerotier networking id
       '';
@@ -63,6 +63,11 @@ in
     };
   };
   config = lib.mkMerge [
+    ({
+      # Override license so that we can build zerotierone without
+      # having to re-import nixpkgs.
+      services.zerotierone.package = lib.mkDefault (pkgs.zerotierone.overrideAttrs (_old: { meta = { }; }));
+    })
     (lib.mkIf (cfg.networkId != null) {
       systemd.network.networks.zerotier = {
         matchConfig.Name = "zt*";
@@ -85,24 +90,20 @@ in
       # only the controller needs to have the key in the repo, the other clients can be dynamic
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
       clanCore.secrets.zerotier = {
-        facts."zerotier.network.id" = { };
-        secrets."zerotier.identity.secret" = { };
+        facts."zerotier-network-id" = { };
+        secrets."zerotier-identity-secret" = { };
         generator = ''
-          TMPDIR=$(mktemp -d)
-          trap 'rm -rf "$TMPDIR"' EXIT
-          ${config.clanCore.clanPkgs.clan-cli}/bin/clan zerotier --outpath "$TMPDIR"
-          cp "$TMPDIR"/network.id "$facts"/zerotier.network.id
-          cp "$TMPDIR"/identity.secret "$secrets"/zerotier.identity.secret
+          export PATH=${lib.makeBinPath [ config.services.zerotierone.package pkgs.fakeroot ]}
+          ${pkgs.python3.interpreter} ${./generate-network.py} "$facts/zerotier-network-id" "$secrets/zerotier-identity-secret"
         '';
       };
 
       systemd.services.zerotierone.serviceConfig.ExecStartPre = [
-        "+${pkgs.writeShellScript "init_zerotier" ''
-          cp /etc/secrets/zerotier.identity.secret /var/lib/zerotier-one/identity.secret
-          ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON networkConfig)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
-        ''}"
+        "+${pkgs.writeShellScript "init-zerotier" ''
+           cp ${config.clanCore.secrets.zerotier.secrets.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+           ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON networkConfig)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
+         ''}"
       ];
     })
   ];
 }
-

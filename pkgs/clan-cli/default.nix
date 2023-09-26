@@ -16,7 +16,6 @@
 , sops
 , stdenv
 , wheel
-, zerotierone
 , fakeroot
 , rsync
 , ui-assets
@@ -49,7 +48,6 @@ let
   runtimeDependencies = [
     bash
     nix
-    zerotierone
     fakeroot
     openssh
     sshpass
@@ -77,10 +75,6 @@ let
   '';
   nixpkgs' = runCommand "nixpkgs" { nativeBuildInputs = [ nix ]; } ''
     mkdir $out
-    mkdir -p $out/unfree
-    cat > $out/unfree/default.nix <<EOF
-    import "${nixpkgs}" { config = { allowUnfree = true; overlays = []; }; }
-    EOF
     cat > $out/flake.nix << EOF
     {
       description = "dependencies for the clan-cli";
