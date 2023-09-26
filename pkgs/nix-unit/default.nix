@@ -23,7 +23,7 @@ stdenv.mkDerivation {
   };
   buildInputs = [
     nlohmann_json
-    nixVersions.unstable
+    nixVersions.stable
     boost
   ];
   nativeBuildInputs = [
