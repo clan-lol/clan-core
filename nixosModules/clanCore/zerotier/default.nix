@@ -45,8 +45,8 @@ in
 {
   options.clan.networking.zerotier = {
     networkId = lib.mkOption {
-      type = lib.types.str;
-      default = config.clanCore.secrets.zerotier.facts."zerotier-network-id".value;
+      type = lib.nullOr lib.types.str;
+      default = null;
       description = ''
         zerotier networking id
       '';
@@ -87,6 +87,7 @@ in
       };
     })
     (lib.mkIf cfg.controller.enable {
+      clan.networking.zerotier.networkId = lib.mkDefault config.clanCore.secrets.zerotier.facts."zerotier-network-id".value;
       # only the controller needs to have the key in the repo, the other clients can be dynamic
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
       clanCore.secrets.zerotier = {
