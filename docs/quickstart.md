@@ -10,7 +10,7 @@ $ nix shell git+https://git.clan.lol/clan/clan-core
 
 2. Then use the following commands to initialize a new clan-flake:
 
-```
+```shellSession
 $ mkdir ./my-flake
 $ cd ./my-flake
 $ clan create
@@ -40,7 +40,7 @@ $ clan machines list
 my-machine
 ```
 
-## configure your machine
+## Configure your machine
 
 In this example we crate a user named `my-user` that is allowed to login to the machine
 
@@ -66,8 +66,8 @@ Absolutely, let's break down the migration step by step, explaining each action 
 
 1. **Backup Your Current Configuration**: Always start by making a backup of your current NixOS configuration to ensure you can revert if needed.
 
-   ```shell
-   cp -r /etc/nixos ~/nixos-backup
+   ```shellSession
+   $ cp -r /etc/nixos ~/nixos-backup
    ```
 
 2. **Update Flake Inputs**: Add a new input for the `clan-core` dependency:
@@ -132,8 +132,8 @@ Absolutely, let's break down the migration step by step, explaining each action 
 
 4. **Rebuild and Switch**: Rebuild your NixOS configuration using the updated flake:
 
-   ```shell
-   sudo nixos-rebuild switch --flake .
+   ```shellSession
+   $ sudo nixos-rebuild switch --flake .
    ```
 
    - This command rebuilds and switches to the new configuration. Make sure to include the `--flake .` argument to use the current directory as the flake source.
@@ -142,8 +142,8 @@ Absolutely, let's break down the migration step by step, explaining each action 
 
 6. **Reboot**: If everything is fine, you can reboot your system to apply the changes:
 
-   ```shell
-   sudo reboot
+   ```shellSession
+   $ sudo reboot
    ```
 
 7. **Verify**: After the reboot, confirm that your system is running with the new configuration, and all services and applications are functioning as expected.
