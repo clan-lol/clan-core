@@ -10,19 +10,13 @@
       clan = clan-core.lib.buildClan {
         directory = self;
         machines = {
-          vm1 = { modulesPath, ... }: {
+          vm1 = { modulesPath, lib, ... }: {
             imports = [ "${toString modulesPath}/virtualisation/qemu-vm.nix" ];
             clan.networking.deploymentAddress = "__CLAN_DEPLOYMENT_ADDRESS__";
             sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
+            system.stateVersion = lib.version;
 
-            clanCore.secrets.testpassword = {
-              generator = ''
-                echo "secret1" > "$secrets/secret1"
-                echo "fact1" > "$facts/fact1"
-              '';
-              secrets.secret1 = { };
-              facts.fact1 = { };
-            };
+            clan.networking.zerotier.controller.enable = true;
           };
         };
       };

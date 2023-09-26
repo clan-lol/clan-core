@@ -2,7 +2,9 @@
   description = "clan.lol base operating system";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    #nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # https://github.com/NixOS/nixpkgs/pull/257462
+    nixpkgs.url = "github:Mic92/nixpkgs/fakeroot";
     floco.url = "github:aakropotkin/floco";
     floco.inputs.nixpkgs.follows = "nixpkgs";
     disko.url = "github:nix-community/disko/party";
