@@ -118,12 +118,12 @@ def options_for_machine(machine_name: str, show_trace: bool = False) -> dict:
     cmd = nix_eval(flags=flags)
     proc = subprocess.run(
         cmd,
-        capture_output=True,
+        stdout=subprocess.PIPE,
         text=True,
     )
     if proc.returncode != 0:
-        raise Exception(
-            f"Failed to read options for machine {machine_name}:\n{shlex.join(cmd)} returned:\n{proc.stderr}"
+        raise ClanError(
+            f"Failed to read options for machine {machine_name}:\n{shlex.join(cmd)}\nexit with {proc.returncode}"
         )
     return json.loads(proc.stdout)
 
