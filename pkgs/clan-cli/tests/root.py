@@ -4,17 +4,17 @@ from pathlib import Path
 import pytest
 
 TEST_ROOT = Path(__file__).parent.resolve()
-PROJECT_ROOT = TEST_ROOT.parent.parent.parent
+PROJECT_ROOT = TEST_ROOT.parent
 if CLAN_CORE_ := os.environ.get("CLAN_CORE"):
     CLAN_CORE = Path(CLAN_CORE_)
 else:
-    CLAN_CORE = PROJECT_ROOT
+    CLAN_CORE = PROJECT_ROOT.parent.parent
 
 
 @pytest.fixture(scope="session")
 def project_root() -> Path:
     """
-    Root directory the clan-core
+    Root directory the clan-cli
     """
     return PROJECT_ROOT
 
