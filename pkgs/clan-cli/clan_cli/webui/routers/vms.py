@@ -92,8 +92,7 @@ async def inspect_vm(
 ) -> VmInspectResponse:
     cmd = nix_inspect_vm_cmd(flake_attr, flake_url=flake_url)
     proc = await asyncio.create_subprocess_exec(
-        cmd[0],
-        *cmd[1:],
+        *cmd,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
