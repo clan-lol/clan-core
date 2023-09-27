@@ -8,7 +8,7 @@ from .dirs import nixpkgs_flake, nixpkgs_source
 
 
 def nix_command(flags: list[str]) -> list[str]:
-    return ["nix", "--experimental-features", "nix-command flakes"] + flags
+    return ["nix", "--extra-experimental-features", "nix-command flakes"] + flags
 
 
 def nix_build(
@@ -20,8 +20,6 @@ def nix_build(
                 "build",
                 "--no-link",
                 "--print-out-paths",
-                "--extra-experimental-features",
-                "nix-command flakes",
             ]
         )
         + flags
