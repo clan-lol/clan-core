@@ -12,7 +12,7 @@ from typing import Iterator
 # XXX: can we dynamically load this using nix develop?
 from uvicorn import run
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 def defer_open_browser(base_url: str) -> None:
@@ -27,7 +27,7 @@ def defer_open_browser(base_url: str) -> None:
 
 @contextmanager
 def spawn_node_dev_server(host: str, port: int) -> Iterator[None]:
-    logger.info("Starting node dev server...")
+    log.info("Starting node dev server...")
     path = Path(__file__).parent.parent.parent.parent / "ui"
     with subprocess.Popen(
         [
@@ -87,5 +87,6 @@ def start_server(args: argparse.Namespace) -> None:
             port=args.port,
             log_level=args.log_level,
             reload=args.reload,
+            access_log=args.log_level == "debug",
             headers=headers,
         )

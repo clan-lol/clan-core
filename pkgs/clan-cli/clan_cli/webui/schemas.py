@@ -44,6 +44,15 @@ class VmConfig(BaseModel):
     graphics: bool
 
 
+class VmStatusResponse(BaseModel):
+    status: int
+    running: bool
+
+
+class VmCreateResponse(BaseModel):
+    uuid: str
+
+
 class VmInspectResponse(BaseModel):
     config: VmConfig
 
