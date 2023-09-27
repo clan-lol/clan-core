@@ -39,23 +39,29 @@ let
   nixosConfigurations = lib.mapAttrs (name: _: nixosConfiguration { inherit name; }) allMachines;
 
   # This instantiates nixos for each system that we support:
-  # clanInternals.machinesForAllSystems.<system>.<machine>
+  # configPerSystem = <system>.<machine>.nixosConfiguration
   # We need this to build nixos secret generators for each system
-  machinesForAllSystems = builtins.listToAttrs
+  configPerSystem = builtins.listToAttrs
     (builtins.map
       (system: lib.nameValuePair system
         (lib.mapAttrs (name: _: nixosConfiguration { inherit name system; }) allMachines))
       supportedSystems);
+
+  machinesPerSystem = lib.mapAttrs (_: machine:
+    let
+      config = {
+        inherit (machine.config.system.clan) uploadSecrets generateSecrets;
+        inherit (machine.config.clan.networking) deploymentAddress;
+      };
+    in
+    config // {
+      json = machine.pkgs.writeText "config.json" (builtins.toJSON config);
+    });
 in
 {
   inherit nixosConfigurations;
 
   clanInternals = {
-    machines = lib.mapAttrs
-      (_: lib.mapAttrs (_: machine: {
-        inherit (machine.config.system.clan) uploadSecrets generateSecrets;
-        inherit (machine.config.clan.networking) deploymentAddress;
-      }))
-      machinesForAllSystems;
+    machines = lib.mapAttrs (_: machinesPerSystem) configPerSystem;
   };
 }

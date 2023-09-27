@@ -22,12 +22,14 @@ def create_flake(
         # in the flake.nix file replace the string __CLAN_URL__ with the the clan flake
         # provided by get_test_flake_toplevel
         flake_nix = flake / "flake.nix"
+        # this is where we would install the sops key to, when updating
+        sops_key = str(flake.joinpath("sops.key"))
         for line in fileinput.input(flake_nix, inplace=True):
             line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
             if clan_core_flake:
                 line = line.replace("__CLAN_CORE__", str(clan_core_flake))
-            print(line)
-        # check that an empty config is returned if no json file exists
+            line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
+            print(line, end="")
         monkeypatch.chdir(flake)
         monkeypatch.setenv("HOME", str(home))
         yield flake
