@@ -10,8 +10,7 @@
       clan = clan-core.lib.buildClan {
         directory = self;
         machines = {
-          vm1 = { modulesPath, lib, ... }: {
-            imports = [ "${toString modulesPath}/virtualisation/qemu-vm.nix" ];
+          vm1 = { lib, ... }: {
             clan.networking.deploymentAddress = "__CLAN_DEPLOYMENT_ADDRESS__";
             sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
             system.stateVersion = lib.version;
