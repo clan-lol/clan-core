@@ -5,6 +5,7 @@ import select
 import shlex
 import subprocess
 import threading
+from typing import Any
 from uuid import UUID, uuid4
 
 
@@ -105,14 +106,14 @@ def get_task(uuid: UUID) -> BaseTask:
     return POOL[uuid]
 
 
-def register_task(task: BaseTask, *kwargs) -> UUID:
+def register_task(task: type, *args: Any) -> UUID:
     global POOL
     if not issubclass(task, BaseTask):
         raise TypeError("task must be a subclass of BaseTask")
 
     uuid = uuid4()
 
-    inst_task = task(uuid, *kwargs)
+    inst_task = task(uuid, *args)
     POOL[uuid] = inst_task
     inst_task.start()
     return uuid
