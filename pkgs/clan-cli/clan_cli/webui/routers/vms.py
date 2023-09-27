@@ -5,14 +5,7 @@ import shlex
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import (
-    APIRouter,
-    BackgroundTasks,
-    Body,
-    HTTPException,
-    Request,
-    status,
-)
+from fastapi import APIRouter, BackgroundTasks, Body, HTTPException, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 
@@ -126,13 +119,13 @@ command output:
 
 
 @router.get("/api/vms/{uuid}/status")
-async def get_status(uuid: str) -> VmStatusResponse:
+async def get_status(uuid: UUID) -> VmStatusResponse:
     task = get_task(uuid)
     return VmStatusResponse(running=not task.finished, status=0)
 
 
 @router.get("/api/vms/{uuid}/logs")
-async def get_logs(uuid: str) -> StreamingResponse:
+async def get_logs(uuid: UUID) -> StreamingResponse:
     # Generator function that yields log lines as they are available
     def stream_logs():
         task = get_task(uuid)
@@ -157,6 +150,7 @@ async def get_logs(uuid: str) -> StreamingResponse:
         content=stream_logs(),
         media_type="text/plain",
     )
+
 
 @router.post("/api/vms/create")
 async def create_vm(
