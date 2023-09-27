@@ -122,7 +122,7 @@ Absolutely, let's break down the migration step by step, explaining each action 
            };
        };
    };
-   in { inherit (clan) nixosConfigurations clanInternal; }
+   in { inherit (clan) nixosConfigurations clanInternals; }
    ```
 
    - `nixosConfigurations`: Defines NixOS configurations, using Clan Core’s `buildClan` function to manage the machines.

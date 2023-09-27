@@ -25,6 +25,8 @@
 , tor
 , git
 , nixpkgs
+, makeDesktopItem
+, copyDesktopItems
 }:
 let
 
@@ -101,6 +103,7 @@ python3.pkgs.buildPythonPackage {
   nativeBuildInputs = [
     setuptools
     installShellFiles
+    copyDesktopItems
   ];
   propagatedBuildInputs = dependencies;
 
@@ -152,4 +155,13 @@ python3.pkgs.buildPythonPackage {
     fi
   '';
   meta.mainProgram = "clan";
+  desktopItems = [
+    (makeDesktopItem {
+      name = "clan";
+      exec = "clan";
+      desktopName = "CLan Manager";
+      startupWMClass = "clan";
+      mimeTypes = [ "x-scheme-handler/clan" ];
+    })
+  ];
 }
