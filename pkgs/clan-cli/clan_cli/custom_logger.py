@@ -26,8 +26,7 @@ class CustomFormatter(logging.Formatter):
 
     def format_time(self, record: Any, datefmt: Any = None) -> str:
         now = datetime.datetime.now()
-        now = now.strftime("%H:%M:%S")
-        return now
+        return now.strftime("%H:%M:%S")
 
     def format(self, record: Any) -> str:
         log_fmt = self.FORMATS.get(record.levelno)
