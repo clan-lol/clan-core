@@ -15,7 +15,7 @@ let
 
   # throw error if option type is not supported
   notSupported = option: throw
-    "option type '${option.type.description}' not supported by jsonschema converter";
+    "option type '${option.type.name}' ('${option.type.description}') not supported by jsonschema converter";
 
 in
 rec {
@@ -91,7 +91,7 @@ rec {
     }
 
     # parse int
-    else if option.type.name == "int"
+    else if (option.type.name == "int" || option.type.name == "positiveInt")
     # return jsonschema property definition for int
     then default // description // {
       type = "integer";
