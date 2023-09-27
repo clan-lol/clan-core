@@ -40,10 +40,17 @@ def test_create(api: TestClient, test_flake_with_core: Path) -> None:
     assert response.status_code == 200, "Failed to get vm status"
 
     response = api.get(f"/api/vms/{uuid}/logs")
-    print("=========LOGS==========")
+    print("=========FLAKE LOGS==========")
     for line in response.stream:
         assert line != b"", "Failed to get vm logs"
         print(line.decode("utf-8"), end="")
     print("=========END LOGS==========")
     assert response.status_code == 200, "Failed to get vm logs"
-    time.sleep(10)
+
+    response = api.get(f"/api/vms/{uuid}/logs")
+    print("=========VM LOGS==========")
+    for line in response.stream:
+        assert line != b"", "Failed to get vm logs"
+        print(line.decode("utf-8"), end="")
+    print("=========END LOGS==========")
+    assert response.status_code == 200, "Failed to get vm logs"
