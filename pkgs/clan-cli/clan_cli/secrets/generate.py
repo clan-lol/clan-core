@@ -19,7 +19,7 @@ def generate_secrets(machine: str) -> None:
 
     cmd = nix_build(
         [
-            f'path:{clan_dir}#clanInternals.machines."{machine}".{system}.config.system.clan.generateSecrets'
+            f'path:{clan_dir}#clanInternals.machines."{system}"."{machine}".generateSecrets'
         ]
     )
     proc = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
