@@ -17,6 +17,16 @@
             system.stateVersion = lib.version;
 
             clan.networking.zerotier.controller.enable = true;
+
+            systemd.services.shutdown-after-boot = {
+              enable = true;
+              wantedBy = [ "multi-user.target" ];
+              after = [ "multi-user.target" ];
+              script = ''
+                #!/usr/bin/env bash
+                shutdown -h now
+              '';
+            };
           };
         };
       };
