@@ -33,8 +33,11 @@ class SshdConfig:
 
 @pytest.fixture(scope="session")
 def sshd_config(project_root: Path, test_root: Path) -> Iterator[SshdConfig]:
-    # FIXME, if any parent of `project_root` is world-writable than sshd will refuse it.
-    with TemporaryDirectory(dir=project_root) as _dir:
+    # FIXME, if any parent of the sshd directory is world-writable than sshd will refuse it.
+    # we use .direnv instead since it's already in .gitignore
+    direnv = project_root / ".direnv"
+    direnv.mkdir(exist_ok=True)
+    with TemporaryDirectory(dir=direnv) as _dir:
         dir = Path(_dir)
         host_key = dir / "host_ssh_host_ed25519_key"
         subprocess.run(
