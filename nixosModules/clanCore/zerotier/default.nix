@@ -1,6 +1,7 @@
 { config, lib, pkgs, ... }:
 let
   cfg = config.clan.networking.zerotier;
+  facts = config.clanCore.secrets.zerotier.facts;
   networkConfig = {
     authTokens = [
       null
@@ -87,17 +88,19 @@ in
       };
     })
     (lib.mkIf cfg.controller.enable {
-      clan.networking.zerotier.networkId = lib.mkDefault config.clanCore.secrets.zerotier.facts."zerotier-network-id".value;
       # only the controller needs to have the key in the repo, the other clients can be dynamic
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
       clanCore.secrets.zerotier = {
-        facts."zerotier-network-id" = { };
-        secrets."zerotier-identity-secret" = { };
+        facts.zerotier-network-id = { };
+        secrets.zerotier-identity-secret = { };
         generator = ''
           export PATH=${lib.makeBinPath [ config.services.zerotierone.package pkgs.fakeroot ]}
           ${pkgs.python3.interpreter} ${./generate-network.py} "$facts/zerotier-network-id" "$secrets/zerotier-identity-secret"
         '';
       };
+    })
+    (lib.mkIf ((config.clanCore.secrets ? zerotier) && (facts.zerotier-network-id.value != null)) {
+      clan.networking.zerotier.networkId = facts.zerotier-network-id.value;
 
       systemd.services.zerotierone.serviceConfig.ExecStartPre = [
         "+${pkgs.writeShellScript "init-zerotier" ''
