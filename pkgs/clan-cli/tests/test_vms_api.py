@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 from api import TestClient
+from httpx import SyncByteStream
 
 # @pytest.mark.impure
 # def test_inspect(api: TestClient, test_flake_with_core: Path) -> None:
@@ -41,6 +42,7 @@ def test_create(api: TestClient, test_flake_with_core: Path) -> None:
 
     response = api.get(f"/api/vms/{uuid}/logs")
     print("=========FLAKE LOGS==========")
+    assert isinstance(response.stream, SyncByteStream)
     for line in response.stream:
         assert line != b"", "Failed to get vm logs"
         print(line.decode("utf-8"), end="")
@@ -48,6 +50,7 @@ def test_create(api: TestClient, test_flake_with_core: Path) -> None:
     assert response.status_code == 200, "Failed to get vm logs"
 
     response = api.get(f"/api/vms/{uuid}/logs")
+    assert isinstance(response.stream, SyncByteStream)
     print("=========VM LOGS==========")
     for line in response.stream:
         assert line != b"", "Failed to get vm logs"

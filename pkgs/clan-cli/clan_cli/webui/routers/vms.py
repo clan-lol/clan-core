@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 import shlex
-from typing import Annotated
+from typing import Annotated, Iterator
 from uuid import UUID
 
 from fastapi import APIRouter, BackgroundTasks, Body, HTTPException, Request, status
@@ -34,12 +34,10 @@ def nix_build_vm_cmd(machine: str, flake_url: str) -> list[str]:
 
 
 class NixBuildException(HTTPException):
-    def __init__(self, uuid: UUID, msg: str, loc: list = ["body", "flake_attr"]):
-        self.uuid = uuid
+    def __init__(self, msg: str, loc: list = ["body", "flake_attr"]):
         detail = [
             {
                 "loc": loc,
-                "uuid": str(uuid),
                 "msg": msg,
                 "type": "value_error",
             }
@@ -65,7 +63,7 @@ class BuildVmTask(BaseTask):
             vm_path = f"{''.join(proc.stdout[0])}/bin/run-nixos-vm"
             self.log.debug(f"vm_path: {vm_path}")
 
-            self.run_cmd(vm_path)
+            self.run_cmd([vm_path])
             self.finished = True
         except Exception as e:
             self.failed = True
@@ -103,7 +101,6 @@ async def inspect_vm(
 
     if proc.returncode != 0:
         raise NixBuildException(
-            ""
             f"""
 Failed to evaluate vm from '{flake_url}#{flake_attr}'.
 command: {shlex.join(cmd)}
@@ -127,7 +124,7 @@ async def get_status(uuid: UUID) -> VmStatusResponse:
 @router.get("/api/vms/{uuid}/logs")
 async def get_logs(uuid: UUID) -> StreamingResponse:
     # Generator function that yields log lines as they are available
-    def stream_logs():
+    def stream_logs() -> Iterator[str]:
         task = get_task(uuid)
 
         for proc in task.procs:
