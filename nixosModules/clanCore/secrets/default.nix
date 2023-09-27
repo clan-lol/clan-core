@@ -93,11 +93,12 @@
                 };
                 value = lib.mkOption {
                   defaultText = lib.literalExpression "\${config.clanCore.clanDir}/\${fact.config.path}";
+                  type = lib.types.nullOr lib.types.str;
                   default =
                     if builtins.pathExists "${config.clanCore.clanDir}/${fact.config.path}" then
                       builtins.readFile "${config.clanCore.clanDir}/${fact.config.path}"
                     else
-                      "";
+                      null;
                 };
               };
             }));
