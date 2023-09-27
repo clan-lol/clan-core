@@ -79,25 +79,24 @@ class BaseTask(threading.Thread):
 
 class TaskPool:
     def __init__(self) -> None:
-       # self.lock: threading.RLock = threading.RLock()
+        self.lock: threading.RLock = threading.RLock()
         self.pool: dict[UUID, BaseTask] = {}
 
     def __getitem__(self, uuid: str | UUID) -> BaseTask:
-       # with self.lock:
-        if type(uuid) is UUID:
-            return self.pool[uuid]
-        else:
-            uuid = UUID(uuid)
-            return self.pool[uuid]
+        with self.lock:
+            if type(uuid) is UUID:
+                return self.pool[uuid]
+            else:
+                uuid = UUID(uuid)
+                return self.pool[uuid]
 
-
-    def __setitem__(self, uuid: UUID, vm: BaseTask) -> None:
-       # with self.lock:
-        if uuid in self.pool:
-            raise KeyError(f"VM with uuid {uuid} already exists")
-        if type(uuid) is not UUID:
-            raise TypeError("uuid must be of type UUID")
-        self.pool[uuid] = vm
+    def __setitem__(self, uuid: UUID, task: BaseTask) -> None:
+        with self.lock:
+            if uuid in self.pool:
+                raise KeyError(f"Task with uuid {uuid} already exists")
+            if type(uuid) is not UUID:
+                raise TypeError("uuid must be of type UUID")
+            self.pool[uuid] = task
 
 
 POOL: TaskPool = TaskPool()
