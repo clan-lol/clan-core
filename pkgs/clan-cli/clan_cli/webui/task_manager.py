@@ -53,6 +53,7 @@ class BaseTask(threading.Thread):
             # Check if stderr is ready to be read from
             rlist, _, _ = select.select([p.stderr, p.stdout], [], [], 0)
             if p.stderr in rlist:
+                assert p.stderr is not None
                 line = p.stderr.readline()
                 if line != "":
                     p_state.stderr.append(line.strip("\n"))
@@ -60,6 +61,7 @@ class BaseTask(threading.Thread):
                     p_state.output.put(line)
 
             if p.stdout in rlist:
+                assert p.stdout is not None
                 line = p.stdout.readline()
                 if line != "":
                     p_state.stdout.append(line.strip("\n"))
