@@ -26,12 +26,9 @@ let
     inherit specialArgs;
   };
 
-  nixosConfigurations = lib.mapAttrs
-    (name: _:
-      nixosConfiguration { inherit name; })
-    (machinesDirs // machines);
+  allMachines = machinesDirs // machines;
 
-  systems = [
+  supportedSystems = [
     "x86_64-linux"
     "aarch64-linux"
     "riscv64-linux"
@@ -39,16 +36,26 @@ let
     "aarch64-darwin"
   ];
 
+  nixosConfigurations = lib.mapAttrs (name: _: nixosConfiguration { inherit name; }) allMachines;
+
+  # This instantiates nixos for each system that we support:
+  # clanInternals.machinesForAllSystems.<system>.<machine>
+  # We need this to build nixos secret generators for each system
+  machinesForAllSystems = builtins.listToAttrs
+    (builtins.map
+      (system: lib.nameValuePair system
+        (lib.mapAttrs (name: _: nixosConfiguration { inherit name system; }) allMachines))
+      supportedSystems);
+in
+{
+  inherit nixosConfigurations;
+
   clanInternals = {
     machines = lib.mapAttrs
-      (name: _:
-        (builtins.listToAttrs (map
-          (system:
-            lib.nameValuePair system (nixosConfiguration { inherit name system; })
-          )
-          systems))
-      )
-      (machinesDirs // machines);
+      (_: lib.mapAttrs (_: machine: {
+        inherit (machine.config.system.clan) uploadSecrets generateSecrets;
+        inherit (machine.config.clan.networking) deploymentAddress;
+      }))
+      machinesForAllSystems;
   };
-in
-{ inherit nixosConfigurations clanInternals; }
+}

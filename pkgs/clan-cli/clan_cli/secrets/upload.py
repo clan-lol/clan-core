@@ -15,9 +15,7 @@ def upload_secrets(machine: str) -> None:
 
     proc = subprocess.run(
         nix_build(
-            [
-                f'{clan_dir}#clanInternals.machines."{machine}".{system}.config.system.clan.uploadSecrets'
-            ]
+            [f'{clan_dir}#clanInternals.machines."{system}"."{machine}".uploadSecrets']
         ),
         stdout=subprocess.PIPE,
         text=True,
@@ -30,7 +28,7 @@ def upload_secrets(machine: str) -> None:
         subprocess.run(
             nix_eval(
                 [
-                    f'{clan_dir}#clanInternals.machines."{machine}".{system}.config.clan.networking.deploymentAddress'
+                    f'{clan_dir}#clanInternals.machines."{system}"."{machine}".deploymentAddress'
                 ]
             ),
             stdout=subprocess.PIPE,
