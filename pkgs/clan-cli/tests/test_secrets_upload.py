@@ -31,10 +31,11 @@ def test_secrets_upload(
     host = host_group.hosts[0]
     addr = f"{host.user}@{host.host}:{host.port}?StrictHostKeyChecking=no&UserKnownHostsFile=/dev/null&IdentityFile={host.key}"
     new_text = flake.read_text().replace("__CLAN_DEPLOYMENT_ADDRESS__", addr)
-    sops_key = test_flake_with_core.joinpath("sops.key")
-    new_text = new_text.replace("__CLAN_SOPS_KEY_PATH__", str(sops_key))
 
     flake.write_text(new_text)
     cli.run(["secrets", "upload", "vm1"])
+
+    # the flake defines this path as the location where the sops key should be installed
+    sops_key = test_flake_with_core.joinpath("sops.key")
     assert sops_key.exists()
     assert sops_key.read_text() == age_keys[0].privkey

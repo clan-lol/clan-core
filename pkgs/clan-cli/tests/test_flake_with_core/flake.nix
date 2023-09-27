@@ -12,8 +12,8 @@
         machines = {
           vm1 = { lib, ... }: {
             clan.networking.deploymentAddress = "__CLAN_DEPLOYMENT_ADDRESS__";
-            sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
             system.stateVersion = lib.version;
+            sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
 
             clan.networking.zerotier.controller.enable = true;
 
