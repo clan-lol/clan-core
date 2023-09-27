@@ -1,38 +1,33 @@
-import datetime
 import logging
 from typing import Any
 
+grey = "\x1b[38;20m"
+yellow = "\x1b[33;20m"
+red = "\x1b[31;20m"
+bold_red = "\x1b[31;1m"
+green = "\u001b[32m"
+blue = "\u001b[34m"
+
+
+def get_formatter(color: str) -> logging.Formatter:
+    reset = "\x1b[0m"
+    return logging.Formatter(
+        f"{color}%(levelname)s{reset}:(%(filename)s:%(lineno)d): %(message)s"
+    )
+
+
+FORMATTER = {
+    logging.DEBUG: get_formatter(blue),
+    logging.INFO: get_formatter(green),
+    logging.WARNING: get_formatter(yellow),
+    logging.ERROR: get_formatter(red),
+    logging.CRITICAL: get_formatter(bold_red),
+}
+
 
 class CustomFormatter(logging.Formatter):
-    grey = "\x1b[38;20m"
-    yellow = "\x1b[33;20m"
-    red = "\x1b[31;20m"
-    bold_red = "\x1b[31;1m"
-    green = "\u001b[32m"
-    blue = "\u001b[34m"
-
-    @staticmethod
-    def format_str(color: str) -> str:
-        reset = "\x1b[0m"
-        return f"{color}%(levelname)s{reset}:(%(filename)s:%(lineno)d): %(message)s"
-
-    FORMATS = {
-        logging.DEBUG: format_str(blue),
-        logging.INFO: format_str(green),
-        logging.WARNING: format_str(yellow),
-        logging.ERROR: format_str(red),
-        logging.CRITICAL: format_str(bold_red),
-    }
-
-    def format_time(self, record: Any, datefmt: Any = None) -> str:
-        now = datetime.datetime.now()
-        return now.strftime("%H:%M:%S")
-
     def format(self, record: Any) -> str:
-        log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt)
-        formatter.formatTime = self.format_time
-        return formatter.format(record)
+        return FORMATTER[record.levelno].format(record)
 
 
 def register(level: Any) -> None:
