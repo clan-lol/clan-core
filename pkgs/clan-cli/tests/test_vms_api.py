@@ -3,7 +3,6 @@ from pathlib import Path
 import pytest
 from api import TestClient
 
-
 # @pytest.mark.impure
 # def test_inspect(api: TestClient, test_flake_with_core: Path) -> None:
 #     response = api.post(
@@ -43,7 +42,8 @@ def test_create(api: TestClient, test_flake_with_core: Path) -> None:
     response = api.get(f"/api/vms/{uuid}/logs")
     print("=========LOGS==========")
     for line in response.stream:
-        print(f"line: {line}")
         assert line != b"", "Failed to get vm logs"
-
+        print(line.decode("utf-8"), end="")
+    print("=========END LOGS==========")
     assert response.status_code == 200, "Failed to get vm logs"
+    time.sleep(10)

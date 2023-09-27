@@ -43,7 +43,7 @@ class BaseTask(threading.Thread):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             encoding="utf-8",
-           # shell=True,
+            # shell=True,
             cwd=cwd,
         )
         self.procs.append(CmdState(p))

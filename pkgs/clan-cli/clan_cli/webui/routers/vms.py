@@ -72,7 +72,7 @@ class BuildVmTask(BaseTask):
             vm_path = f"{''.join(proc.stdout[0])}/bin/run-nixos-vm"
             self.log.debug(f"vm_path: {vm_path}")
 
-            #self.run_cmd(vm_path)
+            self.run_cmd(vm_path)
             self.finished = True
         except Exception as e:
             self.failed = True
