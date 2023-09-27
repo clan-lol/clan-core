@@ -52,8 +52,6 @@ def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
             flags=[
                 "--impure",
                 "--show-trace",
-                "--extra-experimental-features",
-                "nix-command flakes",
                 "--expr",
                 f"""
                 let
