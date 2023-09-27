@@ -144,11 +144,12 @@ async def get_logs(uuid: str) -> StreamingResponse:
                     yield line + "\n"
                 for line in proc.stdout:
                     yield line + "\n"
-                break
+                continue
             while True:
                 out = proc.output
                 line = out.get()
                 if line is None:
+                    log.debug("stream logs and line is None")
                     break
                 yield line
 
