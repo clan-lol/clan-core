@@ -133,8 +133,8 @@ async def get_status(uuid: str) -> VmStatusResponse:
 
 @router.get("/api/vms/{uuid}/logs")
 async def get_logs(uuid: str) -> StreamingResponse:
+    # Generator function that yields log lines as they are available
     def stream_logs():
-
         task = get_task(uuid)
 
         for proc in task.procs:
