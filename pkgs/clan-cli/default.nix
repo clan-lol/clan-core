@@ -89,7 +89,7 @@ let
     ln -s ${nixpkgs} $out/path
     nix flake lock $out \
       --store ./. \
-      --experimental-features 'nix-command flakes' \
+      --extra-experimental-features 'nix-command flakes' \
       --override-input nixpkgs ${nixpkgs}
   '';
 in
