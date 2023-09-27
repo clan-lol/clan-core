@@ -4,7 +4,7 @@ import os
 import subprocess
 
 from ..dirs import get_clan_flake_toplevel
-from ..nix import nix_command, nix_eval
+from ..nix import nix_command, nix_config, nix_eval
 from ..secrets.generate import generate_secrets
 from ..secrets.upload import upload_secrets
 from ..ssh import Host, HostGroup, HostKeyCheck, parse_deployment_address
@@ -78,12 +78,14 @@ def deploy_nixos(hosts: HostGroup) -> None:
 def update(args: argparse.Namespace) -> None:
     clan_dir = get_clan_flake_toplevel().as_posix()
     machine = args.machine
+
+    config = nix_config()
+    system = config["system"]
+
     address = json.loads(
         subprocess.run(
             nix_eval(
-                [
-                    f'{clan_dir}#nixosConfigurations."{machine}".config.clan.networking.deploymentAddress'
-                ]
+                [f'{clan_dir}#clanInternals."{system}"."{machine}".deploymentAddress']
             ),
             stdout=subprocess.PIPE,
             check=True,
