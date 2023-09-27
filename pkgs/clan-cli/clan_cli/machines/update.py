@@ -85,7 +85,9 @@ def update(args: argparse.Namespace) -> None:
     address = json.loads(
         subprocess.run(
             nix_eval(
-                [f'{clan_dir}#clanInternals."{system}"."{machine}".deploymentAddress']
+                [
+                    f'{clan_dir}#clanInternals.machines."{system}"."{machine}".deploymentAddress'
+                ]
             ),
             stdout=subprocess.PIPE,
             check=True,
