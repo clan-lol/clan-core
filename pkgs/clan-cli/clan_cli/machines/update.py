@@ -40,11 +40,8 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
 
         flake_attr = h.meta.get("flake_attr", "")
 
-        if generate_secrets_script := h.meta.get("generate_secrets"):
-            run_generate_secrets(generate_secrets_script, clan_dir)
-
-        if upload_secrets_script := h.meta.get("upload_secrets"):
-            run_upload_secrets(upload_secrets_script, clan_dir)
+        run_generate_secrets(h.meta["generateSecrets"], clan_dir)
+        run_upload_secrets(h.meta["uploadSecrets"], clan_dir)
 
         target_host = h.meta.get("target_host")
         if target_host:
@@ -116,7 +113,9 @@ def get_selected_machines(machine_names: list[str], clan_dir: Path) -> HostGroup
     machines = build_json(what)
     hosts = []
     for i, machine in enumerate(machines):
-        host = parse_deployment_address(machine_names[i], machine["deploymentAddress"])
+        host = parse_deployment_address(
+            machine_names[i], machine["deploymentAddress"], machine
+        )
         hosts.append(host)
     return HostGroup(hosts)
 
