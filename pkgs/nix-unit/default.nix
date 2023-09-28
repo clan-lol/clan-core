@@ -4,7 +4,6 @@
 , fetchFromGitHub
 , nlohmann_json
 , boost
-, bear
 , meson
 , pkg-config
 , ninja
@@ -27,13 +26,12 @@ stdenv.mkDerivation {
     boost
   ];
   nativeBuildInputs = [
-    bear
     meson
     pkg-config
     ninja
     # nlohmann_json can be only discovered via cmake files
     cmake
-  ] ++ (lib.optional stdenv.cc.isClang [ bear clang-tools ]);
+  ] ++ (lib.optional stdenv.cc.isClang [ clang-tools ]);
 
   meta = {
     description = "Nix unit test runner";
