@@ -20,9 +20,10 @@ async def root(path_name: str) -> Response:
         return Response(status_code=403)
 
     if not filename.is_file():
-        print(filename)
-        print(asset_path())
-        return Response(status_code=404)
+        if filename.suffix == "":
+            filename = filename.with_suffix(".html")
+            if not filename.is_file():
+                return Response(status_code=404)
 
     content_type, _ = guess_type(filename)
     return Response(filename.read_bytes(), media_type=content_type)
