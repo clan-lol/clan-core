@@ -1,4 +1,4 @@
-{ nix-unit, clan-cli, ui-assets, system, mkShell, writeScriptBin, openssh }:
+{ nix-unit, clan-cli-unwrapped, ui-assets, system, mkShell, writeScriptBin, openssh }:
 let
   checkScript = writeScriptBin "check" ''
     nix build .#checks.${system}.{treefmt,clan-pytest} -L "$@"
@@ -8,14 +8,14 @@ mkShell {
   packages = [
     nix-unit
     openssh
-    clan-cli.checkPython
+    clan-cli-unwrapped.checkPython
   ];
 
   shellHook = ''
     tmp_path=$(realpath ./.direnv)
 
     rm -f clan_cli/nixpkgs clan_cli/webui/assets
-    ln -sf ${clan-cli.nixpkgs} clan_cli/nixpkgs
+    ln -sf ${clan-cli-unwrapped.nixpkgs} clan_cli/nixpkgs
     ln -sf ${ui-assets} clan_cli/webui/assets
 
     export PATH="$tmp_path/bin:${checkScript}/bin:$PATH"
