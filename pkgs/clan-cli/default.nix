@@ -146,6 +146,11 @@ python3.pkgs.buildPythonApplication {
     installShellCompletion --fish --name clan.fish \
       <(${argcomplete}/bin/register-python-argcomplete --shell fish clan)
   '';
+  # Don't leak python packages into a devshell.
+  # It can be very confusing if you `nix run` than than load the cli from the devshell instead.
+  postFixup = ''
+    rm $out/nix-support/propagated-build-inputs
+  '';
   checkPhase = ''
     PYTHONPATH= $out/bin/clan --help
     if grep --include \*.py -Rq "breakpoint()" $out; then
