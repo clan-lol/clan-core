@@ -64,6 +64,7 @@ export secrets={shlex.quote(str(secrets_dir))}
             encrypt_secret(
                 sops_secrets_folder() / f"{machine_name}-{secret['name']}",
                 secret_file.read_text(),
+                add_machines=[machine_name],
             )
         for fact in secret_options["facts"].values():
             fact_file = facts_dir / fact["name"]
