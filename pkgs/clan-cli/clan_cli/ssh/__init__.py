@@ -756,7 +756,9 @@ class HostGroup:
         return HostGroup(list(filter(pred, self.hosts)))
 
 
-def parse_deployment_address(machine_name: str, host: str) -> Host:
+def parse_deployment_address(
+    machine_name: str, host: str, meta: dict[str, str] = {}
+) -> Host:
     parts = host.split("@")
     user: Optional[str] = None
     if len(parts) > 1:
@@ -776,12 +778,14 @@ def parse_deployment_address(machine_name: str, host: str) -> Host:
     if len(maybe_port) > 1:
         hostname = maybe_port[0]
         port = int(maybe_port[1])
+    meta = meta.copy()
+    meta["flake_attr"] = machine_name
     return Host(
         hostname,
         user=user,
         port=port,
         command_prefix=machine_name,
-        meta=dict(flake_attr=machine_name),
+        meta=meta,
         ssh_options=options,
     )
 

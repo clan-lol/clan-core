@@ -11,6 +11,7 @@ let
       (builtins.fromJSON
         (builtins.readFile (directory + /machines/${machineName}/settings.json)));
 
+  # TODO: remove default system once we have a hardware-config mechanism
   nixosConfiguration = { system ? "x86_64-linux", name }: nixpkgs.lib.nixosSystem {
     modules = [
       self.nixosModules.clanCore
@@ -19,8 +20,7 @@ let
       {
         clanCore.machineName = name;
         clanCore.clanDir = directory;
-        # TODO: remove this once we have a hardware-config mechanism
-        nixpkgs.hostPlatform = lib.mkDefault system;
+        nixpkgs.hostPlatform = lib.mkForce system;
       }
     ];
     inherit specialArgs;
@@ -41,27 +41,32 @@ let
   # This instantiates nixos for each system that we support:
   # configPerSystem = <system>.<machine>.nixosConfiguration
   # We need this to build nixos secret generators for each system
-  configPerSystem = builtins.listToAttrs
+  configsPerSystem = builtins.listToAttrs
     (builtins.map
       (system: lib.nameValuePair system
         (lib.mapAttrs (name: _: nixosConfiguration { inherit name system; }) allMachines))
       supportedSystems);
 
-  machinesPerSystem = lib.mapAttrs (_: machine:
+  getMachine = machine: {
+    inherit (machine.config.system.clan) uploadSecrets generateSecrets;
+    inherit (machine.config.clan.networking) deploymentAddress;
+  };
+
+  machinesPerSystem = lib.mapAttrs (_: machine: getMachine machine);
+
+  machinesPerSystemWithJson = lib.mapAttrs (_: machine:
     let
-      config = {
-        inherit (machine.config.system.clan) uploadSecrets generateSecrets;
-        inherit (machine.config.clan.networking) deploymentAddress;
-      };
+      m = getMachine machine;
     in
-    config // {
-      json = machine.pkgs.writeText "config.json" (builtins.toJSON config);
+    m // {
+      json = machine.pkgs.writers.writeJSON "machine.json" m;
     });
 in
 {
   inherit nixosConfigurations;
 
   clanInternals = {
-    machines = lib.mapAttrs (_: machinesPerSystem) configPerSystem;
+    machines = lib.mapAttrs (_: configs: machinesPerSystemWithJson configs) configsPerSystem;
+    machines-json = lib.mapAttrs (system: configs: nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (machinesPerSystem configs)) configsPerSystem;
   };
 }
