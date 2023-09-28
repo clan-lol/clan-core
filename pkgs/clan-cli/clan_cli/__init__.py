@@ -3,7 +3,7 @@ import sys
 from types import ModuleType
 from typing import Optional
 
-from . import config, create, machines, secrets, webui
+from . import config, create, machines, secrets, vms, webui
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
@@ -46,6 +46,9 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
 
     parser_webui = subparsers.add_parser("webui", help="start webui")
     webui.register_parser(parser_webui)
+
+    parser_vms = subparsers.add_parser("vms", help="manage virtual machines")
+    vms.register_parser(parser_vms)
 
     if argcomplete:
         argcomplete.autocomplete(parser)

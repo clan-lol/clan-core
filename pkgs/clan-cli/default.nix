@@ -27,6 +27,8 @@
 , nixpkgs
 , makeDesktopItem
 , copyDesktopItems
+, qemu
+, gnupg
 }:
 let
 
@@ -59,6 +61,7 @@ let
     rsync
     sops
     git
+    qemu
   ];
 
   runtimeDependenciesAsSet = builtins.listToAttrs (builtins.map (p: lib.nameValuePair (lib.getName p.name) p) runtimeDependencies);
