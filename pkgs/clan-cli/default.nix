@@ -93,7 +93,7 @@ let
       --override-input nixpkgs ${nixpkgs}
   '';
 in
-python3.pkgs.buildPythonPackage {
+python3.pkgs.buildPythonApplication {
   name = "clan-cli";
   src = source;
   format = "pyproject";
