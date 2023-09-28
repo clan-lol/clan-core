@@ -11,7 +11,7 @@
           # this gives us a reference to our flake but also all flake inputs
           inherit self;
         };
-        nixosTests = {
+        nixosTests = lib.optionalAttrs (pkgs.stdenv.isLinux) {
           # import our test
           secrets = import ./secrets nixosTestArgs;
         };
