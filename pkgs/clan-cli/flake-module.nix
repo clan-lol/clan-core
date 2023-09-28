@@ -19,7 +19,7 @@
       default = self'.packages.clan-cli;
     };
 
-    checks = self'.packages.clan-cli.tests;
+    checks = self'.packages.clan-cli-unwrapped.tests;
   };
 
 }
