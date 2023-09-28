@@ -1,5 +1,6 @@
 import os
 import shutil
+import string
 import subprocess
 import time
 from pathlib import Path
@@ -32,39 +33,17 @@ class SshdConfig:
 
 
 @pytest.fixture(scope="session")
-def sshd_config(project_root: Path, test_root: Path) -> Iterator[SshdConfig]:
+def sshd_config(test_root: Path) -> Iterator[SshdConfig]:
     # FIXME, if any parent of the sshd directory is world-writable than sshd will refuse it.
     # we use .direnv instead since it's already in .gitignore
-    direnv = project_root / ".direnv"
-    direnv.mkdir(exist_ok=True)
-    with TemporaryDirectory(dir=direnv) as _dir:
+    with TemporaryDirectory() as _dir:
         dir = Path(_dir)
-        host_key = dir / "host_ssh_host_ed25519_key"
-        subprocess.run(
-            [
-                "ssh-keygen",
-                "-t",
-                "ed25519",
-                "-f",
-                host_key,
-                "-N",
-                "",
-            ],
-            check=True,
-        )
-
-        sshd_config = dir / "sshd_config"
-        sshd_config.write_text(
-            f"""
-        HostKey {host_key}
-        LogLevel DEBUG3
-        # In the nix build sandbox we don't get any meaningful PATH after login
-        MaxStartups 64:30:256
-        AuthorizedKeysFile {host_key}.pub
-        AcceptEnv REALPATH
-        PasswordAuthentication no
-        """
-        )
+        host_key = test_root / "data" / "ssh_host_ed25519_key"
+        host_key.chmod(0o600)
+        template = (test_root / "data" / "sshd_config").read_text()
+        content = string.Template(template).substitute(dict(host_key=host_key))
+        config = dir / "sshd_config"
+        config.write_text(content)
         login_shell = dir / "shell"
 
         bash = shutil.which("bash")
@@ -104,7 +83,7 @@ exec {bash} -l "${{@}}"
             check=True,
         )
 
-        yield SshdConfig(sshd_config, login_shell, str(host_key), lib_path)
+        yield SshdConfig(config, login_shell, str(host_key), lib_path)
 
 
 @pytest.fixture

@@ -1,0 +1,7 @@
+HostKey $host_key
+LogLevel DEBUG3
+# In the nix build sandbox we don't get any meaningful PATH after login
+MaxStartups 64:30:256
+AuthorizedKeysFile $host_key.pub
+AcceptEnv REALPATH
+PasswordAuthentication no
