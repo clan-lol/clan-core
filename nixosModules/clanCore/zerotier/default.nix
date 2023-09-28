@@ -79,9 +79,10 @@ in
           KeepConfiguration = "static";
         };
       };
-      networking.firewall.allowedUDPPorts = [ 9993 ];
-      networking.firewall.interfaces."zt+".allowedTCPPorts = [ 5353 ];
-      networking.firewall.interfaces."zt+".allowedUDPPorts = [ 5353 ];
+      networking.firewall.interfaces."zt+".allowedTCPPorts = [ 5353 ]; # mdns
+      networking.firewall.interfaces."zt+".allowedUDPPorts = [ 5353 ]; # mdns
+      networking.networkmanager.unmanaged = [ "interface-name:zt*" ];
+
       services.zerotierone = {
         enable = true;
         joinNetworks = [ cfg.networkId ];

@@ -41,5 +41,10 @@ def test_upload_secret(
     assert age_key.lstat().st_mtime_ns == age_key_mtime
     assert identity_secret.lstat().st_mtime_ns == secret1_mtime
 
-    machine_path = sops_secrets_folder().joinpath("vm1-zerotier-identity-secret").joinpath("machines").joinpath("vm1")
+    machine_path = (
+        sops_secrets_folder()
+        .joinpath("vm1-zerotier-identity-secret")
+        .joinpath("machines")
+        .joinpath("vm1")
+    )
     assert machine_path.exists()
