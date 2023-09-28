@@ -44,8 +44,8 @@ def generate_secrets_group(
 
         text = f"""\
 set -euo pipefail
-facts={shlex.quote(str(facts_dir))}
-secrets={shlex.quote(str(secrets_dir))}
+export facts={shlex.quote(str(facts_dir))}
+export secrets={shlex.quote(str(secrets_dir))}
 {generator}
         """
         try:

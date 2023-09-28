@@ -15,7 +15,7 @@ exclude = ["clan_cli.nixpkgs*"]
 clan_cli = [ "config/jsonschema/*", "webui/assets/**/*"]
 
 [tool.pytest.ini_options]
-faulthandler_timeout = 30
+faulthandler_timeout = 60
 addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --workers auto --durations 5"
 norecursedirs = "tests/helpers"
 markers = [ "impure" ]

@@ -11,7 +11,7 @@
       };
       # Don't leak python packages into a devshell.
       # It can be very confusing if you `nix run` than than load the cli from the devshell instead.
-      clan-cli = pkgs.runCommand "clan-cli" { } ''
+      clan-cli = pkgs.runCommand "clan" { } ''
         mkdir $out
         ln -s ${self'.packages.clan-cli-unwrapped}/bin $out
       '';
