@@ -45,6 +45,7 @@
       system.clan.deployment.text = builtins.toJSON {
         inherit (config.system.clan) uploadSecrets generateSecrets;
         inherit (config.clan.networking) deploymentAddress;
+        inherit (config.clanCore) secretsUploadDirectory;
       };
       system.clan.deployment.file = pkgs.writeText "deployment.json" config.system.clan.deployment.text;
     };

@@ -4,10 +4,12 @@ import os
 import shlex
 import subprocess
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from ..dirs import get_clan_flake_toplevel, module_root
 from ..errors import ClanError
-from ..nix import nix_build, nix_config, nix_eval
+from ..nix import nix_build, nix_config, nix_shell
+from ..ssh import parse_deployment_address
 
 
 def build_upload_script(machine: str, clan_dir: Path) -> str:
@@ -28,13 +30,13 @@ def build_upload_script(machine: str, clan_dir: Path) -> str:
     return proc.stdout.strip()
 
 
-def get_deployment_address(machine: str, clan_dir: Path) -> str:
+def get_deployment_info(machine: str, clan_dir: Path) -> dict:
     config = nix_config()
     system = config["system"]
 
-    cmd = nix_eval(
+    cmd = nix_build(
         [
-            f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.clan.networking.deploymentAddress'
+            f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.deployment.file'
         ]
     )
     proc = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
@@ -43,29 +45,60 @@ def get_deployment_address(machine: str, clan_dir: Path) -> str:
             f"failed to get deploymentAddress:\n{shlex.join(cmd)}\nexited with {proc.returncode}"
         )
 
-    return json.loads(proc.stdout.strip())
+    return json.load(open(proc.stdout.strip()))
 
 
-def run_upload_secrets(flake_attr: str, clan_dir: Path, target: str) -> None:
+def run_upload_secrets(
+    flake_attr: str, clan_dir: Path, target: str, target_directory: str
+) -> None:
     env = os.environ.copy()
     env["CLAN_DIR"] = str(clan_dir)
     env["PYTHONPATH"] = str(module_root().parent)  # TODO do this in the clanCore module
     print(f"uploading secrets... {flake_attr}")
-    proc = subprocess.run(
-        [flake_attr, target],
-        env=env,
-    )
+    with TemporaryDirectory() as tempdir_:
+        tempdir = Path(tempdir_)
+        env["SECRETS_DIR"] = str(tempdir)
+        proc = subprocess.run(
+            [flake_attr],
+            env=env,
+            check=True,
+            stdout=subprocess.PIPE,
+            text=True,
+        )
 
-    if proc.returncode != 0:
-        raise ClanError("failed to upload secrets")
-    else:
-        print("successfully uploaded secrets")
+        if proc.returncode != 0:
+            raise ClanError("failed to upload secrets")
+
+        h = parse_deployment_address(flake_attr, target)
+        ssh_cmd = h.ssh_cmd()
+        subprocess.run(
+            nix_shell(
+                ["rsync"],
+                [
+                    "rsync",
+                    "-e",
+                    " ".join(["ssh"] + ssh_cmd[2:]),
+                    "-az",
+                    "--delete",
+                    f"{str(tempdir)}/",
+                    f"{h.user}@{h.host}:{target_directory}/",
+                ],
+            ),
+            check=True,
+        )
 
 
 def upload_secrets(machine: str) -> None:
     clan_dir = get_clan_flake_toplevel()
-    target = get_deployment_address(machine, clan_dir)
-    run_upload_secrets(build_upload_script(machine, clan_dir), clan_dir, target)
+    deployment_info = get_deployment_info(machine, clan_dir)
+    address = deployment_info.get("deploymentAddress", "")
+    secrets_upload_directory = deployment_info.get("secretsUploadDirectory", "")
+    run_upload_secrets(
+        build_upload_script(machine, clan_dir),
+        clan_dir,
+        address,
+        secrets_upload_directory,
+    )
 
 
 def upload_command(args: argparse.Namespace) -> None:

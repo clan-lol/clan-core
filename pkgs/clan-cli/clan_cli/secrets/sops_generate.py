@@ -1,3 +1,4 @@
+import os
 import shlex
 import shutil
 import subprocess
@@ -10,7 +11,6 @@ from clan_cli.nix import nix_shell
 
 from ..dirs import get_clan_flake_toplevel
 from ..errors import ClanError
-from ..ssh import parse_deployment_address
 from .folders import sops_secrets_folder
 from .machines import add_machine, has_machine
 from .secrets import decrypt_secret, encrypt_secret, has_secret
@@ -102,27 +102,12 @@ def generate_secrets_from_nix(
 
 # this is called by the sops.nix clan core module
 def upload_age_key_from_nix(
-    machine_name: str, deployment_address: str, age_key_file: str
+    machine_name: str,
 ) -> None:
     secret_name = f"{machine_name}-age.key"
     if not has_secret(secret_name):  # skip uploading the secret, not managed by us
         return
     secret = decrypt_secret(secret_name)
 
-    h = parse_deployment_address(machine_name, deployment_address)
-    path = Path(age_key_file)
-
-    proc = h.run(
-        [
-            "bash",
-            "-c",
-            'mkdir -p "$0" && echo -n "$1" > "$2"',
-            str(path.parent),
-            secret,
-            age_key_file,
-        ],
-        check=False,
-    )
-    if proc.returncode != 0:
-        print(f"failed to upload age key to {deployment_address}")
-        sys.exit(1)
+    secrets_dir = Path(os.environ["SECRETS_DIR"])
+    (secrets_dir / "key.txt").write_text(secret)
