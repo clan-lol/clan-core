@@ -45,7 +45,7 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
             h.meta["uploadSecrets"],
             clan_dir,
             target=target,
-            target_directory=h.meta["targetDirectory"],
+            target_directory=h.meta["secretsUploadDirectory"],
         )
 
         target_host = h.meta.get("target_host")

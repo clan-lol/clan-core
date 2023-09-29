@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.impure
-def test_upload_secret(
+def test_generate_secret(
     monkeypatch: pytest.MonkeyPatch,
     test_flake_with_core: Path,
     age_keys: list["KeyPair"],

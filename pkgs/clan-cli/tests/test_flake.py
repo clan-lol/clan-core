@@ -29,6 +29,7 @@ def create_flake(
             if clan_core_flake:
                 line = line.replace("__CLAN_CORE__", str(clan_core_flake))
             line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
+            line = line.replace("__CLAN_SOPS_KEY_DIR__", str(flake))
             print(line, end="")
         monkeypatch.chdir(flake)
         monkeypatch.setenv("HOME", str(home))
