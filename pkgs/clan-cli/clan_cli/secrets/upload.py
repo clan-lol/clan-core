@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import shlex
 import subprocess
@@ -6,7 +7,7 @@ from pathlib import Path
 
 from ..dirs import get_clan_flake_toplevel, module_root
 from ..errors import ClanError
-from ..nix import nix_build, nix_config
+from ..nix import nix_build, nix_config, nix_eval
 
 
 def build_upload_script(machine: str, clan_dir: Path) -> str:
@@ -14,7 +15,9 @@ def build_upload_script(machine: str, clan_dir: Path) -> str:
     system = config["system"]
 
     cmd = nix_build(
-        [f'{clan_dir}#clanInternals.machines."{system}"."{machine}".uploadSecrets']
+        [
+            f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.uploadSecrets'
+        ]
     )
     proc = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
     if proc.returncode != 0:
@@ -25,13 +28,31 @@ def build_upload_script(machine: str, clan_dir: Path) -> str:
     return proc.stdout.strip()
 
 
-def run_upload_secrets(flake_attr: str, clan_dir: Path) -> None:
+def get_deployment_address(machine: str, clan_dir: Path) -> str:
+    config = nix_config()
+    system = config["system"]
+
+    cmd = nix_eval(
+        [
+            f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.clan.networking.deploymentAddress'
+        ]
+    )
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
+    if proc.returncode != 0:
+        raise ClanError(
+            f"failed to get deploymentAddress:\n{shlex.join(cmd)}\nexited with {proc.returncode}"
+        )
+
+    return json.loads(proc.stdout.strip())
+
+
+def run_upload_secrets(flake_attr: str, clan_dir: Path, target: str) -> None:
     env = os.environ.copy()
     env["CLAN_DIR"] = str(clan_dir)
     env["PYTHONPATH"] = str(module_root().parent)  # TODO do this in the clanCore module
     print(f"uploading secrets... {flake_attr}")
     proc = subprocess.run(
-        [flake_attr],
+        [flake_attr, target],
         env=env,
     )
 
@@ -43,7 +64,8 @@ def run_upload_secrets(flake_attr: str, clan_dir: Path) -> None:
 
 def upload_secrets(machine: str) -> None:
     clan_dir = get_clan_flake_toplevel()
-    run_upload_secrets(build_upload_script(machine, clan_dir), clan_dir)
+    target = get_deployment_address(machine, clan_dir)
+    run_upload_secrets(build_upload_script(machine, clan_dir), clan_dir, target)
 
 
 def upload_command(args: argparse.Namespace) -> None:
