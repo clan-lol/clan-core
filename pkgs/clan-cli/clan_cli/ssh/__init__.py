@@ -373,7 +373,7 @@ class Host:
         Command to run locally for the host
 
         @cmd the commmand to run
-        @stdout if not None stdout of the command will be redirected to this file i.e. stdout=subprocss.PIPE
+        @stdout if not None stdout of the command will be redirected to this file i.e. stdout=subprocess.PIPE
         @stderr if not None stderr of the command will be redirected to this file i.e. stderr=subprocess.PIPE
         @extra_env environment variables to override whe running the command
         @cwd current working directory to run the process in
@@ -447,6 +447,33 @@ class Host:
             f"$ {displayed_cmd}", extra=dict(command_prefix=self.command_prefix)
         )
 
+        bash_cmd = export_cmd
+        bash_args = []
+        if isinstance(cmd, list):
+            bash_cmd += 'exec "$@"'
+            bash_args += cmd
+        else:
+            bash_cmd += cmd
+        # FIXME we assume bash to be present here? Should be documented...
+        ssh_cmd = self.ssh_cmd(verbose_ssh=verbose_ssh) + [
+            "--",
+            f"{sudo}bash -c {quote(bash_cmd)} -- {' '.join(map(quote, bash_args))}",
+        ]
+        return self._run(
+            ssh_cmd,
+            displayed_cmd,
+            shell=False,
+            stdout=stdout,
+            stderr=stderr,
+            cwd=cwd,
+            check=check,
+            timeout=timeout,
+        )
+
+    def ssh_cmd(
+        self,
+        verbose_ssh: bool = False,
+    ) -> List:
         if self.user is not None:
             ssh_target = f"{self.user}@{self.host}"
         else:
@@ -469,32 +496,7 @@ class Host:
         if verbose_ssh or self.verbose_ssh:
             ssh_opts.extend(["-v"])
 
-        bash_cmd = export_cmd
-        bash_args = []
-        if isinstance(cmd, list):
-            bash_cmd += 'exec "$@"'
-            bash_args += cmd
-        else:
-            bash_cmd += cmd
-        # FIXME we assume bash to be present here? Should be documented...
-        ssh_cmd = (
-            ["ssh", ssh_target]
-            + ssh_opts
-            + [
-                "--",
-                f"{sudo}bash -c {quote(bash_cmd)} -- {' '.join(map(quote, bash_args))}",
-            ]
-        )
-        return self._run(
-            ssh_cmd,
-            displayed_cmd,
-            shell=False,
-            stdout=stdout,
-            stderr=stderr,
-            cwd=cwd,
-            check=check,
-            timeout=timeout,
-        )
+        return ["ssh", ssh_target] + ssh_opts
 
 
 T = TypeVar("T")

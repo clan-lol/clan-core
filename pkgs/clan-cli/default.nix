@@ -27,6 +27,8 @@
 , nixpkgs
 , makeDesktopItem
 , copyDesktopItems
+, qemu
+, gnupg
 }:
 let
 
@@ -43,6 +45,7 @@ let
     pytest-parallel
     openssh
     git
+    gnupg
     stdenv.cc
   ];
 
@@ -59,6 +62,7 @@ let
     rsync
     sops
     git
+    qemu
   ];
 
   runtimeDependenciesAsSet = builtins.listToAttrs (builtins.map (p: lib.nameValuePair (lib.getName p.name) p) runtimeDependencies);

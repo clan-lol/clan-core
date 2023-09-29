@@ -99,11 +99,11 @@ in
           ${pkgs.python3.interpreter} ${./generate-network.py} "$facts/zerotier-network-id" "$secrets/zerotier-identity-secret"
         '';
       };
-      environment.etc."zerotier/network-id".text = facts.zerotier-network-id.value;
       environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
     })
     (lib.mkIf ((config.clanCore.secrets ? zerotier) && (facts.zerotier-network-id.value != null)) {
       clan.networking.zerotier.networkId = facts.zerotier-network-id.value;
+      environment.etc."zerotier/network-id".text = facts.zerotier-network-id.value;
 
       systemd.services.zerotierone.serviceConfig.ExecStartPre = [
         "+${pkgs.writeShellScript "init-zerotier" ''
