@@ -99,6 +99,8 @@ in
           ${pkgs.python3.interpreter} ${./generate-network.py} "$facts/zerotier-network-id" "$secrets/zerotier-identity-secret"
         '';
       };
+      environment.etc."zerotier/network-id".text = facts.zerotier-network-id.value;
+      environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
     })
     (lib.mkIf ((config.clanCore.secrets ? zerotier) && (facts.zerotier-network-id.value != null)) {
       clan.networking.zerotier.networkId = facts.zerotier-network-id.value;
@@ -106,8 +108,14 @@ in
       systemd.services.zerotierone.serviceConfig.ExecStartPre = [
         "+${pkgs.writeShellScript "init-zerotier" ''
            cp ${config.clanCore.secrets.zerotier.secrets.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+           mkdir -p /var/lib/zerotier-one/controller.d/network
            ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON networkConfig)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
          ''}"
+      ];
+      systemd.services.zerotierone.serviceConfig.ExecStartPost = [
+        "+${pkgs.writeShellScript "whitelist-controller" ''
+          ${config.clanCore.clanPkgs.zerotier-members}/bin/zerotier-members allow ${builtins.substring 0 10 cfg.networkId}
+        ''}"
       ];
     })
   ];
