@@ -108,6 +108,7 @@ in
       systemd.services.zerotierone.serviceConfig.ExecStartPre = [
         "+${pkgs.writeShellScript "init-zerotier" ''
            cp ${config.clanCore.secrets.zerotier.secrets.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+           mkdir -p /var/lib/zerotier-one/controller.d/network
            ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON networkConfig)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
          ''}"
       ];
