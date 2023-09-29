@@ -9,6 +9,7 @@
         export PATH="${lib.makeBinPath [
           pkgs.gitMinimal
           pkgs.nix
+          pkgs.rsync # needed to have rsync installed on the dummy ssh server
         ]}"
         ROOT=$(git rev-parse --show-toplevel)
         cd "$ROOT/pkgs/clan-cli"

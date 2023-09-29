@@ -1,4 +1,11 @@
-{ lib, config, options, ... }:
+{ lib, config, pkgs, options, extendModules, modulesPath, ... }:
+let
+  vmConfig = extendModules {
+    modules = [
+      (modulesPath + "/virtualisation/qemu-vm.nix")
+    ];
+  };
+in
 {
   options = {
     clan.virtualisation = {
@@ -33,9 +40,19 @@
   };
 
   config = {
-    system.clan.vm.config = {
-      inherit (config.clan.virtualisation) cores graphics;
-      memory_size = config.clan.virtualisation.memorySize;
+    system.clan.vm = {
+      # for clan vm inspect
+      config = {
+        inherit (config.clan.virtualisation) cores graphics;
+        memory_size = config.clan.virtualisation.memorySize;
+      };
+      # for clan vm create
+      create = pkgs.writeText "vm.json" (builtins.toJSON {
+        initrd = "${vmConfig.config.system.build.initialRamdisk}/${vmConfig.config.system.boot.loader.initrdFile}";
+        toplevel = vmConfig.config.system.build.toplevel;
+        regInfo = (pkgs.closureInfo { rootPaths = vmConfig.config.virtualisation.additionalPaths; });
+        inherit (config.clan.virtualisation) memorySize cores graphics;
+      });
     };
 
     virtualisation = lib.optionalAttrs (options.virtualisation ? cores) {

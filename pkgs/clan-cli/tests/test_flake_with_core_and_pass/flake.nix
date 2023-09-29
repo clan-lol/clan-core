@@ -13,8 +13,8 @@
           vm1 = { lib, ... }: {
             clan.networking.deploymentAddress = "__CLAN_DEPLOYMENT_ADDRESS__";
             system.stateVersion = lib.version;
-            sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
-            clanCore.secretsUploadDirectory = "__CLAN_SOPS_KEY_DIR__";
+            clanCore.secretStore = "password-store";
+            clanCore.secretsUploadDirectory = lib.mkForce "__CLAN_SOPS_KEY_DIR__/secrets";
 
             clan.networking.zerotier.controller.enable = true;
 

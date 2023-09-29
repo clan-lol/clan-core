@@ -12,6 +12,7 @@ in
   };
   config = lib.mkIf (config.clanCore.secretStore == "password-store") {
     clanCore.secretsDirectory = config.clan.password-store.targetDirectory;
+    clanCore.secretsUploadDirectory = config.clan.password-store.targetDirectory;
     system.clan.generateSecrets = pkgs.writeScript "generate-secrets" ''
       #!/bin/sh
       set -efu
@@ -33,7 +34,7 @@ in
           trap "rm -rf $facts" EXIT
           secrets=$(mktemp -d)
           trap "rm -rf $secrets" EXIT
-          ${v.generator}
+          ( ${v.generator} )
 
           ${lib.concatMapStrings (fact: ''
             mkdir -p "$(dirname ${fact.path})"
@@ -49,8 +50,6 @@ in
     system.clan.uploadSecrets = pkgs.writeScript "upload-secrets" ''
       #!/bin/sh
       set -efu
-
-      target=$1
 
       umask 0077
 
@@ -71,7 +70,7 @@ in
             sort |
             xargs -r -n 1 git -C ${passwordstoreDir} log -1 --format=%H
         )
-        remote_pass_info=$(ssh "$target" -- ${lib.escapeShellArg ''
+        remote_pass_info=$(ssh ${config.clan.networking.deploymentAddress} -- ${lib.escapeShellArg ''
           cat ${config.clan.password-store.targetDirectory}/.pass_info || :
         ''})
 
@@ -80,12 +79,6 @@ in
           exit 0
         fi
       fi
-
-      tmp_dir=$(mktemp -dt populate-pass.XXXXXXXX)
-      trap cleanup EXIT
-      cleanup() {
-        rm -fR "$tmp_dir"
-      }
 
       find ${passwordstoreDir}/machines/${config.clanCore.machineName} -type f -follow ! -name .gpg-id |
       while read -r gpg_path; do
@@ -99,7 +92,7 @@ in
           fi
         )
         pass_name=$rel_name
-        tmp_path=$tmp_dir/$(basename $rel_name)
+        tmp_path="$SECRETS_DIR"/$(basename $rel_name)
 
         mkdir -p "$(dirname "$tmp_path")"
         pass show "$pass_name" > "$tmp_path"
@@ -109,10 +102,8 @@ in
       done
 
       if test -n "''${local_pass_info-}"; then
-        echo "$local_pass_info" > "$tmp_dir"/.pass_info
+        echo "$local_pass_info" > "$SECRETS_DIR"/.pass_info
       fi
-
-      rsync --mkpath --delete -a "$tmp_dir"/ "$target":${config.clan.password-store.targetDirectory}/
     '';
   };
 }

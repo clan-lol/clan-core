@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, ... }:
 {
   options.clanCore.secretStore = lib.mkOption {
     type = lib.types.enum [ "sops" "password-store" "custom" ];
@@ -14,6 +14,13 @@
     type = lib.types.path;
     description = ''
       The directory where secrets are installed to. This is backend specific.
+    '';
+  };
+
+  options.clanCore.secretsUploadDirectory = lib.mkOption {
+    type = lib.types.path;
+    description = ''
+      The directory where secrets are uploaded into, This is backend specific.
     '';
   };
 
@@ -106,10 +113,6 @@
         };
       }));
   };
-  config.system.build.generateUploadSecrets = pkgs.writeScript "generate_upload_secrets" ''
-    ${config.system.clan.generateSecrets}
-    ${config.system.clan.uploadSecrets}
-  '';
   imports = [
     ./sops.nix
     ./password-store.nix

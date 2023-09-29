@@ -29,6 +29,7 @@ def create_flake(
             if clan_core_flake:
                 line = line.replace("__CLAN_CORE__", str(clan_core_flake))
             line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
+            line = line.replace("__CLAN_SOPS_KEY_DIR__", str(flake))
             print(line, end="")
         monkeypatch.chdir(flake)
         monkeypatch.setenv("HOME", str(home))
@@ -47,3 +48,12 @@ def test_flake_with_core(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
             "clan-core flake not found. This test requires the clan-core flake to be present"
         )
     yield from create_flake(monkeypatch, "test_flake_with_core", CLAN_CORE)
+
+
+@pytest.fixture
+def test_flake_with_core_and_pass(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+    if not (CLAN_CORE / "flake.nix").exists():
+        raise Exception(
+            "clan-core flake not found. This test requires the clan-core flake to be present"
+        )
+    yield from create_flake(monkeypatch, "test_flake_with_core_and_pass", CLAN_CORE)

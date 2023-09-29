@@ -39,7 +39,7 @@ in
         import json
         from clan_cli.secrets.sops_generate import upload_age_key_from_nix
         # the second toJSON is needed to escape the string for the python
-        args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; deployment_address = config.clan.networking.deploymentAddress; age_key_file = config.sops.age.keyFile; })})
+        args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; })})
         upload_age_key_from_nix(**args)
       '';
     };
@@ -54,5 +54,6 @@ in
 
     sops.age.keyFile = lib.mkIf (builtins.pathExists (config.clanCore.clanDir + "/sops/secrets/${config.clanCore.machineName}-age.key/secret"))
       (lib.mkDefault "/var/lib/sops-nix/key.txt");
+    clanCore.secretsUploadDirectory = lib.mkDefault "/var/lib/sops-nix";
   };
 }
