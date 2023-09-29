@@ -1,5 +1,5 @@
 { self, inputs, lib, ... }: {
-  flake.nixosModules.clanCore = { pkgs, options, ... }: {
+  flake.nixosModules.clanCore = { config, pkgs, options, ... }: {
     imports = [
       ./secrets
       ./zerotier
@@ -39,6 +39,14 @@
       description = ''
         utility outputs for clan management of this machine
       '';
+    };
+    # optimization for faster secret generate/upload and machines update
+    config = {
+      system.clan.deployment.text = builtins.toJSON {
+        inherit (config.system.clan) uploadSecrets generateSecrets;
+        inherit (config.clan.networking) deploymentAddress;
+      };
+      system.clan.deployment.file = pkgs.writeText "deployment.json" config.system.clan.deployment.text;
     };
   };
 }

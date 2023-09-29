@@ -46,27 +46,11 @@ let
       (system: lib.nameValuePair system
         (lib.mapAttrs (name: _: nixosConfiguration { inherit name system; }) allMachines))
       supportedSystems);
-
-  getMachine = machine: {
-    inherit (machine.config.system.clan) uploadSecrets generateSecrets;
-    inherit (machine.config.clan.networking) deploymentAddress;
-  };
-
-  machinesPerSystem = lib.mapAttrs (_: machine: getMachine machine);
-
-  machinesPerSystemWithJson = lib.mapAttrs (_: machine:
-    let
-      m = getMachine machine;
-    in
-    m // {
-      json = machine.pkgs.writers.writeJSON "machine.json" m;
-    });
 in
 {
   inherit nixosConfigurations;
 
   clanInternals = {
-    machines = lib.mapAttrs (_: configs: machinesPerSystemWithJson configs) configsPerSystem;
-    machines-json = lib.mapAttrs (system: configs: nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (machinesPerSystem configs)) configsPerSystem;
+    machines = configsPerSystem;
   };
 }

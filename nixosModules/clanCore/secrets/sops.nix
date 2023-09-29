@@ -37,10 +37,12 @@ in
       uploadSecrets = pkgs.writeScript "upload-secrets" ''
         #!${pkgs.python3}/bin/python
         import json
+        import sys
         from clan_cli.secrets.sops_generate import upload_age_key_from_nix
         # the second toJSON is needed to escape the string for the python
-        args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; deployment_address = config.clan.networking.deploymentAddress; age_key_file = config.sops.age.keyFile; })})
-        upload_age_key_from_nix(**args)
+        deployment_address = sys.argv[1]
+        args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; age_key_file = config.sops.age.keyFile; })})
+        upload_age_key_from_nix(**args, deployment_address=deployment_address)
       '';
     };
     sops.secrets = builtins.mapAttrs

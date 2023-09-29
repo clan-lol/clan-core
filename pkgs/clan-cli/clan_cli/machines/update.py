@@ -41,7 +41,12 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
         flake_attr = h.meta.get("flake_attr", "")
 
         run_generate_secrets(h.meta["generateSecrets"], clan_dir)
-        run_upload_secrets(h.meta["uploadSecrets"], clan_dir)
+        run_upload_secrets(
+            h.meta["uploadSecrets"],
+            clan_dir,
+            target=target,
+            target_directory=h.meta["targetDirectory"],
+        )
 
         target_host = h.meta.get("target_host")
         if target_host:
@@ -92,7 +97,7 @@ def build_json(targets: list[str]) -> list[dict[str, Any]]:
 def get_all_machines(clan_dir: Path) -> HostGroup:
     config = nix_config()
     system = config["system"]
-    what = f'{clan_dir}#clanInternals.machines-json."{system}"'
+    what = f'{clan_dir}#clanInternals.all-machines-json."{system}"'
     machines = build_json([what])[0]
 
     hosts = []
@@ -109,7 +114,9 @@ def get_selected_machines(machine_names: list[str], clan_dir: Path) -> HostGroup
     system = config["system"]
     what = []
     for name in machine_names:
-        what.append(f'{clan_dir}#clanInternals.machines."{system}"."{name}".json')
+        what.append(
+            f'{clan_dir}#clanInternals.machines."{system}"."{name}".config.system.clan.deployment.file'
+        )
     machines = build_json(what)
     hosts = []
     for i, machine in enumerate(machines):
