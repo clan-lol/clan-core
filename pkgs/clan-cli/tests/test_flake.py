@@ -48,3 +48,12 @@ def test_flake_with_core(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
             "clan-core flake not found. This test requires the clan-core flake to be present"
         )
     yield from create_flake(monkeypatch, "test_flake_with_core", CLAN_CORE)
+
+
+@pytest.fixture
+def test_flake_with_core_and_pass(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+    if not (CLAN_CORE / "flake.nix").exists():
+        raise Exception(
+            "clan-core flake not found. This test requires the clan-core flake to be present"
+        )
+    yield from create_flake(monkeypatch, "test_flake_with_core_and_pass", CLAN_CORE)

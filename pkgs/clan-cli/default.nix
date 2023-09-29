@@ -45,6 +45,7 @@ let
     pytest-parallel
     openssh
     git
+    gnupg
     stdenv.cc
   ];
 
