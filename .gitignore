@@ -3,6 +3,7 @@ result*
 /pkgs/clan-cli/clan_cli/nixpkgs
 /pkgs/clan-cli/clan_cli/webui/assets
 /machines
+nixos.qcow2
 
 # python
 __pycache__
