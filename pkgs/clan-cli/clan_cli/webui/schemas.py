@@ -45,7 +45,7 @@ class VmConfig(BaseModel):
 
 
 class VmStatusResponse(BaseModel):
-    status: int
+    returncode: list[int | None]
     running: bool
 
 
