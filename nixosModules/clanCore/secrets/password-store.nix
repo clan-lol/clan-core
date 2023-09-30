@@ -28,7 +28,7 @@ in
         ${acc}
         # ${n}
         # if any of the secrets are missing, we regenerate all connected facts/secrets
-        (if ! ${lib.concatMapStringsSep " && " (x: "pass show machines/${config.clanCore.machineName}/${x.name} >/dev/null") (lib.attrValues v.secrets)}; then
+        (if ! (${lib.concatMapStringsSep " && " (x: "pass show machines/${config.clanCore.machineName}/${x.name} >/dev/null") (lib.attrValues v.secrets)}); then
 
           facts=$(mktemp -d)
           trap "rm -rf $facts" EXIT
