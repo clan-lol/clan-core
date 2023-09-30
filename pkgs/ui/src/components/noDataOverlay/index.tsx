@@ -1,5 +1,5 @@
-/* eslint-disable tailwindcss/no-custom-classname */
 "use client";
+/* eslint-disable tailwindcss/no-custom-classname */
 
 import * as React from "react";
 import Box from "@mui/material/Box";

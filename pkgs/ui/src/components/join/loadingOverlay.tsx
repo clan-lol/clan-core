@@ -1,3 +1,4 @@
+"use client";
 import { LinearProgress, Typography } from "@mui/material";
 
 interface LoadingOverlayProps {

@@ -18,7 +18,7 @@ async def inspect_flake(
     actions = []
     # Extract the flake from the given URL
     # We do this by running 'nix flake prefetch {url} --json'
-    cmd = nix_command(["flake", "prefetch", url, "--json"])
+    cmd = nix_command(["flake", "prefetch", url, "--json", "--refresh"])
     proc = await asyncio.create_subprocess_exec(
         cmd[0],
         *cmd[1:],
