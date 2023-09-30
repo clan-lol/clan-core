@@ -82,6 +82,7 @@
               '';
             };
           facts = lib.mkOption {
+            default = { };
             type = lib.types.attrsOf (lib.types.submodule (fact: {
               options = {
                 name = lib.mkOption {
