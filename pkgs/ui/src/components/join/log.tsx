@@ -1,3 +1,4 @@
+"use client";
 interface LogOptions {
   lines: string[];
   title?: string;

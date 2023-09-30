@@ -16,7 +16,7 @@ export const useVms = (options: UseVmsOptions) => {
 
   useEffect(() => {
     const getVmInfo = async (url: string, attr: string) => {
-      if (url === "") {
+      if (url === "" || !url) {
         toast.error("Flake url is missing", { id: "missing.flake.url" });
         return undefined;
       }

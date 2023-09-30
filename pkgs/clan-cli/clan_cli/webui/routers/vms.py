@@ -115,7 +115,7 @@ command output:
 
 
 @router.get("/api/vms/{uuid}/status")
-async def vm_status(uuid: UUID) -> VmStatusResponse:
+async def get_vm_status(uuid: UUID) -> VmStatusResponse:
     task = get_task(uuid)
     status: list[int | None] = list(map(lambda x: x.returncode, task.procs))
     log.debug(msg=f"returncodes: {status}. task.finished: {task.finished}")
