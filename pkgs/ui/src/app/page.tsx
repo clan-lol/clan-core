@@ -1,60 +1,79 @@
-import { RecentActivity } from "@/components/dashboard/activity";
-import { AppOverview } from "@/components/dashboard/appOverview";
-import { NetworkOverview } from "@/components/dashboard/NetworkOverview";
-import { Notifications } from "@/components/dashboard/notifications";
-import { QuickActions } from "@/components/dashboard/quickActions";
-import { TaskQueue } from "@/components/dashboard/taskQueue";
-import { tw } from "@/utils/tailwind";
+"use client";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  IconButton,
+  Input,
+  InputAdornment,
+  Paper,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useSearchParams } from "next/navigation";
+import { useInspectFlake } from "@/api/default/default";
+import { ConfirmVM } from "@/components/join/confirmVM";
+import { LoadingOverlay } from "@/components/join/loadingOverlay";
+import { FlakeBadge } from "@/components/flakeBadge/flakeBadge";
+import { Log } from "@/components/join/log";
 
-interface DashboardCardProps {
-  children?: React.ReactNode;
-  rowSpan?: number;
-  sx?: string;
-}
-const DashboardCard = (props: DashboardCardProps) => {
-  const { children, rowSpan, sx = "" } = props;
-  return (
-    <div
-      className={tw`col-span-full row-span-${rowSpan || 1} xl:col-span-1 ${sx}`}
-    >
-      {children}
-    </div>
-  );
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import { Confirm } from "@/components/join/confirm";
+import { Layout } from "@/components/join/layout";
+import { ChevronRight } from "@mui/icons-material";
+
+type FormValues = {
+  flakeUrl: string;
+  flakeAttribute: string;
 };
 
-interface DashboardPanelProps {
-  children?: React.ReactNode;
-}
-const DashboardPanel = (props: DashboardPanelProps) => {
-  const { children } = props;
-  return (
-    <div className="col-span-full row-span-1 xl:col-span-2">{children}</div>
-  );
-};
+export default function Page() {
+  const queryParams = useSearchParams();
+  const flakeUrl = queryParams.get("flake") || "";
+  const flakeAttribute = queryParams.get("attr") || "default";
+  const { handleSubmit, control, formState, getValues, reset } =
+    useForm<FormValues>({ defaultValues: { flakeUrl: "" } });
 
-export default function Dashboard() {
+  const onSubmit: SubmitHandler<FormValues> = (data) => console.log(data);
+
   return (
-    <div className="flex h-screen w-full">
-      <div className="grid w-full auto-rows-max grid-cols-1 grid-rows-none gap-4 xl:grid-cols-2 2xl:grid-cols-3 ">
-        <DashboardCard rowSpan={2}>
-          <NetworkOverview />
-        </DashboardCard>
-        <DashboardCard rowSpan={2}>
-          <RecentActivity />
-        </DashboardCard>
-        <DashboardCard>
-          <Notifications />
-        </DashboardCard>
-        <DashboardCard>
-          <QuickActions />
-        </DashboardCard>
-        <DashboardPanel>
-          <AppOverview />
-        </DashboardPanel>
-        <DashboardCard sx={tw`xl:col-span-full 2xl:col-span-1`}>
-          <TaskQueue />
-        </DashboardCard>
-      </div>
-    </div>
+    <Layout>
+      {!formState.isSubmitted && !flakeUrl && (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="w-full max-w-2xl justify-self-center"
+        >
+          <Controller
+            name="flakeUrl"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                // variant="standard"
+                // label="Clan url"
+                required
+                fullWidth
+                startAdornment={
+                  <InputAdornment position="start">Clan Url:</InputAdornment>
+                }
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton type="submit">
+                      <ChevronRight />
+                    </IconButton>
+                  </InputAdornment>
+                }
+                // }}
+              />
+            )}
+          />
+        </form>
+      )}
+      {(formState.isSubmitted || flakeUrl) && (
+        <Confirm
+          handleBack={() => reset()}
+          flakeUrl={formState.isSubmitted ? getValues("flakeUrl") : flakeUrl}
+        />
+      )}
+    </Layout>
   );
 }

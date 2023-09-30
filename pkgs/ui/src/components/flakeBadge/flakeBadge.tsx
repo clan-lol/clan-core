@@ -8,6 +8,11 @@ export const FlakeBadge = (props: FlakeBadgeProps) => (
   <Chip
     color="secondary"
     label={`${props.flakeUrl}#${props.flakeAttr}`}
-    sx={{ p: 2 }}
+    sx={{
+      p: 2,
+      "& .MuiChip-label": {
+        overflow: "unset",
+      },
+    }}
   />
 );
