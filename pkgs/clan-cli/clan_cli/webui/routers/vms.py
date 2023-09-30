@@ -115,13 +115,15 @@ command output:
 
 
 @router.get("/api/vms/{uuid}/status")
-async def get_status(uuid: UUID) -> VmStatusResponse:
+async def vm_status(uuid: UUID) -> VmStatusResponse:
     task = get_task(uuid)
-    return VmStatusResponse(running=not task.finished, status=0)
+    status: list[int | None] = list(map(lambda x: x.returncode, task.procs))
+    log.debug(msg=f"returncodes: {status}. task.finished: {task.finished}")
+    return VmStatusResponse(running=not task.finished, returncode=status)
 
 
 @router.get("/api/vms/{uuid}/logs")
-async def get_logs(uuid: UUID) -> StreamingResponse:
+async def get_vm_logs(uuid: UUID) -> StreamingResponse:
     # Generator function that yields log lines as they are available
     def stream_logs() -> Iterator[str]:
         task = get_task(uuid)
