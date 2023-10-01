@@ -52,8 +52,8 @@ def get_deployment_info(machine: str, clan_dir: Path) -> dict:
     return json.load(open(proc.stdout.strip()))
 
 
-def run_upload_secrets(
-    flake_attr: str, clan_dir: Path, target: str, target_directory: str
+def get_decrypted_secrets(
+    flake_attr: str, clan_dir: Path, target_directory: Path
 ) -> None:
     env = os.environ.copy()
     env["CLAN_DIR"] = str(clan_dir)
