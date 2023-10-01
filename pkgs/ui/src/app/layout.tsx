@@ -4,6 +4,7 @@ import "./globals.css";
 import localFont from "next/font/local";
 import * as React from "react";
 import {
+  Button,
   CssBaseline,
   IconButton,
   ThemeProvider,
@@ -20,7 +21,14 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Image from "next/image";
 import { tw } from "@/utils/tailwind";
 import axios from "axios";
-import { MachineContextProvider } from "@/components/hooks/useMachines";
+
+import {
+  AppContext,
+  WithAppState,
+  useAppState,
+} from "@/components/hooks/useAppContext";
+import Background from "@/components/background";
+import { usePathname, redirect } from "next/navigation";
 
 const roboto = localFont({
   src: [
@@ -36,6 +44,17 @@ axios.defaults.baseURL = "http://localhost:2979";
 
 // add negative margin for smooth transition to fill the space of the sidebar
 const translate = tw`lg:-ml-64 -ml-14`;
+
+const AutoRedirectEffect = () => {
+  const { isLoading, data } = useAppState();
+  const pathname = usePathname();
+  React.useEffect(() => {
+    if (!isLoading && !data.isJoined && pathname !== "/") {
+      redirect("/");
+    }
+  }, [isLoading, data, pathname]);
+  return <></>;
+};
 
 export default function RootLayout({
   children,
@@ -82,47 +101,78 @@ export default function RootLayout({
           <body id="__next" className={roboto.className}>
             <CssBaseline />
             <Toaster />
-            <MachineContextProvider>
-              <div className="flex h-screen overflow-hidden">
-                <Sidebar
-                  show={showSidebar}
-                  onClose={() => setShowSidebar(false)}
-                />
-                <div
-                  className={tw`${
-                    !showSidebar && translate
-                  } flex h-full w-full flex-col overflow-y-scroll transition-[margin] duration-150 ease-in-out`}
-                >
-                  <div className="static top-0 mb-2 py-2">
-                    <div className="grid grid-cols-3">
-                      <div className="col-span-1">
-                        <IconButton
-                          hidden={true}
-                          onClick={() => setShowSidebar((c) => !c)}
-                        >
-                          {!showSidebar && <MenuIcon />}
-                        </IconButton>
-                      </div>
-                      <div className="col-span-1 block w-full text-center font-semibold text-white lg:hidden ">
-                        <Image
-                          src="/logo.svg"
-                          alt="Clan Logo"
-                          width={58}
-                          height={58}
-                          priority
+            <WithAppState>
+              <AppContext.Consumer>
+                {(appState) => {
+                  const showSidebarDerived = Boolean(
+                    showSidebar &&
+                      !appState.isLoading &&
+                      appState.data.isJoined,
+                  );
+                  return (
+                    <>
+                      <Background />
+                      <div className="flex h-screen overflow-hidden">
+                        <Sidebar
+                          show={showSidebarDerived}
+                          onClose={() => setShowSidebar(false)}
                         />
-                      </div>
-                    </div>
-                  </div>
+                        <div
+                          className={tw`${
+                            !showSidebarDerived && translate
+                          } flex h-full w-full flex-col overflow-y-scroll transition-[margin] duration-150 ease-in-out`}
+                        >
+                          <div className="static top-0 mb-2 py-2">
+                            <div className="grid grid-cols-3">
+                              <div className="col-span-1">
+                                <IconButton
+                                  hidden={true}
+                                  onClick={() => setShowSidebar((c) => !c)}
+                                >
+                                  {!showSidebar && appState.data.isJoined && (
+                                    <MenuIcon />
+                                  )}
+                                </IconButton>
+                              </div>
+                              <div className="col-span-1 block w-full bg-fixed text-center font-semibold text-white lg:hidden">
+                                <Image
+                                  src="/logo.svg"
+                                  alt="Clan Logo"
+                                  width={58}
+                                  height={58}
+                                  priority
+                                />
+                              </div>
+                            </div>
+                          </div>
 
-                  <div className="px-1">
-                    <div className="relative flex h-full flex-1 flex-col">
-                      <main>{children}</main>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </MachineContextProvider>
+                          <div className="px-1">
+                            <div className="relative flex h-full flex-1 flex-col">
+                              <main>
+                                <AutoRedirectEffect />
+                                <Button
+                                  fullWidth
+                                  onClick={() => {
+                                    appState.setAppState((s) => ({
+                                      ...s,
+                                      isJoined: !s.isJoined,
+                                    }));
+                                  }}
+                                >
+                                  Toggle Joined
+                                </Button>
+
+                                {children}
+                              </main>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                }}
+              </AppContext.Consumer>
+            </WithAppState>
           </body>
         </ThemeProvider>
       </StyledEngineProvider>

@@ -26,10 +26,10 @@ export function ConfirmVM(props: ConfirmVMProps) {
   const formHooks = useForm<VmConfig>({
     defaultValues: {
       flake_url: url,
-      flake_attr: "vm1",
-      cores: 1,
+      flake_attr: "default",
+      cores: 4,
       graphics: true,
-      memory_size: 1024,
+      memory_size: 2048,
     },
   });
   const [vmUuid, setVmUuid] = useState<string | null>(null);
@@ -37,7 +37,6 @@ export function ConfirmVM(props: ConfirmVMProps) {
   const { setValue, watch, formState, handleSubmit } = formHooks;
   const { config, error, isLoading } = useVms({
     url,
-    // TODO: FIXME
     attr: watch("flake_attr"),
   });
   useEffect(() => {
@@ -52,12 +51,12 @@ export function ConfirmVM(props: ConfirmVMProps) {
     <div className="mb-2 flex w-full max-w-2xl flex-col items-center justify-self-center pb-2">
       {!formState.isSubmitted && (
         <>
-          {error && (
+          {/* {error && (
             <Alert severity="error" className="w-full max-w-2xl">
               <AlertTitle>Error</AlertTitle>
               An Error occurred - See details below
             </Alert>
-          )}
+          )} */}
           <div className="mb-2 w-full max-w-2xl">
             {isLoading && (
               <LoadingOverlay
@@ -65,14 +64,10 @@ export function ConfirmVM(props: ConfirmVMProps) {
                 subtitle={<FlakeBadge flakeUrl={url} flakeAttr={url} />}
               />
             )}
-            {config && (
-              <ConfigureVM
-                vmConfig={config}
-                formHooks={formHooks}
-                setVmUuid={setVmUuid}
-              />
-            )}
-            {error && (
+
+            <ConfigureVM formHooks={formHooks} setVmUuid={setVmUuid} />
+
+            {/* {error && (
               <>
                 <Button
                   color="error"
@@ -93,7 +88,7 @@ export function ConfirmVM(props: ConfirmVMProps) {
                   }
                 />
               </>
-            )}
+            )} */}
           </div>
         </>
       )}

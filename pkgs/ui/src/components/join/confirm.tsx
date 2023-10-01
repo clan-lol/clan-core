@@ -22,7 +22,7 @@ export const Confirm = (props: ConfirmProps) => {
   return userConfirmed ? (
     <ConfirmVM url={flakeUrl} handleBack={handleBack} />
   ) : (
-    <div className="mb-2 flex w-full max-w-2xl flex-col items-center justify-self-center pb-2">
+    <div className="mb-2 flex w-full max-w-2xl flex-col items-center justify-self-center pb-2 ">
       {isLoading && (
         <LoadingOverlay
           title={"Loading Flake"}
