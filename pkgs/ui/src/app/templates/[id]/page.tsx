@@ -36,7 +36,6 @@ export async function generateStaticParams() {
 }
 
 function getTemplate(params: { id: string }) {
-  console.log({ params });
   // const res = await fetch(`https://.../posts/${params.id}`);
   return {
     short: `My Template ${params.id}`,
@@ -48,7 +47,6 @@ interface TemplateDetailProps {
 }
 export default function TemplateDetail({ params }: TemplateDetailProps) {
   const { data, isLoading } = useListMachines();
-  console.log({ data, isLoading });
   const details = getTemplate(params);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

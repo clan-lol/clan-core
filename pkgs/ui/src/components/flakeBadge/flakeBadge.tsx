@@ -10,7 +10,10 @@ export const FlakeBadge = (props: FlakeBadgeProps) => (
     label={`${props.flakeUrl}#${props.flakeAttr}`}
     sx={{
       p: 2,
-      "& .MuiChip-label": {
+      "&.MuiChip-root": {
+        maxWidth: "unset",
+      },
+      "&.MuiChip-label": {
         overflow: "unset",
       },
     }}
