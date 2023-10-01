@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .. import custom_logger
 from .assets import asset_path
-from .routers import flake, health, machines, root, vms
+from .routers import flake, health, machines, root, utils, vms
 
 origins = [
     "http://localhost:3000",
@@ -33,7 +33,9 @@ def setup_app() -> FastAPI:
     # Needs to be last in register. Because of wildcard route
     app.include_router(root.router)
 
-    app.add_exception_handler(vms.NixBuildException, vms.nix_build_exception_handler)
+    app.add_exception_handler(
+        utils.NixBuildException, utils.nix_build_exception_handler
+    )
 
     app.mount("/static", StaticFiles(directory=asset_path()), name="static")
 

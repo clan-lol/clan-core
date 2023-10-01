@@ -1,14 +1,24 @@
-import asyncio
 import json
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException
 
-from clan_cli.webui.schemas import FlakeAction, FlakeResponse
+from clan_cli.webui.schemas import FlakeAction, FlakeAttrResponse, FlakeResponse
 
-from ...nix import nix_command
+from ...nix import nix_command, nix_flake_show
+from .utils import run_cmd
 
 router = APIRouter()
+
+
+@router.get("/api/flake/attrs")
+async def inspect_flake_attrs(url: str) -> FlakeAttrResponse:
+    cmd = nix_flake_show(url)
+    stdout = await run_cmd(cmd)
+    data = json.loads(stdout)
+    nixos_configs = data["nixosConfigurations"]
+    flake_attrs = list(nixos_configs.keys())
+    return FlakeAttrResponse(flake_attrs=flake_attrs)
 
 
 @router.get("/api/flake")
@@ -19,17 +29,7 @@ async def inspect_flake(
     # Extract the flake from the given URL
     # We do this by running 'nix flake prefetch {url} --json'
     cmd = nix_command(["flake", "prefetch", url, "--json", "--refresh"])
-    proc = await asyncio.create_subprocess_exec(
-        cmd[0],
-        *cmd[1:],
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
-
-    if proc.returncode != 0:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(stderr))
-
+    stdout = await run_cmd(cmd)
     data: dict[str, str] = json.loads(stdout)
 
     if data.get("storePath") is None:

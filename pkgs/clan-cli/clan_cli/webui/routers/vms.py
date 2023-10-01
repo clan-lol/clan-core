@@ -1,17 +1,15 @@
-import asyncio
 import json
 import logging
-import shlex
 from typing import Annotated, Iterator
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Body, HTTPException, Request, status
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import APIRouter, BackgroundTasks, Body
+from fastapi.responses import StreamingResponse
 
 from ...nix import nix_build, nix_eval
 from ..schemas import VmConfig, VmCreateResponse, VmInspectResponse, VmStatusResponse
 from ..task_manager import BaseTask, get_task, register_task
+from .utils import run_cmd
 
 log = logging.getLogger(__name__)
 router = APIRouter()
@@ -31,20 +29,6 @@ def nix_build_vm_cmd(machine: str, flake_url: str) -> list[str]:
             f"{flake_url}#nixosConfigurations.{json.dumps(machine)}.config.system.build.vm"
         ]
     )
-
-
-class NixBuildException(HTTPException):
-    def __init__(self, msg: str, loc: list = ["body", "flake_attr"]):
-        detail = [
-            {
-                "loc": loc,
-                "msg": msg,
-                "type": "value_error",
-            }
-        ]
-        super().__init__(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail
-        )
 
 
 class BuildVmTask(BaseTask):
@@ -71,43 +55,12 @@ class BuildVmTask(BaseTask):
             log.exception(e)
 
 
-def nix_build_exception_handler(
-    request: Request, exc: NixBuildException
-) -> JSONResponse:
-    log.error("NixBuildException: %s", exc)
-    return JSONResponse(
-        status_code=exc.status_code,
-        content=jsonable_encoder(dict(detail=exc.detail)),
-    )
-
-
-##################################
-#                                #
-#  ======== VM ROUTES ========   #
-#                                #
-##################################
 @router.post("/api/vms/inspect")
 async def inspect_vm(
     flake_url: Annotated[str, Body()], flake_attr: Annotated[str, Body()]
 ) -> VmInspectResponse:
     cmd = nix_inspect_vm_cmd(flake_attr, flake_url=flake_url)
-    proc = await asyncio.create_subprocess_exec(
-        *cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
-
-    if proc.returncode != 0:
-        raise NixBuildException(
-            f"""
-Failed to evaluate vm from '{flake_url}#{flake_attr}'.
-command: {shlex.join(cmd)}
-exit code: {proc.returncode}
-command output:
-{stderr.decode("utf-8")}
-"""
-        )
+    stdout = await run_cmd(cmd)
     data = json.loads(stdout)
     return VmInspectResponse(
         config=VmConfig(flake_url=flake_url, flake_attr=flake_attr, **data)
