@@ -72,7 +72,7 @@ in
         )
         remote_pass_info=$(ssh ${config.clan.networking.deploymentAddress} -- ${lib.escapeShellArg ''
           cat ${config.clan.password-store.targetDirectory}/.pass_info || :
-        ''})
+        ''} || :)
 
         if test "$local_pass_info" = "$remote_pass_info"; then
           echo secrets already match
