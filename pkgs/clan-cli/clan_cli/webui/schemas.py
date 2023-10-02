@@ -53,6 +53,10 @@ class VmCreateResponse(BaseModel):
     uuid: str
 
 
+class FlakeAttrResponse(BaseModel):
+    flake_attrs: list[str]
+
+
 class VmInspectResponse(BaseModel):
     config: VmConfig
 
