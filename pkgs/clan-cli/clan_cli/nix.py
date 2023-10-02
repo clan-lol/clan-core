@@ -11,6 +11,18 @@ def nix_command(flags: list[str]) -> list[str]:
     return ["nix", "--extra-experimental-features", "nix-command flakes"] + flags
 
 
+def nix_flake_show(flake_url: str) -> list[str]:
+    return nix_command(
+        [
+            "flake",
+            "show",
+            "--json",
+            "--show-trace",
+            f"{flake_url}",
+        ]
+    )
+
+
 def nix_build(
     flags: list[str],
 ) -> list[str]:
