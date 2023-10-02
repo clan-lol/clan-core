@@ -1,8 +1,9 @@
 import json
 import logging
 import tempfile
+import time
 from pathlib import Path
-from typing import Annotated, Iterator
+from typing import Annotated, Iterator, Iterable
 from uuid import UUID
 
 from fastapi import APIRouter, Body
@@ -10,7 +11,7 @@ from fastapi.responses import StreamingResponse
 
 from ...nix import nix_build, nix_eval, nix_shell
 from ..schemas import VmConfig, VmCreateResponse, VmInspectResponse, VmStatusResponse
-from ..task_manager import BaseTask, get_task, register_task
+from ..task_manager import BaseTask, get_task, register_task, CmdState
 from .utils import run_cmd
 
 log = logging.getLogger(__name__)
@@ -38,10 +39,11 @@ class BuildVmTask(BaseTask):
         super().__init__(uuid)
         self.vm = vm
 
-    def get_vm_create_info(self) -> dict:
+    def get_vm_create_info(self, cmds: Iterable[CmdState]) -> dict:
         clan_dir = self.vm.flake_url
         machine = self.vm.flake_attr
-        cmd_state = self.run_cmd(
+        cmd = next(cmds)
+        cmd.run(
             nix_build(
                 [
                     # f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.clan.virtualisation.createJSON' # TODO use this
@@ -49,41 +51,48 @@ class BuildVmTask(BaseTask):
                 ]
             )
         )
-        vm_json = "".join(cmd_state.stdout)
+        vm_json = "".join(cmd.stdout)
         self.log.debug(f"VM JSON path: {vm_json}")
         with open(vm_json) as f:
             return json.load(f)
 
     def task_run(self) -> None:
+        cmds = self.register_cmds(4)
+
         machine = self.vm.flake_attr
         self.log.debug(f"Creating VM for {machine}")
-        vm_config = self.get_vm_create_info()
+
+        # TODO: We should get this from the vm argument
+        vm_config = self.get_vm_create_info(cmds)
+
         with tempfile.TemporaryDirectory() as tmpdir_:
             xchg_dir = Path(tmpdir_) / "xchg"
             xchg_dir.mkdir()
             disk_img = f"{tmpdir_}/disk.img"
-            cmd = nix_shell(
+
+            cmd = next(cmds)
+            cmd.run(nix_shell(
                 ["qemu"],
                 [
-                    "qemu" "qemu-img",
+                    "qemu-img",
                     "create",
                     "-f",
                     "raw",
                     disk_img,
                     "1024M",
                 ],
-            )
-            self.run_cmd(cmd)
+            ))
 
-            cmd = [
+            cmd = next(cmds)
+            cmd.run([
                 "mkfs.ext4",
                 "-L",
                 "nixos",
                 disk_img,
-            ]
-            self.run_cmd(cmd)
+            ])
 
-            cmd = nix_shell(
+            cmd = next(cmds)
+            cmd.run(nix_shell(
                 ["qemu"],
                 [
                     # fmt: off
@@ -106,26 +115,7 @@ class BuildVmTask(BaseTask):
                         "-append", f'{(Path(vm_config["toplevel"]) / "kernel-params").read_text()} init={vm_config["toplevel"]}/init regInfo={vm_config["regInfo"]}/registration console=ttyS0,115200n8 console=tty0',
                     # fmt: on
                 ],
-            )
-            self.run_cmd(cmd)
-
-    # def run(self) -> None:
-    #     try:
-    #         self.log.debug(f"BuildVM with uuid {self.uuid} started")
-    #         cmd = nix_build_vm_cmd(self.vm.flake_attr, flake_url=self.vm.flake_url)
-
-    #         proc = self.run_cmd(cmd)
-    #         self.log.debug(f"stdout: {proc.stdout}")
-
-    #         vm_path = f"{''.join(proc.stdout[0])}/bin/run-nixos-vm"
-    #         self.log.debug(f"vm_path: {vm_path}")
-
-    #         self.run_cmd([vm_path])
-    #         self.finished = True
-    # except Exception as e:
-    #     self.failed = True
-    #     self.finished = True
-    #     log.exception(e)
+            ))
 
 
 @router.post("/api/vms/inspect")
@@ -154,21 +144,8 @@ async def get_vm_logs(uuid: UUID) -> StreamingResponse:
     def stream_logs() -> Iterator[str]:
         task = get_task(uuid)
 
-        for proc in task.procs:
-            if proc.done:
-                log.debug("stream logs and proc is done")
-                for line in proc.stderr:
-                    yield line + "\n"
-                for line in proc.stdout:
-                    yield line + "\n"
-                continue
-            while True:
-                out = proc.output
-                line = out.get()
-                if line is None:
-                    log.debug("stream logs and line is None")
-                    break
-                yield line
+        for line in task.logs_iter():
+            yield line
 
     return StreamingResponse(
         content=stream_logs(),
