@@ -164,7 +164,7 @@ async def get_vm_logs(uuid: UUID) -> StreamingResponse:
 
 @router.post("/api/vms/create")
 async def create_vm(
-    vm: Annotated[VmConfig, Body()], background_tasks: BackgroundTasks
+    vm: Annotated[VmConfig, Body()]
 ) -> VmCreateResponse:
     flake_attrs = await get_attrs(vm.flake_url)
     if vm.flake_attr not in flake_attrs:
