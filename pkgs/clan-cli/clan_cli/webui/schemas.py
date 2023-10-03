@@ -3,6 +3,8 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
+from ..vms.inspect import VmConfig
+
 
 class Status(Enum):
     ONLINE = "online"
@@ -33,15 +35,6 @@ class ConfigResponse(BaseModel):
 
 class SchemaResponse(BaseModel):
     schema_: dict = Field(alias="schema")
-
-
-class VmConfig(BaseModel):
-    flake_url: str
-    flake_attr: str
-
-    cores: int
-    memory_size: int
-    graphics: bool
 
 
 class VmStatusResponse(BaseModel):
