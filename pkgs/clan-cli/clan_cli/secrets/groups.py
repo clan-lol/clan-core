@@ -5,7 +5,13 @@ from pathlib import Path
 from ..errors import ClanError
 from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
-from .folders import sops_groups_folder, sops_machines_folder, sops_users_folder
+from .folders import (
+    sops_groups_folder,
+    sops_machines_folder,
+    sops_secrets_folder,
+    sops_users_folder,
+)
+from .sops import update_keys
 from .types import (
     VALID_USER_NAME,
     group_name_type,
@@ -78,6 +84,16 @@ def list_directory(directory: Path) -> str:
     return msg
 
 
+def update_group_keys(group: str) -> None:
+    for secret_ in secrets.list_secrets():
+        secret = sops_secrets_folder() / secret_
+        if (secret / "groups" / group).is_symlink():
+            update_keys(
+                secret,
+                list(sorted(secrets.collect_keys_for_path(secret))),
+            )
+
+
 def add_member(group_folder: Path, source_folder: Path, name: str) -> None:
     source = source_folder / name
     if not source.exists():
@@ -93,6 +109,7 @@ def add_member(group_folder: Path, source_folder: Path, name: str) -> None:
             )
         os.remove(user_target)
     user_target.symlink_to(os.path.relpath(source, user_target.parent))
+    update_group_keys(group_folder.parent.name)
 
 
 def remove_member(group_folder: Path, name: str) -> None:
@@ -102,6 +119,9 @@ def remove_member(group_folder: Path, name: str) -> None:
         msg += list_directory(group_folder)
         raise ClanError(msg)
     os.remove(target)
+
+    if len(os.listdir(group_folder)) > 0:
+        update_group_keys(group_folder.parent.name)
 
     if len(os.listdir(group_folder)) == 0:
         os.rmdir(group_folder)
