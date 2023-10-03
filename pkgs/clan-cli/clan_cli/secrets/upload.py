@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import shlex
+import sys
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
