@@ -107,10 +107,13 @@ def test_groups(
 @contextmanager
 def use_key(key: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     old_key = os.environ["SOPS_AGE_KEY_FILE"]
+    monkeypatch.delenv("SOPS_AGE_KEY_FILE")
     monkeypatch.setenv("SOPS_AGE_KEY", key)
-    yield
-    monkeypatch.delenv("SOPS_AGE_KEY")
-    monkeypatch.setenv("SOPS_AGE_KEY_FILE", old_key)
+    try:
+        yield
+    finally:
+        monkeypatch.delenv("SOPS_AGE_KEY")
+        monkeypatch.setenv("SOPS_AGE_KEY_FILE", old_key)
 
 
 def test_secrets(
@@ -190,6 +193,23 @@ def test_secrets(
         capsys.readouterr()
         cli.run(["secrets", "get", "key"])
         assert capsys.readouterr().out == "foo"
+
+    # extend group will update secrets
+    cli.run(["secrets", "users", "add", "user2", age_keys[2].pubkey])
+    cli.run(["secrets", "groups", "add-user", "admin-group", "user2"])
+
+    with use_key(age_keys[2].privkey, monkeypatch):  # user2
+        capsys.readouterr()
+        cli.run(["secrets", "get", "key"])
+        assert capsys.readouterr().out == "foo"
+
+    cli.run(["secrets", "groups", "remove-user", "admin-group", "user2"])
+    with pytest.raises(ClanError), use_key(age_keys[2].privkey, monkeypatch):
+        # user2 is not in the group anymore
+        capsys.readouterr()
+        cli.run(["secrets", "get", "key"])
+        print(capsys.readouterr().out)
+
     cli.run(["secrets", "groups", "remove-secret", "admin-group", "key"])
 
     cli.run(["secrets", "remove", "key"])
