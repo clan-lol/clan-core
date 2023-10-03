@@ -1,24 +1,24 @@
 import argparse
 import asyncio
+from typing import Any, Iterator
 from uuid import UUID
-import threading
-import queue
+
+from fastapi.responses import StreamingResponse
 
 from ..dirs import get_clan_flake_toplevel
 from ..webui.routers import vms
 from ..webui.schemas import VmConfig
-from typing import Any, Iterator
-from fastapi.responses import StreamingResponse
-import pdb
+
 
 def read_stream_response(stream: StreamingResponse) -> Iterator[Any]:
     iterator = stream.body_iterator
     while True:
         try:
-            tem = asyncio.run(iterator.__anext__())
+            tem = asyncio.run(iterator.__anext__())  # type: ignore
         except StopAsyncIteration:
             break
         yield tem
+
 
 def create(args: argparse.Namespace) -> None:
     clan_dir = get_clan_flake_toplevel().as_posix()
@@ -34,11 +34,10 @@ def create(args: argparse.Namespace) -> None:
     print(res.json())
     uuid = UUID(res.uuid)
 
-    res = asyncio.run(vms.get_vm_logs(uuid))
+    stream = asyncio.run(vms.get_vm_logs(uuid))
 
-    for line in read_stream_response(res):
+    for line in read_stream_response(stream):
         print(line)
-
 
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:

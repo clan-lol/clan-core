@@ -5,14 +5,14 @@ import select
 import shlex
 import subprocess
 import threading
-from typing import Any, Iterable, Iterator
+from typing import Any, Iterator
 from uuid import UUID, uuid4
 
 
 class CmdState:
     def __init__(self, log: logging.Logger) -> None:
         self.log: logging.Logger = log
-        self.p: subprocess.Popen = None
+        self.p: subprocess.Popen | None = None
         self.stdout: list[str] = []
         self.stderr: list[str] = []
         self._output: queue.SimpleQueue = queue.SimpleQueue()
@@ -51,7 +51,7 @@ class CmdState:
                     assert self.p.stderr is not None
                     line = self.p.stderr.readline()
                     if line != "":
-                        line = line.strip('\n')
+                        line = line.strip("\n")
                         self.stderr.append(line)
                         self.log.debug("stderr: %s", line)
                         self._output.put(line)
@@ -60,7 +60,7 @@ class CmdState:
                     assert self.p.stdout is not None
                     line = self.p.stdout.readline()
                     if line != "":
-                        line = line.strip('\n')
+                        line = line.strip("\n")
                         self.stdout.append(line)
                         self.log.debug("stdout: %s", line)
                         self._output.put(line)
@@ -93,14 +93,14 @@ class BaseTask(threading.Thread):
             for proc in self.procs:
                 proc.close_queue()
             self.failed = True
-            self.finished = True
             self.log.exception(e)
-
+        finally:
+            self.finished = True
 
     def task_run(self) -> None:
         raise NotImplementedError
 
-    ## TODO: If two clients are connected to the same task, 
+    ## TODO: If two clients are connected to the same task,
     def logs_iter(self) -> Iterator[str]:
         with self.logs_lock:
             for proc in self.procs:
@@ -120,7 +120,7 @@ class BaseTask(threading.Thread):
                         break
                     yield line
 
-    def register_cmds(self, num_cmds: int) -> Iterable[CmdState]:
+    def register_cmds(self, num_cmds: int) -> Iterator[CmdState]:
         for i in range(num_cmds):
             cmd = CmdState(self.log)
             self.procs.append(cmd)
