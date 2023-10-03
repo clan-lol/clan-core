@@ -100,6 +100,12 @@ in
                   optional = false;
                   dev = true;
                 };
+                "node_modules/@clan/colors" = {
+                  key = "@clan/colors/1.0.0";
+                  link = false;
+                  optional = false;
+                  dev = true;
+                };
               };
           });
         in
