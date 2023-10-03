@@ -1,5 +1,7 @@
 import argparse
+import asyncio
 import json
+import shlex
 import tempfile
 from pathlib import Path
 from typing import Iterator
@@ -8,7 +10,7 @@ from uuid import UUID
 from ..dirs import get_clan_flake_toplevel
 from ..nix import nix_build, nix_shell
 from ..task_manager import BaseTask, CmdState, create_task
-from .inspect import VmConfig
+from .inspect import VmConfig, inspect_vm
 
 
 class BuildVmTask(BaseTask):
@@ -76,32 +78,38 @@ class BuildVmTask(BaseTask):
             )
 
             cmd = next(cmds)
-            cmd.run(
-                nix_shell(
-                    ["qemu"],
-                    [
-                        # fmt: off
-                        "qemu-kvm",
-                        "-name", machine,
-                        "-m", f'{vm_config["memorySize"]}M',
-                        "-smp", str(vm_config["cores"]),
-                        "-device", "virtio-rng-pci",
-                        "-net", "nic,netdev=user.0,model=virtio", "-netdev", "user,id=user.0",
-                        "-virtfs", "local,path=/nix/store,security_model=none,mount_tag=nix-store",
-                        "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=shared",
-                        "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=xchg",
-                        "-drive", f'cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report',
-                        "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
-                        "-device", "virtio-keyboard",
-                        "-usb",
-                        "-device", "usb-tablet,bus=usb-bus.0",
-                        "-kernel", f'{vm_config["toplevel"]}/kernel',
-                        "-initrd", vm_config["initrd"],
-                        "-append", f'{(Path(vm_config["toplevel"]) / "kernel-params").read_text()} init={vm_config["toplevel"]}/init regInfo={vm_config["regInfo"]}/registration console=ttyS0,115200n8 console=tty0',
-                        # fmt: on
-                    ],
-                )
-            )
+            cmdline = [
+                (Path(vm_config["toplevel"]) / "kernel-params").read_text(),
+                f'init={vm_config["toplevel"]}/init',
+                f'regInfo={vm_config["regInfo"]}/registration',
+                "console=ttyS0,115200n8",
+                "console=tty0",
+            ]
+            qemu_command = [
+                # fmt: off
+                "qemu-kvm",
+                "-name", machine,
+                "-m", f'{vm_config["memorySize"]}M',
+                "-smp", str(vm_config["cores"]),
+                "-device", "virtio-rng-pci",
+                "-net", "nic,netdev=user.0,model=virtio", "-netdev", "user,id=user.0",
+                "-virtfs", "local,path=/nix/store,security_model=none,mount_tag=nix-store",
+                "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=shared",
+                "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=xchg",
+                "-drive", f'cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report',
+                "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
+                "-device", "virtio-keyboard",
+                "-usb",
+                "-device", "usb-tablet,bus=usb-bus.0",
+                "-kernel", f'{vm_config["toplevel"]}/kernel',
+                "-initrd", vm_config["initrd"],
+                "-append", " ".join(cmdline),
+                # fmt: on
+            ]
+            if not self.vm.graphics:
+                qemu_command.append("-nographic")
+            print("$ " + shlex.join(qemu_command))
+            cmd.run(nix_shell(["qemu"], qemu_command))
 
 
 def create_vm(vm: VmConfig) -> BuildVmTask:
@@ -110,13 +118,7 @@ def create_vm(vm: VmConfig) -> BuildVmTask:
 
 def create_command(args: argparse.Namespace) -> None:
     clan_dir = get_clan_flake_toplevel().as_posix()
-    vm = VmConfig(
-        flake_url=clan_dir,
-        flake_attr=args.machine,
-        cores=0,
-        graphics=False,
-        memory_size=0,
-    )
+    vm = asyncio.run(inspect_vm(flake_url=clan_dir, flake_attr=args.machine))
 
     task = create_vm(vm)
     for line in task.logs_iter():
