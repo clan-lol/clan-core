@@ -126,7 +126,11 @@ def update_keys(secret_path: Path, keys: list[str]) -> None:
                 str(secret_path / "secret"),
             ],
         )
-        subprocess.run(cmd, check=True)
+        res = subprocess.run(cmd)
+        if res.returncode != 0:
+            raise ClanError(
+                f"Failed to update keys for {secret_path}: sops exited with {res.returncode}"
+            )
 
 
 def encrypt_file(
@@ -177,7 +181,11 @@ def decrypt_file(secret_path: Path) -> str:
         cmd = nix_shell(
             ["sops"], ["sops", "--config", str(manifest), "--decrypt", str(secret_path)]
         )
-    res = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
+    res = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
+    if res.returncode != 0:
+        raise ClanError(
+            f"Failed to decrypt {secret_path}: sops exited with {res.returncode}"
+        )
     return res.stdout
 
 
