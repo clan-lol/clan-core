@@ -29,6 +29,7 @@
 , copyDesktopItems
 , qemu
 , gnupg
+, e2fsprogs
 }:
 let
 
@@ -63,6 +64,7 @@ let
     sops
     git
     qemu
+    e2fsprogs
   ];
 
   runtimeDependenciesAsSet = builtins.listToAttrs (builtins.map (p: lib.nameValuePair (lib.getName p.name) p) runtimeDependencies);
