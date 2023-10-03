@@ -1,5 +1,5 @@
 import { writeFile } from "fs";
-import palette from "./out.json" assert { type: "json" };
+import palette from "./colors.json" assert { type: "json" };
 import { config } from "./config.js";
 
 type PaletteFile = typeof palette;
@@ -33,7 +33,7 @@ const html = (palette: PaletteFile): string => {
 ${colors.join("\n")}
 
 </body>
-</html>     
+</html>
 `;
 };
 

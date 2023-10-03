@@ -1,0 +1,1507 @@
+{
+    "ref": {
+        "palette": {
+            "neutral0": {
+                "type": "color",
+                "value": "#000000",
+                "meta": {
+                    "color": {
+                        "shade": 0,
+                        "name": "neutral0",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4278190080,
+                            "internalHue": 0,
+                            "internalChroma": 0,
+                            "internalTone": 0
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral10": {
+                "type": "color",
+                "value": "#1f1926",
+                "meta": {
+                    "color": {
+                        "shade": 10.003759056317755,
+                        "name": "neutral10",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4280228134,
+                            "internalHue": 307.5177900911134,
+                            "internalChroma": 12.31060913358082,
+                            "internalTone": 10.003759056317755
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral20": {
+                "type": "color",
+                "value": "#342e3c",
+                "meta": {
+                    "color": {
+                        "shade": 20.085095626697807,
+                        "name": "neutral20",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4281609788,
+                            "internalHue": 305.10252972150806,
+                            "internalChroma": 12.306039972203871,
+                            "internalTone": 20.085095626697807
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral30": {
+                "type": "color",
+                "value": "#4b4453",
+                "meta": {
+                    "color": {
+                        "shade": 30.046003376538273,
+                        "name": "neutral30",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4283122771,
+                            "internalHue": 305.98377855280984,
+                            "internalChroma": 12.435661561528065,
+                            "internalTone": 30.046003376538273
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral40": {
+                "type": "color",
+                "value": "#635b6b",
+                "meta": {
+                    "color": {
+                        "shade": 39.90923680162607,
+                        "name": "neutral40",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4284701547,
+                            "internalHue": 306.66704710484186,
+                            "internalChroma": 12.60180604336879,
+                            "internalTone": 39.90923680162607
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral50": {
+                "type": "color",
+                "value": "#7d7485",
+                "meta": {
+                    "color": {
+                        "shade": 50.149634074630896,
+                        "name": "neutral50",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4286411909,
+                            "internalHue": 307.1595078617906,
+                            "internalChroma": 12.771029812055264,
+                            "internalTone": 50.149634074630896
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral60": {
+                "type": "color",
+                "value": "#978d9f",
+                "meta": {
+                    "color": {
+                        "shade": 60.00804427695178,
+                        "name": "neutral60",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4288122271,
+                            "internalHue": 307.58417411006155,
+                            "internalChroma": 12.975589878795695,
+                            "internalTone": 60.00804427695178
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral70": {
+                "type": "color",
+                "value": "#b2a7ba",
+                "meta": {
+                    "color": {
+                        "shade": 69.92830090754354,
+                        "name": "neutral70",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4289898426,
+                            "internalHue": 307.9163792598157,
+                            "internalChroma": 13.186314353672046,
+                            "internalTone": 69.92830090754354
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral80": {
+                "type": "color",
+                "value": "#cec2d5",
+                "meta": {
+                    "color": {
+                        "shade": 79.90290481197965,
+                        "name": "neutral80",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4291740373,
+                            "internalHue": 309.11365640920496,
+                            "internalChroma": 12.860746572272111,
+                            "internalTone": 79.90290481197965
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral90": {
+                "type": "color",
+                "value": "#eadef2",
+                "meta": {
+                    "color": {
+                        "shade": 89.92698389845121,
+                        "name": "neutral90",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4293582578,
+                            "internalHue": 307.1244282338364,
+                            "internalChroma": 13.016607436721062,
+                            "internalTone": 89.92698389845121
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral98": {
+                "type": "color",
+                "value": "#fff7ff",
+                "meta": {
+                    "color": {
+                        "shade": 98.03413002191978,
+                        "name": "neutral98",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4294965247,
+                            "internalHue": 308.5710968231098,
+                            "internalChroma": 5.957979276536917,
+                            "internalTone": 98.03413002191978
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral100": {
+                "type": "color",
+                "value": "#ffffff",
+                "meta": {
+                    "color": {
+                        "shade": 100,
+                        "name": "neutral100",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4294967295,
+                            "internalHue": 209.49195947383808,
+                            "internalChroma": 2.8690352036774005,
+                            "internalTone": 100
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "neutral51": {
+                "type": "color",
+                "value": "#807788",
+                "meta": {
+                    "color": {
+                        "shade": 51.33652653847143,
+                        "name": "neutral51",
+                        "baseName": "neutral",
+                        "value": {
+                            "argb": 4286609288,
+                            "internalHue": 307.02674903511826,
+                            "internalChroma": 12.712042625104525,
+                            "internalTone": 51.33652653847143
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red0": {
+                "type": "color",
+                "value": "#000000",
+                "meta": {
+                    "color": {
+                        "shade": 0,
+                        "name": "red0",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4278190080,
+                            "internalHue": 0,
+                            "internalChroma": 0,
+                            "internalTone": 0
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red10": {
+                "type": "color",
+                "value": "#410006",
+                "meta": {
+                    "color": {
+                        "shade": 10.083978498281937,
+                        "name": "red10",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4282449926,
+                            "internalHue": 20.49137889592658,
+                            "internalChroma": 46.65679825348804,
+                            "internalTone": 10.083978498281937
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red20": {
+                "type": "color",
+                "value": "#680010",
+                "meta": {
+                    "color": {
+                        "shade": 19.965498139437706,
+                        "name": "red20",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4285005840,
+                            "internalHue": 20.03561855894553,
+                            "internalChroma": 61.86972408109188,
+                            "internalTone": 19.965498139437706
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red30": {
+                "type": "color",
+                "value": "#93001a",
+                "meta": {
+                    "color": {
+                        "shade": 30.102356005398256,
+                        "name": "red30",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4287823898,
+                            "internalHue": 20.37329952477052,
+                            "internalChroma": 76.79452989230481,
+                            "internalTone": 30.102356005398256
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red40": {
+                "type": "color",
+                "value": "#bf0026",
+                "meta": {
+                    "color": {
+                        "shade": 39.942423818085885,
+                        "name": "red40",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4290707494,
+                            "internalHue": 20.106199387791385,
+                            "internalChroma": 90.32111969449794,
+                            "internalTone": 39.942423818085885
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red50": {
+                "type": "color",
+                "value": "#e82439",
+                "meta": {
+                    "color": {
+                        "shade": 50.34968418397237,
+                        "name": "red50",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4293403705,
+                            "internalHue": 20.251658998290857,
+                            "internalChroma": 94.07638421868364,
+                            "internalTone": 50.34968418397237
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red60": {
+                "type": "color",
+                "value": "#ff5358",
+                "meta": {
+                    "color": {
+                        "shade": 60.0249972817316,
+                        "name": "red60",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4294923096,
+                            "internalHue": 20.383817287020523,
+                            "internalChroma": 80.36698599157805,
+                            "internalTone": 60.0249972817316
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red70": {
+                "type": "color",
+                "value": "#ff8986",
+                "meta": {
+                    "color": {
+                        "shade": 70.08653691395159,
+                        "name": "red70",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4294936966,
+                            "internalHue": 20.545762347155392,
+                            "internalChroma": 50.64062212391832,
+                            "internalTone": 70.08653691395159
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red80": {
+                "type": "color",
+                "value": "#ffb3b0",
+                "meta": {
+                    "color": {
+                        "shade": 79.97373946776993,
+                        "name": "red80",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4294947760,
+                            "internalHue": 20.18275539730477,
+                            "internalChroma": 29.920657113607206,
+                            "internalTone": 79.97373946776993
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red90": {
+                "type": "color",
+                "value": "#ffdad8",
+                "meta": {
+                    "color": {
+                        "shade": 90.02653678231813,
+                        "name": "red90",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4294957784,
+                            "internalHue": 20.047520036047214,
+                            "internalChroma": 13.328211730043297,
+                            "internalTone": 90.02653678231813
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red95": {
+                "type": "color",
+                "value": "#ffedeb",
+                "meta": {
+                    "color": {
+                        "shade": 95.08785149010296,
+                        "name": "red95",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4294962667,
+                            "internalHue": 23.107458413416488,
+                            "internalChroma": 5.762203689575029,
+                            "internalTone": 95.08785149010296
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "red100": {
+                "type": "color",
+                "value": "#ffffff",
+                "meta": {
+                    "color": {
+                        "shade": 100,
+                        "name": "red100",
+                        "baseName": "red",
+                        "value": {
+                            "argb": 4294967295,
+                            "internalHue": 209.49195947383808,
+                            "internalChroma": 2.8690352036774005,
+                            "internalTone": 100
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green0": {
+                "type": "color",
+                "value": "#000000",
+                "meta": {
+                    "color": {
+                        "shade": 0,
+                        "name": "green0",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4278190080,
+                            "internalHue": 0,
+                            "internalChroma": 0,
+                            "internalTone": 0
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green10": {
+                "type": "color",
+                "value": "#0f2000",
+                "meta": {
+                    "color": {
+                        "shade": 10.065731493614088,
+                        "name": "green10",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4279181312,
+                            "internalHue": 132.6377508621778,
+                            "internalChroma": 27.898808872542403,
+                            "internalTone": 10.065731493614088
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green20": {
+                "type": "color",
+                "value": "#1d3700",
+                "meta": {
+                    "color": {
+                        "shade": 20.0181970675321,
+                        "name": "green20",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4280104704,
+                            "internalHue": 132.90351159718293,
+                            "internalChroma": 37.40556508798026,
+                            "internalTone": 20.0181970675321
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green30": {
+                "type": "color",
+                "value": "#2d5000",
+                "meta": {
+                    "color": {
+                        "shade": 30.14536245858975,
+                        "name": "green30",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4281159680,
+                            "internalHue": 132.7178262928362,
+                            "internalChroma": 46.263150659055384,
+                            "internalTone": 30.14536245858975
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green40": {
+                "type": "color",
+                "value": "#3d6a00",
+                "meta": {
+                    "color": {
+                        "shade": 40.081500150264795,
+                        "name": "green40",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4282214912,
+                            "internalHue": 132.8037028669833,
+                            "internalChroma": 54.73225096061547,
+                            "internalTone": 40.081500150264795
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green50": {
+                "type": "color",
+                "value": "#4e8500",
+                "meta": {
+                    "color": {
+                        "shade": 49.97144885704813,
+                        "name": "green50",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4283335936,
+                            "internalHue": 132.75436059574238,
+                            "internalChroma": 62.72422364559764,
+                            "internalTone": 49.97144885704813
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green60": {
+                "type": "color",
+                "value": "#60a100",
+                "meta": {
+                    "color": {
+                        "shade": 59.86753304815464,
+                        "name": "green60",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4284522752,
+                            "internalHue": 132.63241512726003,
+                            "internalChroma": 70.35443213470766,
+                            "internalTone": 59.86753304815464
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green70": {
+                "type": "color",
+                "value": "#74be11",
+                "meta": {
+                    "color": {
+                        "shade": 69.8809251786242,
+                        "name": "green70",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4285840913,
+                            "internalHue": 132.68991625104582,
+                            "internalChroma": 75.97156752943617,
+                            "internalTone": 69.8809251786242
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green80": {
+                "type": "color",
+                "value": "#8edb34",
+                "meta": {
+                    "color": {
+                        "shade": 79.98896805851334,
+                        "name": "green80",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4287552308,
+                            "internalHue": 132.69953995344068,
+                            "internalChroma": 76.19831467398797,
+                            "internalTone": 79.98896805851334
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green90": {
+                "type": "color",
+                "value": "#a9f850",
+                "meta": {
+                    "color": {
+                        "shade": 89.92847905213094,
+                        "name": "green90",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4289329232,
+                            "internalHue": 132.6291026678884,
+                            "internalChroma": 75.92801750984052,
+                            "internalTone": 89.92847905213094
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green98": {
+                "type": "color",
+                "value": "#efffd8",
+                "meta": {
+                    "color": {
+                        "shade": 97.9648930849126,
+                        "name": "green98",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4293918680,
+                            "internalHue": 133.15723708282297,
+                            "internalChroma": 19.52307057814198,
+                            "internalTone": 97.9648930849126
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green100": {
+                "type": "color",
+                "value": "#ffffff",
+                "meta": {
+                    "color": {
+                        "shade": 100,
+                        "name": "green100",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4294967295,
+                            "internalHue": 209.49195947383808,
+                            "internalChroma": 2.8690352036774005,
+                            "internalTone": 100
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "green72": {
+                "type": "color",
+                "value": "#7ac51b",
+                "meta": {
+                    "color": {
+                        "shade": 72.32811726939526,
+                        "name": "green72",
+                        "baseName": "green",
+                        "value": {
+                            "argb": 4286235931,
+                            "internalHue": 132.72088598890844,
+                            "internalChroma": 76.1645765194525,
+                            "internalTone": 72.32811726939526
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow0": {
+                "type": "color",
+                "value": "#000000",
+                "meta": {
+                    "color": {
+                        "shade": 0,
+                        "name": "yellow0",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4278190080,
+                            "internalHue": 0,
+                            "internalChroma": 0,
+                            "internalTone": 0
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow10": {
+                "type": "color",
+                "value": "#1d1d00",
+                "meta": {
+                    "color": {
+                        "shade": 10.106703477257245,
+                        "name": "yellow10",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4280098048,
+                            "internalHue": 111.03877590605597,
+                            "internalChroma": 21.59454563470911,
+                            "internalTone": 10.106703477257245
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow20": {
+                "type": "color",
+                "value": "#323200",
+                "meta": {
+                    "color": {
+                        "shade": 19.880212207873114,
+                        "name": "yellow20",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4281479680,
+                            "internalHue": 111.0399366950529,
+                            "internalChroma": 28.690976813757185,
+                            "internalTone": 19.880212207873114
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow30": {
+                "type": "color",
+                "value": "#494900",
+                "meta": {
+                    "color": {
+                        "shade": 29.865967480952882,
+                        "name": "yellow30",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4282992896,
+                            "internalHue": 111.04120661143587,
+                            "internalChroma": 35.52733088146877,
+                            "internalTone": 29.865967480952882
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow40": {
+                "type": "color",
+                "value": "#626200",
+                "meta": {
+                    "color": {
+                        "shade": 40.134168675400446,
+                        "name": "yellow40",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4284637696,
+                            "internalHue": 111.04258415006367,
+                            "internalChroma": 42.22832005957653,
+                            "internalTone": 40.134168675400446
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow50": {
+                "type": "color",
+                "value": "#7b7b00",
+                "meta": {
+                    "color": {
+                        "shade": 49.95005800072835,
+                        "name": "yellow50",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4286282496,
+                            "internalHue": 111.04395807340283,
+                            "internalChroma": 48.38382892913055,
+                            "internalTone": 49.95005800072835
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow60": {
+                "type": "color",
+                "value": "#969600",
+                "meta": {
+                    "color": {
+                        "shade": 60.15586763883118,
+                        "name": "yellow60",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4288058880,
+                            "internalHue": 111.04543734311906,
+                            "internalChroma": 54.56632971724491,
+                            "internalTone": 60.15586763883118
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow70": {
+                "type": "color",
+                "value": "#b1b100",
+                "meta": {
+                    "color": {
+                        "shade": 70.02952002930259,
+                        "name": "yellow70",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4289835264,
+                            "internalHue": 111.0469115145827,
+                            "internalChroma": 60.36469563357617,
+                            "internalTone": 70.02952002930259
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow80": {
+                "type": "color",
+                "value": "#cdcd00",
+                "meta": {
+                    "color": {
+                        "shade": 79.97768808984283,
+                        "name": "yellow80",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4291677440,
+                            "internalHue": 111.04843463241409,
+                            "internalChroma": 66.04564867131279,
+                            "internalTone": 79.97768808984283
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow90": {
+                "type": "color",
+                "value": "#eaea2c",
+                "meta": {
+                    "color": {
+                        "shade": 90.10018523056145,
+                        "name": "yellow90",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4293585452,
+                            "internalHue": 111.05850991954583,
+                            "internalChroma": 67.11150141490174,
+                            "internalTone": 90.10018523056145
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow98": {
+                "type": "color",
+                "value": "#fffeac",
+                "meta": {
+                    "color": {
+                        "shade": 98.08238369776234,
+                        "name": "yellow98",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4294966956,
+                            "internalHue": 111.25888789536712,
+                            "internalChroma": 32.85492880156371,
+                            "internalTone": 98.08238369776234
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow100": {
+                "type": "color",
+                "value": "#ffffff",
+                "meta": {
+                    "color": {
+                        "shade": 100,
+                        "name": "yellow100",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4294967295,
+                            "internalHue": 209.49195947383808,
+                            "internalChroma": 2.8690352036774005,
+                            "internalTone": 100
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "yellow87": {
+                "type": "color",
+                "value": "#e0e01f",
+                "meta": {
+                    "color": {
+                        "shade": 86.63141709367274,
+                        "name": "yellow87",
+                        "baseName": "yellow",
+                        "value": {
+                            "argb": 4292927519,
+                            "internalHue": 111.05372283636466,
+                            "internalChroma": 67.03912845344203,
+                            "internalTone": 86.63141709367274
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple0": {
+                "type": "color",
+                "value": "#000000",
+                "meta": {
+                    "color": {
+                        "shade": 0,
+                        "name": "purple0",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4278190080,
+                            "internalHue": 0,
+                            "internalChroma": 0,
+                            "internalTone": 0
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple10": {
+                "type": "color",
+                "value": "#270057",
+                "meta": {
+                    "color": {
+                        "shade": 9.949371183187875,
+                        "name": "purple10",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4280746071,
+                            "internalHue": 304.2328522111427,
+                            "internalChroma": 46.437333166555376,
+                            "internalTone": 9.949371183187875
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple20": {
+                "type": "color",
+                "value": "#42008a",
+                "meta": {
+                    "color": {
+                        "shade": 20.016758807912623,
+                        "name": "purple20",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4282515594,
+                            "internalHue": 304.36784556077544,
+                            "internalChroma": 61.50458145218004,
+                            "internalTone": 20.016758807912623
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple30": {
+                "type": "color",
+                "value": "#5e07bd",
+                "meta": {
+                    "color": {
+                        "shade": 29.925766650608445,
+                        "name": "purple30",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4284352445,
+                            "internalHue": 304.4277771908796,
+                            "internalChroma": 74.23877180929804,
+                            "internalTone": 29.925766650608445
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple40": {
+                "type": "color",
+                "value": "#7734d6",
+                "meta": {
+                    "color": {
+                        "shade": 39.97009865160796,
+                        "name": "purple40",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4286002390,
+                            "internalHue": 304.45603091543944,
+                            "internalChroma": 74.3412000696465,
+                            "internalTone": 39.97009865160796
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple50": {
+                "type": "color",
+                "value": "#9152f1",
+                "meta": {
+                    "color": {
+                        "shade": 49.98393171826943,
+                        "name": "purple50",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4287714033,
+                            "internalHue": 304.4729041253868,
+                            "internalChroma": 74.3979039466535,
+                            "internalTone": 49.98393171826943
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple60": {
+                "type": "color",
+                "value": "#a974ff",
+                "meta": {
+                    "color": {
+                        "shade": 60.020230255269766,
+                        "name": "purple60",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4289295615,
+                            "internalHue": 304.33346937174144,
+                            "internalChroma": 67.696770270822,
+                            "internalTone": 60.020230255269766
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple70": {
+                "type": "color",
+                "value": "#bf98ff",
+                "meta": {
+                    "color": {
+                        "shade": 70.00240792964836,
+                        "name": "purple70",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4290746623,
+                            "internalHue": 304.35303537072394,
+                            "internalChroma": 53.377783125592956,
+                            "internalTone": 70.00240792964836
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple80": {
+                "type": "color",
+                "value": "#d5baff",
+                "meta": {
+                    "color": {
+                        "shade": 79.88845697732896,
+                        "name": "purple80",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4292197119,
+                            "internalHue": 304.33781122020633,
+                            "internalChroma": 37.882491293353276,
+                            "internalTone": 79.88845697732896
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple90": {
+                "type": "color",
+                "value": "#ecdcff",
+                "meta": {
+                    "color": {
+                        "shade": 89.97031492533036,
+                        "name": "purple90",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4293713151,
+                            "internalHue": 304.65634204424674,
+                            "internalChroma": 20.875946834052293,
+                            "internalTone": 89.97031492533036
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple100": {
+                "type": "color",
+                "value": "#ffffff",
+                "meta": {
+                    "color": {
+                        "shade": 100,
+                        "name": "purple100",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4294967295,
+                            "internalHue": 209.49195947383808,
+                            "internalChroma": 2.8690352036774005,
+                            "internalTone": 100
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "purple33": {
+                "type": "color",
+                "value": "#661bc5",
+                "meta": {
+                    "color": {
+                        "shade": 33.22131355688631,
+                        "name": "purple33",
+                        "baseName": "purple",
+                        "value": {
+                            "argb": 4284881861,
+                            "internalHue": 304.39679947806945,
+                            "internalChroma": 74.29428037092354,
+                            "internalTone": 33.22131355688631
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue0": {
+                "type": "color",
+                "value": "#000000",
+                "meta": {
+                    "color": {
+                        "shade": 0,
+                        "name": "blue0",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4278190080,
+                            "internalHue": 0,
+                            "internalChroma": 0,
+                            "internalTone": 0
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue10": {
+                "type": "color",
+                "value": "#001d36",
+                "meta": {
+                    "color": {
+                        "shade": 10.1458152722198,
+                        "name": "blue10",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4278197558,
+                            "internalHue": 253.09732762984137,
+                            "internalChroma": 24.834944519214517,
+                            "internalTone": 10.1458152722198
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue20": {
+                "type": "color",
+                "value": "#003258",
+                "meta": {
+                    "color": {
+                        "shade": 19.986877307700773,
+                        "name": "blue20",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4278202968,
+                            "internalHue": 253.66023249421312,
+                            "internalChroma": 33.065632633907285,
+                            "internalTone": 19.986877307700773
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue30": {
+                "type": "color",
+                "value": "#00497c",
+                "meta": {
+                    "color": {
+                        "shade": 29.961653191648097,
+                        "name": "blue30",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4278208892,
+                            "internalHue": 253.25872418743495,
+                            "internalChroma": 40.50741919101272,
+                            "internalTone": 29.961653191648097
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue40": {
+                "type": "color",
+                "value": "#0061a3",
+                "meta": {
+                    "color": {
+                        "shade": 39.90486789926618,
+                        "name": "blue40",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4278215075,
+                            "internalHue": 253.61785825827238,
+                            "internalChroma": 48.00348281517394,
+                            "internalTone": 39.90486789926618
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue50": {
+                "type": "color",
+                "value": "#1b7ac5",
+                "meta": {
+                    "color": {
+                        "shade": 49.71767580376719,
+                        "name": "blue50",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4279990981,
+                            "internalHue": 253.18446649407957,
+                            "internalChroma": 52.16079963673709,
+                            "internalTone": 49.71767580376719
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue60": {
+                "type": "color",
+                "value": "#4395e2",
+                "meta": {
+                    "color": {
+                        "shade": 60.05026394685983,
+                        "name": "blue60",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4282619362,
+                            "internalHue": 253.19633607389105,
+                            "internalChroma": 52.28109638273356,
+                            "internalTone": 60.05026394685983
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue70": {
+                "type": "color",
+                "value": "#62b0fe",
+                "meta": {
+                    "color": {
+                        "shade": 70.03774643292513,
+                        "name": "blue70",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4284657918,
+                            "internalHue": 252.836495127207,
+                            "internalChroma": 52.02951054971474,
+                            "internalTone": 70.03774643292513
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue80": {
+                "type": "color",
+                "value": "#9ecaff",
+                "meta": {
+                    "color": {
+                        "shade": 80.02758180930664,
+                        "name": "blue80",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4288596735,
+                            "internalHue": 253.4392269209713,
+                            "internalChroma": 37.18607759380727,
+                            "internalTone": 80.02758180930664
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue90": {
+                "type": "color",
+                "value": "#d1e4ff",
+                "meta": {
+                    "color": {
+                        "shade": 89.98090008988925,
+                        "name": "blue90",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4291945727,
+                            "internalHue": 253.51997372711435,
+                            "internalChroma": 20.64342844985456,
+                            "internalTone": 89.98090008988925
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue95": {
+                "type": "color",
+                "value": "#e9f1ff",
+                "meta": {
+                    "color": {
+                        "shade": 94.93066059667177,
+                        "name": "blue95",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4293521919,
+                            "internalHue": 253.05366698660546,
+                            "internalChroma": 11.77862409499581,
+                            "internalTone": 94.93066059667177
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "blue100": {
+                "type": "color",
+                "value": "#ffffff",
+                "meta": {
+                    "color": {
+                        "shade": 100,
+                        "name": "blue100",
+                        "baseName": "blue",
+                        "value": {
+                            "argb": 4294967295,
+                            "internalHue": 209.49195947383808,
+                            "internalChroma": 2.8690352036774005,
+                            "internalTone": 100
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            }
+        },
+        "alias": {
+            "primary0": {
+                "value": "{ref.palette.purple0}"
+            },
+            "primary10": {
+                "value": "{ref.palette.purple10}"
+            },
+            "primary20": {
+                "value": "{ref.palette.purple20}"
+            },
+            "primary30": {
+                "value": "{ref.palette.purple30}"
+            },
+            "primary33": {
+                "value": "{ref.palette.purple33}"
+            },
+            "primary40": {
+                "value": "{ref.palette.purple40}"
+            },
+            "primary50": {
+                "value": "{ref.palette.purple50}"
+            },
+            "primary60": {
+                "value": "{ref.palette.purple60}"
+            },
+            "primary70": {
+                "value": "{ref.palette.purple70}"
+            },
+            "primary80": {
+                "value": "{ref.palette.purple80}"
+            },
+            "primary90": {
+                "value": "{ref.palette.purple90}"
+            },
+            "primary100": {
+                "value": "{ref.palette.purple100}"
+            },
+            "secondary0": {
+                "value": "{ref.palette.green0}"
+            },
+            "secondary10": {
+                "value": "{ref.palette.green10}"
+            },
+            "secondary20": {
+                "value": "{ref.palette.green20}"
+            },
+            "secondary30": {
+                "value": "{ref.palette.green30}"
+            },
+            "secondary40": {
+                "value": "{ref.palette.green40}"
+            },
+            "secondary50": {
+                "value": "{ref.palette.green50}"
+            },
+            "secondary60": {
+                "value": "{ref.palette.green60}"
+            },
+            "secondary70": {
+                "value": "{ref.palette.green70}"
+            },
+            "secondary72": {
+                "value": "{ref.palette.green72}"
+            },
+            "secondary80": {
+                "value": "{ref.palette.green80}"
+            },
+            "secondary90": {
+                "value": "{ref.palette.green90}"
+            },
+            "secondary98": {
+                "value": "{ref.palette.green98}"
+            },
+            "secondary100": {
+                "value": "{ref.palette.green100}"
+            },
+            "error0": {
+                "value": "{ref.palette.red0}"
+            },
+            "error10": {
+                "value": "{ref.palette.red10}"
+            },
+            "error20": {
+                "value": "{ref.palette.red20}"
+            },
+            "error30": {
+                "value": "{ref.palette.red30}"
+            },
+            "error40": {
+                "value": "{ref.palette.red40}"
+            },
+            "error50": {
+                "value": "{ref.palette.red50}"
+            },
+            "error60": {
+                "value": "{ref.palette.red60}"
+            },
+            "error70": {
+                "value": "{ref.palette.red70}"
+            },
+            "error80": {
+                "value": "{ref.palette.red80}"
+            },
+            "error90": {
+                "value": "{ref.palette.red90}"
+            },
+            "error95": {
+                "value": "{ref.palette.red95}"
+            },
+            "error100": {
+                "value": "{ref.palette.red100}"
+            }
+        },
+        "common": {
+            "white": {
+                "type": "color",
+                "value": "#ffffff",
+                "meta": {
+                    "color": {
+                        "shade": 100,
+                        "name": "white100",
+                        "baseName": "white",
+                        "value": {
+                            "argb": 4294967295,
+                            "internalHue": 209.49195947383808,
+                            "internalChroma": 2.8690352036774005,
+                            "internalTone": 100
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            },
+            "black": {
+                "type": "color",
+                "value": "#000000",
+                "meta": {
+                    "color": {
+                        "shade": 0,
+                        "name": "black0",
+                        "baseName": "black",
+                        "value": {
+                            "argb": 4278190080,
+                            "internalHue": 0,
+                            "internalChroma": 0,
+                            "internalTone": 0
+                        }
+                    },
+                    "date": "2023-10-03T13:01:35.376Z"
+                }
+            }
+        }
+    }
+}
