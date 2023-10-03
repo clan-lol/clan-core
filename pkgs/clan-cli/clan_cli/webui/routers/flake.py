@@ -1,4 +1,5 @@
 import json
+from json.decoder import JSONDecodeError
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
@@ -11,14 +12,29 @@ from .utils import run_cmd
 router = APIRouter()
 
 
-@router.get("/api/flake/attrs")
-async def inspect_flake_attrs(url: str) -> FlakeAttrResponse:
+async def get_attrs(url: str) -> list[str]:
     cmd = nix_flake_show(url)
     stdout = await run_cmd(cmd)
-    data = json.loads(stdout)
-    nixos_configs = data["nixosConfigurations"]
+
+    data: dict[str, dict] = {}
+    try:
+        data = json.loads(stdout)
+    except JSONDecodeError:
+        raise HTTPException(status_code=422, detail="Could not load flake.")
+
+    nixos_configs = data.get("nixosConfigurations", {})
     flake_attrs = list(nixos_configs.keys())
-    return FlakeAttrResponse(flake_attrs=flake_attrs)
+
+    if not flake_attrs:
+        raise HTTPException(
+            status_code=422, detail="No entry or no attribute: nixosConfigurations"
+        )
+    return flake_attrs
+
+
+@router.get("/api/flake/attrs")
+async def inspect_flake_attrs(url: str) -> FlakeAttrResponse:
+    return FlakeAttrResponse(flake_attrs=await get_attrs(url))
 
 
 @router.get("/api/flake")
