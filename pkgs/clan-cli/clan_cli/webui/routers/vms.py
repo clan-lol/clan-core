@@ -5,15 +5,13 @@ from pathlib import Path
 from typing import Annotated, Iterator
 from uuid import UUID
 
-from fastapi import APIRouter, Body
-from fastapi import APIRouter, BackgroundTasks, Body, status
+from fastapi import APIRouter, Body, status
 from fastapi.exceptions import HTTPException
 from fastapi.responses import StreamingResponse
 
-from ...nix import nix_build, nix_eval, nix_shell
 from clan_cli.webui.routers.flake import get_attrs
 
-from ...nix import nix_build, nix_eval
+from ...nix import nix_build, nix_eval, nix_shell
 from ..schemas import VmConfig, VmCreateResponse, VmInspectResponse, VmStatusResponse
 from ..task_manager import BaseTask, CmdState, get_task, register_task
 from .utils import run_cmd
@@ -163,9 +161,7 @@ async def get_vm_logs(uuid: UUID) -> StreamingResponse:
 
 
 @router.post("/api/vms/create")
-async def create_vm(
-    vm: Annotated[VmConfig, Body()]
-) -> VmCreateResponse:
+async def create_vm(vm: Annotated[VmConfig, Body()]) -> VmCreateResponse:
     flake_attrs = await get_attrs(vm.flake_url)
     if vm.flake_attr not in flake_attrs:
         raise HTTPException(

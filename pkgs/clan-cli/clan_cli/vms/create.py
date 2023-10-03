@@ -40,6 +40,7 @@ def create(args: argparse.Namespace) -> None:
         print(line, end="")
     print("")
 
+
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("machine", type=str)
     parser.set_defaults(func=create)

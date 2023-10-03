@@ -1,8 +1,9 @@
 import functools
-from pathlib import Path
 import logging
+from pathlib import Path
 
 log = logging.getLogger(__name__)
+
 
 def get_hash(string: str) -> str:
     """
@@ -10,9 +11,9 @@ def get_hash(string: str) -> str:
     and returns the hash part 'kkvk20b8zh8aafdnfjp6dnf062x19732' after '/nix/store/' and before '-source'.
     """
     # Split the string by '/' and get the last element
-    last_element = string.split('/')[-1]
+    last_element = string.split("/")[-1]
     # Split the last element by '-' and get the first element
-    hash_part = last_element.split('-')[0]
+    hash_part = last_element.split("-")[0]
     # Return the hash part
     return hash_part
 
@@ -28,7 +29,6 @@ def check_divergence(path: Path) -> None:
     gh = get_hash(str(p))
 
     log.debug(f"Serving webui asset with hash {gh}")
-
 
 
 @functools.cache
