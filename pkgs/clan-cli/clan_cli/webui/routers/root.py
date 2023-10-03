@@ -1,7 +1,8 @@
+import logging
 import os
 from mimetypes import guess_type
 from pathlib import Path
-import logging
+
 from fastapi import APIRouter, Response
 
 from ..assets import asset_path

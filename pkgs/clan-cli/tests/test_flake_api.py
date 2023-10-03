@@ -1,6 +1,6 @@
+import json
 from pathlib import Path
-import json
-import json
+
 import pytest
 from api import TestClient
 
@@ -29,7 +29,6 @@ def test_inspect_err(api: TestClient) -> None:
     data = response.json()
     print("Data: ", data)
     assert data.get("detail")
-
 
 
 @pytest.mark.impure

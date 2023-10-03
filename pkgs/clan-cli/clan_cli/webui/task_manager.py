@@ -54,7 +54,7 @@ class CmdState:
                         line = line.strip("\n")
                         self.stderr.append(line)
                         self.log.debug("stderr: %s", line)
-                        self._output.put(line + '\n')
+                        self._output.put(line + "\n")
 
                 if self.p.stdout in rlist:
                     assert self.p.stdout is not None
@@ -63,7 +63,7 @@ class CmdState:
                         line = line.strip("\n")
                         self.stdout.append(line)
                         self.log.debug("stdout: %s", line)
-                        self._output.put(line + '\n')
+                        self._output.put(line + "\n")
 
             if self.p.returncode != 0:
                 raise RuntimeError(f"Failed to run command: {shlex.join(cmd)}")
@@ -109,9 +109,9 @@ class BaseTask(threading.Thread):
                     break
                 if proc.done:
                     for line in proc.stderr:
-                        yield line + '\n'
+                        yield line + "\n"
                     for line in proc.stdout:
-                        yield line + '\n'
+                        yield line + "\n"
                     continue
                 while True:
                     out = proc._output
