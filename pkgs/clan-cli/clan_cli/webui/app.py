@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 
-from .. import custom_logger
 from .assets import asset_path
 from .routers import flake, health, machines, root, utils, vms
 
@@ -43,15 +42,11 @@ def setup_app() -> FastAPI:
         if isinstance(route, APIRoute):
             route.operation_id = route.name  # in this case, 'read_items'
         log.debug(f"Registered route: {route}")
+
+    for i in app.exception_handlers.items():
+        log.debug(f"Registered exception handler: {i}")
+
     return app
 
 
-# TODO: How do I get the log level from the command line in here?
-custom_logger.register(logging.DEBUG)
 app = setup_app()
-
-for i in app.exception_handlers.items():
-    log.info(f"Registered exception handler: {i}")
-
-log.warning("log warn")
-log.debug("log debug")

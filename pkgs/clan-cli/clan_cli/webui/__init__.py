@@ -45,6 +45,8 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         help="Log level",
         choices=["critical", "error", "warning", "info", "debug", "trace"],
     )
+
+    # Set the args.func variable in args
     if start_server is None:
         parser.set_defaults(func=fastapi_is_not_installed)
     else:
