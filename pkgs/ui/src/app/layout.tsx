@@ -105,7 +105,9 @@ export default function RootLayout({
               <AppContext.Consumer>
                 {(appState) => {
                   const showSidebarDerived = Boolean(
-                    showSidebar && !appState.isLoading && appState.data.isJoined
+                    showSidebar &&
+                      !appState.isLoading &&
+                      appState.data.isJoined,
                   );
                   return (
                     <>
