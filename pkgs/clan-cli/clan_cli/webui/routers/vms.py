@@ -54,5 +54,5 @@ async def create_vm(vm: Annotated[VmConfig, Body()]) -> VmCreateResponse:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Provided attribute '{vm.flake_attr}' does not exist.",
         )
-    uuid = create.create_vm(vm)
-    return VmCreateResponse(uuid=str(uuid))
+    task = create.create_vm(vm)
+    return VmCreateResponse(uuid=str(task.uuid))

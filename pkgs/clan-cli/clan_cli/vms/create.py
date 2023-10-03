@@ -7,7 +7,7 @@ from uuid import UUID
 
 from ..dirs import get_clan_flake_toplevel
 from ..nix import nix_build, nix_shell
-from ..task_manager import BaseTask, CmdState, get_task, register_task
+from ..task_manager import BaseTask, CmdState, create_task
 from .inspect import VmConfig
 
 
@@ -104,8 +104,8 @@ class BuildVmTask(BaseTask):
             )
 
 
-def create_vm(vm: VmConfig) -> UUID:
-    return register_task(BuildVmTask, vm)
+def create_vm(vm: VmConfig) -> BuildVmTask:
+    return create_task(BuildVmTask, vm)
 
 
 def create_command(args: argparse.Namespace) -> None:
@@ -118,8 +118,7 @@ def create_command(args: argparse.Namespace) -> None:
         memory_size=0,
     )
 
-    uuid = create_vm(vm)
-    task = get_task(uuid)
+    task = create_vm(vm)
     for line in task.logs_iter():
         print(line, end="")
 
