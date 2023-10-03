@@ -6,15 +6,15 @@ from fastapi import APIRouter, HTTPException
 
 from clan_cli.webui.schemas import FlakeAction, FlakeAttrResponse, FlakeResponse
 
+from ...async_cmd import run
 from ...nix import nix_command, nix_flake_show
-from .utils import run_cmd
 
 router = APIRouter()
 
 
 async def get_attrs(url: str) -> list[str]:
     cmd = nix_flake_show(url)
-    stdout = await run_cmd(cmd)
+    stdout = await run(cmd)
 
     data: dict[str, dict] = {}
     try:
@@ -45,7 +45,7 @@ async def inspect_flake(
     # Extract the flake from the given URL
     # We do this by running 'nix flake prefetch {url} --json'
     cmd = nix_command(["flake", "prefetch", url, "--json", "--refresh"])
-    stdout = await run_cmd(cmd)
+    stdout = await run(cmd)
     data: dict[str, str] = json.loads(stdout)
 
     if data.get("storePath") is None:
