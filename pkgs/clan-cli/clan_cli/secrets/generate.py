@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import shlex
 import subprocess
@@ -8,6 +9,8 @@ from clan_cli.errors import ClanError
 
 from ..dirs import get_clan_flake_toplevel, module_root
 from ..nix import nix_build, nix_config
+
+log = logging.getLogger(__name__)
 
 
 def build_generate_script(machine: str, clan_dir: Path) -> str:
@@ -39,6 +42,8 @@ def run_generate_secrets(secret_generator_script: str, clan_dir: Path) -> None:
     )
 
     if proc.returncode != 0:
+        log.error("stdout: %s", proc.stdout)
+        log.error("stderr: %s", proc.stderr)
         raise ClanError("failed to generate secrets")
     else:
         print("successfully generated secrets")

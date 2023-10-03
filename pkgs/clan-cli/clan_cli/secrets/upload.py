@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 import os
 import shlex
 import subprocess
@@ -10,6 +11,8 @@ from ..dirs import get_clan_flake_toplevel, module_root
 from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_shell
 from ..ssh import parse_deployment_address
+
+log = logging.getLogger(__name__)
 
 
 def build_upload_script(machine: str, clan_dir: Path) -> str:
@@ -67,6 +70,8 @@ def run_upload_secrets(
         )
 
         if proc.returncode != 0:
+            log.error("Stdout: %s", proc.stdout)
+            log.error("Stderr: %s", proc.stderr)
             raise ClanError("failed to upload secrets")
 
         h = parse_deployment_address(flake_attr, target)
