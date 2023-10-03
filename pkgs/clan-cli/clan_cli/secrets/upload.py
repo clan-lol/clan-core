@@ -3,12 +3,12 @@ import json
 import logging
 import os
 import shlex
-import sys
 import subprocess
+import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from ..dirs import get_clan_flake_toplevel, module_root
+from ..dirs import get_clan_flake_toplevel
 from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_shell
 from ..ssh import parse_deployment_address
