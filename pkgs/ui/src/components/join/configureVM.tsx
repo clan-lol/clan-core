@@ -90,10 +90,14 @@ export const ConfigureVM = (props: VmDetailsProps) => {
             render={({ field }) => (
               <Select
                 {...field}
+                required
                 variant="standard"
                 fullWidth
                 disabled={isLoading}
               >
+                {!data?.data.flake_attrs.includes("default") && (
+                  <MenuItem value={"default"}>default</MenuItem>
+                )}
                 {data?.data.flake_attrs.map((attr) => (
                   <MenuItem value={attr} key={attr}>
                     {attr}
