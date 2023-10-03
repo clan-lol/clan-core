@@ -3,6 +3,7 @@
     ./clan-cli/flake-module.nix
     ./installer/flake-module.nix
     ./ui/flake-module.nix
+    ./theme/flake-module.nix
   ];
 
   perSystem = { pkgs, config, ... }: {
