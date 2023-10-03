@@ -33,7 +33,16 @@ class BaseTask(threading.Thread):
         self.finished: bool = False
 
     def run(self) -> None:
-        self.finished = True
+        try:
+            self.task_run()
+        except Exception as e:
+            self.failed = True
+            self.log.exception(e)
+        finally:
+            self.finished = True
+
+    def task_run(self) -> None:
+        raise NotImplementedError
 
     def run_cmd(self, cmd: list[str]) -> CmdState:
         cwd = os.getcwd()

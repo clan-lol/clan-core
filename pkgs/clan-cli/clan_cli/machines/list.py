@@ -1,12 +1,16 @@
 import argparse
+import logging
 import os
 
 from .folders import machines_folder
 from .types import validate_hostname
 
+log = logging.getLogger(__name__)
+
 
 def list_machines() -> list[str]:
     path = machines_folder()
+    log.debug(f"Listing machines in {path}")
     if not path.exists():
         return []
     objs: list[str] = []
