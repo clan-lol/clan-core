@@ -9,11 +9,7 @@ interface VmBuildLogsProps {
 export const VmBuildLogs = (props: VmBuildLogsProps) => {
   const { vmUuid } = props;
 
-  const {
-    data: logs,
-    isLoading,
-    error,
-  } = useGetVmLogs(vmUuid as string, {
+  const { data: logs, isLoading } = useGetVmLogs(vmUuid as string, {
     swr: {
       enabled: vmUuid !== null,
     },

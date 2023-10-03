@@ -1,5 +1,5 @@
 import { useListMachines } from "@/api/default/default";
-import { Machine, MachinesResponse } from "@/api/model";
+import { MachinesResponse } from "@/api/model";
 import { AxiosError, AxiosResponse } from "axios";
 import React, {
   createContext,
@@ -22,9 +22,9 @@ type AppContextType = {
   swrKey: string | false | Record<any, any>;
 };
 
-const initialState = {
-  isLoading: true,
-} as const;
+// const initialState = {
+//   isLoading: true,
+// } as const;
 
 export const AppContext = createContext<AppContextType>({} as AppContextType);
 
@@ -38,7 +38,7 @@ interface AppContextProviderProps {
 }
 export const WithAppState = (props: AppContextProviderProps) => {
   const { children } = props;
-  const { data: rawData, isLoading, error, mutate, swrKey } = useListMachines();
+  const { isLoading, error, mutate, swrKey } = useListMachines();
 
   const [data, setAppState] = useState<AppState>({ isJoined: false });
 

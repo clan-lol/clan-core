@@ -62,7 +62,7 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
     if (!isLoading && !error && !isValidating && rawData) {
       const { machines } = rawData.data;
       return machines.filter((m) =>
-        filters.every((f) => m[f.name] === f.value),
+        filters.every((f) => m[f.name] === f.value)
       );
     }
     return [];

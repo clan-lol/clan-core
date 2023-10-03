@@ -7,6 +7,7 @@ import { QuickActions } from "@/components/dashboard/quickActions";
 import { TaskQueue } from "@/components/dashboard/taskQueue";
 import { useAppState } from "@/components/hooks/useAppContext";
 import { MachineContextProvider } from "@/components/hooks/useMachines";
+import { LoadingOverlay } from "@/components/join/loadingOverlay";
 import { tw } from "@/utils/tailwind";
 import JoinPrequel from "@/views/joinPrequel";
 
@@ -37,7 +38,20 @@ const DashboardPanel = (props: DashboardPanelProps) => {
 };
 
 export default function Dashboard() {
-  const { data } = useAppState();
+  const { data, isLoading } = useAppState();
+  if (isLoading) {
+    return (
+      <div className="grid h-full place-items-center">
+        <div className="mt-8 w-full max-w-xl">
+          <LoadingOverlay
+            title="Clan Experience"
+            subtitle="Loading"
+            variant="circle"
+          />
+        </div>
+      </div>
+    );
+  }
   if (!data.isJoined) {
     return <JoinPrequel />;
   }

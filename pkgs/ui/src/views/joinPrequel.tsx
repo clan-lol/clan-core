@@ -1,15 +1,9 @@
 "use client";
 import React from "react";
-import {
-  FormControl,
-  FormHelperText,
-  IconButton,
-  Input,
-  InputAdornment,
-} from "@mui/material";
+import { IconButton, Input, InputAdornment } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 
-import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { Confirm } from "@/components/join/confirm";
 import { Layout } from "@/components/join/layout";
 import { ChevronRight } from "@mui/icons-material";
@@ -21,6 +15,7 @@ type FormValues = {
 export default function JoinPrequel() {
   const queryParams = useSearchParams();
   const flakeUrl = queryParams.get("flake") || "";
+  const flakeAttr = queryParams.get("attr") || "default";
   const { handleSubmit, control, formState, getValues, reset } =
     useForm<FormValues>({ defaultValues: { flakeUrl: "" } });
 
@@ -60,6 +55,7 @@ export default function JoinPrequel() {
         <Confirm
           handleBack={() => reset()}
           flakeUrl={formState.isSubmitted ? getValues("flakeUrl") : flakeUrl}
+          flakeAttr={flakeAttr}
         />
       )}
     </Layout>
