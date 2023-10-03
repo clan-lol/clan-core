@@ -56,7 +56,7 @@ def run_upload_secrets(
 ) -> None:
     env = os.environ.copy()
     env["CLAN_DIR"] = str(clan_dir)
-    env["PYTHONPATH"] = str(module_root().parent)  # TODO do this in the clanCore module
+    env["PYTHONPATH"] = ":".join(sys.path)  # TODO do this in the clanCore module
     print(f"uploading secrets... {flake_attr}")
     with TemporaryDirectory() as tempdir_:
         tempdir = Path(tempdir_)
