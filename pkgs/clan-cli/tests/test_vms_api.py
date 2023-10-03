@@ -6,24 +6,6 @@ from api import TestClient
 from httpx import SyncByteStream
 
 
-def is_running_in_ci() -> bool:
-    # Check if pytest is running in GitHub Actions
-    if os.getenv("GITHUB_ACTIONS") == "true":
-        print("Running on GitHub Actions")
-        return True
-
-    # Check if pytest is running in Travis CI
-    if os.getenv("TRAVIS") == "true":
-        print("Running on Travis CI")
-        return True
-
-    # Check if pytest is running in Circle CI
-    if os.getenv("CIRCLECI") == "true":
-        print("Running on Circle CI")
-        return True
-    return False
-
-
 @pytest.mark.impure
 def test_inspect(api: TestClient, test_flake_with_core: Path) -> None:
     response = api.post(
@@ -49,10 +31,9 @@ def test_incorrect_uuid(api: TestClient) -> None:
         assert response.status_code == 422, "Failed to get vm status"
 
 
+@pytest.mark.skipif(not os.path.exists("/dev/kvm"), reason="Requires KVM")
 @pytest.mark.impure
 def test_create(api: TestClient, test_flake_with_core: Path) -> None:
-    if is_running_in_ci():
-        pytest.skip("Skipping test in CI. As it requires KVM")
     print(f"flake_url: {test_flake_with_core} ")
     response = api.post(
         "/api/vms/create",
@@ -74,20 +55,11 @@ def test_create(api: TestClient, test_flake_with_core: Path) -> None:
     assert response.status_code == 200, "Failed to get vm status"
 
     response = api.get(f"/api/vms/{uuid}/logs")
-    print("=========FLAKE LOGS==========")
-    assert isinstance(response.stream, SyncByteStream)
-    for line in response.stream:
-        assert line != b"", "Failed to get vm logs"
-        print(line.decode("utf-8"), end="")
-    print("=========END LOGS==========")
-    assert response.status_code == 200, "Failed to get vm logs"
-
-    response = api.get(f"/api/vms/{uuid}/logs")
-    assert isinstance(response.stream, SyncByteStream)
     print("=========VM LOGS==========")
+    assert isinstance(response.stream, SyncByteStream)
     for line in response.stream:
         assert line != b"", "Failed to get vm logs"
-        print(line.decode("utf-8"), end="")
+        print(line.decode("utf-8"))
     print("=========END LOGS==========")
     assert response.status_code == 200, "Failed to get vm logs"
 

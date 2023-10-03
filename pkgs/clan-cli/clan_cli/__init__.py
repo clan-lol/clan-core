@@ -1,11 +1,14 @@
 import argparse
+import logging
 import sys
 from types import ModuleType
 from typing import Optional
 
-from . import config, create, machines, secrets, vms, webui
+from . import config, create, custom_logger, machines, secrets, vms, webui
 from .errors import ClanError
 from .ssh import cli as ssh_cli
+
+log = logging.getLogger(__name__)
 
 argcomplete: Optional[ModuleType] = None
 try:
@@ -62,14 +65,20 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
 def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
+
+    if args.debug:
+        custom_logger.register(logging.DEBUG)
+        log.debug("Debug logging enabled")
+    else:
+        custom_logger.register(logging.INFO)
+
     if not hasattr(args, "func"):
+        log.error("No argparse function registered")
         return
     try:
         args.func(args)
     except ClanError as e:
-        if args.debug:
-            raise
-        print(f"{sys.argv[0]}: {e}")
+        log.exception(e)
         sys.exit(1)
 
 

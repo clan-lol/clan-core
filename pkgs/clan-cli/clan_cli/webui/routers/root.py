@@ -1,3 +1,4 @@
+import logging
 import os
 from mimetypes import guess_type
 from pathlib import Path
@@ -8,6 +9,8 @@ from ..assets import asset_path
 
 router = APIRouter()
 
+log = logging.getLogger(__name__)
+
 
 @router.get("/{path_name:path}")
 async def root(path_name: str) -> Response:
@@ -16,6 +19,7 @@ async def root(path_name: str) -> Response:
     filename = Path(os.path.normpath(asset_path() / path_name))
 
     if not filename.is_relative_to(asset_path()):
+        log.error("Prevented directory traversal: %s", filename)
         # prevent directory traversal
         return Response(status_code=403)
 
@@ -23,6 +27,7 @@ async def root(path_name: str) -> Response:
         if filename.suffix == "":
             filename = filename.with_suffix(".html")
             if not filename.is_file():
+                log.error("File not found: %s", filename)
                 return Response(status_code=404)
 
     content_type, _ = guess_type(filename)
