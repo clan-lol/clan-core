@@ -7,16 +7,12 @@ import {
   Edit,
   Group,
   Key,
-  MenuOpen,
-  NetworkCell,
   Settings,
   SettingsEthernet,
-  VisibilityOff,
 } from "@mui/icons-material";
 import {
   Avatar,
   Button,
-  Divider,
   IconButton,
   List,
   ListItem,
@@ -29,14 +25,13 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { useListMachines } from "@/api/default/default";
+// import { useListMachines } from "@/api/default/default";
 
 export async function generateStaticParams() {
   return [{ id: "1" }, { id: "2" }];
 }
 
 function getTemplate(params: { id: string }) {
-  console.log({ params });
   // const res = await fetch(`https://.../posts/${params.id}`);
   return {
     short: `My Template ${params.id}`,
@@ -47,8 +42,7 @@ interface TemplateDetailProps {
   params: { id: string };
 }
 export default function TemplateDetail({ params }: TemplateDetailProps) {
-  const { data, isLoading } = useListMachines();
-  console.log({ data, isLoading });
+  // const { data, isLoading } = useListMachines();
   const details = getTemplate(params);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

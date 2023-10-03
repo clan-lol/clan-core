@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode } from "react";
+import { ReactElement } from "react";
 import { UseFormReturn } from "react-hook-form";
 
 export type StepId = "template" | "modules" | "config" | "save";

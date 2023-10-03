@@ -10,10 +10,11 @@ import {
 } from "@mui/material";
 import { Controller, SubmitHandler, UseFormReturn } from "react-hook-form";
 import { FlakeBadge } from "../flakeBadge/flakeBadge";
-import { createVm, useGetVmLogs } from "@/api/default/default";
+import { createVm, useInspectFlakeAttrs } from "@/api/default/default";
 import { VmConfig } from "@/api/model";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { useAppState } from "../hooks/useAppContext";
 
 interface VmPropLabelProps {
   children: React.ReactNode;
@@ -28,20 +29,26 @@ interface VmPropContentProps {
   children: React.ReactNode;
 }
 const VmPropContent = (props: VmPropContentProps) => (
-  <div className="col-span-4 font-bold sm:col-span-3">{props.children}</div>
+  <div className="col-span-4 sm:col-span-3">{props.children}</div>
 );
 
 interface VmDetailsProps {
-  vmConfig: VmConfig;
   formHooks: UseFormReturn<VmConfig, any, undefined>;
   setVmUuid: Dispatch<SetStateAction<string | null>>;
 }
 
 export const ConfigureVM = (props: VmDetailsProps) => {
-  const { vmConfig, formHooks, setVmUuid } = props;
-  const { control, handleSubmit } = formHooks;
-  const { cores, flake_attr, flake_url, graphics, memory_size } = vmConfig;
+  const { formHooks, setVmUuid } = props;
+  const { control, handleSubmit, watch, setValue } = formHooks;
   const [isStarting, setStarting] = useState(false);
+  const { setAppState } = useAppState();
+  const { isLoading, data } = useInspectFlakeAttrs({ url: watch("flake_url") });
+
+  useEffect(() => {
+    if (!isLoading && data?.data) {
+      setValue("flake_attr", data.data.flake_attrs[0] || "");
+    }
+  }, [isLoading, setValue, data]);
 
   const onSubmit: SubmitHandler<VmConfig> = async (data) => {
     setStarting(true);
@@ -53,6 +60,7 @@ export const ConfigureVM = (props: VmDetailsProps) => {
     setStarting(false);
     if (response.statusText === "OK") {
       toast.success(("Joined @ " + uuid) as string);
+      setAppState((s) => ({ ...s, isJoined: true }));
     } else {
       toast.error("Could not join");
     }
@@ -64,30 +72,44 @@ export const ConfigureVM = (props: VmDetailsProps) => {
       className="grid grid-cols-4 gap-y-10"
     >
       <div className="col-span-4">
-        <ListSubheader>General</ListSubheader>
+        <ListSubheader sx={{ bgcolor: "inherit" }}>General</ListSubheader>
       </div>
       <VmPropLabel>Flake</VmPropLabel>
       <VmPropContent>
-        <FlakeBadge flakeAttr={flake_attr} flakeUrl={flake_url} />
+        <FlakeBadge
+          flakeAttr={watch("flake_attr")}
+          flakeUrl={watch("flake_url")}
+        />
       </VmPropContent>
       <VmPropLabel>Machine</VmPropLabel>
       <VmPropContent>
-        <Controller
-          name="flake_attr"
-          control={control}
-          render={({ field }) => (
-            <Select {...field} variant="standard" fullWidth>
-              {["default", "vm1"].map((attr) => (
-                <MenuItem value={attr} key={attr}>
-                  {attr}
-                </MenuItem>
-              ))}
-            </Select>
-          )}
-        />
+        {!isLoading && (
+          <Controller
+            name="flake_attr"
+            control={control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                required
+                variant="standard"
+                fullWidth
+                disabled={isLoading}
+              >
+                {!data?.data.flake_attrs.includes("default") && (
+                  <MenuItem value={"default"}>default</MenuItem>
+                )}
+                {data?.data.flake_attrs.map((attr) => (
+                  <MenuItem value={attr} key={attr}>
+                    {attr}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+          />
+        )}
       </VmPropContent>
       <div className="col-span-4">
-        <ListSubheader>VM</ListSubheader>
+        <ListSubheader sx={{ bgcolor: "inherit" }}>VM</ListSubheader>
       </div>
       <VmPropLabel>CPU Cores</VmPropLabel>
       <VmPropContent>
@@ -103,7 +125,7 @@ export const ConfigureVM = (props: VmDetailsProps) => {
           name="graphics"
           control={control}
           render={({ field }) => (
-            <Switch {...field} defaultChecked={vmConfig.graphics} />
+            <Switch {...field} defaultChecked={watch("graphics")} />
           )}
         />
       </VmPropContent>
@@ -129,7 +151,12 @@ export const ConfigureVM = (props: VmDetailsProps) => {
 
       <div className="col-span-4 grid items-center">
         {isStarting && <LinearProgress />}
-        <Button type="submit" disabled={isStarting} variant="contained">
+        <Button
+          autoFocus
+          type="submit"
+          disabled={isStarting}
+          variant="contained"
+        >
           Join Clan
         </Button>
       </div>

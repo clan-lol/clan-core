@@ -1,7 +1,5 @@
 import { DashboardCard } from "@/components/card";
 import Image from "next/image";
-import { ReactNode } from "react";
-
 interface AppCardProps {
   name: string;
   icon?: string;
@@ -30,11 +28,6 @@ const AppCard = (props: AppCardProps) => {
       </div>
     </div>
   );
-};
-
-type App = {
-  name: string;
-  icon?: string;
 };
 
 const apps = [

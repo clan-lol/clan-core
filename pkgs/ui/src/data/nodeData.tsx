@@ -58,20 +58,20 @@ function getRandomName(): string {
 }
 
 // A function to generate random IPv6 addresses
-function getRandomId(): string {
-  let hex = "0123456789abcdef";
-  let id = "";
-  for (let i = 0; i < 8; i++) {
-    for (let j = 0; j < 4; j++) {
-      let index = Math.floor(Math.random() * hex.length);
-      id += hex[index];
-    }
-    if (i < 7) {
-      id += ":";
-    }
-  }
-  return id;
-}
+// function getRandomId(): string {
+//   let hex = "0123456789abcdef";
+//   let id = "";
+//   for (let i = 0; i < 8; i++) {
+//     for (let j = 0; j < 4; j++) {
+//       let index = Math.floor(Math.random() * hex.length);
+//       id += hex[index];
+//     }
+//     if (i < 7) {
+//       id += ":";
+//     }
+//   }
+//   return id;
+// }
 
 // A function to generate random status keys
 function getRandomStatus(): NodeStatusKeys {

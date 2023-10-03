@@ -1,6 +1,6 @@
 "use client";
 import { DashboardCard } from "@/components/card";
-import { Button, Fab } from "@mui/material";
+import { Fab } from "@mui/material";
 import { MouseEventHandler, ReactNode } from "react";
 
 import LanIcon from "@mui/icons-material/Lan";

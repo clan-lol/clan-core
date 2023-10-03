@@ -1,17 +1,12 @@
 import { DashboardCard } from "@/components/card";
 import { notificationData } from "@/data/dashboardData";
-import { tw } from "@/utils/tailwind";
 import {
   Avatar,
-  Chip,
   List,
   ListItem,
   ListItemAvatar,
-  ListItemButton,
-  ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import { Label } from "recharts";
 
 import CheckIcon from "@mui/icons-material/Check";
 import InfoIcon from "@mui/icons-material/Info";
