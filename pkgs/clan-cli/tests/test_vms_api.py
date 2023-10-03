@@ -17,7 +17,7 @@ def test_inspect(api: TestClient, test_flake_with_core: Path) -> None:
     assert config.get("flake_attr") == "vm1"
     assert config.get("cores") == 1
     assert config.get("memory_size") == 1024
-    assert config.get("graphics") is True
+    assert config.get("graphics") is False
 
 
 def test_incorrect_uuid(api: TestClient) -> None:
@@ -42,7 +42,7 @@ def test_create(api: TestClient, test_flake_with_core: Path) -> None:
             flake_attr="vm1",
             cores=1,
             memory_size=1024,
-            graphics=True,
+            graphics=False,
         ),
     )
     assert response.status_code == 200, "Failed to create vm"
