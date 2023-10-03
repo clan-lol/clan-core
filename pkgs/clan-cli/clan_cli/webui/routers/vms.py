@@ -3,8 +3,11 @@ import logging
 from typing import Annotated, Iterator
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Body
+from fastapi import APIRouter, BackgroundTasks, Body, status
+from fastapi.exceptions import HTTPException
 from fastapi.responses import StreamingResponse
+
+from clan_cli.webui.routers.flake import get_attrs
 
 from ...nix import nix_build, nix_eval
 from ..schemas import VmConfig, VmCreateResponse, VmInspectResponse, VmStatusResponse
@@ -107,5 +110,11 @@ async def get_vm_logs(uuid: UUID) -> StreamingResponse:
 async def create_vm(
     vm: Annotated[VmConfig, Body()], background_tasks: BackgroundTasks
 ) -> VmCreateResponse:
+    flake_attrs = await get_attrs(vm.flake_url)
+    if vm.flake_attr not in flake_attrs:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Provided attribute '{vm.flake_attr}' does not exist.",
+        )
     uuid = register_task(BuildVmTask, vm)
     return VmCreateResponse(uuid=str(uuid))
