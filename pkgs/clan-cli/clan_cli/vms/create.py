@@ -37,8 +37,8 @@ def create(args: argparse.Namespace) -> None:
     stream = asyncio.run(vms.get_vm_logs(uuid))
 
     for line in read_stream_response(stream):
-        print(line)
-
+        print(line, end="")
+    print("")
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("machine", type=str)
