@@ -33,7 +33,9 @@ export const useVms = (options: UseVmsOptions) => {
       } catch (e) {
         const err = e as AxiosError<HTTPValidationError>;
         setError(err);
-        toast.error(err.message);
+        toast(
+          "Could not find default configuration. Please select a machine preset",
+        );
         return undefined;
       } finally {
         setIsLoading(false);
