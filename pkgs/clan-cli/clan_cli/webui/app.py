@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 
+
 from .assets import asset_path
 from .routers import flake, health, machines, root, utils, vms
 
@@ -35,7 +36,7 @@ def setup_app() -> FastAPI:
     app.add_exception_handler(
         utils.NixBuildException, utils.nix_build_exception_handler
     )
-
+    
     app.mount("/static", StaticFiles(directory=asset_path()), name="static")
 
     for route in app.routes:
