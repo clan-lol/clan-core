@@ -36,7 +36,7 @@ def setup_app() -> FastAPI:
     app.add_exception_handler(
         utils.NixBuildException, utils.nix_build_exception_handler
     )
-    
+
     app.mount("/static", StaticFiles(directory=asset_path()), name="static")
 
     for route in app.routes:
