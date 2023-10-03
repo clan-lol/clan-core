@@ -15,7 +15,7 @@ export type NodeStatusKeys = (typeof NodeStatus)[keyof typeof NodeStatus];
 function createData(
   name: string,
   status: NodeStatusKeys,
-  last_seen: number,
+  last_seen: number
 ): TableData {
   if (status == NodeStatus.Online) {
     last_seen = 0;
@@ -58,20 +58,20 @@ function getRandomName(): string {
 }
 
 // A function to generate random IPv6 addresses
-function getRandomId(): string {
-  let hex = "0123456789abcdef";
-  let id = "";
-  for (let i = 0; i < 8; i++) {
-    for (let j = 0; j < 4; j++) {
-      let index = Math.floor(Math.random() * hex.length);
-      id += hex[index];
-    }
-    if (i < 7) {
-      id += ":";
-    }
-  }
-  return id;
-}
+// function getRandomId(): string {
+//   let hex = "0123456789abcdef";
+//   let id = "";
+//   for (let i = 0; i < 8; i++) {
+//     for (let j = 0; j < 4; j++) {
+//       let index = Math.floor(Math.random() * hex.length);
+//       id += hex[index];
+//     }
+//     if (i < 7) {
+//       id += ":";
+//     }
+//   }
+//   return id;
+// }
 
 // A function to generate random status keys
 function getRandomStatus(): NodeStatusKeys {
@@ -96,61 +96,61 @@ export const tableData = [
     "Matchbox",
 
     NodeStatus.Pending,
-    0,
+    0
   ),
   createData(
     "Ahorn",
 
     NodeStatus.Online,
-    0,
+    0
   ),
   createData(
     "Yellow",
 
     NodeStatus.Offline,
-    16.0,
+    16.0
   ),
   createData(
     "Rauter",
 
     NodeStatus.Offline,
-    6.0,
+    6.0
   ),
   createData(
     "Porree",
 
     NodeStatus.Offline,
-    13,
+    13
   ),
   createData(
     "Helsinki",
 
     NodeStatus.Online,
-    0,
+    0
   ),
   createData(
     "Kelle",
 
     NodeStatus.Online,
-    0,
+    0
   ),
   createData(
     "Shodan",
 
     NodeStatus.Online,
-    0.0,
+    0.0
   ),
   createData(
     "Qubasa",
 
     NodeStatus.Offline,
-    7.0,
+    7.0
   ),
   createData(
     "Green",
 
     NodeStatus.Offline,
-    2,
+    2
   ),
   createData("Gum", NodeStatus.Offline, 0),
   createData("Xu", NodeStatus.Online, 0),
@@ -158,7 +158,7 @@ export const tableData = [
     "Zaatar",
 
     NodeStatus.Online,
-    0,
+    0
   ),
 ];
 

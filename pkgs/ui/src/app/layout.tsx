@@ -11,7 +11,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 import { Toaster } from "react-hot-toast";
 import { StyledEngineProvider } from "@mui/material/styles";
 
@@ -25,10 +25,10 @@ import axios from "axios";
 import {
   AppContext,
   WithAppState,
-  useAppState,
+  // useAppState,
 } from "@/components/hooks/useAppContext";
 import Background from "@/components/background";
-import { usePathname, redirect } from "next/navigation";
+// import { usePathname, redirect } from "next/navigation";
 
 const roboto = localFont({
   src: [
@@ -45,16 +45,16 @@ axios.defaults.baseURL = "http://localhost:2979";
 // add negative margin for smooth transition to fill the space of the sidebar
 const translate = tw`lg:-ml-64 -ml-14`;
 
-const AutoRedirectEffect = () => {
-  const { isLoading, data } = useAppState();
-  const pathname = usePathname();
-  React.useEffect(() => {
-    if (!isLoading && !data.isJoined && pathname !== "/") {
-      redirect("/");
-    }
-  }, [isLoading, data, pathname]);
-  return <></>;
-};
+// const AutoRedirectEffect = () => {
+//   const { isLoading, data } = useAppState();
+//   const pathname = usePathname();
+//   React.useEffect(() => {
+//     if (!isLoading && !data.isJoined && pathname !== "/") {
+//       redirect("/");
+//     }
+//   }, [isLoading, data, pathname]);
+//   return <></>;
+// };
 
 export default function RootLayout({
   children,
@@ -84,9 +84,9 @@ export default function RootLayout({
     }
   }, [userPrefersDarkmode, useDarkTheme, setUseDarkTheme]);
 
-  const changeThemeHandler = (target: ChangeEvent, currentValue: boolean) => {
-    setUseDarkTheme(currentValue);
-  };
+  // const changeThemeHandler = (target: ChangeEvent, currentValue: boolean) => {
+  //   setUseDarkTheme(currentValue);
+  // };
 
   return (
     <html lang="en">
@@ -105,9 +105,7 @@ export default function RootLayout({
               <AppContext.Consumer>
                 {(appState) => {
                   const showSidebarDerived = Boolean(
-                    showSidebar &&
-                      !appState.isLoading &&
-                      appState.data.isJoined,
+                    showSidebar && !appState.isLoading && appState.data.isJoined
                   );
                   return (
                     <>
@@ -149,7 +147,7 @@ export default function RootLayout({
                           <div className="px-1">
                             <div className="relative flex h-full flex-1 flex-col">
                               <main>
-                                <AutoRedirectEffect />
+                                {/* <AutoRedirectEffect /> */}
                                 <Button
                                   fullWidth
                                   onClick={() => {

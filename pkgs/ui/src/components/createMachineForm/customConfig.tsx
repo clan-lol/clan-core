@@ -12,7 +12,7 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import { IChangeEvent, FormProps } from "@rjsf/core";
+import { IChangeEvent } from "@rjsf/core";
 import { Form } from "@rjsf/mui";
 import validator from "@rjsf/validator-ajv8";
 import toast from "react-hot-toast";
@@ -54,7 +54,7 @@ export function CustomConfig(props: FormStepContentProps) {
         }
         return acc;
       }, {}),
-    [schema],
+    [schema]
   );
 
   return isLoading ? (
@@ -100,7 +100,7 @@ function ErrorList<
 }
 
 function PureCustomConfig(props: PureCustomConfigProps) {
-  const { schema, initialValues, formHooks } = props;
+  const { schema, formHooks } = props;
   const { setValue, watch } = formHooks;
 
   console.log({ schema });
@@ -124,7 +124,7 @@ function PureCustomConfig(props: PureCustomConfigProps) {
         message: "invalid config",
       });
       toast.error(
-        "Configuration is invalid. Please check the highlighted fields for details.",
+        "Configuration is invalid. Please check the highlighted fields for details."
       );
     } else {
       formHooks.clearErrors("config");

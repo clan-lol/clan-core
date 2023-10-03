@@ -2,7 +2,6 @@ import { ChevronRight } from "@mui/icons-material";
 import {
   Avatar,
   Divider,
-  IconButton,
   List,
   ListItem,
   ListItemAvatar,

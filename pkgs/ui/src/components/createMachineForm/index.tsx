@@ -5,18 +5,13 @@ import {
   Step,
   StepLabel,
   Stepper,
-  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import React, { ReactNode, useState } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import { CustomConfig } from "./customConfig";
 import { CreateMachineForm, FormStep } from "./interfaces";
-
-const SC = (props: { children: ReactNode }) => {
-  return <>{props.children}</>;
-};
 
 export function CreateMachineForm() {
   const formHooks = useForm<CreateMachineForm>({
@@ -25,7 +20,7 @@ export function CreateMachineForm() {
       config: {},
     },
   });
-  const { handleSubmit, control, watch, reset, formState } = formHooks;
+  const { handleSubmit, reset } = formHooks;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [activeStep, setActiveStep] = useState<number>(0);

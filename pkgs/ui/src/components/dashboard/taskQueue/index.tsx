@@ -19,7 +19,7 @@ interface TaskEntryProps {
   details?: string;
 }
 const TaskEntry = (props: TaskEntryProps) => {
-  const { result, task, details, status } = props;
+  const { result, task, status } = props;
   return (
     <>
       <div className="col-span-1">{status}</div>

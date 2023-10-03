@@ -3,7 +3,7 @@ import { useState } from "react";
 import { LoadingOverlay } from "./loadingOverlay";
 import { FlakeBadge } from "../flakeBadge/flakeBadge";
 import { Typography, Button } from "@mui/material";
-import { FlakeResponse } from "@/api/model";
+// import { FlakeResponse } from "@/api/model";
 import { ConfirmVM } from "./confirmVM";
 import { Log } from "./log";
 import GppMaybeIcon from "@mui/icons-material/GppMaybe";
@@ -11,22 +11,29 @@ import { useInspectFlake } from "@/api/default/default";
 
 interface ConfirmProps {
   flakeUrl: string;
+  flakeAttr: string;
   handleBack: () => void;
 }
 export const Confirm = (props: ConfirmProps) => {
-  const { flakeUrl, handleBack } = props;
+  const { flakeUrl, handleBack, flakeAttr } = props;
   const [userConfirmed, setUserConfirmed] = useState(false);
 
-  const { data, error, isLoading } = useInspectFlake({ url: flakeUrl });
+  const { data, isLoading } = useInspectFlake({
+    url: flakeUrl,
+  });
 
   return userConfirmed ? (
-    <ConfirmVM url={flakeUrl} handleBack={handleBack} />
+    <ConfirmVM
+      url={flakeUrl}
+      handleBack={handleBack}
+      defaultFlakeAttr={flakeAttr}
+    />
   ) : (
     <div className="mb-2 flex w-full max-w-2xl flex-col items-center justify-self-center pb-2 ">
       {isLoading && (
         <LoadingOverlay
           title={"Loading Flake"}
-          subtitle={<FlakeBadge flakeUrl={flakeUrl} flakeAttr="" />}
+          subtitle={<FlakeBadge flakeUrl={flakeUrl} flakeAttr={flakeAttr} />}
         />
       )}
       {data && (
