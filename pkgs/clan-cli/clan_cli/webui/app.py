@@ -5,8 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 
+from ..errors import ClanError
 from .assets import asset_path
-from .routers import flake, health, machines, root, utils, vms
+from .error_handlers import clan_error_handler
+from .routers import flake, health, machines, root, vms
 
 origins = [
     "http://localhost:3000",
@@ -32,9 +34,7 @@ def setup_app() -> FastAPI:
     # Needs to be last in register. Because of wildcard route
     app.include_router(root.router)
 
-    app.add_exception_handler(
-        utils.NixBuildException, utils.nix_build_exception_handler
-    )
+    app.add_exception_handler(ClanError, clan_error_handler)
 
     app.mount("/static", StaticFiles(directory=asset_path()), name="static")
 
