@@ -10,6 +10,7 @@
 , pytest-cov
 , pytest-subprocess
 , pytest-parallel
+, pytest-timeout
 , python3
 , runCommand
 , setuptools
@@ -44,6 +45,7 @@ let
     pytest-cov
     pytest-subprocess
     pytest-parallel
+    pytest-timeout
     openssh
     git
     gnupg

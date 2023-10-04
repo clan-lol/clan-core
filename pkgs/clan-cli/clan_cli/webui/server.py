@@ -2,32 +2,64 @@ import argparse
 import logging
 import multiprocessing as mp
 import os
+import shutil
+import signal
 import socket
 import subprocess
 import sys
 import syslog
+import tempfile
 import time
 import urllib.request
-import webbrowser
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from threading import Thread
 from typing import Iterator
 
 # XXX: can we dynamically load this using nix develop?
-from uvicorn import run
+import uvicorn
+
+from clan_cli.errors import ClanError
 
 log = logging.getLogger(__name__)
 
 
-def defer_open_browser(base_url: str) -> None:
-    for i in range(5):
+def open_browser(base_url: str) -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for i in range(5):
+            try:
+                urllib.request.urlopen(base_url + "/health")
+                break
+            except OSError:
+                time.sleep(i)
+        proc = _open_browser(base_url, tmpdir)
         try:
-            urllib.request.urlopen(base_url + "/health")
-            break
-        except OSError:
-            time.sleep(i)
-    webbrowser.open(base_url)
+            proc.wait()
+            print("Browser closed")
+            os.kill(os.getpid(), signal.SIGINT)
+        finally:
+            proc.kill()
+            proc.wait()
+
+
+def _open_browser(base_url: str, tmpdir: str) -> subprocess.Popen:
+    for browser in ("firefox", "iceweasel", "iceape", "seamonkey"):
+        if shutil.which(browser):
+            cmd = [
+                browser,
+                "-kiosk",
+                "-private-window",
+                "--new-instance",
+                "--profile",
+                tmpdir,
+                base_url,
+            ]
+            print(" ".join(cmd))
+            return subprocess.Popen(cmd)
+    for browser in ("chromium", "chromium-browser", "google-chrome", "chrome"):
+        if shutil.which(browser):
+            return subprocess.Popen([browser, f"--app={base_url}"])
+    raise ClanError("No browser found")
 
 
 @contextmanager
@@ -84,9 +116,9 @@ def start_server(args: argparse.Namespace) -> None:
             open_url = f"http://[{args.host}]:{args.port}"
 
         if not args.no_open:
-            Thread(target=defer_open_browser, args=(open_url,)).start()
+            Thread(target=open_browser, args=(open_url,)).start()
 
-        run(
+        uvicorn.run(
             "clan_cli.webui.app:app",
             host=args.host,
             port=args.port,
@@ -161,7 +193,7 @@ def set_out_to_syslog() -> None:  # type: ignore
 
 def _run_socketfile(socket_file: Path, debug: bool) -> None:
     set_out_to_syslog()
-    run(
+    uvicorn.run(
         "clan_cli.webui.app:app",
         uds=str(socket_file),
         access_log=debug,
