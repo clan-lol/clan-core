@@ -3,12 +3,12 @@ import json
 import os
 import subprocess
 from pathlib import Path
-from typing import Any
 
 from ..dirs import get_clan_flake_toplevel
+from ..machines.machines import Machine
 from ..nix import nix_build, nix_command, nix_config
-from ..secrets.generate import run_generate_secrets
-from ..secrets.upload import run_upload_secrets
+from ..secrets.generate import generate_secrets
+from ..secrets.upload import upload_secrets
 from ..ssh import Host, HostGroup, HostKeyCheck, parse_deployment_address
 
 
@@ -40,13 +40,8 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
 
         flake_attr = h.meta.get("flake_attr", "")
 
-        run_generate_secrets(h.meta["generateSecrets"], clan_dir)
-        run_upload_secrets(
-            h.meta["uploadSecrets"],
-            clan_dir,
-            target=target,
-            target_directory=h.meta["secretsUploadDirectory"],
-        )
+        generate_secrets(h.meta["machine"])
+        upload_secrets(h.meta["machine"])
 
         target_host = h.meta.get("target_host")
         if target_host:
@@ -81,49 +76,36 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
     hosts.run_function(deploy)
 
 
-def build_json(targets: list[str]) -> list[dict[str, Any]]:
-    outpaths = subprocess.run(
-        nix_build(targets),
+# function to speedup eval if we want to evauluate all machines
+def get_all_machines(clan_dir: Path) -> HostGroup:
+    config = nix_config()
+    system = config["system"]
+    machines_json = subprocess.run(
+        nix_build([f'{clan_dir}#clanInternals.all-machines-json."{system}"']),
         stdout=subprocess.PIPE,
         check=True,
         text=True,
     ).stdout
-    parsed = []
-    for outpath in outpaths.splitlines():
-        parsed.append(json.loads(Path(outpath).read_text()))
-    return parsed
 
-
-def get_all_machines(clan_dir: Path) -> HostGroup:
-    config = nix_config()
-    system = config["system"]
-    what = f'{clan_dir}#clanInternals.all-machines-json."{system}"'
-    machines = build_json([what])[0]
+    machines = json.loads(Path(machines_json).read_text())
 
     hosts = []
-    for name, machine in machines.items():
+    for name, machine_data in machines.items():
+        # very hacky. would be better to do a MachinesGroup instead
         host = parse_deployment_address(
-            name, machine["deploymentAddress"], meta=machine
+            name,
+            machine_data["deploymentAddress"],
+            meta={"machine": Machine(name=name, machine_data=machine_data)},
         )
         hosts.append(host)
     return HostGroup(hosts)
 
 
 def get_selected_machines(machine_names: list[str], clan_dir: Path) -> HostGroup:
-    config = nix_config()
-    system = config["system"]
-    what = []
-    for name in machine_names:
-        what.append(
-            f'{clan_dir}#clanInternals.machines."{system}"."{name}".config.system.clan.deployment.file'
-        )
-    machines = build_json(what)
     hosts = []
-    for i, machine in enumerate(machines):
-        host = parse_deployment_address(
-            machine_names[i], machine["deploymentAddress"], machine
-        )
-        hosts.append(host)
+    for name in machine_names:
+        machine = Machine(name=name, clan_dir=clan_dir)
+        hosts.append(machine.host)
     return HostGroup(hosts)
 
 
