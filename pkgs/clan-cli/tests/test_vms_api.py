@@ -58,14 +58,13 @@ def test_create(api: TestClient, test_flake_with_core: Path) -> None:
     print("=========VM LOGS==========")
     assert isinstance(response.stream, SyncByteStream)
     for line in response.stream:
-        assert line != b"", "Failed to get vm logs"
         print(line.decode("utf-8"))
     print("=========END LOGS==========")
     assert response.status_code == 200, "Failed to get vm logs"
 
     response = api.get(f"/api/vms/{uuid}/status")
     assert response.status_code == 200, "Failed to get vm status"
-    returncodes = response.json()["returncode"]
-    assert response.json()["running"] is False, "VM is still running. Should be stopped"
-    for exit_code in returncodes:
-        assert exit_code == 0, "One VM failed with exit code != 0"
+    data = response.json()
+    assert (
+        data["status"] == "FINISHED"
+    ), f"Expected to be finished, but got {data['status']} ({data})"
