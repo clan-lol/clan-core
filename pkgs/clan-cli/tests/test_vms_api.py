@@ -1,9 +1,14 @@
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from api import TestClient
+from cli import Cli
 from httpx import SyncByteStream
+
+if TYPE_CHECKING:
+    from age_keys import KeyPair
 
 
 @pytest.mark.impure
@@ -33,7 +38,16 @@ def test_incorrect_uuid(api: TestClient) -> None:
 
 @pytest.mark.skipif(not os.path.exists("/dev/kvm"), reason="Requires KVM")
 @pytest.mark.impure
-def test_create(api: TestClient, test_flake_with_core: Path) -> None:
+def test_create(
+    api: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    test_flake_with_core: Path,
+    age_keys: list["KeyPair"],
+) -> None:
+    monkeypatch.chdir(test_flake_with_core)
+    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
+    cli = Cli()
+    cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey])
     print(f"flake_url: {test_flake_with_core} ")
     response = api.post(
         "/api/vms/create",
