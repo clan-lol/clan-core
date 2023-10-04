@@ -1,13 +1,16 @@
 {
   description = "clan.lol base operating system";
 
+  nixConfig.extra-substituters = [ "https://cache.clan.lol" ];
+  nixConfig.extra-trusted-public-keys = [ "cache.clan.lol-1:3KztgSAB5R1M+Dz7vzkBGzXdodizbgLXGXKXlcQLA28=" ];
+
   inputs = {
     #nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     # https://github.com/NixOS/nixpkgs/pull/257462
     nixpkgs.url = "github:Mic92/nixpkgs/fakeroot";
     floco.url = "github:aakropotkin/floco";
     floco.inputs.nixpkgs.follows = "nixpkgs";
-    disko.url = "github:nix-community/disko/party";
+    disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "sops-nix";
