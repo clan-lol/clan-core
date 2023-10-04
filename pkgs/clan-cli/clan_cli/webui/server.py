@@ -20,7 +20,7 @@ from clan_cli.errors import ClanError
 log = logging.getLogger(__name__)
 
 
-def open_browser(base_url: str) -> None:
+def open_browser(base_url: str, sub_url: str) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         for i in range(5):
             try:
@@ -28,7 +28,8 @@ def open_browser(base_url: str) -> None:
                 break
             except OSError:
                 time.sleep(i)
-        proc = _open_browser(base_url, tmpdir)
+        url = f"{base_url}/{sub_url.removeprefix('/')}"
+        proc = _open_browser(url, tmpdir)
         try:
             proc.wait()
             print("Browser closed")
@@ -38,7 +39,7 @@ def open_browser(base_url: str) -> None:
             proc.wait()
 
 
-def _open_browser(base_url: str, tmpdir: str) -> subprocess.Popen:
+def _open_browser(url: str, tmpdir: str) -> subprocess.Popen:
     for browser in ("firefox", "iceweasel", "iceape", "seamonkey"):
         if shutil.which(browser):
             cmd = [
@@ -48,13 +49,13 @@ def _open_browser(base_url: str, tmpdir: str) -> subprocess.Popen:
                 "--new-instance",
                 "--profile",
                 tmpdir,
-                base_url,
+                url,
             ]
             print(" ".join(cmd))
             return subprocess.Popen(cmd)
     for browser in ("chromium", "chromium-browser", "google-chrome", "chrome"):
         if shutil.which(browser):
-            return subprocess.Popen([browser, f"--app={base_url}"])
+            return subprocess.Popen([browser, f"--app={url}"])
     raise ClanError("No browser found")
 
 
@@ -90,7 +91,7 @@ def start_server(args: argparse.Namespace) -> None:
         if args.dev:
             stack.enter_context(spawn_node_dev_server(args.dev_host, args.dev_port))
 
-            open_url = f"http://{args.dev_host}:{args.dev_port}"
+            base_url = f"http://{args.dev_host}:{args.dev_port}"
             host = args.dev_host
             if ":" in host:
                 host = f"[{host}]"
@@ -109,10 +110,10 @@ def start_server(args: argparse.Namespace) -> None:
                 # )
             ]
         else:
-            open_url = f"http://[{args.host}]:{args.port}"
+            base_url = f"http://{args.host}:{args.port}"
 
         if not args.no_open:
-            Thread(target=open_browser, args=(open_url,)).start()
+            Thread(target=open_browser, args=(base_url, args.sub_url)).start()
 
         uvicorn.run(
             "clan_cli.webui.app:app",
