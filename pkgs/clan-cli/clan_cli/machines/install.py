@@ -1,30 +1,24 @@
 import argparse
-import json
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from ..dirs import get_clan_flake_toplevel
-from ..nix import nix_build, nix_config, nix_shell
-from ..secrets.generate import run_generate_secrets
-from ..secrets.upload import get_decrypted_secrets
-from ..ssh import Host, parse_deployment_address
+from ..machines.machines import Machine
+from ..nix import nix_shell
+from ..secrets.generate import generate_secrets
 
 
-def install_nixos(h: Host, clan_dir: Path) -> None:
+def install_nixos(machine: Machine) -> None:
+    h = machine.host
     target_host = f"{h.user or 'root'}@{h.host}"
 
     flake_attr = h.meta.get("flake_attr", "")
 
-    run_generate_secrets(h.meta["generateSecrets"], clan_dir)
+    generate_secrets(machine)
 
     with TemporaryDirectory() as tmpdir_:
         tmpdir = Path(tmpdir_)
-        get_decrypted_secrets(
-            h.meta["uploadSecrets"],
-            clan_dir,
-            target_directory=tmpdir / h.meta["secretsUploadDirectory"].lstrip("/"),
-        )
+        machine.upload_secrets(tmpdir / machine.secrets_upload_directory)
 
         subprocess.run(
             nix_shell(
@@ -32,7 +26,7 @@ def install_nixos(h: Host, clan_dir: Path) -> None:
                 [
                     "nixos-anywhere",
                     "-f",
-                    f"{clan_dir}#{flake_attr}",
+                    f"{machine.clan_dir}#{flake_attr}",
                     "-t",
                     "--no-reboot",
                     "--extra-files",
@@ -44,24 +38,11 @@ def install_nixos(h: Host, clan_dir: Path) -> None:
         )
 
 
-def install(args: argparse.Namespace) -> None:
-    clan_dir = get_clan_flake_toplevel()
-    config = nix_config()
-    system = config["system"]
-    json_file = subprocess.run(
-        nix_build(
-            [
-                f'{clan_dir}#clanInternals.machines."{system}"."{args.machine}".config.system.clan.deployment.file'
-            ]
-        ),
-        stdout=subprocess.PIPE,
-        check=True,
-        text=True,
-    ).stdout.strip()
-    machine_json = json.loads(Path(json_file).read_text())
-    host = parse_deployment_address(args.machine, args.target_host, machine_json)
+def install_command(args: argparse.Namespace) -> None:
+    machine = Machine(args.machine)
+    machine.deployment_address = args.target_host
 
-    install_nixos(host, clan_dir)
+    install_nixos(machine)
 
 
 def register_install_parser(parser: argparse.ArgumentParser) -> None:
@@ -76,4 +57,4 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         help="ssh address to install to in the form of user@host:2222",
     )
 
-    parser.set_defaults(func=install)
+    parser.set_defaults(func=install_command)

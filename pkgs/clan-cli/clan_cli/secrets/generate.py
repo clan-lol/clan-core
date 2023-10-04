@@ -1,45 +1,24 @@
 import argparse
 import logging
 import os
-import shlex
 import subprocess
 import sys
-from pathlib import Path
 
 from clan_cli.errors import ClanError
 
-from ..dirs import get_clan_flake_toplevel
-from ..nix import nix_build, nix_config
+from ..machines.machines import Machine
 
 log = logging.getLogger(__name__)
 
 
-def build_generate_script(machine: str, clan_dir: Path) -> str:
-    config = nix_config()
-    system = config["system"]
-
-    cmd = nix_build(
-        [
-            f'path:{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.generateSecrets'
-        ]
-    )
-    proc = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
-    if proc.returncode != 0:
-        raise ClanError(
-            f"failed to generate secrets:\n{shlex.join(cmd)}\nexited with {proc.returncode}"
-        )
-
-    return proc.stdout.strip()
-
-
-def run_generate_secrets(secret_generator_script: str, clan_dir: Path) -> None:
+def generate_secrets(machine: Machine) -> None:
     env = os.environ.copy()
-    env["CLAN_DIR"] = str(clan_dir)
+    env["CLAN_DIR"] = str(machine.clan_dir)
     env["PYTHONPATH"] = ":".join(sys.path)  # TODO do this in the clanCore module
 
-    print(f"generating secrets... {secret_generator_script}")
+    print(f"generating secrets... {machine.generate_secrets}")
     proc = subprocess.run(
-        [secret_generator_script],
+        [machine.generate_secrets],
         env=env,
     )
 
@@ -51,13 +30,9 @@ def run_generate_secrets(secret_generator_script: str, clan_dir: Path) -> None:
         print("successfully generated secrets")
 
 
-def generate(machine: str) -> None:
-    clan_dir = get_clan_flake_toplevel()
-    run_generate_secrets(build_generate_script(machine, clan_dir), clan_dir)
-
-
 def generate_command(args: argparse.Namespace) -> None:
-    generate(args.machine)
+    machine = Machine(args.machine)
+    generate_secrets(machine)
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:
