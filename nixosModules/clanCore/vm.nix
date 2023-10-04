@@ -3,6 +3,14 @@ let
   vmConfig = extendModules {
     modules = [
       (modulesPath + "/virtualisation/qemu-vm.nix")
+      {
+        virtualisation.fileSystems.${config.clanCore.secretsUploadDirectory} = lib.mkForce {
+          device = "secrets";
+          fsType = "9p";
+          neededForBoot = true;
+          options = [ "trans=virtio" "version=9p2000.L" "cache=loose" ];
+        };
+      }
     ];
   };
 in
@@ -52,6 +60,8 @@ in
         toplevel = vmConfig.config.system.build.toplevel;
         regInfo = (pkgs.closureInfo { rootPaths = vmConfig.config.virtualisation.additionalPaths; });
         inherit (config.clan.virtualisation) memorySize cores graphics;
+        generateSecrets = config.system.clan.generateSecrets;
+        uploadSecrets = config.system.clan.uploadSecrets;
       });
     };
 
