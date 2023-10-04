@@ -112,10 +112,24 @@ def get_selected_machines(machine_names: list[str], clan_dir: Path) -> HostGroup
 # FIXME: we want some kind of inventory here.
 def update(args: argparse.Namespace) -> None:
     clan_dir = get_clan_flake_toplevel()
-    if len(args.machines) == 0:
-        machines = get_all_machines(clan_dir)
+    if len(args.machines) == 1 and args.target_host is not None:
+        machine = Machine(name=args.machines[0], clan_dir=clan_dir)
+        machine.deployment_address = args.target_host
+        host = parse_deployment_address(
+            args.machines[0],
+            args.target_host,
+            meta={"machine": machine},
+        )
+        machines = HostGroup([host])
+
+    elif args.target_host is not None:
+        print("target host can only be specified for a single machine")
+        exit(1)
     else:
-        machines = get_selected_machines(args.machines, clan_dir)
+        if len(args.machines) == 0:
+            machines = get_all_machines(clan_dir)
+        else:
+            machines = get_selected_machines(args.machines, clan_dir)
 
     deploy_nixos(machines, clan_dir)
 
@@ -127,5 +141,10 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         help="machine to update. if empty, update all machines",
         nargs="*",
         default=[],
+    )
+    parser.add_argument(
+        "--target-host",
+        type=str,
+        help="address of the machine to update, in the format of user@host:1234",
     )
     parser.set_defaults(func=update)
