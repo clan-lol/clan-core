@@ -27,9 +27,8 @@ async def inspect_vm(
 @router.get("/api/vms/{uuid}/status")
 async def get_vm_status(uuid: UUID) -> VmStatusResponse:
     task = get_task(uuid)
-    status: list[int | None] = list(map(lambda x: x.returncode, task.procs))
-    log.debug(msg=f"returncodes: {status}. task.finished: {task.finished}")
-    return VmStatusResponse(running=not task.finished, returncode=status)
+    log.debug(msg=f"error: {task.error}, task.status: {task.status}")
+    return VmStatusResponse(status=task.status, error=str(task.error))
 
 
 @router.get("/api/vms/{uuid}/logs")
@@ -38,7 +37,7 @@ async def get_vm_logs(uuid: UUID) -> StreamingResponse:
     def stream_logs() -> Iterator[str]:
         task = get_task(uuid)
 
-        yield from task.logs_iter()
+        yield from task.log_lines()
 
     return StreamingResponse(
         content=stream_logs(),
