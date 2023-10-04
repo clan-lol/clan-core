@@ -45,7 +45,8 @@ class BuildVmTask(BaseTask):
         vm_config = self.get_vm_create_info(cmds)
 
         with tempfile.TemporaryDirectory() as tmpdir_:
-            xchg_dir = Path(tmpdir_) / "xchg"
+            tmpdir = Path(tmpdir_)
+            xchg_dir = tmpdir / "xchg"
             xchg_dir.mkdir()
             disk_img = f"{tmpdir_}/disk.img"
 
