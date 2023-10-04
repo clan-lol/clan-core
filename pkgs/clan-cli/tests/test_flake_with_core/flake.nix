@@ -18,6 +18,7 @@
             clan.virtualisation.graphics = false;
 
             clan.networking.zerotier.controller.enable = true;
+            networking.useDHCP = false;
 
             systemd.services.shutdown-after-boot = {
               enable = true;
