@@ -3,7 +3,7 @@ import sys
 from types import ModuleType
 from typing import Optional
 
-from . import config, create, machines, secrets, vms, webui
+from . import config, create, join, machines, secrets, vms, webui
 from .errors import ClanError
 from .ssh import cli as ssh_cli
 
@@ -29,6 +29,9 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
         "create", help="create a clan flake inside the current directory"
     )
     create.register_parser(parser_create)
+
+    parser_join = subparsers.add_parser("join", help="join a remote clan")
+    join.register_parser(parser_join)
 
     parser_config = subparsers.add_parser("config", help="set nixos configuration")
     config.register_parser(parser_config)
