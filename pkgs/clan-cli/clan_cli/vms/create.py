@@ -15,7 +15,7 @@ from .inspect import VmConfig, inspect_vm
 
 class BuildVmTask(BaseTask):
     def __init__(self, uuid: UUID, vm: VmConfig) -> None:
-        super().__init__(uuid)
+        super().__init__(uuid, num_cmds=4)
         self.vm = vm
 
     def get_vm_create_info(self, cmds: Iterator[Command]) -> dict:
@@ -30,13 +30,13 @@ class BuildVmTask(BaseTask):
                 ]
             )
         )
-        vm_json = "".join(cmd.lines)
+        vm_json = "".join(cmd.stdout)
         self.log.debug(f"VM JSON path: {vm_json}")
         with open(vm_json.strip()) as f:
             return json.load(f)
 
     def run(self) -> None:
-        cmds = self.register_commands(4)
+        cmds = self.commands()
 
         machine = self.vm.flake_attr
         self.log.debug(f"Creating VM for {machine}")
