@@ -76,7 +76,7 @@ in
 
         if test "$local_pass_info" = "$remote_pass_info"; then
           echo secrets already match
-          exit 0
+          exit 23
         fi
       fi
 
