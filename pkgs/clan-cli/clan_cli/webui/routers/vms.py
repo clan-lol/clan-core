@@ -28,7 +28,8 @@ async def inspect_vm(
 async def get_vm_status(uuid: UUID) -> VmStatusResponse:
     task = get_task(uuid)
     log.debug(msg=f"error: {task.error}, task.status: {task.status}")
-    return VmStatusResponse(status=task.status, error=str(task.error))
+    error = str(task.error) if task.error is not None else None
+    return VmStatusResponse(status=task.status, error=error)
 
 
 @router.get("/api/vms/{uuid}/logs")
