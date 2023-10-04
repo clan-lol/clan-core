@@ -52,5 +52,8 @@ in
 
   clanInternals = {
     machines = configsPerSystem;
+    all-machines-json = lib.mapAttrs
+      (system: configs: nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs))
+      configsPerSystem;
   };
 }

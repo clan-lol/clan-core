@@ -42,12 +42,12 @@
     };
     # optimization for faster secret generate/upload and machines update
     config = {
-      system.clan.deployment.text = builtins.toJSON {
+      system.clan.deployment.data = {
         inherit (config.system.clan) uploadSecrets generateSecrets;
         inherit (config.clan.networking) deploymentAddress;
         inherit (config.clanCore) secretsUploadDirectory;
       };
-      system.clan.deployment.file = pkgs.writeText "deployment.json" config.system.clan.deployment.text;
+      system.clan.deployment.file = pkgs.writeText "deployment.json" (builtins.toJSON config.system.clan.deployment.data);
     };
   };
 }
