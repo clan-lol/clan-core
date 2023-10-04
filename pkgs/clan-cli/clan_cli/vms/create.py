@@ -1,32 +1,36 @@
 import argparse
 import asyncio
 import json
+import os
 import shlex
+import sys
 import tempfile
 from pathlib import Path
 from typing import Iterator
 from uuid import UUID
 
 from ..dirs import get_clan_flake_toplevel
-from ..nix import nix_build, nix_shell
+from ..nix import nix_build, nix_config, nix_shell
 from ..task_manager import BaseTask, Command, create_task
 from .inspect import VmConfig, inspect_vm
 
 
 class BuildVmTask(BaseTask):
     def __init__(self, uuid: UUID, vm: VmConfig) -> None:
-        super().__init__(uuid, num_cmds=4)
+        super().__init__(uuid, num_cmds=6)
         self.vm = vm
 
     def get_vm_create_info(self, cmds: Iterator[Command]) -> dict:
+        config = nix_config()
+        system = config["system"]
+
         clan_dir = self.vm.flake_url
         machine = self.vm.flake_attr
         cmd = next(cmds)
         cmd.run(
             nix_build(
                 [
-                    # f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.clan.virtualisation.createJSON' # TODO use this
-                    f'{clan_dir}#nixosConfigurations."{machine}".config.system.clan.vm.create'
+                    f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.vm.create'
                 ]
             )
         )
@@ -48,7 +52,28 @@ class BuildVmTask(BaseTask):
             tmpdir = Path(tmpdir_)
             xchg_dir = tmpdir / "xchg"
             xchg_dir.mkdir()
+            secrets_dir = tmpdir / "secrets"
+            secrets_dir.mkdir()
             disk_img = f"{tmpdir_}/disk.img"
+
+            env = os.environ.copy()
+            env["CLAN_DIR"] = str(self.vm.flake_url)
+            env["PYTHONPATH"] = str(
+                ":".join(sys.path)
+            )  # TODO do this in the clanCore module
+            env["SECRETS_DIR"] = str(secrets_dir)
+
+            cmd = next(cmds)
+            cmd.run(
+                [vm_config["generateSecrets"]],
+                env=env,
+            )
+
+            cmd = next(cmds)
+            cmd.run(
+                [vm_config["uploadSecrets"]],
+                env=env,
+            )
 
             cmd = next(cmds)
             cmd.run(
@@ -97,6 +122,7 @@ class BuildVmTask(BaseTask):
                 "-virtfs", "local,path=/nix/store,security_model=none,mount_tag=nix-store",
                 "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=shared",
                 "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=xchg",
+                "-virtfs", f"local,path={secrets_dir},security_model=none,mount_tag=secrets",
                 "-drive", f'cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report',
                 "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
                 "-device", "virtio-keyboard",
