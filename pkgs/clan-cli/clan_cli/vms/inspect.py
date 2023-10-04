@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from ..async_cmd import run
 from ..dirs import get_clan_flake_toplevel
-from ..nix import nix_eval
+from ..nix import nix_config, nix_eval
 
 
 class VmConfig(BaseModel):
@@ -19,9 +19,11 @@ class VmConfig(BaseModel):
 
 
 async def inspect_vm(flake_url: str, flake_attr: str) -> VmConfig:
+    config = nix_config()
+    system = config["system"]
     cmd = nix_eval(
         [
-            f"{flake_url}#nixosConfigurations.{json.dumps(flake_attr)}.config.system.clan.vm.config"
+            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.system.clan.vm.config'
         ]
     )
     stdout = await run(cmd)

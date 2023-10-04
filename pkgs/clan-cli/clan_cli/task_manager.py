@@ -8,7 +8,7 @@ import sys
 import threading
 import traceback
 from enum import Enum
-from typing import Any, Iterator, Type, TypeVar
+from typing import Any, Iterator, Optional, Type, TypeVar
 from uuid import UUID, uuid4
 
 from .errors import ClanError
@@ -30,7 +30,7 @@ class Command:
         self._output.put(None)
         self.done = True
 
-    def run(self, cmd: list[str]) -> None:
+    def run(self, cmd: list[str], env: Optional[dict[str, str]] = None) -> None:
         self.running = True
         self.log.debug(f"Running command: {shlex.join(cmd)}")
         self.p = subprocess.Popen(
@@ -38,6 +38,7 @@ class Command:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             encoding="utf-8",
+            env=env,
         )
         assert self.p.stdout is not None and self.p.stderr is not None
         os.set_blocking(self.p.stdout.fileno(), False)
