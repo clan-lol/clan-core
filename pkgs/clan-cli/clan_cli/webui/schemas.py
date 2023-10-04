@@ -3,6 +3,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
+from ..task_manager import TaskStatus
 from ..vms.inspect import VmConfig
 
 
@@ -38,8 +39,8 @@ class SchemaResponse(BaseModel):
 
 
 class VmStatusResponse(BaseModel):
-    returncode: list[int | None]
-    running: bool
+    error: str | None
+    status: TaskStatus
 
 
 class VmCreateResponse(BaseModel):

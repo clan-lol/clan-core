@@ -9,7 +9,7 @@ from uuid import UUID
 
 from ..dirs import get_clan_flake_toplevel
 from ..nix import nix_build, nix_shell
-from ..task_manager import BaseTask, CmdState, create_task
+from ..task_manager import BaseTask, Command, create_task
 from .inspect import VmConfig, inspect_vm
 
 
@@ -18,7 +18,7 @@ class BuildVmTask(BaseTask):
         super().__init__(uuid)
         self.vm = vm
 
-    def get_vm_create_info(self, cmds: Iterator[CmdState]) -> dict:
+    def get_vm_create_info(self, cmds: Iterator[Command]) -> dict:
         clan_dir = self.vm.flake_url
         machine = self.vm.flake_attr
         cmd = next(cmds)
@@ -30,13 +30,13 @@ class BuildVmTask(BaseTask):
                 ]
             )
         )
-        vm_json = "".join(cmd.stdout)
+        vm_json = "".join(cmd.lines)
         self.log.debug(f"VM JSON path: {vm_json}")
-        with open(vm_json) as f:
+        with open(vm_json.strip()) as f:
             return json.load(f)
 
-    def task_run(self) -> None:
-        cmds = self.register_cmds(4)
+    def run(self) -> None:
+        cmds = self.register_commands(4)
 
         machine = self.vm.flake_attr
         self.log.debug(f"Creating VM for {machine}")
@@ -121,7 +121,7 @@ def create_command(args: argparse.Namespace) -> None:
     vm = asyncio.run(inspect_vm(flake_url=clan_dir, flake_attr=args.machine))
 
     task = create_vm(vm)
-    for line in task.logs_iter():
+    for line in task.log_lines():
         print(line, end="")
 
 
