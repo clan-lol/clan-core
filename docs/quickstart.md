@@ -45,6 +45,10 @@ my-machine
 In this example we crate a user named `my-user` that is allowed to login to the machine
 
 ```shellSession
+# create a new user
+$ clan config --machine my-machine users.users.my-user.isNormalUser true
+
+# set some password
 $ clan config --machine my-machine users.users.my-user.hashedPassword $(mkpasswd)
 ```
 
