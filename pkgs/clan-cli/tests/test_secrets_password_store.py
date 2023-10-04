@@ -18,7 +18,7 @@ def test_upload_secret(
 ) -> None:
     monkeypatch.chdir(test_flake_with_core_and_pass)
     gnupghome = temporary_dir / "gpg"
-    gnupghome.mkdir()
+    gnupghome.mkdir(mode=0o700)
     monkeypatch.setenv("GNUPGHOME", str(gnupghome))
     monkeypatch.setenv("PASSWORD_STORE_DIR", str(temporary_dir / "pass"))
     gpg_key_spec = temporary_dir / "gpg_key_spec"
