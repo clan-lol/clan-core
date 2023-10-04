@@ -12,7 +12,7 @@ def cli() -> Cli:
 
 
 @pytest.mark.impure
-def test_all(
+def test_create_flake(
     monkeypatch: pytest.MonkeyPatch,
     temporary_dir: Path,
     capsys: pytest.CaptureFixture,
