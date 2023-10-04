@@ -3,6 +3,7 @@ import argparse
 
 from .create import register_create_parser
 from .delete import register_delete_parser
+from .install import register_install_parser
 from .list import register_list_parser
 from .update import register_update_parser
 
@@ -27,3 +28,6 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
 
     list_parser = subparser.add_parser("list", help="List machines")
     register_list_parser(list_parser)
+
+    install_parser = subparser.add_parser("install", help="Install a machine")
+    register_install_parser(install_parser)

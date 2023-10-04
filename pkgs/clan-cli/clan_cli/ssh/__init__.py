@@ -759,7 +759,7 @@ class HostGroup:
 
 
 def parse_deployment_address(
-    machine_name: str, host: str, meta: dict[str, str] = {}
+    machine_name: str, host: str, meta: dict[str, Any] = {}
 ) -> Host:
     parts = host.split("@")
     user: Optional[str] = None
