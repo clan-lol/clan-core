@@ -19,7 +19,9 @@ def fastapi_is_not_installed(_: argparse.Namespace) -> NoReturn:
 
 def register_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--port", type=int, default=2979, help="Port to listen on")
-    parser.add_argument("--host", type=str, default="::1", help="Host to listen on")
+    parser.add_argument(
+        "--host", type=str, default="localhost", help="Host to listen on"
+    )
     parser.add_argument(
         "--no-open", action="store_true", help="Don't open the browser", default=False
     )
@@ -44,6 +46,14 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         default="info",
         help="Log level",
         choices=["critical", "error", "warning", "info", "debug", "trace"],
+    )
+
+    parser.add_argument(
+        "sub_url",
+        type=str,
+        default="/",
+        nargs="?",
+        help="Sub url to open in the browser",
     )
 
     # Set the args.func variable in args
