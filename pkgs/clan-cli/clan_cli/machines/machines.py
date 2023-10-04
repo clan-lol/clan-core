@@ -62,7 +62,7 @@ class Machine:
             self.name, self.deployment_address, meta={"machine": self}
         )
 
-    def run_upload_secrets(self, secrets_dir: Path) -> None:
+    def run_upload_secrets(self, secrets_dir: Path) -> bool:
         """
         Upload the secrets to the provided directory
         @secrets_dir: the directory to store the secrets in
@@ -73,13 +73,21 @@ class Machine:
             ":".join(sys.path)
         )  # TODO do this in the clanCore module
         env["SECRETS_DIR"] = str(secrets_dir)
-        subprocess.run(
+        print(f"uploading secrets... {self.upload_secrets}")
+        proc = subprocess.run(
             [self.upload_secrets],
             env=env,
-            check=True,
             stdout=subprocess.PIPE,
             text=True,
         )
+
+        if proc.returncode == 23:
+            print("no secrets to upload")
+            return False
+        elif proc.returncode != 0:
+            print("failed generate secrets directory")
+            exit(1)
+        return True
 
     def eval_nix(self, attr: str) -> str:
         """
