@@ -171,7 +171,7 @@ python3.pkgs.buildPythonApplication {
   desktopItems = [
     (makeDesktopItem {
       name = "clan";
-      exec = "clan";
+      exec = "clan join %u";
       desktopName = "CLan Manager";
       startupWMClass = "clan";
       mimeTypes = [ "x-scheme-handler/clan" ];
