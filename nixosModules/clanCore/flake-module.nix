@@ -35,7 +35,58 @@
       };
     };
     options.system.clan = lib.mkOption {
-      type = lib.types.lazyAttrsOf lib.types.raw;
+      type = lib.types.submodule {
+        options = {
+          deployment.data = lib.mkOption {
+            type = lib.types.attrs;
+            description = ''
+              the data to be written to the deployment.json file
+            '';
+          };
+          deployment.file = lib.mkOption {
+            type = lib.types.path;
+            description = ''
+              the location of the deployment.json file
+            '';
+          };
+          deploymentAddress = lib.mkOption {
+            type = lib.types.str;
+            description = ''
+              the address of the deployment server
+            '';
+          };
+          secretsUploadDirectory = lib.mkOption {
+            type = lib.types.path;
+            description = ''
+              the directory on the deployment server where secrets are uploaded
+            '';
+          };
+          uploadSecrets = lib.mkOption {
+            type = lib.types.path;
+            description = ''
+              script to upload secrets to the deployment server
+            '';
+          };
+          generateSecrets = lib.mkOption {
+            type = lib.types.path;
+            description = ''
+              script to generate secrets
+            '';
+          };
+          vm.config = lib.mkOption {
+            type = lib.types.attrs;
+            description = ''
+              the vm config
+            '';
+          };
+          vm.create = lib.mkOption {
+            type = lib.types.path;
+            description = ''
+              json metadata about the vm
+            '';
+          };
+        };
+      };
       description = ''
         utility outputs for clan management of this machine
       '';
