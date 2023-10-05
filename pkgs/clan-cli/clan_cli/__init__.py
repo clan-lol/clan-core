@@ -4,7 +4,6 @@ from types import ModuleType
 from typing import Optional
 
 from . import config, create, join, machines, secrets, vms, webui
-from .errors import ClanError
 from .ssh import cli as ssh_cli
 
 argcomplete: Optional[ModuleType] = None
@@ -68,11 +67,8 @@ def main() -> None:
 
     if not hasattr(args, "func"):
         return
-    try:
-        args.func(args)
-    except ClanError as e:
-        print(e, file=sys.stderr)
-        sys.exit(1)
+
+    args.func(args)
 
 
 if __name__ == "__main__":
