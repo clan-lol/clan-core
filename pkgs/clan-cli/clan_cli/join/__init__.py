@@ -9,7 +9,7 @@ def join(args: argparse.Namespace) -> None:
     # start webui in background
     uri = args.flake_uri.removeprefix("clan://")
     subprocess.run(
-        ["clan", "webui", f"/join?flake={urllib.parse.quote_plus(uri)}"],
+        ["clan", "--debug", "webui", f"/join?flake={urllib.parse.quote_plus(uri)}"],
         # stdout=sys.stdout,
         # stderr=sys.stderr,
     )
