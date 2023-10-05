@@ -114,7 +114,7 @@ def zerotier_controller() -> Iterator[ZerotierController]:
 
                 yield ZerotierController(controller_port, home)
             finally:
-                p.kill()
+                p.terminate()
                 p.wait()
 
 
