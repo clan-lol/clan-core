@@ -41,7 +41,7 @@ in
           ( ${v.generator} )
 
           ${lib.concatMapStrings (fact: ''
-            mkdir -p "$(dirname ${fact.path})"
+            mkdir -p "$CLAN_DIR"/"$(dirname ${fact.path})"
             cp "$facts"/${fact.name} "$CLAN_DIR"/${fact.path}
           '') (lib.attrValues v.facts)}
 
