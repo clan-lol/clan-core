@@ -108,6 +108,12 @@ python3.pkgs.buildPythonApplication {
   src = source;
   format = "pyproject";
 
+  makeWrapperArgs = [
+    # This prevents problems with mixed glibc versions that might occur when the
+    # cli is called through a browser built against another glibc
+    "--unset LD_LIBRARY_PATH"
+  ];
+
   nativeBuildInputs = [
     setuptools
     installShellFiles
