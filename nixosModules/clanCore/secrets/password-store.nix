@@ -30,6 +30,10 @@ in
         # if any of the secrets are missing, we regenerate all connected facts/secrets
         (if ! (${lib.concatMapStringsSep " && " (x: "test -e ${passwordstoreDir}/machines/${config.clanCore.machineName}/${x.name}.gpg >/dev/null") (lib.attrValues v.secrets)}); then
 
+          tmpdir=$(mktemp -d)
+          trap "rm -rf $tmpdir" EXIT
+          cd $tmpdir
+
           facts=$(mktemp -d)
           trap "rm -rf $facts" EXIT
           secrets=$(mktemp -d)
@@ -37,7 +41,7 @@ in
           ( ${v.generator} )
 
           ${lib.concatMapStrings (fact: ''
-            mkdir -p "$(dirname ${fact.path})"
+            mkdir -p "$CLAN_DIR"/"$(dirname ${fact.path})"
             cp "$facts"/${fact.name} "$CLAN_DIR"/${fact.path}
           '') (lib.attrValues v.facts)}
 
