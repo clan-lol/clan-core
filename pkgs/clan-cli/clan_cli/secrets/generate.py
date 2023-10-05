@@ -23,8 +23,6 @@ def generate_secrets(machine: Machine) -> None:
     )
 
     if proc.returncode != 0:
-        log.error("stdout: %s", proc.stdout)
-        log.error("stderr: %s", proc.stderr)
         raise ClanError("failed to generate secrets")
     else:
         print("successfully generated secrets")

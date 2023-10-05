@@ -1,4 +1,5 @@
 import argparse
+import contextlib
 import json
 import socket
 import subprocess
@@ -33,11 +34,11 @@ def try_connect_port(port: int) -> bool:
     return result == 0
 
 
-def find_free_port(port_range: range) -> Optional[int]:
-    for port in port_range:
-        if try_bind_port(port):
-            return port
-    return None
+def find_free_port() -> Optional[int]:
+    """Find an unused localhost port from 1024-65535 and return it."""
+    with contextlib.closing(socket.socket(type=socket.SOCK_STREAM)) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
 
 
 class ZerotierController:
@@ -82,7 +83,7 @@ class ZerotierController:
 @contextmanager
 def zerotier_controller() -> Iterator[ZerotierController]:
     # This check could be racy but it's unlikely in practice
-    controller_port = find_free_port(range(10000, 65535))
+    controller_port = find_free_port()
     if controller_port is None:
         raise ClanError("cannot find a free port for zerotier controller")
 
