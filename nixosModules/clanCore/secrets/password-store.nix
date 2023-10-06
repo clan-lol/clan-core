@@ -13,44 +13,46 @@ in
   config = lib.mkIf (config.clanCore.secretStore == "password-store") {
     clanCore.secretsDirectory = config.clan.password-store.targetDirectory;
     clanCore.secretsUploadDirectory = config.clan.password-store.targetDirectory;
-    system.clan.generateSecrets = pkgs.writeScript "generate-secrets" ''
-      #!/bin/sh
-      set -efu
+    system.clan.generateSecrets = lib.mkIf (config.clanCore.secrets != { }) (
+      pkgs.writeScript "generate-secrets" ''
+        #!/bin/sh
+        set -efu
 
-      test -d "$CLAN_DIR"
-      PATH=${lib.makeBinPath [
-        pkgs.pass
-      ]}:$PATH
+        test -d "$CLAN_DIR"
+        PATH=${lib.makeBinPath [
+          pkgs.pass
+        ]}:$PATH
 
-      # TODO maybe initialize password store if it doesn't exist yet
+        # TODO maybe initialize password store if it doesn't exist yet
 
-      ${lib.foldlAttrs (acc: n: v: ''
-        ${acc}
-        # ${n}
-        # if any of the secrets are missing, we regenerate all connected facts/secrets
-        (if ! (${lib.concatMapStringsSep " && " (x: "test -e ${passwordstoreDir}/machines/${config.clanCore.machineName}/${x.name}.gpg >/dev/null") (lib.attrValues v.secrets)}); then
+        ${lib.foldlAttrs (acc: n: v: ''
+          ${acc}
+          # ${n}
+          # if any of the secrets are missing, we regenerate all connected facts/secrets
+          (if ! (${lib.concatMapStringsSep " && " (x: "test -e ${passwordstoreDir}/machines/${config.clanCore.machineName}/${x.name}.gpg >/dev/null") (lib.attrValues v.secrets)}); then
 
-          tmpdir=$(mktemp -d)
-          trap "rm -rf $tmpdir" EXIT
-          cd $tmpdir
+            tmpdir=$(mktemp -d)
+            trap "rm -rf $tmpdir" EXIT
+            cd $tmpdir
 
-          facts=$(mktemp -d)
-          trap "rm -rf $facts" EXIT
-          secrets=$(mktemp -d)
-          trap "rm -rf $secrets" EXIT
-          ( ${v.generator} )
+            facts=$(mktemp -d)
+            trap "rm -rf $facts" EXIT
+            secrets=$(mktemp -d)
+            trap "rm -rf $secrets" EXIT
+            ( ${v.generator} )
 
-          ${lib.concatMapStrings (fact: ''
-            mkdir -p "$CLAN_DIR"/"$(dirname ${fact.path})"
-            cp "$facts"/${fact.name} "$CLAN_DIR"/${fact.path}
-          '') (lib.attrValues v.facts)}
+            ${lib.concatMapStrings (fact: ''
+              mkdir -p "$CLAN_DIR"/"$(dirname ${fact.path})"
+              cp "$facts"/${fact.name} "$CLAN_DIR"/${fact.path}
+            '') (lib.attrValues v.facts)}
 
-          ${lib.concatMapStrings (secret: ''
-            cat "$secrets"/${secret.name} | pass insert -m machines/${config.clanCore.machineName}/${secret.name}
-          '') (lib.attrValues v.secrets)}
-        fi)
-      '') "" config.clanCore.secrets}
-    '';
+            ${lib.concatMapStrings (secret: ''
+              cat "$secrets"/${secret.name} | pass insert -m machines/${config.clanCore.machineName}/${secret.name}
+            '') (lib.attrValues v.secrets)}
+          fi)
+        '') "" config.clanCore.secrets}
+      ''
+    );
     system.clan.uploadSecrets = pkgs.writeScript "upload-secrets" ''
       #!/bin/sh
       set -efu
