@@ -2,7 +2,7 @@
   # Use this path to our repo root e.g. for UI test
   # inputs.clan-core.url = "../../../../.";
 
-  # this placeholder is replaced by the path to nixpkgs
+  # this placeholder is replaced by the path to clan-core
   inputs.clan-core.url = "__CLAN_CORE__";
 
   outputs = { self, clan-core }:
