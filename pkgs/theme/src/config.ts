@@ -20,25 +20,25 @@ export const config: PaletteConfig = {
      * Steps are defined in 'tones'
      */
     baseColors: {
-        neutral: {
-            keyColor: "#807788",
-            tones: [98],
-        },
-        red: {
-            keyColor: "#e82439",
-            tones: [95],
-        },
         green: {
             keyColor: "#7AC51B",
-            tones: [98],
-        },
-        yellow: {
-            keyColor: "#E0E01F",
             tones: [98],
         },
         purple: {
             keyColor: "#661bc5",
             tones: [],
+        },
+        neutral: {
+            keyColor: "#807788",
+            tones: [2, 5, 8, 98],
+        },
+        red: {
+            keyColor: "#e82439",
+            tones: [95],
+        },
+        yellow: {
+            keyColor: "#E0E01F",
+            tones: [98],
         },
         blue: {
             keyColor: "#1B7AC5",
