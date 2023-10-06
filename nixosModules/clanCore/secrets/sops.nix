@@ -25,7 +25,7 @@ in
   config = lib.mkIf (config.clanCore.secretStore == "sops") {
     clanCore.secretsDirectory = "/run/secrets";
     clanCore.secretsPrefix = config.clanCore.machineName + "-";
-    system.clan = {
+    system.clan = lib.mkIf (config.clanCore.secrets != { }) {
 
       generateSecrets = pkgs.writeScript "generate-secrets" ''
         #!${pkgs.python3}/bin/python
