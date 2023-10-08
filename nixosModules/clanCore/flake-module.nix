@@ -66,12 +66,14 @@
             description = ''
               script to upload secrets to the deployment server
             '';
+            default = "${pkgs.coreutils}/bin/true";
           };
           generateSecrets = lib.mkOption {
             type = lib.types.path;
             description = ''
               script to generate secrets
             '';
+            default = "${pkgs.coreutils}/bin/true";
           };
           vm.config = lib.mkOption {
             type = lib.types.attrs;

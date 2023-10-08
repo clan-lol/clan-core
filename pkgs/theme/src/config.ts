@@ -24,10 +24,6 @@ export const config: PaletteConfig = {
             keyColor: "#92898a",
             tones: [2, 5, 8, 92, 95, 98],
         },
-        red: {
-            keyColor: "#e82439",
-            tones: [5, 95],
-        },
         green: {
             keyColor: "#7AC51B",
             tones: [2, 98],
@@ -39,6 +35,11 @@ export const config: PaletteConfig = {
         purple: {
             keyColor: "#661bc5",
             tones: [2, 98],
+        },
+
+        red: {
+            keyColor: "#e82439",
+            tones: [95],
         },
         blue: {
             keyColor: "#1B7AC5",
