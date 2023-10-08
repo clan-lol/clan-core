@@ -13,10 +13,12 @@ const AppCard = (props: AppCardProps) => {
     <div
       role="button"
       className="flex h-40 w-40  cursor-pointer items-center justify-center rounded-3xl p-2
-       align-middle shadow-md ring-2 ring-inset ring-violet-500 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-300"
+       align-middle shadow-md ring-2 ring-inset ring-purple-50 
+       hover:bg-neutral-90 focus:bg-neutral-90 active:bg-neutral-80 
+       dark:hover:bg-neutral-10 dark:focus:bg-neutral-10 dark:active:bg-neutral-20"
     >
       <div className="flex w-full flex-col justify-center">
-        <div className="my-1 flex h-[22] w-[22] items-center justify-center self-center overflow-visible p-1">
+        <div className="my-1 flex h-[22] w-[22] items-center justify-center self-center overflow-visible p-1 dark:invert">
           <Image
             src={iconPath}
             alt={`${name}-app-icon`}

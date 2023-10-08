@@ -1,4 +1,8 @@
-import { ThemeOptions, createTheme } from "@mui/material/styles";
+import {
+  PaletteOptions,
+  ThemeOptions,
+  createTheme,
+} from "@mui/material/styles";
 
 import colors from "@clan/colors/colors.json";
 const { palette, common } = colors.ref;
@@ -15,31 +19,39 @@ const commonOptions: Partial<ThemeOptions> = {
   },
 };
 
+const commonPalette: Partial<PaletteOptions> = {
+  primary: {
+    main: palette.green50.value,
+  },
+  secondary: {
+    main: palette.green50.value,
+  },
+  info: {
+    main: palette.blue50.value,
+  },
+  success: {
+    main: palette.green50.value,
+  },
+  warning: {
+    main: palette.yellow50.value,
+  },
+  error: {
+    main: palette.red50.value,
+  },
+};
+
 export const darkTheme = createTheme({
   ...commonOptions,
   palette: {
     mode: "dark",
+    ...commonPalette,
     background: {
-      default: palette.neutral5.value,
-      paper: palette.neutral20.value,
+      default: palette.neutral2.value,
+      paper: palette.neutral5.value,
     },
-    primary: {
-      main: palette.green60.value,
-    },
-    secondary: {
-      main: palette.green60.value,
-    },
-    error: {
-      main: palette.red60.value,
-    },
-    warning: {
-      main: palette.yellow60.value,
-    },
-    success: {
-      main: palette.green60.value,
-    },
-    info: {
-      main: palette.red60.value,
+    common: {
+      black: common.black.value,
+      white: common.white.value,
     },
   },
 });
@@ -48,27 +60,10 @@ export const lightTheme = createTheme({
   ...commonOptions,
   palette: {
     mode: "light",
+    ...commonPalette,
     background: {
-      default: common.white.value,
-      paper: palette.neutral98.value,
-    },
-    primary: {
-      main: palette.green50.value,
-    },
-    secondary: {
-      main: palette.green50.value,
-    },
-    error: {
-      main: palette.red50.value,
-    },
-    warning: {
-      main: palette.yellow50.value,
-    },
-    success: {
-      main: palette.green50.value,
-    },
-    info: {
-      main: palette.red50.value,
+      default: palette.neutral98.value,
+      paper: palette.neutral100.value,
     },
   },
 });

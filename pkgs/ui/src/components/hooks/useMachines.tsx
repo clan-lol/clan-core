@@ -1,11 +1,13 @@
+"use client";
+
 import { useListMachines } from "@/api/default/default";
 import { Machine, MachinesResponse } from "@/api/model";
 import { AxiosError, AxiosResponse } from "axios";
 import React, {
-  createContext,
   Dispatch,
   ReactNode,
   SetStateAction,
+  createContext,
   useMemo,
   useState,
 } from "react";

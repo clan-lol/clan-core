@@ -1,7 +1,7 @@
 "use client";
 
-import { StrictMode } from "react";
 import { NodeTable } from "@/components/table";
+import { StrictMode } from "react";
 
 export default function Page() {
   return (

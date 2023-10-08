@@ -1,33 +1,25 @@
 "use client";
-
-import "./globals.css";
-import localFont from "next/font/local";
-import * as React from "react";
+import { Sidebar } from "@/components/sidebar";
+import { tw } from "@/utils/tailwind";
+import MenuIcon from "@mui/icons-material/Menu";
 import {
   Button,
   CssBaseline,
   IconButton,
   ThemeProvider,
   useMediaQuery,
-  useTheme,
 } from "@mui/material";
-import { useState } from "react";
-import { Toaster } from "react-hot-toast";
 import { StyledEngineProvider } from "@mui/material/styles";
-
-import { darkTheme, lightTheme } from "./theme/themes";
-import { Sidebar } from "@/components/sidebar";
-import MenuIcon from "@mui/icons-material/Menu";
-import Image from "next/image";
-import { tw } from "@/utils/tailwind";
 import axios from "axios";
+import localFont from "next/font/local";
+import Image from "next/image";
+import * as React from "react";
+import { Toaster } from "react-hot-toast";
+import "./globals.css";
+import { darkTheme, lightTheme } from "./theme/themes";
 
-import {
-  AppContext,
-  WithAppState,
-  // useAppState,
-} from "@/components/hooks/useAppContext";
 import Background from "@/components/background";
+import { AppContext, WithAppState } from "@/components/hooks/useAppContext";
 // import { usePathname, redirect } from "next/navigation";
 
 const roboto = localFont({
@@ -62,27 +54,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const userPrefersDarkmode = useMediaQuery("(prefers-color-scheme: dark)");
-  const theme = useTheme();
-  const is_small = useMediaQuery(theme.breakpoints.down("sm"));
 
-  let [useDarkTheme, setUseDarkTheme] = useState(false);
-  let [showSidebar, setShowSidebar] = useState(true);
+  // const theme = useTheme({});
+  // const is_small = useMediaQuery(theme.breakpoints.down("sm"));
+  // const [useDarkTheme, setUseDarkTheme] = useState(false);
+  const [showSidebar, setShowSidebar] = React.useState(true);
 
   // If the screen is small, hide the sidebar
-  React.useEffect(() => {
-    if (is_small) {
-      setShowSidebar(false);
-    } else {
-      setShowSidebar(true);
-    }
-  }, [is_small]);
+  // useEffect(() => {
+  //   if (is_small) {
+  //     setShowSidebar(false);
+  //   } else {
+  //     setShowSidebar(true);
+  //   }
+  // }, [is_small]);
 
-  React.useEffect(() => {
-    if (useDarkTheme !== userPrefersDarkmode) {
-      // Enable dark theme if the user prefers dark mode
-      setUseDarkTheme(userPrefersDarkmode);
-    }
-  }, [userPrefersDarkmode, useDarkTheme, setUseDarkTheme]);
+  // useEffect(() => {
+  //   if (useDarkTheme !== userPrefersDarkmode) {
+  //     // Enable dark theme if the user prefers dark mode
+  //     setUseDarkTheme(userPrefersDarkmode);
+  //   }
+  // }, [userPrefersDarkmode, useDarkTheme, setUseDarkTheme]);
 
   // const changeThemeHandler = (target: ChangeEvent, currentValue: boolean) => {
   //   setUseDarkTheme(currentValue);
@@ -97,7 +89,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={useDarkTheme ? darkTheme : lightTheme}>
+        <ThemeProvider theme={userPrefersDarkmode ? darkTheme : lightTheme}>
           <body id="__next" className={roboto.className}>
             <CssBaseline />
             <Toaster />
@@ -134,9 +126,9 @@ export default function RootLayout({
                                   )}
                                 </IconButton>
                               </div>
-                              <div className="col-span-1 block w-full bg-fixed text-center font-semibold text-white lg:hidden">
+                              <div className="col-span-1 block w-full bg-fixed text-center font-semibold dark:invert lg:hidden">
                                 <Image
-                                  src="/logo.svg"
+                                  src="/favicon.png"
                                   alt="Clan Logo"
                                   width={58}
                                   height={58}
