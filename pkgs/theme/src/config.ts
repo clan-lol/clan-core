@@ -21,28 +21,28 @@ export const config: PaletteConfig = {
      */
     baseColors: {
         neutral: {
-            keyColor: "#807788",
-            tones: [98],
+            keyColor: "#92898a",
+            tones: [2, 5, 8, 92, 95, 98],
         },
         red: {
             keyColor: "#e82439",
-            tones: [95],
+            tones: [5, 95],
         },
         green: {
             keyColor: "#7AC51B",
-            tones: [98],
+            tones: [2, 98],
         },
         yellow: {
             keyColor: "#E0E01F",
-            tones: [98],
+            tones: [2, 98],
         },
         purple: {
             keyColor: "#661bc5",
-            tones: [],
+            tones: [2, 98],
         },
         blue: {
             keyColor: "#1B7AC5",
-            tones: [95],
+            tones: [5, 95],
         },
     },
 

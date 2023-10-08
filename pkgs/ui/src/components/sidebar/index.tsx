@@ -10,17 +10,16 @@ import {
 import Image from "next/image";
 import { ReactNode } from "react";
 
+import { tw } from "@/utils/tailwind";
+import AppsIcon from "@mui/icons-material/Apps";
+import BackupIcon from "@mui/icons-material/Backup";
 import DashboardIcon from "@mui/icons-material/Dashboard";
+import DesignServicesIcon from "@mui/icons-material/DesignServices";
 import DevicesIcon from "@mui/icons-material/Devices";
 import LanIcon from "@mui/icons-material/Lan";
-import AppsIcon from "@mui/icons-material/Apps";
-import DesignServicesIcon from "@mui/icons-material/DesignServices";
-import BackupIcon from "@mui/icons-material/Backup";
 import Link from "next/link";
-import { tw } from "@/utils/tailwind";
 
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import React from "react";
 
 type MenuEntry = {
   icon: ReactNode;
@@ -84,22 +83,22 @@ export function Sidebar(props: SidebarProps) {
     <aside
       className={tw`${
         show ? showSidebar : hideSidebar
-      } z-9999 dark:bg-boxdark static  left-0 top-0 flex h-screen w-14 flex-col overflow-x-hidden overflow-y-hidden bg-zinc-950 transition duration-150 ease-in-out lg:w-64`}
+      } z-9999 static left-0  top-0 flex h-screen w-14 flex-col overflow-x-hidden overflow-y-hidden bg-neutral-10 transition duration-150 ease-in-out dark:bg-neutral-2 lg:w-64`}
     >
       <div className="flex items-center justify-between gap-2 overflow-hidden px-0 py-5 lg:p-6">
         <div className="mt-8 hidden w-full text-center font-semibold text-white lg:block">
           <Image
-            src="/logo.svg"
+            src="/logo.png"
             alt="Clan Logo"
-            width={58}
-            height={58}
+            width={75}
+            height={75}
             priority
           />
         </div>
       </div>
       <Divider
         flexItem
-        className="mx-8 mb-4 mt-9 hidden bg-zinc-600 lg:block"
+        className="mx-8 mb-4 mt-9 hidden bg-neutral-40 lg:block"
       />
       <div className="flex w-full justify-center">
         <IconButton size="large" className="text-white" onClick={onClose}>
@@ -139,7 +138,10 @@ export function Sidebar(props: SidebarProps) {
             );
           })}
         </List>
-        <Divider flexItem className="mx-8 my-10 hidden bg-zinc-600 lg:block" />
+        <Divider
+          flexItem
+          className="mx-8 my-10 hidden bg-neutral-40 lg:block"
+        />
         <div className="mx-auto mb-8 hidden w-full max-w-xs rounded-sm px-4 py-6 text-center align-bottom shadow-sm lg:block">
           <h3 className="mb-2 w-full font-semibold text-white">
             Clan.lol Admin
@@ -148,7 +150,7 @@ export function Sidebar(props: SidebarProps) {
             href=""
             target="_blank"
             rel="nofollow"
-            className="inline-block w-full rounded-md p-2 text-center text-white hover:text-violet-400/95"
+            className="inline-block w-full rounded-md p-2 text-center text-white hover:text-purple-60/95"
           >
             Donate
           </a>

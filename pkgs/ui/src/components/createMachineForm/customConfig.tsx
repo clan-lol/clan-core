@@ -14,11 +14,6 @@ import {
 } from "@mui/material";
 import { IChangeEvent } from "@rjsf/core";
 import { Form } from "@rjsf/mui";
-import validator from "@rjsf/validator-ajv8";
-import toast from "react-hot-toast";
-import { JSONSchema7 } from "json-schema";
-import { useMemo, useRef } from "react";
-import { FormStepContentProps } from "./interfaces";
 import {
   ErrorListProps,
   FormContextType,
@@ -26,6 +21,11 @@ import {
   StrictRJSFSchema,
   TranslatableString,
 } from "@rjsf/utils";
+import validator from "@rjsf/validator-ajv8";
+import { JSONSchema7 } from "json-schema";
+import { useMemo, useRef } from "react";
+import toast from "react-hot-toast";
+import { FormStepContentProps } from "./interfaces";
 
 interface PureCustomConfigProps extends FormStepContentProps {
   schema: JSONSchema7;
@@ -34,6 +34,18 @@ interface PureCustomConfigProps extends FormStepContentProps {
 export function CustomConfig(props: FormStepContentProps) {
   const { formHooks } = props;
   const { data, isLoading, error } = useGetMachineSchema("mama");
+  // const { data, isLoading, error } = { data: {data:{schema: {
+  //   title: 'Test form',
+  //   type: 'object',
+  //   properties: {
+  //     name: {
+  //       type: 'string',
+  //     },
+  //     age: {
+  //       type: 'number',
+  //     },
+  //   },
+  // }}}, isLoading: false, error: undefined }
   const schema = useMemo(() => {
     if (!isLoading && !error?.message && data?.data) {
       return data?.data.schema;

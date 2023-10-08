@@ -14,7 +14,7 @@ pkgs.mkShell {
     mkdir -p .floco
     if [[ "$ID" != "$currID" || ! -d "node_modules"  ]];
     then
-      ${pkgs.rsync}/bin/rsync -a --chmod=ug+w  --delete ${pkg.built.tree}/node_modules/ ./node_modules/
+      ${pkgs.rsync}/bin/rsync -a  --checksum  --chmod=ug+w  --delete ${pkg.built.tree}/node_modules/ ./node_modules/
       echo -n $ID > .floco/.node_modules_id
       echo "floco ok: node_modules updated"
     fi
