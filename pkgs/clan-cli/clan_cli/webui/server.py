@@ -1,10 +1,7 @@
 import argparse
 import logging
-import os
 import shutil
-import signal
 import subprocess
-import tempfile
 import time
 import urllib.request
 from contextlib import ExitStack, contextmanager
@@ -21,34 +18,23 @@ log = logging.getLogger(__name__)
 
 
 def open_browser(base_url: str, sub_url: str) -> None:
-    with tempfile.TemporaryDirectory() as tmpdir:
-        for i in range(5):
-            try:
-                urllib.request.urlopen(base_url + "/health")
-                break
-            except OSError:
-                time.sleep(i)
-        url = f"{base_url}/{sub_url.removeprefix('/')}"
-        proc = _open_browser(url, tmpdir)
+    for i in range(5):
         try:
-            proc.wait()
-            print("Browser closed")
-            os.kill(os.getpid(), signal.SIGINT)
-        finally:
-            proc.kill()
-            proc.wait()
+            urllib.request.urlopen(base_url + "/health")
+            break
+        except OSError:
+            time.sleep(i)
+    url = f"{base_url}/{sub_url.removeprefix('/')}"
+    _open_browser(url)
 
 
-def _open_browser(url: str, tmpdir: str) -> subprocess.Popen:
+def _open_browser(url: str) -> subprocess.Popen:
     for browser in ("firefox", "iceweasel", "iceape", "seamonkey"):
         if shutil.which(browser):
             cmd = [
                 browser,
                 "-kiosk",
-                "-private-window",
-                "--new-instance",
-                "--profile",
-                tmpdir,
+                "-new-window",
                 url,
             ]
             print(" ".join(cmd))
