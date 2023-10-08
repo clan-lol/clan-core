@@ -6,7 +6,6 @@ import { Notifications } from "@/components/dashboard/notifications";
 import { QuickActions } from "@/components/dashboard/quickActions";
 import { TaskQueue } from "@/components/dashboard/taskQueue";
 import { useAppState } from "@/components/hooks/useAppContext";
-import { MachineContextProvider } from "@/components/hooks/useMachines";
 import { LoadingOverlay } from "@/components/join/loadingOverlay";
 import JoinPrequel from "@/views/joinPrequel";
 
@@ -55,24 +54,22 @@ export default function Dashboard() {
   }
   if (data.isJoined) {
     return (
-      <MachineContextProvider>
-        <div className="flex w-full">
-          <div className="grid w-full grid-flow-row grid-cols-3 gap-4">
-            <div className="row-span-2">
-              <NetworkOverview />
-            </div>
-            <div className="col-span-2">
-              <AppOverview />
-            </div>
-            <div className="row-span-2">
-              <RecentActivity />
-            </div>
-            <QuickActions />
-            <Notifications />
-            <TaskQueue />
+      <div className="flex w-full">
+        <div className="grid w-full grid-flow-row grid-cols-3 gap-4">
+          <div className="row-span-2">
+            <NetworkOverview />
           </div>
+          <div className="col-span-2">
+            <AppOverview />
+          </div>
+          <div className="row-span-2">
+            <RecentActivity />
+          </div>
+          <QuickActions />
+          <Notifications />
+          <TaskQueue />
         </div>
-      </MachineContextProvider>
+      </div>
     );
   }
 }

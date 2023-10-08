@@ -20,7 +20,6 @@ import { darkTheme, lightTheme } from "./theme/themes";
 
 import Background from "@/components/background";
 import { AppContext, WithAppState } from "@/components/hooks/useAppContext";
-// import { usePathname, redirect } from "next/navigation";
 
 const roboto = localFont({
   src: [
@@ -37,17 +36,6 @@ axios.defaults.baseURL = "http://localhost:2979";
 // add negative margin for smooth transition to fill the space of the sidebar
 const translate = tw`lg:-ml-64 -ml-14`;
 
-// const AutoRedirectEffect = () => {
-//   const { isLoading, data } = useAppState();
-//   const pathname = usePathname();
-//   React.useEffect(() => {
-//     if (!isLoading && !data.isJoined && pathname !== "/") {
-//       redirect("/");
-//     }
-//   }, [isLoading, data, pathname]);
-//   return <></>;
-// };
-
 export default function RootLayout({
   children,
 }: {
@@ -55,30 +43,7 @@ export default function RootLayout({
 }) {
   const userPrefersDarkmode = useMediaQuery("(prefers-color-scheme: dark)");
 
-  // const theme = useTheme({});
-  // const is_small = useMediaQuery(theme.breakpoints.down("sm"));
-  // const [useDarkTheme, setUseDarkTheme] = useState(false);
   const [showSidebar, setShowSidebar] = React.useState(true);
-
-  // If the screen is small, hide the sidebar
-  // useEffect(() => {
-  //   if (is_small) {
-  //     setShowSidebar(false);
-  //   } else {
-  //     setShowSidebar(true);
-  //   }
-  // }, [is_small]);
-
-  // useEffect(() => {
-  //   if (useDarkTheme !== userPrefersDarkmode) {
-  //     // Enable dark theme if the user prefers dark mode
-  //     setUseDarkTheme(userPrefersDarkmode);
-  //   }
-  // }, [userPrefersDarkmode, useDarkTheme, setUseDarkTheme]);
-
-  // const changeThemeHandler = (target: ChangeEvent, currentValue: boolean) => {
-  //   setUseDarkTheme(currentValue);
-  // };
 
   return (
     <html lang="en">
@@ -86,7 +51,7 @@ export default function RootLayout({
         <title>Clan.lol</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="description" content="Clan.lol - build your own network" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="favicon.ico" sizes="any" />
       </head>
       <StyledEngineProvider injectFirst>
         <ThemeProvider theme={userPrefersDarkmode ? darkTheme : lightTheme}>
@@ -141,7 +106,6 @@ export default function RootLayout({
                           <div className="px-1">
                             <div className="relative flex h-full flex-1 flex-col">
                               <main>
-                                {/* <AutoRedirectEffect /> */}
                                 <Button
                                   fullWidth
                                   onClick={() => {
