@@ -44,7 +44,7 @@ export default function ImageOverview() {
             <ListItem key={id}>
               <ListItemButton LinkComponent={"a"} href={`/templates/${id}`}>
                 <ListItemAvatar>
-                  <Avatar className="bg-violet-600">{name.slice(0, 1)}</Avatar>
+                  <Avatar className="bg-purple-40">{name.slice(0, 1)}</Avatar>
                 </ListItemAvatar>
                 <ListItemText primary={name} secondary={date} />
                 <ListItemSecondaryAction>
