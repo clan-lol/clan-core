@@ -11,9 +11,10 @@
     treefmt.flakeFormatter = true;
     treefmt.programs.shellcheck.enable = true;
     treefmt.programs.prettier.enable = true;
-    treefmt.programs.prettier.settings.plugins = [
-      "${self'.packages.prettier-plugin-tailwindcss}/lib/node_modules/prettier-plugin-tailwindcss/dist/index.mjs"
-    ];
+    # TODO: add custom prettier package, that uses our ui/node_modules
+    # treefmt.programs.prettier.settings.plugins = [
+    #   "${self'.packages.prettier-plugin-tailwindcss}/lib/node_modules/prettier-plugin-tailwindcss/dist/index.mjs"
+    # ];
     treefmt.settings.formatter.prettier.excludes = [
       "secrets.yaml"
       "key.json"
