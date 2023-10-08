@@ -1,6 +1,8 @@
 import Image from "next/image";
-import clanLight from "../../public/clan-dark.png";
-import clanDark from "../../public/clan-dark.png";
+import {
+  default as clanDark,
+  default as clanLight,
+} from "../../public/clan-dark.png";
 import { useAppState } from "./hooks/useAppContext";
 
 export default function Background() {

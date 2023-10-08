@@ -67,12 +67,12 @@ export default function TemplateDetail({ params }: TemplateDetailProps) {
           Back
         </Button>
       </div>
-      <div className="h-full w-full border border-solid border-slate-100 bg-slate-50 shadow-sm shadow-slate-400">
+      <div className="h-full w-full border border-solid border-neutral-90 bg-neutral-98 shadow-sm shadow-neutral-60 dark:bg-paper-dark">
         <div className="flex w-full flex-col items-center justify-center xl:p-2">
-          <Avatar className="m-1 h-20 w-20 bg-violet-600">
+          <Avatar className="m-1 h-20 w-20 bg-purple-40">
             <Typography variant="h5">N</Typography>
           </Avatar>
-          <Typography variant="h6" className="text-violet-600">
+          <Typography variant="h6" className="text-purple-40">
             {details.short}
           </Typography>
           <div className="w-full">
@@ -159,12 +159,12 @@ export default function TemplateDetail({ params }: TemplateDetailProps) {
         <div className="mt-2 flex w-full justify-evenly">
           <Button
             variant="text"
-            className="w-full text-black"
+            className="w-full text-black dark:text-white"
             startIcon={<Edit />}
           >
             Edit
           </Button>
-          <Button className="w-full text-red-700" startIcon={<Delete />}>
+          <Button className="w-full text-red" startIcon={<Delete />}>
             Delete
           </Button>
         </div>

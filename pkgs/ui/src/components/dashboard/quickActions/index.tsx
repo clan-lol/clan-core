@@ -1,11 +1,11 @@
 "use client";
 import { DashboardCard } from "@/components/card";
-import { Fab } from "@mui/material";
+import { Fab, Typography } from "@mui/material";
 import { MouseEventHandler, ReactNode } from "react";
 
-import LanIcon from "@mui/icons-material/Lan";
 import AppsIcon from "@mui/icons-material/Apps";
 import DevicesIcon from "@mui/icons-material/Devices";
+import LanIcon from "@mui/icons-material/Lan";
 
 type Action = {
   id: string;
@@ -43,7 +43,7 @@ export const QuickActions = () => {
   ];
   return (
     <DashboardCard title="Quick Actions">
-      <div className="flex h-fit w-full items-center justify-start pt-5 align-bottom">
+      <div className="flex h-full w-full items-center justify-start pb-10 align-bottom">
         <div className="flex w-full flex-col flex-wrap justify-evenly gap-2 sm:flex-row">
           {actions.map(({ id, icon, label, eventHandler }) => (
             <Fab
@@ -54,7 +54,7 @@ export const QuickActions = () => {
               variant="extended"
             >
               {icon}
-              {label}
+              <Typography>{label}</Typography>
             </Fab>
           ))}
         </div>
