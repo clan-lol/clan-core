@@ -1,12 +1,18 @@
 import json
 from json.decoder import JSONDecodeError
 from pathlib import Path
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Body, HTTPException, Response, status
 
-from clan_cli.webui.schemas import FlakeAction, FlakeAttrResponse, FlakeResponse
+from clan_cli.webui.schemas import (
+    FlakeAction,
+    FlakeAttrResponse,
+    FlakeResponse,
+)
 
 from ...async_cmd import run
+from ...flake import create
 from ...nix import nix_command, nix_flake_show
 
 router = APIRouter()
@@ -14,7 +20,7 @@ router = APIRouter()
 
 async def get_attrs(url: str) -> list[str]:
     cmd = nix_flake_show(url)
-    stdout = await run(cmd)
+    stdout, stderr = await run(cmd)
 
     data: dict[str, dict] = {}
     try:
@@ -45,7 +51,7 @@ async def inspect_flake(
     # Extract the flake from the given URL
     # We do this by running 'nix flake prefetch {url} --json'
     cmd = nix_command(["flake", "prefetch", url, "--json", "--refresh"])
-    stdout = await run(cmd)
+    stdout, stderr = await run(cmd)
     data: dict[str, str] = json.loads(stdout)
 
     if data.get("storePath") is None:
@@ -60,3 +66,15 @@ async def inspect_flake(
     actions.append(FlakeAction(id="vms/create", uri="api/vms/create"))
 
     return FlakeResponse(content=content, actions=actions)
+
+
+@router.post("/api/flake/create")
+async def create_flake(
+    destination: Annotated[Path, Body()], url: Annotated[str, Body()]
+) -> Response:
+    stdout, stderr = await create.create_flake(destination, url)
+    print(stderr.decode("utf-8"), end="")
+    print(stdout.decode("utf-8"), end="")
+    resp = Response()
+    resp.status_code = status.HTTP_201_CREATED
+    return resp

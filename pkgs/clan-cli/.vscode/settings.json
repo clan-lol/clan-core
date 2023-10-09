@@ -12,4 +12,7 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    "search.exclude": {
+        "**/.direnv": true
+    },
 }

@@ -1,4 +1,5 @@
 .direnv
+**/testdir
 democlan
 result*
 /pkgs/clan-cli/clan_cli/nixpkgs

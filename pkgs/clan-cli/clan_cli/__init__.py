@@ -3,7 +3,7 @@ import sys
 from types import ModuleType
 from typing import Optional
 
-from . import config, create, join, machines, secrets, vms, webui
+from . import config, flake, join, machines, secrets, vms, webui
 from .ssh import cli as ssh_cli
 
 argcomplete: Optional[ModuleType] = None
@@ -24,10 +24,10 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers()
 
-    parser_create = subparsers.add_parser(
-        "create", help="create a clan flake inside the current directory"
+    parser_flake = subparsers.add_parser(
+        "flake", help="create a clan flake inside the current directory"
     )
-    create.register_parser(parser_create)
+    flake.register_parser(parser_flake)
 
     parser_join = subparsers.add_parser("join", help="join a remote clan")
     join.register_parser(parser_join)

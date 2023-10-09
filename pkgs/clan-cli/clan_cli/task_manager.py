@@ -8,6 +8,7 @@ import sys
 import threading
 import traceback
 from enum import Enum
+from pathlib import Path
 from typing import Any, Iterator, Optional, Type, TypeVar
 from uuid import UUID, uuid4
 
@@ -30,14 +31,30 @@ class Command:
         self._output.put(None)
         self.done = True
 
-    def run(self, cmd: list[str], env: Optional[dict[str, str]] = None) -> None:
+    def run(
+        self,
+        cmd: list[str],
+        env: Optional[dict[str, str]] = None,
+        cwd: Optional[Path] = None,
+    ) -> None:
         self.running = True
         self.log.debug(f"Running command: {shlex.join(cmd)}")
+
+        cwd_res = None
+        if cwd is not None:
+            if not cwd.exists():
+                raise ClanError(f"Working directory {cwd} does not exist")
+            if not cwd.is_dir():
+                raise ClanError(f"Working directory {cwd} is not a directory")
+            cwd_res = cwd.resolve()
+            self.log.debug(f"Working directory: {cwd_res}")
+
         self.p = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             encoding="utf-8",
+            cwd=cwd_res,
             env=env,
         )
         assert self.p.stdout is not None and self.p.stderr is not None
@@ -106,7 +123,7 @@ class BaseTask:
     def run(self) -> None:
         raise NotImplementedError
 
-    ## TODO: If two clients are connected to the same task,
+    ## TODO: Test when two clients are connected to the same task
     def log_lines(self) -> Iterator[str]:
         with self.logs_lock:
             for proc in self.procs:
