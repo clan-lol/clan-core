@@ -60,6 +60,10 @@ class FlakeAction(BaseModel):
     uri: str
 
 
+class FlakeCreateResponse(BaseModel):
+    uuid: str
+
+
 class FlakeResponse(BaseModel):
     content: str
     actions: List[FlakeAction]

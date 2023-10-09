@@ -31,6 +31,8 @@ def open_browser(base_url: str, sub_url: str) -> None:
 def _open_browser(url: str) -> subprocess.Popen:
     for browser in ("firefox", "iceweasel", "iceape", "seamonkey"):
         if shutil.which(browser):
+            # Do not add a new profile, as it will break in combination with
+            # the -kiosk flag.
             cmd = [
                 browser,
                 "-kiosk",
