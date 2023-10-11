@@ -64,10 +64,13 @@ class BuildVmTask(BaseTask):
             env["SECRETS_DIR"] = str(secrets_dir)
 
             cmd = next(cmds)
-            cmd.run(
-                [vm_config["generateSecrets"]],
-                env=env,
-            )
+            if Path(self.vm.flake_url).is_dir():
+                cmd.run(
+                    [vm_config["generateSecrets"]],
+                    env=env,
+                )
+            else:
+                cmd.run(["echo", "won't generate secrets for non local clan"])
 
             cmd = next(cmds)
             cmd.run(
