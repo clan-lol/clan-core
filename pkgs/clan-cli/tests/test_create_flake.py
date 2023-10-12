@@ -21,12 +21,12 @@ def test_create_flake_api(
     response = api.post(
         "/api/flake/create",
         json=dict(
-            destination=flake_dir_str,
+            dest=flake_dir_str,
             url="git+https://git.clan.lol/clan/clan-core#new-clan",
         ),
     )
 
-    assert response.status_code == 201, "Failed to create flake"
+    assert response.status_code == 201, f"Failed to create flake {response.text}"
     assert (flake_dir / ".clan-flake").exists()
     assert (flake_dir / "flake.nix").exists()
 

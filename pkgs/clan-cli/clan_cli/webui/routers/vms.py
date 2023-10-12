@@ -5,20 +5,22 @@ from uuid import UUID
 from fastapi import APIRouter, Body, status
 from fastapi.exceptions import HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import AnyUrl
+from pathlib import Path
 
 from clan_cli.webui.routers.flake import get_attrs
 
 from ...task_manager import get_task
 from ...vms import create, inspect
-from ..schemas import VmConfig, VmCreateResponse, VmInspectResponse, VmStatusResponse
+from ..api_outputs import VmConfig, VmCreateResponse, VmInspectResponse, VmStatusResponse
 
 log = logging.getLogger(__name__)
 router = APIRouter()
 
-
+# TODO: Check for directory traversal
 @router.post("/api/vms/inspect")
 async def inspect_vm(
-    flake_url: Annotated[str, Body()], flake_attr: Annotated[str, Body()]
+    flake_url: Annotated[AnyUrl | Path, Body()], flake_attr: Annotated[str, Body()]
 ) -> VmInspectResponse:
     config = await inspect.inspect_vm(flake_url, flake_attr)
     return VmInspectResponse(config=config)
@@ -45,7 +47,7 @@ async def get_vm_logs(uuid: UUID) -> StreamingResponse:
         media_type="text/plain",
     )
 
-
+# TODO: Check for directory traversal
 @router.post("/api/vms/create")
 async def create_vm(vm: Annotated[VmConfig, Body()]) -> VmCreateResponse:
     flake_attrs = await get_attrs(vm.flake_url)
