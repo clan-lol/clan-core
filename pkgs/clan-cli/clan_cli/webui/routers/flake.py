@@ -3,12 +3,17 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Body, HTTPException, Response, status
+from fastapi import APIRouter, Body, HTTPException, status
+from pydantic import AnyUrl
 
-from clan_cli.webui.schemas import (
+from clan_cli.webui.api_outputs import (
     FlakeAction,
     FlakeAttrResponse,
+    FlakeCreateResponse,
     FlakeResponse,
+)
+from clan_cli.webui.api_inputs import (
+    FlakeCreateInput,
 )
 
 from ...async_cmd import run
@@ -17,8 +22,8 @@ from ...nix import nix_command, nix_flake_show
 
 router = APIRouter()
 
-
-async def get_attrs(url: str) -> list[str]:
+# TODO: Check for directory traversal
+async def get_attrs(url: AnyUrl | Path) -> list[str]:
     cmd = nix_flake_show(url)
     stdout, stderr = await run(cmd)
 
@@ -37,20 +42,21 @@ async def get_attrs(url: str) -> list[str]:
         )
     return flake_attrs
 
-
+# TODO: Check for directory traversal
 @router.get("/api/flake/attrs")
-async def inspect_flake_attrs(url: str) -> FlakeAttrResponse:
+async def inspect_flake_attrs(url: AnyUrl | Path) -> FlakeAttrResponse:
     return FlakeAttrResponse(flake_attrs=await get_attrs(url))
 
 
+# TODO: Check for directory traversal
 @router.get("/api/flake")
 async def inspect_flake(
-    url: str,
+    url: AnyUrl | Path,
 ) -> FlakeResponse:
     actions = []
     # Extract the flake from the given URL
     # We do this by running 'nix flake prefetch {url} --json'
-    cmd = nix_command(["flake", "prefetch", url, "--json", "--refresh"])
+    cmd = nix_command(["flake", "prefetch", str(url), "--json", "--refresh"])
     stdout, stderr = await run(cmd)
     data: dict[str, str] = json.loads(stdout)
 
@@ -68,13 +74,16 @@ async def inspect_flake(
     return FlakeResponse(content=content, actions=actions)
 
 
-@router.post("/api/flake/create")
+
+@router.post("/api/flake/create", status_code=status.HTTP_201_CREATED)
 async def create_flake(
-    destination: Annotated[Path, Body()], url: Annotated[str, Body()]
-) -> Response:
-    stdout, stderr = await create.create_flake(destination, url)
-    print(stderr.decode("utf-8"), end="")
-    print(stdout.decode("utf-8"), end="")
-    resp = Response()
-    resp.status_code = status.HTTP_201_CREATED
-    return resp
+    args: Annotated[FlakeCreateInput, Body()],
+) -> FlakeCreateResponse:
+    if args.dest.exists():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Flake already exists",
+        )
+
+    cmd_out = await create.create_flake(args.dest, args.url)
+    return FlakeCreateResponse(cmd_out=cmd_out)

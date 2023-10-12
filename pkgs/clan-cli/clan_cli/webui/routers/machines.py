@@ -12,7 +12,7 @@ from ...config.machine import (
 )
 from ...machines.create import create_machine as _create_machine
 from ...machines.list import list_machines as _list_machines
-from ..schemas import (
+from ..api_outputs import (
     ConfigResponse,
     Machine,
     MachineCreate,

@@ -147,7 +147,7 @@ def create_vm(vm: VmConfig) -> BuildVmTask:
 
 
 def create_command(args: argparse.Namespace) -> None:
-    clan_dir = get_clan_flake_toplevel().as_posix()
+    clan_dir = get_clan_flake_toplevel()
     vm = asyncio.run(inspect_vm(flake_url=clan_dir, flake_attr=args.machine))
 
     task = create_vm(vm)

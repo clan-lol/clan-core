@@ -2,14 +2,19 @@ import asyncio
 import logging
 import shlex
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import NamedTuple, Optional
 
 from .errors import ClanError
 
 log = logging.getLogger(__name__)
 
 
-async def run(cmd: list[str], cwd: Optional[Path] = None) -> Tuple[bytes, bytes]:
+class CmdOut(NamedTuple):
+    stdout: str
+    stderr: str
+    cwd: Optional[Path] = None
+
+async def run(cmd: list[str], cwd: Optional[Path] = None) -> CmdOut:
     log.debug(f"$: {shlex.join(cmd)}")
     cwd_res = None
     if cwd is not None:
@@ -36,4 +41,5 @@ command output:
 {stderr.decode("utf-8")}
 """
         )
-    return stdout, stderr
+
+    return CmdOut(stdout.decode("utf-8"), stderr.decode("utf-8"), cwd=cwd)

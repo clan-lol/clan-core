@@ -38,6 +38,36 @@ def user_config_dir() -> Path:
         return Path(os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config")))
 
 
+def user_data_dir() -> Path:
+    if sys.platform == "win32":
+        return Path(os.getenv("APPDATA", os.path.expanduser("~\\AppData\\Roaming\\")))
+    elif sys.platform == "darwin":
+        return Path(os.path.expanduser("~/Library/Application Support/"))
+    else:
+        return Path(os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/state")))
+
+
+def clan_data_dir() -> Path:
+    path = user_data_dir() / "clan"
+    if not path.exists():
+        path.mkdir()
+    return path.resolve()
+
+
+def clan_config_dir() -> Path:
+    path = user_config_dir() / "clan"
+    if not path.exists():
+        path.mkdir()
+    return path.resolve()
+
+
+def clan_flake_dir() -> Path:
+    path = clan_data_dir() / "flake"
+    if not path.exists():
+        path.mkdir()
+    return path.resolve()
+
+
 def module_root() -> Path:
     return Path(__file__).parent
 

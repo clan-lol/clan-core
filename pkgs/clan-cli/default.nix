@@ -31,6 +31,7 @@
 , qemu
 , gnupg
 , e2fsprogs
+, mypy
 }:
 let
 
@@ -65,6 +66,7 @@ let
     rsync
     sops
     git
+    mypy
     qemu
     e2fsprogs
   ];

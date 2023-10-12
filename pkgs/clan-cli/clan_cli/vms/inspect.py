@@ -1,8 +1,9 @@
 import argparse
 import asyncio
 import json
+from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import AnyUrl, BaseModel
 
 from ..async_cmd import run
 from ..dirs import get_clan_flake_toplevel
@@ -10,7 +11,7 @@ from ..nix import nix_config, nix_eval
 
 
 class VmConfig(BaseModel):
-    flake_url: str
+    flake_url: AnyUrl | Path
     flake_attr: str
 
     cores: int
@@ -18,7 +19,7 @@ class VmConfig(BaseModel):
     graphics: bool
 
 
-async def inspect_vm(flake_url: str, flake_attr: str) -> VmConfig:
+async def inspect_vm(flake_url: AnyUrl | Path, flake_attr: str) -> VmConfig:
     config = nix_config()
     system = config["system"]
     cmd = nix_eval(
@@ -32,7 +33,7 @@ async def inspect_vm(flake_url: str, flake_attr: str) -> VmConfig:
 
 
 def inspect_command(args: argparse.Namespace) -> None:
-    clan_dir = get_clan_flake_toplevel().as_posix()
+    clan_dir = get_clan_flake_toplevel()
     res = asyncio.run(inspect_vm(flake_url=clan_dir, flake_attr=args.machine))
     print("Cores:", res.cores)
     print("Memory size:", res.memory_size)

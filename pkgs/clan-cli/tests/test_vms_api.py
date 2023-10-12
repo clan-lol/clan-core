@@ -10,7 +10,8 @@ def test_inspect(api: TestClient, test_flake_with_core: Path) -> None:
         "/api/vms/inspect",
         json=dict(flake_url=str(test_flake_with_core), flake_attr="vm1"),
     )
-    assert response.status_code == 200, "Failed to inspect vm"
+
+    assert response.status_code == 200, f"Failed to inspect vm: {response.text}"
     config = response.json()["config"]
     assert config.get("flake_attr") == "vm1"
     assert config.get("cores") == 1
@@ -26,4 +27,4 @@ def test_incorrect_uuid(api: TestClient) -> None:
 
     for endpoint in uuid_endpoints:
         response = api.get(endpoint.format("1234"))
-        assert response.status_code == 422, "Failed to get vm status"
+        assert response.status_code == 422, f"Failed to get vm status: {response.text}"

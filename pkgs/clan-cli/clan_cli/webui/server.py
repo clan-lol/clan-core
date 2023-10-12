@@ -11,24 +11,25 @@ from typing import Iterator
 
 # XXX: can we dynamically load this using nix develop?
 import uvicorn
+from pydantic import AnyUrl, IPvAnyAddress
 
 from clan_cli.errors import ClanError
 
 log = logging.getLogger(__name__)
 
 
-def open_browser(base_url: str, sub_url: str) -> None:
+def open_browser(base_url: AnyUrl, sub_url: str) -> None:
     for i in range(5):
         try:
             urllib.request.urlopen(base_url + "/health")
             break
         except OSError:
             time.sleep(i)
-    url = f"{base_url}/{sub_url.removeprefix('/')}"
+    url = AnyUrl(f"{base_url}/{sub_url.removeprefix('/')}")
     _open_browser(url)
 
 
-def _open_browser(url: str) -> subprocess.Popen:
+def _open_browser(url: AnyUrl) -> subprocess.Popen:
     for browser in ("firefox", "iceweasel", "iceape", "seamonkey"):
         if shutil.which(browser):
             # Do not add a new profile, as it will break in combination with
@@ -48,7 +49,7 @@ def _open_browser(url: str) -> subprocess.Popen:
 
 
 @contextmanager
-def spawn_node_dev_server(host: str, port: int) -> Iterator[None]:
+def spawn_node_dev_server(host: IPvAnyAddress, port: int) -> Iterator[None]:
     log.info("Starting node dev server...")
     path = Path(__file__).parent.parent.parent.parent / "ui"
     with subprocess.Popen(
@@ -61,7 +62,7 @@ def spawn_node_dev_server(host: str, port: int) -> Iterator[None]:
             "dev",
             "--",
             "--hostname",
-            host,
+            str(host),
             "--port",
             str(port),
         ],

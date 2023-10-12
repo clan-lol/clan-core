@@ -2,19 +2,23 @@
 import argparse
 import asyncio
 from pathlib import Path
-from typing import Tuple
+from typing import Dict
 
-from ..async_cmd import run
+from pydantic import AnyUrl
+from pydantic.tools import parse_obj_as
+
+from ..async_cmd import CmdOut, run
 from ..errors import ClanError
-from ..nix import nix_command
+from ..nix import nix_command, nix_shell
 
-DEFAULT_URL = "git+https://git.clan.lol/clan/clan-core#new-clan"
+DEFAULT_URL: AnyUrl = parse_obj_as(AnyUrl, "git+https://git.clan.lol/clan/clan-core#new-clan")
 
 
-async def create_flake(directory: Path, url: str) -> Tuple[bytes, bytes]:
+async def create_flake(directory: Path, url: AnyUrl) -> Dict[str, CmdOut]:
     if not directory.exists():
         directory.mkdir()
-    flake_command = nix_command(
+    response = {}
+    command = nix_command(
         [
             "flake",
             "init",
@@ -22,15 +26,38 @@ async def create_flake(directory: Path, url: str) -> Tuple[bytes, bytes]:
             url,
         ]
     )
-    stdout, stderr = await run(flake_command, directory)
-    return stdout, stderr
+    out = await run(command, directory)
+    response["flake init"] = out
+
+    command = nix_shell(["git"], ["git", "init"])
+    out = await run(command, directory)
+    response["git init"] = out
+
+    command = nix_shell(["git"], ["git", "config", "user.name", "clan-tool"])
+    out = await run(command, directory)
+    response["git config"] = out
+
+    command = nix_shell(["git"], ["git", "config", "user.email", "clan@example.com"])
+    out = await run(command, directory)
+    response["git config"] = out
+
+    command = nix_shell(["git"], ["git", "commit", "-a", "-m", "Initial commit"])
+    out = await run(command, directory)
+    response["git commit"] = out
+
+    return response
 
 
 def create_flake_command(args: argparse.Namespace) -> None:
     try:
-        stdout, stderr = asyncio.run(create_flake(args.directory, DEFAULT_URL))
-        print(stderr.decode("utf-8"), end="")
-        print(stdout.decode("utf-8"), end="")
+        res = asyncio.run(create_flake(args.directory, DEFAULT_URL))
+
+        for i in res.items():
+            name, out = i
+            if out.stderr:
+                print(f"{name}: {out.stderr}", end="")
+            if out.stdout:
+                print(f"{name}: {out.stdout}", end="")
     except ClanError as e:
         print(e)
         exit(1)
