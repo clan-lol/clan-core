@@ -74,8 +74,9 @@ def generic_create_vm_test(api: TestClient, flake: Path, vm: str) -> None:
         print(line.decode("utf-8"))
     print("=========END LOGS==========")
     assert response.status_code == 200, "Failed to get vm logs"
-
+    print("Get /api/vms/{uuid}/status")
     response = api.get(f"/api/vms/{uuid}/status")
+    print("Finished Get /api/vms/{uuid}/status")
     assert response.status_code == 200, "Failed to get vm status"
     data = response.json()
     assert (

@@ -2,7 +2,7 @@ import asyncio
 import logging
 import shlex
 from pathlib import Path
-from typing import NamedTuple, Optional
+from typing import Any, Callable, Coroutine, Dict, NamedTuple, Optional
 
 from .errors import ClanError
 
@@ -36,10 +36,28 @@ async def run(cmd: list[str], cwd: Optional[Path] = None) -> CmdOut:
         raise ClanError(
             f"""
 command: {shlex.join(cmd)}
+working directory: {cwd_res}
 exit code: {proc.returncode}
-command output:
+stderr:
 {stderr.decode("utf-8")}
+stdout:
+{stdout.decode("utf-8")}
 """
         )
 
     return CmdOut(stdout.decode("utf-8"), stderr.decode("utf-8"), cwd=cwd)
+
+
+def runforcli(func: Callable[..., Coroutine[Any, Any, Dict[str, CmdOut]]], *args: Any) -> None:
+    try:
+        res = asyncio.run(func(*args))
+
+        for i in res.items():
+            name, out = i
+            if out.stderr:
+                print(f"{name}: {out.stderr}", end="")
+            if out.stdout:
+                print(f"{name}: {out.stdout}", end="")
+    except ClanError as e:
+        print(e)
+        exit(1)

@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Annotated, Iterator
 from uuid import UUID
 
@@ -6,13 +7,17 @@ from fastapi import APIRouter, Body, status
 from fastapi.exceptions import HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import AnyUrl
-from pathlib import Path
 
 from clan_cli.webui.routers.flake import get_attrs
 
 from ...task_manager import get_task
 from ...vms import create, inspect
-from ..api_outputs import VmConfig, VmCreateResponse, VmInspectResponse, VmStatusResponse
+from ..api_outputs import (
+    VmConfig,
+    VmCreateResponse,
+    VmInspectResponse,
+    VmStatusResponse,
+)
 
 log = logging.getLogger(__name__)
 router = APIRouter()
