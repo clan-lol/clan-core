@@ -6,14 +6,14 @@ from typing import Annotated
 from fastapi import APIRouter, Body, HTTPException, status
 from pydantic import AnyUrl
 
+from clan_cli.webui.api_inputs import (
+    FlakeCreateInput,
+)
 from clan_cli.webui.api_outputs import (
     FlakeAction,
     FlakeAttrResponse,
     FlakeCreateResponse,
     FlakeResponse,
-)
-from clan_cli.webui.api_inputs import (
-    FlakeCreateInput,
 )
 
 from ...async_cmd import run
@@ -25,11 +25,11 @@ router = APIRouter()
 # TODO: Check for directory traversal
 async def get_attrs(url: AnyUrl | Path) -> list[str]:
     cmd = nix_flake_show(url)
-    stdout, stderr = await run(cmd)
+    out = await run(cmd)
 
     data: dict[str, dict] = {}
     try:
-        data = json.loads(stdout)
+        data = json.loads(out.stdout)
     except JSONDecodeError:
         raise HTTPException(status_code=422, detail="Could not load flake.")
 
@@ -57,8 +57,8 @@ async def inspect_flake(
     # Extract the flake from the given URL
     # We do this by running 'nix flake prefetch {url} --json'
     cmd = nix_command(["flake", "prefetch", str(url), "--json", "--refresh"])
-    stdout, stderr = await run(cmd)
-    data: dict[str, str] = json.loads(stdout)
+    out = await run(cmd)
+    data: dict[str, str] = json.loads(out.stdout)
 
     if data.get("storePath") is None:
         raise HTTPException(status_code=500, detail="Could not load flake")

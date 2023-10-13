@@ -1,14 +1,12 @@
 # !/usr/bin/env python3
 import argparse
-import asyncio
 from pathlib import Path
 from typing import Dict
 
 from pydantic import AnyUrl
 from pydantic.tools import parse_obj_as
 
-from ..async_cmd import CmdOut, run
-from ..errors import ClanError
+from ..async_cmd import CmdOut, run, runforcli
 from ..nix import nix_command, nix_shell
 
 DEFAULT_URL: AnyUrl = parse_obj_as(AnyUrl, "git+https://git.clan.lol/clan/clan-core#new-clan")
@@ -33,6 +31,10 @@ async def create_flake(directory: Path, url: AnyUrl) -> Dict[str, CmdOut]:
     out = await run(command, directory)
     response["git init"] = out
 
+    command = nix_shell(["git"], ["git", "add", "."])
+    out = await run(command, directory)
+    response["git add"] = out
+
     command = nix_shell(["git"], ["git", "config", "user.name", "clan-tool"])
     out = await run(command, directory)
     response["git config"] = out
@@ -49,18 +51,8 @@ async def create_flake(directory: Path, url: AnyUrl) -> Dict[str, CmdOut]:
 
 
 def create_flake_command(args: argparse.Namespace) -> None:
-    try:
-        res = asyncio.run(create_flake(args.directory, DEFAULT_URL))
+    runforcli(create_flake, args.directory, DEFAULT_URL)
 
-        for i in res.items():
-            name, out = i
-            if out.stderr:
-                print(f"{name}: {out.stderr}", end="")
-            if out.stdout:
-                print(f"{name}: {out.stdout}", end="")
-    except ClanError as e:
-        print(e)
-        exit(1)
 
 
 # takes a (sub)parser and configures it

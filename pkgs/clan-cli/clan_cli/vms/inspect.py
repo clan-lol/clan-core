@@ -27,8 +27,8 @@ async def inspect_vm(flake_url: AnyUrl | Path, flake_attr: str) -> VmConfig:
             f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.system.clan.vm.config'
         ]
     )
-    stdout, stderr = await run(cmd)
-    data = json.loads(stdout)
+    out = await run(cmd)
+    data = json.loads(out.stdout)
     return VmConfig(flake_url=flake_url, flake_attr=flake_attr, **data)
 
 

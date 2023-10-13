@@ -1,5 +1,7 @@
+# mypy: ignore-errors
 import logging
 from pathlib import Path
+from typing import Any
 
 from pydantic import AnyUrl, BaseModel, validator
 
@@ -28,7 +30,7 @@ class ClanDataPath(BaseModel):
     dest: Path
 
     @validator("dest")
-    def check_data_path(cls, v: Path) -> Path:
+    def check_data_path(cls: Any, v: Path) -> Path: # type: ignore
         return validate_path(clan_data_dir(), v)
 
 
@@ -36,7 +38,7 @@ class ClanFlakePath(BaseModel):
     dest: Path
 
     @validator("dest")
-    def check_dest(cls, v: Path) -> Path:
+    def check_dest(cls: Any, v: Path) -> Path: # type: ignore
         return validate_path(clan_flake_dir(), v)
 
 

@@ -37,7 +37,8 @@ async def list_machines() -> MachinesResponse:
 
 @router.post("/api/machines", status_code=201)
 async def create_machine(machine: Annotated[MachineCreate, Body()]) -> MachineResponse:
-    _create_machine(machine.name)
+    out = await _create_machine(machine.name)
+    log.debug(out)
     return MachineResponse(machine=Machine(name=machine.name, status=Status.UNKNOWN))
 
 
