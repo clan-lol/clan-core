@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Any, Optional, Tuple, get_origin
 
-from clan_cli.dirs import get_clan_flake_toplevel, machine_settings_file
+from clan_cli.dirs import machine_settings_file, specific_flake_dir
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
@@ -103,8 +103,10 @@ def cast(value: Any, type: Any, opt_description: str) -> Any:
         )
 
 
-def options_for_machine(machine_name: str, show_trace: bool = False) -> dict:
-    clan_dir = get_clan_flake_toplevel()
+def options_for_machine(
+    flake_name: str, machine_name: str, show_trace: bool = False
+) -> dict:
+    clan_dir = specific_flake_dir(flake_name)
     flags = []
     if show_trace:
         flags.append("--show-trace")
@@ -125,9 +127,9 @@ def options_for_machine(machine_name: str, show_trace: bool = False) -> dict:
 
 
 def read_machine_option_value(
-    machine_name: str, option: str, show_trace: bool = False
+    flake_name: str, machine_name: str, option: str, show_trace: bool = False
 ) -> str:
-    clan_dir = get_clan_flake_toplevel()
+    clan_dir = specific_flake_dir(flake_name)
     # use nix eval to read from .#nixosConfigurations.default.config.{option}
     # this will give us the evaluated config with the options attribute
     cmd = nix_eval(
@@ -160,19 +162,19 @@ def get_or_set_option(args: argparse.Namespace) -> None:
         # load options
         if args.options_file is None:
             options = options_for_machine(
-                machine_name=args.machine, show_trace=args.show_trace
+                args.flake, machine_name=args.machine, show_trace=args.show_trace
             )
         else:
             with open(args.options_file) as f:
                 options = json.load(f)
         # compute settings json file location
         if args.settings_file is None:
-            get_clan_flake_toplevel()
             settings_file = machine_settings_file(args.flake, args.machine)
         else:
             settings_file = args.settings_file
         # set the option with the given value
         set_option(
+            flake_name=args.flake,
             option=args.option,
             value=args.value,
             options=options,
@@ -181,7 +183,7 @@ def get_or_set_option(args: argparse.Namespace) -> None:
             show_trace=args.show_trace,
         )
         if not args.quiet:
-            new_value = read_machine_option_value(args.machine, args.option)
+            new_value = read_machine_option_value(args.flake, args.machine, args.option)
             print(f"New Value for {args.option}:")
             print(new_value)
 
@@ -238,6 +240,7 @@ def find_option(
 
 
 def set_option(
+    flake_name: str,
     option: str,
     value: Any,
     options: dict,
@@ -286,7 +289,7 @@ def set_option(
         json.dump(new_config, f, indent=2)
         print(file=f)  # add newline at the end of the file to make git happy
 
-    if settings_file.resolve().is_relative_to(get_clan_flake_toplevel()):
+    if settings_file.resolve().is_relative_to(specific_flake_dir(flake_name)):
         commit_file(settings_file, commit_message=f"Set option {option_description}")
 
 

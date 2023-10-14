@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Iterator
 import pytest
 from api import TestClient
 from cli import Cli
-from fixtures_flakes import create_flake
+from fixtures_flakes import TestFlake, create_flake
 from httpx import SyncByteStream
 from root import CLAN_CORE
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture
-def flake_with_vm_with_secrets(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def flake_with_vm_with_secrets(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestFlake]:
     yield from create_flake(
         monkeypatch,
         "test_flake_with_core_dynamic_machines",
@@ -26,7 +26,7 @@ def flake_with_vm_with_secrets(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path
 @pytest.fixture
 def remote_flake_with_vm_without_secrets(
     monkeypatch: pytest.MonkeyPatch,
-) -> Iterator[Path]:
+) -> Iterator[TestFlake]:
     yield from create_flake(
         monkeypatch,
         "test_flake_with_core_dynamic_machines",

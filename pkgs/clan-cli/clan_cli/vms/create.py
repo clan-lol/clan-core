@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Iterator
 from uuid import UUID
 
-from ..dirs import get_clan_flake_toplevel
+from ..dirs import specific_flake_dir
 from ..nix import nix_build, nix_config, nix_shell
 from ..task_manager import BaseTask, Command, create_task
 from .inspect import VmConfig, inspect_vm
@@ -147,7 +147,7 @@ def create_vm(vm: VmConfig) -> BuildVmTask:
 
 
 def create_command(args: argparse.Namespace) -> None:
-    clan_dir = get_clan_flake_toplevel()
+    clan_dir = specific_flake_dir(args.flake)
     vm = asyncio.run(inspect_vm(flake_url=clan_dir, flake_attr=args.machine))
 
     task = create_vm(vm)
@@ -157,4 +157,9 @@ def create_command(args: argparse.Namespace) -> None:
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("machine", type=str)
+    parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     parser.set_defaults(func=create_command)

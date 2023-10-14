@@ -20,24 +20,27 @@ from .types import (
 )
 
 
-def machines_folder(group: str) -> Path:
-    return sops_groups_folder() / group / "machines"
+def machines_folder(flake_name: str, group: str) -> Path:
+    return sops_groups_folder(flake_name) / group / "machines"
 
 
-def users_folder(group: str) -> Path:
-    return sops_groups_folder() / group / "users"
+def users_folder(flake_name: str, group: str) -> Path:
+    return sops_groups_folder(flake_name) / group / "users"
 
 
 class Group:
-    def __init__(self, name: str, machines: list[str], users: list[str]) -> None:
+    def __init__(
+        self, flake_name: str, name: str, machines: list[str], users: list[str]
+    ) -> None:
         self.name = name
         self.machines = machines
         self.users = users
+        self.flake_name = flake_name
 
 
-def list_groups() -> list[Group]:
+def list_groups(flake_name: str) -> list[Group]:
     groups: list[Group] = []
-    folder = sops_groups_folder()
+    folder = sops_groups_folder(flake_name)
     if not folder.exists():
         return groups
 
@@ -45,24 +48,24 @@ def list_groups() -> list[Group]:
         group_folder = folder / name
         if not group_folder.is_dir():
             continue
-        machines_path = machines_folder(name)
+        machines_path = machines_folder(flake_name, name)
         machines = []
         if machines_path.is_dir():
             for f in machines_path.iterdir():
                 if validate_hostname(f.name):
                     machines.append(f.name)
-        users_path = users_folder(name)
+        users_path = users_folder(flake_name, name)
         users = []
         if users_path.is_dir():
             for f in users_path.iterdir():
                 if VALID_USER_NAME.match(f.name):
                     users.append(f.name)
-        groups.append(Group(name, machines, users))
+        groups.append(Group(flake_name, name, machines, users))
     return groups
 
 
 def list_command(args: argparse.Namespace) -> None:
-    for group in list_groups():
+    for group in list_groups(args.flake):
         print(group.name)
         if group.machines:
             print("machines:")
@@ -84,9 +87,9 @@ def list_directory(directory: Path) -> str:
     return msg
 
 
-def update_group_keys(group: str) -> None:
-    for secret_ in secrets.list_secrets():
-        secret = sops_secrets_folder() / secret_
+def update_group_keys(flake_name: str, group: str) -> None:
+    for secret_ in secrets.list_secrets(flake_name):
+        secret = sops_secrets_folder(flake_name) / secret_
         if (secret / "groups" / group).is_symlink():
             update_keys(
                 secret,
@@ -94,7 +97,9 @@ def update_group_keys(group: str) -> None:
             )
 
 
-def add_member(group_folder: Path, source_folder: Path, name: str) -> None:
+def add_member(
+    flake_name: str, group_folder: Path, source_folder: Path, name: str
+) -> None:
     source = source_folder / name
     if not source.exists():
         msg = f"{name} does not exist in {source_folder}: "
@@ -109,10 +114,10 @@ def add_member(group_folder: Path, source_folder: Path, name: str) -> None:
             )
         os.remove(user_target)
     user_target.symlink_to(os.path.relpath(source, user_target.parent))
-    update_group_keys(group_folder.parent.name)
+    update_group_keys(flake_name, group_folder.parent.name)
 
 
-def remove_member(group_folder: Path, name: str) -> None:
+def remove_member(flake_name: str, group_folder: Path, name: str) -> None:
     target = group_folder / name
     if not target.exists():
         msg = f"{name} does not exist in group in {group_folder}: "
@@ -121,7 +126,7 @@ def remove_member(group_folder: Path, name: str) -> None:
     os.remove(target)
 
     if len(os.listdir(group_folder)) > 0:
-        update_group_keys(group_folder.parent.name)
+        update_group_keys(flake_name, group_folder.parent.name)
 
     if len(os.listdir(group_folder)) == 0:
         os.rmdir(group_folder)
@@ -130,56 +135,65 @@ def remove_member(group_folder: Path, name: str) -> None:
         os.rmdir(group_folder.parent)
 
 
-def add_user(group: str, name: str) -> None:
-    add_member(users_folder(group), sops_users_folder(), name)
+def add_user(flake_name: str, group: str, name: str) -> None:
+    add_member(
+        flake_name, users_folder(flake_name, group), sops_users_folder(flake_name), name
+    )
 
 
 def add_user_command(args: argparse.Namespace) -> None:
-    add_user(args.group, args.user)
+    add_user(args.flake, args.group, args.user)
 
 
-def remove_user(group: str, name: str) -> None:
-    remove_member(users_folder(group), name)
+def remove_user(flake_name: str, group: str, name: str) -> None:
+    remove_member(flake_name, users_folder(flake_name, group), name)
 
 
 def remove_user_command(args: argparse.Namespace) -> None:
-    remove_user(args.group, args.user)
+    remove_user(args.flake, args.group, args.user)
 
 
-def add_machine(group: str, name: str) -> None:
-    add_member(machines_folder(group), sops_machines_folder(), name)
+def add_machine(flake_name: str, group: str, name: str) -> None:
+    add_member(
+        flake_name,
+        machines_folder(flake_name, group),
+        sops_machines_folder(flake_name),
+        name,
+    )
 
 
 def add_machine_command(args: argparse.Namespace) -> None:
-    add_machine(args.group, args.machine)
+    add_machine(args.flake, args.group, args.machine)
 
 
-def remove_machine(group: str, name: str) -> None:
-    remove_member(machines_folder(group), name)
+def remove_machine(flake_name: str, group: str, name: str) -> None:
+    remove_member(flake_name, machines_folder(flake_name, group), name)
 
 
 def remove_machine_command(args: argparse.Namespace) -> None:
-    remove_machine(args.group, args.machine)
+    remove_machine(args.flake, args.group, args.machine)
 
 
 def add_group_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("group", help="the name of the secret", type=group_name_type)
 
 
-def add_secret(group: str, name: str) -> None:
-    secrets.allow_member(secrets.groups_folder(name), sops_groups_folder(), group)
+def add_secret(flake_name: str, group: str, name: str) -> None:
+    secrets.allow_member(
+        secrets.groups_folder(flake_name, name), sops_groups_folder(flake_name), group
+    )
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
-    add_secret(args.group, args.secret)
+    add_secret(args.flake, args.group, args.secret)
 
 
-def remove_secret(group: str, name: str) -> None:
-    secrets.disallow_member(secrets.groups_folder(name), group)
+def remove_secret(flake_name: str, group: str, name: str) -> None:
+    secrets.disallow_member(secrets.groups_folder(flake_name, name), group)
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    remove_secret(args.group, args.secret)
+    remove_secret(args.flake, args.group, args.secret)
 
 
 def register_groups_parser(parser: argparse.ArgumentParser) -> None:

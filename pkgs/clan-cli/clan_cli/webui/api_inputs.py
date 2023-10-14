@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import AnyUrl, BaseModel, validator
 
-from ..dirs import clan_data_dir, clan_flake_dir
+from ..dirs import clan_data_dir, clan_flakes_dir
 from ..flakes.create import DEFAULT_URL
 
 log = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class ClanFlakePath(BaseModel):
 
     @validator("dest")
     def check_dest(cls: Any, v: Path) -> Path:  # noqa
-        return validate_path(clan_flake_dir(), v)
+        return validate_path(clan_flakes_dir(), v)
 
 
 class FlakeCreateInput(ClanFlakePath):

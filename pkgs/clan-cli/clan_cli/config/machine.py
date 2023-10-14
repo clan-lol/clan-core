@@ -7,9 +7,9 @@ from pathlib import Path
 from fastapi import HTTPException
 
 from clan_cli.dirs import (
-    get_flake_path,
     machine_settings_file,
     nixpkgs_source,
+    specific_flake_dir,
     specific_machine_dir,
 )
 from clan_cli.git import commit_file, find_git_repo_root
@@ -84,7 +84,7 @@ def set_config_for_machine(flake_name: str, machine_name: str, config: dict) -> 
 
 
 def schema_for_machine(flake_name: str, machine_name: str) -> dict:
-    flake = get_flake_path(flake_name)
+    flake = specific_flake_dir(flake_name)
 
     # use nix eval to lib.evalModules .#nixosModules.machine-{machine_name}
     proc = subprocess.run(

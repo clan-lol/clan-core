@@ -6,7 +6,7 @@ from typing import Optional
 from .errors import ClanError
 
 
-def get_clan_flake_toplevel() -> Path:
+def _get_clan_flake_toplevel() -> Path:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
 
 
@@ -61,22 +61,22 @@ def clan_config_dir() -> Path:
     return path.resolve()
 
 
-def clan_flake_dir() -> Path:
+def clan_flakes_dir() -> Path:
     path = clan_data_dir() / "flake"
     if not path.exists():
         path.mkdir()
     return path.resolve()
 
 
-def get_flake_path(name: str) -> Path:
-    flake_dir = clan_flake_dir() / name
+def specific_flake_dir(name: str) -> Path:
+    flake_dir = clan_flakes_dir() / name
     if not flake_dir.exists():
         raise ClanError(f"Flake {name} does not exist")
     return flake_dir
 
 
 def machines_dir(flake_name: str) -> Path:
-    return get_flake_path(flake_name) / "machines"
+    return specific_flake_dir(flake_name) / "machines"
 
 
 def specific_machine_dir(flake_name: str, machine: str) -> Path:

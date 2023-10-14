@@ -2,7 +2,7 @@ import fileinput
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, NamedTuple
 
 import pytest
 from root import CLAN_CORE
@@ -27,22 +27,27 @@ def substitute(
         print(line, end="")
 
 
+class TestFlake(NamedTuple):
+    name: str
+    path: Path
+
+
 def create_flake(
     monkeypatch: pytest.MonkeyPatch,
-    name: str,
+    flake_name: str,
     clan_core_flake: Path | None = None,
     machines: list[str] = [],
     remote: bool = False,
-) -> Iterator[Path]:
+) -> Iterator[TestFlake]:
     """
     Creates a flake with the given name and machines.
     The machine names map to the machines in ./test_machines
     """
-    template = Path(__file__).parent / name
+    template = Path(__file__).parent / flake_name
     # copy the template to a new temporary location
     with tempfile.TemporaryDirectory() as tmpdir_:
         home = Path(tmpdir_)
-        flake = home / name
+        flake = home / flake_name
         shutil.copytree(template, flake)
         # lookup the requested machines in ./test_machines and include them
         if machines:
@@ -60,20 +65,20 @@ def create_flake(
             with tempfile.TemporaryDirectory() as workdir:
                 monkeypatch.chdir(workdir)
                 monkeypatch.setenv("HOME", str(home))
-                yield flake
+                yield TestFlake(flake_name, flake)
         else:
             monkeypatch.chdir(flake)
             monkeypatch.setenv("HOME", str(home))
-            yield flake
+            yield TestFlake(flake_name, flake)
 
 
 @pytest.fixture
-def test_flake(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def test_flake(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestFlake]:
     yield from create_flake(monkeypatch, "test_flake")
 
 
 @pytest.fixture
-def test_flake_with_core(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def test_flake_with_core(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestFlake]:
     if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
             "clan-core flake not found. This test requires the clan-core flake to be present"
@@ -82,7 +87,9 @@ def test_flake_with_core(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
 
 
 @pytest.fixture
-def test_flake_with_core_and_pass(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def test_flake_with_core_and_pass(
+    monkeypatch: pytest.MonkeyPatch,
+) -> Iterator[TestFlake]:
     if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
             "clan-core flake not found. This test requires the clan-core flake to be present"
