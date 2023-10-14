@@ -10,6 +10,7 @@ from ...config.machine import (
     set_config_for_machine,
     verify_machine_config,
 )
+from ...flakes.types import FlakeName
 from ...machines.create import create_machine as _create_machine
 from ...machines.list import list_machines as _list_machines
 from ..api_outputs import (
@@ -28,7 +29,7 @@ router = APIRouter()
 
 
 @router.get("/api/{flake_name}/machines")
-async def list_machines(flake_name: str) -> MachinesResponse:
+async def list_machines(flake_name: FlakeName) -> MachinesResponse:
     machines = []
     for m in _list_machines(flake_name):
         machines.append(Machine(name=m, status=Status.UNKNOWN))
@@ -37,7 +38,7 @@ async def list_machines(flake_name: str) -> MachinesResponse:
 
 @router.post("/api/{flake_name}/machines", status_code=201)
 async def create_machine(
-    flake_name: str, machine: Annotated[MachineCreate, Body()]
+    flake_name: FlakeName, machine: Annotated[MachineCreate, Body()]
 ) -> MachineResponse:
     out = await _create_machine(flake_name, machine.name)
     log.debug(out)
@@ -51,21 +52,21 @@ async def get_machine(name: str) -> MachineResponse:
 
 
 @router.get("/api/{flake_name}/machines/{name}/config")
-async def get_machine_config(flake_name: str, name: str) -> ConfigResponse:
+async def get_machine_config(flake_name: FlakeName, name: str) -> ConfigResponse:
     config = config_for_machine(flake_name, name)
     return ConfigResponse(config=config)
 
 
 @router.put("/api/{flake_name}/machines/{name}/config")
 async def set_machine_config(
-    flake_name: str, name: str, config: Annotated[dict, Body()]
+    flake_name: FlakeName, name: str, config: Annotated[dict, Body()]
 ) -> ConfigResponse:
     set_config_for_machine(flake_name, name, config)
     return ConfigResponse(config=config)
 
 
 @router.get("/api/{flake_name}/machines/{name}/schema")
-async def get_machine_schema(flake_name: str, name: str) -> SchemaResponse:
+async def get_machine_schema(flake_name: FlakeName, name: str) -> SchemaResponse:
     schema = schema_for_machine(flake_name, name)
     return SchemaResponse(schema=schema)
 

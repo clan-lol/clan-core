@@ -3,12 +3,13 @@ import logging
 import os
 
 from ..dirs import machines_dir
+from ..flakes.types import FlakeName
 from .types import validate_hostname
 
 log = logging.getLogger(__name__)
 
 
-def list_machines(flake_name: str) -> list[str]:
+def list_machines(flake_name: FlakeName) -> list[str]:
     path = machines_dir(flake_name)
     log.debug(f"Listing machines in {path}")
     if not path.exists():
