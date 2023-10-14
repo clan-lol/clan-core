@@ -4,7 +4,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from ..dirs import get_flake_path
+from ..dirs import specific_flake_dir
 from ..machines.machines import Machine
 from ..nix import nix_build, nix_command, nix_config
 from ..secrets.generate import generate_secrets
@@ -95,7 +95,11 @@ def get_all_machines(clan_dir: Path) -> HostGroup:
         host = parse_deployment_address(
             name,
             machine_data["deploymentAddress"],
-            meta={"machine": Machine(name=name, machine_data=machine_data)},
+            meta={
+                "machine": Machine(
+                    name=name, flake_dir=clan_dir, machine_data=machine_data
+                )
+            },
         )
         hosts.append(host)
     return HostGroup(hosts)
@@ -111,7 +115,7 @@ def get_selected_machines(machine_names: list[str], flake_dir: Path) -> HostGrou
 
 # FIXME: we want some kind of inventory here.
 def update(args: argparse.Namespace) -> None:
-    flake_dir = get_flake_path(args.flake)
+    flake_dir = specific_flake_dir(args.flake)
     if len(args.machines) == 1 and args.target_host is not None:
         machine = Machine(name=args.machines[0], flake_dir=flake_dir)
         machine.deployment_address = args.target_host

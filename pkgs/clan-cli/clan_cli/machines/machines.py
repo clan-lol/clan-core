@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from ..dirs import get_clan_flake_toplevel
 from ..nix import nix_build, nix_config, nix_eval
 from ..ssh import Host, parse_deployment_address
 
@@ -31,7 +30,7 @@ class Machine:
     def __init__(
         self,
         name: str,
-        flake_dir: Optional[Path] = None,
+        flake_dir: Path,
         machine_data: Optional[dict] = None,
     ) -> None:
         """
@@ -41,10 +40,7 @@ class Machine:
         @machine_json: can be optionally used to skip evaluation of the machine, location of the json file with machine data
         """
         self.name = name
-        if flake_dir is None:
-            self.flake_dir = get_clan_flake_toplevel()
-        else:
-            self.flake_dir = flake_dir
+        self.flake_dir = flake_dir
 
         if machine_data is None:
             self.machine_data = build_machine_data(name, self.flake_dir)

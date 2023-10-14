@@ -2,13 +2,13 @@ import argparse
 import logging
 import os
 
-from ..dirs import clan_flake_dir
+from ..dirs import clan_flakes_dir
 
 log = logging.getLogger(__name__)
 
 
 def list_flakes() -> list[str]:
-    path = clan_flake_dir()
+    path = clan_flakes_dir()
     log.debug(f"Listing machines in {path}")
     if not path.exists():
         return []

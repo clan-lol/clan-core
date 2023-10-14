@@ -53,62 +53,79 @@ def collect_keys_for_path(path: Path) -> set[str]:
 
 
 def encrypt_secret(
+    flake_name: str,
     secret: Path,
     value: IO[str] | str | None,
     add_users: list[str] = [],
     add_machines: list[str] = [],
     add_groups: list[str] = [],
 ) -> None:
-    key = ensure_sops_key()
+    key = ensure_sops_key(flake_name)
     keys = set([])
 
     for user in add_users:
-        allow_member(users_folder(secret.name), sops_users_folder(), user, False)
+        allow_member(
+            users_folder(flake_name, secret.name),
+            sops_users_folder(flake_name),
+            user,
+            False,
+        )
 
     for machine in add_machines:
         allow_member(
-            machines_folder(secret.name), sops_machines_folder(), machine, False
+            machines_folder(flake_name, secret.name),
+            sops_machines_folder(flake_name),
+            machine,
+            False,
         )
 
     for group in add_groups:
-        allow_member(groups_folder(secret.name), sops_groups_folder(), group, False)
+        allow_member(
+            groups_folder(flake_name, secret.name),
+            sops_groups_folder(flake_name),
+            group,
+            False,
+        )
 
     keys = collect_keys_for_path(secret)
 
     if key.pubkey not in keys:
         keys.add(key.pubkey)
         allow_member(
-            users_folder(secret.name), sops_users_folder(), key.username, False
+            users_folder(flake_name, secret.name),
+            sops_users_folder(flake_name),
+            key.username,
+            False,
         )
 
     encrypt_file(secret / "secret", value, list(sorted(keys)))
 
 
-def remove_secret(secret: str) -> None:
-    path = sops_secrets_folder() / secret
+def remove_secret(flake_name: str, secret: str) -> None:
+    path = sops_secrets_folder(flake_name) / secret
     if not path.exists():
         raise ClanError(f"Secret '{secret}' does not exist")
     shutil.rmtree(path)
 
 
 def remove_command(args: argparse.Namespace) -> None:
-    remove_secret(args.secret)
+    remove_secret(args.flake, args.secret)
 
 
 def add_secret_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("secret", help="the name of the secret", type=secret_name_type)
 
 
-def machines_folder(group: str) -> Path:
-    return sops_secrets_folder() / group / "machines"
+def machines_folder(flake_name: str, group: str) -> Path:
+    return sops_secrets_folder(flake_name) / group / "machines"
 
 
-def users_folder(group: str) -> Path:
-    return sops_secrets_folder() / group / "users"
+def users_folder(flake_name: str, group: str) -> Path:
+    return sops_secrets_folder(flake_name) / group / "users"
 
 
-def groups_folder(group: str) -> Path:
-    return sops_secrets_folder() / group / "groups"
+def groups_folder(flake_name: str, group: str) -> Path:
+    return sops_secrets_folder(flake_name) / group / "groups"
 
 
 def list_directory(directory: Path) -> str:
@@ -171,35 +188,37 @@ def disallow_member(group_folder: Path, name: str) -> None:
     )
 
 
-def has_secret(secret: str) -> bool:
-    return (sops_secrets_folder() / secret / "secret").exists()
+def has_secret(flake_name: str, secret: str) -> bool:
+    return (sops_secrets_folder(flake_name) / secret / "secret").exists()
 
 
-def list_secrets() -> list[str]:
-    path = sops_secrets_folder()
+def list_secrets(flake_name: str) -> list[str]:
+    path = sops_secrets_folder(flake_name)
 
     def validate(name: str) -> bool:
-        return VALID_SECRET_NAME.match(name) is not None and has_secret(name)
+        return VALID_SECRET_NAME.match(name) is not None and has_secret(
+            flake_name, name
+        )
 
     return list_objects(path, validate)
 
 
 def list_command(args: argparse.Namespace) -> None:
-    lst = list_secrets()
+    lst = list_secrets(args.flake)
     if len(lst) > 0:
         print("\n".join(lst))
 
 
-def decrypt_secret(secret: str) -> str:
-    ensure_sops_key()
-    secret_path = sops_secrets_folder() / secret / "secret"
+def decrypt_secret(flake_name: str, secret: str) -> str:
+    ensure_sops_key(flake_name)
+    secret_path = sops_secrets_folder(flake_name) / secret / "secret"
     if not secret_path.exists():
         raise ClanError(f"Secret '{secret}' does not exist")
     return decrypt_file(secret_path)
 
 
 def get_command(args: argparse.Namespace) -> None:
-    print(decrypt_secret(args.secret), end="")
+    print(decrypt_secret(args.flake, args.secret), end="")
 
 
 def set_command(args: argparse.Namespace) -> None:
@@ -212,7 +231,8 @@ def set_command(args: argparse.Namespace) -> None:
     elif tty.is_interactive():
         secret_value = getpass.getpass(prompt="Paste your secret: ")
     encrypt_secret(
-        sops_secrets_folder() / args.secret,
+        args.flake,
+        sops_secrets_folder(args.flake) / args.secret,
         secret_value,
         args.user,
         args.machine,
@@ -221,8 +241,8 @@ def set_command(args: argparse.Namespace) -> None:
 
 
 def rename_command(args: argparse.Namespace) -> None:
-    old_path = sops_secrets_folder() / args.secret
-    new_path = sops_secrets_folder() / args.new_name
+    old_path = sops_secrets_folder(args.flake) / args.secret
+    new_path = sops_secrets_folder(args.flake) / args.new_name
     if not old_path.exists():
         raise ClanError(f"Secret '{args.secret}' does not exist")
     if new_path.exists():
@@ -237,9 +257,19 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
     parser_get = subparser.add_parser("get", help="get a secret")
     add_secret_argument(parser_get)
     parser_get.set_defaults(func=get_command)
+    parser_get.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
 
     parser_set = subparser.add_parser("set", help="set a secret")
     add_secret_argument(parser_set)
+    parser_set.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     parser_set.add_argument(
         "--group",
         type=str,

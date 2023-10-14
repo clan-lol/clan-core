@@ -3,17 +3,17 @@ import shutil
 from pathlib import Path
 from typing import Callable
 
-from ..dirs import get_clan_flake_toplevel
+from ..dirs import specific_flake_dir
 from ..errors import ClanError
 
 
-def get_sops_folder() -> Path:
-    return get_clan_flake_toplevel() / "sops"
+def get_sops_folder(flake_name: str) -> Path:
+    return specific_flake_dir(flake_name) / "sops"
 
 
-def gen_sops_subfolder(subdir: str) -> Callable[[], Path]:
-    def folder() -> Path:
-        return get_clan_flake_toplevel() / "sops" / subdir
+def gen_sops_subfolder(subdir: str) -> Callable[[str], Path]:
+    def folder(flake_name: str) -> Path:
+        return specific_flake_dir(flake_name) / "sops" / subdir
 
     return folder
 

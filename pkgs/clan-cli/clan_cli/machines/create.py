@@ -3,7 +3,7 @@ import logging
 from typing import Dict
 
 from ..async_cmd import CmdOut, run, runforcli
-from ..dirs import get_flake_path, specific_machine_dir
+from ..dirs import specific_flake_dir, specific_machine_dir
 from ..errors import ClanError
 from ..nix import nix_shell
 
@@ -35,7 +35,7 @@ async def create_machine(flake_name: str, machine_name: str) -> Dict[str, CmdOut
 
 def create_command(args: argparse.Namespace) -> None:
     try:
-        flake_dir = get_flake_path(args.flake)
+        flake_dir = specific_flake_dir(args.flake)
         runforcli(create_machine, flake_dir, args.machine)
     except ClanError as e:
         print(e)
