@@ -8,6 +8,7 @@ import pytest
 from root import CLAN_CORE
 
 from clan_cli.dirs import nixpkgs_source
+from clan_cli.flakes.types import FlakeName
 
 
 # substitutes string sin a file.
@@ -28,13 +29,13 @@ def substitute(
 
 
 class TestFlake(NamedTuple):
-    name: str
+    name: FlakeName
     path: Path
 
 
 def create_flake(
     monkeypatch: pytest.MonkeyPatch,
-    flake_name: str,
+    flake_name: FlakeName,
     clan_core_flake: Path | None = None,
     machines: list[str] = [],
     remote: bool = False,
@@ -74,7 +75,7 @@ def create_flake(
 
 @pytest.fixture
 def test_flake(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestFlake]:
-    yield from create_flake(monkeypatch, "test_flake")
+    yield from create_flake(monkeypatch, FlakeName("test_flake"))
 
 
 @pytest.fixture
@@ -83,7 +84,7 @@ def test_flake_with_core(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestFlake]
         raise Exception(
             "clan-core flake not found. This test requires the clan-core flake to be present"
         )
-    yield from create_flake(monkeypatch, "test_flake_with_core", CLAN_CORE)
+    yield from create_flake(monkeypatch, FlakeName("test_flake_with_core"), CLAN_CORE)
 
 
 @pytest.fixture
@@ -94,4 +95,6 @@ def test_flake_with_core_and_pass(
         raise Exception(
             "clan-core flake not found. This test requires the clan-core flake to be present"
         )
-    yield from create_flake(monkeypatch, "test_flake_with_core_and_pass", CLAN_CORE)
+    yield from create_flake(
+        monkeypatch, FlakeName("test_flake_with_core_and_pass"), CLAN_CORE
+    )

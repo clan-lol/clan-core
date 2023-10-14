@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 from .errors import ClanError
+from .flakes.types import FlakeName
 
 
 def _get_clan_flake_toplevel() -> Path:
@@ -68,22 +69,22 @@ def clan_flakes_dir() -> Path:
     return path.resolve()
 
 
-def specific_flake_dir(name: str) -> Path:
-    flake_dir = clan_flakes_dir() / name
+def specific_flake_dir(flake_name: FlakeName) -> Path:
+    flake_dir = clan_flakes_dir() / flake_name
     if not flake_dir.exists():
-        raise ClanError(f"Flake {name} does not exist")
+        raise ClanError(f"Flake {flake_name} does not exist")
     return flake_dir
 
 
-def machines_dir(flake_name: str) -> Path:
+def machines_dir(flake_name: FlakeName) -> Path:
     return specific_flake_dir(flake_name) / "machines"
 
 
-def specific_machine_dir(flake_name: str, machine: str) -> Path:
+def specific_machine_dir(flake_name: FlakeName, machine: str) -> Path:
     return machines_dir(flake_name) / machine
 
 
-def machine_settings_file(flake_name: str, machine: str) -> Path:
+def machine_settings_file(flake_name: FlakeName, machine: str) -> Path:
     return specific_machine_dir(flake_name, machine) / "settings.json"
 
 

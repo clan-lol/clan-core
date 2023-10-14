@@ -9,6 +9,7 @@ from typing import IO, Iterator
 
 from ..dirs import user_config_dir
 from ..errors import ClanError
+from ..flakes.types import FlakeName
 from ..nix import nix_shell
 from .folders import sops_machines_folder, sops_users_folder
 
@@ -51,7 +52,7 @@ def generate_private_key() -> tuple[str, str]:
         raise ClanError("Failed to generate private sops key") from e
 
 
-def get_user_name(flake_name: str, user: str) -> str:
+def get_user_name(flake_name: FlakeName, user: str) -> str:
     """Ask the user for their name until a unique one is provided."""
     while True:
         name = input(
@@ -64,7 +65,7 @@ def get_user_name(flake_name: str, user: str) -> str:
         print(f"{sops_users_folder(flake_name) / user} already exists")
 
 
-def ensure_user_or_machine(flake_name: str, pub_key: str) -> SopsKey:
+def ensure_user_or_machine(flake_name: FlakeName, pub_key: str) -> SopsKey:
     key = SopsKey(pub_key, username="")
     folders = [sops_users_folder(flake_name), sops_machines_folder(flake_name)]
     for folder in folders:
@@ -90,7 +91,7 @@ def default_sops_key_path() -> Path:
         return user_config_dir() / "sops" / "age" / "keys.txt"
 
 
-def ensure_sops_key(flake_name: str) -> SopsKey:
+def ensure_sops_key(flake_name: FlakeName) -> SopsKey:
     key = os.environ.get("SOPS_AGE_KEY")
     if key:
         return ensure_user_or_machine(flake_name, get_public_key(key))

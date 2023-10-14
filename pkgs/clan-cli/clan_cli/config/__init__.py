@@ -11,6 +11,7 @@ from typing import Any, Optional, Tuple, get_origin
 
 from clan_cli.dirs import machine_settings_file, specific_flake_dir
 from clan_cli.errors import ClanError
+from clan_cli.flakes.types import FlakeName
 from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
 
@@ -104,7 +105,7 @@ def cast(value: Any, type: Any, opt_description: str) -> Any:
 
 
 def options_for_machine(
-    flake_name: str, machine_name: str, show_trace: bool = False
+    flake_name: FlakeName, machine_name: str, show_trace: bool = False
 ) -> dict:
     clan_dir = specific_flake_dir(flake_name)
     flags = []
@@ -127,7 +128,7 @@ def options_for_machine(
 
 
 def read_machine_option_value(
-    flake_name: str, machine_name: str, option: str, show_trace: bool = False
+    flake_name: FlakeName, machine_name: str, option: str, show_trace: bool = False
 ) -> str:
     clan_dir = specific_flake_dir(flake_name)
     # use nix eval to read from .#nixosConfigurations.default.config.{option}
@@ -240,7 +241,7 @@ def find_option(
 
 
 def set_option(
-    flake_name: str,
+    flake_name: FlakeName,
     option: str,
     value: Any,
     options: dict,

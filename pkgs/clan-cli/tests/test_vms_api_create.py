@@ -9,6 +9,8 @@ from fixtures_flakes import TestFlake, create_flake
 from httpx import SyncByteStream
 from root import CLAN_CORE
 
+from clan_cli.flakes.types import FlakeName
+
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
@@ -17,7 +19,7 @@ if TYPE_CHECKING:
 def flake_with_vm_with_secrets(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestFlake]:
     yield from create_flake(
         monkeypatch,
-        "test_flake_with_core_dynamic_machines",
+        FlakeName("test_flake_with_core_dynamic_machines"),
         CLAN_CORE,
         machines=["vm_with_secrets"],
     )
@@ -29,7 +31,7 @@ def remote_flake_with_vm_without_secrets(
 ) -> Iterator[TestFlake]:
     yield from create_flake(
         monkeypatch,
-        "test_flake_with_core_dynamic_machines",
+        FlakeName("test_flake_with_core_dynamic_machines"),
         CLAN_CORE,
         machines=["vm_without_secrets"],
         remote=True,

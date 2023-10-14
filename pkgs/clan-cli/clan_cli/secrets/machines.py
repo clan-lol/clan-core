@@ -1,5 +1,6 @@
 import argparse
 
+from ..flakes.types import FlakeName
 from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
 from .folders import list_objects, remove_object, sops_machines_folder
@@ -7,23 +8,23 @@ from .sops import read_key, write_key
 from .types import public_or_private_age_key_type, secret_name_type
 
 
-def add_machine(flake_name: str, name: str, key: str, force: bool) -> None:
+def add_machine(flake_name: FlakeName, name: str, key: str, force: bool) -> None:
     write_key(sops_machines_folder(flake_name) / name, key, force)
 
 
-def remove_machine(flake_name: str, name: str) -> None:
+def remove_machine(flake_name: FlakeName, name: str) -> None:
     remove_object(sops_machines_folder(flake_name), name)
 
 
-def get_machine(flake_name: str, name: str) -> str:
+def get_machine(flake_name: FlakeName, name: str) -> str:
     return read_key(sops_machines_folder(flake_name) / name)
 
 
-def has_machine(flake_name: str, name: str) -> bool:
+def has_machine(flake_name: FlakeName, name: str) -> bool:
     return (sops_machines_folder(flake_name) / name / "key.json").exists()
 
 
-def list_machines(flake_name: str) -> list[str]:
+def list_machines(flake_name: FlakeName) -> list[str]:
     path = sops_machines_folder(flake_name)
 
     def validate(name: str) -> bool:
@@ -32,7 +33,7 @@ def list_machines(flake_name: str) -> list[str]:
     return list_objects(path, validate)
 
 
-def add_secret(flake_name: str, machine: str, secret: str) -> None:
+def add_secret(flake_name: FlakeName, machine: str, secret: str) -> None:
     secrets.allow_member(
         secrets.machines_folder(flake_name, secret),
         sops_machines_folder(flake_name),
@@ -40,7 +41,7 @@ def add_secret(flake_name: str, machine: str, secret: str) -> None:
     )
 
 
-def remove_secret(flake_name: str, machine: str, secret: str) -> None:
+def remove_secret(flake_name: FlakeName, machine: str, secret: str) -> None:
     secrets.disallow_member(secrets.machines_folder(flake_name, secret), machine)
 
 

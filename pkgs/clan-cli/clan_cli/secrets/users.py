@@ -1,5 +1,6 @@
 import argparse
 
+from ..flakes.types import FlakeName
 from . import secrets
 from .folders import list_objects, remove_object, sops_users_folder
 from .sops import read_key, write_key
@@ -11,19 +12,19 @@ from .types import (
 )
 
 
-def add_user(flake_name: str, name: str, key: str, force: bool) -> None:
+def add_user(flake_name: FlakeName, name: str, key: str, force: bool) -> None:
     write_key(sops_users_folder(flake_name) / name, key, force)
 
 
-def remove_user(flake_name: str, name: str) -> None:
+def remove_user(flake_name: FlakeName, name: str) -> None:
     remove_object(sops_users_folder(flake_name), name)
 
 
-def get_user(flake_name: str, name: str) -> str:
+def get_user(flake_name: FlakeName, name: str) -> str:
     return read_key(sops_users_folder(flake_name) / name)
 
 
-def list_users(flake_name: str) -> list[str]:
+def list_users(flake_name: FlakeName) -> list[str]:
     path = sops_users_folder(flake_name)
 
     def validate(name: str) -> bool:
@@ -35,13 +36,13 @@ def list_users(flake_name: str) -> list[str]:
     return list_objects(path, validate)
 
 
-def add_secret(flake_name: str, user: str, secret: str) -> None:
+def add_secret(flake_name: FlakeName, user: str, secret: str) -> None:
     secrets.allow_member(
         secrets.users_folder(flake_name, secret), sops_users_folder(flake_name), user
     )
 
 
-def remove_secret(flake_name: str, user: str, secret: str) -> None:
+def remove_secret(flake_name: FlakeName, user: str, secret: str) -> None:
     secrets.disallow_member(secrets.users_folder(flake_name, secret), user)
 
 

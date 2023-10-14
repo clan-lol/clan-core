@@ -5,12 +5,13 @@ from typing import Dict
 from ..async_cmd import CmdOut, run, runforcli
 from ..dirs import specific_flake_dir, specific_machine_dir
 from ..errors import ClanError
+from ..flakes.types import FlakeName
 from ..nix import nix_shell
 
 log = logging.getLogger(__name__)
 
 
-async def create_machine(flake_name: str, machine_name: str) -> Dict[str, CmdOut]:
+async def create_machine(flake_name: FlakeName, machine_name: str) -> Dict[str, CmdOut]:
     folder = specific_machine_dir(flake_name, machine_name)
     folder.mkdir(parents=True, exist_ok=True)
 

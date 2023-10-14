@@ -11,13 +11,14 @@ from clan_cli.nix import nix_shell
 
 from ..dirs import specific_flake_dir
 from ..errors import ClanError
+from ..flakes.types import FlakeName
 from .folders import sops_secrets_folder
 from .machines import add_machine, has_machine
 from .secrets import decrypt_secret, encrypt_secret, has_secret
 from .sops import generate_private_key
 
 
-def generate_host_key(flake_name: str, machine_name: str) -> None:
+def generate_host_key(flake_name: FlakeName, machine_name: str) -> None:
     if has_machine(flake_name, machine_name):
         return
     priv_key, pub_key = generate_private_key()
@@ -30,7 +31,7 @@ def generate_host_key(flake_name: str, machine_name: str) -> None:
 
 
 def generate_secrets_group(
-    flake_name: str,
+    flake_name: FlakeName,
     secret_group: str,
     machine_name: str,
     tempdir: Path,
@@ -88,7 +89,7 @@ export secrets={shlex.quote(str(secrets_dir))}
 
 # this is called by the sops.nix clan core module
 def generate_secrets_from_nix(
-    flake_name: str,
+    flake_name: FlakeName,
     machine_name: str,
     secret_submodules: dict[str, Any],
 ) -> None:
@@ -112,7 +113,7 @@ def generate_secrets_from_nix(
 
 # this is called by the sops.nix clan core module
 def upload_age_key_from_nix(
-    flake_name: str,
+    flake_name: FlakeName,
     machine_name: str,
 ) -> None:
     secret_name = f"{machine_name}-age.key"
