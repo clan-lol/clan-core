@@ -25,7 +25,7 @@ def _test_identities(
     cli = Cli()
     sops_folder = test_flake.path / "sops"
 
-    cli.run(["secrets", what, "add", "foo", age_keys[0].pubkey])
+    cli.run(["secrets", what, "add", "foo", age_keys[0].pubkey, test_flake.name])
     assert (sops_folder / what / "foo" / "key.json").exists()
     with pytest.raises(ClanError):
         cli.run(["secrets", what, "add", "foo", age_keys[0].pubkey])
