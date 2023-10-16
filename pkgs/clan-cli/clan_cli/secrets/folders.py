@@ -5,7 +5,7 @@ from typing import Callable
 
 from ..dirs import specific_flake_dir
 from ..errors import ClanError
-from ..flakes.types import FlakeName
+from ..types import FlakeName
 
 
 def get_sops_folder(flake_name: FlakeName) -> Path:

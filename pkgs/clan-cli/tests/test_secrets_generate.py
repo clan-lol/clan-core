@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from cli import Cli
-from fixtures_flakes import TestFlake
+from fixtures_flakes import FlakeForTest
 
 from clan_cli.machines.facts import machine_get_fact
 from clan_cli.secrets.folders import sops_secrets_folder
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 @pytest.mark.impure
 def test_generate_secret(
     monkeypatch: pytest.MonkeyPatch,
-    test_flake_with_core: TestFlake,
+    test_flake_with_core: FlakeForTest,
     age_keys: list["KeyPair"],
 ) -> None:
     monkeypatch.chdir(test_flake_with_core.path)

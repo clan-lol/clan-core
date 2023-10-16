@@ -3,7 +3,7 @@ import logging
 import os
 
 from ..dirs import machines_dir
-from ..flakes.types import FlakeName
+from ..types import FlakeName
 from .types import validate_hostname
 
 log = logging.getLogger(__name__)

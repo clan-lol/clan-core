@@ -1,6 +1,6 @@
 import argparse
 
-from ..flakes.types import FlakeName
+from ..types import FlakeName
 from . import secrets
 from .folders import list_objects, remove_object, sops_users_folder
 from .sops import read_key, write_key

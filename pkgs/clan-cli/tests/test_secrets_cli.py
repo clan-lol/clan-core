@@ -3,23 +3,27 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterator
 
+import logging
 import pytest
 from cli import Cli
+from fixtures_flakes import FlakeForTest
 
 from clan_cli.errors import ClanError
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
+log = logging.getLogger(__name__)
+
 
 def _test_identities(
     what: str,
-    test_flake: Path,
+    test_flake: FlakeForTest,
     capsys: pytest.CaptureFixture,
     age_keys: list["KeyPair"],
 ) -> None:
     cli = Cli()
-    sops_folder = test_flake / "sops"
+    sops_folder = test_flake.path / "sops"
 
     cli.run(["secrets", what, "add", "foo", age_keys[0].pubkey])
     assert (sops_folder / what / "foo" / "key.json").exists()
@@ -34,6 +38,7 @@ def _test_identities(
             "-f",
             "foo",
             age_keys[0].privkey,
+            test_flake.name,
         ]
     )
 
@@ -60,19 +65,19 @@ def _test_identities(
 
 
 def test_users(
-    test_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
+    test_flake: FlakeForTest, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
     _test_identities("users", test_flake, capsys, age_keys)
 
 
 def test_machines(
-    test_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
+    test_flake: FlakeForTest, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
     _test_identities("machines", test_flake, capsys, age_keys)
 
 
 def test_groups(
-    test_flake: Path, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
+    test_flake: FlakeForTest, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
     cli = Cli()
     capsys.readouterr()  # empty the buffer
@@ -100,7 +105,7 @@ def test_groups(
 
     cli.run(["secrets", "groups", "remove-user", "group1", "user1"])
     cli.run(["secrets", "groups", "remove-machine", "group1", "machine1"])
-    groups = os.listdir(test_flake / "sops" / "groups")
+    groups = os.listdir(test_flake.path / "sops" / "groups")
     assert len(groups) == 0
 
 

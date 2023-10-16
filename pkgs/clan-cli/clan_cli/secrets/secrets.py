@@ -8,7 +8,7 @@ from typing import IO
 
 from .. import tty
 from ..errors import ClanError
-from ..flakes.types import FlakeName
+from ..types import FlakeName
 from .folders import (
     list_objects,
     sops_groups_folder,

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 from .errors import ClanError
-from .flakes.types import FlakeName
+from .types import FlakeName
 
 
 def _get_clan_flake_toplevel() -> Path:

@@ -5,18 +5,18 @@ from typing import TYPE_CHECKING, Iterator
 import pytest
 from api import TestClient
 from cli import Cli
-from fixtures_flakes import TestFlake, create_flake
+from fixtures_flakes import FlakeForTest, create_flake
 from httpx import SyncByteStream
 from root import CLAN_CORE
 
-from clan_cli.flakes.types import FlakeName
+from clan_cli.types import FlakeName
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
 
 @pytest.fixture
-def flake_with_vm_with_secrets(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestFlake]:
+def flake_with_vm_with_secrets(monkeypatch: pytest.MonkeyPatch) -> Iterator[FlakeForTest]:
     yield from create_flake(
         monkeypatch,
         FlakeName("test_flake_with_core_dynamic_machines"),
@@ -28,7 +28,7 @@ def flake_with_vm_with_secrets(monkeypatch: pytest.MonkeyPatch) -> Iterator[Test
 @pytest.fixture
 def remote_flake_with_vm_without_secrets(
     monkeypatch: pytest.MonkeyPatch,
-) -> Iterator[TestFlake]:
+) -> Iterator[FlakeForTest]:
     yield from create_flake(
         monkeypatch,
         FlakeName("test_flake_with_core_dynamic_machines"),
