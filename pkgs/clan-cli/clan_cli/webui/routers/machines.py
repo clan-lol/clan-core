@@ -10,7 +10,7 @@ from ...config.machine import (
     set_config_for_machine,
     verify_machine_config,
 )
-from ...flakes.types import FlakeName
+from ...types import FlakeName
 from ...machines.create import create_machine as _create_machine
 from ...machines.list import list_machines as _list_machines
 from ..api_outputs import (

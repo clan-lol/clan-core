@@ -9,7 +9,7 @@ from typing import IO, Iterator
 
 from ..dirs import user_config_dir
 from ..errors import ClanError
-from ..flakes.types import FlakeName
+from ..types import FlakeName
 from ..nix import nix_shell
 from .folders import sops_machines_folder, sops_users_folder
 

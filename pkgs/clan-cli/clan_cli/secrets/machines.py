@@ -1,6 +1,6 @@
 import argparse
 
-from ..flakes.types import FlakeName
+from ..types import FlakeName
 from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
 from .folders import list_objects, remove_object, sops_machines_folder

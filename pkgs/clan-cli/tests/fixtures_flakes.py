@@ -8,7 +8,7 @@ import pytest
 from root import CLAN_CORE
 
 from clan_cli.dirs import nixpkgs_source
-from clan_cli.flakes.types import FlakeName
+from clan_cli.types import FlakeName
 
 
 # substitutes string sin a file.
@@ -28,7 +28,7 @@ def substitute(
         print(line, end="")
 
 
-class TestFlake(NamedTuple):
+class FlakeForTest(NamedTuple):
     name: FlakeName
     path: Path
 
@@ -39,7 +39,7 @@ def create_flake(
     clan_core_flake: Path | None = None,
     machines: list[str] = [],
     remote: bool = False,
-) -> Iterator[TestFlake]:
+) -> Iterator[FlakeForTest]:
     """
     Creates a flake with the given name and machines.
     The machine names map to the machines in ./test_machines
@@ -66,20 +66,20 @@ def create_flake(
             with tempfile.TemporaryDirectory() as workdir:
                 monkeypatch.chdir(workdir)
                 monkeypatch.setenv("HOME", str(home))
-                yield TestFlake(flake_name, flake)
+                yield FlakeForTest(flake_name, flake)
         else:
             monkeypatch.chdir(flake)
             monkeypatch.setenv("HOME", str(home))
-            yield TestFlake(flake_name, flake)
+            yield FlakeForTest(flake_name, flake)
 
 
 @pytest.fixture
-def test_flake(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestFlake]:
+def test_flake(monkeypatch: pytest.MonkeyPatch) -> Iterator[FlakeForTest]:
     yield from create_flake(monkeypatch, FlakeName("test_flake"))
 
 
 @pytest.fixture
-def test_flake_with_core(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestFlake]:
+def test_flake_with_core(monkeypatch: pytest.MonkeyPatch) -> Iterator[FlakeForTest]:
     if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
             "clan-core flake not found. This test requires the clan-core flake to be present"
@@ -90,7 +90,7 @@ def test_flake_with_core(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestFlake]
 @pytest.fixture
 def test_flake_with_core_and_pass(
     monkeypatch: pytest.MonkeyPatch,
-) -> Iterator[TestFlake]:
+) -> Iterator[FlakeForTest]:
     if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
             "clan-core flake not found. This test requires the clan-core flake to be present"

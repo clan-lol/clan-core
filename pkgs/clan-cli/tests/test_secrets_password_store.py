@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 from cli import Cli
-from fixtures_flakes import TestFlake
+from fixtures_flakes import FlakeForTest
 
 from clan_cli.machines.facts import machine_get_fact
 from clan_cli.nix import nix_shell
@@ -13,7 +13,7 @@ from clan_cli.ssh import HostGroup
 @pytest.mark.impure
 def test_upload_secret(
     monkeypatch: pytest.MonkeyPatch,
-    test_flake_with_core_and_pass: TestFlake,
+    test_flake_with_core_and_pass: FlakeForTest,
     temporary_dir: Path,
     host_group: HostGroup,
 ) -> None:

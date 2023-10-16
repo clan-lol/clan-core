@@ -1,5 +1,5 @@
 from ..dirs import specific_machine_dir
-from ..flakes.types import FlakeName
+from ..types import FlakeName
 
 
 def machine_has_fact(flake_name: FlakeName, machine: str, fact: str) -> bool:

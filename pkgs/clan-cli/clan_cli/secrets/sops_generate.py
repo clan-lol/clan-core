@@ -11,7 +11,7 @@ from clan_cli.nix import nix_shell
 
 from ..dirs import specific_flake_dir
 from ..errors import ClanError
-from ..flakes.types import FlakeName
+from ..types import FlakeName
 from .folders import sops_secrets_folder
 from .machines import add_machine, has_machine
 from .secrets import decrypt_secret, encrypt_secret, has_secret

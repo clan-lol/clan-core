@@ -8,6 +8,7 @@
 , openssh
 , pytest
 , pytest-cov
+, pytest-xdist
 , pytest-subprocess
 , pytest-parallel
 , pytest-timeout
@@ -45,7 +46,8 @@ let
     pytest
     pytest-cov
     pytest-subprocess
-    pytest-parallel
+  #  pytest-parallel
+    pytest-xdist
     pytest-timeout
     openssh
     git

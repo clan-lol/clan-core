@@ -15,7 +15,7 @@ from clan_cli.dirs import (
 from clan_cli.git import commit_file, find_git_repo_root
 from clan_cli.nix import nix_eval
 
-from ..flakes.types import FlakeName
+from ..types import FlakeName
 
 
 def verify_machine_config(

@@ -5,7 +5,7 @@ from typing import Dict
 from ..async_cmd import CmdOut, run, runforcli
 from ..dirs import specific_flake_dir, specific_machine_dir
 from ..errors import ClanError
-from ..flakes.types import FlakeName
+from ..types import FlakeName
 from ..nix import nix_shell
 
 log = logging.getLogger(__name__)
