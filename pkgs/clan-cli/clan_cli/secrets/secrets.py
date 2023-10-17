@@ -253,24 +253,25 @@ def rename_command(args: argparse.Namespace) -> None:
 
 def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
     parser_list = subparser.add_parser("list", help="list secrets")
+    parser_list.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     parser_list.set_defaults(func=list_command)
 
     parser_get = subparser.add_parser("get", help="get a secret")
     add_secret_argument(parser_get)
-    parser_get.set_defaults(func=get_command)
     parser_get.add_argument(
         "flake",
         type=str,
         help="name of the flake to create machine for",
     )
+    parser_get.set_defaults(func=get_command)
+
 
     parser_set = subparser.add_parser("set", help="set a secret")
     add_secret_argument(parser_set)
-    parser_set.add_argument(
-        "flake",
-        type=str,
-        help="name of the flake to create machine for",
-    )
     parser_set.add_argument(
         "--group",
         type=str,
@@ -299,13 +300,29 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
         default=False,
         help="edit the secret with $EDITOR instead of pasting it",
     )
+    parser_set.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     parser_set.set_defaults(func=set_command)
 
     parser_rename = subparser.add_parser("rename", help="rename a secret")
     add_secret_argument(parser_rename)
     parser_rename.add_argument("new_name", type=str, help="the new name of the secret")
+    parser_rename.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     parser_rename.set_defaults(func=rename_command)
+
 
     parser_remove = subparser.add_parser("remove", help="remove a secret")
     add_secret_argument(parser_remove)
+    parser_remove.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     parser_remove.set_defaults(func=remove_command)

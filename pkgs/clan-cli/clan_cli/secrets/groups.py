@@ -204,9 +204,17 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
         help="the command to run",
         required=True,
     )
+
+    # List groups
     list_parser = subparser.add_parser("list", help="list groups")
+    list_parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     list_parser.set_defaults(func=list_command)
 
+    # Add user
     add_machine_parser = subparser.add_parser(
         "add-machine", help="add a machine to group"
     )
@@ -214,8 +222,14 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
     add_machine_parser.add_argument(
         "machine", help="the name of the machines to add", type=machine_name_type
     )
+    add_machine_parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     add_machine_parser.set_defaults(func=add_machine_command)
 
+    # Remove machine
     remove_machine_parser = subparser.add_parser(
         "remove-machine", help="remove a machine from group"
     )
@@ -223,15 +237,27 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
     remove_machine_parser.add_argument(
         "machine", help="the name of the machines to remove", type=machine_name_type
     )
+    remove_machine_parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     remove_machine_parser.set_defaults(func=remove_machine_command)
 
+    # Add user
     add_user_parser = subparser.add_parser("add-user", help="add a user to group")
     add_group_argument(add_user_parser)
     add_user_parser.add_argument(
         "user", help="the name of the user to add", type=user_name_type
     )
+    add_user_parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     add_user_parser.set_defaults(func=add_user_command)
 
+    # Remove user
     remove_user_parser = subparser.add_parser(
         "remove-user", help="remove a user from group"
     )
@@ -239,8 +265,14 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
     remove_user_parser.add_argument(
         "user", help="the name of the user to remove", type=user_name_type
     )
+    remove_user_parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     remove_user_parser.set_defaults(func=remove_user_command)
 
+    # Add secret
     add_secret_parser = subparser.add_parser(
         "add-secret", help="allow a user to access a secret"
     )
@@ -250,8 +282,14 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
     add_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type
     )
+    add_secret_parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
+    )
     add_secret_parser.set_defaults(func=add_secret_command)
 
+    # Remove secret
     remove_secret_parser = subparser.add_parser(
         "remove-secret", help="remove a group's access to a secret"
     )
@@ -260,5 +298,10 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
     )
     remove_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type
+    )
+    remove_secret_parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
     )
     remove_secret_parser.set_defaults(func=remove_secret_command)

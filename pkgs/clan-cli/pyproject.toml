@@ -20,7 +20,8 @@ clan_cli = [ "config/jsonschema/*", "webui/assets/**/*"]
 testpaths = "tests"
 faulthandler_timeout = 60
 log_level = "DEBUG"
-addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail -n auto --durations 5 --maxfail=1 --new-first"
+log_format = "%(pathname)s:%(lineno)d::%(funcName)s\n   %(levelname)s: %(message)s\n"
+addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --durations 5 --color=yes --maxfail=1 --new-first -nauto" # Add --pdb for debugging
 norecursedirs = "tests/helpers"
 markers = [ "impure" ]
 
