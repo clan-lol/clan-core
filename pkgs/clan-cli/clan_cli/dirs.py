@@ -2,10 +2,12 @@ import os
 import sys
 from pathlib import Path
 from typing import Optional
+import logging
 
 from .errors import ClanError
 from .types import FlakeName
 
+log = logging.getLogger(__name__)
 
 def _get_clan_flake_toplevel() -> Path:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
@@ -51,28 +53,31 @@ def user_data_dir() -> Path:
 def clan_data_dir() -> Path:
     path = user_data_dir() / "clan"
     if not path.exists():
-        path.mkdir()
+        log.debug(f"Creating path with parents {path}")
+        path.mkdir(parents=True)
     return path.resolve()
 
 
 def clan_config_dir() -> Path:
     path = user_config_dir() / "clan"
     if not path.exists():
-        path.mkdir()
+        log.debug(f"Creating path with parents {path}")
+        path.mkdir(parents=True)
     return path.resolve()
 
 
 def clan_flakes_dir() -> Path:
     path = clan_data_dir() / "flake"
     if not path.exists():
-        path.mkdir()
+        log.debug(f"Creating path with parents {path}")
+        path.mkdir(parents=True)
     return path.resolve()
 
 
 def specific_flake_dir(flake_name: FlakeName) -> Path:
     flake_dir = clan_flakes_dir() / flake_name
     if not flake_dir.exists():
-        raise ClanError(f"Flake {flake_name} does not exist")
+        raise ClanError(f"Flake '{flake_name}' does not exist")
     return flake_dir
 
 
