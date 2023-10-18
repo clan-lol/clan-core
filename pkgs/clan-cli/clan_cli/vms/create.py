@@ -13,6 +13,7 @@ from ..dirs import specific_flake_dir
 from ..nix import nix_build, nix_config, nix_shell
 from ..task_manager import BaseTask, Command, create_task
 from .inspect import VmConfig, inspect_vm
+import pydantic
 
 
 class BuildVmTask(BaseTask):
@@ -58,6 +59,7 @@ class BuildVmTask(BaseTask):
 
             env = os.environ.copy()
             env["CLAN_DIR"] = str(self.vm.flake_url)
+
             env["PYTHONPATH"] = str(
                 ":".join(sys.path)
             )  # TODO do this in the clanCore module
@@ -70,7 +72,7 @@ class BuildVmTask(BaseTask):
                     env=env,
                 )
             else:
-                cmd.run(["echo", "won't generate secrets for non local clan"])
+                self.log.warning("won't generate secrets for non local clan")
 
             cmd = next(cmds)
             cmd.run(

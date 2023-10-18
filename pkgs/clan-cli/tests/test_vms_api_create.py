@@ -89,7 +89,7 @@ def generic_create_vm_test(api: TestClient, flake: Path, vm: str) -> None:
     assert (
         data["status"] == "FINISHED"
     ), f"Expected to be finished, but got {data['status']} ({data})"
-
+ 
 
 @pytest.mark.skipif(not os.path.exists("/dev/kvm"), reason="Requires KVM")
 @pytest.mark.impure

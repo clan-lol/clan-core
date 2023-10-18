@@ -11,6 +11,8 @@
 , pytest-xdist
 , pytest-subprocess
 , pytest-timeout
+, remote-pdb
+, ipdb
 , python3
 , runCommand
 , setuptools
@@ -47,6 +49,8 @@ let
     pytest-subprocess
     pytest-xdist
     pytest-timeout
+    remote-pdb
+    ipdb
     openssh
     git
     gnupg

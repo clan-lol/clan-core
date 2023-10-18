@@ -95,6 +95,7 @@ def generate_secrets_from_nix(
 ) -> None:
     generate_host_key(flake_name, machine_name)
     errors = {}
+
     with TemporaryDirectory() as d:
         # if any of the secrets are missing, we regenerate all connected facts/secrets
         for secret_group, secret_options in secret_submodules.items():
