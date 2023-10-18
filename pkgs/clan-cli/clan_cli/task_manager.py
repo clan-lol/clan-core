@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Iterator, Optional, Type, TypeVar
 from uuid import UUID, uuid4
 
-from .custom_logger import get_caller, ThreadFormatter, CustomFormatter
+from .custom_logger import ThreadFormatter, get_caller
 from .errors import ClanError
 
 
@@ -81,8 +81,6 @@ class Command:
 
         if self.p.returncode != 0:
             raise ClanError(f"Failed to run command: {shlex.join(cmd)}")
-
-
 
 
 class TaskStatus(str, Enum):

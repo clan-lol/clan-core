@@ -3,8 +3,8 @@ import os
 from pathlib import Path
 
 from ..errors import ClanError
-from ..types import FlakeName
 from ..machines.types import machine_name_type, validate_hostname
+from ..types import FlakeName
 from . import secrets
 from .folders import (
     sops_groups_folder,

@@ -13,7 +13,6 @@ from ..dirs import specific_flake_dir
 from ..nix import nix_build, nix_config, nix_shell
 from ..task_manager import BaseTask, Command, create_task
 from .inspect import VmConfig, inspect_vm
-import pydantic
 
 
 class BuildVmTask(BaseTask):

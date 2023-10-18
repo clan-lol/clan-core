@@ -1,13 +1,12 @@
 import argparse
+import logging
 import sys
 from types import ModuleType
 from typing import Optional
 
 from . import config, flakes, join, machines, secrets, vms, webui
-from .ssh import cli as ssh_cli
-
-import logging
 from .custom_logger import register
+from .ssh import cli as ssh_cli
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +56,7 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     parser_vms = subparsers.add_parser("vms", help="manage virtual machines")
     vms.register_parser(parser_vms)
 
-#    if args.debug:
+    #    if args.debug:
     register(logging.DEBUG)
     log.debug("Debug log activated")
 
@@ -73,8 +72,6 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
 def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
-
-
 
     if not hasattr(args, "func"):
         return

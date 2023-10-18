@@ -269,7 +269,6 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
     )
     parser_get.set_defaults(func=get_command)
 
-
     parser_set = subparser.add_parser("set", help="set a secret")
     add_secret_argument(parser_set)
     parser_set.add_argument(
@@ -316,7 +315,6 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
         help="name of the flake to create machine for",
     )
     parser_rename.set_defaults(func=rename_command)
-
 
     parser_remove = subparser.add_parser("remove", help="remove a secret")
     add_secret_argument(parser_remove)
