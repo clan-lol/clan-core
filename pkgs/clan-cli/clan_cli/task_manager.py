@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Iterator, Optional, Type, TypeVar
 from uuid import UUID, uuid4
 
+from .custom_logger import get_caller, ThreadFormatter, CustomFormatter
 from .errors import ClanError
 
 
@@ -38,7 +39,8 @@ class Command:
         cwd: Optional[Path] = None,
     ) -> None:
         self.running = True
-        self.log.debug(f"Running command: {shlex.join(cmd)}")
+        self.log.debug(f"Command: {shlex.join(cmd)}")
+        self.log.debug(f"Caller: {get_caller()}")
 
         cwd_res = None
         if cwd is not None:
@@ -94,7 +96,13 @@ class BaseTask:
     def __init__(self, uuid: UUID, num_cmds: int) -> None:
         # constructor
         self.uuid: UUID = uuid
-        self.log = logging.getLogger(__name__)
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.DEBUG)
+        handler.setFormatter(ThreadFormatter())
+        logger = logging.getLogger(__name__)
+        logger.addHandler(handler)
+        self.log = logger
+        self.log = logger
         self.procs: list[Command] = []
         self.status = TaskStatus.NOTSTARTED
         self.logs_lock = threading.Lock()

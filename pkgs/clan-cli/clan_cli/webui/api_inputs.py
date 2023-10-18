@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 
 def validate_path(base_dir: Path, value: Path) -> Path:
     user_path = (base_dir / value).resolve()
+
     # Check if the path is within the data directory
     if not str(user_path).startswith(str(base_dir)):
         if not str(user_path).startswith("/tmp/pytest"):
