@@ -6,6 +6,7 @@ from typing import Dict
 from pydantic import AnyUrl
 from pydantic.tools import parse_obj_as
 
+from ..errors import ClanError
 from ..async_cmd import CmdOut, run, runforcli
 from ..dirs import clan_flakes_dir
 from ..nix import nix_command, nix_shell
@@ -18,6 +19,8 @@ DEFAULT_URL: AnyUrl = parse_obj_as(
 async def create_flake(directory: Path, url: AnyUrl) -> Dict[str, CmdOut]:
     if not directory.exists():
         directory.mkdir()
+    else:
+        raise ClanError(f"Flake at '{directory}' already exists")
     response = {}
     command = nix_command(
         [
@@ -27,27 +30,27 @@ async def create_flake(directory: Path, url: AnyUrl) -> Dict[str, CmdOut]:
             url,
         ]
     )
-    out = await run(command, directory)
+    out = await run(command, cwd=directory)
     response["flake init"] = out
 
     command = nix_shell(["git"], ["git", "init"])
-    out = await run(command, directory)
+    out = await run(command, cwd=directory)
     response["git init"] = out
 
     command = nix_shell(["git"], ["git", "add", "."])
-    out = await run(command, directory)
+    out = await run(command, cwd=directory)
     response["git add"] = out
 
     command = nix_shell(["git"], ["git", "config", "user.name", "clan-tool"])
-    out = await run(command, directory)
+    out = await run(command, cwd=directory)
     response["git config"] = out
 
     command = nix_shell(["git"], ["git", "config", "user.email", "clan@example.com"])
-    out = await run(command, directory)
+    out = await run(command, cwd=directory)
     response["git config"] = out
 
     command = nix_shell(["git"], ["git", "commit", "-a", "-m", "Initial commit"])
-    out = await run(command, directory)
+    out = await run(command, cwd=directory)
     response["git commit"] = out
 
     return response
@@ -67,7 +70,7 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "--url",
-        type=AnyUrl,
+        type=str,
         help="url for the flake",
         default=DEFAULT_URL,
     )

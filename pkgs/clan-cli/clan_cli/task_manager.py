@@ -80,7 +80,7 @@ class Command:
         if self.p.returncode != 0:
             raise ClanError(f"Failed to run command: {shlex.join(cmd)}")
 
-        self.log.debug("Successfully ran command")
+
 
 
 class TaskStatus(str, Enum):
