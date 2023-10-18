@@ -1,13 +1,14 @@
+import logging
 import os
 import sys
 from pathlib import Path
 from typing import Optional
-import logging
 
 from .errors import ClanError
 from .types import FlakeName
 
 log = logging.getLogger(__name__)
+
 
 def _get_clan_flake_toplevel() -> Path:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])

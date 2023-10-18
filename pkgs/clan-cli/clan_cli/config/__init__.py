@@ -11,9 +11,9 @@ from typing import Any, Optional, Tuple, get_origin
 
 from clan_cli.dirs import machine_settings_file, specific_flake_dir
 from clan_cli.errors import ClanError
-from clan_cli.types import FlakeName
 from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
+from clan_cli.types import FlakeName
 
 script_dir = Path(__file__).parent
 

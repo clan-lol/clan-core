@@ -1,7 +1,7 @@
-import logging
-from typing import Any, Callable
-from pathlib import Path
 import inspect
+import logging
+from pathlib import Path
+from typing import Any, Callable
 
 grey = "\x1b[38;20m"
 yellow = "\x1b[33;20m"
@@ -11,19 +11,19 @@ green = "\u001b[32m"
 blue = "\u001b[34m"
 
 
-
 def get_formatter(color: str) -> Callable[[logging.LogRecord, bool], logging.Formatter]:
-    def myformatter(record: logging.LogRecord, with_location: bool) -> logging.Formatter:
+    def myformatter(
+        record: logging.LogRecord, with_location: bool
+    ) -> logging.Formatter:
         reset = "\x1b[0m"
         filepath = Path(record.pathname).resolve()
         if not with_location:
-            return logging.Formatter(
-                f"{color}%(levelname)s{reset}: %(message)s"
-            )
+            return logging.Formatter(f"{color}%(levelname)s{reset}: %(message)s")
 
         return logging.Formatter(
             f"{color}%(levelname)s{reset}: %(message)s\n       {filepath}:%(lineno)d::%(funcName)s\n"
         )
+
     return myformatter
 
 
@@ -44,6 +44,7 @@ class CustomFormatter(logging.Formatter):
 class ThreadFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         return FORMATTER[record.levelno](record, False).format(record)
+
 
 def get_caller() -> str:
     frame = inspect.currentframe()
@@ -66,4 +67,4 @@ def register(level: Any) -> None:
     handler.setFormatter(CustomFormatter())
     logger = logging.getLogger("registerHandler")
     logger.addHandler(handler)
-    #logging.basicConfig(level=level, handlers=[handler])
+    # logging.basicConfig(level=level, handlers=[handler])

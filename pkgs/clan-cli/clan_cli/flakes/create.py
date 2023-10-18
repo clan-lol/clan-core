@@ -6,9 +6,9 @@ from typing import Dict
 from pydantic import AnyUrl
 from pydantic.tools import parse_obj_as
 
-from ..errors import ClanError
 from ..async_cmd import CmdOut, run, runforcli
 from ..dirs import clan_flakes_dir
+from ..errors import ClanError
 from ..nix import nix_command, nix_shell
 
 DEFAULT_URL: AnyUrl = parse_obj_as(
