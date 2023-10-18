@@ -13,6 +13,8 @@ log = logging.getLogger(__name__)
 
 async def create_machine(flake_name: FlakeName, machine_name: str) -> Dict[str, CmdOut]:
     folder = specific_machine_dir(flake_name, machine_name)
+    if folder.exists():
+        raise ClanError(f"Machine '{machine_name}' already exists")
     folder.mkdir(parents=True, exist_ok=True)
 
     # create empty settings.json file inside the folder

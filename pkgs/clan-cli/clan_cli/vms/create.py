@@ -34,9 +34,9 @@ class BuildVmTask(BaseTask):
                 ]
             )
         )
-        vm_json = "".join(cmd.stdout)
+        vm_json = "".join(cmd.stdout).strip()
         self.log.debug(f"VM JSON path: {vm_json}")
-        with open(vm_json.strip()) as f:
+        with open(vm_json) as f:
             return json.load(f)
 
     def run(self) -> None:

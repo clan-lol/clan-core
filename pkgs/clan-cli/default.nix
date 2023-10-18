@@ -10,7 +10,6 @@
 , pytest-cov
 , pytest-xdist
 , pytest-subprocess
-, pytest-parallel
 , pytest-timeout
 , python3
 , runCommand
@@ -46,7 +45,6 @@ let
     pytest
     pytest-cov
     pytest-subprocess
-  #  pytest-parallel
     pytest-xdist
     pytest-timeout
     openssh

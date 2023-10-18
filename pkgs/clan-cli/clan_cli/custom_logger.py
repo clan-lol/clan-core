@@ -15,7 +15,7 @@ def get_formatter(color: str) -> Callable[[logging.LogRecord], logging.Formatter
         reset = "\x1b[0m"
         filepath = Path(record.pathname).resolve()
         return logging.Formatter(
-            f"{filepath}:%(lineno)d::%(funcName)s\n{color}%(levelname)s{reset}: %(message)s"
+            f"{color}%(levelname)s{reset}: %(message)s\n       {filepath}:%(lineno)d::%(funcName)s\n"
         )
     return myformatter
 
