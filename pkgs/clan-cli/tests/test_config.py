@@ -57,7 +57,7 @@ def test_configure_machine(
     capsys: pytest.CaptureFixture,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("HOME", str(temporary_dir))
+
     cli = Cli()
     cli.run(["config", "-m", "machine1", "clan.jitsi.enable", "true"])
     # clear the output buffer

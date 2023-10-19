@@ -1,7 +1,7 @@
 {
   description = "<Put your description here>";
 
-  inputs.clan-core.url = "git+https://git.clan.lol/clan/clan-core";
+  inputs.clan-core.url = "git+https://git.clan.lol/clan/clan-core?ref=Qubasa-main";
 
   outputs = { self, clan-core, ... }:
     let
