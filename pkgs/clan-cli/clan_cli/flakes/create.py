@@ -12,7 +12,7 @@ from ..errors import ClanError
 from ..nix import nix_command, nix_shell
 
 DEFAULT_URL: AnyUrl = parse_obj_as(
-    AnyUrl, "git+https://git.clan.lol/clan/clan-core#new-clan"
+    AnyUrl, "git+https://git.clan.lol/clan/clan-core?ref=Qubasa-main#new-clan" # TODO: Change me back to main branch
 )
 
 

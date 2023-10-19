@@ -115,6 +115,10 @@ class BaseTask:
         self.status = TaskStatus.RUNNING
         try:
             self.run()
+            # TODO: We need to check, if too many commands have been initialized,
+            # but not run. This would deadlock the log_lines() function.
+            # Idea: Run next(cmds) and check if it raises StopIteration if not,
+            # we have too many commands
         except Exception as e:
             # FIXME: fix exception handling here
             traceback.print_exception(*sys.exc_info())
