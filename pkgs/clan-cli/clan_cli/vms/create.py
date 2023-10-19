@@ -48,6 +48,7 @@ class BuildVmTask(BaseTask):
         # TODO: We should get this from the vm argument
         vm_config = self.get_vm_create_info(cmds)
 
+        # TODO: Don't use a temporary directory, instead create a new flake directory
         with tempfile.TemporaryDirectory() as tmpdir_:
             tmpdir = Path(tmpdir_)
             xchg_dir = tmpdir / "xchg"

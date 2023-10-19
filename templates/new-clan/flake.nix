@@ -9,6 +9,7 @@
       pkgs = clan-core.inputs.nixpkgs.legacyPackages.${system};
       clan = clan-core.lib.buildClan {
         directory = self;
+        clanName = "__CHANGE_ME__";
       };
     in
     {
