@@ -307,11 +307,6 @@ def register_parser(
     # inject callback function to process the input later
     parser.set_defaults(func=get_or_set_option)
     parser.add_argument(
-        "flake",
-        type=str,
-        help="name of the flake to set machine options for",
-    )
-    parser.add_argument(
         "--machine",
         "-m",
         help="Machine to configure",
@@ -354,7 +349,11 @@ def register_parser(
         nargs="*",
         help="option value to set (if omitted, the current value is printed)",
     )
-
+    parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to set machine options for",
+    )
 
 def main(argv: Optional[list[str]] = None) -> None:
     if argv is None:

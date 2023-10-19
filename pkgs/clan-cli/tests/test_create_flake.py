@@ -65,6 +65,6 @@ def test_create_flake(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
     # configure machine1
     capsys.readouterr()
-    cli.run(["config", "--machine", "machine1", "services.openssh.enable"])
+    cli.run(["config", "--machine", "machine1", "services.openssh.enable", "", flake_name])
     capsys.readouterr()
-    cli.run(["config", "--machine", "machine1", "services.openssh.enable", "true"])
+    cli.run(["config", "--machine", "machine1", "services.openssh.enable", "true", flake_name])

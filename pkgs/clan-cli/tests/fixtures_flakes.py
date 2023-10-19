@@ -80,9 +80,9 @@ def create_flake(
 
 @pytest.fixture
 def test_flake(
-    monkeypatch: pytest.MonkeyPatch, temporary_dir: Path
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
-    yield from create_flake(monkeypatch, temporary_dir, FlakeName("test_flake"))
+    yield from create_flake(monkeypatch, temporary_home, FlakeName("test_flake"))
 
 
 @pytest.fixture
