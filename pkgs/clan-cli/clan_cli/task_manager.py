@@ -63,6 +63,7 @@ class Command:
         os.set_blocking(self.p.stdout.fileno(), False)
         os.set_blocking(self.p.stderr.fileno(), False)
 
+
         while self.p.poll() is None:
             # Check if stderr is ready to be read from
             rlist, _, _ = select.select([self.p.stderr, self.p.stdout], [], [], 0)
@@ -70,10 +71,10 @@ class Command:
                 try:
                     for line in fd:
                         if fd == self.p.stderr:
-                            print(f"[{cmd[0]}] stderr: {line.rstrip()}")
+                            self.log.debug(f"[{cmd[0]}] stderr: {line}")
                             self.stderr.append(line)
                         else:
-                            print(f"[{cmd[0]}] stdout: {line.rstrip()}")
+                            self.log.debug(f"[{cmd[0]}] stdout: {line}")
                             self.stdout.append(line)
                         self._output.put(line)
                 except BlockingIOError:
