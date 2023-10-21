@@ -158,7 +158,11 @@ def read_machine_option_value(
 
 def get_or_set_option(args: argparse.Namespace) -> None:
     if args.value == []:
-        print(read_machine_option_value(args.machine, args.option, args.show_trace))
+        print(
+            read_machine_option_value(
+                args.flake, args.machine, args.option, args.show_trace
+            )
+        )
     else:
         # load options
         if args.options_file is None:
@@ -354,6 +358,7 @@ def register_parser(
         type=str,
         help="name of the flake to set machine options for",
     )
+
 
 def main(argv: Optional[list[str]] = None) -> None:
     if argv is None:

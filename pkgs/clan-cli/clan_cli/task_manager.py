@@ -63,7 +63,6 @@ class Command:
         os.set_blocking(self.p.stdout.fileno(), False)
         os.set_blocking(self.p.stderr.fileno(), False)
 
-
         while self.p.poll() is None:
             # Check if stderr is ready to be read from
             rlist, _, _ = select.select([self.p.stderr, self.p.stdout], [], [], 0)

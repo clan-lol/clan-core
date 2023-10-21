@@ -17,11 +17,11 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def flake_with_vm_with_secrets(
-    monkeypatch: pytest.MonkeyPatch, temporary_dir: Path
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
     yield from create_flake(
         monkeypatch,
-        temporary_dir,
+        temporary_home,
         FlakeName("test_flake_with_core_dynamic_machines"),
         CLAN_CORE,
         machines=["vm_with_secrets"],
@@ -30,11 +30,11 @@ def flake_with_vm_with_secrets(
 
 @pytest.fixture
 def remote_flake_with_vm_without_secrets(
-    monkeypatch: pytest.MonkeyPatch, temporary_dir: Path
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
     yield from create_flake(
         monkeypatch,
-        temporary_dir,
+        temporary_home,
         FlakeName("test_flake_with_core_dynamic_machines"),
         CLAN_CORE,
         machines=["vm_without_secrets"],
