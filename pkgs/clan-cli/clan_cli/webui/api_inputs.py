@@ -8,8 +8,8 @@ from ..dirs import clan_data_dir, clan_flakes_dir
 from ..flakes.create import DEFAULT_URL
 from ..types import validate_path
 
-
 log = logging.getLogger(__name__)
+
 
 class ClanDataPath(BaseModel):
     dest: Path

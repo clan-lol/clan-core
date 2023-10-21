@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
+import logging
 
 from clan_cli.nix import nix_shell
 
@@ -17,6 +18,7 @@ from .machines import add_machine, has_machine
 from .secrets import decrypt_secret, encrypt_secret, has_secret
 from .sops import generate_private_key
 
+log = logging.getLogger(__name__)
 
 def generate_host_key(flake_name: FlakeName, machine_name: str) -> None:
     if has_machine(flake_name, machine_name):
@@ -95,7 +97,7 @@ def generate_secrets_from_nix(
 ) -> None:
     generate_host_key(flake_name, machine_name)
     errors = {}
-
+    log.debug("Generating secrets for machine %s and flake %s", machine_name, flake_name)
     with TemporaryDirectory() as d:
         # if any of the secrets are missing, we regenerate all connected facts/secrets
         for secret_group, secret_options in secret_submodules.items():
@@ -117,6 +119,7 @@ def upload_age_key_from_nix(
     flake_name: FlakeName,
     machine_name: str,
 ) -> None:
+    log.debug("Uploading secrets for machine %s and flake %s", machine_name, flake_name)
     secret_name = f"{machine_name}-age.key"
     if not has_secret(
         flake_name, secret_name

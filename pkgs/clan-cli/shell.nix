@@ -44,7 +44,7 @@ mkShell {
 
      export PATH="$tmp_path/python/bin:${checkScript}/bin:$PATH"
      export PYTHONPATH="$repo_root:$tmp_path/python/${pythonWithDeps.sitePackages}:"
-    export PYTHONBREAKPOINT=ipdb.set_trace
+     export PYTHONBREAKPOINT=ipdb.set_trace
 
      export XDG_DATA_DIRS="$tmp_path/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
      export fish_complete_path="$tmp_path/share/fish/vendor_completions.d''${fish_complete_path:+:$fish_complete_path}"
@@ -54,6 +54,7 @@ mkShell {
        $tmp_path/share/zsh/site-functions
      register-python-argcomplete --shell fish clan > $tmp_path/share/fish/vendor_completions.d/clan.fish
      register-python-argcomplete --shell bash clan > $tmp_path/share/bash-completion/completions/clan
+
 
      ./bin/clan flakes create example_clan
      ./bin/clan machines create example_machine example_clan

@@ -4,17 +4,18 @@ import json
 import os
 import shlex
 import sys
-import tempfile
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Dict
 from uuid import UUID
 
-from ..dirs import specific_flake_dir, clan_flakes_dir
-from ..nix import nix_build, nix_config, nix_shell, nix_eval
+from ..dirs import clan_flakes_dir, specific_flake_dir
+from ..nix import nix_build, nix_config, nix_eval, nix_shell
 from ..task_manager import BaseTask, Command, create_task
-from .inspect import VmConfig, inspect_vm
-from ..flakes.create import create_flake
 from ..types import validate_path
+from .inspect import VmConfig, inspect_vm
+from ..errors import ClanError
+from ..debug import repro_env_break
+
 
 class BuildVmTask(BaseTask):
     def __init__(self, uuid: UUID, vm: VmConfig) -> None:
@@ -43,14 +44,8 @@ class BuildVmTask(BaseTask):
     def get_clan_name(self, cmds: Iterator[Command]) -> str:
         clan_dir = self.vm.flake_url
         cmd = next(cmds)
-        cmd.run(
-            nix_eval(
-                [
-                    f'{clan_dir}#clanInternals.clanName'
-                ]
-            )
-        )
-        clan_name = "".join(cmd.stdout).strip()
+        cmd.run(nix_eval([f"{clan_dir}#clanInternals.clanName"]))
+        clan_name = cmd.stdout[0].strip().strip('"')
         return clan_name
 
     def run(self) -> None:
@@ -63,9 +58,11 @@ class BuildVmTask(BaseTask):
         vm_config = self.get_vm_create_info(cmds)
         clan_name = self.get_clan_name(cmds)
 
+        self.log.debug(f"Building VM for clan name: {clan_name}")
 
         flake_dir = clan_flakes_dir() / clan_name
         validate_path(clan_flakes_dir(), flake_dir)
+        flake_dir.mkdir(exist_ok=True)
 
         xchg_dir = flake_dir / "xchg"
         xchg_dir.mkdir()
@@ -82,9 +79,10 @@ class BuildVmTask(BaseTask):
         env["SECRETS_DIR"] = str(secrets_dir)
 
         cmd = next(cmds)
+        repro_env_break(work_dir=flake_dir, env=env, cmd=[vm_config["generateSecrets"], clan_name])
         if Path(self.vm.flake_url).is_dir():
             cmd.run(
-                [vm_config["generateSecrets"]],
+                [vm_config["generateSecrets"], clan_name],
                 env=env,
             )
         else:

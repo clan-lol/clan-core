@@ -5,8 +5,10 @@ from pathlib import Path
 import pytest
 from api import TestClient
 from cli import Cli
+
+from clan_cli.dirs import clan_flakes_dir
 from clan_cli.flakes.create import DEFAULT_URL
-from clan_cli.dirs import clan_flakes_dir, clan_data_dir
+
 
 @pytest.fixture
 def cli() -> Cli:
@@ -65,6 +67,17 @@ def test_create_flake(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
     # configure machine1
     capsys.readouterr()
-    cli.run(["config", "--machine", "machine1", "services.openssh.enable", "", flake_name])
+    cli.run(
+        ["config", "--machine", "machine1", "services.openssh.enable", "", flake_name]
+    )
     capsys.readouterr()
-    cli.run(["config", "--machine", "machine1", "services.openssh.enable", "true", flake_name])
+    cli.run(
+        [
+            "config",
+            "--machine",
+            "machine1",
+            "services.openssh.enable",
+            "true",
+            flake_name,
+        ]
+    )
