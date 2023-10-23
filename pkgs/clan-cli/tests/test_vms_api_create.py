@@ -9,6 +9,7 @@ from fixtures_flakes import FlakeForTest, create_flake
 from httpx import SyncByteStream
 from root import CLAN_CORE
 
+from clan_cli.debug import repro_env_break
 from clan_cli.types import FlakeName
 
 if TYPE_CHECKING:
@@ -17,7 +18,8 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def flake_with_vm_with_secrets(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path
 ) -> Iterator[FlakeForTest]:
     yield from create_flake(
         monkeypatch,
@@ -42,15 +44,6 @@ def remote_flake_with_vm_without_secrets(
     )
 
 
-@pytest.fixture
-def create_user_with_age_key(
-    monkeypatch: pytest.MonkeyPatch,
-    test_flake: FlakeForTest,
-    age_keys: list["KeyPair"],
-) -> None:
-    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
-    cli = Cli()
-    cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey, test_flake.name])
 
 
 def generic_create_vm_test(api: TestClient, flake: Path, vm: str) -> None:
@@ -97,8 +90,13 @@ def test_create_local(
     api: TestClient,
     monkeypatch: pytest.MonkeyPatch,
     flake_with_vm_with_secrets: FlakeForTest,
-    create_user_with_age_key: None,
+    age_keys: list["KeyPair"],
 ) -> None:
+    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
+    cli = Cli()
+    cmd = ["secrets", "users", "add", "user1", age_keys[0].pubkey, flake_with_vm_with_secrets.name]
+    cli.run(cmd)
+
     generic_create_vm_test(api, flake_with_vm_with_secrets.path, "vm_with_secrets")
 
 

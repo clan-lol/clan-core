@@ -3,7 +3,7 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Body
-
+from clan_cli.debug import repro_env_break
 from ...config.machine import (
     config_for_machine,
     schema_for_machine,
@@ -33,6 +33,7 @@ async def list_machines(flake_name: FlakeName) -> MachinesResponse:
     machines = []
     for m in _list_machines(flake_name):
         machines.append(Machine(name=m, status=Status.UNKNOWN))
+
     return MachinesResponse(machines=machines)
 
 

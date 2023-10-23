@@ -21,8 +21,8 @@ def test_generate_secret(
     monkeypatch.chdir(test_flake_with_core.path)
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
     cli = Cli()
-    cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey])
-    cli.run(["secrets", "generate", "vm1"])
+    cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey, test_flake_with_core.name])
+    cli.run(["secrets", "generate", "vm1", test_flake_with_core.name])
     has_secret(test_flake_with_core.name, "vm1-age.key")
     has_secret(test_flake_with_core.name, "vm1-zerotier-identity-secret")
     network_id = machine_get_fact(
@@ -43,7 +43,7 @@ def test_generate_secret(
     secret1_mtime = identity_secret.lstat().st_mtime_ns
 
     # test idempotency
-    cli.run(["secrets", "generate", "vm1"])
+    cli.run(["secrets", "generate", "vm1", test_flake_with_core.name])
     assert age_key.lstat().st_mtime_ns == age_key_mtime
     assert identity_secret.lstat().st_mtime_ns == secret1_mtime
 

@@ -39,6 +39,7 @@ in
       uploadSecrets = pkgs.writeScript "upload-secrets" ''
         #!${pkgs.python3}/bin/python
         import json
+        import sys
         from clan_cli.secrets.sops_generate import upload_age_key_from_nix
         # the second toJSON is needed to escape the string for the python
         args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; })})

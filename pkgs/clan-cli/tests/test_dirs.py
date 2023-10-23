@@ -7,15 +7,15 @@ from clan_cli.errors import ClanError
 
 
 def test_get_clan_flake_toplevel(
-    monkeypatch: pytest.MonkeyPatch, temporary_dir: Path
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> None:
-    monkeypatch.chdir(temporary_dir)
+    monkeypatch.chdir(temporary_home)
     with pytest.raises(ClanError):
         print(_get_clan_flake_toplevel())
-    (temporary_dir / ".git").touch()
-    assert _get_clan_flake_toplevel() == temporary_dir
+    (temporary_home / ".git").touch()
+    assert _get_clan_flake_toplevel() == temporary_home
 
-    subdir = temporary_dir / "subdir"
+    subdir = temporary_home / "subdir"
     subdir.mkdir()
     monkeypatch.chdir(subdir)
     (subdir / ".clan-flake").touch()

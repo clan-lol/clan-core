@@ -1,13 +1,13 @@
 import json
 from pathlib import Path
-
+from fixtures_flakes import FlakeForTest
 import pytest
 from api import TestClient
 
 
 @pytest.mark.impure
-def test_inspect_ok(api: TestClient, test_flake_with_core: Path) -> None:
-    params = {"url": str(test_flake_with_core)}
+def test_inspect_ok(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
+    params = {"url": str(test_flake_with_core.path)}
     response = api.get(
         "/api/flake/attrs",
         params=params,
@@ -32,8 +32,8 @@ def test_inspect_err(api: TestClient) -> None:
 
 
 @pytest.mark.impure
-def test_inspect_flake(api: TestClient, test_flake_with_core: Path) -> None:
-    params = {"url": str(test_flake_with_core)}
+def test_inspect_flake(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
+    params = {"url": str(test_flake_with_core.path)}
     response = api.get(
         "/api/flake",
         params=params,

@@ -91,4 +91,10 @@ def register_import_sops_parser(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="the sops file to import (- for stdin)",
     )
+    parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake",
+    )
+
     parser.set_defaults(func=import_sops)

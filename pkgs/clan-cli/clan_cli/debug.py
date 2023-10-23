@@ -23,10 +23,6 @@ def repro_env_break(work_dir: Path, env: Optional[Dict[str, str]] = None, cmd: O
     else:
         env = env.copy()
 
-    # Error checking
-    if "bash" in env["SHELL"]:
-        raise Exception("I assumed you use zsh, not bash")
-
     # Cmd appending
     args = ["xterm", "-e", "zsh", "-df"]
     if cmd is not None:
@@ -48,7 +44,9 @@ def write_command(command: str, loc:Path) -> None:
     os.chmod(loc, st.st_mode | stat.S_IEXEC)
 
 def spawn_process(func: Callable, **kwargs:Any) -> mp.Process:
-    mp.set_start_method(method="spawn")
+    if mp.get_start_method(allow_none=True) is None:
+        mp.set_start_method(method="spawn")
+
     proc = mp.Process(target=func, kwargs=kwargs)
     proc.start()
     return proc

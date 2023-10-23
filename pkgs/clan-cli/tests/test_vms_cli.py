@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
-
+from fixtures_flakes import FlakeForTest
 import pytest
 from cli import Cli
 
@@ -12,9 +12,9 @@ no_kvm = not os.path.exists("/dev/kvm")
 
 
 @pytest.mark.impure
-def test_inspect(test_flake_with_core: Path, capsys: pytest.CaptureFixture) -> None:
+def test_inspect(test_flake_with_core: FlakeForTest, capsys: pytest.CaptureFixture) -> None:
     cli = Cli()
-    cli.run(["vms", "inspect", "vm1"])
+    cli.run(["vms", "inspect", "vm1", test_flake_with_core.name])
     out = capsys.readouterr()  # empty the buffer
     assert "Cores" in out.out
 
@@ -23,11 +23,11 @@ def test_inspect(test_flake_with_core: Path, capsys: pytest.CaptureFixture) -> N
 @pytest.mark.impure
 def test_create(
     monkeypatch: pytest.MonkeyPatch,
-    test_flake_with_core: Path,
+    test_flake_with_core: FlakeForTest,
     age_keys: list["KeyPair"],
 ) -> None:
-    monkeypatch.chdir(test_flake_with_core)
+    monkeypatch.chdir(test_flake_with_core.path)
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
     cli = Cli()
-    cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey])
-    cli.run(["vms", "create", "vm1"])
+    cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey, test_flake_with_core.name])
+    cli.run(["vms", "create", "vm1", test_flake_with_core.name])
