@@ -23,8 +23,7 @@ mkShell {
 
   shellHook = ''
     tmp_path=$(realpath ./.direnv)
-
-    repo_root=$(realpath .)
+    source=$(realpath .)
     mkdir -p "$tmp_path/python/${pythonWithDeps.sitePackages}"
 
     # Install the package in editable mode
@@ -36,14 +35,14 @@ mkShell {
       --no-index \
       --no-build-isolation \
       --prefix "$tmp_path/python" \
-      --editable $repo_root
+      --editable $source
 
     rm -f clan_cli/nixpkgs clan_cli/webui/assets
     ln -sf ${clan-cli.nixpkgs} clan_cli/nixpkgs
     ln -sf ${ui-assets} clan_cli/webui/assets
 
     export PATH="$tmp_path/python/bin:${checkScript}/bin:$PATH"
-    export PYTHONPATH="$repo_root:$tmp_path/python/${pythonWithDeps.sitePackages}:"
+    export PYTHONPATH="$source:$tmp_path/python/${pythonWithDeps.sitePackages}:"
 
     export XDG_DATA_DIRS="$tmp_path/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
     export fish_complete_path="$tmp_path/share/fish/vendor_completions.d''${fish_complete_path:+:$fish_complete_path}"
