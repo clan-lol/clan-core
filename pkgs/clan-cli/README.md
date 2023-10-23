@@ -70,7 +70,7 @@ pytest -n0 -s tests/test_secrets_cli.py::test_users
 ```
 
 ## Debugging functions
+
 Debugging functions can be found under `src/debug.py`
 quite interesting is the function repro_env_break() which drops you into a shell
 with the test environment loaded.
-

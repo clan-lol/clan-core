@@ -42,6 +42,10 @@ module = "jsonschema.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "ipdb.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "pytest.*"
 ignore_missing_imports = true
 
@@ -52,7 +56,7 @@ ignore_missing_imports = true
 [tool.ruff]
 line-length = 88
 
-select = [ "E", "F", "I", "U", "N"]
+select = [ "E", "F", "I",  "N"]
 ignore = [ "E501" ]
 
 [tool.black]

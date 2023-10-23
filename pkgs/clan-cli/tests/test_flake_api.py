@@ -1,8 +1,8 @@
 import json
-from pathlib import Path
-from fixtures_flakes import FlakeForTest
+
 import pytest
 from api import TestClient
+from fixtures_flakes import FlakeForTest
 
 
 @pytest.mark.impure

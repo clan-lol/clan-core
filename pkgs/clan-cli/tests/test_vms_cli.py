@@ -1,9 +1,9 @@
 import os
-from pathlib import Path
 from typing import TYPE_CHECKING
-from fixtures_flakes import FlakeForTest
+
 import pytest
 from cli import Cli
+from fixtures_flakes import FlakeForTest
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
@@ -12,7 +12,9 @@ no_kvm = not os.path.exists("/dev/kvm")
 
 
 @pytest.mark.impure
-def test_inspect(test_flake_with_core: FlakeForTest, capsys: pytest.CaptureFixture) -> None:
+def test_inspect(
+    test_flake_with_core: FlakeForTest, capsys: pytest.CaptureFixture
+) -> None:
     cli = Cli()
     cli.run(["vms", "inspect", "vm1", test_flake_with_core.name])
     out = capsys.readouterr()  # empty the buffer
@@ -29,5 +31,14 @@ def test_create(
     monkeypatch.chdir(test_flake_with_core.path)
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
     cli = Cli()
-    cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey, test_flake_with_core.name])
+    cli.run(
+        [
+            "secrets",
+            "users",
+            "add",
+            "user1",
+            age_keys[0].pubkey,
+            test_flake_with_core.name,
+        ]
+    )
     cli.run(["vms", "create", "vm1", test_flake_with_core.name])

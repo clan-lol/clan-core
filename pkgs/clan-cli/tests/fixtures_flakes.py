@@ -112,5 +112,4 @@ def test_flake_with_core_and_pass(
         temporary_home,
         FlakeName("test_flake_with_core_and_pass"),
         CLAN_CORE,
-
     )
