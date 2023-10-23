@@ -38,7 +38,7 @@ class FlakeForTest(NamedTuple):
 
 def create_flake(
     monkeypatch: pytest.MonkeyPatch,
-    temporary_dir: Path,
+    temporary_home: Path,
     flake_name: FlakeName,
     clan_core_flake: Path | None = None,
     machines: list[str] = [],
@@ -51,7 +51,7 @@ def create_flake(
     template = Path(__file__).parent / flake_name
 
     # copy the template to a new temporary location
-    home = Path(temporary_dir)
+    home = Path(temporary_home)
     flake = home / ".local/state/clan/flake" / flake_name
     shutil.copytree(template, flake)
 
@@ -87,21 +87,21 @@ def test_flake(
 
 @pytest.fixture
 def test_flake_with_core(
-    monkeypatch: pytest.MonkeyPatch, temporary_dir: Path
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
     if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
             "clan-core flake not found. This test requires the clan-core flake to be present"
         )
     yield from create_flake(
-        monkeypatch, temporary_dir, FlakeName("test_flake_with_core"), CLAN_CORE
+        monkeypatch, temporary_home, FlakeName("test_flake_with_core"), CLAN_CORE
     )
 
 
 @pytest.fixture
 def test_flake_with_core_and_pass(
     monkeypatch: pytest.MonkeyPatch,
-    temporary_dir: Path,
+    temporary_home: Path,
 ) -> Iterator[FlakeForTest]:
     if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
@@ -109,7 +109,8 @@ def test_flake_with_core_and_pass(
         )
     yield from create_flake(
         monkeypatch,
-        temporary_dir,
+        temporary_home,
         FlakeName("test_flake_with_core_and_pass"),
         CLAN_CORE,
+
     )

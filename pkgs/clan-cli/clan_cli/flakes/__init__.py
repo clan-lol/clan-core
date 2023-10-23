@@ -4,7 +4,6 @@ import argparse
 from .create import register_create_parser
 from .list import register_list_parser
 
-
 # takes a (sub)parser and configures it
 def register_parser(parser: argparse.ArgumentParser) -> None:
     subparser = parser.add_subparsers(

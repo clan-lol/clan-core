@@ -4,6 +4,7 @@ import json
 import os
 import shlex
 import sys
+import re
 from pathlib import Path
 from typing import Iterator, Dict
 from uuid import UUID
@@ -16,6 +17,17 @@ from .inspect import VmConfig, inspect_vm
 from ..errors import ClanError
 from ..debug import repro_env_break
 
+
+def is_path_or_url(s: str) -> str | None:
+    # check if s is a valid path
+    if os.path.exists(s):
+        return "path"
+    # check if s is a valid URL
+    elif re.match(r"^https?://[a-zA-Z0-9.-]+/[a-zA-Z0-9.-]+", s):
+        return "URL"
+    # otherwise, return None
+    else:
+        return None
 
 class BuildVmTask(BaseTask):
     def __init__(self, uuid: UUID, vm: VmConfig) -> None:
@@ -78,19 +90,25 @@ class BuildVmTask(BaseTask):
         )  # TODO do this in the clanCore module
         env["SECRETS_DIR"] = str(secrets_dir)
 
-        cmd = next(cmds)
-        repro_env_break(work_dir=flake_dir, env=env, cmd=[vm_config["generateSecrets"], clan_name])
-        if Path(self.vm.flake_url).is_dir():
-            cmd.run(
-                [vm_config["generateSecrets"], clan_name],
-                env=env,
+        res = is_path_or_url(str(self.vm.flake_url))
+        if res is None:
+            raise ClanError(
+                f"flake_url must be a valid path or URL, got {self.vm.flake_url}"
             )
-        else:
-            self.log.warning("won't generate secrets for non local clan")
+        elif res == "path": # Only generate secrets for local clans
+            cmd = next(cmds)
+            if Path(self.vm.flake_url).is_dir():
+                cmd.run(
+                    [vm_config["generateSecrets"], clan_name],
+                    env=env,
+                )
+            else:
+                self.log.warning("won't generate secrets for non local clan")
+
 
         cmd = next(cmds)
         cmd.run(
-            [vm_config["uploadSecrets"]],
+            [vm_config["uploadSecrets"], clan_name],
             env=env,
         )
 

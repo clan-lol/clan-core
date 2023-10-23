@@ -9,7 +9,7 @@
     let
       clan = clan-core.lib.buildClan {
         directory = self;
-        clanName = "core_dynamic_machine_clan";
+        clanName = "test_flake_with_core_dynamic_machines";
         machines =
           let
             machineModules = builtins.readDir (self + "/machines");

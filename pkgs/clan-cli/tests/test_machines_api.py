@@ -1,46 +1,47 @@
 from pathlib import Path
 
 from api import TestClient
+from fixtures_flakes import FlakeForTest
+from clan_cli.debug import repro_env_break
 
-
-def test_machines(api: TestClient, test_flake: Path) -> None:
-    response = api.get("/api/machines")
+def test_machines(api: TestClient, test_flake: FlakeForTest) -> None:
+    response = api.get(f"/api/{test_flake.name}/machines")
     assert response.status_code == 200
     assert response.json() == {"machines": []}
 
-    response = api.post("/api/machines", json={"name": "test"})
+    response = api.post(f"/api/{test_flake.name}/machines", json={"name": "test"})
     assert response.status_code == 201
     assert response.json() == {"machine": {"name": "test", "status": "unknown"}}
 
-    response = api.get("/api/machines/test")
+    response = api.get(f"/api/{test_flake.name}/machines/test")
     assert response.status_code == 200
     assert response.json() == {"machine": {"name": "test", "status": "unknown"}}
 
-    response = api.get("/api/machines")
+    response = api.get(f"/api/{test_flake.name}/machines")
     assert response.status_code == 200
     assert response.json() == {"machines": [{"name": "test", "status": "unknown"}]}
 
 
-def test_configure_machine(api: TestClient, test_flake: Path) -> None:
+def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
     # ensure error 404 if machine does not exist when accessing the config
-    response = api.get("/api/machines/machine1/config")
+    response = api.get(f"/api/{test_flake.name}/machines/machine1/config")
     assert response.status_code == 404
 
     # ensure error 404 if machine does not exist when writing to the config
-    response = api.put("/api/machines/machine1/config", json={})
+    response = api.put(f"/api/{test_flake.name}/machines/machine1/config", json={})
     assert response.status_code == 404
 
     # create the machine
-    response = api.post("/api/machines", json={"name": "machine1"})
+    response = api.post(f"/api/{test_flake.name}/machines", json={"name": "machine1"})
     assert response.status_code == 201
 
     # ensure an empty config is returned by default for a new machine
-    response = api.get("/api/machines/machine1/config")
+    response = api.get(f"/api/{test_flake.name}/machines/machine1/config")
     assert response.status_code == 200
     assert response.json() == {"config": {}}
 
     # get jsonschema for machine
-    response = api.get("/api/machines/machine1/schema")
+    response = api.get(f"/api/{test_flake.name}/machines/machine1/schema")
     assert response.status_code == 200
     json_response = response.json()
     assert "schema" in json_response and "properties" in json_response["schema"]
@@ -91,6 +92,11 @@ def test_configure_machine(api: TestClient, test_flake: Path) -> None:
                     devices=["/dev/fake_disk"],
                 ),
             ),
+        f"/api/{test_flake.name}machines/machine1/config",
+        json=dict(
+            clan=dict(
+                jitsi=True,
+            )
         ),
     )
 
@@ -110,8 +116,8 @@ def test_configure_machine(api: TestClient, test_flake: Path) -> None:
     assert response.status_code == 200
     assert response.json() == {"config": config2}
 
-    # ensure that the config has actually been updated
-    response = api.get("/api/machines/machine1/config")
+    # get the config again
+    response = api.get(f"/api/{test_flake.name}/machines/machine1/config")
     assert response.status_code == 200
     assert response.json() == {"config": config2}
 
