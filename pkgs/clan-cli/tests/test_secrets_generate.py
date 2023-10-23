@@ -21,7 +21,16 @@ def test_generate_secret(
     monkeypatch.chdir(test_flake_with_core.path)
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
     cli = Cli()
-    cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey, test_flake_with_core.name])
+    cli.run(
+        [
+            "secrets",
+            "users",
+            "add",
+            "user1",
+            age_keys[0].pubkey,
+            test_flake_with_core.name,
+        ]
+    )
     cli.run(["secrets", "generate", "vm1", test_flake_with_core.name])
     has_secret(test_flake_with_core.name, "vm1-age.key")
     has_secret(test_flake_with_core.name, "vm1-zerotier-identity-secret")

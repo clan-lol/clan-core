@@ -13,6 +13,7 @@ from typing import Iterator
 import uvicorn
 from pydantic import AnyUrl, IPvAnyAddress
 from pydantic.tools import parse_obj_as
+
 from clan_cli.errors import ClanError
 
 log = logging.getLogger(__name__)
@@ -25,8 +26,7 @@ def open_browser(base_url: AnyUrl, sub_url: str) -> None:
             break
         except OSError:
             time.sleep(i)
-    url = parse_obj_as(
-        AnyUrl,f"{base_url}/{sub_url.removeprefix('/')}")
+    url = parse_obj_as(AnyUrl, f"{base_url}/{sub_url.removeprefix('/')}")
     _open_browser(url)
 
 

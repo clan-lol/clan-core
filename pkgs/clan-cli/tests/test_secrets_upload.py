@@ -1,9 +1,9 @@
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 from cli import Cli
 from fixtures_flakes import FlakeForTest
+
 from clan_cli.ssh import HostGroup
 
 if TYPE_CHECKING:
@@ -21,9 +21,27 @@ def test_secrets_upload(
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
 
     cli = Cli()
-    cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey, test_flake_with_core.name])
+    cli.run(
+        [
+            "secrets",
+            "users",
+            "add",
+            "user1",
+            age_keys[0].pubkey,
+            test_flake_with_core.name,
+        ]
+    )
 
-    cli.run(["secrets", "machines", "add", "vm1", age_keys[1].pubkey, test_flake_with_core.name])
+    cli.run(
+        [
+            "secrets",
+            "machines",
+            "add",
+            "vm1",
+            age_keys[1].pubkey,
+            test_flake_with_core.name,
+        ]
+    )
     monkeypatch.setenv("SOPS_NIX_SECRET", age_keys[0].privkey)
     cli.run(["secrets", "set", "vm1-age.key", test_flake_with_core.name])
 

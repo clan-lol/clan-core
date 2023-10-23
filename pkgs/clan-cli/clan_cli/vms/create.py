@@ -2,20 +2,19 @@ import argparse
 import asyncio
 import json
 import os
+import re
 import shlex
 import sys
-import re
 from pathlib import Path
-from typing import Iterator, Dict
+from typing import Iterator
 from uuid import UUID
 
 from ..dirs import clan_flakes_dir, specific_flake_dir
+from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_eval, nix_shell
 from ..task_manager import BaseTask, Command, create_task
 from ..types import validate_path
 from .inspect import VmConfig, inspect_vm
-from ..errors import ClanError
-from ..debug import repro_env_break
 
 
 def is_path_or_url(s: str) -> str | None:
@@ -28,6 +27,7 @@ def is_path_or_url(s: str) -> str | None:
     # otherwise, return None
     else:
         return None
+
 
 class BuildVmTask(BaseTask):
     def __init__(self, uuid: UUID, vm: VmConfig) -> None:
@@ -95,7 +95,7 @@ class BuildVmTask(BaseTask):
             raise ClanError(
                 f"flake_url must be a valid path or URL, got {self.vm.flake_url}"
             )
-        elif res == "path": # Only generate secrets for local clans
+        elif res == "path":  # Only generate secrets for local clans
             cmd = next(cmds)
             if Path(self.vm.flake_url).is_dir():
                 cmd.run(
@@ -104,7 +104,6 @@ class BuildVmTask(BaseTask):
                 )
             else:
                 self.log.warning("won't generate secrets for non local clan")
-
 
         cmd = next(cmds)
         cmd.run(

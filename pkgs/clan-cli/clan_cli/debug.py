@@ -1,23 +1,27 @@
-from typing import Dict, Optional, Tuple, Callable, Any, Mapping, List
-from pathlib import Path
-import ipdb
+import logging
+import multiprocessing as mp
 import os
+import shlex
 import stat
 import subprocess
-from .dirs import find_git_repo_root
-import multiprocessing as mp
-from .types import FlakeName
-import logging
 import sys
-import shlex
-import time
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
+
+import ipdb
 
 log = logging.getLogger(__name__)
 
-def command_exec(cmd: List[str], work_dir:Path, env: Dict[str, str]) -> None:
+
+def command_exec(cmd: List[str], work_dir: Path, env: Dict[str, str]) -> None:
     subprocess.run(cmd, check=True, env=env, cwd=work_dir.resolve())
 
-def repro_env_break(work_dir: Path, env: Optional[Dict[str, str]] = None, cmd: Optional[List[str]] = None) -> None:
+
+def repro_env_break(
+    work_dir: Path,
+    env: Optional[Dict[str, str]] = None,
+    cmd: Optional[List[str]] = None,
+) -> None:
     if env is None:
         env = os.environ.copy()
     else:
@@ -36,14 +40,16 @@ def repro_env_break(work_dir: Path, env: Optional[Dict[str, str]] = None, cmd: O
     finally:
         proc.terminate()
 
-def write_command(command: str, loc:Path) -> None:
+
+def write_command(command: str, loc: Path) -> None:
     with open(loc, "w") as f:
         f.write("#!/usr/bin/env bash\n")
         f.write(command)
     st = os.stat(loc)
     os.chmod(loc, st.st_mode | stat.S_IEXEC)
 
-def spawn_process(func: Callable, **kwargs:Any) -> mp.Process:
+
+def spawn_process(func: Callable, **kwargs: Any) -> mp.Process:
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method(method="spawn")
 
@@ -57,7 +63,7 @@ def dump_env(env: Dict[str, str], loc: Path) -> None:
     with open(loc, "w") as f:
         f.write("#!/usr/bin/env bash\n")
         for k, v in cenv.items():
-            if v.count('\n') > 0 or v.count("\"") > 0 or v.count("'") > 0:
+            if v.count("\n") > 0 or v.count('"') > 0 or v.count("'") > 0:
                 continue
             f.write(f"export {k}='{v}'\n")
     st = os.stat(loc)

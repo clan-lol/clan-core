@@ -5,11 +5,11 @@ from typing import Any, Optional
 
 import pytest
 from cli import Cli
+from fixtures_flakes import FlakeForTest
 
 from clan_cli import config
 from clan_cli.config import parsing
 from clan_cli.errors import ClanError
-from fixtures_flakes import FlakeForTest
 
 example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 

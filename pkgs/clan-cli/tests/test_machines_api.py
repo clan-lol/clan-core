@@ -1,14 +1,13 @@
-from pathlib import Path
-
 from api import TestClient
 from fixtures_flakes import FlakeForTest
-from clan_cli.debug import repro_env_break
+
 
 def test_machines(api: TestClient, test_flake: FlakeForTest) -> None:
     response = api.get(f"/api/{test_flake.name}/machines")
     assert response.status_code == 200
     assert response.json() == {"machines": []}
 
+    # TODO: Fails because the test_flake fixture needs to init a git repo, which it currently does not
     response = api.post(f"/api/{test_flake.name}/machines", json={"name": "test"})
     assert response.status_code == 201
     assert response.json() == {"machine": {"name": "test", "status": "unknown"}}
