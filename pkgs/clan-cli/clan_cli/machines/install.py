@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from ..dirs import get_flake_path
 from ..machines.machines import Machine
 from ..nix import nix_shell
 from ..secrets.generate import generate_secrets
@@ -26,7 +27,7 @@ def install_nixos(machine: Machine) -> None:
                 [
                     "nixos-anywhere",
                     "-f",
-                    f"{machine.clan_dir}#{flake_attr}",
+                    f"{machine.flake_dir}#{flake_attr}",
                     "-t",
                     "--no-reboot",
                     "--extra-files",
@@ -39,7 +40,7 @@ def install_nixos(machine: Machine) -> None:
 
 
 def install_command(args: argparse.Namespace) -> None:
-    machine = Machine(args.machine)
+    machine = Machine(args.machine, flake_dir=get_flake_path(args.flake))
     machine.deployment_address = args.target_host
 
     install_nixos(machine)
@@ -56,5 +57,9 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         type=str,
         help="ssh address to install to in the form of user@host:2222",
     )
-
+    parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to install machine from",
+    )
     parser.set_defaults(func=install_command)

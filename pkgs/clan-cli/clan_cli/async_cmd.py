@@ -14,6 +14,7 @@ class CmdOut(NamedTuple):
     stderr: str
     cwd: Optional[Path] = None
 
+
 async def run(cmd: list[str], cwd: Optional[Path] = None) -> CmdOut:
     log.debug(f"$: {shlex.join(cmd)}")
     cwd_res = None
@@ -48,7 +49,9 @@ stdout:
     return CmdOut(stdout.decode("utf-8"), stderr.decode("utf-8"), cwd=cwd)
 
 
-def runforcli(func: Callable[..., Coroutine[Any, Any, Dict[str, CmdOut]]], *args: Any) -> None:
+def runforcli(
+    func: Callable[..., Coroutine[Any, Any, Dict[str, CmdOut]]], *args: Any
+) -> None:
     try:
         res = asyncio.run(func(*args))
 

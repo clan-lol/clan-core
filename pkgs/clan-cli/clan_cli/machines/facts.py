@@ -1,9 +1,9 @@
-from .folders import machine_folder
+from ..dirs import specific_machine_dir
 
 
-def machine_has_fact(machine: str, fact: str) -> bool:
-    return (machine_folder(machine) / "facts" / fact).exists()
+def machine_has_fact(flake_name: str, machine: str, fact: str) -> bool:
+    return (specific_machine_dir(flake_name, machine) / "facts" / fact).exists()
 
 
-def machine_get_fact(machine: str, fact: str) -> str:
-    return (machine_folder(machine) / "facts" / fact).read_text()
+def machine_get_fact(flake_name: str, machine: str, fact: str) -> str:
+    return (specific_machine_dir(flake_name, machine) / "facts" / fact).read_text()

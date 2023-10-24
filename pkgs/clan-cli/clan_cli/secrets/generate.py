@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 def generate_secrets(machine: Machine) -> None:
     env = os.environ.copy()
-    env["CLAN_DIR"] = str(machine.clan_dir)
+    env["CLAN_DIR"] = str(machine.flake_dir)
     env["PYTHONPATH"] = ":".join(sys.path)  # TODO do this in the clanCore module
 
     print(f"generating secrets... {machine.generate_secrets}")

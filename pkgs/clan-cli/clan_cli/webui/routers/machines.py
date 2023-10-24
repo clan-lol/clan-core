@@ -27,17 +27,19 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/api/machines")
-async def list_machines() -> MachinesResponse:
+@router.get("/api/{flake_name}/machines")
+async def list_machines(flake_name: str) -> MachinesResponse:
     machines = []
-    for m in _list_machines():
+    for m in _list_machines(flake_name):
         machines.append(Machine(name=m, status=Status.UNKNOWN))
     return MachinesResponse(machines=machines)
 
 
-@router.post("/api/machines", status_code=201)
-async def create_machine(machine: Annotated[MachineCreate, Body()]) -> MachineResponse:
-    out = await _create_machine(machine.name)
+@router.post("/api/{flake_name}/machines", status_code=201)
+async def create_machine(
+    flake_name: str, machine: Annotated[MachineCreate, Body()]
+) -> MachineResponse:
+    out = await _create_machine(flake_name, machine.name)
     log.debug(out)
     return MachineResponse(machine=Machine(name=machine.name, status=Status.UNKNOWN))
 
@@ -48,23 +50,23 @@ async def get_machine(name: str) -> MachineResponse:
     return MachineResponse(machine=Machine(name=name, status=Status.UNKNOWN))
 
 
-@router.get("/api/machines/{name}/config")
-async def get_machine_config(name: str) -> ConfigResponse:
-    config = config_for_machine(name)
+@router.get("/api/{flake_name}/machines/{name}/config")
+async def get_machine_config(flake_name: str, name: str) -> ConfigResponse:
+    config = config_for_machine(flake_name, name)
     return ConfigResponse(config=config)
 
 
-@router.put("/api/machines/{name}/config")
+@router.put("/api/{flake_name}/machines/{name}/config")
 async def set_machine_config(
-    name: str, config: Annotated[dict, Body()]
+    flake_name: str, name: str, config: Annotated[dict, Body()]
 ) -> ConfigResponse:
-    set_config_for_machine(name, config)
+    set_config_for_machine(flake_name, name, config)
     return ConfigResponse(config=config)
 
 
-@router.get("/api/machines/{name}/schema")
-async def get_machine_schema(name: str) -> SchemaResponse:
-    schema = schema_for_machine(name)
+@router.get("/api/{flake_name}/machines/{name}/schema")
+async def get_machine_schema(flake_name: str, name: str) -> SchemaResponse:
+    schema = schema_for_machine(flake_name, name)
     return SchemaResponse(schema=schema)
 
 
