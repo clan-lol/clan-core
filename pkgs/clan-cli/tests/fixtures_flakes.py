@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Iterator, NamedTuple
 
 import pytest
+from command import Command
 from root import CLAN_CORE
 
 from clan_cli.dirs import nixpkgs_source
@@ -40,6 +41,7 @@ def create_flake(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
     flake_name: FlakeName,
+    command: Command,
     clan_core_flake: Path | None = None,
     machines: list[str] = [],
     remote: bool = False,
@@ -67,6 +69,14 @@ def create_flake(
     flake_nix = flake / "flake.nix"
     # this is where we would install the sops key to, when updating
     substitute(flake_nix, clan_core_flake, flake)
+
+    # Init git
+    command.run(["git", "init"], workdir=flake)
+    command.run(["git", "add", "."], workdir=flake)
+    command.run(["git", "config", "user.name", "clan-tool"], workdir=flake)
+    command.run(["git", "config", "user.email", "clan@example.com"], workdir=flake)
+    command.run(["git", "commit", "-a", "-m", "Initial commit"], workdir=flake)
+
     if remote:
         with tempfile.TemporaryDirectory() as workdir:
             monkeypatch.chdir(workdir)
@@ -80,28 +90,33 @@ def create_flake(
 
 @pytest.fixture
 def test_flake(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, command: Command
 ) -> Iterator[FlakeForTest]:
-    yield from create_flake(monkeypatch, temporary_home, FlakeName("test_flake"))
+    yield from create_flake(
+        monkeypatch, temporary_home, FlakeName("test_flake"), command
+    )
 
 
 @pytest.fixture
 def test_flake_with_core(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, command: Command
 ) -> Iterator[FlakeForTest]:
     if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
             "clan-core flake not found. This test requires the clan-core flake to be present"
         )
     yield from create_flake(
-        monkeypatch, temporary_home, FlakeName("test_flake_with_core"), CLAN_CORE
+        monkeypatch,
+        temporary_home,
+        FlakeName("test_flake_with_core"),
+        command,
+        CLAN_CORE,
     )
 
 
 @pytest.fixture
 def test_flake_with_core_and_pass(
-    monkeypatch: pytest.MonkeyPatch,
-    temporary_home: Path,
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, command: Command
 ) -> Iterator[FlakeForTest]:
     if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
@@ -111,5 +126,6 @@ def test_flake_with_core_and_pass(
         monkeypatch,
         temporary_home,
         FlakeName("test_flake_with_core_and_pass"),
+        command,
         CLAN_CORE,
     )
