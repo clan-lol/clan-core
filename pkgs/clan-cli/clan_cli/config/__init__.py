@@ -298,7 +298,6 @@ def set_option(
         commit_file(settings_file, commit_message=f"Set option {option_description}")
 
 
-
 # takes a (sub)parser and configures it
 def register_parser(
     parser: Optional[argparse.ArgumentParser],
