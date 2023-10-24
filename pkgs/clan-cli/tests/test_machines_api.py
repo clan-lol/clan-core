@@ -45,8 +45,31 @@ def test_configure_machine(api: TestClient, test_flake: Path) -> None:
     json_response = response.json()
     assert "schema" in json_response and "properties" in json_response["schema"]
 
-    # set some config
+    # set come invalid config (fileSystems missing)
     config = dict(
+        clan=dict(
+            jitsi=dict(
+                enable=True,
+            ),
+        ),
+    )
+    response = api.put(
+        "/api/machines/machine1/config",
+        json=config,
+    )
+    assert response.status_code == 400
+    assert (
+        "The ‘fileSystems’ option does not specify your root"
+        in response.json()["detail"]
+    )
+
+    # ensure config is still empty after the invalid attempt
+    response = api.get("/api/machines/machine1/config")
+    assert response.status_code == 200
+    assert response.json() == {"config": {}}
+
+    # set some valid config
+    config2 = dict(
         clan=dict(
             jitsi=dict(
                 enable=True,
@@ -69,17 +92,17 @@ def test_configure_machine(api: TestClient, test_flake: Path) -> None:
     )
     response = api.put(
         "/api/machines/machine1/config",
-        json=config,
+        json=config2,
     )
     assert response.status_code == 200
-    assert response.json() == {"config": config}
+    assert response.json() == {"config": config2}
 
-    # verify the machine config
+    # ensure that the config has actually been updated
+    response = api.get("/api/machines/machine1/config")
+    assert response.status_code == 200
+    assert response.json() == {"config": config2}
+
+    # verify the machine config evaluates
     response = api.get("/api/machines/machine1/verify")
     assert response.status_code == 200
     assert response.json() == {"success": True, "error": None}
-
-    # get the config again
-    response = api.get("/api/machines/machine1/config")
-    assert response.status_code == 200
-    assert response.json() == {"config": config}
