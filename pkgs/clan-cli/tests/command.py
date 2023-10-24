@@ -1,7 +1,8 @@
 import os
 import signal
 import subprocess
-from typing import IO, Any, Dict, Iterator, List, Union
+from pathlib import Path
+from typing import IO, Any, Dict, Iterator, List, Optional, Union
 
 import pytest
 
@@ -19,6 +20,7 @@ class Command:
         stdin: _FILE = None,
         stdout: _FILE = None,
         stderr: _FILE = None,
+        workdir: Optional[Path] = None,
     ) -> subprocess.Popen[str]:
         env = os.environ.copy()
         env.update(extra_env)
@@ -31,6 +33,7 @@ class Command:
             stderr=stderr,
             stdin=stdin,
             text=True,
+            cwd=workdir,
         )
         self.processes.append(p)
         return p

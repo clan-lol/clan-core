@@ -7,9 +7,9 @@ def test_machines(api: TestClient, test_flake: FlakeForTest) -> None:
     assert response.status_code == 200
     assert response.json() == {"machines": []}
 
-    # TODO: Fails because the test_flake fixture needs to init a git repo, which it currently does not
     response = api.post(f"/api/{test_flake.name}/machines", json={"name": "test"})
     assert response.status_code == 201
+
     assert response.json() == {"machine": {"name": "test", "status": "unknown"}}
 
     response = api.get(f"/api/{test_flake.name}/machines/test")
@@ -91,13 +91,13 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
                     devices=["/dev/fake_disk"],
                 ),
             ),
-        f"/api/{test_flake.name}machines/machine1/config",
+        
         json=dict(
             clan=dict(
                 jitsi=True,
             )
         ),
-    )
+    ))
 
     # set some valid config
     config2 = dict(

@@ -41,7 +41,7 @@ def test_import_sops(
         str(test_root.joinpath("data", "secrets.yaml")),
         test_flake.name,
     ]
-    repro_env_break(work_dir=test_flake.path, cmd=cmd)
+
     cli.run(cmd)
     capsys.readouterr()
     cli.run(["secrets", "users", "list", test_flake.name])

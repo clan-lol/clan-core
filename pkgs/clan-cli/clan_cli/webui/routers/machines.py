@@ -46,7 +46,7 @@ async def create_machine(
     return MachineResponse(machine=Machine(name=machine.name, status=Status.UNKNOWN))
 
 
-@router.get("/api/machines/{name}")
+@router.get("/api/{flake_name}/machines/{name}")
 async def get_machine(name: str) -> MachineResponse:
     log.error("TODO")
     return MachineResponse(machine=Machine(name=name, status=Status.UNKNOWN))
