@@ -4,6 +4,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body
 
+import clan_cli.config as config
+
 from ...config.machine import (
     config_for_machine,
     schema_for_machine,
@@ -19,6 +21,7 @@ from ..schemas import (
     MachinesResponse,
     SchemaResponse,
     Status,
+    VerifyMachineResponse,
 )
 
 log = logging.getLogger(__name__)
@@ -63,3 +66,9 @@ async def set_machine_config(
 async def get_machine_schema(name: str) -> SchemaResponse:
     schema = schema_for_machine(name)
     return SchemaResponse(schema=schema)
+
+
+@router.get("/api/machines/{name}/verify")
+async def verify_machine_config(name: str) -> VerifyMachineResponse:
+    success, error = config.machine.verify_machine_config(name)
+    return VerifyMachineResponse(success=success, error=error)

@@ -12,6 +12,32 @@ from clan_cli.machines.folders import machine_folder, machine_settings_file
 from clan_cli.nix import nix_eval
 
 
+def verify_machine_config(
+    machine_name: str, flake: Optional[Path] = None
+) -> tuple[bool, Optional[str]]:
+    """
+    Verify that the machine evaluates successfully
+    Returns a tuple of (success, error_message)
+    """
+    if flake is None:
+        flake = get_clan_flake_toplevel()
+    proc = subprocess.run(
+        nix_eval(
+            flags=[
+                "--impure",
+                "--show-trace",
+                f".#nixosConfigurations.{machine_name}.config.system.build.toplevel.outPath",
+            ],
+        ),
+        capture_output=True,
+        text=True,
+        cwd=flake,
+    )
+    if proc.returncode != 0:
+        return False, proc.stderr
+    return True, None
+
+
 def config_for_machine(machine_name: str) -> dict:
     # read the config from a json file located at {flake}/machines/{machine_name}/settings.json
     if not machine_folder(machine_name).exists():
