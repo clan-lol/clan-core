@@ -5,8 +5,6 @@ import pytest
 from cli import Cli
 from fixtures_flakes import FlakeForTest
 
-from clan_cli.debug import repro_env_break
-
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
