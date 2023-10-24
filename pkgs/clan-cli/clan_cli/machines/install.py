@@ -7,15 +7,16 @@ from ..dirs import specific_flake_dir
 from ..machines.machines import Machine
 from ..nix import nix_shell
 from ..secrets.generate import generate_secrets
+from ..types import FlakeName
 
 
-def install_nixos(machine: Machine) -> None:
+def install_nixos(machine: Machine, flake_name: FlakeName) -> None:
     h = machine.host
     target_host = f"{h.user or 'root'}@{h.host}"
 
     flake_attr = h.meta.get("flake_attr", "")
 
-    generate_secrets(machine)
+    generate_secrets(machine, flake_name)
 
     with TemporaryDirectory() as tmpdir_:
         tmpdir = Path(tmpdir_)
@@ -43,7 +44,7 @@ def install_command(args: argparse.Namespace) -> None:
     machine = Machine(args.machine, flake_dir=specific_flake_dir(args.flake))
     machine.deployment_address = args.target_host
 
-    install_nixos(machine)
+    install_nixos(machine, args.flake)
 
 
 def register_install_parser(parser: argparse.ArgumentParser) -> None:

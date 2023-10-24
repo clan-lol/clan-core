@@ -10,6 +10,7 @@ from ..nix import nix_build, nix_command, nix_config
 from ..secrets.generate import generate_secrets
 from ..secrets.upload import upload_secrets
 from ..ssh import Host, HostGroup, HostKeyCheck, parse_deployment_address
+from ..types import FlakeName
 
 
 def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
@@ -40,7 +41,7 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
 
         flake_attr = h.meta.get("flake_attr", "")
 
-        generate_secrets(h.meta["machine"])
+        generate_secrets(h.meta["machine"], FlakeName(clan_dir.name))
         upload_secrets(h.meta["machine"])
 
         target_host = h.meta.get("target_host")
