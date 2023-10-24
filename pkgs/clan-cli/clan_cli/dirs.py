@@ -68,6 +68,25 @@ def clan_flake_dir() -> Path:
     return path.resolve()
 
 
+def get_flake_path(name: str) -> Path:
+    flake_dir = clan_flake_dir() / name
+    if not flake_dir.exists():
+        raise ClanError(f"Flake {name} does not exist")
+    return flake_dir
+
+
+def machines_dir(flake_name: str) -> Path:
+    return get_flake_path(flake_name) / "machines"
+
+
+def specific_machine_dir(flake_name: str, machine: str) -> Path:
+    return machines_dir(flake_name) / machine
+
+
+def machine_settings_file(flake_name: str, machine: str) -> Path:
+    return specific_machine_dir(flake_name, machine) / "settings.json"
+
+
 def module_root() -> Path:
     return Path(__file__).parent
 

@@ -31,7 +31,7 @@ class Machine:
     def __init__(
         self,
         name: str,
-        clan_dir: Optional[Path] = None,
+        flake_dir: Optional[Path] = None,
         machine_data: Optional[dict] = None,
     ) -> None:
         """
@@ -41,13 +41,13 @@ class Machine:
         @machine_json: can be optionally used to skip evaluation of the machine, location of the json file with machine data
         """
         self.name = name
-        if clan_dir is None:
-            self.clan_dir = get_clan_flake_toplevel()
+        if flake_dir is None:
+            self.flake_dir = get_clan_flake_toplevel()
         else:
-            self.clan_dir = clan_dir
+            self.flake_dir = flake_dir
 
         if machine_data is None:
-            self.machine_data = build_machine_data(name, self.clan_dir)
+            self.machine_data = build_machine_data(name, self.flake_dir)
         else:
             self.machine_data = machine_data
 
@@ -68,7 +68,7 @@ class Machine:
         @secrets_dir: the directory to store the secrets in
         """
         env = os.environ.copy()
-        env["CLAN_DIR"] = str(self.clan_dir)
+        env["CLAN_DIR"] = str(self.flake_dir)
         env["PYTHONPATH"] = str(
             ":".join(sys.path)
         )  # TODO do this in the clanCore module
@@ -95,7 +95,7 @@ class Machine:
         @attr: the attribute to get
         """
         output = subprocess.run(
-            nix_eval([f"path:{self.clan_dir}#{attr}"]),
+            nix_eval([f"path:{self.flake_dir}#{attr}"]),
             stdout=subprocess.PIPE,
             check=True,
             text=True,
@@ -108,7 +108,7 @@ class Machine:
         @attr: the attribute to get
         """
         outpath = subprocess.run(
-            nix_build([f"path:{self.clan_dir}#{attr}"]),
+            nix_build([f"path:{self.flake_dir}#{attr}"]),
             stdout=subprocess.PIPE,
             check=True,
             text=True,

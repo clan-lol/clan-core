@@ -22,6 +22,7 @@ from ..api_outputs import (
 log = logging.getLogger(__name__)
 router = APIRouter()
 
+
 # TODO: Check for directory traversal
 @router.post("/api/vms/inspect")
 async def inspect_vm(
@@ -51,6 +52,7 @@ async def get_vm_logs(uuid: UUID) -> StreamingResponse:
         content=stream_logs(),
         media_type="text/plain",
     )
+
 
 # TODO: Check for directory traversal
 @router.post("/api/vms/create")

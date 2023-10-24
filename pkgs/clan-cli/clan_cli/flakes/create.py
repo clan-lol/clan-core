@@ -7,9 +7,12 @@ from pydantic import AnyUrl
 from pydantic.tools import parse_obj_as
 
 from ..async_cmd import CmdOut, run, runforcli
+from ..dirs import clan_flake_dir
 from ..nix import nix_command, nix_shell
 
-DEFAULT_URL: AnyUrl = parse_obj_as(AnyUrl, "git+https://git.clan.lol/clan/clan-core#new-clan")
+DEFAULT_URL: AnyUrl = parse_obj_as(
+    AnyUrl, "git+https://git.clan.lol/clan/clan-core#new-clan"
+)
 
 
 async def create_flake(directory: Path, url: AnyUrl) -> Dict[str, CmdOut]:
@@ -51,16 +54,16 @@ async def create_flake(directory: Path, url: AnyUrl) -> Dict[str, CmdOut]:
 
 
 def create_flake_command(args: argparse.Namespace) -> None:
-    runforcli(create_flake, args.directory, DEFAULT_URL)
-
+    flake_dir = clan_flake_dir() / args.name
+    runforcli(create_flake, flake_dir, DEFAULT_URL)
 
 
 # takes a (sub)parser and configures it
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "directory",
-        type=Path,
-        help="output directory for the flake",
+        "name",
+        type=str,
+        help="name for the flake",
     )
     # parser.add_argument("name", type=str, help="name of the flake")
     parser.set_defaults(func=create_flake_command)
