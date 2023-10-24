@@ -38,6 +38,11 @@ class SchemaResponse(BaseModel):
     schema_: dict = Field(alias="schema")
 
 
+class VerifyMachineResponse(BaseModel):
+    success: bool
+    error: str | None
+
+
 class VmStatusResponse(BaseModel):
     error: str | None
     status: TaskStatus

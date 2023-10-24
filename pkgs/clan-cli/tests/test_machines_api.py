@@ -46,18 +46,40 @@ def test_configure_machine(api: TestClient, test_flake: Path) -> None:
     assert "schema" in json_response and "properties" in json_response["schema"]
 
     # set some config
-    response = api.put(
-        "/api/machines/machine1/config",
-        json=dict(
-            clan=dict(
-                jitsi=True,
-            )
+    config = dict(
+        clan=dict(
+            jitsi=dict(
+                enable=True,
+            ),
+        ),
+        fileSystems={
+            "/": dict(
+                device="/dev/fake_disk",
+                fsType="ext4",
+            ),
+        },
+        # set boot.loader.grub.devices
+        boot=dict(
+            loader=dict(
+                grub=dict(
+                    devices=["/dev/fake_disk"],
+                ),
+            ),
         ),
     )
+    response = api.put(
+        "/api/machines/machine1/config",
+        json=config,
+    )
     assert response.status_code == 200
-    assert response.json() == {"config": {"clan": {"jitsi": True}}}
+    assert response.json() == {"config": config}
+
+    # verify the machine config
+    response = api.get("/api/machines/machine1/verify")
+    assert response.status_code == 200
+    assert response.json() == {"success": True, "error": None}
 
     # get the config again
     response = api.get("/api/machines/machine1/config")
     assert response.status_code == 200
-    assert response.json() == {"config": {"clan": {"jitsi": True}}}
+    assert response.json() == {"config": config}

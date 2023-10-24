@@ -28,10 +28,7 @@ def map_type(type: str) -> Any:
         "16 bit unsigned integer; between 0 and 65535 (both inclusive)",
     ]:
         return int
-    elif type == "string":
-        return str
-    # lib.type.passwdEntry
-    elif type == "string, not containing newlines or colons":
+    elif type.startswith("string"):
         return str
     elif type.startswith("null or "):
         subtype = type.removeprefix("null or ")
