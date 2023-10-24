@@ -157,39 +157,6 @@ def read_machine_option_value(
     return out
 
 
-def get_or_set_option(args: argparse.Namespace) -> None:
-    if args.value == []:
-        print(read_machine_option_value(args.machine, args.option, args.show_trace))
-    else:
-        # load options
-        if args.options_file is None:
-            options = options_for_machine(
-                machine_name=args.machine, show_trace=args.show_trace
-            )
-        else:
-            with open(args.options_file) as f:
-                options = json.load(f)
-        # compute settings json file location
-        if args.settings_file is None:
-            get_clan_flake_toplevel()
-            settings_file = machine_settings_file(args.machine)
-        else:
-            settings_file = args.settings_file
-        # set the option with the given value
-        set_option(
-            option=args.option,
-            value=args.value,
-            options=options,
-            settings_file=settings_file,
-            option_description=args.option,
-            show_trace=args.show_trace,
-        )
-        if not args.quiet:
-            new_value = read_machine_option_value(args.machine, args.option)
-            print(f"New Value for {args.option}:")
-            print(new_value)
-
-
 def find_option(
     option: str, value: Any, options: dict, option_description: Optional[str] = None
 ) -> Tuple[str, Any]:
@@ -292,6 +259,39 @@ def set_option(
 
     if settings_file.resolve().is_relative_to(get_clan_flake_toplevel()):
         commit_file(settings_file, commit_message=f"Set option {option_description}")
+
+
+def get_or_set_option(args: argparse.Namespace) -> None:
+    if args.value == []:
+        print(read_machine_option_value(args.machine, args.option, args.show_trace))
+    else:
+        # load options
+        if args.options_file is None:
+            options = options_for_machine(
+                machine_name=args.machine, show_trace=args.show_trace
+            )
+        else:
+            with open(args.options_file) as f:
+                options = json.load(f)
+        # compute settings json file location
+        if args.settings_file is None:
+            get_clan_flake_toplevel()
+            settings_file = machine_settings_file(args.machine)
+        else:
+            settings_file = args.settings_file
+        # set the option with the given value
+        set_option(
+            option=args.option,
+            value=args.value,
+            options=options,
+            settings_file=settings_file,
+            option_description=args.option,
+            show_trace=args.show_trace,
+        )
+        if not args.quiet:
+            new_value = read_machine_option_value(args.machine, args.option)
+            print(f"New Value for {args.option}:")
+            print(new_value)
 
 
 # takes a (sub)parser and configures it
