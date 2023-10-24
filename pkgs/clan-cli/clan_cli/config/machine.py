@@ -1,7 +1,9 @@
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Optional
 
 from fastapi import HTTPException
@@ -13,29 +15,39 @@ from clan_cli.nix import nix_eval
 
 
 def verify_machine_config(
-    machine_name: str, flake: Optional[Path] = None
-) -> tuple[bool, Optional[str]]:
+    machine_name: str, config: Optional[dict] = None, flake: Optional[Path] = None
+) -> Optional[str]:
     """
     Verify that the machine evaluates successfully
     Returns a tuple of (success, error_message)
     """
+    if config is None:
+        config = config_for_machine(machine_name)
     if flake is None:
         flake = get_clan_flake_toplevel()
-    proc = subprocess.run(
-        nix_eval(
-            flags=[
-                "--impure",
-                "--show-trace",
-                f".#nixosConfigurations.{machine_name}.config.system.build.toplevel.outPath",
-            ],
-        ),
-        capture_output=True,
-        text=True,
-        cwd=flake,
-    )
-    if proc.returncode != 0:
-        return False, proc.stderr
-    return True, None
+    with NamedTemporaryFile(mode="w") as clan_machine_settings_file:
+        json.dump(config, clan_machine_settings_file, indent=2)
+        clan_machine_settings_file.seek(0)
+        env = os.environ.copy()
+        env["CLAN_MACHINE_SETTINGS_FILE"] = clan_machine_settings_file.name
+        proc = subprocess.run(
+            nix_eval(
+                flags=[
+                    "--impure",
+                    "--show-trace",
+                    "--show-trace",
+                    "--impure",  # needed to access CLAN_MACHINE_SETTINGS_FILE
+                    f".#nixosConfigurations.{machine_name}.config.system.build.toplevel.outPath",
+                ],
+            ),
+            capture_output=True,
+            text=True,
+            cwd=flake,
+            env=env,
+        )
+        if proc.returncode != 0:
+            return proc.stderr
+        return None
 
 
 def config_for_machine(machine_name: str) -> dict:
@@ -52,13 +64,16 @@ def config_for_machine(machine_name: str) -> dict:
         return json.load(f)
 
 
-def set_config_for_machine(machine_name: str, config: dict) -> None:
+def set_config_for_machine(machine_name: str, config: dict) -> Optional[str]:
     # write the config to a json file located at {flake}/machines/{machine_name}/settings.json
     if not machine_folder(machine_name).exists():
         raise HTTPException(
             status_code=404,
             detail=f"Machine {machine_name} not found. Create the machine first`",
         )
+    error = verify_machine_config(machine_name, config)
+    if error is not None:
+        return error
     settings_path = machine_settings_file(machine_name)
     settings_path.parent.mkdir(parents=True, exist_ok=True)
     with open(settings_path, "w") as f:
@@ -67,6 +82,7 @@ def set_config_for_machine(machine_name: str, config: dict) -> None:
 
     if repo_dir is not None:
         commit_file(settings_path, repo_dir)
+    return None
 
 
 def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:

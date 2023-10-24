@@ -7,9 +7,12 @@ let
   machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (builtins.readDir (directory + /machines));
 
   machineSettings = machineName:
-    lib.optionalAttrs (builtins.pathExists "${directory}/machines/${machineName}/settings.json")
-      (builtins.fromJSON
-        (builtins.readFile (directory + /machines/${machineName}/settings.json)));
+    if builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE" != ""
+    then builtins.fromJSON (builtins.readFile (builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE"))
+    else
+      lib.optionalAttrs (builtins.pathExists "${directory}/machines/${machineName}/settings.json")
+        (builtins.fromJSON
+          (builtins.readFile (directory + /machines/${machineName}/settings.json)));
 
   # TODO: remove default system once we have a hardware-config mechanism
   nixosConfiguration = { system ? "x86_64-linux", name }: nixpkgs.lib.nixosSystem {

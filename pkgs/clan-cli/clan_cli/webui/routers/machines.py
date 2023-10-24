@@ -2,14 +2,13 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Body
-
-import clan_cli.config as config
+from fastapi import APIRouter, Body, HTTPException
 
 from ...config.machine import (
     config_for_machine,
     schema_for_machine,
     set_config_for_machine,
+    verify_machine_config,
 )
 from ...machines.create import create_machine as _create_machine
 from ...machines.list import list_machines as _list_machines
@@ -58,7 +57,9 @@ async def get_machine_config(name: str) -> ConfigResponse:
 async def set_machine_config(
     name: str, config: Annotated[dict, Body()]
 ) -> ConfigResponse:
-    set_config_for_machine(name, config)
+    error = set_config_for_machine(name, config)
+    if error is not None:
+        raise HTTPException(status_code=400, detail=error)
     return ConfigResponse(config=config)
 
 
@@ -69,6 +70,7 @@ async def get_machine_schema(name: str) -> SchemaResponse:
 
 
 @router.get("/api/machines/{name}/verify")
-async def verify_machine_config(name: str) -> VerifyMachineResponse:
-    success, error = config.machine.verify_machine_config(name)
+async def put_verify_machine_config(name: str) -> VerifyMachineResponse:
+    error = verify_machine_config(name)
+    success = error is None
     return VerifyMachineResponse(success=success, error=error)
