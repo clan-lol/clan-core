@@ -102,6 +102,16 @@ def test_configure_machine(api: TestClient, test_flake: Path) -> None:
     assert response.status_code == 200
     assert response.json() == {"config": config2}
 
+    # ensure PUT on the config is idempotent by passing the config again
+    # For example, this should not result in the boot.loader.grub.devices being
+    #   set twice (eg. merged)
+    response = api.put(
+        "/api/machines/machine1/config",
+        json=config2,
+    )
+    assert response.status_code == 200
+    assert response.json() == {"config": config2}
+
     # verify the machine config evaluates
     response = api.get("/api/machines/machine1/verify")
     assert response.status_code == 200
