@@ -1,4 +1,4 @@
-{ nixpkgs, self, lib }:
+{ clan-core, nixpkgs, lib }:
 { directory  # The directory containing the machines subdirectory
 , specialArgs ? { } # Extra arguments to pass to nixosSystem i.e. useful to make self available
 , machines ? { } # allows to include machine-specific modules i.e. machines.${name} = { ... }
@@ -7,6 +7,9 @@ let
   machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (builtins.readDir (directory + /machines));
 
   machineSettings = machineName:
+    # CLAN_MACHINE_SETTINGS_FILE allows to override the settings file temporarily
+    # This is useful for doing a dry-run before writing changes into the settings.json
+    # Using CLAN_MACHINE_SETTINGS_FILE requires passing --impure to nix eval
     if builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE" != ""
     then builtins.fromJSON (builtins.readFile (builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE"))
     else
@@ -14,18 +17,33 @@ let
         (builtins.fromJSON
           (builtins.readFile (directory + /machines/${machineName}/settings.json)));
 
+  # Read additional imports specified via a config option in settings.json
+  # This is not an infinite recursion, because the imports are discovered here
+  #   before calling evalModules.
+  # It is still useful to have the imports as an option, as this allows for type
+  #   checking and easy integration with the config frontend(s)
+  machineImports = machineSettings:
+    map
+      (module: clan-core.clanModules.${module})
+      (machineSettings.clanImports or [ ]);
+
   # TODO: remove default system once we have a hardware-config mechanism
   nixosConfiguration = { system ? "x86_64-linux", name }: nixpkgs.lib.nixosSystem {
-    modules = [
-      self.nixosModules.clanCore
-      (machineSettings name)
-      (machines.${name} or { })
-      {
-        clanCore.machineName = name;
-        clanCore.clanDir = directory;
-        nixpkgs.hostPlatform = lib.mkForce system;
-      }
-    ];
+    modules =
+      let
+        settings = machineSettings name;
+      in
+      (machineImports settings)
+      ++ [
+        settings
+        clan-core.nixosModules.clanCore
+        (machines.${name} or { })
+        {
+          clanCore.machineName = name;
+          clanCore.clanDir = directory;
+          nixpkgs.hostPlatform = lib.mkForce system;
+        }
+      ];
     inherit specialArgs;
   };
 

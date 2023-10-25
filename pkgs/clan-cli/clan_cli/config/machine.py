@@ -45,9 +45,9 @@ def verify_machine_config(
             cwd=flake,
             env=env,
         )
-        if proc.returncode != 0:
-            return proc.stderr
-        return None
+    if proc.returncode != 0:
+        return proc.stderr
+    return None
 
 
 def config_for_machine(machine_name: str) -> dict:
@@ -85,32 +85,47 @@ def set_config_for_machine(machine_name: str, config: dict) -> Optional[str]:
     return None
 
 
-def schema_for_machine(machine_name: str, flake: Optional[Path] = None) -> dict:
+def schema_for_machine(
+    machine_name: str, config: Optional[dict] = None, flake: Optional[Path] = None
+) -> dict:
     if flake is None:
         flake = get_clan_flake_toplevel()
-    # use nix eval to lib.evalModules .#nixosModules.machine-{machine_name}
-    proc = subprocess.run(
-        nix_eval(
-            flags=[
-                "--impure",
-                "--show-trace",
-                "--expr",
-                f"""
-                let
-                    flake = builtins.getFlake (toString {flake});
-                    lib = import {nixpkgs_source()}/lib;
-                    options = flake.nixosConfigurations.{machine_name}.options;
-                    clanOptions = options.clan;
-                    jsonschemaLib = import {Path(__file__).parent / "jsonschema"} {{ inherit lib; }};
-                    jsonschema = jsonschemaLib.parseOptions clanOptions;
-                in
-                    jsonschema
-                """,
-            ],
-        ),
-        capture_output=True,
-        text=True,
-    )
+    # use nix eval to lib.evalModules .#nixosConfigurations.<machine_name>.options.clan
+    with NamedTemporaryFile(mode="w") as clan_machine_settings_file:
+        env = os.environ.copy()
+        inject_config_flags = []
+        if config is not None:
+            json.dump(config, clan_machine_settings_file, indent=2)
+            clan_machine_settings_file.seek(0)
+            env["CLAN_MACHINE_SETTINGS_FILE"] = clan_machine_settings_file.name
+            inject_config_flags = [
+                "--impure",  # needed to access CLAN_MACHINE_SETTINGS_FILE
+            ]
+        proc = subprocess.run(
+            nix_eval(
+                flags=inject_config_flags
+                + [
+                    "--impure",
+                    "--show-trace",
+                    "--expr",
+                    f"""
+                    let
+                        flake = builtins.getFlake (toString {flake});
+                        lib = import {nixpkgs_source()}/lib;
+                        options = flake.nixosConfigurations.{machine_name}.options;
+                        clanOptions = options.clan;
+                        jsonschemaLib = import {Path(__file__).parent / "jsonschema"} {{ inherit lib; }};
+                        jsonschema = jsonschemaLib.parseOptions clanOptions;
+                    in
+                        jsonschema
+                    """,
+                ],
+            ),
+            capture_output=True,
+            text=True,
+            cwd=flake,
+            env=env,
+        )
     if proc.returncode != 0:
         print(proc.stderr, file=sys.stderr)
         raise Exception(
