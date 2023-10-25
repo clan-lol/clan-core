@@ -69,6 +69,14 @@ async def get_machine_schema(name: str) -> SchemaResponse:
     return SchemaResponse(schema=schema)
 
 
+@router.put("/api/machines/{name}/schema")
+async def set_machine_schema(
+    name: str, config: Annotated[dict, Body()]
+) -> SchemaResponse:
+    schema = schema_for_machine(name, config)
+    return SchemaResponse(schema=schema)
+
+
 @router.get("/api/machines/{name}/verify")
 async def put_verify_machine_config(name: str) -> VerifyMachineResponse:
     error = verify_machine_config(name)

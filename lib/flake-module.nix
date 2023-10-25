@@ -8,7 +8,7 @@
   ];
   flake.lib = import ./default.nix {
     inherit lib;
-    inherit self;
     inherit (inputs) nixpkgs;
+    clan-core = self;
   };
 }

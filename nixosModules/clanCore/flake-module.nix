@@ -1,6 +1,7 @@
 { self, inputs, lib, ... }: {
   flake.nixosModules.clanCore = { config, pkgs, options, ... }: {
     imports = [
+      ../clanImports
       ./secrets
       ./zerotier
       ./networking.nix
@@ -34,6 +35,11 @@
         internal = true;
       };
     };
+    # TODO: factor these out into a separate interface.nix.
+    # Also think about moving these options out of `system.clan`.
+    # Maybe we should not re-use the already polluted confg.system namespace
+    #   and instead have a separate top-level namespace like `clanOutputs`, with
+    #   well defined options marked as `internal = true;`.
     options.system.clan = lib.mkOption {
       type = lib.types.submodule {
         options = {
