@@ -34,6 +34,7 @@
 , gnupg
 , e2fsprogs
 , mypy
+, cntr
 }:
 let
 
