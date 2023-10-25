@@ -64,16 +64,13 @@ def config_for_machine(machine_name: str) -> dict:
         return json.load(f)
 
 
-def set_config_for_machine(machine_name: str, config: dict) -> Optional[str]:
+def set_config_for_machine(machine_name: str, config: dict) -> None:
     # write the config to a json file located at {flake}/machines/{machine_name}/settings.json
     if not machine_folder(machine_name).exists():
         raise HTTPException(
             status_code=404,
             detail=f"Machine {machine_name} not found. Create the machine first`",
         )
-    error = verify_machine_config(machine_name, config)
-    if error is not None:
-        return error
     settings_path = machine_settings_file(machine_name)
     settings_path.parent.mkdir(parents=True, exist_ok=True)
     with open(settings_path, "w") as f:
@@ -82,7 +79,6 @@ def set_config_for_machine(machine_name: str, config: dict) -> Optional[str]:
 
     if repo_dir is not None:
         commit_file(settings_path, repo_dir)
-    return None
 
 
 def schema_for_machine(

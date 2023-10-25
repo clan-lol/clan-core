@@ -45,29 +45,39 @@ def test_configure_machine(api: TestClient, test_flake: Path) -> None:
     json_response = response.json()
     assert "schema" in json_response and "properties" in json_response["schema"]
 
-    # set come invalid config (fileSystems missing)
-    config = dict(
+    # an invalid config missing the fileSystems
+    invalid_config = dict(
         clan=dict(
             jitsi=dict(
                 enable=True,
             ),
         ),
     )
+
+    # verify an invalid config (fileSystems missing) fails
     response = api.put(
-        "/api/machines/machine1/config",
-        json=config,
+        "/api/machines/machine1/verify",
+        json=invalid_config,
     )
-    assert response.status_code == 400
+    assert response.status_code == 200
     assert (
         "The ‘fileSystems’ option does not specify your root"
-        in response.json()["detail"]
+        in response.json()["error"]
     )
 
-    # ensure config is still empty after the invalid attempt
+    # set come invalid config (fileSystems missing)
+    response = api.put(
+        "/api/machines/machine1/config",
+        json=invalid_config,
+    )
+    assert response.status_code == 200
+
+    # ensure the config has actually been updated
     response = api.get("/api/machines/machine1/config")
     assert response.status_code == 200
-    assert response.json() == {"config": {}}
+    assert response.json() == {"config": invalid_config}
 
+    # the part of the config that makes the evaluation pass
     fs_config = dict(
         fileSystems={
             "/": dict(
