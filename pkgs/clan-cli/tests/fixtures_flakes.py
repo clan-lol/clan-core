@@ -1,5 +1,6 @@
 import fileinput
 import logging
+import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -53,8 +54,7 @@ def create_flake(
     template = Path(__file__).parent / flake_name
 
     # copy the template to a new temporary location
-    home = Path(temporary_home)
-    flake = home / ".local/state/clan/flake" / flake_name
+    flake = temporary_home / ".local/state/clan/flake" / flake_name
     shutil.copytree(template, flake)
 
     # lookup the requested machines in ./test_machines and include them
@@ -70,21 +70,25 @@ def create_flake(
     # this is where we would install the sops key to, when updating
     substitute(flake_nix, clan_core_flake, flake)
 
-    # Init git
-    command.run(["git", "init"], workdir=flake)
-    command.run(["git", "add", "."], workdir=flake)
-    command.run(["git", "config", "user.name", "clan-tool"], workdir=flake)
-    command.run(["git", "config", "user.email", "clan@example.com"], workdir=flake)
-    command.run(["git", "commit", "-a", "-m", "Initial commit"], workdir=flake)
+    assert "/tmp" in str(os.environ.get("HOME"))
+
+    # TODO: Find out why test_vms_api.py fails in nix build
+    # but works in pytest when this bottom line is commented out
+    command.run(["git", "config", "--global", "init.defaultBranch", "main"], workdir=flake, check=True)
+    command.run(["git", "init"], workdir=flake, check=True)
+    command.run(["git", "add", "."], workdir=flake, check=True)
+    command.run(["git", "config", "user.name", "clan-tool"], workdir=flake, check=True)
+    command.run(
+        ["git", "config", "user.email", "clan@example.com"], workdir=flake, check=True
+    )
+    command.run(
+        ["git", "commit", "-a", "-m", "Initial commit"], workdir=flake, check=True
+    )
 
     if remote:
-        with tempfile.TemporaryDirectory() as workdir:
-            monkeypatch.chdir(workdir)
-            monkeypatch.setenv("HOME", str(home))
+        with tempfile.TemporaryDirectory():
             yield FlakeForTest(flake_name, flake)
     else:
-        monkeypatch.chdir(flake)
-        monkeypatch.setenv("HOME", str(home))
         yield FlakeForTest(flake_name, flake)
 
 

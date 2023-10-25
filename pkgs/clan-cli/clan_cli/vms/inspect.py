@@ -8,7 +8,7 @@ from pydantic import AnyUrl, BaseModel
 from ..async_cmd import run
 from ..dirs import specific_flake_dir
 from ..nix import nix_config, nix_eval
-from ..debug import repro_env_break
+
 
 class VmConfig(BaseModel):
     flake_url: AnyUrl | Path
