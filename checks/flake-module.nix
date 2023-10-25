@@ -14,6 +14,7 @@
         nixosTests = lib.optionalAttrs (pkgs.stdenv.isLinux) {
           # import our test
           secrets = import ./secrets nixosTestArgs;
+          container = import ./container nixosTestArgs;
         };
         schemaTests = pkgs.callPackages ./schemas.nix {
           inherit self;
@@ -25,5 +26,21 @@
           // lib.mapAttrs' (name: config: lib.nameValuePair "home-manager-${name}" config.activation-script) (self'.legacyPackages.homeConfigurations or { });
       in
       nixosTests // schemaTests // flakeOutputs;
+    legacyPackages = {
+      nixosTests =
+        let
+          nixosTestArgs = {
+            # reference to nixpkgs for the current system
+            inherit pkgs;
+            # this gives us a reference to our flake but also all flake inputs
+            inherit self;
+          };
+        in
+        lib.optionalAttrs (pkgs.stdenv.isLinux) {
+          # import our test
+          secrets = import ./secrets nixosTestArgs;
+          container = import ./container nixosTestArgs;
+        };
+    };
   };
 }
