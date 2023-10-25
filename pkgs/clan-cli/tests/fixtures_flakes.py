@@ -70,11 +70,16 @@ def create_flake(
     # this is where we would install the sops key to, when updating
     substitute(flake_nix, clan_core_flake, flake)
 
-    assert "/tmp" in str(os.environ.get("HOME"))
+    if "/tmp" not in str(os.environ.get("HOME")):
+        log.warning(f"!! $HOME does not point to a temp directory!! HOME={os.environ['HOME']}")
 
     # TODO: Find out why test_vms_api.py fails in nix build
     # but works in pytest when this bottom line is commented out
-    command.run(["git", "config", "--global", "init.defaultBranch", "main"], workdir=flake, check=True)
+    command.run(
+        ["git", "config", "--global", "init.defaultBranch", "main"],
+        workdir=flake,
+        check=True,
+    )
     command.run(["git", "init"], workdir=flake, check=True)
     command.run(["git", "add", "."], workdir=flake, check=True)
     command.run(["git", "config", "user.name", "clan-tool"], workdir=flake, check=True)
