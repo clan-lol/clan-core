@@ -8,7 +8,7 @@ from pydantic import AnyUrl, BaseModel
 from ..async_cmd import run
 from ..dirs import specific_flake_dir
 from ..nix import nix_config, nix_eval
-
+from ..debug import repro_env_break
 
 class VmConfig(BaseModel):
     flake_url: AnyUrl | Path
@@ -22,6 +22,7 @@ class VmConfig(BaseModel):
 async def inspect_vm(flake_url: AnyUrl | Path, flake_attr: str) -> VmConfig:
     config = nix_config()
     system = config["system"]
+
     cmd = nix_eval(
         [
             f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.system.clan.vm.config'
