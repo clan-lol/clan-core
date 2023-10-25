@@ -12,7 +12,7 @@ from clan_cli.dirs import (
     specific_flake_dir,
     specific_machine_dir,
 )
-from clan_cli.git import commit_file, find_git_repo_root
+from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
 
 from ..types import FlakeName
@@ -82,7 +82,7 @@ def set_config_for_machine(
     settings_path.parent.mkdir(parents=True, exist_ok=True)
     with open(settings_path, "w") as f:
         json.dump(config, f)
-    repo_dir = find_git_repo_root()
+    repo_dir = specific_flake_dir(flake_name)
 
     if repo_dir is not None:
         commit_file(settings_path, repo_dir)

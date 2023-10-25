@@ -1,6 +1,7 @@
 # !/usr/bin/env python3
 import argparse
 import json
+import logging
 import os
 import re
 import shlex
@@ -16,6 +17,8 @@ from clan_cli.nix import nix_eval
 from clan_cli.types import FlakeName
 
 script_dir = Path(__file__).parent
+
+log = logging.getLogger(__name__)
 
 
 # nixos option type description to python type
@@ -287,6 +290,7 @@ def set_option(
             current_config = json.load(f)
     else:
         current_config = {}
+
     # merge and save the new config file
     new_config = merge(current_config, result)
     settings_file.parent.mkdir(parents=True, exist_ok=True)
@@ -295,7 +299,11 @@ def set_option(
         print(file=f)  # add newline at the end of the file to make git happy
 
     if settings_file.resolve().is_relative_to(specific_flake_dir(flake_name)):
-        commit_file(settings_file, commit_message=f"Set option {option_description}")
+        commit_file(
+            settings_file,
+            repo_dir=specific_flake_dir(flake_name),
+            commit_message=f"Set option {option_description}",
+        )
 
 
 # takes a (sub)parser and configures it

@@ -2,12 +2,12 @@ import fileinput
 import logging
 import os
 import shutil
+import subprocess as sp
 import tempfile
 from pathlib import Path
 from typing import Iterator, NamedTuple
 
 import pytest
-from command import Command
 from root import CLAN_CORE
 
 from clan_cli.dirs import nixpkgs_source
@@ -42,7 +42,6 @@ def create_flake(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
     flake_name: FlakeName,
-    command: Command,
     clan_core_flake: Path | None = None,
     machines: list[str] = [],
     remote: bool = False,
@@ -71,24 +70,22 @@ def create_flake(
     substitute(flake_nix, clan_core_flake, flake)
 
     if "/tmp" not in str(os.environ.get("HOME")):
-        log.warning(f"!! $HOME does not point to a temp directory!! HOME={os.environ['HOME']}")
+        log.warning(
+            f"!! $HOME does not point to a temp directory!! HOME={os.environ['HOME']}"
+        )
 
     # TODO: Find out why test_vms_api.py fails in nix build
     # but works in pytest when this bottom line is commented out
-    command.run(
+    sp.run(
         ["git", "config", "--global", "init.defaultBranch", "main"],
-        workdir=flake,
+        cwd=flake,
         check=True,
     )
-    command.run(["git", "init"], workdir=flake, check=True)
-    command.run(["git", "add", "."], workdir=flake, check=True)
-    command.run(["git", "config", "user.name", "clan-tool"], workdir=flake, check=True)
-    command.run(
-        ["git", "config", "user.email", "clan@example.com"], workdir=flake, check=True
-    )
-    command.run(
-        ["git", "commit", "-a", "-m", "Initial commit"], workdir=flake, check=True
-    )
+    sp.run(["git", "init"], cwd=flake, check=True)
+    sp.run(["git", "add", "."], cwd=flake, check=True)
+    sp.run(["git", "config", "user.name", "clan-tool"], cwd=flake, check=True)
+    sp.run(["git", "config", "user.email", "clan@example.com"], cwd=flake, check=True)
+    sp.run(["git", "commit", "-a", "-m", "Initial commit"], cwd=flake, check=True)
 
     if remote:
         with tempfile.TemporaryDirectory():
@@ -99,16 +96,14 @@ def create_flake(
 
 @pytest.fixture
 def test_flake(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, command: Command
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
-    yield from create_flake(
-        monkeypatch, temporary_home, FlakeName("test_flake"), command
-    )
+    yield from create_flake(monkeypatch, temporary_home, FlakeName("test_flake"))
 
 
 @pytest.fixture
 def test_flake_with_core(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, command: Command
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
     if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
@@ -118,14 +113,13 @@ def test_flake_with_core(
         monkeypatch,
         temporary_home,
         FlakeName("test_flake_with_core"),
-        command,
         CLAN_CORE,
     )
 
 
 @pytest.fixture
 def test_flake_with_core_and_pass(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, command: Command
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
     if not (CLAN_CORE / "flake.nix").exists():
         raise Exception(
@@ -135,6 +129,5 @@ def test_flake_with_core_and_pass(
         monkeypatch,
         temporary_home,
         FlakeName("test_flake_with_core_and_pass"),
-        command,
         CLAN_CORE,
     )

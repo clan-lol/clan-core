@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-from clan_cli.dirs import find_git_repo_root
+# from clan_cli.dirs import find_git_repo_root
 from clan_cli.errors import ClanError
 from clan_cli.nix import nix_shell
 
@@ -11,13 +11,9 @@ from clan_cli.nix import nix_shell
 # generic vcs agnostic commit function
 def commit_file(
     file_path: Path,
-    repo_dir: Optional[Path] = None,
+    repo_dir: Path,
     commit_message: Optional[str] = None,
 ) -> None:
-    if repo_dir is None:
-        repo_dir = find_git_repo_root()
-        if repo_dir is None:
-            return
     # check that the file is in the git repository and exists
     if not Path(file_path).resolve().is_relative_to(repo_dir.resolve()):
         raise ClanError(f"File {file_path} is not in the git repository {repo_dir}")

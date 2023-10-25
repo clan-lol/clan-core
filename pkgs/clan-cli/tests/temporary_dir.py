@@ -16,10 +16,12 @@ def temporary_home(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
         path = Path(env_dir).resolve()
         log.debug("Temp HOME directory: %s", str(path))
         monkeypatch.setenv("HOME", str(path))
+        monkeypatch.chdir(str(path))
         yield path
     else:
         log.debug("TEST_TEMPORARY_DIR not set, using TemporaryDirectory")
         with tempfile.TemporaryDirectory(prefix="pytest-") as dirpath:
             monkeypatch.setenv("HOME", str(dirpath))
+            monkeypatch.chdir(str(dirpath))
             log.debug("Temp HOME directory: %s", str(dirpath))
             yield Path(dirpath)
