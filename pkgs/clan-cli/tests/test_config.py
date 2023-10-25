@@ -60,11 +60,13 @@ def test_configure_machine(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     cli = Cli()
+
     cli.run(["config", "-m", "machine1", "clan.jitsi.enable", "true", test_flake.name])
     # clear the output buffer
     capsys.readouterr()
     # read a option value
     cli.run(["config", "-m", "machine1", "clan.jitsi.enable", test_flake.name])
+
     # read the output
     assert capsys.readouterr().out == "true\n"
 

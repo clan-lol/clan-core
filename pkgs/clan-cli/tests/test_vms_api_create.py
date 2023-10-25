@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Iterator
 import pytest
 from api import TestClient
 from cli import Cli
-from command import Command
 from fixtures_flakes import FlakeForTest, create_flake
 from httpx import SyncByteStream
 from root import CLAN_CORE
@@ -18,13 +17,12 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def flake_with_vm_with_secrets(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, command: Command
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
     yield from create_flake(
         monkeypatch,
         temporary_home,
         FlakeName("test_flake_with_core_dynamic_machines"),
-        command,
         CLAN_CORE,
         machines=["vm_with_secrets"],
     )
@@ -32,13 +30,12 @@ def flake_with_vm_with_secrets(
 
 @pytest.fixture
 def remote_flake_with_vm_without_secrets(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, command: Command
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
     yield from create_flake(
         monkeypatch,
         temporary_home,
         FlakeName("test_flake_with_core_dynamic_machines"),
-        command,
         CLAN_CORE,
         machines=["vm_without_secrets"],
         remote=True,
