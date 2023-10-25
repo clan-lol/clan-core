@@ -13,6 +13,10 @@ class Status(Enum):
     UNKNOWN = "unknown"
 
 
+class ClanModulesResponse(BaseModel):
+    clan_modules: list[str]
+
+
 class Machine(BaseModel):
     name: str
     status: Status
