@@ -2,7 +2,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body
 
 from ...config.machine import (
     config_for_machine,
@@ -57,9 +57,7 @@ async def get_machine_config(name: str) -> ConfigResponse:
 async def set_machine_config(
     name: str, config: Annotated[dict, Body()]
 ) -> ConfigResponse:
-    error = set_config_for_machine(name, config)
-    if error is not None:
-        raise HTTPException(status_code=400, detail=error)
+    set_config_for_machine(name, config)
     return ConfigResponse(config=config)
 
 
@@ -78,7 +76,17 @@ async def set_machine_schema(
 
 
 @router.get("/api/machines/{name}/verify")
-async def put_verify_machine_config(name: str) -> VerifyMachineResponse:
+async def get_verify_machine_config(name: str) -> VerifyMachineResponse:
     error = verify_machine_config(name)
+    success = error is None
+    return VerifyMachineResponse(success=success, error=error)
+
+
+@router.put("/api/machines/{name}/verify")
+async def put_verify_machine_config(
+    name: str,
+    config: Annotated[dict, Body()],
+) -> VerifyMachineResponse:
+    error = verify_machine_config(name, config)
     success = error is None
     return VerifyMachineResponse(success=success, error=error)
