@@ -68,20 +68,13 @@ def test_configure_machine(api: TestClient, test_flake: Path) -> None:
     assert response.status_code == 200
     assert response.json() == {"config": {}}
 
-    # set some valid config
-    config2 = dict(
-        clan=dict(
-            jitsi=dict(
-                enable=True,
-            ),
-        ),
+    fs_config = dict(
         fileSystems={
             "/": dict(
                 device="/dev/fake_disk",
                 fsType="ext4",
             ),
         },
-        # set boot.loader.grub.devices
         boot=dict(
             loader=dict(
                 grub=dict(
@@ -89,6 +82,16 @@ def test_configure_machine(api: TestClient, test_flake: Path) -> None:
                 ),
             ),
         ),
+    )
+
+    # set some valid config
+    config2 = dict(
+        clan=dict(
+            jitsi=dict(
+                enable=True,
+            ),
+        ),
+        **fs_config,
     )
     response = api.put(
         "/api/machines/machine1/config",
@@ -116,3 +119,58 @@ def test_configure_machine(api: TestClient, test_flake: Path) -> None:
     response = api.get("/api/machines/machine1/verify")
     assert response.status_code == 200
     assert response.json() == {"success": True, "error": None}
+
+    # get the schema with an extra module imported
+    response = api.put(
+        "/api/machines/machine1/schema",
+        json={"clanImports": ["fake-module"]},
+    )
+    # expect the result schema to contain the fake-module.fake-flag option
+    assert response.status_code == 200
+    assert (
+        response.json()["schema"]["properties"]["fake-module"]["properties"][
+            "fake-flag"
+        ]["type"]
+        == "boolean"
+    )
+
+    # new config importing an extra clanModule (clanModules.fake-module)
+    config_with_imports: dict = {
+        "clanImports": ["fake-module"],
+        "clan": {
+            "fake-module": {
+                "fake-flag": True,
+            },
+        },
+        **fs_config,
+    }
+
+    # set the fake-module.fake-flag option to true
+    response = api.put(
+        "/api/machines/machine1/config",
+        json=config_with_imports,
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "config": {
+            "clanImports": ["fake-module"],
+            "clan": {
+                "fake-module": {
+                    "fake-flag": True,
+                },
+            },
+            **fs_config,
+        }
+    }
+
+    # remove the import from the config
+    config_with_empty_imports = dict(
+        clanImports=[],
+        **fs_config,
+    )
+    response = api.put(
+        "/api/machines/machine1/config",
+        json=config_with_empty_imports,
+    )
+    assert response.status_code == 200
+    assert response.json() == {"config": config_with_empty_imports}

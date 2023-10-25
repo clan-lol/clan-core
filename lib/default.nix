@@ -1,6 +1,6 @@
-{ lib, self, nixpkgs, ... }:
+{ lib, clan-core, nixpkgs, ... }:
 {
   jsonschema = import ./jsonschema { inherit lib; };
 
-  buildClan = import ./build-clan { inherit lib self nixpkgs; };
+  buildClan = import ./build-clan { inherit clan-core lib nixpkgs; };
 }
