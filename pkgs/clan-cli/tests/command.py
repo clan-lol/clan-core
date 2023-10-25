@@ -21,6 +21,7 @@ class Command:
         stdout: _FILE = None,
         stderr: _FILE = None,
         workdir: Optional[Path] = None,
+        check: Optional[bool] = True,
     ) -> subprocess.Popen[str]:
         env = os.environ.copy()
         env.update(extra_env)
@@ -36,6 +37,14 @@ class Command:
             cwd=workdir,
         )
         self.processes.append(p)
+        if check:
+            p.wait()
+            if p.returncode != 0:
+                aout = p.stdout.read() if p.stdout else ""
+                bout = p.stderr.read() if p.stderr else ""
+                raise subprocess.CalledProcessError(
+                    p.returncode, command, output=aout, stderr=bout
+                )
         return p
 
     def terminate(self) -> None:
