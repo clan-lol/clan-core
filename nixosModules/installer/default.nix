@@ -19,26 +19,32 @@
   '';
   hidden-ssh-announce = {
     enable = true;
-    script = pkgs.writers.writeDash "write-hostname" ''
+    script = pkgs.writeShellScript "write-hostname" ''
       set -efu
+      export PATH=${lib.makeBinPath (with pkgs; [ iproute2 coreutils jq qrencode ])}
+
       mkdir -p /var/shared
       echo "$1" > /var/shared/onion-hostname
-      ${pkgs.jq}/bin/jq -nc \
+      local_addrs=$(ip -json addr | jq '[map(.addr_info) | flatten | .[] | select(.scope == "global") | .local]')
+      jq -nc \
         --arg password "$(cat /var/shared/root-password)" \
-        --arg address "$(cat /var/shared/onion-hostname)" '{
-          password: $password, address: $address
-        }' > /var/shared/login.info
-      cat /var/shared/login.info |
-        ${pkgs.qrencode}/bin/qrencode -t utf8 -o /var/shared/qrcode.utf8
-      cat /var/shared/login.info |
-        ${pkgs.qrencode}/bin/qrencode -t png -o /var/shared/qrcode.png
+        --arg onion_address "$(cat /var/shared/onion-hostname)" \
+        --argjson local_addrs "$local_addrs" \
+        '{ password: $password, onion_address: $onion_address, local_addresses: $local_addrs }' \
+        > /var/shared/login.json
+      cat /var/shared/login.json | qrencode -t utf8 -o /var/shared/qrcode.utf8
     '';
   };
   services.getty.autologinUser = lib.mkForce "root";
   programs.bash.interactiveShellInit = ''
     if [ "$(tty)" = "/dev/tty1" ]; then
-      echo 'waiting for tor to generate the hidden service'
-      until test -e /var/shared/qrcode.utf8; do echo .; sleep 1; done
+      echo -n 'waiting for tor to generate the hidden service'
+      until test -e /var/shared/qrcode.utf8; do echo -n .; sleep 1; done
+      echo
+      echo "Root password: $(cat /var/shared/root-password)"
+      echo "Onion address: $(cat /var/shared/onion-hostname)"
+      echo "Local network addresses:"
+      ${pkgs.iproute}/bin/ip -brief -color addr | grep -v 127.0.0.1
       cat /var/shared/qrcode.utf8
     fi
   '';
