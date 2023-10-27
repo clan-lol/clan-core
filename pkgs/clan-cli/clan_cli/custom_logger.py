@@ -61,10 +61,12 @@ def get_caller() -> str:
     return ret
 
 
-def register(level: Any) -> None:
+def setup_logging(level: Any) -> None:
     handler = logging.StreamHandler()
     handler.setLevel(level)
     handler.setFormatter(CustomFormatter())
     logger = logging.getLogger("registerHandler")
+    logging.getLogger("asyncio").setLevel(logging.INFO)
+    logging.getLogger("httpx").setLevel(level=logging.WARNING)
     logger.addHandler(handler)
     # logging.basicConfig(level=level, handlers=[handler])

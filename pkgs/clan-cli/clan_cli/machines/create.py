@@ -32,7 +32,6 @@ async def create_machine(flake_name: FlakeName, machine_name: str) -> Dict[str, 
         cwd=folder,
     )
     response["git commit"] = out
-
     return response
 
 
