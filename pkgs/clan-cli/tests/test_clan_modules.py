@@ -2,12 +2,12 @@ from pathlib import Path
 
 import pytest
 from api import TestClient
-
+from fixtures_flakes import FlakeForTest
 
 @pytest.mark.impure()
-def test_configure_machine(api: TestClient, test_flake_with_core: Path) -> None:
+def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     # retrieve the list of available clanModules
-    response = api.get("/api/clan_modules")
+    response = api.get(f"/api/{test_flake_with_core.name}/clan_modules")
     response_json = response.json()
     assert response.status_code == 200
     assert isinstance(response_json, dict)
