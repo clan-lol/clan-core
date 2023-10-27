@@ -4,6 +4,7 @@ import shlex
 from pathlib import Path
 from typing import Any, Callable, Coroutine, Dict, NamedTuple, Optional
 
+from .custom_logger import get_caller
 from .errors import ClanError
 
 log = logging.getLogger(__name__)
@@ -16,7 +17,6 @@ class CmdOut(NamedTuple):
 
 
 async def run(cmd: list[str], cwd: Optional[Path] = None) -> CmdOut:
-    log.debug(f"$: {shlex.join(cmd)}")
     cwd_res = None
     if cwd is not None:
         if not cwd.exists():
@@ -24,7 +24,9 @@ async def run(cmd: list[str], cwd: Optional[Path] = None) -> CmdOut:
         if not cwd.is_dir():
             raise ClanError(f"Working directory {cwd} is not a directory")
         cwd_res = cwd.resolve()
-        log.debug(f"Working directory: {cwd_res}")
+    log.debug(
+        f"Command: {shlex.join(cmd)}\nWorking directory: {cwd_res}\nCaller : {get_caller()}"
+    )
     proc = await asyncio.create_subprocess_exec(
         *cmd,
         stdout=asyncio.subprocess.PIPE,

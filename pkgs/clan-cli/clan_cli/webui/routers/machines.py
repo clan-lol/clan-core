@@ -41,8 +41,7 @@ async def list_machines(flake_name: FlakeName) -> MachinesResponse:
 async def create_machine(
     flake_name: FlakeName, machine: Annotated[MachineCreate, Body()]
 ) -> MachineResponse:
-    out = await _create_machine(flake_name, machine.name)
-    log.debug(out)
+    await _create_machine(flake_name, machine.name)
     return MachineResponse(machine=Machine(name=machine.name, status=Status.UNKNOWN))
 
 
@@ -72,26 +71,29 @@ async def get_machine_schema(flake_name: FlakeName, name: str) -> SchemaResponse
     return SchemaResponse(schema=schema)
 
 
-@router.put("/api/machines/{name}/schema")
+@router.put("/api/{flake_name}/machines/{name}/schema")
 async def set_machine_schema(
-    name: str, config: Annotated[dict, Body()]
+    flake_name: FlakeName, name: str, config: Annotated[dict, Body()]
 ) -> SchemaResponse:
-    schema = schema_for_machine(name, config)
+    schema = schema_for_machine(flake_name, name, config)
     return SchemaResponse(schema=schema)
 
 
-@router.get("/api/machines/{name}/verify")
-async def get_verify_machine_config(name: str) -> VerifyMachineResponse:
-    error = verify_machine_config(name)
+@router.get("/api/{flake_name}/machines/{name}/verify")
+async def get_verify_machine_config(
+    flake_name: FlakeName, name: str
+) -> VerifyMachineResponse:
+    error = verify_machine_config(flake_name, name)
     success = error is None
     return VerifyMachineResponse(success=success, error=error)
 
 
-@router.put("/api/machines/{name}/verify")
+@router.put("/api/{flake_name}/machines/{name}/verify")
 async def put_verify_machine_config(
+    flake_name: FlakeName,
     name: str,
     config: Annotated[dict, Body()],
 ) -> VerifyMachineResponse:
-    error = verify_machine_config(name, config)
+    error = verify_machine_config(flake_name, name, config)
     success = error is None
     return VerifyMachineResponse(success=success, error=error)

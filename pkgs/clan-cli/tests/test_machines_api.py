@@ -56,7 +56,7 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
 
     # verify an invalid config (fileSystems missing) fails
     response = api.put(
-        "/api/machines/machine1/verify",
+        f"/api/{test_flake.name}/machines/machine1/verify",
         json=invalid_config,
     )
     assert response.status_code == 200
@@ -67,13 +67,13 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
 
     # set come invalid config (fileSystems missing)
     response = api.put(
-        "/api/machines/machine1/config",
+        f"/api/{test_flake.name}/machines/machine1/config",
         json=invalid_config,
     )
     assert response.status_code == 200
 
     # ensure the config has actually been updated
-    response = api.get("/api/machines/machine1/config")
+    response = api.get(f"/api/{test_flake.name}/machines/machine1/config")
     assert response.status_code == 200
     assert response.json() == {"config": invalid_config}
 
@@ -91,13 +91,8 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
                     devices=["/dev/fake_disk"],
                 ),
             ),
-        
-        json=dict(
-            clan=dict(
-                jitsi=True,
-            )
         ),
-    ))
+    )
 
     # set some valid config
     config2 = dict(
@@ -108,8 +103,9 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
         ),
         **fs_config,
     )
+
     response = api.put(
-        "/api/machines/machine1/config",
+        f"/api/{test_flake.name}/machines/machine1/config",
         json=config2,
     )
     assert response.status_code == 200
@@ -124,20 +120,21 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
     # For example, this should not result in the boot.loader.grub.devices being
     #   set twice (eg. merged)
     response = api.put(
-        "/api/machines/machine1/config",
+        f"/api/{test_flake.name}/machines/machine1/config",
         json=config2,
     )
     assert response.status_code == 200
     assert response.json() == {"config": config2}
 
     # verify the machine config evaluates
-    response = api.get("/api/machines/machine1/verify")
+    response = api.get(f"/api/{test_flake.name}/machines/machine1/verify")
     assert response.status_code == 200
+
     assert response.json() == {"success": True, "error": None}
 
     # get the schema with an extra module imported
     response = api.put(
-        "/api/machines/machine1/schema",
+        f"/api/{test_flake.name}/machines/machine1/schema",
         json={"clanImports": ["fake-module"]},
     )
     # expect the result schema to contain the fake-module.fake-flag option
@@ -162,7 +159,7 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
 
     # set the fake-module.fake-flag option to true
     response = api.put(
-        "/api/machines/machine1/config",
+        f"/api/{test_flake.name}/machines/machine1/config",
         json=config_with_imports,
     )
     assert response.status_code == 200
@@ -184,7 +181,7 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
         **fs_config,
     )
     response = api.put(
-        "/api/machines/machine1/config",
+        f"/api/{test_flake.name}/machines/machine1/config",
         json=config_with_empty_imports,
     )
     assert response.status_code == 200

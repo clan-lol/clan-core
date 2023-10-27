@@ -5,7 +5,7 @@ from types import ModuleType
 from typing import Optional
 
 from . import config, flakes, join, machines, secrets, vms, webui
-from .custom_logger import register
+from .custom_logger import setup_logging
 from .ssh import cli as ssh_cli
 
 log = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     vms.register_parser(parser_vms)
 
     #    if args.debug:
-    register(logging.DEBUG)
+    setup_logging(logging.DEBUG)
     log.debug("Debug log activated")
 
     if argcomplete:
