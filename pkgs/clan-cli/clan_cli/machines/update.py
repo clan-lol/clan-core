@@ -87,7 +87,7 @@ def get_all_machines(clan_dir: Path) -> HostGroup:
         text=True,
     ).stdout
 
-    machines = json.loads(Path(machines_json).read_text())
+    machines = json.loads(Path(machines_json.rstrip()).read_text())
 
     hosts = []
     for name, machine_data in machines.items():
