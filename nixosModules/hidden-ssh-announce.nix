@@ -37,7 +37,7 @@
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         # ${pkgs.tor}/bin/torify
-        ExecStart = pkgs.writers.writeDash "announce-hidden-service" ''
+        ExecStart = pkgs.writeShellScript "announce-hidden-service" ''
           set -efu
           until test -e ${config.services.tor.settings.DataDirectory}/onion/hidden-ssh/hostname; do
             echo "still waiting for ${config.services.tor.settings.DataDirectory}/onion/hidden-ssh/hostname"

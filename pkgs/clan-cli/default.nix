@@ -132,6 +132,14 @@ python3.pkgs.buildPythonApplication {
       ${checkPython}/bin/python -m pytest -m "not impure" -s ./tests
       touch $out
     '';
+    check-for-breakpoints = runCommand "breakpoints" { } ''
+      if grep --include \*.py -Rq "breakpoint()" ${source}; then
+        echo "breakpoint() found in ${source}:"
+        grep --include \*.py -Rn "breakpoint()" ${source}
+        exit 1
+      fi
+      touch $out
+    '';
   };
   passthru.clan-openapi = runCommand "clan-openapi" { } ''
     cp -r ${source} ./src
@@ -167,11 +175,6 @@ python3.pkgs.buildPythonApplication {
   '';
   checkPhase = ''
     PYTHONPATH= $out/bin/clan --help
-    if grep --include \*.py -Rq "breakpoint()" $out; then
-      echo "breakpoint() found in $out:"
-      grep --include \*.py -Rn "breakpoint()" $out
-      exit 1
-    fi
   '';
   meta.mainProgram = "clan";
   desktopItems = [
