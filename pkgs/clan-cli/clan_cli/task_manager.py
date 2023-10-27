@@ -68,10 +68,10 @@ class Command:
                 try:
                     for line in fd:
                         if fd == self.p.stderr:
-                            print(f"[{cmd[0]}] stderr: {line}")
+                            print(f"[{cmd[0]}] stderr: {line.rstrip()}")
                             self.stderr.append(line)
                         else:
-                            print(f"[{cmd[0]}] stdout: {line}")
+                            print(f"[{cmd[0]}] stdout: {line.rstrip()}")
                             self.stdout.append(line)
                         self._output.put(line)
                 except BlockingIOError:

@@ -13,7 +13,7 @@ $ nix shell git+https://git.clan.lol/clan/clan-core
 ```shellSession
 $ mkdir ./my-flake
 $ cd ./my-flake
-$ clan create
+$ clan flake create .
 ```
 
 This action will generate two primary files: `flake.nix` and `.clan-flake`.
