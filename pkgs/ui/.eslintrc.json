@@ -1,5 +1,10 @@
 {
   "root": true,
-  "extends": ["next/core-web-vitals", "plugin:tailwindcss/recommended"],
-  "ignorePatterns": ["**/src/api/*"]
+  "extends": ["next/core-web-vitals", "plugin:tailwindcss/recommended",  "plugin:@typescript-eslint/recommended"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "ignorePatterns": ["**/src/api/*"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off"
+  }
 }

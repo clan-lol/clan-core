@@ -24,6 +24,7 @@ type MachineContextType =
       rawData: AxiosResponse<MachinesResponse, any> | undefined;
       data: Machine[];
       isLoading: boolean;
+      flakeName: string;
       error: AxiosError<any> | undefined;
       isValidating: boolean;
 
@@ -33,6 +34,7 @@ type MachineContextType =
       swrKey: string | false | Record<any, any>;
     }
   | {
+      flakeName: string;
       isLoading: true;
       data: readonly [];
     };
@@ -42,14 +44,23 @@ const initialState = {
   data: [],
 } as const;
 
-export const MachineContext = createContext<MachineContextType>(initialState);
+
+export function CreateMachineContext(flakeName: string) {
+  return useMemo(() => {
+    return createContext<MachineContextType>({
+      ...initialState,
+      flakeName,
+    });
+  }, [flakeName]);
+}
 
 interface MachineContextProviderProps {
   children: ReactNode;
+  flakeName: string;
 }
 
 export const MachineContextProvider = (props: MachineContextProviderProps) => {
-  const { children } = props;
+  const { children, flakeName } = props;
   const {
     data: rawData,
     isLoading,
@@ -57,7 +68,7 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
     isValidating,
     mutate,
     swrKey,
-  } = useListMachines();
+  } = useListMachines(flakeName);
   const [filters, setFilters] = useState<Filters>([]);
 
   const data = useMemo(() => {
@@ -70,6 +81,8 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
     return [];
   }, [isLoading, error, isValidating, rawData, filters]);
 
+  const MachineContext = CreateMachineContext(flakeName);
+
   return (
     <MachineContext.Provider
       value={{
@@ -77,6 +90,7 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
         data,
 
         isLoading,
+        flakeName,
         error,
         isValidating,
 
@@ -92,4 +106,4 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
   );
 };
 
-export const useMachines = () => React.useContext(MachineContext);
+export const useMachines = (flakeName: string) => React.useContext(CreateMachineContext(flakeName));
