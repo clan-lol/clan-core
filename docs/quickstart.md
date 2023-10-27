@@ -1,6 +1,6 @@
 # Initializing a New Clan Project
 
-## Create a new Clan flake
+## Create a new flake
 
 1. To start a new project, execute the following command to add the clan cli to your shell:
 
@@ -32,33 +32,9 @@ drwxrwxrwt root  root  139 B  12 seconds ago ../
 The `.clan-flake` marker file serves an optional purpose: it helps the `clan-cli` utility locate the project's root directory.
 If `.clan-flake` is missing, `clan-cli` will instead search for other indicators like `.git`, `.hg`, `.svn`, or `flake.nix` to identify the project root.
 
-## Add your first machine
+## What's next
 
-```shellSession
-$ clan machines create my-machine
-$ clan machines list
-my-machine
-```
-
-## Configure your machine
-
-In this example we crate a user named `my-user` that is allowed to login to the machine
-
-```shellSession
-# create a new user
-$ clan config --machine my-machine users.users.my-user.isNormalUser true
-
-# set some password
-$ clan config --machine my-machine users.users.my-user.hashedPassword $(mkpasswd)
-```
-
-## Test your machine config inside a VM
-
-```shellSession
-$ nix build .#nixosConfigurations.my-machine.config.system.build.vm
-...
-$ ./result/bin/run-nixos-vm
-```
+After creating your flake, you can check out how to add [new machines](./machines.md)
 
 ---
 
@@ -153,3 +129,7 @@ Absolutely, let's break down the migration step by step, explaining each action 
 7. **Verify**: After the reboot, confirm that your system is running with the new configuration, and all services and applications are functioning as expected.
 
 By following these steps, you've successfully migrated your NixOS Flake configuration to include the `clan-core` input and adapted the `outputs` section to work with Clan Core's new machine provisioning method.
+
+## What's next
+
+After creating your flake, you can check out how to add [new machines](./machines.md)
