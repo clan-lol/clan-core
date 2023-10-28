@@ -16,7 +16,7 @@ import { SearchBar } from "./searchBar";
 import { StickySpeedDial } from "./stickySpeedDial";
 
 export function NodeTable() {
-  const machines = useMachines();
+  const machines = useMachines("defaultFlake");
   const theme = useTheme();
   const is_xs = useMediaQuery(theme.breakpoints.only("xs"));
 
