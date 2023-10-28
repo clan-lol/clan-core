@@ -1,8 +1,7 @@
-from pathlib import Path
-
 import pytest
 from api import TestClient
 from fixtures_flakes import FlakeForTest
+
 
 @pytest.mark.impure()
 def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
