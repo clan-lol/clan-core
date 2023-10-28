@@ -113,7 +113,7 @@ export function CreateMachineForm() {
         )}
         {!isMobile && (
           <Stepper activeStep={activeStep} color="secondary">
-            {steps.map(({ label }, index) => {
+            {steps.map(({ label }) => {
               const stepProps: { completed?: boolean } = {};
               const labelProps: {
                 optional?: React.ReactNode;

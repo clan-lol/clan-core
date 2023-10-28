@@ -2,10 +2,10 @@ import { useListMachines } from "@/api/default/default";
 import { MachinesResponse } from "@/api/model";
 import { AxiosError, AxiosResponse } from "axios";
 import React, {
-  createContext,
   Dispatch,
   ReactNode,
   SetStateAction,
+  createContext,
   useState,
 } from "react";
 import { KeyedMutator } from "swr";
@@ -38,7 +38,7 @@ interface AppContextProviderProps {
 }
 export const WithAppState = (props: AppContextProviderProps) => {
   const { children } = props;
-  const { isLoading, error, mutate, swrKey } = useListMachines();
+  const { isLoading, error, mutate, swrKey } = useListMachines("defaultFlake");
 
   const [data, setAppState] = useState<AppState>({ isJoined: false });
 

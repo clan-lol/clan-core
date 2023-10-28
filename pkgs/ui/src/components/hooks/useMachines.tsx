@@ -44,7 +44,6 @@ const initialState = {
   data: [],
 } as const;
 
-
 export function CreateMachineContext(flakeName: string) {
   return useMemo(() => {
     return createContext<MachineContextType>({
@@ -106,4 +105,5 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
   );
 };
 
-export const useMachines = (flakeName: string) => React.useContext(CreateMachineContext(flakeName));
+export const useMachines = (flakeName: string) =>
+  React.useContext(CreateMachineContext(flakeName));
