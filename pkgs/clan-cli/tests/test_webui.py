@@ -5,13 +5,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 from cli import Cli
 from ports import PortFunction
 
-from clan_cli.debug import breakpoint_container
 
-
-# @pytest.mark.timeout(10)
+@pytest.mark.timeout(10)
 def test_start_server(unused_tcp_port: PortFunction, temporary_home: Path) -> None:
     Cli()
     port = unused_tcp_port()
@@ -38,15 +37,16 @@ echo "1" > {fifo}
     env["PATH"] = f"{temporary_home}:{env['PATH']}"
 
     # Add build/src to PYTHONPATH so that the webui module is found in nix sandbox
+    # TODO: We need a way to make sure things which work in the devshell also work in the sandbox
     python_path = env.get("PYTHONPATH")
     if python_path:
         env["PYTHONPATH"] = f"/build/src:{python_path}"
 
-    breakpoint_container(
-        cmd=[sys.executable, "-m", "clan_cli.webui", "--port", str(port)],
-        env=env,
-        work_dir=temporary_home,
-    )
+    # breakpoint_container(
+    #     cmd=[sys.executable, "-m", "clan_cli.webui", "--port", str(port)],
+    #     env=env,
+    #     work_dir=temporary_home,
+    # )
 
     with subprocess.Popen(
         [sys.executable, "-m", "clan_cli.webui", "--port", str(port)],

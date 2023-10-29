@@ -25,7 +25,7 @@ def test_create_flake_api(
     response = api.post(
         "/api/flake/create",
         json=dict(
-            dest=str(flake_dir),
+            flake_name=str(flake_dir),
             url=str(DEFAULT_URL),
         ),
     )

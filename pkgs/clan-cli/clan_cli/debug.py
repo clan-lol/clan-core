@@ -21,14 +21,11 @@ def command_exec(cmd: List[str], work_dir: Path, env: Dict[str, str]) -> None:
 def block_for_input() -> None:
     log = logging.getLogger(__name__)
     procid = os.getpid()
-    command = f"echo 'continue' > /sys/proc/{procid}/fd/{sys.stdin.fileno()}"
+    f"echo 'continue' > /sys/proc/{procid}/fd/{sys.stdin.fileno()}"
 
     while True:
         log.warning("Use sudo cntr attach <pid> to attach to the container.")
-        log.warning("Resume execution by executing '%s' in cntr shell", command)
-        res = input("Input 'continue' to resume execution: ")
-        if res == "continue":
-            break
+        # log.warning("Resume execution by executing '%s' in cntr shell", command)
         time.sleep(1)
     log.info("Resuming execution.")
 
