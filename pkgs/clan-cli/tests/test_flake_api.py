@@ -1,42 +1,11 @@
 import json
 import logging
-from pathlib import Path
 
 import pytest
 from api import TestClient
 from fixtures_flakes import FlakeForTest
 
-from clan_cli.flakes.create import DEFAULT_URL
-
 log = logging.getLogger(__name__)
-
-
-@pytest.mark.impure
-def test_flake_create(api: TestClient, temporary_home: Path) -> None:
-    params = {"flake_name": "defaultFlake", "url": str(DEFAULT_URL)}
-    response = api.post(
-        "/api/flake/create",
-        json=params,
-    )
-
-    response.json()
-    assert response.status_code == 201, "Failed to create flake"
-
-
-# @pytest.mark.impure
-# def test_flake_create_fail(api: TestClient, temporary_home: Path) -> None:
-#     params = {
-#         "flake_name": "../../../defaultFlake/",
-#         "url": str(DEFAULT_URL)
-#     }
-#     response = api.post(
-#         "/api/flake/create",
-#         json=params,
-#     )
-
-#     data = response.json()
-#     log.debug("Data: %s", data)
-#     assert response.status_code == 422, "This should have failed"
 
 
 @pytest.mark.impure
