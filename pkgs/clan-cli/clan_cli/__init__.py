@@ -56,10 +56,6 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     parser_vms = subparsers.add_parser("vms", help="manage virtual machines")
     vms.register_parser(parser_vms)
 
-    #    if args.debug:
-    setup_logging(logging.DEBUG)
-    log.debug("Debug log activated")
-
     if argcomplete:
         argcomplete.autocomplete(parser)
 
@@ -72,6 +68,10 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
 def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
+
+    if args.debug:
+        setup_logging(logging.DEBUG)
+        log.debug("Debug log activated")
 
     if not hasattr(args, "func"):
         return

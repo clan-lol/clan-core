@@ -12,18 +12,18 @@ log = logging.getLogger(__name__)
 
 
 class ClanDataPath(BaseModel):
-    dest: Path
+    directory: Path
 
-    @validator("dest")
-    def check_data_path(cls: Any, v: Path) -> Path:  # noqa
+    @validator("directory")
+    def check_directory(cls: Any, v: Path) -> Path:  # noqa
         return validate_path(clan_data_dir(), v)
 
 
 class ClanFlakePath(BaseModel):
-    dest: Path
+    flake_name: Path
 
-    @validator("dest")
-    def check_dest(cls: Any, v: Path) -> Path:  # noqa
+    @validator("flake_name")
+    def check_flake_name(cls: Any, v: Path) -> Path:  # noqa
         return validate_path(clan_flakes_dir(), v)
 
 

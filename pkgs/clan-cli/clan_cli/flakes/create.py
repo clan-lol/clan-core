@@ -42,6 +42,10 @@ async def create_flake(directory: Path, url: AnyUrl) -> Dict[str, CmdOut]:
     out = await run(command, cwd=directory)
     response["git add"] = out
 
+    # command = nix_shell(["git"], ["git", "config", "init.defaultBranch", "main"])
+    # out = await run(command, cwd=directory)
+    # response["git config"] = out
+
     command = nix_shell(["git"], ["git", "config", "user.name", "clan-tool"])
     out = await run(command, cwd=directory)
     response["git config"] = out
@@ -50,9 +54,10 @@ async def create_flake(directory: Path, url: AnyUrl) -> Dict[str, CmdOut]:
     out = await run(command, cwd=directory)
     response["git config"] = out
 
-    command = nix_shell(["git"], ["git", "commit", "-a", "-m", "Initial commit"])
-    out = await run(command, cwd=directory)
-    response["git commit"] = out
+    # TODO: Find out why this fails on Johannes machine
+    # command = nix_shell(["git"], ["git", "commit", "-a", "-m", "Initial commit"])
+    # out = await run(command, cwd=directory)
+    # response["git commit"] = out
 
     return response
 
