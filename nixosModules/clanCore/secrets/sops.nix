@@ -30,16 +30,20 @@ in
       generateSecrets = pkgs.writeScript "generate-secrets" ''
         #!${pkgs.python3}/bin/python
         import json
+        import sys
         from clan_cli.secrets.sops_generate import generate_secrets_from_nix
         args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; secret_submodules = config.clanCore.secrets; })})
+        args["flake_name"] = sys.argv[1]
         generate_secrets_from_nix(**args)
       '';
       uploadSecrets = pkgs.writeScript "upload-secrets" ''
         #!${pkgs.python3}/bin/python
         import json
+        import sys
         from clan_cli.secrets.sops_generate import upload_age_key_from_nix
         # the second toJSON is needed to escape the string for the python
         args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; })})
+        args["flake_name"] = sys.argv[1]
         upload_age_key_from_nix(**args)
       '';
     };

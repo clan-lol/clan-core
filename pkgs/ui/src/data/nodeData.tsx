@@ -28,11 +28,11 @@ function createData(
   };
 }
 
-var nameNumber = 0;
+let nameNumber = 0;
 
 // A function to generate random names
 function getRandomName(): string {
-  let names = [
+  const names = [
     "Alice",
     "Bob",
     "Charlie",
@@ -53,7 +53,7 @@ function getRandomName(): string {
     "Wendy",
     "Zoe",
   ];
-  let index = Math.floor(Math.random() * names.length);
+  const index = Math.floor(Math.random() * names.length);
   return names[index] + nameNumber++;
 }
 
@@ -75,8 +75,12 @@ function getRandomName(): string {
 
 // A function to generate random status keys
 function getRandomStatus(): NodeStatusKeys {
-  let statusKeys = [NodeStatus.Online, NodeStatus.Offline, NodeStatus.Pending];
-  let index = Math.floor(Math.random() * statusKeys.length);
+  const statusKeys = [
+    NodeStatus.Online,
+    NodeStatus.Offline,
+    NodeStatus.Pending,
+  ];
+  const index = Math.floor(Math.random() * statusKeys.length);
   return statusKeys[index];
 }
 
@@ -85,8 +89,8 @@ function getRandomLastSeen(status: NodeStatusKeys): number {
   if (status === "online") {
     return 0;
   } else {
-    let min = 1; // One day ago
-    let max = 360; // One year ago
+    const min = 1; // One day ago
+    const max = 360; // One year ago
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
 }
@@ -164,12 +168,12 @@ export const tableData = [
 
 // A function to execute the createData function with dummy data in a loop 100 times and return an array
 export function executeCreateData(): TableData[] {
-  let result: TableData[] = [];
+  const result: TableData[] = [];
   for (let i = 0; i < 100; i++) {
     // Generate dummy data
-    let name = getRandomName();
-    let status = getRandomStatus();
-    let last_seen = getRandomLastSeen(status);
+    const name = getRandomName();
+    const status = getRandomStatus();
+    const last_seen = getRandomLastSeen(status);
 
     // Call the createData function and push the result to the array
     result.push(createData(name, status, last_seen));

@@ -6,6 +6,9 @@ import pytest
 from api import TestClient
 from cli import Cli
 
+from clan_cli.dirs import clan_flakes_dir
+from clan_cli.flakes.create import DEFAULT_URL
+
 
 @pytest.fixture
 def cli() -> Cli:
@@ -14,19 +17,20 @@ def cli() -> Cli:
 
 @pytest.mark.impure
 def test_create_flake_api(
-    monkeypatch: pytest.MonkeyPatch, api: TestClient, temporary_dir: Path
+    monkeypatch: pytest.MonkeyPatch, api: TestClient, temporary_home: Path
 ) -> None:
-    flake_dir = temporary_dir / "flake_dir"
-    flake_dir_str = str(flake_dir.resolve())
+    monkeypatch.chdir(clan_flakes_dir())
+    flake_name = "flake_dir"
+    flake_dir = clan_flakes_dir() / flake_name
     response = api.post(
         "/api/flake/create",
         json=dict(
-            destination=flake_dir_str,
-            url="git+https://git.clan.lol/clan/clan-core#new-clan",
+            flake_name=str(flake_dir),
+            url=str(DEFAULT_URL),
         ),
     )
 
-    assert response.status_code == 201, "Failed to create flake"
+    assert response.status_code == 201, f"Failed to create flake {response.text}"
     assert (flake_dir / ".clan-flake").exists()
     assert (flake_dir / "flake.nix").exists()
 
@@ -34,19 +38,21 @@ def test_create_flake_api(
 @pytest.mark.impure
 def test_create_flake(
     monkeypatch: pytest.MonkeyPatch,
-    temporary_dir: Path,
     capsys: pytest.CaptureFixture,
+    temporary_home: Path,
     cli: Cli,
 ) -> None:
-    monkeypatch.chdir(temporary_dir)
-    flake_dir = temporary_dir / "flake_dir"
-    flake_dir_str = str(flake_dir.resolve())
-    cli.run(["flake", "create", flake_dir_str])
+    monkeypatch.chdir(clan_flakes_dir())
+    flake_name = "flake_dir"
+    flake_dir = clan_flakes_dir() / flake_name
+
+    cli.run(["flakes", "create", flake_name])
     assert (flake_dir / ".clan-flake").exists()
     monkeypatch.chdir(flake_dir)
-    cli.run(["machines", "create", "machine1"])
+    cli.run(["machines", "create", "machine1", flake_name])
     capsys.readouterr()  # flush cache
-    cli.run(["machines", "list"])
+
+    cli.run(["machines", "list", flake_name])
     assert "machine1" in capsys.readouterr().out
     flake_show = subprocess.run(
         ["nix", "flake", "show", "--json"],
@@ -61,6 +67,17 @@ def test_create_flake(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
     # configure machine1
     capsys.readouterr()
-    cli.run(["config", "--machine", "machine1", "services.openssh.enable"])
+    cli.run(
+        ["config", "--machine", "machine1", "services.openssh.enable", "", flake_name]
+    )
     capsys.readouterr()
-    cli.run(["config", "--machine", "machine1", "services.openssh.enable", "true"])
+    cli.run(
+        [
+            "config",
+            "--machine",
+            "machine1",
+            "services.openssh.enable",
+            "true",
+            flake_name,
+        ]
+    )

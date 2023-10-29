@@ -1,8 +1,9 @@
 from enum import Enum
-from typing import List
+from typing import Dict, List
 
 from pydantic import BaseModel, Field
 
+from ..async_cmd import CmdOut
 from ..task_manager import TaskStatus
 from ..vms.inspect import VmConfig
 
@@ -70,7 +71,7 @@ class FlakeAction(BaseModel):
 
 
 class FlakeCreateResponse(BaseModel):
-    uuid: str
+    cmd_out: Dict[str, CmdOut]
 
 
 class FlakeResponse(BaseModel):

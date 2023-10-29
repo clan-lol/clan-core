@@ -5,6 +5,7 @@ from typing import Any, Optional
 
 import pytest
 from cli import Cli
+from fixtures_flakes import FlakeForTest
 
 from clan_cli import config
 from clan_cli.config import parsing
@@ -29,7 +30,7 @@ example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 def test_set_some_option(
     args: list[str],
     expected: dict[str, Any],
-    test_flake: Path,
+    test_flake: FlakeForTest,
 ) -> None:
     # create temporary file for out_file
     with tempfile.NamedTemporaryFile() as out_file:
@@ -46,24 +47,26 @@ def test_set_some_option(
                 out_file.name,
             ]
             + args
+            + [test_flake.name]
         )
         json_out = json.loads(open(out_file.name).read())
         assert json_out == expected
 
 
 def test_configure_machine(
-    test_flake: Path,
-    temporary_dir: Path,
+    test_flake: FlakeForTest,
+    temporary_home: Path,
     capsys: pytest.CaptureFixture,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("HOME", str(temporary_dir))
     cli = Cli()
-    cli.run(["config", "-m", "machine1", "clan.jitsi.enable", "true"])
+
+    cli.run(["config", "-m", "machine1", "clan.jitsi.enable", "true", test_flake.name])
     # clear the output buffer
     capsys.readouterr()
     # read a option value
-    cli.run(["config", "-m", "machine1", "clan.jitsi.enable"])
+    cli.run(["config", "-m", "machine1", "clan.jitsi.enable", test_flake.name])
+
     # read the output
     assert capsys.readouterr().out == "true\n"
 

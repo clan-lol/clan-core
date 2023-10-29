@@ -9,6 +9,7 @@
     let
       clan = clan-core.lib.buildClan {
         directory = self;
+        clanName = "test_flake_with_core_and_pass";
         machines = {
           vm1 = { lib, ... }: {
             clan.networking.deploymentAddress = "__CLAN_DEPLOYMENT_ADDRESS__";

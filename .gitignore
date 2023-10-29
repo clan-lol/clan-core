@@ -1,4 +1,6 @@
 .direnv
+.coverage.*
+**/qubeclan
 **/testdir
 democlan
 result*

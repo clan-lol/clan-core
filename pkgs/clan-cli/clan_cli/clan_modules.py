@@ -1,20 +1,20 @@
 import json
 import subprocess
-from pathlib import Path
 from typing import Optional
 
-from clan_cli.dirs import get_clan_flake_toplevel
 from clan_cli.nix import nix_eval
+
+from .dirs import specific_flake_dir
+from .types import FlakeName
 
 
 def get_clan_module_names(
-    flake: Optional[Path] = None,
+    flake_name: FlakeName,
 ) -> tuple[list[str], Optional[str]]:
     """
     Get the list of clan modules from the clan-core flake input
     """
-    if flake is None:
-        flake = get_clan_flake_toplevel()
+    flake = specific_flake_dir(flake_name)
     proc = subprocess.run(
         nix_eval(
             [

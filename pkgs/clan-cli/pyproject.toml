@@ -14,9 +14,14 @@ exclude = ["clan_cli.nixpkgs*"]
 [tool.setuptools.package-data]
 clan_cli = [ "config/jsonschema/*", "webui/assets/**/*"]
 
+
+
 [tool.pytest.ini_options]
+testpaths = "tests"
 faulthandler_timeout = 60
-addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --workers auto --durations 5"
+log_level = "DEBUG"
+log_format = "%(levelname)s: %(message)s\n       %(pathname)s:%(lineno)d::%(funcName)s"
+addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --durations 5 --color=yes --new-first" # Add --pdb for debugging
 norecursedirs = "tests/helpers"
 markers = [ "impure" ]
 
@@ -37,6 +42,10 @@ module = "jsonschema.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "ipdb.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = "pytest.*"
 ignore_missing_imports = true
 
@@ -47,7 +56,7 @@ ignore_missing_imports = true
 [tool.ruff]
 line-length = 88
 
-select = [ "E", "F", "I", "U", "N"]
+select = [ "E", "F", "I",  "N"]
 ignore = [ "E501" ]
 
 [tool.black]

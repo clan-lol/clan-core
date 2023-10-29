@@ -12,7 +12,8 @@ from ...config.machine import (
 )
 from ...machines.create import create_machine as _create_machine
 from ...machines.list import list_machines as _list_machines
-from ..schemas import (
+from ...types import FlakeName
+from ..api_outputs import (
     ConfigResponse,
     Machine,
     MachineCreate,
@@ -27,66 +28,72 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/api/machines")
-async def list_machines() -> MachinesResponse:
+@router.get("/api/{flake_name}/machines")
+async def list_machines(flake_name: FlakeName) -> MachinesResponse:
     machines = []
-    for m in _list_machines():
+    for m in _list_machines(flake_name):
         machines.append(Machine(name=m, status=Status.UNKNOWN))
+
     return MachinesResponse(machines=machines)
 
 
-@router.post("/api/machines", status_code=201)
-async def create_machine(machine: Annotated[MachineCreate, Body()]) -> MachineResponse:
-    _create_machine(machine.name)
+@router.post("/api/{flake_name}/machines", status_code=201)
+async def create_machine(
+    flake_name: FlakeName, machine: Annotated[MachineCreate, Body()]
+) -> MachineResponse:
+    await _create_machine(flake_name, machine.name)
     return MachineResponse(machine=Machine(name=machine.name, status=Status.UNKNOWN))
 
 
-@router.get("/api/machines/{name}")
-async def get_machine(name: str) -> MachineResponse:
+@router.get("/api/{flake_name}/machines/{name}")
+async def get_machine(flake_name: FlakeName, name: str) -> MachineResponse:
     log.error("TODO")
     return MachineResponse(machine=Machine(name=name, status=Status.UNKNOWN))
 
 
-@router.get("/api/machines/{name}/config")
-async def get_machine_config(name: str) -> ConfigResponse:
-    config = config_for_machine(name)
+@router.get("/api/{flake_name}/machines/{name}/config")
+async def get_machine_config(flake_name: FlakeName, name: str) -> ConfigResponse:
+    config = config_for_machine(flake_name, name)
     return ConfigResponse(config=config)
 
 
-@router.put("/api/machines/{name}/config")
+@router.put("/api/{flake_name}/machines/{name}/config")
 async def set_machine_config(
-    name: str, config: Annotated[dict, Body()]
+    flake_name: FlakeName, name: str, config: Annotated[dict, Body()]
 ) -> ConfigResponse:
-    set_config_for_machine(name, config)
+    set_config_for_machine(flake_name, name, config)
     return ConfigResponse(config=config)
 
 
-@router.get("/api/machines/{name}/schema")
-async def get_machine_schema(name: str) -> SchemaResponse:
-    schema = schema_for_machine(name)
+@router.get("/api/{flake_name}/machines/{name}/schema")
+async def get_machine_schema(flake_name: FlakeName, name: str) -> SchemaResponse:
+    schema = schema_for_machine(flake_name, name)
     return SchemaResponse(schema=schema)
 
 
-@router.put("/api/machines/{name}/schema")
+@router.put("/api/{flake_name}/machines/{name}/schema")
 async def set_machine_schema(
-    name: str, config: Annotated[dict, Body()]
+    flake_name: FlakeName, name: str, config: Annotated[dict, Body()]
 ) -> SchemaResponse:
-    schema = schema_for_machine(name, config)
+    schema = schema_for_machine(flake_name, name, config)
     return SchemaResponse(schema=schema)
 
 
-@router.get("/api/machines/{name}/verify")
-async def get_verify_machine_config(name: str) -> VerifyMachineResponse:
-    error = verify_machine_config(name)
+@router.get("/api/{flake_name}/machines/{name}/verify")
+async def get_verify_machine_config(
+    flake_name: FlakeName, name: str
+) -> VerifyMachineResponse:
+    error = verify_machine_config(flake_name, name)
     success = error is None
     return VerifyMachineResponse(success=success, error=error)
 
 
-@router.put("/api/machines/{name}/verify")
+@router.put("/api/{flake_name}/machines/{name}/verify")
 async def put_verify_machine_config(
+    flake_name: FlakeName,
     name: str,
     config: Annotated[dict, Body()],
 ) -> VerifyMachineResponse:
-    error = verify_machine_config(name, config)
+    error = verify_machine_config(flake_name, name, config)
     success = error is None
     return VerifyMachineResponse(success=success, error=error)

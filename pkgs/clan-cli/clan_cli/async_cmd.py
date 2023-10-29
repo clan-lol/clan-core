@@ -2,15 +2,21 @@ import asyncio
 import logging
 import shlex
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Any, Callable, Coroutine, Dict, NamedTuple, Optional
 
+from .custom_logger import get_caller
 from .errors import ClanError
 
 log = logging.getLogger(__name__)
 
 
-async def run(cmd: list[str], cwd: Optional[Path] = None) -> Tuple[bytes, bytes]:
-    log.debug(f"$: {shlex.join(cmd)}")
+class CmdOut(NamedTuple):
+    stdout: str
+    stderr: str
+    cwd: Optional[Path] = None
+
+
+async def run(cmd: list[str], cwd: Optional[Path] = None) -> CmdOut:
     cwd_res = None
     if cwd is not None:
         if not cwd.exists():
@@ -18,7 +24,9 @@ async def run(cmd: list[str], cwd: Optional[Path] = None) -> Tuple[bytes, bytes]
         if not cwd.is_dir():
             raise ClanError(f"Working directory {cwd} is not a directory")
         cwd_res = cwd.resolve()
-        log.debug(f"Working directory: {cwd_res}")
+    log.debug(
+        f"Command: {shlex.join(cmd)}\nWorking directory: {cwd_res}\nCaller : {get_caller()}"
+    )
     proc = await asyncio.create_subprocess_exec(
         *cmd,
         stdout=asyncio.subprocess.PIPE,
@@ -31,9 +39,30 @@ async def run(cmd: list[str], cwd: Optional[Path] = None) -> Tuple[bytes, bytes]
         raise ClanError(
             f"""
 command: {shlex.join(cmd)}
+working directory: {cwd_res}
 exit code: {proc.returncode}
-command output:
+stderr:
 {stderr.decode("utf-8")}
+stdout:
+{stdout.decode("utf-8")}
 """
         )
-    return stdout, stderr
+
+    return CmdOut(stdout.decode("utf-8"), stderr.decode("utf-8"), cwd=cwd)
+
+
+def runforcli(
+    func: Callable[..., Coroutine[Any, Any, Dict[str, CmdOut]]], *args: Any
+) -> None:
+    try:
+        res = asyncio.run(func(*args))
+
+        for i in res.items():
+            name, out = i
+            if out.stderr:
+                print(f"{name}: {out.stderr}", end="")
+            if out.stdout:
+                print(f"{name}: {out.stdout}", end="")
+    except ClanError as e:
+        print(e)
+        exit(1)

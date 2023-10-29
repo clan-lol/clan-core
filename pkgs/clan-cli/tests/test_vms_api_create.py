@@ -5,19 +5,24 @@ from typing import TYPE_CHECKING, Iterator
 import pytest
 from api import TestClient
 from cli import Cli
-from fixtures_flakes import create_flake
+from fixtures_flakes import FlakeForTest, create_flake
 from httpx import SyncByteStream
 from root import CLAN_CORE
+
+from clan_cli.types import FlakeName
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
 
 @pytest.fixture
-def flake_with_vm_with_secrets(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def flake_with_vm_with_secrets(
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
+) -> Iterator[FlakeForTest]:
     yield from create_flake(
         monkeypatch,
-        "test_flake_with_core_dynamic_machines",
+        temporary_home,
+        FlakeName("test_flake_with_core_dynamic_machines"),
         CLAN_CORE,
         machines=["vm_with_secrets"],
     )
@@ -25,25 +30,16 @@ def flake_with_vm_with_secrets(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path
 
 @pytest.fixture
 def remote_flake_with_vm_without_secrets(
-    monkeypatch: pytest.MonkeyPatch,
-) -> Iterator[Path]:
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
+) -> Iterator[FlakeForTest]:
     yield from create_flake(
         monkeypatch,
-        "test_flake_with_core_dynamic_machines",
+        temporary_home,
+        FlakeName("test_flake_with_core_dynamic_machines"),
         CLAN_CORE,
         machines=["vm_without_secrets"],
         remote=True,
     )
-
-
-@pytest.fixture
-def create_user_with_age_key(
-    monkeypatch: pytest.MonkeyPatch,
-    age_keys: list["KeyPair"],
-) -> None:
-    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
-    cli = Cli()
-    cli.run(["secrets", "users", "add", "user1", age_keys[0].pubkey])
 
 
 def generic_create_vm_test(api: TestClient, flake: Path, vm: str) -> None:
@@ -74,8 +70,9 @@ def generic_create_vm_test(api: TestClient, flake: Path, vm: str) -> None:
         print(line.decode("utf-8"))
     print("=========END LOGS==========")
     assert response.status_code == 200, "Failed to get vm logs"
-
+    print("Get /api/vms/{uuid}/status")
     response = api.get(f"/api/vms/{uuid}/status")
+    print("Finished Get /api/vms/{uuid}/status")
     assert response.status_code == 200, "Failed to get vm status"
     data = response.json()
     assert (
@@ -88,10 +85,22 @@ def generic_create_vm_test(api: TestClient, flake: Path, vm: str) -> None:
 def test_create_local(
     api: TestClient,
     monkeypatch: pytest.MonkeyPatch,
-    flake_with_vm_with_secrets: Path,
-    create_user_with_age_key: None,
+    flake_with_vm_with_secrets: FlakeForTest,
+    age_keys: list["KeyPair"],
 ) -> None:
-    generic_create_vm_test(api, flake_with_vm_with_secrets, "vm_with_secrets")
+    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
+    cli = Cli()
+    cmd = [
+        "secrets",
+        "users",
+        "add",
+        "user1",
+        age_keys[0].pubkey,
+        flake_with_vm_with_secrets.name,
+    ]
+    cli.run(cmd)
+
+    generic_create_vm_test(api, flake_with_vm_with_secrets.path, "vm_with_secrets")
 
 
 @pytest.mark.skipif(not os.path.exists("/dev/kvm"), reason="Requires KVM")
@@ -99,8 +108,8 @@ def test_create_local(
 def test_create_remote(
     api: TestClient,
     monkeypatch: pytest.MonkeyPatch,
-    remote_flake_with_vm_without_secrets: Path,
+    remote_flake_with_vm_without_secrets: FlakeForTest,
 ) -> None:
     generic_create_vm_test(
-        api, remote_flake_with_vm_without_secrets, "vm_without_secrets"
+        api, remote_flake_with_vm_without_secrets.path, "vm_without_secrets"
     )

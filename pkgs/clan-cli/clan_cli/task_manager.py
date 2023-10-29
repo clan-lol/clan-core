@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Iterator, Optional, Type, TypeVar
 from uuid import UUID, uuid4
 
+from .custom_logger import ThreadFormatter, get_caller
 from .errors import ClanError
 
 
@@ -38,7 +39,8 @@ class Command:
         cwd: Optional[Path] = None,
     ) -> None:
         self.running = True
-        self.log.debug(f"Running command: {shlex.join(cmd)}")
+        self.log.debug(f"Command: {shlex.join(cmd)}")
+        self.log.debug(f"Caller: {get_caller()}")
 
         cwd_res = None
         if cwd is not None:
@@ -68,10 +70,10 @@ class Command:
                 try:
                     for line in fd:
                         if fd == self.p.stderr:
-                            print(f"[{cmd[0]}] stderr: {line.rstrip()}")
+                            self.log.debug(f"[{cmd[0]}] stderr: {line}")
                             self.stderr.append(line)
                         else:
-                            print(f"[{cmd[0]}] stdout: {line.rstrip()}")
+                            self.log.debug(f"[{cmd[0]}] stdout: {line}")
                             self.stdout.append(line)
                         self._output.put(line)
                 except BlockingIOError:
@@ -79,8 +81,6 @@ class Command:
 
         if self.p.returncode != 0:
             raise ClanError(f"Failed to run command: {shlex.join(cmd)}")
-
-        self.log.debug("Successfully ran command")
 
 
 class TaskStatus(str, Enum):
@@ -94,7 +94,13 @@ class BaseTask:
     def __init__(self, uuid: UUID, num_cmds: int) -> None:
         # constructor
         self.uuid: UUID = uuid
-        self.log = logging.getLogger(__name__)
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.DEBUG)
+        handler.setFormatter(ThreadFormatter())
+        logger = logging.getLogger(__name__)
+        logger.addHandler(handler)
+        self.log = logger
+        self.log = logger
         self.procs: list[Command] = []
         self.status = TaskStatus.NOTSTARTED
         self.logs_lock = threading.Lock()
@@ -108,6 +114,10 @@ class BaseTask:
         self.status = TaskStatus.RUNNING
         try:
             self.run()
+            # TODO: We need to check, if too many commands have been initialized,
+            # but not run. This would deadlock the log_lines() function.
+            # Idea: Run next(cmds) and check if it raises StopIteration if not,
+            # we have too many commands
         except Exception as e:
             # FIXME: fix exception handling here
             traceback.print_exception(*sys.exc_info())

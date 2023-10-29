@@ -60,11 +60,31 @@ By default tests run in parallel using pytest-parallel.
 pytest-parallel however breaks `breakpoint()`. To disable it, use this:
 
 ```console
-pytest --workers "" -s
+pytest -n0 -s
 ```
 
 You can also run a single test like this:
 
 ```console
-pytest --workers "" -s tests/test_secrets_cli.py::test_users
+pytest -n0 -s tests/test_secrets_cli.py::test_users
 ```
+
+## Run tests in nix container
+
+Run all impure checks
+
+```console
+nix run .#impure-checks
+```
+
+Run all checks
+
+```console
+nix flake check
+```
+
+## Debugging functions
+
+Debugging functions can be found under `src/debug.py`
+quite interesting is the function breakpoint_shell() which drops you into a shell
+with the test environment loaded.

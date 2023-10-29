@@ -8,9 +8,11 @@
 , openssh
 , pytest
 , pytest-cov
+, pytest-xdist
 , pytest-subprocess
-, pytest-parallel
 , pytest-timeout
+, remote-pdb
+, ipdb
 , python3
 , runCommand
 , setuptools
@@ -31,6 +33,8 @@
 , qemu
 , gnupg
 , e2fsprogs
+, mypy
+, cntr
 }:
 let
 
@@ -44,8 +48,10 @@ let
     pytest
     pytest-cov
     pytest-subprocess
-    pytest-parallel
+    pytest-xdist
     pytest-timeout
+    remote-pdb
+    ipdb
     openssh
     git
     gnupg
@@ -65,6 +71,7 @@ let
     rsync
     sops
     git
+    mypy
     qemu
     e2fsprogs
   ];

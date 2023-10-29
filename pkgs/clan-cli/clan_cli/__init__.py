@@ -1,10 +1,14 @@
 import argparse
+import logging
 import sys
 from types import ModuleType
 from typing import Optional
 
-from . import config, flake, join, machines, secrets, vms, webui
+from . import config, flakes, join, machines, secrets, vms, webui
+from .custom_logger import setup_logging
 from .ssh import cli as ssh_cli
+
+log = logging.getLogger(__name__)
 
 argcomplete: Optional[ModuleType] = None
 try:
@@ -25,9 +29,9 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers()
 
     parser_flake = subparsers.add_parser(
-        "flake", help="create a clan flake inside the current directory"
+        "flakes", help="create a clan flake inside the current directory"
     )
-    flake.register_parser(parser_flake)
+    flakes.register_parser(parser_flake)
 
     parser_join = subparsers.add_parser("join", help="join a remote clan")
     join.register_parser(parser_join)
@@ -64,6 +68,10 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
 def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
+
+    if args.debug:
+        setup_logging(logging.DEBUG)
+        log.debug("Debug log activated")
 
     if not hasattr(args, "func"):
         return

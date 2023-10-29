@@ -8,38 +8,48 @@ from typing import Optional
 
 from fastapi import HTTPException
 
-from clan_cli.dirs import get_clan_flake_toplevel, nixpkgs_source
-from clan_cli.git import commit_file, find_git_repo_root
-from clan_cli.machines.folders import machine_folder, machine_settings_file
+from clan_cli.dirs import (
+    machine_settings_file,
+    nixpkgs_source,
+    specific_flake_dir,
+    specific_machine_dir,
+)
+from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
+
+from ..types import FlakeName
 
 
 def verify_machine_config(
-    machine_name: str, config: Optional[dict] = None, flake: Optional[Path] = None
+    flake_name: FlakeName,
+    machine_name: str,
+    config: Optional[dict] = None,
+    flake: Optional[Path] = None,
 ) -> Optional[str]:
     """
     Verify that the machine evaluates successfully
     Returns a tuple of (success, error_message)
     """
     if config is None:
-        config = config_for_machine(machine_name)
-    if flake is None:
-        flake = get_clan_flake_toplevel()
-    with NamedTemporaryFile(mode="w") as clan_machine_settings_file:
+        config = config_for_machine(flake_name, machine_name)
+    flake = specific_flake_dir(flake_name)
+    with NamedTemporaryFile(mode="w", dir=flake) as clan_machine_settings_file:
         json.dump(config, clan_machine_settings_file, indent=2)
         clan_machine_settings_file.seek(0)
         env = os.environ.copy()
         env["CLAN_MACHINE_SETTINGS_FILE"] = clan_machine_settings_file.name
+        cmd = nix_eval(
+            flags=[
+                "--impure",
+                "--show-trace",
+                "--show-trace",
+                "--impure",  # needed to access CLAN_MACHINE_SETTINGS_FILE
+                f".#nixosConfigurations.{machine_name}.config.system.build.toplevel.outPath",
+            ],
+        )
+        # repro_env_break(work_dir=flake, env=env, cmd=cmd)
         proc = subprocess.run(
-            nix_eval(
-                flags=[
-                    "--impure",
-                    "--show-trace",
-                    "--show-trace",
-                    "--impure",  # needed to access CLAN_MACHINE_SETTINGS_FILE
-                    f".#nixosConfigurations.{machine_name}.config.system.build.toplevel.outPath",
-                ],
-            ),
+            cmd,
             capture_output=True,
             text=True,
             cwd=flake,
@@ -50,44 +60,45 @@ def verify_machine_config(
     return None
 
 
-def config_for_machine(machine_name: str) -> dict:
+def config_for_machine(flake_name: FlakeName, machine_name: str) -> dict:
     # read the config from a json file located at {flake}/machines/{machine_name}/settings.json
-    if not machine_folder(machine_name).exists():
+    if not specific_machine_dir(flake_name, machine_name).exists():
         raise HTTPException(
             status_code=404,
             detail=f"Machine {machine_name} not found. Create the machine first`",
         )
-    settings_path = machine_settings_file(machine_name)
+    settings_path = machine_settings_file(flake_name, machine_name)
     if not settings_path.exists():
         return {}
     with open(settings_path) as f:
         return json.load(f)
 
 
-def set_config_for_machine(machine_name: str, config: dict) -> None:
+def set_config_for_machine(
+    flake_name: FlakeName, machine_name: str, config: dict
+) -> None:
     # write the config to a json file located at {flake}/machines/{machine_name}/settings.json
-    if not machine_folder(machine_name).exists():
+    if not specific_machine_dir(flake_name, machine_name).exists():
         raise HTTPException(
             status_code=404,
             detail=f"Machine {machine_name} not found. Create the machine first`",
         )
-    settings_path = machine_settings_file(machine_name)
+    settings_path = machine_settings_file(flake_name, machine_name)
     settings_path.parent.mkdir(parents=True, exist_ok=True)
     with open(settings_path, "w") as f:
         json.dump(config, f)
-    repo_dir = find_git_repo_root()
+    repo_dir = specific_flake_dir(flake_name)
 
     if repo_dir is not None:
         commit_file(settings_path, repo_dir)
 
 
 def schema_for_machine(
-    machine_name: str, config: Optional[dict] = None, flake: Optional[Path] = None
+    flake_name: FlakeName, machine_name: str, config: Optional[dict] = None
 ) -> dict:
-    if flake is None:
-        flake = get_clan_flake_toplevel()
+    flake = specific_flake_dir(flake_name)
     # use nix eval to lib.evalModules .#nixosConfigurations.<machine_name>.options.clan
-    with NamedTemporaryFile(mode="w") as clan_machine_settings_file:
+    with NamedTemporaryFile(mode="w", dir=flake) as clan_machine_settings_file:
         env = os.environ.copy()
         inject_config_flags = []
         if config is not None:

@@ -4,12 +4,13 @@ import os
 import subprocess
 from pathlib import Path
 
-from ..dirs import get_clan_flake_toplevel
+from ..dirs import specific_flake_dir
 from ..machines.machines import Machine
 from ..nix import nix_build, nix_command, nix_config
 from ..secrets.generate import generate_secrets
 from ..secrets.upload import upload_secrets
 from ..ssh import Host, HostGroup, HostKeyCheck, parse_deployment_address
+from ..types import FlakeName
 
 
 def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
@@ -40,7 +41,7 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
 
         flake_attr = h.meta.get("flake_attr", "")
 
-        generate_secrets(h.meta["machine"])
+        generate_secrets(h.meta["machine"], FlakeName(clan_dir.name))
         upload_secrets(h.meta["machine"])
 
         target_host = h.meta.get("target_host")
@@ -95,25 +96,29 @@ def get_all_machines(clan_dir: Path) -> HostGroup:
         host = parse_deployment_address(
             name,
             machine_data["deploymentAddress"],
-            meta={"machine": Machine(name=name, machine_data=machine_data)},
+            meta={
+                "machine": Machine(
+                    name=name, flake_dir=clan_dir, machine_data=machine_data
+                )
+            },
         )
         hosts.append(host)
     return HostGroup(hosts)
 
 
-def get_selected_machines(machine_names: list[str], clan_dir: Path) -> HostGroup:
+def get_selected_machines(machine_names: list[str], flake_dir: Path) -> HostGroup:
     hosts = []
     for name in machine_names:
-        machine = Machine(name=name, clan_dir=clan_dir)
+        machine = Machine(name=name, flake_dir=flake_dir)
         hosts.append(machine.host)
     return HostGroup(hosts)
 
 
 # FIXME: we want some kind of inventory here.
 def update(args: argparse.Namespace) -> None:
-    clan_dir = get_clan_flake_toplevel()
+    flake_dir = specific_flake_dir(args.flake)
     if len(args.machines) == 1 and args.target_host is not None:
-        machine = Machine(name=args.machines[0], clan_dir=clan_dir)
+        machine = Machine(name=args.machines[0], flake_dir=flake_dir)
         machine.deployment_address = args.target_host
         host = parse_deployment_address(
             args.machines[0],
@@ -127,11 +132,11 @@ def update(args: argparse.Namespace) -> None:
         exit(1)
     else:
         if len(args.machines) == 0:
-            machines = get_all_machines(clan_dir)
+            machines = get_all_machines(flake_dir)
         else:
-            machines = get_selected_machines(args.machines, clan_dir)
+            machines = get_selected_machines(args.machines, flake_dir)
 
-    deploy_nixos(machines, clan_dir)
+    deploy_nixos(machines, flake_dir)
 
 
 def register_update_parser(parser: argparse.ArgumentParser) -> None:
@@ -141,6 +146,11 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         help="machine to update. if empty, update all machines",
         nargs="*",
         default=[],
+    )
+    parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to update machine for",
     )
     parser.add_argument(
         "--target-host",

@@ -15,4 +15,8 @@
     "search.exclude": {
         "**/.direnv": true
     },
+    "python.linting.mypyPath": "mypy",
+    "python.linting.mypyEnabled": true,
+    "python.linting.enabled": true,
+    "python.defaultInterpreterPath": "python"
 }
