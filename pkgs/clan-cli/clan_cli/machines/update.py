@@ -4,7 +4,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from ..dirs import specific_flake_dir
+from ..dirs import get_clan_flake_toplevel
 from ..machines.machines import Machine
 from ..nix import nix_build, nix_command, nix_config
 from ..secrets.generate import generate_secrets
@@ -116,7 +116,10 @@ def get_selected_machines(machine_names: list[str], flake_dir: Path) -> HostGrou
 
 # FIXME: we want some kind of inventory here.
 def update(args: argparse.Namespace) -> None:
-    flake_dir = specific_flake_dir(args.flake)
+    if args.flake is None:
+        flake_dir = get_clan_flake_toplevel()
+    else:
+        flake_dir = args.flake
     if len(args.machines) == 1 and args.target_host is not None:
         machine = Machine(name=args.machines[0], flake_dir=flake_dir)
         machine.deployment_address = args.target_host
@@ -148,9 +151,10 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         default=[],
     )
     parser.add_argument(
-        "flake",
+        "--flake",
         type=str,
         help="name of the flake to update machine for",
+        default=None,
     )
     parser.add_argument(
         "--target-host",
