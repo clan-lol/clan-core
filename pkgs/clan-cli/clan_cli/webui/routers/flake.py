@@ -80,11 +80,11 @@ async def inspect_flake(
 async def create_flake(
     args: Annotated[FlakeCreateInput, Body()],
 ) -> FlakeCreateResponse:
-    if args.dest.exists():
+    if args.flake_name.exists():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Flake already exists",
         )
 
-    cmd_out = await create.create_flake(args.dest, args.url)
+    cmd_out = await create.create_flake(args.flake_name, args.url)
     return FlakeCreateResponse(cmd_out=cmd_out)
