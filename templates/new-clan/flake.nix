@@ -1,7 +1,7 @@
 {
   description = "<Put your description here>";
 
-  inputs.clan-core.url = "git+https://git.clan.lol/clan/clan-core";
+  inputs.clan-core.url = "git+https://git.clan.lol/clan/clan-core?ref=Qubasa-main";
 
   outputs = { self, clan-core, ... }:
     let
@@ -9,6 +9,7 @@
       pkgs = clan-core.inputs.nixpkgs.legacyPackages.${system};
       clan = clan-core.lib.buildClan {
         directory = self;
+        clanName = "__CHANGE_ME__";
       };
     in
     {

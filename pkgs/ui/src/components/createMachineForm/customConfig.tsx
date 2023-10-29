@@ -33,7 +33,10 @@ interface PureCustomConfigProps extends FormStepContentProps {
 }
 export function CustomConfig(props: FormStepContentProps) {
   const { formHooks } = props;
-  const { data, isLoading, error } = useGetMachineSchema("mama");
+  const { data, isLoading, error } = useGetMachineSchema(
+    "defaultFlake",
+    "mama",
+  );
   // const { data, isLoading, error } = { data: {data:{schema: {
   //   title: 'Test form',
   //   type: 'object',
@@ -53,11 +56,11 @@ export function CustomConfig(props: FormStepContentProps) {
     return {};
   }, [data, isLoading, error]);
 
+  type ValueType = { default: any };
   const initialValues = useMemo(
     () =>
       Object.entries(schema?.properties || {}).reduce((acc, [key, value]) => {
-        /*@ts-ignore*/
-        const init: any = value?.default;
+        const init: any = (value as ValueType)?.default;
         if (init) {
           return {
             ...acc,
@@ -157,7 +160,7 @@ function PureCustomConfig(props: PureCustomConfigProps) {
         // ObjectFieldTemplate:
         ErrorListTemplate: ErrorList,
         ButtonTemplates: {
-          SubmitButton: (props) => (
+          SubmitButton: () => (
             <div className="flex w-full items-center justify-center">
               <Button
                 onClick={validate}

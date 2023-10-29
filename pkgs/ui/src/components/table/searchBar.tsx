@@ -1,11 +1,11 @@
 "use client";
 
-import { SetStateAction, Dispatch, useState, useEffect, useMemo } from "react";
-import IconButton from "@mui/material/IconButton";
-import SearchIcon from "@mui/icons-material/Search";
-import { useDebounce } from "../hooks/useDebounce";
-import { Autocomplete, InputAdornment, TextField } from "@mui/material";
 import { Machine } from "@/api/model/machine";
+import SearchIcon from "@mui/icons-material/Search";
+import { Autocomplete, InputAdornment, TextField } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { useDebounce } from "../hooks/useDebounce";
 
 export interface SearchBarProps {
   tableData: readonly Machine[];
@@ -13,7 +13,7 @@ export interface SearchBarProps {
 }
 
 export function SearchBar(props: SearchBarProps) {
-  let { tableData, setFilteredList } = props;
+  const { tableData, setFilteredList } = props;
   const [search, setSearch] = useState<string>("");
   const debouncedSearch = useDebounce(search, 250);
   const [open, setOpen] = useState(false);

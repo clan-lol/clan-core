@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from ..dirs import get_clan_flake_toplevel
 from ..nix import nix_build, nix_config, nix_eval
 from ..ssh import Host, parse_deployment_address
 
@@ -31,7 +30,7 @@ class Machine:
     def __init__(
         self,
         name: str,
-        clan_dir: Optional[Path] = None,
+        flake_dir: Path,
         machine_data: Optional[dict] = None,
     ) -> None:
         """
@@ -41,13 +40,10 @@ class Machine:
         @machine_json: can be optionally used to skip evaluation of the machine, location of the json file with machine data
         """
         self.name = name
-        if clan_dir is None:
-            self.clan_dir = get_clan_flake_toplevel()
-        else:
-            self.clan_dir = clan_dir
+        self.flake_dir = flake_dir
 
         if machine_data is None:
-            self.machine_data = build_machine_data(name, self.clan_dir)
+            self.machine_data = build_machine_data(name, self.flake_dir)
         else:
             self.machine_data = machine_data
 
@@ -68,14 +64,14 @@ class Machine:
         @secrets_dir: the directory to store the secrets in
         """
         env = os.environ.copy()
-        env["CLAN_DIR"] = str(self.clan_dir)
+        env["CLAN_DIR"] = str(self.flake_dir)
         env["PYTHONPATH"] = str(
             ":".join(sys.path)
         )  # TODO do this in the clanCore module
         env["SECRETS_DIR"] = str(secrets_dir)
         print(f"uploading secrets... {self.upload_secrets}")
         proc = subprocess.run(
-            [self.upload_secrets],
+            [self.upload_secrets, self.flake_dir.name],
             env=env,
             stdout=subprocess.PIPE,
             text=True,
@@ -95,7 +91,7 @@ class Machine:
         @attr: the attribute to get
         """
         output = subprocess.run(
-            nix_eval([f"path:{self.clan_dir}#{attr}"]),
+            nix_eval([f"path:{self.flake_dir}#{attr}"]),
             stdout=subprocess.PIPE,
             check=True,
             text=True,
@@ -108,7 +104,7 @@ class Machine:
         @attr: the attribute to get
         """
         outpath = subprocess.run(
-            nix_build([f"path:{self.clan_dir}#{attr}"]),
+            nix_build([f"path:{self.flake_dir}#{attr}"]),
             stdout=subprocess.PIPE,
             check=True,
             text=True,

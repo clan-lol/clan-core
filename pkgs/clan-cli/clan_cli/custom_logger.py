@@ -1,5 +1,7 @@
+import inspect
 import logging
-from typing import Any
+from pathlib import Path
+from typing import Any, Callable
 
 grey = "\x1b[38;20m"
 yellow = "\x1b[33;20m"
@@ -9,11 +11,20 @@ green = "\u001b[32m"
 blue = "\u001b[34m"
 
 
-def get_formatter(color: str) -> logging.Formatter:
-    reset = "\x1b[0m"
-    return logging.Formatter(
-        f"{color}%(levelname)s{reset}:(%(filename)s:%(lineno)d): %(message)s"
-    )
+def get_formatter(color: str) -> Callable[[logging.LogRecord, bool], logging.Formatter]:
+    def myformatter(
+        record: logging.LogRecord, with_location: bool
+    ) -> logging.Formatter:
+        reset = "\x1b[0m"
+        filepath = Path(record.pathname).resolve()
+        if not with_location:
+            return logging.Formatter(f"{color}%(levelname)s{reset}: %(message)s")
+
+        return logging.Formatter(
+            f"{color}%(levelname)s{reset}: %(message)s\n       {filepath}:%(lineno)d::%(funcName)s\n"
+        )
+
+    return myformatter
 
 
 FORMATTER = {
@@ -26,12 +37,36 @@ FORMATTER = {
 
 
 class CustomFormatter(logging.Formatter):
-    def format(self, record: Any) -> str:
-        return FORMATTER[record.levelno].format(record)
+    def format(self, record: logging.LogRecord) -> str:
+        return FORMATTER[record.levelno](record, True).format(record)
 
 
-def register(level: Any) -> None:
-    ch = logging.StreamHandler()
-    ch.setLevel(level)
-    ch.setFormatter(CustomFormatter())
-    logging.basicConfig(level=level, handlers=[ch])
+class ThreadFormatter(logging.Formatter):
+    def format(self, record: logging.LogRecord) -> str:
+        return FORMATTER[record.levelno](record, False).format(record)
+
+
+def get_caller() -> str:
+    frame = inspect.currentframe()
+    if frame is None:
+        return "unknown"
+    caller_frame = frame.f_back
+    if caller_frame is None:
+        return "unknown"
+    caller_frame = caller_frame.f_back
+    if caller_frame is None:
+        return "unknown"
+    frame_info = inspect.getframeinfo(caller_frame)
+    ret = f"{frame_info.filename}:{frame_info.lineno}::{frame_info.function}"
+    return ret
+
+
+def setup_logging(level: Any) -> None:
+    handler = logging.StreamHandler()
+    handler.setLevel(level)
+    handler.setFormatter(CustomFormatter())
+    logger = logging.getLogger("registerHandler")
+    logging.getLogger("asyncio").setLevel(logging.INFO)
+    logging.getLogger("httpx").setLevel(level=logging.WARNING)
+    logger.addHandler(handler)
+    # logging.basicConfig(level=level, handlers=[handler])

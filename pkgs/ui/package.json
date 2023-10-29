@@ -20,6 +20,7 @@
     "@rjsf/mui": "^5.12.1",
     "@rjsf/validator-ajv8": "^5.12.1",
     "@types/json-schema": "^7.0.12",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
     "autoprefixer": "10.4.14",
     "axios": "^1.4.0",
     "classnames": "^2.3.2",

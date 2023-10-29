@@ -16,15 +16,16 @@ export default function JoinPrequel() {
   const queryParams = useSearchParams();
   const flakeUrl = queryParams.get("flake") || "";
   const flakeAttr = queryParams.get("attr") || "default";
-  const { handleSubmit, control, formState, getValues, reset } =
-    useForm<FormValues>({ defaultValues: { flakeUrl: "" } });
+  const { control, formState, getValues, reset } = useForm<FormValues>({
+    defaultValues: { flakeUrl: "" },
+  });
 
   return (
     <Layout>
       <Suspense fallback="Loading">
         {!formState.isSubmitted && !flakeUrl && (
           <form
-            onSubmit={handleSubmit(() => {})}
+            // onSubmit={handleSubmit(() => {})}
             className="w-full max-w-2xl justify-self-center"
           >
             <Controller

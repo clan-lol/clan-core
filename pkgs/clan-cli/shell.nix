@@ -23,7 +23,8 @@ mkShell {
 
   shellHook = ''
     tmp_path=$(realpath ./.direnv)
-    source=$(realpath .)
+
+    repo_root=$(realpath .)
     mkdir -p "$tmp_path/python/${pythonWithDeps.sitePackages}"
 
     # Install the package in editable mode
@@ -35,14 +36,15 @@ mkShell {
       --no-index \
       --no-build-isolation \
       --prefix "$tmp_path/python" \
-      --editable $source
+      --editable $repo_root
 
     rm -f clan_cli/nixpkgs clan_cli/webui/assets
     ln -sf ${clan-cli.nixpkgs} clan_cli/nixpkgs
     ln -sf ${ui-assets} clan_cli/webui/assets
 
     export PATH="$tmp_path/python/bin:${checkScript}/bin:$PATH"
-    export PYTHONPATH="$source:$tmp_path/python/${pythonWithDeps.sitePackages}:"
+    export PYTHONPATH="$repo_root:$tmp_path/python/${pythonWithDeps.sitePackages}:"
+
 
     export XDG_DATA_DIRS="$tmp_path/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
     export fish_complete_path="$tmp_path/share/fish/vendor_completions.d''${fish_complete_path:+:$fish_complete_path}"
@@ -53,6 +55,8 @@ mkShell {
     register-python-argcomplete --shell fish clan > $tmp_path/share/fish/vendor_completions.d/clan.fish
     register-python-argcomplete --shell bash clan > $tmp_path/share/bash-completion/completions/clan
 
-    ./bin/clan machines create example
+
+    ./bin/clan flakes create example_clan
+    ./bin/clan machines create example_machine example_clan
   '';
 }

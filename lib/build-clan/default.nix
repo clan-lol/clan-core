@@ -2,6 +2,7 @@
 { directory  # The directory containing the machines subdirectory
 , specialArgs ? { } # Extra arguments to pass to nixosSystem i.e. useful to make self available
 , machines ? { } # allows to include machine-specific modules i.e. machines.${name} = { ... }
+, clanName # Needs to be (globally) unique, as this determines the folder name where the flake gets downloaded to.
 }:
 let
   machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (builtins.readDir (directory + /machines));
@@ -73,6 +74,7 @@ in
 
   clanInternals = {
     machines = configsPerSystem;
+    clanName = clanName;
     all-machines-json = lib.mapAttrs
       (system: configs: nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs))
       configsPerSystem;

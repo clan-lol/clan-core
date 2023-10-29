@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from ..dirs import specific_flake_dir
 from ..machines.machines import Machine
 from ..nix import nix_shell
 
@@ -37,7 +38,7 @@ def upload_secrets(machine: Machine) -> None:
 
 
 def upload_command(args: argparse.Namespace) -> None:
-    machine = Machine(args.machine)
+    machine = Machine(name=args.machine, flake_dir=specific_flake_dir(args.flake))
     upload_secrets(machine)
 
 
@@ -45,5 +46,10 @@ def register_upload_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "machine",
         help="The machine to upload secrets to",
+    )
+    parser.add_argument(
+        "flake",
+        type=str,
+        help="name of the flake to create machine for",
     )
     parser.set_defaults(func=upload_command)
