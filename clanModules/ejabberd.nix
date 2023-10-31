@@ -1,9 +1,14 @@
 { config
+, pkgs
 , ...
 }: {
   services.ejabberd = {
     enable = true;
     configFile = "/etc/ejabberd.yml";
+    package = pkgs.ejabberd.override {
+      withSqlite = true;
+      withTools = true;
+    };
   };
 
   environment.etc."ejabberd.yml" = {
@@ -38,28 +43,25 @@
       auth_method: [anonymous]
       anonymous_protocol: login_anon
       acl:
-        local:
-          user_regexp: ""
         loopback:
           ip:
             - 127.0.0.0/8
             - ::1/128
       access_rules:
         local:
-          allow: local
+          allow: loopback
         c2s:
-          deny: blocked
-          allow: all
+          allow: loopback
         s2s:
           - allow
         announce:
-          allow: admin
+          allow: loopback
         configure:
-          allow: admin
+          allow: loopback
         muc_create:
-          allow: all
+          allow: loopback
         pubsub_createnode:
-          allow: local
+          allow: loopback
         trusted_network:
           allow: loopback
       api_permissions:
@@ -73,13 +75,11 @@
             access:
               allow:
                 acl: loopback
-                acl: admin
             oauth:
               scope: "ejabberd:admin"
               access:
                 allow:
                   acl: loopback
-                  acl: admin
           what:
             - "*"
             - "!stop"
