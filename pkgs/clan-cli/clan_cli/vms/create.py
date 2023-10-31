@@ -77,9 +77,9 @@ class BuildVmTask(BaseTask):
         flake_dir.mkdir(exist_ok=True)
 
         xchg_dir = flake_dir / "xchg"
-        xchg_dir.mkdir()
+        xchg_dir.mkdir(exist_ok=True)
         secrets_dir = flake_dir / "secrets"
-        secrets_dir.mkdir()
+        secrets_dir.mkdir(exist_ok=True)
         disk_img = f"{flake_dir}/disk.img"
 
         env = os.environ.copy()
