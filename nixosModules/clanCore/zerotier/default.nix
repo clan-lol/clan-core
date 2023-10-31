@@ -70,6 +70,8 @@ in
       services.zerotierone.package = lib.mkDefault (pkgs.zerotierone.overrideAttrs (_old: { meta = { }; }));
     })
     (lib.mkIf (cfg.networkId != null) {
+      systemd.network.enable = true;
+      networking.useNetworkd = true;
       systemd.network.networks.zerotier = {
         matchConfig.Name = "zt*";
         networkConfig = {
