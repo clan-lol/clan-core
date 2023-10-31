@@ -8,5 +8,7 @@
         ];
       })
       (builtins.readDir ./diskLayouts);
+    dino = ./dino.nix;
+    xfce = ./xfce.nix;
   };
 }
