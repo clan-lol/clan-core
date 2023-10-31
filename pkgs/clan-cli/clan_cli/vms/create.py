@@ -5,6 +5,7 @@ import os
 import re
 import shlex
 import sys
+import tempfile
 from pathlib import Path
 from typing import Iterator
 from uuid import UUID
@@ -76,103 +77,105 @@ class BuildVmTask(BaseTask):
         validate_path(clan_flakes_dir(), flake_dir)
         flake_dir.mkdir(exist_ok=True)
 
-        xchg_dir = flake_dir / "xchg"
-        xchg_dir.mkdir(exist_ok=True)
-        secrets_dir = flake_dir / "secrets"
-        secrets_dir.mkdir(exist_ok=True)
-        disk_img = f"{flake_dir}/disk.img"
+        with tempfile.TemporaryDirectory() as tmpdir_:
+            tmpdir = Path(tmpdir_)
+            xchg_dir = tmpdir / "xchg"
+            xchg_dir.mkdir(exist_ok=True)
+            secrets_dir = tmpdir / "secrets"
+            secrets_dir.mkdir(exist_ok=True)
+            disk_img = tmpdir / "disk.img"
 
-        env = os.environ.copy()
-        env["CLAN_DIR"] = str(self.vm.flake_url)
+            env = os.environ.copy()
+            env["CLAN_DIR"] = str(self.vm.flake_url)
 
-        env["PYTHONPATH"] = str(
-            ":".join(sys.path)
-        )  # TODO do this in the clanCore module
-        env["SECRETS_DIR"] = str(secrets_dir)
+            env["PYTHONPATH"] = str(
+                ":".join(sys.path)
+            )  # TODO do this in the clanCore module
+            env["SECRETS_DIR"] = str(secrets_dir)
 
-        res = is_path_or_url(str(self.vm.flake_url))
-        if res is None:
-            raise ClanError(
-                f"flake_url must be a valid path or URL, got {self.vm.flake_url}"
-            )
-        elif res == "path":  # Only generate secrets for local clans
-            cmd = next(cmds)
-            if Path(self.vm.flake_url).is_dir():
-                cmd.run(
-                    [vm_config["generateSecrets"], clan_name],
-                    env=env,
+            res = is_path_or_url(str(self.vm.flake_url))
+            if res is None:
+                raise ClanError(
+                    f"flake_url must be a valid path or URL, got {self.vm.flake_url}"
                 )
-            else:
-                self.log.warning("won't generate secrets for non local clan")
+            elif res == "path":  # Only generate secrets for local clans
+                cmd = next(cmds)
+                if Path(self.vm.flake_url).is_dir():
+                    cmd.run(
+                        [vm_config["generateSecrets"], clan_name],
+                        env=env,
+                    )
+                else:
+                    self.log.warning("won't generate secrets for non local clan")
 
-        cmd = next(cmds)
-        cmd.run(
-            [vm_config["uploadSecrets"], clan_name],
-            env=env,
-        )
-
-        cmd = next(cmds)
-        cmd.run(
-            nix_shell(
-                ["qemu"],
-                [
-                    "qemu-img",
-                    "create",
-                    "-f",
-                    "raw",
-                    disk_img,
-                    "1024M",
-                ],
+            cmd = next(cmds)
+            cmd.run(
+                [vm_config["uploadSecrets"], clan_name],
+                env=env,
             )
-        )
 
-        cmd = next(cmds)
-        cmd.run(
-            nix_shell(
-                ["e2fsprogs"],
-                [
-                    "mkfs.ext4",
-                    "-L",
-                    "nixos",
-                    disk_img,
-                ],
+            cmd = next(cmds)
+            cmd.run(
+                nix_shell(
+                    ["qemu"],
+                    [
+                        "qemu-img",
+                        "create",
+                        "-f",
+                        "raw",
+                        str(disk_img),
+                        "1024M",
+                    ],
+                )
             )
-        )
 
-        cmd = next(cmds)
-        cmdline = [
-            (Path(vm_config["toplevel"]) / "kernel-params").read_text(),
-            f'init={vm_config["toplevel"]}/init',
-            f'regInfo={vm_config["regInfo"]}/registration',
-            "console=ttyS0,115200n8",
-            "console=tty0",
-        ]
-        qemu_command = [
-            # fmt: off
-            "qemu-kvm",
-            "-name", machine,
-            "-m", f'{vm_config["memorySize"]}M',
-            "-smp", str(vm_config["cores"]),
-            "-device", "virtio-rng-pci",
-            "-net", "nic,netdev=user.0,model=virtio", "-netdev", "user,id=user.0",
-            "-virtfs", "local,path=/nix/store,security_model=none,mount_tag=nix-store",
-            "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=shared",
-            "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=xchg",
-            "-virtfs", f"local,path={secrets_dir},security_model=none,mount_tag=secrets",
-            "-drive", f'cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report',
-            "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
-            "-device", "virtio-keyboard",
-            "-usb",
-            "-device", "usb-tablet,bus=usb-bus.0",
-            "-kernel", f'{vm_config["toplevel"]}/kernel',
-            "-initrd", vm_config["initrd"],
-            "-append", " ".join(cmdline),
-            # fmt: on
-        ]
-        if not self.vm.graphics:
-            qemu_command.append("-nographic")
-        print("$ " + shlex.join(qemu_command))
-        cmd.run(nix_shell(["qemu"], qemu_command))
+            cmd = next(cmds)
+            cmd.run(
+                nix_shell(
+                    ["e2fsprogs"],
+                    [
+                        "mkfs.ext4",
+                        "-L",
+                        "nixos",
+                        str(disk_img),
+                    ],
+                )
+            )
+
+            cmd = next(cmds)
+            cmdline = [
+                (Path(vm_config["toplevel"]) / "kernel-params").read_text(),
+                f'init={vm_config["toplevel"]}/init',
+                f'regInfo={vm_config["regInfo"]}/registration',
+                "console=ttyS0,115200n8",
+                "console=tty0",
+            ]
+            qemu_command = [
+                # fmt: off
+                "qemu-kvm",
+                "-name", machine,
+                "-m", f'{vm_config["memorySize"]}M',
+                "-smp", str(vm_config["cores"]),
+                "-device", "virtio-rng-pci",
+                "-net", "nic,netdev=user.0,model=virtio", "-netdev", "user,id=user.0",
+                "-virtfs", "local,path=/nix/store,security_model=none,mount_tag=nix-store",
+                "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=shared",
+                "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=xchg",
+                "-virtfs", f"local,path={secrets_dir},security_model=none,mount_tag=secrets",
+                "-drive", f'cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report',
+                "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
+                "-device", "virtio-keyboard",
+                "-usb",
+                "-device", "usb-tablet,bus=usb-bus.0",
+                "-kernel", f'{vm_config["toplevel"]}/kernel',
+                "-initrd", vm_config["initrd"],
+                "-append", " ".join(cmdline),
+                # fmt: on
+            ]
+            if not self.vm.graphics:
+                qemu_command.append("-nographic")
+            print("$ " + shlex.join(qemu_command))
+            cmd.run(nix_shell(["qemu"], qemu_command))
 
 
 def create_vm(vm: VmConfig) -> BuildVmTask:
