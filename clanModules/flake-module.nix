@@ -8,7 +8,7 @@
         ];
       })
       (builtins.readDir ./diskLayouts);
-    ejabberd = ./ejabberd.nix;
+    prosody = ./prosody.nix;
     dino = ./dino.nix;
     xfce = ./xfce.nix;
   };
