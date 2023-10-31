@@ -165,6 +165,7 @@ class BuildVmTask(BaseTask):
                 "-drive", f'cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report',
                 "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
                 "-device", "virtio-keyboard",
+                "-vga", "virtio",
                 "-usb",
                 "-device", "usb-tablet,bus=usb-bus.0",
                 "-kernel", f'{vm_config["toplevel"]}/kernel',
