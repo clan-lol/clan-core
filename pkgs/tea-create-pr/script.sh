@@ -6,7 +6,7 @@ targetBranch="${2:-main}"
 shift && shift
 TMPDIR="$(mktemp -d)"
 currentBranch="$(git rev-parse --abbrev-ref HEAD)"
-user="$(tea login list -o simple | cut -d" " -f4)"
+user="$(tea login list -o simple | cut -d" " -f4 | head -n1)"
 tempRemoteBranch="$user-$currentBranch"
 
 nix fmt -- --fail-on-change
