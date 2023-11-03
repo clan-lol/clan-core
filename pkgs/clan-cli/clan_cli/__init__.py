@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 from types import ModuleType
-from typing import Optional
+from typing import Any, Optional, Sequence
 
 from . import config, flakes, join, machines, secrets, vms, webui
 from .custom_logger import setup_logging
@@ -17,6 +17,24 @@ except ImportError:
     pass
 
 
+class AppendOptionAction(argparse.Action):
+    def __init__(self, option_strings: str, dest: str, **kwargs: Any) -> None:
+        super().__init__(option_strings, dest, **kwargs)
+
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | Sequence[str] | None,
+        option_string: Optional[str] = None,
+    ) -> None:
+        lst = getattr(namespace, self.dest)
+        lst.append("--option")
+        assert isinstance(values, list), "values must be a list"
+        lst.append(values[0])
+        lst.append(values[1])
+
+
 def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog=prog, description="cLAN tool")
 
@@ -29,9 +47,9 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     parser.add_argument(
         "--option",
         help="Nix option to set",
-        action="append",
         nargs=2,
         metavar=("name", "value"),
+        action=AppendOptionAction,
         default=[],
     )
 
