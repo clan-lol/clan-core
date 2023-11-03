@@ -1,5 +1,5 @@
 "use client";
-import { useGetVmLogs } from "@/api/default/default";
+import { useGetVmLogs } from "@/api/vm/vm";
 import { Log } from "./log";
 import { LoadingOverlay } from "./loadingOverlay";
 
