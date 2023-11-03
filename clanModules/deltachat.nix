@@ -1,4 +1,5 @@
 { config, pkgs, ... }: {
+  networking.firewall.interfaces."zt+".allowedTCPPorts = [ 25 ]; # smtp with other hosts
   environment.systemPackages = [ pkgs.deltachat-desktop ];
 
   services.maddy = {
