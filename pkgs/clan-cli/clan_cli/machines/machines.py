@@ -71,7 +71,7 @@ class Machine:
         env["SECRETS_DIR"] = str(secrets_dir)
         print(f"uploading secrets... {self.upload_secrets}")
         proc = subprocess.run(
-            [self.upload_secrets, self.flake_dir.name],
+            [self.upload_secrets],
             env=env,
             stdout=subprocess.PIPE,
             text=True,

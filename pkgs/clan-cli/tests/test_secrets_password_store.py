@@ -39,7 +39,7 @@ def test_upload_secret(
         check=True,
     )
     subprocess.run(nix_shell(["pass"], ["pass", "init", "test@local"]), check=True)
-    cli.run(["secrets", "generate", "vm1", test_flake_with_core_and_pass.name])
+    cli.run(["secrets", "generate", "vm1"])
     network_id = machine_get_fact(
         test_flake_with_core_and_pass.name, "vm1", "zerotier-network-id"
     )
@@ -50,7 +50,7 @@ def test_upload_secret(
     secret1_mtime = identity_secret.lstat().st_mtime_ns
 
     # test idempotency
-    cli.run(["secrets", "generate", "vm1", test_flake_with_core_and_pass.name])
+    cli.run(["secrets", "generate", "vm1"])
     assert identity_secret.lstat().st_mtime_ns == secret1_mtime
 
     flake = test_flake_with_core_and_pass.path.joinpath("flake.nix")
@@ -58,7 +58,7 @@ def test_upload_secret(
     addr = f"{host.user}@{host.host}:{host.port}?StrictHostKeyChecking=no&UserKnownHostsFile=/dev/null&IdentityFile={host.key}"
     new_text = flake.read_text().replace("__CLAN_DEPLOYMENT_ADDRESS__", addr)
     flake.write_text(new_text)
-    cli.run(["secrets", "upload", "vm1", test_flake_with_core_and_pass.name])
+    cli.run(["secrets", "upload", "vm1"])
     zerotier_identity_secret = (
         test_flake_with_core_and_pass.path / "secrets" / "zerotier-identity-secret"
     )
