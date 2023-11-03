@@ -70,6 +70,10 @@ class FlakeAction(BaseModel):
     uri: str
 
 
+class FlakeListResponse(BaseModel):
+    flakes: list[str]
+
+
 class FlakeCreateResponse(BaseModel):
     cmd_out: Dict[str, CmdOut]
 

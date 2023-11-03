@@ -9,6 +9,7 @@ from ..errors import ClanError
 from .assets import asset_path
 from .error_handlers import clan_error_handler
 from .routers import clan_modules, flake, health, machines, root, vms
+from .tags import tags_metadata
 
 origins = [
     "http://localhost:3000",
@@ -38,6 +39,9 @@ def setup_app() -> FastAPI:
     app.add_exception_handler(ClanError, clan_error_handler)
 
     app.mount("/static", StaticFiles(directory=asset_path()), name="static")
+
+    # Add tag descriptions to the OpenAPI schema
+    app.openapi_tags = tags_metadata
 
     for route in app.routes:
         if isinstance(route, APIRoute):

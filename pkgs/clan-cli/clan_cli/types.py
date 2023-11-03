@@ -1,10 +1,14 @@
 import logging
 from pathlib import Path
-from typing import NewType
+from typing import NewType, Union
+
+from pydantic import AnyUrl
 
 log = logging.getLogger(__name__)
 
 FlakeName = NewType("FlakeName", str)
+
+FlakeUrl = Union[AnyUrl, Path]
 
 
 def validate_path(base_dir: Path, value: Path) -> Path:
