@@ -11,23 +11,16 @@ from typing import Iterator
 from uuid import UUID
 
 from ..dirs import clan_flakes_dir, specific_flake_dir
-from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_eval, nix_shell
 from ..task_manager import BaseTask, Command, create_task
 from ..types import validate_path
 from .inspect import VmConfig, inspect_vm
 
 
-def is_path_or_url(s: str) -> str | None:
-    # check if s is a valid path
-    if os.path.exists(s):
-        return "path"
-    # check if s is a valid URL
-    elif re.match(r"^https?://[a-zA-Z0-9.-]+/[a-zA-Z0-9.-]+", s):
-        return "URL"
-    # otherwise, return None
-    else:
-        return None
+def is_flake_url(s: str) -> bool:
+    if re.match(r"^http.?://[a-zA-Z0-9.-]+/[a-zA-Z0-9.-]+", s) is not None:
+        return True
+    return False
 
 
 class BuildVmTask(BaseTask):
@@ -95,12 +88,8 @@ class BuildVmTask(BaseTask):
             )  # TODO do this in the clanCore module
             env["SECRETS_DIR"] = str(secrets_dir)
 
-            res = is_path_or_url(str(self.vm.flake_url))
-            if res is None:
-                raise ClanError(
-                    f"flake_url must be a valid path or URL, got {self.vm.flake_url}"
-                )
-            elif res == "path":  # Only generate secrets for local clans
+            # Only generate secrets for local clans
+            if not is_flake_url(str(self.vm.flake_url)):
                 cmd = next(cmds)
                 if Path(self.vm.flake_url).is_dir():
                     cmd.run(
@@ -203,8 +192,10 @@ def create_vm(vm: VmConfig, nix_options: list[str] = []) -> BuildVmTask:
 
 
 def create_command(args: argparse.Namespace) -> None:
-    clan_dir = specific_flake_dir(args.flake)
-    vm = asyncio.run(inspect_vm(flake_url=clan_dir, flake_attr=args.machine))
+    flake_url = args.flake
+    if not is_flake_url(args.flake):
+        flake_url = specific_flake_dir(args.flake)
+    vm = asyncio.run(inspect_vm(flake_url=flake_url, flake_attr=args.machine))
 
     task = create_vm(vm, args.option)
     for line in task.log_lines():
