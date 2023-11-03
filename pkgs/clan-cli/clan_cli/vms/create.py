@@ -31,9 +31,10 @@ def is_path_or_url(s: str) -> str | None:
 
 
 class BuildVmTask(BaseTask):
-    def __init__(self, uuid: UUID, vm: VmConfig) -> None:
+    def __init__(self, uuid: UUID, vm: VmConfig, nix_options: list[str] = []) -> None:
         super().__init__(uuid, num_cmds=7)
         self.vm = vm
+        self.nix_options = nix_options
 
     def get_vm_create_info(self, cmds: Iterator[Command]) -> dict:
         config = nix_config()
@@ -47,6 +48,7 @@ class BuildVmTask(BaseTask):
                 [
                     f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.vm.create'
                 ]
+                + self.nix_options
             )
         )
         vm_json = "".join(cmd.stdout).strip()
@@ -57,7 +59,7 @@ class BuildVmTask(BaseTask):
     def get_clan_name(self, cmds: Iterator[Command]) -> str:
         clan_dir = self.vm.flake_url
         cmd = next(cmds)
-        cmd.run(nix_eval([f"{clan_dir}#clanInternals.clanName"]))
+        cmd.run(nix_eval([f"{clan_dir}#clanInternals.clanName"]) + self.nix_options)
         clan_name = cmd.stdout[0].strip().strip('"')
         return clan_name
 
@@ -179,15 +181,15 @@ class BuildVmTask(BaseTask):
             cmd.run(nix_shell(["qemu"], qemu_command))
 
 
-def create_vm(vm: VmConfig) -> BuildVmTask:
-    return create_task(BuildVmTask, vm)
+def create_vm(vm: VmConfig, nix_options: list[str] = []) -> BuildVmTask:
+    return create_task(BuildVmTask, vm, nix_options)
 
 
 def create_command(args: argparse.Namespace) -> None:
     clan_dir = specific_flake_dir(args.flake)
     vm = asyncio.run(inspect_vm(flake_url=clan_dir, flake_attr=args.machine))
 
-    task = create_vm(vm)
+    task = create_vm(vm, args.option)
     for line in task.log_lines():
         print(line, end="")
 
