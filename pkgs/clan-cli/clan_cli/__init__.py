@@ -26,6 +26,15 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
         action="store_true",
     )
 
+    parser.add_argument(
+        "--option",
+        help="Nix option to set",
+        action="append",
+        nargs=2,
+        metavar=("name", "value"),
+        default=[],
+    )
+
     subparsers = parser.add_subparsers()
 
     parser_flake = subparsers.add_parser(
