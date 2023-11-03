@@ -15,6 +15,7 @@
           # import our test
           secrets = import ./secrets nixosTestArgs;
           container = import ./container nixosTestArgs;
+          deltachat = import ./deltachat nixosTestArgs;
         };
         schemaTests = pkgs.callPackages ./schemas.nix {
           inherit self;
