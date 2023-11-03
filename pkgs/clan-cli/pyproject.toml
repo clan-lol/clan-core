@@ -58,25 +58,3 @@ line-length = 88
 
 select = [ "E", "F", "I",  "N"]
 ignore = [ "E501" ]
-
-[tool.black]
-line-length = 88
-target-version = [ "py310" ]
-include = "\\.pyi?$"
-exclude = '''
-/(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-  # The following are specific to Black, you probably don't want those.
-  | blib2to3
-  | tests/data
-  | profiling
-)/
-'''
