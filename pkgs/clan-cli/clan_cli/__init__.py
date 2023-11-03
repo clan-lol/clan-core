@@ -6,6 +6,7 @@ from typing import Any, Optional, Sequence
 
 from . import config, flakes, join, machines, secrets, vms, webui
 from .custom_logger import setup_logging
+from .dirs import get_clan_flake_toplevel
 from .ssh import cli as ssh_cli
 
 log = logging.getLogger(__name__)
@@ -51,6 +52,12 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
         metavar=("name", "value"),
         action=AppendOptionAction,
         default=[],
+    )
+
+    parser.add_argument(
+        "--flake",
+        help="path to the flake where the clan resides in",
+        default=None,
     )
 
     subparsers = parser.add_subparsers()
@@ -99,6 +106,9 @@ def main() -> None:
     if args.debug:
         setup_logging(logging.DEBUG)
         log.debug("Debug log activated")
+
+    if args.flake is None:
+        args.flake = get_clan_flake_toplevel()
 
     if not hasattr(args, "func"):
         return

@@ -10,9 +10,7 @@ from typing import Any
 
 from clan_cli.nix import nix_shell
 
-from ..dirs import specific_flake_dir
 from ..errors import ClanError
-from ..types import FlakeName
 from .folders import sops_secrets_folder
 from .machines import add_machine, has_machine
 from .secrets import decrypt_secret, encrypt_secret, has_secret
@@ -21,29 +19,29 @@ from .sops import generate_private_key
 log = logging.getLogger(__name__)
 
 
-def generate_host_key(flake_name: FlakeName, machine_name: str) -> None:
-    if has_machine(flake_name, machine_name):
+def generate_host_key(flake_dir: Path, machine_name: str) -> None:
+    if has_machine(flake_dir, machine_name):
         return
     priv_key, pub_key = generate_private_key()
     encrypt_secret(
-        flake_name,
-        sops_secrets_folder(flake_name) / f"{machine_name}-age.key",
+        flake_dir,
+        sops_secrets_folder(flake_dir) / f"{machine_name}-age.key",
         priv_key,
     )
-    add_machine(flake_name, machine_name, pub_key, False)
+    add_machine(flake_dir, machine_name, pub_key, False)
 
 
 def generate_secrets_group(
-    flake_name: FlakeName,
+    flake_dir: Path,
     secret_group: str,
     machine_name: str,
     tempdir: Path,
     secret_options: dict[str, Any],
 ) -> None:
-    clan_dir = specific_flake_dir(flake_name)
+    clan_dir = flake_dir
     secrets = secret_options["secrets"]
     needs_regeneration = any(
-        not has_secret(flake_name, f"{machine_name}-{secret['name']}")
+        not has_secret(flake_dir, f"{machine_name}-{secret['name']}")
         for secret in secrets.values()
     )
     generator = secret_options["generator"]
@@ -74,8 +72,8 @@ export secrets={shlex.quote(str(secrets_dir))}
                 msg += text
                 raise ClanError(msg)
             encrypt_secret(
-                flake_name,
-                sops_secrets_folder(flake_name) / f"{machine_name}-{secret['name']}",
+                flake_dir,
+                sops_secrets_folder(flake_dir) / f"{machine_name}-{secret['name']}",
                 secret_file.read_text(),
                 add_machines=[machine_name],
             )
@@ -92,21 +90,19 @@ export secrets={shlex.quote(str(secrets_dir))}
 
 # this is called by the sops.nix clan core module
 def generate_secrets_from_nix(
-    flake_name: FlakeName,
     machine_name: str,
     secret_submodules: dict[str, Any],
 ) -> None:
-    generate_host_key(flake_name, machine_name)
+    flake_dir = Path(os.environ["CLAN_DIR"])
+    generate_host_key(flake_dir, machine_name)
     errors = {}
-    log.debug(
-        "Generating secrets for machine %s and flake %s", machine_name, flake_name
-    )
+    log.debug("Generating secrets for machine %s and flake %s", machine_name, flake_dir)
     with TemporaryDirectory() as d:
         # if any of the secrets are missing, we regenerate all connected facts/secrets
         for secret_group, secret_options in secret_submodules.items():
             try:
                 generate_secrets_group(
-                    flake_name, secret_group, machine_name, Path(d), secret_options
+                    flake_dir, secret_group, machine_name, Path(d), secret_options
                 )
             except ClanError as e:
                 errors[secret_group] = e
@@ -119,16 +115,16 @@ def generate_secrets_from_nix(
 
 # this is called by the sops.nix clan core module
 def upload_age_key_from_nix(
-    flake_name: FlakeName,
     machine_name: str,
 ) -> None:
-    log.debug("Uploading secrets for machine %s and flake %s", machine_name, flake_name)
+    flake_dir = Path(os.environ["CLAN_DIR"])
+    log.debug("Uploading secrets for machine %s and flake %s", machine_name, flake_dir)
     secret_name = f"{machine_name}-age.key"
     if not has_secret(
-        flake_name, secret_name
+        flake_dir, secret_name
     ):  # skip uploading the secret, not managed by us
         return
-    secret = decrypt_secret(flake_name, secret_name)
+    secret = decrypt_secret(flake_dir, secret_name)
 
     secrets_dir = Path(os.environ["SECRETS_DIR"])
     (secrets_dir / "key.txt").write_text(secret)
