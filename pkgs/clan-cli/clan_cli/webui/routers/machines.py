@@ -23,12 +23,13 @@ from ..api_outputs import (
     Status,
     VerifyMachineResponse,
 )
+from ..tags import Tags
 
 log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/api/{flake_name}/machines")
+@router.get("/api/{flake_name}/machines", tags=[Tags.machine])
 async def list_machines(flake_name: FlakeName) -> MachinesResponse:
     machines = []
     for m in _list_machines(flake_name):
@@ -37,7 +38,7 @@ async def list_machines(flake_name: FlakeName) -> MachinesResponse:
     return MachinesResponse(machines=machines)
 
 
-@router.post("/api/{flake_name}/machines", status_code=201)
+@router.post("/api/{flake_name}/machines", tags=[Tags.machine], status_code=201)
 async def create_machine(
     flake_name: FlakeName, machine: Annotated[MachineCreate, Body()]
 ) -> MachineResponse:
@@ -45,19 +46,19 @@ async def create_machine(
     return MachineResponse(machine=Machine(name=machine.name, status=Status.UNKNOWN))
 
 
-@router.get("/api/{flake_name}/machines/{name}")
+@router.get("/api/{flake_name}/machines/{name}", tags=[Tags.machine])
 async def get_machine(flake_name: FlakeName, name: str) -> MachineResponse:
     log.error("TODO")
     return MachineResponse(machine=Machine(name=name, status=Status.UNKNOWN))
 
 
-@router.get("/api/{flake_name}/machines/{name}/config")
+@router.get("/api/{flake_name}/machines/{name}/config", tags=[Tags.machine])
 async def get_machine_config(flake_name: FlakeName, name: str) -> ConfigResponse:
     config = config_for_machine(flake_name, name)
     return ConfigResponse(config=config)
 
 
-@router.put("/api/{flake_name}/machines/{name}/config")
+@router.put("/api/{flake_name}/machines/{name}/config", tags=[Tags.machine])
 async def set_machine_config(
     flake_name: FlakeName, name: str, config: Annotated[dict, Body()]
 ) -> ConfigResponse:
@@ -65,13 +66,13 @@ async def set_machine_config(
     return ConfigResponse(config=config)
 
 
-@router.get("/api/{flake_name}/machines/{name}/schema")
+@router.get("/api/{flake_name}/machines/{name}/schema", tags=[Tags.machine])
 async def get_machine_schema(flake_name: FlakeName, name: str) -> SchemaResponse:
     schema = schema_for_machine(flake_name, name)
     return SchemaResponse(schema=schema)
 
 
-@router.put("/api/{flake_name}/machines/{name}/schema")
+@router.put("/api/{flake_name}/machines/{name}/schema", tags=[Tags.machine])
 async def set_machine_schema(
     flake_name: FlakeName, name: str, config: Annotated[dict, Body()]
 ) -> SchemaResponse:
@@ -79,7 +80,7 @@ async def set_machine_schema(
     return SchemaResponse(schema=schema)
 
 
-@router.get("/api/{flake_name}/machines/{name}/verify")
+@router.get("/api/{flake_name}/machines/{name}/verify", tags=[Tags.machine])
 async def get_verify_machine_config(
     flake_name: FlakeName, name: str
 ) -> VerifyMachineResponse:
@@ -88,7 +89,7 @@ async def get_verify_machine_config(
     return VerifyMachineResponse(success=success, error=error)
 
 
-@router.put("/api/{flake_name}/machines/{name}/verify")
+@router.put("/api/{flake_name}/machines/{name}/verify", tags=[Tags.machine])
 async def put_verify_machine_config(
     flake_name: FlakeName,
     name: str,

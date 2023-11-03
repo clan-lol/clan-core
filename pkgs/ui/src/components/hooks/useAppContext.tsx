@@ -1,4 +1,4 @@
-import { useListMachines } from "@/api/default/default";
+import { useListMachines } from "@/api/machine/machine";
 import { MachinesResponse } from "@/api/model";
 import { AxiosError, AxiosResponse } from "axios";
 import React, {

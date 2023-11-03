@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Iterator, NamedTuple
 
 import pytest
+from pydantic import AnyUrl
+from pydantic.tools import parse_obj_as
 from root import CLAN_CORE
 
 from clan_cli.dirs import nixpkgs_source
@@ -114,6 +116,16 @@ def test_flake_with_core(
         temporary_home,
         FlakeName("test_flake_with_core"),
         CLAN_CORE,
+    )
+
+
+@pytest.fixture
+def test_democlan_url(
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
+) -> Iterator[AnyUrl]:
+    yield parse_obj_as(
+        AnyUrl,
+        "https://git.clan.lol/clan/democlan/archive/main.tar.gz",
     )
 
 

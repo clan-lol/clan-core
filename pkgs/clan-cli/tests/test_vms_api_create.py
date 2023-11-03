@@ -7,6 +7,7 @@ from api import TestClient
 from cli import Cli
 from fixtures_flakes import FlakeForTest, create_flake
 from httpx import SyncByteStream
+from pydantic import AnyUrl
 from root import CLAN_CORE
 
 from clan_cli.types import FlakeName
@@ -42,7 +43,7 @@ def remote_flake_with_vm_without_secrets(
     )
 
 
-def generic_create_vm_test(api: TestClient, flake: Path, vm: str) -> None:
+def generic_create_vm_test(api: TestClient, flake: Path | AnyUrl, vm: str) -> None:
     print(f"flake_url: {flake} ")
     response = api.post(
         "/api/vms/create",
@@ -113,3 +114,18 @@ def test_create_remote(
     generic_create_vm_test(
         api, remote_flake_with_vm_without_secrets.path, "vm_without_secrets"
     )
+
+
+# TODO: We need a test that creates the same VM twice, and checks that the second time it fails
+
+
+# TODO: Democlan needs a machine called testVM, which is headless and gets executed by this test below
+# pytest -n0 -s tests/test_vms_api_create.py::test_create_from_democlan
+# @pytest.mark.skipif(not os.path.exists("/dev/kvm"), reason="Requires KVM")
+# @pytest.mark.impure
+# def test_create_from_democlan(
+#     api: TestClient,
+#     test_democlan_url: AnyUrl) -> None:
+#         generic_create_vm_test(
+#             api, test_democlan_url, "defaultVM"
+#         )

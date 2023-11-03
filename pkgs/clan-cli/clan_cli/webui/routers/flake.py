@@ -13,12 +13,14 @@ from clan_cli.webui.api_outputs import (
     FlakeAction,
     FlakeAttrResponse,
     FlakeCreateResponse,
+    FlakeListResponse,
     FlakeResponse,
 )
 
 from ...async_cmd import run
-from ...flakes import create
+from ...flakes import create, list_flakes
 from ...nix import nix_command, nix_flake_show
+from ..tags import Tags
 
 router = APIRouter()
 
@@ -45,13 +47,13 @@ async def get_attrs(url: AnyUrl | Path) -> list[str]:
 
 
 # TODO: Check for directory traversal
-@router.get("/api/flake/attrs")
+@router.get("/api/flake/attrs", tags=[Tags.flake])
 async def inspect_flake_attrs(url: AnyUrl | Path) -> FlakeAttrResponse:
     return FlakeAttrResponse(flake_attrs=await get_attrs(url))
 
 
 # TODO: Check for directory traversal
-@router.get("/api/flake")
+@router.get("/api/flake/inspect", tags=[Tags.flake])
 async def inspect_flake(
     url: AnyUrl | Path,
 ) -> FlakeResponse:
@@ -76,7 +78,15 @@ async def inspect_flake(
     return FlakeResponse(content=content, actions=actions)
 
 
-@router.post("/api/flake/create", status_code=status.HTTP_201_CREATED)
+@router.get("/api/flake/list", tags=[Tags.flake])
+async def list_all_flakes() -> FlakeListResponse:
+    flakes = list_flakes.list_flakes()
+    return FlakeListResponse(flakes=flakes)
+
+
+@router.post(
+    "/api/flake/create", tags=[Tags.flake], status_code=status.HTTP_201_CREATED
+)
 async def create_flake(
     args: Annotated[FlakeCreateInput, Body()],
 ) -> FlakeCreateResponse:
