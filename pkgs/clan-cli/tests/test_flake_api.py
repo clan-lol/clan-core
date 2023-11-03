@@ -9,6 +9,15 @@ log = logging.getLogger(__name__)
 
 
 @pytest.mark.impure
+def test_list_flakes(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
+    response = api.get("/api/flake/list")
+    assert response.status_code == 200, "Failed to list flakes"
+    data = response.json()
+    print("Data: ", data)
+    assert data.get("flakes") == ["test_flake_with_core"]
+
+
+@pytest.mark.impure
 def test_inspect_ok(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     params = {"url": str(test_flake_with_core.path)}
     response = api.get(
@@ -38,7 +47,7 @@ def test_inspect_err(api: TestClient) -> None:
 def test_inspect_flake(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     params = {"url": str(test_flake_with_core.path)}
     response = api.get(
-        "/api/flake",
+        "/api/flake/inspect",
         params=params,
     )
     assert response.status_code == 200, "Failed to inspect vm"
