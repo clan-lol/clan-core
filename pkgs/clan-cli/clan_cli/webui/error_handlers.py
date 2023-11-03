@@ -9,7 +9,8 @@ from ..errors import ClanError
 log = logging.getLogger(__name__)
 
 
-def clan_error_handler(request: Request, exc: ClanError) -> JSONResponse:
+def clan_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    assert isinstance(exc, ClanError)
     log.error("ClanError: %s", exc)
     detail = [
         {
