@@ -5,7 +5,9 @@
   nixConfig.extra-trusted-public-keys = [ "cache.clan.lol-1:3KztgSAB5R1M+Dz7vzkBGzXdodizbgLXGXKXlcQLA28=" ];
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
+    #nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
+    # https://github.com/NixOS/nixpkgs/pull/265024
+    nixpkgs.url = "github:Mic92/nixpkgs/deltachat";
     floco.url = "github:aakropotkin/floco";
     floco.inputs.nixpkgs.follows = "nixpkgs";
     disko.url = "github:nix-community/disko";
