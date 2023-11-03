@@ -8,8 +8,6 @@
         ];
       })
       (builtins.readDir ./diskLayouts);
-    prosody = ./prosody.nix;
-    dino = ./dino.nix;
     xfce = ./xfce.nix;
   };
 }
