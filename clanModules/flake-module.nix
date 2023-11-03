@@ -8,6 +8,7 @@
         ];
       })
       (builtins.readDir ./diskLayouts);
+    deltachat = ./deltachat.nix;
     xfce = ./xfce.nix;
   };
 }
