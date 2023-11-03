@@ -7,7 +7,7 @@ from fixtures_flakes import FlakeForTest
 
 log = logging.getLogger(__name__)
 
-
+@pytest.mark.impure
 def test_list_flakes(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     response = api.get("/api/flake/list")
     assert response.status_code == 200, "Failed to list flakes"
