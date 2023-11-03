@@ -3,7 +3,7 @@
 
   nodes.machine = { self, ... }: {
     imports = [
-      ../../clanModules/deltachat.nix
+      self.clanModules.deltachat
       self.nixosModules.clanCore
       {
         clanCore.machineName = "machine";
