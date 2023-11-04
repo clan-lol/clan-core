@@ -10,7 +10,8 @@ import {
 } from "@mui/material";
 import { Controller, SubmitHandler, UseFormReturn } from "react-hook-form";
 import { FlakeBadge } from "../flakeBadge/flakeBadge";
-import { createVm, useInspectFlakeAttrs } from "@/api/default/default";
+import { createVm } from "@/api/vm/vm";
+import { useInspectFlakeAttrs } from "@/api/flake/flake";
 import { VmConfig } from "@/api/model";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";

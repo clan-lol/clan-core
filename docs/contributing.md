@@ -10,6 +10,11 @@ Welcome to our website template repository! This template is designed to help yo
 
 **Dependency Management**: We use the [Nix package manager](https://nixos.org/) to manage dependencies and ensure reproducibility, making your development process more robust.
 
+## Supported Operating Systems
+
+- Linux
+- macOS
+
 # Getting Started with the Development Environment
 
 Let's get your development environment up and running:
@@ -28,11 +33,20 @@ Let's get your development environment up and running:
      curl -sfL https://direnv.net/install.sh | bash
      ```
 
-3. **Clone the Repository and Navigate**:
+3. **Add direnv to your shell**:
+
+   - Direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
+     You can do this by executing following command:
+
+   ```bash
+   echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc && eval "$SHELL"
+   ```
+
+4. **Clone the Repository and Navigate**:
 
    - Clone this repository and navigate to it.
 
-4. **Allow .envrc**:
+5. **Allow .envrc**:
 
    - When you enter the directory, you'll receive an error message like this:
      ```bash
@@ -40,7 +54,7 @@ Let's get your development environment up and running:
      ```
    - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
 
-5. **Build the Backend**:
+6. **Build the Backend**:
 
    - Go to the `pkgs/clan-cli` directory and execute:
      ```bash
@@ -48,7 +62,7 @@ Let's get your development environment up and running:
      ```
    - Wait for the backend to build.
 
-6. **Start the Backend Server**:
+7. **Start the Backend Server**:
 
    - To start the backend server, execute:
      ```bash
@@ -56,7 +70,7 @@ Let's get your development environment up and running:
      ```
    - The server will automatically restart if any Python files change.
 
-7. **Build the Frontend**:
+8. **Build the Frontend**:
 
    - In a different shell, navigate to the `pkgs/ui` directory and execute:
      ```bash
@@ -64,7 +78,7 @@ Let's get your development environment up and running:
      ```
    - Wait for the frontend to build.
 
-8. **Start the Frontend**:
+9. **Start the Frontend**:
    - To start the frontend, execute:
      ```bash
      npm run dev
@@ -194,4 +208,4 @@ To make the most of this template:
    - Set the option to "Delete pull request branch after merge by default."
    - Also, set the default merge style to "Rebase then create merge commit."
 
-With this template, you're well-equipped to build and collaborate on high-quality websites efficiently. Happy coding!
+With this template, you're well-equipped to build and collaborate on high-quality websites efficiently. Happy coding!.

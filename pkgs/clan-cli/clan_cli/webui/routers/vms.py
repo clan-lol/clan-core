@@ -18,13 +18,14 @@ from ..api_outputs import (
     VmInspectResponse,
     VmStatusResponse,
 )
+from ..tags import Tags
 
 log = logging.getLogger(__name__)
 router = APIRouter()
 
 
 # TODO: Check for directory traversal
-@router.post("/api/vms/inspect")
+@router.post("/api/vms/inspect", tags=[Tags.vm])
 async def inspect_vm(
     flake_url: Annotated[AnyUrl | Path, Body()], flake_attr: Annotated[str, Body()]
 ) -> VmInspectResponse:
@@ -32,7 +33,7 @@ async def inspect_vm(
     return VmInspectResponse(config=config)
 
 
-@router.get("/api/vms/{uuid}/status")
+@router.get("/api/vms/{uuid}/status", tags=[Tags.vm])
 async def get_vm_status(uuid: UUID) -> VmStatusResponse:
     task = get_task(uuid)
     log.debug(msg=f"error: {task.error}, task.status: {task.status}")
@@ -40,7 +41,7 @@ async def get_vm_status(uuid: UUID) -> VmStatusResponse:
     return VmStatusResponse(status=task.status, error=error)
 
 
-@router.get("/api/vms/{uuid}/logs")
+@router.get("/api/vms/{uuid}/logs", tags=[Tags.vm])
 async def get_vm_logs(uuid: UUID) -> StreamingResponse:
     # Generator function that yields log lines as they are available
     def stream_logs() -> Iterator[str]:
@@ -55,7 +56,7 @@ async def get_vm_logs(uuid: UUID) -> StreamingResponse:
 
 
 # TODO: Check for directory traversal
-@router.post("/api/vms/create")
+@router.post("/api/vms/create", tags=[Tags.vm])
 async def create_vm(vm: Annotated[VmConfig, Body()]) -> VmCreateResponse:
     flake_attrs = await get_attrs(vm.flake_url)
     if vm.flake_attr not in flake_attrs:

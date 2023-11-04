@@ -7,7 +7,7 @@ import { Typography, Button } from "@mui/material";
 import { ConfirmVM } from "./confirmVM";
 import { Log } from "./log";
 import GppMaybeIcon from "@mui/icons-material/GppMaybe";
-import { useInspectFlake } from "@/api/default/default";
+import { useInspectFlake } from "@/api/flake/flake";
 
 interface ConfirmProps {
   flakeUrl: string;

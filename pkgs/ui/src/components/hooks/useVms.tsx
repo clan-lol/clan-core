@@ -1,4 +1,4 @@
-import { inspectVm } from "@/api/default/default";
+import { inspectVm } from "@/api/vm/vm";
 import { HTTPValidationError, VmConfig } from "@/api/model";
 import { AxiosError } from "axios";
 import { useEffect, useState } from "react";

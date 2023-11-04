@@ -1,5 +1,5 @@
 "use client";
-import { useGetMachineSchema } from "@/api/default/default";
+import { useGetMachineSchema } from "@/api/machine/machine";
 import { Check, Error } from "@mui/icons-material";
 import {
   Box,

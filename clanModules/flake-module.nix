@@ -8,8 +8,7 @@
         ];
       })
       (builtins.readDir ./diskLayouts);
-    ejabberd = ./ejabberd.nix;
-    dino = ./dino.nix;
+    deltachat = ./deltachat.nix;
     xfce = ./xfce.nix;
   };
 }

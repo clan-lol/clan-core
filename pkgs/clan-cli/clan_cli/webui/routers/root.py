@@ -6,13 +6,14 @@ from pathlib import Path
 from fastapi import APIRouter, Response
 
 from ..assets import asset_path
+from ..tags import Tags
 
 router = APIRouter()
 
 log = logging.getLogger(__name__)
 
 
-@router.get("/{path_name:path}")
+@router.get("/{path_name:path}", tags=[Tags.root])
 async def root(path_name: str) -> Response:
     if path_name == "":
         path_name = "index.html"
