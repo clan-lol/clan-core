@@ -9,6 +9,7 @@ import MenuItem from "@mui/material/MenuItem";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { useEffect } from "react";
+import { toast } from "react-hot-toast";
 import { CreateMachineForm, FormStepContentProps } from "./interfaces";
 
 const ITEM_HEIGHT = 48;
@@ -52,12 +53,18 @@ export default function ClanModules(props: ClanModulesProps) {
     const newValue = typeof value === "string" ? value.split(",") : value;
     formHooks.setValue("modules", newValue);
     setMachineSchema(clanName, "example_machine", {
-      imports: selectedModules,
-    }).then((response) => {
-      if (response.statusText == "OK") {
-        formHooks.setValue("schema", response.data.schema);
-      }
-    });
+      imports: newValue,
+    })
+      .then((response) => {
+        if (response.statusText == "OK") {
+          formHooks.setValue("schema", response.data.schema);
+        }
+      })
+      .catch((error) => {
+        formHooks.setValue("schema", {});
+        console.error({ error });
+        toast.error(`${error.message}`);
+      });
   };
   return (
     <div className="my-4 flex w-full flex-col justify-center px-2">
