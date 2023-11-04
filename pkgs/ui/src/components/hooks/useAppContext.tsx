@@ -1,6 +1,4 @@
-import { useListMachines } from "@/api/machine/machine";
-import { MachinesResponse } from "@/api/model";
-import { AxiosError, AxiosResponse } from "axios";
+import { AxiosError } from "axios";
 import React, {
   Dispatch,
   ReactNode,
@@ -8,7 +6,6 @@ import React, {
   createContext,
   useState,
 } from "react";
-import { KeyedMutator } from "swr";
 
 type AppContextType = {
   //   data: AxiosResponse<{}, any> | undefined;
@@ -18,7 +15,7 @@ type AppContextType = {
   error: AxiosError<any> | undefined;
 
   setAppState: Dispatch<SetStateAction<AppState>>;
-  mutate: KeyedMutator<AxiosResponse<MachinesResponse, any>>;
+  // mutate: KeyedMutator<AxiosResponse<MachinesResponse, any>>;
   swrKey: string | false | Record<any, any>;
 };
 
@@ -38,7 +35,11 @@ interface AppContextProviderProps {
 }
 export const WithAppState = (props: AppContextProviderProps) => {
   const { children } = props;
-  const { isLoading, error, mutate, swrKey } = useListMachines("defaultFlake");
+  const { isLoading, error, swrKey } = {
+    isLoading: false,
+    error: undefined,
+    swrKey: "default",
+  };
 
   const [data, setAppState] = useState<AppState>({ isJoined: false });
 
@@ -50,7 +51,7 @@ export const WithAppState = (props: AppContextProviderProps) => {
         isLoading,
         error,
         swrKey,
-        mutate,
+        // mutate,
       }}
     >
       {children}
