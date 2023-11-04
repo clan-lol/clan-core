@@ -100,7 +100,10 @@ export function CreateMachineForm() {
     <>
       {activeStep !== steps.length - 1 && (
         <Button
-          disabled={!formHooks.formState.isValid}
+          disabled={
+            !formHooks.formState.isValid ||
+            (activeStep == 1 && !formHooks.watch("schema")?.type)
+          }
           onClick={handleNext}
           color="secondary"
         >
