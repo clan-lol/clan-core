@@ -1,5 +1,6 @@
 import { setMachineSchema } from "@/api/machine/machine";
 import { useListClanModules } from "@/api/modules/modules";
+import { Alert, AlertTitle, FormHelperText, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import FormControl from "@mui/material/FormControl";
@@ -38,7 +39,9 @@ export default function ClanModules(props: ClanModulesProps) {
       }
     });
     formHooks.setValue("modules", []);
-  }, [clanName, formHooks]);
+    // Only re-run if global clanName has changed
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clanName]);
 
   const handleChange = (
     event: SelectChangeEvent<CreateMachineForm["modules"]>,
@@ -57,8 +60,20 @@ export default function ClanModules(props: ClanModulesProps) {
     });
   };
   return (
-    <div>
-      <FormControl sx={{ m: 1, width: 300 }} disabled={isLoading}>
+    <div className="my-4 flex w-full flex-col justify-center px-2">
+      <Alert severity="info">
+        <AlertTitle>Info</AlertTitle>
+        Optionally select some modules —{" "}
+        <strong>
+          This will affect the configurable options in the next steps!
+        </strong>
+        <Typography variant="subtitle2" sx={{ mt: 2 }}>
+          For example, if you add &quot;xfce&quot;, some configuration options
+          for xfce will be added.
+        </Typography>
+      </Alert>
+
+      <FormControl sx={{ my: 2 }} disabled={isLoading}>
         <InputLabel>Modules</InputLabel>
         <Select
           multiple
@@ -80,6 +95,9 @@ export default function ClanModules(props: ClanModulesProps) {
             </MenuItem>
           ))}
         </Select>
+        <FormHelperText>
+          (Optional) Select clan modules to be added.
+        </FormHelperText>
       </FormControl>
     </div>
   );
