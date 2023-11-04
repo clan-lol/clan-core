@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  LinearProgress,
   MobileStepper,
   Step,
   StepLabel,
@@ -10,14 +11,20 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useAppState } from "../hooks/useAppContext";
+import ClanModules from "./clanModules";
 import { CustomConfig } from "./customConfig";
 import { CreateMachineForm, FormStep } from "./interfaces";
 
 export function CreateMachineForm() {
+  const {
+    data: { clanName },
+  } = useAppState();
   const formHooks = useForm<CreateMachineForm>({
     defaultValues: {
       name: "",
       config: {},
+      modules: [],
     },
   });
   const { handleSubmit, reset } = formHooks;
@@ -34,12 +41,20 @@ export function CreateMachineForm() {
     {
       id: "modules",
       label: "Modules",
-      content: <div></div>,
+      content: clanName ? (
+        <ClanModules clanName={clanName} formHooks={formHooks} />
+      ) : (
+        <LinearProgress />
+      ),
     },
     {
       id: "config",
       label: "Customize",
-      content: <CustomConfig formHooks={formHooks} />,
+      content: clanName ? (
+        <CustomConfig formHooks={formHooks} clanName={clanName} />
+      ) : (
+        <LinearProgress />
+      ),
     },
     {
       id: "save",
