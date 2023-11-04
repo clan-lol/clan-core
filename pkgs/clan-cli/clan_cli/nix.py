@@ -21,6 +21,7 @@ def nix_flake_show(flake_url: AnyUrl | Path) -> list[str]:
             "show",
             "--json",
             "--show-trace",
+            "--no-write-lock-file",
             f"{flake_url}",
         ]
     )
@@ -35,6 +36,7 @@ def nix_build(
                 "build",
                 "--no-link",
                 "--print-out-paths",
+                "--no-write-lock-file",
             ]
         )
         + flags
@@ -57,6 +59,7 @@ def nix_eval(flags: list[str]) -> list[str]:
             "eval",
             "--show-trace",
             "--json",
+            "--no-write-lock-file",
         ]
     )
     if os.environ.get("IN_NIX_SANDBOX"):
