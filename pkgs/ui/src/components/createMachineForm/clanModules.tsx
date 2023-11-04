@@ -41,7 +41,7 @@ export default function ClanModules(props: ClanModulesProps) {
   }, [clanName, formHooks]);
 
   const handleChange = (
-    event: SelectChangeEvent<CreateMachineForm["modules"]>
+    event: SelectChangeEvent<CreateMachineForm["modules"]>,
   ) => {
     const {
       target: { value },
