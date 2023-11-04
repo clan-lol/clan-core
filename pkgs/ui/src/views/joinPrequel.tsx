@@ -10,7 +10,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
-import { createFlake } from "@/api/default/default";
+import { createFlake } from "@/api/flake/flake";
 import { useAppState } from "@/components/hooks/useAppContext";
 import { Confirm } from "@/components/join/confirm";
 import { Layout } from "@/components/join/layout";
@@ -27,7 +27,7 @@ export default function JoinPrequel() {
   const queryParams = useSearchParams();
   const flakeUrl = queryParams.get("flake") || "";
   const flakeAttr = queryParams.get("attr") || "default";
-  const [forkInProgress, setForkInProgress] = useState(false);
+  const [, setForkInProgress] = useState(false);
   const { setAppState } = useAppState();
 
   const { control, formState, getValues, reset, watch, handleSubmit } =
