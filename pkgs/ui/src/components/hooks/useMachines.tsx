@@ -34,7 +34,6 @@ type MachineContextType =
       swrKey: string | false | Record<any, any>;
     }
   | {
-      flakeName: string;
       isLoading: true;
       data: readonly [];
     };
@@ -44,19 +43,18 @@ const initialState = {
   data: [],
 } as const;
 
-export function CreateMachineContext(flakeName: string) {
-  return useMemo(() => {
-    return createContext<MachineContextType>({
-      ...initialState,
-      flakeName,
-    });
-  }, [flakeName]);
+export function CreateMachineContext() {
+  return createContext<MachineContextType>({
+    ...initialState,
+  });
 }
 
 interface MachineContextProviderProps {
   children: ReactNode;
   flakeName: string;
 }
+
+const MachineContext = CreateMachineContext();
 
 export const MachineContextProvider = (props: MachineContextProviderProps) => {
   const { children, flakeName } = props;
@@ -79,8 +77,6 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
     }
     return [];
   }, [isLoading, error, isValidating, rawData, filters]);
-
-  const MachineContext = CreateMachineContext(flakeName);
 
   return (
     <MachineContext.Provider
@@ -105,5 +101,4 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
   );
 };
 
-export const useMachines = (flakeName: string) =>
-  React.useContext(CreateMachineContext(flakeName));
+export const useMachines = () => React.useContext(MachineContext);
