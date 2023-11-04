@@ -16,7 +16,8 @@ import { SearchBar } from "./searchBar";
 import { StickySpeedDial } from "./stickySpeedDial";
 
 export function NodeTable() {
-  const machines = useMachines("defaultFlake");
+  const { isLoading, data: machines } = useMachines();
+
   const theme = useTheme();
   const is_xs = useMediaQuery(theme.breakpoints.only("xs"));
 
@@ -26,12 +27,12 @@ export function NodeTable() {
   const [filteredList, setFilteredList] = useState<readonly Machine[]>([]);
 
   const tableData = useMemo(() => {
-    const tableData = machines.data.map((machine) => {
+    const tableData = machines.map((machine) => {
       return { name: machine.name, status: machine.status };
     });
     setFilteredList(tableData);
     return tableData;
-  }, [machines.data]);
+  }, [machines]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -42,7 +43,7 @@ export function NodeTable() {
     setPage(0);
   };
 
-  if (machines.isLoading) {
+  if (isLoading) {
     return (
       <Grid
         container

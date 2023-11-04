@@ -6,6 +6,8 @@ import {
   Button,
   CssBaseline,
   IconButton,
+  MenuItem,
+  Select,
   ThemeProvider,
   useMediaQuery,
 } from "@mui/material";
@@ -51,7 +53,7 @@ export default function RootLayout({
         <title>Clan.lol</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="description" content="Clan.lol - build your own network" />
-        <link rel="icon" href="favicon.ico" sizes="any" />
+        <link rel="icon" href="public/favicon.ico" sizes="any" />
       </head>
       <StyledEngineProvider injectFirst>
         <ThemeProvider theme={userPrefersDarkmode ? darkTheme : lightTheme}>
@@ -70,10 +72,36 @@ export default function RootLayout({
                     <>
                       <Background />
                       <div className="flex h-screen overflow-hidden">
-                        <Sidebar
-                          show={showSidebarDerived}
-                          onClose={() => setShowSidebar(false)}
-                        />
+                        <ThemeProvider theme={darkTheme}>
+                          <Sidebar
+                            show={showSidebarDerived}
+                            onClose={() => setShowSidebar(false)}
+                            clanSelect={
+                              appState.data.clanName && (
+                                <Select
+                                  color="secondary"
+                                  label="clan"
+                                  fullWidth
+                                  variant="standard"
+                                  disableUnderline
+                                  value={appState.data.clanName}
+                                  onChange={(ev) => {
+                                    appState.setAppState((c) => ({
+                                      ...c,
+                                      clanName: ev.target.value,
+                                    }));
+                                  }}
+                                >
+                                  {appState.data.flakes?.map((clan) => (
+                                    <MenuItem value={clan} key={clan}>
+                                      {clan}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              )
+                            }
+                          />
+                        </ThemeProvider>
                         <div
                           className={tw`${
                             !showSidebarDerived && translate
