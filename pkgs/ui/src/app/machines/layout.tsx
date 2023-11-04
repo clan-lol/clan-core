@@ -1,10 +1,18 @@
+"use client";
+import { useAppState } from "@/components/hooks/useAppContext";
 import { MachineContextProvider } from "@/components/hooks/useMachines";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const {
+    data: { clanName },
+  } = useAppState();
   return (
-    // TODO: select flake?
-    <MachineContextProvider flakeName="defaultFlake">
-      {children}
-    </MachineContextProvider>
+    <>
+      {clanName && (
+        <MachineContextProvider flakeName={clanName}>
+          {children}
+        </MachineContextProvider>
+      )}
+    </>
   );
 }

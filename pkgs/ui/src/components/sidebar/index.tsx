@@ -75,9 +75,10 @@ const showSidebar = tw`lg:translate-x-0`;
 interface SidebarProps {
   show: boolean;
   onClose: () => void;
+  clanSelect: React.ReactNode;
 }
 export function Sidebar(props: SidebarProps) {
-  const { show, onClose } = props;
+  const { show, onClose, clanSelect } = props;
 
   return (
     <aside
@@ -96,6 +97,7 @@ export function Sidebar(props: SidebarProps) {
           />
         </div>
       </div>
+      <div className="self-center">{clanSelect}</div>
       <Divider
         flexItem
         className="mx-8 mb-4 mt-9 hidden bg-neutral-40 lg:block"
