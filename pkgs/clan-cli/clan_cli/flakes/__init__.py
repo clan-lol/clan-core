@@ -2,7 +2,7 @@
 import argparse
 
 from .create import register_create_parser
-from .list import register_list_parser
+from .list_flakes import register_list_parser
 
 
 # takes a (sub)parser and configures it

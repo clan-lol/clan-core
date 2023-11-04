@@ -25,7 +25,7 @@ pkgs.mkShell {
 
 
     # re-generate the api code 
-    rm -rf api openapi.json
+    rm -rf src/api openapi.json
     cp ${clanPkgs.clan-openapi}/openapi.json . 
     orval
   '';
