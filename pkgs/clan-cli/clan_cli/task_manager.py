@@ -158,7 +158,6 @@ class TaskPool:
     def __init__(self) -> None:
         self.lock: threading.RLock = threading.RLock()
         self.pool: dict[UUID, BaseTask] = {}
-            
 
     def __getitem__(self, uuid: UUID) -> BaseTask:
         with self.lock:
