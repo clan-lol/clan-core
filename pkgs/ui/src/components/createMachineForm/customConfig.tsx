@@ -96,6 +96,7 @@ function PureCustomConfig(props: PureCustomConfigProps) {
   console.log({ configData });
 
   const setConfig = (data: IChangeEvent<any>) => {
+    console.log("config changed", { data });
     setValue("config", data);
   };
 
