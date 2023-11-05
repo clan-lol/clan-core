@@ -36,15 +36,15 @@ def import_sops(args: argparse.Namespace) -> None:
                     file=sys.stderr,
                 )
                 continue
-            if (sops_secrets_folder(args.flake) / k / "secret").exists():
+            if (sops_secrets_folder(Path(args.flake)) / k / "secret").exists():
                 print(
                     f"WARNING: {k} already exists, skipping",
                     file=sys.stderr,
                 )
                 continue
             encrypt_secret(
-                args.flake,
-                sops_secrets_folder(args.flake) / k,
+                Path(args.flake),
+                sops_secrets_folder(Path(args.flake)) / k,
                 v,
                 add_groups=args.group,
                 add_machines=args.machine,
@@ -90,11 +90,6 @@ def register_import_sops_parser(parser: argparse.ArgumentParser) -> None:
         "sops_file",
         type=str,
         help="the sops file to import (- for stdin)",
-    )
-    parser.add_argument(
-        "flake",
-        type=str,
-        help="name of the flake",
     )
 
     parser.set_defaults(func=import_sops)

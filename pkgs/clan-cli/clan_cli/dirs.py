@@ -10,7 +10,7 @@ from .types import FlakeName
 log = logging.getLogger(__name__)
 
 
-def get_clan_flake_toplevel() -> Path:
+def get_clan_flake_toplevel() -> Optional[Path]:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
 
 
@@ -21,7 +21,7 @@ def find_git_repo_root() -> Optional[Path]:
         return None
 
 
-def find_toplevel(top_level_files: list[str]) -> Path:
+def find_toplevel(top_level_files: list[str]) -> Optional[Path]:
     """Returns the path to the toplevel of the clan flake"""
     for project_file in top_level_files:
         initial_path = Path(os.getcwd())
@@ -30,7 +30,7 @@ def find_toplevel(top_level_files: list[str]) -> Path:
             if (path / project_file).exists():
                 return path
             path = path.parent
-    raise ClanError("Could not find clan flake toplevel directory")
+    return None
 
 
 def user_config_dir() -> Path:

@@ -10,7 +10,6 @@ from typing import IO, Iterator
 from ..dirs import user_config_dir
 from ..errors import ClanError
 from ..nix import nix_shell
-from ..types import FlakeName
 from .folders import sops_machines_folder, sops_users_folder
 
 
@@ -52,7 +51,7 @@ def generate_private_key() -> tuple[str, str]:
         raise ClanError("Failed to generate private sops key") from e
 
 
-def get_user_name(flake_name: FlakeName, user: str) -> str:
+def get_user_name(flake_dir: Path, user: str) -> str:
     """Ask the user for their name until a unique one is provided."""
     while True:
         name = input(
@@ -60,14 +59,14 @@ def get_user_name(flake_name: FlakeName, user: str) -> str:
         )
         if name:
             user = name
-        if not (sops_users_folder(flake_name) / user).exists():
+        if not (flake_dir / user).exists():
             return user
-        print(f"{sops_users_folder(flake_name) / user} already exists")
+        print(f"{flake_dir / user} already exists")
 
 
-def ensure_user_or_machine(flake_name: FlakeName, pub_key: str) -> SopsKey:
+def ensure_user_or_machine(flake_dir: Path, pub_key: str) -> SopsKey:
     key = SopsKey(pub_key, username="")
-    folders = [sops_users_folder(flake_name), sops_machines_folder(flake_name)]
+    folders = [sops_users_folder(flake_dir), sops_machines_folder(flake_dir)]
     for folder in folders:
         if folder.exists():
             for user in folder.iterdir():
@@ -91,13 +90,13 @@ def default_sops_key_path() -> Path:
         return user_config_dir() / "sops" / "age" / "keys.txt"
 
 
-def ensure_sops_key(flake_name: FlakeName) -> SopsKey:
+def ensure_sops_key(flake_dir: Path) -> SopsKey:
     key = os.environ.get("SOPS_AGE_KEY")
     if key:
-        return ensure_user_or_machine(flake_name, get_public_key(key))
+        return ensure_user_or_machine(flake_dir, get_public_key(key))
     path = default_sops_key_path()
     if path.exists():
-        return ensure_user_or_machine(flake_name, get_public_key(path.read_text()))
+        return ensure_user_or_machine(flake_dir, get_public_key(path.read_text()))
     else:
         raise ClanError(
             "No sops key found. Please generate one with 'clan secrets key generate'."
