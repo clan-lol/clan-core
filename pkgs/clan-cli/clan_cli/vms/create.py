@@ -101,7 +101,7 @@ class BuildVmTask(BaseTask):
 
             cmd = next(cmds)
             cmd.run(
-                [vm_config["uploadSecrets"], clan_name],
+                [vm_config["uploadSecrets"]],
                 env=env,
             )
 

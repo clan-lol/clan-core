@@ -23,27 +23,31 @@ def test_secrets_upload(
     cli = Cli()
     cli.run(
         [
+            "--flake",
+            str(test_flake_with_core.path),
             "secrets",
             "users",
             "add",
             "user1",
             age_keys[0].pubkey,
-            test_flake_with_core.name,
         ]
     )
 
     cli.run(
         [
+            "--flake",
+            str(test_flake_with_core.path),
             "secrets",
             "machines",
             "add",
             "vm1",
             age_keys[1].pubkey,
-            test_flake_with_core.name,
         ]
     )
     monkeypatch.setenv("SOPS_NIX_SECRET", age_keys[0].privkey)
-    cli.run(["secrets", "set", "vm1-age.key", test_flake_with_core.name])
+    cli.run(
+        ["--flake", str(test_flake_with_core.path), "secrets", "set", "vm1-age.key"]
+    )
 
     flake = test_flake_with_core.path.joinpath("flake.nix")
     host = host_group.hosts[0]
@@ -51,7 +55,7 @@ def test_secrets_upload(
     new_text = flake.read_text().replace("__CLAN_DEPLOYMENT_ADDRESS__", addr)
 
     flake.write_text(new_text)
-    cli.run(["secrets", "upload", "vm1", test_flake_with_core.name])
+    cli.run(["--flake", str(test_flake_with_core.path), "secrets", "upload", "vm1"])
 
     # the flake defines this path as the location where the sops key should be installed
     sops_key = test_flake_with_core.path.joinpath("key.txt")
