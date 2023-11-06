@@ -4,6 +4,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body
 
+from clan_cli.webui.api_inputs import MachineConfig
+
 from ...config.machine import (
     config_for_machine,
     schema_for_machine,
@@ -55,15 +57,15 @@ async def get_machine(flake_name: FlakeName, name: str) -> MachineResponse:
 @router.get("/api/{flake_name}/machines/{name}/config", tags=[Tags.machine])
 async def get_machine_config(flake_name: FlakeName, name: str) -> ConfigResponse:
     config = config_for_machine(flake_name, name)
-    return ConfigResponse(config=config)
+    return ConfigResponse(**config)
 
 
 @router.put("/api/{flake_name}/machines/{name}/config", tags=[Tags.machine])
 async def set_machine_config(
-    flake_name: FlakeName, name: str, config: Annotated[dict, Body()]
-) -> ConfigResponse:
-    set_config_for_machine(flake_name, name, config)
-    return ConfigResponse(config=config)
+    flake_name: FlakeName, name: str, config: Annotated[MachineConfig, Body()]
+) -> None:
+    conf = dict(config)
+    set_config_for_machine(flake_name, name, conf)
 
 
 @router.get("/api/{flake_name}/machines/{name}/schema", tags=[Tags.machine])

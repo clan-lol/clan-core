@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Extra, Field
 
 from ..async_cmd import CmdOut
 from ..task_manager import TaskStatus
@@ -36,7 +36,12 @@ class MachineResponse(BaseModel):
 
 
 class ConfigResponse(BaseModel):
-    config: dict
+    clanImports: list[str] = []  # noqa: N815
+    clan: dict = {}
+
+    # allow extra fields to cover the full spectrum of a nixos config
+    class Config:
+        extra = Extra.allow
 
 
 class SchemaResponse(BaseModel):
