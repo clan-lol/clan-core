@@ -35,6 +35,7 @@
 , e2fsprogs
 , mypy
 , cntr
+, deal
 }:
 let
 
@@ -56,6 +57,7 @@ let
     git
     gnupg
     stdenv.cc
+    deal
   ];
 
   # Optional dependencies for clan cli, we re-expose them here to make sure they all build.
