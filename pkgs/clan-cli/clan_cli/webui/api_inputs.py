@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from pydantic import AnyUrl, BaseModel, validator
+from pydantic import AnyUrl, BaseModel, Extra, validator
 
 from ..dirs import clan_data_dir, clan_flakes_dir
 from ..flakes.create import DEFAULT_URL
@@ -29,3 +29,12 @@ class ClanFlakePath(BaseModel):
 
 class FlakeCreateInput(ClanFlakePath):
     url: AnyUrl = DEFAULT_URL
+
+
+class MachineConfig(BaseModel):
+    clanImports: list[str] = []  # noqa: N815
+    clan: dict = {}
+
+    # allow extra fields to cover the full spectrum of a nixos config
+    class Config:
+        extra = Extra.allow
