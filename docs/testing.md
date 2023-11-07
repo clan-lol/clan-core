@@ -22,6 +22,11 @@ To implement property-based testing in FastAPI, you can use the following framew
 - [Schemathesis](https://schemathesis.readthedocs.io/en/stable/#id2)
 - [Hypothesis: Property-Based Testing](https://hypothesis.readthedocs.io/en/latest/quickstart.html)
 
+
+### Nix code
+https://github.com/kadena-io/signing-api/blob/master/schema-tests.nix
+https://github.com/garbas/cicero/blob/67acaaa6f568d6f5032419bdcf0f4c97fb46e5ec/pkgs/schemathesis.nix#L5
+
 ### Why Schemas Are Not Contracts
 
 A schema is a description of the data structure of your API, whereas a contract defines not only the structure but also the expected behavior and constraints. The following resource explains why schemas are not contracts in more detail:
@@ -38,6 +43,8 @@ Contract-driven testing combines the benefits of type annotations and property-b
 
 - Contracts, like property-based tests, allow you to specify conditions and constraints, with the testing framework automatically generating test cases and verifying call results.
 
+
+
 ### Frameworks for Contract-Driven Testing
 
 To implement contract-driven testing in FastAPI, consider the following framework and extension:
@@ -46,3 +53,5 @@ To implement contract-driven testing in FastAPI, consider the following framewor
 - [FastAPI-iContract: Extension for FastAPI](https://github.com/mristin/fastapi-icontract)
 
 By adopting contract-driven testing, you can ensure that your FastAPI application not only has a well-defined structure but also behaves correctly, making it more robust and reliable.
+
+**However: icontract uses a 3 year old version of deal and a 3 year old version of typeguard. And icontract-fastapi is not maintained anymore**
