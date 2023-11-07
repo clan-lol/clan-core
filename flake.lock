@@ -62,11 +62,11 @@
     },
     "luispkgs": {
       "locked": {
-        "lastModified": 1699286483,
-        "narHash": "sha256-gzY56MbP3UTztI7Ra69RCNq81fKlsQu79LZ2gGss3Eg=",
+        "lastModified": 1699386673,
+        "narHash": "sha256-T9ZrVSf0ymSBHFpRw7K+DSNzY0sCkwkDe0VIzE033Ac=",
         "owner": "Luis-Hebendanz",
         "repo": "nixpkgs",
-        "rev": "b59438a5a3b4d50e117081d41ed6f8833f65934d",
+        "rev": "e918074d416f0918ac6c3895c6a5db2ae5ce3c1e",
         "type": "github"
       },
       "original": {

@@ -34,8 +34,8 @@
 , gnupg
 , e2fsprogs
 , mypy
-, cntr
 , deal
+, schemathesis
 }:
 let
 
@@ -58,6 +58,7 @@ let
     gnupg
     stdenv.cc
     deal
+    schemathesis
   ];
 
   # Optional dependencies for clan cli, we re-expose them here to make sure they all build.
