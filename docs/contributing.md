@@ -192,6 +192,8 @@ If you need to inspect the Nix sandbox while running tests, follow these steps:
 
 These debugging and testing methods will help you identify and fix issues in your backend code efficiently, ensuring the reliability and robustness of your application.
 
+For more information on testing read [property and contract based testing](testing.md)
+
 # Using this Template
 
 To make the most of this template:
