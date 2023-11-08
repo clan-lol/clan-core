@@ -34,7 +34,8 @@
 , gnupg
 , e2fsprogs
 , mypy
-, cntr
+, deal
+, schemathesis
 }:
 let
 
@@ -42,6 +43,8 @@ let
     argcomplete # optional dependency: if not enabled, shell completion will not work
     fastapi
     uvicorn # optional dependencies: if not enabled, webui subcommand will not work
+    deal
+    schemathesis
   ];
 
   pytestDependencies = runtimeDependencies ++ dependencies ++ [

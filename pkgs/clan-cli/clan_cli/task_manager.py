@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any, Iterator, Optional, Type, TypeVar
 from uuid import UUID, uuid4
 
+import deal
+
 from .custom_logger import ThreadFormatter, get_caller
 from .errors import ClanError
 
@@ -161,6 +163,8 @@ class TaskPool:
 
     def __getitem__(self, uuid: UUID) -> BaseTask:
         with self.lock:
+            if uuid not in self.pool:
+                raise ClanError(f"Task with uuid {uuid} does not exist")
             return self.pool[uuid]
 
     def __setitem__(self, uuid: UUID, task: BaseTask) -> None:
@@ -175,6 +179,7 @@ class TaskPool:
 POOL: TaskPool = TaskPool()
 
 
+@deal.raises(ClanError)
 def get_task(uuid: UUID) -> BaseTask:
     global POOL
     return POOL[uuid]
