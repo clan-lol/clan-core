@@ -92,40 +92,20 @@ def test_get_task(case: deal.TestCase) -> None:
     case() # <--- Call testing framework with function
 ```
 
-### Combining hypothesis with deal
+### Adding example input for deeper testing
 
 You can combine hypothesis annotations with deal annotations to add example inputs to the function so that the verifier can reach deeper parts of the function.
 
 ```python
-import hypothesis
 import deal
 
-@hypothesis.example(["8c3041e0-4512-4b30-aa8e-7be4a75b8b45", "5c2061e0-4512-4b30-aa8e-7be4a75b8b45"])
+@deal.example(lambda: get_task(UUID("5c2061e0-4512-4b30-aa8e-7be4a75b8b45"))) # type: ignore
+@deal.example(lambda: get_task(UUID("7c2061e6-4512-4b30-aa8e-7be4a75b8b45"))) # type: ignore
 @deal.raises(ClanError)
 def get_task(uuid: UUID) -> BaseTask:
     global POOL
-    if "206" in str(uuid):
-        raise ValueError("206 should not be in here")
     return POOL[uuid]
 ```
-
-You can also annotate what kind of information a value can have by adding a hypothesis "strategy". Which kind of data generation hypothesis supports you can see here:
-[Hypothesis Value Properties](https://hypothesis.readthedocs.io/en/latest/data.html)
-The example above doesn't really need a hypothesis annotation because deal can infer from the UUID type a strategy.
-But as an example how it might look like:
-
-```python
-from hypothesis.strategies import uuids
-
-@hypothesis.given(uuids)
-@deal.raises(ClanError)
-def get_task(uuid: UUID) -> BaseTask:
-    global POOL
-    if "206" in str(uuid):
-        raise ValueError("206 should not be in here")
-    return POOL[uuid]
-```
-
-For a complex example for an [HTTP API look here](https://hypothesis.readthedocs.io/en/latest/examples.html#fuzzing-an-http-api). Just note we are using schemathesis for this already.
 
 You can also add `pre` and `post` conditions. A `pre` condition must be true before the function is executed. A `post` condition must be true after the function was executed. For more information read the [Writing Contracts Section](https://deal.readthedocs.io/basic/values.html).
+Or read the [API doc of Deal](https://deal.readthedocs.io/details/api.html)
