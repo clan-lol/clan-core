@@ -43,6 +43,8 @@ let
     argcomplete # optional dependency: if not enabled, shell completion will not work
     fastapi
     uvicorn # optional dependencies: if not enabled, webui subcommand will not work
+    deal
+    schemathesis
   ];
 
   pytestDependencies = runtimeDependencies ++ dependencies ++ [
@@ -57,8 +59,6 @@ let
     git
     gnupg
     stdenv.cc
-    deal
-    schemathesis
   ];
 
   # Optional dependencies for clan cli, we re-expose them here to make sure they all build.
