@@ -14,6 +14,7 @@
         inherit (config.packages) tea-create-pr;
       };
       nix-unit = pkgs.callPackage ./nix-unit { };
+      meshname = pkgs.callPackage ./meshname { };
       inherit (pkgs.callPackages ./node-packages { }) prettier-plugin-tailwindcss;
     };
   };
