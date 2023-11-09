@@ -1,7 +1,6 @@
 import json
 import os
 import subprocess
-import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Optional
@@ -10,7 +9,6 @@ from fastapi import HTTPException
 
 from clan_cli.dirs import (
     machine_settings_file,
-    nixpkgs_source,
     specific_flake_dir,
     specific_machine_dir,
 )
@@ -91,51 +89,3 @@ def set_config_for_machine(
 
     if repo_dir is not None:
         commit_file(settings_path, repo_dir)
-
-
-def schema_for_machine(
-    flake_name: FlakeName, machine_name: str, config: Optional[dict] = None
-) -> dict:
-    flake = specific_flake_dir(flake_name)
-    # use nix eval to lib.evalModules .#nixosConfigurations.<machine_name>.options.clan
-    with NamedTemporaryFile(mode="w", dir=flake) as clan_machine_settings_file:
-        env = os.environ.copy()
-        inject_config_flags = []
-        if config is not None:
-            json.dump(config, clan_machine_settings_file, indent=2)
-            clan_machine_settings_file.seek(0)
-            env["CLAN_MACHINE_SETTINGS_FILE"] = clan_machine_settings_file.name
-            inject_config_flags = [
-                "--impure",  # needed to access CLAN_MACHINE_SETTINGS_FILE
-            ]
-        proc = subprocess.run(
-            nix_eval(
-                flags=inject_config_flags
-                + [
-                    "--impure",
-                    "--show-trace",
-                    "--expr",
-                    f"""
-                    let
-                        flake = builtins.getFlake (toString {flake});
-                        lib = import {nixpkgs_source()}/lib;
-                        options = flake.nixosConfigurations.{machine_name}.options;
-                        clanOptions = options.clan;
-                        jsonschemaLib = import {Path(__file__).parent / "jsonschema"} {{ inherit lib; }};
-                        jsonschema = jsonschemaLib.parseOptions clanOptions;
-                    in
-                        jsonschema
-                    """,
-                ],
-            ),
-            capture_output=True,
-            text=True,
-            cwd=flake,
-            env=env,
-        )
-    if proc.returncode != 0:
-        print(proc.stderr, file=sys.stderr)
-        raise Exception(
-            f"Failed to read schema for machine {machine_name}:\n{proc.stderr}"
-        )
-    return json.loads(proc.stdout)

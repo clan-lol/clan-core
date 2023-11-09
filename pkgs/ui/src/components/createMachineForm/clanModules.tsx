@@ -1,4 +1,4 @@
-import { setMachineSchema } from "@/api/machine/machine";
+import { getMachineSchema } from "@/api/machine/machine";
 import { useListClanModules } from "@/api/modules/modules";
 import { Alert, AlertTitle, FormHelperText, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -32,7 +32,7 @@ export default function ClanModules(props: ClanModulesProps) {
   const selectedModules = formHooks.watch("modules");
 
   useEffect(() => {
-    setMachineSchema(clanName, "example_machine", {
+    getMachineSchema(clanName, {
       imports: [],
     }).then((response) => {
       if (response.statusText == "OK") {
@@ -52,7 +52,7 @@ export default function ClanModules(props: ClanModulesProps) {
     } = event;
     const newValue = typeof value === "string" ? value.split(",") : value;
     formHooks.setValue("modules", newValue);
-    setMachineSchema(clanName, "example_machine", {
+    getMachineSchema(clanName, {
       imports: newValue,
     })
       .then((response) => {
