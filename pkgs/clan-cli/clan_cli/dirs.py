@@ -78,7 +78,7 @@ def clan_flakes_dir() -> Path:
 def specific_flake_dir(flake_name: FlakeName) -> Path:
     flake_dir = clan_flakes_dir() / flake_name
     if not flake_dir.exists():
-        raise ClanError(f"Flake '{flake_name}' does not exist in {flake_dir}")
+        raise ClanError(f"Flake '{flake_name}' does not exist in {clan_flakes_dir()}")
     return flake_dir
 
 
