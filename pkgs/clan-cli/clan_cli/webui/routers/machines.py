@@ -8,10 +8,10 @@ from clan_cli.webui.api_inputs import MachineConfig
 
 from ...config.machine import (
     config_for_machine,
-    schema_for_machine,
     set_config_for_machine,
     verify_machine_config,
 )
+from ...config.schema import machine_schema
 from ...machines.create import create_machine as _create_machine
 from ...machines.list import list_machines as _list_machines
 from ...types import FlakeName
@@ -68,17 +68,11 @@ async def set_machine_config(
     set_config_for_machine(flake_name, name, conf)
 
 
-@router.get("/api/{flake_name}/machines/{name}/schema", tags=[Tags.machine])
-async def get_machine_schema(flake_name: FlakeName, name: str) -> SchemaResponse:
-    schema = schema_for_machine(flake_name, name)
-    return SchemaResponse(schema=schema)
-
-
-@router.put("/api/{flake_name}/machines/{name}/schema", tags=[Tags.machine])
-async def set_machine_schema(
-    flake_name: FlakeName, name: str, config: Annotated[dict, Body()]
+@router.put("/api/{flake_name}/schema", tags=[Tags.machine])
+async def get_machine_schema(
+    flake_name: FlakeName, config: Annotated[dict, Body()]
 ) -> SchemaResponse:
-    schema = schema_for_machine(flake_name, name, config)
+    schema = machine_schema(flake_name, config=config)
     return SchemaResponse(schema=schema)
 
 

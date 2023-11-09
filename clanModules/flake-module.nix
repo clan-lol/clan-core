@@ -1,13 +1,11 @@
-{ self, lib, ... }: {
+{ inputs, ... }: {
   flake.clanModules = {
-    diskLayouts = lib.mapAttrs'
-      (name: _: lib.nameValuePair (lib.removeSuffix ".nix" name) {
-        imports = [
-          self.inputs.disko.nixosModules.disko
-          ./diskLayouts/${name}
-        ];
-      })
-      (builtins.readDir ./diskLayouts);
+    diskLayouts = {
+      imports = [
+        ./diskLayouts.nix
+        inputs.disko.nixosModules.default
+      ];
+    };
     deltachat = ./deltachat.nix;
     xfce = ./xfce.nix;
   };
