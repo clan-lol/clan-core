@@ -48,7 +48,7 @@ def user_data_dir() -> Path:
     elif sys.platform == "darwin":
         return Path(os.path.expanduser("~/Library/Application Support/"))
     else:
-        return Path(os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/state")))
+        return Path(os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share")))
 
 
 def clan_data_dir() -> Path:
