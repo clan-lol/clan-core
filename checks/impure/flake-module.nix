@@ -13,7 +13,7 @@
         ]}"
         ROOT=$(git rev-parse --show-toplevel)
         cd "$ROOT/pkgs/clan-cli"
-        nix develop "$ROOT#clan-cli" -c bash -c 'TMPDIR=/tmp python -m pytest -m impure -s ./tests'
+        nix develop "$ROOT#clan-cli" -c bash -c "TMPDIR=/tmp python -m pytest -m impure -s ./tests $@"
       '';
 
       runMockApi = pkgs.writeShellScriptBin "run-mock-api" ''
