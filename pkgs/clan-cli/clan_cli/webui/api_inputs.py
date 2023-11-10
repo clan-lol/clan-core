@@ -39,7 +39,6 @@ class MachineCreate(BaseModel):
     @classmethod
     @validator("name")
     def validate_hostname(cls, v: str) -> str:
-        # Define a regular expression for a valid hostname
         hostname_regex = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$"
         if not re.match(hostname_regex, v):
             raise ValueError("Machine name must be a valid hostname")
