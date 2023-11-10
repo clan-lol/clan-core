@@ -193,7 +193,7 @@ def create_vm(vm: VmConfig, nix_options: list[str] = []) -> BuildVmTask:
 
 def create_command(args: argparse.Namespace) -> None:
     flake_url = args.flake
-    if not is_flake_url(args.flake):
+    if not is_flake_url(str(args.flake)):
         flake_url = specific_flake_dir(args.flake)
     vm = asyncio.run(inspect_vm(flake_url=flake_url, flake_attr=args.machine))
 
@@ -203,10 +203,5 @@ def create_command(args: argparse.Namespace) -> None:
 
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("machine", type=str)
-    parser.add_argument(
-        "flake",
-        type=str,
-        help="name of the flake to create machine for",
-    )
+    parser.add_argument("machine", type=str, help="machine in the flake to create")
     parser.set_defaults(func=create_command)
