@@ -42,36 +42,15 @@ def user_config_dir() -> Path:
         return Path(os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config")))
 
 
-def user_data_dir() -> Path:
-    if sys.platform == "win32":
-        return Path(os.getenv("APPDATA", os.path.expanduser("~\\AppData\\Roaming\\")))
-    elif sys.platform == "darwin":
-        return Path(os.path.expanduser("~/Library/Application Support/"))
-    else:
-        return Path(os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share")))
-
-
-def clan_data_dir() -> Path:
-    path = user_data_dir() / "clan"
-    if not path.exists():
-        log.debug(f"Creating path with parents {path}")
-        path.mkdir(parents=True)
-    return path.resolve()
-
-
 def clan_config_dir() -> Path:
     path = user_config_dir() / "clan"
-    if not path.exists():
-        log.debug(f"Creating path with parents {path}")
-        path.mkdir(parents=True)
+    path.mkdir(parents=True, exist_ok=True)
     return path.resolve()
 
 
 def clan_flakes_dir() -> Path:
-    path = clan_data_dir() / "flake"
-    if not path.exists():
-        log.debug(f"Creating path with parents {path}")
-        path.mkdir(parents=True)
+    path = clan_config_dir() / "flakes"
+    path.mkdir(parents=True, exist_ok=True)
     return path.resolve()
 
 
