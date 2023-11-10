@@ -10,6 +10,7 @@ from clan_cli.dirs import (
     nixpkgs_source,
     specific_flake_dir,
 )
+from clan_cli.errors import ClanError
 from clan_cli.nix import nix_eval
 
 from ..types import FlakeName
@@ -75,5 +76,5 @@ def machine_schema(
         )
     if proc.returncode != 0:
         print(proc.stderr, file=sys.stderr)
-        raise Exception(f"Failed to read schema:\n{proc.stderr}")
+        raise ClanError(f"Failed to read schema:\n{proc.stderr}")
     return json.loads(proc.stdout)
