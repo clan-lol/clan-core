@@ -27,7 +27,7 @@ def test_inspect_ok(api: TestClient, test_flake_with_core: FlakeForTest) -> None
     assert response.status_code == 200, "Failed to inspect vm"
     data = response.json()
     print("Data: ", data)
-    assert data.get("flake_attrs") == ["vm1"]
+    assert data.get("flake_attrs") == ["vm1", "vm2"]
 
 
 @pytest.mark.impure
