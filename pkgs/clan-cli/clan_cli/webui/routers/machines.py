@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body
 
 from clan_cli.webui.api_errors import MissingClanImports
-from clan_cli.webui.api_inputs import MachineConfig
+from clan_cli.webui.api_inputs import MachineConfig, MachineCreate
 
 from ...config.machine import (
     config_for_machine,
@@ -19,7 +19,6 @@ from ...types import FlakeName
 from ..api_outputs import (
     ConfigResponse,
     Machine,
-    MachineCreate,
     MachineResponse,
     MachinesResponse,
     SchemaResponse,
@@ -75,9 +74,9 @@ async def set_machine_config(
     responses={400: {"model": MissingClanImports}},
 )
 async def get_machine_schema(
-    flake_name: FlakeName, config: Annotated[dict, Body()]
+    flake_name: FlakeName, config: Annotated[MachineConfig, Body()]
 ) -> SchemaResponse:
-    schema = machine_schema(flake_name, config=config)
+    schema = machine_schema(flake_name, config=dict(config))
     return SchemaResponse(schema=schema)
 
 
