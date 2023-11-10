@@ -1,3 +1,4 @@
+import ipaddress
 from typing import TYPE_CHECKING
 
 import pytest
@@ -39,16 +40,9 @@ def test_generate_secret(
         test_flake_with_core.name, "vm1", "zerotier-network-id"
     )
     assert len(network_id) == 16
-    age_key = (
-        sops_secrets_folder(test_flake_with_core.path)
-        .joinpath("vm1-age.key")
-        .joinpath("secret")
-    )
-    identity_secret = (
-        sops_secrets_folder(test_flake_with_core.path)
-        .joinpath("vm1-zerotier-identity-secret")
-        .joinpath("secret")
-    )
+    secrets_folder = sops_secrets_folder(test_flake_with_core.path)
+    age_key = secrets_folder / "vm1-age.key" / "secret"
+    identity_secret = secrets_folder / "vm1-zerotier-identity-secret" / "secret"
     age_key_mtime = age_key.lstat().st_mtime_ns
     secret1_mtime = identity_secret.lstat().st_mtime_ns
 
@@ -57,10 +51,14 @@ def test_generate_secret(
     assert age_key.lstat().st_mtime_ns == age_key_mtime
     assert identity_secret.lstat().st_mtime_ns == secret1_mtime
 
-    machine_path = (
-        sops_secrets_folder(test_flake_with_core.path)
-        .joinpath("vm1-zerotier-identity-secret")
-        .joinpath("machines")
-        .joinpath("vm1")
-    )
-    assert machine_path.exists()
+    assert (
+        secrets_folder / "vm1-zerotier-identity-secret" / "machines" / "vm1"
+    ).exists()
+
+    cli.run(["secrets", "generate", "vm2"])
+    assert has_secret(test_flake_with_core.path, "vm2-age.key")
+    assert has_secret(test_flake_with_core.path, "vm2-zerotier-identity-secret")
+    ip = machine_get_fact(test_flake_with_core.name, "vm1", "zerotier-ip")
+    assert ipaddress.IPv6Address(ip).is_private
+    meshname = machine_get_fact(test_flake_with_core.name, "vm1", "zerotier-meshname")
+    assert len(meshname) == 26
