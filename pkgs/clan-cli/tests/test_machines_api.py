@@ -23,6 +23,21 @@ def test_machines(api: TestClient, test_flake: FlakeForTest) -> None:
 
 
 @pytest.mark.with_core
+def test_schema_errors(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
+    # make sure that eval errors do not raise an internal server error
+    response = api.put(
+        f"/api/{test_flake_with_core.name}/schema",
+        json={"imports": ["some-inavlid-import"]},
+    )
+    assert response.status_code == 422
+    # expect error to contain "error: string 'some-inavlid-import' doesn't represent an absolute path"
+    assert (
+        "error: string 'some-inavlid-import' doesn't represent an absolute path"
+        in response.json()["detail"][0]["msg"]
+    )
+
+
+@pytest.mark.with_core
 def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     # ensure error 404 if machine does not exist when accessing the config
     response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
