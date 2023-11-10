@@ -40,4 +40,4 @@ def test_create(
             age_keys[0].pubkey,
         ]
     )
-    cli.run(["vms", "create", "vm1", test_flake_with_core.name])
+    cli.run(["vms", "create", "vm1"])
