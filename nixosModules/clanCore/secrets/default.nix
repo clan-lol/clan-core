@@ -18,7 +18,8 @@
   };
 
   options.clanCore.secretsUploadDirectory = lib.mkOption {
-    type = lib.types.path;
+    type = lib.types.nullOr lib.types.path;
+    default = null;
     description = ''
       The directory where secrets are uploaded into, This is backend specific.
     '';
