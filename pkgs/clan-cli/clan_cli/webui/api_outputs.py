@@ -23,10 +23,6 @@ class Machine(BaseModel):
     status: Status
 
 
-class MachineCreate(BaseModel):
-    name: str
-
-
 class MachinesResponse(BaseModel):
     machines: list[Machine]
 

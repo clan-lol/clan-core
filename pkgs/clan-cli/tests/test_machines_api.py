@@ -52,6 +52,18 @@ def test_schema_invalid_clan_imports(
     assert "non-existing-clan-module" in response.json()["detail"]["modules_not_found"]
 
 
+def test_create_machine_invalid_hostname(
+    api: TestClient, test_flake: FlakeForTest
+) -> None:
+    response = api.post(
+        f"/api/{test_flake.name}/machines", json={"name": "-invalid-hostname"}
+    )
+    assert response.status_code == 422
+    assert (
+        "Machine name must be a valid hostname" in response.json()["detail"][0]["msg"]
+    )
+
+
 @pytest.mark.with_core
 def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     # ensure error 404 if machine does not exist when accessing the config
