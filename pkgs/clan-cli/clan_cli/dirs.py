@@ -44,17 +44,13 @@ def user_config_dir() -> Path:
 
 def clan_config_dir() -> Path:
     path = user_config_dir() / "clan"
-    if not path.exists():
-        log.debug(f"Creating path with parents {path}")
-        path.mkdir(parents=True)
+    path.mkdir(parents=True, exist_ok=True)
     return path.resolve()
 
 
 def clan_flakes_dir() -> Path:
     path = clan_config_dir() / "flakes"
-    if not path.exists():
-        log.debug(f"Creating path with parents {path}")
-        path.mkdir(parents=True)
+    path.mkdir(parents=True, exist_ok=True)
     return path.resolve()
 
 
