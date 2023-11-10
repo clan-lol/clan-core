@@ -51,7 +51,7 @@ def breakpoint_container(
 
 
 def breakpoint_shell(
-    work_dir: Path,
+    work_dir: Path = Path(os.getcwd()),
     env: Optional[Dict[str, str]] = None,
     cmd: Optional[List[str]] = None,
 ) -> None:
