@@ -12,9 +12,8 @@ from pathlib import Path
 from typing import Any, Iterator, Optional, Type, TypeVar
 from uuid import UUID, uuid4
 
-import deal
-
 from .custom_logger import ThreadFormatter, get_caller
+from .deal import deal
 from .errors import ClanError
 
 

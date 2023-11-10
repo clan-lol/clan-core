@@ -45,8 +45,6 @@ let
     argcomplete # optional dependency: if not enabled, shell completion will not work
     fastapi
     uvicorn # optional dependencies: if not enabled, webui subcommand will not work
-    deal
-    schemathesis
   ];
 
   pytestDependencies = runtimeDependencies ++ dependencies ++ [
@@ -55,6 +53,8 @@ let
     pytest-subprocess
     pytest-xdist
     pytest-timeout
+    deal
+    schemathesis
     remote-pdb
     ipdb
     openssh
