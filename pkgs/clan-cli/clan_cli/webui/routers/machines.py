@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body
 
+from clan_cli.webui.api_errors import MissingClanImports
 from clan_cli.webui.api_inputs import MachineConfig
 
 from ...config.machine import (
@@ -68,7 +69,11 @@ async def set_machine_config(
     set_config_for_machine(flake_name, name, conf)
 
 
-@router.put("/api/{flake_name}/schema", tags=[Tags.machine])
+@router.put(
+    "/api/{flake_name}/schema",
+    tags=[Tags.machine],
+    responses={400: {"model": MissingClanImports}},
+)
 async def get_machine_schema(
     flake_name: FlakeName, config: Annotated[dict, Body()]
 ) -> SchemaResponse:

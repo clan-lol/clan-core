@@ -30,11 +30,26 @@ def test_schema_errors(api: TestClient, test_flake_with_core: FlakeForTest) -> N
         json={"imports": ["some-inavlid-import"]},
     )
     assert response.status_code == 422
-    # expect error to contain "error: string 'some-inavlid-import' doesn't represent an absolute path"
     assert (
         "error: string 'some-inavlid-import' doesn't represent an absolute path"
         in response.json()["detail"][0]["msg"]
     )
+
+
+@pytest.mark.with_core
+def test_schema_invalid_clan_imports(
+    api: TestClient, test_flake_with_core: FlakeForTest
+) -> None:
+    response = api.put(
+        f"/api/{test_flake_with_core.name}/schema",
+        json={"clanImports": ["non-existing-clan-module"]},
+    )
+    assert response.status_code == 400
+    assert (
+        "Some requested clan modules could not be found"
+        in response.json()["detail"]["msg"]
+    )
+    assert "non-existing-clan-module" in response.json()["detail"]["modules_not_found"]
 
 
 @pytest.mark.with_core
