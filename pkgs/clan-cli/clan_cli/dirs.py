@@ -68,7 +68,7 @@ def clan_config_dir() -> Path:
 
 
 def clan_flakes_dir() -> Path:
-    path = clan_data_dir() / "flake"
+    path = clan_config_dir() / "flakes"
     if not path.exists():
         log.debug(f"Creating path with parents {path}")
         path.mkdir(parents=True)
