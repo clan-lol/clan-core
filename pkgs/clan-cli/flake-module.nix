@@ -2,7 +2,6 @@
 {
   perSystem = { self', pkgs, system, ... }:
     let
-      luisPythonPkgs = inputs.luispkgs.legacyPackages.${system}.python3Packages;
       flakeLock = lib.importJSON (self + /flake.lock);
       flakeInputs = (builtins.removeAttrs inputs [ "self" ]);
       flakeLockVendoredDeps = flakeLock // {
@@ -37,8 +36,7 @@
         clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
           inherit (self'.packages) ui-assets;
           inherit (inputs) nixpkgs;
-          deal = luisPythonPkgs.deal;
-          schemathesis = luisPythonPkgs.schemathesis;
+          inherit (inputs.nixpkgs-for-deal.legacyPackages.${system}.python3Packages) deal schemathesis;
           clan-core-path = clanCoreWithVendoredDeps;
         };
         inherit (self'.packages.clan-cli) clan-openapi;

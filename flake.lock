@@ -60,22 +60,6 @@
         "type": "github"
       }
     },
-    "luispkgs": {
-      "locked": {
-        "lastModified": 1699470058,
-        "narHash": "sha256-//c1SEENoNFEDtp8x5lokNxsU9lZjyNkEf5k3OJADTs=",
-        "owner": "Luis-Hebendanz",
-        "repo": "nixpkgs",
-        "rev": "842a157b727ad9712d41a80d1e1564e4e6bbe697",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Luis-Hebendanz",
-        "ref": "fix_python_deal",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixlib": {
       "locked": {
         "lastModified": 1693701915,
@@ -128,14 +112,30 @@
         "type": "github"
       }
     },
+    "nixpkgs-for-deal": {
+      "locked": {
+        "lastModified": 1699470058,
+        "narHash": "sha256-//c1SEENoNFEDtp8x5lokNxsU9lZjyNkEf5k3OJADTs=",
+        "owner": "Luis-Hebendanz",
+        "repo": "nixpkgs",
+        "rev": "842a157b727ad9712d41a80d1e1564e4e6bbe697",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Luis-Hebendanz",
+        "ref": "fix_python_deal",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "disko": "disko",
         "flake-parts": "flake-parts",
         "floco": "floco",
-        "luispkgs": "luispkgs",
         "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-for-deal": "nixpkgs-for-deal",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix"
       }
