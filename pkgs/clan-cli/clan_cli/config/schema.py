@@ -6,6 +6,8 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Optional
 
+from fastapi import HTTPException
+
 from clan_cli.dirs import (
     nixpkgs_source,
     specific_flake_dir,
@@ -25,19 +27,59 @@ def machine_schema(
     # use nix eval to lib.evalModules .#nixosConfigurations.<machine_name>.options.clan
     with NamedTemporaryFile(mode="w", dir=flake) as clan_machine_settings_file:
         env = os.environ.copy()
-        inject_config_flags = []
         if clan_imports is not None:
             config["clanImports"] = clan_imports
+        # dump config to file
         json.dump(config, clan_machine_settings_file, indent=2)
         clan_machine_settings_file.seek(0)
         env["CLAN_MACHINE_SETTINGS_FILE"] = clan_machine_settings_file.name
-        inject_config_flags = [
-            "--impure",  # needed to access CLAN_MACHINE_SETTINGS_FILE
-        ]
+        # ensure that the requested clanImports exist
         proc = subprocess.run(
             nix_eval(
-                flags=inject_config_flags
-                + [
+                flags=[
+                    "--impure",
+                    "--show-trace",
+                    "--expr",
+                    f"""
+                    let
+                        b = builtins;
+                        system = b.currentSystem;
+                        flake = b.getFlake (toString {flake});
+                        clan-core = flake.inputs.clan-core;
+                        config = b.fromJSON (b.readFile (b.getEnv "CLAN_MACHINE_SETTINGS_FILE"));
+                        modules_not_found =
+                            b.filter
+                            (modName: ! clan-core.clanModules ? ${{modName}})
+                            config.clanImports or [];
+                    in
+                        modules_not_found
+                    """,
+                ]
+            ),
+            capture_output=True,
+            text=True,
+            cwd=flake,
+            env=env,
+        )
+        if proc.returncode != 0:
+            print(proc.stderr, file=sys.stderr)
+            raise ClanError(
+                f"Failed to check clanImports for existence:\n{proc.stderr}"
+            )
+        modules_not_found = json.loads(proc.stdout)
+        if len(modules_not_found) > 0:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "msg": "Some requested clan modules could not be found",
+                    "modules_not_found": modules_not_found,
+                },
+            )
+
+        # get the schema
+        proc = subprocess.run(
+            nix_eval(
+                flags=[
                     "--impure",
                     "--show-trace",
                     "--expr",
