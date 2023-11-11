@@ -9,6 +9,7 @@ export type CreateMachineForm = {
   config: any;
   modules: string[];
   schema: JSONSchema7;
+  isSchemaLoading: boolean;
 };
 
 export type FormHooks = UseFormReturn<CreateMachineForm>;

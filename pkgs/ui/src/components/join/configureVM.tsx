@@ -1,3 +1,5 @@
+import { useInspectFlakeAttrs } from "@/api/flake/flake";
+import { FormValues } from "@/views/joinPrequel";
 import {
   Button,
   InputAdornment,
@@ -8,14 +10,10 @@ import {
   Switch,
   TextField,
 } from "@mui/material";
-import { Controller, SubmitHandler, UseFormReturn } from "react-hook-form";
-import { FlakeBadge } from "../flakeBadge/flakeBadge";
-import { createVm } from "@/api/vm/vm";
-import { useInspectFlakeAttrs } from "@/api/flake/flake";
-import { VmConfig } from "@/api/model";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useEffect } from "react";
+import { Controller, UseFormReturn } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { useAppState } from "../hooks/useAppContext";
+import { FlakeBadge } from "../flakeBadge/flakeBadge";
 
 interface VmPropLabelProps {
   children: React.ReactNode;
@@ -34,44 +32,41 @@ const VmPropContent = (props: VmPropContentProps) => (
 );
 
 interface VmDetailsProps {
-  formHooks: UseFormReturn<VmConfig, any, undefined>;
-  setVmUuid: Dispatch<SetStateAction<string | null>>;
+  formHooks: UseFormReturn<FormValues, any, undefined>;
 }
 
+type ClanError = {
+  detail: {
+    msg: string;
+    loc: [];
+  }[];
+};
+
 export const ConfigureVM = (props: VmDetailsProps) => {
-  const { formHooks, setVmUuid } = props;
-  const { control, handleSubmit, watch, setValue } = formHooks;
-  const [isStarting, setStarting] = useState(false);
-  const { setAppState } = useAppState();
-  const { isLoading, data } = useInspectFlakeAttrs({ url: watch("flake_url") });
+  const { formHooks } = props;
+  const { control, watch, setValue, formState } = formHooks;
+
+  const { isLoading, data, error } = useInspectFlakeAttrs({
+    url: watch("flakeUrl"),
+  });
 
   useEffect(() => {
     if (!isLoading && data?.data) {
       setValue("flake_attr", data.data.flake_attrs[0] || "");
     }
   }, [isLoading, setValue, data]);
+  if (error) {
+    const msg =
+      (error?.response?.data as unknown as ClanError)?.detail?.[0]?.msg ||
+      error.message;
 
-  const onSubmit: SubmitHandler<VmConfig> = async (data) => {
-    setStarting(true);
-    console.log(data);
-    const response = await createVm(data);
-    const { uuid } = response?.data || null;
-
-    setVmUuid(() => uuid);
-    setStarting(false);
-    if (response.statusText === "OK") {
-      toast.success(("Joined @ " + uuid) as string);
-      setAppState((s) => ({ ...s, isJoined: true }));
-    } else {
-      toast.error("Could not join");
-    }
-  };
-
+    toast.error(msg, {
+      id: error.name,
+    });
+    return <div>{msg}</div>;
+  }
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="grid grid-cols-4 gap-y-10"
-    >
+    <div className="grid grid-cols-4 gap-y-10">
       <div className="col-span-4">
         <ListSubheader sx={{ bgcolor: "inherit" }}>General</ListSubheader>
       </div>
@@ -79,7 +74,7 @@ export const ConfigureVM = (props: VmDetailsProps) => {
       <VmPropContent>
         <FlakeBadge
           flakeAttr={watch("flake_attr")}
-          flakeUrl={watch("flake_url")}
+          flakeUrl={watch("flakeUrl")}
         />
       </VmPropContent>
       <VmPropLabel>Machine</VmPropLabel>
@@ -88,6 +83,7 @@ export const ConfigureVM = (props: VmDetailsProps) => {
           <Controller
             name="flake_attr"
             control={control}
+            defaultValue={data?.data.flake_attrs?.[0]}
             render={({ field }) => (
               <Select
                 {...field}
@@ -96,9 +92,6 @@ export const ConfigureVM = (props: VmDetailsProps) => {
                 fullWidth
                 disabled={isLoading}
               >
-                {!data?.data.flake_attrs.includes("default") && (
-                  <MenuItem value={"default"}>default</MenuItem>
-                )}
                 {data?.data.flake_attrs.map((attr) => (
                   <MenuItem value={attr} key={attr}>
                     {attr}
@@ -151,16 +144,16 @@ export const ConfigureVM = (props: VmDetailsProps) => {
       </VmPropContent>
 
       <div className="col-span-4 grid items-center">
-        {isStarting && <LinearProgress />}
+        {formState.isSubmitting && <LinearProgress />}
         <Button
           autoFocus
           type="submit"
-          disabled={isStarting}
+          disabled={formState.isSubmitting}
           variant="contained"
         >
           Join Clan
         </Button>
       </div>
-    </form>
+    </div>
   );
 };

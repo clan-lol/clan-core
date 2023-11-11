@@ -1,12 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { VmConfig } from "@/api/model";
 import { useVms } from "@/components/hooks/useVms";
+import { useEffect } from "react";
 
-import { LoadingOverlay } from "./loadingOverlay";
-import { useForm } from "react-hook-form";
+import { FormValues } from "@/views/joinPrequel";
+import { useFormContext } from "react-hook-form";
 import { ConfigureVM } from "./configureVM";
-import { VmBuildLogs } from "./vmBuildLogs";
+import { LoadingOverlay } from "./loadingOverlay";
 
 interface ConfirmVMProps {
   url: string;
@@ -15,22 +14,16 @@ interface ConfirmVMProps {
 }
 
 export function ConfirmVM(props: ConfirmVMProps) {
-  const { url, defaultFlakeAttr } = props;
-  const formHooks = useForm<VmConfig>({
-    defaultValues: {
-      flake_url: url,
-      flake_attr: defaultFlakeAttr,
-      cores: 4,
-      graphics: true,
-      memory_size: 2048,
-    },
-  });
-  const [vmUuid, setVmUuid] = useState<string | null>(null);
+  const formHooks = useFormContext<FormValues>();
 
-  const { setValue, watch, formState } = formHooks;
+  const { setValue, watch } = formHooks;
+
+  const url = watch("flakeUrl");
+  const attr = watch("flake_attr");
+
   const { config, isLoading } = useVms({
     url,
-    attr: watch("flake_attr") || defaultFlakeAttr,
+    attr,
   });
 
   useEffect(() => {
@@ -43,19 +36,13 @@ export function ConfirmVM(props: ConfirmVMProps) {
 
   return (
     <div className="mb-2 flex w-full max-w-2xl flex-col items-center justify-self-center pb-2">
-      {!formState.isSubmitted && (
-        <>
-          <div className="mb-2 w-full max-w-2xl">
-            {isLoading && (
-              <LoadingOverlay title={"Loading VM Configuration"} subtitle="" />
-            )}
+      <div className="mb-2 w-full max-w-2xl">
+        {isLoading && (
+          <LoadingOverlay title={"Loading VM Configuration"} subtitle="" />
+        )}
 
-            <ConfigureVM formHooks={formHooks} setVmUuid={setVmUuid} />
-          </div>
-        </>
-      )}
-
-      {formState.isSubmitted && vmUuid && <VmBuildLogs vmUuid={vmUuid} />}
+        <ConfigureVM formHooks={formHooks} />
+      </div>
     </div>
   );
 }
