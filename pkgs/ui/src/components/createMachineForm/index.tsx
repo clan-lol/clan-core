@@ -1,6 +1,8 @@
+import { createMachine, setMachineConfig } from "@/api/machine/machine";
 import {
   Box,
   Button,
+  CircularProgress,
   LinearProgress,
   MobileStepper,
   Step,
@@ -11,6 +13,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
 import { useAppState } from "../hooks/useAppContext";
 import ClanModules from "./clanModules";
 import { CustomConfig } from "./customConfig";
@@ -22,22 +25,19 @@ export function CreateMachineForm() {
   } = useAppState();
   const formHooks = useForm<CreateMachineForm>({
     defaultValues: {
+      isSchemaLoading: false,
       name: "",
       config: {},
       modules: [],
     },
   });
-  const { handleSubmit, reset } = formHooks;
+
+  const { handleSubmit, reset, watch } = formHooks;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [activeStep, setActiveStep] = useState<number>(0);
 
   const steps: FormStep[] = [
-    {
-      id: "template",
-      label: "Template",
-      content: <div></div>,
-    },
     {
       id: "modules",
       label: "Modules",
@@ -56,11 +56,6 @@ export function CreateMachineForm() {
         <LinearProgress />
       ),
     },
-    {
-      id: "save",
-      label: "Save",
-      content: <div></div>,
-    },
   ];
 
   const handleNext = () => {
@@ -75,14 +70,23 @@ export function CreateMachineForm() {
     }
   };
 
-  const handleReset = () => {
-    setActiveStep(0);
-    reset();
-  };
   const currentStep = steps.at(activeStep);
 
-  async function onSubmit(data: any) {
+  async function onSubmit(data: CreateMachineForm) {
     console.log({ data }, "Aggregated Data; creating machine from");
+    if (clanName) {
+      if (!data.name) {
+        toast.error("Machine name should not be empty");
+        return;
+      }
+      await createMachine(clanName, {
+        name: data.name,
+      });
+      await setMachineConfig(clanName, data.name, {
+        config: data.config.formData,
+        clanImports: data.modules,
+      });
+    }
   }
 
   const BackButton = () => (
@@ -102,17 +106,21 @@ export function CreateMachineForm() {
         <Button
           disabled={
             !formHooks.formState.isValid ||
-            (activeStep == 1 && !formHooks.watch("schema")?.type)
+            (activeStep == 0 && !watch("schema")?.type) ||
+            watch("isSchemaLoading")
           }
           onClick={handleNext}
           color="secondary"
+          startIcon={
+            watch("isSchemaLoading") ? <CircularProgress /> : undefined
+          }
         >
           {activeStep <= steps.length - 1 && "Next"}
         </Button>
       )}
       {activeStep === steps.length - 1 && (
-        <Button color="secondary" onClick={handleReset}>
-          Reset
+        <Button color="secondary" type="submit">
+          Save
         </Button>
       )}
     </>

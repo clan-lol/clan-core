@@ -44,7 +44,7 @@ export function CustomConfig(props: FormStepContentProps) {
         }
         return acc;
       }, {}),
-    [schema],
+    [schema]
   );
 
   return (
@@ -110,11 +110,11 @@ function PureCustomConfig(props: PureCustomConfigProps) {
         message: "invalid config",
       });
       toast.error(
-        "Configuration is invalid. Please check the highlighted fields for details.",
+        "Configuration is invalid. Please check the highlighted fields for details."
       );
     } else {
       formHooks.clearErrors("config");
-      toast.success("Config seems valid");
+      toast.success("Configuration is valid");
     }
   };
 
@@ -139,7 +139,7 @@ function PureCustomConfig(props: PureCustomConfigProps) {
                 variant="outlined"
                 color="secondary"
               >
-                Validate
+                Validate configuration
               </Button>
             </div>
           ),
