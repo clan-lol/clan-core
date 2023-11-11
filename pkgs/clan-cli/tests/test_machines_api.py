@@ -1,3 +1,4 @@
+import pytest
 from api import TestClient
 from fixtures_flakes import FlakeForTest
 
@@ -21,34 +22,76 @@ def test_machines(api: TestClient, test_flake: FlakeForTest) -> None:
     assert response.json() == {"machines": [{"name": "test", "status": "unknown"}]}
 
 
-def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
+@pytest.mark.with_core
+def test_schema_errors(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
+    # make sure that eval errors do not raise an internal server error
+    response = api.put(
+        f"/api/{test_flake_with_core.name}/schema",
+        json={"imports": ["some-inavlid-import"]},
+    )
+    assert response.status_code == 422
+    assert (
+        "error: string 'some-inavlid-import' doesn't represent an absolute path"
+        in response.json()["detail"][0]["msg"]
+    )
+
+
+@pytest.mark.with_core
+def test_schema_invalid_clan_imports(
+    api: TestClient, test_flake_with_core: FlakeForTest
+) -> None:
+    response = api.put(
+        f"/api/{test_flake_with_core.name}/schema",
+        json={"clanImports": ["non-existing-clan-module"]},
+    )
+    assert response.status_code == 400
+    assert (
+        "Some requested clan modules could not be found"
+        in response.json()["detail"]["msg"]
+    )
+    assert "non-existing-clan-module" in response.json()["detail"]["modules_not_found"]
+
+
+@pytest.mark.with_core
+def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     # ensure error 404 if machine does not exist when accessing the config
-    response = api.get(f"/api/{test_flake.name}/machines/machine1/config")
+    response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
     assert response.status_code == 404
 
     # ensure error 404 if machine does not exist when writing to the config
-    response = api.put(f"/api/{test_flake.name}/machines/machine1/config", json={})
+    response = api.put(
+        f"/api/{test_flake_with_core.name}/machines/machine1/config", json={}
+    )
     assert response.status_code == 404
 
     # create the machine
-    response = api.post(f"/api/{test_flake.name}/machines", json={"name": "machine1"})
+    response = api.post(
+        f"/api/{test_flake_with_core.name}/machines", json={"name": "machine1"}
+    )
     assert response.status_code == 201
 
     # ensure an empty config is returned by default for a new machine
-    response = api.get(f"/api/{test_flake.name}/machines/machine1/config")
+    response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
     assert response.status_code == 200
-    assert response.json() == {"config": {}}
+    assert response.json() == {
+        "clanImports": [],
+        "clan": {},
+    }
 
-    # get jsonschema for machine
-    response = api.get(f"/api/{test_flake.name}/machines/machine1/schema")
+    # get jsonschema for without imports
+    response = api.put(
+        f"/api/{test_flake_with_core.name}/schema",
+        json={"clanImports": []},
+    )
     assert response.status_code == 200
     json_response = response.json()
     assert "schema" in json_response and "properties" in json_response["schema"]
 
     # an invalid config missing the fileSystems
     invalid_config = dict(
-        clan=dict(
-            jitsi=dict(
+        clan=dict(),
+        services=dict(
+            nginx=dict(
                 enable=True,
             ),
         ),
@@ -56,7 +99,7 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
 
     # verify an invalid config (fileSystems missing) fails
     response = api.put(
-        f"/api/{test_flake.name}/machines/machine1/verify",
+        f"/api/{test_flake_with_core.name}/machines/machine1/verify",
         json=invalid_config,
     )
     assert response.status_code == 200
@@ -67,15 +110,15 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
 
     # set come invalid config (fileSystems missing)
     response = api.put(
-        f"/api/{test_flake.name}/machines/machine1/config",
+        f"/api/{test_flake_with_core.name}/machines/machine1/config",
         json=invalid_config,
     )
     assert response.status_code == 200
 
     # ensure the config has actually been updated
-    response = api.get(f"/api/{test_flake.name}/machines/machine1/config")
+    response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
     assert response.status_code == 200
-    assert response.json() == {"config": invalid_config}
+    assert response.json() == dict(clanImports=[], **invalid_config)
 
     # the part of the config that makes the evaluation pass
     fs_config = dict(
@@ -96,8 +139,9 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
 
     # set some valid config
     config2 = dict(
-        clan=dict(
-            jitsi=dict(
+        clan=dict(),
+        services=dict(
+            nginx=dict(
                 enable=True,
             ),
         ),
@@ -105,45 +149,57 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
     )
 
     response = api.put(
-        f"/api/{test_flake.name}/machines/machine1/config",
+        f"/api/{test_flake_with_core.name}/machines/machine1/config",
         json=config2,
     )
     assert response.status_code == 200
-    assert response.json() == {"config": config2}
+
+    # ensure the config has been applied
+    response = api.get(
+        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+    )
+    assert response.status_code == 200
+    assert response.json() == dict(clanImports=[], **config2)
 
     # get the config again
-    response = api.get(f"/api/{test_flake.name}/machines/machine1/config")
+    response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
     assert response.status_code == 200
-    assert response.json() == {"config": config2}
+    assert response.json() == {"clanImports": [], **config2}
 
     # ensure PUT on the config is idempotent by passing the config again
     # For example, this should not result in the boot.loader.grub.devices being
     #   set twice (eg. merged)
     response = api.put(
-        f"/api/{test_flake.name}/machines/machine1/config",
+        f"/api/{test_flake_with_core.name}/machines/machine1/config",
         json=config2,
     )
     assert response.status_code == 200
-    assert response.json() == {"config": config2}
+
+    # ensure the config has been applied
+    response = api.get(
+        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+    )
+    assert response.status_code == 200
+    assert response.json() == dict(clanImports=[], **config2)
 
     # verify the machine config evaluates
-    response = api.get(f"/api/{test_flake.name}/machines/machine1/verify")
+    response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/verify")
     assert response.status_code == 200
 
     assert response.json() == {"success": True, "error": None}
 
     # get the schema with an extra module imported
     response = api.put(
-        f"/api/{test_flake.name}/machines/machine1/schema",
-        json={"clanImports": ["fake-module"]},
+        f"/api/{test_flake_with_core.name}/schema",
+        json={"clanImports": ["diskLayouts"]},
     )
-    # expect the result schema to contain the fake-module.fake-flag option
+    # expect the result schema to contain the deltachat option
     assert response.status_code == 200
     assert (
-        response.json()["schema"]["properties"]["fake-module"]["properties"][
-            "fake-flag"
-        ]["type"]
-        == "boolean"
+        response.json()["schema"]["properties"]["diskLayouts"]["properties"][
+            "singleDiskExt4"
+        ]["properties"]["device"]["type"]
+        == "string"
     )
 
     # new config importing an extra clanModule (clanModules.fake-module)
@@ -159,20 +215,24 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
 
     # set the fake-module.fake-flag option to true
     response = api.put(
-        f"/api/{test_flake.name}/machines/machine1/config",
+        f"/api/{test_flake_with_core.name}/machines/machine1/config",
         json=config_with_imports,
     )
     assert response.status_code == 200
+
+    # ensure the config has been applied
+    response = api.get(
+        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+    )
+    assert response.status_code == 200
     assert response.json() == {
-        "config": {
-            "clanImports": ["fake-module"],
-            "clan": {
-                "fake-module": {
-                    "fake-flag": True,
-                },
+        "clanImports": ["fake-module"],
+        "clan": {
+            "fake-module": {
+                "fake-flag": True,
             },
-            **fs_config,
-        }
+        },
+        **fs_config,
     }
 
     # remove the import from the config
@@ -181,8 +241,18 @@ def test_configure_machine(api: TestClient, test_flake: FlakeForTest) -> None:
         **fs_config,
     )
     response = api.put(
-        f"/api/{test_flake.name}/machines/machine1/config",
+        f"/api/{test_flake_with_core.name}/machines/machine1/config",
         json=config_with_empty_imports,
     )
     assert response.status_code == 200
-    assert response.json() == {"config": config_with_empty_imports}
+
+    # ensure the config has been applied
+    response = api.get(
+        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+    )
+    assert response.status_code == 200
+    assert response.json() == {
+        "clanImports": ["fake-module"],
+        "clan": {},
+        **config_with_empty_imports,
+    }

@@ -172,6 +172,14 @@ nix build .#checks.x86_64-linux.clan-pytest --rebuild
 
 This command will run all pure test functions.
 
+### Running schemathesis fuzzer on GET requests
+
+```bash
+nix run .#runSchemaTests
+```
+
+If you want to test more request types edit the file `checks/impure/flake-module.nix`
+
 ### Inspecting the Nix Sandbox
 
 If you need to inspect the Nix sandbox while running tests, follow these steps:
@@ -191,6 +199,8 @@ If you need to inspect the Nix sandbox while running tests, follow these steps:
    ```
 
 These debugging and testing methods will help you identify and fix issues in your backend code efficiently, ensuring the reliability and robustness of your application.
+
+For more information on testing read [property and contract based testing](testing.md)
 
 # Using this Template
 

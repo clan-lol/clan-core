@@ -94,16 +94,38 @@ in
       # only the controller needs to have the key in the repo, the other clients can be dynamic
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
       clanCore.secrets.zerotier = {
+        facts.zerotier-ip = { };
+        facts.zerotier-meshname = { };
         facts.zerotier-network-id = { };
         secrets.zerotier-identity-secret = { };
         generator = ''
           export PATH=${lib.makeBinPath [ config.services.zerotierone.package pkgs.fakeroot ]}
-          ${pkgs.python3.interpreter} ${./generate-network.py} "$facts/zerotier-network-id" "$secrets/zerotier-identity-secret"
+          ${pkgs.python3.interpreter} ${./generate.py} --mode network \
+            --ip "$facts/zerotier-ip" \
+            --meshname "$facts/zerotier-meshname" \
+            --identity-secret "$secrets/zerotier-identity-secret" \
+            --network-id "$facts/zerotier-network-id"
         '';
       };
       environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
     })
-    (lib.mkIf ((config.clanCore.secrets ? zerotier) && (facts.zerotier-network-id.value != null)) {
+    (lib.mkIf (config.clanCore.secretsUploadDirectory != null && !cfg.controller.enable && cfg.networkId != null) {
+      clanCore.secrets.zerotier = {
+        facts.zerotier-ip = { };
+        facts.zerotier-meshname = { };
+        secrets.zerotier-identity-secret = { };
+
+        generator = ''
+          export PATH=${lib.makeBinPath [ config.services.zerotierone.package ]}
+          ${pkgs.python3.interpreter} ${./generate.py} --mode identity \
+            --ip "$facts/zerotier-ip" \
+            --meshname "$facts/zerotier-meshname" \
+            --identity-secret "$secrets/zerotier-identity-secret" \
+            --network-id ${cfg.networkId}
+        '';
+      };
+    })
+    (lib.mkIf (cfg.controller.enable && config.clanCore.secrets ? zerotier && facts.zerotier-network-id.value != null) {
       clan.networking.zerotier.networkId = facts.zerotier-network-id.value;
       environment.etc."zerotier/network-id".text = facts.zerotier-network-id.value;
 

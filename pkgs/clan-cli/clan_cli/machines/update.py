@@ -4,13 +4,12 @@ import os
 import subprocess
 from pathlib import Path
 
-from ..dirs import get_clan_flake_toplevel
+from ..errors import ClanError
 from ..machines.machines import Machine
 from ..nix import nix_build, nix_command, nix_config
 from ..secrets.generate import generate_secrets
 from ..secrets.upload import upload_secrets
 from ..ssh import Host, HostGroup, HostKeyCheck, parse_deployment_address
-from ..types import FlakeName
 
 
 def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
@@ -41,7 +40,7 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
 
         flake_attr = h.meta.get("flake_attr", "")
 
-        generate_secrets(h.meta["machine"], FlakeName(clan_dir.name))
+        generate_secrets(h.meta["machine"])
         upload_secrets(h.meta["machine"])
 
         target_host = h.meta.get("target_host")
@@ -117,11 +116,9 @@ def get_selected_machines(machine_names: list[str], flake_dir: Path) -> HostGrou
 # FIXME: we want some kind of inventory here.
 def update(args: argparse.Namespace) -> None:
     if args.flake is None:
-        flake_dir = get_clan_flake_toplevel()
-    else:
-        flake_dir = args.flake
+        raise ClanError("Could not find clan flake toplevel directory")
     if len(args.machines) == 1 and args.target_host is not None:
-        machine = Machine(name=args.machines[0], flake_dir=flake_dir)
+        machine = Machine(name=args.machines[0], flake_dir=args.flake)
         machine.deployment_address = args.target_host
         host = parse_deployment_address(
             args.machines[0],
@@ -135,11 +132,11 @@ def update(args: argparse.Namespace) -> None:
         exit(1)
     else:
         if len(args.machines) == 0:
-            machines = get_all_machines(flake_dir)
+            machines = get_all_machines(args.flake)
         else:
-            machines = get_selected_machines(args.machines, flake_dir)
+            machines = get_selected_machines(args.machines, args.flake)
 
-    deploy_nixos(machines, flake_dir)
+    deploy_nixos(machines, args.flake)
 
 
 def register_update_parser(parser: argparse.ArgumentParser) -> None:

@@ -1,8 +1,10 @@
+import pytest
 from fixtures_flakes import FlakeForTest
 
-from clan_cli.config import machine
+from clan_cli.config.schema import machine_schema
 
 
-def test_schema_for_machine(test_flake: FlakeForTest) -> None:
-    schema = machine.schema_for_machine(test_flake.name, "machine1")
+@pytest.mark.with_core
+def test_schema_for_machine(test_flake_with_core: FlakeForTest) -> None:
+    schema = machine_schema(test_flake_with_core.name, config={})
     assert "properties" in schema

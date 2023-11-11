@@ -16,7 +16,7 @@ def install_nixos(machine: Machine, flake_name: FlakeName) -> None:
 
     flake_attr = h.meta.get("flake_attr", "")
 
-    generate_secrets(machine, flake_name)
+    generate_secrets(machine)
 
     with TemporaryDirectory() as tmpdir_:
         tmpdir = Path(tmpdir_)
