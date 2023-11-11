@@ -5,9 +5,11 @@
   nixConfig.extra-trusted-public-keys = [ "cache.clan.lol-1:3KztgSAB5R1M+Dz7vzkBGzXdodizbgLXGXKXlcQLA28=" ];
 
   inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
     #nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
-    # https://github.com/NixOS/nixpkgs/pull/265024
-    nixpkgs.url = "github:Mic92/nixpkgs/deltachat";
+    # https://github.com/NixOS/nixpkgs/pull/265872
+    nixpkgs-for-deal.url = "github:Luis-Hebendanz/nixpkgs/fix_python_deal";
+
     floco.url = "github:aakropotkin/floco";
     floco.inputs.nixpkgs.follows = "nixpkgs";
     disko.url = "github:nix-community/disko";
@@ -31,6 +33,7 @@
         "aarch64-darwin"
       ];
       imports = [
+
         ./checks/flake-module.nix
         ./devShell.nix
         ./formatter.nix

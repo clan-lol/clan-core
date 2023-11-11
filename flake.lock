@@ -98,16 +98,32 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1699007274,
-        "narHash": "sha256-m0NH2trnW8cOhona6m3hWkeDZ28BV/wAGPd/YWik23g=",
-        "owner": "Mic92",
+        "lastModified": 1699354722,
+        "narHash": "sha256-abmqUReg4PsyQSwv4d0zjcWpMHrd3IFJiTb2tZpfF04=",
+        "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "fcb19bae00e9d3fd5ecf4a1f80cf33248bf7f714",
+        "rev": "cfbb29d76949ae53c457f152c52c173ea4bdd862",
         "type": "github"
       },
       "original": {
-        "owner": "Mic92",
-        "ref": "deltachat",
+        "owner": "NixOS",
+        "ref": "nixos-unstable-small",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-for-deal": {
+      "locked": {
+        "lastModified": 1699470058,
+        "narHash": "sha256-//c1SEENoNFEDtp8x5lokNxsU9lZjyNkEf5k3OJADTs=",
+        "owner": "Luis-Hebendanz",
+        "repo": "nixpkgs",
+        "rev": "842a157b727ad9712d41a80d1e1564e4e6bbe697",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Luis-Hebendanz",
+        "ref": "fix_python_deal",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -119,6 +135,7 @@
         "floco": "floco",
         "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-for-deal": "nixpkgs-for-deal",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix"
       }

@@ -55,7 +55,7 @@ def create_flake(
     template = Path(__file__).parent / flake_name
 
     # copy the template to a new temporary location
-    flake = temporary_home / ".local/state/clan/flake" / flake_name
+    flake = temporary_home / ".config/clan/flakes" / flake_name
     shutil.copytree(template, flake)
 
     # lookup the requested machines in ./test_machines and include them

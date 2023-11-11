@@ -1,4 +1,4 @@
-import { setMachineSchema } from "@/api/machine/machine";
+import { getMachineSchema } from "@/api/machine/machine";
 import { useListClanModules } from "@/api/modules/modules";
 import {
   Alert,
@@ -49,7 +49,7 @@ const updateSchema = ({
   setSchemaError,
 }: IupdateSchema) => {
   formHooks.setValue("isSchemaLoading", true);
-  setMachineSchema(clanName, "example_machine", {
+  getMachineSchema(clanName, {
     clanImports: modules,
   })
     .then((response) => {
@@ -102,11 +102,12 @@ export default function ClanModules(props: ClanModulesProps) {
   const [schemaError, setSchemaError] = useState<string | null>(null);
   const selectedModules = formHooks.watch("modules");
   useEffect(() => {
-    updateSchema({
-      clanName,
-      modules: formHooks.watch("modules"),
-      formHooks,
-      setSchemaError,
+    getMachineSchema(clanName, {
+      clanImports: [],
+    }).then((response) => {
+      if (response.statusText == "OK") {
+        formHooks.setValue("schema", response.data.schema);
+      }
     });
 
     // Only re-run if global clanName has changed
@@ -122,13 +123,19 @@ export default function ClanModules(props: ClanModulesProps) {
     } = event;
     const newValue = typeof value === "string" ? value.split(",") : value;
     formHooks.setValue("modules", newValue);
-
-    updateSchema({
-      clanName,
-      modules: newValue,
-      formHooks,
-      setSchemaError,
-    });
+    getMachineSchema(clanName, {
+      clanImports: newValue,
+    })
+      .then((response) => {
+        if (response.statusText == "OK") {
+          formHooks.setValue("schema", response.data.schema);
+        }
+      })
+      .catch((error) => {
+        formHooks.setValue("schema", {});
+        console.error({ error });
+        toast.error(`${error.message}`);
+      });
   };
 
   return (

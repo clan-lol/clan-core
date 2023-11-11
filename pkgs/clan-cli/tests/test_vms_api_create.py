@@ -92,12 +92,13 @@ def test_create_local(
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
     cli = Cli()
     cmd = [
+        "--flake",
+        str(flake_with_vm_with_secrets.path),
         "secrets",
         "users",
         "add",
         "user1",
         age_keys[0].pubkey,
-        flake_with_vm_with_secrets.name,
     ]
     cli.run(cmd)
 

@@ -1,11 +1,14 @@
 import argparse
+import base64
 import contextlib
+import ipaddress
 import json
 import socket
 import subprocess
 import time
 import urllib.request
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Iterator, Optional
@@ -41,12 +44,25 @@ def find_free_port() -> Optional[int]:
         return sock.getsockname()[1]
 
 
+class Identity:
+    def __init__(self, path: Path) -> None:
+        self.public = (path / "identity.public").read_text()
+        self.private = (path / "identity.secret").read_text()
+
+    def node_id(self) -> str:
+        nid = self.public.split(":")[0]
+        assert (
+            len(nid) == 10
+        ), f"node_id must be 10 characters long, got {len(nid)}: {nid}"
+        return nid
+
+
 class ZerotierController:
     def __init__(self, port: int, home: Path) -> None:
         self.port = port
         self.home = home
         self.authtoken = (home / "authtoken.secret").read_text()
-        self.secret = (home / "identity.secret").read_text()
+        self.identity = Identity(home)
 
     def _http_request(
         self,
@@ -70,10 +86,10 @@ class ZerotierController:
         return self._http_request("/status")
 
     def create_network(self, data: dict[str, Any] = {}) -> dict[str, Any]:
-        identity = (self.home / "identity.public").read_text()
-        node_id = identity.split(":")[0]
         return self._http_request(
-            f"/controller/network/{node_id}______", method="POST", data=data
+            f"/controller/network/{self.identity.node_id()}______",
+            method="POST",
+            data=data,
         )
 
     def get_network(self, id: str) -> dict[str, Any]:
@@ -118,25 +134,91 @@ def zerotier_controller() -> Iterator[ZerotierController]:
                 p.wait()
 
 
+@dataclass
+class NetworkController:
+    networkid: str
+    identity: Identity
+
+
 # TODO: allow merging more network configuration here
-def create_network() -> dict:
+def create_network_controller() -> NetworkController:
     with zerotier_controller() as controller:
         network = controller.create_network()
-        return {
-            "secret": controller.secret,
-            "networkid": network["nwid"],
-        }
+        return NetworkController(network["nwid"], controller.identity)
+
+
+def create_identity() -> Identity:
+    with TemporaryDirectory() as d:
+        tmpdir = Path(d)
+        private = tmpdir / "identity.secret"
+        public = tmpdir / "identity.public"
+        subprocess.run(["zerotier-idtool", "generate", private, public])
+        return Identity(tmpdir)
+
+
+def compute_zerotier_ip(network_id: str, identity: Identity) -> ipaddress.IPv6Address:
+    assert (
+        len(network_id) == 16
+    ), "network_id must be 16 characters long, got {network_id}"
+    nwid = int(network_id, 16)
+    node_id = int(identity.node_id(), 16)
+    addr_parts = bytearray(
+        [
+            0xFD,
+            (nwid >> 56) & 0xFF,
+            (nwid >> 48) & 0xFF,
+            (nwid >> 40) & 0xFF,
+            (nwid >> 32) & 0xFF,
+            (nwid >> 24) & 0xFF,
+            (nwid >> 16) & 0xFF,
+            (nwid >> 8) & 0xFF,
+            (nwid) & 0xFF,
+            0x99,
+            0x93,
+            (node_id >> 32) & 0xFF,
+            (node_id >> 24) & 0xFF,
+            (node_id >> 16) & 0xFF,
+            (node_id >> 8) & 0xFF,
+            (node_id) & 0xFF,
+        ]
+    )
+    return ipaddress.IPv6Address(bytes(addr_parts))
+
+
+def compute_zerotier_meshname(ip: ipaddress.IPv6Address) -> str:
+    return base64.b32encode(ip.packed)[0:26].decode("ascii").lower()
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("network_id")
-    parser.add_argument("identity_secret")
+    parser.add_argument(
+        "--mode", choices=["network", "identity"], required=True, type=str
+    )
+    parser.add_argument("--ip", type=Path, required=True)
+    parser.add_argument("--meshname", type=Path, required=True)
+    parser.add_argument("--identity-secret", type=Path, required=True)
+    parser.add_argument("--network-id", type=str, required=False)
     args = parser.parse_args()
 
-    zerotier = create_network()
-    Path(args.network_id).write_text(zerotier["networkid"])
-    Path(args.identity_secret).write_text(zerotier["secret"])
+    match args.mode:
+        case "network":
+            if args.network_id is None:
+                raise ValueError("network_id parameter is required")
+            controller = create_network_controller()
+            identity = controller.identity
+            network_id = controller.networkid
+            Path(args.network_id).write_text(network_id)
+        case "identity":
+            identity = create_identity()
+            network_id = args.network_id
+        case _:
+            raise ValueError(f"unknown mode {args.mode}")
+    ip = compute_zerotier_ip(network_id, identity)
+    meshname = compute_zerotier_meshname(ip)
+
+    args.identity_secret.write_text(identity.private)
+    args.ip.write_text(ip.compressed)
+    args.meshname.write_text(meshname)
 
 
 if __name__ == "__main__":

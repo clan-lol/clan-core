@@ -10,7 +10,7 @@ from .types import FlakeName
 log = logging.getLogger(__name__)
 
 
-def get_clan_flake_toplevel() -> Path:
+def get_clan_flake_toplevel() -> Optional[Path]:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
 
 
@@ -21,7 +21,7 @@ def find_git_repo_root() -> Optional[Path]:
         return None
 
 
-def find_toplevel(top_level_files: list[str]) -> Path:
+def find_toplevel(top_level_files: list[str]) -> Optional[Path]:
     """Returns the path to the toplevel of the clan flake"""
     for project_file in top_level_files:
         initial_path = Path(os.getcwd())
@@ -30,7 +30,7 @@ def find_toplevel(top_level_files: list[str]) -> Path:
             if (path / project_file).exists():
                 return path
             path = path.parent
-    raise ClanError("Could not find clan flake toplevel directory")
+    return None
 
 
 def user_config_dir() -> Path:
@@ -42,43 +42,22 @@ def user_config_dir() -> Path:
         return Path(os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config")))
 
 
-def user_data_dir() -> Path:
-    if sys.platform == "win32":
-        return Path(os.getenv("APPDATA", os.path.expanduser("~\\AppData\\Roaming\\")))
-    elif sys.platform == "darwin":
-        return Path(os.path.expanduser("~/Library/Application Support/"))
-    else:
-        return Path(os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/state")))
-
-
-def clan_data_dir() -> Path:
-    path = user_data_dir() / "clan"
-    if not path.exists():
-        log.debug(f"Creating path with parents {path}")
-        path.mkdir(parents=True)
-    return path.resolve()
-
-
 def clan_config_dir() -> Path:
     path = user_config_dir() / "clan"
-    if not path.exists():
-        log.debug(f"Creating path with parents {path}")
-        path.mkdir(parents=True)
+    path.mkdir(parents=True, exist_ok=True)
     return path.resolve()
 
 
 def clan_flakes_dir() -> Path:
-    path = clan_data_dir() / "flake"
-    if not path.exists():
-        log.debug(f"Creating path with parents {path}")
-        path.mkdir(parents=True)
+    path = clan_config_dir() / "flakes"
+    path.mkdir(parents=True, exist_ok=True)
     return path.resolve()
 
 
 def specific_flake_dir(flake_name: FlakeName) -> Path:
     flake_dir = clan_flakes_dir() / flake_name
     if not flake_dir.exists():
-        raise ClanError(f"Flake '{flake_name}' does not exist in {flake_dir}")
+        raise ClanError(f"Flake '{flake_name}' does not exist in {clan_flakes_dir()}")
     return flake_dir
 
 

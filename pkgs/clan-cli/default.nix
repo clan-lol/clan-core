@@ -34,7 +34,10 @@
 , gnupg
 , e2fsprogs
 , mypy
-, cntr
+, deal
+, schemathesis
+, rope
+, clan-core-path
 }:
 let
 
@@ -50,6 +53,8 @@ let
     pytest-subprocess
     pytest-xdist
     pytest-timeout
+    deal
+    schemathesis
     remote-pdb
     ipdb
     openssh
@@ -129,14 +134,30 @@ python3.pkgs.buildPythonApplication {
   propagatedBuildInputs = dependencies;
 
   # also re-expose dependencies so we test them in CI
-  passthru.tests = (lib.mapAttrs' (n: lib.nameValuePair "clan-dep-${n}") runtimeDependenciesAsSet) // {
-    clan-pytest = runCommand "clan-pytest" { nativeBuildInputs = [ checkPython ] ++ pytestDependencies; } ''
+  passthru.tests = (lib.mapAttrs' (n: lib.nameValuePair "clan-dep-${n}") runtimeDependenciesAsSet) // rec {
+    clan-pytest-without-core = runCommand "clan-pytest-without-core" { nativeBuildInputs = [ checkPython ] ++ pytestDependencies; } ''
       cp -r ${source} ./src
       chmod +w -R ./src
       cd ./src
 
       export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
-      ${checkPython}/bin/python -m pytest -m "not impure" -s ./tests
+      ${checkPython}/bin/python -m pytest -m "not impure and not with_core" -s ./tests
+      touch $out
+    '';
+    # separate the tests that can never be cached
+    clan-pytest-with-core = runCommand "clan-pytest-with-core" { nativeBuildInputs = [ checkPython ] ++ pytestDependencies; } ''
+      cp -r ${source} ./src
+      chmod +w -R ./src
+      cd ./src
+
+      export CLAN_CORE=${clan-core-path}
+      export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
+      ${checkPython}/bin/python -m pytest -m "not impure and with_core" -s ./tests
+      touch $out
+    '';
+    clan-pytest = runCommand "clan-pytest" { } ''
+      echo ${clan-pytest-without-core}
+      echo ${clan-pytest-with-core}
       touch $out
     '';
     check-for-breakpoints = runCommand "breakpoints" { } ''
@@ -161,6 +182,7 @@ python3.pkgs.buildPythonApplication {
   passthru.checkPython = checkPython;
 
   passthru.devDependencies = [
+    rope
     setuptools
     wheel
   ] ++ pytestDependencies;

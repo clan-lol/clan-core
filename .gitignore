@@ -1,4 +1,5 @@
 .direnv
+***/.hypothesis
 .coverage.*
 **/qubeclan
 **/testdir

@@ -3,7 +3,7 @@ from api import TestClient
 from fixtures_flakes import FlakeForTest
 
 
-@pytest.mark.impure()
+@pytest.mark.with_core
 def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     # retrieve the list of available clanModules
     response = api.get(f"/api/{test_flake_with_core.name}/clan_modules")
