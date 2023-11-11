@@ -1,5 +1,5 @@
-import { inspectVm } from "@/api/vm/vm";
 import { HTTPValidationError, VmConfig } from "@/api/model";
+import { inspectVm } from "@/api/vm/vm";
 import { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
