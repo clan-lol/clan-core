@@ -1,23 +1,28 @@
 "use client";
 import {
   IconButton,
-  Input,
   InputAdornment,
-  LinearProgress,
   MenuItem,
   Select,
+  Typography,
 } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 import { createFlake } from "@/api/flake/flake";
+import { VmConfig } from "@/api/model";
+import { createVm } from "@/api/vm/vm";
 import { useAppState } from "@/components/hooks/useAppContext";
-import { Confirm } from "@/components/join/confirm";
 import { Layout } from "@/components/join/layout";
+import { VmBuildLogs } from "@/components/join/vmBuildLogs";
 import { ChevronRight } from "@mui/icons-material";
-import { Controller, useForm } from "react-hook-form";
+import { AxiosError } from "axios";
+import { Controller, FormProvider, useForm } from "react-hook-form";
+import { toast } from "react-hot-toast";
+import { CreateForm } from "./createForm";
+import { JoinForm } from "./joinForm";
 
-type FormValues = {
+export type FormValues = VmConfig & {
   workflow: "join" | "create";
   flakeUrl: string;
   dest?: string;
@@ -27,13 +32,25 @@ export default function JoinPrequel() {
   const queryParams = useSearchParams();
   const flakeUrl = queryParams.get("flake") || "";
   const flakeAttr = queryParams.get("attr") || "default";
-  const [, setForkInProgress] = useState(false);
+  const initialParams = { flakeUrl, flakeAttr };
+
   const { setAppState } = useAppState();
 
-  const { control, formState, getValues, reset, watch, handleSubmit } =
-    useForm<FormValues>({
-      defaultValues: { flakeUrl: "", dest: undefined, workflow: "join" },
-    });
+  const methods = useForm<FormValues>({
+    defaultValues: {
+      flakeUrl: "",
+      dest: undefined,
+      workflow: "join",
+      cores: 4,
+      graphics: true,
+      memory_size: 2048,
+    },
+  });
+
+  const { control, watch, handleSubmit } = methods;
+
+  const [vmUuid, setVmUuid] = useState<string | null>(null);
+  const [showLogs, setShowLogs] = useState<boolean>(false);
 
   const workflow = watch("workflow");
 
@@ -54,88 +71,85 @@ export default function JoinPrequel() {
           </Select>
         )}
       />
-      <IconButton type="submit">
+      <IconButton type={"submit"}>
         <ChevronRight />
       </IconButton>
     </InputAdornment>
   );
   return (
-    <Layout>
+    <Layout
+      header={
+        <Typography
+          variant="h4"
+          className="w-full text-center"
+          sx={{ textTransform: "capitalize" }}
+        >
+          {workflow}{" "}
+          <Typography variant="h4" className="font-bold" component={"span"}>
+            Clan.lol
+          </Typography>
+        </Typography>
+      }
+    >
       <Suspense fallback="Loading">
-        {!formState.isSubmitted && !flakeUrl && (
-          <form
-            onSubmit={handleSubmit((values) => {
-              console.log("submitted", { values });
-              if (workflow === "create") {
-                setForkInProgress(true);
-                createFlake({
-                  flake_name: values.dest || "default",
-                  url: values.flakeUrl,
-                }).then(() => {
-                  setForkInProgress(false);
-                  setAppState((s) => ({ ...s, isJoined: true }));
-                });
-              }
-            })}
-            className="w-full max-w-2xl justify-self-center"
-          >
-            <Controller
-              name="flakeUrl"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  disableUnderline
-                  placeholder="url"
-                  color="secondary"
-                  aria-required="true"
-                  {...field}
-                  required
-                  fullWidth
-                  startAdornment={
-                    <InputAdornment position="start">Clan</InputAdornment>
+        {vmUuid && showLogs ? (
+          <VmBuildLogs vmUuid={vmUuid} handleClose={() => setShowLogs(false)} />
+        ) : (
+          <FormProvider {...methods}>
+            <form
+              onSubmit={handleSubmit(async (values) => {
+                if (workflow === "create") {
+                  try {
+                    await createFlake({
+                      flake_name: values.dest || "default",
+                      url: values.flakeUrl,
+                    });
+                    setAppState((s) => ({ ...s, isJoined: true }));
+                  } catch (error) {
+                    toast.error(
+                      `Error: ${(error as AxiosError).message || ""}`,
+                    );
                   }
-                  endAdornment={
-                    workflow == "join" ? WorkflowAdornment : undefined
+                }
+                if (workflow === "join") {
+                  console.log("JOINING");
+                  console.log(values);
+                  try {
+                    const response = await createVm({
+                      cores: values.cores,
+                      flake_attr: values.flake_attr,
+                      flake_url: values.flakeUrl,
+                      graphics: values.graphics,
+                      memory_size: values.memory_size,
+                    });
+                    const { uuid } = response?.data || null;
+                    setShowLogs(true);
+                    setVmUuid(() => uuid);
+                    if (response.statusText === "OK") {
+                      toast.success(("Joined @ " + uuid) as string);
+                    } else {
+                      toast.error("Could not join");
+                    }
+                  } catch (error) {
+                    toast.error(
+                      `Error: ${(error as AxiosError).message || ""}`,
+                    );
                   }
+                }
+              })}
+              className="w-full max-w-2xl justify-self-center"
+            >
+              {workflow == "join" && (
+                <JoinForm
+                  initialParams={initialParams}
+                  confirmAdornment={WorkflowAdornment}
                 />
               )}
-            />
-            {workflow === "create" && (
-              <Controller
-                name="dest"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    sx={{ my: 2 }}
-                    placeholder="Location"
-                    color="secondary"
-                    aria-required="true"
-                    {...field}
-                    required
-                    fullWidth
-                    startAdornment={
-                      <InputAdornment position="start">Name</InputAdornment>
-                    }
-                    endAdornment={
-                      workflow == "create" ? WorkflowAdornment : undefined
-                    }
-                  />
-                )}
-              />
-            )}
-          </form>
-        )}
-        {formState.isSubmitted && workflow == "create" && (
-          <div>
-            <LinearProgress />
-          </div>
-        )}
-        {(formState.isSubmitted || flakeUrl) && workflow == "join" && (
-          <Confirm
-            handleBack={() => reset()}
-            flakeUrl={formState.isSubmitted ? getValues("flakeUrl") : flakeUrl}
-            flakeAttr={flakeAttr}
-          />
+              {workflow == "create" && (
+                <CreateForm confirmAdornment={WorkflowAdornment} />
+              )}
+            </form>
+          </FormProvider>
         )}
       </Suspense>
     </Layout>

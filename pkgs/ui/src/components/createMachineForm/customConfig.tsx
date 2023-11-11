@@ -114,7 +114,7 @@ function PureCustomConfig(props: PureCustomConfigProps) {
       );
     } else {
       formHooks.clearErrors("config");
-      toast.success("Config seems valid");
+      toast.success("Configuration is valid");
     }
   };
 
@@ -139,7 +139,7 @@ function PureCustomConfig(props: PureCustomConfigProps) {
                 variant="outlined"
                 color="secondary"
               >
-                Validate
+                Validate configuration
               </Button>
             </div>
           ),
