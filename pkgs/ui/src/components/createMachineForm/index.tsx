@@ -32,7 +32,7 @@ export function CreateMachineForm() {
     },
   });
 
-  const { handleSubmit, reset, watch } = formHooks;
+  const { handleSubmit, watch } = formHooks;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [activeStep, setActiveStep] = useState<number>(0);
@@ -83,7 +83,7 @@ export function CreateMachineForm() {
         name: data.name,
       });
       await setMachineConfig(clanName, data.name, {
-        config: data.config.formData,
+        clan: data.config.formData,
         clanImports: data.modules,
       });
     }
