@@ -63,6 +63,18 @@ def test_create_machine_invalid_hostname(
 
 
 @pytest.mark.with_core
+def test_verify_config_without_machine(
+    api: TestClient, test_flake_with_core: FlakeForTest
+) -> None:
+    response = api.put(
+        f"/api/{test_flake_with_core.name}/machines/test/verify",
+        json=dict(),
+    )
+    assert response.status_code == 200
+    assert response.json() == {"success": True, "error": None}
+
+
+@pytest.mark.with_core
 def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     # ensure error 404 if machine does not exist when accessing the config
     response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
