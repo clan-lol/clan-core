@@ -53,7 +53,7 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
     # check if there is a diff
     cmd = nix_shell(
         ["git"],
-        ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code"],
+        ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code", str(file_path)],
     )
     result = subprocess.run(cmd, cwd=repo_dir)
     # if there is no diff, return
