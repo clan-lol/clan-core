@@ -3,15 +3,13 @@ from api import TestClient
 from fixtures_flakes import FlakeForTest
 
 
-def test_machines(api: TestClient, test_flake: FlakeForTest) -> None:
+def test_create_and_list(api: TestClient, test_flake: FlakeForTest) -> None:
     response = api.get(f"/api/{test_flake.name}/machines")
     assert response.status_code == 200
     assert response.json() == {"machines": []}
 
-    response = api.post(f"/api/{test_flake.name}/machines", json={"name": "test"})
-    assert response.status_code == 201
-
-    assert response.json() == {"machine": {"name": "test", "status": "unknown"}}
+    response = api.put(f"/api/{test_flake.name}/machines/test/config", json=dict())
+    assert response.status_code == 200
 
     response = api.get(f"/api/{test_flake.name}/machines/test")
     assert response.status_code == 200
@@ -55,8 +53,8 @@ def test_schema_invalid_clan_imports(
 def test_create_machine_invalid_hostname(
     api: TestClient, test_flake: FlakeForTest
 ) -> None:
-    response = api.post(
-        f"/api/{test_flake.name}/machines", json={"name": "-invalid-hostname"}
+    response = api.put(
+        f"/api/{test_flake.name}/machines/-invalid-hostname/config", json=dict()
     )
     assert response.status_code == 422
     assert (
@@ -70,17 +68,11 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
     response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
     assert response.status_code == 404
 
-    # ensure error 404 if machine does not exist when writing to the config
+    # create the machine
     response = api.put(
         f"/api/{test_flake_with_core.name}/machines/machine1/config", json={}
     )
-    assert response.status_code == 404
-
-    # create the machine
-    response = api.post(
-        f"/api/{test_flake_with_core.name}/machines", json={"name": "machine1"}
-    )
-    assert response.status_code == 201
+    assert response.status_code == 200
 
     # ensure an empty config is returned by default for a new machine
     response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")

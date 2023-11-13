@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import subprocess
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -12,6 +13,7 @@ from clan_cli.dirs import (
     specific_flake_dir,
     specific_machine_dir,
 )
+from clan_cli.errors import ClanError
 from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
 
@@ -75,16 +77,22 @@ def config_for_machine(flake_name: FlakeName, machine_name: str) -> dict:
 def set_config_for_machine(
     flake_name: FlakeName, machine_name: str, config: dict
 ) -> None:
+    hostname_regex = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$"
+    if not re.match(hostname_regex, machine_name):
+        raise ClanError("Machine name must be a valid hostname")
+    if "networking" in config and "hostName" in config["networking"]:
+        if machine_name != config["networking"]["hostName"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Machine name does not match the 'networking.hostName' setting in the config",
+            )
+        config["networking"]["hostName"] = machine_name
+    # create machine folder if it doesn't exist
     # write the config to a json file located at {flake}/machines/{machine_name}/settings.json
-    if not specific_machine_dir(flake_name, machine_name).exists():
-        raise HTTPException(
-            status_code=404,
-            detail=f"Machine {machine_name} not found. Create the machine first`",
-        )
     settings_path = machine_settings_file(flake_name, machine_name)
     settings_path.parent.mkdir(parents=True, exist_ok=True)
     with open(settings_path, "w") as f:
-        json.dump(config, f)
+        json.dump(config, f, indent=2)
     repo_dir = specific_flake_dir(flake_name)
 
     if repo_dir is not None:
