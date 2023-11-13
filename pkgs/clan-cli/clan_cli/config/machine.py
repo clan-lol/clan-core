@@ -44,7 +44,7 @@ def verify_machine_config(
                 "--show-trace",
                 "--show-trace",
                 "--impure",  # needed to access CLAN_MACHINE_SETTINGS_FILE
-                f".#nixosConfigurations.{machine_name}.config.system.build.toplevel.outPath",
+                f".#nixosConfigurations.{machine_name}.config.system.build.vm.outPath",
             ],
         )
         # repro_env_break(work_dir=flake, env=env, cmd=cmd)
