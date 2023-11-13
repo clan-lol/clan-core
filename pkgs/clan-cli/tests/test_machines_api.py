@@ -91,9 +91,12 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
     json_response = response.json()
     assert "schema" in json_response and "properties" in json_response["schema"]
 
-    # an invalid config missing the fileSystems
+    # an invalid config setting some non-existent option
     invalid_config = dict(
         clan=dict(),
+        foo=dict(
+            bar=True,
+        ),
         services=dict(
             nginx=dict(
                 enable=True,
@@ -101,18 +104,15 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
         ),
     )
 
-    # verify an invalid config (fileSystems missing) fails
+    # verify an invalid config (foo option does not exist)
     response = api.put(
         f"/api/{test_flake_with_core.name}/machines/machine1/verify",
         json=invalid_config,
     )
     assert response.status_code == 200
-    assert (
-        "The ‘fileSystems’ option does not specify your root"
-        in response.json()["error"]
-    )
+    assert "error: The option `foo' does not exist" in response.json()["error"]
 
-    # set come invalid config (fileSystems missing)
+    # set come invalid config (foo option does not exist)
     response = api.put(
         f"/api/{test_flake_with_core.name}/machines/machine1/config",
         json=invalid_config,
@@ -124,23 +124,6 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
     assert response.status_code == 200
     assert response.json() == dict(clanImports=[], **invalid_config)
 
-    # the part of the config that makes the evaluation pass
-    fs_config = dict(
-        fileSystems={
-            "/": dict(
-                device="/dev/fake_disk",
-                fsType="ext4",
-            ),
-        },
-        boot=dict(
-            loader=dict(
-                grub=dict(
-                    devices=["/dev/fake_disk"],
-                ),
-            ),
-        ),
-    )
-
     # set some valid config
     config2 = dict(
         clan=dict(),
@@ -149,7 +132,6 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
                 enable=True,
             ),
         ),
-        **fs_config,
     )
 
     response = api.put(
@@ -214,7 +196,6 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
                 "fake-flag": True,
             },
         },
-        **fs_config,
     }
 
     # set the fake-module.fake-flag option to true
@@ -236,17 +217,14 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
                 "fake-flag": True,
             },
         },
-        **fs_config,
     }
 
     # remove the import from the config
-    config_with_empty_imports = dict(
-        clanImports=[],
-        **fs_config,
-    )
     response = api.put(
         f"/api/{test_flake_with_core.name}/machines/machine1/config",
-        json=config_with_empty_imports,
+        json=dict(
+            clanImports=[],
+        ),
     )
     assert response.status_code == 200
 
@@ -256,7 +234,6 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
     )
     assert response.status_code == 200
     assert response.json() == {
-        "clanImports": ["fake-module"],
         "clan": {},
-        **config_with_empty_imports,
+        "clanImports": [],
     }
