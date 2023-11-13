@@ -43,7 +43,8 @@ def machine_schema(
                     f"""
                     let
                         b = builtins;
-                        system = b.currentSystem;
+                        # hardcoding system for now, not sure where to get it from
+                        system = "x86_64-linux";
                         flake = b.getFlake (toString {flake});
                         clan-core = flake.inputs.clan-core;
                         config = b.fromJSON (b.readFile (b.getEnv "CLAN_MACHINE_SETTINGS_FILE"));
@@ -85,7 +86,8 @@ def machine_schema(
                     "--expr",
                     f"""
                     let
-                        system = builtins.currentSystem;
+                        # hardcoding system for now, not sure where to get it from
+                        system = "x86_64-linux";
                         flake = builtins.getFlake (toString {flake});
                         clan-core = flake.inputs.clan-core;
                         nixpkgsSrc = flake.inputs.nixpkgs or {nixpkgs_source()};
