@@ -71,10 +71,10 @@ class Command:
                 try:
                     for line in fd:
                         if fd == self.p.stderr:
-                            self.log.debug(f"[{cmd[0]}] stderr: {line}")
+                            self.log.debug(f"[{cmd}] stderr: {line}")
                             self.stderr.append(line)
                         else:
-                            self.log.debug(f"[{cmd[0]}] stdout: {line}")
+                            self.log.debug(f"[{cmd}] stdout: {line}")
                             self.stdout.append(line)
                         self._output.put(line)
                 except BlockingIOError:
