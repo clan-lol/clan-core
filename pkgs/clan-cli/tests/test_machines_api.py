@@ -25,11 +25,11 @@ def test_schema_errors(api: TestClient, test_flake_with_core: FlakeForTest) -> N
     # make sure that eval errors do not raise an internal server error
     response = api.put(
         f"/api/{test_flake_with_core.name}/schema",
-        json={"imports": ["some-inavlid-import"]},
+        json={"imports": ["some-invalid-import"]},
     )
     assert response.status_code == 422
     assert (
-        "error: string 'some-inavlid-import' doesn't represent an absolute path"
+        "error: string 'some-invalid-import' doesn't represent an absolute path"
         in response.json()["detail"][0]["msg"]
     )
 
@@ -70,6 +70,21 @@ def test_verify_config_without_machine(
         f"/api/{test_flake_with_core.name}/machines/test/verify",
         json=dict(),
     )
+    assert response.status_code == 200
+    assert response.json() == {"success": True, "error": None}
+
+
+@pytest.mark.with_core
+def test_ensure_empty_config_is_valid(
+    api: TestClient, test_flake_with_core: FlakeForTest
+) -> None:
+    response = api.put(
+        f"/api/{test_flake_with_core.name}/machines/test/config",
+        json=dict(),
+    )
+    assert response.status_code == 200
+
+    response = api.get(f"/api/{test_flake_with_core.name}/machines/test/verify")
     assert response.status_code == 200
     assert response.json() == {"success": True, "error": None}
 
