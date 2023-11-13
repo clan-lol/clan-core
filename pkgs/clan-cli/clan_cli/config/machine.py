@@ -2,7 +2,6 @@ import json
 import os
 import re
 import subprocess
-from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Optional
 
@@ -10,6 +9,7 @@ from fastapi import HTTPException
 
 from clan_cli.dirs import (
     machine_settings_file,
+    nixpkgs_source,
     specific_flake_dir,
     specific_machine_dir,
 )
@@ -24,7 +24,6 @@ def verify_machine_config(
     flake_name: FlakeName,
     machine_name: str,
     config: Optional[dict] = None,
-    flake: Optional[Path] = None,
 ) -> Optional[str]:
     """
     Verify that the machine evaluates successfully
@@ -40,11 +39,34 @@ def verify_machine_config(
         env["CLAN_MACHINE_SETTINGS_FILE"] = clan_machine_settings_file.name
         cmd = nix_eval(
             flags=[
-                "--impure",
-                "--show-trace",
                 "--show-trace",
                 "--impure",  # needed to access CLAN_MACHINE_SETTINGS_FILE
-                f".#nixosConfigurations.{machine_name}.config.system.build.vm.outPath",
+                "--expr",
+                f"""
+                let
+                    # hardcoding system for now, not sure where to get it from
+                    system = "x86_64-linux";
+                    flake = builtins.getFlake (toString {flake});
+                    clan-core = flake.inputs.clan-core;
+                    nixpkgsSrc = flake.inputs.nixpkgs or {nixpkgs_source()};
+                    lib = import (nixpkgsSrc + /lib);
+                    pkgs = import nixpkgsSrc {{ inherit system; }};
+                    config = lib.importJSON (builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE");
+                    fakeMachine = pkgs.nixos {{
+                        imports =
+                            [
+                                clan-core.nixosModules.clanCore
+                                # potentially the config might affect submodule options,
+                                #   therefore we need to import it
+                                config
+                                {{clanCore.clanDir = {flake};}}
+                            ]
+                            # add all clan modules specified via clanImports
+                            ++ (map (name: clan-core.clanModules.${{name}}) config.clanImports or []);
+                    }};
+                in
+                    fakeMachine.config.system.build.vm.outPath
+                """,
             ],
         )
         # repro_env_break(work_dir=flake, env=env, cmd=cmd)
