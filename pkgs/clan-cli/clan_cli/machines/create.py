@@ -1,46 +1,13 @@
 import argparse
 import logging
-from typing import Dict
 
-from ..async_cmd import CmdOut, run, runforcli
-from ..dirs import specific_flake_dir, specific_machine_dir
-from ..errors import ClanError
-from ..nix import nix_shell
-from ..types import FlakeName
+from clan_cli.config.machine import set_config_for_machine
 
 log = logging.getLogger(__name__)
 
 
-async def create_machine(flake_name: FlakeName, machine_name: str) -> Dict[str, CmdOut]:
-    folder = specific_machine_dir(flake_name, machine_name)
-    if folder.exists():
-        raise ClanError(f"Machine '{machine_name}' already exists")
-    folder.mkdir(parents=True, exist_ok=True)
-
-    # create empty settings.json file inside the folder
-    with open(folder / "settings.json", "w") as f:
-        f.write("{}")
-    response = {}
-    out = await run(nix_shell(["git"], ["git", "add", str(folder)]), cwd=folder)
-    response["git add"] = out
-
-    out = await run(
-        nix_shell(
-            ["git"],
-            ["git", "commit", "-m", f"Added machine {machine_name}", str(folder)],
-        ),
-        cwd=folder,
-    )
-    response["git commit"] = out
-    return response
-
-
 def create_command(args: argparse.Namespace) -> None:
-    try:
-        flake_dir = specific_flake_dir(args.flake)
-        runforcli(create_machine, flake_dir, args.machine)
-    except ClanError as e:
-        print(e)
+    set_config_for_machine(args.flake, args.machine, dict())
 
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:

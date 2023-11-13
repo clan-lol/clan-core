@@ -57,6 +57,6 @@ mkShell {
 
 
     ./bin/clan flakes create example_clan
-    ./bin/clan machines create example_machine example_clan
+    ./bin/clan machines create example-machine example_clan
   '';
 }

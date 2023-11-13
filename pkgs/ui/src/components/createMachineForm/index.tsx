@@ -1,4 +1,4 @@
-import { createMachine, setMachineConfig } from "@/api/machine/machine";
+import { putMachine } from "@/api/machine/machine";
 import {
   Box,
   Button,
@@ -79,10 +79,7 @@ export function CreateMachineForm() {
         toast.error("Machine name should not be empty");
         return;
       }
-      await createMachine(clanName, {
-        name: data.name,
-      });
-      await setMachineConfig(clanName, data.name, {
+      await putMachine(clanName, data.name, {
         clan: data.config.formData,
         clanImports: data.modules,
       });
