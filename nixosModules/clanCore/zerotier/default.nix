@@ -92,6 +92,8 @@ in
       services.zerotierone.package = lib.mkDefault (pkgs.zerotierone.overrideAttrs (_old: { meta = { }; }));
     })
     (lib.mkIf (cfg.networkId != null) {
+      environment.etc."zerotier/hostname".text = "${facts.zerotier-meshname.value}.vpn";
+
       systemd.network.enable = true;
       networking.useNetworkd = true;
       systemd.network.networks.zerotier = {
@@ -132,6 +134,7 @@ in
       environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
     })
     (lib.mkIf (config.clanCore.secretsUploadDirectory != null && !cfg.controller.enable && cfg.networkId != null) {
+
       clanCore.secrets.zerotier = {
         facts.zerotier-ip = { };
         facts.zerotier-meshname = { };
