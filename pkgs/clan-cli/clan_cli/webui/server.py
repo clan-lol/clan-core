@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 import shutil
 import subprocess
 import time
@@ -76,6 +77,8 @@ def spawn_node_dev_server(host: IPvAnyAddress, port: int) -> Iterator[None]:
 
 
 def start_server(args: argparse.Namespace) -> None:
+    os.environ["CLAN_WEBUI_ENV"] = "development" if args.dev else "production"
+
     with ExitStack() as stack:
         headers: list[tuple[str, str]] = []
         if args.dev:
@@ -85,20 +88,6 @@ def start_server(args: argparse.Namespace) -> None:
             host = args.dev_host
             if ":" in host:
                 host = f"[{host}]"
-            headers = [
-                # (
-                #     "Access-Control-Allow-Origin",
-                #     f"http://{host}:{args.dev_port}",
-                # ),
-                # (
-                #     "Access-Control-Allow-Methods",
-                #     "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT"
-                # ),
-                # (
-                #     "Allow",
-                #     "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT"
-                # )
-            ]
         else:
             base_url = f"http://{args.host}:{args.port}"
 
