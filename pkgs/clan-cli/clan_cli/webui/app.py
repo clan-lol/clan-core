@@ -1,47 +1,24 @@
 import logging
-import os
-from enum import Enum
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 
-from ..errors import ClanError
 from .assets import asset_path
 from .error_handlers import clan_error_handler
 from .routers import clan_modules, flake, health, machines, root, vms
+from .settings import settings
 from .tags import tags_metadata
 
 # Logging setup
 log = logging.getLogger(__name__)
 
 
-class EnvType(Enum):
-    production = "production"
-    development = "development"
-
-    @staticmethod
-    def from_environment() -> "EnvType":
-        t = os.environ.get("CLAN_WEBUI_ENV", "production")
-        try:
-            return EnvType[t]
-        except KeyError:
-            log.warning(f"Invalid environment type: {t}, fallback to production")
-            return EnvType.production
-
-    def is_production(self) -> bool:
-        return self == EnvType.production
-
-    def is_development(self) -> bool:
-        return self == EnvType.development
-
-
 def setup_app() -> FastAPI:
-    env = EnvType.from_environment()
     app = FastAPI()
 
-    if env.is_development():
+    if settings.env.is_development():
         # Allow CORS in development mode for nextjs dev server
         app.add_middleware(
             CORSMiddleware,
@@ -59,7 +36,7 @@ def setup_app() -> FastAPI:
     # Needs to be last in register. Because of wildcard route
     app.include_router(root.router)
 
-    app.add_exception_handler(ClanError, clan_error_handler)
+    app.add_exception_handler(Exception, clan_error_handler)
 
     app.mount("/static", StaticFiles(directory=asset_path()), name="static")
 
