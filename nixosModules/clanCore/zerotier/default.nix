@@ -97,11 +97,13 @@ in
         facts.zerotier-ip = { };
         facts.zerotier-meshname = { };
         facts.zerotier-network-id = { };
+        facts.zerotier-subnet = { };
         secrets.zerotier-identity-secret = { };
         generator = ''
           export PATH=${lib.makeBinPath [ config.services.zerotierone.package pkgs.fakeroot ]}
           ${pkgs.python3.interpreter} ${./generate.py} --mode network \
             --ip "$facts/zerotier-ip" \
+            --subnet "$facts/zerotier-subnet" \
             --meshname "$facts/zerotier-meshname" \
             --identity-secret "$secrets/zerotier-identity-secret" \
             --network-id "$facts/zerotier-network-id"
