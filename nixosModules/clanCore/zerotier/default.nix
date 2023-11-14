@@ -52,6 +52,28 @@ in
         zerotier networking id
       '';
     };
+    subnet = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      readOnly = true;
+      default =
+        if cfg.networkId != null then
+          let
+            part0 = builtins.substring 0 2 cfg.networkId;
+            part1 = builtins.substring 2 2 cfg.networkId;
+            part2 = builtins.substring 4 2 cfg.networkId;
+            part3 = builtins.substring 6 2 cfg.networkId;
+            part4 = builtins.substring 8 2 cfg.networkId;
+            part5 = builtins.substring 10 2 cfg.networkId;
+            part6 = builtins.substring 12 2 cfg.networkId;
+            part7 = builtins.substring 14 2 cfg.networkId;
+          in
+          "fd${part0}:${part1}${part2}:${part3}${part4}:${part5}${part6}:${part7}99:93::/88"
+        else
+          null;
+      description = ''
+        zerotier subnet
+      '';
+    };
     controller = {
       enable = lib.mkEnableOption "turn this machine into the networkcontroller";
       public = lib.mkOption {
