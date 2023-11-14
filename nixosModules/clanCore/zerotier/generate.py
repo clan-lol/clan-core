@@ -195,7 +195,6 @@ def main() -> None:
         "--mode", choices=["network", "identity"], required=True, type=str
     )
     parser.add_argument("--ip", type=Path, required=True)
-    parser.add_argument("--subnet", type=Path)
     parser.add_argument("--meshname", type=Path, required=True)
     parser.add_argument("--identity-secret", type=Path, required=True)
     parser.add_argument("--network-id", type=str, required=False)
@@ -219,8 +218,6 @@ def main() -> None:
 
     args.identity_secret.write_text(identity.private)
     args.ip.write_text(ip.compressed)
-    if args.subnet is not None:
-        args.subnet.write_text(ipaddress.ip_network(ip).compressed)
     args.meshname.write_text(meshname)
 
 
