@@ -150,6 +150,7 @@ in
     (lib.mkIf (cfg.controller.enable && config.clanCore.secrets ? zerotier && facts.zerotier-network-id.value != null) {
       clan.networking.zerotier.networkId = facts.zerotier-network-id.value;
       environment.etc."zerotier/network-id".text = facts.zerotier-network-id.value;
+      clan.networking.meshnamed.networks.vpn.subnet = cfg.subnet;
 
       systemd.services.zerotierone.serviceConfig.ExecStartPre = [
         "+${pkgs.writeShellScript "init-zerotier" ''
