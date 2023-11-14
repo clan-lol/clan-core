@@ -30,6 +30,8 @@ async def root(path_name: str) -> Response:
             if not filename.is_file():
                 log.error("File not found: %s", filename)
                 return Response(status_code=404)
+        else:
+            return Response(status_code=404)
 
     content_type, _ = guess_type(filename)
     return Response(filename.read_bytes(), media_type=content_type)
