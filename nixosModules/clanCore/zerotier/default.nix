@@ -67,7 +67,7 @@ in
             part6 = builtins.substring 12 2 cfg.networkId;
             part7 = builtins.substring 14 2 cfg.networkId;
           in
-          "fd${part0}:${part1}${part2}:${part3}${part4}:${part5}${part6}:${part7}99:93::/88"
+          "fd${part0}:${part1}${part2}:${part3}${part4}:${part5}${part6}:${part7}99:9300::/88"
         else
           null;
       description = ''
