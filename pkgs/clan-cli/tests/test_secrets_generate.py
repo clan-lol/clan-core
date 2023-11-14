@@ -36,6 +36,7 @@ def test_generate_secret(
     cli.run(["--flake", str(test_flake_with_core.path), "secrets", "generate", "vm1"])
     has_secret(test_flake_with_core.path, "vm1-age.key")
     has_secret(test_flake_with_core.path, "vm1-zerotier-identity-secret")
+    has_secret(test_flake_with_core.path, "vm1-zerotier-subnet")
     network_id = machine_get_fact(
         test_flake_with_core.name, "vm1", "zerotier-network-id"
     )
