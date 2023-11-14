@@ -11,4 +11,4 @@ from clan_cli.webui.app import app
 def api() -> TestClient:
     # logging.getLogger("httpx").setLevel(level=logging.WARNING)
     logging.getLogger("asyncio").setLevel(logging.INFO)
-    return TestClient(app)
+    return TestClient(app, raise_server_exceptions=False)
