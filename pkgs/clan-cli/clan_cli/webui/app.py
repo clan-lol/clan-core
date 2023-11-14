@@ -1,4 +1,6 @@
 import logging
+import os
+from enum import Enum
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,22 +13,43 @@ from .error_handlers import clan_error_handler
 from .routers import clan_modules, flake, health, machines, root, vms
 from .tags import tags_metadata
 
-origins = [
-    "http://localhost:3000",
-]
 # Logging setup
 log = logging.getLogger(__name__)
 
 
+class EnvType(Enum):
+    production = "production"
+    development = "development"
+
+    @staticmethod
+    def from_environment() -> "EnvType":
+        t = os.environ.get("CLAN_WEBUI_ENV", "production")
+        try:
+            return EnvType[t]
+        except KeyError:
+            log.warning(f"Invalid environment type: {t}, fallback to production")
+            return EnvType.production
+
+    def is_production(self) -> bool:
+        return self == EnvType.production
+
+    def is_development(self) -> bool:
+        return self == EnvType.development
+
+
 def setup_app() -> FastAPI:
+    env = EnvType.from_environment()
     app = FastAPI()
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+
+    if env.is_development():
+        # Allow CORS in development mode for nextjs dev server
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
     app.include_router(clan_modules.router)
     app.include_router(flake.router)
     app.include_router(health.router)
