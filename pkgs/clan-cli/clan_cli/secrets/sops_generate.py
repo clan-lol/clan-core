@@ -43,7 +43,11 @@ def generate_secrets_group(
     needs_regeneration = any(
         not has_secret(flake_dir, f"{machine_name}-{secret['name']}")
         for secret in secrets.values()
+    ) or any(
+        not (flake_dir / fact["path"]).exists()
+        for fact in secret_options["facts"].values()
     )
+
     generator = secret_options["generator"]
     subdir = tempdir / secret_group
     if needs_regeneration:
