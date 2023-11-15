@@ -39,6 +39,8 @@ def test_set_some_option(
         cli = Cli()
         cli.run(
             [
+                "--flake",
+                str(test_flake.path),
                 "config",
                 "--quiet",
                 "--options-file",
@@ -47,7 +49,6 @@ def test_set_some_option(
                 out_file.name,
             ]
             + args
-            + [test_flake.name]
         )
         json_out = json.loads(open(out_file.name).read())
         assert json_out == expected
@@ -61,11 +62,30 @@ def test_configure_machine(
 ) -> None:
     cli = Cli()
 
-    cli.run(["config", "-m", "machine1", "clan.jitsi.enable", "true", test_flake.name])
+    cli.run(
+        [
+            "--flake",
+            str(test_flake.path),
+            "config",
+            "-m",
+            "machine1",
+            "clan.jitsi.enable",
+            "true",
+        ]
+    )
     # clear the output buffer
     capsys.readouterr()
     # read a option value
-    cli.run(["config", "-m", "machine1", "clan.jitsi.enable", test_flake.name])
+    cli.run(
+        [
+            "--flake",
+            str(test_flake.path),
+            "config",
+            "-m",
+            "machine1",
+            "clan.jitsi.enable",
+        ]
+    )
 
     # read the output
     assert capsys.readouterr().out == "true\n"

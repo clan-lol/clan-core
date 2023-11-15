@@ -6,9 +6,9 @@ from fixtures_flakes import FlakeForTest
 @pytest.mark.with_core
 def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     # retrieve the list of available clanModules
-    response = api.get(f"/api/{test_flake_with_core.name}/clan_modules")
+    response = api.get(f"/api/clan_modules?flake_dir={test_flake_with_core.path}")
+    assert response.status_code == 200, response.text
     response_json = response.json()
-    assert response.status_code == 200
     assert isinstance(response_json, dict)
     assert "clan_modules" in response_json
     assert len(response_json["clan_modules"]) > 0

@@ -10,22 +10,18 @@ from fastapi import HTTPException
 
 from clan_cli.dirs import (
     nixpkgs_source,
-    specific_flake_dir,
 )
 from clan_cli.errors import ClanError
 from clan_cli.nix import nix_eval
 
-from ..types import FlakeName
-
 
 def machine_schema(
-    flake_name: FlakeName,
+    flake_dir: Path,
     config: dict,
     clan_imports: Optional[list[str]] = None,
 ) -> dict:
-    flake = specific_flake_dir(flake_name)
     # use nix eval to lib.evalModules .#nixosConfigurations.<machine_name>.options.clan
-    with NamedTemporaryFile(mode="w", dir=flake) as clan_machine_settings_file:
+    with NamedTemporaryFile(mode="w", dir=flake_dir) as clan_machine_settings_file:
         env = os.environ.copy()
         if clan_imports is not None:
             config["clanImports"] = clan_imports
@@ -43,9 +39,8 @@ def machine_schema(
                     f"""
                     let
                         b = builtins;
-                        # hardcoding system for now, not sure where to get it from
-                        system = "x86_64-linux";
-                        flake = b.getFlake (toString {flake});
+                        system = b.currentSystem;
+                        flake = b.getFlake (toString {flake_dir});
                         clan-core = flake.inputs.clan-core;
                         config = b.fromJSON (b.readFile (b.getEnv "CLAN_MACHINE_SETTINGS_FILE"));
                         modules_not_found =
@@ -59,7 +54,7 @@ def machine_schema(
             ),
             capture_output=True,
             text=True,
-            cwd=flake,
+            cwd=flake_dir,
             env=env,
         )
         if proc.returncode != 0:
@@ -86,9 +81,8 @@ def machine_schema(
                     "--expr",
                     f"""
                     let
-                        # hardcoding system for now, not sure where to get it from
-                        system = "x86_64-linux";
-                        flake = builtins.getFlake (toString {flake});
+                        system = builtins.currentSystem;
+                        flake = builtins.getFlake (toString {flake_dir});
                         clan-core = flake.inputs.clan-core;
                         nixpkgsSrc = flake.inputs.nixpkgs or {nixpkgs_source()};
                         lib = import (nixpkgsSrc + /lib);
@@ -115,7 +109,7 @@ def machine_schema(
             ),
             capture_output=True,
             text=True,
-            cwd=flake,
+            cwd=flake_dir,
             env=env,
         )
     if proc.returncode != 0:

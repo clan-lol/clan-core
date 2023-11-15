@@ -41,7 +41,7 @@ def test_upload_secret(
     subprocess.run(nix_shell(["pass"], ["pass", "init", "test@local"]), check=True)
     cli.run(["secrets", "generate", "vm1"])
     network_id = machine_get_fact(
-        test_flake_with_core_and_pass.name, "vm1", "zerotier-network-id"
+        test_flake_with_core_and_pass.path, "vm1", "zerotier-network-id"
     )
     assert len(network_id) == 16
     identity_secret = (

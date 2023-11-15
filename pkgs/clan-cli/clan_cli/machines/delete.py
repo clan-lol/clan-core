@@ -15,9 +15,4 @@ def delete_command(args: argparse.Namespace) -> None:
 
 def register_delete_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("host", type=str)
-    parser.add_argument(
-        "flake",
-        type=str,
-        help="name of the flake to create machine for",
-    )
     parser.set_defaults(func=delete_command)

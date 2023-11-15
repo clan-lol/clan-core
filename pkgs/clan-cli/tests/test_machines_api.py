@@ -3,19 +3,20 @@ from api import TestClient
 from fixtures_flakes import FlakeForTest
 
 
-def test_create_and_list(api: TestClient, test_flake: FlakeForTest) -> None:
-    response = api.get(f"/api/{test_flake.name}/machines")
+def test_machines(api: TestClient, test_flake: FlakeForTest) -> None:
+    response = api.get(f"/api/machines?flake_dir={test_flake.path}")
     assert response.status_code == 200
     assert response.json() == {"machines": []}
-
-    response = api.put(f"/api/{test_flake.name}/machines/test/config", json=dict())
+    response = api.put(
+        f"/api/machines/test/config?flake_dir={test_flake.path}", json={}
+    )
     assert response.status_code == 200
 
-    response = api.get(f"/api/{test_flake.name}/machines/test")
+    response = api.get(f"/api/machines/test?flake_dir={test_flake.path}")
     assert response.status_code == 200
     assert response.json() == {"machine": {"name": "test", "status": "unknown"}}
 
-    response = api.get(f"/api/{test_flake.name}/machines")
+    response = api.get(f"/api/machines?flake_dir={test_flake.path}")
     assert response.status_code == 200
     assert response.json() == {"machines": [{"name": "test", "status": "unknown"}]}
 
@@ -24,7 +25,7 @@ def test_create_and_list(api: TestClient, test_flake: FlakeForTest) -> None:
 def test_schema_errors(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     # make sure that eval errors do not raise an internal server error
     response = api.put(
-        f"/api/{test_flake_with_core.name}/schema",
+        f"/api/schema?flake_dir={test_flake_with_core.path}",
         json={"imports": ["some-invalid-import"]},
     )
     assert response.status_code == 422
@@ -39,7 +40,7 @@ def test_schema_invalid_clan_imports(
     api: TestClient, test_flake_with_core: FlakeForTest
 ) -> None:
     response = api.put(
-        f"/api/{test_flake_with_core.name}/schema",
+        f"/api/schema?flake_dir={test_flake_with_core.path}",
         json={"clanImports": ["non-existing-clan-module"]},
     )
     assert response.status_code == 400
@@ -54,7 +55,8 @@ def test_create_machine_invalid_hostname(
     api: TestClient, test_flake: FlakeForTest
 ) -> None:
     response = api.put(
-        f"/api/{test_flake.name}/machines/-invalid-hostname/config", json=dict()
+        f"/api/machines/-invalid-hostname/config?flake_dir={test_flake.path}",
+        json=dict(),
     )
     assert response.status_code == 422
     assert (
@@ -67,7 +69,7 @@ def test_verify_config_without_machine(
     api: TestClient, test_flake_with_core: FlakeForTest
 ) -> None:
     response = api.put(
-        f"/api/{test_flake_with_core.name}/machines/test/verify",
+        f"/api/machines/test/verify?flake_dir={test_flake_with_core.path}",
         json=dict(),
     )
     assert response.status_code == 200
@@ -79,12 +81,14 @@ def test_ensure_empty_config_is_valid(
     api: TestClient, test_flake_with_core: FlakeForTest
 ) -> None:
     response = api.put(
-        f"/api/{test_flake_with_core.name}/machines/test/config",
+        f"/api/machines/test/config?flake_dir={test_flake_with_core.path}",
         json=dict(),
     )
     assert response.status_code == 200
 
-    response = api.get(f"/api/{test_flake_with_core.name}/machines/test/verify")
+    response = api.get(
+        f"/api/machines/test/verify?flake_dir={test_flake_with_core.path}"
+    )
     assert response.status_code == 200
     assert response.json() == {"success": True, "error": None}
 
@@ -92,17 +96,21 @@ def test_ensure_empty_config_is_valid(
 @pytest.mark.with_core
 def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     # ensure error 404 if machine does not exist when accessing the config
-    response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
+    response = api.get(
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}"
+    )
     assert response.status_code == 404
 
     # create the machine
     response = api.put(
-        f"/api/{test_flake_with_core.name}/machines/machine1/config", json={}
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}", json={}
     )
     assert response.status_code == 200
 
     # ensure an empty config is returned by default for a new machine
-    response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
+    response = api.get(
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}"
+    )
     assert response.status_code == 200
     assert response.json() == {
         "clanImports": [],
@@ -111,7 +119,7 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
 
     # get jsonschema for without imports
     response = api.put(
-        f"/api/{test_flake_with_core.name}/schema",
+        f"/api/schema?flake_dir={test_flake_with_core.path}",
         json={"clanImports": []},
     )
     assert response.status_code == 200
@@ -133,7 +141,7 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
 
     # verify an invalid config (foo option does not exist)
     response = api.put(
-        f"/api/{test_flake_with_core.name}/machines/machine1/verify",
+        f"/api/machines/machine1/verify?flake_dir={test_flake_with_core.path}",
         json=invalid_config,
     )
     assert response.status_code == 200
@@ -141,13 +149,15 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
 
     # set come invalid config (foo option does not exist)
     response = api.put(
-        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}",
         json=invalid_config,
     )
     assert response.status_code == 200
 
     # ensure the config has actually been updated
-    response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
+    response = api.get(
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}"
+    )
     assert response.status_code == 200
     assert response.json() == dict(clanImports=[], **invalid_config)
 
@@ -162,20 +172,22 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
     )
 
     response = api.put(
-        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}",
         json=config2,
     )
     assert response.status_code == 200
 
     # ensure the config has been applied
     response = api.get(
-        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}",
     )
     assert response.status_code == 200
     assert response.json() == dict(clanImports=[], **config2)
 
     # get the config again
-    response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/config")
+    response = api.get(
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}"
+    )
     assert response.status_code == 200
     assert response.json() == {"clanImports": [], **config2}
 
@@ -183,27 +195,29 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
     # For example, this should not result in the boot.loader.grub.devices being
     #   set twice (eg. merged)
     response = api.put(
-        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}",
         json=config2,
     )
     assert response.status_code == 200
 
     # ensure the config has been applied
     response = api.get(
-        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}",
     )
     assert response.status_code == 200
     assert response.json() == dict(clanImports=[], **config2)
 
     # verify the machine config evaluates
-    response = api.get(f"/api/{test_flake_with_core.name}/machines/machine1/verify")
+    response = api.get(
+        f"/api/machines/machine1/verify?flake_dir={test_flake_with_core.path}"
+    )
     assert response.status_code == 200
 
     assert response.json() == {"success": True, "error": None}
 
     # get the schema with an extra module imported
     response = api.put(
-        f"/api/{test_flake_with_core.name}/schema",
+        f"/api/schema?flake_dir={test_flake_with_core.path}",
         json={"clanImports": ["diskLayouts"]},
     )
     # expect the result schema to contain the deltachat option
@@ -227,14 +241,14 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
 
     # set the fake-module.fake-flag option to true
     response = api.put(
-        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}",
         json=config_with_imports,
     )
     assert response.status_code == 200
 
     # ensure the config has been applied
     response = api.get(
-        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}",
     )
     assert response.status_code == 200
     assert response.json() == {
@@ -248,7 +262,7 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
 
     # remove the import from the config
     response = api.put(
-        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}",
         json=dict(
             clanImports=[],
         ),
@@ -257,7 +271,7 @@ def test_configure_machine(api: TestClient, test_flake_with_core: FlakeForTest) 
 
     # ensure the config has been applied
     response = api.get(
-        f"/api/{test_flake_with_core.name}/machines/machine1/config",
+        f"/api/machines/machine1/config?flake_dir={test_flake_with_core.path}",
     )
     assert response.status_code == 200
     assert response.json() == {

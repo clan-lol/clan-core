@@ -1,6 +1,7 @@
 import argparse
 import logging
 import sys
+from pathlib import Path
 from types import ModuleType
 from typing import Any, Optional, Sequence
 
@@ -57,7 +58,8 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     parser.add_argument(
         "--flake",
         help="path to the flake where the clan resides in",
-        default=None,
+        default=get_clan_flake_toplevel(),
+        type=Path,
     )
 
     subparsers = parser.add_subparsers()
@@ -93,8 +95,6 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     if argcomplete:
         argcomplete.autocomplete(parser)
 
-    if len(sys.argv) == 1:
-        parser.print_help()
     return parser
 
 
@@ -103,12 +103,12 @@ def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
 
+    if len(sys.argv) == 1:
+        parser.print_help()
+
     if args.debug:
         setup_logging(logging.DEBUG)
         log.debug("Debug log activated")
-
-    if args.flake is None:
-        args.flake = get_clan_flake_toplevel()
 
     if not hasattr(args, "func"):
         return

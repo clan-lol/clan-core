@@ -4,9 +4,6 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from .errors import ClanError
-from .types import FlakeName
-
 log = logging.getLogger(__name__)
 
 
@@ -15,10 +12,7 @@ def get_clan_flake_toplevel() -> Optional[Path]:
 
 
 def find_git_repo_root() -> Optional[Path]:
-    try:
-        return find_toplevel([".git"])
-    except ClanError:
-        return None
+    return find_toplevel([".git"])
 
 
 def find_toplevel(top_level_files: list[str]) -> Optional[Path]:
@@ -42,35 +36,16 @@ def user_config_dir() -> Path:
         return Path(os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config")))
 
 
-def clan_config_dir() -> Path:
-    path = user_config_dir() / "clan"
-    path.mkdir(parents=True, exist_ok=True)
-    return path.resolve()
+def machines_dir(flake_dir: Path) -> Path:
+    return flake_dir / "machines"
 
 
-def clan_flakes_dir() -> Path:
-    path = clan_config_dir() / "flakes"
-    path.mkdir(parents=True, exist_ok=True)
-    return path.resolve()
+def specific_machine_dir(flake_dir: Path, machine: str) -> Path:
+    return machines_dir(flake_dir) / machine
 
 
-def specific_flake_dir(flake_name: FlakeName) -> Path:
-    flake_dir = clan_flakes_dir() / flake_name
-    if not flake_dir.exists():
-        raise ClanError(f"Flake '{flake_name}' does not exist in {clan_flakes_dir()}")
-    return flake_dir
-
-
-def machines_dir(flake_name: FlakeName) -> Path:
-    return specific_flake_dir(flake_name) / "machines"
-
-
-def specific_machine_dir(flake_name: FlakeName, machine: str) -> Path:
-    return machines_dir(flake_name) / machine
-
-
-def machine_settings_file(flake_name: FlakeName, machine: str) -> Path:
-    return specific_machine_dir(flake_name, machine) / "settings.json"
+def machine_settings_file(flake_dir: Path, machine: str) -> Path:
+    return specific_machine_dir(flake_dir, machine) / "settings.json"
 
 
 def module_root() -> Path:

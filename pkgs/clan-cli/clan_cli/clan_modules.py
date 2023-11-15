@@ -1,20 +1,17 @@
 import json
 import subprocess
+from pathlib import Path
 from typing import Optional
 
 from clan_cli.nix import nix_eval
 
-from .dirs import specific_flake_dir
-from .types import FlakeName
-
 
 def get_clan_module_names(
-    flake_name: FlakeName,
+    flake_dir: Path,
 ) -> tuple[list[str], Optional[str]]:
     """
     Get the list of clan modules from the clan-core flake input
     """
-    flake = specific_flake_dir(flake_name)
     proc = subprocess.run(
         nix_eval(
             [
@@ -23,7 +20,7 @@ def get_clan_module_names(
                 "--expr",
                 f"""
         let
-            flake = builtins.getFlake (toString {flake});
+            flake = builtins.getFlake (toString {flake_dir});
         in
             builtins.attrNames flake.inputs.clan-core.clanModules
         """,
@@ -31,7 +28,7 @@ def get_clan_module_names(
         ),
         capture_output=True,
         text=True,
-        cwd=flake,
+        cwd=flake_dir,
     )
     if proc.returncode != 0:
         return [], proc.stderr
