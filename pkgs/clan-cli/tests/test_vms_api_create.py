@@ -10,8 +10,6 @@ from httpx import SyncByteStream
 from pydantic import AnyUrl
 from root import CLAN_CORE
 
-from clan_cli.types import FlakeName
-
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
@@ -23,7 +21,7 @@ def flake_with_vm_with_secrets(
     yield from create_flake(
         monkeypatch,
         temporary_home,
-        FlakeName("test_flake_with_core_dynamic_machines"),
+        "test_flake_with_core_dynamic_machines",
         CLAN_CORE,
         machines=["vm_with_secrets"],
     )
@@ -36,7 +34,7 @@ def remote_flake_with_vm_without_secrets(
     yield from create_flake(
         monkeypatch,
         temporary_home,
-        FlakeName("test_flake_with_core_dynamic_machines"),
+        "test_flake_with_core_dynamic_machines",
         CLAN_CORE,
         machines=["vm_without_secrets"],
         remote=True,

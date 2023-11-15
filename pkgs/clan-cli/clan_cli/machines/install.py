@@ -3,14 +3,12 @@ import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from ..dirs import specific_flake_dir
 from ..machines.machines import Machine
 from ..nix import nix_shell
 from ..secrets.generate import generate_secrets
-from ..types import FlakeName
 
 
-def install_nixos(machine: Machine, flake_name: FlakeName) -> None:
+def install_nixos(machine: Machine) -> None:
     h = machine.host
     target_host = f"{h.user or 'root'}@{h.host}"
 
@@ -41,10 +39,10 @@ def install_nixos(machine: Machine, flake_name: FlakeName) -> None:
 
 
 def install_command(args: argparse.Namespace) -> None:
-    machine = Machine(args.machine, flake_dir=specific_flake_dir(args.flake))
+    machine = Machine(args.machine, flake_dir=args.flake)
     machine.deployment_address = args.target_host
 
-    install_nixos(machine, args.flake)
+    install_nixos(machine)
 
 
 def register_install_parser(parser: argparse.ArgumentParser) -> None:
@@ -57,10 +55,5 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         "target_host",
         type=str,
         help="ssh address to install to in the form of user@host:2222",
-    )
-    parser.add_argument(
-        "flake",
-        type=str,
-        help="name of the flake to install machine from",
     )
     parser.set_defaults(func=install_command)

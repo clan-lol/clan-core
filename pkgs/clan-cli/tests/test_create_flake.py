@@ -6,7 +6,6 @@ import pytest
 from api import TestClient
 from cli import Cli
 
-from clan_cli.dirs import clan_flakes_dir
 from clan_cli.flakes.create import DEFAULT_URL
 
 
@@ -19,13 +18,11 @@ def cli() -> Cli:
 def test_create_flake_api(
     monkeypatch: pytest.MonkeyPatch, api: TestClient, temporary_home: Path
 ) -> None:
-    monkeypatch.chdir(clan_flakes_dir())
-    flake_name = "flake_dir"
-    flake_dir = clan_flakes_dir() / flake_name
+    flake_dir = temporary_home / "test-flake"
     response = api.post(
-        "/api/flake/create",
+        f"/api/flake/create?flake_dir={flake_dir}",
         json=dict(
-            flake_name=str(flake_dir),
+            flake_dir=str(flake_dir),
             url=str(DEFAULT_URL),
         ),
     )
@@ -42,17 +39,15 @@ def test_create_flake(
     temporary_home: Path,
     cli: Cli,
 ) -> None:
-    monkeypatch.chdir(clan_flakes_dir())
-    flake_name = "flake_dir"
-    flake_dir = clan_flakes_dir() / flake_name
+    flake_dir = temporary_home / "test-flake"
 
-    cli.run(["flakes", "create", flake_name])
+    cli.run(["flakes", "create", str(flake_dir)])
     assert (flake_dir / ".clan-flake").exists()
     monkeypatch.chdir(flake_dir)
-    cli.run(["machines", "create", "machine1", flake_name])
+    cli.run(["machines", "create", "machine1"])
     capsys.readouterr()  # flush cache
 
-    cli.run(["machines", "list", flake_name])
+    cli.run(["machines", "list"])
     assert "machine1" in capsys.readouterr().out
     flake_show = subprocess.run(
         ["nix", "flake", "show", "--json"],
@@ -67,9 +62,7 @@ def test_create_flake(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
     # configure machine1
     capsys.readouterr()
-    cli.run(
-        ["config", "--machine", "machine1", "services.openssh.enable", "", flake_name]
-    )
+    cli.run(["config", "--machine", "machine1", "services.openssh.enable", ""])
     capsys.readouterr()
     cli.run(
         [
@@ -78,6 +71,5 @@ def test_create_flake(
             "machine1",
             "services.openssh.enable",
             "true",
-            flake_name,
         ]
     )

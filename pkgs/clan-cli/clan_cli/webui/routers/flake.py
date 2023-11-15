@@ -13,12 +13,11 @@ from clan_cli.webui.api_outputs import (
     FlakeAction,
     FlakeAttrResponse,
     FlakeCreateResponse,
-    FlakeListResponse,
     FlakeResponse,
 )
 
 from ...async_cmd import run
-from ...flakes import create, list_flakes
+from ...flakes import create
 from ...nix import nix_command, nix_flake_show
 from ..tags import Tags
 
@@ -78,23 +77,17 @@ async def inspect_flake(
     return FlakeResponse(content=content, actions=actions)
 
 
-@router.get("/api/flake/list", tags=[Tags.flake])
-async def list_all_flakes() -> FlakeListResponse:
-    flakes = list_flakes.list_flakes()
-    return FlakeListResponse(flakes=flakes)
-
-
 @router.post(
     "/api/flake/create", tags=[Tags.flake], status_code=status.HTTP_201_CREATED
 )
 async def create_flake(
-    args: Annotated[FlakeCreateInput, Body()],
+    flake_dir: Path, args: Annotated[FlakeCreateInput, Body()]
 ) -> FlakeCreateResponse:
-    if args.flake_name.exists():
+    if flake_dir.exists():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Flake already exists",
         )
 
-    cmd_out = await create.create_flake(args.flake_name, args.url)
+    cmd_out = await create.create_flake(flake_dir, args.url)
     return FlakeCreateResponse(cmd_out=cmd_out)
