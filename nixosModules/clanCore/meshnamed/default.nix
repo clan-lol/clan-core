@@ -65,8 +65,9 @@ in
           (builtins.attrValues config.clan.networking.meshnamed.networks);
       in
       {
-        after = [ "network.target" "sys-devices-virtual-net-meshnamed.device" ];
-        bindsTo = [ "sys-devices-virtual-net-meshnamed.device" ];
+        # fix container test
+        after = [ "network.target" ] ++ lib.optional config.boot.isContainer "sys-devices-virtual-net-meshnamed.device";
+        bindsTo = lib.optional (!config.boot.isContainer) "sys-devices-virtual-net-meshnamed.device";
         wantedBy = [ "multi-user.target" ];
         serviceConfig = {
           Type = "simple";
