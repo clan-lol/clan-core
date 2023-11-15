@@ -13,7 +13,6 @@ from pydantic.tools import parse_obj_as
 from root import CLAN_CORE
 
 from clan_cli.dirs import nixpkgs_source
-from clan_cli.types import FlakeName
 
 log = logging.getLogger(__name__)
 
@@ -36,14 +35,13 @@ def substitute(
 
 
 class FlakeForTest(NamedTuple):
-    name: FlakeName
     path: Path
 
 
 def create_flake(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
-    flake_name: FlakeName,
+    flake_name: str,
     clan_core_flake: Path | None = None,
     machines: list[str] = [],
     remote: bool = False,
@@ -55,7 +53,7 @@ def create_flake(
     template = Path(__file__).parent / flake_name
 
     # copy the template to a new temporary location
-    flake = temporary_home / ".config/clan/flakes" / flake_name
+    flake = temporary_home / flake_name
     shutil.copytree(template, flake)
 
     # lookup the requested machines in ./test_machines and include them
@@ -91,16 +89,16 @@ def create_flake(
 
     if remote:
         with tempfile.TemporaryDirectory():
-            yield FlakeForTest(flake_name, flake)
+            yield FlakeForTest(flake)
     else:
-        yield FlakeForTest(flake_name, flake)
+        yield FlakeForTest(flake)
 
 
 @pytest.fixture
 def test_flake(
     monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
-    yield from create_flake(monkeypatch, temporary_home, FlakeName("test_flake"))
+    yield from create_flake(monkeypatch, temporary_home, "test_flake")
 
 
 @pytest.fixture
@@ -114,7 +112,7 @@ def test_flake_with_core(
     yield from create_flake(
         monkeypatch,
         temporary_home,
-        FlakeName("test_flake_with_core"),
+        "test_flake_with_core",
         CLAN_CORE,
     )
 
@@ -140,6 +138,6 @@ def test_flake_with_core_and_pass(
     yield from create_flake(
         monkeypatch,
         temporary_home,
-        FlakeName("test_flake_with_core_and_pass"),
+        "test_flake_with_core_and_pass",
         CLAN_CORE,
     )

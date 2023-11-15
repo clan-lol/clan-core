@@ -1,5 +1,6 @@
 # Logging setup
 import logging
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Body
@@ -15,7 +16,6 @@ from ...config.machine import (
 )
 from ...config.schema import machine_schema
 from ...machines.list import list_machines as _list_machines
-from ...types import FlakeName
 from ..api_outputs import (
     ConfigResponse,
     Machine,
@@ -31,66 +31,62 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/api/{flake_name}/machines", tags=[Tags.machine])
-async def list_machines(flake_name: FlakeName) -> MachinesResponse:
+@router.get("/api/machines", tags=[Tags.machine])
+async def list_machines(flake_dir: Path) -> MachinesResponse:
     machines = []
-    for m in _list_machines(flake_name):
+    for m in _list_machines(flake_dir):
         machines.append(Machine(name=m, status=Status.UNKNOWN))
 
     return MachinesResponse(machines=machines)
 
 
-@router.get("/api/{flake_name}/machines/{name}", tags=[Tags.machine])
-async def get_machine(flake_name: FlakeName, name: str) -> MachineResponse:
+@router.get("/api/machines/{name}", tags=[Tags.machine])
+async def get_machine(flake_dir: Path, name: str) -> MachineResponse:
     log.error("TODO")
     return MachineResponse(machine=Machine(name=name, status=Status.UNKNOWN))
 
 
-@router.get("/api/{flake_name}/machines/{name}/config", tags=[Tags.machine])
-async def get_machine_config(flake_name: FlakeName, name: str) -> ConfigResponse:
-    config = config_for_machine(flake_name, name)
+@router.get("/api/machines/{name}/config", tags=[Tags.machine])
+async def get_machine_config(flake_dir: Path, name: str) -> ConfigResponse:
+    config = config_for_machine(flake_dir, name)
     return ConfigResponse(**config)
 
 
-@router.put("/api/{flake_name}/machines/{name}/config", tags=[Tags.machine])
-async def put_machine(
-    flake_name: FlakeName, name: str, config: Annotated[MachineConfig, Body()]
+@router.put("/api/machines/{name}/config", tags=[Tags.machine])
+async def set_machine_config(
+    flake_dir: Path, name: str, config: Annotated[MachineConfig, Body()]
 ) -> None:
-    """
-    Set the config for a machine.
-    Creates the machine if it doesn't yet exist.
-    """
     conf = jsonable_encoder(config)
-    set_config_for_machine(flake_name, name, conf)
+    set_config_for_machine(flake_dir, name, conf)
 
 
 @router.put(
-    "/api/{flake_name}/schema",
+    "/api/schema",
     tags=[Tags.machine],
     responses={400: {"model": MissingClanImports}},
 )
 async def get_machine_schema(
-    flake_name: FlakeName, config: Annotated[MachineConfig, Body()]
+    flake_dir: Path, config: Annotated[dict, Body()]
 ) -> SchemaResponse:
-    schema = machine_schema(flake_name, config=dict(config))
+    schema = machine_schema(flake_dir, config=config)
     return SchemaResponse(schema=schema)
 
 
-@router.get("/api/{flake_name}/machines/{name}/verify", tags=[Tags.machine])
+@router.get("/api/machines/{name}/verify", tags=[Tags.machine])
 async def get_verify_machine_config(
-    flake_name: FlakeName, name: str
+    flake_dir: Path, name: str
 ) -> VerifyMachineResponse:
-    error = verify_machine_config(flake_name, name)
+    error = verify_machine_config(flake_dir, name)
     success = error is None
     return VerifyMachineResponse(success=success, error=error)
 
 
-@router.put("/api/{flake_name}/machines/{name}/verify", tags=[Tags.machine])
+@router.put("/api/machines/{name}/verify", tags=[Tags.machine])
 async def put_verify_machine_config(
-    flake_name: FlakeName,
+    flake_dir: Path,
     name: str,
     config: Annotated[dict, Body()],
 ) -> VerifyMachineResponse:
-    error = verify_machine_config(flake_name, name, config)
+    error = verify_machine_config(flake_dir, name, config)
     success = error is None
     return VerifyMachineResponse(success=success, error=error)

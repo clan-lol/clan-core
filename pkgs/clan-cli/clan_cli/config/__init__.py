@@ -10,11 +10,10 @@ import sys
 from pathlib import Path
 from typing import Any, Optional, Tuple, get_origin
 
-from clan_cli.dirs import machine_settings_file, specific_flake_dir
+from clan_cli.dirs import machine_settings_file
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
-from clan_cli.types import FlakeName
 
 script_dir = Path(__file__).parent
 
@@ -108,9 +107,9 @@ def cast(value: Any, type: Any, opt_description: str) -> Any:
 
 
 def options_for_machine(
-    flake_name: FlakeName, machine_name: str, show_trace: bool = False
+    flake_dir: Path, machine_name: str, show_trace: bool = False
 ) -> dict:
-    clan_dir = specific_flake_dir(flake_name)
+    clan_dir = flake_dir
     flags = []
     if show_trace:
         flags.append("--show-trace")
@@ -131,9 +130,9 @@ def options_for_machine(
 
 
 def read_machine_option_value(
-    flake_name: FlakeName, machine_name: str, option: str, show_trace: bool = False
+    flake_dir: Path, machine_name: str, option: str, show_trace: bool = False
 ) -> str:
-    clan_dir = specific_flake_dir(flake_name)
+    clan_dir = flake_dir
     # use nix eval to read from .#nixosConfigurations.default.config.{option}
     # this will give us the evaluated config with the options attribute
     cmd = nix_eval(
@@ -177,12 +176,12 @@ def get_or_set_option(args: argparse.Namespace) -> None:
                 options = json.load(f)
         # compute settings json file location
         if args.settings_file is None:
-            settings_file = machine_settings_file(args.flake, args.machine)
+            settings_file = machine_settings_file(Path(args.flake), args.machine)
         else:
             settings_file = args.settings_file
         # set the option with the given value
         set_option(
-            flake_name=args.flake,
+            flake_dir=Path(args.flake),
             option=args.option,
             value=args.value,
             options=options,
@@ -248,7 +247,7 @@ def find_option(
 
 
 def set_option(
-    flake_name: FlakeName,
+    flake_dir: Path,
     option: str,
     value: Any,
     options: dict,
@@ -298,10 +297,10 @@ def set_option(
         json.dump(new_config, f, indent=2)
         print(file=f)  # add newline at the end of the file to make git happy
 
-    if settings_file.resolve().is_relative_to(specific_flake_dir(flake_name)):
+    if settings_file.resolve().is_relative_to(flake_dir):
         commit_file(
             settings_file,
-            repo_dir=specific_flake_dir(flake_name),
+            repo_dir=flake_dir,
             commit_message=f"Set option {option_description}",
         )
 
@@ -359,11 +358,6 @@ def register_parser(
         # force this arg to be set
         nargs="*",
         help="option value to set (if omitted, the current value is printed)",
-    )
-    parser.add_argument(
-        "flake",
-        type=str,
-        help="name of the flake to set machine options for",
     )
 
 

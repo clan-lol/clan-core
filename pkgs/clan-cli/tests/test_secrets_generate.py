@@ -38,7 +38,7 @@ def test_generate_secret(
     has_secret(test_flake_with_core.path, "vm1-zerotier-identity-secret")
     has_secret(test_flake_with_core.path, "vm1-zerotier-subnet")
     network_id = machine_get_fact(
-        test_flake_with_core.name, "vm1", "zerotier-network-id"
+        test_flake_with_core.path, "vm1", "zerotier-network-id"
     )
     assert len(network_id) == 16
     secrets_folder = sops_secrets_folder(test_flake_with_core.path)
@@ -59,7 +59,7 @@ def test_generate_secret(
     cli.run(["secrets", "generate", "vm2"])
     assert has_secret(test_flake_with_core.path, "vm2-age.key")
     assert has_secret(test_flake_with_core.path, "vm2-zerotier-identity-secret")
-    ip = machine_get_fact(test_flake_with_core.name, "vm1", "zerotier-ip")
+    ip = machine_get_fact(test_flake_with_core.path, "vm1", "zerotier-ip")
     assert ipaddress.IPv6Address(ip).is_private
-    meshname = machine_get_fact(test_flake_with_core.name, "vm1", "zerotier-meshname")
+    meshname = machine_get_fact(test_flake_with_core.path, "vm1", "zerotier-meshname")
     assert len(meshname) == 26
