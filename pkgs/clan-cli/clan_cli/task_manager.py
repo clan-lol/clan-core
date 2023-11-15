@@ -38,6 +38,7 @@ class Command:
         cmd: list[str],
         env: Optional[dict[str, str]] = None,
         cwd: Optional[Path] = None,
+        name: str = "command",
     ) -> None:
         self.running = True
         self.log.debug(f"Command: {shlex.join(cmd)}")
@@ -70,11 +71,10 @@ class Command:
             for fd in rlist:
                 try:
                     for line in fd:
+                        self.log.debug(f"[{name}] {line.rstrip()}")
                         if fd == self.p.stderr:
-                            self.log.debug(f"[{cmd}] stderr: {line}")
                             self.stderr.append(line)
                         else:
-                            self.log.debug(f"[{cmd}] stdout: {line}")
                             self.stdout.append(line)
                         self._output.put(line)
                 except BlockingIOError:
