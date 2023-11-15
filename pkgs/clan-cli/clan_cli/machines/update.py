@@ -148,12 +148,6 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         default=[],
     )
     parser.add_argument(
-        "--flake",
-        type=str,
-        help="name of the flake to update machine for",
-        default=None,
-    )
-    parser.add_argument(
         "--target-host",
         type=str,
         help="address of the machine to update, in the format of user@host:1234",
