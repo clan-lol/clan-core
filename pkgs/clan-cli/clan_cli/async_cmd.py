@@ -57,8 +57,7 @@ def runforcli(
     try:
         res = asyncio.run(func(*args))
 
-        for i in res.items():
-            name, out = i
+        for name, out in res.items():
             if out.stderr:
                 print(f"{name}: {out.stderr}", end="")
             if out.stdout:

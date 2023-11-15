@@ -2,7 +2,6 @@ import argparse
 import asyncio
 import json
 import os
-import re
 import shlex
 import sys
 import tempfile
@@ -10,17 +9,9 @@ from pathlib import Path
 from typing import Iterator
 from uuid import UUID
 
-from ..dirs import clan_flakes_dir, specific_flake_dir
 from ..nix import nix_build, nix_config, nix_eval, nix_shell
 from ..task_manager import BaseTask, Command, create_task
-from ..types import validate_path
 from .inspect import VmConfig, inspect_vm
-
-
-def is_flake_url(s: str) -> bool:
-    if re.match(r"^http.?://[a-zA-Z0-9.-]+/[a-zA-Z0-9.-]+", s) is not None:
-        return True
-    return False
 
 
 class BuildVmTask(BaseTask):
@@ -72,8 +63,7 @@ class BuildVmTask(BaseTask):
 
         self.log.debug(f"Building VM for clan name: {clan_name}")
 
-        flake_dir = clan_flakes_dir() / clan_name
-        validate_path(clan_flakes_dir(), flake_dir)
+        flake_dir = Path(self.vm.flake_url)
         flake_dir.mkdir(exist_ok=True)
 
         with tempfile.TemporaryDirectory() as tmpdir_:
@@ -93,7 +83,7 @@ class BuildVmTask(BaseTask):
             env["SECRETS_DIR"] = str(secrets_dir)
 
             # Only generate secrets for local clans
-            if not is_flake_url(str(self.vm.flake_url)):
+            if isinstance(self.vm.flake_url, Path) and self.vm.flake_url.is_dir():
                 cmd = next(cmds)
                 if Path(self.vm.flake_url).is_dir():
                     cmd.run(
@@ -200,9 +190,7 @@ def create_vm(vm: VmConfig, nix_options: list[str] = []) -> BuildVmTask:
 
 
 def create_command(args: argparse.Namespace) -> None:
-    flake_url = args.flake
-    if not is_flake_url(str(args.flake)):
-        flake_url = specific_flake_dir(args.flake)
+    flake_url = args.flake_url or args.flake
     vm = asyncio.run(inspect_vm(flake_url=flake_url, flake_attr=args.machine))
 
     task = create_vm(vm, args.option)
@@ -212,4 +200,5 @@ def create_command(args: argparse.Namespace) -> None:
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("machine", type=str, help="machine in the flake to create")
+    parser.add_argument("--flake_url", type=str, help="flake url")
     parser.set_defaults(func=create_command)
