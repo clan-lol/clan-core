@@ -91,8 +91,11 @@ in
       # having to re-import nixpkgs.
       services.zerotierone.package = lib.mkDefault (pkgs.zerotierone.overrideAttrs (_old: { meta = { }; }));
     })
-    (lib.mkIf (facts ? zerotier-meshname && (facts.zerotier-meshname.value or null) != null) {
+    (lib.mkIf ((facts.zerotier-meshname.value or null) != null) {
       environment.etc."zerotier/hostname".text = "${facts.zerotier-meshname.value}.vpn";
+    })
+    (lib.mkIf ((facts.zerotier-ip.value or null) != null) {
+      environment.etc."zerotier/ip".text = facts.zerotier-ip.value;
     })
     (lib.mkIf (cfg.networkId != null) {
       clan.networking.meshnamed.networks.vpn.subnet = cfg.subnet;
@@ -100,10 +103,23 @@ in
       systemd.network.networks."09-zerotier" = {
         matchConfig.Name = "zt*";
         networkConfig = {
+          LLMNR = true;
+          LLDP = true;
           MulticastDNS = true;
-          Address = [ "${facts.zerotier-ip.value}/88" ];
+          KeepConfiguration = "static";
         };
       };
+
+      systemd.services.zerotierone.serviceConfig.ExecStartPre = [
+        "+${pkgs.writeShellScript "init-zerotier" ''
+           cp ${config.clanCore.secrets.zerotier.secrets.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+
+           ${lib.optionalString (cfg.controller.enable) ''
+             mkdir -p /var/lib/zerotier-one/controller.d/network
+             ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON networkConfig)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
+           ''}
+         ''}"
+      ];
 
       networking.firewall.interfaces."zt+".allowedTCPPorts = [ 5353 ]; # mdns
       networking.firewall.interfaces."zt+".allowedUDPPorts = [ 5353 ]; # mdns
@@ -153,14 +169,6 @@ in
     (lib.mkIf (cfg.controller.enable && (facts.zerotier-network-id.value or null) != null) {
       clan.networking.zerotier.networkId = facts.zerotier-network-id.value;
       environment.etc."zerotier/network-id".text = facts.zerotier-network-id.value;
-
-      systemd.services.zerotierone.serviceConfig.ExecStartPre = [
-        "+${pkgs.writeShellScript "init-zerotier" ''
-           cp ${config.clanCore.secrets.zerotier.secrets.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
-           mkdir -p /var/lib/zerotier-one/controller.d/network
-           ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON networkConfig)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
-         ''}"
-      ];
       systemd.services.zerotierone.serviceConfig.ExecStartPost = [
         "+${pkgs.writeShellScript "whitelist-controller" ''
           ${config.clanCore.clanPkgs.zerotier-members}/bin/zerotier-members allow ${builtins.substring 0 10 cfg.networkId}
