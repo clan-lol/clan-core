@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 let
   cfg = config.clan.networking.zerotier;
-  facts = config.clanCore.secrets.zerotier.facts;
+  facts = config.clanCore.secrets.zerotier.facts or { };
   networkConfig = {
     authTokens = [
       null
@@ -56,7 +56,9 @@ in
       type = lib.types.nullOr lib.types.str;
       readOnly = true;
       default =
-        if cfg.networkId != null then
+        if cfg.networkId == null then
+          null
+        else
           let
             part0 = builtins.substring 0 2 cfg.networkId;
             part1 = builtins.substring 2 2 cfg.networkId;
@@ -67,9 +69,7 @@ in
             part6 = builtins.substring 12 2 cfg.networkId;
             part7 = builtins.substring 14 2 cfg.networkId;
           in
-          "fd${part0}:${part1}${part2}:${part3}${part4}:${part5}${part6}:${part7}99:9300::/88"
-        else
-          null;
+          "fd${part0}:${part1}${part2}:${part3}${part4}:${part5}${part6}:${part7}99:9300::/88";
       description = ''
         zerotier subnet
       '';
@@ -91,9 +91,10 @@ in
       # having to re-import nixpkgs.
       services.zerotierone.package = lib.mkDefault (pkgs.zerotierone.overrideAttrs (_old: { meta = { }; }));
     })
-    (lib.mkIf (cfg.networkId != null) {
+    (lib.mkIf (facts ? zerotier-meshname && (facts.zerotier-meshname.value or null) != null) {
       environment.etc."zerotier/hostname".text = "${facts.zerotier-meshname.value}.vpn";
-
+    })
+    (lib.mkIf (cfg.networkId != null) {
       clan.networking.meshnamed.networks.vpn.subnet = cfg.subnet;
 
       systemd.network.enable = true;
@@ -152,7 +153,7 @@ in
         '';
       };
     })
-    (lib.mkIf (cfg.controller.enable && config.clanCore.secrets ? zerotier && facts.zerotier-network-id.value != null) {
+    (lib.mkIf (cfg.controller.enable && (facts.zerotier-network-id.value or null) != null) {
       clan.networking.zerotier.networkId = facts.zerotier-network-id.value;
       environment.etc."zerotier/network-id".text = facts.zerotier-network-id.value;
 
