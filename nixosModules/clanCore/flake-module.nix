@@ -1,7 +1,7 @@
 { self, inputs, lib, ... }: {
   flake.nixosModules.clanCore = { config, pkgs, options, ... }: {
     imports = [
-      ../clanImports
+      ./clan-imports
       ./secrets
       ./zerotier
       ./meshnamed
