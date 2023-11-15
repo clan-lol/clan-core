@@ -137,10 +137,10 @@
         }
       '';
       ensureAccounts = [
-        "user@${config.clanCore.machineName}.local"
+        "user@${domain}"
       ];
       ensureCredentials = {
-        "user@${config.clanCore.machineName}.local".passwordFile = pkgs.writeText "dummy" "foobar";
+        "user@${domain}".passwordFile = pkgs.writeText "dummy" "foobar";
       };
     };
 }
