@@ -17,8 +17,8 @@ stdenv.mkDerivation {
   src = fetchFromGitHub {
     owner = "adisbladis";
     repo = "nix-unit";
-    rev = "3ed2378bddad85257fc508a291408f9ed9673d01";
-    sha256 = "sha256-HvMq0TJGYSx37zHm4j2d+JUZx4/6X7xKEt/0DeCiwjQ=";
+    rev = "6389f27c0a13df001d790adfaa08ec4d971ba34a";
+    sha256 = "sha256-bwuiM+2sLrn+vvwW9fv/+s3oh0jN4y6gZV6Lx0pEEmM=";
   };
   buildInputs = [
     nlohmann_json
