@@ -36,7 +36,7 @@
         clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
           inherit (self'.packages) ui-assets;
           inherit (inputs) nixpkgs;
-          inherit (inputs.nixpkgs-for-deal.legacyPackages.${system}.python3Packages) deal schemathesis;
+          inherit (inputs.nixpkgs-for-deal.legacyPackages.${system}.python3Packages) deal;
           clan-core-path = clanCoreWithVendoredDeps;
         };
         inherit (self'.packages.clan-cli) clan-openapi;
