@@ -97,17 +97,14 @@ in
     (lib.mkIf (cfg.networkId != null) {
       clan.networking.meshnamed.networks.vpn.subnet = cfg.subnet;
 
-      systemd.network.enable = true;
-      networking.useNetworkd = true;
-      systemd.network.networks.zerotier = {
+      systemd.network.networks."09-zerotier" = {
         matchConfig.Name = "zt*";
         networkConfig = {
-          LLMNR = true;
-          LLDP = true;
           MulticastDNS = true;
-          KeepConfiguration = "static";
+          Address = [ "${facts.zerotier-ip.value}/88" ];
         };
       };
+
       networking.firewall.interfaces."zt+".allowedTCPPorts = [ 5353 ]; # mdns
       networking.firewall.interfaces."zt+".allowedUDPPorts = [ 5353 ]; # mdns
       networking.networkmanager.unmanaged = [ "interface-name:zt*" ];
