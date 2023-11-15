@@ -42,7 +42,8 @@ class BuildVmTask(BaseTask):
                     f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.vm.create'
                 ]
                 + self.nix_options
-            )
+            ),
+            name="buildvm",
         )
         vm_json = "".join(cmd.stdout).strip()
         self.log.debug(f"VM JSON path: {vm_json}")
@@ -52,7 +53,10 @@ class BuildVmTask(BaseTask):
     def get_clan_name(self, cmds: Iterator[Command]) -> str:
         clan_dir = self.vm.flake_url
         cmd = next(cmds)
-        cmd.run(nix_eval([f"{clan_dir}#clanInternals.clanName"]) + self.nix_options)
+        cmd.run(
+            nix_eval([f"{clan_dir}#clanInternals.clanName"]) + self.nix_options,
+            name="clanname",
+        )
         clan_name = cmd.stdout[0].strip().strip('"')
         return clan_name
 
@@ -95,6 +99,7 @@ class BuildVmTask(BaseTask):
                     cmd.run(
                         [vm_config["generateSecrets"], clan_name],
                         env=env,
+                        name="generateSecrets",
                     )
                 else:
                     self.log.warning("won't generate secrets for non local clan")
@@ -103,6 +108,7 @@ class BuildVmTask(BaseTask):
             cmd.run(
                 [vm_config["uploadSecrets"]],
                 env=env,
+                name="uploadSecrets",
             )
 
             cmd = next(cmds)
@@ -117,7 +123,8 @@ class BuildVmTask(BaseTask):
                         str(disk_img),
                         "1024M",
                     ],
-                )
+                ),
+                name="createDisk",
             )
 
             cmd = next(cmds)
@@ -130,7 +137,8 @@ class BuildVmTask(BaseTask):
                         "nixos",
                         str(disk_img),
                     ],
-                )
+                ),
+                name="formatDisk",
             )
 
             cmd = next(cmds)
@@ -184,7 +192,7 @@ class BuildVmTask(BaseTask):
             if not self.vm.graphics:
                 qemu_command.append("-nographic")
             print("$ " + shlex.join(qemu_command))
-            cmd.run(nix_shell(["qemu"], qemu_command))
+            cmd.run(nix_shell(["qemu"], qemu_command), name="qemu")
 
 
 def create_vm(vm: VmConfig, nix_options: list[str] = []) -> BuildVmTask:
