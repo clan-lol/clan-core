@@ -35,7 +35,6 @@
 , e2fsprogs
 , mypy
 , deal
-, schemathesis
 , rope
 , clan-core-path
 }:
@@ -54,7 +53,8 @@ let
     pytest-xdist
     pytest-timeout
     deal
-    schemathesis
+    # commented out because it injects an incompatible httpx version into our python env
+    #schemathesis
     remote-pdb
     ipdb
     openssh
