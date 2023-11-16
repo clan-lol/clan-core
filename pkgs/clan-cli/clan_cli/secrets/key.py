@@ -10,8 +10,7 @@ def generate_key() -> str:
     if path.exists():
         raise ClanError(f"Key already exists at {path}")
     priv_key, pub_key = generate_private_key()
-    if not (parent := path.parent).exists():
-        parent.mkdir(parents=True, exist_ok=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(priv_key)
     return pub_key
 
