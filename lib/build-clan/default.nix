@@ -43,6 +43,12 @@ let
           clanCore.machineName = name;
           clanCore.clanDir = directory;
           nixpkgs.hostPlatform = lib.mkForce system;
+
+          # speeds up nix commands by using the nixpkgs from the host system (especially useful in VMs)
+          nix.registry.nixpkgs.to = {
+            type = "path";
+            path = lib.mkDefault nixpkgs;
+          };
         }
       ];
     inherit specialArgs;
