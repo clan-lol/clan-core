@@ -54,7 +54,7 @@ in
       };
     };
 
-    # for convience, so we can debug with dig
+    # for convenience, so we can debug with dig
     networking.extraHosts = ''
       ${cfg.listenAddress} meshnamed
     '';
