@@ -7,6 +7,7 @@
       ./meshnamed
       ./networking.nix
       ./packages.nix
+      ./nix-settings.nix
       inputs.sops-nix.nixosModules.sops
       # just some example options. Can be removed later
       ./vm.nix
