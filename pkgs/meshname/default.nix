@@ -10,8 +10,8 @@ buildGoModule {
   src = fetchFromGitHub {
     owner = "Mic92";
     repo = "meshname";
-    rev = "b3c0ec1cafcb91ae7801b139777ff5ffad4c8fed";
-    hash = "sha256-uPon66nc5vw2QbbrNPXcCkO7T0l0foYovyR1adL9JBg=";
+    rev = "9b11879d63ac02b0df59960f47063aefc1baf176";
+    hash = "sha256-oK2fKxCSonWs87s7BRdLO8GRm5MCfQNaJE7AoaH6K/c=";
   };
 
   subPackages = [ "cmd/meshnamed" ];
