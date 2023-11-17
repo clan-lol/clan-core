@@ -29,7 +29,7 @@ interface PureCustomConfigProps extends FormStepContentProps {
   initialValues: any;
 }
 export function CustomConfig(props: FormStepContentProps) {
-  const { formHooks, clanName } = props;
+  const { formHooks, clanDir } = props;
   const schema = formHooks.watch("schema");
 
   const initialValues = useMemo(
@@ -49,7 +49,7 @@ export function CustomConfig(props: FormStepContentProps) {
 
   return (
     <PureCustomConfig
-      clanName={clanName}
+      clanDir={clanDir}
       formHooks={formHooks}
       initialValues={initialValues}
     />
