@@ -13,7 +13,7 @@ const AppCard = (props: AppCardProps) => {
     <div
       role="button"
       className="flex h-40 w-40  cursor-pointer items-center justify-center rounded-3xl p-2
-       align-middle shadow-md ring-2 ring-inset ring-purple-50 
+       align-middle shadow-md ring-2 ring-inset ring-blue-90 
        hover:bg-neutral-90 focus:bg-neutral-90 active:bg-neutral-80 
        dark:hover:bg-neutral-10 dark:focus:bg-neutral-10 dark:active:bg-neutral-20"
     >

@@ -3,7 +3,6 @@ import { Sidebar } from "@/components/sidebar";
 import { tw } from "@/utils/tailwind";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
-  Button,
   CssBaseline,
   IconButton,
   MenuItem,
@@ -71,7 +70,7 @@ export default function RootLayout({
                   return (
                     <>
                       <Background />
-                      <div className="flex h-screen overflow-hidden">
+                      <div className="flex h-screen overflow-hidden bg-neutral-95">
                         <ThemeProvider theme={darkTheme}>
                           <Sidebar
                             show={showSidebarDerived}
@@ -133,21 +132,7 @@ export default function RootLayout({
 
                           <div className="px-1">
                             <div className="relative flex h-full flex-1 flex-col">
-                              <main>
-                                <Button
-                                  fullWidth
-                                  onClick={() => {
-                                    appState.setAppState((s) => ({
-                                      ...s,
-                                      isJoined: !s.isJoined,
-                                    }));
-                                  }}
-                                >
-                                  Toggle Joined
-                                </Button>
-
-                                {children}
-                              </main>
+                              <main>{children}</main>
                             </div>
                           </div>
                         </div>
