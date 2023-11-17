@@ -100,10 +100,14 @@ export default function JoinPrequel() {
               onSubmit={handleSubmit(async (values) => {
                 if (workflow === "create") {
                   try {
-                    await createFlake({
-                      flake_name: values.dest || "default",
-                      url: values.flakeUrl,
-                    });
+                    await createFlake(
+                      {
+                        url: values.flakeUrl,
+                      },
+                      {
+                        flake_dir: values.dest || "myclan",
+                      },
+                    );
                     setAppState((s) => ({ ...s, isJoined: true }));
                   } catch (error) {
                     toast.error(
