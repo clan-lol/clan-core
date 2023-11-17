@@ -36,6 +36,10 @@ def user_config_dir() -> Path:
         return Path(os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config")))
 
 
+def user_history_file() -> Path:
+    return user_config_dir() / "clan" / "history"
+
+
 def machines_dir(flake_dir: Path) -> Path:
     return flake_dir / "machines"
 
