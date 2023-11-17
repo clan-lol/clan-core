@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, HTTPException, status
 from pydantic import AnyUrl
 
+from clan_cli import flakes
 from clan_cli.webui.api_inputs import (
     FlakeCreateInput,
 )
@@ -48,6 +49,11 @@ async def get_attrs(url: AnyUrl | Path) -> list[str]:
 @router.put("/api/flake/add", tags=[Tags.flake])
 async def add_flake(flake_dir: Path) -> None:
     await add.add_flake(flake_dir)
+
+
+@router.get("/api/flake/list_history", tags=[Tags.flake])
+async def list_flakes() -> list[Path]:
+    return flakes.list_history.list_history()
 
 
 # TODO: Check for directory traversal
