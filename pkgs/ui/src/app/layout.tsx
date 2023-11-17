@@ -5,8 +5,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import {
   CssBaseline,
   IconButton,
-  MenuItem,
-  Select,
   ThemeProvider,
   useMediaQuery,
 } from "@mui/material";
@@ -75,30 +73,6 @@ export default function RootLayout({
                           <Sidebar
                             show={showSidebarDerived}
                             onClose={() => setShowSidebar(false)}
-                            clanSelect={
-                              appState.data.clanDir && (
-                                <Select
-                                  color="secondary"
-                                  label="clan"
-                                  fullWidth
-                                  variant="standard"
-                                  disableUnderline
-                                  value={appState.data.clanDir}
-                                  onChange={(ev) => {
-                                    appState.setAppState((c) => ({
-                                      ...c,
-                                      clanDir: ev.target.value,
-                                    }));
-                                  }}
-                                >
-                                  {appState.data.flakes?.map((clan) => (
-                                    <MenuItem value={clan} key={clan}>
-                                      {clan}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              )
-                            }
                           />
                         </ThemeProvider>
                         <div
