@@ -77,18 +77,18 @@ export default function RootLayout({
                             show={showSidebarDerived}
                             onClose={() => setShowSidebar(false)}
                             clanSelect={
-                              appState.data.clanName && (
+                              appState.data.clanDir && (
                                 <Select
                                   color="secondary"
                                   label="clan"
                                   fullWidth
                                   variant="standard"
                                   disableUnderline
-                                  value={appState.data.clanName}
+                                  value={appState.data.clanDir}
                                   onChange={(ev) => {
                                     appState.setAppState((c) => ({
                                       ...c,
-                                      clanName: ev.target.value,
+                                      clanDir: ev.target.value,
                                     }));
                                   }}
                                 >

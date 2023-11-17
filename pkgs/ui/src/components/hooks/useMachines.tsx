@@ -65,7 +65,7 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
     isValidating,
     mutate,
     swrKey,
-  } = useListMachines(flakeName);
+  } = useListMachines({ flake_dir: flakeName });
   const [filters, setFilters] = useState<Filters>([]);
 
   const data = useMemo(() => {

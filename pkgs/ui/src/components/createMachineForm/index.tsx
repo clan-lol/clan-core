@@ -1,4 +1,4 @@
-import { putMachine } from "@/api/machine/machine";
+import { setMachineConfig } from "@/api/machine/machine";
 import {
   Box,
   Button,
@@ -21,7 +21,7 @@ import { CreateMachineForm, FormStep } from "./interfaces";
 
 export function CreateMachineForm() {
   const {
-    data: { clanName },
+    data: { clanDir },
   } = useAppState();
   const formHooks = useForm<CreateMachineForm>({
     defaultValues: {
@@ -41,8 +41,8 @@ export function CreateMachineForm() {
     {
       id: "modules",
       label: "Modules",
-      content: clanName ? (
-        <ClanModules clanName={clanName} formHooks={formHooks} />
+      content: clanDir ? (
+        <ClanModules clanDir={clanDir} formHooks={formHooks} />
       ) : (
         <LinearProgress />
       ),
@@ -50,8 +50,8 @@ export function CreateMachineForm() {
     {
       id: "config",
       label: "Customize",
-      content: clanName ? (
-        <CustomConfig formHooks={formHooks} clanName={clanName} />
+      content: clanDir ? (
+        <CustomConfig formHooks={formHooks} clanDir={clanDir} />
       ) : (
         <LinearProgress />
       ),
@@ -74,15 +74,21 @@ export function CreateMachineForm() {
 
   async function onSubmit(data: CreateMachineForm) {
     console.log({ data }, "Aggregated Data; creating machine from");
-    if (clanName) {
+    if (clanDir) {
       if (!data.name) {
         toast.error("Machine name should not be empty");
         return;
       }
-      await putMachine(clanName, data.name, {
-        clan: data.config.formData,
-        clanImports: data.modules,
-      });
+      await setMachineConfig(
+        data.name,
+        {
+          clan: data.config.formData,
+          clanImports: data.modules,
+        },
+        {
+          flake_dir: clanDir,
+        },
+      );
     }
   }
 

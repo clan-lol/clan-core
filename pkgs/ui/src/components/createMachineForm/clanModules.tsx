@@ -1,5 +1,7 @@
 import { getMachineSchema } from "@/api/machine/machine";
+import { HTTPValidationError } from "@/api/model";
 import { useListClanModules } from "@/api/modules/modules";
+import { clanErrorToast } from "@/error/errorToast";
 import {
   Alert,
   AlertTitle,
@@ -15,6 +17,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import { toast } from "react-hot-toast";
@@ -30,40 +33,6 @@ const MenuProps = {
     },
   },
 };
-
-// interface IupdateSchema {
-//   clanName: string;
-//   modules: string[];
-//   formHooks: FormHooks;
-//   setSchemaError: Dispatch<SetStateAction<null | string>>;
-// }
-
-// const updateSchema = ({
-//   clanName,
-//   modules,
-//   formHooks,
-//   setSchemaError,
-// }: IupdateSchema) => {
-//   formHooks.setValue("isSchemaLoading", true);
-//   getMachineSchema(clanName, {
-//     clanImports: modules,
-//   })
-//     .then((response) => {
-//       if (response.statusText == "OK") {
-//         formHooks.setValue("schema", response.data.schema);
-//         setSchemaError(null);
-//       }
-//     })
-//     .catch((error) => {
-//       formHooks.setValue("schema", {});
-//       console.error({ error });
-//       setSchemaError(error.message);
-//       toast.error(`${error.message}`);
-//     })
-//     .finally(() => {
-//       formHooks.setValue("isSchemaLoading", false);
-//     });
-// };
 
 type ClanModulesProps = FormStepContentProps;
 
@@ -93,22 +62,34 @@ const SchemaErrorMsg = (props: SchemaErrorMsgProps) => (
 );
 
 export default function ClanModules(props: ClanModulesProps) {
-  const { clanName, formHooks } = props;
-  const { data, isLoading } = useListClanModules(clanName);
+  const { clanDir, formHooks } = props;
+  const { data, isLoading } = useListClanModules({ flake_dir: clanDir });
   const [schemaError] = useState<string | null>(null);
   const selectedModules = formHooks.watch("modules");
   useEffect(() => {
-    getMachineSchema(clanName, {
-      clanImports: [],
-    }).then((response) => {
-      if (response.statusText == "OK") {
-        formHooks.setValue("schema", response.data.schema);
-      }
-    });
+    const load = async () => {
+      try {
+        const response = await getMachineSchema(
+          {
+            clanImports: [],
+          },
+          {
+            flake_dir: clanDir,
+          },
+        );
 
-    // Only re-run if global clanName has changed
+        if (response.statusText == "OK") {
+          formHooks.setValue("schema", response.data.schema);
+        }
+      } catch (e) {
+        clanErrorToast(e as AxiosError<HTTPValidationError>);
+      }
+    };
+    load();
+    // Only re-run if global clanDir has changed
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clanName]);
+  }, [clanDir]);
+
   const isSchemaLoading = formHooks.watch("isSchemaLoading");
 
   const handleChange = (
@@ -119,9 +100,14 @@ export default function ClanModules(props: ClanModulesProps) {
     } = event;
     const newValue = typeof value === "string" ? value.split(",") : value;
     formHooks.setValue("modules", newValue);
-    getMachineSchema(clanName, {
-      clanImports: newValue,
-    })
+    getMachineSchema(
+      {
+        clanImports: newValue,
+      },
+      {
+        flake_dir: clanDir,
+      },
+    )
       .then((response) => {
         if (response.statusText == "OK") {
           formHooks.setValue("schema", response.data.schema);
