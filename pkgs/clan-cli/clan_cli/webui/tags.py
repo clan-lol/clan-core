@@ -34,8 +34,4 @@ tags_metadata: List[Dict[str, Any]] = [
         "name": str(Tags.modules),
         "description": "Manage cLAN modules of a flake",
     },
-    {
-        "name": str(Tags.root),
-        "description": "This serves as the frontend delivery",
-    },
 ]
