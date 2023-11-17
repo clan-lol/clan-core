@@ -22,7 +22,7 @@ export type FormStep = {
 
 export interface FormStepContentProps {
   formHooks: FormHooks;
-  clanName: string;
+  clanDir: string;
 }
 
 export type FormStepContent = ReactElement<FormStepContentProps>;
