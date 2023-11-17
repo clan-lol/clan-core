@@ -46,14 +46,14 @@ async def get_attrs(url: AnyUrl | Path) -> list[str]:
     return flake_attrs
 
 
-@router.put("/api/flake/add", tags=[Tags.flake])
-async def add_flake(flake_dir: Path) -> None:
+@router.post("/api/flake/history", tags=[Tags.flake])
+async def flake_history_append(flake_dir: Path) -> None:
     await add.add_flake(flake_dir)
 
 
-@router.get("/api/flake/list_history", tags=[Tags.flake])
-async def list_flakes() -> list[Path]:
-    return flakes.list_history.list_history()
+@router.get("/api/flake/history", tags=[Tags.flake])
+async def flake_history_list() -> list[Path]:
+    return flakes.history.list_history()
 
 
 # TODO: Check for directory traversal
