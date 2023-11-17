@@ -3,17 +3,9 @@ import argparse
 from pathlib import Path
 from typing import Dict
 
-from pydantic import AnyUrl
-from pydantic.tools import parse_obj_as
-
 from clan_cli.dirs import user_history_file
 
 from ..async_cmd import CmdOut, runforcli
-
-DEFAULT_URL: AnyUrl = parse_obj_as(
-    AnyUrl,
-    "git+https://git.clan.lol/clan/clan-core?new-clan",
-)
 
 
 async def add_flake(path: Path) -> Dict[str, CmdOut]:

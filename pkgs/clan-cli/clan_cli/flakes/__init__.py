@@ -2,7 +2,7 @@
 import argparse
 
 from clan_cli.flakes.add import register_add_parser
-from clan_cli.flakes.list_history import register_list_parser
+from clan_cli.flakes.history import register_list_parser
 
 from .create import register_create_parser
 
@@ -19,5 +19,5 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
     register_create_parser(create_parser)
     add_parser = subparser.add_parser("add", help="Add a clan flake")
     register_add_parser(add_parser)
-    list_parser = subparser.add_parser("list", help="List clan flakes")
+    list_parser = subparser.add_parser("list", help="List recently used flakes")
     register_list_parser(list_parser)
