@@ -13,7 +13,7 @@ router = APIRouter()
 log = logging.getLogger(__name__)
 
 
-@router.get("/{path_name:path}", tags=[Tags.root])
+@router.get("/{path_name:path}",  include_in_schema=False)
 async def root(path_name: str) -> Response:
     if path_name == "":
         path_name = "index.html"
