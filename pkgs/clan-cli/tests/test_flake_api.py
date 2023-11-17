@@ -4,8 +4,23 @@ import logging
 import pytest
 from api import TestClient
 from fixtures_flakes import FlakeForTest
+from path import Path
+
+from clan_cli.dirs import user_history_file
 
 log = logging.getLogger(__name__)
+
+
+def test_flake_add(
+    api: TestClient, test_flake: FlakeForTest, temporary_home: Path
+) -> None:
+    response = api.put(
+        f"/api/flake/add?flake_dir={str(test_flake.path)}",
+        json={},
+    )
+    assert response.status_code == 200, response.json()
+    assert user_history_file().exists()
+    assert open(user_history_file()).read().strip() == str(test_flake.path)
 
 
 @pytest.mark.impure
