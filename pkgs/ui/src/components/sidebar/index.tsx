@@ -82,9 +82,9 @@ export function Sidebar(props: SidebarProps) {
         show ? showSidebar : hideSidebar
       } z-9999 static left-0  top-0 flex h-screen w-14 flex-col overflow-x-hidden overflow-y-hidden bg-blue-3 transition duration-150 ease-in-out lg:w-64`}
     >
-      <div className="flex flex-col py-6 mt-8">
+      <div className="mt-8 flex flex-col py-6">
         <div className="hidden w-full max-w-xs text-center shadow-sm lg:block">
-          <h3 className="m-0 pb-2 w-full font-semibold text-white">
+          <h3 className="m-0 w-full pb-2 font-semibold text-white">
             Clan Dashboard
           </h3>
         </div>
