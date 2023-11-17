@@ -23,6 +23,30 @@ def test_flake_add(
     assert open(user_history_file()).read().strip() == str(test_flake.path)
 
 
+def test_flake_list(
+    api: TestClient, test_flake: FlakeForTest, temporary_home: Path
+) -> None:
+    response = api.get(
+        "/api/flake/list_history",
+    )
+    assert response.status_code == 200, response.text
+    assert response.json() == []
+
+    # add the test_flake
+    response = api.put(
+        f"/api/flake/add?flake_dir={str(test_flake.path)}",
+        json={},
+    )
+    assert response.status_code == 200, response.text
+
+    # list the flakes again
+    response = api.get(
+        "/api/flake/list_history",
+    )
+    assert response.status_code == 200, response.text
+    assert response.json() == [str(test_flake.path)]
+
+
 @pytest.mark.impure
 def test_inspect_ok(api: TestClient, test_flake_with_core: FlakeForTest) -> None:
     params = {"url": str(test_flake_with_core.path)}
