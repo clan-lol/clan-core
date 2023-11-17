@@ -1,38 +1,21 @@
 "use client";
 
-import { CircularProgress, Grid, useTheme } from "@mui/material";
+import { CircularProgress, Grid } from "@mui/material";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import TablePagination from "@mui/material/TablePagination";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useState } from "react";
 
-import { Machine } from "@/api/model/machine";
-import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import { useMachines } from "../hooks/useMachines";
-import { EnhancedTableToolbar } from "./enhancedTableToolbar";
 import { NodeTableContainer } from "./nodeTableContainer";
 import { SearchBar } from "./searchBar";
-import { StickySpeedDial } from "./stickySpeedDial";
 
 export function NodeTable() {
-  const { isLoading, data: machines } = useMachines();
-
-  const theme = useTheme();
-  const is_xs = useMediaQuery(theme.breakpoints.only("xs"));
+  const { isLoading, data: machines, rawData, setFilters } = useMachines();
 
   const [selected, setSelected] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [filteredList, setFilteredList] = useState<readonly Machine[]>([]);
-
-  const tableData = useMemo(() => {
-    const tableData = machines.map((machine) => {
-      return { name: machine.name, status: machine.status };
-    });
-    setFilteredList(tableData);
-    return tableData;
-  }, [machines]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -60,19 +43,13 @@ export function NodeTable() {
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
-        <StickySpeedDial selected={selected} />
-        <EnhancedTableToolbar tableData={tableData}>
-          <Grid2 xs={12}>
-            <SearchBar
-              tableData={tableData}
-              setFilteredList={setFilteredList}
-            />
-          </Grid2>
-        </EnhancedTableToolbar>
-
+      <Paper sx={{ width: "100%", mb: 2, p: { xs: 0, lg: 2 } }} elevation={0}>
+        <SearchBar
+          allData={rawData?.data.machines || []}
+          setQuery={setFilters}
+        />
         <NodeTableContainer
-          tableData={filteredList}
+          tableData={machines}
           page={page}
           rowsPerPage={rowsPerPage}
           dense={false}
@@ -80,12 +57,10 @@ export function NodeTable() {
           setSelected={setSelected}
         />
 
-        {/* TODO: This creates the error Warning: Prop `id` did not match. Server: ":RspmmcqH1:" Client: ":R3j6qpj9H1:" */}
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
-          labelRowsPerPage={is_xs ? "Rows" : "Rows per page:"}
           component="div"
-          count={filteredList.length}
+          count={machines.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}

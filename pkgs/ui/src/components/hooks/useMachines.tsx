@@ -2,62 +2,54 @@
 
 import { useListMachines } from "@/api/machine/machine";
 import { Machine, MachinesResponse } from "@/api/model";
+import { clanErrorToast } from "@/error/errorToast";
 import { AxiosError, AxiosResponse } from "axios";
 import React, {
   Dispatch,
   ReactNode,
   SetStateAction,
   createContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
 import { KeyedMutator } from "swr";
 
-type Filter = {
-  name: keyof Machine;
-  value: Machine[keyof Machine];
+type PartialRecord<K extends keyof any, T> = {
+  [P in K]?: T;
 };
-type Filters = Filter[];
 
-type MachineContextType =
-  | {
-      rawData: AxiosResponse<MachinesResponse, any> | undefined;
-      data: Machine[];
-      isLoading: boolean;
-      flakeName: string;
-      error: AxiosError<any> | undefined;
-      isValidating: boolean;
+export type MachineFilter = PartialRecord<
+  keyof Machine,
+  Machine[keyof Machine]
+>;
 
-      filters: Filters;
-      setFilters: Dispatch<SetStateAction<Filters>>;
-      mutate: KeyedMutator<AxiosResponse<MachinesResponse, any>>;
-      swrKey: string | false | Record<any, any>;
-    }
-  | {
-      isLoading: true;
-      data: readonly [];
-    };
+type MachineContextType = {
+  rawData: AxiosResponse<MachinesResponse, any> | undefined;
+  data: Machine[];
+  isLoading: boolean;
+  error: AxiosError<any> | undefined;
+  isValidating: boolean;
 
-const initialState = {
-  isLoading: true,
-  data: [],
-} as const;
+  filters: MachineFilter;
+  setFilters: Dispatch<SetStateAction<MachineFilter>>;
+  mutate: KeyedMutator<AxiosResponse<MachinesResponse, any>>;
+  swrKey: string | false | Record<any, any>;
+};
 
 export function CreateMachineContext() {
-  return createContext<MachineContextType>({
-    ...initialState,
-  });
+  return createContext<MachineContextType>({} as MachineContextType);
 }
 
 interface MachineContextProviderProps {
   children: ReactNode;
-  flakeName: string;
+  clanDir: string;
 }
 
 const MachineContext = CreateMachineContext();
 
 export const MachineContextProvider = (props: MachineContextProviderProps) => {
-  const { children, flakeName } = props;
+  const { children, clanDir } = props;
   const {
     data: rawData,
     isLoading,
@@ -65,18 +57,27 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
     isValidating,
     mutate,
     swrKey,
-  } = useListMachines({ flake_dir: flakeName });
-  const [filters, setFilters] = useState<Filters>([]);
+  } = useListMachines({ flake_dir: clanDir });
+
+  const [filters, setFilters] = useState<MachineFilter>({});
+
+  useEffect(() => {
+    if (error) {
+      clanErrorToast(error);
+    }
+  }, [error]);
 
   const data = useMemo(() => {
-    if (!isLoading && !error && !isValidating && rawData) {
+    if (!isLoading && rawData) {
       const { machines } = rawData.data;
-      return machines.filter((m) =>
-        filters.every((f) => m[f.name] === f.value),
+      return machines.filter(
+        (m) =>
+          !filters.name ||
+          m.name.toLowerCase().includes(filters.name.toLowerCase()),
       );
     }
     return [];
-  }, [isLoading, error, isValidating, rawData, filters]);
+  }, [isLoading, filters, rawData]);
 
   return (
     <MachineContext.Provider
@@ -85,7 +86,7 @@ export const MachineContextProvider = (props: MachineContextProviderProps) => {
         data,
 
         isLoading,
-        flakeName,
+
         error,
         isValidating,
 
