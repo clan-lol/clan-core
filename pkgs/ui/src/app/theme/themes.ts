@@ -21,19 +21,19 @@ const commonOptions: Partial<ThemeOptions> = {
 
 const commonPalette: Partial<PaletteOptions> = {
   primary: {
-    main: palette.green50.value,
+    main: palette.blue50.value,
   },
   secondary: {
-    main: palette.green50.value,
+    main: palette.green60.value,
   },
   info: {
     main: palette.blue50.value,
   },
   success: {
-    main: palette.green50.value,
+    main: palette.green60.value,
   },
   warning: {
-    main: palette.yellow50.value,
+    main: palette.yellow80.value,
   },
   error: {
     main: palette.red50.value,

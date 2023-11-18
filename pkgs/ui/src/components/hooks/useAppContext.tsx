@@ -34,7 +34,7 @@ interface AppContextProviderProps {
   children: ReactNode;
 }
 const mock = {
-  data: { flakes: [] },
+  data: { flakes: ["example_clan"] },
 };
 
 // list_clans

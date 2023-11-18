@@ -10,7 +10,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <>
       {!clanDir && <div>No clan selected</div>}
       {clanDir && (
-        <MachineContextProvider flakeName={clanDir}>
+        <MachineContextProvider clanDir={clanDir}>
           {children}
         </MachineContextProvider>
       )}
