@@ -6,14 +6,15 @@ import { Autocomplete, InputAdornment, TextField } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "../hooks/useDebounce";
+import { MachineFilter } from "../hooks/useMachines";
 
 export interface SearchBarProps {
-  tableData: readonly Machine[];
-  setFilteredList: Dispatch<SetStateAction<readonly Machine[]>>;
+  allData: Machine[];
+  setQuery: Dispatch<SetStateAction<MachineFilter>>;
 }
 
 export function SearchBar(props: SearchBarProps) {
-  const { tableData, setFilteredList } = props;
+  const { allData, setQuery } = props;
   const [search, setSearch] = useState<string>("");
   const debouncedSearch = useDebounce(search, 250);
   const [open, setOpen] = useState(false);
@@ -22,7 +23,6 @@ export function SearchBar(props: SearchBarProps) {
   function handleEsc(event: React.KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
       setSearch("");
-      setFilteredList(tableData);
     }
 
     // check if the key is Enter
@@ -32,32 +32,21 @@ export function SearchBar(props: SearchBarProps) {
   }
 
   useEffect(() => {
-    if (debouncedSearch) {
-      const filtered: Machine[] = tableData.filter((row) => {
-        return row.name.toLowerCase().includes(debouncedSearch.toLowerCase());
-      });
-      setFilteredList(filtered);
-    }
-  }, [debouncedSearch, tableData, setFilteredList]);
+    setQuery((filters) => ({ ...filters, name: debouncedSearch }));
+  }, [debouncedSearch, setQuery]);
 
   const handleInputChange = (event: any, value: string) => {
-    if (value === "") {
-      setFilteredList(tableData);
-    }
-
+    console.log({ value });
     setSearch(value);
   };
 
-  const suggestions = useMemo(
-    () => tableData.map((row) => row.name),
-    [tableData],
-  );
+  const options = useMemo(() => allData.map((row) => row.name), [allData]);
 
   return (
     <Autocomplete
       freeSolo
       autoComplete
-      options={suggestions}
+      options={options}
       renderOption={(props: any, option: any) => {
         return (
           <li {...props} key={option}>

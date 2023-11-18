@@ -36,6 +36,7 @@ module.exports = {
       white: common.white.value,
       black: common.black.value,
       neutral: getTailwindColors(palette)("neutral"),
+      blue: getTailwindColors(palette)("blue"),
       purple: {
         ...getTailwindColors(palette)("purple"),
         DEFAULT: palette.purple50.value,

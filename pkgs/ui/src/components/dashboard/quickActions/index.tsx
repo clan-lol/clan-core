@@ -48,7 +48,7 @@ export const QuickActions = () => {
           {actions.map(({ id, icon, label, eventHandler }) => (
             <Fab
               className="w-fit self-center shadow-none"
-              color="secondary"
+              color="primary"
               key={id}
               onClick={eventHandler}
               variant="extended"
