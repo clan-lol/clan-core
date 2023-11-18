@@ -75,7 +75,7 @@ export function NoDataOverlay(props: NoDataOverlayProps) {
           </g>
         </g>
       </svg>
-      <Box sx={{ mt: 1 }}>{label}</Box>
+      <Box sx={{ mt: 1, textAlign: "center" }}>{label}</Box>
     </StyledGridOverlay>
   );
 }
