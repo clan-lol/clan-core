@@ -13,6 +13,7 @@ import { visuallyHidden } from "@mui/utils";
 import { NodeRow } from "./nodeRow";
 
 import { Machine } from "@/api/model/machine";
+import { NoDataOverlay } from "../noDataOverlay";
 
 interface HeadCell {
   disablePadding: boolean;
@@ -163,35 +164,41 @@ export function NodeTableContainer(props: NodeTableContainerProps) {
   );
   return (
     <TableContainer>
-      <Table aria-labelledby="tableTitle" size={dense ? "small" : "medium"}>
-        <EnhancedTableHead
-          order={order}
-          orderBy={orderBy}
-          onRequestSort={handleRequestSort}
-          rowCount={tableData.length}
-        />
-        <TableBody>
-          {visibleRows.map((row, index) => {
-            return (
-              <NodeRow
-                key={index}
-                row={row}
-                selected={selected}
-                setSelected={setSelected}
-              />
-            );
-          })}
-          {emptyRows > 0 && (
-            <TableRow
-              style={{
-                height: (dense ? 33 : 53) * emptyRows,
-              }}
-            >
-              <TableCell colSpan={6} />
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      {tableData.length === 0 ? (
+        <div className="my-8 flex w-full items-center justify-center">
+          <NoDataOverlay label={"No Machines"} />
+        </div>
+      ) : (
+        <Table aria-labelledby="tableTitle" size={dense ? "small" : "medium"}>
+          <EnhancedTableHead
+            order={order}
+            orderBy={orderBy}
+            onRequestSort={handleRequestSort}
+            rowCount={tableData.length}
+          />
+          <TableBody>
+            {visibleRows.map((row, index) => {
+              return (
+                <NodeRow
+                  key={index}
+                  row={row}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
+              );
+            })}
+            {emptyRows > 0 && (
+              <TableRow
+                style={{
+                  height: (dense ? 33 : 53) * emptyRows,
+                }}
+              >
+                <TableCell colSpan={6} />
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      )}
     </TableContainer>
   );
 }
