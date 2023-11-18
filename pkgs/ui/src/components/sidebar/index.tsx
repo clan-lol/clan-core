@@ -11,18 +11,18 @@ import Image from "next/image";
 import { ReactNode } from "react";
 
 import { tw } from "@/utils/tailwind";
-import AppsIcon from "@mui/icons-material/Apps";
 import BackupIcon from "@mui/icons-material/Backup";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import DevicesIcon from "@mui/icons-material/Devices";
+import WorkspacesIcon from "@mui/icons-material/Workspaces";
 import Link from "next/link";
 
 type MenuEntry = {
   icon: ReactNode;
   label: string;
   to: string;
-  disabled: boolean;
+  disabled?: boolean;
 } & {
   subMenuEntries?: MenuEntry[];
 };
@@ -32,19 +32,16 @@ const menuEntries: MenuEntry[] = [
     icon: <DashboardIcon />,
     label: "Dashoard",
     to: "/",
-    disabled: false,
   },
   {
     icon: <DevicesIcon />,
     label: "Machines",
     to: "/machines",
-    disabled: false,
   },
   {
-    icon: <AppsIcon />,
-    label: "Applications",
-    to: "/applications",
-    disabled: true,
+    icon: <WorkspacesIcon />,
+    label: "Manage",
+    to: "/join",
   },
   {
     icon: <BackupIcon />,
