@@ -4,6 +4,7 @@
 **/qubeclan
 **/testdir
 democlan
+example_clan
 result*
 /pkgs/clan-cli/clan_cli/nixpkgs
 /pkgs/clan-cli/clan_cli/webui/assets
