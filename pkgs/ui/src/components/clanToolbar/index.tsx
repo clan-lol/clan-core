@@ -1,9 +1,9 @@
-import { IconButton, LinearProgress } from "@mui/material";
-import * as React from "react";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
 import { useFlakeHistoryList } from "@/api/flake/flake";
 import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
+import { IconButton, LinearProgress } from "@mui/material";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import * as React from "react";
 
 interface ToolbarButtonProps {
   icon: React.ReactNode;
@@ -36,7 +36,7 @@ export function ClanToolbar() {
     setAnchorEl(null);
   };
   return (
-    <div className="grid w-full auto-cols-min grid-rows-1 grid-flow-col justify-end place-items-end gap-2">
+    <div className="grid w-full auto-cols-min grid-flow-col grid-rows-1 place-items-end justify-end gap-2">
       {toolbarItems.map((item, index) => (
         <ToolbarButton key={index} icon={item.icon} onClick={handleClick} />
       ))}
