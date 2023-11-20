@@ -1,5 +1,5 @@
 { fetchzip }:
 fetchzip {
-  url = "https://git.clan.lol/api/packages/clan/generic/ui/0zh5yxm1nq0xrq44qhm1cqzykxvfdihrng72hdsa9klav8bpzgxc/assets.tar.gz";
-  sha256 = "0zh5yxm1nq0xrq44qhm1cqzykxvfdihrng72hdsa9klav8bpzgxc";
+  url = "https://git.clan.lol/api/packages/clan/generic/ui/0z5k2z8h7zp604389kazqiz0grsbgyrf1ar179y07svbn7v547hq/assets.tar.gz";
+  sha256 = "0z5k2z8h7zp604389kazqiz0grsbgyrf1ar179y07svbn7v547hq";
 }
