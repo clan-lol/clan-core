@@ -68,7 +68,7 @@ export function ClanToolbar(props: ClanToolbarProps) {
 
   const handleClick = (
     event: React.MouseEvent<HTMLButtonElement>,
-    idx: number
+    idx: number,
   ) => {
     setAnchorEl(event.currentTarget);
     setOpenIdx(idx);

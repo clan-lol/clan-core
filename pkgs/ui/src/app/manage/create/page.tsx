@@ -26,7 +26,7 @@ export default function Manage() {
               },
               {
                 flake_dir: values.flakeDir,
-              }
+              },
             );
           } catch (e) {
             const error = e as AxiosError<HTTPValidationError>;
@@ -35,14 +35,14 @@ export default function Manage() {
 
             if (maybeDetail?.loc && maybeDetail?.msg) {
               const urlError = error.response?.data.detail?.find((detail) =>
-                detail.loc.includes("url")
+                detail.loc.includes("url"),
               );
               urlError &&
                 methods.setError("flakeTemplateUrl", {
                   message: urlError.msg,
                 });
               const flakeDirError = error.response?.data.detail?.find(
-                (detail) => detail.loc.includes("flake_dir")
+                (detail) => detail.loc.includes("flake_dir"),
               );
               flakeDirError &&
                 methods.setError("flakeDir", {
