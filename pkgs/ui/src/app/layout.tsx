@@ -1,24 +1,17 @@
 "use client";
 import { Sidebar } from "@/components/sidebar";
 import { tw } from "@/utils/tailwind";
-import MenuIcon from "@mui/icons-material/Menu";
-import {
-  CssBaseline,
-  IconButton,
-  ThemeProvider,
-  useMediaQuery,
-} from "@mui/material";
+import { CssBaseline, ThemeProvider, useMediaQuery } from "@mui/material";
 import { StyledEngineProvider } from "@mui/material/styles";
 import axios from "axios";
 import localFont from "next/font/local";
-import Image from "next/image";
 import * as React from "react";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 import { darkTheme, lightTheme } from "./theme/themes";
 
-import { WithAppState } from "@/components/hooks/useAppContext";
 import { ClanToolbar } from "@/components/clanToolbar";
+import { WithAppState } from "@/components/hooks/useAppContext";
 
 const roboto = localFont({
   src: [
@@ -70,29 +63,10 @@ export default function RootLayout({
                     !showSidebar && translate
                   } flex h-full w-full flex-col overflow-y-scroll transition-[margin] duration-150 ease-in-out`}
                 >
-                  <ClanToolbar />
-                  <div className="static top-0 mb-2 py-2">
-                    <div className="grid grid-cols-3">
-                      <div className="col-span-1">
-                        <IconButton
-                          hidden={showSidebar}
-                          onClick={() => setShowSidebar((c) => !c)}
-                        >
-                          {!showSidebar && <MenuIcon />}
-                        </IconButton>
-                      </div>
-                      <div className="col-span-1 block w-full bg-fixed text-center font-semibold dark:invert lg:hidden">
-                        <Image
-                          src="/favicon.png"
-                          alt="Clan Logo"
-                          width={58}
-                          height={58}
-                          priority
-                        />
-                      </div>
-                    </div>
-                  </div>
-
+                  <ClanToolbar
+                    isSidebarVisible={showSidebar}
+                    handleSidebar={setShowSidebar}
+                  />
                   <div className="px-1">
                     <div className="relative flex h-full flex-1 flex-col">
                       <main>{children}</main>

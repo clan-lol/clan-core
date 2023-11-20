@@ -1,16 +1,16 @@
 import { Confirm } from "@/components/join/confirm";
+import PublicIcon from "@mui/icons-material/Public";
 import { Input, InputAdornment } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 
 interface JoinFormProps {
-  confirmAdornment?: React.ReactNode;
   initialParams: {
     flakeUrl: string;
     flakeAttr: string;
   };
 }
 export const JoinForm = (props: JoinFormProps) => {
-  const { initialParams, confirmAdornment } = props;
+  const { initialParams } = props;
   const { control, formState, reset, getValues, watch } = useFormContext();
 
   return (
@@ -38,10 +38,11 @@ export const JoinForm = (props: JoinFormProps) => {
               {...field}
               required
               fullWidth
-              startAdornment={
-                <InputAdornment position="start">Clan</InputAdornment>
+              endAdornment={
+                <InputAdornment position="end">
+                  <PublicIcon />
+                </InputAdornment>
               }
-              endAdornment={confirmAdornment}
             />
           )}
         />
