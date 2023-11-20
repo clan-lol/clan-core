@@ -138,6 +138,15 @@ rec {
       };
     }
 
+    # parse list of unspecified
+    else if
+      (option.type.name == "listOf")
+      && (option.type.functor.wrapped.name == "unspecified")
+    # return jsonschema property definition for list
+    then default // description // {
+      type = "array";
+    }
+
     # parse attrsOf submodule
     else if option.type.name == "attrsOf" && option.type.nestedTypes.elemType.name == "submodule"
     # return jsonschema property definition for attrsOf submodule

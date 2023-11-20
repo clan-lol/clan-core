@@ -115,6 +115,18 @@ in
       };
     };
 
+  testListOfUnspacified =
+    let
+      default = [ 1 2 3 ];
+    in
+    {
+      expr = slib.parseOption (evalType (lib.types.listOf lib.types.unspecified) default);
+      expected = {
+        type = "array";
+        inherit default description;
+      };
+    };
+
   testAttrsOfInt =
     let
       default = { foo = 1; bar = 2; baz = 3; };
