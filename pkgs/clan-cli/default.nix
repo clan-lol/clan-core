@@ -37,6 +37,7 @@
 , deal
 , rope
 , clan-core-path
+, schemathesis
 }:
 let
 
@@ -47,14 +48,13 @@ let
   ];
 
   pytestDependencies = runtimeDependencies ++ dependencies ++ [
+    #schemathesis # optional for http fuzzing
     pytest
     pytest-cov
     pytest-subprocess
     pytest-xdist
     pytest-timeout
     deal
-    # commented out because it injects an incompatible httpx version into our python env
-    #schemathesis
     remote-pdb
     ipdb
     openssh
