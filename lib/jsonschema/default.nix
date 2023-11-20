@@ -1,21 +1,27 @@
-{ lib ? import <nixpkgs/lib> }:
+{ lib ? import <nixpkgs/lib>
+, excludedTypes ? [
+    "functionTo"
+    "package"
+  ]
+}:
 let
-
-  # from nixos type to jsonschema type
-  typeMap = {
-    bool = "boolean";
-    float = "number";
-    int = "integer";
-    str = "string";
-    path = "string"; # TODO add prober path checks
-  };
-
   # remove _module attribute from options
   clean = opts: builtins.removeAttrs opts [ "_module" ];
 
   # throw error if option type is not supported
-  notSupported = option: throw
-    "option type '${option.type.name}' ('${option.type.description}') not supported by jsonschema converter";
+  notSupported = option: lib.trace option throw ''
+    option type '${option.type.name}' ('${option.type.description}') not supported by jsonschema converter
+    location: ${lib.concatStringsSep "." option.loc}
+  '';
+
+  isExcludedOption = option: (lib.elem (option.type.name or null) excludedTypes);
+
+  filterExcluded = lib.filter (opt: ! isExcludedOption opt);
+
+  filterExcludedAttrs = lib.filterAttrs (_name: opt: ! isExcludedOption opt);
+
+  allBasicTypes =
+    [ "boolean" "integer" "number" "string" "array" "object" "null" ];
 
 in
 rec {
@@ -32,10 +38,11 @@ rec {
   # parses a set of evaluated nixos options to a jsonschema
   parseOptions = options':
     let
-      options = clean options';
+      options = filterExcludedAttrs (clean options');
       # parse options to jsonschema properties
       properties = lib.mapAttrs (_name: option: parseOption option) options;
-      isRequired = prop: ! (prop ? default || prop.type == "object");
+      # TODO: figure out how to handle if prop.anyOf is used
+      isRequired = prop: ! (prop ? default || prop.type or null == "object");
       requiredProps = lib.filterAttrs (_: prop: isRequired prop) properties;
       required = lib.optionalAttrs (requiredProps != { }) {
         required = lib.attrNames requiredProps;
@@ -58,23 +65,46 @@ rec {
       };
     in
 
+    # either type
+      # TODO: if all nested optiosn are excluded, the parent sould be excluded too
+    if option.type.name or null == "either"
+    # return jsonschema property definition for either
+    then
+      let
+        optionsList' = [
+          { type = option.type.nestedTypes.left; _type = "option"; loc = option.loc; }
+          { type = option.type.nestedTypes.right; _type = "option"; loc = option.loc; }
+        ];
+        optionsList = filterExcluded optionsList';
+      in
+      default // description // {
+        anyOf = map parseOption optionsList;
+      }
+
     # handle nested options (not a submodule)
-    if ! option ? _type
+    else if ! option ? _type
     then parseOptions option
 
     # throw if not an option
-    else if option._type != "option"
+    else if option._type != "option" && option._type != "option-type"
     then throw "parseOption: not an option"
 
     # parse nullOr
     else if option.type.name == "nullOr"
     # return jsonschema property definition for nullOr
-    then default // description // {
-      type = [
-        "null"
-        (typeMap.${option.type.functor.wrapped.name} or (notSupported option))
-      ];
-    }
+    then
+      let
+        nestedOption =
+          { type = option.type.nestedTypes.elemType; _type = "option"; loc = option.loc; };
+      in
+      default // description // {
+        anyOf =
+          [{ type = "null"; }]
+          ++ (
+            lib.optional (! isExcludedOption nestedOption)
+              (parseOption nestedOption)
+          );
+      }
 
     # parse bool
     else if option.type.name == "bool"
@@ -111,6 +141,27 @@ rec {
       type = "string";
     }
 
+    # parse anything
+    else if option.type.name == "anything"
+    # return jsonschema property definition for anything
+    then default // description // {
+      type = allBasicTypes;
+    }
+
+    # parse unspecified
+    else if option.type.name == "unspecified"
+    # return jsonschema property definition for unspecified
+    then default // description // {
+      type = allBasicTypes;
+    }
+
+    # parse raw
+    else if option.type.name == "raw"
+    # return jsonschema property definition for raw
+    then default // description // {
+      type = allBasicTypes;
+    }
+
     # parse enum
     else if option.type.name == "enum"
     # return jsonschema property definition for enum
@@ -127,16 +178,16 @@ rec {
     }
 
     # parse list
-    else if
-      (option.type.name == "listOf")
-      && (typeMap ? "${option.type.functor.wrapped.name}")
+    else if (option.type.name == "listOf")
     # return jsonschema property definition for list
-    then default // description // {
-      type = "array";
-      items = {
-        type = typeMap.${option.type.functor.wrapped.name};
-      };
-    }
+    then
+      let
+        nestedOption = { type = option.type.functor.wrapped; _type = "option"; loc = option.loc; };
+      in
+      default // description // {
+        type = "array";
+        items = parseOption nestedOption;
+      }
 
     # parse list of unspecified
     else if
@@ -156,14 +207,28 @@ rec {
     }
 
     # parse attrs
-    else if option.type.name == "attrsOf"
+    else if option.type.name == "attrs"
     # return jsonschema property definition for attrs
     then default // description // {
       type = "object";
-      additionalProperties = {
-        type = typeMap.${option.type.nestedTypes.elemType.name} or (notSupported option);
-      };
+      additionalProperties = true;
     }
+
+    # parse attrsOf
+    # TODO: if nested option is excluded, the parent sould be excluded too
+    else if option.type.name == "attrsOf" || option.type.name == "lazyAttrsOf"
+    # return jsonschema property definition for attrs
+    then
+      let
+        nestedOption = { type = option.type.nestedTypes.elemType; _type = "option"; loc = option.loc; };
+      in
+      default // description // {
+        type = "object";
+        additionalProperties =
+          if ! isExcludedOption nestedOption
+          then parseOption { type = option.type.nestedTypes.elemType; _type = "option"; loc = option.loc; }
+          else false;
+      }
 
     # parse submodule
     else if option.type.name == "submodule"
