@@ -11,9 +11,14 @@ from ..async_cmd import CmdOut, runforcli
 async def add_flake(path: Path) -> Dict[str, CmdOut]:
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
     # append line to history file
-    # TODO: Is this atomic?
-    with open(user_history_file(), "a+") as f:
-        f.write(f"{path}\n")
+    # TODO: Make this atomic
+    lines: set = set()
+    if user_history_file().exists():
+        with open(user_history_file(), "r") as f:
+            lines = set(f.readlines())
+    lines.add(str(path))
+    with open(user_history_file(), "w") as f:
+        f.writelines(lines)
     return {}
 
 
