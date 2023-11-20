@@ -41,7 +41,7 @@ const menuEntries: MenuEntry[] = [
   {
     icon: <WorkspacesIcon />,
     label: "Manage",
-    to: "/join",
+    to: "/manage",
   },
   {
     icon: <BackupIcon />,
