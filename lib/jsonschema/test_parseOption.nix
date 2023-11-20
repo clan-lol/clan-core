@@ -115,7 +115,7 @@ in
       };
     };
 
-  testListOfUnspacified =
+  testListOfUnspecified =
     let
       default = [ 1 2 3 ];
     in
@@ -123,6 +123,22 @@ in
       expr = slib.parseOption (evalType (lib.types.listOf lib.types.unspecified) default);
       expected = {
         type = "array";
+        items = {
+          type = [ "boolean" "integer" "number" "string" "array" "object" "null" ];
+        };
+        inherit default description;
+      };
+    };
+
+  testAttrs =
+    let
+      default = { foo = 1; bar = 2; baz = 3; };
+    in
+    {
+      expr = slib.parseOption (evalType (lib.types.attrs) default);
+      expected = {
+        type = "object";
+        additionalProperties = true;
         inherit default description;
       };
     };
@@ -142,6 +158,21 @@ in
       };
     };
 
+  testLazyAttrsOfInt =
+    let
+      default = { foo = 1; bar = 2; baz = 3; };
+    in
+    {
+      expr = slib.parseOption (evalType (lib.types.lazyAttrsOf lib.types.int) default);
+      expected = {
+        type = "object";
+        additionalProperties = {
+          type = "integer";
+        };
+        inherit default description;
+      };
+    };
+
   testNullOrBool =
     let
       default = null; # null is a valid value for this type
@@ -149,7 +180,30 @@ in
     {
       expr = slib.parseOption (evalType (lib.types.nullOr lib.types.bool) default);
       expected = {
-        type = [ "null" "boolean" ];
+        anyOf = [
+          { type = "null"; }
+          { type = "boolean"; }
+        ];
+        inherit default description;
+      };
+    };
+
+  testNullOrNullOr =
+    let
+      default = null; # null is a valid value for this type
+    in
+    {
+      expr = slib.parseOption (evalType (lib.types.nullOr (lib.types.nullOr lib.types.bool)) default);
+      expected = {
+        anyOf = [
+          { type = "null"; }
+          {
+            anyOf = [
+              { type = "null"; }
+              { type = "boolean"; }
+            ];
+          }
+        ];
         inherit default description;
       };
     };
@@ -256,6 +310,57 @@ in
           };
         };
         inherit default description;
+      };
+    };
+
+  testEither =
+    let
+      default = "foo";
+    in
+    {
+      expr = slib.parseOption (evalType (lib.types.either lib.types.bool lib.types.str) default);
+      expected = {
+        anyOf = [
+          { type = "boolean"; }
+          { type = "string"; }
+        ];
+        inherit default description;
+      };
+    };
+
+  testAnything =
+    let
+      default = "foo";
+    in
+    {
+      expr = slib.parseOption (evalType lib.types.anything default);
+      expected = {
+        inherit default description;
+        type = [ "boolean" "integer" "number" "string" "array" "object" "null" ];
+      };
+    };
+
+  testUnspecified =
+    let
+      default = "foo";
+    in
+    {
+      expr = slib.parseOption (evalType lib.types.unspecified default);
+      expected = {
+        inherit default description;
+        type = [ "boolean" "integer" "number" "string" "array" "object" "null" ];
+      };
+    };
+
+  testRaw =
+    let
+      default = "foo";
+    in
+    {
+      expr = slib.parseOption (evalType lib.types.raw default);
+      expected = {
+        inherit default description;
+        type = [ "boolean" "integer" "number" "string" "array" "object" "null" ];
       };
     };
 }
