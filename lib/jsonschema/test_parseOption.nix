@@ -39,6 +39,28 @@ in
       };
     };
 
+  testDescriptionIsAttrs =
+    let
+      evaledConfig = lib.evalModules {
+        modules = [{
+          options.opt = lib.mkOption {
+            type = lib.types.bool;
+            description = {
+              _type = "mdDoc";
+              text = description;
+            };
+          };
+        }];
+      };
+    in
+    {
+      expr = slib.parseOption evaledConfig.options.opt;
+      expected = {
+        type = "boolean";
+        inherit description;
+      };
+    };
+
   testBool =
     let
       default = false;

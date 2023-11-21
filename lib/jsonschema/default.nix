@@ -61,7 +61,7 @@ rec {
         inherit (option) default;
       };
       description = lib.optionalAttrs (option ? description) {
-        inherit (option) description;
+        description = option.description.text or option.description;
       };
     in
 
@@ -186,8 +186,10 @@ rec {
       in
       default // description // {
         type = "array";
-        items = parseOption nestedOption;
       }
+      // (lib.optionalAttrs (! isExcludedOption nestedOption) {
+        items = parseOption nestedOption;
+      })
 
     # parse list of unspecified
     else if
