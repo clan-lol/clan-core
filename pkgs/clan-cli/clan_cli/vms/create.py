@@ -147,6 +147,8 @@ class BuildVmTask(BaseTask):
                 f'{vm_config["memorySize"]}M',
                 "-smp",
                 str(vm_config["cores"]),
+                "-cpu",
+                "max",
                 "-device",
                 "virtio-rng-pci",
                 "-net",
@@ -167,6 +169,12 @@ class BuildVmTask(BaseTask):
                 "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
                 "-device",
                 "virtio-keyboard",
+                # TODO: audio card
+                # "-audiodev", "spice,id=audio0",
+                # "-device", "intel-hda",
+                # "-device", "hda-duplex,audiodev=audio0",
+                # TODO: we also need to fixup timezone than...
+                # "-rtc", "base=localtime,clock=host,driftfix=slew",
                 "-vga",
                 "virtio",
                 "-usb",
