@@ -43,11 +43,12 @@ let
 
   dependencies = [
     argcomplete # optional dependency: if not enabled, shell completion will not work
-    fastapi
-    uvicorn # optional dependencies: if not enabled, webui subcommand will not work
   ];
 
   pytestDependencies = runtimeDependencies ++ dependencies ++ [
+    fastapi # optional dependencies: if not enabled, webui subcommand will not work
+    uvicorn # optional dependencies: if not enabled, webui subcommand will not work
+
     #schemathesis # optional for http fuzzing
     pytest
     pytest-cov

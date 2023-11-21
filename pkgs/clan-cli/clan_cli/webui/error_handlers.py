@@ -4,7 +4,7 @@ from fastapi import Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-from ..errors import ClanError
+from ..errors import ClanError, ClanHttpError
 from .settings import settings
 
 log = logging.getLogger(__name__)
@@ -17,7 +17,13 @@ def clan_error_handler(request: Request, exc: Exception) -> JSONResponse:
         headers["Access-Control-Allow-Origin"] = "*"
         headers["Access-Control-Allow-Methods"] = "*"
 
-    if isinstance(exc, ClanError):
+    if isinstance(exc, ClanHttpError):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=jsonable_encoder(dict(detail={"msg": exc.msg})),
+            headers=headers,
+        )
+    elif isinstance(exc, ClanError):
         log.error(f"ClanError: {exc}")
         detail = [
             {
