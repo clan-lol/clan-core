@@ -54,9 +54,5 @@ mkShell {
       $tmp_path/share/zsh/site-functions
     register-python-argcomplete --shell fish clan > $tmp_path/share/fish/vendor_completions.d/clan.fish
     register-python-argcomplete --shell bash clan > $tmp_path/share/bash-completion/completions/clan
-
-
-    ./bin/clan flakes create example_clan
-    ./bin/clan machines create examplemachine example_clan
   '';
 }

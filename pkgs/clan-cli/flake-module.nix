@@ -31,12 +31,14 @@
     {
       devShells.clan-cli = pkgs.callPackage ./shell.nix {
         inherit (self'.packages) clan-cli ui-assets nix-unit;
+
       };
       packages = {
         clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
           inherit (self'.packages) ui-assets;
           inherit (inputs) nixpkgs;
           inherit (inputs.nixpkgs-for-deal.legacyPackages.${system}.python3Packages) deal;
+          inherit (inputs.nixpkgs-for-deal.legacyPackages.${system}.python3Packages) schemathesis;
           clan-core-path = clanCoreWithVendoredDeps;
         };
         inherit (self'.packages.clan-cli) clan-openapi;
