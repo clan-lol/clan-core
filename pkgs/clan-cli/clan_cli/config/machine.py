@@ -6,14 +6,8 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Optional
 
-from fastapi import HTTPException
-
-from clan_cli.dirs import (
-    machine_settings_file,
-    nixpkgs_source,
-    specific_machine_dir,
-)
-from clan_cli.errors import ClanError
+from clan_cli.dirs import machine_settings_file, nixpkgs_source, specific_machine_dir
+from clan_cli.errors import ClanError, ClanHttpError
 from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
 
@@ -83,9 +77,9 @@ def verify_machine_config(
 def config_for_machine(flake_dir: Path, machine_name: str) -> dict:
     # read the config from a json file located at {flake}/machines/{machine_name}/settings.json
     if not specific_machine_dir(flake_dir, machine_name).exists():
-        raise HTTPException(
+        raise ClanHttpError(
+            msg=f"Machine {machine_name} not found. Create the machine first`",
             status_code=404,
-            detail=f"Machine {machine_name} not found. Create the machine first`",
         )
     settings_path = machine_settings_file(flake_dir, machine_name)
     if not settings_path.exists():
@@ -100,9 +94,9 @@ def set_config_for_machine(flake_dir: Path, machine_name: str, config: dict) -> 
         raise ClanError("Machine name must be a valid hostname")
     if "networking" in config and "hostName" in config["networking"]:
         if machine_name != config["networking"]["hostName"]:
-            raise HTTPException(
+            raise ClanHttpError(
+                msg="Machine name does not match the 'networking.hostName' setting in the config",
                 status_code=400,
-                detail="Machine name does not match the 'networking.hostName' setting in the config",
             )
         config["networking"]["hostName"] = machine_name
     # create machine folder if it doesn't exist
