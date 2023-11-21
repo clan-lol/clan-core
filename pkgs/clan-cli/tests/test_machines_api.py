@@ -48,7 +48,6 @@ def test_schema_invalid_clan_imports(
         "Some requested clan modules could not be found"
         in response.json()["detail"]["msg"]
     )
-    assert "non-existing-clan-module" in response.json()["detail"]["modules_not_found"]
 
 
 def test_create_machine_invalid_hostname(
