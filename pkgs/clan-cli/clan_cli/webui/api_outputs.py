@@ -5,7 +5,6 @@ from pydantic import BaseModel, Extra, Field
 
 from ..async_cmd import CmdOut
 from ..task_manager import TaskStatus
-from ..vms.inspect import VmConfig
 
 
 class Status(Enum):
@@ -60,10 +59,6 @@ class VmCreateResponse(BaseModel):
 
 class FlakeAttrResponse(BaseModel):
     flake_attrs: list[str]
-
-
-class VmInspectResponse(BaseModel):
-    config: VmConfig
 
 
 class FlakeAction(BaseModel):

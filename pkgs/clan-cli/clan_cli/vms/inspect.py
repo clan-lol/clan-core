@@ -1,16 +1,16 @@
 import argparse
 import asyncio
 import json
+from dataclasses import dataclass
 from pathlib import Path
-
-from pydantic import AnyUrl, BaseModel
 
 from ..async_cmd import run
 from ..nix import nix_config, nix_eval
 
 
-class VmConfig(BaseModel):
-    flake_url: AnyUrl | Path
+@dataclass
+class VmConfig:
+    flake_url: str | Path
     flake_attr: str
 
     cores: int
@@ -18,7 +18,7 @@ class VmConfig(BaseModel):
     graphics: bool
 
 
-async def inspect_vm(flake_url: AnyUrl | Path, flake_attr: str) -> VmConfig:
+async def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:
     config = nix_config()
     system = config["system"]
 
