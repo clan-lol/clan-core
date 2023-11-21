@@ -28,7 +28,6 @@
 , tor
 , git
 , nixpkgs
-, makeDesktopItem
 , copyDesktopItems
 , qemu
 , gnupg
@@ -207,13 +206,4 @@ python3.pkgs.buildPythonApplication {
     PYTHONPATH= $out/bin/clan --help
   '';
   meta.mainProgram = "clan";
-  desktopItems = [
-    (makeDesktopItem {
-      name = "clan";
-      exec = "clan --debug join %u";
-      desktopName = "CLan Manager";
-      startupWMClass = "clan";
-      mimeTypes = [ "x-scheme-handler/clan" ];
-    })
-  ];
 }
