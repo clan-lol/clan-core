@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .assets import asset_path
 from .error_handlers import clan_error_handler
-from .routers import clan_modules, flake, health, machines, root, vms
+from .routers import clan_modules, flake, health, machines, root
 from .settings import settings
 from .tags import tags_metadata
 
@@ -31,7 +31,6 @@ def setup_app() -> FastAPI:
     app.include_router(flake.router)
     app.include_router(health.router)
     app.include_router(machines.router)
-    app.include_router(vms.router)
 
     # Needs to be last in register. Because of wildcard route
     app.include_router(root.router)

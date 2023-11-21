@@ -5,8 +5,6 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from pydantic import AnyUrl
-
 from .dirs import nixpkgs_flake, nixpkgs_source
 
 
@@ -14,7 +12,7 @@ def nix_command(flags: list[str]) -> list[str]:
     return ["nix", "--extra-experimental-features", "nix-command flakes"] + flags
 
 
-def nix_flake_show(flake_url: AnyUrl | Path) -> list[str]:
+def nix_flake_show(flake_url: str | Path) -> list[str]:
     return nix_command(
         [
             "flake",
