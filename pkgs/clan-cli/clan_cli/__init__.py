@@ -5,7 +5,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Optional, Sequence
 
-from . import config, flakes, join, machines, secrets, vms, webui
+from . import config, flakes, machines, secrets, vms, webui
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
 from .ssh import cli as ssh_cli
@@ -68,9 +68,6 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
         "flakes", help="create a clan flake inside the current directory"
     )
     flakes.register_parser(parser_flake)
-
-    parser_join = subparsers.add_parser("join", help="join a remote clan")
-    join.register_parser(parser_join)
 
     parser_config = subparsers.add_parser("config", help="set nixos configuration")
     config.register_parser(parser_config)
