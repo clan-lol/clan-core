@@ -6,12 +6,8 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Optional
 
-from fastapi import HTTPException
-
-from clan_cli.dirs import (
-    nixpkgs_source,
-)
-from clan_cli.errors import ClanError
+from clan_cli.dirs import nixpkgs_source
+from clan_cli.errors import ClanError, ClanHttpError
 from clan_cli.nix import nix_eval
 
 
@@ -59,17 +55,14 @@ def machine_schema(
         )
         if proc.returncode != 0:
             print(proc.stderr, file=sys.stderr)
-            raise ClanError(
-                f"Failed to check clanImports for existence:\n{proc.stderr}"
+            raise ClanHttpError(
+                status_code=400,
+                msg=f"Failed to check clanImports for existence:\n{proc.stderr}",
             )
         modules_not_found = json.loads(proc.stdout)
         if len(modules_not_found) > 0:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "msg": "Some requested clan modules could not be found",
-                    "modules_not_found": modules_not_found,
-                },
+            raise ClanHttpError(
+                msg="Some requested clan modules could not be found", status_code=400
             )
 
         # get the schema
