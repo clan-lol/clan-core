@@ -78,8 +78,7 @@ Let's get your development environment up and running:
      ```
    - Wait for the frontend to build.
 
-   NOTE: If you have the error "@clan/colors.json" you executed `npm install`, please do not do that. `direnv reload` will handle dependency management. Please delete node_modules with `rm -rf node_modules`. 
-
+   NOTE: If you have the error "@clan/colors.json" you executed `npm install`, please do not do that. `direnv reload` will handle dependency management. Please delete node_modules with `rm -rf node_modules`.
 
 9. **Start the Frontend**:
    - To start the frontend, execute:

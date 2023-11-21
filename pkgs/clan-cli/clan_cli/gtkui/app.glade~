@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.40.0 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkApplicationWindow" id="main-window">
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkFixed">
+        <property name="name">asdasd</property>
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child>
+          <object class="GtkButton" id="help_button">
+            <property name="label" translatable="yes">May I help you?</property>
+            <property name="name">asdasd</property>
+            <property name="width-request">100</property>
+            <property name="height-request">80</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="image-position">top</property>
+            <signal name="clicked" handler="on_help_button_clicked" object="coffee_label" swapped="no"/>
+          </object>
+          <packing>
+            <property name="x">21</property>
+            <property name="y">21</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="coffee_label">
+            <property name="width-request">100</property>
+            <property name="height-request">80</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Get me some coffe! </property>
+            <property name="width-chars">0</property>
+          </object>
+          <packing>
+            <property name="x">178</property>
+            <property name="y">120</property>
+          </packing>
+        </child>
+        <style>
+          <class name="asdasd"/>
+        </style>
+      </object>
+    </child>
+  </object>
+</interface>

@@ -2,11 +2,14 @@ import json
 import os
 import subprocess
 import tempfile
-import deal
 from pathlib import Path
 from typing import Any
 
+import deal
+
 from .dirs import nixpkgs_flake, nixpkgs_source
+from .errors import ClanError
+
 
 @deal.raises(ClanError)
 def nix_command(flags: list[str]) -> list[str]:
@@ -25,6 +28,7 @@ def nix_flake_show(flake_url: str | Path) -> list[str]:
         ]
     )
 
+
 @deal.raises(ClanError)
 def nix_build(
     flags: list[str],
@@ -41,6 +45,7 @@ def nix_build(
         + flags
     )
 
+
 @deal.raises(ClanError)
 def nix_config() -> dict[str, Any]:
     cmd = nix_command(["show-config", "--json"])
@@ -50,6 +55,7 @@ def nix_config() -> dict[str, Any]:
     for key, value in data.items():
         config[key] = value["value"]
     return config
+
 
 @deal.raises(ClanError)
 def nix_eval(flags: list[str]) -> list[str]:
@@ -77,6 +83,7 @@ def nix_eval(flags: list[str]) -> list[str]:
                 + flags
             )
     return default_flags + flags
+
 
 @deal.raises(ClanError)
 def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:

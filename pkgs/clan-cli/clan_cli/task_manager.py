@@ -186,6 +186,7 @@ def get_task(uuid: UUID) -> BaseTask:
 
 T = TypeVar("T", bound="BaseTask")
 
+
 @deal.raises(ClanError)
 def create_task(task_type: Type[T], *args: Any) -> T:
     global POOL

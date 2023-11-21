@@ -1,9 +1,8 @@
 import asyncio
 import logging
-import deal
 import shlex
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Dict, NamedTuple, Optional, Awaitable
+from typing import Any, Callable, Coroutine, Dict, NamedTuple, Optional
 
 from .custom_logger import get_caller
 from .errors import ClanError
@@ -16,8 +15,8 @@ class CmdOut(NamedTuple):
     stderr: str
     cwd: Optional[Path] = None
 
-@deal.raises(ClanError)
-async def run(cmd: list[str], cwd: Optional[Path] = None) -> Awaitable[CmdOut]:
+
+async def run(cmd: list[str], cwd: Optional[Path] = None) -> CmdOut:
     cwd_res = None
     if cwd is not None:
         if not cwd.exists():
@@ -52,7 +51,6 @@ stdout:
     return CmdOut(stdout.decode("utf-8"), stderr.decode("utf-8"), cwd=cwd)
 
 
-@deal.raises(ClanError)
 def runforcli(
     func: Callable[..., Coroutine[Any, Any, Dict[str, CmdOut]]], *args: Any
 ) -> None:

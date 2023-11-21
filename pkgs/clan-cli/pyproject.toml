@@ -39,6 +39,11 @@ module = "argcomplete.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = "gi.*"
+ignore_missing_imports = true
+
+
+[[tool.mypy.overrides]]
 module = "jsonschema.*"
 ignore_missing_imports = true
 
@@ -58,4 +63,4 @@ ignore_missing_imports = true
 line-length = 88
 
 select = [ "E", "F", "I",  "N"]
-ignore = [ "E501" ]
+ignore = [ "E501", "E402" ]
