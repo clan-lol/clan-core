@@ -1,6 +1,6 @@
 import logging
 
-from pydantic import AnyUrl, BaseModel, Extra
+from pydantic import AnyUrl, BaseModel, Extra, parse_obj_as
 
 from ..flakes.create import DEFAULT_URL
 
@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 
 class FlakeCreateInput(BaseModel):
-    url: AnyUrl = DEFAULT_URL
+    url: AnyUrl = parse_obj_as(AnyUrl, DEFAULT_URL)
 
 
 class MachineConfig(BaseModel):

@@ -3,20 +3,14 @@ import argparse
 from pathlib import Path
 from typing import Dict
 
-from pydantic import AnyUrl
-from pydantic.tools import parse_obj_as
-
 from ..async_cmd import CmdOut, run, runforcli
 from ..errors import ClanError
 from ..nix import nix_command, nix_shell
 
-DEFAULT_URL: AnyUrl = parse_obj_as(
-    AnyUrl,
-    "git+https://git.clan.lol/clan/clan-core?new-clan",
-)
+DEFAULT_URL: str = "git+https://git.clan.lol/clan/clan-core?new-clan"
 
 
-async def create_flake(directory: Path, url: AnyUrl) -> Dict[str, CmdOut]:
+async def create_flake(directory: Path, url: str) -> Dict[str, CmdOut]:
     if not directory.exists():
         directory.mkdir()
     else:
