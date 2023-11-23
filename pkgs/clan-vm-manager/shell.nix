@@ -1,14 +1,14 @@
-{ clan-vm-manager, clan-cli, mkShell, ruff, python3 }:
-let
-  pythonWithDeps = python3.withPackages (ps: clan-vm-manager.propagatedBuildInputs);
-in
+{ clan-vm-manager, clan-cli, mkShell, ruff }:
 mkShell {
-  buildInputs = [ pythonWithDeps ] ++ clan-vm-manager.buildInputs;
+  inherit (clan-vm-manager) propagatedBuildInputs buildInputs;
   nativeBuildInputs = [
     ruff
   ] ++ clan-vm-manager.nativeBuildInputs;
 
   shellHook = ''
     ln -sfT ${clan-cli.nixpkgs} ../clan-cli/clan_cli/nixpkgs
+
+    # prepend clan-cli for development
+    export PYTHONPATH=../clan-cli:$PYTHONPATH
   '';
 }
