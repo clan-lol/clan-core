@@ -1,20 +1,18 @@
 [build-system]
-requires = [ "setuptools" ]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "clan-cli"
 description = "cLAN CLI tool"
-dynamic = [ "version" ]
+dynamic = ["version"]
 scripts = { clan = "clan_cli:main" }
 
 [tool.setuptools.packages.find]
 exclude = ["clan_cli.nixpkgs*"]
 
 [tool.setuptools.package-data]
-clan_cli = [ "config/jsonschema/*", "webui/assets/**/*"]
-
-
+clan_cli = ["config/jsonschema/*", "webui/assets/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = "tests"
@@ -23,7 +21,7 @@ log_level = "DEBUG"
 log_format = "%(levelname)s: %(message)s\n       %(pathname)s:%(lineno)d::%(funcName)s"
 addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --durations 5 --color=yes --new-first" # Add --pdb for debugging
 norecursedirs = "tests/helpers"
-markers = [ "impure", "with_core" ]
+markers = ["impure", "with_core"]
 
 [tool.mypy]
 plugins = ["deal.mypy"]
@@ -37,11 +35,6 @@ exclude = "clan_cli.nixpkgs"
 [[tool.mypy.overrides]]
 module = "argcomplete.*"
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "gi.*"
-ignore_missing_imports = true
-
 
 [[tool.mypy.overrides]]
 module = "jsonschema.*"
@@ -62,5 +55,5 @@ ignore_missing_imports = true
 [tool.ruff]
 line-length = 88
 
-select = [ "E", "F", "I",  "N"]
-ignore = [ "E501", "E402" ]
+select = ["E", "F", "I", "N"]
+ignore = ["E501", "E402"]
