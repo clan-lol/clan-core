@@ -17,6 +17,7 @@
           container = import ./container nixosTestArgs;
           deltachat = import ./deltachat nixosTestArgs;
           meshnamed = import ./meshnamed nixosTestArgs;
+          borgbackup = import ./borgbackup nixosTestArgs;
         };
         schemaTests = pkgs.callPackages ./schemas.nix {
           inherit self;
