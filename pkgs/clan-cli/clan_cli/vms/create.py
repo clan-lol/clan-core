@@ -14,13 +14,82 @@ from ..task_manager import BaseTask, Command, create_task
 from .inspect import VmConfig, inspect_vm
 
 
+def qemu_command(
+    vm: VmConfig,
+    nixos_config: dict[str, str],
+    xchg_dir: Path,
+    secrets_dir: Path,
+    disk_img: Path,
+) -> list[str]:
+    kernel_cmdline = [
+        (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
+        f'init={nixos_config["toplevel"]}/init',
+        f'regInfo={nixos_config["regInfo"]}/registration',
+        "console=ttyS0,115200n8",
+        "console=tty0",
+    ]
+    # fmt: off
+    command = [
+        "qemu-kvm",
+        "-name", vm.flake_attr,
+        "-m", f'{nixos_config["memorySize"]}M',
+        "-smp", str(nixos_config["cores"]),
+        "-cpu", "max",
+        "-device", "virtio-rng-pci",
+        "-net", "nic,netdev=user.0,model=virtio",
+        "-netdev", "user,id=user.0",
+        "-virtfs", "local,path=/nix/store,security_model=none,mount_tag=nix-store",
+        "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=shared",
+        "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=xchg",
+        "-virtfs", f"local,path={secrets_dir},security_model=none,mount_tag=secrets",
+        "-drive", f"cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report",
+        "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
+        "-device", "virtio-keyboard",
+        # TODO: we also need to fixup timezone than...
+        # "-rtc", "base=localtime,clock=host,driftfix=slew",
+        "-vga", "virtio",
+        "-usb", "-device", "usb-tablet,bus=usb-bus.0",
+        "-kernel", f'{nixos_config["toplevel"]}/kernel',
+        "-initrd", nixos_config["initrd"],
+        "-append", " ".join(kernel_cmdline),
+    ] # fmt: on
+
+    if vm.graphics:
+        # fmt: off
+        command.extend(
+            [
+                "-audiodev", "spice,id=audio0",
+                "-device", "intel-hda",
+                "-device", "hda-duplex,audiodev=audio0",
+                "-device", "virtio-serial-pci",
+                "-chardev", "spicevmc,id=vdagent0,name=vdagent",
+                "-device", "virtserialport,chardev=vdagent0,name=com.redhat.spice.0",
+                "-spice", "disable-ticketing=on,port=5930,addr=127.0.0.1",
+                "-device", "qemu-xhci,id=spicepass",
+                "-chardev", "spicevmc,id=usbredirchardev1,name=usbredir",
+                "-device", "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
+                "-chardev", "spicevmc,id=usbredirchardev2,name=usbredir",
+                "-device", "usb-redir,chardev=usbredirchardev2,id=usbredirdev2",
+                "-chardev", "spicevmc,id=usbredirchardev3,name=usbredir",
+                "-device", "usb-redir,chardev=usbredirchardev3,id=usbredirdev3",
+                "-device", "pci-ohci,id=smartpass",
+                "-device", "usb-ccid",
+                "-chardev", "spicevmc,id=ccid,name=smartcard",
+            ]
+        )
+        # fmt: on
+    else:
+        command.append("-nographic")
+    return command
+
+
 class BuildVmTask(BaseTask):
     def __init__(self, uuid: UUID, vm: VmConfig, nix_options: list[str] = []) -> None:
         super().__init__(uuid, num_cmds=7)
         self.vm = vm
         self.nix_options = nix_options
 
-    def get_vm_create_info(self, cmds: Iterator[Command]) -> dict:
+    def get_vm_create_info(self, cmds: Iterator[Command]) -> dict[str, str]:
         config = nix_config()
         system = config["system"]
 
@@ -58,7 +127,7 @@ class BuildVmTask(BaseTask):
         self.log.debug(f"Creating VM for {machine}")
 
         # TODO: We should get this from the vm argument
-        vm_config = self.get_vm_create_info(cmds)
+        nixos_config = self.get_vm_create_info(cmds)
         clan_name = self.get_clan_name(cmds)
 
         self.log.debug(f"Building VM for clan name: {clan_name}")
@@ -87,7 +156,7 @@ class BuildVmTask(BaseTask):
                 cmd = next(cmds)
                 if Path(self.vm.flake_url).is_dir():
                     cmd.run(
-                        [vm_config["generateSecrets"], clan_name],
+                        [nixos_config["generateSecrets"], clan_name],
                         env=env,
                         name="generateSecrets",
                     )
@@ -96,7 +165,7 @@ class BuildVmTask(BaseTask):
 
             cmd = next(cmds)
             cmd.run(
-                [vm_config["uploadSecrets"]],
+                [nixos_config["uploadSecrets"]],
                 env=env,
                 name="uploadSecrets",
             )
@@ -132,57 +201,20 @@ class BuildVmTask(BaseTask):
             )
 
             cmd = next(cmds)
-            cmdline = [
-                (Path(vm_config["toplevel"]) / "kernel-params").read_text(),
-                f'init={vm_config["toplevel"]}/init',
-                f'regInfo={vm_config["regInfo"]}/registration',
-                "console=ttyS0,115200n8",
-                "console=tty0",
-            ]
-            qemu_command = [
-                "qemu-kvm",
-                "-name",
-                machine,
-                "-m",
-                f'{vm_config["memorySize"]}M',
-                "-smp",
-                str(vm_config["cores"]),
-                "-device",
-                "virtio-rng-pci",
-                "-net",
-                "nic,netdev=user.0,model=virtio",
-                "-netdev",
-                "user,id=user.0",
-                "-virtfs",
-                "local,path=/nix/store,security_model=none,mount_tag=nix-store",
-                "-virtfs",
-                f"local,path={xchg_dir},security_model=none,mount_tag=shared",
-                "-virtfs",
-                f"local,path={xchg_dir},security_model=none,mount_tag=xchg",
-                "-virtfs",
-                f"local,path={secrets_dir},security_model=none,mount_tag=secrets",
-                "-drive",
-                f"cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report",
-                "-device",
-                "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
-                "-device",
-                "virtio-keyboard",
-                "-vga",
-                "virtio",
-                "-usb",
-                "-device",
-                "usb-tablet,bus=usb-bus.0",
-                "-kernel",
-                f'{vm_config["toplevel"]}/kernel',
-                "-initrd",
-                vm_config["initrd"],
-                "-append",
-                " ".join(cmdline),
-            ]
-            if not self.vm.graphics:
-                qemu_command.append("-nographic")
-            print("$ " + shlex.join(qemu_command))
-            cmd.run(nix_shell(["qemu"], qemu_command), name="qemu")
+
+            qemu_cmd = qemu_command(
+                self.vm,
+                nixos_config,
+                xchg_dir=xchg_dir,
+                secrets_dir=secrets_dir,
+                disk_img=disk_img,
+            )
+            print(
+                "nix shell nixpkgs#spice-gtk -c spicy --port 5930 --spice-shared-dir $HOME"
+            )
+
+            print("$ " + shlex.join(qemu_cmd))
+            cmd.run(nix_shell(["qemu"], qemu_cmd), name="qemu")
 
 
 def create_vm(vm: VmConfig, nix_options: list[str] = []) -> BuildVmTask:
