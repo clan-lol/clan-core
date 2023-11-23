@@ -28,7 +28,6 @@
 , tor
 , git
 , nixpkgs
-, copyDesktopItems
 , qemu
 , gnupg
 , e2fsprogs
@@ -36,7 +35,7 @@
 , deal
 , rope
 , clan-core-path
-, schemathesis
+, schemathesis ? null
 }:
 let
 
@@ -129,7 +128,6 @@ python3.pkgs.buildPythonApplication {
   nativeBuildInputs = [
     setuptools
     installShellFiles
-    copyDesktopItems
   ];
   propagatedBuildInputs = dependencies;
 
