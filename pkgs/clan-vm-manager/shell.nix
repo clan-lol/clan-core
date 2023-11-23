@@ -9,7 +9,6 @@ mkShell {
   ] ++ clan-vm-manager.nativeBuildInputs;
 
   shellHook = ''
-    rm -f ../clan-cli/clan_cli/nixpkgs
-    ln -sf ${clan-cli.nixpkgs} ../clan-cli/clan_cli/nixpkgs
+    ln -sfT ${clan-cli.nixpkgs} ../clan-cli/clan_cli/nixpkgs
   '';
 }
