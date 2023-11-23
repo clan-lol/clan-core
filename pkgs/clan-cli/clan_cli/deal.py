@@ -1,13 +1,16 @@
 from types import ModuleType
-from typing import Callable
+from typing import Any, Callable
 
 
 class FakeDeal:
-    def __getattr__(self, _name: str) -> "FakeDeal":
-        return FakeDeal()
+    def __getattr__(self, name: str) -> "Callable":
+        return self.mock_call
 
-    def __call__(self, func: Callable) -> Callable:
-        return func
+    def mock_call(self, *args: Any, **kwargs: Any) -> Callable:
+        def wrapper(func: Callable) -> Callable:
+            return func
+
+        return wrapper
 
 
 try:
