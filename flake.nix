@@ -33,7 +33,6 @@
         "aarch64-darwin"
       ];
       imports = [
-
         ./checks/flake-module.nix
         ./devShell.nix
         ./formatter.nix

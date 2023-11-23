@@ -41,11 +41,6 @@ let
 
   dependencies = [
     argcomplete # optional dependency: if not enabled, shell completion will not work
-    wrapGAppsHook
-    gtk3
-    glib
-    gobject-introspection
-    pygobject3
   ];
 
   pytestDependencies = runtimeDependencies ++ dependencies ++ [

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clan-vm-manager"
+dynamic = ["version"]
+scripts = { clan-vm-manager = "clan_vm_manager:main" }
+
+[tool.setuptools.package-data]
+clan_vm_manager = ["*.glade"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_redundant_casts = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = "gi.*"
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 88
+
+select = ["E", "F", "I", "N"]
+ignore = ["E501", "E402"]
