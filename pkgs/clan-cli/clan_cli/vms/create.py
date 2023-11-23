@@ -3,9 +3,11 @@ import asyncio
 import json
 import os
 import shlex
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from threading import Condition, Thread
 from typing import Iterator
 from uuid import UUID
 
@@ -53,7 +55,7 @@ def qemu_command(
         "-kernel", f'{nixos_config["toplevel"]}/kernel',
         "-initrd", nixos_config["initrd"],
         "-append", " ".join(kernel_cmdline),
-    ] # fmt: on
+    ]  # fmt: on
 
     if vm.graphics:
         # fmt: off
@@ -82,6 +84,21 @@ def qemu_command(
     else:
         command.append("-nographic")
     return command
+
+
+def start_spicy(spice_socket: Path, stop_condition: Condition) -> None:
+    while not spice_socket.exists():
+        with stop_condition:
+            if stop_condition.wait(0.1):
+                return
+
+    spicy = nix_shell(["spice-gtk"], ["spicy", f"--uri=spice+unix://{spice_socket}"])
+    proc = subprocess.Popen(spicy)
+    while proc.poll() is None:
+        with stop_condition:
+            if stop_condition.wait(0.1):
+                proc.terminate()
+                proc.wait()
 
 
 class BuildVmTask(BaseTask):
@@ -212,12 +229,19 @@ class BuildVmTask(BaseTask):
                 disk_img=disk_img,
                 spice_socket=spice_socket,
             )
-            print(
-                f"nix shell nixpkgs#spice-gtk -c spicy --uri=spice+unix://{spice_socket} --spice-shared-dir $HOME"
+            stop_condition = Condition()
+            spice_thread = Thread(
+                target=start_spicy, args=(spice_socket, stop_condition), name="qemu"
             )
+            spice_thread.start()
 
             print("$ " + shlex.join(qemu_cmd))
-            cmd.run(nix_shell(["qemu"], qemu_cmd), name="qemu")
+            try:
+                cmd.run(nix_shell(["qemu"], qemu_cmd), name="qemu")
+            finally:
+                with stop_condition:
+                    stop_condition.notify()
+                spice_thread.join()
 
 
 def create_vm(vm: VmConfig, nix_options: list[str] = []) -> BuildVmTask:
