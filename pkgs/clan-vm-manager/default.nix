@@ -8,6 +8,7 @@
 , gnome
 , gobject-introspection
 , clan-cli
+, makeDesktopItem
 }:
 let
   source = ./.;
@@ -54,4 +55,14 @@ python3.pkgs.buildPythonApplication {
     PYTHONPATH= $out/bin/clan-vm-manager --help
   '';
   meta.mainProgram = "clan";
+  desktopItems = [
+    (makeDesktopItem {
+      name = "clan-vm-manager";
+      # TODO: this subcommand is not implemented yet
+      exec = "clan-vm-manager join %u";
+      desktopName = "CLan VM Manager";
+      startupWMClass = "clan";
+      mimeTypes = [ "x-scheme-handler/clan" ];
+    })
+  ];
 }
