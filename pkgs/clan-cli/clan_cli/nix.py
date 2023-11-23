@@ -5,8 +5,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-import deal
-
+from .deal import deal
 from .dirs import nixpkgs_flake, nixpkgs_source
 from .errors import ClanError
 
