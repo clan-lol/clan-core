@@ -1,6 +1,7 @@
 { self, inputs, lib, ... }: {
   flake.nixosModules.clanCore = { config, pkgs, options, ... }: {
     imports = [
+      ./backups.nix
       ./clan-imports
       ./secrets
       ./zerotier

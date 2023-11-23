@@ -8,5 +8,6 @@
     };
     deltachat = ./deltachat.nix;
     xfce = ./xfce.nix;
+    borgbackup = ./borgbackup.nix;
   };
 }
