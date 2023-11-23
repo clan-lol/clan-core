@@ -20,6 +20,7 @@ def qemu_command(
     xchg_dir: Path,
     secrets_dir: Path,
     disk_img: Path,
+    spice_socket: Path,
 ) -> list[str]:
     kernel_cmdline = [
         (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
@@ -64,7 +65,7 @@ def qemu_command(
                 "-device", "virtio-serial-pci",
                 "-chardev", "spicevmc,id=vdagent0,name=vdagent",
                 "-device", "virtserialport,chardev=vdagent0,name=com.redhat.spice.0",
-                "-spice", "disable-ticketing=on,port=5930,addr=127.0.0.1",
+                "-spice", f"unix=on,addr={spice_socket},disable-ticketing=on",
                 "-device", "qemu-xhci,id=spicepass",
                 "-chardev", "spicevmc,id=usbredirchardev1,name=usbredir",
                 "-device", "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
@@ -142,6 +143,7 @@ class BuildVmTask(BaseTask):
             secrets_dir = tmpdir / "secrets"
             secrets_dir.mkdir(exist_ok=True)
             disk_img = tmpdir / "disk.img"
+            spice_socket = tmpdir / "spice.sock"
 
             env = os.environ.copy()
             env["CLAN_DIR"] = str(self.vm.flake_url)
@@ -208,9 +210,10 @@ class BuildVmTask(BaseTask):
                 xchg_dir=xchg_dir,
                 secrets_dir=secrets_dir,
                 disk_img=disk_img,
+                spice_socket=spice_socket,
             )
             print(
-                "nix shell nixpkgs#spice-gtk -c spicy --port 5930 --spice-shared-dir $HOME"
+                f"nix shell nixpkgs#spice-gtk -c spicy --uri=spice+unix://{spice_socket} --spice-shared-dir $HOME"
             )
 
             print("$ " + shlex.join(qemu_cmd))
