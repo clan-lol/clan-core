@@ -45,7 +45,6 @@ mkShell {
     export PATH="$tmp_path/python/bin:${checkScript}/bin:$PATH"
     export PYTHONPATH="$repo_root:$tmp_path/python/${pythonWithDeps.sitePackages}:"
 
-
     export XDG_DATA_DIRS="$tmp_path/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}"
     export fish_complete_path="$tmp_path/share/fish/vendor_completions.d''${fish_complete_path:+:$fish_complete_path}"
     mkdir -p \

@@ -1,6 +1,7 @@
 { ... }: {
   imports = [
     ./clan-cli/flake-module.nix
+    ./clan-vm-manager/flake-module.nix
     ./installer/flake-module.nix
     ./ui/flake-module.nix
     ./theme/flake-module.nix
