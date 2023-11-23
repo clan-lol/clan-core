@@ -38,9 +38,8 @@ mkShell {
       --prefix "$tmp_path/python" \
       --editable $repo_root
 
-    rm -f clan_cli/nixpkgs clan_cli/webui/assets
-    ln -sf ${clan-cli.nixpkgs} clan_cli/nixpkgs
-    ln -sf ${ui-assets} clan_cli/webui/assets
+    ln -sfT ${clan-cli.nixpkgs} clan_cli/nixpkgs
+    ln -sfT ${ui-assets} clan_cli/webui/assets
 
     export PATH="$tmp_path/python/bin:${checkScript}/bin:$PATH"
     export PYTHONPATH="$repo_root:$tmp_path/python/${pythonWithDeps.sitePackages}:"
