@@ -244,20 +244,20 @@ class BuildVmTask(BaseTask):
                 spice_thread.join()
 
 
-def create_vm(vm: VmConfig, nix_options: list[str] = []) -> BuildVmTask:
+def run_vm(vm: VmConfig, nix_options: list[str] = []) -> BuildVmTask:
     return create_task(BuildVmTask, vm, nix_options)
 
 
-def create_command(args: argparse.Namespace) -> None:
+def run_command(args: argparse.Namespace) -> None:
     flake_url = args.flake_url or args.flake
     vm = asyncio.run(inspect_vm(flake_url=flake_url, flake_attr=args.machine))
 
-    task = create_vm(vm, args.option)
+    task = run_vm(vm, args.option)
     for line in task.log_lines():
         print(line, end="")
 
 
-def register_create_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("machine", type=str, help="machine in the flake to create")
+def register_run_parser(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("machine", type=str, help="machine in the flake to run")
     parser.add_argument("--flake_url", type=str, help="flake url")
-    parser.set_defaults(func=create_command)
+    parser.set_defaults(func=run_command)

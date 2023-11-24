@@ -23,7 +23,7 @@ def test_inspect(
 
 @pytest.mark.skipif(no_kvm, reason="Requires KVM")
 @pytest.mark.impure
-def test_create(
+def test_run(
     monkeypatch: pytest.MonkeyPatch,
     test_flake_with_core: FlakeForTest,
     age_keys: list["KeyPair"],
@@ -40,4 +40,4 @@ def test_create(
             age_keys[0].pubkey,
         ]
     )
-    cli.run(["vms", "create", "vm1"])
+    cli.run(["vms", "run", "vm1"])
