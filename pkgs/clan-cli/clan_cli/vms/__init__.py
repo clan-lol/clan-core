@@ -1,7 +1,7 @@
 import argparse
 
-from .create import register_create_parser
 from .inspect import register_inspect_parser
+from .run import register_run_parser
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:
@@ -12,10 +12,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         required=True,
     )
 
-    inspect_parser = subparser.add_parser(
-        "inspect", help="inspect the vm configuration"
+    register_inspect_parser(
+        subparser.add_parser("inspect", help="inspect the vm configuration")
     )
-    register_inspect_parser(inspect_parser)
-
-    create_parser = subparser.add_parser("create", help="create a VM from a machine")
-    register_create_parser(create_parser)
+    register_run_parser(subparser.add_parser("run", help="run a VM from a machine"))
