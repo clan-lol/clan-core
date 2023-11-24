@@ -9,6 +9,7 @@
 , ninja
 , cmake
 , clang-tools
+, difftastic
 }:
 
 stdenv.mkDerivation {
@@ -32,6 +33,10 @@ stdenv.mkDerivation {
     # nlohmann_json can be only discovered via cmake files
     cmake
   ] ++ (lib.optional stdenv.cc.isClang [ clang-tools ]);
+
+  postInstall = ''
+    wrapProgram "$out/bin/nix-unit" --prefix PATH : ${difftastic}/bin
+  '';
 
   meta = {
     description = "Nix unit test runner";
