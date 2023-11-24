@@ -28,13 +28,13 @@ _Note: The `$(mkpasswd)` command generates a hashed password. Ensure you have th
 
 ## Test Your Machine Configuration Inside a VM
 
-Before deploying your configuration to a live environment, you can create a virtual machine (VM) to test the settings:
+Before deploying your configuration to a live environment, you can run a virtual machine (VM) to test the settings:
 
 ```shellSession
-$ clan vms create my-machine
+$ clan vms run my-machine
 ```
 
-This command creates a VM based on the configuration of `my-machine`, allowing you to verify changes in a controlled environment.
+This command run a VM based on the configuration of `my-machine`, allowing you to verify changes in a controlled environment.
 
 ## Installing a New Machine
 
