@@ -35,6 +35,8 @@
 , deal
 , rope
 , clan-core-path
+, writeShellScriptBin
+, nodePackages
 , schemathesis ? null
 }:
 let
@@ -166,15 +168,27 @@ python3.pkgs.buildPythonApplication {
       fi
       touch $out
     '';
-  };
-  passthru.clan-openapi = runCommand "clan-openapi" { } ''
-    cp -r ${source} ./src
-    chmod +w -R ./src
-    cd ./src
-    export PATH=${checkPython}/bin:$PATH
 
-    ${checkPython}/bin/python ./bin/gen-openapi --out $out/openapi.json --app-dir . clan_cli.webui.app:app
-    touch $out
+    check-clan-openapi = runCommand "check-clan-openapi" { } ''
+      export PATH=${checkPython}/bin:$PATH
+      ${checkPython}/bin/python ${source}/bin/gen-openapi --out ./openapi.json --app-dir ${source} clan_cli.webui.app:app
+      ${lib.getExe nodePackages.prettier} --write ./openapi.json
+
+      if ! diff -u ./openapi.json ${source}/clan_cli/webui/openapi.json; then
+        echo "nix run .#update-clan-openapi to update the openapi.json file."
+        exit 1
+      fi
+
+      touch $out
+    '';
+  };
+  passthru.update-clan-openapi = writeShellScriptBin "update-clan-openapi" ''
+    export PATH=${checkPython}/bin:$PATH
+    git_root=$(git rev-parse --show-toplevel)
+    cd "$git_root/pkgs/clan-cli"
+
+    ${checkPython}/bin/python ./bin/gen-openapi --out clan_cli/webui/openapi.json --app-dir . clan_cli.webui.app:app
+      ${lib.getExe nodePackages.prettier} --write clan_cli/webui/openapi.json
   '';
   passthru.nixpkgs = nixpkgs';
   passthru.checkPython = checkPython;

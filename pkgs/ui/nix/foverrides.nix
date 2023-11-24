@@ -1,4 +1,4 @@
-{ lib, config, pkgs, clanPkgs, ... }:
+{ lib, config, pkgs, ... }:
 let
 
   pjs =
@@ -73,7 +73,7 @@ in
 
 
         echo "----------- GENERATE API TS ------------"
-        cp ${clanPkgs.clan-openapi}/openapi.json .
+        cp ${../../clan-cli/clan_cli/webui/openapi.json} openapi.json
         ./node_modules/.bin/orval
 
         ln -fs ${pkgs.roboto}/share/fonts ./src/

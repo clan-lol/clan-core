@@ -1,7 +1,6 @@
 { floco
 , system
 , pkgs
-, clanPkgs
 }:
 let
 
@@ -25,9 +24,7 @@ let
       { config.floco.settings = { inherit system; basedir = ./.; }; }
       ./nix/floco-cfg.nix
     ];
-    specialArgs = {
-      inherit pkgs clanPkgs;
-    };
+    specialArgs = { inherit pkgs; };
   };
 
   # This attrset holds a few derivations related to our package.
