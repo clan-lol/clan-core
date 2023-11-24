@@ -9,6 +9,8 @@
 , ninja
 , cmake
 , clang-tools
+, difftastic
+, makeWrapper
 }:
 
 stdenv.mkDerivation {
@@ -22,7 +24,7 @@ stdenv.mkDerivation {
   };
   buildInputs = [
     nlohmann_json
-    nixVersions.stable
+    nixVersions.nix_2_18
     boost
   ];
   nativeBuildInputs = [
@@ -31,7 +33,12 @@ stdenv.mkDerivation {
     ninja
     # nlohmann_json can be only discovered via cmake files
     cmake
+    makeWrapper
   ] ++ (lib.optional stdenv.cc.isClang [ clang-tools ]);
+
+  postInstall = ''
+    wrapProgram "$out/bin/nix-unit" --prefix PATH : ${difftastic}/bin
+  '';
 
   meta = {
     description = "Nix unit test runner";
