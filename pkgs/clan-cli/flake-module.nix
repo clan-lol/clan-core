@@ -41,8 +41,12 @@
           inherit (inputs.nixpkgs-for-deal.legacyPackages.${system}.python3Packages) schemathesis;
           clan-core-path = clanCoreWithVendoredDeps;
         };
-        inherit (self'.packages.clan-cli) clan-openapi;
         default = self'.packages.clan-cli;
+      };
+
+      apps.update-clan-openapi = {
+        type = "app";
+        program = "${self'.packages.clan-cli.passthru.update-clan-openapi}/bin/update-clan-openapi";
       };
 
       checks = self'.packages.clan-cli.tests;

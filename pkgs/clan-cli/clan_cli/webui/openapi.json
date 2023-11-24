@@ -1,0 +1,952 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/clan_modules": {
+      "get": {
+        "tags": ["modules"],
+        "summary": "List Clan Modules",
+        "operationId": "list_clan_modules",
+        "parameters": [
+          {
+            "name": "flake_dir",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Flake Dir",
+              "type": "string",
+              "format": "path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClanModulesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/flake/history": {
+      "post": {
+        "tags": ["flake"],
+        "summary": "Flake History Append",
+        "operationId": "flake_history_append",
+        "parameters": [
+          {
+            "name": "flake_dir",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Flake Dir",
+              "type": "string",
+              "format": "path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["flake"],
+        "summary": "Flake History List",
+        "operationId": "flake_history_list",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Flake History List Api Flake History Get",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "path"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/flake/attrs": {
+      "get": {
+        "tags": ["flake"],
+        "summary": "Inspect Flake Attrs",
+        "operationId": "inspect_flake_attrs",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Url",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 65536,
+                  "format": "uri"
+                },
+                {
+                  "type": "string",
+                  "format": "path"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlakeAttrResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/flake/inspect": {
+      "get": {
+        "tags": ["flake"],
+        "summary": "Inspect Flake",
+        "operationId": "inspect_flake",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Url",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 65536,
+                  "format": "uri"
+                },
+                {
+                  "type": "string",
+                  "format": "path"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlakeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/flake/create": {
+      "post": {
+        "tags": ["flake"],
+        "summary": "Create Flake",
+        "operationId": "create_flake",
+        "parameters": [
+          {
+            "name": "flake_dir",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Flake Dir",
+              "type": "string",
+              "format": "path"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlakeCreateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlakeCreateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/machines": {
+      "get": {
+        "tags": ["machine"],
+        "summary": "List Machines",
+        "operationId": "list_machines",
+        "parameters": [
+          {
+            "name": "flake_dir",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Flake Dir",
+              "type": "string",
+              "format": "path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MachinesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/machines/{name}": {
+      "get": {
+        "tags": ["machine"],
+        "summary": "Get Machine",
+        "operationId": "get_machine",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "flake_dir",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Flake Dir",
+              "type": "string",
+              "format": "path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MachineResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/machines/{name}/config": {
+      "get": {
+        "tags": ["machine"],
+        "summary": "Get Machine Config",
+        "operationId": "get_machine_config",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "flake_dir",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Flake Dir",
+              "type": "string",
+              "format": "path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["machine"],
+        "summary": "Set Machine Config",
+        "operationId": "set_machine_config",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "flake_dir",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Flake Dir",
+              "type": "string",
+              "format": "path"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MachineConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/schema": {
+      "put": {
+        "tags": ["machine"],
+        "summary": "Get Machine Schema",
+        "operationId": "get_machine_schema",
+        "parameters": [
+          {
+            "name": "flake_dir",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Flake Dir",
+              "type": "string",
+              "format": "path"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Config",
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MissingClanImports"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/machines/{name}/verify": {
+      "get": {
+        "tags": ["machine"],
+        "summary": "Get Verify Machine Config",
+        "operationId": "get_verify_machine_config",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "flake_dir",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Flake Dir",
+              "type": "string",
+              "format": "path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyMachineResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["machine"],
+        "summary": "Put Verify Machine Config",
+        "operationId": "put_verify_machine_config",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "flake_dir",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "title": "Flake Dir",
+              "type": "string",
+              "format": "path"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "Config",
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyMachineResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClanModulesResponse": {
+        "properties": {
+          "clan_modules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Clan Modules"
+          }
+        },
+        "type": "object",
+        "required": ["clan_modules"],
+        "title": "ClanModulesResponse"
+      },
+      "CmdOut": {
+        "properties": {
+          "stdout": {
+            "type": "string",
+            "title": "Stdout"
+          },
+          "stderr": {
+            "type": "string",
+            "title": "Stderr"
+          },
+          "cwd": {
+            "type": "string",
+            "format": "path",
+            "title": "Cwd"
+          }
+        },
+        "type": "object",
+        "required": ["stdout", "stderr", "cwd"],
+        "title": "CmdOut"
+      },
+      "ConfigResponse": {
+        "properties": {
+          "clanImports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Clanimports",
+            "default": []
+          },
+          "clan": {
+            "type": "object",
+            "title": "Clan",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "title": "ConfigResponse"
+      },
+      "FlakeAction": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "uri": {
+            "type": "string",
+            "title": "Uri"
+          }
+        },
+        "type": "object",
+        "required": ["id", "uri"],
+        "title": "FlakeAction"
+      },
+      "FlakeAttrResponse": {
+        "properties": {
+          "flake_attrs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flake Attrs"
+          }
+        },
+        "type": "object",
+        "required": ["flake_attrs"],
+        "title": "FlakeAttrResponse"
+      },
+      "FlakeCreateInput": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "maxLength": 65536,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url",
+            "default": "git+https://git.clan.lol/clan/clan-core?new-clan"
+          }
+        },
+        "type": "object",
+        "title": "FlakeCreateInput"
+      },
+      "FlakeCreateResponse": {
+        "properties": {
+          "cmd_out": {
+            "additionalProperties": {
+              "items": [
+                {
+                  "type": "string",
+                  "title": "Stdout"
+                },
+                {
+                  "type": "string",
+                  "title": "Stderr"
+                },
+                {
+                  "type": "string",
+                  "format": "path",
+                  "title": "Cwd"
+                }
+              ],
+              "type": "array",
+              "maxItems": 3,
+              "minItems": 3
+            },
+            "type": "object",
+            "title": "Cmd Out"
+          }
+        },
+        "type": "object",
+        "required": ["cmd_out"],
+        "title": "FlakeCreateResponse"
+      },
+      "FlakeResponse": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/FlakeAction"
+            },
+            "type": "array",
+            "title": "Actions"
+          }
+        },
+        "type": "object",
+        "required": ["content", "actions"],
+        "title": "FlakeResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Machine": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          }
+        },
+        "type": "object",
+        "required": ["name", "status"],
+        "title": "Machine"
+      },
+      "MachineConfig": {
+        "properties": {
+          "clanImports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Clanimports",
+            "default": []
+          },
+          "clan": {
+            "type": "object",
+            "title": "Clan",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "title": "MachineConfig"
+      },
+      "MachineResponse": {
+        "properties": {
+          "machine": {
+            "$ref": "#/components/schemas/Machine"
+          }
+        },
+        "type": "object",
+        "required": ["machine"],
+        "title": "MachineResponse"
+      },
+      "MachinesResponse": {
+        "properties": {
+          "machines": {
+            "items": {
+              "$ref": "#/components/schemas/Machine"
+            },
+            "type": "array",
+            "title": "Machines"
+          }
+        },
+        "type": "object",
+        "required": ["machines"],
+        "title": "MachinesResponse"
+      },
+      "MissingClanImports": {
+        "properties": {
+          "missing_clan_imports": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Clan Imports",
+            "default": []
+          },
+          "msg": {
+            "type": "string",
+            "title": "Msg",
+            "default": "Some requested clan modules could not be found"
+          }
+        },
+        "type": "object",
+        "title": "MissingClanImports"
+      },
+      "SchemaResponse": {
+        "properties": {
+          "schema": {
+            "type": "object",
+            "title": "Schema"
+          }
+        },
+        "type": "object",
+        "required": ["schema"],
+        "title": "SchemaResponse"
+      },
+      "Status": {
+        "enum": ["online", "offline", "unknown"],
+        "title": "Status",
+        "description": "An enumeration."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      },
+      "VerifyMachineResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "error": {
+            "type": "string",
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": ["success"],
+        "title": "VerifyMachineResponse"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "flake",
+      "description": "Operations on a flake.",
+      "externalDocs": {
+        "description": "What is a flake?",
+        "url": "https://www.tweag.io/blog/2020-05-25-flakes/"
+      }
+    },
+    {
+      "name": "machine",
+      "description": "Manage physical machines. Instances of a flake"
+    },
+    {
+      "name": "vm",
+      "description": "Manage virtual machines. Instances of a flake"
+    },
+    {
+      "name": "modules",
+      "description": "Manage cLAN modules of a flake"
+    }
+  ]
+}

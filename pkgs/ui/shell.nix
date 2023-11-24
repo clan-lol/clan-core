@@ -1,7 +1,6 @@
 { fmod
 , pkg
 , pkgs
-, clanPkgs
 }:
 pkgs.mkShell {
   buildInputs = [
@@ -26,7 +25,7 @@ pkgs.mkShell {
 
     # re-generate the api code 
     rm -rf src/api openapi.json
-    cp ${clanPkgs.clan-openapi}/openapi.json . 
+    cp ${../../pkgs/clan-cli/clan_cli/webui/openapi.json} .
     orval
   '';
 }
