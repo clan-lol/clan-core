@@ -41,6 +41,15 @@ cd ..
 make
 ```
 
+## Look into virt-manager it uses python + spice-gtk
+
+Look into `virtManager/details/viewers.py` to see how spice-gtk is being used
+
+```bash
+git clone https://github.com/virt-manager/virt-manager
+
+```
+
 ### Glade
 
 Make sure to check the 'composit' box in glade in the GtkApplicationWindow to be able to
