@@ -5,6 +5,7 @@
 , pygobject3
 , wrapGAppsHook
 , gtk3
+, spice-gtk
 , gnome
 , gobject-introspection
 , clan-cli
@@ -31,7 +32,7 @@ python3.pkgs.buildPythonApplication {
     gobject-introspection
   ];
 
-  buildInputs = [ gtk3 gnome.adwaita-icon-theme ];
+  buildInputs = [ spice-gtk gtk3 gnome.adwaita-icon-theme ];
   propagatedBuildInputs = [ pygobject3 clan-cli ];
 
   # also re-expose dependencies so we test them in CI
