@@ -2,8 +2,9 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <object class="GtkApplicationWindow" id="main-window">
+  <template class="main-window" parent="GtkApplicationWindow">
     <property name="can-focus">False</property>
+    <signal name="destroy" handler="onDestroy" swapped="no"/>
     <child>
       <object class="GtkFixed">
         <property name="name">asdasd</property>
@@ -19,7 +20,7 @@
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
             <property name="image-position">top</property>
-            <signal name="clicked" handler="on_help_button_clicked" object="coffee_label" swapped="no"/>
+            <signal name="clicked" handler="onButtonPressed" swapped="no"/>
           </object>
           <packing>
             <property name="x">21</property>
@@ -40,10 +41,25 @@
             <property name="y">120</property>
           </packing>
         </child>
+        <child>
+          <object class="GtkButton" id="next_button">
+            <property name="label" translatable="yes">Next</property>
+            <property name="width-request">79</property>
+            <property name="height-request">39</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <signal name="clicked" handler="onNextButtonPressed" swapped="no"/>
+          </object>
+          <packing>
+            <property name="x">355</property>
+            <property name="y">190</property>
+          </packing>
+        </child>
         <style>
           <class name="asdasd"/>
         </style>
       </object>
     </child>
-  </object>
+  </template>
 </interface>
