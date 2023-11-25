@@ -57,5 +57,11 @@ import the glade file through GTK template
 - To understand GTK3 Components look into the [Python GTK3 Tutorial](https://python-gtk-3-tutorial.readthedocs.io/en/latest/search.html?q=ApplicationWindow&check_keywords=yes&area=default)
 
 - Also look into [PyGObject](https://pygobject.readthedocs.io/en/latest/guide/gtk_template.html) to know more about threading and async etc.
-- [GI Python API](https://lazka.github.io/pgi-docs/#Gtk-4.0/classes/ApplicationWindow.html#Gtk.ApplicationWindow)
+- [GI Python API](https://lazka.github.io/pgi-docs/#Gtk-3.0)
 - https://developer.gnome.org/documentation/tutorials/application.html
+
+## My gripes with GTK
+
+- Registered the signal in the wrong component? Oh then self.application() returns None!
+- Want to quit the Gtk App? Gtk.main_quit() does not work anymore if more than one Window is there, instead use `Gio.Application.quit(self.get_application())` duh! Is this documented anywhere? No? Ah well must be a monday!
+- Want to know which functions you can call on an Gtk.Application object? Then look into [Gtk.Application](https://lazka.github.io/pgi-docs/#Gtk-3.0/classes/Application.html#Gtk.Application) object and try the `get_windows()` function in Python! Oops doesn't exit, must be a Monday!
