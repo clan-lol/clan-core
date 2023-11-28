@@ -1,7 +1,3 @@
-
-
-import gi
-
 from gi.repository import Gtk
 
 
@@ -10,7 +6,11 @@ class ClanSelectPage(Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
 
         self.add(ClanSelectList(vms))
-        self.add(ClanSelectButtons(self.on_start_clicked, self.on_stop_clicked, self.on_backup_clicked))
+        self.add(
+            ClanSelectButtons(
+                self.on_start_clicked, self.on_stop_clicked, self.on_backup_clicked
+            )
+        )
 
     def on_start_clicked(self, widget):
         print("Start clicked")
@@ -20,6 +20,7 @@ class ClanSelectPage(Gtk.Box):
 
     def on_backup_clicked(self, widget):
         print("Backup clicked")
+
 
 class ClanSelectButtons(Gtk.Box):
     def __init__(self, on_start_clicked, on_stop_clicked, on_backup_clicked):
@@ -48,10 +49,10 @@ class ClanSelectList(Gtk.Box):
             self.list_store.append(items)
 
         self.tree_view = Gtk.TreeView(self.list_store, expand=True)
-        for (idx, (key, value))  in enumerate(vm.__dict__.items()):
+        for idx, (key, value) in enumerate(vm.__dict__.items()):
             if isinstance(value, str):
                 renderer = Gtk.CellRendererText()
-                #renderer.set_property("xalign", 0.5)
+                # renderer.set_property("xalign", 0.5)
                 col = Gtk.TreeViewColumn(key.capitalize(), renderer, text=idx)
                 col.set_property("alignment", 0.5)
                 col.set_sort_column_id(idx)
@@ -68,7 +69,6 @@ class ClanSelectList(Gtk.Box):
         selection = self.tree_view.get_selection()
         selection.connect("changed", self.on_select_row)
 
-
         self.set_border_width(10)
         self.add(self.tree_view)
 
@@ -82,7 +82,6 @@ class ClanSelectList(Gtk.Box):
         self.list_store[path][1] = not current_value
         # Print the updated value
         print("Switched", path, "to", self.list_store[path][1])
-
 
     def on_select_row(self, selection):
         model, row = selection.get_selected()
