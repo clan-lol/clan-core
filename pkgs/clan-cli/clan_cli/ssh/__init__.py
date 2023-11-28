@@ -9,6 +9,7 @@ import shlex
 import subprocess
 import sys
 import time
+import urllib.parse
 from contextlib import ExitStack, contextmanager
 from enum import Enum
 from pathlib import Path
@@ -775,11 +776,11 @@ def parse_deployment_address(
         for option in maybe_options[1].split("&"):
             k, v = option.split("=")
             options[k] = v
-    maybe_port = hostname.split(":")
-    port = None
-    if len(maybe_port) > 1:
-        hostname = maybe_port[0]
-        port = int(maybe_port[1])
+    result = urllib.parse.urlsplit("//" + hostname)
+    if not result.hostname:
+        raise Exception(f"Invalid hostname: {hostname}")
+    hostname = result.hostname
+    port = result.port
     meta = meta.copy()
     meta["flake_attr"] = machine_name
     return Host(
