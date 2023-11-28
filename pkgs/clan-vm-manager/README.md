@@ -71,6 +71,8 @@ import the glade file through GTK template
 - [GI Python API](https://lazka.github.io/pgi-docs/#Gtk-3.0)
 - https://developer.gnome.org/documentation/tutorials/application.html
 - [GTK3 Python] https://github.com/sam-m888/python-gtk3-tutorial/tree/master
+- https://gnome.pages.gitlab.gnome.org/libhandy/doc/1.8/index.html
+- https://github.com/geigi/cozy
 
 ## My gripes with GTK
 

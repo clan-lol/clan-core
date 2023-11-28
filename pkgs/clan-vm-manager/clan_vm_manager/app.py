@@ -1,68 +1,97 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
+from pathlib import Path
 
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gio, Gtk
+
+from .constants import constants
+from .ui.clan_select_list import ClanSelectPage
+
+
+class VM:
+    def __init__(self, url: str, autostart: bool, path: Path):
+        self.url = url
+        self.autostart = autostart
+        self.path = path
+
 
 vms = [
-    ("clan://clan.lol", True, "/home/user/my-clan"),
-    ("clan://lassul.lol", False, "/home/user/my-clan"),
-    ("clan://mic.lol", False, "/home/user/my-clan"),
+    VM("clan://clan.lol", True, "/home/user/my-clan"),
+    VM("clan://lassul.lol", False, "/home/user/my-clan"),
+    VM("clan://mic.lol", False, "/home/user/my-clan"),
+    VM("clan://dan.lol", False, "/home/user/my-clan"),
 ]
+vms.extend(vms)
+# vms.extend(vms)
+# vms.extend(vms)
 
 
-class MainWindow(Gtk.Window):
-    def __init__(self) -> None:
+class ClanJoinPage(Gtk.Box):
+    def __init__(self):
         super().__init__()
+        self.page = Gtk.Box()
+        self.set_border_width(10)
+        self.add(Gtk.Label(label="Add/Join another clan"))
+
+
+class MainWindow(Gtk.ApplicationWindow):
+    def __init__(self, application: Gtk.Application) -> None:
+        super().__init__(application=application)
         # Initialize the main window
         self.set_title("Clan VM Manager")
-        self.connect("delete-event", Gtk.main_quit)
+        self.connect("delete-event", self.on_quit)
 
-        # Some styling
-        self.set_border_width(10)
-        # self.set_default_size(500,300)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True)
+        self.add(vbox)
 
         # Add a notebook layout
         # https://python-gtk-3-tutorial.readthedocs.io/en/latest/layout.html#notebook
         self.notebook = Gtk.Notebook()
-        self.add(self.notebook)
+        vbox.add(self.notebook)
 
-        vms_store = Gtk.ListStore(str, bool, str)
-        for vm in vms:
-            vms_store.append(list(vm))
-
-        self.machine_tree_view = Gtk.TreeView(vms_store)
-        for idx, title in enumerate(["Url", "Autostart", "Path"]):
-            renderer = Gtk.CellRendererText()
-            col = Gtk.TreeViewColumn(title, renderer, text=idx)
-            col.set_sort_column_id(idx)
-            self.machine_tree_view.append_column(col)
-
-        selection = self.machine_tree_view.get_selection()
-        selection.connect("changed", self.on_select_row)
-
-        self.machine_page = Gtk.Box()
-        self.machine_page.set_border_width(10)
-        self.machine_page.add(self.machine_tree_view)
-        self.notebook.append_page(self.machine_page, Gtk.Label(label="Overview"))
-
-        self.join_page = Gtk.Box()
-        self.join_page.set_border_width(10)
-        self.join_page.add(Gtk.Label(label="Add/Join another clan"))
-        self.notebook.append_page(self.join_page, Gtk.Label(label="Add/Join"))
+        self.notebook.append_page(ClanSelectPage(vms), Gtk.Label(label="Overview"))
+        self.notebook.append_page(ClanJoinPage(), Gtk.Label(label="Add/Join"))
 
         # Must be called AFTER all components were added
         self.show_all()
 
-    def on_select_row(self, selection):
-        model, row = selection.get_selected()
-        if row is not None:
-            print(f"Selected {model[row][0]}")
+    def on_quit(self, *args):
+        Gio.Application.quit(self.get_application())
+
+
+class Application(Gtk.Application):
+    def __init__(self):
+        super().__init__(
+            application_id=constants["APPID"], flags=Gio.ApplicationFlags.FLAGS_NONE
+        )
+        self.init_style()
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+        Gtk.init(sys.argv)
+
+    def do_activate(self):
+        win = self.props.active_window
+        if not win:
+            # win = SwitchTreeView(application=self)
+            win = MainWindow(application=self)
+        win.present()
+
+    # TODO: For css styling
+    def init_style(self):
+        pass
+        # css_provider = Gtk.CssProvider()
+        # css_provider.load_from_resource(constants['RESOURCEID'] + '/style.css')
+        # screen = Gdk.Screen.get_default()
+        # style_context = Gtk.StyleContext()
+        # style_context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 
 def start_app(args: argparse.Namespace) -> None:
-    MainWindow()
-    Gtk.main()
+    app = Application()
+    return app.run(sys.argv)
