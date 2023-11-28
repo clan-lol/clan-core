@@ -2,19 +2,19 @@
 
 import argparse
 import sys
+from pathlib import Path
 
 import gi
 
 gi.require_version("Gtk", "3.0")
-gi.require_version("Gdk", "3.0")
 from gi.repository import Gio, Gtk
 
-from typing import Any, List
-from pathlib import Path
 from .constants import constants
+from .ui.clan_select_list import ClanSelectPage
 
-class VM():
-    def __init__(self, url:str, autostart: bool, path: Path):
+
+class VM:
+    def __init__(self, url: str, autostart: bool, path: Path):
         self.url = url
         self.autostart = autostart
         self.path = path
@@ -24,17 +24,11 @@ vms = [
     VM("clan://clan.lol", True, "/home/user/my-clan"),
     VM("clan://lassul.lol", False, "/home/user/my-clan"),
     VM("clan://mic.lol", False, "/home/user/my-clan"),
-    VM("clan://dan.lol", False, "/home/user/my-clan")
+    VM("clan://dan.lol", False, "/home/user/my-clan"),
 ]
-
 vms.extend(vms)
 # vms.extend(vms)
 # vms.extend(vms)
-
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-from .ui.clan_select_list import ClanSelectPage
 
 
 class ClanJoinPage(Gtk.Box):
@@ -55,7 +49,6 @@ class MainWindow(Gtk.ApplicationWindow):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True)
         self.add(vbox)
 
-
         # Add a notebook layout
         # https://python-gtk-3-tutorial.readthedocs.io/en/latest/layout.html#notebook
         self.notebook = Gtk.Notebook()
@@ -69,7 +62,6 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def on_quit(self, *args):
         Gio.Application.quit(self.get_application())
-
 
 
 class Application(Gtk.Application):
@@ -86,7 +78,7 @@ class Application(Gtk.Application):
     def do_activate(self):
         win = self.props.active_window
         if not win:
-            #win = SwitchTreeView(application=self)
+            # win = SwitchTreeView(application=self)
             win = MainWindow(application=self)
         win.present()
 
