@@ -21,7 +21,6 @@ class ClanSelectPage(Gtk.Box):
     def on_backup_clicked(self, widget):
         print("Backup clicked")
 
-
     def on_cell_toggled(self, widget, path):
         print(f"on_cell_toggled:  {path}")
         # Get the current value from the model
@@ -38,9 +37,12 @@ class ClanSelectPage(Gtk.Box):
         if row is not None:
             print(f"Selected {model[row][0]}")
 
+
 class ClanSelectButtons(Gtk.Box):
     def __init__(self, on_start_clicked, on_stop_clicked, on_backup_clicked):
-        super().__init__(orientation=Gtk.Orientation.HORIZONTAL, margin_bottom=10, margin_top=10)
+        super().__init__(
+            orientation=Gtk.Orientation.HORIZONTAL, margin_bottom=10, margin_top=10
+        )
 
         button = Gtk.Button(label="Start", margin_left=10)
         button.connect("clicked", on_start_clicked)
@@ -93,4 +95,3 @@ class ClanSelectList(Gtk.Box):
 
         self.set_border_width(10)
         self.add(self.tree_view)
-
