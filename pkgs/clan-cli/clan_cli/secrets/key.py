@@ -66,5 +66,8 @@ def register_key_parser(parser: argparse.ArgumentParser) -> None:
     parser_show = subparser.add_parser("show", help="show age public key")
     parser_show.set_defaults(func=show_command)
 
-    parser_update = subparser.add_parser("update", help="re-encrypt all secrets with current keys (useful when changing keys)")
+    parser_update = subparser.add_parser(
+        "update",
+        help="re-encrypt all secrets with current keys (useful when changing keys)",
+    )
     parser_update.set_defaults(func=update_command)
