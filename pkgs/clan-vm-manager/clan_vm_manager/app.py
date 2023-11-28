@@ -8,98 +8,63 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk
 
-glade_dir = Path(__file__).parent
+
+vms = [
+    ("clan://clan.lol", True, "/home/user/my-clan"),
+    ("clan://lassul.lol", False, "/home/user/my-clan"),
+    ("clan://mic.lol", False, "/home/user/my-clan"),
+]
+class MainWindow(Gtk.Window):
+
+    def __init__(self) -> None:
+        super().__init__()
+        # Initialize the main window
+        self.set_title("Clan VM Manager")
+        self.connect("delete-event", Gtk.main_quit)
+
+        # Some styling
+        self.set_border_width(10)
+        # self.set_default_size(500,300)
+        
+        # Add a notebook layout
+        # https://python-gtk-3-tutorial.readthedocs.io/en/latest/layout.html#notebook
+        self.notebook = Gtk.Notebook()
+        self.add(self.notebook)
+
+        vms_store = Gtk.ListStore(str,bool,str)
+        for vm in vms:
+            vms_store.append(list(vm))
+        
+        self.machine_tree_view = Gtk.TreeView(vms_store)        
+        for idx, title in enumerate(["Url", "Autostart", "Path"]):
+            renderer = Gtk.CellRendererText()
+            col = Gtk.TreeViewColumn(title, renderer, text=idx) 
+            col.set_sort_column_id(idx)
+            self.machine_tree_view.append_column(col)
 
 
-#
-# 1. our .glade file (may contain paths)
-#
-@Gtk.Template.from_file(glade_dir / "app.glade")
-class AppWindow(Gtk.ApplicationWindow):
-    #
-    # 2. the GtkApplicationWindow class
-    #
-    __gtype_name__ = "main-window"
-
-    #
-    # 3. the Button name we saved above
-    #
-    help_button: Gtk.Button = Gtk.Template.Child()
-    next_button: Gtk.Button = Gtk.Template.Child()
-
-    @Gtk.Template.Callback()
-    def onDestroy(self, _):
-        Gio.Application.quit(self.get_application())
-
-    #
-    # 4. the signal handler name we saved above
-    #
-    @Gtk.Template.Callback()
-    def onButtonPressed(self, widget, **_kwargs):
-        assert self.help_button == widget
-        print(widget.get_label())
-
-    @Gtk.Template.Callback()
-    def onNextButtonPressed(self, widget, **_kwargs):
-        assert self.next_button == widget
-        # Hide the first window
-        self.hide()
-
-        # Show the second window
-        self.get_application().window2.show_all()
+        self.machine_page = Gtk.Box()
+        self.machine_page.set_border_width(10)      
+        self.machine_page.add(self.machine_tree_view)
+        self.notebook.append_page(self.machine_page, Gtk.Label(label="Overview"))
 
 
-# Decorate the second window class with the template
-@Gtk.Template.from_file(glade_dir / "second.glade")
-class SecondWindow(Gtk.ApplicationWindow):
-    #
-    # the GtkApplicationWindow class
-    #
-    __gtype_name__ = "second-window"
 
-    # import the button from the template with name 'back_button'
-    back_button: Gtk.Button = Gtk.Template.Child()
-
-    @Gtk.Template.Callback()
-    def onDestroy(self, _):
-        Gio.Application.quit(self.get_application())
-
-    #
-    # 'onBackButtonPressed' is the name of the signal handler we saved in glade
-    #
-    @Gtk.Template.Callback()
-    def onBackButtonPressed(self, widget, **_kwargs):
-        assert self.back_button == widget
-        # Hide the second window
-        self.hide()
-        # Show the first window
-        self.get_application().window1.show_all()
-
-
-class Application(Gtk.Application):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args,
-            application_id="clan.lol.Gtk1",
-            flags=Gio.ApplicationFlags.FLAGS_NONE,
-            **kwargs,
+        self.join_page = Gtk.Box()
+        self.join_page.set_border_width(10)
+        self.join_page.add(Gtk.Label(label="Add/Join another clan"))
+        self.notebook.append_page(
+            self.join_page, Gtk.Label(label="Add/Join")
         )
-        self.window = None
 
-    def do_activate(self):
-        # Load the first window from the template
-        self.window1 = AppWindow(application=self)
-        # Add the first window to the application
-        self.add_window(self.window1)
-        # Show the first window
-        self.window1.show_all()
 
-        # Load the second window from the template
-        self.window2 = SecondWindow(application=self)
-        # Add the second window to the application
-        self.add_window(self.window2)
+        # Must be called AFTER all components were added
+        self.show_all()
+
+    def on_button_click(self,widget):
+        print(f"{self} {widget}")
 
 
 def start_app(args: argparse.Namespace) -> None:
-    app = Application()
-    app.run()
+    MainWindow()
+    Gtk.main()
