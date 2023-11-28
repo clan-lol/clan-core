@@ -18,6 +18,7 @@
           deltachat = import ./deltachat nixosTestArgs;
           meshnamed = import ./meshnamed nixosTestArgs;
           borgbackup = import ./borgbackup nixosTestArgs;
+          syncthing = import ./syncthing nixosTestArgs;
         };
         schemaTests = pkgs.callPackages ./schemas.nix {
           inherit self;
