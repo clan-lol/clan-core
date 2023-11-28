@@ -5,7 +5,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Optional, Sequence
 
-from . import config, flakes, machines, secrets, vms, webui
+from . import config, flakes, machines, secrets, vms, webui, backups
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
 from .ssh import cli as ssh_cli
@@ -63,6 +63,11 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
     )
 
     subparsers = parser.add_subparsers()
+
+    parser_backups = subparsers.add_parser(
+        "backups", help="manage backups of clan machines"
+    )
+    backups.register_parser(parser_backups)
 
     parser_flake = subparsers.add_parser(
         "flakes", help="create a clan flake inside the current directory"
