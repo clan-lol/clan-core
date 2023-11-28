@@ -10,6 +10,7 @@
 , gobject-introspection
 , clan-cli
 , makeDesktopItem
+, ipdb
 }:
 let
   source = ./.;
@@ -33,7 +34,7 @@ python3.pkgs.buildPythonApplication {
   ];
 
   buildInputs = [ spice-gtk gtk3 gnome.adwaita-icon-theme ];
-  propagatedBuildInputs = [ pygobject3 clan-cli ];
+  propagatedBuildInputs = [ ipdb pygobject3 clan-cli ];
 
   # also re-expose dependencies so we test them in CI
   passthru.tests = {
