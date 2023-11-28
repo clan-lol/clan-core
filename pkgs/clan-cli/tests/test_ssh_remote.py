@@ -7,6 +7,9 @@ def test_parse_ipv6() -> None:
     host = parse_deployment_address("foo", "[fe80::1%eth0]:2222")
     assert host.host == "fe80::1%eth0"
     assert host.port == 2222
+    host = parse_deployment_address("foo", "[fe80::1%eth0]")
+    assert host.host == "fe80::1%eth0"
+    assert host.port is None
 
 
 def test_run(host_group: HostGroup) -> None:
