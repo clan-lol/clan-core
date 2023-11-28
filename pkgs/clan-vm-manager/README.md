@@ -41,6 +41,8 @@ cd ..
 make
 ```
 
+- The use the GTK Builder instead of templates.
+
 ## Look into virt-manager it uses python + spice-gtk
 
 Look into `virtManager/details/viewers.py` to see how spice-gtk is being used
@@ -68,6 +70,7 @@ import the glade file through GTK template
 - Also look into [PyGObject](https://pygobject.readthedocs.io/en/latest/guide/gtk_template.html) to know more about threading and async etc.
 - [GI Python API](https://lazka.github.io/pgi-docs/#Gtk-3.0)
 - https://developer.gnome.org/documentation/tutorials/application.html
+- [GTK3 Python] https://github.com/sam-m888/python-gtk3-tutorial/tree/master
 
 ## My gripes with GTK
 
