@@ -18,7 +18,13 @@ def install_nixos(machine: Machine) -> None:
 
     with TemporaryDirectory() as tmpdir_:
         tmpdir = Path(tmpdir_)
-        machine.run_upload_secrets(tmpdir / machine.secrets_upload_directory)
+        upload_dir = machine.secrets_upload_directory
+
+        if upload_dir.startswith("/"):
+            upload_dir = upload_dir[1:]
+        upload_dir = tmpdir / upload_dir
+        upload_dir.mkdir(parents=True)
+        machine.run_upload_secrets(upload_dir)
 
         subprocess.run(
             nix_shell(
