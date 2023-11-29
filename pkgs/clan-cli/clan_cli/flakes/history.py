@@ -9,7 +9,7 @@ def list_history() -> list[Path]:
     if not user_history_file().exists():
         return []
     # read path lines from history file
-    with open(user_history_file(), "r") as f:
+    with open(user_history_file()) as f:
         lines = f.readlines()
     return [Path(line.strip()) for line in lines]
 

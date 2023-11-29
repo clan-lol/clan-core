@@ -21,7 +21,8 @@ def ssh(
             "-p",
             password,
         ]
-    _ssh_args = ssh_args + [
+    _ssh_args = [
+        *ssh_args,
         "ssh",
         "-o",
         "UserKnownHostsFile=/dev/null",
@@ -29,7 +30,7 @@ def ssh(
         "StrictHostKeyChecking=no",
         f"{user}@{host}",
     ]
-    cmd = nix_shell(packages, ["torify"] + password_args + _ssh_args)
+    cmd = nix_shell(packages, ["torify", *password_args, *_ssh_args])
     subprocess.run(cmd)
 
 
