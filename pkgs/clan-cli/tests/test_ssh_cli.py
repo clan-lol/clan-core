@@ -1,6 +1,5 @@
 import os
 import sys
-from typing import Union
 
 import pytest
 import pytest_subprocess.fake_process
@@ -28,7 +27,7 @@ def test_ssh_no_pass(
     user = "user"
     if os.environ.get("IN_NIX_SANDBOX"):
         monkeypatch.delenv("IN_NIX_SANDBOX")
-    cmd: list[Union[str, utils.Any]] = [
+    cmd: list[str | utils.Any] = [
         "nix",
         fp.any(),
         "shell",
@@ -58,7 +57,7 @@ def test_ssh_with_pass(
     user = "user"
     if os.environ.get("IN_NIX_SANDBOX"):
         monkeypatch.delenv("IN_NIX_SANDBOX")
-    cmd: list[Union[str, utils.Any]] = [
+    cmd: list[str | utils.Any] = [
         "nix",
         fp.any(),
         "shell",
@@ -79,7 +78,7 @@ def test_ssh_with_pass(
 
 
 def test_qrcode_scan(fp: pytest_subprocess.fake_process.FakeProcess) -> None:
-    cmd: list[Union[str, utils.Any]] = [fp.any()]
+    cmd: list[str | utils.Any] = [fp.any()]
     fp.register(cmd, stdout="https://test.test")
     result = cli.qrcode_scan("test.png")
     assert result == "https://test.test"

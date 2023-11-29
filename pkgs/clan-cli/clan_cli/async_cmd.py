@@ -1,8 +1,9 @@
 import asyncio
 import logging
 import shlex
+from collections.abc import Callable, Coroutine
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Dict, NamedTuple, Optional
+from typing import Any, NamedTuple
 
 from .custom_logger import get_caller
 from .errors import ClanError
@@ -13,10 +14,10 @@ log = logging.getLogger(__name__)
 class CmdOut(NamedTuple):
     stdout: str
     stderr: str
-    cwd: Optional[Path] = None
+    cwd: Path | None = None
 
 
-async def run(cmd: list[str], cwd: Optional[Path] = None) -> CmdOut:
+async def run(cmd: list[str], cwd: Path | None = None) -> CmdOut:
     cwd_res = None
     if cwd is not None:
         if not cwd.exists():
@@ -52,7 +53,7 @@ stdout:
 
 
 def runforcli(
-    func: Callable[..., Coroutine[Any, Any, Dict[str, CmdOut]]], *args: Any
+    func: Callable[..., Coroutine[Any, Any, dict[str, CmdOut]]], *args: Any
 ) -> None:
     try:
         res = asyncio.run(func(*args))

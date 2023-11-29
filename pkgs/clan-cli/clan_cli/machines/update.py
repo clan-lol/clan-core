@@ -49,23 +49,22 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
             if target_user:
                 target_host = f"{target_user}@{target_host}"
         extra_args = h.meta.get("extra_args", [])
-        cmd = (
-            ["nixos-rebuild", "switch"]
-            + extra_args
-            + [
-                "--fast",
-                "--option",
-                "keep-going",
-                "true",
-                "--option",
-                "accept-flake-config",
-                "true",
-                "--build-host",
-                "",
-                "--flake",
-                f"{path}#{flake_attr}",
-            ]
-        )
+        cmd = [
+            "nixos-rebuild",
+            "switch",
+            *extra_args,
+            "--fast",
+            "--option",
+            "keep-going",
+            "true",
+            "--option",
+            "accept-flake-config",
+            "true",
+            "--build-host",
+            "",
+            "--flake",
+            f"{path}#{flake_attr}",
+        ]
         if target_host:
             cmd.extend(["--target-host", target_host])
         ret = h.run(cmd, check=False)

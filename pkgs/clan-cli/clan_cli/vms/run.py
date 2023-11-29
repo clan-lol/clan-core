@@ -6,9 +6,9 @@ import shlex
 import subprocess
 import sys
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 from threading import Condition, Thread
-from typing import Iterator
 from uuid import UUID
 
 from ..nix import nix_build, nix_config, nix_eval, nix_shell
@@ -117,9 +117,9 @@ class BuildVmTask(BaseTask):
         cmd.run(
             nix_build(
                 [
-                    f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.vm.create'
+                    f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.vm.create',
+                    *self.nix_options,
                 ]
-                + self.nix_options
             ),
             name="buildvm",
         )

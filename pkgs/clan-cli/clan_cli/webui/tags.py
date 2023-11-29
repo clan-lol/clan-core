@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any
 
 
 class Tags(Enum):
@@ -13,7 +13,7 @@ class Tags(Enum):
         return self.value
 
 
-tags_metadata: List[Dict[str, Any]] = [
+tags_metadata: list[dict[str, Any]] = [
     {
         "name": str(Tags.flake),
         "description": "Operations on a flake.",

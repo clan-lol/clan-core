@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Dict, List
 
 from pydantic import BaseModel, Extra, Field
 
@@ -71,9 +70,9 @@ class FlakeListResponse(BaseModel):
 
 
 class FlakeCreateResponse(BaseModel):
-    cmd_out: Dict[str, CmdOut]
+    cmd_out: dict[str, CmdOut]
 
 
 class FlakeResponse(BaseModel):
     content: str
-    actions: List[FlakeAction]
+    actions: list[FlakeAction]

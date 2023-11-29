@@ -4,7 +4,6 @@ import re
 import subprocess
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Optional
 
 from clan_cli.dirs import machine_settings_file, nixpkgs_source, specific_machine_dir
 from clan_cli.errors import ClanError, ClanHttpError
@@ -15,8 +14,8 @@ from clan_cli.nix import nix_eval
 def verify_machine_config(
     flake_dir: Path,
     machine_name: str,
-    config: Optional[dict] = None,
-) -> Optional[str]:
+    config: dict | None = None,
+) -> str | None:
     """
     Verify that the machine evaluates successfully
     Returns a tuple of (success, error_message)

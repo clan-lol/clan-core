@@ -5,10 +5,10 @@ import shutil
 import subprocess
 import time
 import urllib.request
+from collections.abc import Iterator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from threading import Thread
-from typing import Iterator
 
 # XXX: can we dynamically load this using nix develop?
 import uvicorn
