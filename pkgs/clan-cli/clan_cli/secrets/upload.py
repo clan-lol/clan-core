@@ -28,7 +28,7 @@ def upload_secrets(machine: Machine) -> None:
                         " ".join(["ssh"] + ssh_cmd[2:]),
                         "-az",
                         "--delete",
-                        f"{str(tempdir)}/",
+                        f"{tempdir!s}/",
                         f"{host.user}@{host.host}:{machine.secrets_upload_directory}/",
                     ],
                 ),

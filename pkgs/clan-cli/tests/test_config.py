@@ -47,8 +47,8 @@ def test_set_some_option(
                 example_options,
                 "--settings-file",
                 out_file.name,
+                *args,
             ]
-            + args
         )
         json_out = json.loads(open(out_file.name).read())
         assert json_out == expected

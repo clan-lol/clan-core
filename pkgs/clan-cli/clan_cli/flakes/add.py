@@ -14,7 +14,7 @@ async def add_flake(path: Path) -> Dict[str, CmdOut]:
     # TODO: Make this atomic
     lines: set = set()
     if user_history_file().exists():
-        with open(user_history_file(), "r") as f:
+        with open(user_history_file()) as f:
             lines = set(f.readlines())
     lines.add(str(path))
     with open(user_history_file(), "w") as f:

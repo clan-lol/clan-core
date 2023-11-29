@@ -456,7 +456,8 @@ class Host:
         else:
             bash_cmd += cmd
         # FIXME we assume bash to be present here? Should be documented...
-        ssh_cmd = self.ssh_cmd(verbose_ssh=verbose_ssh) + [
+        ssh_cmd = [
+            *self.ssh_cmd(verbose_ssh=verbose_ssh),
             "--",
             f"{sudo}bash -c {quote(bash_cmd)} -- {' '.join(map(quote, bash_args))}",
         ]
@@ -497,7 +498,7 @@ class Host:
         if verbose_ssh or self.verbose_ssh:
             ssh_opts.extend(["-v"])
 
-        return ["ssh", ssh_target] + ssh_opts
+        return ["ssh", ssh_target, *ssh_opts]
 
 
 T = TypeVar("T")

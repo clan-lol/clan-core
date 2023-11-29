@@ -12,7 +12,7 @@ from .errors import ClanError
 
 @deal.raises(ClanError)
 def nix_command(flags: list[str]) -> list[str]:
-    return ["nix", "--extra-experimental-features", "nix-command flakes"] + flags
+    return ["nix", "--extra-experimental-features", "nix-command flakes", *flags]
 
 
 def nix_flake_show(flake_url: str | Path) -> list[str]:
@@ -68,19 +68,17 @@ def nix_eval(flags: list[str]) -> list[str]:
     )
     if os.environ.get("IN_NIX_SANDBOX"):
         with tempfile.TemporaryDirectory() as nix_store:
-            return (
-                default_flags
-                + [
-                    "--override-input",
-                    "nixpkgs",
-                    str(nixpkgs_source()),
-                    # --store is required to prevent this error:
-                    # error: cannot unlink '/nix/store/6xg259477c90a229xwmb53pdfkn6ig3g-default-builder.sh': Operation not permitted
-                    "--store",
-                    nix_store,
-                ]
-                + flags
-            )
+            return [
+                *default_flags,
+                "--override-input",
+                "nixpkgs",
+                str(nixpkgs_source()),
+                # --store is required to prevent this error:
+                # error: cannot unlink '/nix/store/6xg259477c90a229xwmb53pdfkn6ig3g-default-builder.sh': Operation not permitted
+                "--store",
+                nix_store,
+                *flags,
+            ]
     return default_flags + flags
 
 
@@ -96,7 +94,7 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
             [
                 "shell",
                 "--inputs-from",
-                f"{str(nixpkgs_flake())}",
+                f"{nixpkgs_flake()!s}",
             ]
         )
         + wrapped_packages

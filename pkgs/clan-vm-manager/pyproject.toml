@@ -11,7 +11,7 @@ scripts = { clan-vm-manager = "clan_vm_manager:main" }
 clan_vm_manager = ["*.glade"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 warn_redundant_casts = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
@@ -22,7 +22,7 @@ module = "gi.*"
 ignore_missing_imports = true
 
 [tool.ruff]
+target-version = "py311"
 line-length = 88
-
-select = ["E", "F", "I", "N"]
+select = ["E", "F", "I", "N", "RUF", "U"]
 ignore = ["E501", "E402", "N802"]
