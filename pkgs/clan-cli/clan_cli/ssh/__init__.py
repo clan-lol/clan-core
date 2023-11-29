@@ -10,6 +10,7 @@ import subprocess
 import sys
 import time
 import urllib.parse
+from collections.abc import Callable, Iterator
 from contextlib import ExitStack, contextmanager
 from enum import Enum
 from pathlib import Path
@@ -18,16 +19,9 @@ from threading import Thread
 from typing import (
     IO,
     Any,
-    Callable,
-    Dict,
     Generic,
-    Iterator,
-    List,
     Literal,
-    Optional,
-    Tuple,
     TypeVar,
-    Union,
     overload,
 )
 
@@ -48,7 +42,7 @@ class CommandFormatter(logging.Formatter):
         super().__init__(
             "%(prefix_color)s[%(command_prefix)s]%(color_reset)s %(color)s%(message)s%(color_reset)s"
         )
-        self.hostnames: List[str] = []
+        self.hostnames: list[str] = []
         self.hostname_color_offset = 1  # first host shouldn't get agressive red
 
     def format(self, record: logging.LogRecord) -> str:
@@ -80,7 +74,7 @@ class CommandFormatter(logging.Formatter):
         return 31 + (index + self.hostname_color_offset) % 7
 
 
-def setup_loggers() -> Tuple[logging.Logger, logging.Logger]:
+def setup_loggers() -> tuple[logging.Logger, logging.Logger]:
     # If we use the default logger here (logging.error etc) or a logger called
     # "deploykit", then cmdlog messages are also posted on the default logger.
     # To avoid this message duplication, we set up a main and command logger
@@ -115,7 +109,7 @@ error = kitlog.error
 
 
 @contextmanager
-def _pipe() -> Iterator[Tuple[IO[str], IO[str]]]:
+def _pipe() -> Iterator[tuple[IO[str], IO[str]]]:
     (pipe_r, pipe_w) = os.pipe()
     read_end = os.fdopen(pipe_r, "r")
     write_end = os.fdopen(pipe_w, "w")
@@ -130,7 +124,7 @@ def _pipe() -> Iterator[Tuple[IO[str], IO[str]]]:
         write_end.close()
 
 
-FILE = Union[None, int]
+FILE = None | int
 
 # Seconds until a message is printed when _run produces no output.
 NO_OUTPUT_TIMEOUT = 20
@@ -149,13 +143,13 @@ class Host:
     def __init__(
         self,
         host: str,
-        user: Optional[str] = None,
-        port: Optional[int] = None,
-        key: Optional[str] = None,
+        user: str | None = None,
+        port: int | None = None,
+        key: str | None = None,
         forward_agent: bool = False,
-        command_prefix: Optional[str] = None,
+        command_prefix: str | None = None,
         host_key_check: HostKeyCheck = HostKeyCheck.STRICT,
-        meta: Dict[str, Any] = {},
+        meta: dict[str, Any] = {},
         verbose_ssh: bool = False,
         ssh_options: dict[str, str] = {},
     ) -> None:
@@ -186,12 +180,12 @@ class Host:
     def _prefix_output(
         self,
         displayed_cmd: str,
-        print_std_fd: Optional[IO[str]],
-        print_err_fd: Optional[IO[str]],
-        stdout: Optional[IO[str]],
-        stderr: Optional[IO[str]],
+        print_std_fd: IO[str] | None,
+        print_err_fd: IO[str] | None,
+        stdout: IO[str] | None,
+        stderr: IO[str] | None,
         timeout: float = math.inf,
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         rlist = []
         if print_std_fd is not None:
             rlist.append(print_std_fd)
@@ -215,7 +209,7 @@ class Host:
 
             def print_from(
                 print_fd: IO[str], print_buf: str, is_err: bool = False
-            ) -> Tuple[float, str]:
+            ) -> tuple[float, str]:
                 read = os.read(print_fd.fileno(), 4096)
                 if len(read) == 0:
                     rlist.remove(print_fd)
@@ -256,7 +250,7 @@ class Host:
                     extra=dict(command_prefix=self.command_prefix),
                 )
 
-            def handle_fd(fd: Optional[IO[Any]]) -> str:
+            def handle_fd(fd: IO[Any] | None) -> str:
                 if fd and fd in r:
                     read = os.read(fd.fileno(), 4096)
                     if len(read) == 0:
@@ -274,13 +268,13 @@ class Host:
 
     def _run(
         self,
-        cmd: List[str],
+        cmd: list[str],
         displayed_cmd: str,
         shell: bool,
         stdout: FILE = None,
         stderr: FILE = None,
-        extra_env: Dict[str, str] = {},
-        cwd: Union[None, str, Path] = None,
+        extra_env: dict[str, str] = {},
+        cwd: None | str | Path = None,
         check: bool = True,
         timeout: float = math.inf,
     ) -> subprocess.CompletedProcess[str]:
@@ -362,11 +356,11 @@ class Host:
 
     def run_local(
         self,
-        cmd: Union[str, List[str]],
+        cmd: str | list[str],
         stdout: FILE = None,
         stderr: FILE = None,
-        extra_env: Dict[str, str] = {},
-        cwd: Union[None, str, Path] = None,
+        extra_env: dict[str, str] = {},
+        cwd: None | str | Path = None,
         check: bool = True,
         timeout: float = math.inf,
     ) -> subprocess.CompletedProcess[str]:
@@ -404,12 +398,12 @@ class Host:
 
     def run(
         self,
-        cmd: Union[str, List[str]],
+        cmd: str | list[str],
         stdout: FILE = None,
         stderr: FILE = None,
         become_root: bool = False,
-        extra_env: Dict[str, str] = {},
-        cwd: Union[None, str, Path] = None,
+        extra_env: dict[str, str] = {},
+        cwd: None | str | Path = None,
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
@@ -475,7 +469,7 @@ class Host:
     def ssh_cmd(
         self,
         verbose_ssh: bool = False,
-    ) -> List:
+    ) -> list:
         if self.user is not None:
             ssh_target = f"{self.user}@{self.host}"
         else:
@@ -505,12 +499,12 @@ T = TypeVar("T")
 
 
 class HostResult(Generic[T]):
-    def __init__(self, host: Host, result: Union[T, Exception]) -> None:
+    def __init__(self, host: Host, result: T | Exception) -> None:
         self.host = host
         self._result = result
 
     @property
-    def error(self) -> Optional[Exception]:
+    def error(self) -> Exception | None:
         """
         Returns an error if the command failed
         """
@@ -528,13 +522,13 @@ class HostResult(Generic[T]):
         return self._result
 
 
-Results = List[HostResult[subprocess.CompletedProcess[str]]]
+Results = list[HostResult[subprocess.CompletedProcess[str]]]
 
 
 def _worker(
     func: Callable[[Host], T],
     host: Host,
-    results: List[HostResult[T]],
+    results: list[HostResult[T]],
     idx: int,
 ) -> None:
     try:
@@ -545,18 +539,18 @@ def _worker(
 
 
 class HostGroup:
-    def __init__(self, hosts: List[Host]) -> None:
+    def __init__(self, hosts: list[Host]) -> None:
         self.hosts = hosts
 
     def _run_local(
         self,
-        cmd: Union[str, List[str]],
+        cmd: str | list[str],
         host: Host,
         results: Results,
         stdout: FILE = None,
         stderr: FILE = None,
-        extra_env: Dict[str, str] = {},
-        cwd: Union[None, str, Path] = None,
+        extra_env: dict[str, str] = {},
+        cwd: None | str | Path = None,
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
@@ -578,13 +572,13 @@ class HostGroup:
 
     def _run_remote(
         self,
-        cmd: Union[str, List[str]],
+        cmd: str | list[str],
         host: Host,
         results: Results,
         stdout: FILE = None,
         stderr: FILE = None,
-        extra_env: Dict[str, str] = {},
-        cwd: Union[None, str, Path] = None,
+        extra_env: dict[str, str] = {},
+        cwd: None | str | Path = None,
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
@@ -605,7 +599,7 @@ class HostGroup:
             kitlog.exception(e)
             results.append(HostResult(host, e))
 
-    def _reraise_errors(self, results: List[HostResult[Any]]) -> None:
+    def _reraise_errors(self, results: list[HostResult[Any]]) -> None:
         errors = 0
         for result in results:
             e = result.error
@@ -622,12 +616,12 @@ class HostGroup:
 
     def _run(
         self,
-        cmd: Union[str, List[str]],
+        cmd: str | list[str],
         local: bool = False,
         stdout: FILE = None,
         stderr: FILE = None,
-        extra_env: Dict[str, str] = {},
-        cwd: Union[None, str, Path] = None,
+        extra_env: dict[str, str] = {},
+        cwd: None | str | Path = None,
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
@@ -664,11 +658,11 @@ class HostGroup:
 
     def run(
         self,
-        cmd: Union[str, List[str]],
+        cmd: str | list[str],
         stdout: FILE = None,
         stderr: FILE = None,
-        extra_env: Dict[str, str] = {},
-        cwd: Union[None, str, Path] = None,
+        extra_env: dict[str, str] = {},
+        cwd: None | str | Path = None,
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
@@ -696,11 +690,11 @@ class HostGroup:
 
     def run_local(
         self,
-        cmd: Union[str, List[str]],
+        cmd: str | list[str],
         stdout: FILE = None,
         stderr: FILE = None,
-        extra_env: Dict[str, str] = {},
-        cwd: Union[None, str, Path] = None,
+        extra_env: dict[str, str] = {},
+        cwd: None | str | Path = None,
         check: bool = True,
         timeout: float = math.inf,
     ) -> Results:
@@ -728,14 +722,14 @@ class HostGroup:
 
     def run_function(
         self, func: Callable[[Host], T], check: bool = True
-    ) -> List[HostResult[T]]:
+    ) -> list[HostResult[T]]:
         """
         Function to run for each host in the group in parallel
 
         @func the function to call
         """
         threads = []
-        results: List[HostResult[T]] = [
+        results: list[HostResult[T]] = [
             HostResult(h, Exception(f"No result set for thread {i}"))
             for (i, h) in enumerate(self.hosts)
         ]
@@ -764,14 +758,14 @@ def parse_deployment_address(
     machine_name: str, host: str, meta: dict[str, Any] = {}
 ) -> Host:
     parts = host.split("@")
-    user: Optional[str] = None
+    user: str | None = None
     if len(parts) > 1:
         user = parts[0]
         hostname = parts[1]
     else:
         hostname = parts[0]
     maybe_options = hostname.split("?")
-    options: Dict[str, str] = {}
+    options: dict[str, str] = {}
     if len(maybe_options) > 1:
         hostname = maybe_options[0]
         for option in maybe_options[1].split("&"):
@@ -796,12 +790,12 @@ def parse_deployment_address(
 
 @overload
 def run(
-    cmd: Union[List[str], str],
+    cmd: list[str] | str,
     text: Literal[True] = ...,
     stdout: FILE = ...,
     stderr: FILE = ...,
-    extra_env: Dict[str, str] = ...,
-    cwd: Union[None, str, Path] = ...,
+    extra_env: dict[str, str] = ...,
+    cwd: None | str | Path = ...,
     check: bool = ...,
 ) -> subprocess.CompletedProcess[str]:
     ...
@@ -809,24 +803,24 @@ def run(
 
 @overload
 def run(
-    cmd: Union[List[str], str],
+    cmd: list[str] | str,
     text: Literal[False],
     stdout: FILE = ...,
     stderr: FILE = ...,
-    extra_env: Dict[str, str] = ...,
-    cwd: Union[None, str, Path] = ...,
+    extra_env: dict[str, str] = ...,
+    cwd: None | str | Path = ...,
     check: bool = ...,
 ) -> subprocess.CompletedProcess[bytes]:
     ...
 
 
 def run(
-    cmd: Union[List[str], str],
+    cmd: list[str] | str,
     text: bool = True,
     stdout: FILE = None,
     stderr: FILE = None,
-    extra_env: Dict[str, str] = {},
-    cwd: Union[None, str, Path] = None,
+    extra_env: dict[str, str] = {},
+    cwd: None | str | Path = None,
     check: bool = True,
 ) -> subprocess.CompletedProcess[Any]:
     """

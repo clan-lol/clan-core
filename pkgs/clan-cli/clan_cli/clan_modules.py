@@ -1,14 +1,13 @@
 import json
 import subprocess
 from pathlib import Path
-from typing import Optional
 
 from clan_cli.nix import nix_eval
 
 
 def get_clan_module_names(
     flake_dir: Path,
-) -> tuple[list[str], Optional[str]]:
+) -> tuple[list[str], str | None]:
     """
     Get the list of clan modules from the clan-core flake input
     """

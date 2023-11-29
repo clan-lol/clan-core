@@ -1,7 +1,7 @@
 import json
 import subprocess
 from pathlib import Path
-from typing import Any, Optional, Type, Union
+from typing import Any
 
 from ..errors import ClanError
 from ..nix import nix_eval
@@ -19,7 +19,7 @@ type_map: dict[str, type] = {
 
 
 def schema_from_module_file(
-    file: Union[str, Path] = f"{script_dir}/jsonschema/example-schema.json",
+    file: str | Path = f"{script_dir}/jsonschema/example-schema.json",
 ) -> dict[str, Any]:
     absolute_path = Path(file).absolute()
     # define a nix expression that loads the given module file using lib.evalModules
@@ -36,7 +36,7 @@ def schema_from_module_file(
     return json.loads(proc.stdout)
 
 
-def subtype_from_schema(schema: dict[str, Any]) -> Type:
+def subtype_from_schema(schema: dict[str, Any]) -> type:
     if schema["type"] == "object":
         if "additionalProperties" in schema:
             sub_type = subtype_from_schema(schema["additionalProperties"])
@@ -57,8 +57,8 @@ def subtype_from_schema(schema: dict[str, Any]) -> Type:
 def type_from_schema_path(
     schema: dict[str, Any],
     path: list[str],
-    full_path: Optional[list[str]] = None,
-) -> Type:
+    full_path: list[str] | None = None,
+) -> type:
     if full_path is None:
         full_path = path
     if len(path) == 0:
@@ -76,8 +76,8 @@ def type_from_schema_path(
         raise ClanError(f"Unknown type for path {path}")
 
 
-def options_types_from_schema(schema: dict[str, Any]) -> dict[str, Type]:
-    result: dict[str, Type] = {}
+def options_types_from_schema(schema: dict[str, Any]) -> dict[str, type]:
+    result: dict[str, type] = {}
     for name, value in schema.get("properties", {}).items():
         assert isinstance(value, dict)
         type_ = value["type"]

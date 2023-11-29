@@ -1,5 +1,6 @@
 import sys
-from typing import IO, Any, Callable
+from collections.abc import Callable
+from typing import IO, Any
 
 
 def is_interactive() -> bool:

@@ -1,14 +1,13 @@
 # !/usr/bin/env python3
 import argparse
 from pathlib import Path
-from typing import Dict
 
 from clan_cli.dirs import user_history_file
 
 from ..async_cmd import CmdOut, runforcli
 
 
-async def add_flake(path: Path) -> Dict[str, CmdOut]:
+async def add_flake(path: Path) -> dict[str, CmdOut]:
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
     # append line to history file
     # TODO: Make this atomic

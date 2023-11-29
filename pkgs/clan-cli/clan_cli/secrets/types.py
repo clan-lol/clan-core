@@ -1,8 +1,8 @@
 import argparse
 import os
 import re
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from ..errors import ClanError
 from .sops import get_public_key

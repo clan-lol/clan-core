@@ -6,9 +6,9 @@ import shlex
 import subprocess
 import sys
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 from threading import Condition, Thread
-from typing import Iterator
 from uuid import UUID
 
 from ..nix import nix_build, nix_config, nix_eval, nix_shell
