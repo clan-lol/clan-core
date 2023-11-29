@@ -7,7 +7,7 @@ from typing import IO, Any
 
 import pytest
 
-_FILE = None |  int | IO[Any]
+_FILE = None | int | IO[Any]
 
 
 class Command:

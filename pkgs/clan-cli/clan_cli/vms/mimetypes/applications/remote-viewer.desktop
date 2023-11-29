@@ -1,0 +1,4 @@
+[Desktop Entry]
+Name=Remote Viewer
+Type=Application
+Exec=remote-viewer %u
