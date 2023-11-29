@@ -1,7 +1,6 @@
 import argparse
 import json
 import subprocess
-from typing import Optional
 
 from ..nix import nix_shell
 
@@ -9,7 +8,7 @@ from ..nix import nix_shell
 def ssh(
     host: str,
     user: str = "root",
-    password: Optional[str] = None,
+    password: str | None = None,
     ssh_args: list[str] = [],
 ) -> None:
     packages = ["tor", "openssh"]

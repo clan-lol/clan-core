@@ -1,7 +1,7 @@
 import os
 import shutil
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from ..errors import ClanError
 

@@ -1,7 +1,7 @@
 import json
 import tempfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 from cli import Cli
@@ -206,18 +206,18 @@ def test_map_type() -> None:
     assert config.map_type("boolean") == bool
     assert config.map_type("attribute set of string") == dict[str, str]
     assert config.map_type("attribute set of integer") == dict[str, int]
-    assert config.map_type("null or string") == Optional[str]
+    assert config.map_type("null or string") == str | None
 
 
 # test the cast function with simple types
 def test_cast() -> None:
     assert config.cast(value=["true"], type=bool, opt_description="foo-option") is True
     assert (
-        config.cast(value=["null"], type=Optional[str], opt_description="foo-option")
+        config.cast(value=["null"], type=str | None, opt_description="foo-option")
         is None
     )
     assert (
-        config.cast(value=["bar"], type=Optional[str], opt_description="foo-option")
+        config.cast(value=["bar"], type=str | None, opt_description="foo-option")
         == "bar"
     )
 

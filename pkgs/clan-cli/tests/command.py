@@ -1,26 +1,27 @@
 import os
 import signal
 import subprocess
+from collections.abc import Iterator
 from pathlib import Path
-from typing import IO, Any, Dict, Iterator, List, Optional, Union
+from typing import IO, Any
 
 import pytest
 
-_FILE = Union[None, int, IO[Any]]
+_FILE = None |  int | IO[Any]
 
 
 class Command:
     def __init__(self) -> None:
-        self.processes: List[subprocess.Popen[str]] = []
+        self.processes: list[subprocess.Popen[str]] = []
 
     def run(
         self,
-        command: List[str],
-        extra_env: Dict[str, str] = {},
+        command: list[str],
+        extra_env: dict[str, str] = {},
         stdin: _FILE = None,
         stdout: _FILE = None,
         stderr: _FILE = None,
-        workdir: Optional[Path] = None,
+        workdir: Path | None = None,
     ) -> subprocess.Popen[str]:
         env = os.environ.copy()
         env.update(extra_env)

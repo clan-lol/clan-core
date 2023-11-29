@@ -1,7 +1,7 @@
 import argparse
-from typing import Callable, Optional
+from collections.abc import Callable
 
-start_app: Optional[Callable] = None
+start_app: Callable | None = None
 
 from .app import start_app
 

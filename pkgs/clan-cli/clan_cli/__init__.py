@@ -1,9 +1,10 @@
 import argparse
 import logging
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Optional, Sequence
+from typing import Any
 
 from . import config, flakes, machines, secrets, vms, webui
 from .custom_logger import setup_logging
@@ -12,7 +13,7 @@ from .ssh import cli as ssh_cli
 
 log = logging.getLogger(__name__)
 
-argcomplete: Optional[ModuleType] = None
+argcomplete: ModuleType | None = None
 try:
     import argcomplete  # type: ignore[no-redef]
 except ImportError:
@@ -28,7 +29,7 @@ class AppendOptionAction(argparse.Action):
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
         values: str | Sequence[str] | None,
-        option_string: Optional[str] = None,
+        option_string: str | None = None,
     ) -> None:
         lst = getattr(namespace, self.dest)
         lst.append("--option")
@@ -37,7 +38,7 @@ class AppendOptionAction(argparse.Action):
         lst.append(values[1])
 
 
-def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
+def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog=prog, description="cLAN tool")
 
     parser.add_argument(

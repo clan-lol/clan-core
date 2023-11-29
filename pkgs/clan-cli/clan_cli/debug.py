@@ -6,15 +6,16 @@ import stat
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 import ipdb
 
 log = logging.getLogger(__name__)
 
 
-def command_exec(cmd: List[str], work_dir: Path, env: Dict[str, str]) -> None:
+def command_exec(cmd: list[str], work_dir: Path, env: dict[str, str]) -> None:
     subprocess.run(cmd, check=True, env=env, cwd=work_dir.resolve())
 
 
@@ -32,8 +33,8 @@ def block_for_input() -> None:
 
 def breakpoint_container(
     work_dir: Path,
-    env: Optional[Dict[str, str]] = None,
-    cmd: Optional[List[str]] = None,
+    env: dict[str, str] | None = None,
+    cmd: list[str] | None = None,
 ) -> None:
     if env is None:
         env = os.environ.copy()
@@ -52,8 +53,8 @@ def breakpoint_container(
 
 def breakpoint_shell(
     work_dir: Path = Path(os.getcwd()),
-    env: Optional[Dict[str, str]] = None,
-    cmd: Optional[List[str]] = None,
+    env: dict[str, str] | None = None,
+    cmd: list[str] | None = None,
 ) -> None:
     if env is None:
         env = os.environ.copy()
@@ -91,7 +92,7 @@ def spawn_process(func: Callable, **kwargs: Any) -> mp.Process:
     return proc
 
 
-def dump_env(env: Dict[str, str], loc: Path) -> None:
+def dump_env(env: dict[str, str], loc: Path) -> None:
     cenv = env.copy()
     log.info("Dumping environment variables to %s", loc)
     with open(loc, "w") as f:

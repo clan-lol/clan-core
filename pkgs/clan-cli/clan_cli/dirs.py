@@ -2,20 +2,19 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Optional
 
 log = logging.getLogger(__name__)
 
 
-def get_clan_flake_toplevel() -> Optional[Path]:
+def get_clan_flake_toplevel() -> Path | None:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
 
 
-def find_git_repo_root() -> Optional[Path]:
+def find_git_repo_root() -> Path | None:
     return find_toplevel([".git"])
 
 
-def find_toplevel(top_level_files: list[str]) -> Optional[Path]:
+def find_toplevel(top_level_files: list[str]) -> Path | None:
     """Returns the path to the toplevel of the clan flake"""
     for project_file in top_level_files:
         initial_path = Path(os.getcwd())

@@ -4,7 +4,6 @@ import subprocess
 import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Optional
 
 from clan_cli.dirs import nixpkgs_source
 from clan_cli.errors import ClanError, ClanHttpError
@@ -14,7 +13,7 @@ from clan_cli.nix import nix_eval
 def machine_schema(
     flake_dir: Path,
     config: dict,
-    clan_imports: Optional[list[str]] = None,
+    clan_imports: list[str] | None = None,
 ) -> dict:
     # use nix eval to lib.evalModules .#nixosConfigurations.<machine_name>.options.clan
     with NamedTemporaryFile(mode="w", dir=flake_dir) as clan_machine_settings_file:

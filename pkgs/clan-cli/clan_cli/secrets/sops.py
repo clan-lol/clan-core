@@ -2,10 +2,11 @@ import json
 import os
 import shutil
 import subprocess
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import IO, Iterator
+from typing import IO
 
 from ..dirs import user_config_dir
 from ..errors import ClanError
