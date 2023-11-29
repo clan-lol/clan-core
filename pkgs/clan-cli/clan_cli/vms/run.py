@@ -3,14 +3,13 @@ import asyncio
 import json
 import os
 import shlex
-import subprocess
 import sys
 import tempfile
 from collections.abc import Iterator
 from pathlib import Path
-from threading import Condition, Thread
 from uuid import UUID
 
+from ..dirs import module_root
 from ..nix import nix_build, nix_config, nix_eval, nix_shell
 from ..task_manager import BaseTask, Command, create_task
 from .inspect import VmConfig, inspect_vm
@@ -64,10 +63,12 @@ def qemu_command(
                 "-audiodev", "spice,id=audio0",
                 "-device", "intel-hda",
                 "-device", "hda-duplex,audiodev=audio0",
+                "-vga", "none",
+                "-device", "virtio-gpu-gl",
+                "-display", "spice-app,gl=on",
                 "-device", "virtio-serial-pci",
                 "-chardev", "spicevmc,id=vdagent0,name=vdagent",
                 "-device", "virtserialport,chardev=vdagent0,name=com.redhat.spice.0",
-                "-spice", f"unix=on,addr={spice_socket},disable-ticketing=on",
                 "-device", "qemu-xhci,id=spicepass",
                 "-chardev", "spicevmc,id=usbredirchardev1,name=usbredir",
                 "-device", "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
@@ -84,21 +85,6 @@ def qemu_command(
     else:
         command.append("-nographic")
     return command
-
-
-def start_spicy(spice_socket: Path, stop_condition: Condition) -> None:
-    while not spice_socket.exists():
-        with stop_condition:
-            if stop_condition.wait(0.1):
-                return
-
-    spicy = nix_shell(["spice-gtk"], ["spicy", f"--uri=spice+unix://{spice_socket}"])
-    proc = subprocess.Popen(spicy)
-    while proc.poll() is None:
-        with stop_condition:
-            if stop_condition.wait(0.1):
-                proc.terminate()
-                proc.wait()
 
 
 class BuildVmTask(BaseTask):
@@ -229,22 +215,24 @@ class BuildVmTask(BaseTask):
                 disk_img=disk_img,
                 spice_socket=spice_socket,
             )
-            stop_condition = Condition()
-            spice_thread = Thread(
-                target=start_spicy, args=(spice_socket, stop_condition), name="qemu"
-            )
-            spice_thread.start()
 
             print("$ " + shlex.join(qemu_cmd))
-            try:
-                cmd.run(nix_shell(["qemu"], qemu_cmd), name="qemu")
-            finally:
-                with stop_condition:
-                    stop_condition.notify()
-                spice_thread.join()
+            packages = ["qemu"]
+            if self.vm.graphics:
+                packages.append("virt-viewer")
+
+            env = os.environ.copy()
+            remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
+            env[
+                "XDG_DATA_DIRS"
+            ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
+            print(env["XDG_DATA_DIRS"])
+            cmd.run(nix_shell(packages, qemu_cmd), name="qemu", env=env)
 
 
-def run_vm(vm: VmConfig, nix_options: list[str] = []) -> BuildVmTask:
+def run_vm(
+    vm: VmConfig, nix_options: list[str] = [], env: dict[str, str] = {}
+) -> BuildVmTask:
     return create_task(BuildVmTask, vm, nix_options)
 
 
