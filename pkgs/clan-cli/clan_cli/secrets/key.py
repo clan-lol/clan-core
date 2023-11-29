@@ -1,8 +1,16 @@
 import argparse
+from pathlib import Path
 
 from .. import tty
 from ..errors import ClanError
-from .sops import default_sops_key_path, generate_private_key, get_public_key
+from .folders import sops_secrets_folder
+from .secrets import collect_keys_for_path, list_secrets
+from .sops import (
+    default_sops_key_path,
+    generate_private_key,
+    get_public_key,
+    update_keys,
+)
 
 
 def generate_key() -> str:
@@ -34,6 +42,16 @@ def show_command(args: argparse.Namespace) -> None:
     print(show_key())
 
 
+def update_command(args: argparse.Namespace) -> None:
+    flake_dir = Path(args.flake)
+    for name in list_secrets(flake_dir):
+        secret_path = sops_secrets_folder(flake_dir) / name
+        update_keys(
+            secret_path,
+            list(sorted(collect_keys_for_path(secret_path))),
+        )
+
+
 def register_key_parser(parser: argparse.ArgumentParser) -> None:
     subparser = parser.add_subparsers(
         title="command",
@@ -47,3 +65,9 @@ def register_key_parser(parser: argparse.ArgumentParser) -> None:
 
     parser_show = subparser.add_parser("show", help="show age public key")
     parser_show.set_defaults(func=show_command)
+
+    parser_update = subparser.add_parser(
+        "update",
+        help="re-encrypt all secrets with current keys (useful when changing keys)",
+    )
+    parser_update.set_defaults(func=update_command)

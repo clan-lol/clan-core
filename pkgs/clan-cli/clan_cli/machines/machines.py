@@ -73,7 +73,6 @@ class Machine:
         proc = subprocess.run(
             [self.upload_secrets],
             env=env,
-            stdout=subprocess.PIPE,
             text=True,
         )
 
