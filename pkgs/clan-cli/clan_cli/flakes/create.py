@@ -1,7 +1,6 @@
 # !/usr/bin/env python3
 import argparse
 from pathlib import Path
-from typing import Dict
 
 from ..async_cmd import CmdOut, run, runforcli
 from ..errors import ClanError
@@ -10,7 +9,7 @@ from ..nix import nix_command, nix_shell
 DEFAULT_URL: str = "git+https://git.clan.lol/clan/clan-core?new-clan"
 
 
-async def create_flake(directory: Path, url: str) -> Dict[str, CmdOut]:
+async def create_flake(directory: Path, url: str) -> dict[str, CmdOut]:
     if not directory.exists():
         directory.mkdir()
     else:

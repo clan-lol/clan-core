@@ -1,7 +1,8 @@
 import inspect
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 grey = "\x1b[38;20m"
 yellow = "\x1b[33;20m"

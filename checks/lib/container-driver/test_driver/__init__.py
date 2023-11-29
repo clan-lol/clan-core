@@ -3,9 +3,10 @@ import os
 import re
 import subprocess
 import time
+from collections.abc import Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any
 
 
 def prepare_machine_root(machinename: str, root: Path) -> None:
@@ -88,7 +89,7 @@ class Machine:
         except ValueError:
             raise RuntimeError(f"Failed to parse child process id {childs[0]}")
 
-    def get_unit_info(self, unit: str) -> Dict[str, str]:
+    def get_unit_info(self, unit: str) -> dict[str, str]:
         proc = self.systemctl(f'--no-pager show "{unit}"')
         if proc.returncode != 0:
             raise Exception(
@@ -98,7 +99,7 @@ class Machine:
 
         line_pattern = re.compile(r"^([^=]+)=(.*)$")
 
-        def tuple_from_line(line: str) -> Tuple[str, str]:
+        def tuple_from_line(line: str) -> tuple[str, str]:
             match = line_pattern.match(line)
             assert match is not None
             return match[1], match[2]
@@ -114,7 +115,7 @@ class Machine:
         command: str,
         check_return: bool = True,
         check_output: bool = True,
-        timeout: Optional[int] = 900,
+        timeout: int | None = 900,
     ) -> subprocess.CompletedProcess:
         """
         Execute a shell command, returning a list `(status, stdout)`.

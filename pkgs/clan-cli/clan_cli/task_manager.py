@@ -7,9 +7,10 @@ import subprocess
 import sys
 import threading
 import traceback
+from collections.abc import Iterator
 from enum import Enum
 from pathlib import Path
-from typing import Any, Iterator, Optional, Type, TypeVar
+from typing import Any, TypeVar
 from uuid import UUID, uuid4
 
 from .custom_logger import ThreadFormatter, get_caller
@@ -36,8 +37,8 @@ class Command:
     def run(
         self,
         cmd: list[str],
-        env: Optional[dict[str, str]] = None,
-        cwd: Optional[Path] = None,
+        env: dict[str, str] | None = None,
+        cwd: Path | None = None,
         name: str = "command",
     ) -> None:
         self.running = True
@@ -188,7 +189,7 @@ T = TypeVar("T", bound="BaseTask")
 
 
 @deal.raises(ClanError)
-def create_task(task_type: Type[T], *args: Any) -> T:
+def create_task(task_type: type[T], *args: Any) -> T:
     global POOL
 
     # check if task_type is a callable

@@ -8,7 +8,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Optional, Tuple, get_origin
+from typing import Any, get_origin
 
 from clan_cli.dirs import machine_settings_file
 from clan_cli.errors import ClanError
@@ -34,7 +34,7 @@ def map_type(type: str) -> Any:
         return str
     elif type.startswith("null or "):
         subtype = type.removeprefix("null or ")
-        return Optional[map_type(subtype)]
+        return map_type(subtype) | None
     elif type.startswith("attribute set of"):
         subtype = type.removeprefix("attribute set of ")
         return dict[str, map_type(subtype)]  # type: ignore
@@ -50,7 +50,7 @@ def merge(a: dict, b: dict, path: list[str] = []) -> dict:
     for key in b:
         if key in a:
             if isinstance(a[key], dict) and isinstance(b[key], dict):
-                merge(a[key], b[key], path + [str(key)])
+                merge(a[key], b[key], [*path, str(key)])
             elif isinstance(a[key], list) and isinstance(b[key], list):
                 a[key].extend(b[key])
             elif a[key] != b[key]:
@@ -196,8 +196,8 @@ def get_or_set_option(args: argparse.Namespace) -> None:
 
 
 def find_option(
-    option: str, value: Any, options: dict, option_description: Optional[str] = None
-) -> Tuple[str, Any]:
+    option: str, value: Any, options: dict, option_description: str | None = None
+) -> tuple[str, Any]:
     """
     The option path specified by the user doesn't have to match exactly to an
     entry in the options.json file. Examples
@@ -307,7 +307,7 @@ def set_option(
 
 # takes a (sub)parser and configures it
 def register_parser(
-    parser: Optional[argparse.ArgumentParser],
+    parser: argparse.ArgumentParser | None,
 ) -> None:
     if parser is None:
         parser = argparse.ArgumentParser(
@@ -361,7 +361,7 @@ def register_parser(
     )
 
 
-def main(argv: Optional[list[str]] = None) -> None:
+def main(argv: list[str] | None = None) -> None:
     if argv is None:
         argv = sys.argv
     parser = argparse.ArgumentParser()

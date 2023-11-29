@@ -15,7 +15,7 @@ def test_flake_history_append(
     api: TestClient, test_flake: FlakeForTest, temporary_home: Path
 ) -> None:
     response = api.post(
-        f"/api/flake/history?flake_dir={str(test_flake.path)}",
+        f"/api/flake/history?flake_dir={test_flake.path!s}",
         json={},
     )
     assert response.status_code == 200, response.json()
@@ -34,7 +34,7 @@ def test_flake_history_list(
 
     # add the test_flake
     response = api.post(
-        f"/api/flake/history?flake_dir={str(test_flake.path)}",
+        f"/api/flake/history?flake_dir={test_flake.path!s}",
         json={},
     )
     assert response.status_code == 200, response.text

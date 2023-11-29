@@ -3,7 +3,6 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional
 
 from ..nix import nix_build, nix_config, nix_eval
 from ..ssh import Host, parse_deployment_address
@@ -31,7 +30,7 @@ class Machine:
         self,
         name: str,
         flake_dir: Path,
-        machine_data: Optional[dict] = None,
+        machine_data: dict | None = None,
     ) -> None:
         """
         Creates a Machine

@@ -1,8 +1,9 @@
 import argparse
-from typing import Callable, NoReturn, Optional
+from collections.abc import Callable
+from typing import NoReturn
 
-start_server: Optional[Callable] = None
-ServerImportError: Optional[ImportError] = None
+start_server: Callable | None = None
+ServerImportError: ImportError | None = None
 try:
     from .server import start_server
 except ImportError as e:

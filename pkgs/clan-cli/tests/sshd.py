@@ -3,10 +3,11 @@ import shutil
 import string
 import subprocess
 import time
+from collections.abc import Iterator
 from pathlib import Path
 from sys import platform
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING
 
 import pytest
 

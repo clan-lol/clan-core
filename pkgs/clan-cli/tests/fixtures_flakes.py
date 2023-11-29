@@ -4,8 +4,9 @@ import os
 import shutil
 import subprocess as sp
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator, NamedTuple
+from typing import NamedTuple
 
 import pytest
 from pydantic import AnyUrl
