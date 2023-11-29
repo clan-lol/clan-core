@@ -73,9 +73,3 @@ import the glade file through GTK template
 - [GTK3 Python] https://github.com/sam-m888/python-gtk3-tutorial/tree/master
 - https://gnome.pages.gitlab.gnome.org/libhandy/doc/1.8/index.html
 - https://github.com/geigi/cozy
-
-## My gripes with GTK
-
-- Registered the signal in the wrong component? Oh then self.application() returns None!
-- Want to quit the Gtk App? Gtk.main_quit() does not work anymore if more than one Window is there, instead use `Gio.Application.quit(self.get_application())` duh! Is this documented anywhere? No? Ah well must be a monday!
-- Want to know which functions you can call on an Gtk.Application object? Then look into [Gtk.Application](https://lazka.github.io/pgi-docs/#Gtk-3.0/classes/Application.html#Gtk.Application) object and try the `get_windows()` function in Python! Oops doesn't exit, must be a Monday!
