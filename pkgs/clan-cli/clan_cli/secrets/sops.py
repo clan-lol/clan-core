@@ -23,7 +23,9 @@ class SopsKey:
 def get_public_key(privkey: str) -> str:
     cmd = nix_shell(["age"], ["age-keygen", "-y"])
     try:
-        res = subprocess.run(cmd, input=privkey, stdout=subprocess.PIPE, text=True)
+        res = subprocess.run(
+            cmd, input=privkey, stdout=subprocess.PIPE, text=True, check=True
+        )
     except subprocess.CalledProcessError as e:
         raise ClanError(
             "Failed to get public key for age private key. Is the key malformed?"
