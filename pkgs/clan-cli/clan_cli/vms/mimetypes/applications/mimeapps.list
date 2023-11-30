@@ -1,0 +1,4 @@
+[Default Applications]
+x-scheme-handler/spice=remote-viewer.desktop
+x-scheme-handler/spice+unix=remote-viewer.desktop
+x-scheme-handler/spice+tls=remote-viewer.desktop

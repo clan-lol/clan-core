@@ -68,7 +68,7 @@ class Command:
 
         while self.p.poll() is None:
             # Check if stderr is ready to be read from
-            rlist, _, _ = select.select([self.p.stderr, self.p.stdout], [], [], 0)
+            rlist, _, _ = select.select([self.p.stderr, self.p.stdout], [], [], 1)
             for fd in rlist:
                 try:
                     for line in fd:
