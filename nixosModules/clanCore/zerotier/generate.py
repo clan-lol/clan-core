@@ -7,11 +7,12 @@ import socket
 import subprocess
 import time
 import urllib.request
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Iterator, Optional
+from typing import Any
 
 
 class ClanError(Exception):
@@ -37,7 +38,7 @@ def try_connect_port(port: int) -> bool:
     return result == 0
 
 
-def find_free_port() -> Optional[int]:
+def find_free_port() -> int | None:
     """Find an unused localhost port from 1024-65535 and return it."""
     with contextlib.closing(socket.socket(type=socket.SOCK_STREAM)) as sock:
         sock.bind(("127.0.0.1", 0))
@@ -69,7 +70,7 @@ class ZerotierController:
         path: str,
         method: str = "GET",
         headers: dict[str, str] = {},
-        data: Optional[dict[str, Any]] = None,
+        data: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         body = None
         headers = headers.copy()

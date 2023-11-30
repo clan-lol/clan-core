@@ -36,7 +36,7 @@ def retry(fn: Callable, timeout: int = 900) -> None:
 
 
 class Machine:
-    def __init__(self, name: str, toplevel: Path, rootdir: Path, out_dir: str):
+    def __init__(self, name: str, toplevel: Path, rootdir: Path, out_dir: str) -> None:
         self.name = name
         self.toplevel = toplevel
         self.out_dir = out_dir
@@ -198,7 +198,7 @@ class Machine:
         timing out.
         """
 
-        def check_active(_: Any) -> bool:
+        def check_active(_: bool) -> bool:
             info = self.get_unit_info(unit)
             state = info["ActiveState"]
             if state == "failed":
@@ -247,7 +247,7 @@ def setup_filesystems() -> None:
 
 
 class Driver:
-    def __init__(self, containers: list[Path], testscript: str, out_dir: str):
+    def __init__(self, containers: list[Path], testscript: str, out_dir: str) -> None:
         self.containers = containers
         self.testscript = testscript
         self.out_dir = out_dir
