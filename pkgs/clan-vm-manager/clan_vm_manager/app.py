@@ -3,6 +3,7 @@
 import argparse
 import sys
 from pathlib import Path
+from typing import Any
 
 import gi
 
@@ -14,7 +15,7 @@ from .ui.clan_select_list import ClanSelectPage
 
 
 class VM:
-    def __init__(self, url: str, autostart: bool, path: Path):
+    def __init__(self, url: str, autostart: bool, path: Path) -> None:
         self.url = url
         self.autostart = autostart
         self.path = path
@@ -32,7 +33,7 @@ vms.extend(vms)
 
 
 class ClanJoinPage(Gtk.Box):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.page = Gtk.Box()
         self.set_border_width(10)
@@ -60,22 +61,22 @@ class MainWindow(Gtk.ApplicationWindow):
         # Must be called AFTER all components were added
         self.show_all()
 
-    def on_quit(self, *args):
+    def on_quit(self, *args: Any) -> None:
         Gio.Application.quit(self.get_application())
 
 
 class Application(Gtk.Application):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             application_id=constants["APPID"], flags=Gio.ApplicationFlags.FLAGS_NONE
         )
         self.init_style()
 
-    def do_startup(self):
+    def do_startup(self) -> None:
         Gtk.Application.do_startup(self)
         Gtk.init(sys.argv)
 
-    def do_activate(self):
+    def do_activate(self) -> None:
         win = self.props.active_window
         if not win:
             # win = SwitchTreeView(application=self)
@@ -83,7 +84,7 @@ class Application(Gtk.Application):
         win.present()
 
     # TODO: For css styling
-    def init_style(self):
+    def init_style(self) -> None:
         pass
         # css_provider = Gtk.CssProvider()
         # css_provider.load_from_resource(constants['RESOURCEID'] + '/style.css')

@@ -425,14 +425,14 @@ class Host:
         sudo = ""
         if become_root and self.user != "root":
             sudo = "sudo -- "
-        vars = []
+        env_vars = []
         for k, v in extra_env.items():
-            vars.append(f"{shlex.quote(k)}={shlex.quote(v)}")
+            env_vars.append(f"{shlex.quote(k)}={shlex.quote(v)}")
 
         displayed_cmd = ""
         export_cmd = ""
-        if vars:
-            export_cmd = f"export {' '.join(vars)}; "
+        if env_vars:
+            export_cmd = f"export {' '.join(env_vars)}; "
             displayed_cmd += export_cmd
         if isinstance(cmd, list):
             displayed_cmd += " ".join(cmd)
@@ -469,7 +469,7 @@ class Host:
     def ssh_cmd(
         self,
         verbose_ssh: bool = False,
-    ) -> list:
+    ) -> list[str]:
         if self.user is not None:
             ssh_target = f"{self.user}@{self.host}"
         else:
