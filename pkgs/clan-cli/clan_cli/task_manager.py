@@ -21,8 +21,8 @@ from .errors import ClanError
 class Command:
     def __init__(self, log: logging.Logger) -> None:
         self.log: logging.Logger = log
-        self.p: subprocess.Popen | None = None
-        self._output: queue.SimpleQueue = queue.SimpleQueue()
+        self.p: subprocess.Popen[str] | None = None
+        self._output: queue.SimpleQueue[str | None] = queue.SimpleQueue()
         self.returncode: int | None = None
         self.done: bool = False
         self.stdout: list[str] = []
@@ -148,8 +148,8 @@ class BaseTask:
                     for line in proc.stderr:
                         yield line
                 else:
-                    while line := proc._output.get():
-                        yield line
+                    while maybe_line := proc._output.get():
+                        yield maybe_line
 
     def commands(self) -> Iterator[Command]:
         yield from self.procs
