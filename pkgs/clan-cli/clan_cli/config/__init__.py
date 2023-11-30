@@ -21,28 +21,28 @@ log = logging.getLogger(__name__)
 
 
 # nixos option type description to python type
-def map_type(type: str) -> Any:
-    if type == "boolean":
+def map_type(nix_type: str) -> Any:
+    if nix_type == "boolean":
         return bool
-    elif type in [
+    elif nix_type in [
         "integer",
         "signed integer",
         "16 bit unsigned integer; between 0 and 65535 (both inclusive)",
     ]:
         return int
-    elif type.startswith("string"):
+    elif nix_type.startswith("string"):
         return str
-    elif type.startswith("null or "):
-        subtype = type.removeprefix("null or ")
+    elif nix_type.startswith("null or "):
+        subtype = nix_type.removeprefix("null or ")
         return map_type(subtype) | None
-    elif type.startswith("attribute set of"):
-        subtype = type.removeprefix("attribute set of ")
+    elif nix_type.startswith("attribute set of"):
+        subtype = nix_type.removeprefix("attribute set of ")
         return dict[str, map_type(subtype)]  # type: ignore
-    elif type.startswith("list of"):
-        subtype = type.removeprefix("list of ")
+    elif nix_type.startswith("list of"):
+        subtype = nix_type.removeprefix("list of ")
         return list[map_type(subtype)]  # type: ignore
     else:
-        raise ClanError(f"Unknown type {type}")
+        raise ClanError(f"Unknown type {nix_type}")
 
 
 # merge two dicts recursively
@@ -70,10 +70,10 @@ class AllContainer(list):
 
 # value is always a list, as the arg parser cannot know the type upfront
 # and therefore always allows multiple arguments.
-def cast(value: Any, type: Any, opt_description: str) -> Any:
+def cast(value: Any, input_type: Any, opt_description: str) -> Any:
     try:
         # handle bools
-        if isinstance(type, bool):
+        if isinstance(input_type, bool):
             if value[0] in ["true", "True", "yes", "y", "1"]:
                 return True
             elif value[0] in ["false", "False", "no", "n", "0"]:
@@ -81,28 +81,28 @@ def cast(value: Any, type: Any, opt_description: str) -> Any:
             else:
                 raise ClanError(f"Invalid value {value} for boolean")
         # handle lists
-        elif get_origin(type) == list:
-            subtype = type.__args__[0]
+        elif get_origin(input_type) == list:
+            subtype = input_type.__args__[0]
             return [cast([x], subtype, opt_description) for x in value]
         # handle dicts
-        elif get_origin(type) == dict:
+        elif get_origin(input_type) == dict:
             if not isinstance(value, dict):
                 raise ClanError(
                     f"Cannot set {opt_description} directly. Specify a suboption like {opt_description}.<name>"
                 )
-            subtype = type.__args__[1]
+            subtype = input_type.__args__[1]
             return {k: cast(v, subtype, opt_description) for k, v in value.items()}
-        elif str(type) == "typing.Optional[str]":
+        elif str(input_type) == "str | None":
             if value[0] in ["null", "None"]:
                 return None
             return value[0]
         else:
             if len(value) > 1:
                 raise ClanError(f"Too many values for {opt_description}")
-            return type(value[0])
+            return input_type(value[0])
     except ValueError:
         raise ClanError(
-            f"Invalid type for option {opt_description} (expected {type.__name__})"
+            f"Invalid type for option {opt_description} (expected {input_type.__name__})"
         )
 
 

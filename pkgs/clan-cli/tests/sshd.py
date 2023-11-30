@@ -38,14 +38,14 @@ def sshd_config(test_root: Path) -> Iterator[SshdConfig]:
     # FIXME, if any parent of the sshd directory is world-writable than sshd will refuse it.
     # we use .direnv instead since it's already in .gitignore
     with TemporaryDirectory() as _dir:
-        dir = Path(_dir)
+        tmpdir = Path(_dir)
         host_key = test_root / "data" / "ssh_host_ed25519_key"
         host_key.chmod(0o600)
         template = (test_root / "data" / "sshd_config").read_text()
         content = string.Template(template).substitute(dict(host_key=host_key))
-        config = dir / "sshd_config"
+        config = tmpdir / "sshd_config"
         config.write_text(content)
-        login_shell = dir / "shell"
+        login_shell = tmpdir / "shell"
 
         bash = shutil.which("bash")
         path = os.environ["PATH"]
@@ -72,7 +72,7 @@ exec {bash} -l "${{@}}"
         ), "we do not support the ld_preload trick on non-linux just now"
 
         # This enforces a login shell by overriding the login shell of `getpwnam(3)`
-        lib_path = dir / "libgetpwnam-preload.so"
+        lib_path = tmpdir / "libgetpwnam-preload.so"
         subprocess.run(
             [
                 os.environ.get("CC", "cc"),

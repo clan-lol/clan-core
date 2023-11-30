@@ -24,5 +24,5 @@ ignore_missing_imports = true
 [tool.ruff]
 target-version = "py311"
 line-length = 88
-select = [ "E", "F", "I", "U", "N", "RUF", "ANN" ]
-ignore = ["E501", "E402", "N802", "ANN101", "ANN401"]
+select = [ "E", "F", "I", "U", "N", "RUF", "ANN", "A" ]
+ignore = ["E501", "E402", "N802", "ANN101", "ANN401", "A003"]

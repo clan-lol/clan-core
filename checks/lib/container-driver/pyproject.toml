@@ -19,8 +19,8 @@ test_driver = ["py.typed"]
 target-version = "py311"
 line-length = 88
 
-select = ["E", "F", "I", "U", "N", "RUF", "ANN"]
-ignore = ["E501", "ANN101", "ANN401"]
+select = [ "E", "F", "I", "U", "N", "RUF", "ANN", "A" ]
+ignore = ["E501", "ANN101", "ANN401", "A003"]
 
 [tool.mypy]
 python_version = "3.11"

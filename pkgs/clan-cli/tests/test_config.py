@@ -1,7 +1,7 @@
 import json
 import tempfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 from cli import Cli
@@ -211,13 +211,16 @@ def test_map_type() -> None:
 
 # test the cast function with simple types
 def test_cast() -> None:
-    assert config.cast(value=["true"], type=bool, opt_description="foo-option") is True
     assert (
-        config.cast(value=["null"], type=Optional[str], opt_description="foo-option")  # noqa: UP007
+        config.cast(value=["true"], input_type=bool, opt_description="foo-option")
+        is True
+    )
+    assert (
+        config.cast(value=["null"], input_type=str | None, opt_description="foo-option")
         is None
     )
     assert (
-        config.cast(value=["bar"], type=Optional[str], opt_description="foo-option")  # noqa: UP007
+        config.cast(value=["bar"], input_type=str | None, opt_description="foo-option")
         == "bar"
     )
 
