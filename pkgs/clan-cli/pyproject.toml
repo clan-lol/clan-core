@@ -12,7 +12,7 @@ scripts = { clan = "clan_cli:main" }
 exclude = ["clan_cli.nixpkgs*"]
 
 [tool.setuptools.package-data]
-clan_cli = ["config/jsonschema/*", "webui/assets/**/*"]
+clan_cli = ["config/jsonschema/*", "webui/assets/**/*", "vms/mimetypes/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = "tests"
