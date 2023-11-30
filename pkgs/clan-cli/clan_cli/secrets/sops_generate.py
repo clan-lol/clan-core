@@ -41,11 +41,9 @@ def generate_secrets_group(
     clan_dir = flake_dir
     secrets = secret_options["secrets"]
     needs_regeneration = any(
-        not has_secret(flake_dir, f"{machine_name}-{secret['name']}")
-        for secret in secrets.values()
+        not has_secret(flake_dir, f"{machine_name}-{name}") for name in secrets
     ) or any(
-        not (flake_dir / fact["path"]).exists()
-        for fact in secret_options["facts"].values()
+        not (flake_dir / fact).exists() for fact in secret_options["facts"].values()
     )
 
     generator = secret_options["generator"]
@@ -56,7 +54,7 @@ def generate_secrets_group(
         secrets_dir = subdir / "secrets"
         secrets_dir.mkdir(parents=True)
 
-        text = f"""\
+        text = f"""
 set -euo pipefail
 export facts={shlex.quote(str(facts_dir))}
 export secrets={shlex.quote(str(secrets_dir))}
@@ -69,25 +67,25 @@ export secrets={shlex.quote(str(secrets_dir))}
             msg = "failed to the following command:\n"
             msg += text
             raise ClanError(msg)
-        for secret in secrets.values():
-            secret_file = secrets_dir / secret["name"]
+        for name in secrets:
+            secret_file = secrets_dir / name
             if not secret_file.is_file():
-                msg = f"did not generate a file for '{secret['name']}' when running the following command:\n"
+                msg = f"did not generate a file for '{name}' when running the following command:\n"
                 msg += text
                 raise ClanError(msg)
             encrypt_secret(
                 flake_dir,
-                sops_secrets_folder(flake_dir) / f"{machine_name}-{secret['name']}",
+                sops_secrets_folder(flake_dir) / f"{machine_name}-{name}",
                 secret_file.read_text(),
                 add_machines=[machine_name],
             )
-        for fact in secret_options["facts"].values():
-            fact_file = facts_dir / fact["name"]
+        for name, fact_path in secret_options["facts"].items():
+            fact_file = facts_dir / name
             if not fact_file.is_file():
-                msg = f"did not generate a file for '{fact['name']}' when running the following command:\n"
+                msg = f"did not generate a file for '{name}' when running the following command:\n"
                 msg += text
                 raise ClanError(msg)
-            fact_path = clan_dir.joinpath(fact["path"])
+            fact_path = clan_dir / fact_path
             fact_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(fact_file, fact_path)
 
