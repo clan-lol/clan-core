@@ -32,7 +32,14 @@ in
         import json
         import sys
         from clan_cli.secrets.sops_generate import generate_secrets_from_nix
-        args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; secret_submodules = config.clanCore.secrets; })})
+        args = json.loads(${builtins.toJSON (builtins.toJSON {
+          machine_name = config.clanCore.machineName;
+          secret_submodules = lib.mapAttrs (_name: secret: {
+            secrets = builtins.attrNames secret.secrets;
+            facts = lib.mapAttrs (_: secret: secret.path) secret.facts;
+            generator = secret.generator.finalScript;
+          }) config.clanCore.secrets;
+        })})
         generate_secrets_from_nix(**args)
       '';
       uploadSecrets = pkgs.writeScript "upload-secrets" ''
