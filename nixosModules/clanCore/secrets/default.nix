@@ -46,14 +46,36 @@
             '';
           };
           generator = lib.mkOption {
-            type = lib.types.str;
-            description = ''
-              Script to generate the secret.
-              The script will be called with the following variables:
-              - facts: path to a directory where facts can be stored
-              - secrets: path to a directory where secrets can be stored
-              The script is expected to generate all secrets and facts defined in the module.
-            '';
+            type = lib.types.submodule ({ config, ... }: {
+              options = {
+                path = lib.mkOption {
+                  type = lib.types.listOf (lib.types.either lib.types.path lib.types.package);
+                  default = [ ];
+                  description = ''
+                    Extra paths to add to the PATH environment variable when running the generator.
+                  '';
+                };
+                script = lib.mkOption {
+                  type = lib.types.str;
+                  description = ''
+                    Script to generate the secret.
+                    The script will be called with the following variables:
+                    - facts: path to a directory where facts can be stored
+                    - secrets: path to a directory where secrets can be stored
+                    The script is expected to generate all secrets and facts defined in the module.
+                  '';
+                };
+                finalScript = lib.mkOption {
+                  type = lib.types.str;
+                  readOnly = true;
+                  internal = true;
+                  default = ''
+                    export PATH="${lib.makeBinPath config.path}"
+                    ${config.script}
+                  '';
+                };
+              };
+            });
           };
           secrets =
             let

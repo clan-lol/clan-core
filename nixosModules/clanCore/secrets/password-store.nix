@@ -39,7 +39,7 @@ in
             trap "rm -rf $facts" EXIT
             secrets=$(mktemp -d)
             trap "rm -rf $secrets" EXIT
-            ( ${v.generator} )
+            ( ${v.generator.finalScript} )
 
             ${lib.concatMapStrings (fact: ''
               mkdir -p "$CLAN_DIR"/"$(dirname ${fact.path})"

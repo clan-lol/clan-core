@@ -138,9 +138,9 @@ in
         facts.zerotier-meshname = { };
         facts.zerotier-network-id = { };
         secrets.zerotier-identity-secret = { };
-        generator = ''
-          export PATH=${lib.makeBinPath [ config.services.zerotierone.package pkgs.fakeroot ]}
-          ${pkgs.python3.interpreter} ${./generate.py} --mode network \
+        generator.path = [ config.services.zerotierone.package pkgs.fakeroot pkgs.python3 ];
+        generator.script = ''
+          python3 ${./generate.py} --mode network \
             --ip "$facts/zerotier-ip" \
             --meshname "$facts/zerotier-meshname" \
             --identity-secret "$secrets/zerotier-identity-secret" \
@@ -155,10 +155,9 @@ in
         facts.zerotier-ip = { };
         facts.zerotier-meshname = { };
         secrets.zerotier-identity-secret = { };
-
-        generator = ''
-          export PATH=${lib.makeBinPath [ config.services.zerotierone.package ]}
-          ${pkgs.python3.interpreter} ${./generate.py} --mode identity \
+        generator.path = [ config.services.zerotierone.package pkgs.python3 ];
+        generator.script = ''
+          python3 ${./generate.py} --mode identity \
             --ip "$facts/zerotier-ip" \
             --meshname "$facts/zerotier-meshname" \
             --identity-secret "$secrets/zerotier-identity-secret" \
