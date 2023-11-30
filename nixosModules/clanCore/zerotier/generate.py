@@ -93,8 +93,8 @@ class ZerotierController:
             data=data,
         )
 
-    def get_network(self, id: str) -> dict[str, Any]:
-        return self._http_request(f"/controller/network/{id}")
+    def get_network(self, network_id: str) -> dict[str, Any]:
+        return self._http_request(f"/controller/network/{network_id}")
 
 
 @contextmanager

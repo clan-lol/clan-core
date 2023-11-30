@@ -10,5 +10,5 @@ exclude = "clan_cli.nixpkgs"
 [tool.ruff]
 line-length = 88
 target-version = "py311"
-select = [ "E", "F", "I", "U", "N", "RUF", "ANN" ]
-ignore = [ "E501", "ANN101", "ANN401"]
+select = [ "E", "F", "I", "U", "N", "RUF", "ANN", "A" ]
+ignore = [ "E501", "ANN101", "ANN401", "A003"]

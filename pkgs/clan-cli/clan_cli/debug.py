@@ -1,22 +1,15 @@
 import logging
-import multiprocessing as mp
 import os
 import shlex
 import stat
 import subprocess
 import sys
 import time
-from collections.abc import Callable
 from pathlib import Path
-from typing import Any
 
 import ipdb
 
 log = logging.getLogger(__name__)
-
-
-def command_exec(cmd: list[str], work_dir: Path, env: dict[str, str]) -> None:
-    subprocess.run(cmd, check=True, env=env, cwd=work_dir.resolve())
 
 
 def block_for_input() -> None:
@@ -66,12 +59,13 @@ def breakpoint_shell(
     if cmd is not None:
         mycommand = shlex.join(cmd)
         write_command(mycommand, work_dir / "cmd.sh")
-    proc = spawn_process(func=command_exec, cmd=args, work_dir=work_dir, env=env)
+    proc = subprocess.Popen(args, env=env, cwd=work_dir.resolve())
 
-    try:
-        ipdb.set_trace()
-    finally:
-        proc.terminate()
+    with proc:
+        try:
+            ipdb.set_trace()
+        finally:
+            proc.terminate()
 
 
 def write_command(command: str, loc: Path) -> None:
@@ -81,15 +75,6 @@ def write_command(command: str, loc: Path) -> None:
         f.write(command)
     st = os.stat(loc)
     os.chmod(loc, st.st_mode | stat.S_IEXEC)
-
-
-def spawn_process(func: Callable, **kwargs: Any) -> mp.Process:
-    if mp.get_start_method(allow_none=True) is None:
-        mp.set_start_method(method="spawn")
-
-    proc = mp.Process(target=func, name="python-debug-process", kwargs=kwargs)
-    proc.start()
-    return proc
 
 
 def dump_env(env: dict[str, str], loc: Path) -> None:
