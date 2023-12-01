@@ -53,7 +53,6 @@ class ClanSelectPage(Gtk.Box):
     def on_double_click(
         self, tree_view: Gtk.TreeView, path: Gtk.TreePath, column: Gtk.TreeViewColumn
     ) -> None:
-        breakpoint()
         # Get the selection object of the tree view
         selection = tree_view.get_selection()
         model, row = selection.get_selected()
