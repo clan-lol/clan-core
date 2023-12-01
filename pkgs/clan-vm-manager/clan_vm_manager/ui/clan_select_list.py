@@ -1,10 +1,11 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from gi.repository import Gtk
+from gi.repository import Gtk, GdkPixbuf
 
 if TYPE_CHECKING:
     from ..app import VM
+
 
 
 class ClanSelectPage(Gtk.Box):
@@ -55,13 +56,13 @@ class ClanSelectButtons(Gtk.Box):
             orientation=Gtk.Orientation.HORIZONTAL, margin_bottom=10, margin_top=10
         )
 
-        button = Gtk.Button(label="Start", margin_left=10)
+        button = Gtk.Button(label="Join", margin_left=10)
         button.connect("clicked", on_start_clicked)
         self.add(button)
-        button = Gtk.Button(label="Stop", margin_left=10)
+        button = Gtk.Button(label="Leave", margin_left=10)
         button.connect("clicked", on_stop_clicked)
         self.add(button)
-        button = Gtk.Button(label="Backup", margin_left=10)
+        button = Gtk.Button(label="Edit", margin_left=10)
         button.connect("clicked", on_backup_clicked)
         self.add(button)
 
@@ -76,35 +77,47 @@ class ClanSelectList(Gtk.Box):
         super().__init__(expand=True)
         self.vms = vms
 
-        self.list_store = Gtk.ListStore(str, bool, str)
+        self.list_store = Gtk.ListStore(GdkPixbuf.Pixbuf, str, str, bool)
         for vm in vms:
-            items = list(vm.__dict__.values())
-            print(f"Table: {items}")
+            items = list(vm.list_display().values())
+            items[0] = GdkPixbuf.Pixbuf.new_from_file_at_size(items[0], 64, 64)
+            assert(len(items) == 4)
             self.list_store.append(items)
 
         self.tree_view = Gtk.TreeView(self.list_store, expand=True)
-        for idx, (key, value) in enumerate(vm.__dict__.items()):
-            if isinstance(value, str):
-                renderer = Gtk.CellRendererText()
-                # renderer.set_property("xalign", 0.5)
-                col = Gtk.TreeViewColumn(key.capitalize(), renderer, text=idx)
-                col.set_resizable(True)
-                col.set_expand(True)
-                col.set_property("sizing", Gtk.TreeViewColumnSizing.AUTOSIZE)
-                col.set_property("alignment", 0.5)
-                col.set_sort_column_id(idx)
-                self.tree_view.append_column(col)
-            if isinstance(value, bool):
-                renderer = Gtk.CellRendererToggle()
-                renderer.set_property("activatable", True)
-                renderer.connect("toggled", on_cell_toggled)
-                col = Gtk.TreeViewColumn(key.capitalize(), renderer, active=idx)
-                col.set_resizable(True)
-                col.set_expand(True)
-                col.set_property("sizing", Gtk.TreeViewColumnSizing.AUTOSIZE)
-                col.set_property("alignment", 0.5)
-                col.set_sort_column_id(idx)
-                self.tree_view.append_column(col)
+        for idx, (key, value) in enumerate(vm.list_display().items()):
+            match key:
+                case "Icon":
+                    renderer = Gtk.CellRendererPixbuf()
+                    col = Gtk.TreeViewColumn(key, renderer, pixbuf=idx)
+                    #col.add_attribute(renderer, "pixbuf", idx)
+                    col.set_resizable(True)
+                    col.set_expand(True)
+                    col.set_property("sizing", Gtk.TreeViewColumnSizing.AUTOSIZE)
+                    col.set_property("alignment", 0.5)
+                    col.set_sort_column_id(idx)
+                    self.tree_view.append_column(col)
+                case "Name" | "URL":
+                    renderer = Gtk.CellRendererText()
+                    # renderer.set_property("xalign", 0.5)
+                    col = Gtk.TreeViewColumn(key, renderer, text=idx)
+                    col.set_resizable(True)
+                    col.set_expand(True)
+                    col.set_property("sizing", Gtk.TreeViewColumnSizing.AUTOSIZE)
+                    col.set_property("alignment", 0.5)
+                    col.set_sort_column_id(idx)
+                    self.tree_view.append_column(col)
+                case "Running":
+                    renderer = Gtk.CellRendererToggle()
+                    renderer.set_property("activatable", True)
+                    renderer.connect("toggled", on_cell_toggled)
+                    col = Gtk.TreeViewColumn(key, renderer, active=idx)
+                    col.set_resizable(True)
+                    col.set_expand(True)
+                    col.set_property("sizing", Gtk.TreeViewColumnSizing.AUTOSIZE)
+                    col.set_property("alignment", 0.5)
+                    col.set_sort_column_id(idx)
+                    self.tree_view.append_column(col)
 
         selection = self.tree_view.get_selection()
         selection.connect("changed", on_select_row)

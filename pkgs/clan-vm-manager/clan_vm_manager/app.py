@@ -3,8 +3,8 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import Any
-
+from typing import Any, Dict, Optional
+from collections import OrderedDict
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -15,19 +15,34 @@ from .ui.clan_select_list import ClanSelectPage
 
 
 class VM:
-    def __init__(self, url: str, autostart: bool, path: Path) -> None:
+    def __init__(self, icon: Path, name: str, url: str, path: Path, running: bool = False, autostart: bool = False) -> None:
+        self.icon = icon.resolve()
+        assert(self.icon.exists())
+        assert(self.icon.is_file())
         self.url = url
         self.autostart = autostart
+        self.running = running
+        self.name = name
         self.path = path
 
+    def list_display(self) -> OrderedDict[str, Any]:
+        return OrderedDict({
+            "Icon": str(self.icon),
+            "Name": self.name,
+            "URL": self.url,
+            "Running": self.running,
+        })
+
+
+assets = Path(__file__).parent / "assets"
+assert(assets.is_dir())
 
 vms = [
-    VM("clan://clan.lol", True, "/home/user/my-clan"),
-    VM("clan://lassul.lol", False, "/home/user/my-clan"),
-    VM("clan://mic.lol", False, "/home/user/my-clan"),
-    VM("clan://dan.lol", False, "/home/user/my-clan"),
+    VM(assets / "cybernet.jpeg", "Cybernet Clan", "clan://cybernet.lol", "/home/user/w-clan", True),
+    VM(assets / "zenith.jpeg","Zenith Clan", "clan://zenith.lol", "/home/user/lassulus-clan"),
+    VM(assets / "firestorm.jpeg" ,"Firestorm Clan","clan://firestorm.lol", "/home/user/mic-clan"),
 ]
-vms.extend(vms)
+#vms.extend(vms)
 # vms.extend(vms)
 # vms.extend(vms)
 
@@ -37,15 +52,16 @@ class ClanJoinPage(Gtk.Box):
         super().__init__()
         self.page = Gtk.Box()
         self.set_border_width(10)
-        self.add(Gtk.Label(label="Add/Join another clan"))
+        self.add(Gtk.Label(label="Join"))
 
 
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, application: Gtk.Application) -> None:
         super().__init__(application=application)
         # Initialize the main window
-        self.set_title("Clan VM Manager")
+        self.set_title("cLAN Manager")
         self.connect("delete-event", self.on_quit)
+        self.set_default_size(800, 600)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True)
         self.add(vbox)
@@ -56,7 +72,7 @@ class MainWindow(Gtk.ApplicationWindow):
         vbox.add(self.notebook)
 
         self.notebook.append_page(ClanSelectPage(vms), Gtk.Label(label="Overview"))
-        self.notebook.append_page(ClanJoinPage(), Gtk.Label(label="Add/Join"))
+        self.notebook.append_page(ClanJoinPage(), Gtk.Label(label="Join"))
 
         # Must be called AFTER all components were added
         self.show_all()
