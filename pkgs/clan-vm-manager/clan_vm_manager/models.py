@@ -42,12 +42,12 @@ class VMBase:
 
     def run(self) -> None:
         print(f"Running VM {self.name}")
-        vm = asyncio.run(vms.run.inspect_vm(flake_url=self._path, flake_attr="defaultVM"))
+        vm = asyncio.run(
+            vms.run.inspect_vm(flake_url=self._path, flake_attr="defaultVM")
+        )
         task = vms.run.run_vm(vm)
         for line in task.log_lines():
             print(line, end="")
-
-
 
 
 @dataclass(frozen=True)
@@ -88,7 +88,6 @@ def list_vms() -> list[VM]:
             running=False,
         ),
     ]
-
 
     # TODO: list_history() should return a list of dicts, not a list of paths
     # Execute `clan flakes add <path>` to democlan for this to work
