@@ -73,3 +73,4 @@ import the glade file through GTK template
 - [GTK3 Python] https://github.com/sam-m888/python-gtk3-tutorial/tree/master
 - https://gnome.pages.gitlab.gnome.org/libhandy/doc/1.8/index.html
 - https://github.com/geigi/cozy
+- https://github.com/lutris/lutris/blob/2e9bd115febe08694f5d42dabcf9da36a1065f1d/lutris/gui/widgets/cellrenderers.py#L92
