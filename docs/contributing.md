@@ -221,3 +221,7 @@ To make the most of this template:
    - Also, set the default merge style to "Rebase then create merge commit."
 
 With this template, you're well-equipped to build and collaborate on high-quality websites efficiently. Happy coding!.
+
+# API guidelines
+
+see [./api-guidelines](./api-guidelines)
