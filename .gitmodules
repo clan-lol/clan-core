@@ -1,3 +1,0 @@
-[submodule "pkgs/clan-vm-manager/test_democlan"]
-	path = pkgs/clan-vm-manager/test_democlan
-	url = gitea@git.clan.lol:clan/democlan.git
