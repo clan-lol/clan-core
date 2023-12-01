@@ -11,7 +11,6 @@ from ..locked_open import locked_open
 async def add_flake(path: Path) -> dict[str, CmdOut]:
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
     # append line to history file
-    # TODO: Make this atomic
     lines: set = set()
     old_lines = set()
     with locked_open(user_history_file(), "w+") as f:
