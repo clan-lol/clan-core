@@ -4,12 +4,14 @@ from pathlib import Path
 
 from clan_cli.dirs import user_history_file
 
+from ..locked_open import locked_open
+
 
 def list_history() -> list[Path]:
     if not user_history_file().exists():
         return []
     # read path lines from history file
-    with open(user_history_file()) as f:
+    with locked_open(user_history_file()) as f:
         lines = f.readlines()
     return [Path(line.strip()) for line in lines]
 
