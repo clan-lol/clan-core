@@ -7,7 +7,6 @@
     in
     {
       packages = {
-        # disabled because frontend is broken after cli refactoring
         ui = base.pkg.global;
         ui-assets = pkgs.callPackage ./nix/ui-assets.nix { };
         # EXAMPLE: GITEA_TOKEN=$(rbw get -f GITEA_TOKEN git.clan.lol) nix run .#update-ui-assets
