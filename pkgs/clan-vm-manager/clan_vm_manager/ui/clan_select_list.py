@@ -11,12 +11,13 @@ class ClanSelectPage(Gtk.Box):
     def __init__(self, vms: list["VM"]) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
 
-        self.add(ClanSelectList(vms, self.on_cell_toggled, self.on_select_row))
+        self.add(ClanSelectList(vms, self.on_cell_toggled, self.on_select_row, self.on_double_click))
         self.add(
             ClanSelectButtons(
                 self.on_start_clicked, self.on_stop_clicked, self.on_backup_clicked
             )
         )
+
 
     def on_start_clicked(self, widget: Gtk.Widget) -> None:
         print("Start clicked")
@@ -42,6 +43,17 @@ class ClanSelectPage(Gtk.Box):
         model, row = selection.get_selected()
         if row is not None:
             print(f"Selected {model[row][0]}")
+
+    def on_double_click(self, tree_view, path, column) -> None:
+
+        model = tree_view.get_model()
+        iter = model.get_iter(path)
+
+        # Get the selection object of the tree view
+        selection = tree_view.get_selection()
+        model, row = selection.get_selected()
+        if row is not None:
+            print(f"Double clicked {model[row][1]}")
 
 
 class ClanSelectButtons(Gtk.Box):
@@ -72,6 +84,7 @@ class ClanSelectList(Gtk.Box):
         vms: list["VM"],
         on_cell_toggled: Callable[[Gtk.Widget, str], None],
         on_select_row: Callable[[Gtk.TreeSelection], None],
+        on_double_click: Callable[[Gtk.TreeSelection], None],
     ) -> None:
         super().__init__(expand=True)
         self.vms = vms
@@ -120,6 +133,7 @@ class ClanSelectList(Gtk.Box):
 
         selection = self.tree_view.get_selection()
         selection.connect("changed", on_select_row)
+        self.tree_view.connect("row-activated", on_double_click)
 
         self.set_border_width(10)
         self.add(self.tree_view)
