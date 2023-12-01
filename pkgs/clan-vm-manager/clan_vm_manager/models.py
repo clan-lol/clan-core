@@ -13,6 +13,7 @@ class VMBase:
     name: str
     url: str
     running: bool
+    _path: Path
 
     @staticmethod
     def name_to_type_map() -> OrderedDict[str, type]:
@@ -22,6 +23,7 @@ class VMBase:
                 "Name": str,
                 "URL": str,
                 "Running": bool,
+                "_Path": str,
             }
         )
 
@@ -32,13 +34,13 @@ class VMBase:
                 "Name": self.name,
                 "URL": self.url,
                 "Running": self.running,
+                "_Path": str(self._path),
             }
         )
 
 
 @dataclass(frozen=True)
 class VM(VMBase):
-    path: Path
     autostart: bool = False
 
 
@@ -50,28 +52,28 @@ def list_vms() -> list[VM]:
             icon=assets / "cybernet.jpeg",
             name="Cybernet Clan",
             url="clan://cybernet.lol",
-            path=Path(__file__).parent.parent / "test_democlan",
+            _path=Path(__file__).parent.parent / "test_democlan",
             running=True,
         ),
         VM(
             icon=assets / "zenith.jpeg",
             name="Zenith Clan",
             url="clan://zenith.lol",
-            path=Path(__file__).parent.parent / "test_democlan",
+            _path=Path(__file__).parent.parent / "test_democlan",
             running=False,
         ),
         VM(
             icon=assets / "firestorm.jpeg",
             name="Firestorm Clan",
             url="clan://firestorm.lol",
-            path=Path(__file__).parent.parent / "test_democlan",
+            _path=Path(__file__).parent.parent / "test_democlan",
             running=False,
         ),
         VM(
             icon=assets / "placeholder.jpeg",
             name="Demo Clan",
             url="clan://demo.lol",
-            path=Path(__file__).parent.parent / "test_democlan",
+            _path=Path(__file__).parent.parent / "test_democlan",
             running=False,
         ),
     ]
