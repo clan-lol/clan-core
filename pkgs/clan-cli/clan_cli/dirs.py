@@ -9,6 +9,7 @@ log = logging.getLogger(__name__)
 def get_clan_flake_toplevel() -> Path | None:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
 
+
 def is_clan_flake(path: Path) -> bool:
     return (path / ".clan-flake").exists()
 
