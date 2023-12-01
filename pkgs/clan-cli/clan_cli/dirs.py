@@ -10,6 +10,10 @@ def get_clan_flake_toplevel() -> Path | None:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
 
 
+def is_clan_flake(path: Path) -> bool:
+    return (path / ".clan-flake").exists()
+
+
 def find_git_repo_root() -> Path | None:
     return find_toplevel([".git"])
 
