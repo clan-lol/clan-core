@@ -10,6 +10,7 @@ from . import config, flakes, machines, secrets, vms, webui
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
 from .ssh import cli as ssh_cli
+from .dirs import is_clan_flake
 
 log = logging.getLogger(__name__)
 
@@ -56,11 +57,21 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         default=[],
     )
 
+    def flake_path(arg:str) -> Path:
+        flake_dir = Path(arg).resolve()
+        if not flake_dir.exists():
+            raise argparse.ArgumentTypeError(f"flake directory {flake_dir} does not exist")
+        if not flake_dir.is_dir():
+            raise argparse.ArgumentTypeError(f"flake directory {flake_dir} is not a directory")
+        if not is_clan_flake(flake_dir):
+            raise argparse.ArgumentTypeError(f"flake directory {flake_dir} is not a clan flake")
+        return flake_dir
+
     parser.add_argument(
         "--flake",
         help="path to the flake where the clan resides in",
         default=get_clan_flake_toplevel(),
-        type=Path,
+        type=flake_path,
     )
 
     subparsers = parser.add_subparsers()
