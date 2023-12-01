@@ -2,9 +2,10 @@
 
 import argparse
 import sys
-from pathlib import Path
-from typing import Any, Dict, Optional
 from collections import OrderedDict
+from pathlib import Path
+from typing import Any
+
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -15,10 +16,18 @@ from .ui.clan_select_list import ClanSelectPage
 
 
 class VM:
-    def __init__(self, icon: Path, name: str, url: str, path: Path, running: bool = False, autostart: bool = False) -> None:
+    def __init__(
+        self,
+        icon: Path,
+        name: str,
+        url: str,
+        path: Path,
+        running: bool = False,
+        autostart: bool = False,
+    ) -> None:
         self.icon = icon.resolve()
-        assert(self.icon.exists())
-        assert(self.icon.is_file())
+        assert self.icon.exists()
+        assert self.icon.is_file()
         self.url = url
         self.autostart = autostart
         self.running = running
@@ -26,23 +35,41 @@ class VM:
         self.path = path
 
     def list_display(self) -> OrderedDict[str, Any]:
-        return OrderedDict({
-            "Icon": str(self.icon),
-            "Name": self.name,
-            "URL": self.url,
-            "Running": self.running,
-        })
+        return OrderedDict(
+            {
+                "Icon": str(self.icon),
+                "Name": self.name,
+                "URL": self.url,
+                "Running": self.running,
+            }
+        )
 
 
 assets = Path(__file__).parent / "assets"
-assert(assets.is_dir())
+assert assets.is_dir()
 
 vms = [
-    VM(assets / "cybernet.jpeg", "Cybernet Clan", "clan://cybernet.lol", "/home/user/w-clan", True),
-    VM(assets / "zenith.jpeg","Zenith Clan", "clan://zenith.lol", "/home/user/lassulus-clan"),
-    VM(assets / "firestorm.jpeg" ,"Firestorm Clan","clan://firestorm.lol", "/home/user/mic-clan"),
+    VM(
+        assets / "cybernet.jpeg",
+        "Cybernet Clan",
+        "clan://cybernet.lol",
+        "/home/user/w-clan",
+        True,
+    ),
+    VM(
+        assets / "zenith.jpeg",
+        "Zenith Clan",
+        "clan://zenith.lol",
+        "/home/user/lassulus-clan",
+    ),
+    VM(
+        assets / "firestorm.jpeg",
+        "Firestorm Clan",
+        "clan://firestorm.lol",
+        "/home/user/mic-clan",
+    ),
 ]
-#vms.extend(vms)
+# vms.extend(vms)
 # vms.extend(vms)
 # vms.extend(vms)
 

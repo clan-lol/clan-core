@@ -1,11 +1,10 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import GdkPixbuf, Gtk
 
 if TYPE_CHECKING:
     from ..app import VM
-
 
 
 class ClanSelectPage(Gtk.Box):
@@ -81,7 +80,7 @@ class ClanSelectList(Gtk.Box):
         for vm in vms:
             items = list(vm.list_display().values())
             items[0] = GdkPixbuf.Pixbuf.new_from_file_at_size(items[0], 64, 64)
-            assert(len(items) == 4)
+            assert len(items) == 4
             self.list_store.append(items)
 
         self.tree_view = Gtk.TreeView(self.list_store, expand=True)
@@ -90,7 +89,7 @@ class ClanSelectList(Gtk.Box):
                 case "Icon":
                     renderer = Gtk.CellRendererPixbuf()
                     col = Gtk.TreeViewColumn(key, renderer, pixbuf=idx)
-                    #col.add_attribute(renderer, "pixbuf", idx)
+                    # col.add_attribute(renderer, "pixbuf", idx)
                     col.set_resizable(True)
                     col.set_expand(True)
                     col.set_property("sizing", Gtk.TreeViewColumnSizing.AUTOSIZE)
