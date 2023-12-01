@@ -50,6 +50,7 @@ class ClanSelectPage(Gtk.Box):
         print(f"on_double_click:  {vm}")
         vm.run()
 
+
 class ClanSelectButtons(Gtk.Box):
     def __init__(
         self,
