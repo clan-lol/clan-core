@@ -1,23 +1,29 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING
 
 from gi.repository import GdkPixbuf, Gtk
 
-if TYPE_CHECKING:
-    from ..app import VM
+from ..models import VM, list_vms
 
 
 class ClanSelectPage(Gtk.Box):
-    def __init__(self, vms: list["VM"]) -> None:
+    def __init__(self) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
 
-        self.add(ClanSelectList(vms, self.on_cell_toggled, self.on_select_row, self.on_double_click))
-        self.add(
-            ClanSelectButtons(
-                self.on_start_clicked, self.on_stop_clicked, self.on_backup_clicked
-            )
-        )
+        vms = list_vms()
 
+        list_hooks = {
+            "on_cell_toggled": self.on_cell_toggled,
+            "on_select_row": self.on_select_row,
+            "on_double_click": self.on_double_click,
+        }
+        self.add(ClanSelectList(vms=vms, **list_hooks))
+
+        button_hooks = {
+            "on_start_clicked": self.on_start_clicked,
+            "on_stop_clicked": self.on_stop_clicked,
+            "on_backup_clicked": self.on_backup_clicked,
+        }
+        self.add(ClanSelectButtons(**button_hooks))
 
     def on_start_clicked(self, widget: Gtk.Widget) -> None:
         print("Start clicked")
@@ -42,13 +48,12 @@ class ClanSelectPage(Gtk.Box):
     def on_select_row(self, selection: Gtk.TreeSelection) -> None:
         model, row = selection.get_selected()
         if row is not None:
-            print(f"Selected {model[row][0]}")
+            print(f"Selected {model[row][1]}")
 
-    def on_double_click(self, tree_view, path, column) -> None:
-
-        model = tree_view.get_model()
-        iter = model.get_iter(path)
-
+    def on_double_click(
+        self, tree_view: Gtk.TreeView, path: Gtk.TreePath, column: Gtk.TreeViewColumn
+    ) -> None:
+        breakpoint()
         # Get the selection object of the tree view
         selection = tree_view.get_selection()
         model, row = selection.get_selected()
@@ -59,6 +64,7 @@ class ClanSelectPage(Gtk.Box):
 class ClanSelectButtons(Gtk.Box):
     def __init__(
         self,
+        *,
         on_start_clicked: Callable[[Gtk.Widget], None],
         on_stop_clicked: Callable[[Gtk.Widget], None],
         on_backup_clicked: Callable[[Gtk.Widget], None],
@@ -81,7 +87,8 @@ class ClanSelectButtons(Gtk.Box):
 class ClanSelectList(Gtk.Box):
     def __init__(
         self,
-        vms: list["VM"],
+        *,
+        vms: list[VM],
         on_cell_toggled: Callable[[Gtk.Widget, str], None],
         on_select_row: Callable[[Gtk.TreeSelection], None],
         on_double_click: Callable[[Gtk.TreeSelection], None],
