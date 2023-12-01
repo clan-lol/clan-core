@@ -46,7 +46,6 @@ class VM:
 
 
 assets = Path(__file__).parent / "assets"
-assert assets.is_dir()
 
 vms = [
     VM(
