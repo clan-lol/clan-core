@@ -1,35 +1,31 @@
 from collections import OrderedDict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import clan_cli
+from gi.repository import GdkPixbuf
 
 
-class VM:
-    def __init__(
-        self,
-        *,
-        icon: Path,
-        name: str,
-        url: str,
-        path: Path,
-        running: bool = False,
-        autostart: bool = False,
-    ) -> None:
-        self.icon = icon.resolve()
-        assert self.icon.exists()
-        assert self.icon.is_file()
-        self.url = url
-        self.autostart = autostart
-        self.running = running
-        self.name = name
+@dataclass(frozen=True)
+class VMBase:
+    icon: Path | GdkPixbuf.Pixbuf
+    name: str
+    url: str
+    running: bool
 
-        self.path = path.resolve()
-        print(self.path)
-        assert self.path.exists()
-        assert self.path.is_dir()
+    @staticmethod
+    def name_to_type_map() -> OrderedDict[str, type]:
+        return OrderedDict(
+            {
+                "Icon": GdkPixbuf.Pixbuf,
+                "Name": str,
+                "URL": str,
+                "Running": bool,
+            }
+        )
 
-    def list_display(self) -> OrderedDict[str, Any]:
+    def list_data(self) -> OrderedDict[str, Any]:
         return OrderedDict(
             {
                 "Icon": str(self.icon),
@@ -38,6 +34,12 @@ class VM:
                 "Running": self.running,
             }
         )
+
+
+@dataclass(frozen=True)
+class VM(VMBase):
+    path: Path
+    autostart: bool = False
 
 
 def list_vms() -> list[VM]:
@@ -56,23 +58,23 @@ def list_vms() -> list[VM]:
             name="Zenith Clan",
             url="clan://zenith.lol",
             path=Path(__file__).parent.parent / "test_democlan",
+            running=False,
         ),
         VM(
             icon=assets / "firestorm.jpeg",
             name="Firestorm Clan",
             url="clan://firestorm.lol",
             path=Path(__file__).parent.parent / "test_democlan",
+            running=False,
         ),
         VM(
             icon=assets / "placeholder.jpeg",
             name="Demo Clan",
             url="clan://demo.lol",
             path=Path(__file__).parent.parent / "test_democlan",
+            running=False,
         ),
     ]
-    # vms.extend(vms)
-    # vms.extend(vms)
-    # vms.extend(vms)
 
     for path in clan_cli.flakes.history.list_history():
         new_vm = {

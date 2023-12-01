@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 from gi.repository import GdkPixbuf, Gtk
 
-from ..models import VM, list_vms
+from ..models import VM, VMBase, list_vms
 
 
 class ClanSelectPage(Gtk.Box):
@@ -34,16 +34,16 @@ class ClanSelectPage(Gtk.Box):
     def on_backup_clicked(self, widget: Gtk.Widget) -> None:
         print("Backup clicked")
 
-    def on_cell_toggled(self, widget: Gtk.Widget, path: str) -> None:
-        print(f"on_cell_toggled:  {path}")
-        # Get the current value from the model
-        current_value = self.list_store[path][1]
+    def on_cell_toggled(self, vm: VMBase) -> None:
+        print(f"on_cell_toggled:  {vm}")
+        # # Get the current value from the model
+        # current_value = self.list_store[path][1]
 
-        print(f"current_value: {current_value}")
-        # Toggle the value
-        self.list_store[path][1] = not current_value
-        # Print the updated value
-        print("Switched", path, "to", self.list_store[path][1])
+        # print(f"current_value: {current_value}")
+        # # Toggle the value
+        # self.list_store[path][1] = not current_value
+        # # Print the updated value
+        # print("Switched", path, "to", self.list_store[path][1])
 
     def on_select_row(self, selection: Gtk.TreeSelection) -> None:
         model, row = selection.get_selected()
@@ -94,16 +94,17 @@ class ClanSelectList(Gtk.Box):
     ) -> None:
         super().__init__(expand=True)
         self.vms = vms
-
-        self.list_store = Gtk.ListStore(GdkPixbuf.Pixbuf, str, str, bool)
+        self.on_cell_toggled = on_cell_toggled
+        self.list_store = Gtk.ListStore(*VM.name_to_type_map().values())
         for vm in vms:
-            items = list(vm.list_display().values())
-            items[0] = GdkPixbuf.Pixbuf.new_from_file_at_size(items[0], 64, 64)
-            assert len(items) == 4
+            items = list(vm.list_data().values())
+            items[0] = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                filename=items[0], width=64, height=64, preserve_aspect_ratio=True
+            )
             self.list_store.append(items)
 
         self.tree_view = Gtk.TreeView(self.list_store, expand=True)
-        for idx, (key, value) in enumerate(vm.list_display().items()):
+        for idx, (key, value) in enumerate(vm.list_data().items()):
             match key:
                 case "Icon":
                     renderer = Gtk.CellRendererPixbuf()
@@ -128,7 +129,7 @@ class ClanSelectList(Gtk.Box):
                 case "Running":
                     renderer = Gtk.CellRendererToggle()
                     renderer.set_property("activatable", True)
-                    renderer.connect("toggled", on_cell_toggled)
+                    renderer.connect("toggled", self._on_cell_toggled)
                     col = Gtk.TreeViewColumn(key, renderer, active=idx)
                     col.set_resizable(True)
                     col.set_expand(True)
@@ -143,3 +144,8 @@ class ClanSelectList(Gtk.Box):
 
         self.set_border_width(10)
         self.add(self.tree_view)
+
+    def _on_cell_toggled(self, widget: Gtk.CellRendererToggle, path: str) -> None:
+        row = self.list_store[path]
+        vm = VMBase(*row)
+        self.on_cell_toggled(vm)

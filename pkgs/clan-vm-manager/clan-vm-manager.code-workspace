@@ -1,10 +1,10 @@
 {
 	"folders": [
 		{
-			"path": ".."
+			"path": "."
 		},
 		{
-			"path": "../clan-cli"
+			"path": "../clan-cli/clan_cli"
 		}
 	],
 	"settings": {}
