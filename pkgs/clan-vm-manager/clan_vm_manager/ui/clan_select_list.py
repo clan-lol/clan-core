@@ -88,7 +88,7 @@ class ClanSelectList(Gtk.Box):
         self,
         *,
         vms: list[VM],
-        on_cell_toggled: Callable[[Gtk.Widget, str], None],
+        on_cell_toggled: Callable[[VMBase, str], None],
         on_select_row: Callable[[Gtk.TreeSelection], None],
         on_double_click: Callable[[Gtk.TreeSelection], None],
     ) -> None:
@@ -105,6 +105,8 @@ class ClanSelectList(Gtk.Box):
 
         self.tree_view = Gtk.TreeView(self.list_store, expand=True)
         for idx, (key, value) in enumerate(vm.list_data().items()):
+            if key.startswith("_"):
+                continue
             match key:
                 case "Icon":
                     renderer = Gtk.CellRendererPixbuf()
