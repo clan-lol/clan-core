@@ -2,7 +2,6 @@
 
 import argparse
 import sys
-from pathlib import Path
 from typing import Any
 
 import gi
@@ -14,38 +13,21 @@ from .constants import constants
 from .ui.clan_select_list import ClanSelectPage
 
 
-class VM:
-    def __init__(self, url: str, autostart: bool, path: Path) -> None:
-        self.url = url
-        self.autostart = autostart
-        self.path = path
-
-
-vms = [
-    VM("clan://clan.lol", True, "/home/user/my-clan"),
-    VM("clan://lassul.lol", False, "/home/user/my-clan"),
-    VM("clan://mic.lol", False, "/home/user/my-clan"),
-    VM("clan://dan.lol", False, "/home/user/my-clan"),
-]
-vms.extend(vms)
-# vms.extend(vms)
-# vms.extend(vms)
-
-
 class ClanJoinPage(Gtk.Box):
     def __init__(self) -> None:
         super().__init__()
         self.page = Gtk.Box()
         self.set_border_width(10)
-        self.add(Gtk.Label(label="Add/Join another clan"))
+        self.add(Gtk.Label(label="Join"))
 
 
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, application: Gtk.Application) -> None:
         super().__init__(application=application)
         # Initialize the main window
-        self.set_title("Clan VM Manager")
+        self.set_title("cLAN Manager")
         self.connect("delete-event", self.on_quit)
+        self.set_default_size(800, 600)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True)
         self.add(vbox)
@@ -55,8 +37,8 @@ class MainWindow(Gtk.ApplicationWindow):
         self.notebook = Gtk.Notebook()
         vbox.add(self.notebook)
 
-        self.notebook.append_page(ClanSelectPage(vms), Gtk.Label(label="Overview"))
-        self.notebook.append_page(ClanJoinPage(), Gtk.Label(label="Add/Join"))
+        self.notebook.append_page(ClanSelectPage(), Gtk.Label(label="Overview"))
+        self.notebook.append_page(ClanJoinPage(), Gtk.Label(label="Join"))
 
         # Must be called AFTER all components were added
         self.show_all()
