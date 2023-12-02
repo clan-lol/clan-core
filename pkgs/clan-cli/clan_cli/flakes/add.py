@@ -2,24 +2,13 @@
 import argparse
 from pathlib import Path
 
-from clan_cli.dirs import user_history_file
+from clan_cli.flakes.history import push_history
 
 from ..async_cmd import CmdOut, runforcli
-from ..locked_open import locked_open
 
 
 async def add_flake(path: Path) -> dict[str, CmdOut]:
-    user_history_file().parent.mkdir(parents=True, exist_ok=True)
-    # append line to history file
-    lines: set = set()
-    old_lines = set()
-    with locked_open(user_history_file(), "w+") as f:
-        old_lines = set(f.readlines())
-        lines = old_lines | {str(path)}
-        if old_lines != lines:
-            f.seek(0)
-            f.writelines(lines)
-            f.truncate()
+    push_history(path)
     return {}
 
 
