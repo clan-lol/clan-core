@@ -1,3 +1,4 @@
+import json
 from typing import TYPE_CHECKING
 
 from cli import Cli
@@ -5,6 +6,7 @@ from fixtures_flakes import FlakeForTest
 from pytest import CaptureFixture
 
 from clan_cli.dirs import user_history_file
+from clan_cli.flakes.history import HistoryEntry
 
 if TYPE_CHECKING:
     pass
@@ -24,7 +26,8 @@ def test_flakes_add(
 
     history_file = user_history_file()
     assert history_file.exists()
-    assert open(history_file).read().strip() == str(test_flake.path)
+    history = [HistoryEntry(**entry) for entry in json.loads(open(history_file).read())]
+    assert history[0].path == str(test_flake.path)
 
 
 def test_flakes_list(
