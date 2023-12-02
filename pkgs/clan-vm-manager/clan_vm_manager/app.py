@@ -37,11 +37,23 @@ class MainWindow(Gtk.ApplicationWindow):
         self.notebook = Gtk.Notebook()
         vbox.add(self.notebook)
 
-        self.notebook.append_page(ClanSelectPage(), Gtk.Label(label="Overview"))
+        self.notebook.append_page(
+            ClanSelectPage(self.reload_clan_tab), Gtk.Label(label="Overview")
+        )
         self.notebook.append_page(ClanJoinPage(), Gtk.Label(label="Join"))
 
         # Must be called AFTER all components were added
         self.show_all()
+
+    def reload_clan_tab(self) -> None:
+        print("Remounting ClanSelectPage")
+        self.notebook.remove_page(0)
+        self.notebook.insert_page(
+            ClanSelectPage(self.reload_clan_tab), Gtk.Label(label="Overview2"), 0
+        )
+        # must call show_all before set active tab
+        self.show_all()
+        self.notebook.set_current_page(0)
 
     def on_quit(self, *args: Any) -> None:
         Gio.Application.quit(self.get_application())

@@ -67,6 +67,8 @@ import the glade file through GTK template
 
 - To understand GTK3 Components look into the [Python GTK3 Tutorial](https://python-gtk-3-tutorial.readthedocs.io/en/latest/search.html?q=ApplicationWindow&check_keywords=yes&area=default)
 
+- https://web.archive.org/web/20100706201447/http://www.pygtk.org/pygtk2reference/ (GTK2 Reference, many methods still exist in gtk3)
+-
 - Also look into [PyGObject](https://pygobject.readthedocs.io/en/latest/guide/gtk_template.html) to know more about threading and async etc.
 - [GI Python API](https://lazka.github.io/pgi-docs/#Gtk-3.0)
 - https://developer.gnome.org/documentation/tutorials/application.html
