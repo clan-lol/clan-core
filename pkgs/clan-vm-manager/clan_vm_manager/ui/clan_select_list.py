@@ -5,9 +5,92 @@ from gi.repository import GdkPixbuf, Gtk
 from ..models import VMBase, get_initial_vms
 
 
-class ClanSelectPage(Gtk.Box):
-    def __init__(self, reload: Callable[[], None]) -> None:
+class ClanEditForm(Gtk.ListBox):
+    def __init__(self, selected: VMBase | None) -> None:
+        super().__init__()
+        self.page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, expand=True)
+        self.set_border_width(10)
+        self.selected = selected
+        self.set_selection_mode(0)
+
+        if self.selected:
+            row = Gtk.ListBoxRow()
+            row.add(Gtk.Label(f"\n {self.selected.name}"))
+            self.add(row)
+
+        # ---------- row 1 --------
+        row = Gtk.ListBoxRow()
+        row_layout = Gtk.Box(spacing=6, expand=True)
+
+        # Doc: pack_start/end takes alignment params Expand, Fill, Padding
+        row_layout.pack_start(Gtk.Label("Memory Size in MiB"), False, False, 5)
+        row_layout.pack_start(
+            Gtk.SpinButton.new_with_range(512, 4096, 256), True, True, 0
+        )
+
+        row.add(row_layout)
+        self.add(row)
+
+        # ----------- row 2 -------
+
+        row = Gtk.ListBoxRow()
+        row_layout = Gtk.Box(spacing=6, expand=True)
+
+        row_layout.pack_start(Gtk.Label("CPU Count"), False, False, 5)
+        row_layout.pack_end(Gtk.SpinButton.new_with_range(1, 5, 1), True, True, 0)
+
+        row.add(row_layout)
+        self.add(row)
+
+    def switch(self, widget: Gtk.Widget) -> None:
+        self.show_list()
+
+
+class ClanEdit(Gtk.Box):
+    def __init__(self, show_list: Callable[[], None], selected: VMBase | None) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
+
+        self.show_list = show_list
+        self.selected = selected
+
+        button_hooks = {
+            "on_save_clicked": self.on_save,
+        }
+
+        self.toolbar = ClanEditToolbar(**button_hooks)
+        self.add(self.toolbar)
+        self.add(ClanEditForm(self.selected))
+
+    def on_save(self, widget: Gtk.Widget) -> None:
+        print("Save clicked saving values")
+        self.show_list()
+
+
+class ClanList(Gtk.Box):
+    """
+    The ClanList
+    Is the composition of
+    the ClanListToolbar
+    the clanListView
+    # ------------------------#
+    # - Tools <Join> < Edit>  #
+    # ------------------------#
+    # - List Items
+    # - <...>
+    # ------------------------#
+    """
+
+    def __init__(
+        self,
+        show_list: Callable[[], None],
+        show_edit: Callable[[], None],
+        set_selected: Callable[[VMBase | None], None],
+    ) -> None:
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
+
+        self.show_edit = show_edit
+        self.show_list = show_list
+        self.set_selected = set_selected
 
         # TODO: We should use somekind of useState hook here.
         # that updates the list of VMs when the user changes something
@@ -17,59 +100,89 @@ class ClanSelectPage(Gtk.Box):
         # This class needs to take ownership of the data because it has access to the listStore only
         self.selected_vm: VMBase | None = None
 
-        self.list_hooks = {
-            "on_select_row": self.on_select_vm,
-        }
-        self.add(ClanSelectList(**self.list_hooks))
-        self.reload = reload
         button_hooks = {
             "on_start_clicked": self.on_start_clicked,
             "on_stop_clicked": self.on_stop_clicked,
-            "on_backup_clicked": self.on_backup_clicked,
+            "on_edit_clicked": self.on_edit_clicked,
         }
-        self.add(ClanSelectButtons(**button_hooks))
+        self.toolbar = ClanListToolbar(**button_hooks)
+        self.toolbar.set_is_selected(False)
+        self.add(self.toolbar)
+
+        self.list_hooks = {
+            "on_select_row": self.on_select_vm,
+        }
+        self.add(ClanListView(**self.list_hooks))
 
     def on_start_clicked(self, widget: Gtk.Widget) -> None:
         print("Start clicked")
         if self.selected_vm:
             self.selected_vm.run()
-        self.reload()
+        # Call this to reload
+        self.show_list()
 
     def on_stop_clicked(self, widget: Gtk.Widget) -> None:
         print("Stop clicked")
 
-    def on_backup_clicked(self, widget: Gtk.Widget) -> None:
-        print("Backup clicked")
+    def on_edit_clicked(self, widget: Gtk.Widget) -> None:
+        print("Edit clicked")
+        self.show_edit()
 
     def on_select_vm(self, vm: VMBase) -> None:
         print(f"on_select_vm: {vm}")
+        if vm is None:
+            self.toolbar.set_is_selected(False)
+        else:
+            self.toolbar.set_is_selected(True)
+
+        self.set_selected(vm)
         self.selected_vm = vm
 
 
-class ClanSelectButtons(Gtk.Box):
+class ClanListToolbar(Gtk.Toolbar):
     def __init__(
         self,
         *,
         on_start_clicked: Callable[[Gtk.Widget], None],
         on_stop_clicked: Callable[[Gtk.Widget], None],
-        on_backup_clicked: Callable[[Gtk.Widget], None],
+        on_edit_clicked: Callable[[Gtk.Widget], None],
     ) -> None:
-        super().__init__(
-            orientation=Gtk.Orientation.HORIZONTAL, margin_bottom=10, margin_top=10
-        )
+        super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
 
-        button = Gtk.Button(label="Start", margin_left=10)
-        button.connect("clicked", on_start_clicked)
-        self.add(button)
-        button = Gtk.Button(label="Stop", margin_left=10)
-        button.connect("clicked", on_stop_clicked)
-        self.add(button)
-        button = Gtk.Button(label="Edit", margin_left=10)
-        button.connect("clicked", on_backup_clicked)
-        self.add(button)
+        self.start_button = Gtk.ToolButton(label="Join")
+        self.start_button.connect("clicked", on_start_clicked)
+        self.add(self.start_button)
+
+        self.edit_button = Gtk.ToolButton(label="Edit")
+        self.edit_button.connect("clicked", on_edit_clicked)
+        self.add(self.edit_button)
+
+    def set_is_selected(self, s: bool) -> None:
+        if s:
+            self.edit_button.set_sensitive(True)
+            self.start_button.set_sensitive(True)
+        else:
+            self.edit_button.set_sensitive(False)
+            self.start_button.set_sensitive(False)
 
 
-class ClanSelectList(Gtk.Box):
+class ClanEditToolbar(Gtk.Toolbar):
+    def __init__(
+        self,
+        *,
+        on_save_clicked: Callable[[Gtk.Widget], None],
+    ) -> None:
+        super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
+
+        # Icons See: https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+        # Could not find a suitable one
+        self.save_button = Gtk.ToolButton(label="Save")
+        self.save_button.connect("clicked", on_save_clicked)
+
+        self.add(self.save_button)
+
+
+class ClanListView(Gtk.Box):
     def __init__(
         self,
         *,
