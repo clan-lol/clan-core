@@ -6,19 +6,32 @@ from typing import Any
 
 import gi
 
+from clan_vm_manager.models import VMBase
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk
 
 from .constants import constants
-from .ui.clan_select_list import ClanSelectPage
+from .ui.clan_select_list import ClanEdit, ClanList
 
 
 class ClanJoinPage(Gtk.Box):
-    def __init__(self) -> None:
+    def __init__(self, stack: Gtk.Stack) -> None:
         super().__init__()
-        self.page = Gtk.Box()
+        self.page = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True
+        )
         self.set_border_width(10)
-        self.add(Gtk.Label(label="Join"))
+        self.stack = stack
+
+        button = Gtk.Button(label="Back to list", margin_left=10)
+        button.connect("clicked", self.switch)
+        self.add(button)
+
+        self.add(Gtk.Label("Join cLan"))
+
+    def switch(self, widget: Gtk.Widget) -> None:
+        self.stack.set_visible_child_name("list")
 
 
 class MainWindow(Gtk.ApplicationWindow):
@@ -35,25 +48,46 @@ class MainWindow(Gtk.ApplicationWindow):
         # Add a notebook layout
         # https://python-gtk-3-tutorial.readthedocs.io/en/latest/layout.html#notebook
         self.notebook = Gtk.Notebook()
-        vbox.add(self.notebook)
+        self.stack = Gtk.Stack()
+        # self.stack_switcher = Gtk.StackSwitcher()
 
-        self.notebook.append_page(
-            ClanSelectPage(self.reload_clan_tab), Gtk.Label(label="Overview")
+        # Add named stacks
+        self.stack.add_titled(
+            ClanList(self.show_list, self.show_edit, self.set_selected), "list", "List"
         )
-        self.notebook.append_page(ClanJoinPage(), Gtk.Label(label="Join"))
+        self.stack.add_titled(ClanJoinPage(self.show_list), "join", "Join")
+        self.stack.add_titled(ClanEdit(self.show_list, None), "edit", "Edit")
+
+        vbox.add(self.stack)
 
         # Must be called AFTER all components were added
         self.show_all()
 
-    def reload_clan_tab(self) -> None:
-        print("Remounting ClanSelectPage")
-        self.notebook.remove_page(0)
-        self.notebook.insert_page(
-            ClanSelectPage(self.reload_clan_tab), Gtk.Label(label="Overview2"), 0
+    def set_selected(self, sel: VMBase | None) -> None:
+        self.selected = sel
+        print(f"APP selected + {self.selected}")
+
+    def show_list(self) -> None:
+        widget = self.stack.get_child_by_name("list")
+        print("Remounting ClanListView")
+        if widget:
+            widget.destroy()
+
+        self.stack.add_titled(
+            ClanList(self.show_list, self.show_edit, self.set_selected), "list", "List"
         )
-        # must call show_all before set active tab
         self.show_all()
-        self.notebook.set_current_page(0)
+        self.stack.set_visible_child_name("list")
+
+    def show_edit(self) -> None:
+        print("Remounting ClanEdit")
+        widget = self.stack.get_child_by_name("edit")
+        if widget:
+            widget.destroy()
+
+        self.stack.add_titled(ClanEdit(self.show_list, self.selected), "edit", "Edit")
+        self.show_all()
+        self.stack.set_visible_child_name("edit")
 
     def on_quit(self, *args: Any) -> None:
         Gio.Application.quit(self.get_application())
