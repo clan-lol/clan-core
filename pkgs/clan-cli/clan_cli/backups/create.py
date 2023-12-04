@@ -1,34 +1,45 @@
 import argparse
-import pprint
-from pathlib import Path
+import json
+import subprocess
 from typing import Optional
 
 from ..errors import ClanError
+from ..machines.machines import Machine
 
 
-def create_backup(flake_dir: Path, machine: Optional[str] = None, provider: Optional[str] = None) -> None:
-    if machine is None:
-        # TODO get all machines here
-        machines = [ "machine1", "machine2" ]
-    else:
-        machines = [ machine ]
-
+def create_backup(machine: Machine, provider: Optional[str] = None) -> None:
+    backup_scripts = json.loads(
+        machine.eval_nix(f"nixosConfigurations.{machine.name}.config.clanCore.backups")
+    )
     if provider is None:
-        # TODO get all providers here
-        providers = [ "provider1", "provider2" ]
+        for provider in backup_scripts["providers"]:
+            proc = subprocess.run(
+                ["bash", "-c", backup_scripts["providers"][provider]["start"]],
+            )
+            if proc.returncode != 0:
+                raise ClanError("failed to start backup")
+            else:
+                print("successfully started backup")
     else:
-        providers = [ provider ]
-
-    print("would create backups for machines: ", machines, " with providers: ", providers) 
+        if provider not in backup_scripts["providers"]:
+            raise ClanError(f"provider {provider} not found")
+        proc = subprocess.run(
+            ["bash", "-c", backup_scripts["providers"][provider]["start"]],
+        )
+        if proc.returncode != 0:
+            raise ClanError("failed to start backup")
+        else:
+            print("successfully started backup")
 
 
 def create_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        raise ClanError("Could not find clan flake toplevel directory")
-    create_backup(Path(args.flake), machine=args.machine, provider=args.provider)
+    machine = Machine(name=args.machine, flake_dir=args.flake)
+    create_backup(machine=machine, provider=args.provider)
 
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--machine", type=str, help="machine in the flake to create backups of")
+    parser.add_argument(
+        "machine", type=str, help="machine in the flake to create backups of"
+    )
     parser.add_argument("--provider", type=str, help="backup provider to use")
     parser.set_defaults(func=create_command)

@@ -5,7 +5,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Optional, Sequence
 
-from . import config, flakes, machines, secrets, vms, webui, backups
+from . import backups, config, flakes, machines, secrets, vms, webui
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
 from .ssh import cli as ssh_cli
