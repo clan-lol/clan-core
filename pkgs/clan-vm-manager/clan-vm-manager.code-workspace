@@ -7,5 +7,7 @@
 			"path": "../clan-cli/clan_cli"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"python.linting.mypyEnabled": true
+	}
 }
