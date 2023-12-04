@@ -16,7 +16,7 @@ from .ui.clan_select_list import ClanEdit, ClanList
 
 
 class ClanJoinPage(Gtk.Box):
-    def __init__(self, stack: Gtk.Stack) -> None:
+    def __init__(self, *, stack: Gtk.Stack) -> None:
         super().__init__()
         self.page = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True
@@ -51,12 +51,22 @@ class MainWindow(Gtk.ApplicationWindow):
         self.stack = Gtk.Stack()
         # self.stack_switcher = Gtk.StackSwitcher()
 
+        self.list_hooks = {
+            "remount_list": self.remount_list_view,
+            "remount_edit": self.remount_edit_view,
+            "set_selected": self.set_selected,
+        }
+        clan_list = ClanList(**self.list_hooks, selected_vm=None)  # type: ignore
         # Add named stacks
+        self.stack.add_titled(clan_list, "list", "List")
         self.stack.add_titled(
-            ClanList(self.show_list, self.show_edit, self.set_selected), "list", "List"
+            ClanJoinPage(stack=self.remount_list_view), "join", "Join"
         )
-        self.stack.add_titled(ClanJoinPage(self.show_list), "join", "Join")
-        self.stack.add_titled(ClanEdit(self.show_list, None), "edit", "Edit")
+        self.stack.add_titled(
+            ClanEdit(remount_list=self.remount_list_view, selected_vm=None),
+            "edit",
+            "Edit",
+        )
 
         vbox.add(self.stack)
 
@@ -64,28 +74,31 @@ class MainWindow(Gtk.ApplicationWindow):
         self.show_all()
 
     def set_selected(self, sel: VMBase | None) -> None:
-        self.selected = sel
-        print(f"APP selected + {self.selected}")
+        self.selected_vm = sel
+        print(f"APP selected + {self.selected_vm}")
 
-    def show_list(self) -> None:
+    def remount_list_view(self) -> None:
         widget = self.stack.get_child_by_name("list")
         print("Remounting ClanListView")
         if widget:
             widget.destroy()
 
-        self.stack.add_titled(
-            ClanList(self.show_list, self.show_edit, self.set_selected), "list", "List"
-        )
+        clan_list = ClanList(**self.list_hooks, selected_vm=self.selected_vm)  # type: ignore
+        self.stack.add_titled(clan_list, "list", "List")
         self.show_all()
         self.stack.set_visible_child_name("list")
 
-    def show_edit(self) -> None:
+    def remount_edit_view(self) -> None:
         print("Remounting ClanEdit")
         widget = self.stack.get_child_by_name("edit")
         if widget:
             widget.destroy()
 
-        self.stack.add_titled(ClanEdit(self.show_list, self.selected), "edit", "Edit")
+        self.stack.add_titled(
+            ClanEdit(remount_list=self.remount_list_view, selected_vm=self.selected_vm),
+            "edit",
+            "Edit",
+        )
         self.show_all()
         self.stack.set_visible_child_name("edit")
 
