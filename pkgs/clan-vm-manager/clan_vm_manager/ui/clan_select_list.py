@@ -252,7 +252,7 @@ class ClanListView(Gtk.Box):
             vm = VMBase(*model[row])
             vm.run()
 
- 
+
 def setColRenderers(tree_view: Gtk.TreeView) -> None:
     for idx, (key, gtype) in enumerate(VMBase.name_to_type_map().items()):
         col: Gtk.TreeViewColumn = None
@@ -263,10 +263,9 @@ def setColRenderers(tree_view: Gtk.TreeView) -> None:
             case GdkPixbuf.Pixbuf:
                 renderer = Gtk.CellRendererPixbuf()
                 col = Gtk.TreeViewColumn(key, renderer, pixbuf=idx)
-            case str:
+            case str:  # noqa
                 renderer = Gtk.CellRendererText()
                 col = Gtk.TreeViewColumn(key, renderer, text=idx)
-
 
         # CommonSetup for all columns
         if col:

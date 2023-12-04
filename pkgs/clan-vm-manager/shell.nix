@@ -17,7 +17,7 @@ mkShell {
     # install desktop file
     cp -f ${clan-vm-manager}/share/applications/clan-vm-manager.desktop ~/.local/share/applications/clan-vm-manager.desktop
     sleep 2
-    sed -i "s|Exec=.*|Exec=${clan-vm-manager}/bin/clan-vm-manager|" ~/.local/share/applications/clan-vm-manager.desktop
+    sed -i "s|Exec=.*clan-vm-manager|Exec=${clan-vm-manager}/bin/clan-vm-manager|" ~/.local/share/applications/clan-vm-manager.desktop
     xdg-mime default clan-vm-manager.desktop  x-scheme-handler/clan
     set +x
   '';
