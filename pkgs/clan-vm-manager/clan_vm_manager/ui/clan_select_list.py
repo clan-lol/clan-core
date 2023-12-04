@@ -6,7 +6,7 @@ from ..models import VMBase, get_initial_vms
 
 
 class ClanEditForm(Gtk.ListBox):
-    def __init__(self, selected: VMBase | None) -> None:
+    def __init__(self, *, selected: VMBase | None) -> None:
         super().__init__()
         self.page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, expand=True)
         self.set_border_width(10)
@@ -47,11 +47,13 @@ class ClanEditForm(Gtk.ListBox):
 
 
 class ClanEdit(Gtk.Box):
-    def __init__(self, show_list: Callable[[], None], selected: VMBase | None) -> None:
+    def __init__(
+        self, *, remount_list: Callable[[], None], selected_vm: VMBase | None
+    ) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
 
-        self.show_list = show_list
-        self.selected = selected
+        self.show_list = remount_list
+        self.selected = selected_vm
 
         button_hooks = {
             "on_save_clicked": self.on_save,
@@ -59,7 +61,7 @@ class ClanEdit(Gtk.Box):
 
         self.toolbar = ClanEditToolbar(**button_hooks)
         self.add(self.toolbar)
-        self.add(ClanEditForm(self.selected))
+        self.add(ClanEditForm(selected=self.selected))
 
     def on_save(self, widget: Gtk.Widget) -> None:
         print("Save clicked saving values")
@@ -82,14 +84,16 @@ class ClanList(Gtk.Box):
 
     def __init__(
         self,
-        show_list: Callable[[], None],
-        show_edit: Callable[[], None],
+        *,
+        remount_list: Callable[[], None],
+        remount_edit: Callable[[], None],
         set_selected: Callable[[VMBase | None], None],
+        selected_vm: VMBase | None,
     ) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
 
-        self.show_edit = show_edit
-        self.show_list = show_list
+        self.remount_edit_view = remount_edit
+        self.remount_list_view = remount_list
         self.set_selected = set_selected
 
         # TODO: We should use somekind of useState hook here.
@@ -98,7 +102,7 @@ class ClanList(Gtk.Box):
         # self.list_store.set_value(self.list_store.get_iter(path), 3, "new value")
         # self.list_store[path][3] = "new_value"
         # This class needs to take ownership of the data because it has access to the listStore only
-        self.selected_vm: VMBase | None = None
+        self.selected_vm: VMBase | None = selected_vm
 
         button_hooks = {
             "on_start_clicked": self.on_start_clicked,
@@ -106,27 +110,27 @@ class ClanList(Gtk.Box):
             "on_edit_clicked": self.on_edit_clicked,
         }
         self.toolbar = ClanListToolbar(**button_hooks)
-        self.toolbar.set_is_selected(False)
+        self.toolbar.set_is_selected(self.selected_vm is not None)
         self.add(self.toolbar)
 
         self.list_hooks = {
             "on_select_row": self.on_select_vm,
         }
-        self.add(ClanListView(**self.list_hooks))
+        self.add(ClanListView(**self.list_hooks, selected_vm=selected_vm))
 
     def on_start_clicked(self, widget: Gtk.Widget) -> None:
         print("Start clicked")
         if self.selected_vm:
             self.selected_vm.run()
         # Call this to reload
-        self.show_list()
+        self.remount_list_view()
 
     def on_stop_clicked(self, widget: Gtk.Widget) -> None:
         print("Stop clicked")
 
     def on_edit_clicked(self, widget: Gtk.Widget) -> None:
         print("Edit clicked")
-        self.show_edit()
+        self.remount_edit_view()
 
     def on_select_vm(self, vm: VMBase) -> None:
         print(f"on_select_vm: {vm}")
@@ -186,9 +190,8 @@ class ClanListView(Gtk.Box):
     def __init__(
         self,
         *,
-        # vms: list[VMBase],
         on_select_row: Callable[[VMBase], None],
-        # on_double_click: Callable[[VMBase], None],
+        selected_vm: VMBase | None,
     ) -> None:
         super().__init__(expand=True)
         self.vms: list[VMBase] = [vm.base for vm in get_initial_vms()]
@@ -202,12 +205,27 @@ class ClanListView(Gtk.Box):
 
         setColRenderers(self.tree_view)
 
+        self.set_selected_vm(selected_vm)
         selection = self.tree_view.get_selection()
         selection.connect("changed", self._on_select_row)
         self.tree_view.connect("row-activated", self._on_double_click)
 
         self.set_border_width(10)
         self.add(self.tree_view)
+
+    def find_vm(self, vm: VMBase) -> int:
+        for idx, row in enumerate(self.list_store):
+            if row[1] == vm.name:  # TODO: Change to path
+                return idx
+        return -1
+
+    def set_selected_vm(self, vm: VMBase | None) -> None:
+        if vm is None:
+            return
+        selection = self.tree_view.get_selection()
+        idx = self.find_vm(vm)
+        print(f"Set selected vm: {vm.name} at {idx}")
+        selection.select_path(idx)
 
     def insertVM(self, vm: VMBase) -> None:
         values = list(vm.list_data().values())

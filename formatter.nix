@@ -23,6 +23,7 @@
     treefmt.programs.mypy.enable = true;
     treefmt.programs.mypy.directories = {
       "pkgs/clan-cli".extraPythonPackages = self'.packages.clan-cli.pytestDependencies;
+      "pkgs/clan-vm-manager".extraPythonPackages = self'.packages.clan-vm-manager.propagatedBuildInputs;
     };
 
     treefmt.settings.formatter.nix = {
