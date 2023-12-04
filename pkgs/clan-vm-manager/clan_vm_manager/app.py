@@ -6,32 +6,14 @@ from typing import Any
 
 import gi
 
-from clan_vm_manager.models import VMBase
+from .models import VMBase
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk
 
 from .constants import constants
+from .ui.clan_join_page import ClanJoinPage
 from .ui.clan_select_list import ClanEdit, ClanList
-
-
-class ClanJoinPage(Gtk.Box):
-    def __init__(self, *, stack: Gtk.Stack) -> None:
-        super().__init__()
-        self.page = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True
-        )
-        self.set_border_width(10)
-        self.stack = stack
-
-        button = Gtk.Button(label="Back to list", margin_left=10)
-        button.connect("clicked", self.switch)
-        self.add(button)
-
-        self.add(Gtk.Label("Join cLan"))
-
-    def switch(self, widget: Gtk.Widget) -> None:
-        self.stack.set_visible_child_name("list")
 
 
 class MainWindow(Gtk.ApplicationWindow):
@@ -109,7 +91,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
 
 class Application(Gtk.Application):
-    def __init__(self) -> None:
+    def __init__(self, args: argparse.Namespace) -> None:
         super().__init__(
             application_id=constants["APPID"], flags=Gio.ApplicationFlags.FLAGS_NONE
         )
@@ -134,9 +116,3 @@ class Application(Gtk.Application):
         # screen = Gdk.Screen.get_default()
         # style_context = Gtk.StyleContext()
         # style_context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-
-
-def start_app(args: argparse.Namespace) -> None:
-    print(sys.argv)
-    app = Application()
-    return app.run(sys.argv)
