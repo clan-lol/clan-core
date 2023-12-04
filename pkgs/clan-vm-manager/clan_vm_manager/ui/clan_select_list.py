@@ -133,7 +133,7 @@ class ClanList(Gtk.Box):
         self.remount_edit_view()
 
     def on_select_vm(self, vm: VMBase) -> None:
-        print(f"on_select_vm: {vm}")
+        print(f"on_select_vm: {vm.name}")
         if vm is None:
             self.toolbar.set_is_selected(False)
         else:
@@ -215,7 +215,7 @@ class ClanListView(Gtk.Box):
 
     def find_vm(self, vm: VMBase) -> int:
         for idx, row in enumerate(self.list_store):
-            if row[1] == vm.name:  # TODO: Change to path
+            if row[VMBase.to_idx("Name")] == vm.name:  # TODO: Change to path
                 return idx
         return -1
 
@@ -229,16 +229,18 @@ class ClanListView(Gtk.Box):
 
     def insertVM(self, vm: VMBase) -> None:
         values = list(vm.list_data().values())
-        values[0] = GdkPixbuf.Pixbuf.new_from_file_at_scale(
-            filename=values[0], width=64, height=64, preserve_aspect_ratio=True
+        icon_idx = VMBase.to_idx("Icon")
+        values[icon_idx] = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+            filename=values[icon_idx], width=64, height=64, preserve_aspect_ratio=True
         )
         self.list_store.append(values)
 
     def _on_select_row(self, selection: Gtk.TreeSelection) -> None:
         model, row = selection.get_selected()
         if row is not None:
-            print(f"Selected {model[row][1]}")
-            self.on_select_row(VMBase(*model[row]))
+            vm = VMBase(*model[row])
+            print(f"Selected {vm.name}")
+            self.on_select_row(vm)
 
     def _on_double_click(
         self, tree_view: Gtk.TreeView, path: Gtk.TreePath, column: Gtk.TreeViewColumn
@@ -247,24 +249,23 @@ class ClanListView(Gtk.Box):
         selection = tree_view.get_selection()
         model, row = selection.get_selected()
         if row is not None:
-            VMBase(*model[row]).run()
+            vm = VMBase(*model[row])
+            vm.run()
 
 
 def setColRenderers(tree_view: Gtk.TreeView) -> None:
-    for idx, (key, _) in enumerate(VMBase.name_to_type_map().items()):
+    for idx, (key, gtype) in enumerate(VMBase.name_to_type_map().items()):
         col: Gtk.TreeViewColumn = None
-        match key:
-            case "Icon":
+
+        if key.startswith("_"):
+            continue
+        match gtype:
+            case GdkPixbuf.Pixbuf:
                 renderer = Gtk.CellRendererPixbuf()
                 col = Gtk.TreeViewColumn(key, renderer, pixbuf=idx)
-            case "Name" | "URL":
+            case str:  # noqa
                 renderer = Gtk.CellRendererText()
                 col = Gtk.TreeViewColumn(key, renderer, text=idx)
-            case "Status":
-                renderer = Gtk.CellRendererText()
-                col = Gtk.TreeViewColumn(key, renderer, text=idx)
-            case _:
-                continue
 
         # CommonSetup for all columns
         if col:
