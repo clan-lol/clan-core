@@ -75,7 +75,9 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def set_selected(self, sel: VMBase | None) -> None:
         self.selected_vm = sel
-        print(f"APP selected + {self.selected_vm}")
+
+        if self.selected_vm:
+            print(f"APP selected + {self.selected_vm.name}")
 
     def remount_list_view(self) -> None:
         widget = self.stack.get_child_by_name("list")
@@ -135,5 +137,6 @@ class Application(Gtk.Application):
 
 
 def start_app(args: argparse.Namespace) -> None:
+    print(sys.argv)
     app = Application()
     return app.run(sys.argv)

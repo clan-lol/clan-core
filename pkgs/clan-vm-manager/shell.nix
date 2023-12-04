@@ -10,6 +10,7 @@ mkShell {
   shellHook = ''
     ln -sfT ${clan-cli.nixpkgs} ../clan-cli/clan_cli/nixpkgs
 
+    ln -sf ${clan-vm-manager} ./result
     # prepend clan-cli for development
     export PYTHONPATH=../clan-cli:$PYTHONPATH
   '';
