@@ -2,13 +2,15 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+
+
 [project]
 name = "clan-vm-manager"
 dynamic = ["version"]
 scripts = { clan-vm-manager = "clan_vm_manager:main" }
 
 [tool.setuptools.package-data]
-clan_vm_manager = ["*.glade"]
+clan_vm_manager = ["**/assets/*"]
 
 [tool.mypy]
 python_version = "3.11"
