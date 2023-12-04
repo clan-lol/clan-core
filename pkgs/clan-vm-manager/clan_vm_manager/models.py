@@ -5,6 +5,9 @@ from pathlib import Path
 from typing import Any
 
 import clan_cli
+import gi
+
+gi.require_version("GdkPixbuf", "2.0")
 from gi.repository import GdkPixbuf
 
 from clan_vm_manager import assets
@@ -39,6 +42,10 @@ class VMBase:
                 "_Path": str,
             }
         )
+
+    @staticmethod
+    def to_idx(name: str) -> int:
+        return list(VMBase.name_to_type_map().keys()).index(name)
 
     def list_data(self) -> OrderedDict[str, Any]:
         return OrderedDict(

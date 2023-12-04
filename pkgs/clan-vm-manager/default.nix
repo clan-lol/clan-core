@@ -61,7 +61,6 @@ python3.pkgs.buildPythonApplication {
   desktopItems = [
     (makeDesktopItem {
       name = "clan-vm-manager";
-      # TODO: this subcommand is not implemented yet
       exec = "clan-vm-manager join %u";
       desktopName = "CLan VM Manager";
       startupWMClass = "clan";
