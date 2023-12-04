@@ -3,14 +3,21 @@
   options.clanCore.state = lib.mkOption {
     default = { };
     type = lib.types.attrsOf
-      (lib.types.submodule ({ name, ... }: {
+      (lib.types.submodule ({ ... }: {
         options = {
-          folder = lib.mkOption {
-            type = lib.types.str;
-            default = name;
+          folders = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
             description = ''
               Folder where state resides in
             '';
+          };
+          restoreScript = lib.mkOption {
+            type = lib.types.str;
+            default = ":";
+            description = ''
+              script to restore the service after the state dir was restored from a backup
+            '';
+
           };
         };
       }));
@@ -32,10 +39,11 @@
               script to list backups
             '';
           };
-          delete = lib.mkOption {
+          restore = lib.mkOption {
             type = lib.types.str;
             description = ''
-              script to delete a backup
+              script to restore a backup
+              should take an optional service name as argument
             '';
           };
           start = lib.mkOption {

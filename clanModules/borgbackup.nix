@@ -33,7 +33,7 @@ in
   config = lib.mkIf cfg.enable {
     services.borgbackup.jobs = lib.mapAttrs
       (_: dest: {
-        paths = map (state: state.folder) (lib.attrValues config.clanCore.state);
+        paths = lib.flatten (map (state: state.folders) (lib.attrValues config.clanCore.state));
         exclude = [
           "*.pyc"
         ];
@@ -58,16 +58,23 @@ in
     clanCore.backups.providers.borgbackup = {
       list = ''
         ${lib.concatMapStringsSep "\n" (dest: ''
-          echo listing backups for ${dest}
-          borg-job-${dest} list
-        '') cfg.destinations}
+          (
+            export BORG_REPO=${lib.escapeShellArg dest.repo}
+            export BORG_RSH=${lib.escapeShellArg dest.rsh}
+            ${lib.getExe config.services.borgbackup.package} list
+          )
+        '') (lib.attrValues cfg.destinations)}
       '';
       start = ''
-        ${lib.concatMapStringsSep "\n" (dest: ''
-          systemctl start borgbackup-job-${dest}
-        '') cfg.destinations}
+        ssh ${config.clan.networking.deploymentAddress} -- '
+          ${lib.concatMapStringsSep "\n" (dest: ''
+            systemctl start borgbackup-job-${dest.name}
+          '') (lib.attrValues cfg.destinations)}
+        '
       '';
 
+      restore = ''
+      '';
     };
   };
 }

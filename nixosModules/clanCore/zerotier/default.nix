@@ -147,6 +147,8 @@ in
             --network-id "$facts/zerotier-network-id"
         '';
       };
+      clanCore.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
+
       environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
     })
     (lib.mkIf (config.clanCore.secretsUploadDirectory != null && !cfg.controller.enable && cfg.networkId != null) {

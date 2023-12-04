@@ -16,7 +16,7 @@
       {
         clanCore.machineName = "machine";
         clanCore.clanDir = ./.;
-        clanCore.state."/etc/state" = { };
+        clanCore.state.testState.folders = [ "/etc/state" ];
         environment.etc.state.text = "hello world";
         clan.borgbackup = {
           enable = true;
