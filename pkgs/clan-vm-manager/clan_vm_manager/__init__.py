@@ -1,9 +1,6 @@
 import argparse
 
-
 from .app import Application
-
-
 
 
 def join_command(args: argparse.Namespace) -> None:
@@ -11,6 +8,7 @@ def join_command(args: argparse.Namespace) -> None:
     print(args.clan_uri)
     app = Application()
     return app.run()
+
 
 def register_join_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("clan_uri", type=str, help="clan URI to join")
