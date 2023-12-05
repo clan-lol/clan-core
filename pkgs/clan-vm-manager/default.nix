@@ -57,7 +57,6 @@ python3.pkgs.buildPythonApplication {
   checkPhase = ''
     PYTHONPATH= $out/bin/clan-vm-manager --help
   '';
-  meta.mainProgram = "clan";
   desktopItems = [
     (makeDesktopItem {
       name = "clan-vm-manager";
