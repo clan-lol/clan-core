@@ -13,6 +13,8 @@ mkShell {
     # prepend clan-cli for development
     export PYTHONPATH=../clan-cli:$PYTHONPATH
 
+    ln -sf ${clan-vm-manager} result
+
     set -euox
     # install desktop file
     cp -f ${clan-vm-manager}/share/applications/clan-vm-manager.desktop ~/.local/share/applications/clan-vm-manager.desktop

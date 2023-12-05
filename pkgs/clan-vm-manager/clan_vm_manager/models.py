@@ -60,13 +60,15 @@ class VMBase:
 
     def run(self) -> None:
         print(f"Running VM {self.name}")
+        from clan_cli import vms
+        import asyncio
         # raise Exception("Cannot run VMs yet")
-        # vm = asyncio.run(
-        #     vms.run.inspect_vm(flake_url=self._path, flake_attr="defaultVM")
-        # )
-        # task = vms.run.run_vm(vm)
-        # for line in task.log_lines():
-        #     print(line, end="")
+        vm = asyncio.run(
+            vms.run.inspect_vm(flake_url=self._path, flake_attr="defaultVM")
+        )
+        task = vms.run.run_vm(vm)
+        for line in task.log_lines():
+            print(line, end="")
 
 
 @dataclass(frozen=True)
