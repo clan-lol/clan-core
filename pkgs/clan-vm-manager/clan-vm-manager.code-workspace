@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../clan-cli/clan_cli"
+		},
+		{
+			"path": "../clan-cli/tests"
 		}
 	],
 	"settings": {
