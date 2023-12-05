@@ -1,8 +1,10 @@
-{ clan-vm-manager, clan-cli, mkShell, ruff }:
+{ clan-vm-manager, clan-cli, mkShell, ruff, desktop-file-utils, xdg-utils }:
 mkShell {
   inherit (clan-vm-manager) propagatedBuildInputs buildInputs;
   nativeBuildInputs = [
     ruff
+    desktop-file-utils
+    xdg-utils
   ] ++ clan-vm-manager.nativeBuildInputs;
 
   PYTHONBREAKPOINT = "ipdb.set_trace";
@@ -13,14 +15,22 @@ mkShell {
     # prepend clan-cli for development
     export PYTHONPATH=../clan-cli:$PYTHONPATH
 
-    ln -sf ${clan-vm-manager} result
+    ln -snf ${clan-vm-manager} result
 
-    set -euox
+
     # install desktop file
-    cp -f ${clan-vm-manager}/share/applications/clan-vm-manager.desktop ~/.local/share/applications/clan-vm-manager.desktop
+    set -eou pipefail
+    DESKTOP_DST=~/.local/share/applications/clan-vm-manager.desktop
+    DESKTOP_SRC=${clan-vm-manager}/share/applications/clan-vm-manager.desktop
+    UI_BIN=${clan-vm-manager}/bin/clan-vm-manager
+
+    cp -f $DESKTOP_SRC $DESKTOP_DST
     sleep 2
-    sed -i "s|Exec=.*clan-vm-manager|Exec=${clan-vm-manager}/bin/clan-vm-manager|" ~/.local/share/applications/clan-vm-manager.desktop
+    sed -i "s|Exec=.*clan-vm-manager|Exec=$UI_BIN|" $DESKTOP_DST
     xdg-mime default clan-vm-manager.desktop  x-scheme-handler/clan
-    set +x
+    echo "==== Validating desktop file installation   ===="
+    set -x
+    desktop-file-validate $DESKTOP_DST
+    set +xeou pipefail
   '';
 }
