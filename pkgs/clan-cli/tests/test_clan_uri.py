@@ -1,18 +1,19 @@
+from pathlib import Path
+
 import pytest
 
-from clan_cli.clan_uri import ClanURI
+from clan_cli.clan_uri import ClanScheme, ClanURI
 from clan_cli.errors import ClanError
 
 
 def test_local_uri() -> None:
     # Create a ClanURI object from a local URI
     uri = ClanURI("clan://file:///home/user/Downloads")
-    # Check that the URI is local
-    assert uri.is_local()
-    # Check that the URI is not remote
-    assert not uri.is_remote()
-    # Check that the URI path is correct
-    assert uri.path == "/home/user/Downloads"
+    match uri.scheme:
+        case ClanScheme.FILE.value(path):
+            assert path == Path("/home/user/Downloads")  # type: ignore
+        case _:
+            assert False
 
 
 def test_unsupported_schema() -> None:
@@ -24,11 +25,38 @@ def test_unsupported_schema() -> None:
 def test_is_remote() -> None:
     # Create a ClanURI object from a remote URI
     uri = ClanURI("clan://https://example.com")
-    # Check that the URI is remote
-    assert uri.is_remote()
-    # Check that the URI is not local
-    assert not uri.is_local()
-    # Check that the URI path is correct
-    assert uri.path == ""
 
-    assert uri.url == "https://example.com"
+    match uri.scheme:
+        case ClanScheme.HTTPS.value(url):
+            assert url == "https://example.com"  # type: ignore
+        case _:
+            assert False
+
+
+def remote_with_clanparams() -> None:
+    # Create a ClanURI object from a remote URI with parameters
+    uri = ClanURI("clan://https://example.com?flake_attr=defaultVM")
+
+    assert uri.params.flake_attr == "defaultVM"
+
+    match uri.scheme:
+        case ClanScheme.HTTPS.value(url):
+            assert url == "https://example.com"  # type: ignore
+        case _:
+            assert False
+
+
+def remote_with_all_params() -> None:
+    # Create a ClanURI object from a remote URI with parameters
+    uri = ClanURI(
+        "clan://https://example.com?flake_attr=defaultVM&machine=vm1&password=1234"
+    )
+
+    assert uri.params.flake_attr == "defaultVM"
+    assert uri.params.machine == "vm1"
+
+    match uri.scheme:
+        case ClanScheme.HTTPS.value(url):
+            assert url == "https://example.com&password=1234"  # type: ignore
+        case _:
+            assert False
