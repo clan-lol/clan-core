@@ -28,15 +28,17 @@ def qemu_command(
         f'init={nixos_config["toplevel"]}/init',
         f'regInfo={nixos_config["regInfo"]}/registration',
         "console=ttyS0,115200n8",
-        "console=tty0",
+        # "console=tty0",
     ]
     # fmt: off
     command = [
-        "qemu-kvm",
+       #"/nix/store/16v6fajw05bw5ay0263mbxglm3ssqh34-qemu-host-cpu-only-8.1.2/bin/qemu-system-x86_64",
+        "/home/joerg/git/qemu/build/qemu-system-x86_64",
         "-name", vm.flake_attr,
         "-m", f'{nixos_config["memorySize"]}M',
         "-smp", str(nixos_config["cores"]),
         "-cpu", "max",
+        "-enable-kvm",
         "-device", "virtio-rng-pci",
         "-net", "nic,netdev=user.0,model=virtio",
         "-netdev", "user,id=user.0",
@@ -49,7 +51,7 @@ def qemu_command(
         "-device", "virtio-keyboard",
         # TODO: we also need to fixup timezone than...
         # "-rtc", "base=localtime,clock=host,driftfix=slew",
-        "-vga", "virtio",
+        #"-vga", "virtio",
         "-usb", "-device", "usb-tablet,bus=usb-bus.0",
         "-kernel", f'{nixos_config["toplevel"]}/kernel',
         "-initrd", nixos_config["initrd"],
@@ -60,25 +62,32 @@ def qemu_command(
         # fmt: off
         command.extend(
             [
-                "-audiodev", "spice,id=audio0",
-                "-device", "intel-hda",
-                "-device", "hda-duplex,audiodev=audio0",
+                #"-audiodev", "spice,id=audio0",
+                #"-device", "intel-hda",
+                #"-device", "hda-duplex,audiodev=audio0",
+                #"-display", "gtk,gl=on",
+                "-nographic",
+                #-nographic -serial null -enable-kvm \
+                #-device virtio-serial \
+                #-chardev stdio,mux=on,id=char0,signal=off \
+                #-mon chardev=char0,mode=readline \
                 "-vga", "none",
-                "-device", "virtio-gpu-gl",
-                "-display", "spice-app,gl=on",
-                "-device", "virtio-serial-pci",
-                "-chardev", "spicevmc,id=vdagent0,name=vdagent",
-                "-device", "virtserialport,chardev=vdagent0,name=com.redhat.spice.0",
-                "-device", "qemu-xhci,id=spicepass",
-                "-chardev", "spicevmc,id=usbredirchardev1,name=usbredir",
-                "-device", "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
-                "-chardev", "spicevmc,id=usbredirchardev2,name=usbredir",
-                "-device", "usb-redir,chardev=usbredirchardev2,id=usbredirdev2",
-                "-chardev", "spicevmc,id=usbredirchardev3,name=usbredir",
-                "-device", "usb-redir,chardev=usbredirchardev3,id=usbredirdev3",
-                "-device", "pci-ohci,id=smartpass",
-                "-device", "usb-ccid",
-                "-chardev", "spicevmc,id=ccid,name=smartcard",
+                "-device", "virtio-gpu-rutabaga,gfxstream-vulkan=on,cross-domain=on,hostmem=4G,wsi=headless",
+                #"-device", "virtio-gpu-gl",
+                #"-display", "spice-app,gl=on",
+                #"-device", "virtio-serial-pci",
+                #"-chardev", "spicevmc,id=vdagent0,name=vdagent",
+                #"-device", "virtserialport,chardev=vdagent0,name=com.redhat.spice.0",
+                #"-device", "qemu-xhci,id=spicepass",
+                #"-chardev", "spicevmc,id=usbredirchardev1,name=usbredir",
+                #"-device", "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
+                #"-chardev", "spicevmc,id=usbredirchardev2,name=usbredir",
+                #"-device", "usb-redir,chardev=usbredirchardev2,id=usbredirdev2",
+                #"-chardev", "spicevmc,id=usbredirchardev3,name=usbredir",
+                #"-device", "usb-redir,chardev=usbredirchardev3,id=usbredirdev3",
+                #"-device", "pci-ohci,id=smartpass",
+                #"-device", "usb-ccid",
+                #"-chardev", "spicevmc,id=ccid,name=smartcard",
             ]
         )
         # fmt: on
@@ -226,8 +235,14 @@ class BuildVmTask(BaseTask):
             env[
                 "XDG_DATA_DIRS"
             ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
+            env[
+                "LD_LIBRARY_PATH"
+            ] = "/nix/store/r7j600ar9fnnp4jngvhlx55giv46798r-vulkan-loader-1.3.268.0/lib"
             print(env["XDG_DATA_DIRS"])
-            cmd.run(nix_shell(packages, qemu_cmd), name="qemu", env=env)
+            import subprocess
+
+            subprocess.run(qemu_cmd, env=env)
+            # cmd.run(nix_shell(packages, qemu_cmd), name="qemu", env=env)
 
 
 def run_vm(
