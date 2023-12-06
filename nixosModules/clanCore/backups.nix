@@ -54,7 +54,7 @@
           };
         };
       }));
-      default = [ ];
+      default = { };
       description = ''
         Configured backup providers which are used by this machine
       '';
