@@ -1,16 +1,6 @@
 import deal
 
-from clan_cli import nix, task_manager
-
-
-@deal.cases(task_manager.get_task)
-def test_get_task(case: deal.TestCase) -> None:
-    case()
-
-
-@deal.cases(task_manager.create_task)
-def test_create_task(case: deal.TestCase) -> None:
-    case()
+from clan_cli import nix
 
 
 @deal.cases(nix.nix_command)
