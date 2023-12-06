@@ -3,7 +3,6 @@ from enum import Enum
 from pydantic import BaseModel, Extra, Field
 
 from ..async_cmd import CmdOut
-from ..task_manager import TaskStatus
 
 
 class Status(Enum):
@@ -45,15 +44,6 @@ class SchemaResponse(BaseModel):
 class VerifyMachineResponse(BaseModel):
     success: bool
     error: str | None
-
-
-class VmStatusResponse(BaseModel):
-    error: str | None
-    status: TaskStatus
-
-
-class VmCreateResponse(BaseModel):
-    uuid: str
 
 
 class FlakeAttrResponse(BaseModel):
