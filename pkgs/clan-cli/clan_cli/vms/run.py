@@ -1,18 +1,21 @@
 import argparse
 import asyncio
 import json
+import logging
 import os
 import shlex
+import subprocess
 import sys
 import tempfile
-from collections.abc import Iterator
 from pathlib import Path
-from uuid import UUID
+from typing import IO
 
 from ..dirs import module_root
+from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_eval, nix_shell
-from ..task_manager import BaseTask, Command, create_task
 from .inspect import VmConfig, inspect_vm
+
+log = logging.getLogger(__name__)
 
 
 def qemu_command(
@@ -87,162 +90,189 @@ def qemu_command(
     return command
 
 
-class BuildVmTask(BaseTask):
-    def __init__(self, uuid: UUID, vm: VmConfig, nix_options: list[str] = []) -> None:
-        super().__init__(uuid, num_cmds=7)
-        self.vm = vm
-        self.nix_options = nix_options
+def get_vm_create_info(vm: VmConfig, nix_options: list[str]) -> dict[str, str]:
+    config = nix_config()
+    system = config["system"]
 
-    def get_vm_create_info(self, cmds: Iterator[Command]) -> dict[str, str]:
-        config = nix_config()
-        system = config["system"]
-
-        clan_dir = self.vm.flake_url
-        machine = self.vm.flake_attr
-        cmd = next(cmds)
-        cmd.run(
-            nix_build(
-                [
-                    f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.vm.create',
-                    *self.nix_options,
-                ]
-            ),
-            name="buildvm",
+    clan_dir = vm.flake_url
+    machine = vm.flake_attr
+    cmd = nix_build(
+        [
+            f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.vm.create',
+            *nix_options,
+        ]
+    )
+    proc = subprocess.run(
+        cmd,
+        check=False,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    if proc.returncode != 0:
+        raise ClanError(
+            f"Failed to build vm config: {shlex.join(cmd)} failed with: {proc.returncode}"
         )
-        vm_json = "".join(cmd.stdout).strip()
-        self.log.debug(f"VM JSON path: {vm_json}")
-        with open(vm_json) as f:
-            return json.load(f)
+    try:
+        return json.loads(Path(proc.stdout.strip()).read_text())
+    except json.JSONDecodeError as e:
+        raise ClanError(f"Failed to parse vm config: {e}")
 
-    def get_clan_name(self, cmds: Iterator[Command]) -> str:
-        clan_dir = self.vm.flake_url
-        cmd = next(cmds)
-        cmd.run(
-            nix_eval([f"{clan_dir}#clanInternals.clanName"]) + self.nix_options,
-            name="clanname",
+
+def get_clan_name(vm: VmConfig, nix_options: list[str]) -> str:
+    clan_dir = vm.flake_url
+    cmd = nix_eval([f"{clan_dir}#clanInternals.clanName"]) + nix_options
+    proc = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        check=False,
+        text=True,
+    )
+    if proc.returncode != 0:
+        raise ClanError(
+            f"Failed to get clan name: {shlex.join(cmd)} failed with: {proc.returncode}"
         )
-        clan_name = cmd.stdout[0].strip().strip('"')
-        return clan_name
-
-    def run(self) -> None:
-        cmds = self.commands()
-
-        machine = self.vm.flake_attr
-        self.log.debug(f"Creating VM for {machine}")
-
-        # TODO: We should get this from the vm argument
-        nixos_config = self.get_vm_create_info(cmds)
-        clan_name = self.get_clan_name(cmds)
-
-        self.log.debug(f"Building VM for clan name: {clan_name}")
-
-        flake_dir = Path(self.vm.flake_url)
-        flake_dir.mkdir(exist_ok=True)
-
-        with tempfile.TemporaryDirectory() as tmpdir_:
-            tmpdir = Path(tmpdir_)
-            xchg_dir = tmpdir / "xchg"
-            xchg_dir.mkdir(exist_ok=True)
-            secrets_dir = tmpdir / "secrets"
-            secrets_dir.mkdir(exist_ok=True)
-            disk_img = tmpdir / "disk.img"
-            spice_socket = tmpdir / "spice.sock"
-
-            env = os.environ.copy()
-            env["CLAN_DIR"] = str(self.vm.flake_url)
-
-            env["PYTHONPATH"] = str(
-                ":".join(sys.path)
-            )  # TODO do this in the clanCore module
-            env["SECRETS_DIR"] = str(secrets_dir)
-
-            # Only generate secrets for local clans
-            if isinstance(self.vm.flake_url, Path) and self.vm.flake_url.is_dir():
-                cmd = next(cmds)
-                if Path(self.vm.flake_url).is_dir():
-                    cmd.run(
-                        [nixos_config["generateSecrets"], clan_name],
-                        env=env,
-                        name="generateSecrets",
-                    )
-                else:
-                    self.log.warning("won't generate secrets for non local clan")
-
-            cmd = next(cmds)
-            cmd.run(
-                [nixos_config["uploadSecrets"]],
-                env=env,
-                name="uploadSecrets",
-            )
-
-            cmd = next(cmds)
-            cmd.run(
-                nix_shell(
-                    ["qemu"],
-                    [
-                        "qemu-img",
-                        "create",
-                        "-f",
-                        "raw",
-                        str(disk_img),
-                        "1024M",
-                    ],
-                ),
-                name="createDisk",
-            )
-
-            cmd = next(cmds)
-            cmd.run(
-                nix_shell(
-                    ["e2fsprogs"],
-                    [
-                        "mkfs.ext4",
-                        "-L",
-                        "nixos",
-                        str(disk_img),
-                    ],
-                ),
-                name="formatDisk",
-            )
-
-            cmd = next(cmds)
-
-            qemu_cmd = qemu_command(
-                self.vm,
-                nixos_config,
-                xchg_dir=xchg_dir,
-                secrets_dir=secrets_dir,
-                disk_img=disk_img,
-                spice_socket=spice_socket,
-            )
-
-            print("$ " + shlex.join(qemu_cmd))
-            packages = ["qemu"]
-            if self.vm.graphics:
-                packages.append("virt-viewer")
-
-            env = os.environ.copy()
-            remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
-            env[
-                "XDG_DATA_DIRS"
-            ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
-            print(env["XDG_DATA_DIRS"])
-            cmd.run(nix_shell(packages, qemu_cmd), name="qemu", env=env)
+    return proc.stdout.strip().strip('"')
 
 
 def run_vm(
-    vm: VmConfig, nix_options: list[str] = [], env: dict[str, str] = {}
-) -> BuildVmTask:
-    return create_task(BuildVmTask, vm, nix_options)
+    vm: VmConfig, nix_options: list[str] = [], log_fd: IO[str] | None = None
+) -> None:
+    """
+    log_fd can be used to stream the output of all commands to a UI
+    """
+    machine = vm.flake_attr
+    log.debug(f"Creating VM for {machine}")
+
+    # TODO: We should get this from the vm argument
+    nixos_config = get_vm_create_info(vm, nix_options)
+    clan_name = get_clan_name(vm, nix_options)
+
+    log.debug(f"Building VM for clan name: {clan_name}")
+
+    flake_dir = Path(vm.flake_url)
+    flake_dir.mkdir(exist_ok=True)
+
+    with tempfile.TemporaryDirectory() as tmpdir_:
+        tmpdir = Path(tmpdir_)
+        xchg_dir = tmpdir / "xchg"
+        xchg_dir.mkdir(exist_ok=True)
+        secrets_dir = tmpdir / "secrets"
+        secrets_dir.mkdir(exist_ok=True)
+        disk_img = tmpdir / "disk.img"
+        spice_socket = tmpdir / "spice.sock"
+
+        env = os.environ.copy()
+        env["CLAN_DIR"] = str(vm.flake_url)
+
+        env["PYTHONPATH"] = str(
+            ":".join(sys.path)
+        )  # TODO do this in the clanCore module
+        env["SECRETS_DIR"] = str(secrets_dir)
+
+        # Only generate secrets for local clans
+        if isinstance(vm.flake_url, Path) and vm.flake_url.is_dir():
+            if Path(vm.flake_url).is_dir():
+                subprocess.run(
+                    [nixos_config["generateSecrets"], clan_name],
+                    env=env,
+                    check=False,
+                    stdout=log_fd,
+                    stderr=log_fd,
+                )
+            else:
+                log.warning("won't generate secrets for non local clan")
+
+        cmd = [nixos_config["uploadSecrets"]]
+        res = subprocess.run(
+            cmd,
+            env=env,
+            check=False,
+            stdout=log_fd,
+            stderr=log_fd,
+        )
+        if res.returncode != 0:
+            raise ClanError(
+                f"Failed to upload secrets: {shlex.join(cmd)} failed with {res.returncode}"
+            )
+
+        cmd = nix_shell(
+            ["qemu"],
+            [
+                "qemu-img",
+                "create",
+                "-f",
+                "raw",
+                str(disk_img),
+                "1024M",
+            ],
+        )
+        res = subprocess.run(
+            cmd,
+            check=False,
+            stdout=log_fd,
+            stderr=log_fd,
+        )
+        if res.returncode != 0:
+            raise ClanError(
+                f"Failed to create disk image: {shlex.join(cmd)} failed with {res.returncode}"
+            )
+
+        cmd = nix_shell(
+            ["e2fsprogs"],
+            [
+                "mkfs.ext4",
+                "-L",
+                "nixos",
+                str(disk_img),
+            ],
+        )
+        res = subprocess.run(
+            cmd,
+            check=False,
+            stdout=log_fd,
+            stderr=log_fd,
+        )
+        if res.returncode != 0:
+            raise ClanError(
+                f"Failed to create ext4 filesystem: {shlex.join(cmd)} failed with {res.returncode}"
+            )
+
+        qemu_cmd = qemu_command(
+            vm,
+            nixos_config,
+            xchg_dir=xchg_dir,
+            secrets_dir=secrets_dir,
+            disk_img=disk_img,
+            spice_socket=spice_socket,
+        )
+
+        print("$ " + shlex.join(qemu_cmd))
+        packages = ["qemu"]
+        if vm.graphics:
+            packages.append("virt-viewer")
+
+        env = os.environ.copy()
+        remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
+        env[
+            "XDG_DATA_DIRS"
+        ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
+        print(env["XDG_DATA_DIRS"])
+        res = subprocess.run(
+            nix_shell(packages, qemu_cmd),
+            env=env,
+            check=False,
+            stdout=log_fd,
+            stderr=log_fd,
+        )
+        if res.returncode != 0:
+            raise ClanError(f"qemu failed with {res.returncode}")
 
 
 def run_command(args: argparse.Namespace) -> None:
     flake_url = args.flake_url or args.flake
     vm = asyncio.run(inspect_vm(flake_url=flake_url, flake_attr=args.machine))
 
-    task = run_vm(vm, args.option)
-    for line in task.log_lines():
-        print(line, end="")
+    run_vm(vm, args.option)
 
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
