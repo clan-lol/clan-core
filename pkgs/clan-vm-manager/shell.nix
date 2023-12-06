@@ -1,10 +1,12 @@
-{ clan-vm-manager, clan-cli, mkShell, ruff, desktop-file-utils, xdg-utils }:
+{ clan-vm-manager, clan-cli, mkShell, ruff, desktop-file-utils, xdg-utils, mypy, python3Packages }:
 mkShell {
   inherit (clan-vm-manager) propagatedBuildInputs buildInputs;
   nativeBuildInputs = [
     ruff
     desktop-file-utils
     xdg-utils
+    mypy
+    python3Packages.ipdb
   ] ++ clan-vm-manager.nativeBuildInputs;
 
   PYTHONBREAKPOINT = "ipdb.set_trace";
