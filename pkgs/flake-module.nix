@@ -15,6 +15,16 @@
         inherit (config.packages) tea-create-pr;
       };
       pending-reviews = pkgs.callPackage ./pending-reviews { };
+      aemu = pkgs.callPackage ./aemu { };
+      gfxstream = pkgs.callPackage ./gfxstream {
+        inherit (config.packages) aemu;
+      };
+      rutabaga-gfx-ffi = pkgs.callPackage ./rutabaga-gfx-ffi {
+        inherit (config.packages) gfxstream aemu;
+      };
+      qemu-wayland = pkgs.callPackage ./qemu-wayland {
+        inherit (config.packages) rutabaga-gfx-ffi;
+      };
       nix-unit = pkgs.callPackage ./nix-unit { };
       meshname = pkgs.callPackage ./meshname { };
       inherit (pkgs.callPackages ./node-packages { }) prettier-plugin-tailwindcss;
