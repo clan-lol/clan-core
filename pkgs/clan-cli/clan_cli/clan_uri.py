@@ -4,7 +4,7 @@ import urllib.parse
 from dataclasses import dataclass
 from enum import Enum, member
 from pathlib import Path
-from typing import Dict, Self
+from typing import Self
 
 from .errors import ClanError
 
@@ -52,7 +52,7 @@ class ClanURI:
         if uri.startswith("clan://"):
             self._nested_uri = uri[7:]
         else:
-            raise ClanError("Invalid scheme: expected clan://, got {}".format(uri))
+            raise ClanError(f"Invalid scheme: expected clan://, got {uri}")
 
         # Parse the URI into components
         # scheme://netloc/path;parameters?query#fragment
@@ -61,14 +61,12 @@ class ClanURI:
         # Parse the query string into a dictionary
         query = urllib.parse.parse_qs(self._components.query)
 
-        params: Dict[str, str] = {}
+        params: dict[str, str] = {}
         for field in dataclasses.fields(ClanParameters):
             if field.name in query:
                 values = query[field.name]
                 if len(values) > 1:
-                    raise ClanError(
-                        "Multiple values for parameter: {}".format(field.name)
-                    )
+                    raise ClanError(f"Multiple values for parameter: {field.name}")
                 params[field.name] = values[0]
 
                 # Remove the field from the query dictionary
@@ -89,12 +87,10 @@ class ClanURI:
             case "file":
                 self.scheme = ClanScheme.FILE.value(Path(self._components.path))  # type: ignore
             case _:
-                raise ClanError(
-                    "Unsupported scheme: {}".format(self._components.scheme)
-                )
+                raise ClanError(f"Unsupported scheme: {self._components.scheme}")
 
     @classmethod
     def from_path(cls, path: Path, params: ClanParameters) -> Self:  # noqa
         urlparams = urllib.parse.urlencode(params.__dict__)
 
-        return cls("clan://file://{}?{}".format(path, urlparams))
+        return cls(f"clan://file://{path}?{urlparams}")

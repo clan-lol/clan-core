@@ -1,13 +1,12 @@
 import argparse
 import pprint
 from pathlib import Path
-from typing import Optional
 
 from ..errors import ClanError
 
 
 def list_backups(
-    flake_dir: Path, machine: str, provider: Optional[str] = None
+    flake_dir: Path, machine: str, provider: str | None = None
 ) -> dict[str, dict[str, list[dict[str, str]]]]:
     dummy_data = {
         "testhostname": {

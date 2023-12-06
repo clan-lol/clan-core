@@ -1,6 +1,5 @@
 import argparse
 from pathlib import Path
-from typing import Optional
 
 from ..errors import ClanError
 
@@ -10,7 +9,7 @@ def restore_backup(
     machine: str,
     provider: str,
     backup_id: str,
-    service: Optional[str] = None,
+    service: str | None = None,
 ) -> None:
     if service is None:
         print("would restore backup", machine, provider, backup_id)
