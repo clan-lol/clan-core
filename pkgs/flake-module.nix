@@ -7,7 +7,7 @@
     ./theme/flake-module.nix
   ];
 
-  perSystem = { pkgs, config, ... }: {
+  perSystem = { pkgs, config, lib, ... }: {
     packages = {
       tea-create-pr = pkgs.callPackage ./tea-create-pr { };
       zerotier-members = pkgs.callPackage ./zerotier-members { };
@@ -18,6 +18,17 @@
       nix-unit = pkgs.callPackage ./nix-unit { };
       meshname = pkgs.callPackage ./meshname { };
       inherit (pkgs.callPackages ./node-packages { }) prettier-plugin-tailwindcss;
+    } // lib.optionalAttrs pkgs.stdenv.isLinux {
+      aemu = pkgs.callPackage ./aemu { };
+      gfxstream = pkgs.callPackage ./gfxstream {
+        inherit (config.packages) aemu;
+      };
+      rutabaga-gfx-ffi = pkgs.callPackage ./rutabaga-gfx-ffi {
+        inherit (config.packages) gfxstream aemu;
+      };
+      qemu-wayland = pkgs.callPackage ./qemu-wayland {
+        inherit (config.packages) rutabaga-gfx-ffi;
+      };
     };
   };
 }
