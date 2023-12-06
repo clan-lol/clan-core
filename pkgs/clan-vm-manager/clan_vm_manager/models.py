@@ -68,9 +68,11 @@ class VMBase:
         vm = asyncio.run(
             vms.run.inspect_vm(flake_url=self._path, flake_attr="defaultVM")
         )
-        task = vms.run.run_vm(vm)
-        for line in task.log_lines():
-            print(line, end="")
+        vms.run.run_vm(vm)
+
+
+#        for line in task.log_lines():
+#            print(line, end="")
 
 
 @dataclass(frozen=True)

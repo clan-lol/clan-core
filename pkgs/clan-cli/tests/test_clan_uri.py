@@ -33,9 +33,9 @@ def test_is_remote() -> None:
             assert False
 
 
-def remote_with_clanparams() -> None:
+def test_remote_with_clanparams() -> None:
     # Create a ClanURI object from a remote URI with parameters
-    uri = ClanURI("clan://https://example.com?flake_attr=defaultVM")
+    uri = ClanURI("clan://https://example.com")
 
     assert uri.params.flake_attr == "defaultVM"
 
@@ -46,17 +46,13 @@ def remote_with_clanparams() -> None:
             assert False
 
 
-def remote_with_all_params() -> None:
+def test_remote_with_all_params() -> None:
     # Create a ClanURI object from a remote URI with parameters
-    uri = ClanURI(
-        "clan://https://example.com?flake_attr=defaultVM&machine=vm1&password=1234"
-    )
-
-    assert uri.params.flake_attr == "defaultVM"
-    assert uri.params.machine == "vm1"
+    uri = ClanURI("clan://https://example.com?flake_attr=myVM&password=1234")
+    assert uri.params.flake_attr == "myVM"
 
     match uri.scheme:
         case ClanScheme.HTTPS.value(url):
-            assert url == "https://example.com&password=1234"  # type: ignore
+            assert url == "https://example.com?password=1234"  # type: ignore
         case _:
             assert False
