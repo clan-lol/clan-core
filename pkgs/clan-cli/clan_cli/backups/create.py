@@ -1,13 +1,12 @@
 import argparse
 import json
 import subprocess
-from typing import Optional
 
 from ..errors import ClanError
 from ..machines.machines import Machine
 
 
-def create_backup(machine: Machine, provider: Optional[str] = None) -> None:
+def create_backup(machine: Machine, provider: str | None = None) -> None:
     backup_scripts = json.loads(
         machine.eval_nix(f"nixosConfigurations.{machine.name}.config.clanCore.backups")
     )
