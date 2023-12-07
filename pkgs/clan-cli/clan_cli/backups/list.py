@@ -1,57 +1,47 @@
 import argparse
-import pprint
-from pathlib import Path
+import json
+import subprocess
+from typing import Any
 
 from ..errors import ClanError
+from ..machines.machines import Machine
 
 
-def list_backups(
-    flake_dir: Path, machine: str, provider: str | None = None
-) -> dict[str, dict[str, list[dict[str, str]]]]:
-    dummy_data = {
-        "testhostname": {
-            "borgbackup": [
-                {"date": "2021-01-01T00:00:00Z", "id": "1"},
-                {"date": "2022-01-01T00:00:00Z", "id": "2"},
-                {"date": "2023-01-01T00:00:00Z", "id": "3"},
-            ],
-            "restic": [
-                {"date": "2021-01-01T00:00:00Z", "id": "1"},
-                {"date": "2022-01-01T00:00:00Z", "id": "2"},
-                {"date": "2023-01-01T00:00:00Z", "id": "3"},
-            ],
-        },
-        "another host": {
-            "borgbackup": [
-                {"date": "2021-01-01T00:00:00Z", "id": "1"},
-                {"date": "2022-01-01T00:00:00Z", "id": "2"},
-                {"date": "2023-01-01T00:00:00Z", "id": "3"},
-            ],
-        },
-    }
-
-    if provider is not None:
-        new_data = {}
-        for machine_ in dummy_data:
-            if provider in dummy_data[machine_]:
-                new_data[machine_] = {provider: dummy_data[machine_][provider]}
-        dummy_data = new_data
-
-    if machine is None:
-        return dummy_data
+def list_backups(machine: Machine, provider: str | None = None) -> list[dict[str, Any]]:
+    backup_scripts = json.loads(
+        machine.eval_nix(f"nixosConfigurations.{machine.name}.config.clanCore.backups")
+    )
+    results = []
+    if provider is None:
+        for provider in backup_scripts["providers"]:
+            proc = subprocess.run(
+                ["bash", "-c", backup_scripts["providers"][provider]["list"]],
+                stdout=subprocess.PIPE,
+            )
+            if proc.returncode != 0:
+                # TODO this should be a warning, only raise exception if no providers succeed
+                raise ClanError("failed to list backups")
+            else:
+                results.append(proc.stdout)
     else:
-        return {machine: dummy_data[machine]}
+        if provider not in backup_scripts["providers"]:
+            raise ClanError(f"provider {provider} not found")
+        proc = subprocess.run(
+            ["bash", "-c", backup_scripts["providers"][provider]["list"]],
+            stdout=subprocess.PIPE,
+        )
+        if proc.returncode != 0:
+            raise ClanError("failed to list backup")
+        else:
+            results.append(proc.stdout)
+
+    return list(map(json.loads, results))
 
 
 def list_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        raise ClanError("Could not find clan flake toplevel directory")
-    backups = list_backups(
-        Path(args.flake), machine=args.machine, provider=args.provider
-    )
-    if len(backups) > 0:
-        pp = pprint.PrettyPrinter(depth=4)
-        pp.pprint(backups)
+    machine = Machine(name=args.machine, flake_dir=args.flake)
+    backups_data = list_backups(machine=machine, provider=args.provider)
+    print(list(backups_data))
 
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:
