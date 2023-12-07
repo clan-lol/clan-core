@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 let
   cfg = config.clan.borgbackup;
 in
@@ -19,7 +19,7 @@ in
           };
           rsh = lib.mkOption {
             type = lib.types.str;
-            default = "";
+            default = "ssh -i ${config.clanCore.secrets.borgbackup.secrets."borgbackup.ssh".path} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
             description = "the rsh to use for the backup";
           };
 
@@ -55,15 +55,23 @@ in
       })
       cfg.destinations;
 
+    clanCore.secrets.borgbackup = {
+      facts."borgbackup.ssh.pub" = { };
+      secrets."borgbackup.ssh" = { };
+      generator.path = [ pkgs.openssh pkgs.coreutils ];
+      generator.script = ''
+        ssh-keygen -t ed25519 -N "" -f "$secrets"/borgbackup.ssh
+        mv "$secrets"/borgbackup.ssh.pub "$facts"/borgbackup.ssh.pub
+      '';
+    };
+
     clanCore.backups.providers.borgbackup = {
       list = ''
-        ${lib.concatMapStringsSep "\n" (dest: ''
-          (
-            export BORG_REPO=${lib.escapeShellArg dest.repo}
-            export BORG_RSH=${lib.escapeShellArg dest.rsh}
-            ${lib.getExe config.services.borgbackup.package} list
-          )
-        '') (lib.attrValues cfg.destinations)}
+        ssh ${config.clan.networking.deploymentAddress} -- '
+          ${lib.concatMapStringsSep "\n" (dest: ''
+            borg-job-${dest.name} list --json
+          '') (lib.attrValues cfg.destinations)}
+        '
       '';
       start = ''
         ssh ${config.clan.networking.deploymentAddress} -- '
