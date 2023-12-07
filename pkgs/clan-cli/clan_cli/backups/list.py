@@ -41,7 +41,7 @@ def list_backups(machine: Machine, provider: str | None = None) -> list[dict[str
 def list_command(args: argparse.Namespace) -> None:
     machine = Machine(name=args.machine, flake_dir=args.flake)
     backups_data = list_backups(machine=machine, provider=args.provider)
-    print(list(backups_data))
+    print(json.dumps(list(backups_data)))
 
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:

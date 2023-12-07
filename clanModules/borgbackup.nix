@@ -67,11 +67,11 @@ in
 
     clanCore.backups.providers.borgbackup = {
       list = ''
-        ssh ${config.clan.networking.deploymentAddress} -- '
+        ssh ${config.clan.networking.deploymentAddress} <<EOF
           ${lib.concatMapStringsSep "\n" (dest: ''
-            borg-job-${dest.name} list --json
+            borg-job-${dest.name} list --json | jq -r '. + {"job-name": "${dest.name}"}'
           '') (lib.attrValues cfg.destinations)}
-        '
+        EOF
       '';
       start = ''
         ssh ${config.clan.networking.deploymentAddress} -- '
@@ -82,6 +82,11 @@ in
       '';
 
       restore = ''
+        ssh ${config.clan.networking.deploymentAddress} -- LOCATION="$LOCATION" ARCHIVE="$ARCHIVE_ID" JOB="$JOB" '
+          set -efux
+          cd /
+          borg-job-"$JOB" extract --list --dry-run "$LOCATION"::"$ARCHIVE"
+        '
       '';
     };
   };
