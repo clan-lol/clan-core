@@ -11,13 +11,19 @@
               Folder where state resides in
             '';
           };
-          restoreScript = lib.mkOption {
+          preRestoreScript = lib.mkOption {
+            type = lib.types.str;
+            default = ":";
+            description = ''
+              script to run before restoring the state dir from a backup
+            '';
+          };
+          postRestoreScript = lib.mkOption {
             type = lib.types.str;
             default = ":";
             description = ''
               script to restore the service after the state dir was restored from a backup
             '';
-
           };
         };
       }));
