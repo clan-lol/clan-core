@@ -270,6 +270,8 @@ def run_vm(
 
 def run_command(args: argparse.Namespace) -> None:
     flake_url = args.flake_url or args.flake
+    if not flake_url:
+        flake_url = Path.cwd()
     vm = asyncio.run(inspect_vm(flake_url=flake_url, flake_attr=args.machine))
 
     run_vm(vm, args.option)
