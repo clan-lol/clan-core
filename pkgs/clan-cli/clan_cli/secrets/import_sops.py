@@ -22,7 +22,7 @@ def import_sops(args: argparse.Namespace) -> None:
         if args.input_type:
             cmd += ["--input-type", args.input_type]
         cmd += ["--output-type", "json", "--decrypt", args.sops_file]
-        cmd = nix_shell(["sops"], cmd)
+        cmd = nix_shell(["nixpkgs#sops"], cmd)
         try:
             res = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
         except subprocess.CalledProcessError as e:

@@ -11,10 +11,10 @@ def ssh(
     password: str | None = None,
     ssh_args: list[str] = [],
 ) -> None:
-    packages = ["tor", "openssh"]
+    packages = ["nixpkgs#tor", "nixpkgs#openssh"]
     password_args = []
     if password:
-        packages.append("sshpass")
+        packages.append("nixpkgs#sshpass")
         password_args = [
             "sshpass",
             "-p",
@@ -37,7 +37,7 @@ def qrcode_scan(picture_file: str) -> str:
     return (
         subprocess.run(
             nix_shell(
-                ["zbar"],
+                ["nixpkgs#zbar"],
                 [
                     "zbarimg",
                     "--quiet",

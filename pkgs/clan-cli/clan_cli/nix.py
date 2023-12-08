@@ -95,16 +95,15 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     # in our tests we just make sure we have all the packages
     if os.environ.get("IN_NIX_SANDBOX"):
         return cmd
-    wrapped_packages = [f"nixpkgs#{p}" for p in packages]
-    return (
-        nix_command(
+    return [
+        *nix_command(
             [
                 "shell",
                 "--inputs-from",
                 f"{nixpkgs_flake()!s}",
             ]
-        )
-        + wrapped_packages
-        + ["-c"]
-        + cmd
-    )
+        ),
+        *packages,
+        "-c",
+        *cmd,
+    ]
