@@ -20,6 +20,12 @@
       default = self.lib.jsonschema.parseOptions options.clan;
     };
     options.clanCore = {
+      clanName = lib.mkOption {
+        type = lib.types.str;
+        description = ''
+          the name of the clan
+        '';
+      };
       clanDir = lib.mkOption {
         type = lib.types.either lib.types.path lib.types.str;
         description = ''
