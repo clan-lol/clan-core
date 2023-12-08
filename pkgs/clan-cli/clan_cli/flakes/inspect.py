@@ -44,7 +44,7 @@ stdout:
     if res == "null":
         icon_path = None
     else:
-        icon_path = res
+        icon_path = res.strip('"')
 
     meta = nix_metadata(flake_url)
 
