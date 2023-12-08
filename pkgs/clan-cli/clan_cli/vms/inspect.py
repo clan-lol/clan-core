@@ -32,12 +32,20 @@ async def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:
     return VmConfig(flake_url=flake_url, flake_attr=flake_attr, **data)
 
 
+@dataclass
+class InspectOptions:
+    machine: str
+    flake: Path
+
+
 def inspect_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        flake = Path.cwd()
-    else:
-        flake = Path(args.flake)
-    res = asyncio.run(inspect_vm(flake_url=flake, flake_attr=args.machine))
+    inspect_options = InspectOptions(
+        machine=args.machine,
+        flake=args.flake or Path.cwd(),
+    )
+    res = asyncio.run(
+        inspect_vm(flake_url=inspect_options.flake, flake_attr=inspect_options.machine)
+    )
     print("Cores:", res.cores)
     print("Memory size:", res.memory_size)
     print("Graphics:", res.graphics)
