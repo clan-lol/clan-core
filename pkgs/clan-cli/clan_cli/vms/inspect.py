@@ -33,8 +33,11 @@ async def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:
 
 
 def inspect_command(args: argparse.Namespace) -> None:
-    clan_dir = Path(args.flake)
-    res = asyncio.run(inspect_vm(flake_url=clan_dir, flake_attr=args.machine))
+    if args.flake is None:
+        flake = Path.cwd()
+    else:
+        flake = Path(args.flake)
+    res = asyncio.run(inspect_vm(flake_url=flake, flake_attr=args.machine))
     print("Cores:", res.cores)
     print("Memory size:", res.memory_size)
     print("Graphics:", res.graphics)
