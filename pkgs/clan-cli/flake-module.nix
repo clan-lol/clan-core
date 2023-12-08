@@ -31,7 +31,7 @@
     {
       devShells.clan-cli = pkgs.callPackage ./shell.nix {
         inherit (self'.packages) clan-cli ui-assets nix-unit;
-        democlan = inputs.democlan;
+        # inherit (inputs) democlan;
       };
       packages = {
         clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
