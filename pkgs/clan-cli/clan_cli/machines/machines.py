@@ -50,6 +50,8 @@ class Machine:
         self.upload_secrets = self.machine_data["uploadSecrets"]
         self.generate_secrets = self.machine_data["generateSecrets"]
         self.secrets_upload_directory = self.machine_data["secretsUploadDirectory"]
+        self.eval_cache: dict[str, str] = {}
+        self.build_cache: dict[str, Path] = {}
 
     @property
     def host(self) -> Host:
@@ -83,28 +85,35 @@ class Machine:
             exit(1)
         return True
 
-    def eval_nix(self, attr: str) -> str:
+    def eval_nix(self, attr: str, refresh: bool = False) -> str:
         """
         eval a nix attribute of the machine
         @attr: the attribute to get
         """
+        if attr in self.eval_cache and not refresh:
+            return self.eval_cache[attr]
+
         output = subprocess.run(
             nix_eval([f"path:{self.flake_dir}#{attr}"]),
             stdout=subprocess.PIPE,
             check=True,
             text=True,
         ).stdout.strip()
+        self.eval_cache[attr] = output
         return output
 
-    def build_nix(self, attr: str) -> Path:
+    def build_nix(self, attr: str, refresh: bool = False) -> Path:
         """
         build a nix attribute of the machine
         @attr: the attribute to get
         """
+        if attr in self.build_cache and not refresh:
+            return self.build_cache[attr]
         outpath = subprocess.run(
             nix_build([f"path:{self.flake_dir}#{attr}"]),
             stdout=subprocess.PIPE,
             check=True,
             text=True,
         ).stdout.strip()
+        self.build_cache[attr] = Path(outpath)
         return Path(outpath)
