@@ -37,7 +37,6 @@
 , clan-core-path
 , writeShellScriptBin
 , nodePackages
-, schemathesis ? null
 }:
 let
 
@@ -155,6 +154,7 @@ python3.pkgs.buildPythonApplication {
       ${checkPython}/bin/python -m pytest -m "not impure and with_core" -s ./tests
       touch $out
     '';
+
     clan-pytest = runCommand "clan-pytest" { } ''
       echo ${clan-pytest-without-core}
       echo ${clan-pytest-with-core}
