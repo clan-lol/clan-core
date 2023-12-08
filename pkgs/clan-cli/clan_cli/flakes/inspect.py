@@ -1,33 +1,31 @@
 import argparse
-import json
 import shlex
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 from ..errors import ClanError
-from ..nix import nix_config, nix_eval
+from ..nix import nix_config, nix_eval, nix_metadata
 
 
 @dataclass
-class VmConfig:
-    clan_name: str
+class FlakeConfig:
     flake_url: str | Path
     flake_attr: str
 
-    cores: int
-    memory_size: int
-    graphics: bool
-    wayland: bool = False
+    icon: str | None
+    description: str | None
+    last_updated: str
+    revision: str | None
 
 
-def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:
+def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
     config = nix_config()
     system = config["system"]
 
     cmd = nix_eval(
         [
-            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.system.clan.vm.config'
+            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanIcon'
         ]
     )
 
@@ -42,8 +40,22 @@ stdout:
 {proc.stdout}
 """
         )
-    data = json.loads(proc.stdout)
-    return VmConfig(flake_url=flake_url, flake_attr=flake_attr, **data)
+    res = proc.stdout.strip()
+    if res == "null":
+        icon_path = None
+    else:
+        icon_path = res
+
+    meta = nix_metadata(flake_url)
+
+    return FlakeConfig(
+        flake_url=flake_url,
+        flake_attr=flake_attr,
+        icon=icon_path,
+        description=meta.get("description"),
+        last_updated=meta["lastModified"],
+        revision=meta.get("revision"),
+    )
 
 
 @dataclass
@@ -57,14 +69,15 @@ def inspect_command(args: argparse.Namespace) -> None:
         machine=args.machine,
         flake=args.flake or Path.cwd(),
     )
-    res = inspect_vm(
+    res = inspect_flake(
         flake_url=inspect_options.flake, flake_attr=inspect_options.machine
     )
-    print("Cores:", res.cores)
-    print("Memory size:", res.memory_size)
-    print("Graphics:", res.graphics)
+    print("Icon:", res.icon)
+    print("Description:", res.description)
+    print("Last updated:", res.last_updated)
+    print("Revision:", res.revision)
 
 
 def register_inspect_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("machine", type=str, default="defaultVM")
+    parser.add_argument("--machine", type=str, default="defaultVM")
     parser.set_defaults(func=inspect_command)

@@ -22,6 +22,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
+    democlan.url = "git+https://git.clan.lol/clan/democlan.git";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
