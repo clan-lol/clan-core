@@ -22,14 +22,6 @@ class ClanScheme(Enum):
 
     @member
     @dataclass
-    class HTTPS:
-        url: str  # The url field holds the HTTPS URL
-
-        def __str__(self) -> str:
-            return f"HTTPS({self.url})"  # The __str__ method returns a custom string representation
-
-    @member
-    @dataclass
     class FILE:
         path: Path  # The path field holds the local path
 
@@ -78,22 +70,30 @@ class ClanURI:
         self._components = self._components._replace(query=new_query)
         self.params = ClanParameters(**params)
 
-        # Use the match statement to check the scheme and create a ClanScheme member with the value
-        match self._components.scheme:
-            case "http":
+        comb = (
+            self._components.scheme,
+            self._components.netloc,
+            self._components.path,
+            self._components.params,
+            self._components.query,
+            self._components.fragment,
+        )
+
+        match comb:
+            case ("http" | "https", _, _, _, _, _):
                 self.scheme = ClanScheme.HTTP.value(self._components.geturl())  # type: ignore
-            case "https":
-                self.scheme = ClanScheme.HTTPS.value(self._components.geturl())  # type: ignore
-            case "file":
-                self.scheme = ClanScheme.FILE.value(Path(self._components.path))  # type: ignore
+            case ("file", "", path, "", "", "") | ("", "", path, "", "", ""):  # type: ignore
+                self.scheme = ClanScheme.FILE.value(Path(path))  # type: ignore
             case _:
-                raise ClanError(f"Unsupported scheme: {self._components.scheme}")
+                raise ClanError(f"Unsupported uri components: {comb}")
+
+    def get_internal(self) -> str:
+        return self._nested_uri
 
     @classmethod
     def from_path(cls, path: Path, params: ClanParameters) -> Self:  # noqa
         urlparams = urllib.parse.urlencode(params.__dict__)
-
-        return cls(f"clan://file://{path}?{urlparams}")
+        return cls(f"clan://{path}?{urlparams}")
 
     def __str__(self) -> str:
         return f"ClanURI({self._components.geturl()})"
