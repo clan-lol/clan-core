@@ -74,9 +74,9 @@ class ClanList(Gtk.Box):
     Is the composition of
     the ClanListToolbar
     the clanListView
-    # ------------------------#
-    # - Tools <Join> < Edit>  #
-    # ------------------------#
+    # ------------------------        #
+    # - Tools <Start> <Stop> < Edit>  #
+    # ------------------------        #
     # - List Items
     # - <...>
     # ------------------------#
@@ -153,9 +153,13 @@ class ClanListToolbar(Gtk.Toolbar):
     ) -> None:
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
 
-        self.start_button = Gtk.ToolButton(label="Join")
+        self.start_button = Gtk.ToolButton(label="Start")
         self.start_button.connect("clicked", on_start_clicked)
         self.add(self.start_button)
+
+        self.stop_button = Gtk.ToolButton(label="Stop")
+        self.stop_button.connect("clicked", on_stop_clicked)
+        self.add(self.stop_button)
 
         self.edit_button = Gtk.ToolButton(label="Edit")
         self.edit_button.connect("clicked", on_edit_clicked)
@@ -165,9 +169,11 @@ class ClanListToolbar(Gtk.Toolbar):
         if s:
             self.edit_button.set_sensitive(True)
             self.start_button.set_sensitive(True)
+            self.stop_button.set_sensitive(True)
         else:
             self.edit_button.set_sensitive(False)
             self.start_button.set_sensitive(False)
+            self.stop_button.set_sensitive(False)
 
 
 class ClanEditToolbar(Gtk.Toolbar):
@@ -224,7 +230,6 @@ class ClanListView(Gtk.Box):
             return
         selection = self.tree_view.get_selection()
         idx = self.find_vm(vm)
-        print(f"Set selected vm: {vm.name} at {idx}")
         selection.select_path(idx)
 
     def insertVM(self, vm: VMBase) -> None:
@@ -239,7 +244,6 @@ class ClanListView(Gtk.Box):
         model, row = selection.get_selected()
         if row is not None:
             vm = VMBase(*model[row])
-            print(f"Selected {vm.name}")
             self.on_select_row(vm)
 
     def _on_double_click(
@@ -259,13 +263,18 @@ def setColRenderers(tree_view: Gtk.TreeView) -> None:
 
         if key.startswith("_"):
             continue
-        match gtype:
-            case GdkPixbuf.Pixbuf:
-                renderer = Gtk.CellRendererPixbuf()
-                col = Gtk.TreeViewColumn(key, renderer, pixbuf=idx)
-            case str:  # noqa
-                renderer = Gtk.CellRendererText()
-                col = Gtk.TreeViewColumn(key, renderer, text=idx)
+
+        if issubclass(gtype, GdkPixbuf.Pixbuf):
+            renderer = Gtk.CellRendererPixbuf()
+            col = Gtk.TreeViewColumn(key, renderer, pixbuf=idx)
+        elif issubclass(gtype, bool):
+            renderer = Gtk.CellRendererToggle()
+            col = Gtk.TreeViewColumn(key, renderer, active=idx)
+        elif issubclass(gtype, str):
+            renderer = Gtk.CellRendererText()
+            col = Gtk.TreeViewColumn(key, renderer, text=idx)
+        else:
+            raise Exception(f"Unknown type: {gtype}")
 
         # CommonSetup for all columns
         if col:

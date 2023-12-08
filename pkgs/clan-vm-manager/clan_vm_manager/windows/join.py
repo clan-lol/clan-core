@@ -26,6 +26,8 @@ class JoinWindow(Gtk.ApplicationWindow):
         self.notebook = Gtk.Notebook()
         self.stack = Gtk.Stack()
 
+        self.stack.add_titled(Gtk.Label("Join cLan"), "join", "Join")
+
         vbox.add(self.stack)
 
         # Must be called AFTER all components were added
