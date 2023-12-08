@@ -82,6 +82,13 @@ def nix_eval(flags: list[str]) -> list[str]:
     return default_flags + flags
 
 
+def nix_metadata(flake: str) -> dict[str, Any]:
+    cmd = nix_command(["flake", "metadata", "--json", flake])
+    proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
+    data = json.loads(proc.stdout)
+    return data
+
+
 @deal.raises(ClanError)
 def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     # we cannot use nix-shell inside the nix sandbox

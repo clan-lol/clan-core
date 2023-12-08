@@ -89,12 +89,14 @@ class ClanList(Gtk.Box):
         remount_edit: Callable[[], None],
         set_selected: Callable[[VMBase | None], None],
         selected_vm: VMBase | None,
+        show_toolbar: bool = True,
     ) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
 
         self.remount_edit_view = remount_edit
         self.remount_list_view = remount_list
         self.set_selected = set_selected
+        self.show_toolbar = show_toolbar
 
         # TODO: We should use somekind of useState hook here.
         # that updates the list of VMs when the user changes something
@@ -109,9 +111,10 @@ class ClanList(Gtk.Box):
             "on_stop_clicked": self.on_stop_clicked,
             "on_edit_clicked": self.on_edit_clicked,
         }
-        self.toolbar = ClanListToolbar(**button_hooks)
-        self.toolbar.set_is_selected(self.selected_vm is not None)
-        self.add(self.toolbar)
+        if show_toolbar:
+            self.toolbar = ClanListToolbar(**button_hooks)
+            self.toolbar.set_is_selected(self.selected_vm is not None)
+            self.add(self.toolbar)
 
         self.list_hooks = {
             "on_select_row": self.on_select_vm,
@@ -134,10 +137,11 @@ class ClanList(Gtk.Box):
 
     def on_select_vm(self, vm: VMBase) -> None:
         print(f"on_select_vm: {vm.name}")
-        if vm is None:
-            self.toolbar.set_is_selected(False)
-        else:
-            self.toolbar.set_is_selected(True)
+        if self.show_toolbar:
+            if vm is None:
+                self.toolbar.set_is_selected(False)
+            else:
+                self.toolbar.set_is_selected(True)
 
         self.set_selected(vm)
         self.selected_vm = vm
