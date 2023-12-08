@@ -21,7 +21,7 @@ class SopsKey:
 
 
 def get_public_key(privkey: str) -> str:
-    cmd = nix_shell(["age"], ["age-keygen", "-y"])
+    cmd = nix_shell(["nixpkgs#age"], ["age-keygen", "-y"])
     try:
         res = subprocess.run(
             cmd, input=privkey, stdout=subprocess.PIPE, text=True, check=True
@@ -34,7 +34,7 @@ def get_public_key(privkey: str) -> str:
 
 
 def generate_private_key() -> tuple[str, str]:
-    cmd = nix_shell(["age"], ["age-keygen"])
+    cmd = nix_shell(["nixpkgs#age"], ["age-keygen"])
     try:
         proc = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
         res = proc.stdout.strip()
@@ -119,7 +119,7 @@ def sops_manifest(keys: list[str]) -> Iterator[Path]:
 def update_keys(secret_path: Path, keys: list[str]) -> None:
     with sops_manifest(keys) as manifest:
         cmd = nix_shell(
-            ["sops"],
+            ["nixpkgs#sops"],
             [
                 "sops",
                 "--config",
@@ -146,7 +146,7 @@ def encrypt_file(
         if not content:
             args = ["sops", "--config", str(manifest)]
             args.extend([str(secret_path)])
-            cmd = nix_shell(["sops"], args)
+            cmd = nix_shell(["nixpkgs#sops"], args)
             p = subprocess.run(cmd)
             # returns 200 if the file is changed
             if p.returncode != 0 and p.returncode != 200:
@@ -166,7 +166,7 @@ def encrypt_file(
                 # we pass an empty manifest to pick up existing configuration of the user
                 args = ["sops", "--config", str(manifest)]
                 args.extend(["-i", "--encrypt", str(f.name)])
-                cmd = nix_shell(["sops"], args)
+                cmd = nix_shell(["nixpkgs#sops"], args)
                 subprocess.run(cmd, check=True)
                 # atomic copy of the encrypted file
                 with NamedTemporaryFile(dir=folder, delete=False) as f2:
@@ -182,7 +182,8 @@ def encrypt_file(
 def decrypt_file(secret_path: Path) -> str:
     with sops_manifest([]) as manifest:
         cmd = nix_shell(
-            ["sops"], ["sops", "--config", str(manifest), "--decrypt", str(secret_path)]
+            ["nixpkgs#sops"],
+            ["sops", "--config", str(manifest), "--decrypt", str(secret_path)],
         )
     res = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
     if res.returncode != 0:

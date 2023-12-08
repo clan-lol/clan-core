@@ -28,7 +28,7 @@ def install_nixos(machine: Machine) -> None:
 
         subprocess.run(
             nix_shell(
-                ["nixos-anywhere"],
+                ["nixpkgs#nixos-anywhere"],
                 [
                     "nixos-anywhere",
                     "-f",

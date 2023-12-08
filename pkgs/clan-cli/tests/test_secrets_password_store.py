@@ -35,10 +35,14 @@ def test_upload_secret(
     )
     cli = Cli()
     subprocess.run(
-        nix_shell(["gnupg"], ["gpg", "--batch", "--gen-key", str(gpg_key_spec)]),
+        nix_shell(
+            ["nixpkgs#gnupg"], ["gpg", "--batch", "--gen-key", str(gpg_key_spec)]
+        ),
         check=True,
     )
-    subprocess.run(nix_shell(["pass"], ["pass", "init", "test@local"]), check=True)
+    subprocess.run(
+        nix_shell(["nixpkgs#pass"], ["pass", "init", "test@local"]), check=True
+    )
     cli.run(["secrets", "generate", "vm1"])
     network_id = machine_get_fact(
         test_flake_with_core_and_pass.path, "vm1", "zerotier-network-id"

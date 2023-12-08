@@ -21,7 +21,7 @@ def upload_secrets(machine: Machine) -> None:
             ssh_cmd = host.ssh_cmd()
             subprocess.run(
                 nix_shell(
-                    ["rsync"],
+                    ["nixpkgs#rsync"],
                     [
                         "rsync",
                         "-e",
