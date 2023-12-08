@@ -38,7 +38,7 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
     :raises ClanError: If the file is not in the git repository.
     """
     cmd = nix_shell(
-        ["git"],
+        ["nixpkgs#git"],
         ["git", "-C", str(repo_dir), "add", str(file_path)],
     )
     # add the file to the git index
@@ -51,7 +51,7 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
 
     # check if there is a diff
     cmd = nix_shell(
-        ["git"],
+        ["nixpkgs#git"],
         ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code", str(file_path)],
     )
     result = subprocess.run(cmd, cwd=repo_dir)
@@ -61,7 +61,7 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
 
     # commit only that file
     cmd = nix_shell(
-        ["git"],
+        ["nixpkgs#git"],
         [
             "git",
             "-C",

@@ -189,7 +189,7 @@ def generate_secrets(
 def prepare_disk(tmpdir: Path, log_fd: IO[str] | None) -> Path:
     disk_img = tmpdir / "disk.img"
     cmd = nix_shell(
-        ["qemu"],
+        ["nixpkgs#qemu"],
         [
             "qemu-img",
             "create",
@@ -211,7 +211,7 @@ def prepare_disk(tmpdir: Path, log_fd: IO[str] | None) -> Path:
         )
 
     cmd = nix_shell(
-        ["e2fsprogs"],
+        ["nixpkgs#e2fsprogs"],
         [
             "mkfs.ext4",
             "-L",
@@ -269,11 +269,11 @@ def run_vm(
         if vm.wayland:
             packages = ["git+https://git.clan.lol/clan/clan-core.git#qemu-wayland"]
         else:
-            packages = ["qemu"]
+            packages = ["nixpkgs#qemu"]
 
         env = os.environ.copy()
         if vm.graphics and not vm.wayland:
-            packages.append("virt-viewer")
+            packages.append("nixpkgs#virt-viewer")
             remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
             env[
                 "XDG_DATA_DIRS"

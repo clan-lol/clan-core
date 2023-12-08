@@ -61,7 +61,7 @@ export secrets={shlex.quote(str(secrets_dir))}
 {generator}
         """
         try:
-            cmd = nix_shell(["bash"], ["bash", "-c", text])
+            cmd = nix_shell(["nixpkgs#bash"], ["bash", "-c", text])
             subprocess.run(cmd, check=True)
         except subprocess.CalledProcessError:
             msg = "failed to the following command:\n"
