@@ -1,4 +1,3 @@
-import sys
 from typing import Any
 
 import gi
@@ -6,18 +5,18 @@ import gi
 from ..models import VMBase
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gio, Gtk
-
-from ..constants import constants
-from ..ui.clan_join_page import ClanJoinPage
-from ..ui.clan_select_list import ClanEdit, ClanList
-from ..app import Application
-from clan_cli.clan_uri import ClanURI
 import argparse
 
+from gi.repository import Gio, Gtk
+
+from ..app import Application
+from ..ui.clan_join_page import ClanJoinPage
+from ..ui.clan_select_list import ClanEdit, ClanList
+
+
 class OverviewWindow(Gtk.ApplicationWindow):
-    def __init__(self, application: Gtk.Application) -> None:
-        super().__init__(application=application)
+    def __init__(self) -> None:
+        super().__init__()
         # Initialize the main window
         self.set_title("cLAN Manager")
         self.connect("delete-event", self.on_quit)
@@ -89,15 +88,10 @@ class OverviewWindow(Gtk.ApplicationWindow):
         Gio.Application.quit(self.get_application())
 
 
-
 def show_overview(args: argparse.Namespace) -> None:
-    app = Application(OverviewWindow)
+    app = Application(OverviewWindow())
     return app.run()
 
+
 def register_overview_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("clan_uri", type=ClanURI, help="clan URI to join")
     parser.set_defaults(func=show_overview)
-
-
-
-

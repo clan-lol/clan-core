@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 
-import sys
-from typing import Any
 
 import gi
-
-from .models import VMBase
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk
 
 from .constants import constants
-from .ui.clan_join_page import ClanJoinPage
-from .ui.clan_select_list import ClanEdit, ClanList
 
 
 class Application(Gtk.Application):
@@ -30,7 +24,8 @@ class Application(Gtk.Application):
     def do_activate(self) -> None:
         win = self.props.active_window
         if not win:
-           win = self.window(application=self)
+            win = self.window
+            win.set_application(self)
         win.present()
 
     # TODO: For css styling
