@@ -40,6 +40,7 @@ def qemu_command(
         "-m", f'{nixos_config["memorySize"]}M',
         "-smp", str(nixos_config["cores"]),
         "-cpu", "max",
+        "-enable-kvm",
         "-device", "virtio-rng-pci",
         "-net", "nic,netdev=user.0,model=virtio",
         "-netdev", "user,id=user.0",
@@ -50,9 +51,6 @@ def qemu_command(
         "-drive", f"cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report",
         "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
         "-device", "virtio-keyboard",
-        # TODO: we also need to fixup timezone than...
-        # "-rtc", "base=localtime,clock=host,driftfix=slew",
-        "-vga", "virtio",
         "-usb", "-device", "usb-tablet,bus=usb-bus.0",
         "-kernel", f'{nixos_config["toplevel"]}/kernel',
         "-initrd", nixos_config["initrd"],
@@ -60,31 +58,42 @@ def qemu_command(
     ]  # fmt: on
 
     if vm.graphics:
-        # fmt: off
-        command.extend(
-            [
-                "-audiodev", "spice,id=audio0",
-                "-device", "intel-hda",
-                "-device", "hda-duplex,audiodev=audio0",
-                "-vga", "none",
-                "-device", "virtio-gpu-gl",
-                "-display", "spice-app,gl=on",
-                "-device", "virtio-serial-pci",
-                "-chardev", "spicevmc,id=vdagent0,name=vdagent",
-                "-device", "virtserialport,chardev=vdagent0,name=com.redhat.spice.0",
-                "-device", "qemu-xhci,id=spicepass",
-                "-chardev", "spicevmc,id=usbredirchardev1,name=usbredir",
-                "-device", "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
-                "-chardev", "spicevmc,id=usbredirchardev2,name=usbredir",
-                "-device", "usb-redir,chardev=usbredirchardev2,id=usbredirdev2",
-                "-chardev", "spicevmc,id=usbredirchardev3,name=usbredir",
-                "-device", "usb-redir,chardev=usbredirchardev3,id=usbredirdev3",
-                "-device", "pci-ohci,id=smartpass",
-                "-device", "usb-ccid",
-                "-chardev", "spicevmc,id=ccid,name=smartcard",
-            ]
-        )
-        # fmt: on
+        if vm.wayland:
+            # fmt: off
+            command.extend(
+                [
+                    "-audiodev", "spice,id=audio0",
+                    "-device", "intel-hda",
+                    "-device", "hda-duplex,audiodev=audio0",
+                    "-display", "gtk,gl=on",
+                    "-device", "virtio-gpu-gl",
+                    "-display", "spice-app,gl=on",
+                    "-device", "virtio-serial-pci",
+                    "-chardev", "spicevmc,id=vdagent0,name=vdagent",
+                    "-device", "virtserialport,chardev=vdagent0,name=com.redhat.spice.0",
+                    "-device", "qemu-xhci,id=spicepass",
+                    "-chardev", "spicevmc,id=usbredirchardev1,name=usbredir",
+                    "-device", "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
+                    "-chardev", "spicevmc,id=usbredirchardev2,name=usbredir",
+                    "-device", "usb-redir,chardev=usbredirchardev2,id=usbredirdev2",
+                    "-chardev", "spicevmc,id=usbredirchardev3,name=usbredir",
+                    "-device", "usb-redir,chardev=usbredirchardev3,id=usbredirdev3",
+                    "-device", "pci-ohci,id=smartpass",
+                    "-device", "usb-ccid",
+                    "-chardev", "spicevmc,id=ccid,name=smartcard",
+                ]
+            )
+            # fmt: on
+        else:
+            # fmt: off
+            command.extend(
+                [
+                    "-nographic",
+                    "-vga", "none",
+                    "-device", "virtio-gpu-rutabaga,gfxstream-vulkan=on,cross-domain=on,hostmem=4G,wsi=headless",
+                ]
+            )
+            # fmt: on
     else:
         command.append("-nographic")
     return command
@@ -246,17 +255,20 @@ def run_vm(
             spice_socket=spice_socket,
         )
 
-        print("$ " + shlex.join(qemu_cmd))
-        packages = ["qemu"]
-        if vm.graphics:
-            packages.append("virt-viewer")
+        if vm.wayland:
+            packages = ["git+https://git.clan.lol/clan/clan-core.git#qemu-wayland"]
+        else:
+            packages = ["qemu"]
 
         env = os.environ.copy()
-        remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
-        env[
-            "XDG_DATA_DIRS"
-        ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
-        print(env["XDG_DATA_DIRS"])
+        if vm.graphics and not vm.wayland:
+            packages.append("virt-viewer")
+            remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
+            env[
+                "XDG_DATA_DIRS"
+            ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
+
+        print("$ " + shlex.join(qemu_cmd))
         res = subprocess.run(
             nix_shell(packages, qemu_cmd),
             env=env,
@@ -274,6 +286,7 @@ class RunOptions:
     flake_url: str | None
     flake: Path
     nix_options: list[str] = field(default_factory=list)
+    wayland: bool = False
 
 
 def run_command(args: argparse.Namespace) -> None:
@@ -282,10 +295,13 @@ def run_command(args: argparse.Namespace) -> None:
         flake_url=args.flake_url,
         flake=args.flake or Path.cwd(),
         nix_options=args.option,
+        wayland=args.wayland,
     )
 
     flake_url = run_options.flake_url or run_options.flake
     vm = inspect_vm(flake_url=flake_url, flake_attr=run_options.machine)
+    # TODO: allow to set this in the config
+    vm.wayland = run_options.wayland
 
     run_vm(vm, run_options.nix_options)
 
@@ -293,4 +309,5 @@ def run_command(args: argparse.Namespace) -> None:
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("machine", type=str, help="machine in the flake to run")
     parser.add_argument("--flake-url", type=str, help="flake url")
+    parser.add_argument("--wayland", action="store_true", help="use wayland")
     parser.set_defaults(func=run_command)
