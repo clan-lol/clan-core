@@ -1,10 +1,11 @@
 import argparse
-import asyncio
 import json
+import shlex
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from ..async_cmd import run
+from ..errors import ClanError
 from ..nix import nix_config, nix_eval
 
 
@@ -16,9 +17,10 @@ class VmConfig:
     cores: int
     memory_size: int
     graphics: bool
+    wayland: bool = False
 
 
-async def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:
+def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:
     config = nix_config()
     system = config["system"]
 
@@ -27,8 +29,18 @@ async def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:
             f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.system.clan.vm.config'
         ]
     )
-    out = await run(cmd)
-    data = json.loads(out.stdout)
+    proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
+    assert proc.stdout is not None
+    if proc.returncode != 0:
+        raise ClanError(
+            f"""
+command: {shlex.join(cmd)}
+exit code: {proc.returncode}
+stdout:
+{proc.stdout}
+"""
+        )
+    data = json.loads(proc.stdout)
     return VmConfig(flake_url=flake_url, flake_attr=flake_attr, **data)
 
 
@@ -43,8 +55,8 @@ def inspect_command(args: argparse.Namespace) -> None:
         machine=args.machine,
         flake=args.flake or Path.cwd(),
     )
-    res = asyncio.run(
-        inspect_vm(flake_url=inspect_options.flake, flake_attr=inspect_options.machine)
+    res = inspect_vm(
+        flake_url=inspect_options.flake, flake_attr=inspect_options.machine
     )
     print("Cores:", res.cores)
     print("Memory size:", res.memory_size)
