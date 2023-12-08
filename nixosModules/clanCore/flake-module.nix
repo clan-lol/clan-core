@@ -32,6 +32,12 @@
           the location of the flake repo, used to calculate the location of facts and secrets
         '';
       };
+      clanIcon = lib.mkOption {
+        type = lib.types.path;
+        description = ''
+          the location of the clan icon
+        '';
+      };
       machineName = lib.mkOption {
         type = lib.types.str;
         description = ''
