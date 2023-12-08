@@ -1,4 +1,4 @@
-{ nix-unit, clan-cli, ui-assets, system, mkShell, writeScriptBin, openssh, ruff, python3 }:
+{ nix-unit, clan-cli, ui-assets, system, mkShell, writeScriptBin, openssh, ruff, python3, democlan }:
 let
   checkScript = writeScriptBin "check" ''
     nix build .#checks.${system}.{treefmt,clan-pytest} -L "$@"
@@ -24,6 +24,7 @@ mkShell {
   shellHook = ''
     tmp_path=$(realpath ./.direnv)
 
+    export DEMOCLAN_ROOT=${democlan}
     repo_root=$(realpath .)
     mkdir -p "$tmp_path/python/${pythonWithDeps.sitePackages}"
 
