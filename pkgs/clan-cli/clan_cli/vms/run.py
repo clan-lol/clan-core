@@ -273,16 +273,19 @@ def run_vm(
 class RunOptions:
     machine: str
     flake_url: str | None
+    flake: Path
     nix_options: list[str] = field(default_factory=list)
-    flake: Path | None = None
 
 
 def run_command(args: argparse.Namespace) -> None:
-    run_options = RunOptions(args.machine, args.flake_url, args.option, args.flake)
+    run_options = RunOptions(
+        machine=args.machine,
+        flake_url=args.flake_url,
+        flake=args.flake or Path.cwd(),
+        nix_options=args.option,
+    )
 
     flake_url = run_options.flake_url or run_options.flake
-    if not flake_url:
-        flake_url = Path.cwd()
     vm = asyncio.run(inspect_vm(flake_url=flake_url, flake_attr=run_options.machine))
 
     run_vm(vm, run_options.nix_options)
