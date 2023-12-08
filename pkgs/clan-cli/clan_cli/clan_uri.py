@@ -94,3 +94,6 @@ class ClanURI:
         urlparams = urllib.parse.urlencode(params.__dict__)
 
         return cls(f"clan://file://{path}?{urlparams}")
+
+    def __str__(self) -> str:
+        return f"ClanURI({self._components.geturl()})"
