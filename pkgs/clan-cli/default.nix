@@ -37,7 +37,6 @@
 , clan-core-path
 , writeShellScriptBin
 , nodePackages
-, democlan ? null
 }:
 let
 
@@ -155,17 +154,6 @@ python3.pkgs.buildPythonApplication {
       ${checkPython}/bin/python -m pytest -m "not impure and with_core" -s ./tests
       touch $out
     '';
-    # clan-pytest-with-democlan = runCommand "clan-pytest-with-democlan" { nativeBuildInputs = [ checkPython ] ++ pytestDependencies; } ''
-    #   cp -r ${source} ./src
-    #   chmod +w -R ./src
-    #   cd ./src
-
-    #   export DEMOCLAN_ROOT=${democlan}
-    #   export CLAN_CORE=${clan-core-path}
-    #   export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
-    #   ${checkPython}/bin/python -m pytest -m "not impure and with_democlan" -s ./tests
-    #   touch $out
-    # '';
 
     clan-pytest = runCommand "clan-pytest" { } ''
       echo ${clan-pytest-without-core}
