@@ -52,8 +52,9 @@ in
     system.clan.vm = {
       # for clan vm inspect
       config = {
-        inherit (config.clan.virtualisation) cores graphics;
+        clan_name = config.clanCore.clanName;
         memory_size = config.clan.virtualisation.memorySize;
+        inherit (config.clan.virtualisation) cores graphics;
       };
       # for clan vm create
       create = pkgs.writeText "vm.json" (builtins.toJSON {

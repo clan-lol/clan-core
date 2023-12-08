@@ -12,7 +12,7 @@ from typing import IO
 
 from ..dirs import module_root
 from ..errors import ClanError
-from ..nix import nix_build, nix_config, nix_eval, nix_shell
+from ..nix import nix_build, nix_config, nix_shell
 from .inspect import VmConfig, inspect_vm
 
 log = logging.getLogger(__name__)
@@ -126,25 +126,8 @@ def get_vm_create_info(vm: VmConfig, nix_options: list[str]) -> dict[str, str]:
         raise ClanError(f"Failed to parse vm config: {e}")
 
 
-def get_clan_name(vm: VmConfig, nix_options: list[str]) -> str:
-    clan_dir = vm.flake_url
-    cmd = nix_eval([f"{clan_dir}#clanInternals.clanName"]) + nix_options
-    proc = subprocess.run(
-        cmd,
-        stdout=subprocess.PIPE,
-        check=False,
-        text=True,
-    )
-    if proc.returncode != 0:
-        raise ClanError(
-            f"Failed to get clan name: {shlex.join(cmd)} failed with: {proc.returncode}"
-        )
-    return proc.stdout.strip().strip('"')
-
-
 def generate_secrets(
     vm: VmConfig,
-    clan_name: str,
     nixos_config: dict[str, str],
     tmpdir: Path,
     log_fd: IO[str] | None,
@@ -162,7 +145,7 @@ def generate_secrets(
     if isinstance(vm.flake_url, Path) and vm.flake_url.is_dir():
         if Path(vm.flake_url).is_dir():
             subprocess.run(
-                [nixos_config["generateSecrets"], clan_name],
+                [nixos_config["generateSecrets"], vm.clan_name],
                 env=env,
                 check=False,
                 stdout=log_fd,
@@ -243,9 +226,6 @@ def run_vm(
 
     # TODO: We should get this from the vm argument
     nixos_config = get_vm_create_info(vm, nix_options)
-    clan_name = get_clan_name(vm, nix_options)
-
-    log.debug(f"Building VM for clan name: {clan_name}")
 
     flake_dir = Path(vm.flake_url)
     flake_dir.mkdir(exist_ok=True)
@@ -255,7 +235,7 @@ def run_vm(
         xchg_dir = tmpdir / "xchg"
         xchg_dir.mkdir(exist_ok=True)
 
-        secrets_dir = generate_secrets(vm, clan_name, nixos_config, tmpdir, log_fd)
+        secrets_dir = generate_secrets(vm, nixos_config, tmpdir, log_fd)
         disk_img = prepare_disk(tmpdir, log_fd)
 
         qemu_cmd = qemu_command(
