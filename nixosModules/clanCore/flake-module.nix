@@ -33,7 +33,7 @@
         '';
       };
       clanIcon = lib.mkOption {
-        type = lib.types.either lib.types.path lib.types.null;
+        type = lib.types.nullOr lib.types.path;
         description = ''
           the location of the clan icon
         '';
