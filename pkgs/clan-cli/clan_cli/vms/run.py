@@ -1,5 +1,4 @@
 import argparse
-import asyncio
 import json
 import logging
 import os
@@ -286,7 +285,7 @@ def run_command(args: argparse.Namespace) -> None:
     )
 
     flake_url = run_options.flake_url or run_options.flake
-    vm = asyncio.run(inspect_vm(flake_url=flake_url, flake_attr=run_options.machine))
+    vm = inspect_vm(flake_url=flake_url, flake_attr=run_options.machine)
 
     run_vm(vm, run_options.nix_options)
 
