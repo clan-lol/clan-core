@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -13,22 +12,12 @@ from gi.repository import GdkPixbuf
 from clan_vm_manager import assets
 
 
-class Status(Enum):
-    OFF = "Off"
-    RUNNING = "Running"
-    # SUSPENDED = "Suspended"
-    # UNKNOWN = "Unknown"
-
-    def __str__(self) -> str:
-        return self.value
-
-
 @dataclass(frozen=True)
 class VMBase:
     icon: Path | GdkPixbuf.Pixbuf
     name: str
     url: str
-    status: Status
+    status: bool
     _path: Path
 
     @staticmethod
@@ -38,7 +27,7 @@ class VMBase:
                 "Icon": GdkPixbuf.Pixbuf,
                 "Name": str,
                 "URL": str,
-                "Status": str,
+                "Online": bool,
                 "_Path": str,
             }
         )
@@ -53,7 +42,7 @@ class VMBase:
                 "Icon": str(self.icon),
                 "Name": self.name,
                 "URL": self.url,
-                "Status": str(self.status),
+                "Online": self.status,
                 "_Path": str(self._path),
             }
         )
@@ -92,7 +81,7 @@ def get_initial_vms(start: int = 0, end: int | None = None) -> list[VM]:
                 name="Cybernet Clan",
                 url="clan://cybernet.lol",
                 _path=Path(__file__).parent.parent / "test_democlan",
-                status=Status.RUNNING,
+                status=False,
             ),
         ),
         VM(
@@ -101,7 +90,7 @@ def get_initial_vms(start: int = 0, end: int | None = None) -> list[VM]:
                 name="Zenith Clan",
                 url="clan://zenith.lol",
                 _path=Path(__file__).parent.parent / "test_democlan",
-                status=Status.OFF,
+                status=False,
             )
         ),
         VM(
@@ -110,7 +99,7 @@ def get_initial_vms(start: int = 0, end: int | None = None) -> list[VM]:
                 name="Firestorm Clan",
                 url="clan://firestorm.lol",
                 _path=Path(__file__).parent.parent / "test_democlan",
-                status=Status.OFF,
+                status=False,
             ),
         ),
         VM(
@@ -119,7 +108,7 @@ def get_initial_vms(start: int = 0, end: int | None = None) -> list[VM]:
                 name="Placeholder Clan",
                 url="clan://demo.lol",
                 _path=Path(__file__).parent.parent / "test_democlan",
-                status=Status.OFF,
+                status=True,
             ),
         ),
     ]
@@ -132,7 +121,7 @@ def get_initial_vms(start: int = 0, end: int | None = None) -> list[VM]:
             "name": "Demo Clan",
             "url": "clan://demo.lol",
             "_path": entry.path,
-            "status": Status.OFF,
+            "status": False,
         }
         vms.append(VM(base=VMBase(**new_vm)))
 
