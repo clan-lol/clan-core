@@ -43,6 +43,7 @@ let
         {
           clanCore.machineName = name;
           clanCore.clanName = clanName;
+          clanCore.clanIcon = clanIcon;
           clanCore.clanDir = directory;
           nixpkgs.hostPlatform = lib.mkForce system;
 
@@ -82,8 +83,6 @@ in
 
   clanInternals = {
     machines = configsPerSystem;
-    clanName = clanName;
-    clanIcon = clanIcon;
     all-machines-json = lib.mapAttrs
       (system: configs: nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs))
       configsPerSystem;
