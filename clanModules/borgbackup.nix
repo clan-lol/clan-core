@@ -66,27 +66,24 @@ in
     };
 
     clanCore.backups.providers.borgbackup = {
+      # TODO list needs to run locally or on the remote machine
       list = ''
-        ssh ${config.clan.networking.deploymentAddress} <<EOF
-          ${lib.concatMapStringsSep "\n" (dest: ''
-            borg-job-${dest.name} list --json | jq -r '. + {"job-name": "${dest.name}"}'
-          '') (lib.attrValues cfg.destinations)}
-        EOF
+        ${lib.concatMapStringsSep "\n" (dest: ''
+          # we need yes here to skip the changed url verification
+          yes y | borg-job-${dest.name} list --json | jq -r '. + {"job-name": "${dest.name}"}'
+        '') (lib.attrValues cfg.destinations)}
       '';
-      start = ''
-        ssh ${config.clan.networking.deploymentAddress} -- '
-          ${lib.concatMapStringsSep "\n" (dest: ''
-            systemctl start borgbackup-job-${dest.name}
-          '') (lib.attrValues cfg.destinations)}
-        '
+      create = ''
+        ${lib.concatMapStringsSep "\n" (dest: ''
+          systemctl start borgbackup-job-${dest.name}
+        '') (lib.attrValues cfg.destinations)}
       '';
 
       restore = ''
-        ssh ${config.clan.networking.deploymentAddress} -- LOCATION="$LOCATION" ARCHIVE="$ARCHIVE_ID" JOB="$JOB" '
-          set -efux
-          cd /
-          borg-job-"$JOB" extract --list --dry-run "$LOCATION"::"$ARCHIVE"
-        '
+        set -efu
+        cd /
+        IFS=';' read -ra FOLDER <<< "$FOLDERS"
+        yes y | borg-job-"$JOB" extract --list --dry-run "$LOCATION"::"$ARCHIVE_ID" "''${FOLDER[@]}"
       '';
     };
   };
