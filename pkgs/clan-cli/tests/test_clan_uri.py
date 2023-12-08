@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from clan_cli.clan_uri import ClanScheme, ClanURI
+from clan_cli.clan_uri import ClanParameters, ClanScheme, ClanURI
 from clan_cli.errors import ClanError
 
 
@@ -17,7 +17,7 @@ def test_local_uri() -> None:
 
 
 def test_unsupported_schema() -> None:
-    with pytest.raises(ClanError, match="Unsupported scheme: ftp"):
+    with pytest.raises(ClanError, match="Unsupported uri components: .*"):
         # Create a ClanURI object from an unsupported URI
         ClanURI("clan://ftp://ftp.example.com")
 
@@ -27,10 +27,22 @@ def test_is_remote() -> None:
     uri = ClanURI("clan://https://example.com")
 
     match uri.scheme:
-        case ClanScheme.HTTPS.value(url):
+        case ClanScheme.HTTP.value(url):
             assert url == "https://example.com"  # type: ignore
         case _:
             assert False
+
+
+def test_direct_local_path() -> None:
+    # Create a ClanURI object from a remote URI
+    uri = ClanURI("clan://~/Downloads")
+    assert uri.get_internal() == "~/Downloads"
+
+
+def test_direct_local_path2() -> None:
+    # Create a ClanURI object from a remote URI
+    uri = ClanURI("clan:///home/user/Downloads")
+    assert uri.get_internal() == "/home/user/Downloads"
 
 
 def test_remote_with_clanparams() -> None:
@@ -40,8 +52,36 @@ def test_remote_with_clanparams() -> None:
     assert uri.params.flake_attr == "defaultVM"
 
     match uri.scheme:
-        case ClanScheme.HTTPS.value(url):
+        case ClanScheme.HTTP.value(url):
             assert url == "https://example.com"  # type: ignore
+        case _:
+            assert False
+
+
+def test_from_path_with_custom() -> None:
+    # Create a ClanURI object from a remote URI with parameters
+    uri_str = Path("/home/user/Downloads")
+    params = ClanParameters(flake_attr="myVM")
+    uri = ClanURI.from_path(uri_str, params)
+    assert uri.params.flake_attr == "myVM"
+
+    match uri.scheme:
+        case ClanScheme.FILE.value(path):
+            assert path == Path("/home/user/Downloads")  # type: ignore
+        case _:
+            assert False
+
+
+def test_from_path_with_default() -> None:
+    # Create a ClanURI object from a remote URI with parameters
+    uri_str = Path("/home/user/Downloads")
+    params = ClanParameters()
+    uri = ClanURI.from_path(uri_str, params)
+    assert uri.params.flake_attr == "defaultVM"
+
+    match uri.scheme:
+        case ClanScheme.FILE.value(path):
+            assert path == Path("/home/user/Downloads")  # type: ignore
         case _:
             assert False
 
@@ -52,7 +92,7 @@ def test_remote_with_all_params() -> None:
     assert uri.params.flake_attr == "myVM"
 
     match uri.scheme:
-        case ClanScheme.HTTPS.value(url):
+        case ClanScheme.HTTP.value(url):
             assert url == "https://example.com?password=1234"  # type: ignore
         case _:
             assert False
