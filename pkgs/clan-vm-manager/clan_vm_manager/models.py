@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import clan_cli
 import gi
+from clan_cli import flakes, vms
 
 gi.require_version("GdkPixbuf", "2.0")
 from gi.repository import GdkPixbuf
@@ -51,8 +51,6 @@ class VMBase:
         print(f"Running VM {self.name}")
         import asyncio
 
-        from clan_cli import vms
-
         # raise Exception("Cannot run VMs yet")
         vm = asyncio.run(
             vms.run.inspect_vm(flake_url=self._path, flake_attr="defaultVM")
@@ -70,60 +68,78 @@ class VM:
     # Added attributes are separated from base attributes.
     base: VMBase
     autostart: bool = False
+    description: str | None = None
 
 
 # start/end indexes can be used optionally for pagination
 def get_initial_vms(start: int = 0, end: int | None = None) -> list[VM]:
-    vms = [
-        VM(
-            base=VMBase(
-                icon=assets.loc / "cybernet.jpeg",
-                name="Cybernet Clan",
-                url="clan://cybernet.lol",
-                _path=Path(__file__).parent.parent / "test_democlan",
-                status=False,
-            ),
-        ),
-        VM(
-            base=VMBase(
-                icon=assets.loc / "zenith.jpeg",
-                name="Zenith Clan",
-                url="clan://zenith.lol",
-                _path=Path(__file__).parent.parent / "test_democlan",
-                status=False,
-            )
-        ),
-        VM(
-            base=VMBase(
-                icon=assets.loc / "firestorm.jpeg",
-                name="Firestorm Clan",
-                url="clan://firestorm.lol",
-                _path=Path(__file__).parent.parent / "test_democlan",
-                status=False,
-            ),
-        ),
-        VM(
-            base=VMBase(
-                icon=assets.loc / "placeholder.jpeg",
-                name="Placeholder Clan",
-                url="clan://demo.lol",
-                _path=Path(__file__).parent.parent / "test_democlan",
-                status=True,
-            ),
-        ),
-    ]
+    # vms = [
+    #     VM(
+    #         base=VMBase(
+    #             icon=assets.loc / "cybernet.jpeg",
+    #             name="Cybernet Clan",
+    #             url="clan://cybernet.lol",
+    #             _path=Path(__file__).parent.parent / "test_democlan",
+    #             status=False,
+    #         ),
+    #     ),
+    #     VM(
+    #         base=VMBase(
+    #             icon=assets.loc / "zenith.jpeg",
+    #             name="Zenith Clan",
+    #             url="clan://zenith.lol",
+    #             _path=Path(__file__).parent.parent / "test_democlan",
+    #             status=False,
+    #         )
+    #     ),
+    #     VM(
+    #         base=VMBase(
+    #             icon=assets.loc / "firestorm.jpeg",
+    #             name="Firestorm Clan",
+    #             url="clan://firestorm.lol",
+    #             _path=Path(__file__).parent.parent / "test_democlan",
+    #             status=False,
+    #         ),
+    #     ),
+    #     VM(
+    #         base=VMBase(
+    #             icon=assets.loc / "placeholder.jpeg",
+    #             name="Placeholder Clan",
+    #             url="clan://demo.lol",
+    #             _path=Path(__file__).parent.parent / "test_democlan",
+    #             status=True,
+    #         ),
+    #     ),
+    # ]
+
+    vm_list = []
 
     # TODO: list_history() should return a list of dicts, not a list of paths
     # Execute `clan flakes add <path>` to democlan for this to work
-    for entry in clan_cli.flakes.history.list_history():
+    for entry in flakes.history.list_history():
+        flake_config = flakes.inspect.inspect_flake(entry.path, "defaultVM")
+        vm_config = vms.inspect.inspect_vm(entry.path, "defaultVM")
+
+        # if flake_config.icon is None:
+        #     icon = assets.loc / "placeholder.jpeg"
+        # else:
+        #     icon = flake_config.icon
+        icon = assets.loc / "placeholder.jpeg"
+        # TODO: clan flakes inspect currently points to an icon that doesn't exist
+        # the reason being that the icon is not in the nix store, as the democlan has
+        # not been built yet. Not sure how to handle this.
+        # I think how to do this is to add democlan as a flake.nix dependency and then
+        # put it into the devshell.
+
+        print(f"Icon: {icon}")
         new_vm = {
-            "icon": assets.loc / "placeholder.jpeg",
-            "name": "Demo Clan",
-            "url": "clan://demo.lol",
+            "icon": icon,
+            "name": vm_config.clan_name,
+            "url": flake_config.flake_url,
             "_path": entry.path,
             "status": False,
         }
-        vms.append(VM(base=VMBase(**new_vm)))
+        vm_list.append(VM(base=VMBase(**new_vm)))
 
     # start/end slices can be used for pagination
-    return vms[start:end]
+    return vm_list[start:end]
