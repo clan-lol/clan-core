@@ -5,7 +5,10 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import deal
+
 from .dirs import nixpkgs_flake, nixpkgs_source
+from .errors import ClanError
 
 
 def nix_command(flags: list[str]) -> list[str]:
@@ -83,6 +86,7 @@ def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
     return data
 
 
+@deal.raises(ClanError)
 def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     # we cannot use nix-shell inside the nix sandbox
     # in our tests we just make sure we have all the packages
