@@ -3,6 +3,7 @@ let
   vmConfig = extendModules {
     modules = [
       (modulesPath + "/virtualisation/qemu-vm.nix")
+      ./serial.nix
       {
         virtualisation.fileSystems.${config.clanCore.secretsUploadDirectory} = lib.mkForce {
           device = "secrets";
