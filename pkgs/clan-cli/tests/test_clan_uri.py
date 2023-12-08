@@ -6,6 +6,21 @@ from clan_cli.clan_uri import ClanParameters, ClanScheme, ClanURI
 from clan_cli.errors import ClanError
 
 
+def test_get_internal() -> None:
+    # Create a ClanURI object from a remote URI with parameters
+    uri = ClanURI("clan://https://example.com?flake_attr=myVM&password=1234")
+    assert uri.get_internal() == "https://example.com?password=1234"
+
+    uri = ClanURI("clan://~/Downloads")
+    assert uri.get_internal() == "~/Downloads"
+
+    uri = ClanURI("clan:///home/user/Downloads")
+    assert uri.get_internal() == "/home/user/Downloads"
+
+    uri = ClanURI("clan://file:///home/user/Downloads")
+    assert uri.get_internal() == "/home/user/Downloads"
+
+
 def test_local_uri() -> None:
     # Create a ClanURI object from a local URI
     uri = ClanURI("clan://file:///home/user/Downloads")

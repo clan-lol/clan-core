@@ -1,6 +1,7 @@
 import json
 from typing import TYPE_CHECKING
 
+import pytest
 from cli import Cli
 from fixtures_flakes import FlakeForTest
 from pytest import CaptureFixture
@@ -46,3 +47,23 @@ def test_flakes_list(
     cli.run(["flakes", "add", str(test_flake.path)])
     cli.run(cmd)
     assert str(test_flake.path) in capsys.readouterr().out
+
+
+@pytest.mark.impure
+def test_flakes_inspect(
+    test_flake_with_core: FlakeForTest, capsys: pytest.CaptureFixture
+) -> None:
+    cli = Cli()
+    cli.run(
+        [
+            "--flake",
+            str(test_flake_with_core.path),
+            "flakes",
+            "inspect",
+            "--machine",
+            "vm1",
+        ]
+    )
+    out = capsys.readouterr()  # empty the buffer
+
+    assert "Icon" in out.out

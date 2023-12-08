@@ -88,7 +88,13 @@ class ClanURI:
                 raise ClanError(f"Unsupported uri components: {comb}")
 
     def get_internal(self) -> str:
-        return self._nested_uri
+        match self.scheme:
+            case ClanScheme.FILE.value(path):
+                return str(path)  # type: ignore
+            case ClanScheme.HTTP.value(url):
+                return url  # type: ignore
+            case _:
+                raise ClanError(f"Unsupported uri components: {self.scheme}")
 
     @classmethod
     def from_path(cls, path: Path, params: ClanParameters) -> Self:  # noqa

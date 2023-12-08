@@ -119,6 +119,24 @@ def test_flake_with_core(
 
 
 @pytest.fixture
+def test_local_democlan(
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
+) -> Iterator[FlakeForTest]:
+    democlan = os.getenv(key="DEMOCLAN_ROOT")
+    if democlan is None:
+        raise Exception(
+            "DEMOCLAN_ROOT not set. This test requires the democlan flake to be present"
+        )
+    democlan_p = Path(democlan).resolve()
+    if not democlan_p.is_dir():
+        raise Exception(
+            f"DEMOCLAN_ROOT ({democlan_p}) is not a directory. This test requires the democlan directory to be present"
+        )
+
+    yield FlakeForTest(democlan_p)
+
+
+@pytest.fixture
 def test_democlan_url(
     monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[AnyUrl]:

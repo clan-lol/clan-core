@@ -5,12 +5,9 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from .deal import deal
 from .dirs import nixpkgs_flake, nixpkgs_source
-from .errors import ClanError
 
 
-@deal.raises(ClanError)
 def nix_command(flags: list[str]) -> list[str]:
     return ["nix", "--extra-experimental-features", "nix-command flakes", *flags]
 
@@ -28,7 +25,6 @@ def nix_flake_show(flake_url: str | Path) -> list[str]:
     )
 
 
-@deal.raises(ClanError)
 def nix_build(
     flags: list[str],
 ) -> list[str]:
@@ -45,7 +41,6 @@ def nix_build(
     )
 
 
-@deal.raises(ClanError)
 def nix_config() -> dict[str, Any]:
     cmd = nix_command(["show-config", "--json"])
     proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
@@ -56,7 +51,6 @@ def nix_config() -> dict[str, Any]:
     return config
 
 
-@deal.raises(ClanError)
 def nix_eval(flags: list[str]) -> list[str]:
     default_flags = nix_command(
         [
@@ -82,15 +76,13 @@ def nix_eval(flags: list[str]) -> list[str]:
     return default_flags + flags
 
 
-@deal.raises(ClanError)
-def nix_metadata(flake: str) -> dict[str, Any]:
-    cmd = nix_command(["flake", "metadata", "--json", flake])
+def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
+    cmd = nix_command(["flake", "metadata", "--json", f"{flake_url}"])
     proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
     data = json.loads(proc.stdout)
     return data
 
 
-@deal.raises(ClanError)
 def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     # we cannot use nix-shell inside the nix sandbox
     # in our tests we just make sure we have all the packages
