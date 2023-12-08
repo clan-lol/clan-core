@@ -1,11 +1,7 @@
 import argparse
 
-
-from .app import Application
-from clan_cli.clan_uri import ClanURI
-
 from .windows.join import register_join_parser
-from .windows.overview import show_overview, OverviewWindow
+from .windows.overview import register_overview_parser, show_overview
 
 
 def main() -> None:
@@ -18,6 +14,8 @@ def main() -> None:
         help="the command to execute",
     )
     register_join_parser(subparser.add_parser("join", help="join a clan"))
+
+    register_overview_parser(subparser.add_parser("overview", help="overview screen"))
 
     # Executed when no command is given
     parser.set_defaults(func=show_overview)
