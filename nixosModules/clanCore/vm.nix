@@ -11,6 +11,7 @@ let
           neededForBoot = true;
           options = [ "trans=virtio" "version=9p2000.L" "cache=loose" ];
         };
+        boot.initrd.systemd.enable = true;
       }
     ];
   };
