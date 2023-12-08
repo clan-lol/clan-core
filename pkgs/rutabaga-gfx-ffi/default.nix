@@ -18,6 +18,11 @@ rustPlatform.buildRustPackage {
     fetchSubmodules = true;
   };
 
+  patches = [
+    ./0001-rutabaga_gfx-don-t-clone-wayland-memfd-file-descript.patch
+    ./0002-rutabaga_gfx-super-ugly-workaround-to-get-private-ke.patch
+  ];
+
   buildPhase = ''
     cd rutabaga_gfx/ffi
     make build
