@@ -7,6 +7,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import IO
 
@@ -268,13 +269,23 @@ def run_vm(
             raise ClanError(f"qemu failed with {res.returncode}")
 
 
+@dataclass
+class RunOptions:
+    machine: str
+    flake_url: str | None
+    nix_options: list[str] = field(default_factory=list)
+    flake: Path | None = None
+
+
 def run_command(args: argparse.Namespace) -> None:
-    flake_url = args.flake_url or args.flake
+    run_options = RunOptions(args.machine, args.flake_url, args.option, args.flake)
+
+    flake_url = run_options.flake_url or run_options.flake
     if not flake_url:
         flake_url = Path.cwd()
-    vm = asyncio.run(inspect_vm(flake_url=flake_url, flake_attr=args.machine))
+    vm = asyncio.run(inspect_vm(flake_url=flake_url, flake_attr=run_options.machine))
 
-    run_vm(vm, args.option)
+    run_vm(vm, run_options.nix_options)
 
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
