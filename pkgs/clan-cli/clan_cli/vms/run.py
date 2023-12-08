@@ -293,5 +293,5 @@ def run_command(args: argparse.Namespace) -> None:
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("machine", type=str, help="machine in the flake to run")
-    parser.add_argument("--flake_url", type=str, help="flake url")
+    parser.add_argument("--flake-url", type=str, help="flake url")
     parser.set_defaults(func=run_command)
