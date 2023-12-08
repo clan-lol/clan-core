@@ -1,6 +1,5 @@
 import argparse
 import json
-import subprocess
 
 from ..errors import ClanError
 from ..machines.machines import Machine
@@ -12,8 +11,8 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
     )
     if provider is None:
         for provider in backup_scripts["providers"]:
-            proc = subprocess.run(
-                ["bash", "-c", backup_scripts["providers"][provider]["start"]],
+            proc = machine.host.run(
+                ["bash", "-c", backup_scripts["providers"][provider]["create"]],
             )
             if proc.returncode != 0:
                 raise ClanError("failed to start backup")
@@ -22,8 +21,8 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
     else:
         if provider not in backup_scripts["providers"]:
             raise ClanError(f"provider {provider} not found")
-        proc = subprocess.run(
-            ["bash", "-c", backup_scripts["providers"][provider]["start"]],
+        proc = machine.host.run(
+            ["bash", "-c", backup_scripts["providers"][provider]["create"]],
         )
         if proc.returncode != 0:
             raise ClanError("failed to start backup")
