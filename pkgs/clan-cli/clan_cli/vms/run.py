@@ -18,13 +18,47 @@ from .inspect import VmConfig, inspect_vm
 log = logging.getLogger(__name__)
 
 
+def graphics_options(vm: VmConfig) -> list[str]:
+    if vm.wayland:
+        # fmt: off
+        return [
+          "-nographic",
+          "-vga", "none",
+          "-device", "virtio-gpu-rutabaga,gfxstream-vulkan=on,cross-domain=on,hostmem=4G,wsi=headless",
+        ]
+        # fmt: on
+    else:
+        # fmt: off
+        return [
+            "-audiodev", "spice,id=audio0",
+            "-device", "intel-hda",
+            "-device", "hda-duplex,audiodev=audio0",
+            "-display", "gtk,gl=on",
+            "-device", "virtio-gpu-gl",
+            "-display", "spice-app,gl=on",
+            "-device", "virtio-serial-pci",
+            "-chardev", "spicevmc,id=vdagent0,name=vdagent",
+            "-device", "virtserialport,chardev=vdagent0,name=com.redhat.spice.0",
+            "-device", "qemu-xhci,id=spicepass",
+            "-chardev", "spicevmc,id=usbredirchardev1,name=usbredir",
+            "-device", "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
+            "-chardev", "spicevmc,id=usbredirchardev2,name=usbredir",
+            "-device", "usb-redir,chardev=usbredirchardev2,id=usbredirdev2",
+            "-chardev", "spicevmc,id=usbredirchardev3,name=usbredir",
+            "-device", "usb-redir,chardev=usbredirchardev3,id=usbredirdev3",
+            "-device", "pci-ohci,id=smartpass",
+            "-device", "usb-ccid",
+            "-chardev", "spicevmc,id=ccid,name=smartcard",
+        ]
+        # fmt: on
+
+
 def qemu_command(
     vm: VmConfig,
     nixos_config: dict[str, str],
     xchg_dir: Path,
     secrets_dir: Path,
     disk_img: Path,
-    spice_socket: Path,
 ) -> list[str]:
     kernel_cmdline = [
         (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
@@ -58,42 +92,7 @@ def qemu_command(
     ]  # fmt: on
 
     if vm.graphics:
-        if vm.wayland:
-            # fmt: off
-            command.extend(
-                [
-                    "-audiodev", "spice,id=audio0",
-                    "-device", "intel-hda",
-                    "-device", "hda-duplex,audiodev=audio0",
-                    "-display", "gtk,gl=on",
-                    "-device", "virtio-gpu-gl",
-                    "-display", "spice-app,gl=on",
-                    "-device", "virtio-serial-pci",
-                    "-chardev", "spicevmc,id=vdagent0,name=vdagent",
-                    "-device", "virtserialport,chardev=vdagent0,name=com.redhat.spice.0",
-                    "-device", "qemu-xhci,id=spicepass",
-                    "-chardev", "spicevmc,id=usbredirchardev1,name=usbredir",
-                    "-device", "usb-redir,chardev=usbredirchardev1,id=usbredirdev1",
-                    "-chardev", "spicevmc,id=usbredirchardev2,name=usbredir",
-                    "-device", "usb-redir,chardev=usbredirchardev2,id=usbredirdev2",
-                    "-chardev", "spicevmc,id=usbredirchardev3,name=usbredir",
-                    "-device", "usb-redir,chardev=usbredirchardev3,id=usbredirdev3",
-                    "-device", "pci-ohci,id=smartpass",
-                    "-device", "usb-ccid",
-                    "-chardev", "spicevmc,id=ccid,name=smartcard",
-                ]
-            )
-            # fmt: on
-        else:
-            # fmt: off
-            command.extend(
-                [
-                    "-nographic",
-                    "-vga", "none",
-                    "-device", "virtio-gpu-rutabaga,gfxstream-vulkan=on,cross-domain=on,hostmem=4G,wsi=headless",
-                ]
-            )
-            # fmt: on
+        command.extend(graphics_options(vm))
     else:
         command.append("-nographic")
     return command
@@ -143,6 +142,96 @@ def get_clan_name(vm: VmConfig, nix_options: list[str]) -> str:
     return proc.stdout.strip().strip('"')
 
 
+def generate_secrets(
+    vm: VmConfig,
+    clan_name: str,
+    nixos_config: dict[str, str],
+    tmpdir: Path,
+    log_fd: IO[str] | None,
+) -> Path:
+    secrets_dir = tmpdir / "secrets"
+    secrets_dir.mkdir(exist_ok=True)
+
+    env = os.environ.copy()
+    env["CLAN_DIR"] = str(vm.flake_url)
+
+    env["PYTHONPATH"] = str(":".join(sys.path))  # TODO do this in the clanCore module
+    env["SECRETS_DIR"] = str(secrets_dir)
+
+    # Only generate secrets for local clans
+    if isinstance(vm.flake_url, Path) and vm.flake_url.is_dir():
+        if Path(vm.flake_url).is_dir():
+            subprocess.run(
+                [nixos_config["generateSecrets"], clan_name],
+                env=env,
+                check=False,
+                stdout=log_fd,
+                stderr=log_fd,
+            )
+        else:
+            log.warning("won't generate secrets for non local clan")
+
+    cmd = [nixos_config["uploadSecrets"]]
+    res = subprocess.run(
+        cmd,
+        env=env,
+        check=False,
+        stdout=log_fd,
+        stderr=log_fd,
+    )
+    if res.returncode != 0:
+        raise ClanError(
+            f"Failed to upload secrets: {shlex.join(cmd)} failed with {res.returncode}"
+        )
+    return secrets_dir
+
+
+def prepare_disk(tmpdir: Path, log_fd: IO[str] | None) -> Path:
+    disk_img = tmpdir / "disk.img"
+    cmd = nix_shell(
+        ["qemu"],
+        [
+            "qemu-img",
+            "create",
+            "-f",
+            "raw",
+            str(disk_img),
+            "1024M",
+        ],
+    )
+    res = subprocess.run(
+        cmd,
+        check=False,
+        stdout=log_fd,
+        stderr=log_fd,
+    )
+    if res.returncode != 0:
+        raise ClanError(
+            f"Failed to create disk image: {shlex.join(cmd)} failed with {res.returncode}"
+        )
+
+    cmd = nix_shell(
+        ["e2fsprogs"],
+        [
+            "mkfs.ext4",
+            "-L",
+            "nixos",
+            str(disk_img),
+        ],
+    )
+    res = subprocess.run(
+        cmd,
+        check=False,
+        stdout=log_fd,
+        stderr=log_fd,
+    )
+    if res.returncode != 0:
+        raise ClanError(
+            f"Failed to create ext4 filesystem: {shlex.join(cmd)} failed with {res.returncode}"
+        )
+    return disk_img
+
+
 def run_vm(
     vm: VmConfig, nix_options: list[str] = [], log_fd: IO[str] | None = None
 ) -> None:
@@ -165,86 +254,9 @@ def run_vm(
         tmpdir = Path(tmpdir_)
         xchg_dir = tmpdir / "xchg"
         xchg_dir.mkdir(exist_ok=True)
-        secrets_dir = tmpdir / "secrets"
-        secrets_dir.mkdir(exist_ok=True)
-        disk_img = tmpdir / "disk.img"
-        spice_socket = tmpdir / "spice.sock"
 
-        env = os.environ.copy()
-        env["CLAN_DIR"] = str(vm.flake_url)
-
-        env["PYTHONPATH"] = str(
-            ":".join(sys.path)
-        )  # TODO do this in the clanCore module
-        env["SECRETS_DIR"] = str(secrets_dir)
-
-        # Only generate secrets for local clans
-        if isinstance(vm.flake_url, Path) and vm.flake_url.is_dir():
-            if Path(vm.flake_url).is_dir():
-                subprocess.run(
-                    [nixos_config["generateSecrets"], clan_name],
-                    env=env,
-                    check=False,
-                    stdout=log_fd,
-                    stderr=log_fd,
-                )
-            else:
-                log.warning("won't generate secrets for non local clan")
-
-        cmd = [nixos_config["uploadSecrets"]]
-        res = subprocess.run(
-            cmd,
-            env=env,
-            check=False,
-            stdout=log_fd,
-            stderr=log_fd,
-        )
-        if res.returncode != 0:
-            raise ClanError(
-                f"Failed to upload secrets: {shlex.join(cmd)} failed with {res.returncode}"
-            )
-
-        cmd = nix_shell(
-            ["qemu"],
-            [
-                "qemu-img",
-                "create",
-                "-f",
-                "raw",
-                str(disk_img),
-                "1024M",
-            ],
-        )
-        res = subprocess.run(
-            cmd,
-            check=False,
-            stdout=log_fd,
-            stderr=log_fd,
-        )
-        if res.returncode != 0:
-            raise ClanError(
-                f"Failed to create disk image: {shlex.join(cmd)} failed with {res.returncode}"
-            )
-
-        cmd = nix_shell(
-            ["e2fsprogs"],
-            [
-                "mkfs.ext4",
-                "-L",
-                "nixos",
-                str(disk_img),
-            ],
-        )
-        res = subprocess.run(
-            cmd,
-            check=False,
-            stdout=log_fd,
-            stderr=log_fd,
-        )
-        if res.returncode != 0:
-            raise ClanError(
-                f"Failed to create ext4 filesystem: {shlex.join(cmd)} failed with {res.returncode}"
-            )
+        secrets_dir = generate_secrets(vm, clan_name, nixos_config, tmpdir, log_fd)
+        disk_img = prepare_disk(tmpdir, log_fd)
 
         qemu_cmd = qemu_command(
             vm,
@@ -252,7 +264,6 @@ def run_vm(
             xchg_dir=xchg_dir,
             secrets_dir=secrets_dir,
             disk_img=disk_img,
-            spice_socket=spice_socket,
         )
 
         if vm.wayland:
