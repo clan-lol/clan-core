@@ -45,7 +45,6 @@
         8384
         22000
       ];
-      # local ui TODO: mkDefault ?
       networking.firewall.allowedTCPPorts = [ 8384 ];
       networking.firewall.interfaces."zt+".allowedUDPPorts = [
         22000
@@ -72,6 +71,8 @@
 
         dataDir = lib.mkDefault "/home/user/";
 
+        group = "syncthing";
+
         key =
           lib.mkDefault
             config.clanCore.secrets.syncthing.secrets."syncthing.key".path or null;
@@ -82,8 +83,7 @@
         settings = {
           options = {
             urAccepted = -1;
-            # TODO:
-            # allowedNetworks = [];
+            allowedNetworks = [ config.clan.networking.zerotier.subnet ];
           };
           devices =
             { }
