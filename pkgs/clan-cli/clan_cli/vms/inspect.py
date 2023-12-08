@@ -11,6 +11,7 @@ from ..nix import nix_config, nix_eval
 
 @dataclass
 class VmConfig:
+    clan_name: str
     flake_url: str | Path
     flake_attr: str
 
