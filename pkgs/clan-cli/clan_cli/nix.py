@@ -82,6 +82,7 @@ def nix_eval(flags: list[str]) -> list[str]:
     return default_flags + flags
 
 
+@deal.raises(ClanError)
 def nix_metadata(flake: str) -> dict[str, Any]:
     cmd = nix_command(["flake", "metadata", "--json", flake])
     proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
