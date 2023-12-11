@@ -7,7 +7,7 @@ from fixtures_flakes import FlakeForTest
 from pytest import CaptureFixture
 
 from clan_cli.dirs import user_history_file
-from clan_cli.flakes.history import HistoryEntry
+from clan_cli.history.add import HistoryEntry
 
 if TYPE_CHECKING:
     pass
