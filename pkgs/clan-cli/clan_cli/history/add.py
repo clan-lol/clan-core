@@ -55,29 +55,27 @@ def get_dir_time(path: Path) -> str:
 def add_history(path: Path) -> list[HistoryEntry]:
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
     logs = list_history()
-
     found = False
+
+    for entry in logs:
+        if entry.path == str(path):
+            found = True
+            entry.last_used = datetime.datetime.now().isoformat()
+
+    flake = inspect_flake(path, "defaultVM")
+    flake.flake_url = str(flake.flake_url)
+    dir_datetime = get_dir_time(path)
+
+    history = HistoryEntry(
+        flake=flake,
+        dir_datetime=dir_datetime,
+        path=str(path),
+        last_used=datetime.datetime.now().isoformat(),
+    )
+    if not found:
+        logs.append(history)
+
     with locked_open(user_history_file(), "w+") as f:
-        for entry in logs:
-            if entry.path == str(path):
-                found = True
-                entry.last_used = datetime.datetime.now().isoformat()
-
-        flake = inspect_flake(path, "defaultVM")
-
-        flake.flake_url = str(flake.flake_url)
-        dir_datetime = get_dir_time(path)
-
-        history = HistoryEntry(
-            flake=flake,
-            dir_datetime=dir_datetime,
-            path=str(path),
-            last_used=datetime.datetime.now().isoformat(),
-        )
-
-        if not found:
-            logs.append(history)
-
         f.write(json.dumps(logs, cls=EnhancedJSONEncoder, indent=4))
         f.truncate()
 
