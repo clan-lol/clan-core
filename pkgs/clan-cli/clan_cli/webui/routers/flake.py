@@ -17,7 +17,7 @@ from clan_cli.webui.api_outputs import (
 )
 
 from ...async_cmd import run
-from ...flakes import add, create
+from ...flakes import create
 from ...nix import nix_command, nix_flake_show
 from ..tags import Tags
 
@@ -43,16 +43,6 @@ async def get_attrs(url: AnyUrl | Path) -> list[str]:
             status_code=422, detail="No entry or no attribute: nixosConfigurations"
         )
     return flake_attrs
-
-
-@router.post("/api/flake/history", tags=[Tags.flake])
-async def flake_history_append(flake_dir: Path) -> None:
-    await add.add_flake(flake_dir)
-
-
-@router.get("/api/flake/history", tags=[Tags.flake])
-async def flake_history_list() -> list[Path]:
-    return []
 
 
 # TODO: Check for directory traversal
