@@ -6,7 +6,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-from . import backups, config, flakes, machines, secrets, vms, webui
+from . import backups, config, flakes, history, machines, secrets, vms, webui
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel, is_clan_flake
 from .ssh import cli as ssh_cli
@@ -110,6 +110,9 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
 
     parser_vms = subparsers.add_parser("vms", help="manage virtual machines")
     vms.register_parser(parser_vms)
+
+    parser_history = subparsers.add_parser("history", help="manage history")
+    history.register_parser(parser_history)
 
     if argcomplete:
         argcomplete.autocomplete(parser)
