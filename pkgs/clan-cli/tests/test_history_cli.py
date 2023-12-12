@@ -21,13 +21,13 @@ def test_history_add(
         "add",
         str(test_flake.path),
     ]
-
+    breakpoint()
     cli.run(cmd)
 
     history_file = user_history_file()
     assert history_file.exists()
     history = [HistoryEntry(**entry) for entry in json.loads(open(history_file).read())]
-    assert history[0].path == str(test_flake.path)
+    assert history[0].flake.flake_url == str(test_flake.path)
 
 
 def test_history_list(
