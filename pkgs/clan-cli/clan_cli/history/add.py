@@ -3,11 +3,11 @@ import argparse
 import dataclasses
 import datetime
 import json
-from pathlib import Path
 from typing import Any
 
 from clan_cli.flakes.inspect import FlakeConfig, inspect_flake
 
+from ..clan_uri import ClanURI
 from ..dirs import user_history_file
 from ..locked_open import locked_open
 
@@ -46,10 +46,12 @@ def list_history() -> list[HistoryEntry]:
     return logs
 
 
-def add_history(path: Path) -> list[HistoryEntry]:
+def add_history(uri: ClanURI) -> list[HistoryEntry]:
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
     logs = list_history()
     found = False
+    path = uri.get_internal()
+    machine = uri.params.flake_attr
 
     for entry in logs:
         if entry.flake.flake_url == str(path):
@@ -59,7 +61,7 @@ def add_history(path: Path) -> list[HistoryEntry]:
         if found:
             break
 
-    flake = inspect_flake(path, "defaultVM")
+    flake = inspect_flake(path, machine)
     flake.flake_url = str(flake.flake_url)
     history = HistoryEntry(
         flake=flake,
@@ -80,5 +82,7 @@ def add_history_command(args: argparse.Namespace) -> None:
 
 # takes a (sub)parser and configures it
 def register_add_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("path", type=Path, help="Path to the flake", default=Path("."))
+    parser.add_argument(
+        "uri", type=ClanURI, help="Path to the flake", default=ClanURI(".")
+    )
     parser.set_defaults(func=add_history_command)
