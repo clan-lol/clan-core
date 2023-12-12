@@ -13,6 +13,7 @@ class FlakeConfig:
     flake_url: str | Path
     flake_attr: str
 
+    nar_hash: str
     icon: str | None
     description: str | None
     last_updated: str
@@ -29,7 +30,7 @@ def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
         ]
     )
 
-    proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
+    proc = subprocess.run(cmd, text=True, capture_output=True)
     assert proc.stdout is not None
     if proc.returncode != 0:
         raise ClanError(
@@ -38,6 +39,8 @@ command: {shlex.join(cmd)}
 exit code: {proc.returncode}
 stdout:
 {proc.stdout}
+stderr:
+{proc.stderr}
 """
         )
     res = proc.stdout.strip()
@@ -51,6 +54,7 @@ stdout:
     return FlakeConfig(
         flake_url=flake_url,
         flake_attr=flake_attr,
+        nar_hash=meta["locked"]["narHash"],
         icon=icon_path,
         description=meta.get("description"),
         last_updated=meta["lastModified"],

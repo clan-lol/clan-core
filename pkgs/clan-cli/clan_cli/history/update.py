@@ -3,11 +3,11 @@ import argparse
 import copy
 import datetime
 import json
-from pathlib import Path
 
 from ..dirs import user_history_file
 from ..locked_open import locked_open
-from .add import EnhancedJSONEncoder, HistoryEntry, get_dir_time, list_history
+from ..nix import nix_metadata
+from .add import EnhancedJSONEncoder, HistoryEntry, list_history
 
 
 def update_history() -> list[HistoryEntry]:
@@ -16,11 +16,17 @@ def update_history() -> list[HistoryEntry]:
     new_logs = []
     for entry in logs:
         new_entry = copy.deepcopy(entry)
-        new_time = get_dir_time(Path(entry.path))
-        if new_time != entry.dir_datetime:
-            print(f"Updating {entry.path} from {entry.dir_datetime} to {new_time}")
-            new_entry.dir_datetime = new_time
+
+        meta = nix_metadata(entry.flake.flake_url)
+        new_hash = meta["locked"]["narHash"]
+        if new_hash != entry.flake.nar_hash:
+            print(
+                f"Updating {entry.flake.flake_url} from {entry.flake.nar_hash} to {new_hash}"
+            )
             new_entry.last_used = datetime.datetime.now().isoformat()
+            new_entry.flake.nar_hash = new_hash
+
+        # TODO: Delete stale entries
         new_logs.append(new_entry)
 
     with locked_open(user_history_file(), "w+") as f:
