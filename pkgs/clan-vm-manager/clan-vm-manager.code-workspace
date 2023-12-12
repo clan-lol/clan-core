@@ -11,6 +11,22 @@
 		}
 	],
 	"settings": {
-		"python.linting.mypyEnabled": true
+		"python.linting.mypyEnabled": true,
+		"files.exclude": {
+			"**/.direnv": true,
+			"**/.mypy_cache": true,
+			"**/.ruff_cache": true,
+			"**/.hypothesis": true,
+			"**/__pycache__": true,
+			"**/.reports": true
+		},
+		"search.exclude": {
+			"**/.direnv": true,
+			"**/.mypy_cache": true,
+			"**/.ruff_cache": true,
+			"**/.hypothesis": true,
+			"**/__pycache__": true,
+			"**/.reports": true
+		}
 	}
 }

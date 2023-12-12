@@ -40,6 +40,7 @@ class ClanParameters:
 class ClanURI:
     # Initialize the class with a clan:// URI
     def __init__(self, uri: str) -> None:
+
         # Check if the URI starts with clan://
         if uri.startswith("clan://"):
             self._nested_uri = uri[7:]

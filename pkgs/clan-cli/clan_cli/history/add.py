@@ -3,7 +3,6 @@ import argparse
 import dataclasses
 import datetime
 import json
-import os
 from pathlib import Path
 from typing import Any
 
@@ -22,10 +21,12 @@ class EnhancedJSONEncoder(json.JSONEncoder):
 
 @dataclasses.dataclass
 class HistoryEntry:
-    path: str
     last_used: str
-    dir_datetime: str
     flake: FlakeConfig
+
+    def __post_init__(self) -> None:
+        if isinstance(self.flake, dict):
+            self.flake = FlakeConfig(**self.flake)
 
 
 def list_history() -> list[HistoryEntry]:
@@ -45,35 +46,26 @@ def list_history() -> list[HistoryEntry]:
     return logs
 
 
-def get_dir_time(path: Path) -> str:
-    # Get the last modified dir time in seconds
-    dir_mtime = os.path.getmtime(path)
-    dir_datetime = datetime.datetime.fromtimestamp(dir_mtime).isoformat()
-    return dir_datetime
-
-
 def add_history(path: Path) -> list[HistoryEntry]:
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
     logs = list_history()
     found = False
 
     for entry in logs:
-        if entry.path == str(path):
+        if entry.flake.flake_url == str(path):
             found = True
             entry.last_used = datetime.datetime.now().isoformat()
 
+        if found:
+            break
+
     flake = inspect_flake(path, "defaultVM")
     flake.flake_url = str(flake.flake_url)
-    dir_datetime = get_dir_time(path)
-
     history = HistoryEntry(
         flake=flake,
-        dir_datetime=dir_datetime,
-        path=str(path),
         last_used=datetime.datetime.now().isoformat(),
     )
-    if not found:
-        logs.append(history)
+    logs.append(history)
 
     with locked_open(user_history_file(), "w+") as f:
         f.write(json.dumps(logs, cls=EnhancedJSONEncoder, indent=4))
