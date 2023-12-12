@@ -1,7 +1,6 @@
 import json
 from typing import TYPE_CHECKING
 
-import pytest
 from cli import Cli
 from fixtures_flakes import FlakeForTest
 from pytest import CaptureFixture
@@ -47,5 +46,3 @@ def test_history_list(
     cli.run(["history", "add", str(test_flake.path)])
     cli.run(cmd)
     assert str(test_flake.path) in capsys.readouterr().out
-
-

@@ -1,14 +1,12 @@
-import json
 from typing import TYPE_CHECKING
 
 import pytest
 from cli import Cli
 from fixtures_flakes import FlakeForTest
-from pytest import CaptureFixture
-
 
 if TYPE_CHECKING:
     pass
+
 
 @pytest.mark.impure
 def test_flakes_inspect(
