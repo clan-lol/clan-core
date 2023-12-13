@@ -1,8 +1,8 @@
 { qemu_kvm, rutabaga-gfx-ffi, fetchurl, lib, vulkan-loader }:
 qemu_kvm.overrideAttrs (old: {
   src = fetchurl {
-    url = "https://download.qemu.org/qemu-8.2.0-rc2.tar.xz";
-    hash = "sha256-AbQozd8IQNDBsA6/zE98xQboh4dWSk0/V/IsflCju9g=";
+    url = "https://download.qemu.org/qemu-8.2.0-rc3.tar.xz";
+    hash = "sha256-YkHs19gZ+TbPd3O5RnBV9av3mJzdrrEcFKGIDv8AOrs=";
   };
 
   postFixup = (old.postFixup or "") + ''
