@@ -14,11 +14,11 @@
 
 clangStdenv.mkDerivation {
   pname = "gfxstream";
-  version = "unstable-2023-11-29";
+  version = "unstable-2023-12-11";
   src = fetchgit {
     url = "https://android.googlesource.com/platform/hardware/google/gfxstream";
-    rev = "45c27965ee5121651946f54a42b3297b26047955";
-    hash = "sha256-nJVVePNro+sL7jC+ehe5Am2jWo9BK6H1AUSzoP7J1ss=";
+    rev = "000a701a0c52c90e0c1e1fcd605be94b85b55f92";
+    hash = "sha256-j8oBT/7xnvIv6IhNrPxHG5fr2nodWbeHX7KalCGStY0=";
   };
   postPatch = ''
     ln common/etc/etc.cpp host/compressedTextureFormats/etc.cpp
