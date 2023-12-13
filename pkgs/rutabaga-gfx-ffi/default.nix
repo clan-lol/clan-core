@@ -13,8 +13,8 @@ rustPlatform.buildRustPackage {
   src = fetchFromGitHub {
     owner = "google";
     repo = "crosvm";
-    rev = "a10c83864e1d6e47773ca06e47ada4f888b30d82";
-    hash = "sha256-Dd0oCgCL5LNxDuOJ6hyCXeqGyKBP0AqKamQTKXqNcjk=";
+    rev = "65b30e2ecede8056fdbfe8adbe52e9ff51d2a4e2";
+    hash = "sha256-9jzLFBqMGw3wYCL5006+7b9l/f1N2Jy3rw5rEzOr4M0=";
     fetchSubmodules = true;
   };
 
@@ -32,7 +32,7 @@ rustPlatform.buildRustPackage {
     make install prefix=$out
   '';
 
-  cargoHash = "sha256-oh49o/WjfT9xsQH4SUtFwNl6H3pX5Wio3FzKw+slJcQ=";
+  cargoHash = "sha256-jEhobp/ZNx5t20hBjisXR8SSn0776Jehy+RJZNSd2iA=";
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ gfxstream aemu libdrm ];
