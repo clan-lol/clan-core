@@ -5,6 +5,7 @@ from cli import Cli
 from fixtures_flakes import FlakeForTest
 from pytest import CaptureFixture
 
+from clan_cli.clan_uri import ClanParameters, ClanURI
 from clan_cli.dirs import user_history_file
 from clan_cli.history.add import HistoryEntry
 
@@ -16,10 +17,12 @@ def test_history_add(
     test_flake_with_core: FlakeForTest,
 ) -> None:
     cli = Cli()
+    params = ClanParameters(flake_attr="vm1")
+    uri = ClanURI.from_path(test_flake_with_core.path, params=params)
     cmd = [
         "history",
         "add",
-        str(test_flake_with_core.path),
+        str(uri),
     ]
 
     cli.run(cmd)
@@ -35,6 +38,8 @@ def test_history_list(
     test_flake_with_core: FlakeForTest,
 ) -> None:
     cli = Cli()
+    params = ClanParameters(flake_attr="vm1")
+    uri = ClanURI.from_path(test_flake_with_core.path, params=params)
     cmd = [
         "history",
         "list",
@@ -43,6 +48,6 @@ def test_history_list(
     cli.run(cmd)
     assert str(test_flake_with_core.path) not in capsys.readouterr().out
 
-    cli.run(["history", "add", str(test_flake_with_core.path)])
+    cli.run(["history", "add", str(uri)])
     cli.run(cmd)
     assert str(test_flake_with_core.path) in capsys.readouterr().out

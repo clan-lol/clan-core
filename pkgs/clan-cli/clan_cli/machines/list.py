@@ -11,12 +11,12 @@ from ..nix import nix_config, nix_eval
 log = logging.getLogger(__name__)
 
 
-def list_machines(flake_dir: Path) -> list[str]:
+def list_machines(flake_url: Path | str) -> list[str]:
     config = nix_config()
     system = config["system"]
     cmd = nix_eval(
         [
-            f"{flake_dir}#clanInternals.machines.{system}",
+            f"{flake_url}#clanInternals.machines.{system}",
             "--apply",
             "builtins.attrNames",
             "--json",

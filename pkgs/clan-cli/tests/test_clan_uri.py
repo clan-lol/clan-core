@@ -125,6 +125,11 @@ def test_from_str() -> None:
     assert uri.params.flake_attr == "defaultVM"
     assert uri.get_internal() == "~/Downloads/democlan"
 
+    uri_str = "clan://~/Downloads/democlan"
+    uri = ClanURI.from_str(url=uri_str)
+    assert uri.params.flake_attr == "defaultVM"
+    assert uri.get_internal() == "~/Downloads/democlan"
+
 
 def test_remote_with_all_params() -> None:
     # Create a ClanURI object from a remote URI with parameters
