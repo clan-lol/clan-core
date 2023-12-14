@@ -1,8 +1,6 @@
 { age
 , lib
 , argcomplete
-, fastapi
-, uvicorn
 , installShellFiles
 , nix
 , openssh
@@ -21,7 +19,6 @@
 , wheel
 , fakeroot
 , rsync
-, ui-assets
 , bash
 , sshpass
 , zbar
@@ -36,7 +33,6 @@
 , rope
 , clan-core-path
 , writeShellScriptBin
-, nodePackages
 }:
 let
 
@@ -45,8 +41,6 @@ let
   ];
 
   pytestDependencies = runtimeDependencies ++ dependencies ++ [
-    fastapi # optional dependencies: if not enabled, webui subcommand will not work
-    uvicorn # optional dependencies: if not enabled, webui subcommand will not work
 
     #schemathesis # optional for http fuzzing
     pytest
@@ -93,7 +87,6 @@ let
     rm $out/clan_cli/config/jsonschema
     ln -s ${nixpkgs'} $out/clan_cli/nixpkgs
     cp -r ${../../lib/jsonschema} $out/clan_cli/config/jsonschema
-    ln -s ${ui-assets} $out/clan_cli/webui/assets
   '';
   nixpkgs' = runCommand "nixpkgs" { nativeBuildInputs = [ nix ]; } ''
     mkdir $out
@@ -168,28 +161,8 @@ python3.pkgs.buildPythonApplication {
       fi
       touch $out
     '';
-
-    check-clan-openapi = runCommand "check-clan-openapi" { } ''
-      export PATH=${checkPython}/bin:$PATH
-      ${checkPython}/bin/python ${source}/bin/gen-openapi --out ./openapi.json --app-dir ${source} clan_cli.webui.app:app
-      ${lib.getExe nodePackages.prettier} --write ./openapi.json
-
-      if ! diff -u ./openapi.json ${source}/clan_cli/webui/openapi.json; then
-        echo "nix run .#update-clan-openapi to update the openapi.json file."
-        exit 1
-      fi
-
-      touch $out
-    '';
   };
-  passthru.update-clan-openapi = writeShellScriptBin "update-clan-openapi" ''
-    export PATH=${checkPython}/bin:$PATH
-    git_root=$(git rev-parse --show-toplevel)
-    cd "$git_root/pkgs/clan-cli"
 
-    ${checkPython}/bin/python ./bin/gen-openapi --out clan_cli/webui/openapi.json --app-dir . clan_cli.webui.app:app
-      ${lib.getExe nodePackages.prettier} --write clan_cli/webui/openapi.json
-  '';
   passthru.nixpkgs = nixpkgs';
   passthru.checkPython = checkPython;
 

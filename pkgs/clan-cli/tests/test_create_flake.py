@@ -3,33 +3,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from api import TestClient
 from cli import Cli
-
-from clan_cli.flakes.create import DEFAULT_URL
 
 
 @pytest.fixture
 def cli() -> Cli:
     return Cli()
-
-
-@pytest.mark.impure
-def test_create_flake_api(
-    monkeypatch: pytest.MonkeyPatch, api: TestClient, temporary_home: Path
-) -> None:
-    flake_dir = temporary_home / "test-flake"
-    response = api.post(
-        f"/api/flake/create?flake_dir={flake_dir}",
-        json=dict(
-            flake_dir=str(flake_dir),
-            url=str(DEFAULT_URL),
-        ),
-    )
-
-    assert response.status_code == 201, f"Failed to create flake {response.text}"
-    assert (flake_dir / ".clan-flake").exists()
-    assert (flake_dir / "flake.nix").exists()
 
 
 @pytest.mark.impure
