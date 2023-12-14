@@ -77,12 +77,12 @@ def add_history(uri: ClanURI) -> list[HistoryEntry]:
 
 
 def add_history_command(args: argparse.Namespace) -> None:
-    add_history(args.path)
+    add_history(args.uri)
 
 
 # takes a (sub)parser and configures it
 def register_add_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "uri", type=ClanURI, help="Path to the flake", default=ClanURI(".")
+        "uri", type=ClanURI.from_str, help="Path to the flake", default="."
     )
     parser.set_defaults(func=add_history_command)

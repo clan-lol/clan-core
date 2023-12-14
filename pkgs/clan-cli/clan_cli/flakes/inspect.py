@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..errors import ClanError
+from ..machines.list import list_machines
 from ..nix import nix_config, nix_eval, nix_metadata
 
 
@@ -23,6 +24,12 @@ class FlakeConfig:
 def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
     config = nix_config()
     system = config["system"]
+
+    machines = list_machines(flake_url)
+    if flake_attr not in machines:
+        raise ClanError(
+            f"Machine {flake_attr} not found in {flake_url}. Available machines: {', '.join(machines)}"
+        )
 
     cmd = nix_eval(
         [

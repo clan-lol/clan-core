@@ -106,6 +106,10 @@ class ClanURI:
 
     @classmethod
     def from_str(cls, url: str, params: ClanParameters | None = None) -> Self:  # noqa
+        prefix = "clan://"
+        if url.startswith(prefix):
+            url = url[len(prefix) :]
+
         if params is None:
             return cls(f"clan://{url}")
 
@@ -118,4 +122,4 @@ class ClanURI:
         return cls(f"clan://{new_url}")
 
     def __str__(self) -> str:
-        return f"ClanURI({self._components.geturl()})"
+        return self.get_full_uri()
