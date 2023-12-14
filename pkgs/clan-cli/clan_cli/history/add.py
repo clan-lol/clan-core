@@ -58,16 +58,14 @@ def add_history(uri: ClanURI) -> list[HistoryEntry]:
             found = True
             entry.last_used = datetime.datetime.now().isoformat()
 
-        if found:
-            break
-
-    flake = inspect_flake(path, machine)
-    flake.flake_url = str(flake.flake_url)
-    history = HistoryEntry(
-        flake=flake,
-        last_used=datetime.datetime.now().isoformat(),
-    )
-    logs.append(history)
+    if not found:
+        flake = inspect_flake(path, machine)
+        flake.flake_url = str(flake.flake_url)
+        history = HistoryEntry(
+            flake=flake,
+            last_used=datetime.datetime.now().isoformat(),
+        )
+        logs.append(history)
 
     with locked_open(user_history_file(), "w+") as f:
         f.write(json.dumps(logs, cls=EnhancedJSONEncoder, indent=4))
