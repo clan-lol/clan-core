@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ..errors import ClanError
 from ..machines.list import list_machines
-from ..nix import nix_config, nix_eval, nix_metadata
+from ..nix import nix_build, nix_config, nix_eval, nix_metadata
 
 
 @dataclass
@@ -14,6 +14,7 @@ class FlakeConfig:
     flake_url: str | Path
     flake_attr: str
 
+    clan_name: str
     nar_hash: str
     icon: str | None
     description: str | None
@@ -56,10 +57,52 @@ stderr:
     else:
         icon_path = res.strip('"')
 
+        if not Path(icon_path).exists():
+            cmd = nix_build(
+                [
+                    f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanIcon'
+                ]
+            )
+            proc = subprocess.run(cmd, text=True, capture_output=True)
+            assert proc.stdout is not None
+            if proc.returncode != 0:
+                raise ClanError(
+                    f"""
+command: {shlex.join(cmd)}
+exit code: {proc.returncode}
+stdout:
+{proc.stdout}
+stderr:
+{proc.stderr}
+"""
+                )
+
+    cmd = nix_eval(
+        [
+            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanName'
+        ]
+    )
+
+    proc = subprocess.run(cmd, text=True, capture_output=True)
+    assert proc.stdout is not None
+    if proc.returncode != 0:
+        raise ClanError(
+            f"""
+command: {shlex.join(cmd)}
+exit code: {proc.returncode}
+stdout:
+{proc.stdout}
+stderr:
+{proc.stderr}
+"""
+        )
+    clan_name = proc.stdout.strip().strip('"')
+
     meta = nix_metadata(flake_url)
 
     return FlakeConfig(
         flake_url=flake_url,
+        clan_name=clan_name,
         flake_attr=flake_attr,
         nar_hash=meta["locked"]["narHash"],
         icon=icon_path,
@@ -83,6 +126,7 @@ def inspect_command(args: argparse.Namespace) -> None:
     res = inspect_flake(
         flake_url=inspect_options.flake, flake_attr=inspect_options.machine
     )
+    print("cLAN name:", res.clan_name)
     print("Icon:", res.icon)
     print("Description:", res.description)
     print("Last updated:", res.last_updated)

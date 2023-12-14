@@ -1,8 +1,8 @@
-import asyncio
 import logging
 import shlex
-from collections.abc import Callable, Coroutine
+from collections.abc import Callable
 from pathlib import Path
+from subprocess import PIPE, Popen
 from typing import Any, NamedTuple
 
 from .custom_logger import get_caller
@@ -17,7 +17,7 @@ class CmdOut(NamedTuple):
     cwd: Path | None = None
 
 
-async def run(cmd: list[str], cwd: Path | None = None) -> CmdOut:
+def run(cmd: list[str], cwd: Path | None = None) -> CmdOut:
     cwd_res = None
     if cwd is not None:
         if not cwd.exists():
@@ -28,13 +28,14 @@ async def run(cmd: list[str], cwd: Path | None = None) -> CmdOut:
     log.debug(
         f"Command: {shlex.join(cmd)}\nWorking directory: {cwd_res}\nCaller : {get_caller()}"
     )
-    proc = await asyncio.create_subprocess_exec(
-        *cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+    proc = Popen(
+        args=cmd,
+        stderr=PIPE,
+        stdout=PIPE,
+        text=True,
         cwd=cwd_res,
     )
-    stdout, stderr = await proc.communicate()
+    stdout, stderr = proc.communicate()
 
     if proc.returncode != 0:
         raise ClanError(
@@ -43,20 +44,18 @@ command: {shlex.join(cmd)}
 working directory: {cwd_res}
 exit code: {proc.returncode}
 stderr:
-{stderr.decode("utf-8")}
+{stderr}
 stdout:
-{stdout.decode("utf-8")}
+{stdout}
 """
         )
 
-    return CmdOut(stdout.decode("utf-8"), stderr.decode("utf-8"), cwd=cwd)
+    return CmdOut(stdout, stderr, cwd=cwd)
 
 
-def runforcli(
-    func: Callable[..., Coroutine[Any, Any, dict[str, CmdOut]]], *args: Any
-) -> None:
+def runforcli(func: Callable[..., dict[str, CmdOut]], *args: Any) -> None:
     try:
-        res = asyncio.run(func(*args))
+        res = func(*args)
 
         for name, out in res.items():
             if out.stderr:

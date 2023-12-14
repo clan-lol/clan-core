@@ -2,14 +2,14 @@
 import argparse
 from pathlib import Path
 
-from ..async_cmd import CmdOut, run, runforcli
+from ..cmd import CmdOut, run, runforcli
 from ..errors import ClanError
 from ..nix import nix_command, nix_shell
 
 DEFAULT_URL: str = "git+https://git.clan.lol/clan/clan-core?new-clan"
 
 
-async def create_flake(directory: Path, url: str) -> dict[str, CmdOut]:
+def create_flake(directory: Path, url: str) -> dict[str, CmdOut]:
     if not directory.exists():
         directory.mkdir()
     else:
@@ -23,35 +23,26 @@ async def create_flake(directory: Path, url: str) -> dict[str, CmdOut]:
             url,
         ]
     )
-    out = await run(command, cwd=directory)
+    out = run(command, cwd=directory)
     response["flake init"] = out
 
     command = nix_shell(["nixpkgs#git"], ["git", "init"])
-    out = await run(command, cwd=directory)
+    out = run(command, cwd=directory)
     response["git init"] = out
 
     command = nix_shell(["nixpkgs#git"], ["git", "add", "."])
-    out = await run(command, cwd=directory)
+    out = run(command, cwd=directory)
     response["git add"] = out
 
-    # command = nix_shell(["nixpkgs#git"], ["git", "config", "init.defaultBranch", "main"])
-    # out = await run(command, cwd=directory)
-    # response["git config"] = out
-
     command = nix_shell(["nixpkgs#git"], ["git", "config", "user.name", "clan-tool"])
-    out = await run(command, cwd=directory)
+    out = run(command, cwd=directory)
     response["git config"] = out
 
     command = nix_shell(
         ["nixpkgs#git"], ["git", "config", "user.email", "clan@example.com"]
     )
-    out = await run(command, cwd=directory)
+    out = run(command, cwd=directory)
     response["git config"] = out
-
-    # TODO: Find out why this fails on Johannes machine
-    # command = nix_shell(["nixpkgs#git"], ["git", "commit", "-a", "-m", "Initial commit"])
-    # out = await run(command, cwd=directory)
-    # response["git commit"] = out
 
     return response
 
