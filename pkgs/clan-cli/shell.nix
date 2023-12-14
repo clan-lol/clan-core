@@ -1,4 +1,4 @@
-{ nix-unit, clan-cli, ui-assets, system, mkShell, writeScriptBin, openssh, ruff, python3 }:
+{ nix-unit, clan-cli, system, mkShell, writeScriptBin, openssh, ruff, python3 }:
 let
   checkScript = writeScriptBin "check" ''
     nix build .#checks.${system}.{treefmt,clan-pytest} -L "$@"
@@ -39,7 +39,6 @@ mkShell {
       --editable $repo_root
 
     ln -sfT ${clan-cli.nixpkgs} clan_cli/nixpkgs
-    ln -sfT ${ui-assets} clan_cli/webui/assets
 
     export PATH="$tmp_path/python/bin:${checkScript}/bin:$PATH"
     export PYTHONPATH="$repo_root:$tmp_path/python/${pythonWithDeps.sitePackages}:"

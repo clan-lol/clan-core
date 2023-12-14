@@ -40,6 +40,7 @@ class ClanParameters:
 class ClanURI:
     # Initialize the class with a clan:// URI
     def __init__(self, uri: str) -> None:
+        self._full_uri = uri
         # Check if the URI starts with clan://
         if uri.startswith("clan://"):
             self._nested_uri = uri[7:]
@@ -53,13 +54,13 @@ class ClanURI:
         # Parse the query string into a dictionary
         query = urllib.parse.parse_qs(self._components.query)
 
-        params: dict[str, str] = {}
+        new_params: dict[str, str] = {}
         for field in dataclasses.fields(ClanParameters):
             if field.name in query:
                 values = query[field.name]
                 if len(values) > 1:
                     raise ClanError(f"Multiple values for parameter: {field.name}")
-                params[field.name] = values[0]
+                new_params[field.name] = values[0]
 
                 # Remove the field from the query dictionary
                 # clan uri and nested uri share one namespace for query parameters
@@ -68,7 +69,7 @@ class ClanURI:
 
         new_query = urllib.parse.urlencode(query, doseq=True)
         self._components = self._components._replace(query=new_query)
-        self.params = ClanParameters(**params)
+        self.params = ClanParameters(**new_params)
 
         comb = (
             self._components.scheme,
@@ -96,10 +97,29 @@ class ClanURI:
             case _:
                 raise ClanError(f"Unsupported uri components: {self.scheme}")
 
+    def get_full_uri(self) -> str:
+        return self._full_uri
+
     @classmethod
-    def from_path(cls, path: Path, params: ClanParameters) -> Self:  # noqa
-        urlparams = urllib.parse.urlencode(params.__dict__)
-        return cls(f"clan://{path}?{urlparams}")
+    def from_path(cls, path: Path, params: ClanParameters | None = None) -> Self:  # noqa
+        return cls.from_str(str(path), params)
+
+    @classmethod
+    def from_str(cls, url: str, params: ClanParameters | None = None) -> Self:  # noqa
+        prefix = "clan://"
+        if url.startswith(prefix):
+            url = url[len(prefix) :]
+
+        if params is None:
+            return cls(f"clan://{url}")
+
+        comp = urllib.parse.urlparse(url)
+        query = urllib.parse.parse_qs(comp.query)
+        query.update(params.__dict__)
+        new_query = urllib.parse.urlencode(query, doseq=True)
+        comp = comp._replace(query=new_query)
+        new_url = urllib.parse.urlunparse(comp)
+        return cls(f"clan://{new_url}")
 
     def __str__(self) -> str:
-        return f"ClanURI({self._components.geturl()})"
+        return self.get_full_uri()

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..errors import ClanError
+from ..machines.list import list_machines
 from ..nix import nix_config, nix_eval, nix_metadata
 
 
@@ -13,6 +14,7 @@ class FlakeConfig:
     flake_url: str | Path
     flake_attr: str
 
+    nar_hash: str
     icon: str | None
     description: str | None
     last_updated: str
@@ -23,13 +25,19 @@ def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
     config = nix_config()
     system = config["system"]
 
+    machines = list_machines(flake_url)
+    if flake_attr not in machines:
+        raise ClanError(
+            f"Machine {flake_attr} not found in {flake_url}. Available machines: {', '.join(machines)}"
+        )
+
     cmd = nix_eval(
         [
             f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanIcon'
         ]
     )
 
-    proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
+    proc = subprocess.run(cmd, text=True, capture_output=True)
     assert proc.stdout is not None
     if proc.returncode != 0:
         raise ClanError(
@@ -38,6 +46,8 @@ command: {shlex.join(cmd)}
 exit code: {proc.returncode}
 stdout:
 {proc.stdout}
+stderr:
+{proc.stderr}
 """
         )
     res = proc.stdout.strip()
@@ -51,6 +61,7 @@ stdout:
     return FlakeConfig(
         flake_url=flake_url,
         flake_attr=flake_attr,
+        nar_hash=meta["locked"]["narHash"],
         icon=icon_path,
         description=meta.get("description"),
         last_updated=meta["lastModified"],

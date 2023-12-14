@@ -1,6 +1,6 @@
 # clan-cli
 
-The clan-cli contains the command line interface as well as the graphical webui through the `clan webui` command.
+The clan-cli contains the command line interface
 
 ## Hacking on the cli
 
@@ -15,43 +15,6 @@ After you can use the local bin wrapper to test things in the cli:
 
 ```
 ./bin/clan
-```
-
-## Hacking on the webui
-
-By default the webui is build from a tarball available https://git.clan.lol/clan/-/packages/generic/ui/.
-To start a local developement environment instead, use the `--dev` flag:
-
-```
-./bin/clan webui --dev
-```
-
-This will spawn two webserver, a python one to for the api and a nodejs one that rebuilds the ui on the fly.
-
-## Run webui directly
-
-Useful for vscode run and debug option
-
-```bash
-python -m clan_cli.webui --reload --no-open
-```
-
-Add this `launch.json` to your .vscode directory to have working breakpoints in your vscode editor.
-
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Clan Webui",
-      "type": "python",
-      "request": "launch",
-      "module": "clan_cli.webui",
-      "justMyCode": true,
-      "args": ["--reload", "--no-open", "--log-level", "debug"]
-    }
-  ]
-}
 ```
 
 ## Run locally single-threaded for debugging

@@ -101,6 +101,36 @@ def test_from_path_with_default() -> None:
             assert False
 
 
+def test_from_str() -> None:
+    # Create a ClanURI object from a remote URI with parameters
+    uri_str = "https://example.com?password=asdasd&test=1234"
+    params = ClanParameters(flake_attr="myVM")
+    uri = ClanURI.from_str(url=uri_str, params=params)
+    assert uri.params.flake_attr == "myVM"
+
+    match uri.scheme:
+        case ClanScheme.HTTP.value(url):
+            assert url == "https://example.com?password=asdasd&test=1234"  # type: ignore
+        case _:
+            assert False
+
+    uri_str = "~/Downloads/democlan"
+    params = ClanParameters(flake_attr="myVM")
+    uri = ClanURI.from_str(url=uri_str, params=params)
+    assert uri.params.flake_attr == "myVM"
+    assert uri.get_internal() == "~/Downloads/democlan"
+
+    uri_str = "~/Downloads/democlan"
+    uri = ClanURI.from_str(url=uri_str)
+    assert uri.params.flake_attr == "defaultVM"
+    assert uri.get_internal() == "~/Downloads/democlan"
+
+    uri_str = "clan://~/Downloads/democlan"
+    uri = ClanURI.from_str(url=uri_str)
+    assert uri.params.flake_attr == "defaultVM"
+    assert uri.get_internal() == "~/Downloads/democlan"
+
+
 def test_remote_with_all_params() -> None:
     # Create a ClanURI object from a remote URI with parameters
     uri = ClanURI("clan://https://example.com?flake_attr=myVM&password=1234")

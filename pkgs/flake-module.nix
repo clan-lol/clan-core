@@ -3,8 +3,6 @@
     ./clan-cli/flake-module.nix
     ./clan-vm-manager/flake-module.nix
     ./installer/flake-module.nix
-    ./ui/flake-module.nix
-    ./theme/flake-module.nix
   ];
 
   perSystem = { pkgs, config, lib, ... }: {
@@ -17,7 +15,6 @@
       pending-reviews = pkgs.callPackage ./pending-reviews { };
       nix-unit = pkgs.callPackage ./nix-unit { };
       meshname = pkgs.callPackage ./meshname { };
-      inherit (pkgs.callPackages ./node-packages { }) prettier-plugin-tailwindcss;
     } // lib.optionalAttrs pkgs.stdenv.isLinux {
       aemu = pkgs.callPackage ./aemu { };
       gfxstream = pkgs.callPackage ./gfxstream {
