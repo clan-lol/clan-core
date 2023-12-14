@@ -1,24 +1,42 @@
 import argparse
+import json
 import logging
-import os
+import shlex
+import subprocess
 from pathlib import Path
 
-from ..dirs import machines_dir
-from .types import validate_hostname
+from ..errors import ClanError
+from ..nix import nix_config, nix_eval
 
 log = logging.getLogger(__name__)
 
 
-def list_machines(flake_dir: Path) -> list[str]:
-    path = machines_dir(flake_dir)
-    log.debug(f"Listing machines in {path}")
-    if not path.exists():
-        return []
-    objs: list[str] = []
-    for f in os.listdir(path):
-        if validate_hostname(f):
-            objs.append(f)
-    return objs
+def list_machines(flake_url: Path | str) -> list[str]:
+    config = nix_config()
+    system = config["system"]
+    cmd = nix_eval(
+        [
+            f"{flake_url}#clanInternals.machines.{system}",
+            "--apply",
+            "builtins.attrNames",
+            "--json",
+        ]
+    )
+    proc = subprocess.run(cmd, text=True, capture_output=True)
+    assert proc.stdout is not None
+    if proc.returncode != 0:
+        raise ClanError(
+            f"""
+command: {shlex.join(cmd)}
+exit code: {proc.returncode}
+stdout:
+{proc.stdout}
+stderr:
+{proc.stderr}
+"""
+        )
+    res = proc.stdout.strip()
+    return json.loads(res)
 
 
 def list_command(args: argparse.Namespace) -> None:

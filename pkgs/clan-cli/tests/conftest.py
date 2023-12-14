@@ -10,7 +10,6 @@ from clan_cli.nix import nix_shell
 sys.path.append(os.path.join(os.path.dirname(__file__), "helpers"))
 
 pytest_plugins = [
-    "api",
     "temporary_dir",
     "root",
     "age_keys",

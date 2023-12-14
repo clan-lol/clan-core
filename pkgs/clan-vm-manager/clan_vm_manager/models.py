@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import gi
-from clan_cli import flakes, vms
+from clan_cli import flakes, history, vms
 
 gi.require_version("GdkPixbuf", "2.0")
 from gi.repository import GdkPixbuf
@@ -73,50 +73,11 @@ class VM:
 
 # start/end indexes can be used optionally for pagination
 def get_initial_vms(start: int = 0, end: int | None = None) -> list[VM]:
-    # vms = [
-    #     VM(
-    #         base=VMBase(
-    #             icon=assets.loc / "cybernet.jpeg",
-    #             name="Cybernet Clan",
-    #             url="clan://cybernet.lol",
-    #             _path=Path(__file__).parent.parent / "test_democlan",
-    #             status=False,
-    #         ),
-    #     ),
-    #     VM(
-    #         base=VMBase(
-    #             icon=assets.loc / "zenith.jpeg",
-    #             name="Zenith Clan",
-    #             url="clan://zenith.lol",
-    #             _path=Path(__file__).parent.parent / "test_democlan",
-    #             status=False,
-    #         )
-    #     ),
-    #     VM(
-    #         base=VMBase(
-    #             icon=assets.loc / "firestorm.jpeg",
-    #             name="Firestorm Clan",
-    #             url="clan://firestorm.lol",
-    #             _path=Path(__file__).parent.parent / "test_democlan",
-    #             status=False,
-    #         ),
-    #     ),
-    #     VM(
-    #         base=VMBase(
-    #             icon=assets.loc / "placeholder.jpeg",
-    #             name="Placeholder Clan",
-    #             url="clan://demo.lol",
-    #             _path=Path(__file__).parent.parent / "test_democlan",
-    #             status=True,
-    #         ),
-    #     ),
-    # ]
-
     vm_list = []
 
     # TODO: list_history() should return a list of dicts, not a list of paths
     # Execute `clan flakes add <path>` to democlan for this to work
-    for entry in flakes.history.list_history():
+    for entry in history.list.list_history():
         flake_config = flakes.inspect.inspect_flake(entry.path, "defaultVM")
         vm_config = vms.inspect.inspect_vm(entry.path, "defaultVM")
 
