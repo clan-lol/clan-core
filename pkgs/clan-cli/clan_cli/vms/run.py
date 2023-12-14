@@ -60,7 +60,6 @@ def qemu_command(
     xchg_dir: Path,
     secrets_dir: Path,
     disk_img: Path,
-    wayland: bool,
 ) -> list[str]:
     kernel_cmdline = [
         (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
@@ -68,7 +67,7 @@ def qemu_command(
         f'regInfo={nixos_config["regInfo"]}/registration',
         "console=ttyS0,115200n8",
     ]
-    if not wayland:
+    if not vm.wayland:
         kernel_cmdline.append("console=tty0")
     # fmt: off
     command = [
@@ -247,7 +246,6 @@ def run_vm(
             xchg_dir=xchg_dir,
             secrets_dir=secrets_dir,
             disk_img=disk_img,
-            wayland=vm.wayland,
         )
 
         if vm.wayland:
