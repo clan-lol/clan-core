@@ -19,6 +19,7 @@ class VmConfig:
     memory_size: int
     graphics: bool
     wayland: bool = False
+    serial: bool = False
 
 
 def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:

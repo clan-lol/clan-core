@@ -33,7 +33,6 @@ def graphics_options(vm: VmConfig) -> list[str]:
             "-audiodev", "spice,id=audio0",
             "-device", "intel-hda",
             "-device", "hda-duplex,audiodev=audio0",
-            "-vga", "none",
             "-display", "gtk,gl=on",
             "-device", "virtio-gpu-gl",
             "-display", "spice-app,gl=on",
@@ -66,10 +65,16 @@ def qemu_command(
         (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
         f'init={nixos_config["toplevel"]}/init',
         f'regInfo={nixos_config["regInfo"]}/registration',
-        "console=ttyS0,115200n8",
+        # "console=hvc0,115200n8",
+        # "console=ttyS0,115200n8", # serial
+        # console=hvc0
     ]
-    if not wayland:
-        kernel_cmdline.append("console=tty0")
+    if vm.serial:
+        kernel_cmdline.append("console=hvc0,115200n8")
+        print("HUUUI")
+        exit()
+    # if not wayland:
+    #     kernel_cmdline.append("console=tty0")
     # fmt: off
     command = [
         "qemu-kvm",
@@ -96,8 +101,22 @@ def qemu_command(
 
     if vm.graphics:
         command.extend(graphics_options(vm))
-    else:
-        command.append("-nographic")
+
+    if vm.serial:
+        # command.append("-nographic") # weglassen?? kommt auf modus drauf an
+        command.extend([
+        "-serial", "null",
+        "-device", "virtio-serial",
+        "-chardev", "stdio,mux=on,id=char0,signal=off",
+        "-mon", "chardev=char0,mode=readline",
+        ]) # weglassen?? kommt auf modus drauf an
+        #-serial null \
+      # -device virtio-serial \
+      # -chardev stdio,mux=on,id=char0,signal=off \
+      # -mon chardev=char0,mode=readline \ 
+      # terminal heisst dann anders
+    # console=hvc0 
+    # statt ttyS0
     return command
 
 
@@ -256,7 +275,7 @@ def run_vm(
             packages = ["nixpkgs#qemu"]
 
         env = os.environ.copy()
-        if vm.graphics and not vm.wayland:
+        if vm.graphics and not (vm.wayland or vm.serial):
             packages.append("nixpkgs#virt-viewer")
             remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
             env[
@@ -305,4 +324,5 @@ def register_run_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("machine", type=str, help="machine in the flake to run")
     parser.add_argument("--flake-url", type=str, help="flake url")
     parser.add_argument("--wayland", action="store_true", help="use wayland")
+    parser.add_argument("--serial", action="store_true", help="use serial")
     parser.set_defaults(func=run_command)
