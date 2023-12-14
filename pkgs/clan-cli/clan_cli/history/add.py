@@ -39,7 +39,7 @@ def list_history() -> list[HistoryEntry]:
             content: str = f.read()
             parsed: list[dict] = json.loads(content)
             logs = [HistoryEntry(**p) for p in parsed]
-        except json.JSONDecodeError as ex:
+        except (json.JSONDecodeError, TypeError) as ex:
             print("Failed to load history. Invalid JSON.")
             print(f"{user_history_file()}: {ex}")
 
@@ -58,16 +58,14 @@ def add_history(uri: ClanURI) -> list[HistoryEntry]:
             found = True
             entry.last_used = datetime.datetime.now().isoformat()
 
-        if found:
-            break
-
-    flake = inspect_flake(path, machine)
-    flake.flake_url = str(flake.flake_url)
-    history = HistoryEntry(
-        flake=flake,
-        last_used=datetime.datetime.now().isoformat(),
-    )
-    logs.append(history)
+    if not found:
+        flake = inspect_flake(path, machine)
+        flake.flake_url = str(flake.flake_url)
+        history = HistoryEntry(
+            flake=flake,
+            last_used=datetime.datetime.now().isoformat(),
+        )
+        logs.append(history)
 
     with locked_open(user_history_file(), "w+") as f:
         f.write(json.dumps(logs, cls=EnhancedJSONEncoder, indent=4))
