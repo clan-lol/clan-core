@@ -39,7 +39,7 @@ def list_history() -> list[HistoryEntry]:
             content: str = f.read()
             parsed: list[dict] = json.loads(content)
             logs = [HistoryEntry(**p) for p in parsed]
-        except json.JSONDecodeError as ex:
+        except (json.JSONDecodeError, TypeError) as ex:
             print("Failed to load history. Invalid JSON.")
             print(f"{user_history_file()}: {ex}")
 

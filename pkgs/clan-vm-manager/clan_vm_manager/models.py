@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import gi
-from clan_cli import flakes, history, vms
+from clan_cli import history, vms
 
 gi.require_version("GdkPixbuf", "2.0")
 from gi.repository import GdkPixbuf
@@ -18,7 +18,6 @@ class VMBase:
     name: str
     url: str
     status: bool
-    _path: Path
 
     @staticmethod
     def name_to_type_map() -> OrderedDict[str, type]:
@@ -28,7 +27,6 @@ class VMBase:
                 "Name": str,
                 "URL": str,
                 "Online": bool,
-                "_Path": str,
             }
         )
 
@@ -43,7 +41,6 @@ class VMBase:
                 "Name": self.name,
                 "URL": self.url,
                 "Online": self.status,
-                "_Path": str(self._path),
             }
         )
 
@@ -52,14 +49,8 @@ class VMBase:
         import asyncio
 
         # raise Exception("Cannot run VMs yet")
-        vm = asyncio.run(
-            vms.run.inspect_vm(flake_url=self._path, flake_attr="defaultVM")
-        )
+        vm = asyncio.run(vms.run.inspect_vm(flake_url=self.url, flake_attr="defaultVM"))
         vms.run.run_vm(vm)
-
-
-#        for line in task.log_lines():
-#            print(line, end="")
 
 
 @dataclass(frozen=True)
@@ -75,32 +66,19 @@ class VM:
 def get_initial_vms(start: int = 0, end: int | None = None) -> list[VM]:
     vm_list = []
 
-    # TODO: list_history() should return a list of dicts, not a list of paths
     # Execute `clan flakes add <path>` to democlan for this to work
     for entry in history.list.list_history():
-        flake_config = flakes.inspect.inspect_flake(entry.path, "defaultVM")
-        vm_config = vms.inspect.inspect_vm(entry.path, "defaultVM")
-
-        # if flake_config.icon is None:
-        #     icon = assets.loc / "placeholder.jpeg"
-        # else:
-        #     icon = flake_config.icon
         icon = assets.loc / "placeholder.jpeg"
-        # TODO: clan flakes inspect currently points to an icon that doesn't exist
-        # the reason being that the icon is not in the nix store, as the democlan has
-        # not been built yet. Not sure how to handle this.
-        # I think how to do this is to add democlan as a flake.nix dependency and then
-        # put it into the devshell.
+        if entry.flake.icon is not None:
+            icon = entry.flake.icon
 
-        print(f"Icon: {icon}")
-        new_vm = {
-            "icon": icon,
-            "name": vm_config.clan_name,
-            "url": flake_config.flake_url,
-            "_path": entry.path,
-            "status": False,
-        }
-        vm_list.append(VM(base=VMBase(**new_vm)))
+        base = VMBase(
+            icon=icon,
+            name=entry.flake.clan_name,
+            url=entry.flake.flake_url,
+            status=False,
+        )
+        vm_list.append(VM(base=base))
 
     # start/end slices can be used for pagination
     return vm_list[start:end]
