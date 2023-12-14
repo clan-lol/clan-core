@@ -6,7 +6,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-from . import backups, config, flakes, history, machines, secrets, vms, webui
+from . import backups, config, flakes, history, machines, secrets, vms
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel, is_clan_flake
 from .ssh import cli as ssh_cli
@@ -104,9 +104,6 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         "machines", help="Manage machines and their configuration"
     )
     machines.register_parser(parser_machine)
-
-    parser_webui = subparsers.add_parser("webui", help="start webui")
-    webui.register_parser(parser_webui)
 
     parser_vms = subparsers.add_parser("vms", help="manage virtual machines")
     vms.register_parser(parser_vms)
