@@ -66,14 +66,14 @@ def qemu_command(
         f'init={nixos_config["toplevel"]}/init',
         f'regInfo={nixos_config["regInfo"]}/registration',
         # "console=hvc0,115200n8",
-        # "console=ttyS0,115200n8", # serial
+        "console=ttyS0,115200n8",  # serial
         # console=hvc0
     ]
     if vm.serial:
-        kernel_cmdline.append("console=hvc0,115200n8")
-        print("HUUUI")
-        exit()
-    # if not wayland:
+        # kernel_cmdline.append("console=tty0")
+        kernel_cmdline.append("console=hvc0")
+
+    # if not wayland or not vm.serial:
     #     kernel_cmdline.append("console=tty0")
     # fmt: off
     command = [
@@ -275,14 +275,16 @@ def run_vm(
             packages = ["nixpkgs#qemu"]
 
         env = os.environ.copy()
-        if vm.graphics and not (vm.wayland or vm.serial):
+        if vm.graphics and not vm.wayland:
             packages.append("nixpkgs#virt-viewer")
             remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
             env[
                 "XDG_DATA_DIRS"
             ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
 
-        print("$ " + shlex.join(qemu_cmd))
+        import textwrap
+
+        print("$ " + "\n".join(textwrap.wrap(shlex.join(qemu_cmd))))
         res = subprocess.run(
             nix_shell(packages, qemu_cmd),
             env=env,
@@ -301,6 +303,7 @@ class RunOptions:
     flake: Path
     nix_options: list[str] = field(default_factory=list)
     wayland: bool = False
+    serial: bool = False
 
 
 def run_command(args: argparse.Namespace) -> None:
@@ -310,12 +313,14 @@ def run_command(args: argparse.Namespace) -> None:
         flake=args.flake or Path.cwd(),
         nix_options=args.option,
         wayland=args.wayland,
+        serial=args.serial,
     )
 
     flake_url = run_options.flake_url or run_options.flake
     vm = inspect_vm(flake_url=flake_url, flake_attr=run_options.machine)
     # TODO: allow to set this in the config
     vm.wayland = run_options.wayland
+    vm.serial = run_options.serial
 
     run_vm(vm, run_options.nix_options)
 
