@@ -33,6 +33,7 @@ def graphics_options(vm: VmConfig) -> list[str]:
             "-audiodev", "spice,id=audio0",
             "-device", "intel-hda",
             "-device", "hda-duplex,audiodev=audio0",
+            "-vga", "none",
             "-display", "gtk,gl=on",
             "-device", "virtio-gpu-gl",
             "-display", "spice-app,gl=on",
