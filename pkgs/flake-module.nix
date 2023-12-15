@@ -13,7 +13,6 @@
         inherit (config.packages) tea-create-pr;
       };
       pending-reviews = pkgs.callPackage ./pending-reviews { };
-      nix-unit = pkgs.callPackage ./nix-unit { };
       meshname = pkgs.callPackage ./meshname { };
     } // lib.optionalAttrs pkgs.stdenv.isLinux {
       aemu = pkgs.callPackage ./aemu { };
@@ -26,6 +25,7 @@
       qemu-wayland = pkgs.callPackage ./qemu-wayland {
         inherit (config.packages) rutabaga-gfx-ffi;
       };
+      wayland-proxy-virtwl = pkgs.callPackage ./wayland-proxy-virtwl { };
     };
   };
 }

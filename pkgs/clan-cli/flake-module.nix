@@ -30,8 +30,7 @@
     in
     {
       devShells.clan-cli = pkgs.callPackage ./shell.nix {
-        inherit (self'.packages) clan-cli nix-unit;
-        # inherit (inputs) democlan;
+        inherit (self'.packages) clan-cli;
       };
       packages = {
         clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
