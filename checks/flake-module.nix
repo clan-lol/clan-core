@@ -19,6 +19,7 @@
           meshnamed = import ./meshnamed nixosTestArgs;
           borgbackup = import ./borgbackup nixosTestArgs;
           syncthing = import ./syncthing nixosTestArgs;
+          wayland-proxy-virtwl = import ./wayland-proxy-virtwl nixosTestArgs;
         };
         schemaTests = pkgs.callPackages ./schemas.nix {
           inherit self;
