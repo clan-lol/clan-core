@@ -40,26 +40,6 @@
         "type": "github"
       }
     },
-    "floco": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1694873346,
-        "narHash": "sha256-Uvh03bg0a6ZnNWiX1Gb8g+m343wSJ/wb8ryUASt0loc=",
-        "owner": "aakropotkin",
-        "repo": "floco",
-        "rev": "d16bd444ab9d29a6640f52ee4e43a66528e07515",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aakropotkin",
-        "repo": "floco",
-        "type": "github"
-      }
-    },
     "nixlib": {
       "locked": {
         "lastModified": 1693701915,
@@ -132,7 +112,6 @@
       "inputs": {
         "disko": "disko",
         "flake-parts": "flake-parts",
-        "floco": "floco",
         "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs",
         "nixpkgs-for-deal": "nixpkgs-for-deal",
