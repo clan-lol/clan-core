@@ -21,6 +21,7 @@ rustPlatform.buildRustPackage {
   patches = [
     ./0001-rutabaga_gfx-don-t-clone-wayland-memfd-file-descript.patch
     ./0002-rutabaga_gfx-super-ugly-workaround-to-get-private-ke.patch
+    ./0003-rutabaga_gfx-fix-stale-cross-domain-keymap-resources.patch
   ];
 
   buildPhase = ''

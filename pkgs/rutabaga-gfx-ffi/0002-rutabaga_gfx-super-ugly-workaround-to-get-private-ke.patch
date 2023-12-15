@@ -1,7 +1,7 @@
-From d0173b741cface0b49fc105bd66dc8c8d9276591 Mon Sep 17 00:00:00 2001
+From 76c69111118b9a63cde378f754897f8bdaf123dd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?J=C3=B6rg=20Thalheim?= <joerg@thalheim.io>
 Date: Thu, 7 Dec 2023 18:45:37 +0100
-Subject: [PATCH 2/2] rutabaga_gfx: super ugly workaround to get private
+Subject: [PATCH 2/3] rutabaga_gfx: super ugly workaround to get private
  keyboard resources forwarded
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -13,7 +13,7 @@ Signed-off-by: Jörg Thalheim <joerg@thalheim.io>
  1 file changed, 33 insertions(+), 2 deletions(-)
 
 diff --git a/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs b/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs
-index e16c32747..b37e2c351 100644
+index f18e3b80a..fe5eb684e 100644
 --- a/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs
 +++ b/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs
 @@ -9,6 +9,7 @@
