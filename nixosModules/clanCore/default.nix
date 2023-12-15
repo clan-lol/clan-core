@@ -12,6 +12,7 @@
     ./schema.nix
     ./secrets
     ./vm.nix
+    ./wayland-proxy-virtwl.nix
     ./zerotier
   ];
 }
