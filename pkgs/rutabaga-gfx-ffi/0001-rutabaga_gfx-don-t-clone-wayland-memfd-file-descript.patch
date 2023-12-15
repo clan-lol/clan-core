@@ -1,7 +1,7 @@
-From 91ad77f0d41ce7043a0bc4cfc3887d64b9763ba9 Mon Sep 17 00:00:00 2001
+From 7ca362d01f265ef7eac0532e0e2b3b8acce1287c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?J=C3=B6rg=20Thalheim?= <joerg@thalheim.io>
 Date: Thu, 7 Dec 2023 17:09:28 +0100
-Subject: [PATCH 1/2] rutabaga_gfx: don't clone wayland memfd file descriptor
+Subject: [PATCH 1/3] rutabaga_gfx: don't clone wayland memfd file descriptor
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -51,7 +51,7 @@ index d15fe81bd..885c6c9d8 100644
          map_info: u32,
      ) -> RutabagaResult<MemoryMapping> {
 diff --git a/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs b/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs
-index 629e4f9e7..e16c32747 100644
+index 73e5db169..f18e3b80a 100644
 --- a/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs
 +++ b/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs
 @@ -38,7 +38,7 @@ fn drop(&mut self) {
