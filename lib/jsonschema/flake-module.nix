@@ -1,5 +1,5 @@
 {
-  perSystem = { pkgs, self', ... }: {
+  perSystem = { pkgs, ... }: {
     checks = {
 
       # check if the `clan config` example jsonschema and data is valid
@@ -19,7 +19,7 @@
       # check if the `clan config` nix jsonschema converter unit tests succeed
       lib-jsonschema-nix-unit-tests = pkgs.runCommand "lib-jsonschema-nix-unit-tests" { } ''
         export NIX_PATH=nixpkgs=${pkgs.path}
-        ${self'.packages.nix-unit}/bin/nix-unit \
+        ${pkgs.nix-unit}/bin/nix-unit \
           ${./.}/test.nix \
           --eval-store $(realpath .)
         touch $out
