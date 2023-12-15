@@ -25,6 +25,7 @@
       qemu-wayland = pkgs.callPackage ./qemu-wayland {
         inherit (config.packages) rutabaga-gfx-ffi;
       };
+      wayland-proxy-virtwl = pkgs.callPackage ./wayland-proxy-virtwl { };
     };
   };
 }
