@@ -84,4 +84,3 @@ class OverviewWindow(Gtk.ApplicationWindow):
 
     def on_quit(self, *args: Any) -> None:
         Gio.Application.quit(self.get_application())
-        

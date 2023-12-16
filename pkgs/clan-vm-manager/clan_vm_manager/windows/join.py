@@ -10,7 +10,7 @@ from gi.repository import Gio, Gtk
 
 
 class JoinWindow(Gtk.ApplicationWindow):
-    def __init__(self, initial_values: InitialJoinValues, cbs: Callbacks ) -> None:
+    def __init__(self, initial_values: InitialJoinValues, cbs: Callbacks) -> None:
         super().__init__()
         # Initialize the main wincbsdow
         self.cbs = cbs
@@ -28,18 +28,17 @@ class JoinWindow(Gtk.ApplicationWindow):
         vbox.add(self.stack)
         vbox.add(Gtk.Entry(text=str(initial_values.url)))
 
-
-        button = Gtk.Button(label="To List", )
+        button = Gtk.Button(
+            label="To List",
+        )
         button.connect("clicked", self.switch)
         vbox.add(button)
 
         # Must be called AFTER all components were added
         self.show_all()
 
-    def switch(self, widget: Gtk.Widget) -> None: 
+    def switch(self, widget: Gtk.Widget) -> None:
         self.cbs.show_list()
 
     def on_quit(self, *args: Any) -> None:
         Gio.Application.quit(self.get_application())
-        
-

@@ -11,5 +11,5 @@ class InitialJoinValues:
 
 @dataclass
 class Callbacks:
-    show_list: Callable[[],None]
-    show_join: Callable[[InitialJoinValues],None]
+    show_list: Callable[[], None]
+    show_join: Callable[[InitialJoinValues], None]
