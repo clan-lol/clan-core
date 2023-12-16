@@ -76,3 +76,13 @@ import the glade file through GTK template
 - https://gnome.pages.gitlab.gnome.org/libhandy/doc/1.8/index.html
 - https://github.com/geigi/cozy
 - https://github.com/lutris/lutris/blob/2e9bd115febe08694f5d42dabcf9da36a1065f1d/lutris/gui/widgets/cellrenderers.py#L92
+
+## Debugging Style and Layout
+
+```bash
+# Enable the debugger
+gsettings set org.gtk.Settings.Debug enable-inspector-keybinding true
+
+# Start the application with the debugger attached
+GTK_DEBUG=interactive ./bin/clan-vm-manager
+```
