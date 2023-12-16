@@ -88,9 +88,9 @@ class ClanList(Gtk.Box):
         remount_list: Callable[[], None],
         remount_edit: Callable[[], None],
         set_selected: Callable[[VMBase | None], None],
+        show_join: Callable[[], None],
         selected_vm: VMBase | None,
         show_toolbar: bool = True,
-        show_join: Callable[[], None],
     ) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
 

@@ -34,10 +34,9 @@ class OverviewWindow(Gtk.ApplicationWindow):
             "remount_list": self.remount_list_view,
             "remount_edit": self.remount_edit_view,
             "set_selected": self.set_selected,
+            "show_join": cbs.show_join,
         }
-        clan_list = ClanList(
-            **self.list_hooks, selected_vm=None, show_join=cbs.show_join
-        )  # type: ignore
+        clan_list = ClanList(**self.list_hooks, selected_vm=None)  # type: ignore
         # Add named stacks
         self.stack.add_titled(clan_list, "list", "List")
         self.stack.add_titled(
