@@ -5,7 +5,6 @@ import gi
 from ..models import VMBase
 
 gi.require_version("Gtk", "3.0")
-import argparse
 
 from gi.repository import Gio, Gtk
 
