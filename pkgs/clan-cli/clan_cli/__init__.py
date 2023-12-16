@@ -8,7 +8,7 @@ from typing import Any
 
 from . import backups, config, flakes, history, machines, secrets, vms
 from .custom_logger import setup_logging
-from .dirs import get_clan_flake_toplevel, is_clan_flake
+from .dirs import get_clan_flake_toplevel
 from .ssh import cli as ssh_cli
 
 log = logging.getLogger(__name__)
@@ -65,10 +65,6 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         if not flake_dir.is_dir():
             raise argparse.ArgumentTypeError(
                 f"flake directory {flake_dir} is not a directory"
-            )
-        if not is_clan_flake(flake_dir):
-            raise argparse.ArgumentTypeError(
-                f"flake directory {flake_dir} is not a clan flake"
             )
         return flake_dir
 
