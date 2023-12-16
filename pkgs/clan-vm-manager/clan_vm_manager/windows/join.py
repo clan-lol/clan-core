@@ -13,9 +13,9 @@ from gi.repository import GdkPixbuf, Gio, Gtk
 
 
 class Trust(Gtk.Box):
-    def __init__(self, url: str, next: Callable[[], None]) -> None:
+    def __init__(self, url: str, show_next: Callable[[], None]) -> None:
         super().__init__()
-        self.next = next
+        self.show_next = show_next
 
         icon = Gtk.Image.new_from_pixbuf(
             GdkPixbuf.Pixbuf.new_from_file_at_scale(
@@ -52,13 +52,13 @@ class Trust(Gtk.Box):
     def on_trust(self, widget: Gtk.Widget) -> None:
         print("trusted")
         print(self.entry.get_text())
-        self.next()
+        self.show_next()
 
 
 class Details(Gtk.Box):
-    def __init__(self, url: str, next: Callable[[], None]) -> None:
+    def __init__(self, url: str, show_next: Callable[[], None]) -> None:
         super().__init__()
-        self.next = next
+        self.show_next = show_next
 
         icon = Gtk.Image.new_from_pixbuf(
             GdkPixbuf.Pixbuf.new_from_file_at_scale(
@@ -99,7 +99,7 @@ class Details(Gtk.Box):
 
     def on_join(self, widget: Gtk.Widget) -> None:
         print("join")
-        self.next()
+        self.show_next()
 
 
 class JoinWindow(Gtk.ApplicationWindow):
@@ -125,12 +125,14 @@ class JoinWindow(Gtk.ApplicationWindow):
         self.stack = Gtk.Stack()
 
         self.stack.add_titled(
-            Details(str(initial_values.url), next=self.show_details),
+            Details(str(initial_values.url), show_next=self.show_details),
             "details",
             "Details",
         )
         self.stack.add_titled(
-            Trust(str(initial_values.url), next=self.show_details), "trust", "Trust"
+            Trust(str(initial_values.url), show_next=self.show_details),
+            "trust",
+            "Trust",
         )
 
         vbox.add(self.stack)
