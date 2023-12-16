@@ -9,7 +9,6 @@ import argparse
 
 from gi.repository import Gio, Gtk
 
-from ..app import Application
 from ..ui.clan_join_page import ClanJoinPage
 from ..ui.clan_select_list import ClanEdit, ClanList
 
@@ -86,12 +85,4 @@ class OverviewWindow(Gtk.ApplicationWindow):
 
     def on_quit(self, *args: Any) -> None:
         Gio.Application.quit(self.get_application())
-
-
-def show_overview(args: argparse.Namespace) -> None:
-    app = Application(OverviewWindow())
-    return app.run()
-
-
-def register_overview_parser(parser: argparse.ArgumentParser) -> None:
-    parser.set_defaults(func=show_overview)
+        

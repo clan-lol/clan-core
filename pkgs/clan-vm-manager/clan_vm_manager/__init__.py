@@ -1,7 +1,6 @@
 import argparse
 
-from .windows.join import register_join_parser
-from .windows.overview import register_overview_parser, show_overview
+from .app import register_overview_parser, show_overview, register_join_parser
 
 
 def main() -> None:
