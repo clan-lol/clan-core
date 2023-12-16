@@ -9,7 +9,7 @@
         services.openssh.enable = true;
         services.borgbackup.repos.testrepo = {
           authorizedKeys = [
-            (builtins.readFile ./borg_test.pub)
+            (builtins.readFile ../lib/ssh/pubkey)
           ];
         };
       }
@@ -22,7 +22,7 @@
           enable = true;
           destinations.test = {
             repo = "borg@localhost:.";
-            rsh = "ssh -i ${./borg_test} -o StrictHostKeyChecking=no";
+            rsh = "ssh -i ${../lib/ssh/privkey} -o StrictHostKeyChecking=no";
           };
         };
       }
