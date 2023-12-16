@@ -23,7 +23,7 @@ class ClanWindows:
 @dataclass
 class ClanConfig:
     initial_window: str
-    url: Optional[ClanURI]
+    url: ClanURI | None
     
 
 class Application(Gtk.Application):
