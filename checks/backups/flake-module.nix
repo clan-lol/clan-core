@@ -23,7 +23,7 @@ in
       services.sshd.enable = true;
       services.borgbackup.repos.testrepo = {
         authorizedKeys = [
-          (builtins.readFile ../borgbackup/borg_test.pub)
+          (builtins.readFile ../lib/ssh/pubkey)
         ];
       };
     };
@@ -42,7 +42,7 @@ in
         networking.hostName = "client";
         services.sshd.enable = true;
         users.users.root.openssh.authorizedKeys.keyFiles = [
-          ../borgbackup/borg_test.pub
+          ../lib/ssh/pubkey
         ];
         environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
         environment.etc."install-closure".source = "${closureInfo}/store-paths";
@@ -97,7 +97,7 @@ in
               # setup
               client.succeed("mkdir -m 700 /root/.ssh")
               client.succeed(
-                  "cat ${../borgbackup/borg_test} > /root/.ssh/id_ed25519"
+                  "cat ${../lib/ssh/privkey} > /root/.ssh/id_ed25519"
               )
               client.succeed("chmod 600 /root/.ssh/id_ed25519")
               client.wait_for_unit("sshd", timeout=30)
