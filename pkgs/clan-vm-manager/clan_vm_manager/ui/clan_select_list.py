@@ -90,6 +90,7 @@ class ClanList(Gtk.Box):
         set_selected: Callable[[VMBase | None], None],
         selected_vm: VMBase | None,
         show_toolbar: bool = True,
+        show_join: Callable[[], None],
     ) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
 
@@ -97,19 +98,15 @@ class ClanList(Gtk.Box):
         self.remount_list_view = remount_list
         self.set_selected = set_selected
         self.show_toolbar = show_toolbar
+        self.show_join = show_join
 
-        # TODO: We should use somekind of useState hook here.
-        # that updates the list of VMs when the user changes something
-        # @hsjobeki reply: @qubasa: This is how to update data in the list store
-        # self.list_store.set_value(self.list_store.get_iter(path), 3, "new value")
-        # self.list_store[path][3] = "new_value"
-        # This class needs to take ownership of the data because it has access to the listStore only
         self.selected_vm: VMBase | None = selected_vm
 
         button_hooks = {
             "on_start_clicked": self.on_start_clicked,
             "on_stop_clicked": self.on_stop_clicked,
             "on_edit_clicked": self.on_edit_clicked,
+            "on_join_clicked": self.on_join_clicked,
         }
         if show_toolbar:
             self.toolbar = ClanListToolbar(**button_hooks)
@@ -130,6 +127,10 @@ class ClanList(Gtk.Box):
 
     def on_stop_clicked(self, widget: Gtk.Widget) -> None:
         print("Stop clicked")
+
+    def on_join_clicked(self, widget: Gtk.Widget) -> None:
+        print("Join clicked")
+        self.show_join()
 
     def on_edit_clicked(self, widget: Gtk.Widget) -> None:
         print("Edit clicked")
@@ -154,6 +155,7 @@ class ClanListToolbar(Gtk.Toolbar):
         on_start_clicked: Callable[[Gtk.Widget], None],
         on_stop_clicked: Callable[[Gtk.Widget], None],
         on_edit_clicked: Callable[[Gtk.Widget], None],
+        on_join_clicked: Callable[[Gtk.Widget], None],
     ) -> None:
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
 
@@ -168,6 +170,10 @@ class ClanListToolbar(Gtk.Toolbar):
         self.edit_button = Gtk.ToolButton(label="Edit")
         self.edit_button.connect("clicked", on_edit_clicked)
         self.add(self.edit_button)
+
+        self.join_button = Gtk.ToolButton(label="New")
+        self.join_button.connect("clicked", on_join_clicked)
+        self.add(self.join_button)
 
     def set_is_selected(self, s: bool) -> None:
         if s:

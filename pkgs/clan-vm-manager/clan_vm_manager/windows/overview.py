@@ -8,12 +8,13 @@ gi.require_version("Gtk", "3.0")
 
 from gi.repository import Gio, Gtk
 
+from ..interfaces import Callbacks
 from ..ui.clan_join_page import ClanJoinPage
 from ..ui.clan_select_list import ClanEdit, ClanList
 
 
 class OverviewWindow(Gtk.ApplicationWindow):
-    def __init__(self) -> None:
+    def __init__(self, cbs: Callbacks) -> None:
         super().__init__()
         # Initialize the main window
         self.set_title("cLAN Manager")
@@ -34,7 +35,9 @@ class OverviewWindow(Gtk.ApplicationWindow):
             "remount_edit": self.remount_edit_view,
             "set_selected": self.set_selected,
         }
-        clan_list = ClanList(**self.list_hooks, selected_vm=None)  # type: ignore
+        clan_list = ClanList(
+            **self.list_hooks, selected_vm=None, show_join=cbs.show_join
+        )  # type: ignore
         # Add named stacks
         self.stack.add_titled(clan_list, "list", "List")
         self.stack.add_titled(
