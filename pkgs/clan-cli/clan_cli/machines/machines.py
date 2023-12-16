@@ -4,6 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_eval
 from ..ssh import Host, parse_deployment_address
 
@@ -12,17 +13,22 @@ def build_machine_data(machine_name: str, clan_dir: Path) -> dict:
     config = nix_config()
     system = config["system"]
 
-    outpath = subprocess.run(
+    proc = subprocess.run(
         nix_build(
             [
-                f'path:{clan_dir}#clanInternals.machines."{system}"."{machine_name}".config.system.clan.deployment.file'
+                f'{clan_dir}#clanInternals.machines."{system}"."{machine_name}".config.system.clan.deployment.file'
             ]
         ),
         stdout=subprocess.PIPE,
         check=True,
         text=True,
-    ).stdout.strip()
-    return json.loads(Path(outpath).read_text())
+    )
+
+    if proc.returncode != 0:
+        ClanError("failed to build machine data")
+        exit(1)
+
+    return json.loads(Path(proc.stdout.strip()).read_text())
 
 
 class Machine:
