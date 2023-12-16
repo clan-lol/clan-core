@@ -34,27 +34,29 @@ class Application(Gtk.Application):
         self.init_style()
         self.windows = windows
         initial = windows.__dict__[config.initial_window]
-
+        self.cbs = Callbacks(show_list=self.show_list, show_join=self.show_join)
         if issubclass(initial, JoinWindow):
             # see JoinWindow constructor
             self.window = initial(
                 initial_values=InitialJoinValues(url=config.url or ""),
-                cbs=Callbacks(show_list=self.show_list, show_join=self.show_join),
+                cbs=self.cbs,
             )
 
         if issubclass(initial, OverviewWindow):
             # see OverviewWindow constructor
-            self.window = initial()
+            self.window = initial(cbs=self.cbs)
 
     def show_list(self) -> None:
         prev = self.window
-        self.window = self.windows.__dict__["overview"]()
+        self.window = self.windows.__dict__["overview"](cbs=self.cbs)
         self.do_activate()
         prev.hide()
 
-    def show_join(self, initial_values: InitialJoinValues) -> None:
+    def show_join(self) -> None:
         prev = self.window
-        self.window = self.windows.__dict__["join"]()
+        self.window = self.windows.__dict__["join"](
+            cbs=self.cbs, initial_values=InitialJoinValues(url="")
+        )
         self.do_activate()
         prev.hide()
 
