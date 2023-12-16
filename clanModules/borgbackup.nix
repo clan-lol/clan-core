@@ -83,7 +83,7 @@ in
         set -efu
         cd /
         IFS=';' read -ra FOLDER <<< "$FOLDERS"
-        yes y | borg-job-"$JOB" extract --list --dry-run "$LOCATION"::"$ARCHIVE_ID" "''${FOLDER[@]}"
+        yes y | borg-job-"$JOB" extract --list "$LOCATION"::"$ARCHIVE_ID" "''${FOLDER[@]}"
       '';
     };
   };
