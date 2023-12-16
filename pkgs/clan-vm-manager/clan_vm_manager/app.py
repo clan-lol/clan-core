@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
 import argparse
 from dataclasses import dataclass
+from typing import Optional
+
 import gi
-from typing import Callable, Optional, Type
+
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gio, Gtk
 from clan_cli.clan_uri import ClanURI
+from gi.repository import Gio, Gtk
+
 from .constants import constants
+from .interfaces import Callbacks, InitialJoinValues
 from .windows.join import JoinWindow
 from .windows.overview import OverviewWindow
-from .interfaces import Callbacks, InitialJoinValues
+
 
 @dataclass
-class ClanWindows():
+class ClanWindows:
    join: type[JoinWindow]
    overview: type[OverviewWindow]
 
 @dataclass
-class ClanConfig():
+class ClanConfig:
     initial_window: str
     url: Optional[ClanURI]
     

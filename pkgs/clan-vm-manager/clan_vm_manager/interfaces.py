@@ -1,13 +1,15 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Optional, Type
+
 from clan_cli.clan_uri import ClanURI
 
+
 @dataclass
-class InitialJoinValues():
+class InitialJoinValues:
     url: ClanURI
 
 
 @dataclass
-class Callbacks():
+class Callbacks:
     show_list: Callable[[],None]
     show_join: Callable[[InitialJoinValues],None]

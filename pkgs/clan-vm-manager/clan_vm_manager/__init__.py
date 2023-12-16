@@ -1,6 +1,6 @@
 import argparse
 
-from .app import register_overview_parser, show_overview, register_join_parser
+from .app import register_join_parser, register_overview_parser, show_overview
 
 
 def main() -> None:

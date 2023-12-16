@@ -1,16 +1,12 @@
-import argparse
 from typing import Any
 
 import gi
-from clan_cli.clan_uri import ClanURI
 
 from ..interfaces import Callbacks, InitialJoinValues
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gio, Gtk
-from typing import Callable
-from dataclasses import dataclass
 
+from gi.repository import Gio, Gtk
 
 
 class JoinWindow(Gtk.ApplicationWindow):
