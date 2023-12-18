@@ -14,7 +14,7 @@ let
 in
 {
   flake.nixosConfigurations = { inherit (clan.nixosConfigurations) test_backup_client; };
-  flake.clanInternals = clan.clanInternals;
+  flake.clanInternals.machines = clan.clanInternals.machines;
   flake.nixosModules = {
     test_backup_server = { ... }: {
       imports = [
@@ -101,7 +101,7 @@ in
               )
               client.succeed("chmod 600 /root/.ssh/id_ed25519")
               client.wait_for_unit("sshd", timeout=30)
-              print(client.succeed("ssh -o StrictHostKeyChecking=accept-new -v root@client hostname"))
+              client.succeed("ssh -o StrictHostKeyChecking=accept-new root@client hostname")
 
               # dummy data
               client.succeed("mkdir /var/test-backups")
