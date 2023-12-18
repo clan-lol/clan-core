@@ -2,6 +2,7 @@
   imports = [
     ./impure/flake-module.nix
     ./backups/flake-module.nix
+    ./installation/flake-module.nix
   ];
   perSystem = { pkgs, lib, self', ... }: {
     checks =
