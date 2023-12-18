@@ -24,7 +24,7 @@
   };
 
   outputs = inputs @ { flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } ({ ... }: {
+    flake-parts.lib.mkFlake { inherit inputs; } ({ lib, ... }: {
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -41,6 +41,22 @@
 
         ./lib/flake-module.nix
         ./nixosModules/flake-module.nix
+        {
+          options.flake = flake-parts.lib.mkSubmoduleOptions {
+            clanInternals = lib.mkOption {
+              type = lib.types.submodule {
+                options = {
+                  all-machines-json = lib.mkOption {
+                    type = lib.types.attrsOf lib.types.str;
+                  };
+                  machines = lib.mkOption {
+                    type = lib.types.attrsOf (lib.types.attrsOf lib.types.unspecified);
+                  };
+                };
+              };
+            };
+          };
+        }
       ];
     });
 }
