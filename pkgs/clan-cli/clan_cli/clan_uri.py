@@ -5,8 +5,23 @@ from dataclasses import dataclass
 from enum import Enum, member
 from pathlib import Path
 from typing import Self
+import urllib.request
+
 
 from .errors import ClanError
+
+
+def url_ok(url: str):
+    # Create a request object with the URL and the HEAD method
+    req = urllib.request.Request(url, method="HEAD")
+    try:
+        # Open the URL and get the response object
+        res = urllib.request.urlopen(req)
+        # Return True if the status code is 200 (OK)
+        if not res.status_code == 200:
+            raise ClanError(f"URL has status code: {res.status_code}")
+    except urllib.error.URLError as ex:
+        raise ClanError(f"URL error: {ex}")
 
 
 # Define an enum with different members that have different values
@@ -87,6 +102,14 @@ class ClanURI:
                 self.scheme = ClanScheme.FILE.value(Path(path))  # type: ignore
             case _:
                 raise ClanError(f"Unsupported uri components: {comb}")
+
+    def check_exits(self):
+        match self.scheme:
+            case ClanScheme.FILE.value(path):
+                if not path.exists():
+                    raise ClanError(f"File does not exist: {path}")
+            case ClanScheme.HTTP.value(url):
+                return url_ok(url)
 
     def get_internal(self) -> str:
         match self.scheme:

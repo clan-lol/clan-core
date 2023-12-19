@@ -125,9 +125,12 @@ def dummy_f(msg: str) -> None:
 
 
 def show_run_vm(parser: argparse.ArgumentParser) -> None:
+    from pathlib import Path
+
     from .executor import spawn
 
-    proc = spawn(wait_stdin_connect=True, func=dummy_f, msg="Hello")
+    log_path = Path(".").resolve()
+    proc = spawn(wait_stdin_con=True, log_path=log_path, func=dummy_f, msg="Hello")
     input("Press enter to kill process: ")
     proc.kill_group()
 

@@ -47,6 +47,7 @@ def list_history() -> list[HistoryEntry]:
 
 
 def add_history(uri: ClanURI) -> list[HistoryEntry]:
+    uri.check_exits()
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
     logs = list_history()
     found = False
