@@ -13,24 +13,6 @@ from gi.repository import GdkPixbuf
 from clan_vm_manager import assets
 
 
-# Define a function that writes to the memfd
-def dummy_f() -> None:
-    import sys
-    import time
-
-    c = 0
-    while True:  # Simulate a long running process
-        print(f"out: Hello from process c={c}", file=sys.stdout)
-        print(f"err: Hello from process c={c}", file=sys.stderr)
-        user = input("Enter to continue: \n")
-        if user == "q":
-            raise Exception("User quit")
-        print(f"User entered {user}", file=sys.stdout)
-        print(f"User entered {user}", file=sys.stderr)
-        time.sleep(1)  # Wait for 1 second
-        c += 1
-
-
 @dataclass(frozen=True)
 class VMBase:
     icon: Path | GdkPixbuf.Pixbuf
@@ -66,20 +48,6 @@ class VMBase:
     def run(self) -> None:
         print(f"Running VM {self.name}")
         # vm = vms.run.inspect_vm(flake_url=self.url, flake_attr="defaultVM")
-        import os
-
-        from .executor import spawn
-
-        # proc = spawn(vms.run.run_vm, vm=vm)
-        proc = spawn(wait_stdin_connect=True, func=dummy_f)
-
-        pid = os.getpid()
-        gpid = os.getpgid(pid)
-        print(f"Main  pid={pid}  gpid={gpid}")
-        assert proc.proc.pid is not None
-        gpid = os.getpgid(proc.proc.pid)
-        print(f"Child pid={proc.proc.pid}  gpid={gpid}")
-        # os.killpg(gpid, signal.SIGKILL)
 
 
 @dataclass(frozen=True)
