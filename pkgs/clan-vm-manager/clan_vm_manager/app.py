@@ -49,7 +49,6 @@ class Application(Gtk.Application):
     def show_list(self) -> None:
         prev = self.window
         self.window = self.windows.__dict__["overview"](cbs=self.cbs)
-        self.do_activate()
         prev.hide()
 
     def show_join(self) -> None:
@@ -57,7 +56,6 @@ class Application(Gtk.Application):
         self.window = self.windows.__dict__["join"](
             cbs=self.cbs, initial_values=InitialJoinValues(url="")
         )
-        self.do_activate()
         prev.hide()
 
     def do_startup(self) -> None:
