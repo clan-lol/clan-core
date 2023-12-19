@@ -106,10 +106,11 @@ def register_overview_parser(parser: argparse.ArgumentParser) -> None:
 
 
 # Define a function that writes to the memfd
-def dummy_f() -> None:
+def dummy_f(msg: str) -> None:
     import sys
     import time
 
+    print(f"Receeived message {msg}")
     c = 0
     while True:  # Simulate a long running process
         print(f"out: Hello from process c={c}", file=sys.stdout)
@@ -124,27 +125,12 @@ def dummy_f() -> None:
 
 
 def show_run_vm(parser: argparse.ArgumentParser) -> None:
-    import os
-
     from .executor import spawn
 
-    print("Spawn process")
-    # proc = spawn(vms.run.run_vm, vm=vm)
-    proc = spawn(wait_stdin_connect=True, func=dummy_f)
-
-    pid = os.getpid()
-    gpid = os.getpgid(pid)
-    print(f"Main  pid={pid}  gpid={gpid}")
-    assert proc.proc.pid is not None
-    gpid = os.getpgid(proc.proc.pid)
-    print(f"Child pid={proc.proc.pid}  gpid={gpid}")
+    proc = spawn(wait_stdin_connect=True, func=dummy_f, msg="Hello")
+    input("Press enter to kill process: ")
+    proc.kill_group()
 
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
-    # parser.add_argument(
-    #     "command",
-    #     type=str,
-    #     help="command to run",
-    #     choices=["join", "overview"],
-    # )
     parser.set_defaults(func=show_run_vm)
