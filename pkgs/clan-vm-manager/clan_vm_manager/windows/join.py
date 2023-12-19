@@ -2,6 +2,8 @@ from collections.abc import Callable
 from typing import Any
 
 import gi
+from clan_cli.clan_uri import ClanURI
+from clan_cli.history.add import add_history, list_history
 
 from clan_vm_manager import assets
 
@@ -13,9 +15,63 @@ from gi.repository import GdkPixbuf, Gio, Gtk
 
 
 class Trust(Gtk.Box):
-    def __init__(self, url: str, show_next: Callable[[], None]) -> None:
+    def __init__(
+        self, url: str, show_next: Callable[[], None], stack: Gtk.Stack
+    ) -> None:
         super().__init__()
         self.show_next = show_next
+        self.stack = stack
+        self.url = url
+        icon = Gtk.Image.new_from_pixbuf(
+            GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                filename=str(assets.loc / "placeholder.jpeg"),
+                width=256,
+                height=256,
+                preserve_aspect_ratio=True,
+            )
+        )
+        layout = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, expand=True)
+        layout.set_border_width(20)
+
+        upper = Gtk.Box(orientation="vertical")
+        upper.set_spacing(20)
+        upper.add(Gtk.Label(label="Clan URL"))
+        upper.add(icon)
+
+        self.entry = Gtk.Label(label=str(url))
+
+        upper.add(self.entry)
+
+        lower = Gtk.Box(orientation="vertical")
+        lower.set_spacing(20)
+        trust_button = Gtk.Button(label="Trust")
+        trust_button.connect("clicked", self.on_trust)
+        lower.add(trust_button)
+
+        layout.pack_start(upper, expand=True, fill=True, padding=0)
+        layout.pack_end(lower, expand=True, fill=True, padding=0)
+        self.set_center_widget(layout)
+
+    def on_trust(self, widget: Gtk.Widget) -> None:
+        print(f"trusted: {self.url}")
+        uri = ClanURI(self.url)
+        add_history(uri)
+        history = list_history()
+        found = filter(lambda item: item.flake.flake_url == uri.get_internal(), history)
+        if found:
+            [item] = found
+            self.stack.add_titled(
+                Details(url=uri.get_internal(), description=item.flake.description),
+                "details",
+                "Details",
+            )
+            self.show_next()
+            self.stack.set_visible_child_name("details")
+
+
+class Details(Gtk.Box):
+    def __init__(self, url: str, description: str | None) -> None:
+        super().__init__()
 
         icon = Gtk.Image.new_from_pixbuf(
             GdkPixbuf.Pixbuf.new_from_file_at_scale(
@@ -33,73 +89,50 @@ class Trust(Gtk.Box):
         upper.add(Gtk.Label(label="Clan URL"))
         upper.add(icon)
 
-        self.entry = Gtk.Entry(text=str(url))
-        # self.entry.set_editable(False) ?
-
-        upper.add(self.entry)
-
-        lower = Gtk.Box(orientation="vertical")
-        lower.set_spacing(20)
-        trust_button = Gtk.Button(label="Trust")
-        trust_button.connect("clicked", self.on_trust)
-        lower.add(trust_button)
-
-        layout.pack_start(upper, expand=True, fill=True, padding=0)
-        layout.pack_end(lower, expand=True, fill=True, padding=0)
-        self.set_center_widget(layout)
-        # self.show_all()
-
-    def on_trust(self, widget: Gtk.Widget) -> None:
-        print("trusted")
-        print(self.entry.get_text())
-        self.show_next()
-
-
-class Details(Gtk.Box):
-    def __init__(self, url: str, show_next: Callable[[], None]) -> None:
-        super().__init__()
-        self.show_next = show_next
-
-        icon = Gtk.Image.new_from_pixbuf(
-            GdkPixbuf.Pixbuf.new_from_file_at_scale(
-                filename=str(assets.loc / "placeholder.jpeg"),
-                width=256,
-                height=256,
-                preserve_aspect_ratio=True,
-            )
-        )
-        layout = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, expand=True)
-        layout.set_border_width(20)
-
-        upper = Gtk.Box(orientation="vertical")
-        upper.set_spacing(20)
-        upper.add(icon)
-
         label = Gtk.Label(label=str(url))
 
         upper.add(label)
 
-        description = Gtk.TextBuffer()
-        description.set_text("Lorem ipsum")
-        text_view = Gtk.TextView.new_with_buffer(description)
-        text_view.set_editable(False)
-
-        upper.add(text_view)
+        description_label = Gtk.Label(label=description)
+        upper.add(description_label)
 
         lower = Gtk.Box(orientation="horizontal", expand=True)
         lower.set_spacing(20)
 
-        layout.pack_start(upper, expand=True, fill=True, padding=0)
-        layout.add(lower)
-
         join_button = Gtk.Button(label="Join")
         join_button.connect("clicked", self.on_join)
-        layout.add(join_button)
+        join_action_area = Gtk.Box(orientation="horizontal", expand=False)
+        join_button_area = Gtk.Box(orientation="vertical", expand=False)
+        join_action_area.pack_end(join_button_area, expand=False, fill=False, padding=0)
+        join_button_area.pack_end(join_button, expand=False, fill=False, padding=0)
+        join_details = Gtk.Label(label="Info")
+
+        join_details_area = Gtk.Box(orientation="horizontal", expand=False)
+        join_label_area = Gtk.Box(orientation="vertical", expand=False)
+        join_label_area.pack_end(join_details, expand=False, fill=False, padding=0)
+        for info in [
+            "Memory: 2 GiB",
+            "CPU: 2 Cores",
+            "Storage: 64 GiB",
+        ]:
+            details_label = Gtk.Label(label=info)
+            details_label.set_justify(Gtk.Justification.LEFT)
+            join_label_area.pack_end(details_label, expand=False, fill=False, padding=0)
+
+        join_details_area.pack_start(
+            join_label_area, expand=False, fill=False, padding=0
+        )
+
+        lower.pack_start(join_details_area, expand=True, fill=True, padding=0)
+        lower.pack_end(join_action_area, expand=True, fill=True, padding=0)
+        layout.pack_start(upper, expand=False, fill=False, padding=0)
+        layout.add(lower)
+
         self.add(layout)
 
     def on_join(self, widget: Gtk.Widget) -> None:
-        print("join")
-        self.show_next()
+        # TODO: @Qubasa
+        raise Exception("Not ready yet.")
 
 
 class JoinWindow(Gtk.ApplicationWindow):
@@ -125,15 +158,17 @@ class JoinWindow(Gtk.ApplicationWindow):
         self.stack = Gtk.Stack()
 
         self.stack.add_titled(
-            Details(str(initial_values.url), show_next=self.show_details),
-            "details",
-            "Details",
-        )
-        self.stack.add_titled(
-            Trust(str(initial_values.url), show_next=self.show_details),
+            Trust(
+                str(initial_values.url), show_next=self.show_details, stack=self.stack
+            ),
             "trust",
             "Trust",
         )
+        # self.stack.add_titled(
+        #     self.details,
+        #     "details",
+        #     "Details",
+        # )
 
         vbox.add(self.stack)
 
@@ -143,7 +178,7 @@ class JoinWindow(Gtk.ApplicationWindow):
         self.show_all()
 
     def show_details(self) -> None:
-        self.stack.set_visible_child_name("details")
+        self.show_all()
 
     def switch(self, widget: Gtk.Widget) -> None:
         self.cbs.show_list()

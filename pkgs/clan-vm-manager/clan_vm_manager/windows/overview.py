@@ -16,19 +16,13 @@ from ..ui.clan_select_list import ClanEdit, ClanList
 class OverviewWindow(Gtk.ApplicationWindow):
     def __init__(self, cbs: Callbacks) -> None:
         super().__init__()
-        # Initialize the main window
         self.set_title("cLAN Manager")
         self.connect("delete-event", self.on_quit)
         self.set_default_size(800, 600)
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True)
         self.add(vbox)
-
-        # Add a notebook layout
-        # https://python-gtk-3-tutorial.readthedocs.io/en/latest/layout.html#notebook
-        self.notebook = Gtk.Notebook()
         self.stack = Gtk.Stack()
-        # self.stack_switcher = Gtk.StackSwitcher()
 
         self.list_hooks = {
             "remount_list": self.remount_list_view,
