@@ -1,0 +1,12 @@
+Waiting for stdin connection on file test_in.log
+Executing function dummy_f now
+out: Hello from process c=0
+err: Hello from process c=0
+Enter to continue: 
+Traceback (most recent call last):
+  File "/home/lhebendanz/Projects/clan-core/pkgs/clan-vm-manager/clan_vm_manager/executor.py", line 64, in init_proc
+    func(**kwargs)
+  File "/home/lhebendanz/Projects/clan-core/pkgs/clan-vm-manager/clan_vm_manager/models.py", line 26, in dummy_f
+    raise Exception("User quit")
+Exception: User quit
+Killing process group pid=547301 gpid=547301
