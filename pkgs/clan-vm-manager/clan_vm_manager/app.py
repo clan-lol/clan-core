@@ -103,3 +103,37 @@ def show_overview(args: argparse.Namespace) -> None:
 
 def register_overview_parser(parser: argparse.ArgumentParser) -> None:
     parser.set_defaults(func=show_overview)
+
+
+# Define a function that writes to the memfd
+def dummy_f(msg: str) -> None:
+    import sys
+    import time
+
+    print(f"Receeived message {msg}")
+    c = 0
+    while True:  # Simulate a long running process
+        print(f"out: Hello from process c={c}", file=sys.stdout)
+        print(f"err: Hello from process c={c}", file=sys.stderr)
+        user = input("Enter to continue: \n")
+        if user == "q":
+            raise Exception("User quit")
+        print(f"User entered {user}", file=sys.stdout)
+        print(f"User entered {user}", file=sys.stderr)
+        time.sleep(1)  # Wait for 1 second
+        c += 1
+
+
+def show_run_vm(parser: argparse.ArgumentParser) -> None:
+    from pathlib import Path
+
+    from .executor import spawn
+
+    log_path = Path(".").resolve()
+    proc = spawn(wait_stdin_con=True, log_path=log_path, func=dummy_f, msg="Hello")
+    input("Press enter to kill process: ")
+    proc.kill_group()
+
+
+def register_run_parser(parser: argparse.ArgumentParser) -> None:
+    parser.set_defaults(func=show_run_vm)
