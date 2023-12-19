@@ -33,7 +33,6 @@ class MPProcess:
     # def get_all_output(self) -> str:
     #     os.lseek(self.out_fd, 0, os.SEEK_SET)
     #     return os.read(self.out_fd, 1024).decode("utf-8")
-
     # def write_all_input(self, input_str: str) -> None:
     #     os.lseek(self.in_fd, 0, os.SEEK_SET)
     #     os.write(self.in_fd, input_str.encode("utf-8"))
@@ -76,8 +75,8 @@ def spawn(*, wait_stdin_connect: bool, func: Callable, **kwargs: Any) -> MPProce
     # rand_name = str(uuid.uuid4())
     rand_name = "test"
     proc_name = f"MPExecutor:{func.__name__}:{rand_name}"
-    out_file_name = f"{rand_name}_out.log"
-    in_file_name = f"{rand_name}_in.log"
+    out_file_name = f"{rand_name}_out.txt"
+    in_file_name = f"{rand_name}_in.fifo"
 
     if os.path.exists(in_file_name):
         os.unlink(in_file_name)
