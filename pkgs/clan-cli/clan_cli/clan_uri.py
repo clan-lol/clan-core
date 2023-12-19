@@ -1,17 +1,16 @@
 # Import the urllib.parse, enum and dataclasses modules
 import dataclasses
 import urllib.parse
+import urllib.request
 from dataclasses import dataclass
 from enum import Enum, member
 from pathlib import Path
 from typing import Self
-import urllib.request
-
 
 from .errors import ClanError
 
 
-def url_ok(url: str):
+def url_ok(url: str) -> None:
     # Create a request object with the URL and the HEAD method
     req = urllib.request.Request(url, method="HEAD")
     try:
@@ -99,11 +98,11 @@ class ClanURI:
             case ("http" | "https", _, _, _, _, _):
                 self.scheme = ClanScheme.HTTP.value(self._components.geturl())  # type: ignore
             case ("file", "", path, "", "", "") | ("", "", path, "", "", ""):  # type: ignore
-                self.scheme = ClanScheme.FILE.value(Path(path))  # type: ignore
+                self.scheme = ClanScheme.FILE.value(Path(path))
             case _:
                 raise ClanError(f"Unsupported uri components: {comb}")
 
-    def check_exits(self):
+    def check_exits(self) -> None:
         match self.scheme:
             case ClanScheme.FILE.value(path):
                 if not path.exists():
@@ -114,9 +113,9 @@ class ClanURI:
     def get_internal(self) -> str:
         match self.scheme:
             case ClanScheme.FILE.value(path):
-                return str(path)  # type: ignore
+                return str(path)
             case ClanScheme.HTTP.value(url):
-                return url  # type: ignore
+                return url
             case _:
                 raise ClanError(f"Unsupported uri components: {self.scheme}")
 
