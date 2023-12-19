@@ -21,21 +21,22 @@ class MPProcess:
         self.out_file_name = out_file_name
         self.in_file_name = in_file_name
 
-    def kill_all(self) -> None:
+    # Kill the new process and all its children by sending a SIGTERM signal to the process group
+    def kill_group(self) -> None:
         pid = self.proc.pid
         assert pid is not None
+        os.killpg(pid, signal.SIGTERM)
 
-        # Get the process group ID of the new process
-        new_pgid = os.getpgid(pid)
-        # Kill the new process and all its children by sending a SIGTERM signal to the process group
-        os.killpg(new_pgid, signal.SIGTERM)
 
-    # def get_all_output(self) -> str:
-    #     os.lseek(self.out_fd, 0, os.SEEK_SET)
-    #     return os.read(self.out_fd, 1024).decode("utf-8")
-    # def write_all_input(self, input_str: str) -> None:
-    #     os.lseek(self.in_fd, 0, os.SEEK_SET)
-    #     os.write(self.in_fd, input_str.encode("utf-8"))
+def signal_handler(signum: int, frame: Any) -> None:
+    signame = signal.strsignal(signum)
+    print("Signal received:", signame)
+
+    # Restore the default handler
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+
+    # Re-raise the signal
+    os.kill(os.getpid(), signum)
 
 
 def init_proc(
@@ -46,6 +47,13 @@ def init_proc(
     out_fd = os.open(out_file, flags=os.O_RDWR | os.O_CREAT | os.O_TRUNC)
     os.dup2(out_fd, sys.stdout.fileno())
     os.dup2(out_fd, sys.stderr.fileno())
+
+    pid = os.getpid()
+    gpid = os.getpgid(pid=pid)
+    print(f"Started new process pid={pid} gpid={gpid}")
+
+    # Register the signal handler for SIGINT
+    signal.signal(signal.SIGTERM, signal_handler)
 
     flags = None
     if wait_stdin_connect:
@@ -70,11 +78,10 @@ def init_proc(
 
 def spawn(*, wait_stdin_connect: bool, func: Callable, **kwargs: Any) -> MPProcess:
     if mp.get_start_method(allow_none=True) is None:
-        print("Setting start method to spawn")
         mp.set_start_method(method="spawn")
     # rand_name = str(uuid.uuid4())
     rand_name = "test"
-    proc_name = f"MPExecutor:{func.__name__}:{rand_name}"
+    proc_name = f"MPExecutor:{rand_name}:{func.__name__}"
     out_file_name = f"{rand_name}_out.txt"
     in_file_name = f"{rand_name}_in.fifo"
 
@@ -90,8 +97,13 @@ def spawn(*, wait_stdin_connect: bool, func: Callable, **kwargs: Any) -> MPProce
     )
     proc.start()
     assert proc.pid is not None
-    print(f"Started process '{proc_name}'. pid={proc.pid} gpid={os.getpgid(proc.pid)}")
-
+    print(f"Started process '{proc_name}'")
+    print(f"Arguments: {kwargs}")
+    if wait_stdin_connect:
+        cmd = f"cat - > {in_file_name}"
+        print(f"Connect to stdin with : {cmd}")
+    cmd = f"tail -f {out_file_name}"
+    print(f"Connect to stdout with: {cmd}")
     mp_proc = MPProcess(
         name=proc_name,
         proc=proc,
