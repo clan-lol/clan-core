@@ -1,6 +1,11 @@
 import argparse
 
-from .app import register_join_parser, register_overview_parser, show_overview
+from .app import (
+    register_join_parser,
+    register_overview_parser,
+    register_run_parser,
+    show_overview,
+)
 
 
 def main() -> None:
@@ -15,6 +20,8 @@ def main() -> None:
     register_join_parser(subparser.add_parser("join", help="join a clan"))
 
     register_overview_parser(subparser.add_parser("overview", help="overview screen"))
+
+    register_run_parser(subparser.add_parser("run", help="run a vm"))
 
     # Executed when no command is given
     parser.set_defaults(func=show_overview)

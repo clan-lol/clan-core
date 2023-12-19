@@ -4,9 +4,10 @@ from pathlib import Path
 from typing import Any
 
 import gi
-from clan_cli import history, vms
+from clan_cli import history
 
 gi.require_version("GdkPixbuf", "2.0")
+
 from gi.repository import GdkPixbuf
 
 from clan_vm_manager import assets
@@ -46,11 +47,7 @@ class VMBase:
 
     def run(self) -> None:
         print(f"Running VM {self.name}")
-        import asyncio
-
-        # raise Exception("Cannot run VMs yet")
-        vm = asyncio.run(vms.run.inspect_vm(flake_url=self.url, flake_attr="defaultVM"))
-        vms.run.run_vm(vm)
+        # vm = vms.run.inspect_vm(flake_url=self.url, flake_attr="defaultVM")
 
 
 @dataclass(frozen=True)

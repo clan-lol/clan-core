@@ -1,12 +1,26 @@
 # Import the urllib.parse, enum and dataclasses modules
 import dataclasses
 import urllib.parse
+import urllib.request
 from dataclasses import dataclass
 from enum import Enum, member
 from pathlib import Path
 from typing import Self
 
 from .errors import ClanError
+
+
+def url_ok(url: str) -> None:
+    # Create a request object with the URL and the HEAD method
+    req = urllib.request.Request(url, method="HEAD")
+    try:
+        # Open the URL and get the response object
+        res = urllib.request.urlopen(req)
+        # Return True if the status code is 200 (OK)
+        if not res.status_code == 200:
+            raise ClanError(f"URL has status code: {res.status_code}")
+    except urllib.error.URLError as ex:
+        raise ClanError(f"URL error: {ex}")
 
 
 # Define an enum with different members that have different values
@@ -84,16 +98,24 @@ class ClanURI:
             case ("http" | "https", _, _, _, _, _):
                 self.scheme = ClanScheme.HTTP.value(self._components.geturl())  # type: ignore
             case ("file", "", path, "", "", "") | ("", "", path, "", "", ""):  # type: ignore
-                self.scheme = ClanScheme.FILE.value(Path(path))  # type: ignore
+                self.scheme = ClanScheme.FILE.value(Path(path))
             case _:
                 raise ClanError(f"Unsupported uri components: {comb}")
+
+    def check_exits(self) -> None:
+        match self.scheme:
+            case ClanScheme.FILE.value(path):
+                if not path.exists():
+                    raise ClanError(f"File does not exist: {path}")
+            case ClanScheme.HTTP.value(url):
+                return url_ok(url)
 
     def get_internal(self) -> str:
         match self.scheme:
             case ClanScheme.FILE.value(path):
-                return str(path)  # type: ignore
+                return str(path)
             case ClanScheme.HTTP.value(url):
-                return url  # type: ignore
+                return url
             case _:
                 raise ClanError(f"Unsupported uri components: {self.scheme}")
 
