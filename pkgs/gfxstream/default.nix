@@ -10,19 +10,21 @@
 , glm
 , libglvnd
 , xorg
+, lib
+, vulkan-loader
 }:
 
 clangStdenv.mkDerivation {
   pname = "gfxstream";
-  version = "unstable-2023-12-11";
+  version = "unstable-2023-12-19";
   src = fetchgit {
     url = "https://android.googlesource.com/platform/hardware/google/gfxstream";
-    rev = "000a701a0c52c90e0c1e1fcd605be94b85b55f92";
-    hash = "sha256-j8oBT/7xnvIv6IhNrPxHG5fr2nodWbeHX7KalCGStY0=";
+    rev = "5ef37b16f4777f6052903ffcdf96ad0bb87e1572";
+    hash = "sha256-xUKDGTwF05oojuFhs1ruDPmRdOnkGuYo4IK7KdTYZ0k=";
   };
   postPatch = ''
-    ln common/etc/etc.cpp host/compressedTextureFormats/etc.cpp
-    ln common/etc/etc.cpp host/gl/glestranslator/GLcommon/etc.cpp
+    ln -s common/etc/etc.cpp host/compressedTextureFormats/etc.cpp
+    ln -s common/etc/etc.cpp host/gl/glestranslator/GLcommon/etc.cpp
   '';
   preConfigure = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -I$(pwd)/common/etc/include"
@@ -38,10 +40,21 @@ clangStdenv.mkDerivation {
   mesonFlags = [
     "-Ddecoders=gles,vulkan,composer"
   ];
+  postFixup = ''
+    patchelf --set-rpath "$(patchelf --print-rpath "$f"):${vulkan-loader}/lib" "$out/lib/libgfxstream_backend.so"
+  '';
   nativeBuildInputs = [
     meson
     pkg-config
     ninja
     python3
   ];
+
+  meta = with lib; {
+    description = "Graphics Streaming Kit is a code generator that makes it easier to serialize and forward graphics API calls i.e. for remote rendering.";
+    homepage = "https://android.googlesource.com/platform/hardware/google/gfxstream";
+    license = licenses.asl20;
+    platforms = platforms.linux;
+    maintainers = with maintainers; [ mic92 ];
+  };
 }
