@@ -4,17 +4,18 @@
 , pkg-config
 , gfxstream
 , libdrm
+, lib
 }:
 
 rustPlatform.buildRustPackage {
   pname = "rutabaga_gfx_ffi";
-  version = "unstable-2023-12-05";
+  version = "unstable-2023-12-20";
 
   src = fetchFromGitHub {
     owner = "google";
     repo = "crosvm";
-    rev = "65b30e2ecede8056fdbfe8adbe52e9ff51d2a4e2";
-    hash = "sha256-9jzLFBqMGw3wYCL5006+7b9l/f1N2Jy3rw5rEzOr4M0=";
+    rev = "46279a0c03f8892f22ebd8c0dc19e4a6dc8aac41";
+    hash = "sha256-xHT3uWPGVqXFr5G08jliti5RXSsZLb6fH8eiy8cyzNY=";
     fetchSubmodules = true;
   };
 
@@ -33,8 +34,16 @@ rustPlatform.buildRustPackage {
     make install prefix=$out
   '';
 
-  cargoHash = "sha256-jEhobp/ZNx5t20hBjisXR8SSn0776Jehy+RJZNSd2iA=";
+  cargoHash = "sha256-lOC0bK/nePSQCkxKHjD6xAVyvx0xGRFm/5+2jEKfwQs=";
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ gfxstream aemu libdrm ];
+
+  meta = with lib; {
+    description = "FFI bindings for rutabaga_gfx";
+    homepage = "https://crosvm.dev/book/appendix/rutabaga_gfx.html";
+    license = licenses.bsd3;
+    platforms = platforms.linux;
+    maintainers = with maintainers; [ mic92 ];
+  };
 }
