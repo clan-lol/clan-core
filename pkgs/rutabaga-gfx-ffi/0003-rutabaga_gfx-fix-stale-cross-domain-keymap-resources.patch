@@ -1,4 +1,4 @@
-From 37d51bb5bcf329bd098a0365dcbfbafc2222fddf Mon Sep 17 00:00:00 2001
+From 83d8aa249fb4cd221aa7dbb75403553d5c96e04b Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?J=C3=B6rg=20Thalheim?= <joerg@thalheim.io>
 Date: Thu, 14 Dec 2023 14:54:51 +0100
 Subject: [PATCH 3/3] rutabaga_gfx: fix stale cross-domain keymap resources
@@ -16,7 +16,7 @@ Signed-off-by: Jörg Thalheim <joerg@thalheim.io>
  1 file changed, 68 insertions(+), 87 deletions(-)
 
 diff --git a/rutabaga_gfx/src/cross_domain/mod.rs b/rutabaga_gfx/src/cross_domain/mod.rs
-index 6eb7ec988..34b51d4da 100644
+index 260c1b6b7..2a1fb00e3 100644
 --- a/rutabaga_gfx/src/cross_domain/mod.rs
 +++ b/rutabaga_gfx/src/cross_domain/mod.rs
 @@ -69,7 +69,7 @@ pub enum CrossDomainToken {
