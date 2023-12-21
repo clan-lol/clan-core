@@ -1,4 +1,4 @@
-From 76c69111118b9a63cde378f754897f8bdaf123dd Mon Sep 17 00:00:00 2001
+From cfeedccee6c6e7c309369b5dc37b6525aac859b6 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?J=C3=B6rg=20Thalheim?= <joerg@thalheim.io>
 Date: Thu, 7 Dec 2023 18:45:37 +0100
 Subject: [PATCH 2/3] rutabaga_gfx: super ugly workaround to get private
@@ -9,11 +9,11 @@ Content-Transfer-Encoding: 8bit
 
 Signed-off-by: Jörg Thalheim <joerg@thalheim.io>
 ---
- .../rutabaga_os/sys/linux/memory_mapping.rs   | 35 +++++++++++++++++--
- 1 file changed, 33 insertions(+), 2 deletions(-)
+ .../rutabaga_os/sys/linux/memory_mapping.rs   | 34 +++++++++++++++++--
+ 1 file changed, 32 insertions(+), 2 deletions(-)
 
 diff --git a/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs b/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs
-index f18e3b80a..fe5eb684e 100644
+index 6d9f19124..afd8771c8 100644
 --- a/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs
 +++ b/rutabaga_gfx/src/rutabaga_os/sys/linux/memory_mapping.rs
 @@ -9,6 +9,7 @@
@@ -24,11 +24,9 @@ index f18e3b80a..fe5eb684e 100644
  
  use crate::rutabaga_os::descriptor::SafeDescriptor;
  use crate::rutabaga_utils::RutabagaError;
-@@ -51,15 +52,45 @@ pub fn from_safe_descriptor(
-         };
- 
-         if let Some(non_zero_size) = non_zero_opt {
-+
+@@ -55,14 +56,43 @@ pub fn from_safe_descriptor(
+             // TODO(b/315870313): Add safety comment
+             #[allow(clippy::undocumented_unsafe_blocks)]
              let addr = unsafe {
 -                mmap(
 +                let mut res = mmap(
