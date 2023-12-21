@@ -19,9 +19,11 @@ log = logging.getLogger(__name__)
 
 
 def graphics_options(vm: VmConfig) -> list[str]:
+    common = ["-audio", "driver=pa,model=virtio"]
     if vm.wayland:
         # fmt: off
         return [
+          *common,
           "-nographic",
           "-vga", "none",
           "-device", "virtio-gpu-rutabaga,gfxstream-vulkan=on,cross-domain=on,hostmem=4G,wsi=headless",
@@ -30,9 +32,7 @@ def graphics_options(vm: VmConfig) -> list[str]:
     else:
         # fmt: off
         return [
-            "-audiodev", "spice,id=audio0",
-            "-device", "intel-hda",
-            "-device", "hda-duplex,audiodev=audio0",
+            *common,
             "-vga", "none",
             "-display", "gtk,gl=on",
             "-device", "virtio-gpu-gl",
