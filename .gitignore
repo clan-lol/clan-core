@@ -1,5 +1,6 @@
 .direnv
 ***/.hypothesis
+out.log
 .coverage.*
 **/qubeclan
 **/testdir

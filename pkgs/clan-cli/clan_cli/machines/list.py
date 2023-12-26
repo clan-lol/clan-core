@@ -22,7 +22,7 @@ def list_machines(flake_url: Path | str) -> list[str]:
             "--json",
         ]
     )
-    proc = subprocess.run(cmd, text=True, capture_output=True)
+    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE)
     assert proc.stdout is not None
     if proc.returncode != 0:
         raise ClanError(
@@ -31,8 +31,6 @@ command: {shlex.join(cmd)}
 exit code: {proc.returncode}
 stdout:
 {proc.stdout}
-stderr:
-{proc.stderr}
 """
         )
     res = proc.stdout.strip()

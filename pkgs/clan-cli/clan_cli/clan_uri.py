@@ -16,8 +16,9 @@ def url_ok(url: str) -> None:
     try:
         # Open the URL and get the response object
         res = urllib.request.urlopen(req)
+
         # Return True if the status code is 200 (OK)
-        if not res.status_code == 200:
+        if not res.getcode() == 200:
             raise ClanError(f"URL has status code: {res.status_code}")
     except urllib.error.URLError as ex:
         raise ClanError(f"URL error: {ex}")
