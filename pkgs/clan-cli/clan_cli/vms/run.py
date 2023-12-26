@@ -38,8 +38,8 @@ def graphics_options(vm: VmConfig) -> list[str]:
     common: list[str] = []
 
     # Check if the version is greater than 8.1.3 to enable virtio audio
-    if get_qemu_version() > [8, 1, 3]:
-        common = ["-audio", "driver=pa,model=virtio"]
+    # if get_qemu_version() > [8, 1, 3]:
+    common = ["-audio", "driver=pa,model=virtio"]
 
     if vm.wayland:
         # fmt: off

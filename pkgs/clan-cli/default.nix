@@ -133,7 +133,7 @@ python3.pkgs.buildPythonApplication {
       cd ./src
 
       export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
-      ${checkPython}/bin/python -m pytest -m "not impure and not with_core" -s ./tests
+      ${checkPython}/bin/python -m pytest -m "not impure and not with_core" ./tests
       touch $out
     '';
     # separate the tests that can never be cached
@@ -144,7 +144,7 @@ python3.pkgs.buildPythonApplication {
 
       export CLAN_CORE=${clan-core-path}
       export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
-      ${checkPython}/bin/python -m pytest -m "not impure and with_core" -s ./tests
+      ${checkPython}/bin/python -m pytest -m "not impure and with_core" ./tests
       touch $out
     '';
 
