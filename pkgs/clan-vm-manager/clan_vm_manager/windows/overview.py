@@ -2,7 +2,7 @@ from typing import Any
 
 import gi
 
-from ..models import VMBase
+from ..models import VMBase, get_initial_vms
 
 gi.require_version("Gtk", "3.0")
 
@@ -19,18 +19,20 @@ class OverviewWindow(Gtk.ApplicationWindow):
         self.set_title("cLAN Manager")
         self.connect("delete-event", self.on_quit)
         self.set_default_size(800, 600)
+        self.cbs = cbs
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True)
         self.add(vbox)
         self.stack = Gtk.Stack()
 
-        self.list_hooks = {
-            "remount_list": self.remount_list_view,
-            "remount_edit": self.remount_edit_view,
-            "set_selected": self.set_selected,
-            "show_join": cbs.show_join,
-        }
-        clan_list = ClanList(**self.list_hooks, selected_vm=None)  # type: ignore
+        clan_list = ClanList(
+            vms=[vm.base for vm in get_initial_vms(self.cbs.running_vms())],
+            cbs=self.cbs,
+            remount_list=self.remount_list_view,
+            remount_edit=self.remount_edit_view,
+            set_selected=self.set_selected,
+            selected_vm=None,
+        )
         # Add named stacks
         self.stack.add_titled(clan_list, "list", "List")
         self.stack.add_titled(
@@ -59,7 +61,14 @@ class OverviewWindow(Gtk.ApplicationWindow):
         if widget:
             widget.destroy()
 
-        clan_list = ClanList(**self.list_hooks, selected_vm=self.selected_vm)  # type: ignore
+        clan_list = ClanList(
+            vms=[vm.base for vm in get_initial_vms(self.cbs.running_vms())],
+            cbs=self.cbs,
+            remount_list=self.remount_list_view,
+            remount_edit=self.remount_edit_view,
+            set_selected=self.set_selected,
+            selected_vm=self.selected_vm,
+        )
         self.stack.add_titled(clan_list, "list", "List")
         self.show_all()
         self.stack.set_visible_child_name("list")

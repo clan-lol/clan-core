@@ -18,8 +18,29 @@ from .inspect import VmConfig, inspect_vm
 log = logging.getLogger(__name__)
 
 
+def get_qemu_version() -> list[int]:
+    # Run the command and capture the output
+    output = subprocess.check_output(["qemu-kvm", "--version"])
+    # Decode the output from bytes to string
+    output_str = output.decode("utf-8")
+    # Split the output by newline and get the first line
+    first_line = output_str.split("\n")[0]
+    # Split the first line by space and get the third element
+    version = first_line.split(" ")[3]
+
+    # Split the version by dot and convert each part to integer
+    version_list = [int(x) for x in version.split(".")]
+    # Return the version as a list of integers
+    return version_list
+
+
 def graphics_options(vm: VmConfig) -> list[str]:
+    common: list[str] = []
+
+    # Check if the version is greater than 8.1.3 to enable virtio audio
+    # if get_qemu_version() > [8, 1, 3]:
     common = ["-audio", "driver=pa,model=virtio"]
+
     if vm.wayland:
         # fmt: off
         return [
