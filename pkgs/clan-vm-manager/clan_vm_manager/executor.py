@@ -2,34 +2,44 @@ import os
 import signal
 import sys
 import traceback
+import weakref
 from pathlib import Path
 from typing import Any
 
 import gi
+from clan_cli.errors import ClanError
 
 gi.require_version("GdkPixbuf", "2.0")
 
+import dataclasses
 import multiprocessing as mp
 from collections.abc import Callable
 
-OUT_FILE: Path | None = None
-IN_FILE: Path | None = None
+
+# Kill the new process and all its children by sending a SIGTERM signal to the process group
+def _kill_group(proc: mp.Process) -> None:
+    pid = proc.pid
+    assert pid is not None
+    if proc.is_alive():
+        print(
+            f"Killing process group pid={pid}",
+            file=sys.stderr,
+        )
+        os.killpg(pid, signal.SIGTERM)
+    else:
+        print(f"Process {proc.name} with pid {pid} is already dead", file=sys.stderr)
 
 
+@dataclasses.dataclass(frozen=True)
 class MPProcess:
-    def __init__(
-        self, *, name: str, proc: mp.Process, out_file: Path, in_file: Path
-    ) -> None:
-        self.name = name
-        self.proc = proc
-        self.out_file = out_file
-        self.in_file = in_file
+    name: str
+    proc: mp.Process
+    out_file: Path
+    in_file: Path
 
     # Kill the new process and all its children by sending a SIGTERM signal to the process group
     def kill_group(self) -> None:
-        pid = self.proc.pid
-        assert pid is not None
-        os.killpg(pid, signal.SIGTERM)
+        _kill_group(proc=self.proc)
 
 
 def _set_proc_name(name: str) -> None:
@@ -51,23 +61,6 @@ def _set_proc_name(name: str) -> None:
     prctl(15, name.encode(), 0, 0, 0)
 
 
-def _signal_handler(signum: int, frame: Any) -> None:
-    signame = signal.strsignal(signum)
-    print("Signal received:", signame)
-
-    # Delete files
-    if OUT_FILE is not None:
-        OUT_FILE.unlink()
-    if IN_FILE is not None:
-        IN_FILE.unlink()
-
-    # Restore the default handler
-    signal.signal(signal.SIGTERM, signal.SIG_DFL)
-
-    # Re-raise the signal
-    os.kill(os.getpid(), signum)
-
-
 def _init_proc(
     func: Callable,
     out_file: Path,
@@ -76,39 +69,29 @@ def _init_proc(
     proc_name: str,
     **kwargs: Any,
 ) -> None:
-    # Set the global variables
-    global OUT_FILE, IN_FILE
-    OUT_FILE = out_file
-    IN_FILE = in_file
-
     # Create a new process group
     os.setsid()
 
     # Open stdout and stderr
-    out_fd = os.open(str(out_file), flags=os.O_RDWR | os.O_CREAT | os.O_TRUNC)
-    os.dup2(out_fd, sys.stdout.fileno())
-    os.dup2(out_fd, sys.stderr.fileno())
+    with open(out_file, "w") as out_fd:
+        os.dup2(out_fd.fileno(), sys.stdout.fileno())
+        os.dup2(out_fd.fileno(), sys.stderr.fileno())
 
     # Print some information
     pid = os.getpid()
     gpid = os.getpgid(pid=pid)
-    print(f"Started new process pid={pid} gpid={gpid}")
-
-    # Register the signal handler for SIGINT
-    signal.signal(signal.SIGTERM, _signal_handler)
+    print(f"Started new process pid={pid} gpid={gpid}", file=sys.stderr)
 
     # Set the process name
     _set_proc_name(proc_name)
 
     # Open stdin
-    flags = None
     if wait_stdin_connect:
         print(f"Waiting for stdin connection on file {in_file}", file=sys.stderr)
-        flags = os.O_RDONLY
+        with open(in_file) as in_fd:
+            os.dup2(in_fd.fileno(), sys.stdin.fileno())
     else:
-        flags = os.O_RDONLY | os.O_NONBLOCK
-    in_fd = os.open(str(in_file), flags=flags)
-    os.dup2(in_fd, sys.stdin.fileno())
+        sys.stdin.close()
 
     # Execute the main function
     print(f"Executing function {func.__name__} now", file=sys.stderr)
@@ -116,9 +99,10 @@ def _init_proc(
         func(**kwargs)
     except Exception:
         traceback.print_exc()
+    finally:
         pid = os.getpid()
         gpid = os.getpgid(pid=pid)
-        print(f"Killing process group pid={pid} gpid={gpid}")
+        print(f"Killing process group pid={pid} gpid={gpid}", file=sys.stderr)
         os.killpg(gpid, signal.SIGTERM)
 
 
@@ -127,7 +111,13 @@ def spawn(
 ) -> MPProcess:
     # Decouple the process from the parent
     if mp.get_start_method(allow_none=True) is None:
-        mp.set_start_method(method="spawn")
+        mp.set_start_method(method="forkserver")
+        print("Set mp start method to forkserver", file=sys.stderr)
+
+    if not log_path.is_dir():
+        raise ClanError(f"Log path {log_path} is not a directory")
+    if not log_path.exists():
+        log_path.mkdir(parents=True)
 
     # Set names
     proc_name = f"MPExec:{func.__name__}"
@@ -152,6 +142,7 @@ def spawn(
     assert proc.pid is not None
     print(f"Started process '{proc_name}'")
     print(f"Arguments: {kwargs}")
+
     if wait_stdin_con:
         cmd = f"cat - > {in_file}"
         print(f"Connect to stdin with : {cmd}")
@@ -165,4 +156,41 @@ def spawn(
         out_file=out_file,
         in_file=in_file,
     )
+
     return mp_proc
+
+
+# Processes are killed when the ProcessManager is garbage collected
+class ProcessManager:
+    def __init__(self) -> None:
+        self.procs: dict[str, MPProcess] = dict()
+        self._finalizer = weakref.finalize(self, self.kill_all)
+
+    def spawn(
+        self,
+        *,
+        ident: str,
+        wait_stdin_con: bool,
+        log_path: Path,
+        func: Callable,
+        **kwargs: Any,
+    ) -> MPProcess:
+        proc = spawn(
+            wait_stdin_con=wait_stdin_con, log_path=log_path, func=func, **kwargs
+        )
+        if ident in self.procs:
+            raise ClanError(f"Process with id {ident} already exists")
+        self.procs[ident] = proc
+        return proc
+
+    def kill_all(self) -> None:
+        print("Killing all processes", file=sys.stderr)
+        for proc in self.procs.values():
+            proc.kill_group()
+
+    def kill(self, ident: str) -> None:
+        if ident not in self.procs:
+            raise ClanError(f"Process with id {ident} does not exist")
+        proc = self.procs[ident]
+        proc.kill_group()
+        del self.procs[ident]

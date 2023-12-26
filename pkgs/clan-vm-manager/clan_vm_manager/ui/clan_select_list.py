@@ -2,7 +2,8 @@ from collections.abc import Callable
 
 from gi.repository import GdkPixbuf, Gtk
 
-from ..models import VMBase, get_initial_vms
+from ..interfaces import Callbacks
+from ..models import VMBase
 
 
 class ClanEditForm(Gtk.ListBox):
@@ -55,11 +56,7 @@ class ClanEdit(Gtk.Box):
         self.show_list = remount_list
         self.selected = selected_vm
 
-        button_hooks = {
-            "on_save_clicked": self.on_save,
-        }
-
-        self.toolbar = ClanEditToolbar(**button_hooks)
+        self.toolbar = ClanEditToolbar(on_save_clicked=self.on_save)
         self.add(self.toolbar)
         self.add(ClanEditForm(selected=self.selected))
 
@@ -88,8 +85,9 @@ class ClanList(Gtk.Box):
         remount_list: Callable[[], None],
         remount_edit: Callable[[], None],
         set_selected: Callable[[VMBase | None], None],
-        show_join: Callable[[], None],
+        cbs: Callbacks,
         selected_vm: VMBase | None,
+        vms: list[VMBase],
         show_toolbar: bool = True,
     ) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
@@ -98,35 +96,45 @@ class ClanList(Gtk.Box):
         self.remount_list_view = remount_list
         self.set_selected = set_selected
         self.show_toolbar = show_toolbar
-        self.show_join = show_join
+        self.cbs = cbs
 
         self.selected_vm: VMBase | None = selected_vm
 
-        button_hooks = {
-            "on_start_clicked": self.on_start_clicked,
-            "on_stop_clicked": self.on_stop_clicked,
-            "on_edit_clicked": self.on_edit_clicked,
-            "on_join_clicked": self.on_join_clicked,
-        }
         if show_toolbar:
-            self.toolbar = ClanListToolbar(**button_hooks)
+            self.toolbar = ClanListToolbar(
+                on_start_clicked=self.on_start_clicked,
+                on_stop_clicked=self.on_stop_clicked,
+                on_edit_clicked=self.on_edit_clicked,
+                on_join_clicked=self.on_join_clicked,
+            )
             self.toolbar.set_is_selected(self.selected_vm is not None)
             self.add(self.toolbar)
 
-        self.list_hooks = {
-            "on_select_row": self.on_select_vm,
-        }
-        self.add(ClanListView(**self.list_hooks, selected_vm=selected_vm))
+        self.add(
+            ClanListView(
+                vms=vms,
+                on_select_row=self.on_select_vm,
+                selected_vm=selected_vm,
+                on_double_click=self.on_double_click,
+            )
+        )
+
+    def on_double_click(self, vm: VMBase) -> None:
+        print(f"on_double_click: {vm.name}")
+        self.on_start_clicked(self)
 
     def on_start_clicked(self, widget: Gtk.Widget) -> None:
         print("Start clicked")
         if self.selected_vm:
-            self.selected_vm.run()
+            self.cbs.spawn_vm(self.selected_vm.url, self.selected_vm._flake_attr)
         # Call this to reload
         self.remount_list_view()
 
     def on_stop_clicked(self, widget: Gtk.Widget) -> None:
         print("Stop clicked")
+        if self.selected_vm:
+            self.cbs.stop_vm(self.selected_vm.url, self.selected_vm._flake_attr)
+        self.remount_list_view()
 
     def on_join_clicked(self, widget: Gtk.Widget) -> None:
         print("Join clicked")
@@ -208,10 +216,13 @@ class ClanListView(Gtk.Box):
         *,
         on_select_row: Callable[[VMBase], None],
         selected_vm: VMBase | None,
+        vms: list[VMBase],
+        on_double_click: Callable[[VMBase], None],
     ) -> None:
         super().__init__(expand=True)
-        self.vms: list[VMBase] = [vm.base for vm in get_initial_vms()]
+        self.vms: list[VMBase] = vms
         self.on_select_row = on_select_row
+        self.on_double_click = on_double_click
         store_types = VMBase.name_to_type_map().values()
 
         self.list_store = Gtk.ListStore(*store_types)
@@ -264,7 +275,7 @@ class ClanListView(Gtk.Box):
         model, row = selection.get_selected()
         if row is not None:
             vm = VMBase(*model[row])
-            vm.run()
+            self.on_double_click(vm)
 
 
 def setColRenderers(tree_view: Gtk.TreeView) -> None:

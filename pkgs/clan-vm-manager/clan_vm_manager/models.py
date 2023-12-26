@@ -19,6 +19,7 @@ class VMBase:
     name: str
     url: str
     status: bool
+    _flake_attr: str
 
     @staticmethod
     def name_to_type_map() -> OrderedDict[str, type]:
@@ -28,6 +29,7 @@ class VMBase:
                 "Name": str,
                 "URL": str,
                 "Online": bool,
+                "_FlakeAttr": str,
             }
         )
 
@@ -42,12 +44,9 @@ class VMBase:
                 "Name": self.name,
                 "URL": self.url,
                 "Online": self.status,
+                "_FlakeAttr": self._flake_attr,
             }
         )
-
-    def run(self) -> None:
-        print(f"Running VM {self.name}")
-        # vm = vms.run.inspect_vm(flake_url=self.url, flake_attr="defaultVM")
 
 
 @dataclass(frozen=True)
@@ -60,7 +59,9 @@ class VM:
 
 
 # start/end indexes can be used optionally for pagination
-def get_initial_vms(start: int = 0, end: int | None = None) -> list[VM]:
+def get_initial_vms(
+    running_vms: list[str], start: int = 0, end: int | None = None
+) -> list[VM]:
     vm_list = []
 
     # Execute `clan flakes add <path>` to democlan for this to work
@@ -69,11 +70,16 @@ def get_initial_vms(start: int = 0, end: int | None = None) -> list[VM]:
         if entry.flake.icon is not None:
             icon = entry.flake.icon
 
+        status = False
+        if entry.flake.flake_url in running_vms:
+            status = True
+
         base = VMBase(
             icon=icon,
             name=entry.flake.clan_name,
             url=entry.flake.flake_url,
-            status=False,
+            status=status,
+            _flake_attr=entry.flake.flake_attr,
         )
         vm_list.append(VM(base=base))
 

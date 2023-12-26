@@ -38,7 +38,7 @@ def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
         ]
     )
 
-    proc = subprocess.run(cmd, text=True, capture_output=True)
+    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE)
     assert proc.stdout is not None
     if proc.returncode != 0:
         raise ClanError(
@@ -47,8 +47,6 @@ command: {shlex.join(cmd)}
 exit code: {proc.returncode}
 stdout:
 {proc.stdout}
-stderr:
-{proc.stderr}
 """
         )
     res = proc.stdout.strip()
