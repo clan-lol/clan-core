@@ -8,17 +8,18 @@
 		},
 		{
 			"path": "../clan-cli/tests"
-		}
+		},
 	],
 	"settings": {
 		"python.linting.mypyEnabled": true,
 		"files.exclude": {
-			"**/.direnv": true,
-			"**/.mypy_cache": true,
-			"**/.ruff_cache": true,
-			"**/.hypothesis": true,
 			"**/__pycache__": true,
-			"**/.reports": true
+			"**/.direnv": true,
+			"**/.hypothesis": true,
+			"**/.mypy_cache": true,
+			"**/.reports": true,
+			"**/.ruff_cache": true,
+			"**/result": true
 		},
 		"search.exclude": {
 			"**/.direnv": true,
