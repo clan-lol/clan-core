@@ -98,6 +98,8 @@ class ClanList(Gtk.Box):
         self.show_toolbar = show_toolbar
         self.cbs = cbs
 
+        self.show_join = cbs.show_join
+
         self.selected_vm: VMBase | None = selected_vm
 
         if show_toolbar:

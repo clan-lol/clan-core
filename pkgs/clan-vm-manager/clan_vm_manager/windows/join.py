@@ -16,12 +16,16 @@ from gi.repository import GdkPixbuf, Gio, Gtk
 
 class Trust(Gtk.Box):
     def __init__(
-        self, url: str, show_next: Callable[[], None], stack: Gtk.Stack
+        self,
+        initial_values: InitialJoinValues,
+        show_next: Callable[[], None],
+        stack: Gtk.Stack,
     ) -> None:
         super().__init__()
         self.show_next = show_next
         self.stack = stack
-        self.url = url
+        self.url: ClanURI | None = initial_values.url
+
         icon = Gtk.Image.new_from_pixbuf(
             GdkPixbuf.Pixbuf.new_from_file_at_scale(
                 filename=str(assets.loc / "placeholder.jpeg"),
@@ -35,11 +39,27 @@ class Trust(Gtk.Box):
 
         upper = Gtk.Box(orientation="vertical")
         upper.set_spacing(20)
-        upper.add(Gtk.Label(label="Clan URL"))
+
+        if self.url is not None:
+            self.entry = Gtk.Label(label=str(self.url))
+            upper.add(Gtk.Label(label="Clan URL"))
+        else:
+            upper.add(Gtk.Label(label="Enter Clan URL"))
+            self.entry = Gtk.Entry()
+            # Autocomplete
+            # TODO: provide intelligent suggestions
+            completion_list = Gtk.ListStore(str)
+            completion_list.append(["clan://"])
+            completion = Gtk.EntryCompletion()
+            completion.set_model(completion_list)
+            completion.set_text_column(0)
+            completion.set_popup_completion(False)
+            completion.set_inline_completion(True)
+
+            self.entry.set_completion(completion)
+            self.entry.set_placeholder_text("clan://")
+
         upper.add(icon)
-
-        self.entry = Gtk.Label(label=str(url))
-
         upper.add(self.entry)
 
         lower = Gtk.Box(orientation="vertical")
@@ -53,8 +73,8 @@ class Trust(Gtk.Box):
         self.set_center_widget(layout)
 
     def on_trust(self, widget: Gtk.Widget) -> None:
-        print(f"trusted: {self.url}")
-        uri = ClanURI(self.url)
+        uri = self.url or ClanURI(self.entry.get_text())
+        print(f"trusted: {uri}")
         add_history(uri)
         history = list_history()
         found = filter(lambda item: item.flake.flake_url == uri.get_internal(), history)
@@ -157,10 +177,19 @@ class JoinWindow(Gtk.ApplicationWindow):
 
         self.stack = Gtk.Stack()
 
+        # If the initial url is not set, the user must provide one
+        # if initial_values.url is None:
+        #     self.stack.add_titled(
+        #         UrlInput(
+        #             initial_values, stack=self.stack
+        #         ),
+        #         "URL",
+        #         "url",
+        #     )
+
+        print("initial_values", initial_values)
         self.stack.add_titled(
-            Trust(
-                str(initial_values.url), show_next=self.show_details, stack=self.stack
-            ),
+            Trust(initial_values, show_next=self.show_details, stack=self.stack),
             "trust",
             "Trust",
         )
