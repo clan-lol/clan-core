@@ -4,9 +4,11 @@ from dataclasses import dataclass
 from clan_cli.clan_uri import ClanURI
 
 
+# url is only set, if the app was started with "join <url>"
+# Url is usually None, when user clicks "New" clan
 @dataclass
 class InitialJoinValues:
-    url: ClanURI
+    url: ClanURI | None
 
 
 @dataclass

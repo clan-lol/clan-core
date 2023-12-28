@@ -96,7 +96,7 @@ class Application(Gtk.Application):
     def show_join(self) -> None:
         prev = self.window
         self.window = self.windows.__dict__["join"](
-            cbs=self.cbs, initial_values=InitialJoinValues(url="")
+            cbs=self.cbs, initial_values=InitialJoinValues(url=None)
         )
         prev.hide()
 
