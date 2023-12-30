@@ -25,20 +25,32 @@ def nix_flake_show(flake_url: str | Path) -> list[str]:
     )
 
 
-def nix_build(
-    flags: list[str],
-) -> list[str]:
-    return (
-        nix_command(
-            [
-                "build",
-                "--no-link",
-                "--print-out-paths",
-                "--no-write-lock-file",
-            ]
+def nix_build(flags: list[str], gcroot: Path | None = None) -> list[str]:
+    if gcroot is not None:
+        return (
+            nix_command(
+                [
+                    "build",
+                    "--out-link",
+                    str(gcroot),
+                    "--print-out-paths",
+                    "--no-write-lock-file",
+                ]
+            )
+            + flags
         )
-        + flags
-    )
+    else:
+        return (
+            nix_command(
+                [
+                    "build",
+                    "--no-link",
+                    "--print-out-paths",
+                    "--no-write-lock-file",
+                ]
+            )
+            + flags
+        )
 
 
 def nix_config() -> dict[str, Any]:

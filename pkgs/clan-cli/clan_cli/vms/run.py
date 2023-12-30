@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import IO
 
-from ..dirs import module_root
+from ..dirs import module_root, specific_groot_dir
 from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_shell
 from .inspect import VmConfig, inspect_vm
@@ -131,7 +131,9 @@ def get_vm_create_info(vm: VmConfig, nix_options: list[str]) -> dict[str, str]:
         [
             f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.vm.create',
             *nix_options,
-        ]
+        ],
+        specific_groot_dir(clan_name=vm.clan_name, flake_url=str(vm.flake_url))
+        / f"vm-{machine}",
     )
     proc = subprocess.run(
         cmd,

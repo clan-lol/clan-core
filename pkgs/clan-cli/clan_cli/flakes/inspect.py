@@ -4,6 +4,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..dirs import specific_groot_dir
 from ..errors import ClanError
 from ..machines.list import list_machines
 from ..nix import nix_build, nix_config, nix_eval, nix_metadata
@@ -22,22 +23,7 @@ class FlakeConfig:
     revision: str | None
 
 
-def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
-    config = nix_config()
-    system = config["system"]
-
-    machines = list_machines(flake_url)
-    if flake_attr not in machines:
-        raise ClanError(
-            f"Machine {flake_attr} not found in {flake_url}. Available machines: {', '.join(machines)}"
-        )
-
-    cmd = nix_eval(
-        [
-            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanIcon'
-        ]
-    )
-
+def run_cmd(cmd: list[str]) -> str:
     proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE)
     assert proc.stdout is not None
     if proc.returncode != 0:
@@ -49,53 +35,54 @@ stdout:
 {proc.stdout}
 """
         )
-    res = proc.stdout.strip()
-    if res == "null":
-        icon_path = None
-    else:
-        icon_path = res.strip('"')
 
-        if not Path(icon_path).exists():
-            cmd = nix_build(
-                [
-                    f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanIcon'
-                ]
-            )
-            proc = subprocess.run(cmd, text=True, capture_output=True)
-            assert proc.stdout is not None
-            if proc.returncode != 0:
-                raise ClanError(
-                    f"""
-command: {shlex.join(cmd)}
-exit code: {proc.returncode}
-stdout:
-{proc.stdout}
-stderr:
-{proc.stderr}
-"""
-                )
+    return proc.stdout.strip()
 
+
+def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
+    config = nix_config()
+    system = config["system"]
+
+    # Check if the machine exists
+    machines = list_machines(flake_url)
+    if flake_attr not in machines:
+        raise ClanError(
+            f"Machine {flake_attr} not found in {flake_url}. Available machines: {', '.join(machines)}"
+        )
+
+    # Get the cLAN name
     cmd = nix_eval(
         [
             f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanName'
         ]
     )
+    res = run_cmd(cmd)
+    clan_name = res.strip('"')
 
-    proc = subprocess.run(cmd, text=True, capture_output=True)
-    assert proc.stdout is not None
-    if proc.returncode != 0:
-        raise ClanError(
-            f"""
-command: {shlex.join(cmd)}
-exit code: {proc.returncode}
-stdout:
-{proc.stdout}
-stderr:
-{proc.stderr}
-"""
+    # Get the clan icon path
+    cmd = nix_eval(
+        [
+            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanIcon'
+        ]
+    )
+    res = run_cmd(cmd)
+
+    # If the icon is null, no icon is set for this cLAN
+    if res == "null":
+        icon_path = None
+    else:
+        icon_path = res.strip('"')
+
+        cmd = nix_build(
+            [
+                f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanIcon'
+            ],
+            specific_groot_dir(clan_name=clan_name, flake_url=str(flake_url))
+            / "clanIcon",
         )
-    clan_name = proc.stdout.strip().strip('"')
+        run_cmd(cmd)
 
+    # Get the flake metadata
     meta = nix_metadata(flake_url)
 
     return FlakeConfig(
