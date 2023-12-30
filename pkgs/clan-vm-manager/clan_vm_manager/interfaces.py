@@ -12,9 +12,15 @@ class InitialJoinValues:
 
 
 @dataclass
+class InitialFlashValues:
+    selected: str | None
+
+
+@dataclass
 class Callbacks:
     show_list: Callable[[], None]
     show_join: Callable[[], None]
+    show_flash: Callable[[], None]
     spawn_vm: Callable[[str, str], None]
     stop_vm: Callable[[str, str], None]
     running_vms: Callable[[], list[str]]
