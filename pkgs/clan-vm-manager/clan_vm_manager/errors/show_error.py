@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 
-from typing import Literal, Optional, Union
+from typing import Literal
+
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
 from clan_cli.errors import ClanError
+from gi.repository import Gtk
 
-Severity = Union[Literal["Error"], Literal["Warning"], Literal["Info"], str]
+Severity = Literal["Error"] | Literal["Warning"] | Literal["Info"] | str
 
-def show_error_dialog(error: ClanError, severity: Optional[Severity] = "Error") -> None:
+
+def show_error_dialog(error: ClanError, severity: Severity | None = "Error") -> None:
     message = str(error)
-    dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, severity)
+    dialog = Gtk.MessageDialog(
+        None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, severity
+    )
     print("error:", message)
     dialog.format_secondary_text(message)
     dialog.run()

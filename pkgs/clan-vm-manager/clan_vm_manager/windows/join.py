@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from typing import Any
-from clan_cli.errors import ClanError
 
 import gi
 from clan_cli.clan_uri import ClanURI
+from clan_cli.errors import ClanError
 from clan_cli.history.add import add_history, list_history
 
 from clan_vm_manager import assets
@@ -80,7 +80,9 @@ class Trust(Gtk.Box):
             print(f"trusted: {uri}")
             add_history(uri)
             history = list_history()
-            found = filter(lambda item: item.flake.flake_url == uri.get_internal(), history)
+            found = filter(
+                lambda item: item.flake.flake_url == uri.get_internal(), history
+            )
             if found:
                 [item] = found
                 self.stack.add_titled(
@@ -93,7 +95,6 @@ class Trust(Gtk.Box):
 
         except ClanError as e:
             show_error_dialog(e)
-
 
 
 class Details(Gtk.Box):

@@ -5,6 +5,7 @@ from gi.repository import GdkPixbuf, Gtk
 from ..interfaces import Callbacks
 from ..models import VMBase
 
+
 class ClanEditForm(Gtk.ListBox):
     def __init__(self, *, selected: VMBase | None) -> None:
         super().__init__()
