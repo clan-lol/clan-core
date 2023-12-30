@@ -1,6 +1,6 @@
 { inputs, self, lib, ... }:
 {
-  perSystem = { self', pkgs, system, ... }:
+  perSystem = { self', pkgs, ... }:
     let
       flakeLock = lib.importJSON (self + /flake.lock);
       flakeInputs = (builtins.removeAttrs inputs [ "self" ]);
@@ -35,9 +35,6 @@
       packages = {
         clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs;
-          # inherit (inputs) democlan;
-          inherit (inputs.nixpkgs-for-deal.legacyPackages.${system}.python3Packages) deal;
-          #inherit (inputs.nixpkgs-for-deal.legacyPackages.${system}.python3Packages) schemathesis;
           clan-core-path = clanCoreWithVendoredDeps;
         };
         default = self'.packages.clan-cli;
