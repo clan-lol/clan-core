@@ -24,7 +24,6 @@ norecursedirs = "tests/helpers"
 markers = ["impure", "with_core"]
 
 [tool.mypy]
-plugins = ["deal.mypy"]
 python_version = "3.11"
 warn_redundant_casts = true
 disallow_untyped_calls = true

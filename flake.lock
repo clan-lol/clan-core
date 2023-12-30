@@ -92,29 +92,12 @@
         "type": "github"
       }
     },
-    "nixpkgs-for-deal": {
-      "locked": {
-        "lastModified": 1700490099,
-        "narHash": "sha256-IDZGtMvddtEdYr7BUtXsQNPhVXcLzWj6AC9s1wRkZlo=",
-        "owner": "Luis-Hebendanz",
-        "repo": "nixpkgs",
-        "rev": "32ea44ece77a5bad662685acf4652cc984e2df3f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Luis-Hebendanz",
-        "ref": "fix_python_deal",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "disko": "disko",
         "flake-parts": "flake-parts",
         "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-for-deal": "nixpkgs-for-deal",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix"
       }

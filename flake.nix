@@ -6,9 +6,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
-    #nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
-    # https://github.com/NixOS/nixpkgs/pull/265872
-    nixpkgs-for-deal.url = "github:Luis-Hebendanz/nixpkgs/fix_python_deal";
 
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
