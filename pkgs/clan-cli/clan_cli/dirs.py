@@ -1,3 +1,4 @@
+import base64
 import logging
 import os
 import sys
@@ -33,6 +34,23 @@ def user_config_dir() -> Path:
         return Path(os.path.expanduser("~/Library/Application Support/"))
     else:
         return Path(os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config")))
+
+
+def user_gcroot_dir() -> Path:
+    p = user_config_dir() / "clan" / "gcroots"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+def specific_groot_dir(*, clan_name: str, flake_url: str) -> Path:
+    # Always build icon so that we can symlink it to the gcroot
+    gcroot_dir = user_gcroot_dir()
+    burl = base64.urlsafe_b64encode(flake_url.encode()).decode()
+    # Create the directory if it already exists append a number to it till it doesn't exist and then create it
+    clan_gcroot = gcroot_dir / f"{clan_name}-{burl}"
+
+    clan_gcroot.mkdir(parents=True, exist_ok=True)
+    return clan_gcroot
 
 
 def user_history_file() -> Path:
