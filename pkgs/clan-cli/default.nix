@@ -29,7 +29,6 @@
 , gnupg
 , e2fsprogs
 , mypy
-, deal
 , rope
 , clan-core-path
 , writeShellScriptBin
@@ -48,7 +47,6 @@ let
     pytest-subprocess
     pytest-xdist
     pytest-timeout
-    deal
     remote-pdb
     ipdb
     openssh
