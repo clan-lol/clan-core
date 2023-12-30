@@ -3,9 +3,11 @@ from typing import Any
 
 import gi
 from clan_cli.clan_uri import ClanURI
+from clan_cli.errors import ClanError
 from clan_cli.history.add import add_history, list_history
 
 from clan_vm_manager import assets
+from clan_vm_manager.errors.show_error import show_error_dialog
 
 from ..interfaces import Callbacks, InitialJoinValues
 
@@ -73,20 +75,26 @@ class Trust(Gtk.Box):
         self.set_center_widget(layout)
 
     def on_trust(self, widget: Gtk.Widget) -> None:
-        uri = self.url or ClanURI(self.entry.get_text())
-        print(f"trusted: {uri}")
-        add_history(uri)
-        history = list_history()
-        found = filter(lambda item: item.flake.flake_url == uri.get_internal(), history)
-        if found:
-            [item] = found
-            self.stack.add_titled(
-                Details(url=uri.get_internal(), description=item.flake.description),
-                "details",
-                "Details",
+        try:
+            uri = self.url or ClanURI(self.entry.get_text())
+            print(f"trusted: {uri}")
+            add_history(uri)
+            history = list_history()
+            found = filter(
+                lambda item: item.flake.flake_url == uri.get_internal(), history
             )
-            self.show_next()
-            self.stack.set_visible_child_name("details")
+            if found:
+                [item] = found
+                self.stack.add_titled(
+                    Details(url=uri.get_internal(), description=item.flake.description),
+                    "details",
+                    "Details",
+                )
+                self.show_next()
+                self.stack.set_visible_child_name("details")
+
+        except ClanError as e:
+            show_error_dialog(e)
 
 
 class Details(Gtk.Box):
@@ -152,7 +160,7 @@ class Details(Gtk.Box):
 
     def on_join(self, widget: Gtk.Widget) -> None:
         # TODO: @Qubasa
-        raise Exception("Not ready yet.")
+        show_error_dialog(ClanError("Feature not ready yet."), "Info")
 
 
 class JoinWindow(Gtk.ApplicationWindow):
@@ -177,27 +185,12 @@ class JoinWindow(Gtk.ApplicationWindow):
 
         self.stack = Gtk.Stack()
 
-        # If the initial url is not set, the user must provide one
-        # if initial_values.url is None:
-        #     self.stack.add_titled(
-        #         UrlInput(
-        #             initial_values, stack=self.stack
-        #         ),
-        #         "URL",
-        #         "url",
-        #     )
-
         print("initial_values", initial_values)
         self.stack.add_titled(
             Trust(initial_values, show_next=self.show_details, stack=self.stack),
             "trust",
             "Trust",
         )
-        # self.stack.add_titled(
-        #     self.details,
-        #     "details",
-        #     "Details",
-        # )
 
         vbox.add(self.stack)
 
