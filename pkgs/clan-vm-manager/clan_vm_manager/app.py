@@ -6,6 +6,8 @@ from pathlib import Path
 import gi
 from clan_cli import vms
 
+from clan_vm_manager.windows.flash import FlashUSBWindow
+
 gi.require_version("Gtk", "3.0")
 
 from clan_cli.clan_uri import ClanURI
@@ -13,7 +15,7 @@ from gi.repository import Gio, Gtk
 
 from .constants import constants
 from .executor import ProcessManager, spawn
-from .interfaces import Callbacks, InitialJoinValues
+from .interfaces import Callbacks, InitialFlashValues, InitialJoinValues
 from .windows.join import JoinWindow
 from .windows.overview import OverviewWindow
 
@@ -22,6 +24,7 @@ from .windows.overview import OverviewWindow
 class ClanWindows:
     join: type[JoinWindow]
     overview: type[OverviewWindow]
+    flash_usb: type[FlashUSBWindow]
 
 
 @dataclass
@@ -42,6 +45,7 @@ class Application(Gtk.Application):
         self.cbs = Callbacks(
             show_list=self.show_list,
             show_join=self.show_join,
+            show_flash=self.show_flash,
             spawn_vm=self.spawn_vm,
             stop_vm=self.stop_vm,
             running_vms=self.running_vms,
@@ -100,6 +104,13 @@ class Application(Gtk.Application):
         )
         prev.hide()
 
+    def show_flash(self) -> None:
+        prev = self.window
+        self.window = self.windows.__dict__["flash_usb"](
+            cbs=self.cbs, initial_values=FlashUSBWindow(InitialFlashValues(None))
+        )
+        prev.hide()
+
     def do_startup(self) -> None:
         Gtk.Application.do_startup(self)
         Gtk.init()
@@ -124,7 +135,9 @@ class Application(Gtk.Application):
 def show_join(args: argparse.Namespace) -> None:
     print(f"Joining clan {args.clan_uri}")
     app = Application(
-        windows=ClanWindows(join=JoinWindow, overview=OverviewWindow),
+        windows=ClanWindows(
+            join=JoinWindow, overview=OverviewWindow, flash_usb=FlashUSBWindow
+        ),
         config=ClanConfig(url=args.clan_uri, initial_window="join"),
     )
     return app.run()
@@ -137,7 +150,9 @@ def register_join_parser(parser: argparse.ArgumentParser) -> None:
 
 def show_overview(args: argparse.Namespace) -> None:
     app = Application(
-        windows=ClanWindows(join=JoinWindow, overview=OverviewWindow),
+        windows=ClanWindows(
+            join=JoinWindow, overview=OverviewWindow, flash_usb=FlashUSBWindow
+        ),
         config=ClanConfig(url=None, initial_window="overview"),
     )
     return app.run()
