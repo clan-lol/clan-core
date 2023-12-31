@@ -252,9 +252,6 @@ def run_vm(
     # TODO: We should get this from the vm argument
     nixos_config = get_vm_create_info(vm, nix_options)
 
-    flake_dir = Path(vm.flake_url)
-    flake_dir.mkdir(exist_ok=True)
-
     with tempfile.TemporaryDirectory() as tmpdir_:
         tmpdir = Path(tmpdir_)
         xchg_dir = tmpdir / "xchg"
