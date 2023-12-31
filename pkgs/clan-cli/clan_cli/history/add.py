@@ -46,6 +46,7 @@ def list_history() -> list[HistoryEntry]:
     return logs
 
 
+# TODO: Add all vm entries to history
 def add_history(uri: ClanURI) -> list[HistoryEntry]:
     uri.check_exits()
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
