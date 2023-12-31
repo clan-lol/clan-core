@@ -152,7 +152,6 @@ class ClanList(Gtk.Box):
         self.remount_edit_view()
 
     def on_select_vm(self, vm: VMBase) -> None:
-        print(f"on_select_vm: {vm.name}")
         if self.show_toolbar:
             if vm is None:
                 self.toolbar.set_is_selected(False)
