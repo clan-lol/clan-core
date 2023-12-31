@@ -52,9 +52,6 @@ class OverviewWindow(Gtk.ApplicationWindow):
     def set_selected(self, sel: VMBase | None) -> None:
         self.selected_vm = sel
 
-        if self.selected_vm:
-            print(f"APP selected + {self.selected_vm.name}")
-
     def remount_list_view(self) -> None:
         widget = self.stack.get_child_by_name("list")
         print("Remounting ClanListView")
