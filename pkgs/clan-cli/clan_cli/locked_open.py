@@ -1,11 +1,23 @@
+import dataclasses
 import fcntl
+import json
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Any
+
+from .dirs import user_history_file
+
+
+class EnhancedJSONEncoder(json.JSONEncoder):
+    def default(self, o: Any) -> Any:
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+        return super().default(o)
 
 
 @contextmanager
-def locked_open(filename: str | Path, mode: str = "r") -> Generator:
+def _locked_open(filename: str | Path, mode: str = "r") -> Generator:
     """
     This is a context manager that provides an advisory write lock on the file specified by `filename` when entering the context, and releases the lock when leaving the context. The lock is acquired using the `fcntl` module's `LOCK_EX` flag, which applies an exclusive write lock to the file.
     """
@@ -13,3 +25,16 @@ def locked_open(filename: str | Path, mode: str = "r") -> Generator:
         fcntl.flock(fd, fcntl.LOCK_EX)
         yield fd
         fcntl.flock(fd, fcntl.LOCK_UN)
+
+
+def write_history_file(data: Any) -> None:
+    with _locked_open(user_history_file(), "w+") as f:
+        f.write(json.dumps(data, cls=EnhancedJSONEncoder, indent=4))
+        f.truncate()
+
+
+def read_history_file() -> list[dict]:
+    with _locked_open(user_history_file(), "r") as f:
+        content: str = f.read()
+        parsed: list[dict] = json.loads(content)
+        return parsed

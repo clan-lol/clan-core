@@ -9,7 +9,7 @@ from clan_cli.flakes.inspect import FlakeConfig, inspect_flake
 
 from ..clan_uri import ClanURI
 from ..dirs import user_history_file
-from ..locked_open import locked_open
+from ..locked_open import read_history_file, write_history_file
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
@@ -34,14 +34,12 @@ def list_history() -> list[HistoryEntry]:
     if not user_history_file().exists():
         return []
 
-    with locked_open(user_history_file(), "r") as f:
-        try:
-            content: str = f.read()
-            parsed: list[dict] = json.loads(content)
-            logs = [HistoryEntry(**p) for p in parsed]
-        except (json.JSONDecodeError, TypeError) as ex:
-            print("Failed to load history. Invalid JSON.")
-            print(f"{user_history_file()}: {ex}")
+    try:
+        parsed = read_history_file()
+        logs = [HistoryEntry(**p) for p in parsed]
+    except (json.JSONDecodeError, TypeError) as ex:
+        print("Failed to load history. Invalid JSON.")
+        print(f"{user_history_file()}: {ex}")
 
     return logs
 
@@ -69,9 +67,7 @@ def add_history(uri: ClanURI) -> list[HistoryEntry]:
         )
         logs.append(history)
 
-    with locked_open(user_history_file(), "w+") as f:
-        f.write(json.dumps(logs, cls=EnhancedJSONEncoder, indent=4))
-        f.truncate()
+    write_history_file(logs)
 
     return logs
 
