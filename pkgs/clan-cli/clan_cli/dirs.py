@@ -1,7 +1,8 @@
-import base64
+import copy
 import logging
 import os
 import sys
+import urllib
 from pathlib import Path
 
 log = logging.getLogger(__name__)
@@ -45,7 +46,9 @@ def user_gcroot_dir() -> Path:
 def specific_groot_dir(*, clan_name: str, flake_url: str) -> Path:
     # Always build icon so that we can symlink it to the gcroot
     gcroot_dir = user_gcroot_dir()
-    burl = base64.urlsafe_b64encode(flake_url.encode()).decode()
+    # burl = base64.urlsafe_b64encode(flake_url.encode()).decode()
+    burl = copy.copy(flake_url).replace("/", "_").replace(":", "_")
+    burl = urllib.parse.quote_plus(burl)
     # Create the directory if it already exists append a number to it till it doesn't exist and then create it
     clan_gcroot = gcroot_dir / f"{clan_name}-{burl}"
 
