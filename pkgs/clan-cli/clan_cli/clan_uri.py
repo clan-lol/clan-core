@@ -146,3 +146,6 @@ class ClanURI:
 
     def __str__(self) -> str:
         return self.get_full_uri()
+
+    def __repr__(self) -> str:
+        return f"ClanURI({self.get_full_uri()})"
