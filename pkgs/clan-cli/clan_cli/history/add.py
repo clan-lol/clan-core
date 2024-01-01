@@ -23,10 +23,26 @@ class EnhancedJSONEncoder(json.JSONEncoder):
 class HistoryEntry:
     last_used: str
     flake: FlakeConfig
+    settings: dict[str, Any] = dataclasses.field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if isinstance(self.flake, dict):
             self.flake = FlakeConfig(**self.flake)
+
+
+def merge_dicts(d1: dict, d2: dict) -> dict:
+    # create a new dictionary that copies d1
+    merged = dict(d1)
+    # iterate over the keys and values of d2
+    for key, value in d2.items():
+        # if the key is in d1 and both values are dictionaries, merge them recursively
+        if key in d1 and isinstance(d1[key], dict) and isinstance(value, dict):
+            merged[key] = merge_dicts(d1[key], value)
+        # otherwise, update the value of the key in the merged dictionary
+        else:
+            merged[key] = value
+    # return the merged dictionary
+    return merged
 
 
 def list_history() -> list[HistoryEntry]:
@@ -36,6 +52,8 @@ def list_history() -> list[HistoryEntry]:
 
     try:
         parsed = read_history_file()
+        for i, p in enumerate(parsed.copy()):
+            parsed[i] = merge_dicts(p, p["settings"])
         logs = [HistoryEntry(**p) for p in parsed]
     except (json.JSONDecodeError, TypeError) as ex:
         print("Failed to load history. Invalid JSON.")
