@@ -75,6 +75,7 @@ class Trust(Gtk.Box):
         self.set_center_widget(layout)
 
     def on_trust(self, widget: Gtk.Widget) -> None:
+        # TODO: @Johannes, replace image with real clan logo
         try:
             uri = self.url or ClanURI(self.entry.get_text())
             print(f"trusted: {uri}")

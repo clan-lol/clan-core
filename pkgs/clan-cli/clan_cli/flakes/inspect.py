@@ -8,6 +8,7 @@ from ..dirs import specific_groot_dir
 from ..errors import ClanError
 from ..machines.list import list_machines
 from ..nix import nix_build, nix_config, nix_eval, nix_metadata
+from ..vms.inspect import VmConfig, inspect_vm
 
 
 @dataclass
@@ -21,6 +22,7 @@ class FlakeConfig:
     description: str | None
     last_updated: str
     revision: str | None
+    vm: VmConfig
 
 
 def run_cmd(cmd: list[str]) -> str:
@@ -49,6 +51,8 @@ def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
         raise ClanError(
             f"Machine {flake_attr} not found in {flake_url}. Available machines: {', '.join(machines)}"
         )
+
+    vm = inspect_vm(flake_url, flake_attr)
 
     # Get the cLAN name
     cmd = nix_eval(
@@ -86,6 +90,7 @@ def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
     meta = nix_metadata(flake_url)
 
     return FlakeConfig(
+        vm=vm,
         flake_url=flake_url,
         clan_name=clan_name,
         flake_attr=flake_attr,
