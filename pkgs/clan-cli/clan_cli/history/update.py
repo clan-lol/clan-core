@@ -2,12 +2,10 @@
 import argparse
 import copy
 import datetime
-import json
 
-from ..dirs import user_history_file
-from ..locked_open import locked_open
+from ..locked_open import write_history_file
 from ..nix import nix_metadata
-from .add import EnhancedJSONEncoder, HistoryEntry, list_history
+from .add import HistoryEntry, list_history
 
 
 def update_history() -> list[HistoryEntry]:
@@ -29,9 +27,7 @@ def update_history() -> list[HistoryEntry]:
         # TODO: Delete stale entries
         new_logs.append(new_entry)
 
-    with locked_open(user_history_file(), "w+") as f:
-        f.write(json.dumps(new_logs, cls=EnhancedJSONEncoder, indent=4))
-        f.truncate()
+    write_history_file(new_logs)
     return new_logs
 
 

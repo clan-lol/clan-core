@@ -9,7 +9,7 @@ from clan_cli.flakes.inspect import FlakeConfig, inspect_flake
 
 from ..clan_uri import ClanURI
 from ..dirs import user_history_file
-from ..locked_open import locked_open
+from ..locked_open import read_history_file, write_history_file
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
@@ -23,10 +23,26 @@ class EnhancedJSONEncoder(json.JSONEncoder):
 class HistoryEntry:
     last_used: str
     flake: FlakeConfig
+    settings: dict[str, Any] = dataclasses.field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if isinstance(self.flake, dict):
             self.flake = FlakeConfig(**self.flake)
+
+
+def merge_dicts(d1: dict, d2: dict) -> dict:
+    # create a new dictionary that copies d1
+    merged = dict(d1)
+    # iterate over the keys and values of d2
+    for key, value in d2.items():
+        # if the key is in d1 and both values are dictionaries, merge them recursively
+        if key in d1 and isinstance(d1[key], dict) and isinstance(value, dict):
+            merged[key] = merge_dicts(d1[key], value)
+        # otherwise, update the value of the key in the merged dictionary
+        else:
+            merged[key] = value
+    # return the merged dictionary
+    return merged
 
 
 def list_history() -> list[HistoryEntry]:
@@ -34,18 +50,19 @@ def list_history() -> list[HistoryEntry]:
     if not user_history_file().exists():
         return []
 
-    with locked_open(user_history_file(), "r") as f:
-        try:
-            content: str = f.read()
-            parsed: list[dict] = json.loads(content)
-            logs = [HistoryEntry(**p) for p in parsed]
-        except (json.JSONDecodeError, TypeError) as ex:
-            print("Failed to load history. Invalid JSON.")
-            print(f"{user_history_file()}: {ex}")
+    try:
+        parsed = read_history_file()
+        for i, p in enumerate(parsed.copy()):
+            parsed[i] = merge_dicts(p, p["settings"])
+        logs = [HistoryEntry(**p) for p in parsed]
+    except (json.JSONDecodeError, TypeError) as ex:
+        print("Failed to load history. Invalid JSON.")
+        print(f"{user_history_file()}: {ex}")
 
     return logs
 
 
+# TODO: Add all vm entries to history
 def add_history(uri: ClanURI) -> list[HistoryEntry]:
     uri.check_exits()
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
@@ -68,9 +85,7 @@ def add_history(uri: ClanURI) -> list[HistoryEntry]:
         )
         logs.append(history)
 
-    with locked_open(user_history_file(), "w+") as f:
-        f.write(json.dumps(logs, cls=EnhancedJSONEncoder, indent=4))
-        f.truncate()
+    write_history_file(logs)
 
     return logs
 
