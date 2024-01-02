@@ -5,7 +5,7 @@ from clan_cli.errors import ClanError
 
 from clan_vm_manager.errors.show_error import show_error_dialog
 
-from ..interfaces import InitialFlashValues
+from ..interfaces import Callbacks, InitialFlashValues
 
 gi.require_version("Gtk", "3.0")
 
@@ -24,7 +24,7 @@ class Details(Gtk.Box):
 
 
 class FlashUSBWindow(Gtk.ApplicationWindow):
-    def __init__(self, initial_values: InitialFlashValues) -> None:
+    def __init__(self, cbs: Callbacks, initial_values: InitialFlashValues) -> None:
         super().__init__()
         # Initialize the main wincbsdow
         # self.cbs = cbs

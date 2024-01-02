@@ -4,6 +4,7 @@ from typing import Any
 import gi
 from clan_cli.clan_uri import ClanURI
 from clan_cli.errors import ClanError
+from clan_cli.flakes.inspect import FlakeConfig
 from clan_cli.history.add import add_history, list_history
 
 from clan_vm_manager import assets
@@ -20,12 +21,11 @@ class Trust(Gtk.Box):
     def __init__(
         self,
         initial_values: InitialJoinValues,
-        show_next: Callable[[], None],
-        stack: Gtk.Stack,
+        on_trust: Callable[[str, FlakeConfig], None],
     ) -> None:
         super().__init__()
-        self.show_next = show_next
-        self.stack = stack
+
+        self.on_trust = on_trust
         self.url: ClanURI | None = initial_values.url
 
         icon = Gtk.Image.new_from_pixbuf(
@@ -67,14 +67,14 @@ class Trust(Gtk.Box):
         lower = Gtk.Box(orientation="vertical")
         lower.set_spacing(20)
         trust_button = Gtk.Button(label="Trust")
-        trust_button.connect("clicked", self.on_trust)
+        trust_button.connect("clicked", self.on_trust_clicked)
         lower.add(trust_button)
 
         layout.pack_start(upper, expand=True, fill=True, padding=0)
         layout.pack_end(lower, expand=True, fill=True, padding=0)
         self.set_center_widget(layout)
 
-    def on_trust(self, widget: Gtk.Widget) -> None:
+    def on_trust_clicked(self, widget: Gtk.Widget) -> None:
         try:
             uri = self.url or ClanURI(self.entry.get_text())
             print(f"trusted: {uri}")
@@ -85,25 +85,21 @@ class Trust(Gtk.Box):
             )
             if found:
                 [item] = found
-                self.stack.add_titled(
-                    Details(url=uri.get_internal(), description=item.flake.description),
-                    "details",
-                    "Details",
-                )
-                self.show_next()
-                self.stack.set_visible_child_name("details")
+                self.on_trust(uri.get_internal(), item.flake)
 
         except ClanError as e:
             show_error_dialog(e)
 
 
 class Details(Gtk.Box):
-    def __init__(self, url: str, description: str | None) -> None:
+    def __init__(self, url: str, flake: FlakeConfig) -> None:
         super().__init__()
+
+        self.flake = flake
 
         icon = Gtk.Image.new_from_pixbuf(
             GdkPixbuf.Pixbuf.new_from_file_at_scale(
-                filename=str(assets.loc / "placeholder.jpeg"),
+                filename=str(flake.icon),
                 width=256,
                 height=256,
                 preserve_aspect_ratio=True,
@@ -121,7 +117,7 @@ class Details(Gtk.Box):
 
         upper.add(label)
 
-        description_label = Gtk.Label(label=description)
+        description_label = Gtk.Label(label=flake.description)
         upper.add(description_label)
 
         lower = Gtk.Box(orientation="horizontal", expand=True)
@@ -137,9 +133,9 @@ class Details(Gtk.Box):
 
         join_details_area = Gtk.Box(orientation="horizontal", expand=False)
         join_label_area = Gtk.Box(orientation="vertical", expand=False)
-        join_label_area.pack_end(join_details, expand=False, fill=False, padding=0)
+
         for info in [
-            "Memory: 2 GiB",
+            f"Memory: {flake.clan_name}",
             "CPU: 2 Cores",
             "Storage: 64 GiB",
         ]:
@@ -147,6 +143,7 @@ class Details(Gtk.Box):
             details_label.set_justify(Gtk.Justification.LEFT)
             join_label_area.pack_end(details_label, expand=False, fill=False, padding=0)
 
+        join_label_area.pack_end(join_details, expand=False, fill=False, padding=0)
         join_details_area.pack_start(
             join_label_area, expand=False, fill=False, padding=0
         )
@@ -160,6 +157,7 @@ class Details(Gtk.Box):
 
     def on_join(self, widget: Gtk.Widget) -> None:
         # TODO: @Qubasa
+
         show_error_dialog(ClanError("Feature not ready yet."), "Info")
 
 
@@ -187,7 +185,7 @@ class JoinWindow(Gtk.ApplicationWindow):
 
         print("initial_values", initial_values)
         self.stack.add_titled(
-            Trust(initial_values, show_next=self.show_details, stack=self.stack),
+            Trust(initial_values, on_trust=self.on_trust),
             "trust",
             "Trust",
         )
@@ -199,8 +197,14 @@ class JoinWindow(Gtk.ApplicationWindow):
         # Must be called AFTER all components were added
         self.show_all()
 
-    def show_details(self) -> None:
+    def on_trust(self, url: str, flake: FlakeConfig) -> None:
+        self.stack.add_titled(
+            Details(url=url, flake=flake),
+            "details",
+            "Details",
+        )
         self.show_all()
+        self.stack.set_visible_child_name("details")
 
     def switch(self, widget: Gtk.Widget) -> None:
         self.cbs.show_list()
