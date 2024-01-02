@@ -13,7 +13,7 @@
 
     environment.sessionVariables = {
       WAYLAND_DISPLAY = "wayland-1";
-      DISPLAY = ":0";
+      DISPLAY = ":1";
       QT_QPA_PLATFORM = "wayland"; # Qt Applications
       GDK_BACKEND = "wayland"; # GTK Applications
       XDG_SESSION_TYPE = "wayland"; # Electron Applications
@@ -34,7 +34,7 @@
       wantedBy = [ "graphical-session.target" ];
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${config.services.wayland-proxy-virtwl.package}/bin/wayland-proxy-virtwl --virtio-gpu --x-display=0 --xwayland-binary=${pkgs.xwayland}/bin/Xwayland";
+        ExecStart = "${config.services.wayland-proxy-virtwl.package}/bin/wayland-proxy-virtwl --virtio-gpu --x-display=1 --xwayland-binary=${pkgs.xwayland}/bin/Xwayland";
         Restart = "always";
         RestartSec = 5;
       };
