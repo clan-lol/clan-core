@@ -117,7 +117,7 @@ class Application(Gtk.Application):
     def show_flash(self) -> None:
         prev = self.window
         self.window = self.windows.__dict__["flash_usb"](
-            cbs=self.cbs, initial_values=FlashUSBWindow(InitialFlashValues(None))
+            cbs=self.cbs, initial_values=InitialFlashValues(None)
         )
         self.window.set_application(self)
         prev.hide()
@@ -171,3 +171,7 @@ def show_overview(args: argparse.Namespace) -> None:
 
 def register_overview_parser(parser: argparse.ArgumentParser) -> None:
     parser.set_defaults(func=show_overview)
+
+
+# def register_run_parser(parser: argparse.ArgumentParser) -> None:
+#     parser.set_defaults(func=show_run_vm)
