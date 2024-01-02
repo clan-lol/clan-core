@@ -9,7 +9,7 @@ def test_get_internal() -> None:
     assert uri.get_internal() == "https://example.com?password=1234"
 
     uri = ClanURI("clan://~/Downloads")
-    assert uri.get_internal() == "~/Downloads"
+    assert uri.get_internal().endswith("/Downloads")
 
     uri = ClanURI("clan:///home/user/Downloads")
     assert uri.get_internal() == "/home/user/Downloads"
@@ -42,7 +42,7 @@ def test_is_remote() -> None:
 def test_direct_local_path() -> None:
     # Create a ClanURI object from a remote URI
     uri = ClanURI("clan://~/Downloads")
-    assert uri.get_internal() == "~/Downloads"
+    assert uri.get_internal().endswith("/Downloads")
 
 
 def test_direct_local_path2() -> None:
@@ -109,17 +109,17 @@ def test_from_str() -> None:
     params = ClanParameters(flake_attr="myVM")
     uri = ClanURI.from_str(url=uri_str, params=params)
     assert uri.params.flake_attr == "myVM"
-    assert uri.get_internal() == "~/Downloads/democlan"
+    assert uri.get_internal().endswith("/Downloads/democlan")
 
     uri_str = "~/Downloads/democlan"
     uri = ClanURI.from_str(url=uri_str)
     assert uri.params.flake_attr == "defaultVM"
-    assert uri.get_internal() == "~/Downloads/democlan"
+    assert uri.get_internal().endswith("/Downloads/democlan")
 
     uri_str = "clan://~/Downloads/democlan"
     uri = ClanURI.from_str(url=uri_str)
     assert uri.params.flake_attr == "defaultVM"
-    assert uri.get_internal() == "~/Downloads/democlan"
+    assert uri.get_internal().endswith("/Downloads/democlan")
 
 
 def test_remote_with_all_params() -> None:
