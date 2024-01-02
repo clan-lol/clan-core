@@ -31,7 +31,6 @@ class MPProcess:
     name: str
     proc: mp.Process
     out_file: Path
-    in_file: Path
 
     # Kill the new process and all its children by sending a SIGTERM signal to the process group
     def kill_group(self) -> None:
@@ -60,7 +59,6 @@ def _set_proc_name(name: str) -> None:
 def _init_proc(
     func: Callable,
     out_file: Path,
-    in_file: Path,
     wait_stdin_connect: bool,
     proc_name: str,
     on_except: Callable[[Exception, mp.process.BaseProcess], None],
@@ -83,12 +81,7 @@ def _init_proc(
     _set_proc_name(proc_name)
 
     # Open stdin
-    if wait_stdin_connect:
-        print(f"Waiting for stdin connection on file {in_file}", file=sys.stderr)
-        with open(in_file) as in_fd:
-            os.dup2(in_fd.fileno(), sys.stdin.fileno())
-    else:
-        sys.stdin.close()
+    sys.stdin.close()
 
     # Execute the main function
     print(f"Executing function {func.__name__} now", file=sys.stderr)
@@ -106,7 +99,6 @@ def _init_proc(
 
 def spawn(
     *,
-    wait_stdin_con: bool,
     log_path: Path,
     on_except: Callable[[Exception, mp.process.BaseProcess], None],
     func: Callable,
@@ -124,17 +116,11 @@ def spawn(
     # Set names
     proc_name = f"MPExec:{func.__name__}"
     out_file = log_path / "out.log"
-    in_file = log_path / "in.fifo"
-
-    # Create stdin fifo
-    if in_file.exists():
-        in_file.unlink()
-    os.mkfifo(in_file)
 
     # Start the process
     proc = mp.Process(
         target=_init_proc,
-        args=(func, out_file, in_file, wait_stdin_con, proc_name, on_except),
+        args=(func, out_file, proc_name, on_except),
         name=proc_name,
         kwargs=kwargs,
     )
@@ -143,19 +129,11 @@ def spawn(
     # Print some information
     assert proc.pid is not None
 
-    if wait_stdin_con:
-        cmd = f"cat - > {in_file}"
-        print(f"Connect to stdin with : {cmd}")
     cmd = f"tail -f {out_file}"
     print(f"Connect to stdout with: {cmd}")
 
     # Return the process
-    mp_proc = MPProcess(
-        name=proc_name,
-        proc=proc,
-        out_file=out_file,
-        in_file=in_file,
-    )
+    mp_proc = MPProcess(name=proc_name, proc=proc, out_file=out_file)
 
     return mp_proc
 
@@ -190,14 +168,12 @@ class ProcessManager:
         self,
         *,
         ident: str,
-        wait_stdin_con: bool,
         log_path: Path,
         on_except: Callable[[Exception, mp.process.BaseProcess], None],
         func: Callable,
         **kwargs: Any,
     ) -> MPProcess:
         proc = spawn(
-            wait_stdin_con=wait_stdin_con,
             log_path=log_path,
             on_except=on_except,
             func=func,
