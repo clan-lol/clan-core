@@ -4,10 +4,13 @@ from pathlib import Path
 from typing import Any
 
 import gi
-from clan_cli import history
+from clan_cli.history.list import list_history
+
+from .errors.show_error import show_error_dialog
 
 gi.require_version("GdkPixbuf", "2.0")
 
+from clan_cli.errors import ClanError
 from gi.repository import GdkPixbuf
 
 from clan_vm_manager import assets
@@ -58,30 +61,34 @@ class VM:
     description: str | None = None
 
 
+# TODO: How to handle incompatible / corrupted history file. Delete it?
 # start/end indexes can be used optionally for pagination
 def get_initial_vms(
     running_vms: list[str], start: int = 0, end: int | None = None
 ) -> list[VM]:
     vm_list = []
 
-    # Execute `clan flakes add <path>` to democlan for this to work
-    for entry in history.list.list_history():
-        icon = assets.loc / "placeholder.jpeg"
-        if entry.flake.icon is not None:
-            icon = entry.flake.icon
+    try:
+        # Execute `clan flakes add <path>` to democlan for this to work
+        for entry in list_history():
+            icon = assets.loc / "placeholder.jpeg"
+            if entry.flake.icon is not None:
+                icon = entry.flake.icon
 
-        status = False
-        if entry.flake.flake_url in running_vms:
-            status = True
+            status = False
+            if entry.flake.flake_url in running_vms:
+                status = True
 
-        base = VMBase(
-            icon=icon,
-            name=entry.flake.clan_name,
-            url=entry.flake.flake_url,
-            status=status,
-            _flake_attr=entry.flake.flake_attr,
-        )
-        vm_list.append(VM(base=base))
+            base = VMBase(
+                icon=icon,
+                name=entry.flake.clan_name,
+                url=entry.flake.flake_url,
+                status=status,
+                _flake_attr=entry.flake.flake_attr,
+            )
+            vm_list.append(VM(base=base))
+    except ClanError as e:
+        show_error_dialog(e)
 
     # start/end slices can be used for pagination
     return vm_list[start:end]
