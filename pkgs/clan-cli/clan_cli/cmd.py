@@ -24,24 +24,26 @@ def run(cmd: list[str], cwd: Path = Path.cwd()) -> CmdOut:
     )
 
     # Initialize empty strings for output and error
-    output = ""
-    error = ""
+    output = b""
+    error = b""
 
     # Iterate over the stdout stream
     for c in iter(lambda: process.stdout.read(1), b""):  # type: ignore
         # Convert bytes to string and append to output
-        output += c.decode("utf-8")
+        output += c
         # Write to terminal
-        sys.stdout.write(c.decode("utf-8"))
-
+        sys.stdout.buffer.write(c)
     # Iterate over the stderr stream
     for c in iter(lambda: process.stderr.read(1), b""):  # type: ignore
         # Convert bytes to string and append to error
-        error += c.decode("utf-8")
+        error += c
         # Write to terminal
-        sys.stderr.write(c.decode("utf-8"))
+        sys.stderr.buffer.write(c)
     # Wait for the subprocess to finish
     process.wait()
+
+    output_str = output.decode("utf-8")
+    error_str = error.decode("utf-8")
 
     if process.returncode != 0:
         raise ClanError(
@@ -50,12 +52,12 @@ command: {shlex.join(cmd)}
 working directory: {cwd}
 exit code: {process.returncode}
 stderr:
-{error}
+{error_str}
 stdout:
-{output}
+{output_str}
 """
         )
-    return CmdOut(output, error, cwd=cwd)
+    return CmdOut(output_str, error_str, cwd=cwd)
 
 
 def runforcli(func: Callable[..., dict[str, CmdOut]], *args: Any) -> None:
