@@ -54,7 +54,6 @@ class OverviewWindow(Gtk.ApplicationWindow):
 
     def remount_list_view(self) -> None:
         widget = self.stack.get_child_by_name("list")
-        print("Remounting ClanListView")
         if widget:
             widget.destroy()
 
@@ -71,7 +70,6 @@ class OverviewWindow(Gtk.ApplicationWindow):
         self.stack.set_visible_child_name("list")
 
     def remount_edit_view(self) -> None:
-        print("Remounting ClanEdit")
         widget = self.stack.get_child_by_name("edit")
         if widget:
             widget.destroy()

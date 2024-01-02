@@ -10,10 +10,13 @@ from clan_vm_manager.windows.flash import FlashUSBWindow
 
 gi.require_version("Gtk", "3.0")
 
+import multiprocessing as mp
+
 from clan_cli.clan_uri import ClanURI
 from gi.repository import Gio, Gtk
 
 from .constants import constants
+from .errors.show_error import show_error_dialog
 from .executor import ProcessManager
 from .interfaces import Callbacks, InitialFlashValues, InitialJoinValues
 from .windows.join import JoinWindow
@@ -31,6 +34,11 @@ class ClanWindows:
 class ClanConfig:
     initial_window: str
     url: ClanURI | None
+
+
+# Will be executed in the context of the child process
+def on_except(error: Exception, proc: mp.process.BaseProcess) -> None:
+    show_error_dialog(str(error))
 
 
 class Application(Gtk.Application):
@@ -80,17 +88,17 @@ class Application(Gtk.Application):
         self.proc_manager.spawn(
             ident=url,
             wait_stdin_con=False,
+            on_except=on_except,
             log_path=log_path,
             func=vms.run.run_vm,
             vm=vm,
         )
 
     def stop_vm(self, url: str, attr: str) -> None:
-        print(f"stop_vm {url}")
         self.proc_manager.kill(url)
 
     def running_vms(self) -> list[str]:
-        return list(self.proc_manager.procs.keys())
+        return self.proc_manager.running_procs()
 
     def show_list(self) -> None:
         prev = self.window
