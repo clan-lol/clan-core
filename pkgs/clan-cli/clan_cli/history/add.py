@@ -10,7 +10,7 @@ from clan_cli.flakes.inspect import FlakeConfig, inspect_flake
 from ..clan_uri import ClanURI
 from ..dirs import user_history_file
 from ..locked_open import read_history_file, write_history_file
-
+from ..errors import ClanError
 
 class EnhancedJSONEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
@@ -56,8 +56,7 @@ def list_history() -> list[HistoryEntry]:
             parsed[i] = merge_dicts(p, p["settings"])
         logs = [HistoryEntry(**p) for p in parsed]
     except (json.JSONDecodeError, TypeError) as ex:
-        print("Failed to load history. Invalid JSON.")
-        print(f"{user_history_file()}: {ex}")
+        raise ClanError(f"History file at {user_history_file()} is corrupted") from ex
 
     return logs
 
