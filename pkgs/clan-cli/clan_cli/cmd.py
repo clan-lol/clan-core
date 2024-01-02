@@ -2,10 +2,8 @@ import logging
 import shlex
 from collections.abc import Callable
 from pathlib import Path
-from subprocess import PIPE, Popen
 from typing import Any, NamedTuple
 
-from .custom_logger import get_caller
 from .errors import ClanError
 
 log = logging.getLogger(__name__)
@@ -17,40 +15,49 @@ class CmdOut(NamedTuple):
     cwd: Path | None = None
 
 
-def run(cmd: list[str], cwd: Path | None = None) -> CmdOut:
-    cwd_res = None
-    if cwd is not None:
-        if not cwd.exists():
-            raise ClanError(f"Working directory {cwd} does not exist")
-        if not cwd.is_dir():
-            raise ClanError(f"Working directory {cwd} is not a directory")
-        cwd_res = cwd.resolve()
-    log.debug(
-        f"Command: {shlex.join(cmd)}\nWorking directory: {cwd_res}\nCaller : {get_caller()}"
-    )
-    proc = Popen(
-        args=cmd,
-        stderr=PIPE,
-        stdout=PIPE,
-        text=True,
-        cwd=cwd_res,
-    )
-    stdout, stderr = proc.communicate()
+import subprocess
+import sys
 
-    if proc.returncode != 0:
+
+def run(cmd: list[str], cwd: Path = Path.cwd()) -> CmdOut:
+    # Start the subprocess
+    process = subprocess.Popen(
+        cmd, cwd=str(cwd), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+
+    # Initialize empty strings for output and error
+    output = ""
+    error = ""
+
+    # Iterate over the stdout stream
+    for c in iter(lambda: process.stdout.read(1), b""):  # type: ignore
+        # Convert bytes to string and append to output
+        output += c.decode("utf-8")
+        # Write to terminal
+        sys.stdout.write(c.decode("utf-8"))
+
+    # Iterate over the stderr stream
+    for c in iter(lambda: process.stderr.read(1), b""):  # type: ignore
+        # Convert bytes to string and append to error
+        error += c.decode("utf-8")
+        # Write to terminal
+        sys.stderr.write(c.decode("utf-8"))
+    # Wait for the subprocess to finish
+    process.wait()
+
+    if process.returncode != 0:
         raise ClanError(
             f"""
 command: {shlex.join(cmd)}
-working directory: {cwd_res}
-exit code: {proc.returncode}
+working directory: {cwd}
+exit code: {process.returncode}
 stderr:
-{stderr}
+{error}
 stdout:
-{stdout}
+{output}
 """
         )
-
-    return CmdOut(stdout, stderr, cwd=cwd)
+    return CmdOut(output, error, cwd=cwd)
 
 
 def runforcli(func: Callable[..., dict[str, CmdOut]], *args: Any) -> None:
