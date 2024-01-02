@@ -10,6 +10,7 @@ from .errors.show_error import show_error_dialog
 
 gi.require_version("GdkPixbuf", "2.0")
 
+from clan_cli.errors import ClanError
 from gi.repository import GdkPixbuf
 
 from clan_vm_manager import assets
@@ -60,6 +61,7 @@ class VM:
     description: str | None = None
 
 
+# TODO: How to handle incompatible / corrupted history file. Delete it?
 # start/end indexes can be used optionally for pagination
 def get_initial_vms(
     running_vms: list[str], start: int = 0, end: int | None = None
@@ -85,7 +87,7 @@ def get_initial_vms(
                 _flake_attr=entry.flake.flake_attr,
             )
             vm_list.append(VM(base=base))
-    except Exception as e:
+    except ClanError as e:
         show_error_dialog(e)
 
     # start/end slices can be used for pagination

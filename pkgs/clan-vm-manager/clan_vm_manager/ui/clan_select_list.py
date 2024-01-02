@@ -1,9 +1,10 @@
 from collections.abc import Callable
 
-from gi.repository import GdkPixbuf, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gtk
 
 from ..interfaces import Callbacks
 from ..models import VMBase
+from .context_menu import VmMenu
 
 
 class ClanEditForm(Gtk.ListBox):
@@ -97,7 +98,6 @@ class ClanList(Gtk.Box):
         self.set_selected = set_selected
         self.show_toolbar = show_toolbar
         self.cbs = cbs
-
         self.show_join = cbs.show_join
 
         self.selected_vm: VMBase | None = selected_vm
@@ -228,6 +228,8 @@ class ClanListView(Gtk.Box):
         self.vms: list[VMBase] = vms
         self.on_select_row = on_select_row
         self.on_double_click = on_double_click
+        self.context_menu: VmMenu | None = None
+
         store_types = VMBase.name_to_type_map().values()
 
         self.list_store = Gtk.ListStore(*store_types)
@@ -241,6 +243,7 @@ class ClanListView(Gtk.Box):
         selection = self.tree_view.get_selection()
         selection.connect("changed", self._on_select_row)
         self.tree_view.connect("row-activated", self._on_double_click)
+        self.tree_view.connect("button-press-event", self._on_button_pressed)
 
         self.set_border_width(10)
         self.add(self.tree_view)
@@ -272,12 +275,29 @@ class ClanListView(Gtk.Box):
             vm = VMBase(*model[row])
             self.on_select_row(vm)
 
+    def _on_button_pressed(
+        self, tree_view: Gtk.TreeView, event: Gdk.EventButton
+    ) -> None:
+        if self.context_menu:
+            self.context_menu.destroy()
+            self.context_menu = None
+
+        if event.button == 3:
+            path, column, x, y = tree_view.get_path_at_pos(event.x, event.y)
+            if path is not None:
+                vm = VMBase(*self.list_store[path[0]])
+                print(event)
+                print(f"Right click on {vm.url}")
+                self.context_menu = VmMenu(vm)
+                self.context_menu.popup_at_pointer(event)
+
     def _on_double_click(
         self, tree_view: Gtk.TreeView, path: Gtk.TreePath, column: Gtk.TreeViewColumn
     ) -> None:
         # Get the selection object of the tree view
         selection = tree_view.get_selection()
         model, row = selection.get_selected()
+
         if row is not None:
             vm = VMBase(*model[row])
             self.on_double_click(vm)
