@@ -1,4 +1,3 @@
-import copy
 import logging
 import os
 import sys
@@ -46,9 +45,7 @@ def user_gcroot_dir() -> Path:
 def specific_groot_dir(*, clan_name: str, flake_url: str) -> Path:
     # Always build icon so that we can symlink it to the gcroot
     gcroot_dir = user_gcroot_dir()
-    # burl = base64.urlsafe_b64encode(flake_url.encode()).decode()
-    burl = copy.copy(flake_url).replace("/", "_").replace(":", "_")
-    burl = urllib.parse.quote_plus(burl)
+    burl = urllib.parse.quote_plus(flake_url)
     clan_gcroot = gcroot_dir / f"{clan_name}-{burl}"
 
     clan_gcroot.mkdir(parents=True, exist_ok=True)

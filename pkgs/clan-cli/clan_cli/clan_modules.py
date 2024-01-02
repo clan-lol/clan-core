@@ -1,17 +1,18 @@
 import json
-import subprocess
 from pathlib import Path
 
 from clan_cli.nix import nix_eval
 
+from .cmd import run
+
 
 def get_clan_module_names(
     flake_dir: Path,
-) -> tuple[list[str], str | None]:
+) -> list[str]:
     """
     Get the list of clan modules from the clan-core flake input
     """
-    proc = subprocess.run(
+    proc = run(
         nix_eval(
             [
                 "--impure",
@@ -25,11 +26,8 @@ def get_clan_module_names(
         """,
             ],
         ),
-        capture_output=True,
-        text=True,
         cwd=flake_dir,
     )
-    if proc.returncode != 0:
-        return [], proc.stderr
+
     module_names = json.loads(proc.stdout)
-    return module_names, None
+    return module_names
