@@ -49,7 +49,6 @@ def specific_groot_dir(*, clan_name: str, flake_url: str) -> Path:
     # burl = base64.urlsafe_b64encode(flake_url.encode()).decode()
     burl = copy.copy(flake_url).replace("/", "_").replace(":", "_")
     burl = urllib.parse.quote_plus(burl)
-    # Create the directory if it already exists append a number to it till it doesn't exist and then create it
     clan_gcroot = gcroot_dir / f"{clan_name}-{burl}"
 
     clan_gcroot.mkdir(parents=True, exist_ok=True)
