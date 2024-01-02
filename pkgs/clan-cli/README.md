@@ -45,9 +45,3 @@ Run all checks
 ```console
 nix flake check
 ```
-
-## Debugging functions
-
-Debugging functions can be found under `src/debug.py`
-quite interesting is the function breakpoint_shell() which drops you into a shell
-with the test environment loaded.
