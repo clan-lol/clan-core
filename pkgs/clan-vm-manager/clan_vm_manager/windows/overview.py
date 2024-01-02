@@ -33,6 +33,7 @@ class OverviewWindow(Gtk.ApplicationWindow):
             set_selected=self.set_selected,
             selected_vm=None,
         )
+
         # Add named stacks
         self.stack.add_titled(clan_list, "list", "List")
         self.stack.add_titled(
