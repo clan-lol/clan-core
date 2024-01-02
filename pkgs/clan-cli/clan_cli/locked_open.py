@@ -30,7 +30,6 @@ def _locked_open(filename: str | Path, mode: str = "r") -> Generator:
 def write_history_file(data: Any) -> None:
     with _locked_open(user_history_file(), "w+") as f:
         f.write(json.dumps(data, cls=EnhancedJSONEncoder, indent=4))
-        f.truncate()
 
 
 def read_history_file() -> list[dict]:

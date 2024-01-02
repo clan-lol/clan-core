@@ -1,11 +1,9 @@
 import argparse
 import json
-import shlex
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from ..errors import ClanError
+from ..cmd import run
 from ..nix import nix_config, nix_eval
 
 
@@ -31,17 +29,8 @@ def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:
         ]
     )
 
-    proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
-    assert proc.stdout is not None
-    if proc.returncode != 0:
-        raise ClanError(
-            f"""
-command: {shlex.join(cmd)}
-exit code: {proc.returncode}
-stdout:
-{proc.stdout}
-"""
-        )
+    proc = run(cmd)
+
     data = json.loads(proc.stdout)
     return VmConfig(flake_url=flake_url, flake_attr=flake_attr, **data)
 
