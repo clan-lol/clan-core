@@ -1,5 +1,7 @@
 import logging
 import shlex
+import subprocess
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -13,10 +15,6 @@ class CmdOut(NamedTuple):
     stdout: str
     stderr: str
     cwd: Path | None = None
-
-
-import subprocess
-import sys
 
 
 def run(cmd: list[str], cwd: Path = Path.cwd()) -> CmdOut:

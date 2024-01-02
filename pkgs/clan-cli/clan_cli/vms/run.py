@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import IO
 
+from ..cmd import run
 from ..dirs import module_root, specific_groot_dir
 from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_shell
@@ -20,9 +21,10 @@ log = logging.getLogger(__name__)
 
 def get_qemu_version() -> list[int]:
     # Run the command and capture the output
-    output = subprocess.check_output(["qemu-kvm", "--version"])
+    res = run(["qemu-kvm", "--version"])
+
     # Decode the output from bytes to string
-    output_str = output.decode("utf-8")
+    output_str = res.stdout
     # Split the output by newline and get the first line
     first_line = output_str.split("\n")[0]
     # Split the first line by space and get the third element
@@ -39,7 +41,7 @@ def graphics_options(vm: VmConfig) -> list[str]:
 
     # Check if the version is greater than 8.1.3 to enable virtio audio
     # if get_qemu_version() > [8, 1, 3]:
-    # common = ["-audio", "driver=pa,model=virtio"]
+    #    common = ["-audio", "driver=pa,model=virtio"]
 
     if vm.wayland:
         # fmt: off
@@ -135,16 +137,7 @@ def get_vm_create_info(vm: VmConfig, nix_options: list[str]) -> dict[str, str]:
         specific_groot_dir(clan_name=vm.clan_name, flake_url=str(vm.flake_url))
         / f"vm-{machine}",
     )
-    proc = subprocess.run(
-        cmd,
-        check=False,
-        stdout=subprocess.PIPE,
-        text=True,
-    )
-    if proc.returncode != 0:
-        raise ClanError(
-            f"Failed to build vm config: {shlex.join(cmd)} failed with: {proc.returncode}"
-        )
+    proc = run(cmd)
     try:
         return json.loads(Path(proc.stdout.strip()).read_text())
     except json.JSONDecodeError as e:
