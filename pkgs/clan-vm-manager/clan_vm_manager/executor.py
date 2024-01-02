@@ -21,10 +21,6 @@ def _kill_group(proc: mp.Process) -> None:
     pid = proc.pid
     assert pid is not None
     if proc.is_alive():
-        print(
-            f"Killing process group pid={pid}",
-            file=sys.stderr,
-        )
         os.killpg(pid, signal.SIGTERM)
     else:
         print(f"Process {proc.name} with pid {pid} is already dead", file=sys.stderr)
@@ -67,6 +63,7 @@ def _init_proc(
     in_file: Path,
     wait_stdin_connect: bool,
     proc_name: str,
+    on_except: Callable[[Exception, mp.process.BaseProcess], None],
     **kwargs: Any,
 ) -> None:
     # Create a new process group
@@ -97,8 +94,9 @@ def _init_proc(
     print(f"Executing function {func.__name__} now", file=sys.stderr)
     try:
         func(**kwargs)
-    except Exception:
+    except Exception as ex:
         traceback.print_exc()
+        on_except(ex, mp.current_process())
     finally:
         pid = os.getpid()
         gpid = os.getpgid(pid=pid)
@@ -107,12 +105,16 @@ def _init_proc(
 
 
 def spawn(
-    *, wait_stdin_con: bool, log_path: Path, func: Callable, **kwargs: Any
+    *,
+    wait_stdin_con: bool,
+    log_path: Path,
+    on_except: Callable[[Exception, mp.process.BaseProcess], None],
+    func: Callable,
+    **kwargs: Any,
 ) -> MPProcess:
     # Decouple the process from the parent
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method(method="forkserver")
-        print("Set mp start method to forkserver", file=sys.stderr)
 
     if not log_path.is_dir():
         raise ClanError(f"Log path {log_path} is not a directory")
@@ -132,7 +134,7 @@ def spawn(
     # Start the process
     proc = mp.Process(
         target=_init_proc,
-        args=(func, out_file, in_file, wait_stdin_con, proc_name),
+        args=(func, out_file, in_file, wait_stdin_con, proc_name, on_except),
         name=proc_name,
         kwargs=kwargs,
     )
@@ -140,8 +142,6 @@ def spawn(
 
     # Print some information
     assert proc.pid is not None
-    print(f"Started process '{proc_name}'")
-    print(f"Arguments: {kwargs}")
 
     if wait_stdin_con:
         cmd = f"cat - > {in_file}"
@@ -166,17 +166,42 @@ class ProcessManager:
         self.procs: dict[str, MPProcess] = dict()
         self._finalizer = weakref.finalize(self, self.kill_all)
 
+    def by_pid(self, pid: int) -> tuple[str, MPProcess] | None:
+        for ident, proc in self.procs.items():
+            if proc.proc.pid == pid:
+                return (ident, proc)
+        return None
+
+    def by_proc(self, proc: mp.process.BaseProcess) -> tuple[str, MPProcess] | None:
+        if proc.pid is None:
+            return None
+        return self.by_pid(pid=proc.pid)
+
+    def running_procs(self) -> list[str]:
+        res = []
+        for ident, proc in self.procs.copy().items():
+            if proc.proc.is_alive():
+                res.append(ident)
+            else:
+                del self.procs[ident]
+        return res
+
     def spawn(
         self,
         *,
         ident: str,
         wait_stdin_con: bool,
         log_path: Path,
+        on_except: Callable[[Exception, mp.process.BaseProcess], None],
         func: Callable,
         **kwargs: Any,
     ) -> MPProcess:
         proc = spawn(
-            wait_stdin_con=wait_stdin_con, log_path=log_path, func=func, **kwargs
+            wait_stdin_con=wait_stdin_con,
+            log_path=log_path,
+            on_except=on_except,
+            func=func,
+            **kwargs,
         )
         if ident in self.procs:
             raise ClanError(f"Process with id {ident} already exists")

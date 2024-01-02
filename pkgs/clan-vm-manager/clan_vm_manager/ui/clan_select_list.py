@@ -123,32 +123,26 @@ class ClanList(Gtk.Box):
         )
 
     def on_flash_clicked(self, widget: Gtk.Widget) -> None:
-        print("Flash clicked")
         self.cbs.show_flash()
 
     def on_double_click(self, vm: VMBase) -> None:
-        print(f"on_double_click: {vm.name}")
         self.on_start_clicked(self)
 
     def on_start_clicked(self, widget: Gtk.Widget) -> None:
-        print("Start clicked")
         if self.selected_vm:
             self.cbs.spawn_vm(self.selected_vm.url, self.selected_vm._flake_attr)
         # Call this to reload
         self.remount_list_view()
 
     def on_stop_clicked(self, widget: Gtk.Widget) -> None:
-        print("Stop clicked")
         if self.selected_vm:
             self.cbs.stop_vm(self.selected_vm.url, self.selected_vm._flake_attr)
         self.remount_list_view()
 
     def on_new_clicked(self, widget: Gtk.Widget) -> None:
-        print("New clicked")
         self.show_join()
 
     def on_edit_clicked(self, widget: Gtk.Widget) -> None:
-        print("Edit clicked")
         self.remount_edit_view()
 
     def on_select_vm(self, vm: VMBase) -> None:
