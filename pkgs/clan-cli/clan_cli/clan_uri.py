@@ -10,38 +10,24 @@ from typing import Self
 from .errors import ClanError
 
 
-def url_ok(url: str) -> None:
-    # Create a request object with the URL and the HEAD method
-    req = urllib.request.Request(url, method="HEAD")
-    try:
-        # Open the URL and get the response object
-        res = urllib.request.urlopen(req)
-
-        # Return True if the status code is 200 (OK)
-        if not res.getcode() == 200:
-            raise ClanError(f"URL has status code: {res.status_code}")
-    except urllib.error.URLError as ex:
-        raise ClanError(f"URL error: {ex}")
-
-
 # Define an enum with different members that have different values
 class ClanScheme(Enum):
     # Use the dataclass decorator to add fields and methods to the members
     @member
     @dataclass
-    class HTTP:
+    class REMOTE:
         url: str  # The url field holds the HTTP URL
 
         def __str__(self) -> str:
-            return f"HTTP({self.url})"  # The __str__ method returns a custom string representation
+            return f"REMOTE({self.url})"  # The __str__ method returns a custom string representation
 
     @member
     @dataclass
-    class FILE:
+    class LOCAL:
         path: Path  # The path field holds the local path
 
         def __str__(self) -> str:
-            return f"FILE({self.path})"  # The __str__ method returns a custom string representation
+            return f"LOCAL({self.path})"  # The __str__ method returns a custom string representation
 
 
 # Parameters defined here will be DELETED from the nested uri
@@ -96,26 +82,16 @@ class ClanURI:
         )
 
         match comb:
-            case ("http" | "https", _, _, _, _, _):
-                self.scheme = ClanScheme.HTTP.value(self._components.geturl())  # type: ignore
             case ("file", "", path, "", "", "") | ("", "", path, "", "", ""):  # type: ignore
-                self.scheme = ClanScheme.FILE.value(Path(path))
+                self.scheme = ClanScheme.LOCAL.value(Path(path).resolve())  # type: ignore
             case _:
-                raise ClanError(f"Unsupported uri components: {comb}")
-
-    def check_exits(self) -> None:
-        match self.scheme:
-            case ClanScheme.FILE.value(path):
-                if not path.exists():
-                    raise ClanError(f"File does not exist: {path}")
-            case ClanScheme.HTTP.value(url):
-                return url_ok(url)
+                self.scheme = ClanScheme.REMOTE.value(self._components.geturl())  # type: ignore
 
     def get_internal(self) -> str:
         match self.scheme:
-            case ClanScheme.FILE.value(path):
+            case ClanScheme.LOCAL.value(path):
                 return str(path)
-            case ClanScheme.HTTP.value(url):
+            case ClanScheme.REMOTE.value(url):
                 return url
             case _:
                 raise ClanError(f"Unsupported uri components: {self.scheme}")
