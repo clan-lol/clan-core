@@ -1,9 +1,9 @@
 import argparse
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from ..cmd import Log, run
 from ..machines.machines import Machine
 from ..nix import nix_shell
 from ..secrets.generate import generate_secrets
@@ -40,12 +40,12 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
             cmd += ["--kexec", kexec]
         cmd.append(target_host)
 
-        subprocess.run(
+        run(
             nix_shell(
                 ["nixpkgs#nixos-anywhere"],
                 cmd,
             ),
-            check=True,
+            log=Log.BOTH,
         )
 
 
