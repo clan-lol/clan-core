@@ -61,7 +61,6 @@ def _set_proc_name(name: str) -> None:
 def _init_proc(
     func: Callable,
     out_file: Path,
-    wait_stdin_connect: bool,
     proc_name: str,
     on_except: Callable[[Exception, mp.process.BaseProcess], None],
     **kwargs: Any,
@@ -82,7 +81,7 @@ def _init_proc(
     # Set the process name
     _set_proc_name(proc_name)
 
-    # Open stdin
+    # Close stdin
     sys.stdin.close()
 
     # Execute the main function
