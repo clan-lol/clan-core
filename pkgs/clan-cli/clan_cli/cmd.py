@@ -5,6 +5,7 @@ import shlex
 import subprocess
 import sys
 from collections.abc import Callable
+from enum import Enum
 from pathlib import Path
 from typing import IO, Any, NamedTuple
 
@@ -16,7 +17,7 @@ log = logging.getLogger(__name__)
 class CmdOut(NamedTuple):
     stdout: str
     stderr: str
-    cwd: Path | None = None
+    cwd: Path
 
 
 def handle_output(process: subprocess.Popen) -> tuple[str, str]:

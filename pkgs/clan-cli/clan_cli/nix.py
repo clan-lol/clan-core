@@ -1,10 +1,10 @@
 import json
 import os
-import subprocess
 import tempfile
 from pathlib import Path
 from typing import Any
 
+from .cmd import run
 from .dirs import nixpkgs_flake, nixpkgs_source
 
 
@@ -55,7 +55,7 @@ def nix_build(flags: list[str], gcroot: Path | None = None) -> list[str]:
 
 def nix_config() -> dict[str, Any]:
     cmd = nix_command(["show-config", "--json"])
-    proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
+    proc = run(cmd)
     data = json.loads(proc.stdout)
     config = {}
     for key, value in data.items():
@@ -90,7 +90,7 @@ def nix_eval(flags: list[str]) -> list[str]:
 
 def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
     cmd = nix_command(["flake", "metadata", "--json", f"{flake_url}"])
-    proc = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
+    proc = run(cmd)
     data = json.loads(proc.stdout)
     return data
 
