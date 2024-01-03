@@ -1,8 +1,8 @@
 import json
-import subprocess
 from pathlib import Path
 from typing import Any
 
+from ..cmd import run
 from ..errors import ClanError
 from ..nix import nix_eval
 
@@ -32,7 +32,7 @@ def schema_from_module_file(
     """
     # run the nix expression and parse the output as json
     cmd = nix_eval(["--expr", nix_expr])
-    proc = subprocess.run(cmd, stdout=subprocess.PIPE, check=True)
+    proc = run(cmd)
     return json.loads(proc.stdout)
 
 

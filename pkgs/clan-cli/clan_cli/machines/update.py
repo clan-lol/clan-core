@@ -4,6 +4,7 @@ import os
 import subprocess
 from pathlib import Path
 
+from ..cmd import run
 from ..errors import ClanError
 from ..machines.machines import Machine
 from ..nix import nix_build, nix_command, nix_config
@@ -79,11 +80,8 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
 def get_all_machines(clan_dir: Path) -> HostGroup:
     config = nix_config()
     system = config["system"]
-    machines_json = subprocess.run(
-        nix_build([f'{clan_dir}#clanInternals.all-machines-json."{system}"']),
-        stdout=subprocess.PIPE,
-        check=True,
-        text=True,
+    machines_json = run(
+        nix_build([f'{clan_dir}#clanInternals.all-machines-json."{system}"'])
     ).stdout
 
     machines = json.loads(Path(machines_json.rstrip()).read_text())

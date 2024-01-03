@@ -111,8 +111,7 @@ def spawn(
 
     if not log_path.is_dir():
         raise ClanError(f"Log path {log_path} is not a directory")
-    if not log_path.exists():
-        log_path.mkdir(parents=True)
+    log_path.mkdir(parents=True, exist_ok=True)
 
     # Set names
     proc_name = f"MPExec:{func.__name__}"
@@ -128,8 +127,6 @@ def spawn(
     proc.start()
 
     # Print some information
-    assert proc.pid is not None
-
     cmd = f"tail -f {out_file}"
     print(f"Connect to stdout with: {cmd}")
 

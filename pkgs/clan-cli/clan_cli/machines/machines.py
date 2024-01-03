@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from ..errors import ClanError
+from ..cmd import run
 from ..nix import nix_build, nix_config, nix_eval
 from ..ssh import Host, parse_deployment_address
 
@@ -13,20 +13,13 @@ def build_machine_data(machine_name: str, clan_dir: Path) -> dict:
     config = nix_config()
     system = config["system"]
 
-    proc = subprocess.run(
+    proc = run(
         nix_build(
             [
                 f'{clan_dir}#clanInternals.machines."{system}"."{machine_name}".config.system.clan.deployment.file'
             ]
         ),
-        stdout=subprocess.PIPE,
-        check=True,
-        text=True,
     )
-
-    if proc.returncode != 0:
-        ClanError("failed to build machine data")
-        exit(1)
 
     return json.loads(Path(proc.stdout.strip()).read_text())
 
@@ -99,11 +92,8 @@ class Machine:
         if attr in self.eval_cache and not refresh:
             return self.eval_cache[attr]
 
-        output = subprocess.run(
+        output = run(
             nix_eval([f"path:{self.flake_dir}#{attr}"]),
-            stdout=subprocess.PIPE,
-            check=True,
-            text=True,
         ).stdout.strip()
         self.eval_cache[attr] = output
         return output
@@ -115,11 +105,8 @@ class Machine:
         """
         if attr in self.build_cache and not refresh:
             return self.build_cache[attr]
-        outpath = subprocess.run(
+        outpath = run(
             nix_build([f"path:{self.flake_dir}#{attr}"]),
-            stdout=subprocess.PIPE,
-            check=True,
-            text=True,
         ).stdout.strip()
         self.build_cache[attr] = Path(outpath)
         return Path(outpath)
