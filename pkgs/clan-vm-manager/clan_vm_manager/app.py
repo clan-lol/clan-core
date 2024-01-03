@@ -87,7 +87,6 @@ class Application(Gtk.Application):
         # when we migrate everything to use the ClanURI class we can use the full url as the ident
         self.proc_manager.spawn(
             ident=url,
-            wait_stdin_con=False,
             on_except=on_except,
             log_path=log_path,
             func=vms.run.run_vm,
