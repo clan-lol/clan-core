@@ -157,13 +157,9 @@ class ProcessManager:
         return self.by_pid(pid=proc.pid)
 
     def running_procs(self) -> list[str]:
-        res = []
-        for ident, proc in self.procs.copy().items():
-            if proc.proc.is_alive():
-                res.append(ident)
-            else:
-                del self.procs[ident]
-        return res
+        alive_procs = filter(lambda pair: pair[1].proc.is_alive(), self.procs.items())
+        self.procs = dict(alive_procs)
+        return list(self.procs.keys())
 
     def spawn(
         self,
@@ -189,6 +185,7 @@ class ProcessManager:
         print("Killing all processes", file=sys.stderr)
         for proc in self.procs.values():
             proc.kill_group()
+        self.procs.clear()
 
     def kill(self, ident: str) -> None:
         if ident not in self.procs:
