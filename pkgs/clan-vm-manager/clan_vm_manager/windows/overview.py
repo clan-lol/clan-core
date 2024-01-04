@@ -57,9 +57,17 @@ class OverviewWindow(Gtk.ApplicationWindow):
         widget = self.stack.get_child_by_name("list")
         if widget:
             widget.destroy()
+        vms = []
+
+        for vm in get_initial_vms(self.cbs.running_vms()):
+            vms.append(vm.base)
+            # FIXME: It feels very odd that we have to re-fetch the selected VM.
+            #        The model should be just updated in-place.
+            if self.selected_vm and vm.base.url == self.selected_vm.url:
+                self.selected_vm = vm.base
 
         clan_list = ClanList(
-            vms=[vm.base for vm in get_initial_vms(self.cbs.running_vms())],
+            vms=vms,
             cbs=self.cbs,
             remount_list=self.remount_list_view,
             remount_edit=self.remount_edit_view,

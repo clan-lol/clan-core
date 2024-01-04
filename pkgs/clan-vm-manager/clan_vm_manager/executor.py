@@ -185,6 +185,7 @@ class ProcessManager:
         print("Killing all processes", file=sys.stderr)
         for proc in self.procs.values():
             proc.kill_group()
+        self.procs.clear()
 
     def kill(self, ident: str) -> None:
         if ident not in self.procs:
