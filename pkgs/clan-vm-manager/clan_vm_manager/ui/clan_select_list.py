@@ -3,7 +3,7 @@ from collections.abc import Callable
 from gi.repository import Gdk, GdkPixbuf, Gtk
 
 from ..interfaces import Callbacks
-from ..models import VMBase
+from ..models import VMBase, VMStatus
 from .context_menu import VmMenu
 
 
@@ -89,29 +89,26 @@ class ClanList(Gtk.Box):
         cbs: Callbacks,
         selected_vm: VMBase | None,
         vms: list[VMBase],
-        show_toolbar: bool = True,
     ) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
 
         self.remount_edit_view = remount_edit
         self.remount_list_view = remount_list
         self.set_selected = set_selected
-        self.show_toolbar = show_toolbar
         self.cbs = cbs
         self.show_join = cbs.show_join
 
         self.selected_vm: VMBase | None = selected_vm
 
-        if show_toolbar:
-            self.toolbar = ClanListToolbar(
-                on_start_clicked=self.on_start_clicked,
-                on_stop_clicked=self.on_stop_clicked,
-                on_edit_clicked=self.on_edit_clicked,
-                on_join_clan_clicked=self.on_join_clan_clicked,
-                on_flash_clicked=self.on_flash_clicked,
-            )
-            self.toolbar.set_is_selected(self.selected_vm is not None)
-            self.add(self.toolbar)
+        self.toolbar = ClanListToolbar(
+            on_start_clicked=self.on_start_clicked,
+            on_stop_clicked=self.on_stop_clicked,
+            on_edit_clicked=self.on_edit_clicked,
+            on_join_clan_clicked=self.on_join_clan_clicked,
+            on_flash_clicked=self.on_flash_clicked,
+        )
+        self.toolbar.set_selected_vm(self.selected_vm)
+        self.add(self.toolbar)
 
         self.add(
             ClanListView(
@@ -146,11 +143,7 @@ class ClanList(Gtk.Box):
         self.remount_edit_view()
 
     def on_select_vm(self, vm: VMBase) -> None:
-        if self.show_toolbar:
-            if vm is None:
-                self.toolbar.set_is_selected(False)
-            else:
-                self.toolbar.set_is_selected(True)
+        self.toolbar.set_selected_vm(vm)
 
         self.set_selected(vm)
         self.selected_vm = vm
@@ -188,11 +181,11 @@ class ClanListToolbar(Gtk.Toolbar):
         self.flash_button.connect("clicked", on_flash_clicked)
         self.add(self.flash_button)
 
-    def set_is_selected(self, s: bool) -> None:
-        if s:
+    def set_selected_vm(self, vm: VMBase | None) -> None:
+        if vm:
             self.edit_button.set_sensitive(True)
-            self.start_button.set_sensitive(True)
-            self.stop_button.set_sensitive(True)
+            self.start_button.set_sensitive(vm.status == VMStatus.STOPPED)
+            self.stop_button.set_sensitive(vm.status == VMStatus.RUNNING)
         else:
             self.edit_button.set_sensitive(False)
             self.start_button.set_sensitive(False)
