@@ -38,15 +38,14 @@ class Trust(Gtk.Box):
         )
         layout = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, expand=True)
         layout.set_border_width(20)
-
-        upper = Gtk.Box(orientation="vertical")
-        upper.set_spacing(20)
+        layout.set_spacing(20)
 
         if self.url is not None:
             self.entry = Gtk.Label(label=str(self.url))
-            upper.add(Gtk.Label(label="Clan URL"))
+            layout.add(icon)
+            layout.add(Gtk.Label(label="Clan URL"))
         else:
-            upper.add(Gtk.Label(label="Enter Clan URL"))
+            layout.add(Gtk.Label(label="Enter Clan URL"))
             self.entry = Gtk.Entry()
             # Autocomplete
             # TODO: provide intelligent suggestions
@@ -61,17 +60,16 @@ class Trust(Gtk.Box):
             self.entry.set_completion(completion)
             self.entry.set_placeholder_text("clan://")
 
-        upper.add(icon)
-        upper.add(self.entry)
+        layout.add(self.entry)
 
-        lower = Gtk.Box(orientation="vertical")
-        lower.set_spacing(20)
-        trust_button = Gtk.Button(label="Trust")
+        if self.url is None:
+            trust_button = Gtk.Button(label="Load cLAN-URL")
+        else:
+            trust_button = Gtk.Button(label="Trust cLAN-URL")
+
         trust_button.connect("clicked", self.on_trust_clicked)
-        lower.add(trust_button)
+        layout.add(trust_button)
 
-        layout.pack_start(upper, expand=True, fill=True, padding=0)
-        layout.pack_end(lower, expand=True, fill=True, padding=0)
         self.set_center_widget(layout)
 
     def on_trust_clicked(self, widget: Gtk.Widget) -> None:
