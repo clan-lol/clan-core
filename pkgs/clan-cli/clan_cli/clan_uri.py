@@ -41,6 +41,8 @@ class ClanParameters:
 class ClanURI:
     # Initialize the class with a clan:// URI
     def __init__(self, uri: str) -> None:
+        # users might copy whitespace along with the uri
+        uri = uri.strip()
         self._full_uri = uri
         # Check if the URI starts with clan://
         if uri.startswith("clan://"):
