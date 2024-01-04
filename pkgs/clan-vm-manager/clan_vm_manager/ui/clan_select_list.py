@@ -107,7 +107,7 @@ class ClanList(Gtk.Box):
                 on_start_clicked=self.on_start_clicked,
                 on_stop_clicked=self.on_stop_clicked,
                 on_edit_clicked=self.on_edit_clicked,
-                on_new_clicked=self.on_new_clicked,
+                on_join_clan_clicked=self.on_join_clan_clicked,
                 on_flash_clicked=self.on_flash_clicked,
             )
             self.toolbar.set_is_selected(self.selected_vm is not None)
@@ -139,7 +139,7 @@ class ClanList(Gtk.Box):
             self.cbs.stop_vm(self.selected_vm.url, self.selected_vm._flake_attr)
         self.remount_list_view()
 
-    def on_new_clicked(self, widget: Gtk.Widget) -> None:
+    def on_join_clan_clicked(self, widget: Gtk.Widget) -> None:
         self.show_join()
 
     def on_edit_clicked(self, widget: Gtk.Widget) -> None:
@@ -163,7 +163,7 @@ class ClanListToolbar(Gtk.Toolbar):
         on_start_clicked: Callable[[Gtk.Widget], None],
         on_stop_clicked: Callable[[Gtk.Widget], None],
         on_edit_clicked: Callable[[Gtk.Widget], None],
-        on_new_clicked: Callable[[Gtk.Widget], None],
+        on_join_clan_clicked: Callable[[Gtk.Widget], None],
         on_flash_clicked: Callable[[Gtk.Widget], None],
     ) -> None:
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
@@ -180,9 +180,9 @@ class ClanListToolbar(Gtk.Toolbar):
         self.edit_button.connect("clicked", on_edit_clicked)
         self.add(self.edit_button)
 
-        self.new_button = Gtk.ToolButton(label="New")
-        self.new_button.connect("clicked", on_new_clicked)
-        self.add(self.new_button)
+        self.join_clan_button = Gtk.ToolButton(label="Join Clan")
+        self.join_clan_button.connect("clicked", on_join_clan_clicked)
+        self.add(self.join_clan_button)
 
         self.flash_button = Gtk.ToolButton(label="Write to USB")
         self.flash_button.connect("clicked", on_flash_clicked)
