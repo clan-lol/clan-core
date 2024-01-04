@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
@@ -16,12 +17,17 @@ from gi.repository import GdkPixbuf
 from clan_vm_manager import assets
 
 
+class VMStatus(StrEnum):
+    RUNNING = "Running"
+    STOPPED = "Stopped"
+
+
 @dataclass(frozen=True)
 class VMBase:
     icon: Path | GdkPixbuf.Pixbuf
     name: str
     url: str
-    status: bool
+    status: VMStatus
     _flake_attr: str
 
     @staticmethod
@@ -31,7 +37,7 @@ class VMBase:
                 "Icon": GdkPixbuf.Pixbuf,
                 "Name": str,
                 "URL": str,
-                "Online": bool,
+                "Status": str,
                 "_FlakeAttr": str,
             }
         )
@@ -46,7 +52,7 @@ class VMBase:
                 "Icon": str(self.icon),
                 "Name": self.name,
                 "URL": self.url,
-                "Online": self.status,
+                "Status": self.status,
                 "_FlakeAttr": self._flake_attr,
             }
         )
@@ -75,9 +81,9 @@ def get_initial_vms(
             if entry.flake.icon is not None:
                 icon = entry.flake.icon
 
-            status = False
+            status = VMStatus.STOPPED
             if entry.flake.flake_url in running_vms:
-                status = True
+                status = VMStatus.RUNNING
 
             base = VMBase(
                 icon=icon,
