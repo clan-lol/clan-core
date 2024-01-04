@@ -101,13 +101,13 @@ class ClanList(Gtk.Box):
         self.selected_vm: VMBase | None = selected_vm
 
         self.toolbar = ClanListToolbar(
+            selected_vm=selected_vm,
             on_start_clicked=self.on_start_clicked,
             on_stop_clicked=self.on_stop_clicked,
             on_edit_clicked=self.on_edit_clicked,
             on_join_clan_clicked=self.on_join_clan_clicked,
             on_flash_clicked=self.on_flash_clicked,
         )
-        self.toolbar.set_selected_vm(self.selected_vm)
         self.add(self.toolbar)
 
         self.add(
@@ -153,6 +153,7 @@ class ClanListToolbar(Gtk.Toolbar):
     def __init__(
         self,
         *,
+        selected_vm: VMBase | None,
         on_start_clicked: Callable[[Gtk.Widget], None],
         on_stop_clicked: Callable[[Gtk.Widget], None],
         on_edit_clicked: Callable[[Gtk.Widget], None],
@@ -180,6 +181,8 @@ class ClanListToolbar(Gtk.Toolbar):
         self.flash_button = Gtk.ToolButton(label="Write to USB")
         self.flash_button.connect("clicked", on_flash_clicked)
         self.add(self.flash_button)
+
+        self.set_selected_vm(selected_vm)
 
     def set_selected_vm(self, vm: VMBase | None) -> None:
         if vm:
