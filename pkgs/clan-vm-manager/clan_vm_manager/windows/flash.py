@@ -7,7 +7,7 @@ from clan_vm_manager.errors.show_error import show_error_dialog
 
 from ..interfaces import Callbacks, InitialFlashValues
 
-gi.require_version("Gtk", "3.0")
+gi.require_version("Gtk", "4.0")
 
 from gi.repository import Gio, Gtk
 
@@ -29,19 +29,19 @@ class FlashUSBWindow(Gtk.ApplicationWindow):
         # Initialize the main wincbsdow
         # self.cbs = cbs
         self.set_title("cLAN Manager")
-        self.connect("delete-event", self.on_quit)
+        # self.connect("delete-event", self.on_quit)
         self.set_default_size(800, 600)
 
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True)
-        self.add(vbox)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, )
+        self.append(vbox)
 
         button = Gtk.ToolButton()
         button.set_icon_name("go-previous")
         button.connect("clicked", self.switch)
 
-        toolbar = Gtk.Toolbar(orientation=Gtk.Orientation.HORIZONTAL)
-        toolbar.add(button)
-        vbox.add(toolbar)
+        # toolbar = Gtk.Toolbar(orientation=Gtk.Orientation.HORIZONTAL)
+        # toolbar.add(button)
+        # vbox.add(toolbar)
 
         self.stack = Gtk.Stack()
 
@@ -52,10 +52,10 @@ class FlashUSBWindow(Gtk.ApplicationWindow):
             "Details",
         )
 
-        vbox.add(self.stack)
+        vbox.append(self.stack)
 
         # Must be called AFTER all components were added
-        self.show_all()
+        # self.show_all()
 
     def switch(self, widget: Gtk.Widget) -> None:
         pass

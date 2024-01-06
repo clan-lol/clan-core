@@ -1,6 +1,6 @@
 import gi
 
-gi.require_version("Gtk", "3.0")
+gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk
 
 from ..models import VMBase
@@ -21,7 +21,7 @@ class VmMenu(Gtk.Menu):
             menu_item = Gtk.MenuItem(label=item[0])
             menu_item.connect("activate", item[1])
             self.append(menu_item)
-        self.show_all()
+        # self.show_all()
 
     def start_vm(self, widget: Gtk.Widget) -> None:
         print("start_vm")

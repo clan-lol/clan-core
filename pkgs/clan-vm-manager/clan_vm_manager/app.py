@@ -8,7 +8,7 @@ from clan_cli import vms
 
 from clan_vm_manager.windows.flash import FlashUSBWindow
 
-gi.require_version("Gtk", "3.0")
+gi.require_version("Gtk", "4.0")
 
 import multiprocessing as mp
 

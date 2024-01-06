@@ -4,13 +4,13 @@
 , copyDesktopItems
 , pygobject3
 , wrapGAppsHook
-, gtk3
-, spice-gtk
+, gtk4
 , gnome
 , gobject-introspection
 , clan-cli
 , makeDesktopItem
 , ipdb
+, libadwaita
 }:
 let
   source = ./.;
@@ -33,7 +33,7 @@ python3.pkgs.buildPythonApplication {
     gobject-introspection
   ];
 
-  buildInputs = [ spice-gtk gtk3 gnome.adwaita-icon-theme ];
+  buildInputs = [ gtk4 libadwaita gnome.adwaita-icon-theme ];
   propagatedBuildInputs = [ pygobject3 clan-cli ];
 
   # also re-expose dependencies so we test them in CI
