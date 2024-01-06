@@ -4,7 +4,7 @@ import gi
 
 from ..models import VMBase, get_initial_vms
 
-gi.require_version("Gtk", "3.0")
+gi.require_version("Gtk", "4.0")
 
 from gi.repository import Gio, Gtk
 
@@ -17,12 +17,12 @@ class OverviewWindow(Gtk.ApplicationWindow):
     def __init__(self, cbs: Callbacks) -> None:
         super().__init__()
         self.set_title("cLAN Manager")
-        self.connect("delete-event", self.on_quit)
+        # self.connect("delete-event", self.on_quit)
         self.set_default_size(800, 600)
         self.cbs = cbs
 
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True)
-        self.add(vbox)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, )
+        self.set_child(vbox)
         self.stack = Gtk.Stack()
 
         clan_list = ClanList(
@@ -45,10 +45,10 @@ class OverviewWindow(Gtk.ApplicationWindow):
             "Edit",
         )
 
-        vbox.add(self.stack)
+        vbox.append(self.stack)
 
         # Must be called AFTER all components were added
-        self.show_all()
+        # self.show_all()
 
     def set_selected(self, sel: VMBase | None) -> None:
         self.selected_vm = sel
@@ -75,7 +75,7 @@ class OverviewWindow(Gtk.ApplicationWindow):
             selected_vm=self.selected_vm,
         )
         self.stack.add_titled(clan_list, "list", "List")
-        self.show_all()
+        # self.show_all()
         self.stack.set_visible_child_name("list")
 
     def remount_edit_view(self) -> None:
@@ -88,7 +88,7 @@ class OverviewWindow(Gtk.ApplicationWindow):
             "edit",
             "Edit",
         )
-        self.show_all()
+        # self.show_all()
         self.stack.set_visible_child_name("edit")
 
     def on_quit(self, *args: Any) -> None:

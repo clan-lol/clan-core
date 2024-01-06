@@ -12,9 +12,11 @@ from clan_vm_manager.errors.show_error import show_error_dialog
 
 from ..interfaces import Callbacks, InitialJoinValues
 
-gi.require_version("Gtk", "3.0")
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
 
-from gi.repository import GdkPixbuf, Gio, Gtk
+
+from gi.repository import GdkPixbuf, Gio, Gtk, Adw
 
 
 class Trust(Gtk.Box):
@@ -36,16 +38,16 @@ class Trust(Gtk.Box):
                 preserve_aspect_ratio=True,
             )
         )
-        layout = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, expand=True)
-        layout.set_border_width(20)
+        layout = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        # layout.set_border_width(20)
         layout.set_spacing(20)
 
         if self.url is not None:
             self.entry = Gtk.Label(label=str(self.url))
-            layout.add(icon)
-            layout.add(Gtk.Label(label="Clan URL"))
+            layout.append(icon)
+            layout.append(Gtk.Label(label="Clan URL"))
         else:
-            layout.add(Gtk.Label(label="Enter Clan URL"))
+            layout.append(Gtk.Label(label="Enter Clan URL"))
             self.entry = Gtk.Entry()
             # Autocomplete
             # TODO: provide intelligent suggestions
@@ -60,7 +62,7 @@ class Trust(Gtk.Box):
             self.entry.set_completion(completion)
             self.entry.set_placeholder_text("clan://")
 
-        layout.add(self.entry)
+        layout.append(self.entry)
 
         if self.url is None:
             trust_button = Gtk.Button(label="Load cLAN-URL")
@@ -68,9 +70,9 @@ class Trust(Gtk.Box):
             trust_button = Gtk.Button(label="Trust cLAN-URL")
 
         trust_button.connect("clicked", self.on_trust_clicked)
-        layout.add(trust_button)
+        layout.append(trust_button)
 
-        self.set_center_widget(layout)
+        self.append(layout)
 
     def on_trust_clicked(self, widget: Gtk.Widget) -> None:
         try:
@@ -86,6 +88,7 @@ class Trust(Gtk.Box):
                 self.on_trust(uri.get_internal(), item.flake)
 
         except ClanError as e:
+            pass
             show_error_dialog(e)
 
 
@@ -103,34 +106,34 @@ class Details(Gtk.Box):
                 preserve_aspect_ratio=True,
             )
         )
-        layout = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, expand=True)
-        layout.set_border_width(20)
+        layout = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, )
+        # layout.set_border_width(20)
 
         upper = Gtk.Box(orientation="vertical")
         upper.set_spacing(20)
-        upper.add(Gtk.Label(label="Clan URL"))
-        upper.add(icon)
+        upper.append(Gtk.Label(label="Clan URL"))
+        upper.append(icon)
 
         label = Gtk.Label(label=str(url))
 
-        upper.add(label)
+        upper.append(label)
 
         description_label = Gtk.Label(label=flake.description)
-        upper.add(description_label)
+        upper.append(description_label)
 
-        lower = Gtk.Box(orientation="horizontal", expand=True)
+        lower = Gtk.Box(orientation="horizontal", )
         lower.set_spacing(20)
 
         join_button = Gtk.Button(label="Join")
         join_button.connect("clicked", self.on_join)
-        join_action_area = Gtk.Box(orientation="horizontal", expand=False)
-        join_button_area = Gtk.Box(orientation="vertical", expand=False)
-        join_action_area.pack_end(join_button_area, expand=False, fill=False, padding=0)
-        join_button_area.pack_end(join_button, expand=False, fill=False, padding=0)
+        join_action_area = Gtk.Box(orientation="horizontal", )
+        join_button_area = Gtk.Box(orientation="vertical", )
+        join_action_area.append(join_button_area)
+        join_button_area.append(join_button)
         join_details = Gtk.Label(label="Info")
 
-        join_details_area = Gtk.Box(orientation="horizontal", expand=False)
-        join_label_area = Gtk.Box(orientation="vertical", expand=False)
+        join_details_area = Gtk.Box(orientation="horizontal", )
+        join_label_area = Gtk.Box(orientation="vertical", )
 
         for info in [
             f"Memory: {flake.clan_name}",
@@ -139,19 +142,19 @@ class Details(Gtk.Box):
         ]:
             details_label = Gtk.Label(label=info)
             details_label.set_justify(Gtk.Justification.LEFT)
-            join_label_area.pack_end(details_label, expand=False, fill=False, padding=0)
+            join_label_area.append(details_label)
 
-        join_label_area.pack_end(join_details, expand=False, fill=False, padding=0)
-        join_details_area.pack_start(
-            join_label_area, expand=False, fill=False, padding=0
+        join_label_area.append(join_details)
+        join_details_area.append(
+            join_label_area
         )
 
-        lower.pack_start(join_details_area, expand=True, fill=True, padding=0)
-        lower.pack_end(join_action_area, expand=True, fill=True, padding=0)
-        layout.pack_start(upper, expand=False, fill=False, padding=0)
-        layout.add(lower)
+        lower.append(join_details_area)
+        lower.append(join_action_area)
+        layout.append(upper)
+        layout.append(lower)
 
-        self.add(layout)
+        self.append(layout)
 
     def on_join(self, widget: Gtk.Widget) -> None:
         # TODO: @Qubasa
@@ -163,21 +166,34 @@ class JoinWindow(Gtk.ApplicationWindow):
     def __init__(self, initial_values: InitialJoinValues, cbs: Callbacks) -> None:
         super().__init__()
         # Initialize the main wincbsdow
+        
         self.cbs = cbs
         self.set_title("cLAN Manager")
-        self.connect("delete-event", self.on_quit)
+        # self.connect("delete-event", self.on_quit)
         self.set_default_size(800, 600)
 
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, expand=True)
-        self.add(vbox)
+        # menu = Gtk.Menu()
+        # menu_bar = Gtk.MenuBar()
 
-        button = Gtk.ToolButton()
-        button.set_icon_name("go-previous")
-        button.connect("clicked", self.switch)
+        # main_menu = Gtk.MenuItem("Menu")
+        # menu_item = Gtk.MenuItem("Start", "Start the selected clan")
 
-        toolbar = Gtk.Toolbar(orientation=Gtk.Orientation.HORIZONTAL)
-        toolbar.add(button)
-        vbox.add(toolbar)
+        # menu_bar.append(main_menu)
+        # main_menu.set_submenu(menu)
+        # menu.append(menu_item)
+        # vbox.add(menu_bar)
+
+
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        self.set_child(vbox)
+
+        # button = Gtk.ToolButton()
+        # button.set_icon_name("go-previous")
+        # button.connect("clicked", self.switch)
+
+        # toolbar = Gtk.Toolbar(orientation=Gtk.Orientation.HORIZONTAL)
+        # toolbar.add(button)
+        # vbox.add(toolbar)
 
         self.stack = Gtk.Stack()
 
@@ -188,12 +204,12 @@ class JoinWindow(Gtk.ApplicationWindow):
             "Trust",
         )
 
-        vbox.add(self.stack)
+        vbox.append(self.stack)
 
         # vbox.add(Gtk.Entry(text=str(initial_values.url)))
 
         # Must be called AFTER all components were added
-        self.show_all()
+        # self.show_all()
 
     def on_trust(self, url: str, flake: FlakeConfig) -> None:
         self.stack.add_titled(
@@ -201,7 +217,7 @@ class JoinWindow(Gtk.ApplicationWindow):
             "details",
             "Details",
         )
-        self.show_all()
+        # self.show_all()
         self.stack.set_visible_child_name("details")
 
     def switch(self, widget: Gtk.Widget) -> None:

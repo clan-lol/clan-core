@@ -4,19 +4,19 @@ from typing import Literal
 
 import gi
 
-gi.require_version("Gtk", "3.0")
+gi.require_version("Gtk", "4.0")
+gi.require_version('Adw', '1')
 from clan_cli.errors import ClanError
-from gi.repository import Gtk
+from gi.repository import Gtk, Adw
 
 Severity = Literal["Error"] | Literal["Warning"] | Literal["Info"] | str
 
 
 def show_error_dialog(error: ClanError, severity: Severity | None = "Error") -> None:
     message = str(error)
-    dialog = Gtk.MessageDialog(
-        None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, severity
+    dialog = Adw.MessageDialog(
+        parent=None, heading=severity, body=message
     )
     print("error:", message)
-    dialog.format_secondary_text(message)
-    dialog.run()
-    dialog.destroy()
+    dialog.add_response("ok", "ok")
+    dialog.choose()

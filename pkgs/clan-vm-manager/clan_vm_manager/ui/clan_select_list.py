@@ -1,48 +1,48 @@
-from collections.abc import Callable
+from typing import Callable, Any
 
-from gi.repository import Gdk, GdkPixbuf, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gtk, Adw
 
 from ..interfaces import Callbacks
 from ..models import VMBase, VMStatus
-from .context_menu import VmMenu
+# from .context_menu import VmMenu
 
 
-class ClanEditForm(Gtk.ListBox):
+class ClanEditForm(Gtk.Box):
     def __init__(self, *, selected: VMBase | None) -> None:
         super().__init__()
-        self.page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, expand=True)
-        self.set_border_width(10)
+        self.page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        # self.set_border_width(10)
         self.selected = selected
-        self.set_selection_mode(0)
+        # self.set_selection_mode(0)
 
         if self.selected:
-            row = Gtk.ListBoxRow()
-            row.add(Gtk.Label(f"\n {self.selected.name}"))
-            self.add(row)
+            label = Gtk.Box()
+            label.append(Gtk.Label.new(f"\n {self.selected.name}"))
+            self.append(label)
 
         # ---------- row 1 --------
-        row = Gtk.ListBoxRow()
-        row_layout = Gtk.Box(spacing=6, expand=True)
+        # row = Gtk.ListBoxRow()
+        # row_layout = Gtk.Box(spacing=6)
 
-        # Doc: pack_start/end takes alignment params Expand, Fill, Padding
-        row_layout.pack_start(Gtk.Label("Memory Size in MiB"), False, False, 5)
-        row_layout.pack_start(
-            Gtk.SpinButton.new_with_range(512, 4096, 256), True, True, 0
-        )
+        # # Doc: pack_start/end takes alignment params Expand, Fill, Padding
+        # row_layout.append(Gtk.Label.new("Memory Size in MiB"))
+        # row_layout.append(
+        #     Gtk.SpinButton.new_with_range(512, 4096, 256)
+        # )
 
-        row.add(row_layout)
-        self.add(row)
+        # row.append(row_layout)
+        # self.append(row)
 
-        # ----------- row 2 -------
+        # # ----------- row 2 -------
 
-        row = Gtk.ListBoxRow()
-        row_layout = Gtk.Box(spacing=6, expand=True)
+        # row = Gtk.ListBoxRow()
+        # row_layout = Gtk.Box(spacing=6)
 
-        row_layout.pack_start(Gtk.Label("CPU Count"), False, False, 5)
-        row_layout.pack_end(Gtk.SpinButton.new_with_range(1, 5, 1), True, True, 0)
+        # row_layout.append(Gtk.Label("CPU Count"))
+        # row_layout.append(Gtk.SpinButton.new_with_range(1, 5, 1))
 
-        row.add(row_layout)
-        self.add(row)
+        # row.append(row_layout)
+        # self.append(row)
 
     def switch(self, widget: Gtk.Widget) -> None:
         self.show_list()
@@ -52,14 +52,14 @@ class ClanEdit(Gtk.Box):
     def __init__(
         self, *, remount_list: Callable[[], None], selected_vm: VMBase | None
     ) -> None:
-        super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, )
 
         self.show_list = remount_list
         self.selected = selected_vm
 
-        self.toolbar = ClanEditToolbar(on_save_clicked=self.on_save)
-        self.add(self.toolbar)
-        self.add(ClanEditForm(selected=self.selected))
+        # self.toolbar = ClanEditToolbar(on_save_clicked=self.on_save)
+        # self.add(self.toolbar)
+        self.append(ClanEditForm(selected=self.selected))
 
     def on_save(self, widget: Gtk.Widget) -> None:
         print("Save clicked saving values")
@@ -90,7 +90,7 @@ class ClanList(Gtk.Box):
         selected_vm: VMBase | None,
         vms: list[VMBase],
     ) -> None:
-        super().__init__(orientation=Gtk.Orientation.VERTICAL, expand=True)
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, )
 
         self.remount_edit_view = remount_edit
         self.remount_list_view = remount_list
@@ -100,17 +100,17 @@ class ClanList(Gtk.Box):
 
         self.selected_vm: VMBase | None = selected_vm
 
-        self.toolbar = ClanListToolbar(
-            selected_vm=selected_vm,
-            on_start_clicked=self.on_start_clicked,
-            on_stop_clicked=self.on_stop_clicked,
-            on_edit_clicked=self.on_edit_clicked,
-            on_join_clan_clicked=self.on_join_clan_clicked,
-            on_flash_clicked=self.on_flash_clicked,
-        )
-        self.add(self.toolbar)
+        # self.toolbar = ClanListToolbar(
+        #     selected_vm=selected_vm,
+        #     on_start_clicked=self.on_start_clicked,
+        #     on_stop_clicked=self.on_stop_clicked,
+        #     on_edit_clicked=self.on_edit_clicked,
+        #     on_join_clan_clicked=self.on_join_clan_clicked,
+        #     on_flash_clicked=self.on_flash_clicked,
+        # )
+        # self.add(self.toolbar)
 
-        self.add(
+        self.append(
             ClanListView(
                 vms=vms,
                 on_select_row=self.on_select_vm,
@@ -143,13 +143,13 @@ class ClanList(Gtk.Box):
         self.remount_edit_view()
 
     def on_select_vm(self, vm: VMBase) -> None:
-        self.toolbar.set_selected_vm(vm)
+        # self.toolbar.set_selected_vm(vm)
 
         self.set_selected(vm)
         self.selected_vm = vm
 
 
-class ClanListToolbar(Gtk.Toolbar):
+class ClanListToolbar(Gtk.Box):
     def __init__(
         self,
         *,
@@ -164,23 +164,23 @@ class ClanListToolbar(Gtk.Toolbar):
 
         self.start_button = Gtk.ToolButton(label="Start")
         self.start_button.connect("clicked", on_start_clicked)
-        self.add(self.start_button)
+        self.append(self.start_button)
 
         self.stop_button = Gtk.ToolButton(label="Stop")
         self.stop_button.connect("clicked", on_stop_clicked)
-        self.add(self.stop_button)
+        self.append(self.stop_button)
 
         self.edit_button = Gtk.ToolButton(label="Edit")
         self.edit_button.connect("clicked", on_edit_clicked)
-        self.add(self.edit_button)
+        self.append(self.edit_button)
 
         self.join_clan_button = Gtk.ToolButton(label="Join Clan")
         self.join_clan_button.connect("clicked", on_join_clan_clicked)
-        self.add(self.join_clan_button)
+        self.append(self.join_clan_button)
 
         self.flash_button = Gtk.ToolButton(label="Write to USB")
         self.flash_button.connect("clicked", on_flash_clicked)
-        self.add(self.flash_button)
+        self.append(self.flash_button)
 
         self.set_selected_vm(selected_vm)
 
@@ -195,7 +195,7 @@ class ClanListToolbar(Gtk.Toolbar):
             self.stop_button.set_sensitive(False)
 
 
-class ClanEditToolbar(Gtk.Toolbar):
+class ClanEditToolbar(Gtk.Box):
     def __init__(
         self,
         *,
@@ -208,7 +208,7 @@ class ClanEditToolbar(Gtk.Toolbar):
         self.save_button = Gtk.ToolButton(label="Save")
         self.save_button.connect("clicked", on_save_clicked)
 
-        self.add(self.save_button)
+        self.append(self.save_button)
 
 
 class ClanListView(Gtk.Box):
@@ -220,29 +220,29 @@ class ClanListView(Gtk.Box):
         vms: list[VMBase],
         on_double_click: Callable[[VMBase], None],
     ) -> None:
-        super().__init__(expand=True)
+        super().__init__()
         self.vms: list[VMBase] = vms
         self.on_select_row = on_select_row
         self.on_double_click = on_double_click
-        self.context_menu: VmMenu | None = None
+        # self.context_menu: VmMenu | None = None
 
         store_types = VMBase.name_to_type_map().values()
 
-        self.list_store = Gtk.ListStore(*store_types)
-        self.tree_view = Gtk.TreeView(self.list_store, expand=True)
-        for vm in self.vms:
-            self.insertVM(vm)
+        # self.list_store = Gtk.ListStore(*store_types)
+        # self.tree_view = Gtk.TreeView(self.list_store)
+        # for vm in self.vms:
+        #     self.insertVM(vm)
 
-        setColRenderers(self.tree_view)
+        # setColRenderers(self.tree_view)
 
         self.set_selected_vm(selected_vm)
-        selection = self.tree_view.get_selection()
-        selection.connect("changed", self._on_select_row)
-        self.tree_view.connect("row-activated", self._on_double_click)
-        self.tree_view.connect("button-press-event", self._on_button_pressed)
+        # selection = self.tree_view.get_selection()
+        # selection.connect("changed", self._on_select_row)
+        # self.tree_view.connect("row-activated", self._on_double_click)
+        # self.tree_view.connect("button-press-event", self._on_button_pressed)
 
-        self.set_border_width(10)
-        self.add(self.tree_view)
+        # self.set_border_width(10)
+        # self.append(self.tree_view)
 
     def find_vm(self, vm: VMBase) -> int:
         for idx, row in enumerate(self.list_store):
@@ -257,13 +257,13 @@ class ClanListView(Gtk.Box):
         idx = self.find_vm(vm)
         selection.select_path(idx)
 
-    def insertVM(self, vm: VMBase) -> None:
-        values = list(vm.list_data().values())
-        icon_idx = VMBase.to_idx("Icon")
-        values[icon_idx] = GdkPixbuf.Pixbuf.new_from_file_at_scale(
-            filename=values[icon_idx], width=64, height=64, preserve_aspect_ratio=True
-        )
-        self.list_store.append(values)
+    # def insertVM(self, vm: VMBase) -> None:
+    #     values = list(vm.list_data().values())
+    #     icon_idx = VMBase.to_idx("Icon")
+    #     values[icon_idx] = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+    #         filename=values[icon_idx], width=64, height=64, preserve_aspect_ratio=True
+    #     )
+    #     self.list_store.append(values)
 
     def _on_select_row(self, selection: Gtk.TreeSelection) -> None:
         model, row = selection.get_selected()
@@ -271,58 +271,58 @@ class ClanListView(Gtk.Box):
             vm = VMBase(*model[row])
             self.on_select_row(vm)
 
-    def _on_button_pressed(
-        self, tree_view: Gtk.TreeView, event: Gdk.EventButton
-    ) -> None:
-        if self.context_menu:
-            self.context_menu.destroy()
-            self.context_menu = None
+    # def _on_button_pressed(
+    #     self, tree_view: Gtk.TreeView, event: Any
+    # ) -> None:
+    #     # if self.context_menu:
+    #     #     self.context_menu.destroy()
+    #     #     self.context_menu = None
 
-        if event.button == 3:
-            path, column, x, y = tree_view.get_path_at_pos(event.x, event.y)
-            if path is not None:
-                vm = VMBase(*self.list_store[path[0]])
-                print(event)
-                print(f"Right click on {vm.url}")
-                self.context_menu = VmMenu(vm)
-                self.context_menu.popup_at_pointer(event)
+    #     if event.button == 3:
+    #         path, column, x, y = tree_view.get_path_at_pos(event.x, event.y)
+    #         if path is not None:
+    #             vm = VMBase(*self.list_store[path[0]])
+    #             print(event)
+    #             print(f"Right click on {vm.url}")
+    #             # self.context_menu = VmMenu(vm)
+    #             # self.context_menu.popup_at_pointer(event)
 
-    def _on_double_click(
-        self, tree_view: Gtk.TreeView, path: Gtk.TreePath, column: Gtk.TreeViewColumn
-    ) -> None:
-        # Get the selection object of the tree view
-        selection = tree_view.get_selection()
-        model, row = selection.get_selected()
+    # def _on_double_click(
+    #     self, tree_view: Gtk.TreeView, path: Gtk.TreePath, column: Gtk.TreeViewColumn
+    # ) -> None:
+    #     # Get the selection object of the tree view
+    #     selection = tree_view.get_selection()
+    #     model, row = selection.get_selected()
 
-        if row is not None:
-            vm = VMBase(*model[row])
-            self.on_double_click(vm)
+    #     if row is not None:
+    #         vm = VMBase(*model[row])
+    #         self.on_double_click(vm)
 
 
-def setColRenderers(tree_view: Gtk.TreeView) -> None:
-    for idx, (key, gtype) in enumerate(VMBase.name_to_type_map().items()):
-        col: Gtk.TreeViewColumn = None
+# def setColRenderers(tree_view: Gtk.TreeView) -> None:
+#     for idx, (key, gtype) in enumerate(VMBase.name_to_type_map().items()):
+#         col: Gtk.TreeViewColumn = None
 
-        if key.startswith("_"):
-            continue
+#         if key.startswith("_"):
+#             continue
 
-        if issubclass(gtype, GdkPixbuf.Pixbuf):
-            renderer = Gtk.CellRendererPixbuf()
-            col = Gtk.TreeViewColumn(key, renderer, pixbuf=idx)
-        elif issubclass(gtype, bool):
-            renderer = Gtk.CellRendererToggle()
-            col = Gtk.TreeViewColumn(key, renderer, active=idx)
-        elif issubclass(gtype, str):
-            renderer = Gtk.CellRendererText()
-            col = Gtk.TreeViewColumn(key, renderer, text=idx)
-        else:
-            raise Exception(f"Unknown type: {gtype}")
+#         if issubclass(gtype, GdkPixbuf.Pixbuf):
+#             renderer = Gtk.CellRendererPixbuf()
+#             col = Gtk.TreeViewColumn(key, renderer, pixbuf=idx)
+#         elif issubclass(gtype, bool):
+#             renderer = Gtk.CellRendererToggle()
+#             col = Gtk.TreeViewColumn(key, renderer, active=idx)
+#         elif issubclass(gtype, str):
+#             renderer = Gtk.CellRendererText()
+#             col = Gtk.TreeViewColumn(key, renderer, text=idx)
+#         else:
+#             raise Exception(f"Unknown type: {gtype}")
 
-        # CommonSetup for all columns
-        if col:
-            col.set_resizable(True)
-            col.set_expand(True)
-            col.set_property("sizing", Gtk.TreeViewColumnSizing.AUTOSIZE)
-            col.set_property("alignment", 0.5)
-            col.set_sort_column_id(idx)
-            tree_view.append_column(col)
+#         # CommonSetup for all columns
+#         if col:
+#             col.set_resizable(True)
+#             col.set_expand(True)
+#             col.set_property("sizing", Gtk.TreeViewColumnSizing.AUTOSIZE)
+#             col.set_property("alignment", 0.5)
+#             col.set_sort_column_id(idx)
+#             tree_view.append_column(col)
