@@ -9,11 +9,12 @@ from clan_cli import vms
 from clan_vm_manager.windows.flash import FlashUSBWindow
 
 gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
 
 import multiprocessing as mp
 
 from clan_cli.clan_uri import ClanURI
-from gi.repository import Gio, Gtk
+from gi.repository import Gio, Gtk, Adw
 
 from .constants import constants
 from .errors.show_error import show_error_dialog
@@ -41,35 +42,30 @@ def on_except(error: Exception, proc: mp.process.BaseProcess) -> None:
     show_error_dialog(str(error))
 
 
+class MainWindow(Adw.ApplicationWindow):
+        def __init__(self, config: ClanConfig) -> None:
+            super().__init__()
+            self.set_title("Clan Manager")
+            view = Adw.ToolbarView()
+            header = Adw.HeaderBar()
+            view.add_top_bar(header)
+
+            label = Gtk.Label.new("testlabel")
+            view.set_content(label)
+
+            self.set_content(view)
+
 class Application(Gtk.Application):
-    def __init__(self, windows: ClanWindows, config: ClanConfig) -> None:
+    def __init__(self, config: ClanConfig) -> None:
         super().__init__(
             application_id=constants["APPID"], flags=Gio.ApplicationFlags.FLAGS_NONE
         )
-        self.init_style()
-        self.windows = windows
+        # TODO:
+        # self.init_style()
+
+        self.window = MainWindow(config)
         self.proc_manager = ProcessManager()
-        initial = windows.__dict__[config.initial_window]
-        self.cbs = Callbacks(
-            show_list=self.show_list,
-            show_join=self.show_join,
-            show_flash=self.show_flash,
-            spawn_vm=self.spawn_vm,
-            stop_vm=self.stop_vm,
-            running_vms=self.running_vms,
-        )
-        if issubclass(initial, JoinWindow):
-            # see JoinWindow constructor
-            self.window = initial(
-                initial_values=InitialJoinValues(url=config.url or ""),
-                cbs=self.cbs,
-            )
 
-        if issubclass(initial, OverviewWindow):
-            # see OverviewWindow constructor
-            self.window = initial(cbs=self.cbs)
-
-        # Connect to the shutdown signal
         self.connect("shutdown", self.on_shutdown)
 
     def on_shutdown(self, app: Gtk.Application) -> None:
@@ -99,31 +95,24 @@ class Application(Gtk.Application):
     def running_vms(self) -> list[str]:
         return self.proc_manager.running_procs()
 
-    def show_list(self) -> None:
-        prev = self.window
-        self.window = self.windows.__dict__["overview"](cbs=self.cbs)
-        self.window.set_application(self)
-        prev.hide()
-
-    def show_join(self) -> None:
-        prev = self.window
-        self.window = self.windows.__dict__["join"](
-            cbs=self.cbs, initial_values=InitialJoinValues(url=None)
-        )
-        self.window.set_application(self)
-        prev.hide()
-
-    def show_flash(self) -> None:
-        prev = self.window
-        self.window = self.windows.__dict__["flash_usb"](
-            cbs=self.cbs, initial_values=InitialFlashValues(None)
-        )
-        self.window.set_application(self)
-        prev.hide()
-
     def do_startup(self) -> None:
         Gtk.Application.do_startup(self)
         Gtk.init()
+        Gio.Application.do_startup(self)
+        
+
+        menu = Gio.Menu.new()
+        file_menu = Gio.Menu.new()
+        item = Gio.MenuItem.new("Menu Item", "app.menu_item")
+
+        file_menu.append_item(item)
+        menu.append_submenu("File", file_menu)
+
+
+        # TODO: add application menu
+        self.set_menubar(menu)
+        
+
 
     def do_activate(self) -> None:
         win = self.props.active_window
@@ -143,11 +132,7 @@ class Application(Gtk.Application):
 
 
 def show_join(args: argparse.Namespace) -> None:
-    print(f"Joining clan {args.clan_uri}")
     app = Application(
-        windows=ClanWindows(
-            join=JoinWindow, overview=OverviewWindow, flash_usb=FlashUSBWindow
-        ),
         config=ClanConfig(url=args.clan_uri, initial_window="join"),
     )
     return app.run()
@@ -160,9 +145,6 @@ def register_join_parser(parser: argparse.ArgumentParser) -> None:
 
 def show_overview(args: argparse.Namespace) -> None:
     app = Application(
-        windows=ClanWindows(
-            join=JoinWindow, overview=OverviewWindow, flash_usb=FlashUSBWindow
-        ),
         config=ClanConfig(url=None, initial_window="overview"),
     )
     return app.run()
@@ -170,7 +152,3 @@ def show_overview(args: argparse.Namespace) -> None:
 
 def register_overview_parser(parser: argparse.ArgumentParser) -> None:
     parser.set_defaults(func=show_overview)
-
-
-# def register_run_parser(parser: argparse.ArgumentParser) -> None:
-#     parser.set_defaults(func=show_run_vm)
