@@ -9,7 +9,6 @@
 , gobject-introspection
 , clan-cli
 , makeDesktopItem
-, ipdb
 , libadwaita
 }:
 let
