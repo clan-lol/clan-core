@@ -45,12 +45,6 @@
           '';
           default = "${pkgs.coreutils}/bin/true";
         };
-        vm.config = lib.mkOption {
-          type = lib.types.attrs;
-          description = ''
-            the vm config
-          '';
-        };
         vm.create = lib.mkOption {
           type = lib.types.path;
           description = ''
