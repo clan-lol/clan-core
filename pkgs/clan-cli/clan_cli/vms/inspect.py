@@ -25,7 +25,7 @@ def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:
 
     cmd = nix_eval(
         [
-            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.system.clan.vm.config'
+            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.vm.inspect'
         ]
     )
 

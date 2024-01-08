@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import IO
 
 from ..cmd import run
-from ..dirs import module_root, specific_groot_dir
+from ..dirs import module_root, specific_groot_dir, vm_state_dir
 from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_shell
 from .inspect import VmConfig, inspect_vm
@@ -82,6 +82,7 @@ def qemu_command(
     nixos_config: dict[str, str],
     xchg_dir: Path,
     secrets_dir: Path,
+    state_dir: Path,
     disk_img: Path,
 ) -> list[str]:
     kernel_cmdline = [
@@ -107,6 +108,7 @@ def qemu_command(
         "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=shared",
         "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=xchg",
         "-virtfs", f"local,path={secrets_dir},security_model=none,mount_tag=secrets",
+        "-virtfs", f"local,path={state_dir},security_model=none,mount_tag=state",
         "-drive", f"cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report",
         "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
         "-device", "virtio-keyboard",
@@ -253,11 +255,15 @@ def run_vm(
         secrets_dir = generate_secrets(vm, nixos_config, tmpdir, log_fd)
         disk_img = prepare_disk(tmpdir, log_fd)
 
+        state_dir = vm_state_dir(vm.clan_name, machine)
+        state_dir.mkdir(parents=True, exist_ok=True)
+
         qemu_cmd = qemu_command(
             vm,
             nixos_config,
             xchg_dir=xchg_dir,
             secrets_dir=secrets_dir,
+            state_dir=state_dir,
             disk_img=disk_img,
         )
 
