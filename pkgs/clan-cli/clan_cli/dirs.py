@@ -56,6 +56,10 @@ def user_history_file() -> Path:
     return user_config_dir() / "clan" / "history"
 
 
+def vm_state_dir(clan_name: str, vm_name: str) -> Path:
+    return user_config_dir() / "clan" / "vmstate" / clan_name / vm_name
+
+
 def machines_dir(flake_dir: Path) -> Path:
     return flake_dir / "machines"
 
