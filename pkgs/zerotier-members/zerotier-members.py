@@ -53,7 +53,7 @@ def list_members(args: argparse.Namespace) -> None:
                 member_id = data["id"]
             except KeyError:
                 raise ClanError(f"error: {member} does not contain an id")
-            print(member_id)
+            print(member_id, data["authorized"] or "false")
 
 
 def main() -> None:
