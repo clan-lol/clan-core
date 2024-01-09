@@ -1,4 +1,5 @@
 import fileinput
+import json
 import logging
 import os
 import shutil
@@ -37,22 +38,88 @@ class FlakeForTest(NamedTuple):
     path: Path
 
 
+def generate_flake(
+    temporary_home: Path,
+    flake_template: Path,
+    substitutions: dict[str, str] = {},
+    # define the machines directly including their config
+    machine_configs: dict[str, dict] = {},
+) -> FlakeForTest:
+    """
+    Creates a clan flake with the given name.
+    Machines are fully generated from the machine_configs.
+
+    Example:
+        machine_configs = dict(
+            my_machine=dict(
+                clanCore=dict(
+                    backups=dict(
+                        ...
+                    )
+                )
+            )
+        )
+    """
+
+    # copy the template to a new temporary location
+    flake = temporary_home / "flake"
+    shutil.copytree(flake_template, flake)
+
+    # substitute `substitutions` in all files of the template
+    for file in flake.rglob("*"):
+        if file.is_file():
+            print(f"Final Content of {file}:")
+            for line in fileinput.input(file, inplace=True):
+                for key, value in substitutions.items():
+                    line = line.replace(key, value)
+                print(line, end="")
+
+    # generate machines from machineConfigs
+    for machine_name, machine_config in machine_configs.items():
+        settings_path = flake / "machines" / machine_name / "settings.json"
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text(json.dumps(machine_config, indent=2))
+
+    if "/tmp" not in str(os.environ.get("HOME")):
+        log.warning(
+            f"!! $HOME does not point to a temp directory!! HOME={os.environ['HOME']}"
+        )
+
+    # TODO: Find out why test_vms_api.py fails in nix build
+    # but works in pytest when this bottom line is commented out
+    sp.run(
+        ["git", "config", "--global", "init.defaultBranch", "main"],
+        cwd=flake,
+        check=True,
+    )
+    sp.run(["git", "init"], cwd=flake, check=True)
+    sp.run(["git", "add", "."], cwd=flake, check=True)
+    sp.run(["git", "config", "user.name", "clan-tool"], cwd=flake, check=True)
+    sp.run(["git", "config", "user.email", "clan@example.com"], cwd=flake, check=True)
+    sp.run(["git", "commit", "-a", "-m", "Initial commit"], cwd=flake, check=True)
+
+    return FlakeForTest(flake)
+
+
 def create_flake(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
-    flake_name: str,
+    flake_template_name: str,
     clan_core_flake: Path | None = None,
+    # names referring to pre-defined machines from ../machines
     machines: list[str] = [],
+    # alternatively specify the machines directly including their config
+    machine_configs: dict[str, dict] = {},
     remote: bool = False,
 ) -> Iterator[FlakeForTest]:
     """
     Creates a flake with the given name and machines.
     The machine names map to the machines in ./test_machines
     """
-    template = Path(__file__).parent / flake_name
+    template = Path(__file__).parent / flake_template_name
 
     # copy the template to a new temporary location
-    flake = temporary_home / flake_name
+    flake = temporary_home / flake_template_name
     shutil.copytree(template, flake)
 
     # lookup the requested machines in ./test_machines and include them
@@ -62,6 +129,13 @@ def create_flake(
         machine_path = Path(__file__).parent / "machines" / machine_name
         shutil.copytree(machine_path, flake / "machines" / machine_name)
         substitute(flake / "machines" / machine_name / "default.nix", flake)
+
+    # generate machines from machineConfigs
+    for machine_name, machine_config in machine_configs.items():
+        settings_path = flake / "machines" / machine_name / "settings.json"
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+        settings_path.write_text(json.dumps(machine_config, indent=2))
+
     # in the flake.nix file replace the string __CLAN_URL__ with the the clan flake
     # provided by get_test_flake_toplevel
     flake_nix = flake / "flake.nix"
