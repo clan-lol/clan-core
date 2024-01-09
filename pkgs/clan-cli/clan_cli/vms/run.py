@@ -255,7 +255,7 @@ def run_vm(
         secrets_dir = generate_secrets(vm, nixos_config, tmpdir, log_fd)
         disk_img = prepare_disk(tmpdir, log_fd)
 
-        state_dir = vm_state_dir(vm.clan_name, machine)
+        state_dir = vm_state_dir(vm.clan_name, str(vm.flake_url), machine)
         state_dir.mkdir(parents=True, exist_ok=True)
 
         qemu_cmd = qemu_command(
