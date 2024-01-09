@@ -7,6 +7,8 @@ from cli import Cli
 from fixtures_flakes import FlakeForTest, generate_flake
 from root import CLAN_CORE
 
+from clan_cli.dirs import vm_state_dir
+
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
@@ -89,14 +91,8 @@ def test_vm_persistence(
     )
     monkeypatch.chdir(flake.path)
     Cli().run(["vms", "run", "my_machine"])
-
     test_file = (
-        temporary_home
-        / ".config"
-        / "clan"
-        / "vmstate"
-        / "_test_vm_persistence"
-        / "my_machine"
+        vm_state_dir("_test_vm_persistence", str(flake.path), "my_machine")
         / "var"
         / "my-state"
         / "test"
