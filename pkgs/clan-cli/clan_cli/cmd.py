@@ -19,8 +19,13 @@ class CmdOut(NamedTuple):
     stderr: str
     cwd: Path
 
+class Log(Enum):
+    STDERR = 1
+    STDOUT = 2
+    BOTH = 3
 
-def handle_output(process: subprocess.Popen) -> tuple[str, str]:
+
+def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
     rlist = [process.stdout, process.stderr]
     stdout_buf = b""
     stderr_buf = b""
@@ -37,21 +42,25 @@ def handle_output(process: subprocess.Popen) -> tuple[str, str]:
             return b""
 
         ret = handle_fd(process.stdout)
-        sys.stdout.buffer.write(ret)
+        if log in [Log.STDOUT, Log.BOTH]:
+            sys.stdout.buffer.write(ret)
+
         stdout_buf += ret
         ret = handle_fd(process.stderr)
-        sys.stderr.buffer.write(ret)
+
+        if log in [Log.STDERR, Log.BOTH]:
+            sys.stderr.buffer.write(ret)
         stderr_buf += ret
     return stdout_buf.decode("utf-8"), stderr_buf.decode("utf-8")
 
 
-def run(cmd: list[str], cwd: Path = Path.cwd()) -> CmdOut:
+def run(cmd: list[str], cwd: Path = Path.cwd(), log = Log.BOTH) -> CmdOut:
     # Start the subprocess
     process = subprocess.Popen(
         cmd, cwd=str(cwd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
     )
 
-    stdout_buf, stderr_buf = handle_output(process)
+    stdout_buf, stderr_buf = handle_output(process, log)
 
     # Wait for the subprocess to finish
     rc = process.wait()
