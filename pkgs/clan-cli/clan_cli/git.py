@@ -1,10 +1,10 @@
 from pathlib import Path
 
 # from clan_cli.dirs import find_git_repo_root
-from clan_cli.errors import ClanCmdError, ClanError
+from clan_cli.errors import ClanError
 from clan_cli.nix import nix_shell
 
-from .cmd import run
+from .cmd import Log, run
 
 
 # generic vcs agnostic commit function
@@ -42,12 +42,8 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
         ["git", "-C", str(repo_dir), "add", str(file_path)],
     )
     # add the file to the git index
-    try:
-        run(cmd)
-    except ClanCmdError as e:
-        raise ClanError(
-            f"Failed to add {file_path} to git repository {repo_dir}:\n{e.cmd.command}\n exited with {e.cmd.returncode}"
-        ) from e
+
+    run(cmd, log=Log.BOTH, error_msg=f"Failed to add {file_path} file to git index")
 
     # check if there is a diff
     cmd = nix_shell(
@@ -72,11 +68,5 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
             str(file_path.relative_to(repo_dir)),
         ],
     )
-    try:
-        run(
-            cmd,
-        )
-    except ClanCmdError as e:
-        raise ClanError(
-            f"Failed to commit {file_path} to git repository {repo_dir}:\n{e.cmd.command}\n exited with {e.cmd.returncode}"
-        ) from e
+
+    run(cmd, error_msg=f"Failed to commit {file_path} to git repository {repo_dir}")

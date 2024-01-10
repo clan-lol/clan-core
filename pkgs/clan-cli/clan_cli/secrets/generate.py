@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 
-from ..cmd import run
+from ..cmd import Log, run
 from ..machines.machines import Machine
 
 log = logging.getLogger(__name__)
@@ -19,6 +19,7 @@ def generate_secrets(machine: Machine) -> None:
         [machine.generate_secrets],
         env=env,
         error_msg="failed to generate secrets",
+        log=Log.BOTH,
     )
 
     print("successfully generated secrets")
