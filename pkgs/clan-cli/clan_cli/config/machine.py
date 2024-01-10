@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from clan_cli.cmd import run
+from clan_cli.cmd import Log, run
 from clan_cli.dirs import machine_settings_file, nixpkgs_source, specific_machine_dir
 from clan_cli.errors import ClanError, ClanHttpError
 from clan_cli.git import commit_file
@@ -65,6 +65,7 @@ def verify_machine_config(
             cmd,
             cwd=flake,
             env=env,
+            log=Log.BOTH,
         )
     if proc.returncode != 0:
         return proc.stderr

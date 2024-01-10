@@ -18,6 +18,7 @@ def build_machine_data(machine_name: str, clan_dir: Path) -> dict:
                 f'{clan_dir}#clanInternals.machines."{system}"."{machine_name}".config.system.clan.deployment.file'
             ]
         ),
+        error_msg="failed to build machine data",
     )
 
     return json.loads(Path(proc.stdout.strip()).read_text())
