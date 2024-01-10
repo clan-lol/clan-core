@@ -54,7 +54,7 @@ def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
     return stdout_buf.decode("utf-8"), stderr_buf.decode("utf-8")
 
 
-def run(cmd: list[str], cwd: Path = Path.cwd(), log = Log.BOTH) -> CmdOut:
+def run(cmd: list[str], cwd: Path = Path.cwd(), log: Log = Log.BOTH) -> CmdOut:
     # Start the subprocess
     process = subprocess.Popen(
         cmd, cwd=str(cwd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
