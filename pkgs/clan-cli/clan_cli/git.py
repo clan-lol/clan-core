@@ -54,7 +54,7 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
         ["nixpkgs#git"],
         ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code", str(file_path)],
     )
-    result = run(cmd, cwd=repo_dir)
+    result = run(cmd, check=False, cwd=repo_dir)
     # if there is no diff, return
     if result.returncode == 0:
         return
