@@ -2,7 +2,7 @@
 import argparse
 from pathlib import Path
 
-from ..cmd import CmdOut, run, runforcli
+from ..cmd import CmdOut, run
 from ..errors import ClanError
 from ..nix import nix_command, nix_shell
 
@@ -24,7 +24,6 @@ def create_flake(directory: Path, url: str) -> dict[str, CmdOut]:
         ]
     )
     out = run(command, cwd=directory)
-    response["flake init"] = out
 
     command = nix_shell(["nixpkgs#git"], ["git", "init"])
     out = run(command, cwd=directory)
@@ -48,7 +47,7 @@ def create_flake(directory: Path, url: str) -> dict[str, CmdOut]:
 
 
 def create_flake_command(args: argparse.Namespace) -> None:
-    runforcli(create_flake, args.path, args.url)
+    create_flake(args.path, args.url)
 
 
 # takes a (sub)parser and configures it
