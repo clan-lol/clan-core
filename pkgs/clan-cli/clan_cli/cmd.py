@@ -19,6 +19,7 @@ class CmdOut(NamedTuple):
     stderr: str
     cwd: Path
 
+
 class Log(Enum):
     STDERR = 1
     STDOUT = 2
