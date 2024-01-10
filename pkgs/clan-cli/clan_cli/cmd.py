@@ -54,6 +54,7 @@ def run(
     env: dict[str, str] | None = None,
     cwd: Path = Path.cwd(),
     log: Log = Log.STDERR,
+    check: bool = True,
 ) -> CmdOut:
     # Start the subprocess
     process = subprocess.Popen(
@@ -70,14 +71,14 @@ def run(
     # Wait for the subprocess to finish
     rc = process.wait()
     cmd_out = CmdOut(
-        stdout_buf,
-        stderr_buf,
+        stdout=stdout_buf,
+        stderr=stderr_buf,
         cwd=cwd,
         command=shlex.join(cmd),
         returncode=process.returncode,
     )
 
-    if rc != 0:
+    if check and rc != 0:
         raise ClanCmdError(cmd_out)
 
     return cmd_out
