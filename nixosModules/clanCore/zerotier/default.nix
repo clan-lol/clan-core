@@ -123,6 +123,10 @@ in
 
       networking.firewall.interfaces."zt+".allowedTCPPorts = [ 5353 ]; # mdns
       networking.firewall.interfaces."zt+".allowedUDPPorts = [ 5353 ]; # mdns
+
+      networking.firewall.allowedTCPPorts = [ 9993 ]; # zerotier
+      networking.firewall.allowedUDPPorts = [ 9993 ]; # zerotier
+
       networking.networkmanager.unmanaged = [ "interface-name:zt*" ];
 
       services.zerotierone = {
