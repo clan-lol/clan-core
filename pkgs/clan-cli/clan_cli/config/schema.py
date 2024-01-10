@@ -1,10 +1,9 @@
 import json
 import os
-import subprocess
-import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+from clan_cli.cmd import run
 from clan_cli.dirs import nixpkgs_source
 from clan_cli.errors import ClanError, ClanHttpError
 from clan_cli.nix import nix_eval
@@ -25,7 +24,7 @@ def machine_schema(
         clan_machine_settings_file.seek(0)
         env["CLAN_MACHINE_SETTINGS_FILE"] = clan_machine_settings_file.name
         # ensure that the requested clanImports exist
-        proc = subprocess.run(
+        proc = run(
             nix_eval(
                 flags=[
                     "--impure",
@@ -47,13 +46,11 @@ def machine_schema(
                     """,
                 ]
             ),
-            capture_output=True,
-            text=True,
             cwd=flake_dir,
             env=env,
+            check=False,
         )
         if proc.returncode != 0:
-            print(proc.stderr, file=sys.stderr)
             raise ClanHttpError(
                 status_code=400,
                 msg=f"Failed to check clanImports for existence:\n{proc.stderr}",
@@ -65,7 +62,7 @@ def machine_schema(
             )
 
         # get the schema
-        proc = subprocess.run(
+        proc = run(
             nix_eval(
                 flags=[
                     "--impure",
@@ -100,12 +97,10 @@ def machine_schema(
                     """,
                 ],
             ),
-            capture_output=True,
-            text=True,
+            check=False,
             cwd=flake_dir,
             env=env,
         )
     if proc.returncode != 0:
-        print(proc.stderr, file=sys.stderr)
         raise ClanError(f"Failed to read schema:\n{proc.stderr}")
     return json.loads(proc.stdout)

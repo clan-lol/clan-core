@@ -1,6 +1,5 @@
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
@@ -70,10 +69,10 @@ class Machine:
         )  # TODO do this in the clanCore module
         env["SECRETS_DIR"] = str(secrets_dir)
         print(f"uploading secrets... {self.upload_secrets}")
-        proc = subprocess.run(
+        proc = run(
             [self.upload_secrets],
             env=env,
-            text=True,
+            check=False,
         )
 
         if proc.returncode == 23:
