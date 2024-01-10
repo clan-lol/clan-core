@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-from ..cmd import run
+from ..cmd import Log, run
 from ..nix import nix_build, nix_config, nix_eval
 from ..ssh import Host, parse_deployment_address
 
@@ -18,6 +18,7 @@ def build_machine_data(machine_name: str, clan_dir: Path) -> dict:
                 f'{clan_dir}#clanInternals.machines."{system}"."{machine_name}".config.system.clan.deployment.file'
             ]
         ),
+        log=Log.BOTH,
         error_msg="failed to build machine data",
     )
 
