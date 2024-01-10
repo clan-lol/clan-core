@@ -55,6 +55,7 @@ def run(
     cwd: Path = Path.cwd(),
     log: Log = Log.STDERR,
     check: bool = True,
+    error_msg: str | None = None,
 ) -> CmdOut:
     # Start the subprocess
     process = subprocess.Popen(
@@ -76,6 +77,7 @@ def run(
         cwd=cwd,
         command=shlex.join(cmd),
         returncode=process.returncode,
+        msg=error_msg,
     )
 
     if check and rc != 0:

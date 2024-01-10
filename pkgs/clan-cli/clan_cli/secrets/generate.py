@@ -1,11 +1,9 @@
 import argparse
 import logging
 import os
-import subprocess
 import sys
 
-from clan_cli.errors import ClanError
-
+from ..cmd import run
 from ..machines.machines import Machine
 
 log = logging.getLogger(__name__)
@@ -17,15 +15,13 @@ def generate_secrets(machine: Machine) -> None:
     env["PYTHONPATH"] = ":".join(sys.path)  # TODO do this in the clanCore module
 
     print(f"generating secrets... {machine.generate_secrets}")
-    proc = subprocess.run(
+    run(
         [machine.generate_secrets],
         env=env,
+        error_msg="failed to generate secrets",
     )
 
-    if proc.returncode != 0:
-        raise ClanError("failed to generate secrets")
-    else:
-        print("successfully generated secrets")
+    print("successfully generated secrets")
 
 
 def generate_command(args: argparse.Namespace) -> None:
