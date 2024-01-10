@@ -9,6 +9,18 @@ class CmdOut(NamedTuple):
     command: str
     returncode: int
 
+    def __str__(self) -> str:
+        return f"""
+Working Directory: '{self.cwd}'
+Return Code: {self.returncode}
+=================== Command ===================
+{self.command}
+=================== STDERR ===================
+{self.stderr}
+=================== STDOUT ===================
+{self.stdout}
+"""
+
 
 class ClanError(Exception):
     """Base class for exceptions in this module."""
@@ -32,3 +44,9 @@ class ClanCmdError(ClanError):
     def __init__(self, cmd: CmdOut) -> None:
         self.cmd = cmd
         super().__init__()
+
+    def __str__(self) -> str:
+        return str(self.cmd)
+
+    def __repr__(self) -> str:
+        return f"ClanCmdError({self.cmd})"
