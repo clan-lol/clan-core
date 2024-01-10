@@ -1,10 +1,10 @@
 import json
 import os
 import re
-import subprocess
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+from clan_cli.cmd import run
 from clan_cli.dirs import machine_settings_file, nixpkgs_source, specific_machine_dir
 from clan_cli.errors import ClanError, ClanHttpError
 from clan_cli.git import commit_file
@@ -60,11 +60,9 @@ def verify_machine_config(
                 """,
             ],
         )
-        # repro_env_break(work_dir=flake, env=env, cmd=cmd)
-        proc = subprocess.run(
+
+        proc = run(
             cmd,
-            capture_output=True,
-            text=True,
             cwd=flake,
             env=env,
         )

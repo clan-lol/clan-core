@@ -1,10 +1,10 @@
-import shlex
-import subprocess
 from pathlib import Path
 
 # from clan_cli.dirs import find_git_repo_root
-from clan_cli.errors import ClanError
+from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.nix import nix_shell
+
+from .cmd import run
 
 
 # generic vcs agnostic commit function
@@ -43,10 +43,10 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
     )
     # add the file to the git index
     try:
-        subprocess.run(cmd, check=True)
-    except subprocess.CalledProcessError as e:
+        run(cmd)
+    except ClanCmdError as e:
         raise ClanError(
-            f"Failed to add {file_path} to git repository {repo_dir}:\n{shlex.join(cmd)}\n exited with {e.returncode}"
+            f"Failed to add {file_path} to git repository {repo_dir}:\n{e.cmd.command}\n exited with {e.cmd.returncode}"
         ) from e
 
     # check if there is a diff
@@ -54,7 +54,7 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
         ["nixpkgs#git"],
         ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code", str(file_path)],
     )
-    result = subprocess.run(cmd, cwd=repo_dir)
+    result = run(cmd, cwd=repo_dir)
     # if there is no diff, return
     if result.returncode == 0:
         return
@@ -73,11 +73,10 @@ def _commit_file_to_git(repo_dir: Path, file_path: Path, commit_message: str) ->
         ],
     )
     try:
-        subprocess.run(
+        run(
             cmd,
-            check=True,
         )
-    except subprocess.CalledProcessError as e:
+    except ClanCmdError as e:
         raise ClanError(
-            f"Failed to commit {file_path} to git repository {repo_dir}:\n{shlex.join(cmd)}\n exited with {e.returncode}"
+            f"Failed to commit {file_path} to git repository {repo_dir}:\n{e.cmd.command}\n exited with {e.cmd.returncode}"
         ) from e
