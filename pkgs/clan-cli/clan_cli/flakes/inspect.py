@@ -1,9 +1,8 @@
 import argparse
-import shlex
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..cmd import run
 from ..dirs import specific_groot_dir
 from ..errors import ClanError
 from ..machines.list import list_machines
@@ -26,18 +25,7 @@ class FlakeConfig:
 
 
 def run_cmd(cmd: list[str]) -> str:
-    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE)
-    assert proc.stdout is not None
-    if proc.returncode != 0:
-        raise ClanError(
-            f"""
-command: {shlex.join(cmd)}
-exit code: {proc.returncode}
-stdout:
-{proc.stdout}
-"""
-        )
-
+    proc = run(cmd)
     return proc.stdout.strip()
 
 
