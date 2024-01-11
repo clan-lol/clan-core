@@ -118,6 +118,15 @@ in
              mkdir -p /var/lib/zerotier-one/controller.d/network
              ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON networkConfig)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
            ''}
+
+           # cleanup old networks
+           if [[ -d /var/lib/zerotier-one/networks.d ]]; then
+             find /var/lib/zerotier-one/networks.d \
+               -type f \
+               -name "*.conf" \
+               -not \( ${lib.concatMapStringsSep " -o " (netId: ''-name "${netId}.conf"'') config.services.zerotierone.joinNetworks} \) \
+               -delete
+           fi
          ''}"
       ];
 
