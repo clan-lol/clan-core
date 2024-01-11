@@ -8,9 +8,10 @@ from enum import Enum
 from pathlib import Path
 from typing import IO, Any
 
+from .custom_logger import get_caller
 from .errors import ClanCmdError, CmdOut
 
-log = logging.getLogger(__name__)
+glog = logging.getLogger(__name__)
 
 
 class Log(Enum):
@@ -38,12 +39,14 @@ def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
         ret = handle_fd(process.stdout)
         if log in [Log.STDOUT, Log.BOTH]:
             sys.stdout.buffer.write(ret)
+            sys.stdout.flush()
 
         stdout_buf += ret
         ret = handle_fd(process.stderr)
 
         if log in [Log.STDERR, Log.BOTH]:
             sys.stderr.buffer.write(ret)
+            sys.stderr.flush()
         stderr_buf += ret
     return stdout_buf.decode("utf-8"), stderr_buf.decode("utf-8")
 
@@ -55,7 +58,9 @@ def run(
     cwd: Path = Path.cwd(),
     log: Log = Log.STDERR,
     check: bool = True,
+    error_msg: str | None = None,
 ) -> CmdOut:
+    glog.debug(f"running command: {shlex.join(cmd)}. Caller: {get_caller()}")
     # Start the subprocess
     process = subprocess.Popen(
         cmd,
@@ -67,7 +72,7 @@ def run(
     )
 
     stdout_buf, stderr_buf = handle_output(process, log)
-
+    # stdout_buf, stderr_buf = process.communicate()
     # Wait for the subprocess to finish
     rc = process.wait()
     cmd_out = CmdOut(
@@ -76,6 +81,7 @@ def run(
         cwd=cwd,
         command=shlex.join(cmd),
         returncode=process.returncode,
+        msg=error_msg,
     )
 
     if check and rc != 0:

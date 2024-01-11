@@ -1,11 +1,9 @@
 import argparse
 import json
 import logging
-import shlex
-import subprocess
 from pathlib import Path
 
-from ..errors import ClanError
+from ..cmd import run
 from ..nix import nix_config, nix_eval
 
 log = logging.getLogger(__name__)
@@ -22,17 +20,8 @@ def list_machines(flake_url: Path | str) -> list[str]:
             "--json",
         ]
     )
-    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE)
-    assert proc.stdout is not None
-    if proc.returncode != 0:
-        raise ClanError(
-            f"""
-command: {shlex.join(cmd)}
-exit code: {proc.returncode}
-stdout:
-{proc.stdout}
-"""
-        )
+    proc = run(cmd)
+
     res = proc.stdout.strip()
     return json.loads(res)
 
