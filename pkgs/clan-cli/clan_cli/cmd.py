@@ -20,12 +20,15 @@ class Log(Enum):
     BOTH = 3
     NONE = 4
 
+
 def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
     rlist = [process.stdout, process.stderr]
     stdout_buf = b""
     stderr_buf = b""
 
     while process.poll() is None:
+        if len(rlist) == 0:
+            break
         r, _, _ = select.select(rlist, [], [], 0)
 
         def handle_fd(fd: IO[Any] | None) -> bytes:
