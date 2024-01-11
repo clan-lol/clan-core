@@ -59,6 +59,8 @@ in
       ${cfg.listenAddress} meshnamed
     '';
 
+    networking.networkmanager.unmanaged = [ "interface-name:meshnamed" ];
+
     systemd.services.meshnamed =
       let
         networks = lib.concatMapStringsSep "," (network: "${network.name}=${network.subnet}")
