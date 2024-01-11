@@ -124,6 +124,7 @@ def main() -> None:
     if args.debug:
         setup_logging(logging.DEBUG)
         log.debug("Debug log activated")
+    setup_logging(logging.INFO)
 
     if not hasattr(args, "func"):
         return
