@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import http.client
+import ipaddress
 import json
 import sys
 from pathlib import Path
@@ -10,6 +11,35 @@ ZEROTIER_STATE_DIR = Path("/var/lib/zerotier-one")
 
 class ClanError(Exception):
     pass
+
+
+def compute_zerotier_ip(network_id: str, identity: str) -> ipaddress.IPv6Address:
+    assert (
+        len(network_id) == 16
+    ), "network_id must be 16 characters long, got {network_id}"
+    nwid = int(network_id, 16)
+    node_id = int(identity, 16)
+    addr_parts = bytearray(
+        [
+            0xFD,
+            (nwid >> 56) & 0xFF,
+            (nwid >> 48) & 0xFF,
+            (nwid >> 40) & 0xFF,
+            (nwid >> 32) & 0xFF,
+            (nwid >> 24) & 0xFF,
+            (nwid >> 16) & 0xFF,
+            (nwid >> 8) & 0xFF,
+            (nwid) & 0xFF,
+            0x99,
+            0x93,
+            (node_id >> 32) & 0xFF,
+            (node_id >> 24) & 0xFF,
+            (node_id >> 16) & 0xFF,
+            (node_id >> 8) & 0xFF,
+            (node_id) & 0xFF,
+        ]
+    )
+    return ipaddress.IPv6Address(bytes(addr_parts))
 
 
 # this is managed by the nixos module
@@ -53,7 +83,11 @@ def list_members(args: argparse.Namespace) -> None:
                 member_id = data["id"]
             except KeyError:
                 raise ClanError(f"error: {member} does not contain an id")
-            print(member_id, data["authorized"] or "false")
+            print(
+                member_id,
+                compute_zerotier_ip(network_id, data["id"]),
+                data["authorized"] or "false",
+            )
 
 
 def main() -> None:
