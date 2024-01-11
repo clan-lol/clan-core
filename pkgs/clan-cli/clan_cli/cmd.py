@@ -72,7 +72,7 @@ def run(
     )
 
     stdout_buf, stderr_buf = handle_output(process, log)
-
+    # stdout_buf, stderr_buf = process.communicate()
     # Wait for the subprocess to finish
     rc = process.wait()
     cmd_out = CmdOut(
