@@ -15,7 +15,7 @@ let
     ipAssignmentPools = [ ];
     mtu = 2800;
     multicastLimit = 32;
-    name = "";
+    name = cfg.name;
     uwid = cfg.networkId;
     objtype = "network";
     private = !cfg.controller.public;
@@ -50,6 +50,13 @@ in
       default = null;
       description = ''
         zerotier networking id
+      '';
+    };
+    name = lib.mkOption {
+      type = lib.types.str;
+      default = config.clanCore.clanName;
+      description = ''
+        zerotier network name
       '';
     };
     subnet = lib.mkOption {
@@ -129,6 +136,21 @@ in
            fi
          ''}"
       ];
+      systemd.services.zerotierone.serviceConfig.ExecStartPost = [
+        "+${pkgs.writeShellScript "configure-interface" ''
+          while ! ${pkgs.netcat}/bin/nc -z localhost 9993; do
+            sleep 0.1
+          done
+          zerotier-cli listnetworks -j | ${pkgs.jq}/bin/jq -r '.[] | [.portDeviceName, .name] | @tsv' \
+            | while IFS=$'\t' read -r portDeviceName name; do
+              if [[ -z "$name" ]] || [[ -z "$portDeviceName" ]]; then
+                continue
+              fi
+              # Execute the command for each element
+              ${pkgs.iproute2}/bin/ip link property add dev "$portDeviceName" altname "$name"
+          done
+         ''}"
+      ];
 
       networking.firewall.interfaces."zt+".allowedTCPPorts = [ 5353 ]; # mdns
       networking.firewall.interfaces."zt+".allowedUDPPorts = [ 5353 ]; # mdns
@@ -165,7 +187,6 @@ in
       environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
     })
     (lib.mkIf (config.clanCore.secretsUploadDirectory != null && !cfg.controller.enable && cfg.networkId != null) {
-
       clanCore.secrets.zerotier = {
         facts.zerotier-ip = { };
         facts.zerotier-meshname = { };
