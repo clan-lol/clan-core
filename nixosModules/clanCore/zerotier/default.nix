@@ -15,7 +15,7 @@ let
     ipAssignmentPools = [ ];
     mtu = 2800;
     multicastLimit = 32;
-    name = "";
+    name = cfg.name;
     uwid = cfg.networkId;
     objtype = "network";
     private = !cfg.controller.public;
@@ -50,6 +50,13 @@ in
       default = null;
       description = ''
         zerotier networking id
+      '';
+    };
+    name = lib.mkOption {
+      type = lib.types.str;
+      default = config.clanCore.clanName;
+      description = ''
+        zerotier network name
       '';
     };
     subnet = lib.mkOption {
@@ -165,7 +172,6 @@ in
       environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
     })
     (lib.mkIf (config.clanCore.secretsUploadDirectory != null && !cfg.controller.enable && cfg.networkId != null) {
-
       clanCore.secrets.zerotier = {
         facts.zerotier-ip = { };
         facts.zerotier-meshname = { };
