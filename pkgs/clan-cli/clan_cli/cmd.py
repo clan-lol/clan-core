@@ -18,6 +18,7 @@ class Log(Enum):
     STDERR = 1
     STDOUT = 2
     BOTH = 3
+    NONE = 4
 
 
 def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
@@ -25,10 +26,9 @@ def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
     stdout_buf = b""
     stderr_buf = b""
 
-    # Note: We need to read till the process is done, otherwise we might block
-    # forever because the process might be waiting for us to read from the pipe
-    # before it can continue and will block in the write call.
-    while True:
+    while process.poll() is None:
+        if len(rlist) == 0:
+            break
         r, _, _ = select.select(rlist, [], [], 0)
 
         def handle_fd(fd: IO[Any] | None) -> bytes:
@@ -36,6 +36,7 @@ def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
                 read = os.read(fd.fileno(), 4096)
                 if len(read) != 0:
                     return read
+                rlist.remove(fd)
             return b""
 
         ret = handle_fd(process.stdout)
@@ -50,11 +51,6 @@ def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
             sys.stderr.buffer.write(ret)
             sys.stderr.flush()
         stderr_buf += ret
-
-        # Check if the process is still running
-        if process.poll() is not None:
-            break
-
     return stdout_buf.decode("utf-8"), stderr_buf.decode("utf-8")
 
 
@@ -79,7 +75,7 @@ def run(
     )
 
     stdout_buf, stderr_buf = handle_output(process, log)
-    # stdout_buf, stderr_buf = process.communicate()
+
     # Wait for the subprocess to finish
     rc = process.wait()
     cmd_out = CmdOut(
