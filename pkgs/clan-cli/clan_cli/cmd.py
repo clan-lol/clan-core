@@ -8,9 +8,10 @@ from enum import Enum
 from pathlib import Path
 from typing import IO, Any
 
+from .custom_logger import get_caller
 from .errors import ClanCmdError, CmdOut
 
-log = logging.getLogger(__name__)
+glog = logging.getLogger(__name__)
 
 
 class Log(Enum):
@@ -59,6 +60,7 @@ def run(
     check: bool = True,
     error_msg: str | None = None,
 ) -> CmdOut:
+    glog.debug(f"running command: {shlex.join(cmd)}. Caller: {get_caller()}")
     # Start the subprocess
     process = subprocess.Popen(
         cmd,
