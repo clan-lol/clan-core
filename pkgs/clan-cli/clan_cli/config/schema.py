@@ -87,6 +87,7 @@ def machine_schema(
                                     # potentially the config might affect submodule options,
                                     #   therefore we need to import it
                                     config
+                                    {{ clanCore.clanName = "fakeClan"; }}
                                 ]
                                 # add all clan modules specified via clanImports
                                 ++ (map (name: clan-core.clanModules.${{name}}) config.clanImports or []);
