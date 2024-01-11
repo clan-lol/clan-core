@@ -136,6 +136,21 @@ in
            fi
          ''}"
       ];
+      systemd.services.zerotierone.serviceConfig.ExecStartPost = [
+        "+${pkgs.writeShellScript "configure-interface" ''
+          while ! ${pkgs.netcat}/bin/nc -z localhost 9993; do
+            sleep 0.1
+          done
+          zerotier-cli listnetworks -j | ${pkgs.jq}/bin/jq -r '.[] | [.portDeviceName, .name] | @tsv' \
+            | while IFS=$'\t' read -r portDeviceName name; do
+              if [[ -z "$name" ]] || [[ -z "$portDeviceName" ]]; then
+                continue
+              fi
+              # Execute the command for each element
+              ${pkgs.iproute2}/bin/ip link property add dev "$portDeviceName" altname "$name"
+          done
+         ''}"
+      ];
 
       networking.firewall.interfaces."zt+".allowedTCPPorts = [ 5353 ]; # mdns
       networking.firewall.interfaces."zt+".allowedUDPPorts = [ 5353 ]; # mdns
