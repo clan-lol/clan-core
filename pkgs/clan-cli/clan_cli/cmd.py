@@ -60,7 +60,7 @@ def run(
     check: bool = True,
     error_msg: str | None = None,
 ) -> CmdOut:
-    glog.debug(f"running command: {shlex.join(cmd)}. Caller: {get_caller()}")
+    glog.debug(f"$: {shlex.join(cmd)} \nCaller: {get_caller()}")
     # Start the subprocess
     process = subprocess.Popen(
         cmd,
