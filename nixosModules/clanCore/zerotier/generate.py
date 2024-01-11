@@ -142,9 +142,9 @@ class NetworkController:
 
 
 # TODO: allow merging more network configuration here
-def create_network_controller() -> NetworkController:
+def create_network_controller(name: str="") -> NetworkController:
     with zerotier_controller() as controller:
-        network = controller.create_network()
+        network = controller.create_network({"name": name})
         return NetworkController(network["nwid"], controller.identity)
 
 
@@ -199,13 +199,14 @@ def main() -> None:
     parser.add_argument("--meshname", type=Path, required=True)
     parser.add_argument("--identity-secret", type=Path, required=True)
     parser.add_argument("--network-id", type=str, required=False)
+    parser.add_argument("--network-name", type=str, default="", required=False)
     args = parser.parse_args()
 
     match args.mode:
         case "network":
             if args.network_id is None:
                 raise ValueError("network_id parameter is required")
-            controller = create_network_controller()
+            controller = create_network_controller(name=args.network_name)
             identity = controller.identity
             network_id = controller.networkid
             Path(args.network_id).write_text(network_id)
