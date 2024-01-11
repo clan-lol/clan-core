@@ -26,10 +26,13 @@ def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
     stdout_buf = b""
     stderr_buf = b""
 
-    while process.poll() is None:
-        if len(rlist) == 0:
+    while len(rlist) != 0:
+        r, _, _ = select.select(rlist, [], [], 0.1)
+        if len(r) == 0:  # timeout in select
+            if process.poll() is None:
+                continue
+            # Process has exited
             break
-        r, _, _ = select.select(rlist, [], [], 0)
 
         def handle_fd(fd: IO[Any] | None) -> bytes:
             if fd and fd in r:
@@ -71,13 +74,12 @@ def run(
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True,
     )
-
     stdout_buf, stderr_buf = handle_output(process, log)
 
-    # Wait for the subprocess to finish
     rc = process.wait()
+
+    # Wait for the subprocess to finish
     cmd_out = CmdOut(
         stdout=stdout_buf,
         stderr=stderr_buf,
