@@ -4,12 +4,11 @@ import json
 import logging
 import os
 import re
-import shlex
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any, get_origin
 
+from clan_cli.cmd import run
 from clan_cli.dirs import machine_settings_file
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_file
@@ -117,15 +116,11 @@ def options_for_machine(
         f"{clan_dir}#nixosConfigurations.{machine_name}.config.clanCore.optionsNix"
     )
     cmd = nix_eval(flags=flags)
-    proc = subprocess.run(
+    proc = run(
         cmd,
-        stdout=subprocess.PIPE,
-        text=True,
+        error_msg=f"Failed to read options for machine {machine_name}",
     )
-    if proc.returncode != 0:
-        raise ClanError(
-            f"Failed to read options for machine {machine_name}:\n{shlex.join(cmd)}\nexit with {proc.returncode}"
-        )
+
     return json.loads(proc.stdout)
 
 
@@ -141,11 +136,8 @@ def read_machine_option_value(
             f"{clan_dir}#nixosConfigurations.{machine_name}.config.{option}",
         ],
     )
-    proc = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
-    if proc.returncode != 0:
-        raise ClanError(
-            f"Failed to read option {option}:\n{shlex.join(cmd)}\nexit with {proc.returncode}"
-        )
+    proc = run(cmd, error_msg=f"Failed to read option {option}")
+
     value = json.loads(proc.stdout)
     # print the value so that the output can be copied and fed as an input.
     # for example a list should be displayed as space separated values surrounded by quotes.

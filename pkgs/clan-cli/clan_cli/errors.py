@@ -8,9 +8,11 @@ class CmdOut(NamedTuple):
     cwd: Path
     command: str
     returncode: int
+    msg: str | None = None
 
     def __str__(self) -> str:
         return f"""
+Message: {self.msg}
 Working Directory: '{self.cwd}'
 Return Code: {self.returncode}
 =================== Command ===================

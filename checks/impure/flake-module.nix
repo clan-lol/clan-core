@@ -12,7 +12,7 @@
       ]}"
       ROOT=$(git rev-parse --show-toplevel)
       cd "$ROOT/pkgs/clan-cli"
-      nix develop "$ROOT#clan-cli" -c bash -c "TMPDIR=/tmp python -m pytest -m impure ./tests $@"
+      nix develop "$ROOT#clan-cli" -c bash -c "TMPDIR=/tmp python -m pytest -s -m impure ./tests $@"
     '';
   };
 }
