@@ -1,9 +1,9 @@
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 
+from ..cmd import run
 from ..errors import ClanError
 from ..nix import nix_shell
 from .secrets import encrypt_secret, sops_secrets_folder
@@ -23,10 +23,8 @@ def import_sops(args: argparse.Namespace) -> None:
             cmd += ["--input-type", args.input_type]
         cmd += ["--output-type", "json", "--decrypt", args.sops_file]
         cmd = nix_shell(["nixpkgs#sops"], cmd)
-        try:
-            res = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
-        except subprocess.CalledProcessError as e:
-            raise ClanError(f"Could not import sops file {file}: {e}") from e
+
+        res = run(cmd, error_msg=f"Could not import sops file {file}")
         secrets = json.loads(res.stdout)
         for k, v in secrets.items():
             k = args.prefix + k
