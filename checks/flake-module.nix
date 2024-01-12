@@ -19,6 +19,7 @@
           container = import ./container nixosTestArgs;
           deltachat = import ./deltachat nixosTestArgs;
           meshnamed = import ./meshnamed nixosTestArgs;
+          zt-tcp-relay = import ./zt-tcp-relay nixosTestArgs;
           borgbackup = import ./borgbackup nixosTestArgs;
           syncthing = import ./syncthing nixosTestArgs;
           wayland-proxy-virtwl = import ./wayland-proxy-virtwl nixosTestArgs;

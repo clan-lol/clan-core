@@ -10,5 +10,6 @@
     xfce = ./xfce.nix;
     borgbackup = ./borgbackup.nix;
     syncthing = ./syncthing.nix;
+    zt-tcp-relay = ./zt-tcp-relay.nix;
   };
 }
