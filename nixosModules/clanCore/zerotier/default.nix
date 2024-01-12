@@ -164,6 +164,10 @@ in
         enable = true;
         joinNetworks = [ cfg.networkId ];
       };
+
+      # The official zerotier tcp relay no longer works: https://github.com/zerotier/ZeroTierOne/issues/2202
+      # So we host our own relay in https://git.clan.lol/clan/clan-infra
+      services.zerotierone.localConf.settings.tcpFallbackRelay = "65.21.12.51/4443";
     })
     (lib.mkIf cfg.controller.enable {
       # only the controller needs to have the key in the repo, the other clients can be dynamic
