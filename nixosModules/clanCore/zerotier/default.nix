@@ -73,6 +73,14 @@ in
           It will be reachable under the given stable endpoints.
         '';
       };
+      orbitMoons = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        description = ''
+          Join these moons.
+          This machine will be able to reach all machines in these moons.
+        '';
+      };
     };
     subnet = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
@@ -171,6 +179,10 @@ in
               # Execute the command for each element
               ${pkgs.iproute2}/bin/ip link property add dev "$portDeviceName" altname "$name"
           done
+
+          ${lib.concatMapStringsSep "\n" (moon: ''
+            zerotier-cli orbit ${moon} ${moon}
+          '') cfg.moon.orbitMoons}
          ''}"
       ];
 
