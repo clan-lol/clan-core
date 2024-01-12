@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import IO
 
-from ..cmd import run
+from ..cmd import Log, run
 from ..dirs import module_root, specific_groot_dir, vm_state_dir
 from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_shell
@@ -118,7 +118,7 @@ def get_vm_create_info(vm: VmConfig, nix_options: list[str]) -> dict[str, str]:
         specific_groot_dir(clan_name=vm.clan_name, flake_url=str(vm.flake_url))
         / f"vm-{machine}",
     )
-    proc = run(cmd)
+    proc = run(cmd, log=Log.BOTH, error_msg=f"Could not build vm config for {machine}")
     try:
         return json.loads(Path(proc.stdout.strip()).read_text())
     except json.JSONDecodeError as e:
@@ -143,28 +143,17 @@ def generate_secrets(
     # Only generate secrets for local clans
     if isinstance(vm.flake_url, Path) and vm.flake_url.is_dir():
         if Path(vm.flake_url).is_dir():
-            subprocess.run(
-                [nixos_config["generateSecrets"], vm.clan_name],
-                env=env,
-                check=False,
-                stdout=log_fd,
-                stderr=log_fd,
-            )
+            run([nixos_config["generateSecrets"], vm.clan_name], env=env)
         else:
             log.warning("won't generate secrets for non local clan")
 
     cmd = [nixos_config["uploadSecrets"]]
-    res = subprocess.run(
+    run(
         cmd,
         env=env,
-        check=False,
-        stdout=log_fd,
-        stderr=log_fd,
+        log=Log.BOTH,
+        error_msg=f"Could not upload secrets for {vm.flake_attr}",
     )
-    if res.returncode != 0:
-        raise ClanError(
-            f"Failed to upload secrets: {shlex.join(cmd)} failed with {res.returncode}"
-        )
     return secrets_dir
 
 
@@ -181,16 +170,11 @@ def prepare_disk(tmpdir: Path, log_fd: IO[str] | None) -> Path:
             "1024M",
         ],
     )
-    res = subprocess.run(
+    run(
         cmd,
-        check=False,
-        stdout=log_fd,
-        stderr=log_fd,
+        log=Log.BOTH,
+        error_msg=f"Could not create disk image at {disk_img}",
     )
-    if res.returncode != 0:
-        raise ClanError(
-            f"Failed to create disk image: {shlex.join(cmd)} failed with {res.returncode}"
-        )
 
     cmd = nix_shell(
         ["nixpkgs#e2fsprogs"],
@@ -201,16 +185,11 @@ def prepare_disk(tmpdir: Path, log_fd: IO[str] | None) -> Path:
             str(disk_img),
         ],
     )
-    res = subprocess.run(
+    run(
         cmd,
-        check=False,
-        stdout=log_fd,
-        stderr=log_fd,
+        log=Log.BOTH,
+        error_msg=f"Could not create ext4 filesystem at {disk_img}",
     )
-    if res.returncode != 0:
-        raise ClanError(
-            f"Failed to create ext4 filesystem: {shlex.join(cmd)} failed with {res.returncode}"
-        )
     return disk_img
 
 
