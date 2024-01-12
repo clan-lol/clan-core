@@ -9,6 +9,7 @@
     packages = {
       tea-create-pr = pkgs.callPackage ./tea-create-pr { };
       zerotier-members = pkgs.callPackage ./zerotier-members { };
+      zt-tcp-relay = pkgs.callPackage ./zt-tcp-relay { };
       merge-after-ci = pkgs.callPackage ./merge-after-ci {
         inherit (config.packages) tea-create-pr;
       };
