@@ -2,6 +2,9 @@
 let
   cfg = config.clan.networking.zerotier;
   facts = config.clanCore.secrets.zerotier.facts or { };
+  genMoonScript = pkgs.runCommand "genmoon" { buildInputs = [ pkgs.python3 ]; } ''
+    install -Dm755 ${./genmoon.py} $out/bin/genmoon
+  '';
   networkConfig = {
     authTokens = [
       null
@@ -58,6 +61,17 @@ in
       description = ''
         zerotier network name
       '';
+    };
+    moon = {
+      stableEndpoints = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [ ];
+        description = ''
+          Make this machine a moon.
+          Other machines can join this moon by adding this moon in their config.
+          It will be reachable under the given stable endpoints.
+        '';
+      };
     };
     subnet = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
@@ -120,10 +134,17 @@ in
       systemd.services.zerotierone.serviceConfig.ExecStartPre = [
         "+${pkgs.writeShellScript "init-zerotier" ''
            cp ${config.clanCore.secrets.zerotier.secrets.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+           zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
 
            ${lib.optionalString (cfg.controller.enable) ''
              mkdir -p /var/lib/zerotier-one/controller.d/network
              ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON networkConfig)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
+           ''}
+           ${lib.optionalString (cfg.moon.stableEndpoints != []) ''
+             if [ -f /var/lib/zerotier-one/moon.json ]; then
+               zerotier-idtool initmoon /var/lib/zerotier-one/identity.public >> /var/lib/zerotier-one/moon.json
+             fi
+             ${genMoonScript} /var/lib/zerotier-one/moon.json ${builtins.toFile "moon.json" (builtins.toJSON cfg.moon.config) cfg.moon.stableEndpoints} /var/lib/zerotier-one/moons.d
            ''}
 
            # cleanup old networks
