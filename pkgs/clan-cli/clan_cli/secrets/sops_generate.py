@@ -2,12 +2,12 @@ import logging
 import os
 import shlex
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
+from clan_cli.cmd import run
 from clan_cli.nix import nix_shell
 
 from ..errors import ClanError
@@ -60,13 +60,9 @@ export facts={shlex.quote(str(facts_dir))}
 export secrets={shlex.quote(str(secrets_dir))}
 {generator}
         """
-        try:
-            cmd = nix_shell(["nixpkgs#bash"], ["bash", "-c", text])
-            subprocess.run(cmd, check=True)
-        except subprocess.CalledProcessError:
-            msg = "failed to the following command:\n"
-            msg += text
-            raise ClanError(msg)
+        cmd = nix_shell(["nixpkgs#bash"], ["bash", "-c", text])
+        run(cmd)
+
         for name in secrets:
             secret_file = secrets_dir / name
             if not secret_file.is_file():
