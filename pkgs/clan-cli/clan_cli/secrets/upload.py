@@ -1,9 +1,9 @@
 import argparse
 import logging
-import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from ..cmd import Log, run
 from ..machines.machines import Machine
 from ..nix import nix_shell
 
@@ -19,7 +19,7 @@ def upload_secrets(machine: Machine) -> None:
             host = machine.host
 
             ssh_cmd = host.ssh_cmd()
-            subprocess.run(
+            run(
                 nix_shell(
                     ["nixpkgs#rsync"],
                     [
@@ -32,7 +32,7 @@ def upload_secrets(machine: Machine) -> None:
                         f"{host.user}@{host.host}:{machine.secrets_upload_directory}/",
                     ],
                 ),
-                check=True,
+                log=Log.BOTH,
             )
 
 

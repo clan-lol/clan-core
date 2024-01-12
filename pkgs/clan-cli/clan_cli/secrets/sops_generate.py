@@ -7,7 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
-from clan_cli.cmd import run
+from clan_cli.cmd import Log, run
 from clan_cli.nix import nix_shell
 
 from ..errors import ClanError
@@ -61,7 +61,7 @@ export secrets={shlex.quote(str(secrets_dir))}
 {generator}
         """
         cmd = nix_shell(["nixpkgs#bash"], ["bash", "-c", text])
-        run(cmd)
+        run(cmd, log=Log.BOTH)
 
         for name in secrets:
             secret_file = secrets_dir / name

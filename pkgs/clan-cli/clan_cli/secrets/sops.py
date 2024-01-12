@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import IO
 
+from ..cmd import Log, run
 from ..dirs import user_config_dir
 from ..errors import ClanError
 from ..nix import nix_shell
@@ -36,7 +37,7 @@ def get_public_key(privkey: str) -> str:
 def generate_private_key() -> tuple[str, str]:
     cmd = nix_shell(["nixpkgs#age"], ["age-keygen"])
     try:
-        proc = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
+        proc = run(cmd)
         res = proc.stdout.strip()
         pubkey = None
         private_key = None
@@ -129,11 +130,7 @@ def update_keys(secret_path: Path, keys: list[str]) -> None:
                 str(secret_path / "secret"),
             ],
         )
-        res = subprocess.run(cmd)
-        if res.returncode != 0:
-            raise ClanError(
-                f"Failed to update keys for {secret_path}: sops exited with {res.returncode}"
-            )
+        run(cmd, log=Log.BOTH, error_msg=f"Could not update keys for {secret_path}")
 
 
 def encrypt_file(
@@ -147,7 +144,7 @@ def encrypt_file(
             args = ["sops", "--config", str(manifest)]
             args.extend([str(secret_path)])
             cmd = nix_shell(["nixpkgs#sops"], args)
-            p = subprocess.run(cmd)
+            p = run(cmd, log=Log.BOTH, check=False)
             # returns 200 if the file is changed
             if p.returncode != 0 and p.returncode != 200:
                 raise ClanError(
@@ -167,7 +164,7 @@ def encrypt_file(
                 args = ["sops", "--config", str(manifest)]
                 args.extend(["-i", "--encrypt", str(f.name)])
                 cmd = nix_shell(["nixpkgs#sops"], args)
-                subprocess.run(cmd, check=True)
+                run(cmd, log=Log.BOTH)
                 # atomic copy of the encrypted file
                 with NamedTemporaryFile(dir=folder, delete=False) as f2:
                     shutil.copyfile(f.name, f2.name)
@@ -185,11 +182,7 @@ def decrypt_file(secret_path: Path) -> str:
             ["nixpkgs#sops"],
             ["sops", "--config", str(manifest), "--decrypt", str(secret_path)],
         )
-    res = subprocess.run(cmd, stdout=subprocess.PIPE, text=True)
-    if res.returncode != 0:
-        raise ClanError(
-            f"Failed to decrypt {secret_path}: sops exited with {res.returncode}"
-        )
+    res = run(cmd, error_msg=f"Could not decrypt {secret_path}")
     return res.stdout
 
 
