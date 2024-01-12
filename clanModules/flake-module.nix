@@ -6,10 +6,11 @@
         inputs.disko.nixosModules.default
       ];
     };
-    deltachat = ./deltachat.nix;
-    xfce = ./xfce.nix;
     borgbackup = ./borgbackup.nix;
+    deltachat = ./deltachat.nix;
+    moonlight = ./moonlight.nix;
     syncthing = ./syncthing.nix;
+    xfce = ./xfce.nix;
     zt-tcp-relay = ./zt-tcp-relay.nix;
   };
 }
