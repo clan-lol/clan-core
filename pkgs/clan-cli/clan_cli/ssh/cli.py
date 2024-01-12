@@ -1,7 +1,7 @@
 import argparse
 import json
-import subprocess
 
+from ..cmd import Log, run
 from ..nix import nix_shell
 
 
@@ -30,27 +30,21 @@ def ssh(
         f"{user}@{host}",
     ]
     cmd = nix_shell(packages, ["torify", *password_args, *_ssh_args])
-    subprocess.run(cmd)
+    run(cmd, log=Log.BOTH)
 
 
 def qrcode_scan(picture_file: str) -> str:
-    return (
-        subprocess.run(
-            nix_shell(
-                ["nixpkgs#zbar"],
-                [
-                    "zbarimg",
-                    "--quiet",
-                    "--raw",
-                    picture_file,
-                ],
-            ),
-            stdout=subprocess.PIPE,
-            check=True,
-        )
-        .stdout.decode()
-        .strip()
-    )
+    return run(
+        nix_shell(
+            ["nixpkgs#zbar"],
+            [
+                "zbarimg",
+                "--quiet",
+                "--raw",
+                picture_file,
+            ],
+        ),
+    ).stdout.strip()
 
 
 def main(args: argparse.Namespace) -> None:
