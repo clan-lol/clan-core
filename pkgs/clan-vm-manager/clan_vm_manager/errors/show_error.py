@@ -7,7 +7,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version('Adw', '1')
 from clan_cli.errors import ClanError
-from gi.repository import Gtk, Adw
+from gi.repository import Adw
 
 Severity = Literal["Error"] | Literal["Warning"] | Literal["Info"] | str
 

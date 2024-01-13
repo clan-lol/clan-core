@@ -2,11 +2,14 @@
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+import os
 
 import gi
 from clan_cli import vms
 
-from clan_vm_manager.windows.flash import FlashUSBWindow
+from clan_vm_manager.views.list import ClanList
+
+# from clan_vm_manager.windows.flash import FlashUSBWindow
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -14,26 +17,19 @@ gi.require_version("Adw", "1")
 import multiprocessing as mp
 
 from clan_cli.clan_uri import ClanURI
-from gi.repository import Gio, Gtk, Adw
+from gi.repository import Adw, Gio, Gtk, Gdk
 
 from .constants import constants
 from .errors.show_error import show_error_dialog
 from .executor import ProcessManager
-from .interfaces import Callbacks, InitialFlashValues, InitialJoinValues
-from .windows.join import JoinWindow
-from .windows.overview import OverviewWindow
 
-
-@dataclass
-class ClanWindows:
-    join: type[JoinWindow]
-    overview: type[OverviewWindow]
-    flash_usb: type[FlashUSBWindow]
+# from .windows.join import JoinWindow
+# from .windows.overview import OverviewWindow
 
 
 @dataclass
 class ClanConfig:
-    initial_window: str
+    initial_view: str
     url: ClanURI | None
 
 
@@ -43,30 +39,53 @@ def on_except(error: Exception, proc: mp.process.BaseProcess) -> None:
 
 
 class MainWindow(Adw.ApplicationWindow):
-        def __init__(self, config: ClanConfig) -> None:
-            super().__init__()
-            self.set_title("Clan Manager")
-            view = Adw.ToolbarView()
-            header = Adw.HeaderBar()
-            view.add_top_bar(header)
+    def __init__(self, app: Gtk.Application, config: ClanConfig) -> None:
+        super().__init__()
+        self.set_application(app)
 
-            label = Gtk.Label.new("testlabel")
-            view.set_content(label)
+        self.set_title("Clan Manager")
+        
+        # ToolbarView is the root layout.
+        # A Widget containing a page, as well as top and/or bottom bars.
+        # See https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/class.ToolbarView.html
+        self.view = Adw.ToolbarView()
+        self.header = Adw.HeaderBar()
+        self.view.add_top_bar(self.header)
+        
 
-            self.set_content(view)
+        clan_list = ClanList(
+            app = app
+        )
+        
+        self.stack = Adw.ViewStack()
+        self.stack.add_titled(
+            clan_list, "list", "list"  
+            
+        )
 
-class Application(Gtk.Application):
+        self.view.set_content(self.stack)
+
+        self.set_content(self.view)
+
+
+# AdwApplication
+# - handles library initialization by calling adw_init() in the default GApplication::startup signal handle
+# - automatically loads stylesheets (style.css, style-dark.css, ...)
+# - ...
+# More see: https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/class.Application.html
+class Application(Adw.Application):
     def __init__(self, config: ClanConfig) -> None:
         super().__init__(
             application_id=constants["APPID"], flags=Gio.ApplicationFlags.FLAGS_NONE
         )
-        # TODO:
-        # self.init_style()
-
-        self.window = MainWindow(config)
+        self.config = config
         self.proc_manager = ProcessManager()
 
+        # self.connect("activate", self.do_activate)
         self.connect("shutdown", self.on_shutdown)
+        # constants
+        # breakpoint()
+
 
     def on_shutdown(self, app: Gtk.Application) -> None:
         print("Shutting down")
@@ -115,25 +134,22 @@ class Application(Gtk.Application):
 
 
     def do_activate(self) -> None:
-        win = self.props.active_window
-        if not win:
-            win = self.window
-            win.set_application(self)
-        win.present()
-
+        self.init_style()
+        window = MainWindow(app=self,config=self.config)
+        window.set_default_size(980,650)
+        window.present()
+        
     # TODO: For css styling
     def init_style(self) -> None:
-        pass
-        # css_provider = Gtk.CssProvider()
-        # css_provider.load_from_resource(constants['RESOURCEID'] + '/style.css')
-        # screen = Gdk.Screen.get_default()
-        # style_context = Gtk.StyleContext()
-        # style_context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        resource_path = Path(__file__).parent / "style.css"
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_path(str(resource_path))
+        Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
 
 def show_join(args: argparse.Namespace) -> None:
     app = Application(
-        config=ClanConfig(url=args.clan_uri, initial_window="join"),
+        config=ClanConfig(url=args.clan_uri, initial_view="join"),
     )
     return app.run()
 
@@ -145,7 +161,7 @@ def register_join_parser(parser: argparse.ArgumentParser) -> None:
 
 def show_overview(args: argparse.Namespace) -> None:
     app = Application(
-        config=ClanConfig(url=None, initial_window="overview"),
+        config=ClanConfig(url=None, initial_view="list"),
     )
     return app.run()
 

@@ -1,9 +1,13 @@
-from typing import Callable, Any
+from collections.abc import Callable
 
-from gi.repository import Gdk, GdkPixbuf, Gtk, Adw
 
-from ..interfaces import Callbacks
-from ..models import VMBase, VMStatus
+import gi
+gi.require_version("Adw", "1")
+from gi.repository import Adw, GdkPixbuf, Gio, GObject, Gtk
+from pathlib import Path
+
+from ..models import VMBase, get_initial_vms
+
 # from .context_menu import VmMenu
 
 
@@ -66,6 +70,21 @@ class ClanEdit(Gtk.Box):
         self.show_list()
 
 
+class VMListItem(GObject.Object):
+    def __init__(self, data: VMBase) -> None:
+        super().__init__()
+        self.data = data
+
+class ClanIcon(Gtk.Box):
+    def __init__(self, icon_path: Path) -> None:
+        super().__init__()
+        self.append(
+            GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                filename=icon_path, width=64, height=64, preserve_aspect_ratio=True
+            )
+        )
+
+
 class ClanList(Gtk.Box):
     """
     The ClanList
@@ -83,132 +102,67 @@ class ClanList(Gtk.Box):
     def __init__(
         self,
         *,
-        remount_list: Callable[[], None],
-        remount_edit: Callable[[], None],
-        set_selected: Callable[[VMBase | None], None],
-        cbs: Callbacks,
-        selected_vm: VMBase | None,
-        vms: list[VMBase],
+        app: Adw.Application
     ) -> None:
-        super().__init__(orientation=Gtk.Orientation.VERTICAL, )
+        super().__init__(orientation=Gtk.Orientation.VERTICAL)
+        self.application = app
 
-        self.remount_edit_view = remount_edit
-        self.remount_list_view = remount_list
-        self.set_selected = set_selected
-        self.cbs = cbs
-        self.show_join = cbs.show_join
+        boxed_list = Gtk.ListBox()
+        boxed_list.set_selection_mode(Gtk.SelectionMode.NONE)
+        boxed_list.add_css_class("boxed-list")
 
-        self.selected_vm: VMBase | None = selected_vm
+        def create_widget(item: VMListItem) -> Gtk.Widget:
+            print("Creating", item.data)
+            vm = item.data
+            # Not displayed; Can be used as id.
+            row = Adw.SwitchRow()
+            row.set_name(vm.url)
+            
+            row.set_title(vm.name)
+            row.set_title_lines(1)
 
-        # self.toolbar = ClanListToolbar(
-        #     selected_vm=selected_vm,
-        #     on_start_clicked=self.on_start_clicked,
-        #     on_stop_clicked=self.on_stop_clicked,
-        #     on_edit_clicked=self.on_edit_clicked,
-        #     on_join_clan_clicked=self.on_join_clan_clicked,
-        #     on_flash_clicked=self.on_flash_clicked,
-        # )
-        # self.add(self.toolbar)
+            row.set_subtitle(vm.url)
+            row.set_subtitle_lines(1)
 
-        self.append(
-            ClanListView(
-                vms=vms,
-                on_select_row=self.on_select_vm,
-                selected_vm=selected_vm,
-                on_double_click=self.on_double_click,
-            )
-        )
-
-    def on_flash_clicked(self, widget: Gtk.Widget) -> None:
-        self.cbs.show_flash()
-
-    def on_double_click(self, vm: VMBase) -> None:
-        self.on_start_clicked(self)
-
-    def on_start_clicked(self, widget: Gtk.Widget) -> None:
-        if self.selected_vm:
-            self.cbs.spawn_vm(self.selected_vm.url, self.selected_vm._flake_attr)
-        # Call this to reload
-        self.remount_list_view()
-
-    def on_stop_clicked(self, widget: Gtk.Widget) -> None:
-        if self.selected_vm:
-            self.cbs.stop_vm(self.selected_vm.url, self.selected_vm._flake_attr)
-        self.remount_list_view()
-
-    def on_join_clan_clicked(self, widget: Gtk.Widget) -> None:
-        self.show_join()
-
-    def on_edit_clicked(self, widget: Gtk.Widget) -> None:
-        self.remount_edit_view()
-
-    def on_select_vm(self, vm: VMBase) -> None:
-        # self.toolbar.set_selected_vm(vm)
-
-        self.set_selected(vm)
-        self.selected_vm = vm
+            avatar = Adw.Avatar()
+            avatar.set_text(vm.name)
+            avatar.set_show_initials(True)
+            avatar.set_size(50)
+            # (GdkPixbuf.Pixbuf.new_from_file_at_scale(
+            #             filename=vm.icon,
+            #             width=512,
+            #             height=512,
+            #             preserve_aspect_ratio=True,
+            #         ))
+            
+            # Gtk.Image.new_from_pixbuf(
+                    
+            #     )
+            row.add_prefix(avatar)
 
 
-class ClanListToolbar(Gtk.Box):
-    def __init__(
-        self,
-        *,
-        selected_vm: VMBase | None,
-        on_start_clicked: Callable[[Gtk.Widget], None],
-        on_stop_clicked: Callable[[Gtk.Widget], None],
-        on_edit_clicked: Callable[[Gtk.Widget], None],
-        on_join_clan_clicked: Callable[[Gtk.Widget], None],
-        on_flash_clicked: Callable[[Gtk.Widget], None],
-    ) -> None:
-        super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
+            row.connect("notify::active", self.on_row_toggle)
 
-        self.start_button = Gtk.ToolButton(label="Start")
-        self.start_button.connect("clicked", on_start_clicked)
-        self.append(self.start_button)
+            return row
+        
 
-        self.stop_button = Gtk.ToolButton(label="Stop")
-        self.stop_button.connect("clicked", on_stop_clicked)
-        self.append(self.stop_button)
+        list_store = Gio.ListStore()
+        print(list_store)
 
-        self.edit_button = Gtk.ToolButton(label="Edit")
-        self.edit_button.connect("clicked", on_edit_clicked)
-        self.append(self.edit_button)
-
-        self.join_clan_button = Gtk.ToolButton(label="Join Clan")
-        self.join_clan_button.connect("clicked", on_join_clan_clicked)
-        self.append(self.join_clan_button)
-
-        self.flash_button = Gtk.ToolButton(label="Write to USB")
-        self.flash_button.connect("clicked", on_flash_clicked)
-        self.append(self.flash_button)
-
-        self.set_selected_vm(selected_vm)
-
-    def set_selected_vm(self, vm: VMBase | None) -> None:
-        if vm:
-            self.edit_button.set_sensitive(True)
-            self.start_button.set_sensitive(vm.status == VMStatus.STOPPED)
-            self.stop_button.set_sensitive(vm.status == VMStatus.RUNNING)
-        else:
-            self.edit_button.set_sensitive(False)
-            self.start_button.set_sensitive(False)
-            self.stop_button.set_sensitive(False)
+        for vm in get_initial_vms(app.running_vms()):
+            list_store.append(VMListItem(data=vm.base))
 
 
-class ClanEditToolbar(Gtk.Box):
-    def __init__(
-        self,
-        *,
-        on_save_clicked: Callable[[Gtk.Widget], None],
-    ) -> None:
-        super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
+        boxed_list.bind_model(list_store, create_widget_func=create_widget)
 
-        # Icons See: https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
-        # Could not find a suitable one
-        self.save_button = Gtk.ToolButton(label="Save")
-        self.save_button.connect("clicked", on_save_clicked)
+        
+        self.append(boxed_list)
 
-        self.append(self.save_button)
+    def on_row_toggle(self, row: Adw.SwitchRow, state: bool) -> None:
+        print("Toggled", row.get_name(), "active:", row.get_active())
+        # TODO: start VM here
+        # question: Should we disable the switch 
+        # for the time until we got a response for this VM?
 
 
 class ClanListView(Gtk.Box):

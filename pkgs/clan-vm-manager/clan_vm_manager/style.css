@@ -1,0 +1,27 @@
+window {
+    /* Set consistent border radius */
+    border-radius: 10px;
+}
+
+.title {
+    margin-right: 20px;
+}
+
+.subtitle {
+    font-size: 12px;
+    font-weight: 300;
+    margin-right: 20px;
+}
+
+row {
+    padding-right: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+stack {
+    padding-left: 10px;
+    padding-right: 10px; 
+    padding-top: 10px;
+    padding-bottom: 10px;  
+}
