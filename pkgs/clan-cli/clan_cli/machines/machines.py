@@ -49,6 +49,10 @@ class Machine:
         self.deployment_address = self.machine_data["deploymentAddress"]
         self.upload_secrets = self.machine_data["uploadSecrets"]
         self.generate_secrets = self.machine_data["generateSecrets"]
+        self.secrets_module = self.machine_data["secretsModule"]
+        self.secrets_data = json.loads(
+            Path(self.machine_data["secretsData"]).read_text()
+        )
         self.secrets_upload_directory = self.machine_data["secretsUploadDirectory"]
         self.eval_cache: dict[str, str] = {}
         self.build_cache: dict[str, Path] = {}

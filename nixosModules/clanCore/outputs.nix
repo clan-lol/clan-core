@@ -45,6 +45,28 @@
           '';
           default = "${pkgs.coreutils}/bin/true";
         };
+        secretsModule = lib.mkOption {
+          type = lib.types.path;
+          default = "${pkgs.coreutils}/bin/true";
+          description = ''
+            the module that generates secrets.
+            A needs to define a python class SecretStore which implements the following methods:
+            set, get, exists
+          '';
+        };
+        secretsData = lib.mkOption {
+          type = lib.types.path;
+          description = ''
+            secret data as json for the generator
+          '';
+          default = pkgs.writers.writeJSON "secrets.json" (lib.mapAttrs
+            (_name: secret: {
+              secrets = builtins.attrNames secret.secrets;
+              facts = lib.mapAttrs (_: secret: secret.path) secret.facts;
+              generator = secret.generator.finalScript;
+            })
+            config.clanCore.secrets);
+        };
         vm.create = lib.mkOption {
           type = lib.types.path;
           description = ''
@@ -60,7 +82,7 @@
   # optimization for faster secret generate/upload and machines update
   config = {
     system.clan.deployment.data = {
-      inherit (config.system.clan) uploadSecrets generateSecrets;
+      inherit (config.system.clan) uploadSecrets generateSecrets secretsModule secretsData;
       inherit (config.clan.networking) deploymentAddress;
       inherit (config.clanCore) secretsUploadDirectory;
     };

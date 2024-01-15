@@ -1,7 +1,4 @@
 { config, lib, pkgs, ... }:
-let
-  passwordstoreDir = "\${PASSWORD_STORE_DIR:-$HOME/.password-store}";
-in
 {
   options.clan.password-store.targetDirectory = lib.mkOption {
     type = lib.types.path;
@@ -13,103 +10,80 @@ in
   config = lib.mkIf (config.clanCore.secretStore == "password-store") {
     clanCore.secretsDirectory = config.clan.password-store.targetDirectory;
     clanCore.secretsUploadDirectory = config.clan.password-store.targetDirectory;
-    system.clan.generateSecrets = lib.mkIf (config.clanCore.secrets != { }) (
-      pkgs.writeScript "generate-secrets" ''
-        #!/bin/sh
-        set -efu
+    system.clan.secretsModule = pkgs.writeText "pass.py" ''
+      import os
+      import subprocess
+      from clan_cli.machines.machines import Machine
+      from pathlib import Path
 
-        test -d "$CLAN_DIR"
-        PATH=${lib.makeBinPath [
-          pkgs.pass
-        ]}:$PATH
 
-        # TODO maybe initialize password store if it doesn't exist yet
+      class SecretStore:
+          def __init__(self, machine: Machine) -> None:
+              self.machine = machine
 
-        ${lib.foldlAttrs (acc: n: v: ''
-          ${acc}
-          # ${n}
-          # if any of the secrets are missing, we regenerate all connected facts/secrets
-          (if ! (${lib.concatMapStringsSep " && " (x: "test -e ${passwordstoreDir}/machines/${config.clanCore.machineName}/${x.name}.gpg >/dev/null") (lib.attrValues v.secrets)}); then
+          def set(self, service: str, name: str, value: str):
+              subprocess.run(
+                  ["${pkgs.pass}/bin/pass", "insert", "-m", f"machines/{self.machine.name}/{name}"],
+                  input=value.encode("utf-8"),
+                  check=True,
+              )
 
-            tmpdir=$(mktemp -d)
-            trap "rm -rf $tmpdir" EXIT
-            cd $tmpdir
+          def get(self, service: str, name: str) -> str:
+              return subprocess.run(
+                  ["${pkgs.pass}/bin/pass", "show", f"machines/{self.machine.name}/{name}"],
+                  check=True,
+                  stdout=subprocess.PIPE,
+                  text=True,
+              ).stdout
 
-            facts=$(mktemp -d)
-            trap "rm -rf $facts" EXIT
-            secrets=$(mktemp -d)
-            trap "rm -rf $secrets" EXIT
-            ( ${v.generator.finalScript} )
+          def exists(self, service: str, name: str) -> bool:
+              password_store = os.environ.get("PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store")
+              secret_path = Path(password_store) / f"machines/{self.machine.name}/{name}.gpg"
+              print(f"checking {secret_path}")
+              return secret_path.exists()
 
-            ${lib.concatMapStrings (fact: ''
-              mkdir -p "$CLAN_DIR"/"$(dirname ${fact.path})"
-              cp "$facts"/${fact.name} "$CLAN_DIR"/${fact.path}
-            '') (lib.attrValues v.facts)}
+          def generate_hash(self) -> str:
+              password_store = os.environ.get("PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store")
+              hashes = []
+              hashes.append(
+                  subprocess.run(
+                      ["${pkgs.git}/bin/git", "-C", password_store, "log", "-1", "--format=%H", f"machines/{self.machine.name}"],
+                      stdout=subprocess.PIPE,
+                      text=True,
+                  ).stdout.strip()
+              )
+              for symlink in Path(password_store).glob(f"machines/{self.machine.name}/**/*"):
+                  if symlink.is_symlink():
+                      hashes.append(
+                          subprocess.run(
+                              ["${pkgs.git}/bin/git", "-C", password_store, "log", "-1", "--format=%H", symlink],
+                              stdout=subprocess.PIPE,
+                              text=True,
+                          ).stdout.strip()
+                      )
 
-            ${lib.concatMapStrings (secret: ''
-              cat "$secrets"/${secret.name} | pass insert -m machines/${config.clanCore.machineName}/${secret.name}
-            '') (lib.attrValues v.secrets)}
-          fi)
-        '') "" config.clanCore.secrets}
-      ''
-    );
-    system.clan.uploadSecrets = pkgs.writeScript "upload-secrets" ''
-      #!/bin/sh
-      set -efu
+              # we sort the hashes to make sure that the order is always the same
+              hashes.sort()
+              return "\n".join(hashes)
 
-      umask 0077
+          def update_check(self):
+              local_hash = self.generate_hash()
+              remote_hash = self.machine.host.run(
+                  ["cat", "${config.clan.password-store.targetDirectory}/.pass_info"],
+                  check=False,
+                  stdout=subprocess.PIPE,
+              ).stdout.strip()
 
-      PATH=${lib.makeBinPath [
-        pkgs.pass
-        pkgs.git
-        pkgs.findutils
-        pkgs.rsync
-      ]}:$PATH:${lib.getBin pkgs.openssh}
+              if not remote_hash:
+                  print("remote hash is empty")
+                  return False
 
-      if test -e ${passwordstoreDir}/.git; then
-        local_pass_info=$(
-          git -C ${passwordstoreDir} log -1 --format=%H machines/${config.clanCore.machineName}
-          # we append a hash for every symlink, otherwise we would miss updates on
-          # files where the symlink points to
-          find ${passwordstoreDir}/machines/${config.clanCore.machineName} -type l \
-              -exec realpath {} + |
-            sort |
-            xargs -r -n 1 git -C ${passwordstoreDir} log -1 --format=%H
-        )
-        remote_pass_info=$(ssh ${config.clan.networking.deploymentAddress} -- ${lib.escapeShellArg ''
-          cat ${config.clan.password-store.targetDirectory}/.pass_info || :
-        ''} || :)
+              return local_hash == remote_hash
 
-        if test "$local_pass_info" = "$remote_pass_info"; then
-          echo secrets already match
-          exit 23
-        fi
-      fi
-
-      find ${passwordstoreDir}/machines/${config.clanCore.machineName} -type f -follow ! -name .gpg-id |
-      while read -r gpg_path; do
-
-        rel_name=''${gpg_path#${passwordstoreDir}}
-        rel_name=''${rel_name%.gpg}
-
-        pass_date=$(
-          if test -e ${passwordstoreDir}/.git; then
-            git -C ${passwordstoreDir} log -1 --format=%aI "$gpg_path"
-          fi
-        )
-        pass_name=$rel_name
-        tmp_path="$SECRETS_DIR"/$(basename $rel_name)
-
-        mkdir -p "$(dirname "$tmp_path")"
-        pass show "$pass_name" > "$tmp_path"
-        if [ -n "$pass_date" ]; then
-          touch -d "$pass_date" "$tmp_path"
-        fi
-      done
-
-      if test -n "''${local_pass_info-}"; then
-        echo "$local_pass_info" > "$SECRETS_DIR"/.pass_info
-      fi
+          def upload(self, output_dir: Path, secrets: list[str, str]) -> None:
+              for service, secret in secrets:
+                  (output_dir / secret).write_text(self.get(service, secret))
+              (output_dir / ".pass_info").write_text(self.generate_hash())
     '';
   };
 }
