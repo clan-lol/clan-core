@@ -63,26 +63,32 @@ def list_history() -> list[HistoryEntry]:
     return logs
 
 
-# TODO: Add all vm entries to history
+def new_history_entry(uri: ClanURI) -> HistoryEntry:
+    flake = inspect_flake(uri.get_internal(), uri.params.flake_attr)
+    flake.flake_url = str(flake.flake_url)
+    return HistoryEntry(
+        flake=flake,
+        last_used=datetime.datetime.now().isoformat(),
+    )
+
+
 def add_history(uri: ClanURI) -> list[HistoryEntry]:
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
     logs = list_history()
     found = False
-    path = uri.get_internal()
-    machine = uri.params.flake_attr
+    uri_path = uri.get_internal()
+    uri_machine = uri.params.flake_attr
 
     for entry in logs:
-        if entry.flake.flake_url == str(path):
+        if (
+            entry.flake.flake_url == str(uri_path)
+            and entry.flake.flake_attr == uri_machine
+        ):
             found = True
             entry.last_used = datetime.datetime.now().isoformat()
 
     if not found:
-        flake = inspect_flake(path, machine)
-        flake.flake_url = str(flake.flake_url)
-        history = HistoryEntry(
-            flake=flake,
-            last_used=datetime.datetime.now().isoformat(),
-        )
+        history = new_history_entry(uri)
         logs.append(history)
 
     write_history_file(logs)

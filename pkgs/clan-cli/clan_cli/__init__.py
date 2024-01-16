@@ -1,6 +1,7 @@
 import argparse
 import logging
 import sys
+import traceback
 from collections.abc import Sequence
 from pathlib import Path
 from types import ModuleType
@@ -9,6 +10,7 @@ from typing import Any
 from . import backups, config, flakes, history, machines, secrets, vms
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
+from .errors import ClanCmdError, ClanError
 from .ssh import cli as ssh_cli
 
 log = logging.getLogger(__name__)
@@ -130,7 +132,18 @@ def main() -> None:
     if not hasattr(args, "func"):
         return
 
-    args.func(args)
+    try:
+        args.func(args)
+    except ClanError as e:
+        if args.debug:
+            traceback.print_exc()
+            sys.exit(1)
+        if isinstance(e, ClanCmdError):
+            if e.cmd.msg:
+                print(e.cmd.msg, file=sys.stderr)
+            else:
+                print(e, file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
