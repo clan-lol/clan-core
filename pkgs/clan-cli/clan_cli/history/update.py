@@ -1,34 +1,36 @@
 # !/usr/bin/env python3
 import argparse
-import copy
-import datetime
 
+from ..clan_uri import ClanParameters, ClanURI
+from ..errors import ClanCmdError
 from ..locked_open import write_history_file
 from ..nix import nix_metadata
-from .add import HistoryEntry, list_history
+from .add import HistoryEntry, list_history, new_history_entry
 
 
 def update_history() -> list[HistoryEntry]:
     logs = list_history()
 
-    new_logs = []
     for entry in logs:
-        new_entry = copy.deepcopy(entry)
+        try:
+            meta = nix_metadata(entry.flake.flake_url)
+        except ClanCmdError as e:
+            print(f"Failed to update {entry.flake.flake_url}: {e}")
+            continue
 
-        meta = nix_metadata(entry.flake.flake_url)
         new_hash = meta["locked"]["narHash"]
         if new_hash != entry.flake.nar_hash:
             print(
                 f"Updating {entry.flake.flake_url} from {entry.flake.nar_hash} to {new_hash}"
             )
-            new_entry.last_used = datetime.datetime.now().isoformat()
-            new_entry.flake.nar_hash = new_hash
+            uri = ClanURI.from_str(
+                url=str(entry.flake.flake_url),
+                params=ClanParameters(entry.flake.flake_attr),
+            )
+            entry = new_history_entry(uri)
 
-        # TODO: Delete stale entries
-        new_logs.append(new_entry)
-
-    write_history_file(new_logs)
-    return new_logs
+    write_history_file(logs)
+    return logs
 
 
 def add_update_command(args: argparse.Namespace) -> None:
