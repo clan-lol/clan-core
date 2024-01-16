@@ -1,5 +1,19 @@
+import os
+from math import floor
 from pathlib import Path
 from typing import NamedTuple
+
+
+def get_term_filler(name: str) -> int:
+    width, height = os.get_terminal_size()
+
+    filler = floor((width - len(name)) / 2)
+    return filler - 1
+
+
+def text_heading(heading: str) -> str:
+    filler = get_term_filler(heading)
+    return f"{'=' * filler} {heading} {'=' * filler}"
 
 
 class CmdOut(NamedTuple):
@@ -12,15 +26,16 @@ class CmdOut(NamedTuple):
 
     def __str__(self) -> str:
         return f"""
+{text_heading(heading="Command")}
+{self.command}
+{text_heading(heading="Stderr")}
+{self.stderr}
+{text_heading(heading="Stdout")}
+{self.stdout}
+{text_heading(heading="Metadata")}
 Message: {self.msg}
 Working Directory: '{self.cwd}'
 Return Code: {self.returncode}
-=================== Command ===================
-{self.command}
-=================== STDERR ===================
-{self.stderr}
-=================== STDOUT ===================
-{self.stdout}
 """
 
 
