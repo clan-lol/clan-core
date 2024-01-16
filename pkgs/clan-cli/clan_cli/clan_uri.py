@@ -5,7 +5,7 @@ import urllib.request
 from dataclasses import dataclass
 from enum import Enum, member
 from pathlib import Path
-from typing import Self
+from typing import Any, Self
 
 from .errors import ClanError
 
@@ -44,7 +44,9 @@ class ClanURI:
         # users might copy whitespace along with the uri
         uri = uri.strip()
         self._full_uri = uri
+
         # Check if the URI starts with clan://
+        # If it does, remove the clan:// prefix
         if uri.startswith("clan://"):
             self._nested_uri = uri[7:]
         else:
@@ -57,22 +59,36 @@ class ClanURI:
         # Parse the query string into a dictionary
         query = urllib.parse.parse_qs(self._components.query)
 
-        new_params: dict[str, str] = {}
+        # Create a new dictionary with only the parameters we want
+        # example: https://example.com?flake_attr=myVM&password=1234
+        # becomes: https://example.com?password=1234
+        # clan_params = {"flake_attr": "myVM"}
+        # query = {"password": ["1234"]}
+        clan_params: dict[str, str] = {}
         for field in dataclasses.fields(ClanParameters):
             if field.name in query:
                 values = query[field.name]
                 if len(values) > 1:
                     raise ClanError(f"Multiple values for parameter: {field.name}")
-                new_params[field.name] = values[0]
+                clan_params[field.name] = values[0]
 
                 # Remove the field from the query dictionary
                 # clan uri and nested uri share one namespace for query parameters
                 # we need to make sure there are no conflicts
                 del query[field.name]
+        # Reencode the query dictionary into a query string
+        real_query = urllib.parse.urlencode(query, doseq=True)
 
-        new_query = urllib.parse.urlencode(query, doseq=True)
-        self._components = self._components._replace(query=new_query)
-        self.params = ClanParameters(**new_params)
+        # If the fragment contains a #, use the part after the # as the flake_attr
+        # on multiple #, use the first one
+        if self._components.fragment != "":
+            clan_params["flake_attr"] = self._components.fragment.split("#")[0]
+
+        # Replace the query string in the components with the new query string
+        self._components = self._components._replace(query=real_query)
+
+        # Create a ClanParameters object from the clan_params dictionary
+        self.params = ClanParameters(**clan_params)
 
         comb = (
             self._components.scheme,
@@ -102,21 +118,43 @@ class ClanURI:
         return self._full_uri
 
     @classmethod
-    def from_path(cls, path: Path, params: ClanParameters | None = None) -> Self:  # noqa
-        return cls.from_str(str(path), params)
+    def from_path(
+        cls,  # noqa
+        path: Path,
+        flake_attr: str | None = None,
+        params: dict[str, Any] | ClanParameters | None = None,
+    ) -> Self:
+        return cls.from_str(str(path), flake_attr=flake_attr, params=params)
 
     @classmethod
-    def from_str(cls, url: str, params: ClanParameters | None = None) -> Self:  # noqa
+    def from_str(
+        cls,  # noqa
+        url: str,
+        flake_attr: str | None = None,
+        params: dict[str, Any] | ClanParameters | None = None,
+    ) -> Self:
+        if flake_attr is not None and params is not None:
+            raise ClanError("flake_attr and params are mutually exclusive")
+
         prefix = "clan://"
         if url.startswith(prefix):
             url = url[len(prefix) :]
 
-        if params is None:
+        if params is None and flake_attr is None:
             return cls(f"clan://{url}")
 
         comp = urllib.parse.urlparse(url)
         query = urllib.parse.parse_qs(comp.query)
-        query.update(params.__dict__)
+
+        if isinstance(params, dict):
+            query.update(params)
+        elif isinstance(params, ClanParameters):
+            query.update(params.__dict__)
+        elif flake_attr is not None:
+            query["flake_attr"] = [flake_attr]
+        else:
+            raise ClanError(f"Unsupported params type: {type(params)}")
+
         new_query = urllib.parse.urlencode(query, doseq=True)
         comp = comp._replace(query=new_query)
         new_url = urllib.parse.urlunparse(comp)
