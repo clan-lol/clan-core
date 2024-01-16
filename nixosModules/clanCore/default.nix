@@ -1,6 +1,7 @@
 {
   imports = [
     ./backups.nix
+    ./manual.nix
     ./imports.nix
     ./meshnamed
     ./metadata.nix
