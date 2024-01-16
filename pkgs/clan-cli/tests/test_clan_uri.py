@@ -68,7 +68,7 @@ def test_from_path_with_custom() -> None:
     # Create a ClanURI object from a remote URI with parameters
     uri_str = Path("/home/user/Downloads")
     params = ClanParameters(flake_attr="myVM")
-    uri = ClanURI.from_path(uri_str, params)
+    uri = ClanURI.from_path(uri_str, params=params)
     assert uri.params.flake_attr == "myVM"
 
     match uri.scheme:
@@ -82,7 +82,7 @@ def test_from_path_with_default() -> None:
     # Create a ClanURI object from a remote URI with parameters
     uri_str = Path("/home/user/Downloads")
     params = ClanParameters()
-    uri = ClanURI.from_path(uri_str, params)
+    uri = ClanURI.from_path(uri_str, params=params)
     assert uri.params.flake_attr == "defaultVM"
 
     match uri.scheme:
@@ -104,6 +104,12 @@ def test_from_str() -> None:
             assert url == "https://example.com?password=asdasd&test=1234"  # type: ignore
         case _:
             assert False
+
+    uri = ClanURI.from_str(url=uri_str, params={"flake_attr": "myVM"})
+    assert uri.params.flake_attr == "myVM"
+
+    uri = ClanURI.from_str(uri_str, "myVM")
+    assert uri.params.flake_attr == "myVM"
 
     uri_str = "~/Downloads/democlan"
     params = ClanParameters(flake_attr="myVM")
@@ -132,3 +138,8 @@ def test_remote_with_all_params() -> None:
             assert url == "https://example.com?password=1234"  # type: ignore
         case _:
             assert False
+
+
+def test_with_hashtag() -> None:
+    uri = ClanURI("clan://https://example.com?flake_attr=thirdVM#myVM#secondVM")
+    assert uri.params.flake_attr == "myVM"
