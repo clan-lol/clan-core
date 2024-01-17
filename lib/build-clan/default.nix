@@ -30,7 +30,7 @@ let
       (machineSettings.clanImports or [ ]);
 
   # TODO: remove default system once we have a hardware-config mechanism
-  nixosConfiguration = { system ? "x86_64-linux", name }: nixpkgs.lib.nixosSystem {
+  nixosConfiguration = { system ? "x86_64-linux", name, forceSystem ? false }: nixpkgs.lib.nixosSystem {
     modules =
       let
         settings = machineSettings name;
@@ -45,7 +45,7 @@ let
           clanCore.clanName = clanName;
           clanCore.clanIcon = clanIcon;
           clanCore.clanDir = directory;
-          nixpkgs.hostPlatform = lib.mkDefault system;
+          nixpkgs.hostPlatform = if forceSystem then lib.mkForce system else lib.mkDefault system;
 
           # speeds up nix commands by using the nixpkgs from the host system (especially useful in VMs)
           nix.registry.nixpkgs.to = {
@@ -75,7 +75,7 @@ let
   configsPerSystem = builtins.listToAttrs
     (builtins.map
       (system: lib.nameValuePair system
-        (lib.mapAttrs (name: _: nixosConfiguration { inherit name system; }) allMachines))
+        (lib.mapAttrs (name: _: nixosConfiguration { inherit name system; forceSystem = true; }) allMachines))
       supportedSystems);
 in
 {
