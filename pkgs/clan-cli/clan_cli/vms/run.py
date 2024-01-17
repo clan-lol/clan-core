@@ -225,10 +225,7 @@ def run_vm(
             disk_img=disk_img,
         )
 
-        if vm.wayland:
-            packages = ["git+https://git.clan.lol/clan/clan-core.git#qemu-wayland"]
-        else:
-            packages = ["nixpkgs#qemu"]
+        packages = ["nixpkgs#qemu"]
 
         env = os.environ.copy()
         if vm.graphics and not vm.wayland:
