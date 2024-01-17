@@ -1,6 +1,4 @@
 import json
-import os
-import sys
 from pathlib import Path
 
 from ..cmd import Log, run
@@ -47,8 +45,6 @@ class Machine:
             self.machine_data = machine_data
 
         self.deployment_address = self.machine_data["deploymentAddress"]
-        self.upload_secrets = self.machine_data["uploadSecrets"]
-        self.generate_secrets = self.machine_data["generateSecrets"]
         self.secrets_module = self.machine_data["secretsModule"]
         self.secrets_data = json.loads(
             Path(self.machine_data["secretsData"]).read_text()
@@ -62,32 +58,6 @@ class Machine:
         return parse_deployment_address(
             self.name, self.deployment_address, meta={"machine": self}
         )
-
-    def run_upload_secrets(self, secrets_dir: Path) -> bool:
-        """
-        Upload the secrets to the provided directory
-        @secrets_dir: the directory to store the secrets in
-        """
-        env = os.environ.copy()
-        env["CLAN_DIR"] = str(self.flake_dir)
-        env["PYTHONPATH"] = str(
-            ":".join(sys.path)
-        )  # TODO do this in the clanCore module
-        env["SECRETS_DIR"] = str(secrets_dir)
-        print(f"uploading secrets... {self.upload_secrets}")
-        proc = run(
-            [self.upload_secrets],
-            env=env,
-            check=False,
-        )
-
-        if proc.returncode == 23:
-            print("no secrets to upload")
-            return False
-        elif proc.returncode != 0:
-            print("failed generate secrets directory")
-            exit(1)
-        return True
 
     def eval_nix(self, attr: str, refresh: bool = False) -> str:
         """

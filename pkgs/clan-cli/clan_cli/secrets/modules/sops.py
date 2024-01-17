@@ -10,6 +10,13 @@ from clan_cli.secrets.sops import generate_private_key
 class SecretStore:
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
+
+        # no need to generate keys if we don't manage secrets
+        if not hasattr(self.machine, "secrets_data"):
+            return
+        if not self.machine.secrets_data:
+            return
+
         if has_machine(self.machine.flake_dir, self.machine.name):
             return
         priv_key, pub_key = generate_private_key()
@@ -21,7 +28,7 @@ class SecretStore:
         )
         add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)
 
-    def set(self, _service: str, name: str, value: str):
+    def set(self, _service: str, name: str, value: str) -> None:
         encrypt_secret(
             self.machine.flake_dir,
             sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}",
@@ -38,7 +45,7 @@ class SecretStore:
             f"{self.machine.name}-{name}",
         )
 
-    def upload(self, output_dir: Path, _secrets: list[str]) -> None:
+    def upload(self, output_dir: Path) -> None:
         key_name = f"{self.machine.name}-age.key"
         if not has_secret(self.machine.flake_dir, key_name):
             # skip uploading the secret, not managed by us

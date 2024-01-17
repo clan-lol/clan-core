@@ -25,9 +25,7 @@ in
   config = lib.mkIf (config.clanCore.secretStore == "sops") {
     clanCore.secretsDirectory = "/run/secrets";
     clanCore.secretsPrefix = config.clanCore.machineName + "-";
-    system.clan = lib.mkIf (config.clanCore.secrets != { }) {
-      secretsModule = ./sops/sops.py;
-    };
+    system.clan.secretsModule = "clan_cli.secrets.modules.sops";
     sops.secrets = builtins.mapAttrs
       (name: _: {
         sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";

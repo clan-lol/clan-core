@@ -1,4 +1,5 @@
 import argparse
+import importlib
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -10,6 +11,9 @@ from ..secrets.generate import generate_secrets
 
 
 def install_nixos(machine: Machine, kexec: str | None = None) -> None:
+    secrets_module = importlib.import_module(machine.secrets_module)
+    secret_store = secrets_module.SecretStore(machine=machine)
+
     h = machine.host
     target_host = f"{h.user or 'root'}@{h.host}"
 
@@ -25,7 +29,7 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
             upload_dir = upload_dir[1:]
         upload_dir = tmpdir / upload_dir
         upload_dir.mkdir(parents=True)
-        machine.run_upload_secrets(upload_dir)
+        secret_store.upload(upload_dir)
 
         cmd = [
             "nixos-anywhere",

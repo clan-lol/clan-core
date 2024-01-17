@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import tempfile
+import importlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import IO
@@ -13,6 +14,7 @@ from ..dirs import module_root, specific_groot_dir, vm_state_dir
 from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_shell
 from .inspect import VmConfig, inspect_vm
+from ..machines.machines import Machine
 
 log = logging.getLogger(__name__)
 
@@ -132,11 +134,8 @@ def generate_secrets(
     secrets_dir = tmpdir / "secrets"
     secrets_dir.mkdir(exist_ok=True)
 
-    env = os.environ.copy()
-    env["CLAN_DIR"] = str(vm.flake_url)
-
-    env["PYTHONPATH"] = str(":".join(sys.path))  # TODO do this in the clanCore module
-    env["SECRETS_DIR"] = str(secrets_dir)
+    secrets_module = importlib.import_module(machine.secrets_module)
+    secret_store = secrets_module.SecretStore(machine=machine)
 
     # Only generate secrets for local clans
     if isinstance(vm.flake_url, Path) and vm.flake_url.is_dir():

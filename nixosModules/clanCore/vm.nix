@@ -140,8 +140,6 @@ in
         toplevel = vmConfig.config.system.build.toplevel;
         regInfo = (pkgs.closureInfo { rootPaths = vmConfig.config.virtualisation.additionalPaths; });
         inherit (config.clan.virtualisation) memorySize cores graphics;
-        generateSecrets = config.system.clan.generateSecrets;
-        uploadSecrets = config.system.clan.uploadSecrets;
       });
     };
 
