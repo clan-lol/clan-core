@@ -20,6 +20,8 @@
             default = ":";
             description = ''
               script to run before restoring the state dir from a backup
+
+              Utilize this to stop services which currently access these folders
             '';
           };
           postRestoreScript = lib.mkOption {
@@ -27,6 +29,8 @@
             default = ":";
             description = ''
               script to restore the service after the state dir was restored from a backup
+
+              Utilize this to start services which were previously stopped
             '';
           };
         };
