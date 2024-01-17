@@ -1,4 +1,4 @@
-{ clan-vm-manager, clan-cli, mkShell, ruff, desktop-file-utils, xdg-utils, mypy, python3Packages }:
+{ clan-vm-manager, libadwaita, clan-cli, mkShell, ruff, desktop-file-utils, xdg-utils, mypy, python3Packages }:
 mkShell {
   inherit (clan-vm-manager) propagatedBuildInputs buildInputs;
   nativeBuildInputs = [
@@ -7,6 +7,7 @@ mkShell {
     xdg-utils
     mypy
     python3Packages.ipdb
+    libadwaita.devdoc # has the demo called 'adwaita-1-demo'
   ] ++ clan-vm-manager.nativeBuildInputs;
 
   PYTHONBREAKPOINT = "ipdb.set_trace";

@@ -1,0 +1,16 @@
+/* Insert custom styles here */
+
+navigation-view {
+    padding: 5px;
+    /* padding-left: 5px;
+    padding-right: 5px;
+    padding-bottom: 5px; */
+}
+
+avatar {
+    margin: 2px;
+}
+
+.trust {
+    padding: 25px; 
+}
