@@ -70,6 +70,7 @@
                   internal = true;
                   default = ''
                     export PATH="${lib.makeBinPath config.path}"
+                    set -efu -o pipefail
                     ${config.script}
                   '';
                 };
