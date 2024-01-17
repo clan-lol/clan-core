@@ -31,27 +31,10 @@
             the directory on the deployment server where secrets are uploaded
           '';
         };
-        uploadSecrets = lib.mkOption {
-          type = lib.types.path;
-          description = ''
-            script to upload secrets to the deployment server
-          '';
-          default = "${pkgs.coreutils}/bin/true";
-        };
-        generateSecrets = lib.mkOption {
-          type = lib.types.path;
-          description = ''
-            script to generate secrets
-          '';
-          default = "${pkgs.coreutils}/bin/true";
-        };
         secretsModule = lib.mkOption {
-          type = lib.types.path;
-          default = "${pkgs.coreutils}/bin/true";
+          type = lib.types.str;
           description = ''
-            the module that generates secrets.
-            A needs to define a python class SecretStore which implements the following methods:
-            set, get, exists
+            the python import path to the secrets module
           '';
         };
         secretsData = lib.mkOption {
@@ -82,7 +65,7 @@
   # optimization for faster secret generate/upload and machines update
   config = {
     system.clan.deployment.data = {
-      inherit (config.system.clan) uploadSecrets generateSecrets secretsModule secretsData;
+      inherit (config.system.clan) secretsModule secretsData;
       inherit (config.clan.networking) deploymentAddress;
       inherit (config.clanCore) secretsUploadDirectory;
     };

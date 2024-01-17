@@ -1,7 +1,6 @@
 import argparse
+import importlib
 import logging
-import types
-from importlib.machinery import SourceFileLoader
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -13,10 +12,7 @@ log = logging.getLogger(__name__)
 
 
 def upload_secrets(machine: Machine) -> None:
-    # load secrets module from file
-    loader = SourceFileLoader("secret_module", machine.secrets_module)
-    secrets_module = types.ModuleType(loader.name)
-    loader.exec_module(secrets_module)
+    secrets_module = importlib.import_module(machine.secrets_module)
     secret_store = secrets_module.SecretStore(machine=machine)
 
     update_check = getattr(secret_store, "update_check", None)
@@ -25,11 +21,7 @@ def upload_secrets(machine: Machine) -> None:
             log.info("Secrets already up to date")
             return
     with TemporaryDirectory() as tempdir:
-        secrets = []
-        for service in machine.secrets_data:
-            for secret in machine.secrets_data[service]["secrets"]:
-                secrets.append((service, secret))
-        secret_store.upload(Path(tempdir), secrets)
+        secret_store.upload(Path(tempdir))
         host = machine.host
 
         ssh_cmd = host.ssh_cmd()
