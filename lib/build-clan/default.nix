@@ -45,7 +45,7 @@ let
           clanCore.clanName = clanName;
           clanCore.clanIcon = clanIcon;
           clanCore.clanDir = directory;
-          nixpkgs.hostPlatform = lib.mkForce system;
+          nixpkgs.hostPlatform = lib.mkDefault system;
 
           # speeds up nix commands by using the nixpkgs from the host system (especially useful in VMs)
           nix.registry.nixpkgs.to = {
