@@ -38,11 +38,12 @@ FORMATTER = {
 
 
 class CustomFormatter(logging.Formatter):
+    def __init__(self, log_locations: bool) -> None:
+        super().__init__()
+        self.log_locations = log_locations
+
     def format(self, record: logging.LogRecord) -> str:
-        if record.levelno == logging.DEBUG:
-            return FORMATTER[record.levelno](record, True).format(record)
-        else:
-            return FORMATTER[record.levelno](record, False).format(record)
+        return FORMATTER[record.levelno](record, self.log_locations).format(record)
 
 
 class ThreadFormatter(logging.Formatter):
@@ -75,7 +76,7 @@ def setup_logging(level: Any) -> None:
 
     # Create and add your custom handler
     default_handler.setLevel(level)
-    default_handler.setFormatter(CustomFormatter())
+    default_handler.setFormatter(CustomFormatter(level == logging.DEBUG))
     main_logger.addHandler(default_handler)
 
     # Set logging level for other modules used by this module

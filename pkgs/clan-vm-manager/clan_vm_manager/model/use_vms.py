@@ -1,17 +1,9 @@
-import multiprocessing as mp
+from collections.abc import Callable
 from typing import Any
 
-from clan_cli.errors import ClanError
 from gi.repository import Gio
 
-from clan_vm_manager.errors.show_error import show_error_dialog
 from clan_vm_manager.models import VM, get_initial_vms
-
-
-# https://amolenaar.pages.gitlab.gnome.org/pygobject-docs/Adw-1/class-ToolbarView.html
-# Will be executed in the context of the child process
-def on_except(error: Exception, proc: mp.process.BaseProcess) -> None:
-    show_error_dialog(ClanError(str(error)))
 
 
 class VMS:
@@ -44,6 +36,14 @@ class VMS:
             for vm in get_initial_vms():
                 cls.list_store.append(vm)
         return cls._instance
+
+    def handle_vm_stopped(self, func: Callable[[VM, VM], None]) -> None:
+        for vm in self.list_store:
+            vm.connect("vm_stopped", func)
+
+    def handle_vm_started(self, func: Callable[[VM, VM], None]) -> None:
+        for vm in self.list_store:
+            vm.connect("vm_started", func)
 
     def get_running_vms(self) -> list[VM]:
         return list(filter(lambda vm: vm.is_running(), self.list_store))

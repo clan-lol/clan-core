@@ -61,7 +61,7 @@ def _init_proc(
     func: Callable,
     out_file: Path,
     proc_name: str,
-    on_except: Callable[[Exception, mp.process.BaseProcess], None],
+    on_except: Callable[[Exception, mp.process.BaseProcess], None] | None,
     **kwargs: Any,
 ) -> None:
     # Create a new process group
@@ -89,7 +89,8 @@ def _init_proc(
         func(**kwargs)
     except Exception as ex:
         traceback.print_exc()
-        on_except(ex, mp.current_process())
+        if on_except is not None:
+            on_except(ex, mp.current_process())
     finally:
         pid = os.getpid()
         gpid = os.getpgid(pid=pid)
@@ -99,8 +100,8 @@ def _init_proc(
 
 def spawn(
     *,
-    log_path: Path,
-    on_except: Callable[[Exception, mp.process.BaseProcess], None],
+    log_dir: Path,
+    on_except: Callable[[Exception, mp.process.BaseProcess], None] | None,
     func: Callable,
     **kwargs: Any,
 ) -> MPProcess:
@@ -108,13 +109,13 @@ def spawn(
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method(method="forkserver")
 
-    if not log_path.is_dir():
-        raise ClanError(f"Log path {log_path} is not a directory")
-    log_path.mkdir(parents=True, exist_ok=True)
+    if not log_dir.is_dir():
+        raise ClanError(f"Log path {log_dir} is not a directory")
+    log_dir.mkdir(parents=True, exist_ok=True)
 
     # Set names
     proc_name = f"MPExec:{func.__name__}"
-    out_file = log_path / "out.log"
+    out_file = log_dir / "out.log"
 
     # Start the process
     proc = mp.Process(
