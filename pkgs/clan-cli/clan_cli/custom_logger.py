@@ -22,7 +22,7 @@ def get_formatter(color: str) -> Callable[[logging.LogRecord, bool], logging.For
             return logging.Formatter(f"{color}%(levelname)s{reset}: %(message)s")
 
         return logging.Formatter(
-            f"{color}%(levelname)s{reset}: %(message)s\n       {filepath}:%(lineno)d::%(funcName)s\n"
+            f"{color}%(levelname)s{reset}: %(message)s\n        {filepath}:%(lineno)d::%(funcName)s\n"
         )
 
     return myformatter
@@ -39,7 +39,10 @@ FORMATTER = {
 
 class CustomFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
-        return FORMATTER[record.levelno](record, True).format(record)
+        if record.levelno == logging.DEBUG:
+            return FORMATTER[record.levelno](record, True).format(record)
+        else:
+            return FORMATTER[record.levelno](record, False).format(record)
 
 
 class ThreadFormatter(logging.Formatter):

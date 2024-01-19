@@ -139,11 +139,10 @@ def main() -> None:
             sys.exit(1)
         if isinstance(e, ClanCmdError):
             if e.cmd.msg:
-                print(e.cmd.msg, file=sys.stderr)
-            else:
-                print(e, file=sys.stderr)
-        elif isinstance(e, ClanError):
-            print(e, file=sys.stderr)
+                log.error(e.cmd.msg)
+                sys.exit(1)
+
+        log.error(e)
         sys.exit(1)
 
 
