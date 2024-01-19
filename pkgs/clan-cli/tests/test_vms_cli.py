@@ -58,9 +58,10 @@ def test_vm_persistence(
     flake = generate_flake(
         temporary_home,
         flake_template=CLAN_CORE / "templates" / "new-clan",
-        substitutions=dict(
-            __CHANGE_ME__="_test_vm_persistence",
-        ),
+        substitutions={
+            "__CHANGE_ME__": "_test_vm_persistence",
+            "git+https://git.clan.lol/clan/clan-core": "path://" + str(CLAN_CORE),
+        },
         machine_configs=dict(
             my_machine=dict(
                 clanCore=dict(state=dict(my_state=dict(folders=["/var/my-state"]))),
