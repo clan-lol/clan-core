@@ -1,11 +1,10 @@
-import os
+import shutil
 from math import floor
 from pathlib import Path
-from typing import NamedTuple
 
 
 def get_term_filler(name: str) -> int:
-    width, height = os.get_terminal_size()
+    width, height = shutil.get_terminal_size()
 
     filler = floor((width - len(name)) / 2)
     return filler - 1
@@ -16,16 +15,25 @@ def text_heading(heading: str) -> str:
     return f"{'=' * filler} {heading} {'=' * filler}"
 
 
-class CmdOut(NamedTuple):
-    stdout: str
-    stderr: str
-    cwd: Path
-    command: str
-    returncode: int
-    msg: str | None = None
+class CmdOut:
+    def __init__(
+        self,
+        stdout: str,
+        stderr: str,
+        cwd: Path,
+        command: str,
+        returncode: int,
+        msg: str | None,
+    ) -> None:
+        super().__init__()
+        self.stdout = stdout
+        self.stderr = stderr
+        self.cwd = cwd
+        self.command = command
+        self.returncode = returncode
+        self.msg = msg
 
-    def __str__(self) -> str:
-        return f"""
+        self.error_str = f"""
 {text_heading(heading="Command")}
 {self.command}
 {text_heading(heading="Stderr")}
@@ -36,7 +44,10 @@ class CmdOut(NamedTuple):
 Message: {self.msg}
 Working Directory: '{self.cwd}'
 Return Code: {self.returncode}
-"""
+        """
+
+    def __str__(self) -> str:
+        return self.error_str
 
 
 class ClanError(Exception):

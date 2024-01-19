@@ -64,17 +64,38 @@ class ClanList(Gtk.Box):
 
             return row
 
-        list_store = VMS.use().list_store
+        vms = VMS.use()
 
-        boxed_list.bind_model(list_store, create_widget_func=create_widget)
+        # TODO: Move this up to create_widget and connect every VM signal to its corresponding switch
+        vms.handle_vm_stopped(self.stopped_vm)
+        vms.handle_vm_started(self.started_vm)
+
+        boxed_list.bind_model(vms.list_store, create_widget_func=create_widget)
 
         self.append(boxed_list)
+
+    def started_vm(self, vm: VM, _vm: VM) -> None:
+        print("VM started", vm.data.flake.flake_attr)
+
+    def stopped_vm(self, vm: VM, _vm: VM) -> None:
+        print("VM stopped", vm.data.flake.flake_attr)
+
+    def show_error_dialog(self, error: str) -> None:
+        dialog = Gtk.MessageDialog(
+            parent=self.get_toplevel(),
+            modal=True,
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.OK,
+            text=error,
+        )
+        dialog.run()
+        dialog.destroy()
 
     def on_row_toggle(self, vm: VM, row: Adw.SwitchRow, state: bool) -> None:
         print("Toggled", vm.data.flake.flake_attr, "active:", row.get_active())
 
         if row.get_active():
-            vm.start()
+            vm.start_async()
 
         if not row.get_active():
-            vm.stop()
+            vm.stop_async()
