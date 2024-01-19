@@ -31,7 +31,7 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
 
 
 def create_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake_dir=args.flake)
+    machine = Machine(name=args.machine, flake=args.flake)
     create_backup(machine=machine, provider=args.provider)
 
 

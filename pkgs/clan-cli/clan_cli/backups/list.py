@@ -45,9 +45,7 @@ def list_provider(machine: Machine, provider: str) -> list[Backup]:
 
 
 def list_backups(machine: Machine, provider: str | None = None) -> list[Backup]:
-    backup_metadata = json.loads(
-        machine.eval_nix(f"nixosConfigurations.{machine.name}.config.clanCore.backups")
-    )
+    backup_metadata = json.loads(machine.eval_nix("config.clanCore.backups"))
     results = []
     if provider is None:
         for _provider in backup_metadata["providers"]:
@@ -60,7 +58,7 @@ def list_backups(machine: Machine, provider: str | None = None) -> list[Backup]:
 
 
 def list_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake_dir=args.flake)
+    machine = Machine(name=args.machine, flake=args.flake)
     backups = list_backups(machine=machine, provider=args.provider)
     print(backups)
 

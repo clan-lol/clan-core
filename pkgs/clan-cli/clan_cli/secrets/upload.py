@@ -43,7 +43,7 @@ def upload_secrets(machine: Machine) -> None:
 
 
 def upload_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake_dir=args.flake)
+    machine = Machine(name=args.machine, flake=args.flake)
     upload_secrets(machine)
 
 

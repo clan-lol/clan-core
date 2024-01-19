@@ -91,7 +91,7 @@ def restore_backup(
 
 
 def restore_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake_dir=args.flake)
+    machine = Machine(name=args.machine, flake=args.flake)
     backups = list_backups(machine=machine, provider=args.provider)
     restore_backup(
         machine=machine,

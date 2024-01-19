@@ -34,7 +34,7 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
         cmd = [
             "nixos-anywhere",
             "-f",
-            f"{machine.flake_dir}#{flake_attr}",
+            f"{machine.flake}#{flake_attr}",
             "-t",
             "--no-reboot",
             "--extra-files",
@@ -68,7 +68,7 @@ def install_command(args: argparse.Namespace) -> None:
         target_host=args.target_host,
         kexec=args.kexec,
     )
-    machine = Machine(opts.machine, flake_dir=opts.flake)
+    machine = Machine(opts.machine, flake=opts.flake)
     machine.deployment_address = opts.target_host
 
     install_nixos(machine, kexec=opts.kexec)

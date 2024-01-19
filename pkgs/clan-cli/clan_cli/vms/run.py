@@ -1,20 +1,20 @@
 import argparse
+import importlib
 import json
 import logging
 import os
-import sys
 import tempfile
-import importlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import IO
 
 from ..cmd import Log, run
-from ..dirs import module_root, specific_groot_dir, vm_state_dir
+from ..dirs import machine_gcroot, module_root, vm_state_dir
 from ..errors import ClanError
-from ..nix import nix_build, nix_config, nix_shell
-from .inspect import VmConfig, inspect_vm
 from ..machines.machines import Machine
+from ..nix import nix_build, nix_config, nix_shell
+from ..secrets.generate import generate_secrets
+from .inspect import VmConfig, inspect_vm
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ def qemu_command(
     # fmt: off
     command = [
         "qemu-kvm",
-        "-name", vm.flake_attr,
+        "-name", vm.machine_name,
         "-m", f'{nixos_config["memorySize"]}M',
         "-smp", str(nixos_config["cores"]),
         "-cpu", "max",
@@ -104,32 +104,34 @@ def qemu_command(
     return command
 
 
-def get_vm_create_info(vm: VmConfig, nix_options: list[str]) -> dict[str, str]:
+# TODO move this to the Machines class
+def get_vm_create_info(
+    machine: Machine, vm: VmConfig, nix_options: list[str]
+) -> dict[str, str]:
     config = nix_config()
     system = config["system"]
 
-    clan_dir = vm.flake_url
-    machine = vm.flake_attr
+    clan_dir = machine.flake
     cmd = nix_build(
         [
-            f'{clan_dir}#clanInternals.machines."{system}"."{machine}".config.system.clan.vm.create',
+            f'{clan_dir}#clanInternals.machines."{system}"."{machine.name}".config.system.clan.vm.create',
             *nix_options,
         ],
-        specific_groot_dir(clan_name=vm.clan_name, flake_url=str(vm.flake_url))
-        / f"vm-{machine}",
+        machine_gcroot(clan_name=vm.clan_name, flake_url=str(vm.flake_url))
+        / f"vm-{machine.name}",
     )
-    proc = run(cmd, log=Log.BOTH, error_msg=f"Could not build vm config for {machine}")
+    proc = run(
+        cmd, log=Log.BOTH, error_msg=f"Could not build vm config for {machine.name}"
+    )
     try:
         return json.loads(Path(proc.stdout.strip()).read_text())
     except json.JSONDecodeError as e:
         raise ClanError(f"Failed to parse vm config: {e}")
 
 
-def generate_secrets(
-    vm: VmConfig,
-    nixos_config: dict[str, str],
+def get_secrets(
+    machine: Machine,
     tmpdir: Path,
-    log_fd: IO[str] | None,
 ) -> Path:
     secrets_dir = tmpdir / "secrets"
     secrets_dir.mkdir(exist_ok=True)
@@ -138,19 +140,12 @@ def generate_secrets(
     secret_store = secrets_module.SecretStore(machine=machine)
 
     # Only generate secrets for local clans
-    if isinstance(vm.flake_url, Path) and vm.flake_url.is_dir():
-        if Path(vm.flake_url).is_dir():
-            run([nixos_config["generateSecrets"], vm.clan_name], env=env)
-        else:
-            log.warning("won't generate secrets for non local clan")
+    if isinstance(machine.flake, Path) and machine.flake.is_dir():
+        generate_secrets(machine)
+    else:
+        log.warning("won't generate secrets for non local clan")
 
-    cmd = [nixos_config["uploadSecrets"]]
-    run(
-        cmd,
-        env=env,
-        log=Log.BOTH,
-        error_msg=f"Could not upload secrets for {vm.flake_attr}",
-    )
+    secret_store.upload(secrets_dir)
     return secrets_dir
 
 
@@ -191,26 +186,28 @@ def prepare_disk(tmpdir: Path, log_fd: IO[str] | None) -> Path:
 
 
 def run_vm(
-    vm: VmConfig, nix_options: list[str] = [], log_fd: IO[str] | None = None
+    vm: VmConfig,
+    nix_options: list[str] = [],
+    log_fd: IO[str] | None = None,
 ) -> None:
     """
     log_fd can be used to stream the output of all commands to a UI
     """
-    machine = vm.flake_attr
+    machine = Machine(vm.machine_name, vm.flake_url)
     log.debug(f"Creating VM for {machine}")
 
     # TODO: We should get this from the vm argument
-    nixos_config = get_vm_create_info(vm, nix_options)
+    nixos_config = get_vm_create_info(machine, vm, nix_options)
 
     with tempfile.TemporaryDirectory() as tmpdir_:
         tmpdir = Path(tmpdir_)
         xchg_dir = tmpdir / "xchg"
         xchg_dir.mkdir(exist_ok=True)
 
-        secrets_dir = generate_secrets(vm, nixos_config, tmpdir, log_fd)
+        secrets_dir = get_secrets(machine, tmpdir)
         disk_img = prepare_disk(tmpdir, log_fd)
 
-        state_dir = vm_state_dir(vm.clan_name, str(vm.flake_url), machine)
+        state_dir = vm_state_dir(vm.clan_name, str(machine.flake), machine.name)
         state_dir.mkdir(parents=True, exist_ok=True)
 
         qemu_cmd = qemu_command(
@@ -243,7 +240,6 @@ def run_vm(
 @dataclass
 class RunOptions:
     machine: str
-    flake_url: str | None
     flake: Path
     nix_options: list[str] = field(default_factory=list)
     wayland: bool = False
@@ -252,14 +248,14 @@ class RunOptions:
 def run_command(args: argparse.Namespace) -> None:
     run_options = RunOptions(
         machine=args.machine,
-        flake_url=args.flake_url,
-        flake=args.flake or Path.cwd(),
+        flake=args.flake,
         nix_options=args.option,
         wayland=args.wayland,
     )
 
-    flake_url = run_options.flake_url or run_options.flake
-    vm = inspect_vm(flake_url=flake_url, flake_attr=run_options.machine)
+    machine = Machine(run_options.machine, run_options.flake)
+
+    vm = inspect_vm(machine=machine)
     # TODO: allow to set this in the config
     vm.wayland = run_options.wayland
 

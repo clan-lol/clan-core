@@ -1,33 +1,16 @@
 import json
 from pathlib import Path
 
-from ..cmd import Log, run
+from ..cmd import run
 from ..nix import nix_build, nix_config, nix_eval
 from ..ssh import Host, parse_deployment_address
-
-
-def build_machine_data(machine_name: str, clan_dir: Path) -> dict:
-    config = nix_config()
-    system = config["system"]
-
-    proc = run(
-        nix_build(
-            [
-                f'{clan_dir}#clanInternals.machines."{system}"."{machine_name}".config.system.clan.deployment.file'
-            ]
-        ),
-        log=Log.BOTH,
-        error_msg="failed to build machine data",
-    )
-
-    return json.loads(Path(proc.stdout.strip()).read_text())
 
 
 class Machine:
     def __init__(
         self,
         name: str,
-        flake_dir: Path,
+        flake: Path | str,
         machine_data: dict | None = None,
     ) -> None:
         """
@@ -36,22 +19,39 @@ class Machine:
         @clan_dir: the directory of the clan, optional, if not set it will be determined from the current working directory
         @machine_json: can be optionally used to skip evaluation of the machine, location of the json file with machine data
         """
-        self.name = name
-        self.flake_dir = flake_dir
+        self.name: str = name
+        self.flake: str | Path = flake
 
+        self.eval_cache: dict[str, str] = {}
+        self.build_cache: dict[str, Path] = {}
+
+        # TODO do this lazily
         if machine_data is None:
-            self.machine_data = build_machine_data(name, self.flake_dir)
+            self.machine_data = json.loads(
+                self.build_nix("config.system.clan.deployment.file").read_text()
+            )
         else:
             self.machine_data = machine_data
 
         self.deployment_address = self.machine_data["deploymentAddress"]
-        self.secrets_module = self.machine_data["secretsModule"]
-        self.secrets_data = json.loads(
-            Path(self.machine_data["secretsData"]).read_text()
-        )
+        self.secrets_module = self.machine_data.get("secretsModule", None)
+        if "secretsData" in self.machine_data:
+            self.secrets_data = json.loads(
+                Path(self.machine_data["secretsData"]).read_text()
+            )
         self.secrets_upload_directory = self.machine_data["secretsUploadDirectory"]
-        self.eval_cache: dict[str, str] = {}
-        self.build_cache: dict[str, Path] = {}
+
+    @property
+    def flake_dir(self) -> Path:
+        if isinstance(self.flake, Path):
+            return self.flake
+
+        if hasattr(self, "flake_path"):
+            return Path(self.flake_path)
+
+        print(nix_eval([f"{self.flake}"]))
+        self.flake_path = run(nix_eval([f"{self.flake}"])).stdout.strip()
+        return Path(self.flake_path)
 
     @property
     def host(self) -> Host:
@@ -67,9 +67,25 @@ class Machine:
         if attr in self.eval_cache and not refresh:
             return self.eval_cache[attr]
 
-        output = run(
-            nix_eval([f"path:{self.flake_dir}#{attr}"]),
-        ).stdout.strip()
+        config = nix_config()
+        system = config["system"]
+
+        if isinstance(self.flake, Path):
+            output = run(
+                nix_eval(
+                    [
+                        f'path:{self.flake}#clanInternals.machines."{system}"."{self.name}".{attr}'
+                    ]
+                ),
+            ).stdout.strip()
+        else:
+            output = run(
+                nix_eval(
+                    [
+                        f'{self.flake}#clanInternals.machines."{system}"."{self.name}".{attr}'
+                    ]
+                ),
+            ).stdout.strip()
         self.eval_cache[attr] = output
         return output
 
@@ -80,8 +96,25 @@ class Machine:
         """
         if attr in self.build_cache and not refresh:
             return self.build_cache[attr]
-        outpath = run(
-            nix_build([f"path:{self.flake_dir}#{attr}"]),
-        ).stdout.strip()
+
+        config = nix_config()
+        system = config["system"]
+
+        if isinstance(self.flake, Path):
+            outpath = run(
+                nix_build(
+                    [
+                        f'path:{self.flake}#clanInternals.machines."{system}"."{self.name}".{attr}'
+                    ]
+                ),
+            ).stdout.strip()
+        else:
+            outpath = run(
+                nix_build(
+                    [
+                        f'{self.flake}#clanInternals.machines."{system}"."{self.name}".{attr}'
+                    ]
+                ),
+            ).stdout.strip()
         self.build_cache[attr] = Path(outpath)
         return Path(outpath)
