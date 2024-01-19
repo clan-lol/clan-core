@@ -72,7 +72,7 @@ def qemu_command(
         kernel_cmdline.append("console=tty0")
     # fmt: off
     command = [
-        "qemu-kvms",
+        "qemu-kvm",
         "-name", vm.flake_attr,
         "-m", f'{nixos_config["memorySize"]}M',
         "-smp", str(nixos_config["cores"]),

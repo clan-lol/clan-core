@@ -98,4 +98,4 @@ class ClanList(Gtk.Box):
             vm.start_async()
 
         if not row.get_active():
-            vm.stop()
+            vm.stop_async()
