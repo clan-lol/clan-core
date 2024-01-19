@@ -10,9 +10,12 @@ in
 (nixos-lib.runTest {
   hostPkgs = pkgs;
   # speed-up evaluation
-  defaults.documentation.enable = lib.mkDefault false;
+  defaults = {
+    documentation.enable = lib.mkDefault false;
+    nix.settings.min-free = 0;
+  };
+
   # to accept external dependencies such as disko
   node.specialArgs.self = self;
   imports = [ test ];
 }).config.result
-
