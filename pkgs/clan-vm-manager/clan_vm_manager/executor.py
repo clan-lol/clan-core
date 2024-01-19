@@ -2,7 +2,6 @@ import os
 import signal
 import sys
 import traceback
-import weakref
 from pathlib import Path
 from typing import Any
 
@@ -134,59 +133,3 @@ def spawn(
     mp_proc = MPProcess(name=proc_name, proc=proc, out_file=out_file)
 
     return mp_proc
-
-
-# Processes are killed when the ProcessManager is garbage collected
-class ProcessManager:
-    def __init__(self) -> None:
-        self.procs: dict[str, MPProcess] = dict()
-        self._finalizer = weakref.finalize(self, self.kill_all)
-
-    def by_pid(self, pid: int) -> tuple[str, MPProcess] | None:
-        for ident, proc in self.procs.items():
-            if proc.proc.pid == pid:
-                return (ident, proc)
-        return None
-
-    def by_proc(self, proc: mp.process.BaseProcess) -> tuple[str, MPProcess] | None:
-        if proc.pid is None:
-            return None
-        return self.by_pid(pid=proc.pid)
-
-    def running_procs(self) -> list[str]:
-        alive_procs = filter(lambda pair: pair[1].proc.is_alive(), self.procs.items())
-        self.procs = dict(alive_procs)
-        return list(self.procs.keys())
-
-    def spawn(
-        self,
-        *,
-        ident: str,
-        log_path: Path,
-        on_except: Callable[[Exception, mp.process.BaseProcess], None],
-        func: Callable,
-        **kwargs: Any,
-    ) -> MPProcess:
-        proc = spawn(
-            log_path=log_path,
-            on_except=on_except,
-            func=func,
-            **kwargs,
-        )
-        if ident in self.procs:
-            raise ClanError(f"Process with id {ident} already exists")
-        self.procs[ident] = proc
-        return proc
-
-    def kill_all(self) -> None:
-        print("Killing all processes", file=sys.stderr)
-        for proc in self.procs.values():
-            proc.kill_group()
-        self.procs.clear()
-
-    def kill(self, ident: str) -> None:
-        if ident not in self.procs:
-            raise ClanError(f"Process with id {ident} does not exist")
-        proc = self.procs[ident]
-        proc.kill_group()
-        del self.procs[ident]
