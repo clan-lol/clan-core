@@ -47,7 +47,7 @@ def user_gcroot_dir() -> Path:
     return p
 
 
-def specific_groot_dir(*, clan_name: str, flake_url: str) -> Path:
+def machine_gcroot(*, clan_name: str, flake_url: str) -> Path:
     # Always build icon so that we can symlink it to the gcroot
     gcroot_dir = user_gcroot_dir()
     clan_gcroot = gcroot_dir / clan_key_safe(clan_name, flake_url)

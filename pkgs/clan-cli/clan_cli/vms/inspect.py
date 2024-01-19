@@ -3,15 +3,14 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from ..cmd import run
-from ..nix import nix_config, nix_eval
+from ..machines.machines import Machine
 
 
 @dataclass
 class VmConfig:
-    clan_name: str
+    machine_name: str
     flake_url: str | Path
-    flake_attr: str
+    clan_name: str
 
     cores: int
     memory_size: int
@@ -19,21 +18,9 @@ class VmConfig:
     wayland: bool = False
 
 
-def inspect_vm(flake_url: str | Path, flake_attr: str) -> VmConfig:
-    config = nix_config()
-    system = config["system"]
-
-    cmd = nix_eval(
-        [
-            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.vm.inspect',
-            "--refresh",
-        ]
-    )
-
-    proc = run(cmd)
-
-    data = json.loads(proc.stdout)
-    return VmConfig(flake_url=flake_url, flake_attr=flake_attr, **data)
+def inspect_vm(machine: Machine) -> VmConfig:
+    data = json.loads(machine.eval_nix("config.clanCore.vm.inspect"))
+    return VmConfig(machine_name=machine.name, flake_url=machine.flake, **data)
 
 
 @dataclass
@@ -47,9 +34,9 @@ def inspect_command(args: argparse.Namespace) -> None:
         machine=args.machine,
         flake=args.flake or Path.cwd(),
     )
-    res = inspect_vm(
-        flake_url=inspect_options.flake, flake_attr=inspect_options.machine
-    )
+
+    machine = Machine(inspect_options.machine, inspect_options.flake)
+    res = inspect_vm(machine)
     print("Cores:", res.cores)
     print("Memory size:", res.memory_size)
     print("Graphics:", res.graphics)

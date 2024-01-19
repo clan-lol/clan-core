@@ -28,11 +28,11 @@ def generate_secrets(machine: Machine) -> None:
                 not secret_store.exists(service, secret)
                 for secret in machine.secrets_data[service]["secrets"]
             ) or any(
-                not (machine.flake_dir / fact).exists()
+                not (machine.flake / fact).exists()
                 for fact in machine.secrets_data[service]["facts"].values()
             )
             for fact in machine.secrets_data[service]["facts"].values():
-                if not (machine.flake_dir / fact).exists():
+                if not (machine.flake / fact).exists():
                     print(f"fact {fact} is missing")
             if needs_regeneration:
                 env = os.environ.copy()
@@ -66,7 +66,7 @@ def generate_secrets(machine: Machine) -> None:
                         msg = f"did not generate a file for '{name}' when running the following command:\n"
                         msg += machine.secrets_data[service]["generator"]
                         raise ClanError(msg)
-                    fact_path = machine.flake_dir / fact_path
+                    fact_path = machine.flake / fact_path
                     fact_path.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copyfile(fact_file, fact_path)
 
@@ -74,7 +74,7 @@ def generate_secrets(machine: Machine) -> None:
 
 
 def generate_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake_dir=args.flake)
+    machine = Machine(name=args.machine, flake=args.flake)
     generate_secrets(machine)
 
 
