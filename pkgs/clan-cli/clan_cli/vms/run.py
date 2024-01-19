@@ -2,8 +2,6 @@ import argparse
 import json
 import logging
 import os
-import shlex
-import subprocess
 import sys
 import tempfile
 from dataclasses import dataclass, field
@@ -235,16 +233,12 @@ def run_vm(
                 "XDG_DATA_DIRS"
             ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
 
-        print("$ " + shlex.join(qemu_cmd))
-        res = subprocess.run(
+        run(
             nix_shell(packages, qemu_cmd),
             env=env,
-            check=False,
-            stdout=log_fd,
-            stderr=log_fd,
+            log=Log.BOTH,
+            error_msg=f"Could not start vm {machine}",
         )
-        if res.returncode != 0:
-            raise ClanError(f"qemu failed with {res.returncode}")
 
 
 @dataclass
