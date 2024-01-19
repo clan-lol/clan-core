@@ -52,7 +52,9 @@ def test_run(
 def test_vm_persistence(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
+    age_keys: list["KeyPair"],
 ) -> None:
+    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
     flake = generate_flake(
         temporary_home,
         flake_template=CLAN_CORE / "templates" / "new-clan",
@@ -90,7 +92,17 @@ def test_vm_persistence(
         ),
     )
     monkeypatch.chdir(flake.path)
-    Cli().run(["vms", "run", "my_machine"])
+    cli = Cli()
+    cli.run(
+        [
+            "secrets",
+            "users",
+            "add",
+            "user1",
+            age_keys[0].pubkey,
+        ]
+    )
+    cli.run(["vms", "run", "my_machine"])
     test_file = (
         vm_state_dir("_test_vm_persistence", str(flake.path), "my_machine")
         / "var"
