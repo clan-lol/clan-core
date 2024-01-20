@@ -12,5 +12,20 @@ avatar {
 }
 
 .trust {
-    padding: 25px; 
+    padding-top: 25px; 
+    padding-bottom: 25px; 
 }
+
+.vm-list {
+    margin-top: 25px; 
+    margin-bottom: 25px; 
+}
+
+.no-shadow {
+    box-shadow: none;	
+}
+
+/* TODO: Disable shadow for empty lists */
+/* list:empty {
+    box-shadow: none;	
+}  */

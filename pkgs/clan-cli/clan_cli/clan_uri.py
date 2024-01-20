@@ -117,6 +117,11 @@ class ClanURI:
     def get_full_uri(self) -> str:
         return self._full_uri
 
+    # TODO(@Qubasa): return a comparable id e.g. f"{url}#{attr}"
+    # This should be our standard.
+    def get_id(self) -> str:
+        return f"{self._components.path}#{self._components.fragment}"
+
     @classmethod
     def from_path(
         cls,  # noqa

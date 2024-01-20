@@ -1,9 +1,8 @@
 import gi
 
-from clan_vm_manager.models.interfaces import ClanConfig, InitialJoinValues
+from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_views import Views
 from clan_vm_manager.views.list import ClanList
-from clan_vm_manager.views.trust_join import Trust
 
 gi.require_version("Adw", "1")
 
@@ -25,9 +24,6 @@ class MainWindow(Adw.ApplicationWindow):
         # Initialize all views
         stack_view = Views.use().view
         stack_view.add_named(ClanList(), "list")
-        stack_view.add_named(
-            Trust(initial_values=InitialJoinValues(url=config.url)), "join.trust"
-        )
 
         stack_view.set_visible_child_name(config.initial_view)
 
