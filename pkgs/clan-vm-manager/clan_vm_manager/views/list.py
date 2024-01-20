@@ -74,7 +74,7 @@ class ClanList(Gtk.Box):
         row.set_title_selectable(True)
 
         # Subtitle
-        row.set_subtitle(flake.flake_attr)
+        row.set_subtitle(item.get_id())
         row.set_subtitle_lines(1)
 
         # Avatar
@@ -102,7 +102,7 @@ class ClanList(Gtk.Box):
 
         row = Adw.ActionRow()
 
-        row.set_title(str(item.url))
+        row.set_title(item.url.get_internal())
         row.add_css_class("trust")
 
         # TODO: figure out how to detect that
