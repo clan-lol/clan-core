@@ -28,7 +28,7 @@ def main() -> None:
 
 def show_join(args: argparse.Namespace) -> None:
     app = MainApplication(
-        config=ClanConfig(url=args.clan_uri, initial_view="join.trust"),
+        config=ClanConfig(url=args.clan_uri, initial_view="list"),
     )
     return app.run()
 
