@@ -1,11 +1,27 @@
+from collections.abc import Callable
 from functools import partial
 
 import gi
+from clan_cli.history.add import HistoryEntry
+
+from clan_vm_manager.models.use_join import Join, JoinValue
 
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gtk
+from gi.repository import Adw, Gdk, Gio, GObject, Gtk
 
 from clan_vm_manager.models.use_vms import VM, VMS
+
+
+def create_boxed_list(
+    model: Gio.ListStore, render_row: Callable[[Gtk.ListBox, GObject], Gtk.Widget]
+) -> Gtk.ListBox:
+    boxed_list = Gtk.ListBox()
+    boxed_list.set_selection_mode(Gtk.SelectionMode.NONE)
+    boxed_list.add_css_class("boxed-list")
+    boxed_list.add_css_class("no-shadow")
+
+    boxed_list.bind_model(model, create_widget_func=partial(render_row, boxed_list))
+    return boxed_list
 
 
 class ClanList(Gtk.Box):
@@ -25,52 +41,96 @@ class ClanList(Gtk.Box):
     def __init__(self) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
-        boxed_list = Gtk.ListBox()
-        boxed_list.set_selection_mode(Gtk.SelectionMode.NONE)
-        boxed_list.add_css_class("boxed-list")
-
-        def create_widget(item: VM) -> Gtk.Widget:
-            flake = item.data.flake
-            row = Adw.ActionRow()
-
-            print("Creating", item.data.flake.flake_attr)
-            # Title
-            row.set_title(flake.clan_name)
-            row.set_title_lines(1)
-            row.set_title_selectable(True)
-
-            # Subtitle
-            row.set_subtitle(flake.flake_attr)
-            row.set_subtitle_lines(1)
-
-            # Avatar
-            avatar = Adw.Avatar()
-            avatar.set_custom_image(Gdk.Texture.new_from_filename(flake.icon))
-            avatar.set_text(flake.clan_name + " " + flake.flake_attr)
-            avatar.set_show_initials(True)
-            avatar.set_size(50)
-            row.add_prefix(avatar)
-
-            # Switch
-            switch = Gtk.Switch()
-            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            box.set_valign(Gtk.Align.CENTER)
-            box.append(switch)
-
-            switch.connect("notify::active", partial(self.on_row_toggle, item))
-            row.add_suffix(box)
-
-            return row
-
         vms = VMS.use()
+        join = Join.use()
 
         # TODO: Move this up to create_widget and connect every VM signal to its corresponding switch
         vms.handle_vm_stopped(self.stopped_vm)
         vms.handle_vm_started(self.started_vm)
 
-        boxed_list.bind_model(vms.list_store, create_widget_func=create_widget)
+        self.join_boxed_list = create_boxed_list(
+            model=join.list_store, render_row=self.render_join_row
+        )
 
-        self.append(boxed_list)
+        self.vm_boxed_list = create_boxed_list(
+            model=vms.list_store, render_row=self.render_vm_row
+        )
+        self.vm_boxed_list.add_css_class("vm-list")
+
+        self.append(self.join_boxed_list)
+        self.append(self.vm_boxed_list)
+
+    def render_vm_row(self, boxed_list: Gtk.ListBox, item: VM) -> Gtk.Widget:
+        if boxed_list.has_css_class("no-shadow"):
+            boxed_list.remove_css_class("no-shadow")
+        flake = item.data.flake
+        row = Adw.ActionRow()
+
+        print("Creating", item.data.flake.flake_attr)
+        # Title
+        row.set_title(flake.clan_name)
+
+        row.set_title_lines(1)
+        row.set_title_selectable(True)
+
+        # Subtitle
+        row.set_subtitle(flake.flake_attr)
+        row.set_subtitle_lines(1)
+
+        # Avatar
+        avatar = Adw.Avatar()
+        avatar.set_custom_image(Gdk.Texture.new_from_filename(flake.icon))
+        avatar.set_text(flake.clan_name + " " + flake.flake_attr)
+        avatar.set_show_initials(True)
+        avatar.set_size(50)
+        row.add_prefix(avatar)
+
+        # Switch
+        switch = Gtk.Switch()
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        box.set_valign(Gtk.Align.CENTER)
+        box.append(switch)
+
+        switch.connect("notify::active", partial(self.on_row_toggle, item))
+        row.add_suffix(box)
+
+        return row
+
+    def render_join_row(self, boxed_list: Gtk.ListBox, item: JoinValue) -> Gtk.Widget:
+        if boxed_list.has_css_class("no-shadow"):
+            boxed_list.remove_css_class("no-shadow")
+
+        row = Adw.ActionRow()
+
+        row.set_title(str(item.url))
+        row.add_css_class("trust")
+
+        # TODO: figure out how to detect that
+        if True:
+            row.set_subtitle("Clan already exists. Joining again will update it")
+
+        avatar = Adw.Avatar()
+        avatar.set_text(str(item.url))
+        avatar.set_show_initials(True)
+        avatar.set_size(50)
+        row.add_prefix(avatar)
+
+        cancel_button = Gtk.Button(label="Cancel")
+        cancel_button.add_css_class("error")
+        cancel_button.connect("clicked", partial(self.on_discard_clicked, item))
+
+        trust_button = Gtk.Button(label="Join")
+        trust_button.add_css_class("success")
+        trust_button.connect("clicked", partial(self.on_trust_clicked, item))
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        box.set_valign(Gtk.Align.CENTER)
+        box.append(cancel_button)
+        box.append(trust_button)
+
+        row.add_suffix(box)
+
+        return row
 
     def started_vm(self, vm: VM, _vm: VM) -> None:
         print("VM started", vm.data.flake.flake_attr)
@@ -88,6 +148,21 @@ class ClanList(Gtk.Box):
         )
         dialog.run()
         dialog.destroy()
+
+    def on_trust_clicked(self, item: JoinValue, widget: Gtk.Widget) -> None:
+        def on_join(_history: list[HistoryEntry]) -> None:
+            VMS.use().refresh()
+
+        Join.use().join(item, cb=on_join)
+
+        # If the join request list is empty disable the shadow artefact
+        if not Join.use().list_store.get_n_items():
+            self.join_boxed_list.add_css_class("no-shadow")
+
+    def on_discard_clicked(self, item: JoinValue, widget: Gtk.Widget) -> None:
+        Join.use().discard(item)
+        if not Join.use().list_store.get_n_items():
+            self.join_boxed_list.add_css_class("no-shadow")
 
     def on_row_toggle(self, vm: VM, row: Adw.SwitchRow, state: bool) -> None:
         print("Toggled", vm.data.flake.flake_attr, "active:", row.get_active())

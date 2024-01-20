@@ -142,6 +142,11 @@ class VMS:
         for vm in self.get_running_vms():
             vm.stop()
 
+    def refresh(self) -> None:
+        self.list_store.remove_all()
+        for vm in get_initial_vms():
+            self.list_store.append(vm)
+
 
 def get_initial_vms() -> list[VM]:
     vm_list = []
