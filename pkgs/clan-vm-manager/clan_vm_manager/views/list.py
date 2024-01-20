@@ -2,12 +2,10 @@ from functools import partial
 
 import gi
 
-from ..model.use_vms import VMS
-
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gtk
 
-from ..models import VM
+from clan_vm_manager.models.use_vms import VM, VMS
 
 
 class ClanList(Gtk.Box):
