@@ -1,10 +1,10 @@
 import argparse
 
-from .app import (
-    register_join_parser,
-    register_overview_parser,
-    show_overview,
-)
+from clan_cli.clan_uri import ClanURI
+
+from clan_vm_manager.models.interfaces import ClanConfig
+
+from .app import MainApplication
 
 
 def main() -> None:
@@ -24,3 +24,26 @@ def main() -> None:
     parser.set_defaults(func=show_overview)
     args = parser.parse_args()
     args.func(args)
+
+
+def show_join(args: argparse.Namespace) -> None:
+    app = MainApplication(
+        config=ClanConfig(url=args.clan_uri, initial_view="join.trust"),
+    )
+    return app.run()
+
+
+def register_join_parser(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("clan_uri", type=ClanURI, help="clan URI to join")
+    parser.set_defaults(func=show_join)
+
+
+def show_overview(args: argparse.Namespace) -> None:
+    app = MainApplication(
+        config=ClanConfig(url=None, initial_view="list"),
+    )
+    return app.run()
+
+
+def register_overview_parser(parser: argparse.ArgumentParser) -> None:
+    parser.set_defaults(func=show_overview)

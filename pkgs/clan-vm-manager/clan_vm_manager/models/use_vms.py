@@ -1,31 +1,26 @@
 import sys
 import tempfile
 import weakref
-from enum import StrEnum
+from collections.abc import Callable
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import gi
 from clan_cli import vms
 from clan_cli.errors import ClanError
 from clan_cli.history.add import HistoryEntry
 from clan_cli.history.list import list_history
-from gi.repository import GObject
 
 from clan_vm_manager import assets
+from clan_vm_manager.errors.show_error import show_error_dialog
+from clan_vm_manager.models.interfaces import VMStatus
 
-from .errors.show_error import show_error_dialog
 from .executor import MPProcess, spawn
 
 gi.require_version("Gtk", "4.0")
 import threading
 
-from gi.repository import GLib
-
-
-class VMStatus(StrEnum):
-    RUNNING = "Running"
-    STOPPED = "Stopped"
+from gi.repository import Gio, GLib, GObject
 
 
 class VM(GObject.Object):
@@ -82,7 +77,7 @@ class VM(GObject.Object):
         return False
 
     def get_id(self) -> str:
-        return self.data.flake.flake_url + self.data.flake.flake_attr
+        return f"{self.data.flake.flake_url}#{self.data.flake.flake_attr}"
 
     def stop_async(self) -> None:
         threading.Thread(target=self.stop).start()
@@ -101,6 +96,53 @@ class VM(GObject.Object):
         return self.process.out_file.read_text()
 
 
+class VMS:
+    """
+    This is a singleton.
+    It is initialized with the first call of use()
+
+    Usage:
+
+    VMS.use().get_running_vms()
+
+    VMS.use() can also be called before the data is needed. e.g. to eliminate/reduce waiting time.
+
+    """
+
+    list_store: Gio.ListStore
+    _instance: "None | VMS" = None
+
+    # Make sure the VMS class is used as a singleton
+    def __init__(self) -> None:
+        raise RuntimeError("Call use() instead")
+
+    @classmethod
+    def use(cls: Any) -> "VMS":
+        if cls._instance is None:
+            print("Creating new instance")
+            cls._instance = cls.__new__(cls)
+            cls.list_store = Gio.ListStore.new(VM)
+
+            for vm in get_initial_vms():
+                cls.list_store.append(vm)
+        return cls._instance
+
+    def handle_vm_stopped(self, func: Callable[[VM, VM], None]) -> None:
+        for vm in self.list_store:
+            vm.connect("vm_stopped", func)
+
+    def handle_vm_started(self, func: Callable[[VM, VM], None]) -> None:
+        for vm in self.list_store:
+            vm.connect("vm_started", func)
+
+    def get_running_vms(self) -> list[VM]:
+        return list(filter(lambda vm: vm.is_running(), self.list_store))
+
+    def kill_all(self) -> None:
+        for vm in self.get_running_vms():
+            vm.stop()
+
+
 def get_initial_vms() -> list[VM]:
     vm_list = []
 
@@ -113,7 +155,7 @@ def get_initial_vms() -> list[VM]:
                 icon = entry.flake.icon
 
             base = VM(
-                icon=icon,
+                icon=Path(icon),
                 status=VMStatus.STOPPED,
                 data=entry,
             )

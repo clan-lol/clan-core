@@ -6,8 +6,7 @@ from clan_cli.errors import ClanError
 from clan_cli.history.add import add_history
 
 from clan_vm_manager.errors.show_error import show_error_dialog
-
-from ..interfaces import InitialJoinValues
+from clan_vm_manager.models.interfaces import InitialJoinValues
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
