@@ -1,12 +1,11 @@
 from functools import partial
 
 import gi
-from clan_cli.clan_uri import ClanURI
 from clan_cli.errors import ClanError
 from clan_cli.history.add import add_history
 
 from clan_vm_manager.errors.show_error import show_error_dialog
-from clan_vm_manager.models.interfaces import InitialJoinValues
+from clan_vm_manager.models.use_join import JoinValue
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -16,9 +15,9 @@ from gi.repository import Adw, Gio, GObject, Gtk
 
 
 class TrustValues(GObject.Object):
-    data: InitialJoinValues
+    data: JoinValue
 
-    def __init__(self, data: InitialJoinValues) -> None:
+    def __init__(self, data: JoinValue) -> None:
         super().__init__()
         print("TrustValues", data)
         self.data = data
@@ -27,13 +26,11 @@ class TrustValues(GObject.Object):
 class Trust(Gtk.Box):
     def __init__(
         self,
-        *,
-        initial_values: InitialJoinValues,
     ) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
         # self.on_trust = on_trust
-        self.url: ClanURI | None = initial_values.url
+        # self.url: ClanURI | None = Join.use().
 
         def render(item: TrustValues) -> Gtk.Widget:
             row = Adw.ActionRow()
@@ -49,7 +46,7 @@ class Trust(Gtk.Box):
             cancel_button = Gtk.Button(label="Cancel")
             cancel_button.add_css_class("error")
 
-            trust_button = Gtk.Button(label="Trust")
+            trust_button = Gtk.Button(label="Join")
             trust_button.add_css_class("success")
             trust_button.connect("clicked", partial(self.on_trust_clicked, item.data))
 
@@ -68,7 +65,7 @@ class Trust(Gtk.Box):
         boxed_list.add_css_class("boxed-list")
 
         list_store = Gio.ListStore.new(TrustValues)
-        list_store.append(TrustValues(data=initial_values))
+        # list_store.append(TrustValues(data=initial_values))
 
         # icon = Gtk.Image.new_from_pixbuf(
         #     GdkPixbuf.Pixbuf.new_from_file_at_scale(
@@ -117,7 +114,7 @@ class Trust(Gtk.Box):
         # trust_button.connect("clicked", self.on_trust_clicked)
         # layout.append(trust_button)
 
-    def on_trust_clicked(self, item: InitialJoinValues, widget: Gtk.Widget) -> None:
+    def on_trust_clicked(self, item: JoinValue, widget: Gtk.Widget) -> None:
         try:
             uri = item.url
             # or ClanURI(self.entry.get_text())
