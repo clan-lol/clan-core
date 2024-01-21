@@ -25,6 +25,14 @@ avatar {
     box-shadow: none;	
 }
 
+.search-entry {
+    margin-bottom: 12px; 
+}
+
+searchbar {
+    margin-bottom: 25px; 
+}
+
 /* TODO: Disable shadow for empty lists */
 /* list:empty {
     box-shadow: none;	
