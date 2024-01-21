@@ -22,6 +22,7 @@ class Views:
 
     _instance: "None | Views" = None
     view: Adw.ViewStack
+    main_window: Adw.ApplicationWindow = None
 
     # Make sure the VMS class is used as a singleton
     def __init__(self) -> None:
@@ -35,3 +36,6 @@ class Views:
             cls.view = Adw.ViewStack()
 
         return cls._instance
+
+    def set_main_window(self, window: Adw.ApplicationWindow) -> None:
+        self.main_window = window

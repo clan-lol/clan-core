@@ -123,9 +123,19 @@ class VMS:
             cls._instance = cls.__new__(cls)
             cls.list_store = Gio.ListStore.new(VM)
 
-            for vm in get_initial_vms():
+            for vm in get_saved_vms():
                 cls.list_store.append(vm)
         return cls._instance
+
+    def filter_by_name(self, text: str) -> None:
+        if text:
+            filtered_list = self.list_store
+            filtered_list.remove_all()
+            for vm in get_saved_vms():
+                if text.lower() in vm.data.flake.clan_name.lower():
+                    filtered_list.append(vm)
+        else:
+            self.refresh()
 
     def handle_vm_stopped(self, func: Callable[[VM, VM], None]) -> None:
         for vm in self.list_store:
@@ -144,11 +154,11 @@ class VMS:
 
     def refresh(self) -> None:
         self.list_store.remove_all()
-        for vm in get_initial_vms():
+        for vm in get_saved_vms():
             self.list_store.append(vm)
 
 
-def get_initial_vms() -> list[VM]:
+def get_saved_vms() -> list[VM]:
     vm_list = []
 
     try:

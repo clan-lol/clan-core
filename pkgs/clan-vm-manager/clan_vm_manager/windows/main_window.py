@@ -23,6 +23,8 @@ class MainWindow(Adw.ApplicationWindow):
 
         # Initialize all views
         stack_view = Views.use().view
+        Views.use().set_main_window(self)
+
         stack_view.add_named(ClanList(), "list")
 
         stack_view.set_visible_child_name(config.initial_view)
