@@ -2,6 +2,7 @@ import gi
 
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_views import Views
+from clan_vm_manager.views.details import Details
 from clan_vm_manager.views.list import ClanList
 
 gi.require_version("Adw", "1")
@@ -26,6 +27,7 @@ class MainWindow(Adw.ApplicationWindow):
         Views.use().set_main_window(self)
 
         stack_view.add_named(ClanList(), "list")
+        stack_view.add_named(Details(), "details")
 
         stack_view.set_visible_child_name(config.initial_view)
 
