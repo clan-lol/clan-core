@@ -169,6 +169,9 @@ class ClanList(Gtk.Box):
         def on_join(_history: list[HistoryEntry]) -> None:
             VMS.use().refresh()
 
+        # TODO(@hsjobeki): Confirm and edit details
+        # Views.use().view.set_visible_child_name("details")
+
         Join.use().join(item, cb=on_join)
 
         # If the join request list is empty disable the shadow artefact
