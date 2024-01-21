@@ -5,6 +5,7 @@ import gi
 from clan_cli.history.add import HistoryEntry
 
 from clan_vm_manager.models.use_join import Join, JoinValue
+from clan_vm_manager.models.use_views import Views
 
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GObject, Gtk
@@ -57,8 +58,24 @@ class ClanList(Gtk.Box):
         )
         self.vm_boxed_list.add_css_class("vm-list")
 
+        search_bar = Gtk.SearchBar()
+        # This widget will typically be the top-level window
+        search_bar.set_key_capture_widget(Views.use().main_window)
+        entry = Gtk.SearchEntry()
+        entry.set_placeholder_text("Search cLan")
+        entry.connect("search-changed", self.on_search_changed)
+        entry.add_css_class("search-entry")
+        search_bar.set_child(entry)
+
+        self.append(search_bar)
         self.append(self.join_boxed_list)
         self.append(self.vm_boxed_list)
+
+    def on_search_changed(self, entry: Gtk.SearchEntry) -> None:
+        VMS.use().filter_by_name(entry.get_text())
+        # Disable the shadow if the list is empty
+        if not VMS.use().list_store.get_n_items():
+            self.vm_boxed_list.add_css_class("no-shadow")
 
     def render_vm_row(self, boxed_list: Gtk.ListBox, item: VM) -> Gtk.Widget:
         if boxed_list.has_css_class("no-shadow"):
@@ -66,7 +83,6 @@ class ClanList(Gtk.Box):
         flake = item.data.flake
         row = Adw.ActionRow()
 
-        print("Creating", item.data.flake.flake_attr)
         # Title
         row.set_title(flake.clan_name)
 
