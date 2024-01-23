@@ -1,14 +1,16 @@
 import argparse
 import json
+import logging
 
 from ..errors import ClanError
 from ..machines.machines import Machine
 
+log = logging.getLogger(__name__)
+
 
 def create_backup(machine: Machine, provider: str | None = None) -> None:
-    backup_scripts = json.loads(
-        machine.eval_nix(f"nixosConfigurations.{machine.name}.config.clanCore.backups")
-    )
+    log.info(f"creating backup for {machine.name}")
+    backup_scripts = json.loads(machine.eval_nix("config.clanCore.backups"))
     if provider is None:
         for provider in backup_scripts["providers"]:
             proc = machine.host.run(

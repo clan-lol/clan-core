@@ -27,11 +27,12 @@ in
         ];
       };
     };
-    test_backup_client = { pkgs, lib, ... }:
+    test_backup_client = { pkgs, lib, config, ... }:
       let
         dependencies = [
           self
           pkgs.stdenv.drvPath
+          clan.clanInternals.machines.x86_64-linux.test_backup_client.config.system.clan.deployment.file
         ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
         closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
       in
