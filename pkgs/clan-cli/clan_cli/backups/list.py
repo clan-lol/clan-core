@@ -18,9 +18,7 @@ class Backup:
 
 def list_provider(machine: Machine, provider: str) -> list[Backup]:
     results = []
-    backup_metadata = json.loads(
-        machine.eval_nix(f"nixosConfigurations.{machine.name}.config.clanCore.backups")
-    )
+    backup_metadata = json.loads(machine.eval_nix("config.clanCore.backups"))
     proc = machine.host.run(
         ["bash", "-c", backup_metadata["providers"][provider]["list"]],
         stdout=subprocess.PIPE,
