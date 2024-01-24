@@ -93,7 +93,9 @@ def get_all_machines(clan_dir: Path) -> HostGroup:
             name,
             machine_data["deploymentAddress"],
             meta={
-                "machine": Machine(name=name, flake=clan_dir, machine_data=machine_data)
+                "machine": Machine(
+                    name=name, flake=clan_dir, deployment_info=machine_data
+                )
             },
         )
         hosts.append(host)
@@ -114,7 +116,7 @@ def update(args: argparse.Namespace) -> None:
         raise ClanError("Could not find clan flake toplevel directory")
     if len(args.machines) == 1 and args.target_host is not None:
         machine = Machine(name=args.machines[0], flake=args.flake)
-        machine.deployment_address = args.target_host
+        machine.deployment_info["deploymentAddress"] = args.target_host
         host = parse_deployment_address(
             args.machines[0],
             args.target_host,
