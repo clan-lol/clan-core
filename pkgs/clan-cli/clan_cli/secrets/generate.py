@@ -42,11 +42,25 @@ def generate_secrets(machine: Machine) -> None:
                 secrets_dir = tmpdir / "secrets"
                 secrets_dir.mkdir(parents=True)
                 env["secrets"] = str(secrets_dir)
-                # TODO use bubblewrap here
+                # fmt: off
                 cmd = nix_shell(
-                    ["nixpkgs#bash"],
-                    ["bash", "-c", machine.secrets_data[service]["generator"]],
+                    [
+                        "nixpkgs#bash",
+                        "nixpkgs#bubblewrap",
+                    ],
+                    [
+                        "bwrap",
+                        "--ro-bind", "/nix/store", "/nix/store",
+                        "--tmpfs",  "/usr/lib/systemd",
+                        "--dev", "/dev",
+                        "--bind", str(facts_dir), str(facts_dir),
+                        "--bind", str(secrets_dir), str(secrets_dir),
+                        "--unshare-all",
+                        "--",
+                        "bash", "-c", machine.secrets_data[service]["generator"]
+                    ],
                 )
+                # fmt: on
                 run(
                     cmd,
                     env=env,
