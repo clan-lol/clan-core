@@ -31,19 +31,24 @@
             the directory on the deployment server where secrets are uploaded
           '';
         };
-        uploadSecrets = lib.mkOption {
-          type = lib.types.path;
+        secretsModule = lib.mkOption {
+          type = lib.types.str;
           description = ''
-            script to upload secrets to the deployment server
+            the python import path to the secrets module
           '';
-          default = "${pkgs.coreutils}/bin/true";
         };
-        generateSecrets = lib.mkOption {
+        secretsData = lib.mkOption {
           type = lib.types.path;
           description = ''
-            script to generate secrets
+            secret data as json for the generator
           '';
-          default = "${pkgs.coreutils}/bin/true";
+          default = pkgs.writers.writeJSON "secrets.json" (lib.mapAttrs
+            (_name: secret: {
+              secrets = builtins.attrNames secret.secrets;
+              facts = lib.mapAttrs (_: secret: secret.path) secret.facts;
+              generator = secret.generator.finalScript;
+            })
+            config.clanCore.secrets);
         };
         vm.create = lib.mkOption {
           type = lib.types.path;
@@ -60,7 +65,7 @@
   # optimization for faster secret generate/upload and machines update
   config = {
     system.clan.deployment.data = {
-      inherit (config.system.clan) uploadSecrets generateSecrets;
+      inherit (config.system.clan) secretsModule secretsData;
       inherit (config.clan.networking) deploymentAddress;
       inherit (config.clanCore) secretsUploadDirectory;
     };

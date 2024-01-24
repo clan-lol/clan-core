@@ -3,9 +3,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..cmd import run
-from ..dirs import specific_groot_dir
+from ..dirs import machine_gcroot
 from ..errors import ClanError
 from ..machines.list import list_machines
+from ..machines.machines import Machine
 from ..nix import nix_build, nix_config, nix_eval, nix_metadata
 from ..vms.inspect import VmConfig, inspect_vm
 
@@ -29,23 +30,24 @@ def run_cmd(cmd: list[str]) -> str:
     return proc.stdout.strip()
 
 
-def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
+def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     config = nix_config()
     system = config["system"]
 
     # Check if the machine exists
     machines = list_machines(flake_url)
-    if flake_attr not in machines:
+    if machine_name not in machines:
         raise ClanError(
-            f"Machine {flake_attr} not found in {flake_url}. Available machines: {', '.join(machines)}"
+            f"Machine {machine_name} not found in {flake_url}. Available machines: {', '.join(machines)}"
         )
 
-    vm = inspect_vm(flake_url, flake_attr)
+    machine = Machine(machine_name, flake_url)
+    vm = inspect_vm(machine)
 
     # Get the cLAN name
     cmd = nix_eval(
         [
-            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanName'
+            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clanCore.clanName'
         ]
     )
     res = run_cmd(cmd)
@@ -54,7 +56,7 @@ def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
     # Get the clan icon path
     cmd = nix_eval(
         [
-            f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanIcon'
+            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clanCore.clanIcon'
         ]
     )
     res = run_cmd(cmd)
@@ -67,10 +69,9 @@ def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
 
         cmd = nix_build(
             [
-                f'{flake_url}#clanInternals.machines."{system}"."{flake_attr}".config.clanCore.clanIcon'
+                f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clanCore.clanIcon'
             ],
-            specific_groot_dir(clan_name=clan_name, flake_url=str(flake_url))
-            / "clanIcon",
+            machine_gcroot(clan_name=clan_name, flake_url=str(flake_url)) / "clanIcon",
         )
         run_cmd(cmd)
 
@@ -81,7 +82,7 @@ def inspect_flake(flake_url: str | Path, flake_attr: str) -> FlakeConfig:
         vm=vm,
         flake_url=flake_url,
         clan_name=clan_name,
-        flake_attr=flake_attr,
+        flake_attr=machine_name,
         nar_hash=meta["locked"]["narHash"],
         icon=icon_path,
         description=meta.get("description"),
@@ -102,7 +103,7 @@ def inspect_command(args: argparse.Namespace) -> None:
         flake=args.flake or Path.cwd(),
     )
     res = inspect_flake(
-        flake_url=inspect_options.flake, flake_attr=inspect_options.machine
+        flake_url=inspect_options.flake, machine_name=inspect_options.machine
     )
     print("cLAN name:", res.clan_name)
     print("Icon:", res.icon)
