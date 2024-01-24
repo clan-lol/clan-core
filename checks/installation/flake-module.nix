@@ -41,8 +41,9 @@ in
       dependencies = [
         self
         pkgs.stdenv.drvPath
-        self.nixosConfigurations.test_install_machine.config.system.build.toplevel
-        self.nixosConfigurations.test_install_machine.config.system.build.diskoScript
+        clan.clanInternals.machines.x86_64-linux.test_install_machine.config.system.build.toplevel
+        clan.clanInternals.machines.x86_64-linux.test_install_machine.config.system.build.diskoScript
+        clan.clanInternals.machines.x86_64-linux.test_install_machine.config.system.clan.deployment.file
         pkgs.nixos-anywhere
       ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
