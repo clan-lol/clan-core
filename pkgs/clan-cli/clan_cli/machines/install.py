@@ -1,4 +1,6 @@
 import argparse
+import importlib
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -8,10 +10,20 @@ from ..machines.machines import Machine
 from ..nix import nix_shell
 from ..secrets.generate import generate_secrets
 
+log = logging.getLogger(__name__)
+
 
 def install_nixos(machine: Machine, kexec: str | None = None) -> None:
+    log.info(f"deployment address1: {machine.deployment_info['deploymentAddress']}")
+    secrets_module = importlib.import_module(machine.secrets_module)
+    log.info(f"installing {machine.name}")
+    log.info(f"using secret store: {secrets_module.SecretStore}")
+    secret_store = secrets_module.SecretStore(machine=machine)
+
     h = machine.host
+    log.info(f"deployment address2: {machine.deployment_info['deploymentAddress']}")
     target_host = f"{h.user or 'root'}@{h.host}"
+    log.info(f"target host: {target_host}")
 
     flake_attr = h.meta.get("flake_attr", "")
 
@@ -19,18 +31,18 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
 
     with TemporaryDirectory() as tmpdir_:
         tmpdir = Path(tmpdir_)
-        upload_dir = machine.secrets_upload_directory
+        upload_dir_ = machine.secrets_upload_directory
 
-        if upload_dir.startswith("/"):
-            upload_dir = upload_dir[1:]
-        upload_dir = tmpdir / upload_dir
+        if upload_dir_.startswith("/"):
+            upload_dir_ = upload_dir_[1:]
+        upload_dir = tmpdir / upload_dir_
         upload_dir.mkdir(parents=True)
-        machine.run_upload_secrets(upload_dir)
+        secret_store.upload(upload_dir)
 
         cmd = [
             "nixos-anywhere",
             "-f",
-            f"{machine.flake_dir}#{flake_attr}",
+            f"{machine.flake}#{flake_attr}",
             "-t",
             "--no-reboot",
             "--extra-files",
@@ -64,8 +76,11 @@ def install_command(args: argparse.Namespace) -> None:
         target_host=args.target_host,
         kexec=args.kexec,
     )
-    machine = Machine(opts.machine, flake_dir=opts.flake)
-    machine.deployment_address = opts.target_host
+    machine = Machine(opts.machine, flake=opts.flake)
+    machine.get_deployment_info()
+    machine.deployment_info["deploymentAddress"] = opts.target_host
+    log.info(f"target host: {opts.target_host}")
+    log.info(f"deployment address: {machine.deployment_info['deploymentAddress']}")
 
     install_nixos(machine, kexec=opts.kexec)
 

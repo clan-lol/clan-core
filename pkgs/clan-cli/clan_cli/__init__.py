@@ -57,21 +57,15 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         default=[],
     )
 
-    def flake_path(arg: str) -> Path:
+    def flake_path(arg: str) -> str | Path:
         flake_dir = Path(arg).resolve()
-        if not flake_dir.exists():
-            raise argparse.ArgumentTypeError(
-                f"flake directory {flake_dir} does not exist"
-            )
-        if not flake_dir.is_dir():
-            raise argparse.ArgumentTypeError(
-                f"flake directory {flake_dir} is not a directory"
-            )
-        return flake_dir
+        if flake_dir.exists() and flake_dir.is_dir():
+            return flake_dir
+        return arg
 
     parser.add_argument(
         "--flake",
-        help="path to the flake where the clan resides in",
+        help="path to the flake where the clan resides in, can be a remote flake or local",
         default=get_clan_flake_toplevel(),
         type=flake_path,
     )

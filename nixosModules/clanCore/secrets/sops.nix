@@ -25,33 +25,7 @@ in
   config = lib.mkIf (config.clanCore.secretStore == "sops") {
     clanCore.secretsDirectory = "/run/secrets";
     clanCore.secretsPrefix = config.clanCore.machineName + "-";
-    system.clan = lib.mkIf (config.clanCore.secrets != { }) {
-
-      generateSecrets = pkgs.writeScript "generate-secrets" ''
-        #!${pkgs.python3}/bin/python
-        import json
-        import sys
-        from clan_cli.secrets.sops_generate import generate_secrets_from_nix
-        args = json.loads(${builtins.toJSON (builtins.toJSON {
-          machine_name = config.clanCore.machineName;
-          secret_submodules = lib.mapAttrs (_name: secret: {
-            secrets = builtins.attrNames secret.secrets;
-            facts = lib.mapAttrs (_: secret: secret.path) secret.facts;
-            generator = secret.generator.finalScript;
-          }) config.clanCore.secrets;
-        })})
-        generate_secrets_from_nix(**args)
-      '';
-      uploadSecrets = pkgs.writeScript "upload-secrets" ''
-        #!${pkgs.python3}/bin/python
-        import json
-        import sys
-        from clan_cli.secrets.sops_generate import upload_age_key_from_nix
-        # the second toJSON is needed to escape the string for the python
-        args = json.loads(${builtins.toJSON (builtins.toJSON { machine_name = config.clanCore.machineName; })})
-        upload_age_key_from_nix(**args)
-      '';
-    };
+    system.clan.secretsModule = "clan_cli.secrets.modules.sops";
     sops.secrets = builtins.mapAttrs
       (name: _: {
         sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";

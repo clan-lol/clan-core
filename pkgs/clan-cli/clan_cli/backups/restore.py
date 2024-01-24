@@ -11,12 +11,8 @@ from .list import Backup, list_backups
 def restore_service(
     machine: Machine, backup: Backup, provider: str, service: str
 ) -> None:
-    backup_metadata = json.loads(
-        machine.eval_nix(f"nixosConfigurations.{machine.name}.config.clanCore.backups")
-    )
-    backup_folders = json.loads(
-        machine.eval_nix(f"nixosConfigurations.{machine.name}.config.clanCore.state")
-    )
+    backup_metadata = json.loads(machine.eval_nix("config.clanCore.backups"))
+    backup_folders = json.loads(machine.eval_nix("config.clanCore.state"))
     folders = backup_folders[service]["folders"]
     env = os.environ.copy()
     env["ARCHIVE_ID"] = backup.archive_id
@@ -77,11 +73,7 @@ def restore_backup(
     if service is None:
         for backup in backups:
             if backup.archive_id == archive_id:
-                backup_folders = json.loads(
-                    machine.eval_nix(
-                        f"nixosConfigurations.{machine.name}.config.clanCore.state"
-                    )
-                )
+                backup_folders = json.loads(machine.eval_nix("config.clanCore.state"))
                 for _service in backup_folders:
                     restore_service(machine, backup, provider, _service)
     else:
@@ -91,7 +83,7 @@ def restore_backup(
 
 
 def restore_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake_dir=args.flake)
+    machine = Machine(name=args.machine, flake=args.flake)
     backups = list_backups(machine=machine, provider=args.provider)
     restore_backup(
         machine=machine,

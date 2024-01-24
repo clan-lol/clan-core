@@ -6,7 +6,6 @@
     description = ''
       method to store secrets
       custom can be used to define a custom secret store.
-      one would have to define system.clan.generateSecrets and system.clan.uploadSecrets
     '';
   };
 
@@ -71,6 +70,7 @@
                   internal = true;
                   default = ''
                     export PATH="${lib.makeBinPath config.path}"
+                    set -efu -o pipefail
                     ${config.script}
                   '';
                 };
