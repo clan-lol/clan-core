@@ -41,28 +41,6 @@ def user_config_dir() -> Path:
         return Path(os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config")))
 
 
-def user_data_dir() -> Path:
-    if sys.platform == "win32":
-        return Path(
-            os.getenv("LOCALAPPDATA", os.path.expanduser("~\\AppData\\Local\\"))
-        )
-    elif sys.platform == "darwin":
-        return Path(os.path.expanduser("~/Library/Application Support/"))
-    else:
-        return Path(os.getenv("XDG_DATA_HOME", os.path.expanduser("~/.local/share")))
-
-
-def user_cache_dir() -> Path:
-    if sys.platform == "win32":
-        return Path(
-            os.getenv("LOCALAPPDATA", os.path.expanduser("~\\AppData\\Local\\"))
-        )
-    elif sys.platform == "darwin":
-        return Path(os.path.expanduser("~/Library/Caches/"))
-    else:
-        return Path(os.getenv("XDG_CACHE_HOME", os.path.expanduser("~/.cache")))
-
-
 def user_gcroot_dir() -> Path:
     p = user_config_dir() / "clan" / "gcroots"
     p.mkdir(parents=True, exist_ok=True)
@@ -83,7 +61,7 @@ def user_history_file() -> Path:
 
 def vm_state_dir(clan_name: str, flake_url: str, vm_name: str) -> Path:
     clan_key = clan_key_safe(clan_name, flake_url)
-    return user_data_dir() / "clan" / "vmstate" / clan_key / vm_name
+    return user_config_dir() / "clan" / "vmstate" / clan_key / vm_name
 
 
 def machines_dir(flake_dir: Path) -> Path:
