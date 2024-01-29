@@ -1,9 +1,8 @@
 { lib, ... }:
 {
   # defaults
-  config.clanCore.state.HOME.folders = [
-    "/home"
-  ];
+  # FIXME: currently broken, will be fixed soon
+  #config.clanCore.state.HOME.folders = [ "/home" ];
 
   # interface
   options.clanCore.state = lib.mkOption {
