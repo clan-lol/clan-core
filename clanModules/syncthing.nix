@@ -62,6 +62,10 @@
         }
       ];
 
+      # Activates inofify compatibilty on syncthing
+      boot.kernel.sysctl."fs.inotify.max_user_watches" = 524288;
+
+
       services.syncthing = {
         enable = true;
         configDir = "/var/lib/syncthing";
