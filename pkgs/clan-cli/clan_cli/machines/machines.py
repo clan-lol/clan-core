@@ -35,6 +35,7 @@ class Machine:
         self.deployment_info = json.loads(
             self.build_nix("config.system.clan.deployment.file").read_text()
         )
+        print(f"self_deployment_info: {self.deployment_info}")
 
     @property
     def deployment_address(self) -> str:
@@ -46,6 +47,7 @@ class Machine:
     def secrets_module(self) -> str:
         if not hasattr(self, "deployment_info"):
             self.get_deployment_info()
+        print(f"self_deployment_info2: {self.deployment_info}")
         return self.deployment_info["secretsModule"]
 
     @property
@@ -77,7 +79,8 @@ class Machine:
             return Path(self.flake_path)
 
         print(nix_eval([f"{self.flake}"]))
-        self.flake_path = run(nix_eval([f"{self.flake}"])).stdout.strip()
+        print(f"self.flake:{self.flake}. Type: {type(self.flake)}")
+        self.flake_path = run(nix_eval([f"{self.flake}  "])).stdout.strip()
         return Path(self.flake_path)
 
     @property
@@ -95,6 +98,7 @@ class Machine:
         system = config["system"]
 
         attr = f'clanInternals.machines."{system}".{self.name}.{attr}'
+        print(f"attr: {attr}")
 
         if attr in self.eval_cache and not refresh:
             return self.eval_cache[attr]
@@ -107,8 +111,10 @@ class Machine:
         else:
             flake = self.flake
 
-        log.info(f"evaluating {flake}#{attr}")
-        output = run(nix_eval([f"{flake}#{attr}"])).stdout.strip()
+        print(f"evaluating {flake}#{attr}")
+        cmd = nix_eval([f"{flake}#{attr}"])
+        print(f"cmd: {cmd}")
+        output = run(cmd).stdout.strip()
         self.eval_cache[attr] = output
         return output
 
