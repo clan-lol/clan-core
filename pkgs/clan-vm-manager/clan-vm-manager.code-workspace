@@ -19,7 +19,7 @@
 			"**/.mypy_cache": true,
 			"**/.reports": true,
 			"**/.ruff_cache": true,
-			"**/result": true,
+			"**/result/**": true,
 			"/nix/store/**": true
 		},
 		"search.exclude": {
@@ -29,6 +29,7 @@
 			"**/.mypy_cache": true,
 			"**/.reports": true,
 			"**/.ruff_cache": true,
+			"**/result/": true,
 			"/nix/store/**": true
 		},
 		"files.autoSave": "off"

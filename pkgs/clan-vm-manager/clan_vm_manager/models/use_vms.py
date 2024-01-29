@@ -21,13 +21,17 @@ gi.require_version("Gtk", "4.0")
 import threading
 
 from gi.repository import Gio, GLib, GObject
+import logging
+import multiprocessing as mp
+from clan_cli.machines.machines import Machine
+
+log = logging.getLogger(__name__)
 
 
 class VM(GObject.Object):
     # Define a custom signal with the name "vm_stopped" and a string argument for the message
     __gsignals__: ClassVar = {
-        "vm_started": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object]),
-        "vm_stopped": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object]),
+        "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object]),
     }
 
     def __init__(
@@ -35,23 +39,28 @@ class VM(GObject.Object):
         icon: Path,
         status: VMStatus,
         data: HistoryEntry,
-        process: MPProcess | None = None,
     ) -> None:
         super().__init__()
         self.data = data
-        self.process = process
+        self.process = MPProcess("dummy", mp.Process(), Path("./dummy"))
+        self._watcher_id: int = 0
         self.status = status
+        self._last_liveness: bool = False
         self.log_dir = tempfile.TemporaryDirectory(
             prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
         )
         self._finalizer = weakref.finalize(self, self.stop)
 
-    def start(self) -> None:
-        if self.process is not None:
-            show_error_dialog(ClanError("VM is already running"))
+    def __start(self) -> None:
+        if self.is_running():
+            log.warn("VM is already running")
             return
+        machine = Machine(
+            name=self.data.flake.flake_attr,
+            flake=self.data.flake.flake_url,
+        )
         vm = vms.run.inspect_vm(
-            flake_url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
+            machine
         )
         self.process = spawn(
             on_except=None,
@@ -59,39 +68,51 @@ class VM(GObject.Object):
             func=vms.run.run_vm,
             vm=vm,
         )
-        self.emit("vm_started", self)
-        GLib.timeout_add(50, self.vm_stopped_task)
 
-    def start_async(self) -> None:
-        threading.Thread(target=self.start).start()
+    def start(self) -> None:
+        if self.is_running():
+            log.warn("VM is already running")
+            return
 
-    def vm_stopped_task(self) -> bool:
-        if not self.is_running():
-            self.emit("vm_stopped", self)
-            return GLib.SOURCE_REMOVE
+        threading.Thread(target=self.__start).start()
+
+        if self._watcher_id == 0:
+            # Every 50ms check if the VM is still running
+            self._watcher_id = GLib.timeout_add(50, self._vm_watcher_task)
+
+            if self._watcher_id == 0:
+                log.error("Failed to add watcher")
+                raise ClanError("Failed to add watcher")
+
+    def _vm_watcher_task(self) -> bool:
+        if self.is_running() != self._last_liveness:
+            self.emit("vm_status_changed", self)
+            prev_liveness = self._last_liveness
+            self._last_liveness = self.is_running()
+
+            # If the VM was running and now it is not, remove the watcher
+            if prev_liveness == True and not self.is_running():
+                return GLib.SOURCE_REMOVE
+
         return GLib.SOURCE_CONTINUE
 
     def is_running(self) -> bool:
-        if self.process is not None:
-            return self.process.proc.is_alive()
-        return False
+        return self.process.proc.is_alive()
 
     def get_id(self) -> str:
         return f"{self.data.flake.flake_url}#{self.data.flake.flake_attr}"
 
-    def stop_async(self) -> None:
-        threading.Thread(target=self.stop).start()
-
     def stop(self) -> None:
-        if self.process is None:
-            print("VM is already stopped", file=sys.stderr)
+        log.info("Stopping VM")
+        if not self.is_running():
+            log.error("VM already stopped")
             return
 
         self.process.kill_group()
-        self.process = None
 
     def read_log(self) -> str:
-        if self.process is None:
+        if not self.process.out_file.exists():
+            log.error(f"Log file {self.process.out_file} does not exist")
             return ""
         return self.process.out_file.read_text()
 
@@ -136,14 +157,6 @@ class VMS:
                     filtered_list.append(vm)
         else:
             self.refresh()
-
-    def handle_vm_stopped(self, func: Callable[[VM, VM], None]) -> None:
-        for vm in self.list_store:
-            vm.connect("vm_stopped", func)
-
-    def handle_vm_started(self, func: Callable[[VM, VM], None]) -> None:
-        for vm in self.list_store:
-            vm.connect("vm_started", func)
 
     def get_running_vms(self) -> list[VM]:
         return list(filter(lambda vm: vm.is_running(), self.list_store))

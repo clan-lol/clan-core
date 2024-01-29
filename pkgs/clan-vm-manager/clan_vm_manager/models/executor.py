@@ -18,7 +18,6 @@ from collections.abc import Callable
 # Kill the new process and all its children by sending a SIGTERM signal to the process group
 def _kill_group(proc: mp.Process) -> None:
     pid = proc.pid
-    assert pid is not None
     if proc.is_alive():
         os.killpg(pid, signal.SIGTERM)
     else:
