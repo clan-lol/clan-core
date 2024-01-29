@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from functools import partial
+
 import gi
 from clan_cli.history.add import HistoryEntry
 
@@ -7,7 +8,7 @@ from clan_vm_manager.models.use_join import Join, JoinValue
 from clan_vm_manager.models.use_views import Views
 
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GObject, Gtk
+from gi.repository import Adw, Gio, GObject, Gtk
 
 from clan_vm_manager.models.use_vms import VM, VMS
 
@@ -77,7 +78,7 @@ class ClanList(Gtk.Box):
             boxed_list.remove_css_class("no-shadow")
         flake = vm.data.flake
         row = Adw.ActionRow()
-    
+
         # Title
         row.set_title(flake.clan_name)
 
@@ -144,21 +145,17 @@ class ClanList(Gtk.Box):
 
         return row
 
-
     def show_error_dialog(self, error: str) -> None:
         p = Views.use().main_window
 
         # app = Gio.Application.get_default()
         # p = Gtk.Application.get_active_window(app)
 
-        dialog = Adw.MessageDialog(
-            heading="Error"
-        )
+        dialog = Adw.MessageDialog(heading="Error")
         dialog.add_response("ok", "ok")
         dialog.set_body(error)
-        dialog.set_transient_for(p) # set the parent window of the dialog
+        dialog.set_transient_for(p)  # set the parent window of the dialog
         dialog.choose()
-
 
     def on_trust_clicked(self, item: JoinValue, widget: Gtk.Widget) -> None:
         def on_join(_history: list[HistoryEntry]) -> None:
@@ -189,14 +186,9 @@ class ClanList(Gtk.Box):
             row.set_state(True)
             vm.stop()
 
-
-
     def vm_status_changed(self, switch: Gtk.Switch, vm: VM, _vm: VM) -> None:
         switch.set_active(vm.is_running())
         switch.set_state(vm.is_running())
 
-        if vm.process and vm.process.proc.exitcode != 0:
-            print(f"====== {vm.is_running()}")
+        if not vm.is_running() and vm.process.proc.exitcode != 0:
             self.show_error_dialog(vm.read_log())
-
-
