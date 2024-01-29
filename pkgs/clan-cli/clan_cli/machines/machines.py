@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from ..cmd import run
-from ..nix import nix_build, nix_config, nix_eval
+from ..nix import nix_build, nix_config, nix_eval, nix_metadata
 from ..ssh import Host, parse_deployment_address
 
 log = logging.getLogger(__name__)
@@ -78,9 +78,7 @@ class Machine:
         if hasattr(self, "flake_path"):
             return Path(self.flake_path)
 
-        print(nix_eval([f"{self.flake}"]))
-        print(f"self.flake:{self.flake}. Type: {type(self.flake)}")
-        self.flake_path = run(nix_eval([f"{self.flake}  "])).stdout.strip()
+        self.flake_path = nix_metadata(self.flake)["path"]
         return Path(self.flake_path)
 
     @property
