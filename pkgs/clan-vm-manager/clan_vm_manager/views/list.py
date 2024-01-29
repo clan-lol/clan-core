@@ -8,7 +8,7 @@ from clan_vm_manager.models.use_join import Join, JoinValue
 from clan_vm_manager.models.use_views import Views
 
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GObject, Gtk
+from gi.repository import Adw, Gio, GObject, Gtk
 
 from clan_vm_manager.models.use_vms import VM, VMS
 
@@ -45,10 +45,6 @@ class ClanList(Gtk.Box):
         vms = VMS.use()
         join = Join.use()
 
-        # TODO: Move this up to create_widget and connect every VM signal to its corresponding switch
-        vms.handle_vm_stopped(self.stopped_vm)
-        vms.handle_vm_started(self.started_vm)
-
         self.join_boxed_list = create_boxed_list(
             model=join.list_store, render_row=self.render_join_row
         )
@@ -77,10 +73,10 @@ class ClanList(Gtk.Box):
         if not VMS.use().list_store.get_n_items():
             self.vm_boxed_list.add_css_class("no-shadow")
 
-    def render_vm_row(self, boxed_list: Gtk.ListBox, item: VM) -> Gtk.Widget:
+    def render_vm_row(self, boxed_list: Gtk.ListBox, vm: VM) -> Gtk.Widget:
         if boxed_list.has_css_class("no-shadow"):
             boxed_list.remove_css_class("no-shadow")
-        flake = item.data.flake
+        flake = vm.data.flake
         row = Adw.ActionRow()
 
         # Title
@@ -90,16 +86,16 @@ class ClanList(Gtk.Box):
         row.set_title_selectable(True)
 
         # Subtitle
-        row.set_subtitle(item.get_id())
+        row.set_subtitle(vm.get_id())
         row.set_subtitle_lines(1)
 
-        # Avatar
-        avatar = Adw.Avatar()
-        avatar.set_custom_image(Gdk.Texture.new_from_filename(flake.icon))
-        avatar.set_text(flake.clan_name + " " + flake.flake_attr)
-        avatar.set_show_initials(True)
-        avatar.set_size(50)
-        row.add_prefix(avatar)
+        # # Avatar
+        # avatar = Adw.Avatar()
+        # avatar.set_custom_image(Gdk.Texture.new_from_filename(flake.icon))
+        # avatar.set_text(flake.clan_name + " " + flake.flake_attr)
+        # avatar.set_show_initials(True)
+        # avatar.set_size(50)
+        # row.add_prefix(avatar)
 
         # Switch
         switch = Gtk.Switch()
@@ -107,7 +103,8 @@ class ClanList(Gtk.Box):
         box.set_valign(Gtk.Align.CENTER)
         box.append(switch)
 
-        switch.connect("notify::active", partial(self.on_row_toggle, item))
+        switch.connect("notify::active", partial(self.on_row_toggle, vm))
+        vm.connect("vm_status_changed", partial(self.vm_status_changed, switch))
         row.add_suffix(box)
 
         return row
@@ -148,22 +145,17 @@ class ClanList(Gtk.Box):
 
         return row
 
-    def started_vm(self, vm: VM, _vm: VM) -> None:
-        print("VM started", vm.data.flake.flake_attr)
-
-    def stopped_vm(self, vm: VM, _vm: VM) -> None:
-        print("VM stopped", vm.data.flake.flake_attr)
-
     def show_error_dialog(self, error: str) -> None:
-        dialog = Gtk.MessageDialog(
-            parent=self.get_toplevel(),
-            modal=True,
-            message_type=Gtk.MessageType.ERROR,
-            buttons=Gtk.ButtonsType.OK,
-            text=error,
-        )
-        dialog.run()
-        dialog.destroy()
+        p = Views.use().main_window
+
+        # app = Gio.Application.get_default()
+        # p = Gtk.Application.get_active_window(app)
+
+        dialog = Adw.MessageDialog(heading="Error")
+        dialog.add_response("ok", "ok")
+        dialog.set_body(error)
+        dialog.set_transient_for(p)  # set the parent window of the dialog
+        dialog.choose()
 
     def on_trust_clicked(self, item: JoinValue, widget: Gtk.Widget) -> None:
         def on_join(_history: list[HistoryEntry]) -> None:
@@ -187,7 +179,16 @@ class ClanList(Gtk.Box):
         print("Toggled", vm.data.flake.flake_attr, "active:", row.get_active())
 
         if row.get_active():
-            vm.start_async()
+            row.set_state(False)
+            vm.start()
 
         if not row.get_active():
-            vm.stop_async()
+            row.set_state(True)
+            vm.stop()
+
+    def vm_status_changed(self, switch: Gtk.Switch, vm: VM, _vm: VM) -> None:
+        switch.set_active(vm.is_running())
+        switch.set_state(vm.is_running())
+
+        if not vm.is_running() and vm.process.proc.exitcode != 0:
+            self.show_error_dialog(vm.read_log())
