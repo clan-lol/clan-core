@@ -1,7 +1,5 @@
-import sys
 import tempfile
 import weakref
-from collections.abc import Callable
 from pathlib import Path
 from typing import Any, ClassVar
 
@@ -18,12 +16,12 @@ from clan_vm_manager.models.interfaces import VMStatus
 from .executor import MPProcess, spawn
 
 gi.require_version("Gtk", "4.0")
-import threading
-
-from gi.repository import Gio, GLib, GObject
 import logging
 import multiprocessing as mp
+import threading
+
 from clan_cli.machines.machines import Machine
+from gi.repository import Gio, GLib, GObject
 
 log = logging.getLogger(__name__)
 
@@ -57,11 +55,9 @@ class VM(GObject.Object):
             return
         machine = Machine(
             name=self.data.flake.flake_attr,
-            flake=self.data.flake.flake_url,
+            flake=Path(self.data.flake.flake_url),
         )
-        vm = vms.run.inspect_vm(
-            machine
-        )
+        vm = vms.run.inspect_vm(machine)
         self.process = spawn(
             on_except=None,
             log_dir=Path(str(self.log_dir.name)),
@@ -91,7 +87,7 @@ class VM(GObject.Object):
             self._last_liveness = self.is_running()
 
             # If the VM was running and now it is not, remove the watcher
-            if prev_liveness == True and not self.is_running():
+            if prev_liveness and not self.is_running():
                 return GLib.SOURCE_REMOVE
 
         return GLib.SOURCE_CONTINUE
