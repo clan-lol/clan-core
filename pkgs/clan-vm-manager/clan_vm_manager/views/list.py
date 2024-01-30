@@ -8,7 +8,7 @@ from clan_vm_manager.models.use_join import Join, JoinValue
 from clan_vm_manager.models.use_views import Views
 
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GObject, Gtk
+from gi.repository import Adw, Gdk, Gio, GObject, Gtk
 
 from clan_vm_manager.models.use_vms import VM, VMS
 
@@ -90,12 +90,12 @@ class ClanList(Gtk.Box):
         row.set_subtitle_lines(1)
 
         # # Avatar
-        # avatar = Adw.Avatar()
-        # avatar.set_custom_image(Gdk.Texture.new_from_filename(flake.icon))
-        # avatar.set_text(flake.clan_name + " " + flake.flake_attr)
-        # avatar.set_show_initials(True)
-        # avatar.set_size(50)
-        # row.add_prefix(avatar)
+        avatar = Adw.Avatar()
+        avatar.set_custom_image(Gdk.Texture.new_from_filename(flake.icon))
+        avatar.set_text(flake.clan_name + " " + flake.flake_attr)
+        avatar.set_show_initials(True)
+        avatar.set_size(50)
+        row.add_prefix(avatar)
 
         # Switch
         switch = Gtk.Switch()

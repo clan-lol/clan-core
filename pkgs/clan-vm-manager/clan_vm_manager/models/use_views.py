@@ -31,7 +31,6 @@ class Views:
     @classmethod
     def use(cls: Any) -> "Views":
         if cls._instance is None:
-            print("Creating new instance")
             cls._instance = cls.__new__(cls)
             cls.view = Adw.ViewStack()
 
