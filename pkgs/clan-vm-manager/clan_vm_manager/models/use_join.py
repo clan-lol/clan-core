@@ -40,7 +40,6 @@ class Join:
     @classmethod
     def use(cls: Any) -> "Join":
         if cls._instance is None:
-            print("Creating new instance")
             cls._instance = cls.__new__(cls)
             cls.list_store = Gio.ListStore.new(JoinValue)
 

@@ -136,7 +136,6 @@ class VMS:
     @classmethod
     def use(cls: Any) -> "VMS":
         if cls._instance is None:
-            print("Creating new instance")
             cls._instance = cls.__new__(cls)
             cls.list_store = Gio.ListStore.new(VM)
 
