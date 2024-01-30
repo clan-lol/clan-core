@@ -3,6 +3,7 @@ import argparse
 import dataclasses
 import datetime
 import json
+import logging
 from typing import Any
 
 from clan_cli.flakes.inspect import FlakeConfig, inspect_flake
@@ -11,6 +12,8 @@ from ..clan_uri import ClanURI
 from ..dirs import user_history_file
 from ..errors import ClanError
 from ..locked_open import read_history_file, write_history_file
+
+log = logging.getLogger(__name__)
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
