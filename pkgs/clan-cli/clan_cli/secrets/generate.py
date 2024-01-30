@@ -56,6 +56,8 @@ def generate_secrets(machine: Machine) -> None:
                         "--bind", str(facts_dir), str(facts_dir),
                         "--bind", str(secrets_dir), str(secrets_dir),
                         "--unshare-all",
+                        "--unshare-user",
+                        "--uid", "1000",
                         "--",
                         "bash", "-c", machine.secrets_data[service]["generator"]
                     ],
