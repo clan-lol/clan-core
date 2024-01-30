@@ -33,7 +33,7 @@
     systemd.services.hidden-ssh-announce = {
       description = "announce hidden ssh";
       after = [ "tor.service" "network-online.target" ];
-      wants = [ "tor.service" ];
+      wants = [ "tor.service" "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         # ${pkgs.tor}/bin/torify
