@@ -72,13 +72,12 @@ class VM(GObject.Object):
 
         threading.Thread(target=self.__start).start()
 
-        if self._watcher_id == 0:
-            # Every 50ms check if the VM is still running
-            self._watcher_id = GLib.timeout_add(50, self._vm_watcher_task)
+        # Every 50ms check if the VM is still running
+        self._watcher_id = GLib.timeout_add(50, self._vm_watcher_task)
 
-            if self._watcher_id == 0:
-                log.error("Failed to add watcher")
-                raise ClanError("Failed to add watcher")
+        if self._watcher_id == 0:
+            log.error("Failed to add watcher")
+            raise ClanError("Failed to add watcher")
 
     def _vm_watcher_task(self) -> bool:
         if self.is_running() != self._last_liveness:
@@ -88,6 +87,7 @@ class VM(GObject.Object):
 
             # If the VM was running and now it is not, remove the watcher
             if prev_liveness and not self.is_running():
+                print("===>Removing watcher")
                 return GLib.SOURCE_REMOVE
 
         return GLib.SOURCE_CONTINUE
