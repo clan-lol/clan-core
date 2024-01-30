@@ -31,7 +31,6 @@
 , mypy
 , rope
 , clan-core-path
-, writeShellScriptBin
 }:
 let
 
@@ -40,8 +39,6 @@ let
   ];
 
   pytestDependencies = runtimeDependencies ++ dependencies ++ [
-
-    #schemathesis # optional for http fuzzing
     pytest
     pytest-cov
     pytest-subprocess
