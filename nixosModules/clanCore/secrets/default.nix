@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 {
   options.clanCore.secretStore = lib.mkOption {
     type = lib.types.enum [ "sops" "password-store" "custom" ];
@@ -69,8 +69,18 @@
                   readOnly = true;
                   internal = true;
                   default = ''
-                    export PATH="${lib.makeBinPath config.path}"
-                    set -efu -o pipefail
+                    set -eu -o pipefail
+
+                    export PATH="${lib.makeBinPath config.path}:${pkgs.coreutils}/bin"
+
+                    # prepare sandbox user
+                    mkdir -p /etc
+                    cp ${pkgs.runCommand "fake-etc" {} ''
+                      export PATH="${pkgs.coreutils}/bin"
+                      mkdir -p $out
+                      cp /etc/* $out/
+                    ''}/* /etc/
+
                     ${config.script}
                   '';
                 };

@@ -28,11 +28,11 @@ class SecretStore:
         )
         add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)
 
-    def set(self, _service: str, name: str, value: str) -> None:
+    def set(self, _service: str, name: str, value: bytes) -> None:
         encrypt_secret(
             self.machine.flake_dir,
             sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}",
-            value,
+            value.decode(),
             add_machines=[self.machine.name],
         )
 
