@@ -43,14 +43,14 @@ def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
             return b""
 
         ret = handle_fd(process.stdout)
-        if log in [Log.STDOUT, Log.BOTH]:
+        if ret and log in [Log.STDOUT, Log.BOTH]:
             sys.stdout.buffer.write(ret)
             sys.stdout.flush()
 
         stdout_buf += ret
         ret = handle_fd(process.stderr)
 
-        if log in [Log.STDERR, Log.BOTH]:
+        if ret and log in [Log.STDERR, Log.BOTH]:
             sys.stderr.buffer.write(ret)
             sys.stderr.flush()
         stderr_buf += ret

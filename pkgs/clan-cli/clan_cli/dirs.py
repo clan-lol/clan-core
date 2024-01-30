@@ -86,7 +86,3 @@ def nixpkgs_flake() -> Path:
 
 def nixpkgs_source() -> Path:
     return (module_root() / "nixpkgs" / "path").resolve()
-
-
-def unfree_nixpkgs() -> Path:
-    return module_root() / "nixpkgs" / "unfree"
