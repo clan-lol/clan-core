@@ -31,6 +31,12 @@ class Machine:
         if deployment_info is not None:
             self.deployment_info = deployment_info
 
+    def __str__(self) -> str:
+        return f"Machine(name={self.name}, flake={self.flake})"
+
+    def __repr__(self) -> str:
+        return str(self)
+
     def get_deployment_info(self) -> None:
         self.deployment_info = json.loads(
             self.build_nix("config.system.clan.deployment.file").read_text()
