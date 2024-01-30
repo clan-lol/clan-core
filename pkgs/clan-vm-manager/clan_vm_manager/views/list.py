@@ -189,9 +189,9 @@ class ClanList(Gtk.Box):
     def vm_status_changed(self, switch: Gtk.Switch, vm: VM, _vm: VM) -> None:
         switch.set_active(vm.is_running())
         switch.set_state(vm.is_running())
-        print("====> Set switch to", vm.is_running())
         exitc = vm.process.proc.exitcode
-        if not vm.is_running() and exitc != 0 and exitc != -15:
+        print("VM exited with code:", exitc)
+        if not vm.is_running() and exitc != 0:
             print("VM exited with error. Exitcode:", exitc)
             print(vm.read_log())
-            self.show_error_dialog(vm.read_log())
+            # self.show_error_dialog(vm.read_log())
