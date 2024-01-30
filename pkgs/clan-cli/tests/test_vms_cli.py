@@ -2,7 +2,9 @@ import base64
 import json
 import os
 import socket
+import sys
 import threading
+import traceback
 from pathlib import Path
 from time import sleep
 from typing import TYPE_CHECKING
@@ -57,7 +59,7 @@ class QgaSession:
         )
 
     # run, wait for result, return exitcode and output
-    def run(self, cmd: str) -> tuple[int, str]:
+    def run(self, cmd: str) -> tuple[int, str, str]:
         self.exec_cmd(cmd)
         result_pid = self.get_response()
         pid = result_pid["return"]["pid"]
@@ -80,19 +82,17 @@ class QgaSession:
             sleep(0.1)
 
         exitcode = result["return"]["exitcode"]
-        if exitcode == 0:
-            out = (
-                ""
-                if "out-data" not in result["return"]
-                else base64.b64decode(result["return"]["out-data"]).decode("utf-8")
-            )
-        else:
-            out = (
-                ""
-                if "err-data" not in result["return"]
-                else base64.b64decode(result["return"]["err-data"]).decode("utf-8")
-            )
-        return exitcode, out
+        stdout = (
+            ""
+            if "out-data" not in result["return"]
+            else base64.b64decode(result["return"]["out-data"]).decode("utf-8")
+        )
+        stderr = (
+            ""
+            if "err-data" not in result["return"]
+            else base64.b64decode(result["return"]["err-data"]).decode("utf-8")
+        )
+        return exitcode, stdout, stderr
 
 
 @pytest.mark.impure
@@ -150,9 +150,9 @@ def test_vm_persistence(
                         my_state=dict(
                             folders=[
                                 # to be owned by root
-                                "/var/my-state"
+                                "/var/my-state",
                                 # to be owned by user 'test'
-                                "/var/user-state"
+                                "/var/user-state",
                             ]
                         )
                     )
@@ -196,7 +196,7 @@ def test_vm_persistence(
                                 if [ ! -f /var/my-state/rebooting ]; then
                                     echo "Rebooting the machine"
                                     touch /var/my-state/rebooting
-                                    reboot
+                                    poweroff
                                 else
                                     touch /var/my-state/rebooted
                                 fi
@@ -216,12 +216,10 @@ def test_vm_persistence(
                                 # ensure test file is owned by test
                                 elif [ "$(stat -c '%U' /var/my-state/test)" != "test" ]; then
                                     echo "state file /var/my-state/test is not owned by user test" > /var/my-state/error
-                                fi
-
                                 # ensure /var/user-state is owned by test
-                                # if [ "$(stat -c '%U' /var/user-state)" != "test" ]; then
-                                #     echo "state folder /var/user-state is not owned by user test" > /var/my-state/error
-                                # fi
+                                elif [ "$(stat -c '%U' /var/user-state)" != "test" ]; then
+                                    echo "state folder /var/user-state is not owned by user test" > /var/my-state/error
+                                fi
 
                             """,
                             serviceConfig=dict(
@@ -234,7 +232,10 @@ def test_vm_persistence(
                             wantedBy=["multi-user.target"],
                             after=["read_after_reboot.service"],
                             script="""
-                                sleep 5
+                                while [ ! -f /var/my-state/poweroff ]; do
+                                  sleep 0.1
+                                done
+                                sleep 0.1
                                 poweroff
                             """,
                         ),
@@ -246,42 +247,96 @@ def test_vm_persistence(
     )
     monkeypatch.chdir(flake.path)
 
+    state_dir = vm_state_dir("_test_vm_persistence", str(flake.path), "my_machine")
+    socket_file = state_dir / "qga.sock"
+
+    # wait until socket file exists
+    def connect() -> QgaSession:
+        while True:
+            if (state_dir / "qga.sock").exists():
+                break
+            sleep(0.1)
+        return QgaSession(os.path.realpath(socket_file))
+
     # run the machine in a separate thread
     def run() -> None:
-        Cli().run(["vms", "run", "my_machine"])
+        try:
+            Cli().run(["vms", "run", "my_machine"])
+        except Exception:
+            # print exception details
+            print(traceback.format_exc())
+            print(sys.exc_info()[2])
 
     t = threading.Thread(target=run, name="run")
     t.daemon = True
     t.start()
 
-    state_dir = vm_state_dir("_test_vm_persistence", str(flake.path), "my_machine")
-
-    # wait until socket file exists
+    # wait for socket to be up
+    Path("/tmp/log").write_text(f"wait for socket to be up: {socket_file!s}")
     while True:
-        if (state_dir / "qga.sock").exists():
+        if socket_file.exists():
             break
         sleep(0.1)
-    qga = QgaSession(os.path.realpath(str(state_dir / "qga.sock")))
-    # wait for the machine to reboot
+
+    # wait for socket to be down
+    Path("/tmp/log").write_text("wait for socket to be down")
+    while socket_file.exists():
+        sleep(0.1)
+    Path("/tmp/log").write_text("socket is down")
+
+    # start vm again
+    t = threading.Thread(target=run, name="run")
+    t.daemon = True
+    t.start()
+
+    # wait for the socket to be up
+    Path("/tmp/log").write_text("wait for socket to be up second time")
     while True:
-        try:
-            # this might crash as the operation is not atomic
-            exitcode, out = qga.run("cat /var/my-state/rebooted")
-            if exitcode == 0:
-                break
-        except Exception:
-            pass
-        finally:
-            sleep(0.1)
+        if socket_file.exists():
+            break
+        sleep(0.1)
 
-    # ensure that /etc get persisted (required to persist user IDs)
-    exitcode, out = qga.run("ls /vmstate/.rw-etc/upper")
-    assert exitcode == 0, out
+    # connect second time
+    Path("/tmp/log").write_text("connecting")
+    qga = connect()
 
-    exitcode, out = qga.run("cat /var/my-state/test")
-    assert exitcode == 0, out
+    # Path("/tmp/log").write_text("wait for reboot")
+    def wait_cmd_succeed(cmd: str) -> QgaSession:
+        while True:
+            try:
+                # this might crash as the operation is not atomic
+                exitcode, out, err = qga.run(cmd)
+                if exitcode == 0:
+                    break
+            except Exception:
+                pass
+            finally:
+                sleep(0.1)
+        return qga
+
+    Path("/tmp/log").write_text("trying echo hello")
+    qga = wait_cmd_succeed("echo hello")
+
+    # sleep(9999)
+
+    # ensure that either /var/lib/nixos or /etc gets persisted
+    # (depending on if system.etc.overlay.enable is set or not)
+    exitcode, out, err = qga.run(
+        "ls /vmstate/var/lib/nixos/gid-map || ls /vmstate/.rw-etc/upper"
+    )
+    assert exitcode == 0, err
+
+    exitcode, out, err = qga.run("cat /var/my-state/test")
+    assert exitcode == 0, err
     assert out == "dream2nix\n", out
 
     # check for errors
-    exitcode, out = qga.run("cat /var/my-state/error")
+    exitcode, out, err = qga.run("cat /var/my-state/error")
     assert exitcode == 1, out
+
+    # check all systemd services are OK
+    exitcode, out, err = qga.run(
+        "systemctl --failed | tee /tmp/yolo | grep -q '0 loaded units listed' || ( cat /tmp/yolo && false )"
+    )
+    print(out)
+    assert exitcode == 0, out

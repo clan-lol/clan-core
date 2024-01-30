@@ -4,6 +4,11 @@ import importlib
 import json
 import logging
 import os
+import random
+import socket
+import subprocess
+import time
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -89,7 +94,7 @@ def qemu_command(
     state_img: Path,
     qmp_socket_file: Path,
     qga_socket_file: Path,
-) -> list[str]:
+) -> QemuCommand:
     kernel_cmdline = [
         (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
         f'init={nixos_config["toplevel"]}/init',
@@ -304,18 +309,26 @@ def run_vm(
         #   in the state_dir.
         # The reason is, qemu has a length limit of 108 bytes for the qmp socket
         #   path which is violated easily.
-        (state_dir / "qmp.sock").symlink_to(qmp_socket_file)
-        (state_dir / "qga.sock").symlink_to(qga_socket_file)
+        qmp_link = state_dir / "qmp.sock"
+        if os.path.lexists(qmp_link):
+            qmp_link.unlink()
+        qmp_link.symlink_to(qmp_socket_file)
+
+        qga_link = state_dir / "qga.sock"
+        if os.path.lexists(qga_link):
+            qga_link.unlink()
+        qga_link.symlink_to(qga_socket_file)
 
         rootfs_img = prepare_disk(tmpdir)
-        state_img = prepare_disk(
-            directory=state_dir,
-            file_name="state.qcow2",
-            disk_format="qcow2",
-            size="50G",
-            label="state",
-        )
-
+        state_img = state_dir / "state.qcow2"
+        if not state_img.exists():
+            state_img = prepare_disk(
+                directory=state_dir,
+                file_name="state.qcow2",
+                disk_format="qcow2",
+                size="50G",
+                label="state",
+            )
         qemu_cmd = qemu_command(
             vm,
             nixos_config,

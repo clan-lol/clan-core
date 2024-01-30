@@ -31,8 +31,6 @@ let
     services.qemuGuest.enable = true;
 
     boot.initrd.systemd.enable = true;
-    systemd.sysusers.enable = true;
-    system.etc.overlay.enable = true;
 
     # currently needed for system.etc.overlay.enable
     boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -46,22 +44,26 @@ let
         DefaultDependencies = false;
         RequiresMountsFor = "/sysroot /dev";
       };
+      wantedBy = [ "initrd.target" ];
       requiredBy = [ "rw-etc.service" ];
       before = [ "rw-etc.service" ];
       serviceConfig = {
         Type = "oneshot";
       };
       script = ''
+        set -x
         mkdir -p -m 0755 \
           /sysroot/vmstate \
           /sysroot/.rw-etc \
-          /sysroot/vmstate/.rw-etc
+          /sysroot/var/lib/nixos
 
         ${pkgs.util-linux}/bin/blkid /dev/vdb || ${pkgs.e2fsprogs}/bin/mkfs.ext4 /dev/vdb
         sync
         mount /dev/vdb /sysroot/vmstate
 
+        mkdir -p -m 0755 /sysroot/vmstate/{.rw-etc,var/lib/nixos}
         mount --bind /sysroot/vmstate/.rw-etc /sysroot/.rw-etc
+        mount --bind /sysroot/vmstate/var/lib/nixos /sysroot/var/lib/nixos
 
         for folder in "${lib.concatStringsSep ''" "'' sortedStateFolders}"; do
           mkdir -p -m 0755 "/sysroot/vmstate/$folder" "/sysroot/$folder"
