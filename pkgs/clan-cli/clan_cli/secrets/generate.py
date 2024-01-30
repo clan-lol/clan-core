@@ -74,7 +74,7 @@ def generate_secrets(machine: Machine) -> None:
                         msg = f"did not generate a file for '{secret}' when running the following command:\n"
                         msg += machine.secrets_data[service]["generator"]
                         raise ClanError(msg)
-                    secret_store.set(service, secret, secret_file.read_text())
+                    secret_store.set(service, secret, secret_file.read_bytes())
                 # store facts
                 for name, fact_path in machine.secrets_data[service]["facts"].items():
                     fact_file = facts_dir / name

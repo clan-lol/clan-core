@@ -10,13 +10,13 @@ class SecretStore:
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
 
-    def set(self, service: str, name: str, value: str) -> None:
+    def set(self, service: str, name: str, value: bytes) -> None:
         subprocess.run(
             nix_shell(
                 ["nixpkgs#pass"],
                 ["pass", "insert", "-m", f"machines/{self.machine.name}/{name}"],
             ),
-            input=value.encode("utf-8"),
+            input=value,
             check=True,
         )
 
