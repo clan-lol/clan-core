@@ -85,7 +85,7 @@ class ClanURI:
             clan_params["flake_attr"] = self._components.fragment.split("#")[0]
 
         # Replace the query string in the components with the new query string
-        self._components = self._components._replace(query=real_query)
+        self._components = self._components._replace(query=real_query, fragment="")
 
         # Create a ClanParameters object from the clan_params dictionary
         self.params = ClanParameters(**clan_params)
