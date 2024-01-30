@@ -4,18 +4,13 @@ import importlib
 import json
 import logging
 import os
-import random
-import socket
-import subprocess
-import tempfile
-import time
-from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import IO
 
 from ..cmd import Log, run
-from ..dirs import machine_gcroot, module_root, vm_state_dir
+from ..dirs import machine_gcroot, module_root, user_cache_dir, vm_state_dir
 from ..errors import ClanError
 from ..machines.machines import Machine
 from ..nix import nix_build, nix_config, nix_shell
@@ -90,9 +85,11 @@ def qemu_command(
     nixos_config: dict[str, str],
     xchg_dir: Path,
     secrets_dir: Path,
-    state_dir: Path,
-    disk_img: Path,
-) -> QemuCommand:
+    rootfs_img: Path,
+    state_img: Path,
+    qmp_socket_file: Path,
+    qga_socket_file: Path,
+) -> list[str]:
     kernel_cmdline = [
         (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
         f'init={nixos_config["toplevel"]}/init',
@@ -118,14 +115,20 @@ def qemu_command(
         "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=shared",
         "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=xchg",
         "-virtfs", f"local,path={secrets_dir},security_model=none,mount_tag=secrets",
-        "-virtfs", f"local,path={state_dir},security_model=none,mount_tag=state",
-        "-drive", f"cache=writeback,file={disk_img},format=raw,id=drive1,if=none,index=1,werror=report",
+        "-drive", f"cache=writeback,file={rootfs_img},format=raw,id=drive1,if=none,index=1,werror=report",
         "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
+        "-drive", f"cache=writeback,file={state_img},format=qcow2,id=state,if=none,index=2,werror=report",
+        "-device", "virtio-blk-pci,drive=state",
         "-device", "virtio-keyboard",
         "-usb", "-device", "usb-tablet,bus=usb-bus.0",
         "-kernel", f'{nixos_config["toplevel"]}/kernel',
         "-initrd", nixos_config["initrd"],
         "-append", " ".join(kernel_cmdline),
+        # qmp & qga setup
+        "-qmp", f"unix:{qmp_socket_file},server,wait=off",
+        "-chardev", f"socket,path={qga_socket_file},server=on,wait=off,id=qga0",
+        "-device", "virtio-serial",
+        "-device", "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
     ]  # fmt: on
 
     vsock_cid = None
@@ -183,17 +186,23 @@ def get_secrets(
     return secrets_dir
 
 
-def prepare_disk(tmpdir: Path, log_fd: IO[str] | None) -> Path:
-    disk_img = tmpdir / "disk.img"
+def prepare_disk(
+    directory: Path,
+    disk_format: str = "raw",
+    size: str = "1024M",
+    label: str = "nixos",
+    file_name: str = "disk.img",
+) -> Path:
+    disk_img = directory / file_name
     cmd = nix_shell(
         ["nixpkgs#qemu"],
         [
             "qemu-img",
             "create",
             "-f",
-            "raw",
+            disk_format,
             str(disk_img),
-            "1024M",
+            size,
         ],
     )
     run(
@@ -202,20 +211,21 @@ def prepare_disk(tmpdir: Path, log_fd: IO[str] | None) -> Path:
         error_msg=f"Could not create disk image at {disk_img}",
     )
 
-    cmd = nix_shell(
-        ["nixpkgs#e2fsprogs"],
-        [
-            "mkfs.ext4",
-            "-L",
-            "nixos",
-            str(disk_img),
-        ],
-    )
-    run(
-        cmd,
-        log=Log.BOTH,
-        error_msg=f"Could not create ext4 filesystem at {disk_img}",
-    )
+    if disk_format == "raw":
+        cmd = nix_shell(
+            ["nixpkgs#e2fsprogs"],
+            [
+                "mkfs.ext4",
+                "-L",
+                label,
+                str(disk_img),
+            ],
+        )
+        run(
+            cmd,
+            log=Log.BOTH,
+            error_msg=f"Could not create ext4 filesystem at {disk_img}",
+        )
     return disk_img
 
 
@@ -272,24 +282,49 @@ def run_vm(
     # TODO: We should get this from the vm argument
     nixos_config = get_vm_create_info(machine, vm, nix_options)
 
-    with tempfile.TemporaryDirectory() as tmpdir_:
-        tmpdir = Path(tmpdir_)
+    # store the temporary rootfs inside XDG_CACHE_HOME on the host
+    # otherwise, when using /tmp, we risk running out of memory
+    cache = user_cache_dir() / "clan"
+    cache.mkdir(exist_ok=True)
+    with TemporaryDirectory(dir=cache) as cachedir, TemporaryDirectory() as sockets:
+        tmpdir = Path(cachedir)
         xchg_dir = tmpdir / "xchg"
         xchg_dir.mkdir(exist_ok=True)
 
         secrets_dir = get_secrets(machine, tmpdir)
-        disk_img = prepare_disk(tmpdir, log_fd)
 
-        state_dir = vm_state_dir(vm.clan_name, str(machine.flake), machine.name)
+        state_dir = vm_state_dir(vm.clan_name, str(vm.flake_url), machine.name)
         state_dir.mkdir(parents=True, exist_ok=True)
+
+        # specify socket files for qmp and qga
+        qmp_socket_file = Path(sockets) / "qmp.sock"
+        qga_socket_file = Path(sockets) / "qga.sock"
+        # Create symlinks to the qmp/qga sockets to be able to find them later.
+        # This indirection is needed because we cannot put the sockets directly
+        #   in the state_dir.
+        # The reason is, qemu has a length limit of 108 bytes for the qmp socket
+        #   path which is violated easily.
+        (state_dir / "qmp.sock").symlink_to(qmp_socket_file)
+        (state_dir / "qga.sock").symlink_to(qga_socket_file)
+
+        rootfs_img = prepare_disk(tmpdir)
+        state_img = prepare_disk(
+            directory=state_dir,
+            file_name="state.qcow2",
+            disk_format="qcow2",
+            size="50G",
+            label="state",
+        )
 
         qemu_cmd = qemu_command(
             vm,
             nixos_config,
             xchg_dir=xchg_dir,
             secrets_dir=secrets_dir,
-            state_dir=state_dir,
-            disk_img=disk_img,
+            rootfs_img=rootfs_img,
+            state_img=state_img,
+            qmp_socket_file=qmp_socket_file,
+            qga_socket_file=qga_socket_file,
         )
 
         packages = ["nixpkgs#qemu"]

@@ -1,17 +1,5 @@
 { lib, config, pkgs, options, extendModules, modulesPath, ... }:
 let
-  # Generates a fileSystems entry for bind mounting a given state folder path
-  # It binds directories from /var/clanstate/{some-path} to /{some-path}.
-  # As a result, all state paths will be persisted across reboots, because
-  #   the state folder is mounted from the host system.
-  mkBindMount = path: {
-    name = path;
-    value = {
-      device = "/var/clanstate/${path}";
-      options = [ "bind" ];
-    };
-  };
-
   # Flatten the list of state folders into a single list
   stateFolders = lib.flatten (
     lib.mapAttrsToList
@@ -19,19 +7,68 @@ let
       config.clanCore.state
   );
 
-  # A module setting up bind mounts for all state folders
-  stateMounts = {
-    virtualisation.fileSystems =
-      lib.listToAttrs
-        (map mkBindMount stateFolders);
-  };
+  # Ensure sane mount order by topo-sorting
+  sortedStateFolders =
+    let
+      sorted = lib.toposort lib.hasPrefix stateFolders;
+    in
+      sorted.result or (
+        throw ''
+          The state folders have a cyclic dependency.
+          This is not allowed.
+          The cyclic dependencies are:
+            - ${lib.concatStringsSep "\n  - " sorted.loops}
+        ''
+      );
 
   vmModule = {
     imports = [
       (modulesPath + "/virtualisation/qemu-vm.nix")
       ./serial.nix
-      stateMounts
     ];
+
+    # required for issuing shell commands via qga
+    services.qemuGuest.enable = true;
+
+    boot.initrd.systemd.enable = true;
+    systemd.sysusers.enable = true;
+    system.etc.overlay.enable = true;
+
+    # currently needed for system.etc.overlay.enable
+    boot.kernelPackages = pkgs.linuxPackages_latest;
+
+    boot.initrd.systemd.storePaths = [ pkgs.util-linux pkgs.e2fsprogs ];
+    # Ensures, that all state paths will be persisted across reboots
+    # - Mounts the state.qcow2 disk to /vmstate.
+    # - Binds directories from /vmstate/{some-path} to /{some-path}.
+    boot.initrd.systemd.services.rw-etc-pre = {
+      unitConfig = {
+        DefaultDependencies = false;
+        RequiresMountsFor = "/sysroot /dev";
+      };
+      requiredBy = [ "rw-etc.service" ];
+      before = [ "rw-etc.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+      };
+      script = ''
+        mkdir -p -m 0755 \
+          /sysroot/vmstate \
+          /sysroot/.rw-etc \
+          /sysroot/vmstate/.rw-etc
+
+        ${pkgs.util-linux}/bin/blkid /dev/vdb || ${pkgs.e2fsprogs}/bin/mkfs.ext4 /dev/vdb
+        sync
+        mount /dev/vdb /sysroot/vmstate
+
+        mount --bind /sysroot/vmstate/.rw-etc /sysroot/.rw-etc
+
+        for folder in "${lib.concatStringsSep ''" "'' sortedStateFolders}"; do
+          mkdir -p -m 0755 "/sysroot/vmstate/$folder" "/sysroot/$folder"
+          mount --bind "/sysroot/vmstate/$folder" "/sysroot/$folder"
+        done
+      '';
+    };
     virtualisation.fileSystems = {
       ${config.clanCore.secretsUploadDirectory} = lib.mkForce {
         device = "secrets";
@@ -39,13 +76,7 @@ let
         neededForBoot = true;
         options = [ "trans=virtio" "version=9p2000.L" "cache=loose" ];
       };
-      "/var/clanstate" = {
-        device = "state";
-        fsType = "9p";
-        options = [ "trans=virtio" "version=9p2000.L" "cache=loose" ];
-      };
     };
-    boot.initrd.systemd.enable = true;
   };
 
   # We cannot simply merge the VM config into the current system config, because
@@ -53,7 +84,7 @@ let
   # Instead we use extendModules to create a second instance of the current
   # system configuration, and then merge the VM config into that.
   vmConfig = extendModules {
-    modules = [ vmModule stateMounts ];
+    modules = [ vmModule ];
   };
 in
 {
