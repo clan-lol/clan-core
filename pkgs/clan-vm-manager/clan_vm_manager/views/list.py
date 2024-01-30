@@ -191,4 +191,6 @@ class ClanList(Gtk.Box):
         switch.set_state(vm.is_running())
 
         if not vm.is_running() and vm.process.proc.exitcode != 0:
-            self.show_error_dialog(vm.read_log())
+            print("VM exited with error. Exitcode:", vm.process.proc.exitcode)
+            # print(vm.read_log())
+            # self.show_error_dialog(vm.read_log())
