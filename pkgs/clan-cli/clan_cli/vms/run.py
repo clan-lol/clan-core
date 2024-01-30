@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import IO
 
 from ..cmd import Log, run
-from ..dirs import machine_gcroot, module_root, vm_state_dir
+from ..dirs import machine_gcroot, module_root, user_gcroot_dir, vm_state_dir
 from ..errors import ClanError
 from ..machines.machines import Machine
 from ..nix import nix_build, nix_config, nix_shell
@@ -27,11 +27,12 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class GraphicOptions:
-    args: list[str]
+    args: list[str] = field(default_factory=list)
     vsock_cid: int | None = None
+    vgpu_path: Path | None = None
 
 
-def graphics_options(vm: VmConfig) -> GraphicOptions:
+def graphics_options(vm: VmConfig, state_dir: Path) -> GraphicOptions:
     common = [
         "-audio",
         "driver=pa,model=virtio",
@@ -40,19 +41,18 @@ def graphics_options(vm: VmConfig) -> GraphicOptions:
     if vm.wayland:
         # FIXME: check for collisions
         cid = random.randint(1, 2**32)
+        vgpu_path = state_dir / "vgpu.sock"
         # fmt: off
         return GraphicOptions([
           *common,
           "-nographic",
           "-vga", "none",
           "-device", f"vhost-vsock-pci,id=vhost-vsock-pci0,guest-cid={cid}",
-          # TODO: vgpu
-          #"-display", "egl-headless,gl=core",
-          #"-device", "virtio-vga,blob=true",
-          #"-device", "virtio-serial-pci",
-          #"-device", "vhost-user-vga,chardev=vgpu",
-          #"-chardev", "socket,id=vgpu,path=/tmp/vgpu.sock",
-        ], cid)
+          "-display", "egl-headless,gl=core",
+          "-device", "virtio-serial-pci",
+          "-device", "vhost-user-vga,chardev=vgpu",
+          "-chardev", f"socket,id=vgpu,path={vgpu_path}",
+        ], cid, vgpu_path=vgpu_path)
         # fmt: on
     else:
         # fmt: off
@@ -82,7 +82,7 @@ def graphics_options(vm: VmConfig) -> GraphicOptions:
 @dataclass
 class QemuCommand:
     args: list[str]
-    vsock_cid: int | None = None
+    graphic_options: GraphicOptions
 
 
 def qemu_command(
@@ -128,14 +128,13 @@ def qemu_command(
         "-append", " ".join(kernel_cmdline),
     ]  # fmt: on
 
-    vsock_cid = None
+    opts: GraphicOptions = GraphicOptions()
     if vm.graphics:
-        opts = graphics_options(vm)
-        vsock_cid = opts.vsock_cid
+        opts = graphics_options(vm, state_dir)
         command.extend(opts.args)
     else:
         command.append("-nographic")
-    return QemuCommand(command, vsock_cid=vsock_cid)
+    return QemuCommand(command, graphic_options=opts)
 
 
 # TODO move this to the Machines class
@@ -186,7 +185,7 @@ def get_secrets(
 def prepare_disk(tmpdir: Path, log_fd: IO[str] | None) -> Path:
     disk_img = tmpdir / "disk.img"
     cmd = nix_shell(
-        ["nixpkgs#qemu"],
+        ["nixpkgs#qemu_kvm"],
         [
             "qemu-img",
             "create",
@@ -258,6 +257,36 @@ def start_waypipe(cid: int | None, title_prefix: str) -> Iterator[None]:
             proc.kill()
 
 
+@contextlib.contextmanager
+def start_vgpu(vm: VmConfig, vgpu_path: Path | None) -> Iterator[None]:
+    if vgpu_path is None:
+        yield
+        return
+
+    qemu = user_gcroot_dir() / "qemu"
+    cmd = nix_build(["nixpkgs#qemu_kvm"], qemu)
+    proc = run(
+        cmd, log=Log.BOTH, error_msg=f"Could not build vm config for {vm.machine_name}"
+    )
+    try:
+        qemu_path = proc.stdout.strip()
+        with subprocess.Popen(
+            [
+                f"{qemu_path}/libexec/vhost-user-gpu",
+                "--virgl",
+                f"--socket-path={vgpu_path}",
+            ]
+        ) as gpu:
+            try:
+                while not vgpu_path.exists():
+                    time.sleep(0.1)
+                yield
+            finally:
+                gpu.kill()
+    except json.JSONDecodeError as e:
+        raise ClanError(f"Failed to parse vm config: {e}")
+
+
 def run_vm(
     vm: VmConfig,
     nix_options: list[str] = [],
@@ -292,7 +321,7 @@ def run_vm(
             disk_img=disk_img,
         )
 
-        packages = ["nixpkgs#qemu"]
+        packages = ["nixpkgs#qemu_kvm"]
 
         env = os.environ.copy()
         if vm.graphics and not vm.wayland:
@@ -302,7 +331,9 @@ def run_vm(
                 "XDG_DATA_DIRS"
             ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
 
-        with start_waypipe(qemu_cmd.vsock_cid, f"[{vm.machine_name}] "):
+        with start_waypipe(
+            qemu_cmd.graphic_options.vsock_cid, f"[{vm.machine_name}] "
+        ), start_vgpu(vm, qemu_cmd.graphic_options.vgpu_path):
             run(
                 nix_shell(packages, qemu_cmd.args),
                 env=env,
