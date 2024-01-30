@@ -98,10 +98,9 @@ class ClanURI:
             self._components.query,
             self._components.fragment,
         )
-
         match comb:
-            case ("file", "", path, "", "", "") | ("", "", path, "", "", ""):  # type: ignore
-                self.scheme = ClanScheme.LOCAL.value(Path(path).resolve())  # type: ignore
+            case ("file", "", path, "", "", "") | ("", "", path, "", "", _):  # type: ignore
+                self.scheme = ClanScheme.LOCAL.value(Path(path).expanduser().resolve())  # type: ignore
             case _:
                 self.scheme = ClanScheme.REMOTE.value(self._components.geturl())  # type: ignore
 
