@@ -220,7 +220,7 @@ in
             --network-id "$facts/zerotier-network-id"
         '';
       };
-      # clanCore.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
+      clanCore.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
 
       environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
     })
