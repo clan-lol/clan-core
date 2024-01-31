@@ -119,6 +119,14 @@ in
           change the preferred console.
         '';
       };
+
+      wayland = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = lib.mdDoc ''
+          Whether to run QEMU with a native wayland window, or not.
+        '';
+      };
     };
     # All important VM config variables needed by the vm runner
     # this is really just a remapping of values defined elsewhere
@@ -156,6 +164,14 @@ in
           whether to enable graphics for the vm
         '';
       };
+      wayland = lib.mkOption {
+        type = lib.types.bool;
+        internal = true;
+        readOnly = true;
+        description = ''
+          whether to enable native wayland window passthrough for the vm
+        '';
+      };
     };
   };
 
@@ -164,7 +180,7 @@ in
     clanCore.vm.inspect = {
       clan_name = config.clanCore.clanName;
       memory_size = config.clan.virtualisation.memorySize;
-      inherit (config.clan.virtualisation) cores graphics;
+      inherit (config.clan.virtualisation) cores graphics wayland;
     };
     # for clan vm create
     system.clan.vm = {
