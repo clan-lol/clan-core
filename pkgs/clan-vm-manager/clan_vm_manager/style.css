@@ -16,6 +16,18 @@ avatar {
     padding-bottom: 25px; 
 }
 
+.group-list {
+	background-color: inherit;
+}
+.group-list > .activatable:hover {
+	background-color: unset;	
+}
+.group-list > row {
+    margin-top: 12px;
+    border-bottom: unset;
+}
+
+
 .vm-list {
     margin-top: 25px; 
     margin-bottom: 25px; 
