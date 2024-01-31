@@ -69,8 +69,12 @@
         enable = true;
         configDir = "/var/lib/syncthing";
 
-        overrideFolders = true;
-        overrideDevices = true;
+        overrideFolders = lib.mkDefault (
+          if (config.clan.syncthing.introducer == null) then true else false
+        );
+        overrideDevices = lib.mkDefault (
+          if (config.clan.syncthing.introducer == null) then true else false
+        );
 
         dataDir = lib.mkDefault "/home/user/";
 
@@ -78,10 +82,10 @@
 
         key =
           lib.mkDefault
-            config.clanCore.secrets.syncthing.secrets."syncthing.key".path or null;
+            config.clan.secrets.syncthing.secrets."syncthing.key".path or null;
         cert =
           lib.mkDefault
-            config.clanCore.secrets.syncthing.secrets."syncthing.cert".path or null;
+            config.clan.secrets.syncthing.secrets."syncthing.cert".path or null;
 
         settings = {
           options = {
