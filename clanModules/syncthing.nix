@@ -63,8 +63,7 @@
       ];
 
       # Activates inofify compatibilty on syncthing
-      boot.kernel.sysctl."fs.inotify.max_user_watches" = 524288;
-
+      boot.kernel.sysctl."fs.inotify.max_user_watches" = lib.mkDefault 524288;
 
       services.syncthing = {
         enable = true;
