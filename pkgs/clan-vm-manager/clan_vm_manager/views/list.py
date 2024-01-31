@@ -211,5 +211,6 @@ class ClanList(Gtk.Box):
         print("VM exited with code:", exitc)
         if not vm.is_running() and exitc != 0:
             print("VM exited with error. Exitcode:", exitc)
-            print(vm.read_log())
+            print("==========VM LOGS=========")
+            print(vm.read_whole_log())
             # self.show_error_dialog(vm.read_log())
