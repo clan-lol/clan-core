@@ -10,7 +10,7 @@ from clan_vm_manager.models.use_views import Views
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GObject, Gtk
 
-from clan_vm_manager.models.use_vms import VM, VMS
+from clan_vm_manager.models.use_vms import VM, VMS, ClanGroup, Clans
 
 
 def create_boxed_list(
@@ -42,17 +42,17 @@ class ClanList(Gtk.Box):
     def __init__(self) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
-        vms = VMS.use()
+        groups = Clans.use()
         join = Join.use()
 
         self.join_boxed_list = create_boxed_list(
             model=join.list_store, render_row=self.render_join_row
         )
 
-        self.vm_boxed_list = create_boxed_list(
-            model=vms.list_store, render_row=self.render_vm_row
+        self.group_list = create_boxed_list(
+            model=groups.list_store, render_row=self.render_group_row
         )
-        self.vm_boxed_list.add_css_class("vm-list")
+        self.group_list.add_css_class("group-list")
 
         search_bar = Gtk.SearchBar()
         # This widget will typically be the top-level window
@@ -65,13 +65,28 @@ class ClanList(Gtk.Box):
 
         self.append(search_bar)
         self.append(self.join_boxed_list)
-        self.append(self.vm_boxed_list)
+        self.append(self.group_list)
+
+    def render_group_row(self, boxed_list: Gtk.ListBox, group: ClanGroup) -> Gtk.Widget:
+        # if boxed_list.has_css_class("no-shadow"):
+        #     boxed_list.remove_css_class("no-shadow")
+
+        grp = Adw.PreferencesGroup()
+        grp.set_title(group.url)
+
+        vm_list = create_boxed_list(
+            model=group.list_store, render_row=self.render_vm_row
+        )
+
+        grp.add(vm_list)
+
+        return grp
 
     def on_search_changed(self, entry: Gtk.SearchEntry) -> None:
         VMS.use().filter_by_name(entry.get_text())
         # Disable the shadow if the list is empty
         if not VMS.use().list_store.get_n_items():
-            self.vm_boxed_list.add_css_class("no-shadow")
+            self.group_list.add_css_class("no-shadow")
 
     def render_vm_row(self, boxed_list: Gtk.ListBox, vm: VM) -> Gtk.Widget:
         if boxed_list.has_css_class("no-shadow"):
@@ -80,19 +95,22 @@ class ClanList(Gtk.Box):
         row = Adw.ActionRow()
 
         # Title
-        row.set_title(flake.clan_name)
+        row.set_title(flake.flake_attr)
 
         row.set_title_lines(1)
         row.set_title_selectable(True)
 
         # Subtitle
-        row.set_subtitle(vm.get_id())
+        row.set_subtitle(flake.clan_name)
         row.set_subtitle_lines(1)
 
         # # Avatar
         avatar = Adw.Avatar()
-        avatar.set_custom_image(Gdk.Texture.new_from_filename(flake.icon))
-        avatar.set_text(flake.clan_name + " " + flake.flake_attr)
+        if flake.icon:
+            avatar.set_custom_image(Gdk.Texture.new_from_filename(flake.icon))
+        if not flake.icon:
+            avatar.set_text(flake.clan_name + " " + flake.flake_attr)
+
         avatar.set_show_initials(True)
         avatar.set_size(50)
         row.add_prefix(avatar)
