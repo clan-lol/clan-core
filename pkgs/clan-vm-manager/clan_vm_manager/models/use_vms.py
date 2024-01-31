@@ -26,6 +26,44 @@ from gi.repository import Gio, GLib, GObject
 log = logging.getLogger(__name__)
 
 
+class ClanGroup(GObject.Object):
+    def __init__(self, url: str | Path, vms: list["VM"]) -> None:
+        super().__init__()
+        self.url = url
+        self.vms = vms
+        self.list_store = Gio.ListStore.new(VM)
+
+        for vm in vms:
+            self.list_store.append(vm)
+
+
+class Clans:
+    list_store: Gio.ListStore
+    _instance: "None | ClanGroup" = None
+
+    # Make sure the VMS class is used as a singleton
+    def __init__(self) -> None:
+        raise RuntimeError("Call use() instead")
+
+    @classmethod
+    def use(cls: Any) -> "ClanGroup":
+        if cls._instance is None:
+            cls._instance = cls.__new__(cls)
+            cls.list_store = Gio.ListStore.new(ClanGroup)
+
+            groups: dict[str | Path, list["VM"]] = {}
+            for vm in get_saved_vms():
+                ll = groups.get(vm.data.flake.flake_url, [])
+                ll.append(vm)
+                groups[vm.data.flake.flake_url] = ll
+
+            for url, vms in groups.items():
+                grp = ClanGroup(url, vms)
+                cls.list_store.append(grp)
+
+        return cls._instance
+
+
 class VM(GObject.Object):
     # Define a custom signal with the name "vm_stopped" and a string argument for the message
     __gsignals__: ClassVar = {
