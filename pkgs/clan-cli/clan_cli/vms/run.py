@@ -378,8 +378,9 @@ def run_command(args: argparse.Namespace) -> None:
     machine = Machine(run_options.machine, run_options.flake)
 
     vm = inspect_vm(machine=machine)
-    # TODO: allow to set this in the config
-    vm.wayland = run_options.wayland
+
+    if run_options.wayland:
+        vm.wayland = run_options.wayland
 
     run_vm(vm, run_options.nix_options)
 
