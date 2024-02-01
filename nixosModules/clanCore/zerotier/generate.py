@@ -3,6 +3,8 @@ import base64
 import contextlib
 import ipaddress
 import json
+import os
+import signal
 import socket
 import subprocess
 import time
@@ -115,7 +117,11 @@ def zerotier_controller() -> Iterator[ZerotierController]:
             f"-p{controller_port}",
             str(home),
         ]
-        with subprocess.Popen(cmd) as p:
+        with subprocess.Popen(
+            cmd,
+            preexec_fn=os.setsid,
+        ) as p:
+            process_group = os.getpgid(p.pid)
             try:
                 print(
                     f"wait for controller to be started on 127.0.0.1:{controller_port}...",
@@ -131,8 +137,7 @@ def zerotier_controller() -> Iterator[ZerotierController]:
 
                 yield ZerotierController(controller_port, home)
             finally:
-                p.terminate()
-                p.wait()
+                os.killpg(process_group, signal.SIGKILL)
 
 
 @dataclass
