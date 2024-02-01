@@ -7,6 +7,7 @@ import os
 import signal
 import socket
 import subprocess
+import sys
 import time
 import urllib.request
 from collections.abc import Iterator
@@ -148,9 +149,15 @@ class NetworkController:
 
 # TODO: allow merging more network configuration here
 def create_network_controller() -> NetworkController:
-    with zerotier_controller() as controller:
-        network = controller.create_network()
-        return NetworkController(network["nwid"], controller.identity)
+    e = ClanError("Bug, should never happen")
+    for _ in range(10):
+        try:
+            with zerotier_controller() as controller:
+                network = controller.create_network()
+                return NetworkController(network["nwid"], controller.identity)
+        except ClanError:  # probably failed to allocate port, so retry
+            print("failed to create network, retrying..., probabl", file=sys.stderr)
+    raise e
 
 
 def create_identity() -> Identity:
