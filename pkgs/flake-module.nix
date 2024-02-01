@@ -28,6 +28,12 @@
             hash = "sha256-dxz4AmeJAweffyPCayvykworQNntHtHeq6PXMXWsM5k=";
           };
         });
+      # halalify zerotierone
+      zerotierone = pkgs.zerotierone.overrideAttrs (_old: {
+        meta = _old.meta // {
+          license = lib.licenses.apsl20;
+        };
+      });
     };
   };
 }
