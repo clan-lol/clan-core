@@ -120,11 +120,11 @@ in
         '';
       };
 
-      wayland = lib.mkOption {
+      waypipe = lib.mkOption {
         type = lib.types.bool;
         default = false;
         description = lib.mdDoc ''
-          Whether to run QEMU with a native wayland window, or not.
+          Whether to use waypipe for native wayland passthrough, or not.
         '';
       };
     };
@@ -164,12 +164,12 @@ in
           whether to enable graphics for the vm
         '';
       };
-      wayland = lib.mkOption {
+      waypipe = lib.mkOption {
         type = lib.types.bool;
         internal = true;
         readOnly = true;
         description = ''
-          whether to enable native wayland window passthrough for the vm
+          whether to enable native wayland window passthrough with waypipe for the vm
         '';
       };
     };
@@ -180,7 +180,7 @@ in
     clanCore.vm.inspect = {
       clan_name = config.clanCore.clanName;
       memory_size = config.clan.virtualisation.memorySize;
-      inherit (config.clan.virtualisation) cores graphics wayland;
+      inherit (config.clan.virtualisation) cores graphics waypipe;
     };
     # for clan vm create
     system.clan.vm = {

@@ -15,7 +15,7 @@ class VmConfig:
     cores: int
     memory_size: int
     graphics: bool
-    wayland: bool = False
+    waypipe: bool = False
 
 
 def inspect_vm(machine: Machine) -> VmConfig:
