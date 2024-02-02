@@ -7,6 +7,7 @@ import logging
 from typing import Any
 
 from clan_cli.flakes.inspect import FlakeConfig, inspect_flake
+from clan_cli.machines.list import list_machines
 
 from ..clan_uri import ClanURI
 from ..dirs import user_history_file
@@ -66,8 +67,8 @@ def list_history() -> list[HistoryEntry]:
     return logs
 
 
-def new_history_entry(uri: ClanURI) -> HistoryEntry:
-    flake = inspect_flake(uri.get_internal(), uri.params.flake_attr)
+def new_history_entry(url: str, machine: str) -> HistoryEntry:
+    flake = inspect_flake(url, machine)
     flake.flake_url = str(flake.flake_url)
     return HistoryEntry(
         flake=flake,
@@ -75,12 +76,24 @@ def new_history_entry(uri: ClanURI) -> HistoryEntry:
     )
 
 
-def add_history(uri: ClanURI) -> list[HistoryEntry]:
+def add_history(uri: ClanURI, *, all_machines: bool) -> list[HistoryEntry]:
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
-    logs = list_history()
+    history = list_history()
+    if not all_machines:
+        add_maschine_to_history(uri.get_internal(), uri.params.flake_attr, history)
+
+    if all_machines:
+        for machine in list_machines(uri.get_internal()):
+            add_maschine_to_history(uri.get_internal(), machine, history)
+
+    write_history_file(history)
+    return history
+
+
+def add_maschine_to_history(
+    uri_path: str, uri_machine: str, logs: list[HistoryEntry]
+) -> None:
     found = False
-    uri_path = uri.get_internal()
-    uri_machine = uri.params.flake_attr
 
     for entry in logs:
         if (
@@ -91,21 +104,20 @@ def add_history(uri: ClanURI) -> list[HistoryEntry]:
             entry.last_used = datetime.datetime.now().isoformat()
 
     if not found:
-        history = new_history_entry(uri)
+        history = new_history_entry(uri_path, uri_machine)
         logs.append(history)
-
-    write_history_file(logs)
-
-    return logs
 
 
 def add_history_command(args: argparse.Namespace) -> None:
-    add_history(args.uri)
+    add_history(args.uri, all_machines=args.all)
 
 
 # takes a (sub)parser and configures it
 def register_add_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "uri", type=ClanURI.from_str, help="Path to the flake", default="."
+    )
+    parser.add_argument(
+        "--all", help="Add all machines", default=False, action="store_true"
     )
     parser.set_defaults(func=add_history_command)
