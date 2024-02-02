@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable
 from functools import partial
 
@@ -11,6 +12,8 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GObject, Gtk
 
 from clan_vm_manager.models.use_vms import VM, VMS, ClanGroup, Clans
+
+log = logging.getLogger(__name__)
 
 
 def create_boxed_list(
@@ -194,8 +197,6 @@ class ClanList(Gtk.Box):
             self.join_boxed_list.add_css_class("no-shadow")
 
     def on_row_toggle(self, vm: VM, row: Adw.SwitchRow, state: bool) -> None:
-        print("Toggled", vm.data.flake.flake_attr, "active:", row.get_active())
-
         if row.get_active():
             row.set_state(False)
             vm.start()
@@ -208,9 +209,5 @@ class ClanList(Gtk.Box):
         switch.set_active(vm.is_running())
         switch.set_state(vm.is_running())
         exitc = vm.process.proc.exitcode
-        print("VM exited with code:", exitc)
         if not vm.is_running() and exitc != 0:
-            print("VM exited with error. Exitcode:", exitc)
-            print("==========VM LOGS=========")
-            print(vm.read_whole_log())
-            # self.show_error_dialog(vm.read_log())
+            log.error(f"VM exited with error. Exitcode: {exitc}")

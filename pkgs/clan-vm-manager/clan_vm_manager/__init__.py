@@ -1,14 +1,20 @@
 import argparse
+import logging
 
 from clan_cli.clan_uri import ClanURI
+from clan_cli.custom_logger import setup_logging
 
 from clan_vm_manager.models.interfaces import ClanConfig
 
 from .app import MainApplication
 
+log = logging.getLogger(__name__)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="clan-vm-manager")
+
+    parser.add_argument("--debug", action="store_true", help="enable debug mode")
 
     # Add join subcommand
     subparser = parser.add_subparsers(
@@ -23,6 +29,15 @@ def main() -> None:
     # Executed when no command is given
     parser.set_defaults(func=show_overview)
     args = parser.parse_args()
+
+    if args.debug:
+        setup_logging("DEBUG", root_log_name=__name__.split(".")[0])
+    else:
+        setup_logging("INFO", root_log_name=__name__.split(".")[0])
+
+    log.debug("Debug logging enabled")
+    log.info("Info logging enabled")
+
     args.func(args)
 
 

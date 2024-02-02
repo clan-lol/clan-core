@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import logging
 from typing import Literal
 
 import gi
@@ -11,10 +12,12 @@ from gi.repository import Adw
 
 Severity = Literal["Error"] | Literal["Warning"] | Literal["Info"] | str
 
+log = logging.getLogger(__name__)
+
 
 def show_error_dialog(error: ClanError, severity: Severity | None = "Error") -> None:
     message = str(error)
     dialog = Adw.MessageDialog(parent=None, heading=severity, body=message)
-    print("error:", message)
+    log.error(message)
     dialog.add_response("ok", "ok")
     dialog.choose()

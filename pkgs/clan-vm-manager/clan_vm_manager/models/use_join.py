@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable
 from typing import Any
 
@@ -11,6 +12,8 @@ from clan_vm_manager.errors.show_error import show_error_dialog
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 from gi.repository import Gio, GObject
+
+log = logging.getLogger(__name__)
 
 
 class JoinValue(GObject.Object):
@@ -56,7 +59,7 @@ class Join:
         # TODO: remove the item that was accepted join from this list
         # and call the success function. (The caller is responsible for handling the success)
         try:
-            print(f"trying to join: {item.url}")
+            log.info(f"trying to join: {item.url}")
 
             history = add_history(item.url)
             cb(history)
