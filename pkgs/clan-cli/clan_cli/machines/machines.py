@@ -28,8 +28,7 @@ class Machine:
         self.eval_cache: dict[str, str] = {}
         self.build_cache: dict[str, Path] = {}
 
-        if deployment_info is not None:
-            self.deployment_info = deployment_info
+        self._deployment_info: None | dict[str, str] = deployment_info
 
     def __str__(self) -> str:
         return f"Machine(name={self.name}, flake={self.flake})"
@@ -37,29 +36,34 @@ class Machine:
     def __repr__(self) -> str:
         return str(self)
 
-    def get_deployment_info(self) -> None:
-        self.deployment_info = json.loads(
+    @property
+    def deployment_info(self) -> dict[str, str]:
+        if self._deployment_info is not None:
+            return self._deployment_info
+        self._deployment_info = json.loads(
             self.build_nix("config.system.clan.deployment.file").read_text()
         )
         print(f"self_deployment_info: {self.deployment_info}")
+        return self._deployment_info
 
     @property
-    def deployment_address(self) -> str:
-        if not hasattr(self, "deployment_info"):
-            self.get_deployment_info()
-        return self.deployment_info["deploymentAddress"]
+    def target_host(self) -> str:
+        # deploymentAddress is deprecated.
+        return (
+            self.deployment_info.get("targetHost")
+            or self.deployment_info["deploymentAddress"]
+        )
+
+    @target_host.setter
+    def target_host(self, value: str) -> None:
+        self.deployment_info["targetHost"] = value
 
     @property
     def secrets_module(self) -> str:
-        if not hasattr(self, "deployment_info"):
-            self.get_deployment_info()
-        print(f"self_deployment_info2: {self.deployment_info}")
         return self.deployment_info["secretsModule"]
 
     @property
     def secrets_data(self) -> dict:
-        if not hasattr(self, "deployment_info"):
-            self.get_deployment_info()
         if self.deployment_info["secretsData"]:
             try:
                 return json.loads(Path(self.deployment_info["secretsData"]).read_text())
@@ -72,8 +76,6 @@ class Machine:
 
     @property
     def secrets_upload_directory(self) -> str:
-        if not hasattr(self, "deployment_info"):
-            self.get_deployment_info()
         return self.deployment_info["secretsUploadDirectory"]
 
     @property
@@ -90,7 +92,7 @@ class Machine:
     @property
     def host(self) -> Host:
         return parse_deployment_address(
-            self.name, self.deployment_address, meta={"machine": self}
+            self.name, self.target_host, meta={"machine": self}
         )
 
     def eval_nix(self, attr: str, refresh: bool = False) -> str:

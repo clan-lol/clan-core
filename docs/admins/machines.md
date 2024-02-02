@@ -88,17 +88,18 @@ $ clan machines install my-machine <target_host>
 
 ## Update Your Machines
 
-Clan CLI enables you to remotely update your machines over SSH. This requires setting up a deployment address for each target machine.
+Clan CLI enables you to remotely update your machines over SSH. This requires setting up a target address for each target machine.
 
-### Setting the Deployment Address
+### Setting the Target Host
 
 Replace `host_or_ip` with the actual hostname or IP address of your target machine:
 
 ```shellSession
-$ clan config --machine my-machine clan.networking.deploymentAddress root@host_or_ip
+$ clan config --machine my-machine clan.networking.targetHost root@host_or_ip
 ```
 
-_Note: The use of `root@` in the deployment address implies SSH access as the root user. Ensure that the root login is secured and only used when necessary._
+_Note: The use of `root@` in the target address implies SSH access as the root user.
+Ensure that the root login is secured and only used when necessary._
 
 ### Updating Machine Configurations
 
