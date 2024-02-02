@@ -52,7 +52,7 @@ def test_secrets_upload(
     flake = test_flake_with_core.path.joinpath("flake.nix")
     host = host_group.hosts[0]
     addr = f"{host.user}@{host.host}:{host.port}?StrictHostKeyChecking=no&UserKnownHostsFile=/dev/null&IdentityFile={host.key}"
-    new_text = flake.read_text().replace("__CLAN_DEPLOYMENT_ADDRESS__", addr)
+    new_text = flake.read_text().replace("__CLAN_TARGET_ADDRESS__", addr)
 
     flake.write_text(new_text)
     cli.run(["--flake", str(test_flake_with_core.path), "secrets", "upload", "vm1"])

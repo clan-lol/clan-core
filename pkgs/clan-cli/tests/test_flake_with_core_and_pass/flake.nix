@@ -12,7 +12,7 @@
         clanName = "test_flake_with_core_and_pass";
         machines = {
           vm1 = { lib, ... }: {
-            clan.networking.deploymentAddress = "__CLAN_DEPLOYMENT_ADDRESS__";
+            clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
             system.stateVersion = lib.version;
             clanCore.secretStore = "password-store";
             clanCore.secretsUploadDirectory = lib.mkForce "__CLAN_SOPS_KEY_DIR__/secrets";
