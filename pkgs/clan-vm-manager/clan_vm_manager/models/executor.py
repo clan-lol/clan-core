@@ -1,3 +1,4 @@
+import logging
 import os
 import signal
 import sys
@@ -14,6 +15,8 @@ import dataclasses
 import multiprocessing as mp
 from collections.abc import Callable
 
+log = logging.getLogger(__name__)
+
 
 # Kill the new process and all its children by sending a SIGTERM signal to the process group
 def _kill_group(proc: mp.Process) -> None:
@@ -21,7 +24,7 @@ def _kill_group(proc: mp.Process) -> None:
     if proc.is_alive() and pid:
         os.killpg(pid, signal.SIGTERM)
     else:
-        print(f"Process {proc.name} with pid {pid} is already dead", file=sys.stderr)
+        log.warning(f"Process {proc.name} with pid {pid} is already dead")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -127,7 +130,7 @@ def spawn(
 
     # Print some information
     cmd = f"tail -f {out_file}"
-    print(f"Connect to stdout with: {cmd}")
+    log.info(f"Connect to stdout with: {cmd}")
 
     # Return the process
     mp_proc = MPProcess(name=proc_name, proc=proc, out_file=out_file)
