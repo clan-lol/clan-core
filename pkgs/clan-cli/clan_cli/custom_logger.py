@@ -66,9 +66,9 @@ def get_caller() -> str:
     return ret
 
 
-def setup_logging(level: Any) -> None:
+def setup_logging(level: Any, root_log_name: str = __name__.split(".")[0]) -> None:
     # Get the root logger and set its level
-    main_logger = logging.getLogger("clan_cli")
+    main_logger = logging.getLogger(root_log_name)
     main_logger.setLevel(level)
 
     # Create and add the default handler
