@@ -1,11 +1,14 @@
 # !/usr/bin/env python3
 import argparse
+import datetime
+
+from clan_cli.flakes.inspect import inspect_flake
 
 from ..clan_uri import ClanParameters, ClanURI
 from ..errors import ClanCmdError
 from ..locked_open import write_history_file
 from ..nix import nix_metadata
-from .add import HistoryEntry, list_history, new_history_entry
+from .add import HistoryEntry, list_history
 
 
 def update_history() -> list[HistoryEntry]:
@@ -27,7 +30,11 @@ def update_history() -> list[HistoryEntry]:
                 url=str(entry.flake.flake_url),
                 params=ClanParameters(entry.flake.flake_attr),
             )
-            entry = new_history_entry(uri)
+            flake = inspect_flake(uri.get_internal(), uri.params.flake_attr)
+            flake.flake_url = str(flake.flake_url)
+            entry = HistoryEntry(
+                flake=flake, last_used=datetime.datetime.now().isoformat()
+            )
 
     write_history_file(logs)
     return logs
