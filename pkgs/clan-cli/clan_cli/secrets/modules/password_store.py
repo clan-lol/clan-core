@@ -35,7 +35,6 @@ class SecretStore:
             "PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store"
         )
         secret_path = Path(password_store) / f"machines/{self.machine.name}/{name}.gpg"
-        print(f"checking {secret_path}")
         return secret_path.exists()
 
     def generate_hash(self) -> bytes:
