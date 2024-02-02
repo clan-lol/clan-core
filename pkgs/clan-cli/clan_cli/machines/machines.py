@@ -43,7 +43,6 @@ class Machine:
         self._deployment_info = json.loads(
             self.build_nix("config.system.clan.deployment.file").read_text()
         )
-        print(f"self_deployment_info: {self.deployment_info}")
         return self._deployment_info
 
     @property
@@ -141,7 +140,6 @@ class Machine:
         else:
             flake = self.flake
 
-        log.info(f"building {flake}#{attr}")
         outpath = run(nix_build([f"{flake}#{attr}"])).stdout.strip()
         self.build_cache[attr] = Path(outpath)
         return Path(outpath)
