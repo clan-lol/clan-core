@@ -7,7 +7,7 @@ from clan_vm_manager.views.list import ClanList
 
 gi.require_version("Adw", "1")
 
-from gi.repository import Adw
+from gi.repository import Adw, Gtk
 
 
 class MainWindow(Adw.ApplicationWindow):
@@ -26,7 +26,12 @@ class MainWindow(Adw.ApplicationWindow):
         stack_view = Views.use().view
         Views.use().set_main_window(self)
 
-        stack_view.add_named(ClanList(), "list")
+        scroll = Gtk.ScrolledWindow()
+        scroll.set_propagate_natural_height(True)
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroll.set_child(ClanList())
+
+        stack_view.add_named(scroll, "list")
         stack_view.add_named(Details(), "details")
 
         stack_view.set_visible_child_name(config.initial_view)
