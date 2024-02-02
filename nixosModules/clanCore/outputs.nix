@@ -19,10 +19,16 @@
             the location of the deployment.json file
           '';
         };
-        deploymentAddress = lib.mkOption {
+        deployment.buildHost = lib.mkOption {
           type = lib.types.str;
           description = ''
-            the address of the deployment server
+            the hostname of the build host where nixos-rebuild is run
+          '';
+        };
+        deployment.targetHost = lib.mkOption {
+          type = lib.types.str;
+          description = ''
+            the hostname of the target host to be deployed to
           '';
         };
         secretsUploadDirectory = lib.mkOption {
@@ -66,10 +72,10 @@
   config = {
     system.clan.deployment.data = {
       inherit (config.system.clan) secretsModule secretsData;
-      inherit (config.clan.networking) deploymentAddress;
+      inherit (config.clan.networking) targetHost buildHost;
       inherit (config.clanCore) secretsUploadDirectory;
     };
     system.clan.deployment.file = pkgs.writeText "deployment.json" (builtins.toJSON config.system.clan.deployment.data);
-  };
 
+  };
 }

@@ -1,7 +1,7 @@
 { config, lib, ... }:
 {
   options.clan.networking = {
-    deploymentAddress = lib.mkOption {
+    targetHost = lib.mkOption {
       description = ''
         The target SSH node for deployment.
 
@@ -14,10 +14,27 @@
           - user@machine2.example.com
           - root@example.com:2222&IdentityFile=/path/to/private/key
       '';
+      type = lib.types.str;
+    };
+    buildHost = lib.mkOption {
+      description = ''
+        The build SSH node where nixos-rebuild will be executed.
+
+        If set to null, the targetHost will be used.
+
+        format: user@host:port&SSH_OPTION=SSH_VALUE
+        examples:
+          - machine.example.com
+          - user@machine2.example.com
+          - root@example.com:2222&IdentityFile=/path/to/private/key
+      '';
       type = lib.types.nullOr lib.types.str;
-      default = "root@${config.networking.hostName}";
+      default = null;
     };
   };
+  imports = [
+    (lib.mkRenamedOptionModule [ "clan" "networking" "deploymentAddress" ] [ "clan" "networking" "buildHost" ])
+  ];
   config = {
     # conflicts with systemd-resolved
     networking.useHostResolvConf = false;

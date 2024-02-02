@@ -5,6 +5,7 @@ let
     directory = ../..;
     machines = {
       test_install_machine = {
+        clan.networking.targetHost = "test_install_machine";
         imports = [ self.nixosModules.test_install_machine ];
       };
     };

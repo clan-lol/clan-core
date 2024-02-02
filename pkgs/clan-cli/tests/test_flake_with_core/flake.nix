@@ -12,7 +12,7 @@
         clanName = "test_flake_with_core";
         machines = {
           vm1 = { lib, ... }: {
-            clan.networking.deploymentAddress = "__CLAN_DEPLOYMENT_ADDRESS__";
+            clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
             system.stateVersion = lib.version;
             sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
             clanCore.secretsUploadDirectory = "__CLAN_SOPS_KEY_DIR__";
@@ -32,7 +32,7 @@
             };
           };
           vm2 = { lib, ... }: {
-            clan.networking.deploymentAddress = "__CLAN_DEPLOYMENT_ADDRESS__";
+            clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
             system.stateVersion = lib.version;
             sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
             clanCore.secretsUploadDirectory = "__CLAN_SOPS_KEY_DIR__";

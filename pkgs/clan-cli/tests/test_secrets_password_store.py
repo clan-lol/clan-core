@@ -60,7 +60,7 @@ def test_upload_secret(
     flake = test_flake_with_core_and_pass.path.joinpath("flake.nix")
     host = host_group.hosts[0]
     addr = f"{host.user}@{host.host}:{host.port}?StrictHostKeyChecking=no&UserKnownHostsFile=/dev/null&IdentityFile={host.key}"
-    new_text = flake.read_text().replace("__CLAN_DEPLOYMENT_ADDRESS__", addr)
+    new_text = flake.read_text().replace("__CLAN_TARGET_ADDRESS__", addr)
     flake.write_text(new_text)
     cli.run(["secrets", "upload", "vm1"])
     zerotier_identity_secret = (
