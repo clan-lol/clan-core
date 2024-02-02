@@ -154,7 +154,10 @@ def test_vm_persistence(
                         ),
                     )
                 ),
-                clan=dict(virtualisation=dict(graphics=False)),
+                clan=dict(
+                    virtualisation=dict(graphics=False),
+                    networking=dict(targetHost="client"),
+                ),
             )
         ),
     )

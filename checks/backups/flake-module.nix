@@ -5,6 +5,7 @@ let
     directory = ../..;
     machines = {
       test_backup_client = {
+        clan.networking.targetHost = "client";
         imports = [ self.nixosModules.test_backup_client ];
         fileSystems."/".device = "/dev/null";
         boot.loader.grub.device = "/dev/null";

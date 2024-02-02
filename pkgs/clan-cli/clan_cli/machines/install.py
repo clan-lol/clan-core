@@ -14,14 +14,12 @@ log = logging.getLogger(__name__)
 
 
 def install_nixos(machine: Machine, kexec: str | None = None) -> None:
-    log.info(f"deployment address1: {machine.deployment_info['deploymentAddress']}")
     secrets_module = importlib.import_module(machine.secrets_module)
     log.info(f"installing {machine.name}")
     log.info(f"using secret store: {secrets_module.SecretStore}")
     secret_store = secrets_module.SecretStore(machine=machine)
 
     h = machine.host
-    log.info(f"deployment address2: {machine.deployment_info['deploymentAddress']}")
     target_host = f"{h.user or 'root'}@{h.host}"
     log.info(f"target host: {target_host}")
 
@@ -77,10 +75,7 @@ def install_command(args: argparse.Namespace) -> None:
         kexec=args.kexec,
     )
     machine = Machine(opts.machine, flake=opts.flake)
-    machine.get_deployment_info()
-    machine.deployment_info["deploymentAddress"] = opts.target_host
-    log.info(f"target host: {opts.target_host}")
-    log.info(f"deployment address: {machine.deployment_info['deploymentAddress']}")
+    machine.target_host = opts.target_host
 
     install_nixos(machine, kexec=opts.kexec)
 
