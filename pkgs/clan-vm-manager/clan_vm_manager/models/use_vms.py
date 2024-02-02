@@ -89,6 +89,7 @@ class VM(GObject.Object):
             prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
         )
         self._finalizer = weakref.finalize(self, self.stop)
+        self.connect("vm_status_changed", self._start_logs_task)
 
     def __start(self) -> None:
         if self.is_running():
@@ -112,8 +113,6 @@ class VM(GObject.Object):
             return
 
         threading.Thread(target=self.__start).start()
-
-        self.connect("vm_status_changed", self._start_logs_task)
 
         # Every 50ms check if the VM is still running
         self._watcher_id = GLib.timeout_add(50, self._vm_watcher_task)
