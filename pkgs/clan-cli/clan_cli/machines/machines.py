@@ -102,7 +102,6 @@ class Machine:
         system = config["system"]
 
         attr = f'clanInternals.machines."{system}".{self.name}.{attr}'
-        print(f"attr: {attr}")
 
         if attr in self.eval_cache and not refresh:
             return self.eval_cache[attr]
@@ -115,9 +114,8 @@ class Machine:
         else:
             flake = self.flake
 
-        print(f"evaluating {flake}#{attr}")
         cmd = nix_eval([f"{flake}#{attr}"])
-        print(f"cmd: {cmd}")
+
         output = run(cmd).stdout.strip()
         self.eval_cache[attr] = output
         return output

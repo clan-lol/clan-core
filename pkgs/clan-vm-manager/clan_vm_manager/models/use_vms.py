@@ -1,8 +1,8 @@
+import os
 import tempfile
 import weakref
-from collections.abc import Generator
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import IO, Any, ClassVar
 
 import gi
 from clan_cli import vms
@@ -81,6 +81,8 @@ class VM(GObject.Object):
         self.data = data
         self.process = MPProcess("dummy", mp.Process(), Path("./dummy"))
         self._watcher_id: int = 0
+        self._logs_id: int = 0
+        self._log_file: IO[str] | None = None
         self.status = status
         self._last_liveness: bool = False
         self.log_dir = tempfile.TemporaryDirectory(
@@ -116,7 +118,6 @@ class VM(GObject.Object):
         # Every 50ms check if the VM is still running
         self._watcher_id = GLib.timeout_add(50, self._vm_watcher_task)
         if self._watcher_id == 0:
-            log.error("Failed to add watcher")
             raise ClanError("Failed to add watcher")
 
     def _vm_watcher_task(self) -> bool:
@@ -127,24 +128,38 @@ class VM(GObject.Object):
 
             # If the VM was running and now it is not, remove the watcher
             if prev_liveness and not self.is_running():
-                print("===>Removing watcher")
+                log.debug("Removing VM watcher")
                 return GLib.SOURCE_REMOVE
-
         return GLib.SOURCE_CONTINUE
 
-    def _start_logs_task(self, obj: Any, vm: Any, _vm: Any) -> None:
-        print("Starting log task")
-        self._logs_id = GLib.timeout_add(50, self._get_logs_task)
+    def _start_logs_task(self, obj: Any, vm: Any) -> None:
+        if self.is_running():
+            log.debug(f"Starting logs watcher on file: {self.process.out_file}")
+            self._logs_id = GLib.timeout_add(50, self._get_logs_task)
+        else:
+            log.debug("Not starting logs watcher")
 
     def _get_logs_task(self) -> bool:
         if not self.process.out_file.exists():
-            log.error(f"Log file {self.process.out_file} does not exist")
-            return GLib.SOURCE_REMOVE
+            return GLib.SOURCE_CONTINUE
+
+        if not self._log_file:
+            try:
+                self._log_file = open(self.process.out_file)
+            except Exception as ex:
+                log.exception(ex)
+                self._log_file = None
+                return GLib.SOURCE_REMOVE
+
         if not self.is_running():
-            log.info("VM is not running")
+            log.debug("Removing logs watcher")
+            self._log_file = None
             return GLib.SOURCE_REMOVE
 
-        print(self.read_whole_log())
+        line = os.read(self._log_file.fileno(), 4096)
+        if len(line) != 0:
+            print(line.decode("utf-8"), end="", flush=True)
+
         return GLib.SOURCE_CONTINUE
 
     def is_running(self) -> bool:
@@ -156,19 +171,9 @@ class VM(GObject.Object):
     def stop(self) -> None:
         log.info("Stopping VM")
         if not self.is_running():
-            log.error("VM already stopped")
             return
 
         self.process.kill_group()
-
-    def read_line_log(self) -> Generator[str, None, None]:
-        with open(self.process.out_file) as f:
-            while True:
-                line = f.readline()
-                if not line:
-                    break
-                yield line
-        return None
 
     def read_whole_log(self) -> str:
         if not self.process.out_file.exists():

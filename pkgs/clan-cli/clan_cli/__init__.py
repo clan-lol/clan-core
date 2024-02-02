@@ -117,10 +117,10 @@ def main() -> None:
         parser.print_help()
 
     if args.debug:
-        setup_logging(logging.DEBUG)
+        setup_logging(logging.DEBUG, root_log_name=__name__.split(".")[0])
         log.debug("Debug log activated")
     else:
-        setup_logging(logging.INFO)
+        setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
 
     if not hasattr(args, "func"):
         return
