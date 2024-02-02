@@ -11,6 +11,7 @@ from clan_cli.cmd import run
 from ..errors import ClanError
 from ..machines.machines import Machine
 from ..nix import nix_shell
+from .check import check_secrets
 
 log = logging.getLogger(__name__)
 
@@ -24,13 +25,7 @@ def generate_secrets(machine: Machine) -> None:
             print(service)
             tmpdir = Path(d) / service
             # check if all secrets exist and generate them if at least one is missing
-            needs_regeneration = any(
-                not secret_store.exists(service, secret)
-                for secret in machine.secrets_data[service]["secrets"]
-            ) or any(
-                not (machine.flake / fact).exists()
-                for fact in machine.secrets_data[service]["facts"].values()
-            )
+            needs_regeneration = not check_secrets(machine)
             for fact in machine.secrets_data[service]["facts"].values():
                 if not (machine.flake / fact).exists():
                     print(f"fact {fact} is missing")
