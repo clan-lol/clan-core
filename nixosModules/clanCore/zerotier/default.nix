@@ -79,46 +79,7 @@ in
       type = lib.types.submodule {
         freeformType = (pkgs.formats.json { }).type;
       };
-      default = {
-        authTokens = [
-          null
-        ];
-        authorizationEndpoint = "";
-        capabilities = [ ];
-        clientId = "";
-        dns = [ ];
-        enableBroadcast = true;
-        id = cfg.networkId;
-        ipAssignmentPools = [ ];
-        mtu = 2800;
-        multicastLimit = 32;
-        name = cfg.name;
-        uwid = cfg.networkId;
-        objtype = "network";
-        private = !cfg.controller.public;
-        remoteTraceLevel = 0;
-        remoteTraceTarget = null;
-        revision = 1;
-        routes = [ ];
-        rules = [
-          {
-            not = false;
-            or = false;
-            type = "ACTION_ACCEPT";
-          }
-        ];
-        rulesSource = "";
-        ssoEnabled = false;
-        tags = [ ];
-        v4AssignMode = {
-          zt = false;
-        };
-        v6AssignMode = {
-          "6plane" = false;
-          rfc4193 = true;
-          zt = false;
-        };
-      };
+      default = { };
     };
   };
   config = lib.mkMerge [
@@ -247,6 +208,46 @@ in
     })
     (lib.mkIf (cfg.controller.enable && (facts.zerotier-network-id.value or null) != null) {
       clan.networking.zerotier.networkId = facts.zerotier-network-id.value;
+      clan.networking.zerotier.settings = {
+        authTokens = [
+          null
+        ];
+        authorizationEndpoint = "";
+        capabilities = [ ];
+        clientId = "";
+        dns = [ ];
+        enableBroadcast = true;
+        id = cfg.networkId;
+        ipAssignmentPools = [ ];
+        mtu = 2800;
+        multicastLimit = 32;
+        name = cfg.name;
+        uwid = cfg.networkId;
+        objtype = "network";
+        private = !cfg.controller.public;
+        remoteTraceLevel = 0;
+        remoteTraceTarget = null;
+        revision = 1;
+        routes = [ ];
+        rules = [
+          {
+            not = false;
+            or = false;
+            type = "ACTION_ACCEPT";
+          }
+        ];
+        rulesSource = "";
+        ssoEnabled = false;
+        tags = [ ];
+        v4AssignMode = {
+          zt = false;
+        };
+        v6AssignMode = {
+          "6plane" = false;
+          rfc4193 = true;
+          zt = false;
+        };
+      };
       environment.etc."zerotier/network-id".text = facts.zerotier-network-id.value;
       systemd.services.zerotierone.serviceConfig.ExecStartPost = [
         "+${pkgs.writeShellScript "whitelist-controller" ''
