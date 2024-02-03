@@ -84,7 +84,8 @@ def upload_sources(
             f"failed to parse output of {shlex.join(cmd)}: {e}\nGot: {proc.stdout.decode('utf-8', 'replace')}"
         )
 
-def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
+
+def deploy_nixos(hosts: HostGroup) -> None:
     """
     Deploy to all hosts in parallel
     """
@@ -197,7 +198,7 @@ def update(args: argparse.Namespace) -> None:
         else:
             machines = get_selected_machines(args.machines, args.flake)
 
-    deploy_nixos(machines, args.flake)
+    deploy_nixos(machines)
 
 
 def register_update_parser(parser: argparse.ArgumentParser) -> None:
