@@ -1,17 +1,88 @@
 import argparse
 import json
+import logging
 import os
+import shlex
 import subprocess
 from pathlib import Path
 
 from ..cmd import run
 from ..errors import ClanError
 from ..machines.machines import Machine
-from ..nix import nix_build, nix_command, nix_config
+from ..nix import nix_build, nix_command, nix_config, nix_metadata
 from ..secrets.generate import generate_secrets
 from ..secrets.upload import upload_secrets
 from ..ssh import Host, HostGroup, HostKeyCheck, parse_deployment_address
 
+log = logging.getLogger(__name__)
+
+
+def is_path_input(node: dict[str, dict[str, str]]) -> bool:
+    locked = node.get("locked")
+    if not locked:
+        return False
+    return locked["type"] == "path" or locked.get("url", "").startswith("file://")
+
+
+def upload_sources(
+    flake_url: str, remote_url: str, always_upload_source: bool = False
+) -> str:
+    if not always_upload_source:
+        flake_data = nix_metadata(flake_url)
+        url = flake_data["resolvedUrl"]
+        has_path_inputs = any(
+            is_path_input(node) for node in flake_data["locks"]["nodes"].values()
+        )
+        if not has_path_inputs and not is_path_input(flake_data):
+            # No need to upload sources, we can just build the flake url directly
+            # FIXME: this might fail for private repositories?
+            return url
+        if not has_path_inputs:
+            # Just copy the flake to the remote machine, we can substitute other inputs there.
+            path = flake_data["path"]
+            env = os.environ.copy()
+            # env["NIX_SSHOPTS"] = " ".join(opts.remote_ssh_options)
+            assert remote_url
+            cmd = nix_command(
+                [
+                    "copy",
+                    "--to",
+                    f"ssh://{remote_url}",
+                    "--no-check-sigs",
+                    path,
+                ]
+            )
+            proc = subprocess.run(cmd, stdout=subprocess.PIPE, env=env, check=False)
+            if proc.returncode != 0:
+                raise ClanError(
+                    f"failed to upload sources: {shlex.join(cmd)} failed with {proc.returncode}"
+                )
+            return path
+
+    # Slow path: we need to upload all sources to the remote machine
+    assert remote_url
+    cmd = nix_command(
+        [
+            "flake",
+            "archive",
+            "--to",
+            f"ssh://{remote_url}",
+            "--json",
+            flake_url,
+        ]
+    )
+    log.info("run %s", shlex.join(cmd))
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, check=False)
+    if proc.returncode != 0:
+        raise ClanError(
+            f"failed to upload sources: {shlex.join(cmd)} failed with {proc.returncode}"
+        )
+    try:
+        return json.loads(proc.stdout)["path"]
+    except (json.JSONDecodeError, OSError) as e:
+        raise ClanError(
+            f"failed to parse output of {shlex.join(cmd)}: {e}\nGot: {proc.stdout.decode('utf-8', 'replace')}"
+        )
 
 def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
     """
@@ -23,14 +94,7 @@ def deploy_nixos(hosts: HostGroup, clan_dir: Path) -> None:
         ssh_arg = f"-p {h.port}" if h.port else ""
         env = os.environ.copy()
         env["NIX_SSHOPTS"] = ssh_arg
-        res = h.run_local(
-            nix_command(["flake", "archive", "--to", f"ssh://{target}", "--json"]),
-            check=True,
-            stdout=subprocess.PIPE,
-            extra_env=env,
-        )
-        data = json.loads(res.stdout)
-        path = data["path"]
+        path = upload_sources(".", target)
 
         if h.host_key_check != HostKeyCheck.STRICT:
             ssh_arg += " -o StrictHostKeyChecking=no"
