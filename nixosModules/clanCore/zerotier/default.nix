@@ -6,46 +6,6 @@ let
     install -Dm755 ${./genmoon.py} $out/bin/genmoon
     patchShebangs $out/bin/genmoon
   '';
-  networkConfig = {
-    authTokens = [
-      null
-    ];
-    authorizationEndpoint = "";
-    capabilities = [ ];
-    clientId = "";
-    dns = [ ];
-    enableBroadcast = true;
-    id = cfg.networkId;
-    ipAssignmentPools = [ ];
-    mtu = 2800;
-    multicastLimit = 32;
-    name = cfg.name;
-    uwid = cfg.networkId;
-    objtype = "network";
-    private = !cfg.controller.public;
-    remoteTraceLevel = 0;
-    remoteTraceTarget = null;
-    revision = 1;
-    routes = [ ];
-    rules = [
-      {
-        not = false;
-        or = false;
-        type = "ACTION_ACCEPT";
-      }
-    ];
-    rulesSource = "";
-    ssoEnabled = false;
-    tags = [ ];
-    v4AssignMode = {
-      zt = false;
-    };
-    v6AssignMode = {
-      "6plane" = false;
-      rfc4193 = true;
-      zt = false;
-    };
-  };
 in
 {
   options.clan.networking.zerotier = {
@@ -114,6 +74,52 @@ in
         '';
       };
     };
+    settings = lib.mkOption {
+      description = lib.mdDoc "override the network config in /var/lib/zerotier/bla/$network.json";
+      type = lib.types.submodule {
+        freeformType = (pkgs.formats.json { }).type;
+      };
+      default = {
+        authTokens = [
+          null
+        ];
+        authorizationEndpoint = "";
+        capabilities = [ ];
+        clientId = "";
+        dns = [ ];
+        enableBroadcast = true;
+        id = cfg.networkId;
+        ipAssignmentPools = [ ];
+        mtu = 2800;
+        multicastLimit = 32;
+        name = cfg.name;
+        uwid = cfg.networkId;
+        objtype = "network";
+        private = !cfg.controller.public;
+        remoteTraceLevel = 0;
+        remoteTraceTarget = null;
+        revision = 1;
+        routes = [ ];
+        rules = [
+          {
+            not = false;
+            or = false;
+            type = "ACTION_ACCEPT";
+          }
+        ];
+        rulesSource = "";
+        ssoEnabled = false;
+        tags = [ ];
+        v4AssignMode = {
+          zt = false;
+        };
+        v6AssignMode = {
+          "6plane" = false;
+          rfc4193 = true;
+          zt = false;
+        };
+      };
+    };
   };
   config = lib.mkMerge [
     ({
@@ -147,7 +153,7 @@ in
 
            ${lib.optionalString (cfg.controller.enable) ''
              mkdir -p /var/lib/zerotier-one/controller.d/network
-             ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON networkConfig)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
+             ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON cfg.settings)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
            ''}
            ${lib.optionalString (cfg.moon.stableEndpoints != []) ''
              if [[ ! -f /var/lib/zerotier-one/moon.json ]]; then
