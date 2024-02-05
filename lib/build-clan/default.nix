@@ -4,8 +4,6 @@
 , machines ? { } # allows to include machine-specific modules i.e. machines.${name} = { ... }
 , clanName # Needs to be (globally) unique, as this determines the folder name where the flake gets downloaded to.
 , clanIcon ? null # A path to an icon to be used for the clan, should be the same for all machines
-, machineIcon ? null # A path to an icon to be used for the machine
-, machineDescription ? null # A description of the machine
 }:
 let
   machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (builtins.readDir (directory + /machines));
@@ -47,8 +45,8 @@ let
           clanCore.clanName = clanName;
           clanCore.clanIcon = clanIcon;
           clanCore.clanDir = directory;
-          clanCore.machineIcon = machineIcon;
-          clanCore.machineDescription = machineDescription;
+          clanCore.machineIcon = clanIcon;
+          clanCore.machineDescription = null;
           nixpkgs.hostPlatform = if forceSystem then lib.mkForce system else lib.mkDefault system;
 
           # speeds up nix commands by using the nixpkgs from the host system (especially useful in VMs)
