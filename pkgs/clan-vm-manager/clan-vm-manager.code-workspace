@@ -9,6 +9,9 @@
 		{
 			"path": "../clan-cli/tests"
 		},
+		{
+			"path": "../../nixosModules"
+		}
 	],
 	"settings": {
 		"python.linting.mypyEnabled": true,

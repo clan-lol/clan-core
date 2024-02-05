@@ -168,10 +168,9 @@ class VM(GObject.Object):
         return f"{self.data.flake.flake_url}#{self.data.flake.flake_attr}"
 
     def stop(self) -> None:
-        log.info("Stopping VM")
         if not self.is_running():
             return
-
+        log.info(f"Stopping VM {self.get_id()}")
         self.process.kill_group()
 
     def read_whole_log(self) -> str:
