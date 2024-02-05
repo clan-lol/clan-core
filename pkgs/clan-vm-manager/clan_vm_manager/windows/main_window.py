@@ -29,7 +29,7 @@ class MainWindow(Adw.ApplicationWindow):
         scroll = Gtk.ScrolledWindow()
         scroll.set_propagate_natural_height(True)
         scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scroll.set_child(ClanList())
+        scroll.set_child(ClanList(config))
 
         stack_view.add_named(scroll, "list")
         stack_view.add_named(Details(), "details")

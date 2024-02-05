@@ -4,8 +4,6 @@ from pathlib import Path
 
 import gi
 
-from clan_vm_manager.models.use_join import Join
-
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
@@ -27,9 +25,6 @@ class MainApplication(Adw.Application):
         )
         self.config = config
         self.connect("shutdown", self.on_shutdown)
-
-        if config.url:
-            Join.use().push(config.url)
 
     def on_shutdown(self, app: Gtk.Application) -> None:
         log.debug("Shutting down")
