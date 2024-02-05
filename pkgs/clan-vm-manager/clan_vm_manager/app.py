@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import logging
 from pathlib import Path
 
 import gi
@@ -16,6 +17,8 @@ from clan_vm_manager.models.use_vms import VMS
 from .constants import constants
 from .windows.main_window import MainWindow
 
+log = logging.getLogger(__name__)
+
 
 class MainApplication(Adw.Application):
     def __init__(self, config: ClanConfig) -> None:
@@ -29,7 +32,7 @@ class MainApplication(Adw.Application):
             Join.use().push(config.url)
 
     def on_shutdown(self, app: Gtk.Application) -> None:
-        print("Shutting down")
+        log.debug("Shutting down")
         VMS.use().kill_all()
 
     def do_activate(self) -> None:

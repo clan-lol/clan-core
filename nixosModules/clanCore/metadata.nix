@@ -6,6 +6,18 @@
         the name of the clan
       '';
     };
+    machineIcon = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      description = ''
+        the location of the machine icon
+      '';
+    };
+    machineDescription = lib.mkOption {
+      type = lib.types.str;
+      description = ''
+        the description of the machine
+      '';
+    };
     clanDir = lib.mkOption {
       type = lib.types.either lib.types.path lib.types.str;
       description = ''
