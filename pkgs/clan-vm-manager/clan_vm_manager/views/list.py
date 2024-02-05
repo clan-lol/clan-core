@@ -3,8 +3,9 @@ from collections.abc import Callable
 from functools import partial
 
 import gi
-from clan_cli.history.add import HistoryEntry
+from clan_cli import history
 
+from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_join import Join, JoinValue
 from clan_vm_manager.models.use_views import Views
 
@@ -42,12 +43,16 @@ class ClanList(Gtk.Box):
     # ------------------------#
     """
 
-    def __init__(self) -> None:
+    def __init__(self, config: ClanConfig) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
         groups = Clans.use()
         join = Join.use()
 
+        if config.url:
+            join.push(config.url, self.after_join)
+
+        self.__init_machines = history.add.list_history()
         self.join_boxed_list = create_boxed_list(
             model=join.list_store, render_row=self.render_join_row
         )
@@ -152,6 +157,7 @@ class ClanList(Gtk.Box):
         cancel_button = Gtk.Button(label="Cancel")
         cancel_button.add_css_class("error")
         cancel_button.connect("clicked", partial(self.on_discard_clicked, item))
+        self.cancel_button = cancel_button
 
         trust_button = Gtk.Button(label="Join")
         trust_button.add_css_class("success")
@@ -178,18 +184,20 @@ class ClanList(Gtk.Box):
         dialog.set_transient_for(p)  # set the parent window of the dialog
         dialog.choose()
 
+    def after_join(self, item: JoinValue) -> None:
+        # If the join request list is empty disable the shadow artefact
+        if not Join.use().list_store.get_n_items():
+            self.join_boxed_list.add_css_class("no-shadow")
+        print("after join in list")
+
     def on_trust_clicked(self, item: JoinValue, widget: Gtk.Widget) -> None:
-        def on_join(_history: list[HistoryEntry]) -> None:
-            VMS.use().refresh()
+        widget.set_sensitive(False)
+        self.cancel_button.set_sensitive(False)
 
         # TODO(@hsjobeki): Confirm and edit details
         # Views.use().view.set_visible_child_name("details")
 
-        Join.use().join(item, cb=on_join)
-
-        # If the join request list is empty disable the shadow artefact
-        if not Join.use().list_store.get_n_items():
-            self.join_boxed_list.add_css_class("no-shadow")
+        Join.use().join(item)
 
     def on_discard_clicked(self, item: JoinValue, widget: Gtk.Widget) -> None:
         Join.use().discard(item)
