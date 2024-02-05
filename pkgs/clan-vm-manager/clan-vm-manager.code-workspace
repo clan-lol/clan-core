@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../../nixosModules"
+		},
+		{
+			"path": "../../lib/build-clan"
 		}
 	],
 	"settings": {
