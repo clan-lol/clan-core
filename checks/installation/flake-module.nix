@@ -107,7 +107,7 @@ in
                 client.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../lib/ssh/privkey} /root/.ssh/id_ed25519")
                 client.wait_until_succeeds("ssh -o StrictHostKeyChecking=accept-new -v root@target hostname")
 
-                client.succeed("clan --flake ${../..} machines install test_install_machine root@target >&2")
+                client.succeed("clan --debug --flake ${../..} machines install test_install_machine root@target >&2")
                 try:
                   target.shutdown()
                 except BrokenPipeError:
