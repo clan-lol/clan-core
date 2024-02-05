@@ -10,7 +10,7 @@ class SecretStore:
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
 
-    def set(self, service: str, name: str, value: bytes) -> None:
+    def set(self, _service: str, name: str, value: bytes) -> Path | None:
         subprocess.run(
             nix_shell(
                 ["nixpkgs#pass"],
@@ -19,8 +19,9 @@ class SecretStore:
             input=value,
             check=True,
         )
+        return None  # we manage the files outside of the git repo
 
-    def get(self, service: str, name: str) -> bytes:
+    def get(self, _service: str, name: str) -> bytes:
         return subprocess.run(
             nix_shell(
                 ["nixpkgs#pass"],
@@ -30,7 +31,7 @@ class SecretStore:
             stdout=subprocess.PIPE,
         ).stdout
 
-    def exists(self, service: str, name: str) -> bool:
+    def exists(self, _service: str, name: str) -> bool:
         password_store = os.environ.get(
             "PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store"
         )

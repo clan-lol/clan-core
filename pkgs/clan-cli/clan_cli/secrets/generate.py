@@ -9,6 +9,7 @@ from tempfile import TemporaryDirectory
 from clan_cli.cmd import run
 
 from ..errors import ClanError
+from ..git import commit_files
 from ..machines.machines import Machine
 from ..nix import nix_shell
 from .check import check_secrets
@@ -22,14 +23,14 @@ def generate_secrets(machine: Machine) -> None:
 
     with TemporaryDirectory() as d:
         for service in machine.secrets_data:
-            print(service)
             tmpdir = Path(d) / service
             # check if all secrets exist and generate them if at least one is missing
             needs_regeneration = not check_secrets(machine)
-            for fact in machine.secrets_data[service]["facts"].values():
-                if not (machine.flake / fact).exists():
-                    print(f"fact {fact} is missing")
             if needs_regeneration:
+                if not isinstance(machine.flake, Path):
+                    msg = f"flake is not a Path: {machine.flake}"
+                    msg += "fact/secret generation is only supported for local flakes"
+
                 env = os.environ.copy()
                 facts_dir = tmpdir / "facts"
                 facts_dir.mkdir(parents=True)
@@ -62,6 +63,7 @@ def generate_secrets(machine: Machine) -> None:
                     cmd,
                     env=env,
                 )
+                files_to_commit = []
                 # store secrets
                 for secret in machine.secrets_data[service]["secrets"]:
                     secret_file = secrets_dir / secret
@@ -69,7 +71,12 @@ def generate_secrets(machine: Machine) -> None:
                         msg = f"did not generate a file for '{secret}' when running the following command:\n"
                         msg += machine.secrets_data[service]["generator"]
                         raise ClanError(msg)
-                    secret_store.set(service, secret, secret_file.read_bytes())
+                    secret_path = secret_store.set(
+                        service, secret, secret_file.read_bytes()
+                    )
+                    if secret_path:
+                        files_to_commit.append(secret_path)
+
                 # store facts
                 for name, fact_path in machine.secrets_data[service]["facts"].items():
                     fact_file = facts_dir / name
@@ -80,6 +87,12 @@ def generate_secrets(machine: Machine) -> None:
                     fact_path = machine.flake / fact_path
                     fact_path.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copyfile(fact_file, fact_path)
+                    files_to_commit.append(fact_path)
+                commit_files(
+                    files_to_commit,
+                    machine.flake_dir,
+                    f"Update facts/secrets for service {service} in machine {machine.name}",
+                )
 
     print("successfully generated secrets")
 
