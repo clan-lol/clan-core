@@ -110,16 +110,16 @@ in
               client.succeed("echo testing > /var/test-backups/somefile")
 
               # create
-              client.succeed("clan --flake ${../..} backups create test_backup_client")
+              client.succeed("clan --debug --flake ${../..} backups create test_backup_client")
               client.wait_until_succeeds("! systemctl is-active borgbackup-job-test_backup_server")
 
               # list
               backup_id = json.loads(client.succeed("borg-job-test_backup_server list --json"))["archives"][0]["archive"]
-              assert(backup_id in client.succeed("clan --flake ${../..} backups list test_backup_client"))
+              assert(backup_id in client.succeed("clan --debug --flake ${../..} backups list test_backup_client"))
 
               # restore
               client.succeed("rm -f /var/test-backups/somefile")
-              client.succeed(f"clan --flake ${../..} backups restore test_backup_client borgbackup {backup_id}")
+              client.succeed(f"clan --debug --flake ${../..} backups restore test_backup_client borgbackup {backup_id}")
               assert(client.succeed("cat /var/test-backups/somefile").strip() == "testing")
             '';
           }
