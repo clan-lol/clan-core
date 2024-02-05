@@ -215,7 +215,7 @@ in
         authorizationEndpoint = "";
         capabilities = [ ];
         clientId = "";
-        dns = [ ];
+        dns = { };
         enableBroadcast = true;
         id = cfg.networkId;
         ipAssignmentPools = [ ];
