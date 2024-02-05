@@ -38,6 +38,18 @@ class ClanGroup(GObject.Object):
             self.list_store.append(vm)
 
 
+def init_grp_store(list_store: Gio.ListStore) -> None:
+    groups: dict[str | Path, list["VM"]] = {}
+    for vm in get_saved_vms():
+        ll = groups.get(vm.data.flake.flake_url, [])
+        ll.append(vm)
+        groups[vm.data.flake.flake_url] = ll
+
+    for url, vm_list in groups.items():
+        grp = ClanGroup(url, vm_list)
+        list_store.append(grp)
+
+
 class Clans:
     list_store: Gio.ListStore
     _instance: "None | ClanGroup" = None
@@ -51,18 +63,13 @@ class Clans:
         if cls._instance is None:
             cls._instance = cls.__new__(cls)
             cls.list_store = Gio.ListStore.new(ClanGroup)
-
-            groups: dict[str | Path, list["VM"]] = {}
-            for vm in get_saved_vms():
-                ll = groups.get(vm.data.flake.flake_url, [])
-                ll.append(vm)
-                groups[vm.data.flake.flake_url] = ll
-
-            for url, vms in groups.items():
-                grp = ClanGroup(url, vms)
-                cls.list_store.append(grp)
+            init_grp_store(cls.list_store)
 
         return cls._instance
+
+    def refresh(self) -> None:
+        self.list_store.remove_all()
+        init_grp_store(self.list_store)
 
 
 class VM(GObject.Object):
