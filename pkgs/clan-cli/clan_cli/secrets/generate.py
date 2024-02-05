@@ -22,13 +22,9 @@ def generate_secrets(machine: Machine) -> None:
 
     with TemporaryDirectory() as d:
         for service in machine.secrets_data:
-            print(service)
             tmpdir = Path(d) / service
             # check if all secrets exist and generate them if at least one is missing
             needs_regeneration = not check_secrets(machine)
-            for fact in machine.secrets_data[service]["facts"].values():
-                if not (machine.flake / fact).exists():
-                    print(f"fact {fact} is missing")
             if needs_regeneration:
                 env = os.environ.copy()
                 facts_dir = tmpdir / "facts"
