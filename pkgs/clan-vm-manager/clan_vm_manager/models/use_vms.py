@@ -6,6 +6,7 @@ from typing import IO, Any, ClassVar
 
 import gi
 from clan_cli import vms
+from clan_cli.clan_uri import ClanScheme, ClanURI
 from clan_cli.errors import ClanError
 from clan_cli.history.add import HistoryEntry
 from clan_cli.history.list import list_history
@@ -102,10 +103,22 @@ class VM(GObject.Object):
         if self.is_running():
             log.warn("VM is already running")
             return
-        machine = Machine(
-            name=self.data.flake.flake_attr,
-            flake=Path(self.data.flake.flake_url),
+
+        uri = ClanURI.from_str(
+            url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
         )
+
+        match uri.scheme:
+            case ClanScheme.LOCAL.value(path):
+                machine = Machine(
+                    name=self.data.flake.flake_attr,
+                    flake=path,  # type: ignore
+                )
+            case ClanScheme.REMOTE.value(url):
+                machine = Machine(
+                    name=self.data.flake.flake_attr,
+                    flake=url,  # type: ignore
+                )
         vm = vms.run.inspect_vm(machine)
         self.process = spawn(
             on_except=None,
