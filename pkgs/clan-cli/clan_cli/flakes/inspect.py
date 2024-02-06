@@ -24,6 +24,10 @@ class FlakeConfig:
     revision: str | None
     vm: VmConfig
 
+    def __post_init__(self) -> None:
+        if isinstance(self.vm, dict):
+            self.vm = VmConfig(**self.vm)
+
 
 def run_cmd(cmd: list[str]) -> str:
     proc = run(cmd)
