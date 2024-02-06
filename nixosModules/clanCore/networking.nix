@@ -33,7 +33,7 @@
     };
   };
   imports = [
-    (lib.mkRenamedOptionModule [ "clan" "networking" "deploymentAddress" ] [ "clan" "networking" "buildHost" ])
+    (lib.mkRenamedOptionModule [ "clan" "networking" "deploymentAddress" ] [ "clan" "networking" "targetHost" ])
   ];
   config = {
     # conflicts with systemd-resolved
