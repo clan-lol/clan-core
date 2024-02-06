@@ -19,7 +19,7 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
     log.info(f"using secret store: {secrets_module.SecretStore}")
     secret_store = secrets_module.SecretStore(machine=machine)
 
-    h = machine.host
+    h = machine.target_host
     target_host = f"{h.user or 'root'}@{h.host}"
     log.info(f"target host: {target_host}")
 
