@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 
 from ..cmd import run
+from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_eval, nix_metadata
 from ..ssh import Host, parse_deployment_address
 
@@ -48,10 +49,14 @@ class Machine:
     @property
     def target_host(self) -> str:
         # deploymentAddress is deprecated.
-        return (
+        val = (
             self.deployment_info.get("targetHost")
             or self.deployment_info["deploymentAddress"]
         )
+        if val is None:
+            msg = f"the 'clan.networking.targetHost' nixos option is not set for machine '{self.name}'"
+            raise ClanError(msg)
+        return val
 
     @target_host.setter
     def target_host(self, value: str) -> None:
