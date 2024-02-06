@@ -49,9 +49,8 @@ class Machine:
     @property
     def target_host(self) -> str:
         # deploymentAddress is deprecated.
-        val = (
-            self.deployment_info.get("targetHost")
-            or self.deployment_info["deploymentAddress"]
+        val = self.deployment_info.get("targetHost") or self.deployment_info.get(
+            "deploymentAddress"
         )
         if val is None:
             msg = f"the 'clan.networking.targetHost' nixos option is not set for machine '{self.name}'"

@@ -4,6 +4,7 @@ import logging
 import os
 import shlex
 import subprocess
+import sys
 from pathlib import Path
 
 from ..cmd import run
@@ -152,15 +153,28 @@ def get_all_machines(clan_dir: Path) -> HostGroup:
     machines = json.loads(Path(machines_json.rstrip()).read_text())
 
     hosts = []
+    ignored_machines = []
     for name, machine_data in machines.items():
-        # very hacky. would be better to do a MachinesGroup instead
         machine = Machine(name=name, flake=clan_dir, deployment_info=machine_data)
+        try:
+            machine.target_host
+        except ClanError:
+            ignored_machines.append(name)
+            continue
         host = parse_deployment_address(
             name,
             host=machine.target_host,
             meta={"machine": machine},
         )
         hosts.append(host)
+    if not hosts and ignored_machines != []:
+        print(
+            "WARNING: No machines to update. The following defined machines were ignored because they do not have `clan.networking.targetHost` nixos option set:",
+            file=sys.stderr,
+        )
+        for machine in ignored_machines:
+            print(machine, file=sys.stderr)
+    # very hacky. would be better to do a MachinesGroup instead
     return HostGroup(hosts)
 
 
