@@ -1,38 +1,53 @@
 { config, lib, ... }:
 {
-  options.clan.networking = {
-    targetHost = lib.mkOption {
-      description = ''
-        The target SSH node for deployment.
+  options.clan = {
+    networking = {
+      targetHost = lib.mkOption {
+        description = ''
+          The target SSH node for deployment.
 
-        By default, the node's attribute name will be used.
-        If set to null, only local deployment will be supported.
+          By default, the node's attribute name will be used.
+          If set to null, only local deployment will be supported.
 
-        format: user@host:port&SSH_OPTION=SSH_VALUE
-        examples:
-          - machine.example.com
-          - user@machine2.example.com
-          - root@example.com:2222&IdentityFile=/path/to/private/key
-      '';
-      default = null;
-      type = lib.types.nullOr lib.types.str;
+          format: user@host:port&SSH_OPTION=SSH_VALUE
+          examples:
+            - machine.example.com
+            - user@machine2.example.com
+            - root@example.com:2222&IdentityFile=/path/to/private/key
+        '';
+        default = null;
+        type = lib.types.nullOr lib.types.str;
+      };
+      buildHost = lib.mkOption {
+        description = ''
+          The build SSH node where nixos-rebuild will be executed.
+
+          If set to null, the targetHost will be used.
+
+          format: user@host:port&SSH_OPTION=SSH_VALUE
+          examples:
+            - machine.example.com
+            - user@machine2.example.com
+            - root@example.com:2222&IdentityFile=/path/to/private/key
+        '';
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+      };
     };
-    buildHost = lib.mkOption {
-      description = ''
-        The build SSH node where nixos-rebuild will be executed.
 
-        If set to null, the targetHost will be used.
+    deployment = {
+      requireExplicitUpdate = lib.mkOption {
+        description = ''
+          Do not update this machine when running `clan machines update` without any machines specified.
 
-        format: user@host:port&SSH_OPTION=SSH_VALUE
-        examples:
-          - machine.example.com
-          - user@machine2.example.com
-          - root@example.com:2222&IdentityFile=/path/to/private/key
-      '';
-      type = lib.types.nullOr lib.types.str;
-      default = null;
+          This is useful for machines that are not always online or are not part of the regular update cycle.
+        '';
+        type = lib.types.bool;
+        default = false;
+      };
     };
   };
+
   imports = [
     (lib.mkRenamedOptionModule [ "clan" "networking" "deploymentAddress" ] [ "clan" "networking" "targetHost" ])
   ];
