@@ -19,11 +19,9 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
     log.info(f"using secret store: {secrets_module.SecretStore}")
     secret_store = secrets_module.SecretStore(machine=machine)
 
-    h = machine.host
+    h = machine.target_host
     target_host = f"{h.user or 'root'}@{h.host}"
     log.info(f"target host: {target_host}")
-
-    flake_attr = h.meta.get("flake_attr", "")
 
     generate_secrets(machine)
 
@@ -40,7 +38,7 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
         cmd = [
             "nixos-anywhere",
             "-f",
-            f"{machine.flake}#{flake_attr}",
+            f"{machine.flake}#{machine.name}",
             "-t",
             "--no-reboot",
             "--extra-files",
@@ -75,7 +73,7 @@ def install_command(args: argparse.Namespace) -> None:
         kexec=args.kexec,
     )
     machine = Machine(opts.machine, flake=opts.flake)
-    machine.target_host = opts.target_host
+    machine.target_host_address = opts.target_host
 
     install_nixos(machine, kexec=opts.kexec)
 

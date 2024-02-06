@@ -13,7 +13,7 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
     backup_scripts = json.loads(machine.eval_nix("config.clanCore.backups"))
     if provider is None:
         for provider in backup_scripts["providers"]:
-            proc = machine.host.run(
+            proc = machine.target_host.run(
                 ["bash", "-c", backup_scripts["providers"][provider]["create"]],
             )
             if proc.returncode != 0:
@@ -23,7 +23,7 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
     else:
         if provider not in backup_scripts["providers"]:
             raise ClanError(f"provider {provider} not found")
-        proc = machine.host.run(
+        proc = machine.target_host.run(
             ["bash", "-c", backup_scripts["providers"][provider]["create"]],
         )
         if proc.returncode != 0:
