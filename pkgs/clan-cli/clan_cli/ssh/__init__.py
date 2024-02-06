@@ -16,12 +16,7 @@ from enum import Enum
 from pathlib import Path
 from shlex import quote
 from threading import Thread
-from typing import (
-    IO,
-    Any,
-    Generic,
-    TypeVar,
-)
+from typing import IO, Any, Generic, TypeVar
 
 # https://no-color.org
 DISABLE_COLOR = not sys.stderr.isatty() or os.environ.get("NO_COLOR", "") != ""
@@ -753,7 +748,7 @@ class HostGroup:
 
 
 def parse_deployment_address(
-    machine_name: str, host: str, meta: dict[str, Any] = {}
+    machine_name: str, host: str, forward_agent: bool = True, meta: dict[str, Any] = {}
 ) -> Host:
     parts = host.split("@")
     user: str | None = None
@@ -780,6 +775,7 @@ def parse_deployment_address(
         user=user,
         port=port,
         command_prefix=machine_name,
+        forward_agent=forward_agent,
         meta=meta,
         ssh_options=options,
     )
