@@ -109,14 +109,21 @@ class ClanList(Gtk.Box):
         row.set_title_selectable(True)
 
         # Subtitle
-        row.set_subtitle(flake.clan_name)
+        if flake.vm.machine_description:
+            row.set_subtitle(flake.vm.machine_description)
+        else:
+            row.set_subtitle(flake.clan_name)
         row.set_subtitle_lines(1)
 
-        # # Avatar
+        # Avatar
         avatar = Adw.Avatar()
-        if flake.icon:
-            avatar.set_custom_image(Gdk.Texture.new_from_filename(flake.icon))
-        if not flake.icon:
+
+        machine_icon = flake.vm.machine_icon
+        if machine_icon:
+            avatar.set_custom_image(Gdk.Texture.new_from_filename(str(machine_icon)))
+        elif flake.icon:
+            avatar.set_custom_image(Gdk.Texture.new_from_filename(str(flake.icon)))
+        else:
             avatar.set_text(flake.clan_name + " " + flake.flake_attr)
 
         avatar.set_show_initials(True)
