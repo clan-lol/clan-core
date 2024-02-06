@@ -31,6 +31,13 @@
             the hostname of the target host to be deployed to
           '';
         };
+        deployment.requireExplicitUpdate = lib.mkOption {
+          type = lib.types.bool;
+          description = ''
+            if true, the deployment will not be updated automatically.
+          '';
+          default = false;
+        };
         secretsUploadDirectory = lib.mkOption {
           type = lib.types.path;
           description = ''
@@ -73,6 +80,7 @@
     system.clan.deployment.data = {
       inherit (config.system.clan) secretsModule secretsData;
       inherit (config.clan.networking) targetHost buildHost;
+      inherit (config.clan.deployment) requireExplicitUpdate;
       inherit (config.clanCore) secretsUploadDirectory;
     };
     system.clan.deployment.file = pkgs.writeText "deployment.json" (builtins.toJSON config.system.clan.deployment.data);
