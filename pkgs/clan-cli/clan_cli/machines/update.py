@@ -105,10 +105,10 @@ def deploy_nixos(hosts: HostGroup) -> None:
 
         ssh_arg += " -i " + h.key if h.key else ""
 
-        flake_attr = h.meta.get("flake_attr", "")
+        machine: Machine = h.meta["machine"]
 
-        generate_secrets(h.meta["machine"])
-        upload_secrets(h.meta["machine"])
+        generate_secrets(machine)
+        upload_secrets(machine)
 
         target_host = h.meta.get("target_host")
         if target_host:
@@ -130,7 +130,7 @@ def deploy_nixos(hosts: HostGroup) -> None:
             "--build-host",
             "",
             "--flake",
-            f"{path}#{flake_attr}",
+            f"{path}#{machine.name}",
         ]
         if target_host:
             cmd.extend(["--target-host", target_host])

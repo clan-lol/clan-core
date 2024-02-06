@@ -23,8 +23,6 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
     target_host = f"{h.user or 'root'}@{h.host}"
     log.info(f"target host: {target_host}")
 
-    flake_attr = h.meta.get("flake_attr", "")
-
     generate_secrets(machine)
 
     with TemporaryDirectory() as tmpdir_:
@@ -40,7 +38,7 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
         cmd = [
             "nixos-anywhere",
             "-f",
-            f"{machine.flake}#{flake_attr}",
+            f"{machine.flake}#{machine.name}",
             "-t",
             "--no-reboot",
             "--extra-files",
