@@ -172,6 +172,30 @@ in
           whether to enable native wayland window passthrough with waypipe for the vm
         '';
       };
+      machine_icon = lib.mkOption {
+        type = lib.types.nullOr lib.types.path;
+        internal = true;
+        readOnly = true;
+        description = ''
+          the location of the clan icon
+        '';
+      };
+      machine_name = lib.mkOption {
+        type = lib.types.str;
+        internal = true;
+        readOnly = true;
+        description = ''
+          the name of the vm
+        '';
+      };
+      machine_description = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        internal = true;
+        readOnly = true;
+        description = ''
+          the description of the vm
+        '';
+      };
     };
   };
 
@@ -179,6 +203,9 @@ in
     # for clan vm inspect
     clanCore.vm.inspect = {
       clan_name = config.clanCore.clanName;
+      machine_icon = config.clanCore.machineIcon or config.clanCore.clanIcon;
+      machine_name = config.clanCore.machineName;
+      machine_description = config.clanCore.machineDescription;
       memory_size = config.clan.virtualisation.memorySize;
       inherit (config.clan.virtualisation) cores graphics waypipe;
     };

@@ -9,6 +9,8 @@ from ..machines.machines import Machine
 @dataclass
 class VmConfig:
     machine_name: str
+    machine_icon: Path
+    machine_description: str
     flake_url: str | Path
     clan_name: str
 
@@ -20,7 +22,7 @@ class VmConfig:
 
 def inspect_vm(machine: Machine) -> VmConfig:
     data = json.loads(machine.eval_nix("config.clanCore.vm.inspect"))
-    return VmConfig(machine_name=machine.name, flake_url=machine.flake, **data)
+    return VmConfig(flake_url=machine.flake, **data)
 
 
 @dataclass

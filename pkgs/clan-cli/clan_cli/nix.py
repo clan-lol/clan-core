@@ -53,6 +53,11 @@ def nix_build(flags: list[str], gcroot: Path | None = None) -> list[str]:
         )
 
 
+def nix_add_to_gcroots(nix_path: Path, dest: Path) -> None:
+    cmd = ["nix-store", "--realise", f"{nix_path}", "--add-root", f"{dest}"]
+    run(cmd)
+
+
 def nix_config() -> dict[str, Any]:
     cmd = nix_command(["show-config", "--json"])
     proc = run(cmd)
