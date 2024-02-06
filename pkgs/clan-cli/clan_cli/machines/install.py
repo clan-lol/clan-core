@@ -73,7 +73,7 @@ def install_command(args: argparse.Namespace) -> None:
         kexec=args.kexec,
     )
     machine = Machine(opts.machine, flake=opts.flake)
-    machine.target_host = opts.target_host
+    machine.target_host_address = opts.target_host
 
     install_nixos(machine, kexec=opts.kexec)
 
