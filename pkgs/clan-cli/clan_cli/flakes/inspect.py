@@ -7,7 +7,7 @@ from ..dirs import machine_gcroot
 from ..errors import ClanError
 from ..machines.list import list_machines
 from ..machines.machines import Machine
-from ..nix import nix_build, nix_config, nix_eval, nix_metadata
+from ..nix import nix_add_to_gcroots, nix_build, nix_config, nix_eval, nix_metadata
 from ..vms.inspect import VmConfig, inspect_vm
 
 
@@ -43,6 +43,14 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
 
     machine = Machine(machine_name, flake_url)
     vm = inspect_vm(machine)
+
+    # Make symlink to gcroots from vm.machine_icon
+    if vm.machine_icon:
+        gcroot_icon: Path = (
+            machine_gcroot(clan_name=vm.clan_name, flake_url=str(flake_url))
+            / vm.machine_name
+        )
+        nix_add_to_gcroots(vm.machine_icon, gcroot_icon)
 
     # Get the cLAN name
     cmd = nix_eval(
