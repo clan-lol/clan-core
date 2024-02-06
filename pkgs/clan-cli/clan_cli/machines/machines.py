@@ -70,11 +70,10 @@ class Machine:
         if self.deployment_info["secretsData"]:
             try:
                 return json.loads(Path(self.deployment_info["secretsData"]).read_text())
-            except json.JSONDecodeError:
-                log.error(
+            except json.JSONDecodeError as e:
+                raise ClanError(
                     f"Failed to parse secretsData for machine {self.name} as json"
-                )
-                return {}
+                ) from e
         return {}
 
     @property
