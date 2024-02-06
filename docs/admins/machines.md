@@ -101,16 +101,6 @@ $ clan config --machine my-machine clan.networking.targetHost root@host_or_ip
 _Note: The use of `root@` in the target address implies SSH access as the root user.
 Ensure that the root login is secured and only used when necessary._
 
-### Setting the Build Host
-
-If the machine does not have enough resources to run the NixOS evaluation or build itself,
-it is also possible to specify a build host instead.
-During an update, the cli will ssh into the build host and run `nixos-rebuild` from there.
-
-```shellSession
-$ clan config --machine my-machine clan.networking.buildHost root@host_or_ip
-```
-
 ### Updating Machine Configurations
 
 Execute the following command to update the specified machine:
@@ -124,3 +114,25 @@ You can also update all configured machines simultaneously by omitting the machi
 ```shellSession
 $ clan machines update
 ```
+
+### Setting a Build Host
+
+If the machine does not have enough resources to run the NixOS evaluation or build itself,
+it is also possible to specify a build host instead.
+During an update, the cli will ssh into the build host and run `nixos-rebuild` from there.
+
+```shellSession
+$ clan config --machine my-machine clan.networking.buildHost root@host_or_ip
+```
+
+### Excluding a machine from `clan machine update`
+
+To exclude machines from beeing updated when running `clan machines update` without any machines specified,
+one can set the `clan.deployment.requireExplicitUpdate` option to true:
+
+
+```shellSession
+$ clan config --machine my-machine clan.deployment.requireExplicitUpdate true
+```
+
+This is useful for machines that are not always online or are not part of the regular update cycle.
