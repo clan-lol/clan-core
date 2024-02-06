@@ -151,6 +151,9 @@ def get_all_machines(clan_dir: Path) -> HostGroup:
     hosts = []
     ignored_machines = []
     for name, machine_data in machines.items():
+        if machine_data.get("requireExplicitUpdate", False):
+            continue
+
         machine = Machine(name=name, flake=clan_dir, deployment_info=machine_data)
         try:
             hosts.append(machine.build_host)
