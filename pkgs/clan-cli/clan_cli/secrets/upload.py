@@ -22,7 +22,7 @@ def upload_secrets(machine: Machine) -> None:
             return
     with TemporaryDirectory() as tempdir:
         secret_store.upload(Path(tempdir))
-        host = machine.host
+        host = machine.target_host
 
         ssh_cmd = host.ssh_cmd()
         run(

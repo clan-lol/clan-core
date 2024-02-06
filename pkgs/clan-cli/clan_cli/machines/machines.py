@@ -92,7 +92,7 @@ class Machine:
         return Path(self.flake_path)
 
     @property
-    def host(self) -> Host:
+    def target_host(self) -> Host:
         return parse_deployment_address(
             self.name, self.target_host_address, meta={"machine": self}
         )

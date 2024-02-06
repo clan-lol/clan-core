@@ -182,7 +182,7 @@ def get_selected_machines(machine_names: list[str], flake_dir: Path) -> HostGrou
     hosts = []
     for name in machine_names:
         machine = Machine(name=name, flake=flake_dir)
-        hosts.append(machine.host)
+        hosts.append(machine.target_host)
     return HostGroup(hosts)
 
 
