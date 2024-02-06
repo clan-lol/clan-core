@@ -105,16 +105,11 @@ def deploy_nixos(hosts: HostGroup) -> None:
 
         ssh_arg += " -i " + h.key if h.key else ""
 
-        flake_attr = h.meta.get("flake_attr", "")
+        machine: Machine = h.meta["machine"]
 
-        generate_secrets(h.meta["machine"])
-        upload_secrets(h.meta["machine"])
+        generate_secrets(machine)
+        upload_secrets(machine)
 
-        target_host = h.meta.get("target_host")
-        if target_host:
-            target_user = h.meta.get("target_user")
-            if target_user:
-                target_host = f"{target_user}@{target_host}"
         extra_args = h.meta.get("extra_args", [])
         cmd = [
             "nixos-rebuild",
@@ -130,9 +125,10 @@ def deploy_nixos(hosts: HostGroup) -> None:
             "--build-host",
             "",
             "--flake",
-            f"{path}#{flake_attr}",
+            f"{path}#{machine.name}",
         ]
-        if target_host:
+        if target_host := h.meta.get("target_host"):
+            target_host = f"{target_host.user or 'root'}@{target_host.host}"
             cmd.extend(["--target-host", target_host])
         ret = h.run(cmd, check=False)
         # re-retry switch if the first time fails
@@ -157,16 +153,10 @@ def get_all_machines(clan_dir: Path) -> HostGroup:
     for name, machine_data in machines.items():
         machine = Machine(name=name, flake=clan_dir, deployment_info=machine_data)
         try:
-            machine.target_host
+            hosts.append(machine.build_host)
         except ClanError:
             ignored_machines.append(name)
             continue
-        host = parse_deployment_address(
-            name,
-            host=machine.target_host,
-            meta={"machine": machine},
-        )
-        hosts.append(host)
     if not hosts and ignored_machines != []:
         print(
             "WARNING: No machines to update. The following defined machines were ignored because they do not have `clan.networking.targetHost` nixos option set:",
@@ -182,7 +172,7 @@ def get_selected_machines(machine_names: list[str], flake_dir: Path) -> HostGrou
     hosts = []
     for name in machine_names:
         machine = Machine(name=name, flake=flake_dir)
-        hosts.append(machine.host)
+        hosts.append(machine.build_host)
     return HostGroup(hosts)
 
 
@@ -192,7 +182,7 @@ def update(args: argparse.Namespace) -> None:
         raise ClanError("Could not find clan flake toplevel directory")
     if len(args.machines) == 1 and args.target_host is not None:
         machine = Machine(name=args.machines[0], flake=args.flake)
-        machine.target_host = args.target_host
+        machine.target_host_address = args.target_host
         host = parse_deployment_address(
             args.machines[0],
             args.target_host,

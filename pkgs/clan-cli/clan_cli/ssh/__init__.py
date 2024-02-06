@@ -16,14 +16,7 @@ from enum import Enum
 from pathlib import Path
 from shlex import quote
 from threading import Thread
-from typing import (
-    IO,
-    Any,
-    Generic,
-    Literal,
-    TypeVar,
-    overload,
-)
+from typing import IO, Any, Generic, TypeVar
 
 # https://no-color.org
 DISABLE_COLOR = not sys.stderr.isatty() or os.environ.get("NO_COLOR", "") != ""
@@ -755,7 +748,7 @@ class HostGroup:
 
 
 def parse_deployment_address(
-    machine_name: str, host: str, meta: dict[str, Any] = {}
+    machine_name: str, host: str, forward_agent: bool = True, meta: dict[str, Any] = {}
 ) -> Host:
     parts = host.split("@")
     user: str | None = None
@@ -777,83 +770,12 @@ def parse_deployment_address(
     hostname = result.hostname
     port = result.port
     meta = meta.copy()
-    meta["flake_attr"] = machine_name
     return Host(
         hostname,
         user=user,
         port=port,
         command_prefix=machine_name,
+        forward_agent=forward_agent,
         meta=meta,
         ssh_options=options,
-    )
-
-
-@overload
-def run(
-    cmd: list[str] | str,
-    text: Literal[True] = ...,
-    stdout: FILE = ...,
-    stderr: FILE = ...,
-    extra_env: dict[str, str] = ...,
-    cwd: None | str | Path = ...,
-    check: bool = ...,
-) -> subprocess.CompletedProcess[str]:
-    ...
-
-
-@overload
-def run(
-    cmd: list[str] | str,
-    text: Literal[False],
-    stdout: FILE = ...,
-    stderr: FILE = ...,
-    extra_env: dict[str, str] = ...,
-    cwd: None | str | Path = ...,
-    check: bool = ...,
-) -> subprocess.CompletedProcess[bytes]:
-    ...
-
-
-def run(
-    cmd: list[str] | str,
-    text: bool = True,
-    stdout: FILE = None,
-    stderr: FILE = None,
-    extra_env: dict[str, str] = {},
-    cwd: None | str | Path = None,
-    check: bool = True,
-) -> subprocess.CompletedProcess[Any]:
-    """
-    Run command locally
-
-    @cmd if this parameter is a string the command is interpreted as a shell command,
-         otherwise if it is a list, than the first list element is the command
-         and the remaining list elements are passed as arguments to the
-         command.
-    @text when true, file objects for stdout and stderr are opened in text mode.
-    @stdout if not None stdout of the command will be redirected to this file i.e. stdout=subprocss.PIPE
-    @stderr if not None stderr of the command will be redirected to this file i.e. stderr=subprocess.PIPE
-    @extra_env environment variables to override whe running the command
-    @cwd current working directory to run the process in
-    @check If check is true, and the process exits with a non-zero exit code, a
-           CalledProcessError exception will be raised. Attributes of that exception
-           hold the arguments, the exit code, and stdout and stderr if they were
-           captured.
-    """
-    if isinstance(cmd, list):
-        info("$ " + " ".join(cmd))
-    else:
-        info(f"$ {cmd}")
-    env = os.environ.copy()
-    env.update(extra_env)
-
-    return subprocess.run(
-        cmd,
-        stdout=stdout,
-        stderr=stderr,
-        env=env,
-        cwd=cwd,
-        check=check,
-        shell=not isinstance(cmd, list),
-        text=text,
     )

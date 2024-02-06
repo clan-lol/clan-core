@@ -47,7 +47,7 @@ class Machine:
         return self._deployment_info
 
     @property
-    def target_host(self) -> str:
+    def target_host_address(self) -> str:
         # deploymentAddress is deprecated.
         val = self.deployment_info.get("targetHost") or self.deployment_info.get(
             "deploymentAddress"
@@ -57,8 +57,8 @@ class Machine:
             raise ClanError(msg)
         return val
 
-    @target_host.setter
-    def target_host(self, value: str) -> None:
+    @target_host_address.setter
+    def target_host_address(self, value: str) -> None:
         self.deployment_info["targetHost"] = value
 
     @property
@@ -92,9 +92,26 @@ class Machine:
         return Path(self.flake_path)
 
     @property
-    def host(self) -> Host:
+    def target_host(self) -> Host:
         return parse_deployment_address(
-            self.name, self.target_host, meta={"machine": self}
+            self.name, self.target_host_address, meta={"machine": self}
+        )
+
+    @property
+    def build_host(self) -> Host:
+        """
+        The host where the machine is built and deployed from.
+        Can be the same as the target host.
+        """
+        build_host = self.deployment_info.get("buildHost")
+        if build_host is None:
+            return self.target_host
+        # enable ssh agent forwarding to allow the build host to access the target host
+        return parse_deployment_address(
+            self.name,
+            build_host,
+            forward_agent=True,
+            meta={"machine": self, "target_host": self.target_host},
         )
 
     def eval_nix(self, attr: str, refresh: bool = False) -> str:

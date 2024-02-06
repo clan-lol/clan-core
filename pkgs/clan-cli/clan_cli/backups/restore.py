@@ -20,7 +20,7 @@ def restore_service(
     env["JOB"] = backup.job_name
     env["FOLDERS"] = ":".join(folders)
 
-    proc = machine.host.run(
+    proc = machine.target_host.run(
         [
             "bash",
             "-c",
@@ -34,7 +34,7 @@ def restore_service(
             f"failed to run preRestoreScript: {backup_folders[service]['preRestoreScript']}, error was: {proc.stdout}"
         )
 
-    proc = machine.host.run(
+    proc = machine.target_host.run(
         [
             "bash",
             "-c",
@@ -48,7 +48,7 @@ def restore_service(
             f"failed to restore backup: {backup_metadata['providers'][provider]['restore']}"
         )
 
-    proc = machine.host.run(
+    proc = machine.target_host.run(
         [
             "bash",
             "-c",

@@ -86,7 +86,7 @@ class SecretStore:
 
     def update_check(self) -> bool:
         local_hash = self.generate_hash()
-        remote_hash = self.machine.host.run(
+        remote_hash = self.machine.target_host.run(
             # TODO get the path to the secrets from the machine
             ["cat", f"{self.machine.secrets_upload_directory}/.pass_info"],
             check=False,

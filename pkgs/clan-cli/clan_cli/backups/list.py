@@ -19,7 +19,7 @@ class Backup:
 def list_provider(machine: Machine, provider: str) -> list[Backup]:
     results = []
     backup_metadata = json.loads(machine.eval_nix("config.clanCore.backups"))
-    proc = machine.host.run(
+    proc = machine.target_host.run(
         ["bash", "-c", backup_metadata["providers"][provider]["list"]],
         stdout=subprocess.PIPE,
         check=False,
