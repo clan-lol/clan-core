@@ -20,9 +20,7 @@ from typing import (
     IO,
     Any,
     Generic,
-    Literal,
     TypeVar,
-    overload,
 )
 
 # https://no-color.org
@@ -785,75 +783,4 @@ def parse_deployment_address(
         command_prefix=machine_name,
         meta=meta,
         ssh_options=options,
-    )
-
-
-@overload
-def run(
-    cmd: list[str] | str,
-    text: Literal[True] = ...,
-    stdout: FILE = ...,
-    stderr: FILE = ...,
-    extra_env: dict[str, str] = ...,
-    cwd: None | str | Path = ...,
-    check: bool = ...,
-) -> subprocess.CompletedProcess[str]:
-    ...
-
-
-@overload
-def run(
-    cmd: list[str] | str,
-    text: Literal[False],
-    stdout: FILE = ...,
-    stderr: FILE = ...,
-    extra_env: dict[str, str] = ...,
-    cwd: None | str | Path = ...,
-    check: bool = ...,
-) -> subprocess.CompletedProcess[bytes]:
-    ...
-
-
-def run(
-    cmd: list[str] | str,
-    text: bool = True,
-    stdout: FILE = None,
-    stderr: FILE = None,
-    extra_env: dict[str, str] = {},
-    cwd: None | str | Path = None,
-    check: bool = True,
-) -> subprocess.CompletedProcess[Any]:
-    """
-    Run command locally
-
-    @cmd if this parameter is a string the command is interpreted as a shell command,
-         otherwise if it is a list, than the first list element is the command
-         and the remaining list elements are passed as arguments to the
-         command.
-    @text when true, file objects for stdout and stderr are opened in text mode.
-    @stdout if not None stdout of the command will be redirected to this file i.e. stdout=subprocss.PIPE
-    @stderr if not None stderr of the command will be redirected to this file i.e. stderr=subprocess.PIPE
-    @extra_env environment variables to override whe running the command
-    @cwd current working directory to run the process in
-    @check If check is true, and the process exits with a non-zero exit code, a
-           CalledProcessError exception will be raised. Attributes of that exception
-           hold the arguments, the exit code, and stdout and stderr if they were
-           captured.
-    """
-    if isinstance(cmd, list):
-        info("$ " + " ".join(cmd))
-    else:
-        info(f"$ {cmd}")
-    env = os.environ.copy()
-    env.update(extra_env)
-
-    return subprocess.run(
-        cmd,
-        stdout=stdout,
-        stderr=stderr,
-        env=env,
-        cwd=cwd,
-        check=check,
-        shell=not isinstance(cmd, list),
-        text=text,
     )

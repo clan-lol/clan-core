@@ -1,32 +1,11 @@
 import subprocess
 
-from clan_cli.ssh import Host, HostGroup, run
-
-
-def test_run() -> None:
-    p = run("echo hello")
-    assert p.stdout is None
-
-
-def test_run_failure() -> None:
-    p = run("exit 1", check=False)
-    assert p.returncode == 1
-
-    try:
-        p = run("exit 1")
-    except Exception:
-        pass
-    else:
-        assert False, "Command should have raised an error"
-
+from clan_cli.ssh import Host, HostGroup
 
 hosts = HostGroup([Host("some_host")])
 
 
 def test_run_environment() -> None:
-    p1 = run("echo $env_var", stdout=subprocess.PIPE, extra_env=dict(env_var="true"))
-    assert p1.stdout == "true\n"
-
     p2 = hosts.run_local(
         "echo $env_var", extra_env=dict(env_var="true"), stdout=subprocess.PIPE
     )
@@ -36,17 +15,6 @@ def test_run_environment() -> None:
         ["env"], extra_env=dict(env_var="true"), stdout=subprocess.PIPE
     )
     assert "env_var=true" in p3[0].result.stdout
-
-
-def test_run_non_shell() -> None:
-    p = run(["echo", "$hello"], stdout=subprocess.PIPE)
-    assert p.stdout == "$hello\n"
-
-
-def test_run_stderr_stdout() -> None:
-    p = run("echo 1; echo 2 >&2", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    assert p.stdout == "1\n"
-    assert p.stderr == "2\n"
 
 
 def test_run_local() -> None:
