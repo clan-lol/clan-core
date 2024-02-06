@@ -775,7 +775,6 @@ def parse_deployment_address(
     hostname = result.hostname
     port = result.port
     meta = meta.copy()
-    meta["flake_attr"] = machine_name
     return Host(
         hostname,
         user=user,
