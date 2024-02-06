@@ -20,13 +20,13 @@
           '';
         };
         deployment.buildHost = lib.mkOption {
-          type = lib.types.str;
+          type = lib.types.nullOr lib.types.str;
           description = ''
             the hostname of the build host where nixos-rebuild is run
           '';
         };
         deployment.targetHost = lib.mkOption {
-          type = lib.types.str;
+          type = lib.types.nullOr lib.types.str;
           description = ''
             the hostname of the target host to be deployed to
           '';

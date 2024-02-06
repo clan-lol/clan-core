@@ -14,7 +14,8 @@
           - user@machine2.example.com
           - root@example.com:2222&IdentityFile=/path/to/private/key
       '';
-      type = lib.types.str;
+      default = null;
+      type = lib.types.nullOr lib.types.str;
     };
     buildHost = lib.mkOption {
       description = ''
