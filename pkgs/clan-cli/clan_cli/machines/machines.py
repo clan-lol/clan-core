@@ -97,6 +97,23 @@ class Machine:
             self.name, self.target_host_address, meta={"machine": self}
         )
 
+    @property
+    def build_host(self) -> Host:
+        """
+        The host where the machine is built and deployed from.
+        Can be the same as the target host.
+        """
+        build_host = self.deployment_info.get("buildHost")
+        if build_host is None:
+            return self.target_host
+        # enable ssh agent forwarding to allow the build host to access the target host
+        return parse_deployment_address(
+            self.name,
+            build_host,
+            forward_agent=True,
+            meta={"machine": self, "target_host": self.target_host},
+        )
+
     def eval_nix(self, attr: str, refresh: bool = False) -> str:
         """
         eval a nix attribute of the machine
