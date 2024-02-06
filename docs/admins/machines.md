@@ -101,6 +101,16 @@ $ clan config --machine my-machine clan.networking.targetHost root@host_or_ip
 _Note: The use of `root@` in the target address implies SSH access as the root user.
 Ensure that the root login is secured and only used when necessary._
 
+### Setting the Build Host
+
+If the machine does not have enough resources to run the NixOS evaluation or build itself,
+it is also possible to specify a build host instead.
+During an update, the cli will ssh into the build host and run `nixos-rebuild` from there.
+
+```shellSession
+$ clan config --machine my-machine clan.networking.buildHost root@host_or_ip
+```
+
 ### Updating Machine Configurations
 
 Execute the following command to update the specified machine:
