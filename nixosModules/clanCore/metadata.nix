@@ -8,12 +8,14 @@
     };
     machineIcon = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
+      default = null;
       description = ''
         the location of the machine icon
       '';
     };
     machineDescription = lib.mkOption {
-      type = lib.types.str;
+      type = lib.types.nullOr lib.types.str;
+      default = null;
       description = ''
         the description of the machine
       '';
