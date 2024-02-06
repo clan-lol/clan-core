@@ -41,12 +41,10 @@ let
         clan-core.nixosModules.clanCore
         (machines.${name} or { })
         {
-          clanCore.machineName = name;
           clanCore.clanName = clanName;
           clanCore.clanIcon = clanIcon;
           clanCore.clanDir = directory;
-          clanCore.machineIcon = clanIcon;
-          clanCore.machineDescription = null;
+          clanCore.machineName = name;
           nixpkgs.hostPlatform = if forceSystem then lib.mkForce system else lib.mkDefault system;
 
           # speeds up nix commands by using the nixpkgs from the host system (especially useful in VMs)
