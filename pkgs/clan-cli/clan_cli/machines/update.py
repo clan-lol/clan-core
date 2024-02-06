@@ -154,14 +154,11 @@ def get_all_machines(clan_dir: Path) -> HostGroup:
     hosts = []
     for name, machine_data in machines.items():
         # very hacky. would be better to do a MachinesGroup instead
+        machine = Machine(name=name, flake=clan_dir, deployment_info=machine_data)
         host = parse_deployment_address(
             name,
-            machine_data.get("targetHost") or machine_data.get("deploymentAddress"),
-            meta={
-                "machine": Machine(
-                    name=name, flake=clan_dir, deployment_info=machine_data
-                )
-            },
+            host=machine.target_host,
+            meta={"machine": machine},
         )
         hosts.append(host)
     return HostGroup(hosts)
