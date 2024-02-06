@@ -47,7 +47,7 @@ class Machine:
         return self._deployment_info
 
     @property
-    def target_host(self) -> str:
+    def target_host_address(self) -> str:
         # deploymentAddress is deprecated.
         val = self.deployment_info.get("targetHost") or self.deployment_info.get(
             "deploymentAddress"
@@ -57,8 +57,8 @@ class Machine:
             raise ClanError(msg)
         return val
 
-    @target_host.setter
-    def target_host(self, value: str) -> None:
+    @target_host_address.setter
+    def target_host_address(self, value: str) -> None:
         self.deployment_info["targetHost"] = value
 
     @property
@@ -94,7 +94,7 @@ class Machine:
     @property
     def host(self) -> Host:
         return parse_deployment_address(
-            self.name, self.target_host, meta={"machine": self}
+            self.name, self.target_host_address, meta={"machine": self}
         )
 
     def eval_nix(self, attr: str, refresh: bool = False) -> str:
