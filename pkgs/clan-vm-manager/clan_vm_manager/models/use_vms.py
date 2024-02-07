@@ -33,6 +33,7 @@ class ClanGroup(GObject.Object):
         super().__init__()
         self.url = url
         self.vms = vms
+        self.clan_name = vms[0].data.flake.clan_name
         self.list_store = Gio.ListStore.new(VM)
 
         for vm in vms:
@@ -67,6 +68,26 @@ class Clans:
             init_grp_store(cls.list_store)
 
         return cls._instance
+
+    def filter_by_name(self, text: str) -> None:
+        if text:
+            filtered_list = self.list_store
+            filtered_list.remove_all()
+
+            groups: dict[str | Path, list["VM"]] = {}
+            for vm in get_saved_vms():
+                ll = groups.get(vm.data.flake.flake_url, [])
+                print(text, vm.data.flake.vm.machine_name)
+                if text.lower() in vm.data.flake.vm.machine_name.lower():
+                    ll.append(vm)
+                    groups[vm.data.flake.flake_url] = ll
+
+            for url, vm_list in groups.items():
+                grp = ClanGroup(url, vm_list)
+                filtered_list.append(grp)
+
+        else:
+            self.refresh()
 
     def refresh(self) -> None:
         self.list_store.remove_all()
@@ -235,7 +256,7 @@ class VMS:
             filtered_list = self.list_store
             filtered_list.remove_all()
             for vm in get_saved_vms():
-                if text.lower() in vm.data.flake.clan_name.lower():
+                if text.lower() in vm.data.flake.vm.machine_name.lower():
                     filtered_list.append(vm)
         else:
             self.refresh()

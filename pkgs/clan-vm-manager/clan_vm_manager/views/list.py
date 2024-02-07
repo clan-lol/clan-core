@@ -4,7 +4,7 @@ from functools import partial
 from typing import Any
 
 import gi
-from clan_cli import ClanError, history
+from clan_cli import ClanError, history, machines
 from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.models.interfaces import ClanConfig
@@ -83,7 +83,31 @@ class ClanList(Gtk.Box):
         #     boxed_list.remove_css_class("no-shadow")
 
         grp = Adw.PreferencesGroup()
-        grp.set_title(group.url)
+        grp.set_title(group.clan_name)
+        grp.set_description(group.url)
+
+        add_action = Gio.SimpleAction.new("add", GLib.VariantType.new("s"))
+        add_action.connect("activate", self.on_add)
+        app = Gio.Application.get_default()
+        app.add_action(add_action)
+
+        menu_model = Gio.Menu()
+        for vm in machines.list.list_machines(flake_url=group.url):
+            if vm not in [item.data.flake.flake_attr for item in group.list_store]:
+                menu_model.append(vm, f"app.add::{vm}")
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        box.set_valign(Gtk.Align.CENTER)
+
+        add_button = Gtk.MenuButton()
+        add_button.set_icon_name("list-add")
+        add_button.set_has_frame(False)
+        add_button.set_menu_model(menu_model)
+
+        box.append(add_button)
+        box.append(Gtk.Label.new("Add machine"))
+
+        grp.set_header_suffix(box)
 
         vm_list = create_boxed_list(
             model=group.list_store, render_row=self.render_vm_row
@@ -93,8 +117,12 @@ class ClanList(Gtk.Box):
 
         return grp
 
+    def on_add(self, action: Any, parameter: Any) -> None:
+        target = parameter.get_string()
+        print("Adding new machine", target)
+
     def on_search_changed(self, entry: Gtk.SearchEntry) -> None:
-        VMS.use().filter_by_name(entry.get_text())
+        Clans.use().filter_by_name(entry.get_text())
         # Disable the shadow if the list is empty
         if not VMS.use().list_store.get_n_items():
             self.group_list.add_css_class("no-shadow")
