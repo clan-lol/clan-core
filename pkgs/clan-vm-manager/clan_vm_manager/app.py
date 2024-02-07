@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
+from clan_cli.custom_logger import setup_logging
 from gi.repository import Adw, Gdk, Gio, Gtk
 
 from clan_vm_manager.models.interfaces import ClanConfig
+from clan_vm_manager.models.use_join import GLib, GObject
 from clan_vm_manager.models.use_vms import VMS
 
 from .constants import constants
@@ -20,14 +22,53 @@ log = logging.getLogger(__name__)
 
 
 class MainApplication(Adw.Application):
-    def __init__(self, config: ClanConfig) -> None:
+    __gsignals__: ClassVar = {
+        "join_request": (GObject.SignalFlags.RUN_FIRST, None, [str]),
+    }
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
-            application_id=constants["APPID"], flags=Gio.ApplicationFlags.FLAGS_NONE
+            *args,
+            application_id=constants["APPID"],
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+            **kwargs,
         )
-        self.config = config
+
+        self.add_main_option(
+            "debug",
+            ord("d"),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            "enable debug mode",
+            None,
+        )
+
         self.win: Adw.ApplicationWindow | None = None
         self.connect("shutdown", self.on_shutdown)
         self.connect("activate", self.show_window)
+
+    def do_command_line(self, command_line: Any) -> int:
+        log.info("Do command line executed")
+        options = command_line.get_options_dict()
+        # convert GVariantDict -> GVariant -> dict
+        options = options.end().unpack()
+
+        if "debug" in options:
+            setup_logging("DEBUG", root_log_name=__name__.split(".")[0])
+        else:
+            setup_logging("INFO", root_log_name=__name__.split(".")[0])
+        log.debug("Debug logging enabled")
+
+        args = command_line.get_arguments()
+
+        self.activate()
+
+        if len(args) > 1:
+            log.debug(f"Join request: {args[1]}")
+            uri = args[1]
+            self.emit("join_request", uri)
+
+        return 0
 
     def on_shutdown(self, app: Gtk.Application) -> None:
         log.debug("Shutting down")
@@ -39,7 +80,7 @@ class MainApplication(Adw.Application):
     def show_window(self, app: Any = None) -> None:
         if not self.win:
             self.init_style()
-            self.win = MainWindow(config=self.config)
+            self.win = MainWindow(config=ClanConfig(initial_view="list"))
             self.win.set_application(self)
         self.win.present()
 
