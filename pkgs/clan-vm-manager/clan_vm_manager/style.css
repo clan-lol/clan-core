@@ -16,12 +16,19 @@ avatar {
     padding-bottom: 25px; 
 }
 
+.join-list {
+    margin-left: 2px;
+    margin-right: 2px;
+
+}
+
 .group-list {
 	background-color: inherit;
 }
 .group-list > .activatable:hover {
 	background-color: unset;	
 }
+
 .group-list > row {
     margin-top: 12px;
     border-bottom: unset;
@@ -44,8 +51,3 @@ avatar {
 searchbar {
     margin-bottom: 25px; 
 }
-
-/* TODO: Disable shadow for empty lists */
-/* list:empty {
-    box-shadow: none;	
-}  */

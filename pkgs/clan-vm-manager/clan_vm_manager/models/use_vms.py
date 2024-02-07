@@ -240,6 +240,13 @@ class VMS:
         else:
             self.refresh()
 
+    def get_by_id(self, ident: str) -> None | VM:
+        for vm in self.list_store:
+            if ident == vm.get_id():
+                return vm
+
+        return None
+
     def get_running_vms(self) -> list[VM]:
         return list(filter(lambda vm: vm.is_running(), self.list_store))
 
