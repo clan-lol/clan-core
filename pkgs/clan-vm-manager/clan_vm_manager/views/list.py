@@ -188,7 +188,8 @@ class ClanList(Gtk.Box):
         row.add_css_class("trust")
 
         # TODO: figure out how to detect that
-        if True:
+        exist = VMS.use().get_by_id(item.url.get_id())
+        if exist:
             row.set_subtitle("Clan already exists. Joining again will update it")
 
         avatar = Adw.Avatar()
