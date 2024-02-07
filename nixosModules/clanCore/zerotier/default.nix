@@ -79,7 +79,6 @@ in
       type = lib.types.submodule {
         freeformType = (pkgs.formats.json { }).type;
       };
-      default = { };
     };
   };
   config = lib.mkMerge [
