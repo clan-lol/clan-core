@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 from pathlib import Path
+from typing import Any
 
 import gi
 
@@ -24,17 +25,23 @@ class MainApplication(Adw.Application):
             application_id=constants["APPID"], flags=Gio.ApplicationFlags.FLAGS_NONE
         )
         self.config = config
+        self.win: Adw.ApplicationWindow | None = None
         self.connect("shutdown", self.on_shutdown)
+        self.connect("activate", self.show_window)
 
     def on_shutdown(self, app: Gtk.Application) -> None:
         log.debug("Shutting down")
         VMS.use().kill_all()
 
     def do_activate(self) -> None:
-        self.init_style()
-        window = MainWindow(config=self.config)
-        window.set_application(self)
-        window.present()
+        self.show_window()
+
+    def show_window(self, app: Any = None) -> None:
+        if not self.win:
+            self.init_style()
+            self.win = MainWindow(config=self.config)
+            self.win.set_application(self)
+        self.win.present()
 
     # TODO: For css styling
     def init_style(self) -> None:
