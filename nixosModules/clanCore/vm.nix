@@ -78,7 +78,17 @@ let
         done
       '';
     };
+
+    boot.initrd.systemd.emergencyAccess = true;
+
+    boot.initrd.kernelModules = [ "virtiofs" ];
+    virtualisation.writableStore = false;
     virtualisation.fileSystems = {
+      "/nix/store" = {
+        options = lib.mkForce [ "x-systemd.requires=systemd-modules-load.service" ];
+        fsType = lib.mkForce "virtiofs";
+      };
+
       ${config.clanCore.secretsUploadDirectory} = lib.mkForce {
         device = "secrets";
         fsType = "9p";

@@ -3,8 +3,10 @@ import contextlib
 import importlib
 import json
 import logging
+import multiprocessing
 import os
 import random
+import shutil
 import socket
 import subprocess
 import time
@@ -91,6 +93,7 @@ def qemu_command(
     secrets_dir: Path,
     rootfs_img: Path,
     state_img: Path,
+    virtiofsd_socket: Path,
     qmp_socket_file: Path,
     qga_socket_file: Path,
 ) -> QemuCommand:
@@ -115,7 +118,8 @@ def qemu_command(
         "-device", "virtio-rng-pci",
         "-net", "nic,netdev=user.0,model=virtio",
         "-netdev", "user,id=user.0",
-        "-virtfs", "local,path=/nix/store,security_model=none,mount_tag=nix-store",
+        "-chardev", f"socket,id=char0,path={virtiofsd_socket}",
+        "-device", "vhost-user-fs-pci,chardev=char0,tag=nix-store",
         "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=shared",
         "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=xchg",
         "-virtfs", f"local,path={secrets_dir},security_model=none,mount_tag=secrets",
@@ -263,6 +267,43 @@ def start_waypipe(cid: int | None, title_prefix: str) -> Iterator[None]:
     with subprocess.Popen(waypipe) as proc:
         try:
             while not test_vsock_port(3049):
+                rc = proc.poll()
+                if rc is not None:
+                    msg = f"waypipe exited unexpectedly with code {rc}"
+                    raise ClanError(msg)
+                time.sleep(0.1)
+            yield
+        finally:
+            proc.kill()
+
+
+@contextlib.contextmanager
+def start_virtiofsd(socket_path: Path) -> Iterator[None]:
+    sandbox = "namespace"
+    if shutil.which("newuidmap") is None:
+        sandbox = "none"
+    virtiofsd = nix_shell(
+        ["nixpkgs#virtiofsd"],
+        [
+            "virtiofsd",
+            "--socket-path",
+            str(socket_path),
+            "--cache", "always",
+            "--posix-acl",
+            "--sandbox",
+            sandbox,
+            "--xattr",
+            "--shared-dir",
+            "/nix/store",
+        ],
+    )
+    with subprocess.Popen(virtiofsd) as proc:
+        try:
+            while not socket_path.exists():
+                rc = proc.poll()
+                if rc is not None:
+                    msg = f"virtiofsd exited unexpectedly with code {rc}"
+                    raise ClanError(msg)
                 time.sleep(0.1)
             yield
         finally:
@@ -318,6 +359,7 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
                 size="50G",
                 label="state",
             )
+        virtiofsd_socket = Path(sockets) / "virtiofsd.sock"
         qemu_cmd = qemu_command(
             vm,
             nixos_config,
@@ -325,6 +367,7 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
             secrets_dir=secrets_dir,
             rootfs_img=rootfs_img,
             state_img=state_img,
+            virtiofsd_socket=virtiofsd_socket,
             qmp_socket_file=qmp_socket_file,
             qga_socket_file=qga_socket_file,
         )
@@ -339,7 +382,9 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
                 "XDG_DATA_DIRS"
             ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
 
-        with start_waypipe(qemu_cmd.vsock_cid, f"[{vm.machine_name}] "):
+        with start_waypipe(
+            qemu_cmd.vsock_cid, f"[{vm.machine_name}] "
+        ), start_virtiofsd(virtiofsd_socket):
             run(
                 nix_shell(packages, qemu_cmd.args),
                 env=env,
