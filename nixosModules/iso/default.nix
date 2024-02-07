@@ -21,7 +21,7 @@ let
 
   # A module setting up bind mounts for all state folders
   stateMounts = {
-    virtualisation.fileSystems =
+    fileSystems =
       lib.listToAttrs
         (map mkBindMount stateFolders);
   };
@@ -69,7 +69,13 @@ let
         };
       };
     };
-    config.disko.devices = lib.mkOverride 51 config.clan.iso.disko;
+    config = {
+      disko.devices = lib.mkOverride 51 config.clan.iso.disko;
+      boot.loader.grub.enable = true;
+      boot.loader.grub.efiSupport = true;
+      boot.loader.grub.device = lib.mkForce "/dev/vda";
+      boot.loader.grub.efiInstallAsRemovable = true;
+    };
   };
 
   isoConfig = extendModules {
