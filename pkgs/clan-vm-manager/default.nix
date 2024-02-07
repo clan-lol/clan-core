@@ -58,8 +58,9 @@ python3.pkgs.buildPythonApplication {
   desktopItems = [
     (makeDesktopItem {
       name = "clan-vm-manager";
-      exec = "clan-vm-manager join %u";
-      desktopName = "CLan VM Manager";
+      exec = "clan-vm-manager %u";
+      icon = ./clan_vm_manager/assets/clan_white.png;
+      desktopName = "cLAN Manager";
       startupWMClass = "clan";
       mimeTypes = [ "x-scheme-handler/clan" ];
     })

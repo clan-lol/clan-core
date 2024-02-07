@@ -69,6 +69,10 @@ class Join:
         This method can add multiple join requests if called subsequently for each request.
         """
 
+        if url.get_id() in [item.url.get_id() for item in self.list_store]:
+            log.info(f"Join request already exists: {url}")
+            return
+
         def after_join(item: JoinValue, _: Any) -> None:
             self.discard(item)
             Clans.use().refresh()
