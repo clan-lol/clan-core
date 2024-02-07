@@ -5,6 +5,7 @@ from typing import Any
 
 import gi
 from clan_cli import ClanError, history
+from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_join import Join, JoinValue
@@ -47,11 +48,11 @@ class ClanList(Gtk.Box):
     def __init__(self, config: ClanConfig) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
+        app = Gio.Application.get_default()
+        app.connect("join_request", self.on_join_request)
+
         groups = Clans.use()
         join = Join.use()
-
-        if config.url:
-            join.push(config.url, self.after_join)
 
         self.__init_machines = history.add.list_history()
         self.join_boxed_list = create_boxed_list(
@@ -227,6 +228,11 @@ class ClanList(Gtk.Box):
         dialog.set_body(error)
         dialog.set_transient_for(p)  # set the parent window of the dialog
         dialog.choose()
+
+    def on_join_request(self, widget: Any, url: str) -> None:
+        log.debug("Join request: %s", url)
+        clan_uri = ClanURI.from_str(url)
+        Join.use().push(clan_uri, self.after_join)
 
     def after_join(self, item: JoinValue) -> None:
         # If the join request list is empty disable the shadow artefact
