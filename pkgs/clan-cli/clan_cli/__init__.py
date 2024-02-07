@@ -6,7 +6,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-from . import backups, config, flakes, history, machines, secrets, vms
+from . import backups, config, flakes, flash, history, machines, secrets, vms
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
 from .errors import ClanCmdError, ClanError
@@ -101,6 +101,11 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
 
     parser_history = subparsers.add_parser("history", help="manage history")
     history.register_parser(parser_history)
+
+    parser_flash = subparsers.add_parser(
+        "flash", help="flash machines to usb sticks or into isos"
+    )
+    flash.register_parser(parser_flash)
 
     if argcomplete:
         argcomplete.autocomplete(parser)
