@@ -1,16 +1,17 @@
 import logging
 from collections.abc import Callable
 from functools import partial
+from typing import Any
 
 import gi
-from clan_cli import history
+from clan_cli import ClanError, history
 
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_join import Join, JoinValue
 from clan_vm_manager.models.use_views import Views
 
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gdk, Gio, GObject, Gtk
+from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
 
 from clan_vm_manager.models.use_vms import VM, VMS, ClanGroup, Clans
 
@@ -56,6 +57,7 @@ class ClanList(Gtk.Box):
         self.join_boxed_list = create_boxed_list(
             model=join.list_store, render_row=self.render_join_row
         )
+        self.join_boxed_list.add_css_class("join-list")
 
         self.group_list = create_boxed_list(
             model=groups.list_store, render_row=self.render_group_row
@@ -132,15 +134,49 @@ class ClanList(Gtk.Box):
 
         # Switch
         switch = Gtk.Switch()
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+        switch_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        switch_box.set_valign(Gtk.Align.CENTER)
+        switch_box.append(switch)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         box.set_valign(Gtk.Align.CENTER)
-        box.append(switch)
+
+        # suffix_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        # suffix.set_halign(Gtk.Align.CENTER)
+        # suffix_box.append(switch)
+
+        open_action = Gio.SimpleAction.new("edit", GLib.VariantType.new("s"))
+        open_action.connect("activate", self.on_edit)
+
+        app = Gio.Application.get_default()
+        app.add_action(open_action)
+
+        menu_model = Gio.Menu()
+        menu_model.append("Edit", f"app.edit::{vm.get_id()}")
+        pref_button = Gtk.MenuButton()
+        pref_button.set_icon_name("open-menu-symbolic")
+        pref_button.set_menu_model(menu_model)
+
+        box.append(switch_box)
+        box.append(pref_button)
 
         switch.connect("notify::active", partial(self.on_row_toggle, vm))
         vm.connect("vm_status_changed", partial(self.vm_status_changed, switch))
+
+        # suffix.append(box)
         row.add_suffix(box)
 
         return row
+
+    def on_edit(self, action: Any, parameter: Any) -> None:
+        target = parameter.get_string()
+        vm = VMS.use().get_by_id(target)
+
+        if not vm:
+            raise ClanError("Something went wrong. Please restart the app.")
+
+        print("Editing settings for machine", vm)
 
     def render_join_row(self, boxed_list: Gtk.ListBox, item: JoinValue) -> Gtk.Widget:
         if boxed_list.has_css_class("no-shadow"):
