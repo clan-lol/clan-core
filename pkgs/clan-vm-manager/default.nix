@@ -10,6 +10,7 @@
 , clan-cli
 , makeDesktopItem
 , libadwaita
+, libayatana-appindicator
 }:
 let
   source = ./.;
@@ -30,6 +31,7 @@ python3.pkgs.buildPythonApplication {
     copyDesktopItems
     wrapGAppsHook
     gobject-introspection
+    libayatana-appindicator
   ];
 
   buildInputs = [ gtk4 libadwaita gnome.adwaita-icon-theme ];
@@ -57,7 +59,7 @@ python3.pkgs.buildPythonApplication {
   '';
   desktopItems = [
     (makeDesktopItem {
-      name = "clan-vm-manager";
+      name = "lol.clan.vm.manager";
       exec = "clan-vm-manager %u";
       icon = ./clan_vm_manager/assets/clan_white.png;
       desktopName = "cLAN Manager";

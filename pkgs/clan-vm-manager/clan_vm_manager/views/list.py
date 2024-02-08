@@ -100,12 +100,10 @@ class ClanList(Gtk.Box):
         box.set_valign(Gtk.Align.CENTER)
 
         add_button = Gtk.MenuButton()
-        add_button.set_icon_name("list-add")
         add_button.set_has_frame(False)
         add_button.set_menu_model(menu_model)
-
+        add_button.set_label("Add machine")
         box.append(add_button)
-        box.append(Gtk.Label.new("Add machine"))
 
         grp.set_header_suffix(box)
 
