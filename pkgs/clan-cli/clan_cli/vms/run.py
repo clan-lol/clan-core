@@ -3,7 +3,6 @@ import contextlib
 import importlib
 import json
 import logging
-import multiprocessing
 import os
 import random
 import shutil
@@ -288,7 +287,8 @@ def start_virtiofsd(socket_path: Path) -> Iterator[None]:
             "virtiofsd",
             "--socket-path",
             str(socket_path),
-            "--cache", "always",
+            "--cache",
+            "always",
             "--posix-acl",
             "--sandbox",
             sandbox,
