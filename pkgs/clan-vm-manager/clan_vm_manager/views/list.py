@@ -185,16 +185,20 @@ class ClanList(Gtk.Box):
 
         row = Adw.ActionRow()
 
-        row.set_title(item.url.get_internal())
+        row.set_title(item.url.params.flake_attr)
+        row.set_subtitle(item.url.get_internal())
         row.add_css_class("trust")
 
         # TODO: figure out how to detect that
         exist = VMS.use().get_by_id(item.url.get_id())
         if exist:
-            row.set_subtitle("Clan already exists. Joining again will update it")
+            sub = row.get_subtitle()
+            row.set_subtitle(
+                sub + "\nClan already exists. Joining again will update it"
+            )
 
         avatar = Adw.Avatar()
-        avatar.set_text(str(item.url))
+        avatar.set_text(str(item.url.params.flake_attr))
         avatar.set_show_initials(True)
         avatar.set_size(50)
         row.add_prefix(avatar)
