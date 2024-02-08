@@ -16,6 +16,7 @@ from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_join import GLib, GObject
 from clan_vm_manager.models.use_vms import VMS
 
+from .trayicon import TrayIcon
 from .windows.main_window import MainWindow
 
 log = logging.getLogger(__name__)
@@ -29,9 +30,11 @@ class MainApplication(Adw.Application):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
             *args,
+            application_id="lol.clan.vm.manager",
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
             **kwargs,
         )
+        self.tray_icon: TrayIcon | None = None
 
         self.add_main_option(
             "debug",
@@ -42,7 +45,7 @@ class MainApplication(Adw.Application):
             None,
         )
 
-        self.win: Adw.ApplicationWindow | None = None
+        self.window: Adw.ApplicationWindow | None = None
         self.connect("shutdown", self.on_shutdown)
         self.connect("activate", self.show_window)
 
@@ -70,19 +73,33 @@ class MainApplication(Adw.Application):
 
     def on_shutdown(self, app: Gtk.Application) -> None:
         log.debug("Shutting down")
+
+        if self.tray_icon is not None:
+            self.tray_icon.destroy()
+
         VMS.use().kill_all()
+
+    def on_window_hide_unhide(self, *_args: Any) -> None:
+        assert self.window is not None
+        if self.window.is_visible():
+            self.window.hide()
+            return
+
+        self.window.present()
+
+    def dummy_menu_entry(self) -> None:
+        log.info("Dummy menu entry called")
 
     def do_activate(self) -> None:
         self.show_window()
 
     def show_window(self, app: Any = None) -> None:
-        if not self.win:
+        if not self.window:
             self.init_style()
-            self.win = MainWindow(config=ClanConfig(initial_view="list"))
-            self.win.set_application(self)
-            icon_path = assets.loc / "clan_black.png"
-            self.win.set_default_icon_name(str(icon_path))
-        self.win.present()
+            self.window = MainWindow(config=ClanConfig(initial_view="list"))
+            self.window.set_application(self)
+            self.tray_icon = TrayIcon(self)
+        self.window.present()
 
     # TODO: For css styling
     def init_style(self) -> None:
