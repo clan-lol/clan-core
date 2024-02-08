@@ -25,7 +25,8 @@ mkShell {
     set -eou pipefail
     DESKTOP_DST=~/.local/share/applications/clan-vm-manager.desktop
     DESKTOP_SRC=${clan-vm-manager}/share/applications/clan-vm-manager.desktop
-    UI_BIN=${clan-vm-manager}/bin/clan-vm-manager
+    # UI_BIN="env GTK_DEBUG=interactive ${clan-vm-manager}/bin/clan-vm-manager"
+    UI_BIN="${clan-vm-manager}/bin/clan-vm-manager"
 
     cp -f $DESKTOP_SRC $DESKTOP_DST
     sleep 2
