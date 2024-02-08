@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import logging
-from pathlib import Path
 from typing import Any, ClassVar
 
 import gi
+
+from clan_vm_manager import assets
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -86,7 +87,9 @@ class MainApplication(Adw.Application):
 
     # TODO: For css styling
     def init_style(self) -> None:
-        resource_path = Path(__file__).parent / "style.css"
+        resource_path = assets.loc / "style.css"
+
+        log.debug(f"Style css path: {resource_path}")
         css_provider = Gtk.CssProvider()
         css_provider.load_from_path(str(resource_path))
         Gtk.StyleContext.add_provider_for_display(
