@@ -114,9 +114,11 @@ def qemu_command(
         "-smp", str(nixos_config["cores"]),
         "-cpu", "max",
         "-enable-kvm",
+        # speed-up boot by not waiting for the boot menu
+        "-boot", "menu=off,strict=on",
         "-device", "virtio-rng-pci",
-        "-net", "nic,netdev=user.0,model=virtio",
         "-netdev", "user,id=user.0",
+        "-device", "virtio-net-pci,netdev=user.0,romfile=",
         "-chardev", f"socket,id=char0,path={virtiofsd_socket}",
         "-device", "vhost-user-fs-pci,chardev=char0,tag=nix-store",
         "-virtfs", f"local,path={xchg_dir},security_model=none,mount_tag=shared",
