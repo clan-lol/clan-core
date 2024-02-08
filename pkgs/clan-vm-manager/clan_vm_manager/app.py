@@ -16,7 +16,6 @@ from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_join import GLib, GObject
 from clan_vm_manager.models.use_vms import VMS
 
-from .constants import constants
 from .windows.main_window import MainWindow
 
 log = logging.getLogger(__name__)
@@ -30,7 +29,6 @@ class MainApplication(Adw.Application):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
             *args,
-            application_id=constants["APPID"],
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
             **kwargs,
         )
@@ -49,7 +47,6 @@ class MainApplication(Adw.Application):
         self.connect("activate", self.show_window)
 
     def do_command_line(self, command_line: Any) -> int:
-        log.info("Do command line executed")
         options = command_line.get_options_dict()
         # convert GVariantDict -> GVariant -> dict
         options = options.end().unpack()
@@ -83,6 +80,8 @@ class MainApplication(Adw.Application):
             self.init_style()
             self.win = MainWindow(config=ClanConfig(initial_view="list"))
             self.win.set_application(self)
+            icon_path = assets.loc / "clan_black.png"
+            self.win.set_default_icon_name(str(icon_path))
         self.win.present()
 
     # TODO: For css styling
