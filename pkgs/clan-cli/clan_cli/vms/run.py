@@ -194,7 +194,6 @@ def prepare_disk(
     directory: Path,
     disk_format: str = "raw",
     size: str = "1024M",
-    label: str = "nixos",
     file_name: str = "disk.img",
 ) -> Path:
     disk_img = directory / file_name
@@ -215,21 +214,6 @@ def prepare_disk(
         error_msg=f"Could not create disk image at {disk_img}",
     )
 
-    if disk_format == "raw":
-        cmd = nix_shell(
-            ["nixpkgs#e2fsprogs"],
-            [
-                "mkfs.ext4",
-                "-L",
-                label,
-                str(disk_img),
-            ],
-        )
-        run(
-            cmd,
-            log=Log.BOTH,
-            error_msg=f"Could not create ext4 filesystem at {disk_img}",
-        )
     return disk_img
 
 
@@ -357,7 +341,6 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
                 file_name="state.qcow2",
                 disk_format="qcow2",
                 size="50G",
-                label="state",
             )
         virtiofsd_socket = Path(sockets) / "virtiofsd.sock"
         qemu_cmd = qemu_command(

@@ -35,21 +35,24 @@ let
     boot.initrd.kernelModules = [ "virtiofs" ];
     virtualisation.writableStore = false;
     virtualisation.fileSystems = lib.mkForce ({
-      "/" = {
-        device = "/dev/disk/by-label/nixos";
-        fsType = "ext4";
-        options = [ "defaults" "x-systemd.makefs" ];
-      };
       "/nix/store" = {
         device = "nix-store";
         options = [ "x-systemd.requires=systemd-modules-load.service" ];
         fsType = "virtiofs";
       };
 
+      "/" = {
+        device = "/dev/vda";
+        fsType = "ext4";
+        noCheck = true;
+        options = [ "defaults" "x-systemd.makefs" ];
+      };
+
       "/vmstate" = {
         device = "/dev/vdb";
-        options = ["x-systemd.makefs"];
         options = [ "x-systemd.makefs" ];
+        noCheck = true;
+        fsType = "ext4";
       };
 
       ${config.clanCore.secretsUploadDirectory} = {
