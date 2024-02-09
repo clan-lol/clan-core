@@ -50,10 +50,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
 
     # Make symlink to gcroots from vm.machine_icon
     if vm.machine_icon:
-        gcroot_icon: Path = (
-            machine_gcroot(clan_name=vm.clan_name, flake_url=str(flake_url))
-            / vm.machine_name
-        )
+        gcroot_icon: Path = machine_gcroot(flake_url=str(flake_url)) / vm.machine_name
         nix_add_to_gcroots(vm.machine_icon, gcroot_icon)
 
     # Get the cLAN name
@@ -83,7 +80,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
             [
                 f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clanCore.clanIcon'
             ],
-            machine_gcroot(clan_name=clan_name, flake_url=str(flake_url)) / "clanIcon",
+            machine_gcroot(flake_url=str(flake_url)) / "clanIcon",
         )
         run_cmd(cmd)
 

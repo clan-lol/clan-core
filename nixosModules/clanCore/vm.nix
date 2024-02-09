@@ -30,6 +30,13 @@ let
     # required for issuing shell commands via qga
     services.qemuGuest.enable = true;
 
+    # required to react to system_powerdown qmp command
+    # Some desktop managers like xfce override the poweroff signal and therefore
+    #   make it impossible to handle it via 'logind' diretly.
+    services.acpid.enable = true;
+    services.acpid.handlers.power.event = "button/power.*";
+    services.acpid.handlers.power.action = "poweroff";
+
     boot.initrd.systemd.enable = true;
 
     # currently needed for system.etc.overlay.enable
