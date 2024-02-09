@@ -120,33 +120,34 @@ class VM(GObject.Object):
         self._finalizer = weakref.finalize(self, self.stop)
         self.connect("vm_status_changed", self._start_logs_task)
 
-    def __start(self) -> None:
-        if self.is_running():
-            log.warn("VM is already running")
-            return
-
         uri = ClanURI.from_str(
             url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
         )
-
         match uri.scheme:
             case ClanScheme.LOCAL.value(path):
-                machine = Machine(
+                self.machine = Machine(
                     name=self.data.flake.flake_attr,
                     flake=path,  # type: ignore
                 )
             case ClanScheme.REMOTE.value(url):
-                machine = Machine(
+                self.machine = Machine(
                     name=self.data.flake.flake_attr,
                     flake=url,  # type: ignore
                 )
-        vm = vms.run.inspect_vm(machine)
+
+    def __start(self) -> None:
+        if self.is_running():
+            log.warn("VM is already running")
+            return
+        vm = vms.run.inspect_vm(self.machine)
         self.process = spawn(
             on_except=None,
             log_dir=Path(str(self.log_dir.name)),
             func=vms.run.run_vm,
             vm=vm,
         )
+        log.debug("Starting VM")
+        self.machine.qmp_connect()
 
     def start(self) -> None:
         if self.is_running():
@@ -212,7 +213,8 @@ class VM(GObject.Object):
         if not self.is_running():
             return
         log.info(f"Stopping VM {self.get_id()}")
-        self.process.kill_group()
+        # TODO: add fallback to kill the process if the QMP command fails
+        self.machine.qmp_command("system_powerdown")
 
     def read_whole_log(self) -> str:
         if not self.process.out_file.exists():

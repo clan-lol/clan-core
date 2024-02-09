@@ -159,8 +159,7 @@ def get_vm_create_info(
             f'{clan_dir}#clanInternals.machines."{system}"."{machine.name}".config.system.clan.vm.create',
             *nix_options,
         ],
-        machine_gcroot(clan_name=vm.clan_name, flake_url=str(vm.flake_url))
-        / f"vm-{machine.name}",
+        machine_gcroot(flake_url=str(vm.flake_url)) / f"vm-{machine.name}",
     )
     proc = run(
         cmd, log=Log.BOTH, error_msg=f"Could not build vm config for {machine.name}"
@@ -298,7 +297,7 @@ def run_vm(
 
         secrets_dir = get_secrets(machine, tmpdir)
 
-        state_dir = vm_state_dir(vm.clan_name, str(vm.flake_url), machine.name)
+        state_dir = vm_state_dir(str(vm.flake_url), machine.name)
         state_dir.mkdir(parents=True, exist_ok=True)
 
         # specify socket files for qmp and qga
