@@ -12,13 +12,61 @@ from fixtures_flakes import FlakeForTest, generate_flake
 from root import CLAN_CORE
 
 from clan_cli.dirs import vm_state_dir
-from clan_cli.qemu.qga import QgaSession
-from clan_cli.qemu.qmp import QEMUMonitorProtocol
+from qemu.qga import QgaSession
+from qemu.qmp import QEMUMonitorProtocol
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
 no_kvm = not os.path.exists("/dev/kvm")
+
+
+def run_vm_in_thread(machine_name: str) -> None:
+    # runs machine and prints exceptions
+    def run() -> None:
+        try:
+            Cli().run(["vms", "run", machine_name])
+        except Exception:
+            # print exception details
+            print(traceback.format_exc(), file=sys.stderr)
+            print(sys.exc_info()[2], file=sys.stderr)
+
+    # run the machine in a separate thread
+    t = threading.Thread(target=run, name="run")
+    t.daemon = True
+    t.start()
+
+
+# wait for qmp socket to exist
+def wait_vm_up(state_dir: Path) -> None:
+    socket_file = state_dir / "qga.sock"
+    while True:
+        if socket_file.exists():
+            break
+        sleep(0.1)
+
+
+# wait for vm to be down by checking if qga socket is down
+def wait_vm_down(state_dir: Path) -> None:
+    socket_file = state_dir / "qga.sock"
+    while socket_file.exists():
+        sleep(0.1)
+
+
+# wait for vm to be up then connect and return qmp instance
+def qmp_connect(state_dir: Path) -> QEMUMonitorProtocol:
+    wait_vm_up(state_dir)
+    qmp = QEMUMonitorProtocol(
+        address=str(os.path.realpath(state_dir / "qmp.sock")),
+    )
+    qmp.connect()
+    return qmp
+
+
+# wait for vm to be up then connect and return qga instance
+def qga_connect(state_dir: Path) -> QgaSession:
+    wait_vm_up(state_dir)
+    return QgaSession(os.path.realpath(state_dir / "qga.sock"))
 
 
 @pytest.mark.impure
@@ -55,19 +103,56 @@ def test_run(
 
 @pytest.mark.skipif(no_kvm, reason="Requires KVM")
 @pytest.mark.impure
-def test_vm_persistence(
+def test_vm_qmp(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
-    age_keys: list["KeyPair"],
 ) -> None:
-    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
+    # set up a simple clan flake
     flake = generate_flake(
         temporary_home,
         flake_template=CLAN_CORE / "templates" / "new-clan",
-        substitutions={
-            "__CHANGE_ME__": "_test_vm_persistence",
-            "git+https://git.clan.lol/clan/clan-core": "path://" + str(CLAN_CORE),
-        },
+        machine_configs=dict(
+            my_machine=dict(
+                clan=dict(
+                    virtualisation=dict(graphics=False),
+                    networking=dict(targetHost="client"),
+                ),
+                services=dict(getty=dict(autologinUser="root")),
+            )
+        ),
+    )
+
+    # 'clan vms run' must be executed from within the flake
+    monkeypatch.chdir(flake.path)
+
+    # the state dir is a point of reference for qemu interactions as it links to the qga/qmp sockets
+    state_dir = vm_state_dir(str(flake.path), "my_machine")
+
+    # start the VM
+    run_vm_in_thread("my_machine")
+
+    # connect with qmp
+    qmp = qmp_connect(state_dir)
+
+    # verify that issuing a command works
+    # result = qmp.cmd_obj({"execute": "query-status"})
+    result = qmp.command("query-status")
+    assert result["status"] == "running", result
+
+    # shutdown machine (prevent zombie qemu processes)
+    qmp.command("system_powerdown")
+
+
+@pytest.mark.skipif(no_kvm, reason="Requires KVM")
+@pytest.mark.impure
+def test_vm_persistence(
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+) -> None:
+    # set up a clan flake with some systemd services to test persistence
+    flake = generate_flake(
+        temporary_home,
+        flake_template=CLAN_CORE / "templates" / "new-clan",
         machine_configs=dict(
             my_machine=dict(
                 services=dict(getty=dict(autologinUser="root")),
@@ -83,8 +168,7 @@ def test_vm_persistence(
                         )
                     )
                 ),
-                # create test user
-                # TODO: test persisting files via that user
+                # create test user to test if state can be owned by user
                 users=dict(
                     users=dict(
                         test=dict(
@@ -94,6 +178,8 @@ def test_vm_persistence(
                         root=dict(password="root"),
                     )
                 ),
+                # create a systemd service to create a file in the state folder
+                # and another to read it after reboot
                 systemd=dict(
                     services=dict(
                         create_state=dict(
@@ -163,59 +249,22 @@ def test_vm_persistence(
     )
     monkeypatch.chdir(flake.path)
 
-    state_dir = vm_state_dir("_test_vm_persistence", str(flake.path), "my_machine")
-    socket_file = state_dir / "qga.sock"
+    # the state dir is a point of reference for qemu interactions as it links to the qga/qmp sockets
+    state_dir = vm_state_dir(str(flake.path), "my_machine")
 
-    # wait until socket file exists
-    def connect() -> QgaSession:
-        while True:
-            if (state_dir / "qga.sock").exists():
-                break
-            sleep(0.1)
-        return QgaSession(os.path.realpath(socket_file))
+    run_vm_in_thread("my_machine")
 
-    # runs machine and prints exceptions
-    def run() -> None:
-        try:
-            Cli().run(["vms", "run", "my_machine"])
-        except Exception:
-            # print exception details
-            print(traceback.format_exc())
-            print(sys.exc_info()[2])
-
-    # run the machine in a separate thread
-    t = threading.Thread(target=run, name="run")
-    t.daemon = True
-    t.start()
-
-    # wait for socket to be up
-    Path("/tmp/log").write_text(f"wait for socket to be up: {socket_file!s}")
-    while True:
-        if socket_file.exists():
-            break
-        sleep(0.1)
+    # wait for the VM to start
+    wait_vm_up(state_dir)
 
     # wait for socket to be down (systemd service 'poweroff' rebooting machine)
-    Path("/tmp/log").write_text("wait for socket to be down")
-    while socket_file.exists():
-        sleep(0.1)
-    Path("/tmp/log").write_text("socket is down")
+    wait_vm_down(state_dir)
 
     # start vm again
-    t = threading.Thread(target=run, name="run")
-    t.daemon = True
-    t.start()
-
-    # wait for the socket to be up
-    Path("/tmp/log").write_text("wait for socket to be up second time")
-    while True:
-        if socket_file.exists():
-            break
-        sleep(0.1)
+    run_vm_in_thread("my_machine")
 
     # connect second time
-    Path("/tmp/log").write_text("connecting")
-    qga = connect()
+    qga = qga_connect(state_dir)
 
     # ensure that either /var/lib/nixos or /etc gets persisted
     # (depending on if system.etc.overlay.enable is set or not)
@@ -224,6 +273,7 @@ def test_vm_persistence(
     )
     assert exitcode == 0, err
 
+    # ensure that the file created by the service is still there and has the expected content
     exitcode, out, err = qga.run("cat /var/my-state/test")
     assert exitcode == 0, err
     assert out == "dream2nix\n", out
@@ -236,11 +286,8 @@ def test_vm_persistence(
     exitcode, out, err = qga.run(
         "systemctl --failed | tee /tmp/yolo | grep -q '0 loaded units listed' || ( cat /tmp/yolo && false )"
     )
-    print(out)
     assert exitcode == 0, out
 
-    qmp = QEMUMonitorProtocol(
-        address=str(os.path.realpath(state_dir / "qmp.sock")),
-    )
-    qmp.connect()
-    qmp.cmd_obj({"execute": "system_powerdown"})
+    # use qmp to shutdown the machine (prevent zombie qemu processes)
+    qmp = qmp_connect(state_dir)
+    qmp.command("system_powerdown")

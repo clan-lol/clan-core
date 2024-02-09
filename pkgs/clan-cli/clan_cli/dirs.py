@@ -15,9 +15,12 @@ def find_git_repo_root() -> Path | None:
     return find_toplevel([".git"])
 
 
-def clan_key_safe(clan_name: str, flake_url: str) -> str:
+def clan_key_safe(flake_url: str) -> str:
+    """
+    only embed the url in the path, not the clan name, as it would involve eval.
+    """
     quoted_url = urllib.parse.quote_plus(flake_url)
-    return f"{clan_name}-{quoted_url}"
+    return f"{quoted_url}"
 
 
 def find_toplevel(top_level_files: list[str]) -> Path | None:
@@ -69,10 +72,10 @@ def user_gcroot_dir() -> Path:
     return p
 
 
-def machine_gcroot(*, clan_name: str, flake_url: str) -> Path:
+def machine_gcroot(flake_url: str) -> Path:
     # Always build icon so that we can symlink it to the gcroot
     gcroot_dir = user_gcroot_dir()
-    clan_gcroot = gcroot_dir / clan_key_safe(clan_name, flake_url)
+    clan_gcroot = gcroot_dir / clan_key_safe(flake_url)
     clan_gcroot.mkdir(parents=True, exist_ok=True)
     return clan_gcroot
 
@@ -81,8 +84,8 @@ def user_history_file() -> Path:
     return user_config_dir() / "clan" / "history"
 
 
-def vm_state_dir(clan_name: str, flake_url: str, vm_name: str) -> Path:
-    clan_key = clan_key_safe(clan_name, flake_url)
+def vm_state_dir(flake_url: str, vm_name: str) -> Path:
+    clan_key = clan_key_safe(flake_url)
     return user_data_dir() / "clan" / "vmstate" / clan_key / vm_name
 
 

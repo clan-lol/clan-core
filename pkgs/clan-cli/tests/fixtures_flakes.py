@@ -41,7 +41,10 @@ class FlakeForTest(NamedTuple):
 def generate_flake(
     temporary_home: Path,
     flake_template: Path,
-    substitutions: dict[str, str] = {},
+    substitutions: dict[str, str] = {
+        "__CHANGE_ME__": "_test_vm_persistence",
+        "git+https://git.clan.lol/clan/clan-core": "path://" + str(CLAN_CORE),
+    },
     # define the machines directly including their config
     machine_configs: dict[str, dict] = {},
 ) -> FlakeForTest:

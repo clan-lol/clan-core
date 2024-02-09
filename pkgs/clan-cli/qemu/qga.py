@@ -12,7 +12,7 @@ from time import sleep
 class QgaSession:
     def __init__(self, socket_file: Path | str) -> None:
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        # try to reconnect a couple of times if connetion refused
+        # try to reconnect a couple of times if connection refused
         for _ in range(100):
             try:
                 self.sock.connect(str(socket_file))
