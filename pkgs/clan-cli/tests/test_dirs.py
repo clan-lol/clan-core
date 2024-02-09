@@ -20,16 +20,16 @@ from clan_cli.dirs import clan_key_safe, vm_state_dir
 
 
 def test_clan_key_safe() -> None:
-    assert clan_key_safe("clan1", "/foo/bar") == "clan1-%2Ffoo%2Fbar"
+    assert clan_key_safe("/foo/bar") == "%2Ffoo%2Fbar"
 
 
 def test_vm_state_dir_identity() -> None:
-    dir1 = vm_state_dir("clan1", "https://some.clan", "vm1")
-    dir2 = vm_state_dir("clan1", "https://some.clan", "vm1")
+    dir1 = vm_state_dir("https://some.clan", "vm1")
+    dir2 = vm_state_dir("https://some.clan", "vm1")
     assert str(dir1) == str(dir2)
 
 
 def test_vm_state_dir_no_collision() -> None:
-    dir1 = vm_state_dir("clan1", "/foo/bar", "vm1")
-    dir2 = vm_state_dir("clan1", "https://some.clan", "vm1")
+    dir1 = vm_state_dir("/foo/bar", "vm1")
+    dir2 = vm_state_dir("https://some.clan", "vm1")
     assert str(dir1) != str(dir2)
