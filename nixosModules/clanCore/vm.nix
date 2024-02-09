@@ -34,10 +34,16 @@ let
 
     boot.initrd.kernelModules = [ "virtiofs" ];
     virtualisation.writableStore = false;
-    virtualisation.fileSystems = {
+    virtualisation.fileSystems = lib.mkForce ({
+      "/" = {
+        device = "/dev/disk/by-label/nixos";
+        fsType = "ext4";
+        options = [ "defaults" "x-systemd.makefs" ];
+      };
       "/nix/store" = {
-        options = lib.mkForce [ "x-systemd.requires=systemd-modules-load.service" ];
-        fsType = lib.mkForce "virtiofs";
+        device = "nix-store";
+        options = [ "x-systemd.requires=systemd-modules-load.service" ];
+        fsType = "virtiofs";
       };
 
       "/vmstate" = {
@@ -46,18 +52,21 @@ let
         options = [ "x-systemd.makefs" ];
       };
 
-      ${config.clanCore.secretsUploadDirectory} = lib.mkForce {
+      ${config.clanCore.secretsUploadDirectory} = {
         device = "secrets";
         fsType = "9p";
         neededForBoot = true;
         options = [ "trans=virtio" "version=9p2000.L" "cache=loose" ];
       };
-    } // lib.listToAttrs (map (folder:
-      lib.nameValuePair folder {
-        device = "/vmstate${folder}";
-        fsType = "none";
-        options = ["bind"];
-      }) stateFolders);
+
+    } // lib.listToAttrs (map
+      (folder:
+        lib.nameValuePair folder {
+          device = "/vmstate${folder}";
+          fsType = "none";
+          options = [ "bind" ];
+        })
+      stateFolders));
   };
 
   # We cannot simply merge the VM config into the current system config, because
