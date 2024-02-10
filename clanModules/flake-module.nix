@@ -14,5 +14,6 @@
     xfce = ./xfce.nix;
     zt-tcp-relay = ./zt-tcp-relay.nix;
     localsend = ./localsend.nix;
+    waypipe = ./waypipe.nix;
   };
 }
