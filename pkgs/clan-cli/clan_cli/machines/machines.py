@@ -2,6 +2,7 @@ import json
 import logging
 from os import path
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from time import sleep
 
 from clan_cli.dirs import vm_state_dir
@@ -149,52 +150,128 @@ class Machine:
             meta={"machine": self, "target_host": self.target_host},
         )
 
-    def eval_nix(self, attr: str, refresh: bool = False) -> str:
+    def nix(
+        self,
+        method: str,
+        attr: str,
+        extra_config: None | dict = None,
+        impure: bool = False,
+    ) -> str | Path:
         """
-        eval a nix attribute of the machine
-        @attr: the attribute to get
+        Build the machine and return the path to the result
+        accepts a secret store and a facts store # TODO
         """
         config = nix_config()
         system = config["system"]
 
-        attr = f'clanInternals.machines."{system}".{self.name}.{attr}'
+        with NamedTemporaryFile(mode="w") as config_json:
+            if extra_config is not None:
+                json.dump(extra_config, config_json, indent=2)
+            else:
+                json.dump({}, config_json)
+            config_json.flush()
 
-        if attr in self.eval_cache and not refresh:
+            nar_hash = json.loads(
+                run(
+                    nix_eval(
+                        [
+                            "--impure",
+                            "--expr",
+                            f'(builtins.fetchTree {{ type = "file"; url = "{config_json.name}"; }}).narHash',
+                        ]
+                    )
+                ).stdout.strip()
+            )
+
+            args = []
+
+            # get git commit from flake
+            if extra_config is not None:
+                metadata = nix_metadata(self.flake_dir)
+                url = metadata["url"]
+                if "dirtyRev" in metadata:
+                    if not impure:
+                        raise ClanError(
+                            "The machine has a dirty revision, and impure mode is not allowed"
+                        )
+                    else:
+                        args += ["--impure"]
+
+                if "dirtyRev" in nix_metadata(self.flake_dir):
+                    dirty_rev = nix_metadata(self.flake_dir)["dirtyRevision"]
+                    url = f"{url}?rev={dirty_rev}"
+                args += [
+                    "--expr",
+                    f"""
+                        ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.name}" {{
+                          extraConfig = builtins.fromJSON (builtins.readFile (builtins.fetchTree {{
+                            type = "file";
+                            url = "{config_json.name}";
+                            narHash = "{nar_hash}";
+                          }}));
+                        }}).{attr}
+                    """,
+                ]
+            else:
+                if isinstance(self.flake, Path):
+                    if (self.flake / ".git").exists():
+                        flake = f"git+file://{self.flake}"
+                    else:
+                        flake = f"path:{self.flake}"
+                else:
+                    flake = self.flake
+                args += [
+                    f'{flake}#clanInternals.machines."{system}".{self.name}.{attr}'
+                ]
+
+            if method == "eval":
+                output = run(nix_eval(args)).stdout.strip()
+                return output
+            elif method == "build":
+                outpath = run(nix_build(args)).stdout.strip()
+                return Path(outpath)
+            else:
+                raise ValueError(f"Unknown method {method}")
+
+    def eval_nix(
+        self,
+        attr: str,
+        refresh: bool = False,
+        extra_config: None | dict = None,
+        impure: bool = False,
+    ) -> str:
+        """
+        eval a nix attribute of the machine
+        @attr: the attribute to get
+        """
+        if attr in self.eval_cache and not refresh and extra_config is None:
             return self.eval_cache[attr]
 
-        if isinstance(self.flake, Path):
-            if (self.flake / ".git").exists():
-                flake = f"git+file://{self.flake}"
-            else:
-                flake = f"path:{self.flake}"
+        output = self.nix("eval", attr, extra_config, impure)
+        if isinstance(output, str):
+            self.eval_cache[attr] = output
+            return output
         else:
-            flake = self.flake
+            raise ClanError("eval_nix returned not a string")
 
-        cmd = nix_eval([f"{flake}#{attr}"])
-
-        output = run(cmd).stdout.strip()
-        self.eval_cache[attr] = output
-        return output
-
-    def build_nix(self, attr: str, refresh: bool = False) -> Path:
+    def build_nix(
+        self,
+        attr: str,
+        refresh: bool = False,
+        extra_config: None | dict = None,
+        impure: bool = False,
+    ) -> Path:
         """
         build a nix attribute of the machine
         @attr: the attribute to get
         """
 
-        config = nix_config()
-        system = config["system"]
-
-        attr = f'clanInternals.machines."{system}".{self.name}.{attr}'
-
-        if attr in self.build_cache and not refresh:
+        if attr in self.build_cache and not refresh and extra_config is None:
             return self.build_cache[attr]
 
-        if isinstance(self.flake, Path):
-            flake = f"path:{self.flake}"
+        output = self.nix("build", attr, extra_config, impure)
+        if isinstance(output, Path):
+            self.build_cache[attr] = output
+            return output
         else:
-            flake = self.flake
-
-        outpath = run(nix_build([f"{flake}#{attr}"])).stdout.strip()
-        self.build_cache[attr] = Path(outpath)
-        return Path(outpath)
+            raise ClanError("build_nix returned not a Path")
