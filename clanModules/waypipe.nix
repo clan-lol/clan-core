@@ -1,0 +1,62 @@
+{ pkgs
+, lib
+, config
+, ...
+}:
+{
+  options.clan.services.waypipe = {
+    enable = lib.mkEnableOption "waypipe";
+    user = lib.mkOption {
+      type = lib.types.str;
+      default = "user";
+      description = "User the program is run under";
+    };
+    command = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [
+        "--vsock"
+        "-s"
+        "3049"
+        "server"
+      ];
+      description = "Waypipe command that will be run";
+    };
+    program = lib.mkOption {
+      type = lib.types.str;
+      default = lib.getExe pkgs.foot;
+      description = "Program that should be started";
+    };
+  };
+  config = lib.mkIf config.clan.services.waypipe.enable {
+    # Waypipe needs pipewire
+    services.pipewire = {
+      enable = lib.mkDefault true;
+      alsa.enable = lib.mkDefault true;
+      alsa.support32Bit = lib.mkDefault true;
+      pulse.enable = lib.mkDefault true;
+      jack.enable = lib.mkDefault true;
+    };
+    fonts.enableDefaultPackages = true;
+
+    # User account
+    services.getty.autologinUser = lib.mkDefault config.clan.services.waypipe.user;
+    security.sudo.wheelNeedsPassword = false;
+
+    users.users.${config.clan.services.waypipe.user} = {
+      isNormalUser = true;
+      password = "";
+      extraGroups = [ "wheel" ];
+      shell = "/run/current-system/sw/bin/bash";
+    };
+
+    systemd.user.services.waypipe-passthrough = {
+      serviceConfig.PassEnvironment = "DISPLAY";
+      script = ''
+        ${lib.getExe config.clanCore.clanPkgs.waypipe} \
+        ${lib.concatStringsSep " " config.clan.services.waypipe.command} \
+        ${config.clan.services.waypipe.program}
+      '';
+      wantedBy = [ "default.target" ];
+    };
+  };
+}
