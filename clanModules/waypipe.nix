@@ -36,7 +36,12 @@
       pulse.enable = lib.mkDefault true;
       jack.enable = lib.mkDefault true;
     };
-    fonts.enableDefaultPackages = true;
+    # General default settings
+    fonts.enableDefaultPackages = lib.mkDefault true;
+    hardware.opengl.enable = lib.mkDefault true;
+    # Assume it is ran inside a clan context
+    clan.virtualisation.waypipe = lib.mkDefault true;
+
 
     # User account
     services.getty.autologinUser = lib.mkDefault config.clan.services.waypipe.user;
