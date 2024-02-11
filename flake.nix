@@ -49,6 +49,9 @@
                   machines = lib.mkOption {
                     type = lib.types.attrsOf (lib.types.attrsOf lib.types.unspecified);
                   };
+                  machinesFunc = lib.mkOption {
+                    type = lib.types.attrsOf (lib.types.attrsOf lib.types.unspecified);
+                  };
                 };
               };
             };

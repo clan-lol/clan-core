@@ -15,7 +15,7 @@ let
 in
 {
   flake.nixosConfigurations = { inherit (clan.nixosConfigurations) test_backup_client; };
-  flake.clanInternals.machines = clan.clanInternals.machines;
+  flake.clanInternals = clan.clanInternals;
   flake.nixosModules = {
     test_backup_server = { ... }: {
       imports = [

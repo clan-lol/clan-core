@@ -30,13 +30,14 @@ let
       (machineSettings.clanImports or [ ]);
 
   # TODO: remove default system once we have a hardware-config mechanism
-  nixosConfiguration = { system ? "x86_64-linux", name, pkgs ? null }: nixpkgs.lib.nixosSystem {
+  nixosConfiguration = { system ? "x86_64-linux", name, pkgs ? null, extraConfig ? { } }: nixpkgs.lib.nixosSystem {
     modules =
       let
         settings = machineSettings name;
       in
       (machineImports settings)
       ++ [
+        (nixpkgs.lib.mkOverride 51 extraConfig)
         settings
         clan-core.nixosModules.clanCore
         (machines.${name} or { })
@@ -77,7 +78,13 @@ let
   configsPerSystem = builtins.listToAttrs
     (builtins.map
       (system: lib.nameValuePair system
-        (lib.mapAttrs (name: _: nixosConfiguration { inherit name system; pkgs = nixpkgs.legacyPackages.${system}; }) allMachines))
+        (lib.mapAttrs (name: _: nixosConfiguration { inherit name system; }) allMachines))
+      supportedSystems);
+
+  configsFuncPerSystem = builtins.listToAttrs
+    (builtins.map
+      (system: lib.nameValuePair system
+        (lib.mapAttrs (name: _: args: nixosConfiguration (args // { inherit name system; })) allMachines))
       supportedSystems);
 in
 {
@@ -85,6 +92,7 @@ in
 
   clanInternals = {
     machines = configsPerSystem;
+    machinesFunc = configsFuncPerSystem;
     all-machines-json = lib.mapAttrs
       (system: configs: nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs))
       configsPerSystem;
