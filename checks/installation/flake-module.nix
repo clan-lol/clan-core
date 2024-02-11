@@ -13,7 +13,7 @@ let
 in
 {
   flake.nixosConfigurations = { inherit (clan.nixosConfigurations) test_install_machine; };
-  flake.clanInternals.machines = clan.clanInternals.machines;
+  flake.clanInternals = clan.clanInternals;
   flake.nixosModules = {
     test_install_machine = { lib, modulesPath, ... }: {
       imports = [
