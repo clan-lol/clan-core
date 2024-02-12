@@ -1,4 +1,4 @@
-(import ../lib/container-test.nix) ({ ... }: {
+(import ../lib/test-base.nix) ({ ... }: {
   name = "borgbackup";
 
   nodes.machine = { self, ... }: {
@@ -18,11 +18,20 @@
         clanCore.clanDir = ./.;
         clanCore.state.testState.folders = [ "/etc/state" ];
         environment.etc.state.text = "hello world";
+        systemd.tmpfiles.settings = {
+          "ssh-key"."/root/.ssh/id_ed25519" = {
+            C.argument = "${../lib/ssh/privkey}";
+            z = {
+              mode = "0400";
+              user = "root";
+            };
+          };
+        };
         clan.borgbackup = {
           enable = true;
           destinations.test = {
             repo = "borg@localhost:.";
-            rsh = "ssh -i ${../lib/ssh/privkey} -o StrictHostKeyChecking=no";
+            rsh = "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no";
           };
         };
       }
