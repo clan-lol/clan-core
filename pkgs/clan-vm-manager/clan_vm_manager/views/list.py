@@ -127,25 +127,13 @@ class ClanList(Gtk.Box):
             self.group_list.add_css_class("no-shadow")
 
     def render_vm_row(self, boxed_list: Gtk.ListBox, vm: VM) -> Gtk.Widget:
+        # Remove no-shadow class if attached
         if boxed_list.has_css_class("no-shadow"):
             boxed_list.remove_css_class("no-shadow")
         flake = vm.data.flake
         row = Adw.ActionRow()
 
-        # Title
-        row.set_title(flake.flake_attr)
-
-        row.set_title_lines(1)
-        row.set_title_selectable(True)
-
-        # Subtitle
-        if flake.vm.machine_description:
-            row.set_subtitle(flake.vm.machine_description)
-        else:
-            row.set_subtitle(flake.clan_name)
-        row.set_subtitle_lines(1)
-
-        # Avatar
+        # ====== Display Avatar ======
         avatar = Adw.Avatar()
 
         machine_icon = flake.vm.machine_icon
@@ -160,12 +148,25 @@ class ClanList(Gtk.Box):
         avatar.set_size(50)
         row.add_prefix(avatar)
 
-        # Display build logs
-        log_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        log_box.set_valign(Gtk.Align.CENTER)
-        log_box.append(self.log_label)
+        # ====== Display Name And Url =====
+        row.set_title(flake.flake_attr)
 
-        # Switch
+        row.set_title_lines(1)
+        row.set_title_selectable(True)
+
+        if flake.vm.machine_description:
+            row.set_subtitle(flake.vm.machine_description)
+        else:
+            row.set_subtitle(flake.clan_name)
+        row.set_subtitle_lines(1)
+
+        # ==== Display build progress bar ====
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        box.set_valign(Gtk.Align.CENTER)
+        box.append(vm.progress_bar)
+        row.add_suffix(box)
+
+        # ==== Action buttons ====
         switch = Gtk.Switch()
 
         switch_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -174,10 +175,6 @@ class ClanList(Gtk.Box):
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         box.set_valign(Gtk.Align.CENTER)
-
-        # suffix_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        # suffix.set_halign(Gtk.Align.CENTER)
-        # suffix_box.append(switch)
 
         open_action = Gio.SimpleAction.new("edit", GLib.VariantType.new("s"))
         open_action.connect("activate", self.on_edit)
@@ -196,7 +193,6 @@ class ClanList(Gtk.Box):
 
         switch.connect("notify::active", partial(self.on_row_toggle, vm))
         vm.connect("vm_status_changed", partial(self.vm_status_changed, switch))
-        vm.connect("build_vm", self.build_vm)
 
         # suffix.append(box)
         row.add_suffix(box)
@@ -257,9 +253,6 @@ class ClanList(Gtk.Box):
     def show_error_dialog(self, error: str) -> None:
         p = Views.use().main_window
 
-        # app = Gio.Application.get_default()
-        # p = Gtk.Application.get_active_window(app)
-
         dialog = Adw.MessageDialog(heading="Error")
         dialog.add_response("ok", "ok")
         dialog.set_body(error)
@@ -299,12 +292,6 @@ class ClanList(Gtk.Box):
         if not row.get_active():
             row.set_state(True)
             vm.stop()
-
-    def build_vm(self, vm: VM, _vm: VM, building: bool) -> None:
-        if building:
-            log.info("Building VM")
-        else:
-            log.info("VM built")
 
     def vm_status_changed(self, switch: Gtk.Switch, vm: VM, _vm: VM) -> None:
         switch.set_active(vm.is_running())
