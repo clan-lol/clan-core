@@ -100,12 +100,10 @@ class ClanList(Gtk.Box):
         box.set_valign(Gtk.Align.CENTER)
 
         add_button = Gtk.MenuButton()
-        add_button.set_icon_name("list-add")
         add_button.set_has_frame(False)
         add_button.set_menu_model(menu_model)
-
+        add_button.set_label("Add machine")
         box.append(add_button)
-        box.append(Gtk.Label.new("Add machine"))
 
         grp.set_header_suffix(box)
 
@@ -192,6 +190,7 @@ class ClanList(Gtk.Box):
 
         switch.connect("notify::active", partial(self.on_row_toggle, vm))
         vm.connect("vm_status_changed", partial(self.vm_status_changed, switch))
+        vm.connect("build_vm", self.build_vm)
 
         # suffix.append(box)
         row.add_suffix(box)
@@ -294,6 +293,12 @@ class ClanList(Gtk.Box):
         if not row.get_active():
             row.set_state(True)
             vm.stop()
+
+    def build_vm(self, vm: VM, _vm: VM, building: bool) -> None:
+        if building:
+            log.info("Building VM")
+        else:
+            log.info("VM built")
 
     def vm_status_changed(self, switch: Gtk.Switch, vm: VM, _vm: VM) -> None:
         switch.set_active(vm.is_running())
