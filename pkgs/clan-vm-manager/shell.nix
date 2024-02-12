@@ -1,4 +1,4 @@
-{ lib, stdenv, clan-vm-manager, libadwaita, clan-cli, mkShell, ruff, desktop-file-utils, xdg-utils, mypy, python3Packages }:
+{ lib, stdenv, clan-vm-manager, gtk4, libadwaita, clan-cli, mkShell, ruff, desktop-file-utils, xdg-utils, mypy, python3Packages }:
 mkShell {
   inherit (clan-vm-manager) propagatedBuildInputs buildInputs;
 
@@ -11,6 +11,7 @@ mkShell {
     desktop-file-utils
     mypy
     python3Packages.ipdb
+    gtk4.dev
     libadwaita.devdoc # has the demo called 'adwaita-1-demo'
   ] ++ clan-vm-manager.nativeBuildInputs;
 
