@@ -12,7 +12,6 @@ from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import IO
 
 from ..cmd import Log, run
 from ..dirs import machine_gcroot, module_root, user_cache_dir, vm_state_dir
@@ -147,9 +146,7 @@ def qemu_command(
 
 
 # TODO move this to the Machines class
-def get_vm_create_info(
-    machine: Machine, vm: VmConfig, nix_options: list[str]
-) -> dict[str, str]:
+def build_vm(machine: Machine, vm: VmConfig, nix_options: list[str]) -> dict[str, str]:
     config = nix_config()
     system = config["system"]
 
@@ -272,19 +269,12 @@ def start_waypipe(cid: int | None, title_prefix: str) -> Iterator[None]:
             proc.kill()
 
 
-def run_vm(
-    vm: VmConfig,
-    nix_options: list[str] = [],
-    log_fd: IO[str] | None = None,
-) -> None:
-    """
-    log_fd can be used to stream the output of all commands to a UI
-    """
+def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
     machine = Machine(vm.machine_name, vm.flake_url)
     log.debug(f"Creating VM for {machine}")
 
     # TODO: We should get this from the vm argument
-    nixos_config = get_vm_create_info(machine, vm, nix_options)
+    nixos_config = build_vm(machine, vm, nix_options)
 
     # store the temporary rootfs inside XDG_CACHE_HOME on the host
     # otherwise, when using /tmp, we risk running out of memory

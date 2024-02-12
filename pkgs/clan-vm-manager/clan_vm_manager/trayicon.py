@@ -109,6 +109,7 @@ class MyLog:
         self.log = logging.getLogger(__name__)
 
     def add_debug(self, *args: Any, **kwargs: Any) -> None:
+        return
         self.log.debug(*args, **kwargs)
 
 
@@ -215,30 +216,12 @@ class BaseImplementation:
             "default", self.application.dummy_menu_entry
         )
 
-        self.create_item()
-
-        self.downloads_item = self.create_item(
-            "Downloads", self.application.dummy_menu_entry
-        )
-        self.uploads_item = self.create_item(
-            "Uploads", self.application.dummy_menu_entry
-        )
-
-        self.create_item()
-
-        self.create_item("Private Chat", self.application.dummy_menu_entry)
-        self.create_item("Chat Rooms", self.application.dummy_menu_entry)
-        self.create_item("Searches", self.application.dummy_menu_entry)
-
-        self.create_item()
-
         self.connect_disconnect_item = self.create_item(
             "default", self.application.dummy_menu_entry
         )
 
         self.create_item()
 
-        self.create_item("Preferences", self.application.dummy_menu_entry)
         self.create_item("_Quit", self.application.dummy_menu_entry)
 
     def update_window_visibility(self) -> None:
@@ -246,9 +229,9 @@ class BaseImplementation:
             return
 
         if self.application.window.is_visible():
-            label = "Hide Nicotine+"
+            label = "Hide VM Manager"
         else:
-            label = "Show Nicotine+"
+            label = "Show VM Manager"
 
         self.set_item_text(self.show_hide_item, label)
         self.update_menu()
@@ -298,11 +281,9 @@ class BaseImplementation:
         pass
 
     def set_download_status(self, status: str) -> None:
-        self.set_item_text(self.downloads_item, status)
         self.update_menu()
 
     def set_upload_status(self, status) -> None:
-        self.set_item_text(self.uploads_item, status)
         self.update_menu()
 
     def show_notification(self, title, message) -> None:
