@@ -6,7 +6,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-from . import backups, config, flakes, flash, history, machines, secrets, vms
+from . import backups, config, flakes, flash, history, machines, secrets, vms, facts
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
 from .errors import ClanCmdError, ClanError
@@ -90,6 +90,9 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
 
     parser_secrets = subparsers.add_parser("secrets", help="manage secrets")
     secrets.register_parser(parser_secrets)
+
+    parser_facts = subparsers.add_parser("facts", help="manage facts")
+    facts.register_parser(parser_facts)
 
     parser_machine = subparsers.add_parser(
         "machines", help="Manage machines and their configuration"

@@ -97,6 +97,10 @@ class Machine:
         return self.deployment_info["secretsModule"]
 
     @property
+    def facts_module(self) -> str:
+        return self.deployment_info["factsModule"]
+
+    @property
     def secrets_data(self) -> dict:
         if self.deployment_info["secretsData"]:
             try:
