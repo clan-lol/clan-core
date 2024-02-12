@@ -10,7 +10,6 @@
 , clan-cli
 , makeDesktopItem
 , libadwaita
-, libayatana-appindicator
 }:
 let
   source = ./.;
@@ -31,7 +30,6 @@ python3.pkgs.buildPythonApplication {
     copyDesktopItems
     wrapGAppsHook
     gobject-introspection
-    libayatana-appindicator
   ];
 
   buildInputs = [ gtk4 libadwaita gnome.adwaita-icon-theme ];

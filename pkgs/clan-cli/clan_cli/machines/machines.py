@@ -177,7 +177,7 @@ class Machine:
                         [
                             "--impure",
                             "--expr",
-                            f'(builtins.fetchTree {{ type = "file"; url = "{config_json.name}"; }}).narHash',
+                            f'(builtins.fetchTree {{ type = "file"; url = "file://{config_json.name}"; }}).narHash',
                         ]
                     )
                 ).stdout.strip()
