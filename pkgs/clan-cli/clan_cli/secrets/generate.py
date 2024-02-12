@@ -2,7 +2,6 @@ import argparse
 import importlib
 import logging
 import os
-import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -20,6 +19,9 @@ log = logging.getLogger(__name__)
 def generate_secrets(machine: Machine) -> None:
     secrets_module = importlib.import_module(machine.secrets_module)
     secret_store = secrets_module.SecretStore(machine=machine)
+
+    facts_module = importlib.import_module(machine.facts_module)
+    fact_store = facts_module.FactStore(machine=machine)
 
     with TemporaryDirectory() as d:
         for service in machine.secrets_data:
@@ -84,10 +86,10 @@ def generate_secrets(machine: Machine) -> None:
                         msg = f"did not generate a file for '{name}' when running the following command:\n"
                         msg += machine.secrets_data[service]["generator"]
                         raise ClanError(msg)
-                    fact_path = machine.flake / fact_path
-                    fact_path.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(fact_file, fact_path)
-                    files_to_commit.append(fact_path)
+                    fact_file = fact_store.set(
+                        service, fact_path, fact_file.read_bytes()
+                    )
+                    files_to_commit.append(fact_file)
                 commit_files(
                     files_to_commit,
                     machine.flake_dir,
