@@ -56,6 +56,7 @@ class MainApplication(Adw.Application):
 
         if "debug" in options:
             setup_logging("DEBUG", root_log_name=__name__.split(".")[0])
+            setup_logging("DEBUG", root_log_name="clan_cli")
         else:
             setup_logging("INFO", root_log_name=__name__.split(".")[0])
         log.debug("Debug logging enabled")
