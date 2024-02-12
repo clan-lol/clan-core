@@ -1,10 +1,14 @@
-{ clan-vm-manager, libadwaita, clan-cli, mkShell, ruff, desktop-file-utils, xdg-utils, mypy, python3Packages }:
+{ lib, stdenv, clan-vm-manager, libadwaita, clan-cli, mkShell, ruff, desktop-file-utils, xdg-utils, mypy, python3Packages }:
 mkShell {
   inherit (clan-vm-manager) propagatedBuildInputs buildInputs;
+
+  linuxOnlyPackages = lib.optionals stdenv.isLinux [
+    xdg-utils
+  ];
+
   nativeBuildInputs = [
     ruff
     desktop-file-utils
-    xdg-utils
     mypy
     python3Packages.ipdb
     libadwaita.devdoc # has the demo called 'adwaita-1-demo'
@@ -18,14 +22,16 @@ mkShell {
     # prepend clan-cli for development
     export PYTHONPATH=../clan-cli:$PYTHONPATH
 
-    ln -snf ${clan-vm-manager} result
+
+    if ! command -v xdg-mime &> /dev/null; then
+      echo "Warning: 'xdg-mime' is not available. The desktop file cannot be installed."
+    fi
 
     # install desktop file
     set -eou pipefail
     DESKTOP_FILE_NAME=lol.clan.vm.manager.desktop
     DESKTOP_DST=~/.local/share/applications/$DESKTOP_FILE_NAME
     DESKTOP_SRC=${clan-vm-manager}/share/applications/$DESKTOP_FILE_NAME
-    # UI_BIN="env GTK_DEBUG=interactive ${clan-vm-manager}/bin/clan-vm-manager"
     UI_BIN="${clan-vm-manager}/bin/clan-vm-manager"
 
     cp -f $DESKTOP_SRC $DESKTOP_DST
