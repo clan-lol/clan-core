@@ -41,7 +41,7 @@ class Machine:
         self.qmp_socket: Path = state_dir / "qmp.sock"
         self.qga_socket: Path = state_dir / "qga.sock"
 
-        print(f"qmp_socket: {self.qmp_socket}")
+        log.debug(f"qmp_socket: {self.qmp_socket}")
         self._qmp = QEMUMonitorProtocol(path.realpath(self.qmp_socket))
         self._qmp_connected = False
 
