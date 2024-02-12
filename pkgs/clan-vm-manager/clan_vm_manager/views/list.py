@@ -54,6 +54,7 @@ class ClanList(Gtk.Box):
         groups = Clans.use()
         join = Join.use()
 
+        self.log_label: Gtk.Label = Gtk.Label()
         self.__init_machines = history.add.list_history()
         self.join_boxed_list = create_boxed_list(
             model=join.list_store, render_row=self.render_join_row
@@ -158,6 +159,11 @@ class ClanList(Gtk.Box):
         avatar.set_show_initials(True)
         avatar.set_size(50)
         row.add_prefix(avatar)
+
+        # Display build logs
+        log_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        log_box.set_valign(Gtk.Align.CENTER)
+        log_box.append(self.log_label)
 
         # Switch
         switch = Gtk.Switch()
