@@ -23,7 +23,7 @@ import multiprocessing as mp
 import threading
 
 from clan_cli.machines.machines import Machine
-from gi.repository import Gio, GLib, GObject
+from gi.repository import Gio, GLib, GObject, Gtk
 
 log = logging.getLogger(__name__)
 
@@ -114,10 +114,13 @@ class VM(GObject.Object):
         self._stop_timer_init: datetime | None = None
         self._logs_id: int = 0
         self._log_file: IO[str] | None = None
+        self.progress_bar: Gtk.ProgressBar = Gtk.ProgressBar()
+        self.prog_bar_id: int = 0
         self.log_dir = tempfile.TemporaryDirectory(
             prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
         )
         self._finalizer = weakref.finalize(self, self.stop)
+        self.connect("build_vm", self.build_vm)
 
         uri = ClanURI.from_str(
             url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
@@ -133,6 +136,21 @@ class VM(GObject.Object):
                     name=self.data.flake.flake_attr,
                     flake=url,  # type: ignore
                 )
+
+    def _pulse_progress_bar(self) -> bool:
+        self.progress_bar.pulse()
+        return GLib.SOURCE_CONTINUE
+
+    def build_vm(self, vm: "VM", _vm: "VM", building: bool) -> None:
+        if building:
+            log.info("Building VM")
+            self.prog_bar_id = GLib.timeout_add(100, self._pulse_progress_bar)
+            if self.prog_bar_id == 0:
+                raise ClanError("Couldn't spawn a progess bar task")
+        else:
+            if not GLib.Source.remove(self.prog_bar_id):
+                log.error("Failed to remove progress bar task")
+            log.info("VM built")
 
     def __start(self) -> None:
         log.info(f"Starting VM {self.get_id()}")
