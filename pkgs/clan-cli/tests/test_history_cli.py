@@ -26,7 +26,6 @@ def test_history_add(
         "add",
         str(uri),
     ]
-
     cli.run(cmd)
 
     history_file = user_history_file()

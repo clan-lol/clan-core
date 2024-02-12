@@ -1,6 +1,7 @@
 import os
 import tempfile
 import weakref
+from datetime import datetime
 from pathlib import Path
 from typing import IO, Any, ClassVar
 
@@ -13,7 +14,6 @@ from clan_cli.history.list import list_history
 
 from clan_vm_manager import assets
 from clan_vm_manager.errors.show_error import show_error_dialog
-from clan_vm_manager.models.interfaces import VMStatus
 
 from .executor import MPProcess, spawn
 
@@ -98,27 +98,26 @@ class VM(GObject.Object):
     # Define a custom signal with the name "vm_stopped" and a string argument for the message
     __gsignals__: ClassVar = {
         "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object]),
+        "build_vm": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object, bool]),
     }
 
     def __init__(
         self,
         icon: Path,
-        status: VMStatus,
         data: HistoryEntry,
     ) -> None:
         super().__init__()
         self.data = data
         self.process = MPProcess("dummy", mp.Process(), Path("./dummy"))
         self._watcher_id: int = 0
+        self._stop_watcher_id: int = 0
+        self._stop_timer_init: datetime | None = None
         self._logs_id: int = 0
         self._log_file: IO[str] | None = None
-        self.status = status
-        self._last_liveness: bool = False
         self.log_dir = tempfile.TemporaryDirectory(
             prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
         )
         self._finalizer = weakref.finalize(self, self.stop)
-        self.connect("vm_status_changed", self._start_logs_task)
 
         uri = ClanURI.from_str(
             url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
@@ -136,49 +135,46 @@ class VM(GObject.Object):
                 )
 
     def __start(self) -> None:
-        if self.is_running():
-            log.warn("VM is already running")
-            return
+        log.info(f"Starting VM {self.get_id()}")
         vm = vms.run.inspect_vm(self.machine)
+
+        GLib.idle_add(self.emit, "build_vm", self, True)
+        vms.run.build_vm(self.machine, vm, [])
+        GLib.idle_add(self.emit, "build_vm", self, False)
+
         self.process = spawn(
             on_except=None,
             log_dir=Path(str(self.log_dir.name)),
             func=vms.run.run_vm,
             vm=vm,
         )
-        log.debug("Starting VM")
+        log.debug(f"Started VM {self.get_id()}")
+        GLib.idle_add(self.emit, "vm_status_changed", self)
+        log.debug(f"Starting logs watcher on file: {self.process.out_file}")
+        self._logs_id = GLib.timeout_add(50, self._get_logs_task)
+        if self._logs_id == 0:
+            raise ClanError("Failed to add logs watcher")
+
+        log.debug(f"Starting VM watcher for: {self.machine.name}")
+        self._watcher_id = GLib.timeout_add(50, self._vm_watcher_task)
+        if self._watcher_id == 0:
+            raise ClanError("Failed to add watcher")
+
         self.machine.qmp_connect()
 
     def start(self) -> None:
         if self.is_running():
             log.warn("VM is already running")
             return
-
         threading.Thread(target=self.__start).start()
 
-        # Every 50ms check if the VM is still running
-        self._watcher_id = GLib.timeout_add(50, self._vm_watcher_task)
-        if self._watcher_id == 0:
-            raise ClanError("Failed to add watcher")
-
     def _vm_watcher_task(self) -> bool:
-        if self.is_running() != self._last_liveness:
+        if not self.is_running():
             self.emit("vm_status_changed", self)
-            prev_liveness = self._last_liveness
-            self._last_liveness = self.is_running()
+            log.debug("Removing VM watcher")
+            return GLib.SOURCE_REMOVE
 
-            # If the VM was running and now it is not, remove the watcher
-            if prev_liveness and not self.is_running():
-                log.debug("Removing VM watcher")
-                return GLib.SOURCE_REMOVE
         return GLib.SOURCE_CONTINUE
-
-    def _start_logs_task(self, obj: Any, vm: Any) -> None:
-        if self.is_running():
-            log.debug(f"Starting logs watcher on file: {self.process.out_file}")
-            self._logs_id = GLib.timeout_add(50, self._get_logs_task)
-        else:
-            log.debug("Not starting logs watcher")
 
     def _get_logs_task(self) -> bool:
         if not self.process.out_file.exists():
@@ -192,14 +188,14 @@ class VM(GObject.Object):
                 self._log_file = None
                 return GLib.SOURCE_REMOVE
 
+        line = os.read(self._log_file.fileno(), 4096)
+        if len(line) != 0:
+            print(line.decode("utf-8"), end="", flush=True)
+
         if not self.is_running():
             log.debug("Removing logs watcher")
             self._log_file = None
             return GLib.SOURCE_REMOVE
-
-        line = os.read(self._log_file.fileno(), 4096)
-        if len(line) != 0:
-            print(line.decode("utf-8"), end="", flush=True)
 
         return GLib.SOURCE_CONTINUE
 
@@ -209,12 +205,32 @@ class VM(GObject.Object):
     def get_id(self) -> str:
         return f"{self.data.flake.flake_url}#{self.data.flake.flake_attr}"
 
+    def __shutdown_watchdog(self) -> None:
+        if self.is_running():
+            assert self._stop_timer_init is not None
+            diff = datetime.now() - self._stop_timer_init
+            if diff.seconds > 10:
+                log.error(f"VM {self.get_id()} has not stopped. Killing it")
+                self.process.kill_group()
+            return GLib.SOURCE_CONTINUE
+        else:
+            log.info(f"VM {self.get_id()} has stopped")
+            return GLib.SOURCE_REMOVE
+
+    def __stop(self) -> None:
+        log.info(f"Stopping VM {self.get_id()}")
+
+        self.machine.qmp_command("system_powerdown")
+        self._stop_timer_init = datetime.now()
+        self._stop_watcher_id = GLib.timeout_add(100, self.__shutdown_watchdog)
+        if self._stop_watcher_id == 0:
+            raise ClanError("Failed to add stop watcher")
+
     def stop(self) -> None:
         if not self.is_running():
             return
         log.info(f"Stopping VM {self.get_id()}")
-        # TODO: add fallback to kill the process if the QMP command fails
-        self.machine.qmp_command("system_powerdown")
+        threading.Thread(target=self.__stop).start()
 
     def read_whole_log(self) -> str:
         if not self.process.out_file.exists():
@@ -296,7 +312,6 @@ def get_saved_vms() -> list[VM]:
 
             base = VM(
                 icon=Path(icon),
-                status=VMStatus.STOPPED,
                 data=entry,
             )
             vm_list.append(base)

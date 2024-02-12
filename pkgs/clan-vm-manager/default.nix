@@ -57,7 +57,7 @@ python3.pkgs.buildPythonApplication {
   '';
   desktopItems = [
     (makeDesktopItem {
-      name = "clan-vm-manager";
+      name = "lol.clan.vm.manager";
       exec = "clan-vm-manager %u";
       icon = ./clan_vm_manager/assets/clan_white.png;
       desktopName = "cLAN Manager";
