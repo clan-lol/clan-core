@@ -11,7 +11,7 @@
       default = "user";
       description = "User the program is run under";
     };
-    command = lib.mkOption {
+    flags = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [
         "--vsock"
@@ -19,12 +19,12 @@
         "3049"
         "server"
       ];
-      description = "Waypipe command that will be run";
+      description = "Flags that will be passed to waypipe";
     };
-    program = lib.mkOption {
-      type = lib.types.str;
-      default = lib.getExe pkgs.foot;
-      description = "Program that should be started";
+    command = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ (lib.getExe pkgs.foot) ];
+      description = "Commands that waypipe should run";
     };
   };
   config = lib.mkIf config.clan.services.waypipe.enable {
@@ -56,8 +56,8 @@
       serviceConfig.PassEnvironment = "DISPLAY";
       script = ''
         ${lib.getExe config.clanCore.clanPkgs.waypipe} \
-        ${lib.escapeShellArgs config.clan.services.waypipe.command} \
-        ${config.clan.services.waypipe.program}
+        ${lib.escapeShellArgs config.clan.services.waypipe.flags} \
+        ${lib.escapeShellArgs config.clan.services.waypipe.command}
       '';
       wantedBy = [ "default.target" ];
     };
