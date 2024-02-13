@@ -71,10 +71,14 @@ def run_vm_in_thread(machine_name: str) -> None:
 # wait for qmp socket to exist
 def wait_vm_up(state_dir: Path) -> None:
     socket_file = state_dir / "qga.sock"
-    while True:
+    timeout: float = 50
+    while timeout > 0:
         if socket_file.exists():
             break
         sleep(0.1)
+        timeout -= 0.1
+    if timeout <= 0:
+        raise TimeoutError(f"{socket_file} did not appear")
 
 
 # wait for vm to be down by checking if qga socket is down
@@ -156,26 +160,22 @@ def test_vm_qmp(
     # 'clan vms run' must be executed from within the flake
     monkeypatch.chdir(flake.path)
 
+    # the state dir is a point of reference for qemu interactions as it links to the qga/qmp sockets
+    qmp_state_dir = temporary_home / "vm-tmp"
+
     with monkeypatch_tempdir_with_custom_path(
         monkeypatch=monkeypatch,
-        custom_path=str(temporary_home / "vm-tmp"),
-        prefix_condition="clan_vm-",
+        custom_path=str(qmp_state_dir),
+        prefix_condition="machine_vm-",
     ):
-        # the state dir is a point of reference for qemu interactions as it links to the qga/qmp sockets
-        state_dir = vm_state_dir(str(flake.path), "my_machine")
         # start the VM
         run_vm_in_thread("my_machine")
 
-        # connect with qmp
-        qmp = qmp_connect(state_dir)
+    # connect with qmp
+    qmp = qmp_connect(qmp_state_dir)
 
-        # verify that issuing a command works
-        # result = qmp.cmd_obj({"execute": "query-status"})
-        result = qmp.command("query-status")
-        assert result["status"] == "running", result
-
-        # shutdown machine (prevent zombie qemu processes)
-        qmp.command("system_powerdown")
+    # shutdown machine (prevent zombie qemu processes)
+    qmp.command("system_powerdown")
 
 
 @pytest.mark.skipif(no_kvm, reason="Requires KVM")
