@@ -52,7 +52,7 @@
       shell = "/run/current-system/sw/bin/bash";
     };
 
-    systemd.user.services.waypipe-passthrough = {
+    systemd.user.services.waypipe = {
       serviceConfig.PassEnvironment = "DISPLAY";
       script = ''
         ${lib.getExe config.clanCore.clanPkgs.waypipe} \
