@@ -169,7 +169,12 @@ class VM(GObject.Object):
             vm=vm,
         )
         self.process.proc.join()
+
         GLib.idle_add(self.emit, "build_vm", self, False)
+
+        if self.process.proc.exitcode != 0:
+            log.error(f"Failed to build VM {self.get_id()}")
+            return
 
         self.process = spawn(
             on_except=None,
@@ -188,8 +193,6 @@ class VM(GObject.Object):
         self._watcher_id = GLib.timeout_add(50, self._vm_watcher_task)
         if self._watcher_id == 0:
             raise ClanError("Failed to add watcher")
-
-        self.machine.qmp_connect()
 
     def start(self) -> None:
         if self.is_running():
@@ -249,7 +252,12 @@ class VM(GObject.Object):
     def __stop(self) -> None:
         log.info(f"Stopping VM {self.get_id()}")
 
-        self.machine.qmp_command("system_powerdown")
+        try:
+            with self.machine.vm.qmp() as qmp:
+                qmp.command("system_powerdown")
+        except ClanError as e:
+            log.debug(e)
+
         self._stop_timer_init = datetime.now()
         self._stop_watcher_id = GLib.timeout_add(100, self.__shutdown_watchdog)
         if self._stop_watcher_id == 0:
