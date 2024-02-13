@@ -164,7 +164,8 @@ class ClanList(Gtk.Box):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         box.set_valign(Gtk.Align.CENTER)
         box.append(vm.progress_bar)
-        row.add_suffix(box)
+        box.set_homogeneous(False)
+        row.add_suffix(box)  # This allows children to have different sizes
 
         # ==== Action buttons ====
         switch = Gtk.Switch()
