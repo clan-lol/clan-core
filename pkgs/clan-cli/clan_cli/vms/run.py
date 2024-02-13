@@ -100,7 +100,7 @@ def qemu_command(
         (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
         f'init={nixos_config["toplevel"]}/init',
         f'regInfo={nixos_config["regInfo"]}/registration',
-        "console=ttyS0,115200n8",
+        "console=hvc0",
     ]
     if not vm.waypipe:
         kernel_cmdline.append("console=tty0")
@@ -136,6 +136,11 @@ def qemu_command(
         "-chardev", f"socket,path={qga_socket_file},server=on,wait=off,id=qga0",
         "-device", "virtio-serial",
         "-device", "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
+
+        "-serial", "null",
+        "-chardev", "stdio,mux=on,id=char0,signal=off",
+        "-mon", "chardev=char0,mode=readline",
+        "-device", "virtconsole,chardev=char0,nr=0",
     ]  # fmt: on
 
     vsock_cid = None
