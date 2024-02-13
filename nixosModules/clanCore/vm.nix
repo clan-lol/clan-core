@@ -37,14 +37,13 @@ let
     virtualisation.fileSystems = lib.mkForce ({
       "/nix/store" = {
         device = "nix-store";
-        options = [ "x-systemd.requires=systemd-modules-load.service" ];
+        options = [ "x-systemd.requires=systemd-modules-load.service" "ro" ];
         fsType = "virtiofs";
       };
 
       "/" = {
         device = "/dev/vda";
         fsType = "ext4";
-        noCheck = true;
         options = [ "defaults" "x-systemd.makefs" ];
       };
 
