@@ -25,5 +25,5 @@ EOF
 
 cat << EOF
 Execute this command to show waypipe windows:
-$ clan --flake $democlan vms run --wayland wayland
+$ clan --flake $democlan vms run wayland
 EOF
