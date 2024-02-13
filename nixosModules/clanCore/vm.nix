@@ -32,6 +32,12 @@ let
     boot.initrd.systemd.storePaths = [ pkgs.util-linux pkgs.e2fsprogs ];
     boot.initrd.systemd.emergencyAccess = true;
 
+    # sysusers is faster than nixos's perl scripts
+    # and doesn't require state.
+    systemd.sysusers.enable = true;
+    users.mutableUsers = false;
+    users.allowNoPasswordLogin = true;
+
     boot.initrd.kernelModules = [ "virtiofs" ];
     virtualisation.writableStore = false;
     virtualisation.fileSystems = lib.mkForce ({
