@@ -7,19 +7,6 @@ let
       config.clanCore.state
   );
 
-  # Ensure sane mount order by topo-sorting
-  sortedStateFolders =
-    let
-      sorted = lib.toposort lib.hasPrefix stateFolders;
-    in
-      sorted.result or (
-        throw ''
-          The state folders have a cyclic dependency.
-          This is not allowed.
-          The cyclic dependencies are:
-            - ${lib.concatStringsSep "\n  - " sorted.loops}
-        ''
-      );
 
   vmModule = {
     imports = [
@@ -43,49 +30,45 @@ let
     boot.kernelPackages = pkgs.linuxPackages_latest;
 
     boot.initrd.systemd.storePaths = [ pkgs.util-linux pkgs.e2fsprogs ];
-    # Ensures, that all state paths will be persisted across reboots
-    # - Mounts the state.qcow2 disk to /vmstate.
-    # - Binds directories from /vmstate/{some-path} to /{some-path}.
-    boot.initrd.systemd.services.rw-etc-pre = {
-      unitConfig = {
-        DefaultDependencies = false;
-        RequiresMountsFor = "/sysroot /dev";
+    boot.initrd.systemd.emergencyAccess = true;
+
+    boot.initrd.kernelModules = [ "virtiofs" ];
+    virtualisation.writableStore = false;
+    virtualisation.fileSystems = lib.mkForce ({
+      "/nix/store" = {
+        device = "nix-store";
+        options = [ "x-systemd.requires=systemd-modules-load.service" "ro" ];
+        fsType = "virtiofs";
       };
-      wantedBy = [ "initrd.target" ];
-      requiredBy = [ "rw-etc.service" ];
-      before = [ "rw-etc.service" ];
-      serviceConfig = {
-        Type = "oneshot";
+
+      "/" = {
+        device = "/dev/vda";
+        fsType = "ext4";
+        options = [ "defaults" "x-systemd.makefs" ];
       };
-      script = ''
-        set -x
-        mkdir -p -m 0755 \
-          /sysroot/vmstate \
-          /sysroot/.rw-etc \
-          /sysroot/var/lib/nixos
 
-        ${pkgs.util-linux}/bin/blkid /dev/vdb || ${pkgs.e2fsprogs}/bin/mkfs.ext4 /dev/vdb
-        sync
-        mount /dev/vdb /sysroot/vmstate
+      "/vmstate" = {
+        device = "/dev/vdb";
+        options = [ "x-systemd.makefs" ];
+        noCheck = true;
+        fsType = "ext4";
+      };
 
-        mkdir -p -m 0755 /sysroot/vmstate/{.rw-etc,var/lib/nixos}
-        mount --bind /sysroot/vmstate/.rw-etc /sysroot/.rw-etc
-        mount --bind /sysroot/vmstate/var/lib/nixos /sysroot/var/lib/nixos
-
-        for folder in "${lib.concatStringsSep ''" "'' sortedStateFolders}"; do
-          mkdir -p -m 0755 "/sysroot/vmstate/$folder" "/sysroot/$folder"
-          mount --bind "/sysroot/vmstate/$folder" "/sysroot/$folder"
-        done
-      '';
-    };
-    virtualisation.fileSystems = {
-      ${config.clanCore.secretsUploadDirectory} = lib.mkForce {
+      ${config.clanCore.secretsUploadDirectory} = {
         device = "secrets";
         fsType = "9p";
         neededForBoot = true;
         options = [ "trans=virtio" "version=9p2000.L" "cache=loose" ];
       };
-    };
+
+    } // lib.listToAttrs (map
+      (folder:
+        lib.nameValuePair folder {
+          device = "/vmstate${folder}";
+          fsType = "none";
+          options = [ "bind" ];
+        })
+      stateFolders));
   };
 
   # We cannot simply merge the VM config into the current system config, because

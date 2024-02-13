@@ -266,13 +266,6 @@ def test_vm_persistence(
     # connect second time
     qga = qga_connect(state_dir)
 
-    # ensure that either /var/lib/nixos or /etc gets persisted
-    # (depending on if system.etc.overlay.enable is set or not)
-    exitcode, out, err = qga.run(
-        "ls /vmstate/var/lib/nixos/gid-map || ls /vmstate/.rw-etc/upper"
-    )
-    assert exitcode == 0, err
-
     # ensure that the file created by the service is still there and has the expected content
     exitcode, out, err = qga.run("cat /var/my-state/test")
     assert exitcode == 0, err
