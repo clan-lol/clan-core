@@ -34,14 +34,12 @@
       alsa.enable = lib.mkDefault true;
       alsa.support32Bit = lib.mkDefault true;
       pulse.enable = lib.mkDefault true;
-      jack.enable = lib.mkDefault true;
     };
     # General default settings
     fonts.enableDefaultPackages = lib.mkDefault true;
     hardware.opengl.enable = lib.mkDefault true;
-    # Assume it is ran inside a clan context
+    # Assume it is run inside a clan context
     clan.virtualisation.waypipe = lib.mkDefault true;
-
 
     # User account
     services.getty.autologinUser = lib.mkDefault config.clan.services.waypipe.user;
@@ -58,7 +56,7 @@
       serviceConfig.PassEnvironment = "DISPLAY";
       script = ''
         ${lib.getExe config.clanCore.clanPkgs.waypipe} \
-        ${lib.concatStringsSep " " config.clan.services.waypipe.command} \
+        ${lib.escapeShellArgs config.clan.services.waypipe.command} \
         ${config.clan.services.waypipe.program}
       '';
       wantedBy = [ "default.target" ];
