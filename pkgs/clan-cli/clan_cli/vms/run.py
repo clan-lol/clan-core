@@ -122,7 +122,7 @@ def qemu_command(
         "-chardev", f"socket,id=char1,path={virtiofsd_socket}",
         "-device", "vhost-user-fs-pci,chardev=char1,tag=nix-store",
         "-virtfs", f"local,path={secrets_dir},security_model=none,mount_tag=secrets",
-        "-drive", f"cache=writeback,file={rootfs_img},format=raw,id=drive1,if=none,index=1,werror=report",
+        "-drive", f"cache=writeback,file={rootfs_img},format=qcow2,id=drive1,if=none,index=1,werror=report",
         "-device", "virtio-blk-pci,bootindex=1,drive=drive1,serial=root",
         "-drive", f"cache=writeback,file={state_img},format=qcow2,id=state,if=none,index=2,werror=report",
         "-device", "virtio-blk-pci,drive=state",
@@ -197,7 +197,6 @@ def get_secrets(
 
 def prepare_disk(
     directory: Path,
-    disk_format: str = "raw",
     size: str = "1024M",
     file_name: str = "disk.img",
 ) -> Path:
@@ -208,7 +207,7 @@ def prepare_disk(
             "qemu-img",
             "create",
             "-f",
-            disk_format,
+            "qcow2",
             str(disk_img),
             size,
         ],
@@ -344,7 +343,6 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
             state_img = prepare_disk(
                 directory=state_dir,
                 file_name="state.qcow2",
-                disk_format="qcow2",
                 size="50G",
             )
         virtiofsd_socket = Path(sockets) / "virtiofsd.sock"
