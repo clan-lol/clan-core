@@ -1,7 +1,10 @@
 import os
 import sys
+import tempfile
 import threading
 import traceback
+from collections.abc import Generator
+from contextlib import contextmanager
 from pathlib import Path
 from time import sleep
 from typing import TYPE_CHECKING
@@ -19,6 +22,34 @@ if TYPE_CHECKING:
     from age_keys import KeyPair
 
 no_kvm = not os.path.exists("/dev/kvm")
+
+
+@contextmanager
+def monkeypatch_tempdir_with_custom_path(
+    *, monkeypatch: pytest.MonkeyPatch, custom_path: str, prefix_condition: str
+) -> Generator[None, None, None]:
+    # Custom wrapper function that checks the prefix and either modifies the behavior or falls back to the original
+    class CustomTemporaryDirectory(tempfile.TemporaryDirectory):
+        def __init__(
+            self,
+            suffix: str | None = None,
+            prefix: str | None = None,
+            dir: str | None = None,  # noqa: A002
+        ) -> None:
+            if prefix == prefix_condition:
+                self.name = custom_path  # Use the custom path
+                self._finalizer = None  # Prevent cleanup attempts on the custom path by the original finalizer
+            else:
+                super().__init__(suffix=suffix, prefix=prefix, dir=dir)
+
+    # Use ExitStack to ensure unpatching
+    try:
+        # Patch the TemporaryDirectory with our custom class
+        monkeypatch.setattr(tempfile, "TemporaryDirectory", CustomTemporaryDirectory)
+        yield  # This allows the code within the 'with' block of this context manager to run
+    finally:
+        # Unpatch the TemporaryDirectory
+        monkeypatch.undo()
 
 
 def run_vm_in_thread(machine_name: str) -> None:
@@ -125,22 +156,26 @@ def test_vm_qmp(
     # 'clan vms run' must be executed from within the flake
     monkeypatch.chdir(flake.path)
 
-    # the state dir is a point of reference for qemu interactions as it links to the qga/qmp sockets
-    state_dir = vm_state_dir(str(flake.path), "my_machine")
+    with monkeypatch_tempdir_with_custom_path(
+        monkeypatch=monkeypatch,
+        custom_path=str(temporary_home / "vm-tmp"),
+        prefix_condition="clan_vm-",
+    ):
+        # the state dir is a point of reference for qemu interactions as it links to the qga/qmp sockets
+        state_dir = vm_state_dir(str(flake.path), "my_machine")
+        # start the VM
+        run_vm_in_thread("my_machine")
 
-    # start the VM
-    run_vm_in_thread("my_machine")
+        # connect with qmp
+        qmp = qmp_connect(state_dir)
 
-    # connect with qmp
-    qmp = qmp_connect(state_dir)
+        # verify that issuing a command works
+        # result = qmp.cmd_obj({"execute": "query-status"})
+        result = qmp.command("query-status")
+        assert result["status"] == "running", result
 
-    # verify that issuing a command works
-    # result = qmp.cmd_obj({"execute": "query-status"})
-    result = qmp.command("query-status")
-    assert result["status"] == "running", result
-
-    # shutdown machine (prevent zombie qemu processes)
-    qmp.command("system_powerdown")
+        # shutdown machine (prevent zombie qemu processes)
+        qmp.command("system_powerdown")
 
 
 @pytest.mark.skipif(no_kvm, reason="Requires KVM")

@@ -12,8 +12,8 @@ avatar {
 }
 
 .trust {
-    padding-top: 25px; 
-    padding-bottom: 25px; 
+    padding-top: 25px;
+    padding-bottom: 25px;
 }
 
 .join-list {
@@ -22,11 +22,16 @@ avatar {
 
 }
 
+.progress-bar {
+    margin-right: 25px;
+    min-width: 200px;
+}
+
 .group-list {
 	background-color: inherit;
 }
 .group-list > .activatable:hover {
-	background-color: unset;	
+	background-color: unset;
 }
 
 .group-list > row {
