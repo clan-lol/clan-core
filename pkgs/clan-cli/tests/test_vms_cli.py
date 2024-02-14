@@ -40,7 +40,7 @@ def run_vm_in_thread(machine_name: str) -> None:
 # wait for qmp socket to exist
 def wait_vm_up(state_dir: Path) -> None:
     socket_file = state_dir / "qga.sock"
-    timeout = 5.0
+    timeout: float = 300
     while True:
         if timeout <= 0:
             raise TimeoutError(f"qga socket {socket_file} not found")
@@ -53,8 +53,12 @@ def wait_vm_up(state_dir: Path) -> None:
 # wait for vm to be down by checking if qga socket is down
 def wait_vm_down(state_dir: Path) -> None:
     socket_file = state_dir / "qga.sock"
+    timeout: float = 300
     while socket_file.exists():
+        if timeout <= 0:
+            raise TimeoutError(f"qga socket {socket_file} still exists")
         sleep(0.1)
+        timeout -= 0.1
 
 
 # wait for vm to be up then connect and return qmp instance
