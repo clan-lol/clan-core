@@ -50,12 +50,12 @@ let
       "/" = {
         device = "/dev/vda";
         fsType = "ext4";
-        options = [ "defaults" "x-systemd.makefs" ];
+        options = [ "defaults" "x-systemd.makefs" "nobarrier" "noatime" "nodiratime" "data=writeback" "discard" ];
       };
 
       "/vmstate" = {
         device = "/dev/vdb";
-        options = [ "x-systemd.makefs" ];
+        options = [ "x-systemd.makefs" "noatime" "nodiratime" "discard" ];
         noCheck = true;
         fsType = "ext4";
       };
