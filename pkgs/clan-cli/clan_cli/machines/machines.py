@@ -1,9 +1,9 @@
 import json
 import logging
-from os import path
+from collections.abc import Generator
+from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from time import sleep
 
 from clan_cli.dirs import vm_state_dir
 from qemu.qmp import QEMUMonitorProtocol
@@ -14,6 +14,27 @@ from ..nix import nix_build, nix_config, nix_eval, nix_metadata
 from ..ssh import Host, parse_deployment_address
 
 log = logging.getLogger(__name__)
+
+
+class VMAttr:
+    def __init__(self, state_dir: Path) -> None:
+        self._qmp_socket: Path = state_dir / "qmp.sock"
+        self._qga_socket: Path = state_dir / "qga.sock"
+        self._qmp: QEMUMonitorProtocol | None = None
+
+    @contextmanager
+    def qmp(self) -> Generator[QEMUMonitorProtocol, None, None]:
+        if self._qmp is None:
+            log.debug(f"qmp_socket: {self._qmp_socket}")
+            rpath = self._qmp_socket.resolve()
+            if not rpath.exists():
+                raise ClanError(f"qmp socket {rpath} does not exist")
+            self._qmp = QEMUMonitorProtocol(str(rpath))
+        self._qmp.connect()
+        try:
+            yield self._qmp
+        finally:
+            self._qmp.close()
 
 
 class Machine:
@@ -36,14 +57,10 @@ class Machine:
         self.build_cache: dict[str, Path] = {}
 
         self._deployment_info: None | dict[str, str] = deployment_info
+
         state_dir = vm_state_dir(flake_url=str(self.flake), vm_name=self.name)
 
-        self.qmp_socket: Path = state_dir / "qmp.sock"
-        self.qga_socket: Path = state_dir / "qga.sock"
-
-        log.debug(f"qmp_socket: {self.qmp_socket}")
-        self._qmp = QEMUMonitorProtocol(path.realpath(self.qmp_socket))
-        self._qmp_connected = False
+        self.vm: VMAttr = VMAttr(state_dir)
 
     def __str__(self) -> str:
         return f"Machine(name={self.name}, flake={self.flake})"
@@ -59,28 +76,6 @@ class Machine:
             self.build_nix("config.system.clan.deployment.file").read_text()
         )
         return self._deployment_info
-
-    def qmp_connect(self) -> None:
-        if not self._qmp_connected:
-            tries = 100
-            for num in range(tries):
-                try:
-                    # the socket file link might be outdated, therefore re-init the qmp object
-                    self._qmp = QEMUMonitorProtocol(path.realpath(self.qmp_socket))
-                    self._qmp.connect()
-                    self._qmp_connected = True
-                    log.debug("QMP Connected")
-                    return
-                except FileNotFoundError:
-                    if num < 99:
-                        sleep(0.1)
-                        continue
-                    else:
-                        raise
-
-    def qmp_command(self, command: str) -> dict:
-        self.qmp_connect()
-        return self._qmp.command(command)
 
     @property
     def target_host_address(self) -> str:

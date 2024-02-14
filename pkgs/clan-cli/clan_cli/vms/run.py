@@ -154,7 +154,9 @@ def qemu_command(
 
 
 # TODO move this to the Machines class
-def build_vm(machine: Machine, vm: VmConfig, nix_options: list[str]) -> dict[str, str]:
+def build_vm(
+    machine: Machine, vm: VmConfig, nix_options: list[str] = []
+) -> dict[str, str]:
     config = nix_config()
     system = config["system"]
 

@@ -23,7 +23,7 @@ import multiprocessing as mp
 import threading
 
 from clan_cli.machines.machines import Machine
-from gi.repository import Gio, GLib, GObject
+from gi.repository import Gio, GLib, GObject, Gtk
 
 log = logging.getLogger(__name__)
 
@@ -114,10 +114,15 @@ class VM(GObject.Object):
         self._stop_timer_init: datetime | None = None
         self._logs_id: int = 0
         self._log_file: IO[str] | None = None
+        self.progress_bar: Gtk.ProgressBar = Gtk.ProgressBar()
+        self.progress_bar.hide()
+        self.progress_bar.set_hexpand(True)  # Horizontally expand
+        self.prog_bar_id: int = 0
         self.log_dir = tempfile.TemporaryDirectory(
             prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
         )
         self._finalizer = weakref.finalize(self, self.stop)
+        self.connect("build_vm", self.build_vm)
 
         uri = ClanURI.from_str(
             url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
@@ -134,13 +139,42 @@ class VM(GObject.Object):
                     flake=url,  # type: ignore
                 )
 
+    def _pulse_progress_bar(self) -> bool:
+        self.progress_bar.pulse()
+        return GLib.SOURCE_CONTINUE
+
+    def build_vm(self, vm: "VM", _vm: "VM", building: bool) -> None:
+        if building:
+            log.info("Building VM")
+            self.progress_bar.show()
+            self.prog_bar_id = GLib.timeout_add(100, self._pulse_progress_bar)
+            if self.prog_bar_id == 0:
+                raise ClanError("Couldn't spawn a progess bar task")
+        else:
+            self.progress_bar.hide()
+            if not GLib.Source.remove(self.prog_bar_id):
+                log.error("Failed to remove progress bar task")
+            log.info("VM built")
+
     def __start(self) -> None:
         log.info(f"Starting VM {self.get_id()}")
         vm = vms.run.inspect_vm(self.machine)
 
         GLib.idle_add(self.emit, "build_vm", self, True)
-        vms.run.build_vm(self.machine, vm, [])
+        self.process = spawn(
+            on_except=None,
+            log_dir=Path(str(self.log_dir.name)),
+            func=vms.run.build_vm,
+            machine=self.machine,
+            vm=vm,
+        )
+        self.process.proc.join()
+
         GLib.idle_add(self.emit, "build_vm", self, False)
+
+        if self.process.proc.exitcode != 0:
+            log.error(f"Failed to build VM {self.get_id()}")
+            return
 
         self.process = spawn(
             on_except=None,
@@ -159,8 +193,6 @@ class VM(GObject.Object):
         self._watcher_id = GLib.timeout_add(50, self._vm_watcher_task)
         if self._watcher_id == 0:
             raise ClanError("Failed to add watcher")
-
-        self.machine.qmp_connect()
 
     def start(self) -> None:
         if self.is_running():
@@ -220,7 +252,12 @@ class VM(GObject.Object):
     def __stop(self) -> None:
         log.info(f"Stopping VM {self.get_id()}")
 
-        self.machine.qmp_command("system_powerdown")
+        try:
+            with self.machine.vm.qmp() as qmp:
+                qmp.command("system_powerdown")
+        except ClanError as e:
+            log.debug(e)
+
         self._stop_timer_init = datetime.now()
         self._stop_watcher_id = GLib.timeout_add(100, self.__shutdown_watchdog)
         if self._stop_watcher_id == 0:
