@@ -15,10 +15,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from ..cmd import Log, run
-from ..dirs import machine_gcroot, module_root, user_cache_dir, vm_state_dir
+from ..dirs import module_root, user_cache_dir, vm_state_dir
 from ..errors import ClanError
 from ..machines.machines import Machine
-from ..nix import nix_build, nix_config, nix_shell
+from ..nix import nix_shell
 from ..secrets.generate import generate_secrets
 from .inspect import VmConfig, inspect_vm
 
@@ -153,26 +153,39 @@ def qemu_command(
     return QemuCommand(command, vsock_cid=vsock_cid)
 
 
+def facts_to_nixos_config(facts: dict[str, dict[str, bytes]]) -> dict:
+    nixos_config: dict = {}
+    nixos_config["clanCore"] = {}
+    nixos_config["clanCore"]["secrets"] = {}
+    for service, service_facts in facts.items():
+        nixos_config["clanCore"]["secrets"][service] = {}
+        nixos_config["clanCore"]["secrets"][service]["facts"] = {}
+        for fact, value in service_facts.items():
+            nixos_config["clanCore"]["secrets"][service]["facts"][fact] = {
+                "value": value.decode()
+            }
+    return nixos_config
+
+
 # TODO move this to the Machines class
 def build_vm(
-    machine: Machine, vm: VmConfig, nix_options: list[str] = []
+    machine: Machine, vm: VmConfig, tmpdir: Path, nix_options: list[str]
 ) -> dict[str, str]:
-    config = nix_config()
-    system = config["system"]
+    secrets_dir = get_secrets(machine, tmpdir)
 
-    clan_dir = machine.flake
-    cmd = nix_build(
-        [
-            f'{clan_dir}#clanInternals.machines."{system}"."{machine.name}".config.system.clan.vm.create',
-            *nix_options,
-        ],
-        machine_gcroot(flake_url=str(vm.flake_url)) / f"vm-{machine.name}",
-    )
-    proc = run(
-        cmd, log=Log.BOTH, error_msg=f"Could not build vm config for {machine.name}"
+    facts_module = importlib.import_module(machine.facts_module)
+    fact_store = facts_module.FactStore(machine=machine)
+    facts = fact_store.get_all()
+
+    nixos_config_file = machine.build_nix(
+        "config.system.clan.vm.create",
+        extra_config=facts_to_nixos_config(facts),
+        nix_options=nix_options,
     )
     try:
-        return json.loads(Path(proc.stdout.strip()).read_text())
+        vm_data = json.loads(Path(nixos_config_file).read_text())
+        vm_data["secrets_dir"] = str(secrets_dir)
+        return vm_data
     except json.JSONDecodeError as e:
         raise ClanError(f"Failed to parse vm config: {e}")
 
@@ -182,16 +195,13 @@ def get_secrets(
     tmpdir: Path,
 ) -> Path:
     secrets_dir = tmpdir / "secrets"
-    secrets_dir.mkdir(exist_ok=True)
+    secrets_dir.mkdir(parents=True, exist_ok=True)
 
     secrets_module = importlib.import_module(machine.secrets_module)
     secret_store = secrets_module.SecretStore(machine=machine)
 
-    # Only generate secrets for local clans
-    if isinstance(machine.flake, Path) and machine.flake.is_dir():
-        generate_secrets(machine)
-    else:
-        log.warning("won't generate secrets for non local clan")
+    # TODO Only generate secrets for local clans
+    generate_secrets(machine)
 
     secret_store.upload(secrets_dir)
     return secrets_dir
@@ -302,19 +312,18 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
     machine = Machine(vm.machine_name, vm.flake_url)
     log.debug(f"Creating VM for {machine}")
 
-    # TODO: We should get this from the vm argument
-    nixos_config = build_vm(machine, vm, nix_options)
-
     # store the temporary rootfs inside XDG_CACHE_HOME on the host
     # otherwise, when using /tmp, we risk running out of memory
     cache = user_cache_dir() / "clan"
     cache.mkdir(exist_ok=True)
     with TemporaryDirectory(dir=cache) as cachedir, TemporaryDirectory() as sockets:
         tmpdir = Path(cachedir)
+
+        # TODO: We should get this from the vm argument
+        nixos_config = build_vm(machine, vm, tmpdir, nix_options)
+
         xchg_dir = tmpdir / "xchg"
         xchg_dir.mkdir(exist_ok=True)
-
-        secrets_dir = get_secrets(machine, tmpdir)
 
         state_dir = vm_state_dir(str(vm.flake_url), machine.name)
         state_dir.mkdir(parents=True, exist_ok=True)
@@ -350,7 +359,7 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
             vm,
             nixos_config,
             xchg_dir=xchg_dir,
-            secrets_dir=secrets_dir,
+            secrets_dir=Path(nixos_config["secrets_dir"]),
             rootfs_img=rootfs_img,
             state_img=state_img,
             virtiofsd_socket=virtiofsd_socket,
