@@ -11,7 +11,7 @@ def check_secrets(machine: Machine) -> bool:
     secrets_module = importlib.import_module(machine.secrets_module)
     secret_store = secrets_module.SecretStore(machine=machine)
     facts_module = importlib.import_module(machine.facts_module)
-    fact_store = facts_module.FactsStore(machine=machine)
+    fact_store = facts_module.FactStore(machine=machine)
 
     missing_secrets = []
     missing_facts = []
@@ -21,11 +21,13 @@ def check_secrets(machine: Machine) -> bool:
                 log.info(f"Secret {secret} for service {service} is missing")
                 missing_secrets.append((service, secret))
 
-        for fact in machine.secrets_data[service]["facts"].values():
+        for fact in machine.secrets_data[service]["facts"]:
             if not fact_store.exists(service, fact):
                 log.info(f"Fact {fact} for service {service} is missing")
                 missing_facts.append((service, fact))
 
+    log.debug(f"missing_secrets: {missing_secrets}")
+    log.debug(f"missing_facts: {missing_facts}")
     if missing_secrets or missing_facts:
         return False
     return True

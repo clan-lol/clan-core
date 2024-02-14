@@ -7,6 +7,7 @@ from clan_cli.machines.machines import Machine
 class FactStore:
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
+        self.works_remotely = False
 
     def set(self, _service: str, name: str, value: bytes) -> Path | None:
         if isinstance(self.machine.flake, Path):
@@ -23,12 +24,16 @@ class FactStore:
             )
 
     def exists(self, _service: str, name: str) -> bool:
-        fact_path = self.machine.flake_dir / "machines" / self.machine.name / "facts" / name
+        fact_path = (
+            self.machine.flake_dir / "machines" / self.machine.name / "facts" / name
+        )
         return fact_path.exists()
 
     # get a single fact
     def get(self, _service: str, name: str) -> bytes:
-        fact_path = self.machine.flake_dir / "machines" / self.machine.name / "facts" / name
+        fact_path = (
+            self.machine.flake_dir / "machines" / self.machine.name / "facts" / name
+        )
         return fact_path.read_bytes()
 
     # get all facts

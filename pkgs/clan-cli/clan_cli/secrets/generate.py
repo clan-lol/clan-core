@@ -28,6 +28,7 @@ def generate_secrets(machine: Machine) -> None:
             tmpdir = Path(d) / service
             # check if all secrets exist and generate them if at least one is missing
             needs_regeneration = not check_secrets(machine)
+            log.debug(f"{service} needs_regeneration: {needs_regeneration}")
             if needs_regeneration:
                 if not isinstance(machine.flake, Path):
                     msg = f"flake is not a Path: {machine.flake}"
@@ -80,16 +81,15 @@ def generate_secrets(machine: Machine) -> None:
                         files_to_commit.append(secret_path)
 
                 # store facts
-                for name, fact_path in machine.secrets_data[service]["facts"].items():
+                for name in machine.secrets_data[service]["facts"]:
                     fact_file = facts_dir / name
                     if not fact_file.is_file():
                         msg = f"did not generate a file for '{name}' when running the following command:\n"
                         msg += machine.secrets_data[service]["generator"]
                         raise ClanError(msg)
-                    fact_file = fact_store.set(
-                        service, fact_path, fact_file.read_bytes()
-                    )
-                    files_to_commit.append(fact_file)
+                    fact_file = fact_store.set(service, name, fact_file.read_bytes())
+                    if fact_file:
+                        files_to_commit.append(fact_file)
                 commit_files(
                     files_to_commit,
                     machine.flake_dir,

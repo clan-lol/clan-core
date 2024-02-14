@@ -1,6 +1,6 @@
-import json
 import argparse
 import importlib
+import json
 import logging
 
 from ..machines.machines import Machine

@@ -155,6 +155,7 @@ class Machine:
         attr: str,
         extra_config: None | dict = None,
         impure: bool = False,
+        nix_options: list[str] = [],
     ) -> str | Path:
         """
         Build the machine and return the path to the result
@@ -188,17 +189,15 @@ class Machine:
             if extra_config is not None:
                 metadata = nix_metadata(self.flake_dir)
                 url = metadata["url"]
-                if "dirtyRev" in metadata:
-                    if not impure:
-                        raise ClanError(
-                            "The machine has a dirty revision, and impure mode is not allowed"
-                        )
-                    else:
-                        args += ["--impure"]
+                if "dirtyRevision" in metadata:
+                    # if not impure:
+                    #     raise ClanError(
+                    #         "The machine has a dirty revision, and impure mode is not allowed"
+                    #     )
+                    # else:
+                    #     args += ["--impure"]
+                    args += ["--impure"]
 
-                if "dirtyRev" in nix_metadata(self.flake_dir):
-                    dirty_rev = nix_metadata(self.flake_dir)["dirtyRevision"]
-                    url = f"{url}?rev={dirty_rev}"
                 args += [
                     "--expr",
                     f"""
@@ -220,7 +219,8 @@ class Machine:
                 else:
                     flake = self.flake
                 args += [
-                    f'{flake}#clanInternals.machines."{system}".{self.name}.{attr}'
+                    f'{flake}#clanInternals.machines."{system}".{self.name}.{attr}',
+                    *nix_options,
                 ]
 
             if method == "eval":
@@ -238,6 +238,7 @@ class Machine:
         refresh: bool = False,
         extra_config: None | dict = None,
         impure: bool = False,
+        nix_options: list[str] = [],
     ) -> str:
         """
         eval a nix attribute of the machine
@@ -246,7 +247,7 @@ class Machine:
         if attr in self.eval_cache and not refresh and extra_config is None:
             return self.eval_cache[attr]
 
-        output = self.nix("eval", attr, extra_config, impure)
+        output = self.nix("eval", attr, extra_config, impure, nix_options)
         if isinstance(output, str):
             self.eval_cache[attr] = output
             return output
@@ -259,6 +260,7 @@ class Machine:
         refresh: bool = False,
         extra_config: None | dict = None,
         impure: bool = False,
+        nix_options: list[str] = [],
     ) -> Path:
         """
         build a nix attribute of the machine
@@ -268,7 +270,7 @@ class Machine:
         if attr in self.build_cache and not refresh and extra_config is None:
             return self.build_cache[attr]
 
-        output = self.nix("build", attr, extra_config, impure)
+        output = self.nix("build", attr, extra_config, impure, nix_options)
         if isinstance(output, Path):
             self.build_cache[attr] = output
             return output

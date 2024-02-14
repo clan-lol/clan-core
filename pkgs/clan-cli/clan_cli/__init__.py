@@ -6,7 +6,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-from . import backups, config, flakes, flash, history, machines, secrets, vms, facts
+from . import backups, config, facts, flakes, flash, history, machines, secrets, vms
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
 from .errors import ClanCmdError, ClanError
