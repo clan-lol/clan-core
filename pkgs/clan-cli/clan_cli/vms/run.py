@@ -1,15 +1,9 @@
 import argparse
-import contextlib
 import importlib
 import json
 import logging
 import os
 import random
-import shutil
-import socket
-import subprocess
-import time
-from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -21,6 +15,8 @@ from ..machines.machines import Machine
 from ..nix import nix_shell
 from ..secrets.generate import generate_secrets
 from .inspect import VmConfig, inspect_vm
+from .virtiofsd import start_virtiofsd
+from .waypipe import start_waypipe
 
 log = logging.getLogger(__name__)
 
@@ -88,7 +84,6 @@ class QemuCommand:
 def qemu_command(
     vm: VmConfig,
     nixos_config: dict[str, str],
-    xchg_dir: Path,
     secrets_dir: Path,
     rootfs_img: Path,
     state_img: Path,
@@ -233,81 +228,6 @@ def prepare_disk(
     return disk_img
 
 
-VMADDR_CID_HYPERVISOR = 2
-
-
-def test_vsock_port(port: int) -> bool:
-    try:
-        s = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)
-        s.connect((VMADDR_CID_HYPERVISOR, port))
-        s.close()
-        return True
-    except OSError:
-        return False
-
-
-@contextlib.contextmanager
-def start_waypipe(cid: int | None, title_prefix: str) -> Iterator[None]:
-    if cid is None:
-        yield
-        return
-    waypipe = nix_shell(
-        ["git+https://git.clan.lol/clan/clan-core#waypipe"],
-        [
-            "waypipe",
-            "--vsock",
-            "--socket",
-            f"s{cid}:3049",
-            "--title-prefix",
-            title_prefix,
-            "client",
-        ],
-    )
-    with subprocess.Popen(waypipe) as proc:
-        try:
-            while not test_vsock_port(3049):
-                rc = proc.poll()
-                if rc is not None:
-                    msg = f"waypipe exited unexpectedly with code {rc}"
-                    raise ClanError(msg)
-                time.sleep(0.1)
-            yield
-        finally:
-            proc.kill()
-
-
-@contextlib.contextmanager
-def start_virtiofsd(socket_path: Path) -> Iterator[None]:
-    sandbox = "namespace"
-    if shutil.which("newuidmap") is None:
-        sandbox = "none"
-    virtiofsd = nix_shell(
-        ["nixpkgs#virtiofsd"],
-        [
-            "virtiofsd",
-            "--socket-path",
-            str(socket_path),
-            "--cache",
-            "always",
-            "--sandbox",
-            sandbox,
-            "--shared-dir",
-            "/nix/store",
-        ],
-    )
-    with subprocess.Popen(virtiofsd) as proc:
-        try:
-            while not socket_path.exists():
-                rc = proc.poll()
-                if rc is not None:
-                    msg = f"virtiofsd exited unexpectedly with code {rc}"
-                    raise ClanError(msg)
-                time.sleep(0.1)
-            yield
-        finally:
-            proc.kill()
-
-
 def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
     machine = Machine(vm.machine_name, vm.flake_url)
     log.debug(f"Creating VM for {machine}")
@@ -321,9 +241,6 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
 
         # TODO: We should get this from the vm argument
         nixos_config = build_vm(machine, vm, tmpdir, nix_options)
-
-        xchg_dir = tmpdir / "xchg"
-        xchg_dir.mkdir(exist_ok=True)
 
         state_dir = vm_state_dir(str(vm.flake_url), machine.name)
         state_dir.mkdir(parents=True, exist_ok=True)
@@ -358,7 +275,6 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
         qemu_cmd = qemu_command(
             vm,
             nixos_config,
-            xchg_dir=xchg_dir,
             secrets_dir=Path(nixos_config["secrets_dir"]),
             rootfs_img=rootfs_img,
             state_img=state_img,
