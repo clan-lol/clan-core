@@ -48,7 +48,7 @@
     users.users.${config.clan.services.waypipe.user} = {
       isNormalUser = true;
       password = "";
-      extraGroups = [ "wheel" ];
+      extraGroups = [ "wheel" "video" ];
       shell = "/run/current-system/sw/bin/bash";
     };
 
