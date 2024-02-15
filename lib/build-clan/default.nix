@@ -37,9 +37,9 @@ let
       in
       (machineImports settings)
       ++ [
-        (nixpkgs.lib.mkOverride 51 extraConfig)
         settings
         clan-core.nixosModules.clanCore
+        extraConfig
         (machines.${name} or { })
         ({
           clanCore.clanName = clanName;

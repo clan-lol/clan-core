@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 {
   options.clanCore.secretStore = lib.mkOption {
-    type = lib.types.enum [ "sops" "password-store" "custom" ];
+    type = lib.types.enum [ "sops" "password-store" "vm" "custom" ];
     default = "sops";
     description = ''
       method to store secrets
@@ -150,5 +150,6 @@
   imports = [
     ./sops.nix
     ./password-store.nix
+    ./vm.nix
   ];
 }

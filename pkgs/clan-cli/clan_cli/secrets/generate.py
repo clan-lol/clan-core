@@ -2,7 +2,6 @@ import argparse
 import importlib
 import logging
 import os
-import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -21,11 +20,15 @@ def generate_secrets(machine: Machine) -> None:
     secrets_module = importlib.import_module(machine.secrets_module)
     secret_store = secrets_module.SecretStore(machine=machine)
 
+    facts_module = importlib.import_module(machine.facts_module)
+    fact_store = facts_module.FactStore(machine=machine)
+
     with TemporaryDirectory() as d:
         for service in machine.secrets_data:
             tmpdir = Path(d) / service
             # check if all secrets exist and generate them if at least one is missing
             needs_regeneration = not check_secrets(machine)
+            log.debug(f"{service} needs_regeneration: {needs_regeneration}")
             if needs_regeneration:
                 if not isinstance(machine.flake, Path):
                     msg = f"flake is not a Path: {machine.flake}"
@@ -78,16 +81,15 @@ def generate_secrets(machine: Machine) -> None:
                         files_to_commit.append(secret_path)
 
                 # store facts
-                for name, fact_path in machine.secrets_data[service]["facts"].items():
+                for name in machine.secrets_data[service]["facts"]:
                     fact_file = facts_dir / name
                     if not fact_file.is_file():
                         msg = f"did not generate a file for '{name}' when running the following command:\n"
                         msg += machine.secrets_data[service]["generator"]
                         raise ClanError(msg)
-                    fact_path = machine.flake / fact_path
-                    fact_path.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(fact_file, fact_path)
-                    files_to_commit.append(fact_path)
+                    fact_file = fact_store.set(service, name, fact_file.read_bytes())
+                    if fact_file:
+                        files_to_commit.append(fact_file)
                 commit_files(
                     files_to_commit,
                     machine.flake_dir,

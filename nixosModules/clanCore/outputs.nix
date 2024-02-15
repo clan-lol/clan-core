@@ -44,6 +44,13 @@
             the directory on the deployment server where secrets are uploaded
           '';
         };
+        factsModule = lib.mkOption {
+          type = lib.types.str;
+          description = ''
+            the python import path to the facts module
+          '';
+          default = "clan_cli.facts.modules.in_repo";
+        };
         secretsModule = lib.mkOption {
           type = lib.types.str;
           description = ''
@@ -84,7 +91,7 @@
   # optimization for faster secret generate/upload and machines update
   config = {
     system.clan.deployment.data = {
-      inherit (config.system.clan) secretsModule secretsData;
+      inherit (config.system.clan) factsModule secretsModule secretsData;
       inherit (config.clan.networking) targetHost buildHost;
       inherit (config.clan.deployment) requireExplicitUpdate;
       inherit (config.clanCore) secretsUploadDirectory;
