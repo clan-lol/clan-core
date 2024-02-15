@@ -190,7 +190,7 @@ in
 
       environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
     })
-    (lib.mkIf (config.clanCore.secretsUploadDirectory != null && !cfg.controller.enable && cfg.networkId != null) {
+    (lib.mkIf (!cfg.controller.enable && cfg.networkId != null) {
       clanCore.secrets.zerotier = {
         facts.zerotier-ip = { };
         facts.zerotier-meshname = { };
