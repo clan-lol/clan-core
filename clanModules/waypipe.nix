@@ -57,7 +57,9 @@
       serviceConfig.Environment = ''
         XDG_SESSION_TYPE=wayland \
         NIXOS_OZONE_WL=1 \
+        GDK_BACKEND=wayland \
         QT_QPA_PLATFORM=wayland \
+        CLUTTER_BACKEND = "wayland" \
         SDL_VIDEODRIVER=wayland
       '';
       script = ''
