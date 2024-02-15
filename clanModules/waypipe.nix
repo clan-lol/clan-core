@@ -54,6 +54,12 @@
 
     systemd.user.services.waypipe = {
       serviceConfig.PassEnvironment = "DISPLAY";
+      serviceConfig.Environment = ''
+        XDG_SESSION_TYPE=wayland \
+        NIXOS_OZONE_WL=1 \
+        QT_QPA_PLATFORM=wayland \
+        SDL_VIDEODRIVER=wayland
+      '';
       script = ''
         ${lib.getExe config.clanCore.clanPkgs.waypipe} \
         ${lib.escapeShellArgs config.clan.services.waypipe.flags} \
