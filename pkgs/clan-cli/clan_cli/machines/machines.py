@@ -204,7 +204,7 @@ class Machine:
                         ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.name}" {{
                           extraConfig = builtins.fromJSON (builtins.readFile (builtins.fetchTree {{
                             type = "file";
-                            url = "{config_json.name}";
+                            url = if (builtins.compareVersions builtins.nixVersion "2.19") == -1 then "{config_json.name}" else "file:{config_json.name}";
                             narHash = "{nar_hash}";
                           }}));
                         }}).{attr}
