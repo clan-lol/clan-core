@@ -84,7 +84,6 @@ class QemuCommand:
 def qemu_command(
     vm: VmConfig,
     nixos_config: dict[str, str],
-    xchg_dir: Path,
     secrets_dir: Path,
     rootfs_img: Path,
     state_img: Path,
@@ -243,9 +242,6 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
         # TODO: We should get this from the vm argument
         nixos_config = build_vm(machine, vm, tmpdir, nix_options)
 
-        xchg_dir = tmpdir / "xchg"
-        xchg_dir.mkdir(exist_ok=True)
-
         state_dir = vm_state_dir(str(vm.flake_url), machine.name)
         state_dir.mkdir(parents=True, exist_ok=True)
 
@@ -279,7 +275,6 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
         qemu_cmd = qemu_command(
             vm,
             nixos_config,
-            xchg_dir=xchg_dir,
             secrets_dir=Path(nixos_config["secrets_dir"]),
             rootfs_img=rootfs_img,
             state_img=state_img,
