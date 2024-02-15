@@ -45,8 +45,9 @@
     services.getty.autologinUser = lib.mkDefault config.clan.services.waypipe.user;
     security.sudo.wheelNeedsPassword = false;
 
-    users.users.${config.clan.services.waypipe.user} = {
+    users.users.user = lib.mkIf (config.clan.services.waypipe.user == "user") {
       isNormalUser = true;
+      uid = 1000;
       password = "";
       extraGroups = [ "wheel" "video" ];
       shell = "/run/current-system/sw/bin/bash";
