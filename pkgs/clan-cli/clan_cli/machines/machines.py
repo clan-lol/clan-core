@@ -32,7 +32,9 @@ class VMAttr:
             log.debug(f"qmp_socket: {self._qmp_socket}")
             rpath = self._qmp_socket.resolve()
             if not rpath.exists():
-                raise ClanError(f"qmp socket {rpath} does not exist. Is the VM running?")
+                raise ClanError(
+                    f"qmp socket {rpath} does not exist. Is the VM running?"
+                )
             self._qmp = QEMUMonitorProtocol(str(rpath))
         self._qmp.connect()
         try:
