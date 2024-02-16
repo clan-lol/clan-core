@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any
 
 import gi
-from clan_cli.errors import ClanError
 
 gi.require_version("GdkPixbuf", "2.0")
 
@@ -24,7 +23,7 @@ def _kill_group(proc: mp.Process) -> None:
     if proc.is_alive() and pid:
         os.killpg(pid, signal.SIGTERM)
     else:
-        log.warning(f"Process {proc.name} with pid {pid} is already dead")
+        log.warning(f"Process '{proc.name}' with pid '{pid}' is already dead")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -102,7 +101,7 @@ def _init_proc(
 
 def spawn(
     *,
-    log_dir: Path,
+    out_file: Path,
     on_except: Callable[[Exception, mp.process.BaseProcess], None] | None,
     func: Callable,
     **kwargs: Any,
@@ -111,13 +110,8 @@ def spawn(
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method(method="forkserver")
 
-    if not log_dir.is_dir():
-        raise ClanError(f"Log path {log_dir} is not a directory")
-    log_dir.mkdir(parents=True, exist_ok=True)
-
     # Set names
     proc_name = f"MPExec:{func.__name__}"
-    out_file = log_dir / "out.log"
 
     # Start the process
     proc = mp.Process(

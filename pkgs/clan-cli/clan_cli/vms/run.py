@@ -37,7 +37,7 @@ def facts_to_nixos_config(facts: dict[str, dict[str, bytes]]) -> dict:
 
 # TODO move this to the Machines class
 def build_vm(
-    machine: Machine, vm: VmConfig, tmpdir: Path, nix_options: list[str]
+    machine: Machine, vm: VmConfig, tmpdir: Path, nix_options: list[str] = []
 ) -> dict[str, str]:
     secrets_dir = get_secrets(machine, tmpdir)
 
