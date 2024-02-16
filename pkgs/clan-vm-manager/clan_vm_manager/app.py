@@ -72,6 +72,24 @@ class MainApplication(Adw.Application):
 
         return 0
 
+    def get_application_icon_path(self) -> None:
+        self.icon_name = "lol.clan.vm.manager"
+        if not self.icon_name:
+            return None
+
+        icon_theme = Gtk.IconTheme.get_for_display(
+            self.get_active_window().get_display()
+        )
+        # Use the correct method to look up an icon
+        icon_lookup_flags = 16
+        icon = icon_theme.lookup_icon(
+            self.icon_name, 128, 1.0, Gtk.TextDirection.NONE, icon_lookup_flags
+        )
+
+        if icon:
+            return icon.get_file().get_path()
+        return None
+
     def on_shutdown(self, app: Gtk.Application) -> None:
         log.debug("Shutting down")
 
@@ -84,9 +102,8 @@ class MainApplication(Adw.Application):
         assert self.window is not None
         if self.window.is_visible():
             self.window.hide()
-            return
-
-        self.window.present()
+        else:
+            self.window.present()
 
     def dummy_menu_entry(self) -> None:
         log.info("Dummy menu entry called")

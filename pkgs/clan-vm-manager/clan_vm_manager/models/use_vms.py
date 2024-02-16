@@ -253,7 +253,7 @@ class VM(GObject.Object):
         log.info(f"Stopping VM {self.get_id()}")
 
         try:
-            with self.machine.vm.qmp() as qmp:
+            with self.machine.vm.qmp_ctx() as qmp:
                 qmp.command("system_powerdown")
         except ClanError as e:
             log.debug(e)
