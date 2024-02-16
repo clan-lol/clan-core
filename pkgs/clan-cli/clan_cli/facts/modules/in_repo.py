@@ -3,13 +3,15 @@ from pathlib import Path
 from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
 
+from . import FactStoreBase
 
-class FactStore:
+
+class FactStore(FactStoreBase):
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
         self.works_remotely = False
 
-    def set(self, _service: str, name: str, value: bytes) -> Path | None:
+    def set(self, service: str, name: str, value: bytes) -> Path | None:
         if isinstance(self.machine.flake, Path):
             fact_path = (
                 self.machine.flake / "machines" / self.machine.name / "facts" / name
@@ -23,14 +25,14 @@ class FactStore:
                 f"in_flake fact storage is only supported for local flakes: {self.machine.flake}"
             )
 
-    def exists(self, _service: str, name: str) -> bool:
+    def exists(self, service: str, name: str) -> bool:
         fact_path = (
             self.machine.flake_dir / "machines" / self.machine.name / "facts" / name
         )
         return fact_path.exists()
 
     # get a single fact
-    def get(self, _service: str, name: str) -> bytes:
+    def get(self, service: str, name: str) -> bytes:
         fact_path = (
             self.machine.flake_dir / "machines" / self.machine.name / "facts" / name
         )
