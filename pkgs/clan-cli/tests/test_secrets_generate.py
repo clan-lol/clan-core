@@ -33,6 +33,17 @@ def test_generate_secret(
             age_keys[0].pubkey,
         ]
     )
+    cli.run(
+        [
+            "--flake",
+            str(test_flake_with_core.path),
+            "secrets",
+            "groups",
+            "add-user",
+            "admins",
+            "user1",
+        ]
+    )
     cmd = ["--flake", str(test_flake_with_core.path), "secrets", "generate", "vm1"]
     cli.run(cmd)
     has_secret(test_flake_with_core.path, "vm1-age.key")

@@ -108,6 +108,14 @@
                     '';
                     default = "${config'.clanCore.secretsDirectory}/${config'.clanCore.secretsPrefix}${config.name}";
                   };
+                } // lib.optionalAttrs (config'.clanCore.secretStore == "sops") {
+                  groups = lib.mkOption {
+                    type = lib.types.listOf lib.types.str;
+                    default = config'.clanCore.sops.defaultGroups;
+                    description = ''
+                      Groups to decrypt the secret for. By default we always use the user's key.
+                    '';
+                  };
                 };
               }));
               description = ''

@@ -14,7 +14,9 @@ class SecretStore(SecretStoreBase):
         self.dir = vm_state_dir(str(machine.flake), machine.name) / "secrets"
         self.dir.mkdir(parents=True, exist_ok=True)
 
-    def set(self, service: str, name: str, value: bytes) -> Path | None:
+    def set(
+        self, service: str, name: str, value: bytes, groups: list[str]
+    ) -> Path | None:
         secret_file = self.dir / service / name
         secret_file.parent.mkdir(parents=True, exist_ok=True)
         secret_file.write_bytes(value)
