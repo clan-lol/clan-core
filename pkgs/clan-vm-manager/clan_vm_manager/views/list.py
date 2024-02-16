@@ -14,7 +14,7 @@ from clan_vm_manager.models.use_views import Views
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
 
-from clan_vm_manager.models.use_vms import VM, VMS, ClanGroup, Clans
+from clan_vm_manager.models.use_vms import VM, ClanGroup, Clans
 
 log = logging.getLogger(__name__)
 
@@ -48,8 +48,8 @@ class ClanList(Gtk.Box):
     def __init__(self, config: ClanConfig) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
-        app = Gio.Application.get_default()
-        app.connect("join_request", self.on_join_request)
+        self.app = Gio.Application.get_default()
+        self.app.connect("join_request", self.on_join_request)
 
         groups = Clans.use()
         join = Join.use()
@@ -123,7 +123,7 @@ class ClanList(Gtk.Box):
     def on_search_changed(self, entry: Gtk.SearchEntry) -> None:
         Clans.use().filter_by_name(entry.get_text())
         # Disable the shadow if the list is empty
-        if not VMS.use().list_store.get_n_items():
+        if not self.app.vms.list_store.get_n_items():
             self.group_list.add_css_class("no-shadow")
 
     def render_vm_row(self, boxed_list: Gtk.ListBox, vm: VM) -> Gtk.Widget:
@@ -202,7 +202,7 @@ class ClanList(Gtk.Box):
 
     def on_edit(self, action: Any, parameter: Any) -> None:
         target = parameter.get_string()
-        vm = VMS.use().get_by_id(target)
+        vm = self.app.vms.get_by_id(target)
 
         if not vm:
             raise ClanError("Something went wrong. Please restart the app.")
@@ -220,7 +220,7 @@ class ClanList(Gtk.Box):
         row.add_css_class("trust")
 
         # TODO: figure out how to detect that
-        exist = VMS.use().get_by_id(item.url.get_id())
+        exist = self.app.vms.use().get_by_id(item.url.get_id())
         if exist:
             sub = row.get_subtitle()
             row.set_subtitle(
@@ -292,7 +292,7 @@ class ClanList(Gtk.Box):
 
         if not row.get_active():
             row.set_state(True)
-            vm.stop()
+            vm.shutdown()
 
     def vm_status_changed(self, switch: Gtk.Switch, vm: VM, _vm: VM) -> None:
         switch.set_active(vm.is_running())
