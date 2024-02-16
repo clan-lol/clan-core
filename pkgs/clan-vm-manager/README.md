@@ -11,6 +11,10 @@ GTK4 has a demo application showing all widgets. You can run it by executing:
 gtk4-widget-factory
 ```
 
+To find available icons execute:
+```bash
+gtk4-icon-browser
+```
 
 
 

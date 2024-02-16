@@ -18,17 +18,21 @@ log = logging.getLogger(__name__)
 
 class VMAttr:
     def __init__(self, state_dir: Path) -> None:
+        # These sockets here are just symlinks to the real sockets which
+        # are created by the run.py file. The reason being that we run into
+        # file path length issues on Linux. If no qemu process is running
+        # the symlink will be dangling.
         self._qmp_socket: Path = state_dir / "qmp.sock"
         self._qga_socket: Path = state_dir / "qga.sock"
         self._qmp: QEMUMonitorProtocol | None = None
 
     @contextmanager
-    def qmp(self) -> Generator[QEMUMonitorProtocol, None, None]:
+    def qmp_ctx(self) -> Generator[QEMUMonitorProtocol, None, None]:
         if self._qmp is None:
             log.debug(f"qmp_socket: {self._qmp_socket}")
             rpath = self._qmp_socket.resolve()
             if not rpath.exists():
-                raise ClanError(f"qmp socket {rpath} does not exist")
+                raise ClanError(f"qmp socket {rpath} does not exist. Is the VM running?")
             self._qmp = QEMUMonitorProtocol(str(rpath))
         self._qmp.connect()
         try:
