@@ -64,7 +64,13 @@
           '';
           default = pkgs.writers.writeJSON "secrets.json" (lib.mapAttrs
             (_name: secret: {
-              secrets = builtins.attrNames secret.secrets;
+              secrets = lib.mapAttrsToList
+                (name: secret: {
+                  inherit name;
+                } // lib.optionalAttrs (secret ? groups) {
+                  inherit (secret) groups;
+                })
+                secret.secrets;
               facts = lib.mapAttrs (_: secret: secret.path) secret.facts;
               generator = secret.generator.finalScript;
             })
