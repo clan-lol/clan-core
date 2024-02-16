@@ -142,7 +142,7 @@ def allow_member(
 ) -> None:
     source = source_folder / name
     if not source.exists():
-        msg = f"{name} does not exist in {source_folder}: "
+        msg = f"Cannot encrypt {group_folder.parent.name} for '{name}' group. '{name}' group does not exist in {source_folder}: "
         msg += list_directory(source_folder)
         raise ClanError(msg)
     group_folder.mkdir(parents=True, exist_ok=True)
@@ -150,7 +150,7 @@ def allow_member(
     if user_target.exists():
         if not user_target.is_symlink():
             raise ClanError(
-                f"Cannot add user {name}. {user_target} exists but is not a symlink"
+                f"Cannot add user '{name}' to {group_folder.parent.name} secret. {user_target} exists but is not a symlink"
             )
         os.remove(user_target)
 
