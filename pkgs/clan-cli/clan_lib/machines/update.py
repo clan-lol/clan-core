@@ -182,7 +182,8 @@ def run_machine_update(
 
         if machine._class_ == "nixos":
             nix_options += [
-                "--fast",
+                "--no-reexec",
+                "--no-build-nix",
                 "--build-host",
                 "",
             ]
