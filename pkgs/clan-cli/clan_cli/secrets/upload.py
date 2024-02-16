@@ -15,11 +15,9 @@ def upload_secrets(machine: Machine) -> None:
     secrets_module = importlib.import_module(machine.secrets_module)
     secret_store = secrets_module.SecretStore(machine=machine)
 
-    update_check = getattr(secret_store, "update_check", None)
-    if callable(update_check):
-        if update_check():
-            log.info("Secrets already up to date")
-            return
+    if secret_store.update_check():
+        log.info("Secrets already up to date")
+        return
     with TemporaryDirectory() as tempdir:
         secret_store.upload(Path(tempdir))
         host = machine.target_host
