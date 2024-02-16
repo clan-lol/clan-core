@@ -22,6 +22,14 @@ let
   secrets = filterDir containsMachineOrGroups secretsDir;
 in
 {
+  options = {
+    clanCore.sops.defaultGroups = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [ "admins" ];
+      description = "The default groups to for encryption use when no groups are specified.";
+    };
+  };
   config = lib.mkIf (config.clanCore.secretStore == "sops") {
     clanCore.secretsDirectory = "/run/secrets";
     clanCore.secretsPrefix = config.clanCore.machineName + "-";

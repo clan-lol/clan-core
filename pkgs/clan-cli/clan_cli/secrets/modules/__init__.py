@@ -10,7 +10,9 @@ class SecretStoreBase(ABC):
         pass
 
     @abstractmethod
-    def set(self, service: str, name: str, value: bytes) -> Path | None:
+    def set(
+        self, service: str, name: str, value: bytes, groups: list[str]
+    ) -> Path | None:
         pass
 
     @abstractmethod
