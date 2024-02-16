@@ -37,9 +37,9 @@ fi
 
 democlan="$1"
 
-check_git_tag "$democlan" "v2.0"
+check_git_tag "$democlan" "v2.2"
 
-check_git_tag "." "v2.0"
+check_git_tag "." "v2.2"
 
 rm -rf ~/.config/clan
 
