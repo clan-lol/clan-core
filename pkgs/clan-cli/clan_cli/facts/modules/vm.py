@@ -5,10 +5,12 @@ from clan_cli.dirs import vm_state_dir
 from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
 
+from . import FactStoreBase
+
 log = logging.getLogger(__name__)
 
 
-class FactStore:
+class FactStore(FactStoreBase):
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
         self.works_remotely = False
