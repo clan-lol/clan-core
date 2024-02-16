@@ -26,9 +26,12 @@ def graphics_options(vm: VmConfig) -> GraphicOptions:
           "-nographic",
           "-vga", "none",
           "-device", f"vhost-vsock-pci,id=vhost-vsock-pci0,guest-cid={cid}",
-          # TODO: vgpu
-          #"-display", "egl-headless,gl=core",
-          #"-device", "virtio-vga,blob=true",
+          "-display", "egl-headless,gl=core",
+
+          # this would make the gpu part of the hypervisor
+          #"-device", "virtio-vga-gl,blob=true",
+
+          # This is for an external gpu process
           #"-device", "virtio-serial-pci",
           #"-device", "vhost-user-vga,chardev=vgpu",
           #"-chardev", "socket,id=vgpu,path=/tmp/vgpu.sock",
