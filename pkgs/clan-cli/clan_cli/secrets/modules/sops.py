@@ -28,7 +28,7 @@ class SecretStore:
         )
         add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)
 
-    def set(self, _service: str, name: str, value: bytes) -> Path | None:
+    def set(self, service: str, name: str, value: bytes) -> Path | None:
         path = (
             sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}"
         )
@@ -40,14 +40,17 @@ class SecretStore:
         )
         return path
 
-    def get(self, _service: str, _name: str) -> bytes:
+    def get(self, service: str, _name: str) -> bytes:
         raise NotImplementedError()
 
-    def exists(self, _service: str, name: str) -> bool:
+    def exists(self, service: str, name: str) -> bool:
         return has_secret(
             self.machine.flake_dir,
             f"{self.machine.name}-{name}",
         )
+
+    def update_check(self) -> bool:
+        return False
 
     def upload(self, output_dir: Path) -> None:
         key_name = f"{self.machine.name}-age.key"
