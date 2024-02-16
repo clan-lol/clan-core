@@ -8,13 +8,15 @@ check_git_tag() {
 
     # Change directory to the specified Git repository
     pushd "$repo_path" > /dev/null 2>&1
+    # shellcheck disable=SC2181
     if [ $? -ne 0 ]; then
         echo "Error: Failed to change directory to $repo_path"
         return 1
     fi
 
     # Get the current Git tag
-    local current_tag=$(git describe --tags --exact-match 2>/dev/null)
+    local current_tag
+    current_tag=$(git describe --tags --exact-match 2>/dev/null)
 
     # Restore the original directory
     popd > /dev/null 2>&1
@@ -39,7 +41,7 @@ democlan="$1"
 
 check_git_tag "$democlan" "v2.2"
 
-check_git_tag "." "v2.2"
+check_git_tag "." "v2.3"
 
 rm -rf ~/.config/clan
 
