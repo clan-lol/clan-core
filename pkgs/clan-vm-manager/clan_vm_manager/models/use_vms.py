@@ -107,6 +107,7 @@ class VM(GObject.Object):
         data: HistoryEntry,
     ) -> None:
         super().__init__()
+        self.KILL_TIMEOUT = 6  # seconds
         self.data = data
         self.process = MPProcess("dummy", mp.Process(), Path("./dummy"))
         self._watcher_id: int = 0
@@ -121,9 +122,8 @@ class VM(GObject.Object):
         self.log_dir = tempfile.TemporaryDirectory(
             prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
         )
-        self._finalizer = weakref.finalize(self, self.stop)
+        self._finalizer = weakref.finalize(self, self.kill)
         self.connect("build_vm", self.build_vm)
-
         uri = ClanURI.from_str(
             url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
         )
@@ -160,25 +160,25 @@ class VM(GObject.Object):
         log.info(f"Starting VM {self.get_id()}")
         vm = vms.run.inspect_vm(self.machine)
 
-        GLib.idle_add(self.emit, "build_vm", self, True)
+        # GLib.idle_add(self.emit, "build_vm", self, True)
+        # self.process = spawn(
+        #     on_except=None,
+        #     log_dir=Path(str(self.log_dir.name)),
+        #     func=vms.run.build_vm,
+        #     machine=self.machine,
+        #     vm=vm,
+        # )
+        # self.process.proc.join()
+
+        # GLib.idle_add(self.emit, "build_vm", self, False)
+
+        # if self.process.proc.exitcode != 0:
+        #     log.error(f"Failed to build VM {self.get_id()}")
+        #     return
+
         self.process = spawn(
             on_except=None,
-            log_dir=Path(str(self.log_dir.name)),
-            func=vms.run.build_vm,
-            machine=self.machine,
-            vm=vm,
-        )
-        self.process.proc.join()
-
-        GLib.idle_add(self.emit, "build_vm", self, False)
-
-        if self.process.proc.exitcode != 0:
-            log.error(f"Failed to build VM {self.get_id()}")
-            return
-
-        self.process = spawn(
-            on_except=None,
-            log_dir=Path(str(self.log_dir.name)),
+            out_file=Path(str(self.log_dir.name)) / "vm.log",
             func=vms.run.run_vm,
             vm=vm,
         )
@@ -241,7 +241,7 @@ class VM(GObject.Object):
         if self.is_running():
             assert self._stop_timer_init is not None
             diff = datetime.now() - self._stop_timer_init
-            if diff.seconds > 10:
+            if diff.seconds > self.KILL_TIMEOUT:
                 log.error(f"VM {self.get_id()} has not stopped. Killing it")
                 self.process.kill_group()
             return GLib.SOURCE_CONTINUE
@@ -253,7 +253,7 @@ class VM(GObject.Object):
         log.info(f"Stopping VM {self.get_id()}")
 
         try:
-            with self.machine.vm.qmp() as qmp:
+            with self.machine.vm.qmp_ctx() as qmp:
                 qmp.command("system_powerdown")
         except ClanError as e:
             log.debug(e)
@@ -263,11 +263,18 @@ class VM(GObject.Object):
         if self._stop_watcher_id == 0:
             raise ClanError("Failed to add stop watcher")
 
-    def stop(self) -> None:
+    def shutdown(self) -> None:
         if not self.is_running():
             return
         log.info(f"Stopping VM {self.get_id()}")
         threading.Thread(target=self.__stop).start()
+
+    def kill(self) -> None:
+        if not self.is_running():
+            log.warning(f"Tried to kill VM {self.get_id()} is not running")
+            return
+        log.info(f"Killing VM {self.get_id()} now")
+        self.process.kill_group()
 
     def read_whole_log(self) -> str:
         if not self.process.out_file.exists():
@@ -276,28 +283,16 @@ class VM(GObject.Object):
         return self.process.out_file.read_text()
 
 
-class VMS:
-    """
-    This is a singleton.
-    It is initialized with the first call of use()
-
-    Usage:
-
-    VMS.use().get_running_vms()
-
-    VMS.use() can also be called before the data is needed. e.g. to eliminate/reduce waiting time.
-
-    """
-
+class VMs:
     list_store: Gio.ListStore
-    _instance: "None | VMS" = None
+    _instance: "None | VMs" = None
 
     # Make sure the VMS class is used as a singleton
     def __init__(self) -> None:
         raise RuntimeError("Call use() instead")
 
     @classmethod
-    def use(cls: Any) -> "VMS":
+    def use(cls: Any) -> "VMs":
         if cls._instance is None:
             cls._instance = cls.__new__(cls)
             cls.list_store = Gio.ListStore.new(VM)
@@ -327,10 +322,13 @@ class VMS:
         return list(filter(lambda vm: vm.is_running(), self.list_store))
 
     def kill_all(self) -> None:
+        log.debug(f"Running vms: {self.get_running_vms()}")
         for vm in self.get_running_vms():
-            vm.stop()
+            vm.kill()
 
     def refresh(self) -> None:
+        log.error("NEVER FUCKING DO THIS")
+        return
         self.list_store.remove_all()
         for vm in get_saved_vms():
             self.list_store.append(vm)
@@ -338,7 +336,7 @@ class VMS:
 
 def get_saved_vms() -> list[VM]:
     vm_list = []
-
+    log.info("=====CREATING NEW VM OBJ====")
     try:
         # Execute `clan flakes add <path>` to democlan for this to work
         for entry in list_history():

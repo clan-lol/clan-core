@@ -14,7 +14,7 @@ from gi.repository import Adw, Gdk, Gio, Gtk
 
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_join import GLib, GObject
-from clan_vm_manager.models.use_vms import VMS
+from clan_vm_manager.models.use_vms import VMs
 
 from .trayicon import TrayIcon
 from .windows.main_window import MainWindow
@@ -44,7 +44,8 @@ class MainApplication(Adw.Application):
             "enable debug mode",
             None,
         )
-
+        self.vms = VMs.use()
+        log.debug(f"VMS object: {self.vms}")
         self.window: Adw.ApplicationWindow | None = None
         self.connect("shutdown", self.on_shutdown)
         self.connect("activate", self.show_window)
@@ -69,24 +70,22 @@ class MainApplication(Adw.Application):
             log.debug(f"Join request: {args[1]}")
             uri = args[1]
             self.emit("join_request", uri)
-
         return 0
 
     def on_shutdown(self, app: Gtk.Application) -> None:
         log.debug("Shutting down")
 
+        self.vms.kill_all()
+
         if self.tray_icon is not None:
             self.tray_icon.destroy()
-
-        VMS.use().kill_all()
 
     def on_window_hide_unhide(self, *_args: Any) -> None:
         assert self.window is not None
         if self.window.is_visible():
             self.window.hide()
-            return
-
-        self.window.present()
+        else:
+            self.window.present()
 
     def dummy_menu_entry(self) -> None:
         log.info("Dummy menu entry called")

@@ -172,7 +172,7 @@ class BaseImplementation:
         self.application = application
         self.menu_items: dict[int, Any] = {}
         self.menu_item_id: int = 1
-        self.activate_callback: Callable = application.on_window_hide_unhide
+        self.activate_callback: Callable = lambda a, b: self.update_window_visibility
         self.is_visible: bool = True
 
         self.create_menu()
@@ -213,16 +213,12 @@ class BaseImplementation:
 
     def create_menu(self) -> None:
         self.show_hide_item = self.create_item(
-            "default", self.application.dummy_menu_entry
+            "default", self.application.on_window_hide_unhide
         )
 
-        self.connect_disconnect_item = self.create_item(
-            "default", self.application.dummy_menu_entry
-        )
+        # self.create_item()
 
-        self.create_item()
-
-        self.create_item("_Quit", self.application.dummy_menu_entry)
+        # self.create_item("_Quit", self.application.on_shutdown)
 
     def update_window_visibility(self) -> None:
         if self.application.window is None:
@@ -237,14 +233,6 @@ class BaseImplementation:
         self.update_menu()
 
     def update_user_status(self) -> None:
-        sensitive = core.users.login_status != slskmessages.UserStatus.OFFLINE
-        label = "_Disconnect" if sensitive else "_Connect"
-
-        # self.set_item_sensitive(self.away_item, sensitive)
-
-        self.set_item_text(self.connect_disconnect_item, label)
-        # self.set_item_toggled(self.away_item, core.users.login_status == slskmessages.UserStatus.AWAY)
-
         self.update_icon()
         self.update_menu()
 
@@ -266,9 +254,9 @@ class BaseImplementation:
         #     icon_name = "disconnect"
 
         # icon_name = f"{pynicotine.__application_id__}-{icon_name}"
-        # self.set_icon_name(icon_name)
+        # self.set_icon(icon_name)
 
-    def set_icon_name(self, icon_name: str) -> None:
+    def set_icon(self, icon_name: str) -> None:
         # Implemented in subclasses
         pass
 
@@ -410,6 +398,7 @@ class StatusNotifierImplementation(BaseImplementation):
         ):
             method = self.methods[method_name]
             result = method.callback(*parameters.unpack())
+
             out_arg_types = "".join(method.out_args)
             return_value = None
 
@@ -570,6 +559,11 @@ class StatusNotifierImplementation(BaseImplementation):
             )
             self.tray_icon.register()
 
+            from .assets import loc
+
+            icon_path = str(loc / "clan_white_notext.png")
+            self.set_icon(icon_path)
+
             self.bus.call_sync(
                 bus_name="org.kde.StatusNotifierWatcher",
                 object_path="/StatusNotifierWatcher",
@@ -617,38 +611,12 @@ class StatusNotifierImplementation(BaseImplementation):
         """Returns an icon path to use for tray icons, or None to fall back to
         system-wide icons."""
 
-        self.custom_icons = False
-        custom_icon_path = os.path.join(config.data_folder_path, ".nicotine-icon-theme")
-
-        if hasattr(sys, "real_prefix") or sys.base_prefix != sys.prefix:
-            # Virtual environment
-            local_icon_path = os.path.join(
-                sys.prefix, "share", "icons", "hicolor", "scalable", "apps"
-            )
-        else:
-            # Git folder
-            local_icon_path = os.path.join(
-                GTK_GUI_FOLDER_PATH, "icons", "hicolor", "scalable", "apps"
-            )
-
-        for icon_name in ("away", "connect", "disconnect", "msg"):
-            # Check if custom icons exist
-            if self.check_icon_path(icon_name, custom_icon_path):
-                self.custom_icons = True
-                return custom_icon_path
-
-            # Check if local icons exist
-            if self.check_icon_path(icon_name, local_icon_path):
-                return local_icon_path
+        # icon_path = self.application.get_application_icon_path()
 
         return ""
 
-    def set_icon_name(self, icon_name):
-        if self.custom_icons:
-            # Use alternative icon names to enforce custom icons, since system-wide icons take precedence
-            icon_name = icon_name.replace(pynicotine.__application_id__, "nplus-tray")
-
-        self.tray_icon.properties["IconName"].value = icon_name
+    def set_icon(self, icon_path) -> None:
+        self.tray_icon.properties["IconName"].value = icon_path
         self.tray_icon.emit_signal("NewIcon")
 
         if not self.is_visible:
@@ -1064,7 +1032,7 @@ class Win32Implementation(BaseImplementation):
                     self._menu, item_id, False, byref(item_info)
                 )
 
-    def set_icon_name(self, icon_name):
+    def set_icon(self, icon_name):
         self._update_notify_icon(icon_name=icon_name)
 
     def show_notification(self, title, message):
