@@ -12,7 +12,9 @@ class SecretStore(SecretStoreBase):
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
 
-    def set(self, service: str, name: str, value: bytes) -> Path | None:
+    def set(
+        self, service: str, name: str, value: bytes, groups: list[str]
+    ) -> Path | None:
         subprocess.run(
             nix_shell(
                 ["nixpkgs#pass"],
@@ -104,5 +106,10 @@ class SecretStore(SecretStoreBase):
     def upload(self, output_dir: Path) -> None:
         for service in self.machine.secrets_data:
             for secret in self.machine.secrets_data[service]["secrets"]:
-                (output_dir / secret).write_bytes(self.get(service, secret))
+                if isinstance(secret, dict):
+                    secret_name = secret["name"]
+                else:
+                    # TODO: drop old format soon
+                    secret_name = secret
+                (output_dir / secret_name).write_bytes(self.get(service, secret_name))
         (output_dir / ".pass_info").write_bytes(self.generate_hash())

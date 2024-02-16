@@ -4,6 +4,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import Any
 
 from clan_cli.dirs import vm_state_dir
 from qemu.qmp import QEMUMonitorProtocol
@@ -107,7 +108,7 @@ class Machine:
         return self.deployment_info["factsModule"]
 
     @property
-    def secrets_data(self) -> dict:
+    def secrets_data(self) -> dict[str, dict[str, Any]]:
         if self.deployment_info["secretsData"]:
             try:
                 return json.loads(Path(self.deployment_info["secretsData"]).read_text())

@@ -110,6 +110,15 @@ def test_run(
             age_keys[0].pubkey,
         ]
     )
+    cli.run(
+        [
+            "secrets",
+            "groups",
+            "add-user",
+            "admins",
+            "user1",
+        ]
+    )
     cli.run(["vms", "run", "vm1"])
 
 

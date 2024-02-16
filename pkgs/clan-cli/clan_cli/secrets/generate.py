@@ -69,12 +69,22 @@ def generate_service_secrets(
         files_to_commit = []
         # store secrets
         for secret in machine.secrets_data[service]["secrets"]:
-            secret_file = secrets_dir / secret
+            if isinstance(secret, str):
+                # TODO: This is the old NixOS module, can be dropped everyone has updated.
+                secret_name = secret
+                groups = []
+            else:
+                secret_name = secret["name"]
+                groups = secret.get("groups", [])
+
+            secret_file = secrets_dir / secret_name
             if not secret_file.is_file():
-                msg = f"did not generate a file for '{secret}' when running the following command:\n"
+                msg = f"did not generate a file for '{secret_name}' when running the following command:\n"
                 msg += machine.secrets_data[service]["generator"]
                 raise ClanError(msg)
-            secret_path = secret_store.set(service, secret, secret_file.read_bytes())
+            secret_path = secret_store.set(
+                service, secret_name, secret_file.read_bytes(), groups
+            )
             if secret_path:
                 files_to_commit.append(secret_path)
 
