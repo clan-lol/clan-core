@@ -5,8 +5,10 @@ from pathlib import Path
 from clan_cli.dirs import vm_state_dir
 from clan_cli.machines.machines import Machine
 
+from . import SecretStoreBase
 
-class SecretStore:
+
+class SecretStore(SecretStoreBase):
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
         self.dir = vm_state_dir(str(machine.flake), machine.name) / "secrets"
@@ -24,6 +26,9 @@ class SecretStore:
 
     def exists(self, service: str, name: str) -> bool:
         return (self.dir / service / name).exists()
+
+    def update_check(self) -> bool:
+        return False
 
     def upload(self, output_dir: Path) -> None:
         if os.path.exists(output_dir):
