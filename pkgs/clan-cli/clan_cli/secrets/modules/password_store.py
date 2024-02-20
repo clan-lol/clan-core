@@ -88,6 +88,8 @@ class SecretStore(SecretStoreBase):
         hashes.sort()
         return b"\n".join(hashes)
 
+    # FIXME: add this when we switch to python3.12
+    # @override
     def update_check(self) -> bool:
         local_hash = self.generate_hash()
         remote_hash = self.machine.target_host.run(
