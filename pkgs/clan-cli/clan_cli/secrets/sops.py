@@ -144,7 +144,9 @@ def encrypt_file(
             args = ["sops", "--config", str(manifest)]
             args.extend([str(secret_path)])
             cmd = nix_shell(["nixpkgs#sops"], args)
-            p = run(cmd, log=Log.BOTH, check=False)
+            # Don't use our `run` here, because it breaks editor integration.
+            # We never need this in our UI.
+            p = subprocess.run(cmd, check=False)
             # returns 200 if the file is changed
             if p.returncode != 0 and p.returncode != 200:
                 raise ClanError(
