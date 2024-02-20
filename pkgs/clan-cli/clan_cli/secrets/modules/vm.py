@@ -29,9 +29,6 @@ class SecretStore(SecretStoreBase):
     def exists(self, service: str, name: str) -> bool:
         return (self.dir / service / name).exists()
 
-    def update_check(self) -> bool:
-        return False
-
     def upload(self, output_dir: Path) -> None:
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
