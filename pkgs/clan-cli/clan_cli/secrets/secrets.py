@@ -8,6 +8,7 @@ from typing import IO
 
 from .. import tty
 from ..errors import ClanError
+from ..git import commit_files
 from .folders import (
     list_objects,
     sops_groups_folder,
@@ -63,42 +64,58 @@ def encrypt_secret(
     key = ensure_sops_key(flake_dir)
     keys = set([])
 
+    files_to_commit = []
     for user in add_users:
-        allow_member(
-            users_folder(flake_dir, secret.name),
-            sops_users_folder(flake_dir),
-            user,
-            False,
+        files_to_commit.append(
+            allow_member(
+                users_folder(flake_dir, secret.name),
+                sops_users_folder(flake_dir),
+                user,
+                False,
+            )
         )
 
     for machine in add_machines:
-        allow_member(
-            machines_folder(flake_dir, secret.name),
-            sops_machines_folder(flake_dir),
-            machine,
-            False,
+        files_to_commit.append(
+            allow_member(
+                machines_folder(flake_dir, secret.name),
+                sops_machines_folder(flake_dir),
+                machine,
+                False,
+            )
         )
 
     for group in add_groups:
-        allow_member(
-            groups_folder(flake_dir, secret.name),
-            sops_groups_folder(flake_dir),
-            group,
-            False,
+        files_to_commit.append(
+            allow_member(
+                groups_folder(flake_dir, secret.name),
+                sops_groups_folder(flake_dir),
+                group,
+                False,
+            )
         )
 
     keys = collect_keys_for_path(secret)
 
     if key.pubkey not in keys:
         keys.add(key.pubkey)
-        allow_member(
-            users_folder(flake_dir, secret.name),
-            sops_users_folder(flake_dir),
-            key.username,
-            False,
+        files_to_commit.append(
+            allow_member(
+                users_folder(flake_dir, secret.name),
+                sops_users_folder(flake_dir),
+                key.username,
+                False,
+            )
         )
 
-    encrypt_file(secret / "secret", value, list(sorted(keys)))
+    secret_path = secret / "secret"
+    encrypt_file(secret_path, value, list(sorted(keys)))
+    files_to_commit.append(secret_path)
+    commit_files(
+        files_to_commit,
+        flake_dir,
+        f"Update secret {secret.name}",
+    )
 
 
 def remove_secret(flake_dir: Path, secret: str) -> None:
@@ -139,7 +156,7 @@ def list_directory(directory: Path) -> str:
 
 def allow_member(
     group_folder: Path, source_folder: Path, name: str, do_update_keys: bool = True
-) -> None:
+) -> Path:
     source = source_folder / name
     if not source.exists():
         msg = f"Cannot encrypt {group_folder.parent.name} for '{name}' group. '{name}' group does not exist in {source_folder}: "
@@ -160,6 +177,7 @@ def allow_member(
             group_folder.parent,
             list(sorted(collect_keys_for_path(group_folder.parent))),
         )
+    return user_target
 
 
 def disallow_member(group_folder: Path, name: str) -> None:
