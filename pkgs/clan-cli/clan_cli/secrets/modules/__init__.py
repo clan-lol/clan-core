@@ -23,10 +23,6 @@ class SecretStoreBase(ABC):
     def exists(self, service: str, name: str) -> bool:
         pass
 
-    @abstractmethod
-    def generate_hash(self) -> bytes:
-        pass
-
     def update_check(self) -> bool:
         return False
 
