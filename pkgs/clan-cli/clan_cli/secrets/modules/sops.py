@@ -6,8 +6,10 @@ from clan_cli.secrets.machines import add_machine, has_machine
 from clan_cli.secrets.secrets import decrypt_secret, encrypt_secret, has_secret
 from clan_cli.secrets.sops import generate_private_key
 
+from . import SecretStoreBase
 
-class SecretStore:
+
+class SecretStore(SecretStoreBase):
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
 
@@ -51,9 +53,6 @@ class SecretStore:
             self.machine.flake_dir,
             f"{self.machine.name}-{name}",
         )
-
-    def update_check(self) -> bool:
-        return False
 
     def upload(self, output_dir: Path) -> None:
         key_name = f"{self.machine.name}-age.key"

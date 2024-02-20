@@ -1,3 +1,4 @@
+import os
 import random
 from dataclasses import dataclass
 from pathlib import Path
@@ -24,9 +25,9 @@ def graphics_options(vm: VmConfig) -> GraphicOptions:
         return GraphicOptions([
           *common,
           "-nographic",
-          "-vga", "none",
           "-device", f"vhost-vsock-pci,id=vhost-vsock-pci0,guest-cid={cid}",
-          "-display", "egl-headless,gl=core",
+          "-vga", "none",
+          #"-display", "egl-headless,gl=core",
 
           # this would make the gpu part of the hypervisor
           #"-device", "virtio-vga-gl,blob=true",
@@ -38,13 +39,24 @@ def graphics_options(vm: VmConfig) -> GraphicOptions:
         ], cid)
         # fmt: on
     else:
+        if not os.path.exists("/run/opengl-driver"):
+            display_options = [
+                "-vga",
+                "none",
+                "-display",
+                "gtk,gl=on",
+                "-device",
+                "virtio-gpu-gl",
+                "-display",
+                "spice-app,gl=on",
+            ]
+        else:
+            display_options = ["-display", "spice-app"]
+
         # fmt: off
         return GraphicOptions([
             *common,
-            "-vga", "none",
-            "-display", "gtk,gl=on",
-            "-device", "virtio-gpu-gl",
-            "-display", "spice-app,gl=on",
+            *display_options,
             "-device", "virtio-serial-pci",
             "-chardev", "spicevmc,id=vdagent0,name=vdagent",
             "-device", "virtserialport,chardev=vdagent0,name=com.redhat.spice.0",
