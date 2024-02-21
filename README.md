@@ -6,13 +6,13 @@ Welcome to the cLAN Core Repository, the heart of the [clan.lol](https://clan.lo
 
 If you're new to cLAN and eager to dive in, start with our quickstart guide:
 
-- **Quickstart Guide**: Check out [quickstart.md](docs/admin/quickstart.md) to get up and running with cLAN in no time.
+- **Quickstart Guide**: Check out [quickstart.md](docs/admins/quickstart.md) to get up and running with cLAN in no time.
 
 ## Managing Secrets
 
 Security is paramount, and cLAN provides guidelines for handling secrets effectively:
 
-- **Secrets Management**: Learn how to manage secrets securely by reading [secrets-management.md](docs/admin/secrets-management.md).
+- **Secrets Management**: Learn how to manage secrets securely by reading [secrets-management.md](docs/admins/secrets-management.md).
 
 ## Contributing to cLAN
 
