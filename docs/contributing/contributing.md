@@ -52,39 +52,6 @@ Let's get your development environment up and running:
      ```
    - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
 
-6. **Build the Backend**:
-
-   - Go to the `pkgs/clan-cli` directory and execute:
-     ```bash
-     direnv allow
-     ```
-   - Wait for the backend to build.
-
-7. **Start the Backend Server**:
-
-   - To start the backend server, execute:
-     ```bash
-     clan webui --reload --no-open --log-level debug
-     ```
-   - The server will automatically restart if any Python files change.
-
-8. **Build the Frontend**:
-
-   - In a different shell, navigate to the `pkgs/ui` directory and execute:
-     ```bash
-     direnv allow
-     ```
-   - Wait for the frontend to build.
-
-   NOTE: If you have the error "@clan/colors.json" you executed `npm install`, please do not do that. `direnv reload` will handle dependency management. Please delete node_modules with `rm -rf node_modules`.
-
-9. **Start the Frontend**:
-   - To start the frontend, execute:
-     ```bash
-     npm run dev
-     ```
-   - Access the website by going to [http://localhost:3000](http://localhost:3000).
-
 # Setting Up Your Git Workflow
 
 Let's set up your Git workflow to collaborate effectively:
@@ -211,7 +178,3 @@ To make the most of this template:
    - Also, set the default merge style to "Rebase then create merge commit."
 
 With this template, you're well-equipped to build and collaborate on high-quality websites efficiently. Happy coding!.
-
-# API guidelines
-
-see [./api-guidelines](./api-guidelines)
