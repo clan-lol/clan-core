@@ -17,9 +17,12 @@ def get_formatter(color: str) -> Callable[[logging.LogRecord, bool], logging.For
         record: logging.LogRecord, with_location: bool
     ) -> logging.Formatter:
         reset = "\x1b[0m"
-        filepath = Path(record.pathname).resolve()
-        home = Path.home()
-        filepath = Path("~", filepath.relative_to(home))
+
+        try:
+            filepath = Path(record.pathname).resolve()
+            filepath = Path("~", filepath.relative_to(Path.home()))
+        except Exception:
+            filepath = Path(record.pathname)
 
         if not with_location:
             return logging.Formatter(f"{color}%(levelname)s{reset}: %(message)s")
@@ -65,8 +68,12 @@ def get_caller() -> str:
     if caller_frame is None:
         return "unknown"
     frame_info = inspect.getframeinfo(caller_frame)
-    filepath = Path(frame_info.filename).resolve()
-    filepath = Path("~", filepath.relative_to(Path.home()))
+
+    try:
+        filepath = Path(frame_info.filename).resolve()
+        filepath = Path("~", filepath.relative_to(Path.home()))
+    except Exception:
+        filepath = Path(frame_info.filename)
 
     ret = f"{filepath}:{frame_info.lineno}::{frame_info.function}"
     return ret
