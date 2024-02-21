@@ -10,6 +10,7 @@ from clan_cli.clan_uri import ClanURI
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_join import Join, JoinValue
 from clan_vm_manager.models.use_views import Views
+from clan_vm_manager.models.use_vms import VMs
 
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
@@ -123,7 +124,7 @@ class ClanList(Gtk.Box):
     def on_search_changed(self, entry: Gtk.SearchEntry) -> None:
         Clans.use().filter_by_name(entry.get_text())
         # Disable the shadow if the list is empty
-        if not self.app.vms.list_store.get_n_items():
+        if not VMs.use().list_store.get_n_items():
             self.group_list.add_css_class("no-shadow")
 
     def render_vm_row(self, boxed_list: Gtk.ListBox, vm: VM) -> Gtk.Widget:
@@ -202,7 +203,7 @@ class ClanList(Gtk.Box):
 
     def on_edit(self, action: Any, parameter: Any) -> None:
         target = parameter.get_string()
-        vm = self.app.vms.get_by_id(target)
+        vm = VMs.use().get_by_id(target)
 
         if not vm:
             raise ClanError("Something went wrong. Please restart the app.")
@@ -220,7 +221,7 @@ class ClanList(Gtk.Box):
         row.add_css_class("trust")
 
         # TODO: figure out how to detect that
-        exist = self.app.vms.use().get_by_id(item.url.get_id())
+        exist = VMs.use().use().get_by_id(item.url.get_id())
         if exist:
             sub = row.get_subtitle()
             row.set_subtitle(

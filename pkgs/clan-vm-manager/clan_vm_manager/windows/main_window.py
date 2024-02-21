@@ -1,13 +1,18 @@
+from typing import Any
+
 import gi
 
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_views import Views
+from clan_vm_manager.models.use_vms import VMs
 from clan_vm_manager.views.details import Details
 from clan_vm_manager.views.list import ClanList
 
 gi.require_version("Adw", "1")
 
-from gi.repository import Adw, Gtk
+from gi.repository import Adw, Gio, Gtk
+
+from ..trayicon import TrayIcon
 
 
 class MainWindow(Adw.ApplicationWindow):
@@ -21,6 +26,10 @@ class MainWindow(Adw.ApplicationWindow):
 
         header = Adw.HeaderBar()
         view.add_top_bar(header)
+
+        self.vms = VMs.use()
+        app = Gio.Application.get_default()
+        self.tray_icon: TrayIcon = TrayIcon(app)
 
         # Initialize all views
         stack_view = Views.use().view
@@ -41,3 +50,9 @@ class MainWindow(Adw.ApplicationWindow):
         clamp.set_maximum_size(1000)
 
         view.set_content(clamp)
+
+        self.connect("destroy", self.on_destroy)
+
+    def on_destroy(self, *_args: Any) -> None:
+        self.tray_icon.destroy()
+        self.vms.kill_all()

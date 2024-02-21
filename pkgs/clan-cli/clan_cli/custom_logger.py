@@ -18,11 +18,14 @@ def get_formatter(color: str) -> Callable[[logging.LogRecord, bool], logging.For
     ) -> logging.Formatter:
         reset = "\x1b[0m"
         filepath = Path(record.pathname).resolve()
+        home = Path.home()
+        filepath = Path("~", filepath.relative_to(home))
+
         if not with_location:
             return logging.Formatter(f"{color}%(levelname)s{reset}: %(message)s")
 
         return logging.Formatter(
-            f"{color}%(levelname)s{reset}: %(message)s\n        {filepath}:%(lineno)d::%(funcName)s\n"
+            f"{color}%(levelname)s{reset}: %(message)s\nLocation: {filepath}:%(lineno)d::%(funcName)s\n"
         )
 
     return myformatter
@@ -62,7 +65,10 @@ def get_caller() -> str:
     if caller_frame is None:
         return "unknown"
     frame_info = inspect.getframeinfo(caller_frame)
-    ret = f"{frame_info.filename}:{frame_info.lineno}::{frame_info.function}"
+    filepath = Path(frame_info.filename).resolve()
+    filepath = Path("~", filepath.relative_to(Path.home()))
+
+    ret = f"{filepath}:{frame_info.lineno}::{frame_info.function}"
     return ret
 
 
@@ -76,7 +82,7 @@ def setup_logging(level: Any, root_log_name: str = __name__.split(".")[0]) -> No
 
     # Create and add your custom handler
     default_handler.setLevel(level)
-    default_handler.setFormatter(CustomFormatter(level == logging.DEBUG))
+    default_handler.setFormatter(CustomFormatter(str(level) == str(logging.DEBUG)))
     main_logger.addHandler(default_handler)
 
     # Set logging level for other modules used by this module
