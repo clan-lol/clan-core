@@ -1,10 +1,6 @@
 # Contributing
 
-**Frontend**: Our frontend is powered by [React NextJS](https://nextjs.org/), a popular and versatile framework for building web applications.
-
-**Backend**: For the backend, we use Python along with the [FastAPI framework](https://fastapi.tiangolo.com/). To ensure seamless communication between the frontend and backend, we generate an `openapi.json` file from the Python code, which defines the REST API. This file is then used with [Orval](https://orval.dev/) to generate TypeScript bindings for the REST API. We're committed to code correctness, so we use [mypy](https://mypy-lang.org/) to ensure that our Python code is statically typed correctly. For backend testing, we rely on [pytest](https://docs.pytest.org/en/7.4.x/).
-
-**Continuous Integration (CI)**: We've set up a CI bot that rigorously checks your code using the quality assurance (QA) tools mentioned above. If any errors are detected, it will block pull requests until they're resolved.
+**Continuous Integration (CI)**: Each pull request gets automatically tested by gitea. If any errors are detected, it will block pull requests until they're resolved.
 
 **Dependency Management**: We use the [Nix package manager](https://nixos.org/) to manage dependencies and ensure reproducibility, making your development process more robust.
 
@@ -34,7 +30,7 @@ Let's get your development environment up and running:
 3. **Add direnv to your shell**:
 
    - Direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
-     You can do this by executing following command:
+     You can do this by executing following command. The example below will setup direnv for `zsh` and `bash`
 
    ```bash
    echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc && eval "$SHELL"
@@ -63,7 +59,7 @@ Let's set up your Git workflow to collaborate effectively:
      tea login add
      ```
    - Fill out the prompt as follows:
-     - URL of Gitea instance: `https://gitea.gchq.icu`
+     - URL of Gitea instance: `https://git.clan.lol`
      - Name of new Login [gitea.gchq.icu]: `gitea.gchq.icu:7171`
      - Do you have an access token? No
      - Username: YourUsername
@@ -92,7 +88,7 @@ Let's set up your Git workflow to collaborate effectively:
 
 4. **Review Your Pull Request**:
 
-   - Visit https://gitea.gchq.icu and go to the project page. Check under "Pull Requests" for any issues with your pull request.
+   - Visit https://git.clan.lol and go to the project page. Check under "Pull Requests" for any issues with your pull request.
 
 5. **Push Your Changes**:
    - If there are issues, fix them and redo step 2. Afterward, execute:
@@ -103,21 +99,22 @@ Let's set up your Git workflow to collaborate effectively:
 
 # Debugging
 
-When working on the backend of your project, debugging is an essential part of the development process. Here are some methods for debugging and testing the backend of your application:
+Here are some methods for debugging and testing the clan-cli:
 
-## Test Backend Locally in Devshell with Breakpoints
+## Test Locally in Devshell with Breakpoints
 
-To test the backend locally in a development environment and set breakpoints for debugging, follow these steps:
+To test the cli locally in a development environment and set breakpoints for debugging, follow these steps:
 
 1. Run the following command to execute your tests and allow for debugging with breakpoints:
    ```bash
-   pytest -n0 -s --maxfail=1
+   cd ./pkgs/clan-cli
+   pytest -n0 -s --maxfail=1 ./tests/test_nameofthetest.py
    ```
    You can place `breakpoint()` in your Python code where you want to trigger a breakpoint for debugging.
 
-## Test Backend Locally in a Nix Sandbox
+## Test Locally in a Nix Sandbox
 
-To run your backend tests in a Nix sandbox, you have two options depending on whether your test functions have been marked as impure or not:
+To run tests in a Nix sandbox, you have two options depending on whether your test functions have been marked as impure or not:
 
 ### Running Tests Marked as Impure
 
@@ -156,25 +153,3 @@ If you need to inspect the Nix sandbox while running tests, follow these steps:
    cntr exec -w your_sandbox_name
    psgrep -a -x your_python_process_name
    ```
-
-These debugging and testing methods will help you identify and fix issues in your backend code efficiently, ensuring the reliability and robustness of your application.
-
-For more information on testing read [property and contract based testing](testing.md)
-
-# Using this Template
-
-To make the most of this template:
-
-1. Set up a new Gitea account named `ui-asset-bot`. Generate an access token with all access permissions and set it under `settings/actions/secrets` as a secret called `BOT_ACCESS_TOKEN`.
-
-   - Also, edit the file `.gitea/workflows/ui_assets.yaml` and change the `BOT_EMAIL` variable to match the email you set for that account. Gitea matches commits to accounts by their email address, so this step is essential.
-
-2. Create a second Gitea account named `merge-bot`. Edit the file `pkgs/merge-after-ci/default.nix` if the name should be different. Under "Branches," set the main branch to be protected and add `merge-bot` to the whitelisted users for pushing. Set the unprotected file pattern to `**/ui-assets.nix`.
-
-   - Enable the status check for "build / test (pull_request)."
-
-3. Add both `merge-bot` and `ui-asset-bot` as collaborators.
-   - Set the option to "Delete pull request branch after merge by default."
-   - Also, set the default merge style to "Rebase then create merge commit."
-
-With this template, you're well-equipped to build and collaborate on high-quality websites efficiently. Happy coding!.
