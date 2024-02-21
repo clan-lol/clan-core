@@ -122,7 +122,7 @@ class VM(GObject.Object):
         self.log_dir = tempfile.TemporaryDirectory(
             prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
         )
-        self._finalizer = weakref.finalize(self, self.kill)
+        self._finalizer = weakref.finalize(self, self.kill_ref_drop)
         self.connect("build_vm", self.build_vm)
         uri = ClanURI.from_str(
             url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
@@ -269,6 +269,11 @@ class VM(GObject.Object):
         log.info(f"Stopping VM {self.get_id()}")
         threading.Thread(target=self.__stop).start()
 
+    def kill_ref_drop(self) -> None:
+        if self.is_running():
+            log.warning("Killing VM due to reference drop")
+            self.kill()
+
     def kill(self) -> None:
         if not self.is_running():
             log.warning(f"Tried to kill VM {self.get_id()} is not running")
@@ -315,14 +320,12 @@ class VMs:
         for vm in self.list_store:
             if ident == vm.get_id():
                 return vm
-
         return None
 
     def get_running_vms(self) -> list[VM]:
         return list(filter(lambda vm: vm.is_running(), self.list_store))
 
     def kill_all(self) -> None:
-        log.debug(f"Running vms: {self.get_running_vms()}")
         for vm in self.get_running_vms():
             vm.kill()
 

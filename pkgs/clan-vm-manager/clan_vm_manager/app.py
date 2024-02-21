@@ -14,15 +14,19 @@ from gi.repository import Adw, Gdk, Gio, Gtk
 
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_join import GLib, GObject
-from clan_vm_manager.models.use_vms import VMs
 
-from .trayicon import TrayIcon
 from .windows.main_window import MainWindow
 
 log = logging.getLogger(__name__)
 
 
 class MainApplication(Adw.Application):
+    """
+    This class is initialized  every time the app is started
+    Only the Adw.ApplicationWindow is a singleton.
+    So don't use any singletons  in the Adw.Application class.
+    """
+
     __gsignals__: ClassVar = {
         "join_request": (GObject.SignalFlags.RUN_FIRST, None, [str]),
     }
@@ -34,7 +38,6 @@ class MainApplication(Adw.Application):
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
             **kwargs,
         )
-        self.tray_icon: TrayIcon | None = None
 
         self.add_main_option(
             "debug",
@@ -44,10 +47,8 @@ class MainApplication(Adw.Application):
             "enable debug mode",
             None,
         )
-        self.vms = VMs.use()
-        log.debug(f"VMS object: {self.vms}")
+
         self.window: Adw.ApplicationWindow | None = None
-        self.connect("shutdown", self.on_shutdown)
         self.connect("activate", self.show_window)
 
     def do_command_line(self, command_line: Any) -> int:
@@ -56,10 +57,10 @@ class MainApplication(Adw.Application):
         options = options.end().unpack()
 
         if "debug" in options:
-            setup_logging("DEBUG", root_log_name=__name__.split(".")[0])
-            setup_logging("DEBUG", root_log_name="clan_cli")
+            setup_logging(logging.DEBUG, root_log_name=__name__.split(".")[0])
+            setup_logging(logging.DEBUG, root_log_name="clan_cli")
         else:
-            setup_logging("INFO", root_log_name=__name__.split(".")[0])
+            setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
         log.debug("Debug logging enabled")
 
         args = command_line.get_arguments()
@@ -72,14 +73,6 @@ class MainApplication(Adw.Application):
             self.emit("join_request", uri)
         return 0
 
-    def on_shutdown(self, app: Gtk.Application) -> None:
-        log.debug("Shutting down")
-
-        self.vms.kill_all()
-
-        if self.tray_icon is not None:
-            self.tray_icon.destroy()
-
     def on_window_hide_unhide(self, *_args: Any) -> None:
         assert self.window is not None
         if self.window.is_visible():
@@ -90,15 +83,12 @@ class MainApplication(Adw.Application):
     def dummy_menu_entry(self) -> None:
         log.info("Dummy menu entry called")
 
-    def do_activate(self) -> None:
-        self.show_window()
-
-    def show_window(self, app: Any = None) -> None:
+    def show_window(self, *_args: Any) -> None:
         if not self.window:
             self.init_style()
             self.window = MainWindow(config=ClanConfig(initial_view="list"))
             self.window.set_application(self)
-            self.tray_icon = TrayIcon(self)
+
         self.window.present()
 
     # TODO: For css styling
