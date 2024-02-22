@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 from ..errors import ClanError
+from ..git import commit_files
 from . import secrets
 from .folders import list_objects, remove_object, sops_users_folder
 from .sops import read_key, write_key
@@ -14,7 +15,13 @@ from .types import (
 
 
 def add_user(flake_dir: Path, name: str, key: str, force: bool) -> None:
-    write_key(sops_users_folder(flake_dir) / name, key, force)
+    path = sops_users_folder(flake_dir) / name
+    write_key(path, key, force)
+    commit_files(
+        [path],
+        flake_dir,
+        f"Add user {name} to secrets",
+    )
 
 
 def remove_user(flake_dir: Path, name: str) -> None:
