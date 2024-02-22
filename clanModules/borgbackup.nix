@@ -34,14 +34,13 @@ in
     services.borgbackup.jobs = lib.mapAttrs
       (_: dest: {
         paths = lib.flatten (map (state: state.folders) (lib.attrValues config.clanCore.state));
-        exclude = [
-          "*.pyc"
-        ];
+        exclude = [ "*.pyc" ];
         repo = dest.repo;
         environment.BORG_RSH = dest.rsh;
         encryption.mode = "none";
         compression = "auto,zstd";
         startAt = "*-*-* 01:00:00";
+        persistentTimer = true;
         preHook = ''
           set -x
         '';
