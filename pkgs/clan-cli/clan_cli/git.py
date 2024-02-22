@@ -28,12 +28,10 @@ def commit_files(
     repo_dir: Path,
     commit_message: str | None = None,
 ) -> None:
-    # check that the file is in the git repository and exists
+    # check that the file is in the git repository
     for file_path in file_paths:
         if not Path(file_path).resolve().is_relative_to(repo_dir.resolve()):
             raise ClanError(f"File {file_path} is not in the git repository {repo_dir}")
-        if not file_path.exists():
-            raise ClanError(f"File {file_path} does not exist")
     # generate commit message if not provided
     if commit_message is None:
         commit_message = ""
