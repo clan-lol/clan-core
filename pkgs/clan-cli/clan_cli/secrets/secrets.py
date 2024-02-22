@@ -272,13 +272,19 @@ def set_command(args: argparse.Namespace) -> None:
 
 
 def rename_command(args: argparse.Namespace) -> None:
-    old_path = sops_secrets_folder(Path(args.flake)) / args.secret
-    new_path = sops_secrets_folder(Path(args.flake)) / args.new_name
+    flake_dir = Path(args.flake)
+    old_path = sops_secrets_folder(flake_dir) / args.secret
+    new_path = sops_secrets_folder(flake_dir) / args.new_name
     if not old_path.exists():
         raise ClanError(f"Secret '{args.secret}' does not exist")
     if new_path.exists():
         raise ClanError(f"Secret '{args.new_name}' already exists")
     os.rename(old_path, new_path)
+    commit_files(
+        [old_path, new_path],
+        flake_dir,
+        f"Rename secret {args.secret} to {args.new_name}",
+    )
 
 
 def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
