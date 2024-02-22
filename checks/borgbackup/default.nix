@@ -1,7 +1,7 @@
 (import ../lib/test-base.nix) ({ ... }: {
   name = "borgbackup";
 
-  nodes.machine = { self, ... }: {
+  nodes.machine = { self, pkgs, ... }: {
     imports = [
       self.clanModules.borgbackup
       self.nixosModules.clanCore
@@ -18,21 +18,27 @@
         clanCore.clanDir = ./.;
         clanCore.state.testState.folders = [ "/etc/state" ];
         environment.etc.state.text = "hello world";
-        systemd.tmpfiles.settings = {
-          "ssh-key"."/root/.ssh/id_ed25519" = {
+        systemd.tmpfiles.settings."vmsecrets" = {
+          "/etc/secrets/borgbackup.ssh" = {
             C.argument = "${../lib/ssh/privkey}";
             z = {
               mode = "0400";
               user = "root";
             };
           };
+          "/etc/secrets/borgbackup.repokey" = {
+            C.argument = builtins.toString (pkgs.writeText "repokey" "repokey12345");
+            z = {
+              mode = "0400";
+              user = "root";
+            };
+          };
         };
+        clanCore.secretStore = "vm";
+
         clan.borgbackup = {
           enable = true;
-          destinations.test = {
-            repo = "borg@localhost:.";
-            rsh = "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no";
-          };
+          destinations.test.repo = "borg@localhost:.";
         };
       }
     ];

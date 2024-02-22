@@ -46,6 +46,25 @@ in
         users.users.root.openssh.authorizedKeys.keyFiles = [
           ../lib/ssh/pubkey
         ];
+
+        systemd.tmpfiles.settings."vmsecrets" = {
+          "/etc/secrets/borgbackup.ssh" = {
+            C.argument = "${../lib/ssh/privkey}";
+            z = {
+              mode = "0400";
+              user = "root";
+            };
+          };
+          "/etc/secrets/borgbackup.repokey" = {
+            C.argument = builtins.toString (pkgs.writeText "repokey" "repokey12345");
+            z = {
+              mode = "0400";
+              user = "root";
+            };
+          };
+        };
+        clanCore.secretStore = "vm";
+
         environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
         environment.etc."install-closure".source = "${closureInfo}/store-paths";
         nix.settings = {
@@ -58,10 +77,7 @@ in
         clanCore.state.test-backups.folders = [ "/var/test-backups" ];
         clan.borgbackup = {
           enable = true;
-          destinations.test_backup_server = {
-            repo = "borg@server:.";
-            rsh = "ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no";
-          };
+          destinations.test_backup_server.repo = "borg@server:.";
         };
       };
   };
