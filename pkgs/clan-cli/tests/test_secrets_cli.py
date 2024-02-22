@@ -275,6 +275,14 @@ def test_secrets(
     cli.run(["--flake", str(test_flake.path), "secrets", "list"])
     assert capsys.readouterr().out == "key\n"
 
+    capsys.readouterr()  # empty the buffer
+    cli.run(["--flake", str(test_flake.path), "secrets", "list", "nonexisting"])
+    assert capsys.readouterr().out == ""
+
+    capsys.readouterr()  # empty the buffer
+    cli.run(["--flake", str(test_flake.path), "secrets", "list", "key"])
+    assert capsys.readouterr().out == "key\n"
+
     cli.run(
         [
             "--flake",

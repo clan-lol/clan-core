@@ -3,6 +3,7 @@ import getpass
 import os
 import shutil
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import IO
 
@@ -210,17 +211,31 @@ def has_secret(flake_dir: Path, secret: str) -> bool:
     return (sops_secrets_folder(flake_dir) / secret / "secret").exists()
 
 
-def list_secrets(flake_dir: Path) -> list[str]:
+def list_secrets(flake_dir: Path, pattern: str | None = None) -> list[str]:
     path = sops_secrets_folder(flake_dir)
 
     def validate(name: str) -> bool:
-        return VALID_SECRET_NAME.match(name) is not None and has_secret(flake_dir, name)
+        return (
+            VALID_SECRET_NAME.match(name) is not None
+            and has_secret(flake_dir, name)
+            and (pattern is None or pattern in name)
+        )
 
     return list_objects(path, validate)
 
 
+@dataclass
+class ListSecretsOptions:
+    flake: Path
+    pattern: str | None
+
+
 def list_command(args: argparse.Namespace) -> None:
-    lst = list_secrets(Path(args.flake))
+    options = ListSecretsOptions(
+        flake=args.flake,
+        pattern=args.pattern,
+    )
+    lst = list_secrets(options.flake, options.pattern)
     if len(lst) > 0:
         print("\n".join(lst))
 
@@ -268,6 +283,11 @@ def rename_command(args: argparse.Namespace) -> None:
 
 def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
     parser_list = subparser.add_parser("list", help="list secrets")
+    parser_list.add_argument(
+        "pattern",
+        nargs="?",
+        help="a pattern to filter the secrets. All secrets containing the pattern will be listed.",
+    )
     parser_list.set_defaults(func=list_command)
 
     parser_get = subparser.add_parser("get", help="get a secret")
