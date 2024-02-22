@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 from ..errors import ClanError
+from ..git import commit_files
 from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
 from .folders import list_objects, remove_object, sops_machines_folder
@@ -10,7 +11,13 @@ from .types import public_or_private_age_key_type, secret_name_type
 
 
 def add_machine(flake_dir: Path, name: str, key: str, force: bool) -> None:
-    write_key(sops_machines_folder(flake_dir) / name, key, force)
+    path = sops_machines_folder(flake_dir) / name
+    write_key(path, key, force)
+    commit_files(
+        [path],
+        flake_dir,
+        f"Add machine {name} to secrets",
+    )
 
 
 def remove_machine(flake_dir: Path, name: str) -> None:
@@ -35,10 +42,15 @@ def list_machines(flake_dir: Path) -> list[str]:
 
 
 def add_secret(flake_dir: Path, machine: str, secret: str) -> None:
-    secrets.allow_member(
+    path = secrets.allow_member(
         secrets.machines_folder(flake_dir, secret),
         sops_machines_folder(flake_dir),
         machine,
+    )
+    commit_files(
+        [path],
+        flake_dir,
+        f"Add {machine} to secret",
     )
 
 

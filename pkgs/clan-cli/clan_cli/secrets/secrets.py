@@ -124,6 +124,11 @@ def remove_secret(flake_dir: Path, secret: str) -> None:
     if not path.exists():
         raise ClanError(f"Secret '{secret}' does not exist")
     shutil.rmtree(path)
+    commit_files(
+        [path],
+        flake_dir,
+        f"Remove secret {secret}",
+    )
 
 
 def remove_command(args: argparse.Namespace) -> None:
