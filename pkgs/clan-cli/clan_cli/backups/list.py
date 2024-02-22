@@ -58,7 +58,8 @@ def list_backups(machine: Machine, provider: str | None = None) -> list[Backup]:
 def list_command(args: argparse.Namespace) -> None:
     machine = Machine(name=args.machine, flake=args.flake)
     backups = list_backups(machine=machine, provider=args.provider)
-    print(backups)
+    for backup in backups:
+        print(backup.archive_id)
 
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:
