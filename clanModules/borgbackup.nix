@@ -73,10 +73,9 @@ in
     clanCore.backups.providers.borgbackup = {
       # TODO list needs to run locally or on the remote machine
       list = ''
-        ${lib.concatMapStringsSep "\n" (dest: ''
-          # we need yes here to skip the changed url verification
-          yes y | borg-job-${dest.name} list --json | jq -r '. + {"job-name": "${dest.name}"}'
-        '') (lib.attrValues cfg.destinations)}
+        # we need yes here to skip the changed url verification
+        ${lib.concatMapStringsSep "\n" (dest: ''yes y | borg-job-${dest.name} list --json | jq -r '. + {"job-name": "${dest.name}"}' '')
+          (lib.attrValues cfg.destinations)}
       '';
       create = ''
         ${lib.concatMapStringsSep "\n" (dest: ''
