@@ -37,13 +37,17 @@ in
         exclude = [ "*.pyc" ];
         repo = dest.repo;
         environment.BORG_RSH = dest.rsh;
-        encryption.mode = "none";
         compression = "auto,zstd";
         startAt = "*-*-* 01:00:00";
         persistentTimer = true;
         preHook = ''
           set -x
         '';
+
+        encryption = {
+          mode = "repokey";
+          passCommand = "cat ${config.clanCore.secrets.borgbackup.secrets."borgbackup.repokey".path}";
+        };
 
         prune.keep = {
           within = "1d"; # Keep all archives from the last day
@@ -57,10 +61,12 @@ in
     clanCore.secrets.borgbackup = {
       facts."borgbackup.ssh.pub" = { };
       secrets."borgbackup.ssh" = { };
-      generator.path = [ pkgs.openssh pkgs.coreutils ];
+      secrets."borgbackup.repokey" = { };
+      generator.path = [ pkgs.openssh pkgs.coreutils pkgs.xkcdpass ];
       generator.script = ''
         ssh-keygen -t ed25519 -N "" -f "$secrets"/borgbackup.ssh
         mv "$secrets"/borgbackup.ssh.pub "$facts"/borgbackup.ssh.pub
+        xkcdpass -n 4 -d - > "$secrets"/borgbackup.repokey
       '';
     };
 
