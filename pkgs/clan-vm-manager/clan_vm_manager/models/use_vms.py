@@ -286,12 +286,11 @@ class VM(GObject.Object):
             try:
                 with self.machine.vm.qmp_ctx() as qmp:
                     qmp.command("system_powerdown")
-            except (OSError, ClanError):
-                # log.debug(f"QMP command 'system_powerdown' ignored. Error: {e}")
-                pass
+            except (OSError, ClanError) as ex:
+                log.debug(f"QMP command 'system_powerdown' ignored. Error: {ex}")
 
-            # Try 2 times a second
-            time.sleep(0.5)
+            # Try 20 times to stop the VM
+            time.sleep(self.KILL_TIMEOUT / 20)
         GLib.idle_add(self.emit, "vm_status_changed", self)
         log.debug(f"VM {self.get_id()} has stopped")
 
