@@ -30,7 +30,6 @@ class VMAttr:
     @contextmanager
     def qmp_ctx(self) -> Generator[QEMUMonitorProtocol, None, None]:
         if self._qmp is None:
-            log.debug(f"qmp_socket: {self._qmp_socket}")
             rpath = self._qmp_socket.resolve()
             if not rpath.exists():
                 raise ClanError(
