@@ -194,6 +194,10 @@ class ClanList(Gtk.Box):
         box.append(pref_button)
 
         switch.connect("notify::active", partial(self.on_row_toggle, vm))
+        # def on_switch_state_set(switch: Any, state: bool) -> bool:
+        #     return True
+        # switch.connect("state-set", on_switch_state_set)
+
         vm.connect("vm_status_changed", partial(self.vm_status_changed, switch))
 
         # suffix.append(box)
@@ -286,18 +290,20 @@ class ClanList(Gtk.Box):
         if not Join.use().list_store.get_n_items():
             self.join_boxed_list.add_css_class("no-shadow")
 
-    def on_row_toggle(self, vm: VM, row: Adw.SwitchRow, state: bool) -> None:
-        if row.get_active():
-            row.set_state(False)
+    def on_row_toggle(self, vm: VM, switch: Gtk.Switch, user_state: bool) -> None:
+        if switch.get_active():
+            switch.set_state(False)
             vm.start()
-
-        if not row.get_active():
-            row.set_state(True)
+        else:
+            switch.set_state(True)
             vm.shutdown()
+            switch.set_sensitive(False)
 
     def vm_status_changed(self, switch: Gtk.Switch, vm: VM, _vm: VM) -> None:
-        switch.set_active(vm.is_running())
-        switch.set_state(vm.is_running())
-        exitc = vm.process.proc.exitcode
+        switch.set_state(vm.is_running() and not vm.is_building())
+        if switch.get_sensitive() is False and not vm.is_building():
+            switch.set_sensitive(True)
+
+        exitc = vm.vm_process.proc.exitcode
         if not vm.is_running() and exitc != 0:
             log.error(f"VM exited with error. Exitcode: {exitc}")
