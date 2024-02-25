@@ -136,6 +136,11 @@ class VM(GObject.Object):
         self._logs_id: int = 0
         self._log_file: IO[str] | None = None
 
+        # To be able to set the switch state programmatically
+        # we need to store the handler id returned by the connect method
+        # and block the signal while we change the state. This is cursed.
+        self.switch_handler_id: int = 0
+
         # Make sure the VM is killed when the reference to this object is dropped
         self._finalizer = weakref.finalize(self, self.kill_ref_drop)
 
@@ -171,14 +176,24 @@ class VM(GObject.Object):
         with self.create_machine() as machine:
             # Start building VM
             log.info(f"Building VM {self.get_id()}")
+            log_dir = Path(str(self.log_dir.name))
             self.build_process = spawn(
                 on_except=None,
-                out_file=Path(str(self.log_dir.name)) / "build.log",
+                out_file=log_dir / "build.log",
                 func=vms.run.build_vm,
                 machine=machine,
+                tmpdir=log_dir,
                 vm=self.data.flake.vm,
             )
             GLib.idle_add(self.emit, "vm_status_changed", self)
+
+            # Start the logs watcher
+            self._logs_id = GLib.timeout_add(
+                50, self._get_logs_task, self.build_process
+            )
+            if self._logs_id == 0:
+                log.error("Failed to start VM log watcher")
+            log.debug(f"Starting logs watcher on file: {self.build_process.out_file}")
 
             # Start the progress bar and show it
             self.progress_bar.show()
@@ -208,7 +223,7 @@ class VM(GObject.Object):
             GLib.idle_add(self.emit, "vm_status_changed", self)
 
             # Start the logs watcher
-            self._logs_id = GLib.timeout_add(50, self._get_logs_task)
+            self._logs_id = GLib.timeout_add(50, self._get_logs_task, self.vm_process)
             if self._logs_id == 0:
                 log.error("Failed to start VM log watcher")
             log.debug(f"Starting logs watcher on file: {self.vm_process.out_file}")
@@ -223,16 +238,17 @@ class VM(GObject.Object):
             log.warn("VM is already running. Ignoring start request")
             self.emit("vm_status_changed", self)
             return
+        log.debug(f"VM state dir {self.log_dir.name}")
         self._start_thread = threading.Thread(target=self.__start)
         self._start_thread.start()
 
-    def _get_logs_task(self) -> bool:
-        if not self.vm_process.out_file.exists():
+    def _get_logs_task(self, proc: MPProcess) -> bool:
+        if not proc.out_file.exists():
             return GLib.SOURCE_CONTINUE
 
         if not self._log_file:
             try:
-                self._log_file = open(self.vm_process.out_file)
+                self._log_file = open(proc.out_file)
             except Exception as ex:
                 log.exception(ex)
                 self._log_file = None
@@ -242,7 +258,7 @@ class VM(GObject.Object):
         if len(line) != 0:
             print(line.decode("utf-8"), end="", flush=True)
 
-        if not self.is_running():
+        if not proc.proc.is_alive():
             log.debug("Removing logs watcher")
             self._log_file = None
             return GLib.SOURCE_REMOVE
