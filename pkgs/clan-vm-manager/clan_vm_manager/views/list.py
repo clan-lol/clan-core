@@ -193,11 +193,9 @@ class ClanList(Gtk.Box):
         box.append(switch_box)
         box.append(pref_button)
 
-        switch.connect("notify::active", partial(self.on_row_toggle, vm))
-        # def on_switch_state_set(switch: Any, state: bool) -> bool:
-        #     return True
-        # switch.connect("state-set", on_switch_state_set)
-
+        vm.switch_handler_id = switch.connect(
+            "notify::active", partial(self.on_row_toggle, vm)
+        )
         vm.connect("vm_status_changed", partial(self.vm_status_changed, switch))
 
         # suffix.append(box)
@@ -304,6 +302,11 @@ class ClanList(Gtk.Box):
         if switch.get_sensitive() is False and not vm.is_building():
             switch.set_sensitive(True)
 
-        exitc = vm.vm_process.proc.exitcode
+        exit_vm = vm.vm_process.proc.exitcode
+        exit_build = vm.build_process.proc.exitcode
+        exitc = exit_vm or exit_build
         if not vm.is_running() and exitc != 0:
+            switch.handler_block(vm.switch_handler_id)
+            switch.set_active(False)
+            switch.handler_unblock(vm.switch_handler_id)
             log.error(f"VM exited with error. Exitcode: {exitc}")
