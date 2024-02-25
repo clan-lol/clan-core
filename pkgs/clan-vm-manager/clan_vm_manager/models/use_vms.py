@@ -1,6 +1,9 @@
 import os
 import tempfile
+import time
 import weakref
+from collections.abc import Generator
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import IO, Any, ClassVar
@@ -97,8 +100,7 @@ class Clans:
 class VM(GObject.Object):
     # Define a custom signal with the name "vm_stopped" and a string argument for the message
     __gsignals__: ClassVar = {
-        "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object]),
-        "build_vm": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object, bool]),
+        "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object])
     }
 
     def __init__(
@@ -107,23 +109,40 @@ class VM(GObject.Object):
         data: HistoryEntry,
     ) -> None:
         super().__init__()
-        self.KILL_TIMEOUT = 6  # seconds
+
+        # Store the data from the history entry
         self.data = data
-        self.process = MPProcess("dummy", mp.Process(), Path("./dummy"))
-        self._watcher_id: int = 0
-        self._stop_watcher_id: int = 0
-        self._stop_timer_init: datetime | None = None
-        self._logs_id: int = 0
-        self._log_file: IO[str] | None = None
+
+        # Create a process object to store the VM process
+        self.vm_process = MPProcess("vm_dummy", mp.Process(), Path("./dummy"))
+        self.build_process = MPProcess("build_dummy", mp.Process(), Path("./dummy"))
+        self._start_thread: threading.Thread = threading.Thread()
+        self.machine: Machine | None = None
+
+        # Watcher to stop the VM
+        self.KILL_TIMEOUT = 20  # seconds
+        self._stop_thread: threading.Thread = threading.Thread()
+
+        # Build progress bar vars
         self.progress_bar: Gtk.ProgressBar = Gtk.ProgressBar()
         self.progress_bar.hide()
         self.progress_bar.set_hexpand(True)  # Horizontally expand
         self.prog_bar_id: int = 0
+
+        # Create a temporary directory to store the logs
         self.log_dir = tempfile.TemporaryDirectory(
             prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
         )
+        self._logs_id: int = 0
+        self._log_file: IO[str] | None = None
+
+        # Make sure the VM is killed when the reference to this object is dropped
         self._finalizer = weakref.finalize(self, self.kill_ref_drop)
-        self.connect("build_vm", self.build_vm)
+
+    # We use a context manager to create the machine object
+    # and make sure it is destroyed when the context is exited
+    @contextmanager
+    def create_machine(self) -> Generator[Machine, None, None]:
         uri = ClanURI.from_str(
             url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
         )
@@ -138,83 +157,82 @@ class VM(GObject.Object):
                     name=self.data.flake.flake_attr,
                     flake=url,  # type: ignore
                 )
+        yield self.machine
+        self.machine = None
 
     def _pulse_progress_bar(self) -> bool:
-        self.progress_bar.pulse()
-        return GLib.SOURCE_CONTINUE
+        if self.progress_bar.is_visible():
+            self.progress_bar.pulse()
+            return GLib.SOURCE_CONTINUE
+        else:
+            return GLib.SOURCE_REMOVE
 
-    def build_vm(self, vm: "VM", _vm: "VM", building: bool) -> None:
-        if building:
-            log.info("Building VM")
+    def __start(self) -> None:
+        with self.create_machine() as machine:
+            # Start building VM
+            log.info(f"Building VM {self.get_id()}")
+            self.build_process = spawn(
+                on_except=None,
+                out_file=Path(str(self.log_dir.name)) / "build.log",
+                func=vms.run.build_vm,
+                machine=machine,
+                vm=self.data.flake.vm,
+            )
+            GLib.idle_add(self.emit, "vm_status_changed", self)
+
+            # Start the progress bar and show it
             self.progress_bar.show()
             self.prog_bar_id = GLib.timeout_add(100, self._pulse_progress_bar)
             if self.prog_bar_id == 0:
-                raise ClanError("Couldn't spawn a progess bar task")
-        else:
+                log.error("Couldn't spawn a progess bar task")
+
+            # Wait for the build to finish then hide the progress bar
+            self.build_process.proc.join()
             self.progress_bar.hide()
-            if not GLib.Source.remove(self.prog_bar_id):
-                log.error("Failed to remove progress bar task")
-            log.info("VM built")
 
-    def __start(self) -> None:
-        log.info(f"Starting VM {self.get_id()}")
-        vm = vms.run.inspect_vm(self.machine)
+            # Check if the VM was built successfully
+            if self.build_process.proc.exitcode != 0:
+                log.error(f"Failed to build VM {self.get_id()}")
+                GLib.idle_add(self.emit, "vm_status_changed", self)
+                return
+            log.info(f"Successfully built VM {self.get_id()}")
 
-        # GLib.idle_add(self.emit, "build_vm", self, True)
-        # self.process = spawn(
-        #     on_except=None,
-        #     log_dir=Path(str(self.log_dir.name)),
-        #     func=vms.run.build_vm,
-        #     machine=self.machine,
-        #     vm=vm,
-        # )
-        # self.process.proc.join()
+            # Start the VM
+            self.vm_process = spawn(
+                on_except=None,
+                out_file=Path(str(self.log_dir.name)) / "vm.log",
+                func=vms.run.run_vm,
+                vm=self.data.flake.vm,
+            )
+            log.debug(f"Started VM {self.get_id()}")
+            GLib.idle_add(self.emit, "vm_status_changed", self)
 
-        # GLib.idle_add(self.emit, "build_vm", self, False)
+            # Start the logs watcher
+            self._logs_id = GLib.timeout_add(50, self._get_logs_task)
+            if self._logs_id == 0:
+                log.error("Failed to start VM log watcher")
+            log.debug(f"Starting logs watcher on file: {self.vm_process.out_file}")
 
-        # if self.process.proc.exitcode != 0:
-        #     log.error(f"Failed to build VM {self.get_id()}")
-        #     return
-
-        self.process = spawn(
-            on_except=None,
-            out_file=Path(str(self.log_dir.name)) / "vm.log",
-            func=vms.run.run_vm,
-            vm=vm,
-        )
-        log.debug(f"Started VM {self.get_id()}")
-        GLib.idle_add(self.emit, "vm_status_changed", self)
-        log.debug(f"Starting logs watcher on file: {self.process.out_file}")
-        self._logs_id = GLib.timeout_add(50, self._get_logs_task)
-        if self._logs_id == 0:
-            raise ClanError("Failed to add logs watcher")
-
-        log.debug(f"Starting VM watcher for: {self.machine.name}")
-        self._watcher_id = GLib.timeout_add(50, self._vm_watcher_task)
-        if self._watcher_id == 0:
-            raise ClanError("Failed to add watcher")
+            # Wait for the VM to stop
+            self.vm_process.proc.join()
+            log.debug(f"VM {self.get_id()} has stopped")
+            GLib.idle_add(self.emit, "vm_status_changed", self)
 
     def start(self) -> None:
         if self.is_running():
-            log.warn("VM is already running")
-            return
-        threading.Thread(target=self.__start).start()
-
-    def _vm_watcher_task(self) -> bool:
-        if not self.is_running():
+            log.warn("VM is already running. Ignoring start request")
             self.emit("vm_status_changed", self)
-            log.debug("Removing VM watcher")
-            return GLib.SOURCE_REMOVE
-
-        return GLib.SOURCE_CONTINUE
+            return
+        self._start_thread = threading.Thread(target=self.__start)
+        self._start_thread.start()
 
     def _get_logs_task(self) -> bool:
-        if not self.process.out_file.exists():
+        if not self.vm_process.out_file.exists():
             return GLib.SOURCE_CONTINUE
 
         if not self._log_file:
             try:
-                self._log_file = open(self.process.out_file)
+                self._log_file = open(self.vm_process.out_file)
             except Exception as ex:
                 log.exception(ex)
                 self._log_file = None
@@ -232,42 +250,60 @@ class VM(GObject.Object):
         return GLib.SOURCE_CONTINUE
 
     def is_running(self) -> bool:
-        return self.process.proc.is_alive()
+        return self._start_thread.is_alive()
+
+    def is_building(self) -> bool:
+        return self.build_process.proc.is_alive()
+
+    def is_shutting_down(self) -> bool:
+        return self._stop_thread.is_alive()
 
     def get_id(self) -> str:
         return f"{self.data.flake.flake_url}#{self.data.flake.flake_attr}"
 
-    def __shutdown_watchdog(self) -> None:
-        if self.is_running():
-            assert self._stop_timer_init is not None
-            diff = datetime.now() - self._stop_timer_init
-            if diff.seconds > self.KILL_TIMEOUT:
-                log.error(f"VM {self.get_id()} has not stopped. Killing it")
-                self.process.kill_group()
-            return GLib.SOURCE_CONTINUE
-        else:
-            log.info(f"VM {self.get_id()} has stopped")
-            return GLib.SOURCE_REMOVE
-
     def __stop(self) -> None:
         log.info(f"Stopping VM {self.get_id()}")
 
-        try:
-            with self.machine.vm.qmp_ctx() as qmp:
-                qmp.command("system_powerdown")
-        except ClanError as e:
-            log.debug(e)
+        start_time = datetime.now()
+        while self.is_running():
+            diff = datetime.now() - start_time
+            if diff.seconds > self.KILL_TIMEOUT:
+                log.error(
+                    f"VM {self.get_id()} has not stopped after {self.KILL_TIMEOUT}s. Killing it"
+                )
+                self.vm_process.kill_group()
+                return
+            if self.is_building():
+                log.info(f"VM {self.get_id()} is still building. Killing it")
+                self.build_process.kill_group()
+                return
+            if not self.machine:
+                log.error(f"Machine object is None. Killing VM {self.get_id()}")
+                self.vm_process.kill_group()
+                return
 
-        self._stop_timer_init = datetime.now()
-        self._stop_watcher_id = GLib.timeout_add(100, self.__shutdown_watchdog)
-        if self._stop_watcher_id == 0:
-            raise ClanError("Failed to add stop watcher")
+            # Try to shutdown the VM gracefully using QMP
+            try:
+                with self.machine.vm.qmp_ctx() as qmp:
+                    qmp.command("system_powerdown")
+            except (OSError, ClanError):
+                # log.debug(f"QMP command 'system_powerdown' ignored. Error: {e}")
+                pass
+
+            # Try 2 times a second
+            time.sleep(0.5)
+        GLib.idle_add(self.emit, "vm_status_changed", self)
+        log.debug(f"VM {self.get_id()} has stopped")
 
     def shutdown(self) -> None:
         if not self.is_running():
+            log.warning("VM not running. Ignoring shutdown request.")
             return
-        log.info(f"Stopping VM {self.get_id()}")
-        threading.Thread(target=self.__stop).start()
+        if self.is_shutting_down():
+            log.warning("Shutdown already in progress")
+            return
+        self._stop_thread = threading.Thread(target=self.__stop)
+        self._stop_thread.start()
 
     def kill_ref_drop(self) -> None:
         if self.is_running():
@@ -279,13 +315,13 @@ class VM(GObject.Object):
             log.warning(f"Tried to kill VM {self.get_id()} is not running")
             return
         log.info(f"Killing VM {self.get_id()} now")
-        self.process.kill_group()
+        self.vm_process.kill_group()
 
     def read_whole_log(self) -> str:
-        if not self.process.out_file.exists():
-            log.error(f"Log file {self.process.out_file} does not exist")
+        if not self.vm_process.out_file.exists():
+            log.error(f"Log file {self.vm_process.out_file} does not exist")
             return ""
-        return self.process.out_file.read_text()
+        return self.vm_process.out_file.read_text()
 
 
 class VMs:
