@@ -99,7 +99,7 @@ def _init_proc(
             gpid = os.getpgid(pid=pid)
             print(f"Killing process group pid={pid} gpid={gpid}", file=sys.stderr)
             os.killpg(gpid, signal.SIGTERM)
-
+        sys.exit(1)
     # Don't use a finally block here, because we want the exitcode to be set to
     # 0 if the function returns normally
 
