@@ -25,22 +25,18 @@ class VMAttr:
         # the symlink will be dangling.
         self._qmp_socket: Path = state_dir / "qmp.sock"
         self._qga_socket: Path = state_dir / "qga.sock"
-        self._qmp: QEMUMonitorProtocol | None = None
 
     @contextmanager
     def qmp_ctx(self) -> Generator[QEMUMonitorProtocol, None, None]:
-        if self._qmp is None:
-            rpath = self._qmp_socket.resolve()
-            if not rpath.exists():
-                raise ClanError(
-                    f"qmp socket {rpath} does not exist. Is the VM running?"
-                )
-            self._qmp = QEMUMonitorProtocol(str(rpath))
-        self._qmp.connect()
+        rpath = self._qmp_socket.resolve()
+        if not rpath.exists():
+            raise ClanError(f"qmp socket {rpath} does not exist. Is the VM running?")
+        qmp = QEMUMonitorProtocol(str(rpath))
+        qmp.connect()
         try:
-            yield self._qmp
+            yield qmp
         finally:
-            self._qmp.close()
+            qmp.close()
 
 
 class Machine:
