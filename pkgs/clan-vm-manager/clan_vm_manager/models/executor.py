@@ -76,7 +76,6 @@ def _init_proc(
     # Print some information
     pid = os.getpid()
     gpid = os.getpgid(pid=pid)
-    print(f"Started new process pid={pid} gpid={gpid}", file=sys.stderr)
 
     # Set the process name
     _set_proc_name(proc_name)
@@ -84,19 +83,25 @@ def _init_proc(
     # Close stdin
     sys.stdin.close()
 
+    linebreak = "=" * 5
     # Execute the main function
-    print(f"Executing function {func.__name__} now", file=sys.stderr)
+    print(linebreak + f"{func.__name__}:{pid}" + linebreak, file=sys.stderr)
+
     try:
         func(**kwargs)
     except Exception as ex:
         traceback.print_exc()
         if on_except is not None:
             on_except(ex, mp.current_process())
-    finally:
-        pid = os.getpid()
-        gpid = os.getpgid(pid=pid)
-        print(f"Killing process group pid={pid} gpid={gpid}", file=sys.stderr)
-        os.killpg(gpid, signal.SIGTERM)
+
+            # Kill the new process and all its children by sending a SIGTERM signal to the process group
+            pid = os.getpid()
+            gpid = os.getpgid(pid=pid)
+            print(f"Killing process group pid={pid} gpid={gpid}", file=sys.stderr)
+            os.killpg(gpid, signal.SIGTERM)
+
+    # Don't use a finally block here, because we want the exitcode to be set to
+    # 0 if the function returns normally
 
 
 def spawn(
@@ -121,10 +126,6 @@ def spawn(
         kwargs=kwargs,
     )
     proc.start()
-
-    # Print some information
-    cmd = f"tail -f {out_file}"
-    log.info(f"Connect to stdout with: {cmd}")
 
     # Return the process
     mp_proc = MPProcess(name=proc_name, proc=proc, out_file=out_file)
