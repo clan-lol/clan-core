@@ -139,10 +139,37 @@ class VM(GObject.Object):
         # To be able to set the switch state programmatically
         # we need to store the handler id returned by the connect method
         # and block the signal while we change the state. This is cursed.
-        self.switch_handler_id: int = 0
+        self.switch = Gtk.Switch()
+        self.switch_handler_id: int = self.switch.connect(
+            "notify::active", self.on_switch_toggle
+        )
+        self.connect("vm_status_changed", self.vm_status_changed)
 
         # Make sure the VM is killed when the reference to this object is dropped
         self._finalizer = weakref.finalize(self, self.kill_ref_drop)
+
+    def vm_status_changed(self, vm: "VM", _vm: "VM") -> None:
+        self.switch.set_state(self.is_running() and not self.is_building())
+        if self.switch.get_sensitive() is False and not self.is_building():
+            self.switch.set_sensitive(True)
+
+        exit_vm = self.vm_process.proc.exitcode
+        exit_build = self.build_process.proc.exitcode
+        exitc = exit_vm or exit_build
+        if not self.is_running() and exitc != 0:
+            self.switch.handler_block(self.switch_handler_id)
+            self.switch.set_active(False)
+            self.switch.handler_unblock(self.switch_handler_id)
+            log.error(f"VM exited with error. Exitcode: {exitc}")
+
+    def on_switch_toggle(self, switch: Gtk.Switch, user_state: bool) -> None:
+        if switch.get_active():
+            switch.set_state(False)
+            self.start()
+        else:
+            switch.set_state(True)
+            self.shutdown()
+            switch.set_sensitive(False)
 
     # We use a context manager to create the machine object
     # and make sure it is destroyed when the context is exited
@@ -175,6 +202,7 @@ class VM(GObject.Object):
     def __start(self) -> None:
         with self.create_machine() as machine:
             # Start building VM
+            tstart = datetime.now()
             log.info(f"Building VM {self.get_id()}")
             log_dir = Path(str(self.log_dir.name))
             self.build_process = spawn(
@@ -203,6 +231,8 @@ class VM(GObject.Object):
 
             # Wait for the build to finish then hide the progress bar
             self.build_process.proc.join()
+            tend = datetime.now()
+            log.info(f"VM {self.get_id()} build took {tend - tstart}s")
             self.progress_bar.hide()
 
             # Check if the VM was built successfully
@@ -313,9 +343,11 @@ class VM(GObject.Object):
     def shutdown(self) -> None:
         if not self.is_running():
             log.warning("VM not running. Ignoring shutdown request.")
+            self.emit("vm_status_changed", self)
             return
         if self.is_shutting_down():
             log.warning("Shutdown already in progress")
+            self.emit("vm_status_changed", self)
             return
         self._stop_thread = threading.Thread(target=self.__stop)
         self._stop_thread.start()

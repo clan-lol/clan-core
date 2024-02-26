@@ -9,7 +9,6 @@ from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_join import Join, JoinValue
-from clan_vm_manager.models.use_views import Views
 from clan_vm_manager.models.use_vms import VMs
 
 gi.require_version("Adw", "1")
@@ -67,16 +66,17 @@ class ClanList(Gtk.Box):
         )
         self.group_list.add_css_class("group-list")
 
-        search_bar = Gtk.SearchBar()
-        # This widget will typically be the top-level window
-        search_bar.set_key_capture_widget(Views.use().main_window)
-        entry = Gtk.SearchEntry()
-        entry.set_placeholder_text("Search cLan")
-        entry.connect("search-changed", self.on_search_changed)
-        entry.add_css_class("search-entry")
-        search_bar.set_child(entry)
+        # disable search bar because of unsound handling of VM objects
+        # search_bar = Gtk.SearchBar()
+        # # This widget will typically be the top-level window
+        # search_bar.set_key_capture_widget(Views.use().main_window)
+        # entry = Gtk.SearchEntry()
+        # entry.set_placeholder_text("Search cLan")
+        # entry.connect("search-changed", self.on_search_changed)
+        # entry.add_css_class("search-entry")
+        # search_bar.set_child(entry)
 
-        self.append(search_bar)
+        # self.append(search_bar)
         self.append(self.join_boxed_list)
         self.append(self.group_list)
 
@@ -169,11 +169,9 @@ class ClanList(Gtk.Box):
         row.add_suffix(box)  # This allows children to have different sizes
 
         # ==== Action buttons ====
-        switch = Gtk.Switch()
-
         switch_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         switch_box.set_valign(Gtk.Align.CENTER)
-        switch_box.append(switch)
+        switch_box.append(vm.switch)
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         box.set_valign(Gtk.Align.CENTER)
@@ -192,11 +190,6 @@ class ClanList(Gtk.Box):
 
         box.append(switch_box)
         box.append(pref_button)
-
-        vm.switch_handler_id = switch.connect(
-            "notify::active", partial(self.on_row_toggle, vm)
-        )
-        vm.connect("vm_status_changed", partial(self.vm_status_changed, switch))
 
         # suffix.append(box)
         row.add_suffix(box)
@@ -254,15 +247,6 @@ class ClanList(Gtk.Box):
 
         return row
 
-    def show_error_dialog(self, error: str) -> None:
-        p = Views.use().main_window
-
-        dialog = Adw.MessageDialog(heading="Error")
-        dialog.add_response("ok", "ok")
-        dialog.set_body(error)
-        dialog.set_transient_for(p)  # set the parent window of the dialog
-        dialog.choose()
-
     def on_join_request(self, widget: Any, url: str) -> None:
         log.debug("Join request: %s", url)
         clan_uri = ClanURI.from_str(url)
@@ -287,26 +271,3 @@ class ClanList(Gtk.Box):
         Join.use().discard(item)
         if not Join.use().list_store.get_n_items():
             self.join_boxed_list.add_css_class("no-shadow")
-
-    def on_row_toggle(self, vm: VM, switch: Gtk.Switch, user_state: bool) -> None:
-        if switch.get_active():
-            switch.set_state(False)
-            vm.start()
-        else:
-            switch.set_state(True)
-            vm.shutdown()
-            switch.set_sensitive(False)
-
-    def vm_status_changed(self, switch: Gtk.Switch, vm: VM, _vm: VM) -> None:
-        switch.set_state(vm.is_running() and not vm.is_building())
-        if switch.get_sensitive() is False and not vm.is_building():
-            switch.set_sensitive(True)
-
-        exit_vm = vm.vm_process.proc.exitcode
-        exit_build = vm.build_process.proc.exitcode
-        exitc = exit_vm or exit_build
-        if not vm.is_running() and exitc != 0:
-            switch.handler_block(vm.switch_handler_id)
-            switch.set_active(False)
-            switch.handler_unblock(vm.switch_handler_id)
-            log.error(f"VM exited with error. Exitcode: {exitc}")

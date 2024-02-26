@@ -33,7 +33,6 @@ class MainWindow(Adw.ApplicationWindow):
 
         # Initialize all views
         stack_view = Views.use().view
-        Views.use().set_main_window(self)
 
         scroll = Gtk.ScrolledWindow()
         scroll.set_propagate_natural_height(True)
