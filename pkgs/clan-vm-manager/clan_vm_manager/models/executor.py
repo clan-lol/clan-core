@@ -3,6 +3,7 @@ import os
 import signal
 import sys
 import traceback
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -63,6 +64,7 @@ def _init_proc(
     out_file: Path,
     proc_name: str,
     on_except: Callable[[Exception, mp.process.BaseProcess], None] | None,
+    tstart: datetime,
     **kwargs: Any,
 ) -> None:
     # Create a new process group
@@ -85,8 +87,8 @@ def _init_proc(
 
     linebreak = "=" * 5
     # Execute the main function
-    print(linebreak + f"{func.__name__}:{pid}" + linebreak, file=sys.stderr)
-
+    print(linebreak + f" {func.__name__}:{pid} " + linebreak, file=sys.stderr)
+    print(f"Spawn overhead time: {datetime.now() - tstart}s", file=sys.stderr)
     try:
         func(**kwargs)
     except Exception as ex:
@@ -111,6 +113,8 @@ def spawn(
     func: Callable,
     **kwargs: Any,
 ) -> MPProcess:
+    tstart = datetime.now()
+
     # Decouple the process from the parent
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method(method="forkserver")
@@ -121,7 +125,7 @@ def spawn(
     # Start the process
     proc = mp.Process(
         target=_init_proc,
-        args=(func, out_file, proc_name, on_except),
+        args=(func, out_file, proc_name, on_except, tstart),
         name=proc_name,
         kwargs=kwargs,
     )
