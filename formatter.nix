@@ -30,6 +30,10 @@
         "--" # this argument is ignored by bash
       ];
       includes = [ "*.nix" ];
+      excludes = [
+        # Was copied from nixpkgs. Keep diff minimal to simplify upstreaming.
+        "pkgs/builders/script-writers.nix"
+      ];
     };
     treefmt.settings.formatter.python = {
       command = "sh";
