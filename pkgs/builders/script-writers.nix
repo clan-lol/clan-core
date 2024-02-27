@@ -1,4 +1,4 @@
-{ pkgs, buildPackages, lib, stdenv, libiconv, mkNugetDeps, mkNugetSource, gixy }:
+{ pkgs, buildPackages, lib, stdenv, libiconv, mkNugetDeps, mkNugetSource, gixy, makeWrapper, }:
 let
   inherit (lib)
     concatMapStringsSep
@@ -18,7 +18,7 @@ rec {
   # Examples:
   #   writeBash = makeScriptWriter { interpreter = "${pkgs.bash}/bin/bash"; }
   #   makeScriptWriter { interpreter = "${pkgs.dash}/bin/dash"; } "hello" "echo hello world"
-  makeScriptWriter = { interpreter, check ? "" }: nameOrPath: content:
+  makeScriptWriter = { interpreter, check ? "", makeWrapperArgs ? [], }: nameOrPath: content:
     assert lib.or (types.path.check nameOrPath) (builtins.match "([0-9A-Za-z._])[0-9A-Za-z._-]*" nameOrPath != null);
     assert lib.or (types.path.check content) (types.str.check content);
     let
@@ -26,7 +26,13 @@ rec {
     in
 
     pkgs.runCommandLocal name (
-      lib.optionalAttrs (nameOrPath == "/bin/${name}") {
+      {
+        inherit makeWrapperArgs;
+        nativeBuildInputs = [
+          makeWrapper
+        ];
+      }
+      // lib.optionalAttrs (nameOrPath == "/bin/${name}") {
         meta.mainProgram = name;
       }
       // (
@@ -69,10 +75,15 @@ rec {
         ${check} $out
       ''}
       chmod +x $out
+
+      # Relocate executable if path was specified instead of name.
+      # Only in this case wrapProgram is applied, as it wouldn't work with a
+      #   single executable file under $out.
       ${optionalString (types.path.check nameOrPath) ''
         mv $out tmp
         mkdir -p $out/$(dirname "${nameOrPath}")
         mv tmp $out/${nameOrPath}
+        wrapProgram $out/${nameOrPath} ''${makeWrapperArgs[@]}
       ''}
     '';
 
@@ -201,17 +212,20 @@ rec {
 
   # makeRubyWriter takes ruby and compatible rubyPackages and produces ruby script writer,
   # If any libraries are specified, ruby.withPackages is used as interpreter, otherwise the "bare" ruby is used.
-  makeRubyWriter = ruby: rubyPackages: buildRubyPackages: name: { libraries ? [], }:
-  makeScriptWriter {
-    interpreter =
-      if libraries == []
-      then "${ruby}/bin/ruby"
-      else "${(ruby.withPackages (ps: libraries))}/bin/ruby";
-    # Rubocop doesnt seem to like running in this fashion.
-    #check = (writeDash "rubocop.sh" ''
-    #  exec ${lib.getExe buildRubyPackages.rubocop} "$1"
-    #'');
-  } name;
+  makeRubyWriter = ruby: rubyPackages: buildRubyPackages: name: { libraries ? [], ... } @ args:
+  makeScriptWriter (
+    (builtins.reamoveAttrs args ["libraries"])
+    // {
+      interpreter =
+        if libraries == []
+        then "${ruby}/bin/ruby"
+        else "${(ruby.withPackages (ps: libraries))}/bin/ruby";
+      # Rubocop doesnt seem to like running in this fashion.
+      #check = (writeDash "rubocop.sh" ''
+      #  exec ${lib.getExe buildRubyPackages.rubocop} "$1"
+      #'');
+    }
+  ) name;
 
   # Like writeScript but the first line is a shebang to ruby
   #
@@ -227,17 +241,20 @@ rec {
   # makeLuaWriter takes lua and compatible luaPackages and produces lua script writer,
   # which validates the script with luacheck at build time. If any libraries are specified,
   # lua.withPackages is used as interpreter, otherwise the "bare" lua is used.
-  makeLuaWriter = lua: luaPackages: buildLuaPackages: name: { libraries ? [], }:
-  makeScriptWriter {
-    interpreter = lua.interpreter;
-      # if libraries == []
-      # then lua.interpreter
-      # else (lua.withPackages (ps: libraries)).interpreter
-      # This should support packages! I just cant figure out why some dependency collision happens whenever I try to run this.
-    check = (writeDash "luacheck.sh" ''
-      exec ${buildLuaPackages.luacheck}/bin/luacheck "$1"
-    '');
-  } name;
+  makeLuaWriter = lua: luaPackages: buildLuaPackages: name: { libraries ? [], ... } @ args:
+  makeScriptWriter (
+    (builtins.removeAttrs args ["libraries"])
+    // {
+      interpreter = lua.interpreter;
+        # if libraries == []
+        # then lua.interpreter
+        # else (lua.withPackages (ps: libraries)).interpreter
+        # This should support packages! I just cant figure out why some dependency collision happens whenever I try to run this.
+      check = (writeDash "luacheck.sh" ''
+        exec ${buildLuaPackages.luacheck}/bin/luacheck "$1"
+      '');
+    }
+   ) name;
 
   # writeLua takes a name an attributeset with libraries and some lua source code and
   # returns an executable (should also work with luajit)
@@ -337,10 +354,13 @@ rec {
   #     use boolean;
   #     print "Howdy!\n" if true;
   #   ''
-  writePerl = name: { libraries ? [] }:
-    makeScriptWriter {
-      interpreter = "${lib.getExe (pkgs.perl.withPackages (p: libraries))}";
-    } name;
+  writePerl = name: { libraries ? [], ... } @ args:
+    makeScriptWriter (
+      (builtins.removeAttrs args ["libraries"])
+      // {
+        interpreter = "${lib.getExe (pkgs.perl.withPackages (p: libraries))}";
+      }
+    ) name;
 
   # writePerlBin takes the same arguments as writePerl but outputs a directory (like writeScriptBin)
   writePerlBin = name:
@@ -349,22 +369,27 @@ rec {
   # makePythonWriter takes python and compatible pythonPackages and produces python script writer,
   # which validates the script with flake8 at build time. If any libraries are specified,
   # python.withPackages is used as interpreter, otherwise the "bare" python is used.
-  makePythonWriter = python: pythonPackages: buildPythonPackages: name: { libraries ? [], flakeIgnore ? [] }:
+  makePythonWriter = python: pythonPackages: buildPythonPackages: name: { libraries ? [], flakeIgnore ? [], ... } @ args:
   let
     ignoreAttribute = optionalString (flakeIgnore != []) "--ignore ${concatMapStringsSep "," escapeShellArg flakeIgnore}";
   in
-  makeScriptWriter {
-    interpreter =
-      if pythonPackages != pkgs.pypy2Packages || pythonPackages != pkgs.pypy3Packages then
-        if libraries == []
-        then python.interpreter
-        else (python.withPackages (ps: libraries)).interpreter
-      else python.interpreter
-    ;
-    check = optionalString python.isPy3k (writeDash "pythoncheck.sh" ''
-      exec ${buildPythonPackages.flake8}/bin/flake8 --show-source ${ignoreAttribute} "$1"
-    '');
-  } name;
+  makeScriptWriter
+    (
+      (builtins.removeAttrs args ["libraries" "flakeIgnore"])
+      // {
+        interpreter =
+          if pythonPackages != pkgs.pypy2Packages || pythonPackages != pkgs.pypy3Packages then
+            if libraries == []
+            then python.interpreter
+            else (python.withPackages (ps: libraries)).interpreter
+          else python.interpreter
+        ;
+        check = optionalString python.isPy3k (writeDash "pythoncheck.sh" ''
+          exec ${buildPythonPackages.flake8}/bin/flake8 --show-source ${ignoreAttribute} "$1"
+        '');
+      }
+    )
+    name;
 
   # writePyPy2 takes a name an attributeset with libraries and some pypy2 sourcecode and
   # returns an executable
@@ -421,7 +446,7 @@ rec {
     writePyPy3 "/bin/${name}";
 
 
-  makeFSharpWriter = { dotnet-sdk ? pkgs.dotnet-sdk, fsi-flags ? "", libraries ? _: [] }: nameOrPath:
+  makeFSharpWriter = { dotnet-sdk ? pkgs.dotnet-sdk, fsi-flags ? "", libraries ? _: [], ... } @ args: nameOrPath:
   let
     fname = last (builtins.split "/" nameOrPath);
     path = if strings.hasSuffix ".fsx" nameOrPath then nameOrPath else "${nameOrPath}.fsx";
@@ -442,9 +467,12 @@ rec {
       ${lib.getExe dotnet-sdk} fsi --quiet --nologo --readline- ${fsi-flags} "$@" < "$script"
     '';
 
-  in content: makeScriptWriter {
-    interpreter = fsi;
-  } path
+  in content: makeScriptWriter (
+    (builtins.removeAttrs args ["dotnet-sdk" "fsi-flags" "libraries"])
+    // {
+      interpreter = fsi;
+    }
+  ) path
   ''
     #i "nuget: ${nuget-source}/lib"
     ${ content }
