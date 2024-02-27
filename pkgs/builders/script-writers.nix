@@ -1,4 +1,14 @@
-{ pkgs, buildPackages, lib, stdenv, libiconv, mkNugetDeps, mkNugetSource, gixy, makeWrapper, }:
+{
+  buildPackages,
+  gixy,
+  lib,
+  libiconv,
+  makeWrapper,
+  mkNugetDeps,
+  mkNugetSource,
+  pkgs,
+  stdenv,
+}:
 let
   inherit (lib)
     concatMapStringsSep
@@ -6,7 +16,6 @@ let
     escapeShellArg
     last
     optionalString
-    stringLength
     strings
     types
     ;
@@ -214,7 +223,7 @@ rec {
   # If any libraries are specified, ruby.withPackages is used as interpreter, otherwise the "bare" ruby is used.
   makeRubyWriter = ruby: rubyPackages: buildRubyPackages: name: { libraries ? [], ... } @ args:
   makeScriptWriter (
-    (builtins.reamoveAttrs args ["libraries"])
+    (builtins.removeAttrs args ["libraries"])
     // {
       interpreter =
         if libraries == []
