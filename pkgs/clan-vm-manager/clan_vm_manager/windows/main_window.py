@@ -1,5 +1,5 @@
+import logging
 import threading
-import time
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +18,8 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw, Gio, GLib, Gtk
 
 from ..trayicon import TrayIcon
+
+log = logging.getLogger(__name__)
 
 
 class MainWindow(Adw.ApplicationWindow):
@@ -59,6 +61,10 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.connect("destroy", self.on_destroy)
 
+    def push_vm(self, vm: VM) -> bool:
+        VMs.use().push(vm)
+        return GLib.SOURCE_REMOVE
+
     def _populate_vms(self) -> None:
         # Execute `clan flakes add <path>` to democlan for this to work
         # TODO: Make list_history a generator function
@@ -72,7 +78,7 @@ class MainWindow(Adw.ApplicationWindow):
                 icon=Path(icon),
                 data=entry,
             )
-            GLib.idle_add(lambda: VMs.use().push(vm))
+            GLib.idle_add(self.push_vm, vm)
 
     def on_destroy(self, *_args: Any) -> None:
         self.tray_icon.destroy()
