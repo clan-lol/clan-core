@@ -6,19 +6,16 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import IO, Any, ClassVar
+from typing import IO, Any, ClassVar, NewType
 
 import gi
 from clan_cli import vms
 from clan_cli.clan_uri import ClanScheme, ClanURI
 from clan_cli.errors import ClanError
 from clan_cli.history.add import HistoryEntry
-from clan_cli.history.list import list_history
-
-from clan_vm_manager import assets
-from clan_vm_manager.errors.show_error import show_error_dialog
 
 from .executor import MPProcess, spawn
+from .gkvstore import GKVStore
 
 gi.require_version("Gtk", "4.0")
 import logging
@@ -26,75 +23,9 @@ import multiprocessing as mp
 import threading
 
 from clan_cli.machines.machines import Machine
-from gi.repository import Gio, GLib, GObject, Gtk
+from gi.repository import GLib, GObject, Gtk
 
 log = logging.getLogger(__name__)
-
-
-class ClanGroup(GObject.Object):
-    def __init__(self, url: str | Path, vms: list["VM"]) -> None:
-        super().__init__()
-        self.url = url
-        self.vms = vms
-        self.clan_name = vms[0].data.flake.clan_name
-        self.list_store = Gio.ListStore.new(VM)
-
-        for vm in vms:
-            self.list_store.append(vm)
-
-
-def init_grp_store(list_store: Gio.ListStore) -> None:
-    groups: dict[str | Path, list["VM"]] = {}
-    for vm in get_saved_vms():
-        ll = groups.get(vm.data.flake.flake_url, [])
-        ll.append(vm)
-        groups[vm.data.flake.flake_url] = ll
-
-    for url, vm_list in groups.items():
-        grp = ClanGroup(url, vm_list)
-        list_store.append(grp)
-
-
-class Clans:
-    list_store: Gio.ListStore
-    _instance: "None | ClanGroup" = None
-
-    # Make sure the VMS class is used as a singleton
-    def __init__(self) -> None:
-        raise RuntimeError("Call use() instead")
-
-    @classmethod
-    def use(cls: Any) -> "ClanGroup":
-        if cls._instance is None:
-            cls._instance = cls.__new__(cls)
-            cls.list_store = Gio.ListStore.new(ClanGroup)
-            init_grp_store(cls.list_store)
-
-        return cls._instance
-
-    def filter_by_name(self, text: str) -> None:
-        if text:
-            filtered_list = self.list_store
-            filtered_list.remove_all()
-
-            groups: dict[str | Path, list["VM"]] = {}
-            for vm in get_saved_vms():
-                ll = groups.get(vm.data.flake.flake_url, [])
-                print(text, vm.data.flake.vm.machine_name)
-                if text.lower() in vm.data.flake.vm.machine_name.lower():
-                    ll.append(vm)
-                    groups[vm.data.flake.flake_url] = ll
-
-            for url, vm_list in groups.items():
-                grp = ClanGroup(url, vm_list)
-                filtered_list.append(grp)
-
-        else:
-            self.refresh()
-
-    def refresh(self) -> None:
-        self.list_store.remove_all()
-        init_grp_store(self.list_store)
 
 
 class VM(GObject.Object):
@@ -371,9 +302,12 @@ class VM(GObject.Object):
         return self.vm_process.out_file.read_text()
 
 
-class VMs:
-    list_store: Gio.ListStore
+VMStore = NewType("VMStore", GKVStore[str, VM])
+
+
+class VMs(GObject.Object):
     _instance: "None | VMs" = None
+    _clan_store: GKVStore[str, VMStore]
 
     # Make sure the VMS class is used as a singleton
     def __init__(self) -> None:
@@ -383,60 +317,37 @@ class VMs:
     def use(cls: Any) -> "VMs":
         if cls._instance is None:
             cls._instance = cls.__new__(cls)
-            cls.list_store = Gio.ListStore.new(VM)
-
-            for vm in get_saved_vms():
-                cls.list_store.append(vm)
+            cls._clan_store = GKVStore(
+                VMStore, lambda store: store.first().data.flake.flake_url
+            )
         return cls._instance
 
-    def filter_by_name(self, text: str) -> None:
-        if text:
-            filtered_list = self.list_store
-            filtered_list.remove_all()
-            for vm in get_saved_vms():
-                if text.lower() in vm.data.flake.vm.machine_name.lower():
-                    filtered_list.append(vm)
-        else:
-            self.refresh()
+    @property
+    def clan_store(self) -> GKVStore[str, VMStore]:
+        return self._clan_store
 
-    def get_by_id(self, ident: str) -> None | VM:
-        for vm in self.list_store:
-            if ident == vm.get_id():
-                return vm
-        return None
+    def push(self, vm: VM) -> None:
+        url = vm.data.flake.flake_url
+        if url not in self.clan_store:
+            self.clan_store[url] = GKVStore[str, VM](
+                VM, lambda vm: vm.data.flake.flake_attr
+            )
+        self.clan_store[url].append(vm)
+
+    def remove(self, vm: VM) -> None:
+        del self.clan_store[vm.data.flake.flake_url][vm.data.flake.flake_attr]
+
+    def get_vm(self, flake_url: str, flake_attr: str) -> None | VM:
+        return self.clan_store.get(flake_url, {}).get(flake_attr, None)
 
     def get_running_vms(self) -> list[VM]:
-        return list(filter(lambda vm: vm.is_running(), self.list_store))
+        return [
+            vm
+            for clan in self.clan_store.values()
+            for vm in clan.values()
+            if vm.is_running()
+        ]
 
     def kill_all(self) -> None:
         for vm in self.get_running_vms():
             vm.kill()
-
-    def refresh(self) -> None:
-        log.error("NEVER FUCKING DO THIS")
-        return
-        self.list_store.remove_all()
-        for vm in get_saved_vms():
-            self.list_store.append(vm)
-
-
-def get_saved_vms() -> list[VM]:
-    vm_list = []
-    log.info("=====CREATING NEW VM OBJ====")
-    try:
-        # Execute `clan flakes add <path>` to democlan for this to work
-        for entry in list_history():
-            if entry.flake.icon is None:
-                icon = assets.loc / "placeholder.jpeg"
-            else:
-                icon = entry.flake.icon
-
-            base = VM(
-                icon=Path(icon),
-                data=entry,
-            )
-            vm_list.append(base)
-    except ClanError as e:
-        show_error_dialog(e)
-
-    return vm_list
