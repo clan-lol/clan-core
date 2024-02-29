@@ -1,34 +1,35 @@
+import logging
+import multiprocessing as mp
 import os
 import tempfile
+import threading
 import time
 import weakref
 from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import IO, Any, ClassVar, NewType
+from typing import IO, Any, ClassVar
 
 import gi
 from clan_cli import vms
 from clan_cli.clan_uri import ClanScheme, ClanURI
 from clan_cli.errors import ClanError
 from clan_cli.history.add import HistoryEntry
+from clan_cli.machines.machines import Machine
 
 from .executor import MPProcess, spawn
 from .gkvstore import GKVStore
 
+gi.require_version("GObject", "2.0")
 gi.require_version("Gtk", "4.0")
-import logging
-import multiprocessing as mp
-import threading
-
-from clan_cli.machines.machines import Machine
 from gi.repository import GLib, GObject, Gtk
 
 log = logging.getLogger(__name__)
 
 
 class VM(GObject.Object):
+    __gtype_name__: ClassVar = "VMGobject"
     # Define a custom signal with the name "vm_stopped" and a string argument for the message
     __gsignals__: ClassVar = {
         "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object])
@@ -301,11 +302,21 @@ class VM(GObject.Object):
             return ""
         return self.vm_process.out_file.read_text()
 
+    def __str__(self) -> str:
+        return f"VM({self.get_id()})"
 
-VMStore = NewType("VMStore", GKVStore[str, VM])
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
-class VMs(GObject.Object):
+class VMStore(GKVStore):
+    __gtype_name__ = "MyVMStore"
+
+    def __init__(self) -> None:
+        super().__init__(VM, lambda vm: vm.data.flake.flake_attr)
+
+
+class VMs:
     _instance: "None | VMs" = None
     _clan_store: GKVStore[str, VMStore]
 
@@ -320,6 +331,7 @@ class VMs(GObject.Object):
             cls._clan_store = GKVStore(
                 VMStore, lambda store: store.first().data.flake.flake_url
             )
+
         return cls._instance
 
     @property
@@ -328,17 +340,27 @@ class VMs(GObject.Object):
 
     def push(self, vm: VM) -> None:
         url = vm.data.flake.flake_url
+
+        # Only write to the store if the VM is not already in it
+        # Every write to the KVStore rerenders bound widgets to the clan_store
         if url not in self.clan_store:
-            self.clan_store[url] = GKVStore[str, VM](
-                VM, lambda vm: vm.data.flake.flake_attr
-            )
-        self.clan_store[url].append(vm)
+            log.debug(f"Creating new VMStore for {url}")
+            vm_store = VMStore()
+            vm_store.append(vm)
+            self.clan_store[url] = vm_store
+        else:
+            log.debug(f"Appending VM {vm.data.flake.flake_attr} to store")
+            vm_store = self.clan_store[url]
+            vm_store.append(vm)
 
     def remove(self, vm: VM) -> None:
         del self.clan_store[vm.data.flake.flake_url][vm.data.flake.flake_attr]
 
     def get_vm(self, flake_url: str, flake_attr: str) -> None | VM:
-        return self.clan_store.get(flake_url, {}).get(flake_attr, None)
+        clan = self.clan_store.get(flake_url)
+        if clan is None:
+            return None
+        return clan.get(flake_attr, None)
 
     def get_running_vms(self) -> list[VM]:
         return [

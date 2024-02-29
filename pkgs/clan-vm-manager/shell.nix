@@ -3,7 +3,7 @@ mkShell (
   let
     pygdb = runCommand "pygdb" { buildInputs = [ gdb python3 makeWrapper ]; } ''
       mkdir -p "$out/bin"
-      makeWrapper "${gdb}/bin/gdb" "$out/bin/gdb" \
+      makeWrapper "${gdb}/bin/gdb" "$out/bin/pygdb" \
         --add-flags '-ex "source ${python3}/share/gdb/libpython.py"'
     '';
   in
@@ -15,6 +15,7 @@ mkShell (
     ];
 
 
+    # To debug clan-vm-manger execute pygdb --args python ./bin/clan-vm-manager
     nativeBuildInputs = [
       pygdb
       ruff

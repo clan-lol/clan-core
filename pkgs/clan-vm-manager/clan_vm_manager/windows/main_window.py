@@ -73,7 +73,6 @@ class MainWindow(Adw.ApplicationWindow):
                 data=entry,
             )
             GLib.idle_add(lambda: VMs.use().push(vm))
-            time.sleep(0.5)  # Add sleep for testing purposes
 
     def on_destroy(self, *_args: Any) -> None:
         self.tray_icon.destroy()

@@ -4,7 +4,7 @@ from functools import partial
 from typing import Any
 
 import gi
-from clan_cli import ClanError, history, machines
+from clan_cli import history, machines
 from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.models.interfaces import ClanConfig
@@ -69,6 +69,7 @@ class ClanList(Gtk.Box):
         self, boxed_list: Gtk.ListBox, vm_store: VMStore
     ) -> Gtk.Widget:
         vm = vm_store.first()
+        log.debug("Rendering group row for %s", vm.data.flake.flake_url)
         grp = Adw.PreferencesGroup()
         grp.set_title(vm.data.flake.clan_name)
         grp.set_description(vm.data.flake.flake_url)
@@ -80,7 +81,7 @@ class ClanList(Gtk.Box):
 
         menu_model = Gio.Menu()
         for vm in machines.list.list_machines(flake_url=vm.data.flake.flake_url):
-            if vm not in [item.data.flake.flake_attr for item in VMs.use().list_store]:
+            if vm not in vm_store:
                 menu_model.append(vm, f"app.add::{vm}")
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
@@ -94,11 +95,8 @@ class ClanList(Gtk.Box):
 
         grp.set_header_suffix(box)
 
-        # vm_list = create_boxed_list(
-        #     model=group, render_row=self.render_vm_row
-        # )
-
-        # grp.add(vm_list)
+        vm_list = create_boxed_list(model=vm_store, render_row=self.render_vm_row)
+        grp.add(vm_list)
 
         return grp
 
@@ -177,12 +175,8 @@ class ClanList(Gtk.Box):
 
     def on_edit(self, action: Any, parameter: Any) -> None:
         target = parameter.get_string()
-        vm = VMs.use().get_by_id(target)
 
-        if not vm:
-            raise ClanError("Something went wrong. Please restart the app.")
-
-        print("Editing settings for machine", vm)
+        print("Editing settings for machine", target)
 
     def render_join_row(self, boxed_list: Gtk.ListBox, item: JoinValue) -> Gtk.Widget:
         if boxed_list.has_css_class("no-shadow"):
@@ -194,9 +188,7 @@ class ClanList(Gtk.Box):
         row.set_subtitle(item.url.get_internal())
         row.add_css_class("trust")
 
-        # TODO: figure out how to detect that
-        exist = VMs.use().use().get_by_id(item.url.get_id())
-        if exist:
+        if item.url.params.flake_attr in VMs.use().clan_store:
             sub = row.get_subtitle()
             row.set_subtitle(
                 sub + "\nClan already exists. Joining again will update it"
