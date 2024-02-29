@@ -35,7 +35,7 @@ class JoinValue(GObject.Object):
 
     def __join(self) -> None:
         add_history(self.url, all_machines=False)
-        GLib.idle_add(lambda: self.emit("join_finished", self))
+        GLib.idle_add(self.emit, "join_finished", self)
 
     def join(self) -> None:
         threading.Thread(target=self.__join).start()
