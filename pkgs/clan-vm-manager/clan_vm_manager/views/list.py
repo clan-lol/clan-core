@@ -9,12 +9,10 @@ from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_join import Join, JoinValue
-from clan_vm_manager.models.use_vms import VMs
+from clan_vm_manager.models.use_vms import VM, VMs, VMStore
 
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
-
-from clan_vm_manager.models.use_vms import VM, ClanGroup, Clans
 
 log = logging.getLogger(__name__)
 
@@ -51,42 +49,29 @@ class ClanList(Gtk.Box):
         self.app = Gio.Application.get_default()
         self.app.connect("join_request", self.on_join_request)
 
-        groups = Clans.use()
-        join = Join.use()
-
         self.log_label: Gtk.Label = Gtk.Label()
         self.__init_machines = history.add.list_history()
+
+        # Add join list
         self.join_boxed_list = create_boxed_list(
-            model=join.list_store, render_row=self.render_join_row
+            model=Join.use().list_store, render_row=self.render_join_row
         )
         self.join_boxed_list.add_css_class("join-list")
+        self.append(self.join_boxed_list)
 
         self.group_list = create_boxed_list(
-            model=groups.list_store, render_row=self.render_group_row
+            model=VMs.use().clan_store, render_row=self.render_group_row
         )
         self.group_list.add_css_class("group-list")
-
-        # disable search bar because of unsound handling of VM objects
-        # search_bar = Gtk.SearchBar()
-        # # This widget will typically be the top-level window
-        # search_bar.set_key_capture_widget(Views.use().main_window)
-        # entry = Gtk.SearchEntry()
-        # entry.set_placeholder_text("Search cLan")
-        # entry.connect("search-changed", self.on_search_changed)
-        # entry.add_css_class("search-entry")
-        # search_bar.set_child(entry)
-
-        # self.append(search_bar)
-        self.append(self.join_boxed_list)
         self.append(self.group_list)
 
-    def render_group_row(self, boxed_list: Gtk.ListBox, group: ClanGroup) -> Gtk.Widget:
-        # if boxed_list.has_css_class("no-shadow"):
-        #     boxed_list.remove_css_class("no-shadow")
-
+    def render_group_row(
+        self, boxed_list: Gtk.ListBox, vm_store: VMStore
+    ) -> Gtk.Widget:
+        vm = vm_store.first()
         grp = Adw.PreferencesGroup()
-        grp.set_title(group.clan_name)
-        grp.set_description(group.url)
+        grp.set_title(vm.data.flake.clan_name)
+        grp.set_description(vm.data.flake.flake_url)
 
         add_action = Gio.SimpleAction.new("add", GLib.VariantType.new("s"))
         add_action.connect("activate", self.on_add)
@@ -94,8 +79,8 @@ class ClanList(Gtk.Box):
         app.add_action(add_action)
 
         menu_model = Gio.Menu()
-        for vm in machines.list.list_machines(flake_url=group.url):
-            if vm not in [item.data.flake.flake_attr for item in group.list_store]:
+        for vm in machines.list.list_machines(flake_url=vm.data.flake.flake_url):
+            if vm not in [item.data.flake.flake_attr for item in VMs.use().list_store]:
                 menu_model.append(vm, f"app.add::{vm}")
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
@@ -109,23 +94,17 @@ class ClanList(Gtk.Box):
 
         grp.set_header_suffix(box)
 
-        vm_list = create_boxed_list(
-            model=group.list_store, render_row=self.render_vm_row
-        )
+        # vm_list = create_boxed_list(
+        #     model=group, render_row=self.render_vm_row
+        # )
 
-        grp.add(vm_list)
+        # grp.add(vm_list)
 
         return grp
 
     def on_add(self, action: Any, parameter: Any) -> None:
         target = parameter.get_string()
         print("Adding new machine", target)
-
-    def on_search_changed(self, entry: Gtk.SearchEntry) -> None:
-        Clans.use().filter_by_name(entry.get_text())
-        # Disable the shadow if the list is empty
-        if not VMs.use().list_store.get_n_items():
-            self.group_list.add_css_class("no-shadow")
 
     def render_vm_row(self, boxed_list: Gtk.ListBox, vm: VM) -> Gtk.Widget:
         # Remove no-shadow class if attached

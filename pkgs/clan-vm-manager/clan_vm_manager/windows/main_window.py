@@ -1,16 +1,21 @@
+import threading
+import time
+from pathlib import Path
 from typing import Any
 
 import gi
+from clan_cli.history.list import list_history
 
+from clan_vm_manager import assets
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_views import Views
-from clan_vm_manager.models.use_vms import VMs
+from clan_vm_manager.models.use_vms import VM, VMs
 from clan_vm_manager.views.details import Details
 from clan_vm_manager.views.list import ClanList
 
 gi.require_version("Adw", "1")
 
-from gi.repository import Adw, Gio, Gtk
+from gi.repository import Adw, Gio, GLib, Gtk
 
 from ..trayicon import TrayIcon
 
@@ -27,9 +32,11 @@ class MainWindow(Adw.ApplicationWindow):
         header = Adw.HeaderBar()
         view.add_top_bar(header)
 
-        self.vms = VMs.use()
         app = Gio.Application.get_default()
         self.tray_icon: TrayIcon = TrayIcon(app)
+
+        # Initialize all VMs
+        threading.Thread(target=self._populate_vms).start()
 
         # Initialize all views
         stack_view = Views.use().view
@@ -52,6 +59,22 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.connect("destroy", self.on_destroy)
 
+    def _populate_vms(self) -> None:
+        # Execute `clan flakes add <path>` to democlan for this to work
+        # TODO: Make list_history a generator function
+        for entry in list_history():
+            if entry.flake.icon is None:
+                icon = assets.loc / "placeholder.jpeg"
+            else:
+                icon = entry.flake.icon
+
+            vm = VM(
+                icon=Path(icon),
+                data=entry,
+            )
+            GLib.idle_add(lambda: VMs.use().push(vm))
+            time.sleep(0.5)  # Add sleep for testing purposes
+
     def on_destroy(self, *_args: Any) -> None:
         self.tray_icon.destroy()
-        self.vms.kill_all()
+        VMs.use().kill_all()
