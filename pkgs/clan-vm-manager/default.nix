@@ -14,7 +14,7 @@
 let
   source = ./.;
   desktop-file = makeDesktopItem {
-    name = "lol.clan.vm.manager";
+    name = "org.clan.vm-manager";
     exec = "clan-vm-manager %u";
     icon = ./clan_vm_manager/assets/clan_white.png;
     desktopName = "cLAN Manager";

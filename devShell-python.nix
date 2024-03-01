@@ -88,7 +88,7 @@
 
           # install desktop file
           set -eou pipefail
-          DESKTOP_FILE_NAME=lol.clan.vm.manager.desktop
+          DESKTOP_FILE_NAME=org.clan.vm-manager.desktop
           DESKTOP_DST=~/.local/share/applications/$DESKTOP_FILE_NAME
           DESKTOP_SRC=${clan-vm-manager.desktop-file}/share/applications/$DESKTOP_FILE_NAME
           UI_BIN="clan-vm-manager"
