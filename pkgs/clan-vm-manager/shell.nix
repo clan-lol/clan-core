@@ -12,12 +12,12 @@ mkShell (
 
     linuxOnlyPackages = lib.optionals stdenv.isLinux [
       xdg-utils
+      pygdb
     ];
 
 
     # To debug clan-vm-manger execute pygdb --args python ./bin/clan-vm-manager
     nativeBuildInputs = [
-      pygdb
       ruff
       desktop-file-utils
       mypy
