@@ -13,6 +13,14 @@
 }:
 let
   source = ./.;
+  desktop-file = makeDesktopItem {
+    name = "lol.clan.vm.manager";
+    exec = "clan-vm-manager %u";
+    icon = ./clan_vm_manager/assets/clan_white.png;
+    desktopName = "cLAN Manager";
+    startupWMClass = "clan";
+    mimeTypes = [ "x-scheme-handler/clan" ];
+  };
 in
 python3.pkgs.buildPythonApplication {
   name = "clan-vm-manager";
@@ -36,15 +44,18 @@ python3.pkgs.buildPythonApplication {
   propagatedBuildInputs = [ pygobject3 clan-cli ];
 
   # also re-expose dependencies so we test them in CI
-  passthru.tests = {
-    clan-vm-manager-no-breakpoints = runCommand "clan-vm-manager-no-breakpoints" { } ''
-      if grep --include \*.py -Rq "breakpoint()" ${source}; then
-        echo "breakpoint() found in ${source}:"
-        grep --include \*.py -Rn "breakpoint()" ${source}
-        exit 1
-      fi
-      touch $out
-    '';
+  passthru = {
+    inherit desktop-file;
+    tests = {
+      clan-vm-manager-no-breakpoints = runCommand "clan-vm-manager-no-breakpoints" { } ''
+        if grep --include \*.py -Rq "breakpoint()" ${source}; then
+          echo "breakpoint() found in ${source}:"
+          grep --include \*.py -Rn "breakpoint()" ${source}
+          exit 1
+        fi
+        touch $out
+      '';
+    };
   };
 
   # Don't leak python packages into a devshell.
@@ -56,13 +67,6 @@ python3.pkgs.buildPythonApplication {
     PYTHONPATH= $out/bin/clan-vm-manager --help
   '';
   desktopItems = [
-    (makeDesktopItem {
-      name = "lol.clan.vm.manager";
-      exec = "clan-vm-manager %u";
-      icon = ./clan_vm_manager/assets/clan_white.png;
-      desktopName = "cLAN Manager";
-      startupWMClass = "clan";
-      mimeTypes = [ "x-scheme-handler/clan" ];
-    })
+    desktop-file
   ];
 }
