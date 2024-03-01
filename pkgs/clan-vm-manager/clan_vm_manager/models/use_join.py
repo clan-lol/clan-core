@@ -9,7 +9,6 @@ from clan_cli.clan_uri import ClanURI
 from clan_cli.history.add import add_history
 
 from clan_vm_manager.errors.show_error import show_error_dialog
-from clan_vm_manager.models.use_vms import Clans
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -36,7 +35,7 @@ class JoinValue(GObject.Object):
 
     def __join(self) -> None:
         add_history(self.url, all_machines=False)
-        GLib.idle_add(lambda: self.emit("join_finished", self))
+        GLib.idle_add(self.emit, "join_finished", self)
 
     def join(self) -> None:
         threading.Thread(target=self.__join).start()
@@ -75,8 +74,6 @@ class Join:
 
         def after_join(item: JoinValue, _: Any) -> None:
             self.discard(item)
-            Clans.use().refresh()
-            # VMS.use().refresh()
             print("Refreshed list after join")
             on_join(item)
 
