@@ -34,7 +34,7 @@ class MainApplication(Adw.Application):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
             *args,
-            application_id="lol.clan.vm.manager",
+            application_id="org.clan.vm-manager",
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
             **kwargs,
         )
