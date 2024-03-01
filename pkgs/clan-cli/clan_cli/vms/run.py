@@ -39,6 +39,7 @@ def facts_to_nixos_config(facts: dict[str, dict[str, bytes]]) -> dict:
 def build_vm(
     machine: Machine, tmpdir: Path, nix_options: list[str] = []
 ) -> dict[str, str]:
+    # TODO pass prompt here for the GTK gui
     secrets_dir = get_secrets(machine, tmpdir)
 
     facts_module = importlib.import_module(machine.facts_module)
@@ -68,7 +69,6 @@ def get_secrets(
     secrets_module = importlib.import_module(machine.secrets_module)
     secret_store = secrets_module.SecretStore(machine=machine)
 
-    # TODO Only generate secrets for local clans
     generate_secrets(machine)
 
     secret_store.upload(secrets_dir)

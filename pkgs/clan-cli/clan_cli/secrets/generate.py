@@ -2,6 +2,7 @@ import argparse
 import importlib
 import logging
 import os
+from collections.abc import Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -24,6 +25,7 @@ def generate_service_secrets(
     secret_store: SecretStoreBase,
     fact_store: FactStoreBase,
     tmpdir: Path,
+    prompt: Callable[[str], str],
 ) -> None:
     service_dir = tmpdir / service
     # check if all secrets exist and generate them if at least one is missing
@@ -41,6 +43,16 @@ def generate_service_secrets(
         secrets_dir = service_dir / "secrets"
         secrets_dir.mkdir(parents=True)
         env["secrets"] = str(secrets_dir)
+        # compatibility for old outputs.nix users
+        if isinstance(machine.secrets_data[service]["generator"], str):
+            generator = machine.secrets_data[service]["generator"]
+        else:
+            generator = machine.secrets_data[service]["generator"]["finalScript"]
+            if machine.secrets_data[service]["generator"]["prompt"]:
+                prompt_value = prompt(
+                    machine.secrets_data[service]["generator"]["prompt"]
+                )
+                env["prompt_value"] = prompt_value
         # fmt: off
         cmd = nix_shell(
             [
@@ -58,7 +70,7 @@ def generate_service_secrets(
                 "--unshare-user",
                 "--uid", "1000",
                 "--",
-                "bash", "-c", machine.secrets_data[service]["generator"]["finalScript"]
+                "bash", "-c", generator
             ],
         )
         # fmt: on
@@ -105,17 +117,30 @@ def generate_service_secrets(
         )
 
 
-def generate_secrets(machine: Machine) -> None:
+def generate_secrets(
+    machine: Machine,
+    prompt: None | Callable[[str], str] = None,
+) -> None:
     secrets_module = importlib.import_module(machine.secrets_module)
     secret_store = secrets_module.SecretStore(machine=machine)
 
     facts_module = importlib.import_module(machine.facts_module)
     fact_store = facts_module.FactStore(machine=machine)
 
+    if prompt is None:
+        prompt = lambda text: input(f"{text}: ")
+
     with TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
         for service in machine.secrets_data:
-            generate_service_secrets(machine, service, secret_store, fact_store, tmpdir)
+            generate_service_secrets(
+                machine=machine,
+                service=service,
+                secret_store=secret_store,
+                fact_store=fact_store,
+                tmpdir=tmpdir,
+                prompt=prompt,
+            )
 
     print("successfully generated secrets")
 
