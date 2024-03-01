@@ -21,3 +21,8 @@ We welcome contributions from the community, and we've prepared a comprehensive 
 - **Contribution Guidelines**: Find out how to contribute and make a meaningful impact on the cLAN project by reading [contributing.md](docs/contributing/contributing.md).
 
 Whether you're a newcomer or a seasoned developer, we look forward to your contributions and collaboration on the cLAN project. Let's build amazing things together!
+
+
+### development environment
+Setup `direnv` and `nix-direnv` and execute `dienv allow`.
+To switch between different dev environments execute `select-shell`.

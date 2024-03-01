@@ -9,6 +9,9 @@ name = "clan-vm-manager"
 dynamic = ["version"]
 scripts = { clan-vm-manager = "clan_vm_manager:main" }
 
+[tool.setuptools.packages.find]
+exclude = ["result"]
+
 [tool.setuptools.package-data]
 clan_vm_manager = ["**/assets/*"]
 
