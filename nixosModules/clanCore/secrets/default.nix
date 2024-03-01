@@ -54,6 +54,14 @@
                     Extra paths to add to the PATH environment variable when running the generator.
                   '';
                 };
+                prompt = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                  description = ''
+                    prompt text to ask for a value.
+                    This value will be passed to the script as the environment variabel $prompt_value.
+                  '';
+                };
                 script = lib.mkOption {
                   type = lib.types.str;
                   description = ''
@@ -92,14 +100,14 @@
               config' = config;
             in
             lib.mkOption {
-              type = lib.types.attrsOf (lib.types.submodule ({ config, ... }: {
+              type = lib.types.attrsOf (lib.types.submodule ({ config, name, ... }: {
                 options = {
                   name = lib.mkOption {
                     type = lib.types.str;
                     description = ''
                       name of the secret
                     '';
-                    default = config._module.args.name;
+                    default = name;
                   };
                   path = lib.mkOption {
                     type = lib.types.str;
