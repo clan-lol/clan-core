@@ -9,7 +9,7 @@ dynamic = ["version"]
 scripts = { clan = "clan_cli:main" }
 
 [tool.setuptools.packages.find]
-exclude = ["clan_cli.nixpkgs*"]
+exclude = ["clan_cli.nixpkgs*", "result"]
 
 [tool.setuptools.package-data]
 clan_cli = ["config/jsonschema/*", "webui/assets/**/*", "vms/mimetypes/**/*"]
