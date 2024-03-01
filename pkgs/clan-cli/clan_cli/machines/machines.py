@@ -166,6 +166,7 @@ class Machine:
         config = nix_config()
         system = config["system"]
 
+        file_info = dict()
         with NamedTemporaryFile(mode="w") as config_json:
             if extra_config is not None:
                 json.dump(extra_config, config_json, indent=2)
@@ -173,66 +174,66 @@ class Machine:
                 json.dump({}, config_json)
             config_json.flush()
 
-            nar_hash = json.loads(
+            file_info = json.loads(
                 run(
                     nix_eval(
                         [
                             "--impure",
                             "--expr",
-                            f'(builtins.fetchTree {{ type = "file"; url = "file://{config_json.name}"; }}).narHash',
+                            f'let x = (builtins.fetchTree {{ type = "file"; url = "file://{config_json.name}"; }}); in {{ narHash = x.narHash; path = x.outPath; }}',
                         ]
                     )
                 ).stdout.strip()
             )
 
-            args = []
+        args = []
 
-            # get git commit from flake
-            if extra_config is not None:
-                metadata = nix_metadata(self.flake_dir)
-                url = metadata["url"]
-                if "dirtyRevision" in metadata:
-                    # if not impure:
-                    #     raise ClanError(
-                    #         "The machine has a dirty revision, and impure mode is not allowed"
-                    #     )
-                    # else:
-                    #     args += ["--impure"]
-                    args += ["--impure"]
+        # get git commit from flake
+        if extra_config is not None:
+            metadata = nix_metadata(self.flake_dir)
+            url = metadata["url"]
+            if "dirtyRevision" in metadata:
+                # if not impure:
+                #     raise ClanError(
+                #         "The machine has a dirty revision, and impure mode is not allowed"
+                #     )
+                # else:
+                #     args += ["--impure"]
+                args += ["--impure"]
 
-                args += [
-                    "--expr",
-                    f"""
-                        ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.name}" {{
-                          extraConfig = builtins.fromJSON (builtins.readFile (builtins.fetchTree {{
-                            type = "file";
-                            url = if (builtins.compareVersions builtins.nixVersion "2.19") == -1 then "{config_json.name}" else "file:{config_json.name}";
-                            narHash = "{nar_hash}";
-                          }}));
-                        }}).{attr}
-                    """,
-                ]
-            else:
-                if isinstance(self.flake, Path):
-                    if (self.flake / ".git").exists():
-                        flake = f"git+file://{self.flake}"
-                    else:
-                        flake = f"path:{self.flake}"
+            args += [
+                "--expr",
+                f"""
+                    ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.name}" {{
+                      extraConfig = builtins.fromJSON (builtins.readFile (builtins.fetchTree {{
+                        type = "file";
+                        url = if (builtins.compareVersions builtins.nixVersion "2.19") == -1 then "{file_info["path"]}" else "file:{file_info["path"]}";
+                        narHash = "{file_info["narHash"]}";
+                      }}));
+                    }}).{attr}
+                """,
+            ]
+        else:
+            if isinstance(self.flake, Path):
+                if (self.flake / ".git").exists():
+                    flake = f"git+file://{self.flake}"
                 else:
-                    flake = self.flake
-                args += [
-                    f'{flake}#clanInternals.machines."{system}".{self.name}.{attr}',
-                    *nix_options,
-                ]
-
-            if method == "eval":
-                output = run(nix_eval(args)).stdout.strip()
-                return output
-            elif method == "build":
-                outpath = run(nix_build(args)).stdout.strip()
-                return Path(outpath)
+                    flake = f"path:{self.flake}"
             else:
-                raise ValueError(f"Unknown method {method}")
+                flake = self.flake
+            args += [
+                f'{flake}#clanInternals.machines."{system}".{self.name}.{attr}',
+                *nix_options,
+            ]
+
+        if method == "eval":
+            output = run(nix_eval(args)).stdout.strip()
+            return output
+        elif method == "build":
+            outpath = run(nix_build(args)).stdout.strip()
+            return Path(outpath)
+        else:
+            raise ValueError(f"Unknown method {method}")
 
     def eval_nix(
         self,
