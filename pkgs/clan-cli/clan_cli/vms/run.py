@@ -37,7 +37,7 @@ def facts_to_nixos_config(facts: dict[str, dict[str, bytes]]) -> dict:
 
 # TODO move this to the Machines class
 def build_vm(
-    machine: Machine, vm: VmConfig, tmpdir: Path, nix_options: list[str] = []
+    machine: Machine, tmpdir: Path, nix_options: list[str] = []
 ) -> dict[str, str]:
     secrets_dir = get_secrets(machine, tmpdir)
 
@@ -113,7 +113,7 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
         tmpdir = Path(cachedir)
 
         # TODO: We should get this from the vm argument
-        nixos_config = build_vm(machine, vm, tmpdir, nix_options)
+        nixos_config = build_vm(machine, tmpdir, nix_options)
 
         state_dir = vm_state_dir(str(vm.flake_url), machine.name)
         state_dir.mkdir(parents=True, exist_ok=True)
