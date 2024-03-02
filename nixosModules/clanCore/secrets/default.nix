@@ -35,13 +35,13 @@
   options.clanCore.secrets = lib.mkOption {
     default = { };
     type = lib.types.attrsOf
-      (lib.types.submodule (secret: {
+      (lib.types.submodule (service: {
         options = {
           name = lib.mkOption {
             type = lib.types.str;
-            default = secret.config._module.args.name;
+            default = service.config._module.args.name;
             description = ''
-              Namespace of the secret
+              Namespace of the service
             '';
           };
           generator = lib.mkOption {
