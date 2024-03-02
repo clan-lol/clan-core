@@ -13,9 +13,9 @@
         green = ''\033[32m'';
       };
 
-      # a python program using argparse to enable and disable dev shells
-      # synopsis: select-shell enable|disable shell-name
-      # enabled devshells are written as a newline separated list into ./.direnv/selected-shells
+      # A python program to switch between dev-shells
+      # usage: select-shell shell-name
+      # the currently enabled dev-shell gets stored in ./.direnv/selected-shell
       select-shell = writers.writePython3Bin "select-shell"
         {
           flakeIgnore = [ "E501" ];
@@ -23,7 +23,6 @@
     in
     {
       devShells.default = pkgs.mkShell {
-        # inputsFrom = [ self'.devShells.python ];
         packages = [
           select-shell
           pkgs.tea

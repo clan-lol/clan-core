@@ -76,7 +76,6 @@
 
           export PATH="$tmp_path/python/bin:$PATH"
           export PYTHONPATH="''${PYTHONPATH:+$PYTHONPATH:}$tmp_path/python/${pythonWithDeps.sitePackages}"
-          # export PYTHONPATH="$tmp_path/python/${pythonWithDeps.sitePackages}"
 
           for package in "''${localPackages[@]}"; do
             export PYTHONPATH="$package:$PYTHONPATH"
