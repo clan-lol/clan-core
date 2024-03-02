@@ -62,19 +62,7 @@
           description = ''
             secret data as json for the generator
           '';
-          default = pkgs.writers.writeJSON "secrets.json" (lib.mapAttrs
-            (_name: secret: {
-              secrets = lib.mapAttrsToList
-                (name: secret: {
-                  inherit name;
-                } // lib.optionalAttrs (secret ? groups) {
-                  inherit (secret) groups;
-                })
-                secret.secrets;
-              facts = lib.mapAttrs (_: secret: secret.path) secret.facts;
-              generator = secret.generator.finalScript;
-            })
-            config.clanCore.secrets);
+          default = pkgs.writers.writeJSON "secrets.json" config.clanCore.secrets;
         };
         vm.create = lib.mkOption {
           type = lib.types.path;

@@ -58,7 +58,7 @@ def generate_service_secrets(
                 "--unshare-user",
                 "--uid", "1000",
                 "--",
-                "bash", "-c", machine.secrets_data[service]["generator"]
+                "bash", "-c", machine.secrets_data[service]["generator"]["finalScript"]
             ],
         )
         # fmt: on
