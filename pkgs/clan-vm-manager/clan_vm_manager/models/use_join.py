@@ -26,7 +26,7 @@ class JoinValue(GObject.Object):
     url: ClanURI
     entry: HistoryEntry | None
 
-    def _join_finished(self) -> bool:
+    def _join_finished_task(self) -> bool:
         self.emit("join_finished", self)
         return GLib.SOURCE_REMOVE
 
@@ -38,7 +38,7 @@ class JoinValue(GObject.Object):
     def __join(self) -> None:
         new_entry = add_history(self.url)
         self.entry = new_entry
-        GLib.idle_add(self._join_finished)
+        GLib.idle_add(self._join_finished_task)
 
     def join(self) -> None:
         threading.Thread(target=self.__join).start()
