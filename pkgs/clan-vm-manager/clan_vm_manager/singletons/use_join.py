@@ -7,7 +7,7 @@ import gi
 from clan_cli.clan_uri import ClanURI
 from clan_cli.history.add import HistoryEntry, add_history
 
-from clan_vm_manager.models.use_vms import VMs
+from clan_vm_manager.singletons.use_vms import VMs
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")

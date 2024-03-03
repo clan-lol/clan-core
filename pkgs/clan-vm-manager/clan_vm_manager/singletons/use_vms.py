@@ -19,9 +19,8 @@ from clan_cli.history.add import HistoryEntry
 from clan_cli.machines.machines import Machine
 
 from clan_vm_manager import assets
-
-from .executor import MPProcess, spawn
-from .gkvstore import GKVStore
+from clan_vm_manager.components.executor import MPProcess, spawn
+from clan_vm_manager.components.gkvstore import GKVStore
 
 gi.require_version("GObject", "2.0")
 gi.require_version("Gtk", "4.0")
