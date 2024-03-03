@@ -32,56 +32,19 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
         self.key_gen = key_gen
         self._items: "OrderedDict[K, V]" = OrderedDict()
 
+    ##################################
+    #                                #
+    #    Gio.ListStore Interface     #
+    #                                #
+    ##################################
     @classmethod
     def new(cls: Any, gtype: type[V]) -> "GKVStore":
         return cls.__new__(cls, gtype)
 
-    #########################
-    #                       #
-    #    READ OPERATIONS    #
-    #                       #
-    #########################
-    def keys(self) -> list[K]:
-        return list(self._items.keys())
+    def append(self, item: V) -> None:
+        key = self.key_gen(item)
+        self[key] = item
 
-    def values(self) -> list[V]:
-        return list(self._items.values())
-
-    def items(self) -> list[tuple[K, V]]:
-        return list(self._items.items())
-
-    def get(self, key: K, default: V | None = None) -> V | None:
-        return self._items.get(key, default)
-
-    def get_n_items(self) -> int:
-        return len(self._items)
-
-    def do_get_n_items(self) -> int:
-        return self.get_n_items()
-
-    def get_item(self, position: int) -> V | None:
-        if position < 0 or position >= self.get_n_items():
-            return None
-        # Access items by index since OrderedDict does not support direct indexing
-        key = list(self._items.keys())[position]
-        return self._items[key]
-
-    def do_get_item(self, position: int) -> V | None:
-        return self.get_item(position)
-
-    def get_item_type(self) -> GObject.GType:
-        return self.gtype.__gtype__
-
-    def do_get_item_type(self) -> GObject.GType:
-        return self.get_item_type()
-
-    def first(self) -> V:
-        return self.values()[0]
-
-    def last(self) -> V:
-        return self.values()[-1]
-
-    # O(n) operation
     def find(self, item: V) -> tuple[bool, int]:
         log.warning("Finding is O(n) in GKVStore. Better use indexing")
         for i, v in enumerate(self.values()):
@@ -89,11 +52,24 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
                 return True, i
         return False, -1
 
-    #########################
-    #                       #
-    #    WRITE OPERATIONS   #
-    #                       #
-    #########################
+    def find_with_equal_func(
+        self, item: V, equal_func: Callable[[V, V], bool]
+    ) -> tuple[bool, int]:
+        log.warning("Finding is O(n) in GKVStore. Better use indexing")
+        for i, v in enumerate(self.values()):
+            if equal_func(v, item):
+                return True, i
+        return False, -1
+
+    def find_with_equal_func_full(
+        self, item: V, equal_func: Callable[[V, V, Any], bool], user_data: Any
+    ) -> tuple[bool, int]:
+        log.warning("Finding is O(n) in GKVStore. Better use indexing")
+        for i, v in enumerate(self.values()):
+            if equal_func(v, item, user_data):
+                return True, i
+        return False, -1
+
     def insert(self, position: int, item: V) -> None:
         log.warning("Inserting is O(n) in GKVStore. Better use append")
         log.warning(
@@ -122,9 +98,10 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
         # Notify the model of the changes
         self.items_changed(position, 0, 1)
 
-    def append(self, item: V) -> None:
-        key = self.key_gen(item)
-        self[key] = item
+    def insert_sorted(
+        self, item: V, compare_func: Callable[[V, V, Any], int], user_data: Any
+    ) -> None:
+        raise NotImplementedError("insert_sorted is not implemented in GKVStore")
 
     def remove(self, position: int) -> None:
         if position < 0 or position >= self.get_n_items():
@@ -136,6 +113,56 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
     def remove_all(self) -> None:
         self._items.clear()
         self.items_changed(0, len(self._items), 0)
+
+    def sort(self, compare_func: Callable[[V, V, Any], int], user_data: Any) -> None:
+        raise NotImplementedError("sort is not implemented in GKVStore")
+
+    def splice(self, position: int, n_removals: int, additions: list[V]) -> None:
+        raise NotImplementedError("splice is not implemented in GKVStore")
+
+    ##################################
+    #                                #
+    #    Gio.ListModel Interface     #
+    #                                #
+    ##################################
+    def get_item(self, position: int) -> V | None:
+        if position < 0 or position >= self.get_n_items():
+            return None
+        # Access items by index since OrderedDict does not support direct indexing
+        key = list(self._items.keys())[position]
+        return self._items[key]
+
+    def do_get_item(self, position: int) -> V | None:
+        return self.get_item(position)
+
+    def get_item_type(self) -> GObject.GType:
+        return self.gtype.__gtype__
+
+    def do_get_item_type(self) -> GObject.GType:
+        return self.get_item_type()
+
+    def get_n_items(self) -> int:
+        return len(self._items)
+
+    def do_get_n_items(self) -> int:
+        return self.get_n_items()
+
+    ##################################
+    #                                #
+    #        Dict Interface          #
+    #                                #
+    ##################################
+    def keys(self) -> list[K]:
+        return list(self._items.keys())
+
+    def values(self) -> list[V]:
+        return list(self._items.values())
+
+    def items(self) -> list[tuple[K, V]]:
+        return list(self._items.items())
+
+    def get(self, key: K, default: V | None = None) -> V | None:
+        return self._items.get(key, default)
 
     # O(1) operation if the key does not exist, O(n) if it does
     def __setitem__(self, key: K, value: V) -> None:
@@ -178,3 +205,14 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
 
     def __repr__(self) -> str:
         return self._items.__str__()
+
+    ##################################
+    #                                #
+    #        Custom Methods          #
+    #                                #
+    ##################################
+    def first(self) -> V:
+        return self.values()[0]
+
+    def last(self) -> V:
+        return self.values()[-1]
