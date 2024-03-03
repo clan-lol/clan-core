@@ -149,7 +149,6 @@ class VM(GObject.Object):
                 func=vms.run.build_vm,
                 machine=machine,
                 tmpdir=log_dir,
-                vm=self.data.flake.vm,
             )
             GLib.idle_add(self.vm_status_changed)
 
