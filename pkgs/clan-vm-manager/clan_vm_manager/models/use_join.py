@@ -1,5 +1,6 @@
 import logging
 import threading
+from collections.abc import Callable
 from typing import Any, ClassVar
 
 import gi
@@ -67,17 +68,20 @@ class JoinList:
     def is_empty(self) -> bool:
         return self.list_store.get_n_items() == 0
 
-    def push(self, value: JoinValue) -> None:
+    def push(
+        self, value: JoinValue, after_join: Callable[[JoinValue, JoinValue], None]
+    ) -> None:
         """
         Add a join request.
         This method can add multiple join requests if called subsequently for each request.
         """
 
         if value.url.get_id() in [item.url.get_id() for item in self.list_store]:
-            log.info(f"Join request already exists: {value.url}")
+            log.info(f"Join request already exists: {value.url}. Ignoring.")
             return
 
         value.connect("join_finished", self._on_join_finished)
+        value.connect("join_finished", after_join)
 
         self.list_store.append(value)
 

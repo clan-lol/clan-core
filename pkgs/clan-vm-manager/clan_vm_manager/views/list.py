@@ -223,8 +223,7 @@ class ClanList(Gtk.Box):
         log.debug("Join request: %s", url)
         clan_uri = ClanURI.from_str(url)
         value = JoinValue(url=clan_uri)
-        JoinList.use().push(value)
-        value.connect("join_finished", self.on_after_join)
+        JoinList.use().push(value, self.on_after_join)
 
     def on_after_join(self, source: JoinValue, item: JoinValue) -> None:
         # If the join request list is empty disable the shadow artefact
