@@ -12,8 +12,8 @@ gi.require_version("Adw", "1")
 from clan_cli.custom_logger import setup_logging
 from gi.repository import Adw, Gdk, Gio, Gtk
 
-from clan_vm_manager.models.interfaces import ClanConfig
-from clan_vm_manager.models.use_join import GLib, GObject
+from clan_vm_manager.components.interfaces import ClanConfig
+from clan_vm_manager.singletons.use_join import GLib, GObject
 
 from .windows.main_window import MainWindow
 
