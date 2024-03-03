@@ -7,7 +7,7 @@ from clan_cli.history.list import list_history
 
 from clan_vm_manager.components.interfaces import ClanConfig
 from clan_vm_manager.singletons.use_views import Views
-from clan_vm_manager.singletons.use_vms import VMs
+from clan_vm_manager.singletons.use_vms import ClanStore
 from clan_vm_manager.views.details import Details
 from clan_vm_manager.views.list import ClanList
 
@@ -35,7 +35,7 @@ class MainWindow(Adw.ApplicationWindow):
         app = Gio.Application.get_default()
         self.tray_icon: TrayIcon = TrayIcon(app)
 
-        # Initialize all VMs
+        # Initialize all ClanStore
         threading.Thread(target=self._populate_vms).start()
 
         # Initialize all views
@@ -63,8 +63,8 @@ class MainWindow(Adw.ApplicationWindow):
         # Execute `clan flakes add <path>` to democlan for this to work
         # TODO: Make list_history a generator function
         for entry in list_history():
-            GLib.idle_add(VMs.use().create_vm_task, entry)
+            GLib.idle_add(ClanStore.use().create_vm_task, entry)
 
     def on_destroy(self, *_args: Any) -> None:
         self.tray_icon.destroy()
-        VMs.use().kill_all()
+        ClanStore.use().kill_all()

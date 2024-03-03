@@ -29,8 +29,8 @@ from gi.repository import GLib, GObject, Gtk
 log = logging.getLogger(__name__)
 
 
-class VM(GObject.Object):
-    __gtype_name__: ClassVar = "VMGobject"
+class VMObject(GObject.Object):
+    __gtype_name__: ClassVar = "VMObject"
     # Define a custom signal with the name "vm_stopped" and a string argument for the message
     __gsignals__: ClassVar = {
         "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object])
@@ -85,7 +85,7 @@ class VM(GObject.Object):
         # Make sure the VM is killed when the reference to this object is dropped
         self._finalizer = weakref.finalize(self, self.kill_ref_drop)
 
-    def on_vm_status_changed(self, vm: "VM", _vm: "VM") -> None:
+    def on_vm_status_changed(self, vm: "VMObject", _vm: "VMObject") -> None:
         self.switch.set_state(self.is_running() and not self.is_building())
         if self.switch.get_sensitive() is False and not self.is_building():
             self.switch.set_sensitive(True)
@@ -317,11 +317,11 @@ class VMStore(GKVStore):
     __gtype_name__ = "MyVMStore"
 
     def __init__(self) -> None:
-        super().__init__(VM, lambda vm: vm.data.flake.flake_attr)
+        super().__init__(VMObject, lambda vm: vm.data.flake.flake_attr)
 
 
-class VMs:
-    _instance: "None | VMs" = None
+class ClanStore:
+    _instance: "None | ClanStore" = None
     _clan_store: GKVStore[str, VMStore]
 
     # Make sure the VMS class is used as a singleton
@@ -329,7 +329,7 @@ class VMs:
         raise RuntimeError("Call use() instead")
 
     @classmethod
-    def use(cls: Any) -> "VMs":
+    def use(cls: Any) -> "ClanStore":
         if cls._instance is None:
             cls._instance = cls.__new__(cls)
             cls._clan_store = GKVStore(
@@ -353,13 +353,13 @@ class VMs:
         else:
             icon = entry.flake.icon
 
-        vm = VM(
+        vm = VMObject(
             icon=Path(icon),
             data=entry,
         )
         self.push(vm)
 
-    def push(self, vm: VM) -> None:
+    def push(self, vm: VMObject) -> None:
         url = vm.data.flake.flake_url
 
         # Only write to the store if the VM is not already in it
@@ -374,16 +374,16 @@ class VMs:
             vm_store = self.clan_store[url]
             vm_store.append(vm)
 
-    def remove(self, vm: VM) -> None:
+    def remove(self, vm: VMObject) -> None:
         del self.clan_store[vm.data.flake.flake_url][vm.data.flake.flake_attr]
 
-    def get_vm(self, flake_url: str, flake_attr: str) -> None | VM:
+    def get_vm(self, flake_url: str, flake_attr: str) -> None | VMObject:
         clan = self.clan_store.get(flake_url)
         if clan is None:
             return None
         return clan.get(flake_attr, None)
 
-    def get_running_vms(self) -> list[VM]:
+    def get_running_vms(self) -> list[VMObject]:
         return [
             vm
             for clan in self.clan_store.values()
