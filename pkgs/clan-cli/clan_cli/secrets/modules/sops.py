@@ -45,7 +45,7 @@ class SecretStore(SecretStoreBase):
         )
         return path
 
-    def get(self, service: str, _name: str) -> bytes:
+    def get(self, service: str, name: str) -> bytes:
         raise NotImplementedError()
 
     def exists(self, service: str, name: str) -> bool:
