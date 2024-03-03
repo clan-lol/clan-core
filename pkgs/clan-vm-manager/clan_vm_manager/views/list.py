@@ -9,7 +9,7 @@ from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.components.interfaces import ClanConfig
 from clan_vm_manager.singletons.use_join import JoinList, JoinValue
-from clan_vm_manager.singletons.use_vms import VM, VMs, VMStore
+from clan_vm_manager.singletons.use_vms import ClanStore, VMObject, VMStore
 
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
@@ -60,7 +60,7 @@ class ClanList(Gtk.Box):
         self.append(self.join_boxed_list)
 
         self.group_list = create_boxed_list(
-            model=VMs.use().clan_store, render_row=self.render_group_row
+            model=ClanStore.use().clan_store, render_row=self.render_group_row
         )
         self.group_list.add_css_class("group-list")
         self.append(self.group_list)
@@ -104,7 +104,7 @@ class ClanList(Gtk.Box):
         target = parameter.get_string()
         print("Adding new machine", target)
 
-    def render_vm_row(self, boxed_list: Gtk.ListBox, vm: VM) -> Gtk.Widget:
+    def render_vm_row(self, boxed_list: Gtk.ListBox, vm: VMObject) -> Gtk.Widget:
         # Remove no-shadow class if attached
         if boxed_list.has_css_class("no-shadow"):
             boxed_list.remove_css_class("no-shadow")
@@ -189,7 +189,7 @@ class ClanList(Gtk.Box):
         row.set_subtitle(item.url.get_internal())
         row.add_css_class("trust")
 
-        if item.url.params.flake_attr in VMs.use().clan_store:
+        if item.url.params.flake_attr in ClanStore.use().clan_store:
             sub = row.get_subtitle()
             row.set_subtitle(
                 sub + "\nClan already exists. Joining again will update it"

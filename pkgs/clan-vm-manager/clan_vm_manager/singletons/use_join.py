@@ -7,7 +7,7 @@ import gi
 from clan_cli.clan_uri import ClanURI
 from clan_cli.history.add import HistoryEntry, add_history
 
-from clan_vm_manager.singletons.use_vms import VMs
+from clan_vm_manager.singletons.use_vms import ClanStore
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -88,7 +88,7 @@ class JoinList:
     def _on_join_finished(self, _source: GObject.Object, value: JoinValue) -> None:
         log.info(f"Join finished: {value.url}")
         self.discard(value)
-        VMs.use().push_history_entry(value.entry)
+        ClanStore.use().push_history_entry(value.entry)
 
     def discard(self, value: JoinValue) -> None:
         (has, idx) = self.list_store.find(value)
