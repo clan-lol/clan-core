@@ -95,6 +95,10 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
     #                       #
     #########################
     def insert(self, position: int, item: V) -> None:
+        log.warning("Inserting is O(n) in GKVStore. Better use append")
+        log.warning(
+            "This functions may have incorrect items_changed signal behavior. Please test it"
+        )
         key = self.key_gen(item)
         if key in self._items:
             raise ValueError("Key already exists in the dictionary")
@@ -141,12 +145,12 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
             log.warning("Updating an existing key in GKVStore is O(n)")
             position = self.keys().index(key)
             self._items[key] = value
-            self.items_changed(position, 0, 1)
+            self.items_changed(position, 1, 1)
         else:
             # Add the new key-value pair
-            position = max(len(self._items) - 1, 0)
             self._items[key] = value
             self._items.move_to_end(key)
+            position = max(len(self._items) - 1, 0)
             self.items_changed(position, 0, 1)
 
     # O(n) operation
