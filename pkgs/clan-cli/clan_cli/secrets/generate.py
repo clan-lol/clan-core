@@ -92,7 +92,7 @@ def generate_service_secrets(
             secret_file = secrets_dir / secret_name
             if not secret_file.is_file():
                 msg = f"did not generate a file for '{secret_name}' when running the following command:\n"
-                msg += machine.secrets_data[service]["generator"]
+                msg += generator
                 raise ClanError(msg)
             secret_path = secret_store.set(
                 service, secret_name, secret_file.read_bytes(), groups
