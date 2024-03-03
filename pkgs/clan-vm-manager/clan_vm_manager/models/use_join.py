@@ -4,7 +4,9 @@ from typing import Any, ClassVar
 
 import gi
 from clan_cli.clan_uri import ClanURI
-from clan_cli.history.add import add_history
+from clan_cli.history.add import HistoryEntry, add_history
+
+from clan_vm_manager.models.use_vms import VMs
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -21,6 +23,7 @@ class JoinValue(GObject.Object):
     }
 
     url: ClanURI
+    entry: HistoryEntry | None
 
     def _join_finished(self) -> bool:
         self.emit("join_finished", self)
@@ -29,9 +32,11 @@ class JoinValue(GObject.Object):
     def __init__(self, url: ClanURI) -> None:
         super().__init__()
         self.url = url
+        self.entry = None
 
     def __join(self) -> None:
-        add_history(self.url, all_machines=False)
+        new_entry = add_history(self.url)
+        self.entry = new_entry
         GLib.idle_add(self._join_finished)
 
     def join(self) -> None:
@@ -79,6 +84,7 @@ class JoinList:
     def _on_join_finished(self, _source: GObject.Object, value: JoinValue) -> None:
         log.info(f"Join finished: {value.url}")
         self.discard(value)
+        VMs.use().push_history_entry(value.entry)
 
     def discard(self, value: JoinValue) -> None:
         (has, idx) = self.list_store.find(value)
