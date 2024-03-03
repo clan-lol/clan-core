@@ -29,7 +29,7 @@ def generate_service_secrets(
 ) -> None:
     service_dir = tmpdir / service
     # check if all secrets exist and generate them if at least one is missing
-    needs_regeneration = not check_secrets(machine)
+    needs_regeneration = not check_secrets(machine, service=service)
     log.debug(f"{service} needs_regeneration: {needs_regeneration}")
     if needs_regeneration:
         if not isinstance(machine.flake, Path):
