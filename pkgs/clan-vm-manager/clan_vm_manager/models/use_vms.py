@@ -37,7 +37,7 @@ class VM(GObject.Object):
         "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object])
     }
 
-    def vm_status_changed(self) -> bool:
+    def vm_status_changed_task(self) -> bool:
         self.emit("vm_status_changed", self)
         return GLib.SOURCE_REMOVE
 
@@ -130,7 +130,7 @@ class VM(GObject.Object):
         yield self.machine
         self.machine = None
 
-    def _pulse_progress_bar(self) -> bool:
+    def _pulse_progress_bar_task(self) -> bool:
         if self.progress_bar.is_visible():
             self.progress_bar.pulse()
             return GLib.SOURCE_CONTINUE
@@ -150,7 +150,7 @@ class VM(GObject.Object):
                 machine=machine,
                 tmpdir=log_dir,
             )
-            GLib.idle_add(self.vm_status_changed)
+            GLib.idle_add(self.vm_status_changed_task)
 
             # Start the logs watcher
             self._logs_id = GLib.timeout_add(
@@ -162,7 +162,7 @@ class VM(GObject.Object):
 
             # Start the progress bar and show it
             self.progress_bar.show()
-            self.prog_bar_id = GLib.timeout_add(100, self._pulse_progress_bar)
+            self.prog_bar_id = GLib.timeout_add(100, self._pulse_progress_bar_task)
             if self.prog_bar_id == 0:
                 log.error("Couldn't spawn a progess bar task")
 
@@ -175,7 +175,7 @@ class VM(GObject.Object):
             # Check if the VM was built successfully
             if self.build_process.proc.exitcode != 0:
                 log.error(f"Failed to build VM {self.get_id()}")
-                GLib.idle_add(self.vm_status_changed)
+                GLib.idle_add(self.vm_status_changed_task)
                 return
             log.info(f"Successfully built VM {self.get_id()}")
 
@@ -187,7 +187,7 @@ class VM(GObject.Object):
                 vm=self.data.flake.vm,
             )
             log.debug(f"Started VM {self.get_id()}")
-            GLib.idle_add(self.vm_status_changed)
+            GLib.idle_add(self.vm_status_changed_task)
 
             # Start the logs watcher
             self._logs_id = GLib.timeout_add(50, self._get_logs_task, self.vm_process)
@@ -198,7 +198,7 @@ class VM(GObject.Object):
             # Wait for the VM to stop
             self.vm_process.proc.join()
             log.debug(f"VM {self.get_id()} has stopped")
-            GLib.idle_add(self.vm_status_changed)
+            GLib.idle_add(self.vm_status_changed_task)
 
     def start(self) -> None:
         if self.is_running():
@@ -274,7 +274,7 @@ class VM(GObject.Object):
 
             # Try 20 times to stop the VM
             time.sleep(self.KILL_TIMEOUT / 20)
-        GLib.idle_add(self.vm_status_changed)
+        GLib.idle_add(self.vm_status_changed_task)
         log.debug(f"VM {self.get_id()} has stopped")
 
     def shutdown(self) -> None:
@@ -348,6 +348,7 @@ class VMs:
         return GLib.SOURCE_REMOVE
 
     def push_history_entry(self, entry: HistoryEntry) -> None:
+        # TODO: We shouldn't do this here but in the list view
         if entry.flake.icon is None:
             icon = assets.loc / "placeholder.jpeg"
         else:
