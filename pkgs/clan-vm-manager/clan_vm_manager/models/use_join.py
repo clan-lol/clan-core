@@ -26,6 +26,10 @@ class JoinValue(GObject.Object):
 
     url: ClanURI
 
+    def join_finished(self) -> bool:
+        self.emit("join_finished", self)
+        return GLib.SOURCE_REMOVE
+
     def __init__(
         self, url: ClanURI, on_join: Callable[["JoinValue", Any], None]
     ) -> None:
@@ -35,7 +39,7 @@ class JoinValue(GObject.Object):
 
     def __join(self) -> None:
         add_history(self.url, all_machines=False)
-        GLib.idle_add(self.emit, "join_finished", self)
+        GLib.idle_add(self.join_finished)
 
     def join(self) -> None:
         threading.Thread(target=self.__join).start()
