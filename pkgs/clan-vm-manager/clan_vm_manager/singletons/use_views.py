@@ -7,20 +7,20 @@ gi.require_version("Adw", "1")
 from gi.repository import Adw
 
 
-class Views:
+class ViewStack:
     """
     This is a singleton.
     It is initialized with the first call of use()
 
     Usage:
 
-    Views.use().set_visible()
+    ViewStack.use().set_visible()
 
-    Views.use() can also be called before the data is needed. e.g. to eliminate/reduce waiting time.
+    ViewStack.use() can also be called before the data is needed. e.g. to eliminate/reduce waiting time.
 
     """
 
-    _instance: "None | Views" = None
+    _instance: "None | ViewStack" = None
     view: Adw.ViewStack
 
     # Make sure the VMS class is used as a singleton
@@ -28,7 +28,7 @@ class Views:
         raise RuntimeError("Call use() instead")
 
     @classmethod
-    def use(cls: Any) -> "Views":
+    def use(cls: Any) -> "ViewStack":
         if cls._instance is None:
             cls._instance = cls.__new__(cls)
             cls.view = Adw.ViewStack()
