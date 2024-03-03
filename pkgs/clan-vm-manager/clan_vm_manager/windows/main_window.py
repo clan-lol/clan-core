@@ -5,9 +5,9 @@ from typing import Any
 import gi
 from clan_cli.history.list import list_history
 
-from clan_vm_manager.models.interfaces import ClanConfig
-from clan_vm_manager.models.use_views import Views
-from clan_vm_manager.models.use_vms import VMs
+from clan_vm_manager.components.interfaces import ClanConfig
+from clan_vm_manager.singletons.use_views import Views
+from clan_vm_manager.singletons.use_vms import VMs
 from clan_vm_manager.views.details import Details
 from clan_vm_manager.views.list import ClanList
 
@@ -15,7 +15,7 @@ gi.require_version("Adw", "1")
 
 from gi.repository import Adw, Gio, GLib, Gtk
 
-from ..trayicon import TrayIcon
+from clan_vm_manager.components.trayicon import TrayIcon
 
 log = logging.getLogger(__name__)
 

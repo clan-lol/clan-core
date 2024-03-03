@@ -7,9 +7,9 @@ import gi
 from clan_cli import history, machines
 from clan_cli.clan_uri import ClanURI
 
-from clan_vm_manager.models.interfaces import ClanConfig
-from clan_vm_manager.models.use_join import JoinList, JoinValue
-from clan_vm_manager.models.use_vms import VM, VMs, VMStore
+from clan_vm_manager.components.interfaces import ClanConfig
+from clan_vm_manager.singletons.use_join import JoinList, JoinValue
+from clan_vm_manager.singletons.use_vms import VM, VMs, VMStore
 
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk

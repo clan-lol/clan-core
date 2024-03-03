@@ -559,7 +559,7 @@ class StatusNotifierImplementation(BaseImplementation):
             )
             self.tray_icon.register()
 
-            from .assets import loc
+            from clan_vm_manager.assets import loc
 
             icon_path = str(loc / "clan_white_notext.png")
             self.set_icon(icon_path)
