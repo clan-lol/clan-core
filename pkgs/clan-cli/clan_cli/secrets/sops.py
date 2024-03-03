@@ -134,7 +134,7 @@ def update_keys(secret_path: Path, keys: list[str]) -> None:
 
 
 def encrypt_file(
-    secret_path: Path, content: IO[str] | str | None, keys: list[str]
+    secret_path: Path, content: IO[str] | str | bytes | None, keys: list[str]
 ) -> None:
     folder = secret_path.parent
     folder.mkdir(parents=True, exist_ok=True)
@@ -157,11 +157,17 @@ def encrypt_file(
         # hopefully /tmp is written to an in-memory file to avoid leaking secrets
         with NamedTemporaryFile(delete=False) as f:
             try:
-                with open(f.name, "w") as fd:
-                    if isinstance(content, str):
+                if isinstance(content, str):
+                    with open(f.name, "w") as fd:
                         fd.write(content)
-                    else:
+                elif isinstance(content, bytes):
+                    with open(f.name, "wb") as fd:
+                        fd.write(content)
+                elif isinstance(content, IO):
+                    with open(f.name, "w") as fd:
                         shutil.copyfileobj(content, fd)
+                else:
+                    raise ClanError("Invalid content type")
                 # we pass an empty manifest to pick up existing configuration of the user
                 args = ["sops", "--config", str(manifest)]
                 args.extend(["-i", "--encrypt", str(f.name)])

@@ -39,7 +39,7 @@ class SecretStore(SecretStoreBase):
         encrypt_secret(
             self.machine.flake_dir,
             path,
-            value.decode(),
+            value,
             add_machines=[self.machine.name],
             add_groups=groups,
         )
