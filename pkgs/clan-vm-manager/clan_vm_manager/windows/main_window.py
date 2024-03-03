@@ -1,15 +1,13 @@
 import logging
 import threading
-from pathlib import Path
 from typing import Any
 
 import gi
 from clan_cli.history.list import list_history
 
-from clan_vm_manager import assets
 from clan_vm_manager.models.interfaces import ClanConfig
 from clan_vm_manager.models.use_views import Views
-from clan_vm_manager.models.use_vms import VM, VMs
+from clan_vm_manager.models.use_vms import VMs
 from clan_vm_manager.views.details import Details
 from clan_vm_manager.views.list import ClanList
 
@@ -61,24 +59,11 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.connect("destroy", self.on_destroy)
 
-    def push_vm(self, vm: VM) -> bool:
-        VMs.use().push(vm)
-        return GLib.SOURCE_REMOVE
-
     def _populate_vms(self) -> None:
         # Execute `clan flakes add <path>` to democlan for this to work
         # TODO: Make list_history a generator function
         for entry in list_history():
-            if entry.flake.icon is None:
-                icon = assets.loc / "placeholder.jpeg"
-            else:
-                icon = entry.flake.icon
-
-            vm = VM(
-                icon=Path(icon),
-                data=entry,
-            )
-            GLib.idle_add(self.push_vm, vm)
+            GLib.idle_add(VMs.use().create_vm_task, entry)
 
     def on_destroy(self, *_args: Any) -> None:
         self.tray_icon.destroy()

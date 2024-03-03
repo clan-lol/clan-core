@@ -8,7 +8,7 @@ from clan_cli import history, machines
 from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.models.interfaces import ClanConfig
-from clan_vm_manager.models.use_join import Join, JoinValue
+from clan_vm_manager.models.use_join import JoinList, JoinValue
 from clan_vm_manager.models.use_vms import VM, VMs, VMStore
 
 gi.require_version("Adw", "1")
@@ -54,7 +54,7 @@ class ClanList(Gtk.Box):
 
         # Add join list
         self.join_boxed_list = create_boxed_list(
-            model=Join.use().list_store, render_row=self.render_join_row
+            model=JoinList.use().list_store, render_row=self.render_join_row
         )
         self.join_boxed_list.add_css_class("join-list")
         self.append(self.join_boxed_list)
@@ -113,8 +113,10 @@ class ClanList(Gtk.Box):
 
         # ====== Display Avatar ======
         avatar = Adw.Avatar()
-
         machine_icon = flake.vm.machine_icon
+
+        # If there is a machine icon, display it else
+        # display the clan icon
         if machine_icon:
             avatar.set_custom_image(Gdk.Texture.new_from_filename(str(machine_icon)))
         elif flake.icon:
@@ -128,10 +130,11 @@ class ClanList(Gtk.Box):
 
         # ====== Display Name And Url =====
         row.set_title(flake.flake_attr)
-
         row.set_title_lines(1)
         row.set_title_selectable(True)
 
+        # If there is a machine description, display it else
+        # display the clan name
         if flake.vm.machine_description:
             row.set_subtitle(flake.vm.machine_description)
         else:
@@ -139,37 +142,35 @@ class ClanList(Gtk.Box):
         row.set_subtitle_lines(1)
 
         # ==== Display build progress bar ====
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        box.set_valign(Gtk.Align.CENTER)
-        box.append(vm.progress_bar)
-        box.set_homogeneous(False)
-        row.add_suffix(box)  # This allows children to have different sizes
+        build_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        build_box.set_valign(Gtk.Align.CENTER)
+        build_box.append(vm.progress_bar)
+        build_box.set_homogeneous(False)
+        row.add_suffix(build_box)  # This allows children to have different sizes
 
         # ==== Action buttons ====
-        switch_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        switch_box.set_valign(Gtk.Align.CENTER)
-        switch_box.append(vm.switch)
+        button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        button_box.set_valign(Gtk.Align.CENTER)
 
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        box.set_valign(Gtk.Align.CENTER)
-
+        ## Drop down menu
         open_action = Gio.SimpleAction.new("edit", GLib.VariantType.new("s"))
         open_action.connect("activate", self.on_edit)
-
         app = Gio.Application.get_default()
         app.add_action(open_action)
-
         menu_model = Gio.Menu()
         menu_model.append("Edit", f"app.edit::{vm.get_id()}")
         pref_button = Gtk.MenuButton()
         pref_button.set_icon_name("open-menu-symbolic")
         pref_button.set_menu_model(menu_model)
+        button_box.append(pref_button)
 
-        box.append(switch_box)
-        box.append(pref_button)
+        ## VM switch button
+        switch_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        switch_box.set_valign(Gtk.Align.CENTER)
+        switch_box.append(vm.switch)
+        button_box.append(switch_box)
 
-        # suffix.append(box)
-        row.add_suffix(box)
+        row.add_suffix(button_box)
 
         return row
 
@@ -221,24 +222,20 @@ class ClanList(Gtk.Box):
     def on_join_request(self, widget: Any, url: str) -> None:
         log.debug("Join request: %s", url)
         clan_uri = ClanURI.from_str(url)
-        Join.use().push(clan_uri, self.after_join)
+        value = JoinValue(url=clan_uri)
+        JoinList.use().push(value, self.on_after_join)
 
-    def after_join(self, item: JoinValue) -> None:
+    def on_after_join(self, source: JoinValue, item: JoinValue) -> None:
         # If the join request list is empty disable the shadow artefact
-        if not Join.use().list_store.get_n_items():
+        if JoinList.use().is_empty():
             self.join_boxed_list.add_css_class("no-shadow")
-        print("after join in list")
 
-    def on_trust_clicked(self, item: JoinValue, widget: Gtk.Widget) -> None:
+    def on_trust_clicked(self, value: JoinValue, widget: Gtk.Widget) -> None:
         widget.set_sensitive(False)
         self.cancel_button.set_sensitive(False)
+        value.join()
 
-        # TODO(@hsjobeki): Confirm and edit details
-        # Views.use().view.set_visible_child_name("details")
-
-        Join.use().join(item)
-
-    def on_discard_clicked(self, item: JoinValue, widget: Gtk.Widget) -> None:
-        Join.use().discard(item)
-        if not Join.use().list_store.get_n_items():
+    def on_discard_clicked(self, value: JoinValue, widget: Gtk.Widget) -> None:
+        JoinList.use().discard(value)
+        if JoinList.use().is_empty():
             self.join_boxed_list.add_css_class("no-shadow")
