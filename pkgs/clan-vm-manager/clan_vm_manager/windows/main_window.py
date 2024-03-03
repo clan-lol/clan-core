@@ -6,7 +6,7 @@ import gi
 from clan_cli.history.list import list_history
 
 from clan_vm_manager.components.interfaces import ClanConfig
-from clan_vm_manager.singletons.use_views import Views
+from clan_vm_manager.singletons.use_views import ViewStack
 from clan_vm_manager.singletons.use_vms import ClanStore
 from clan_vm_manager.views.details import Details
 from clan_vm_manager.views.list import ClanList
@@ -39,7 +39,7 @@ class MainWindow(Adw.ApplicationWindow):
         threading.Thread(target=self._populate_vms).start()
 
         # Initialize all views
-        stack_view = Views.use().view
+        stack_view = ViewStack.use().view
 
         scroll = Gtk.ScrolledWindow()
         scroll.set_propagate_natural_height(True)
