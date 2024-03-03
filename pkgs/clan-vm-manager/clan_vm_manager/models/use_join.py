@@ -1,14 +1,10 @@
 import logging
 import threading
-from collections.abc import Callable
 from typing import Any, ClassVar
 
 import gi
-from clan_cli import ClanError
 from clan_cli.clan_uri import ClanURI
 from clan_cli.history.add import add_history
-
-from clan_vm_manager.errors.show_error import show_error_dialog
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -26,32 +22,29 @@ class JoinValue(GObject.Object):
 
     url: ClanURI
 
-    def join_finished(self) -> bool:
+    def _join_finished(self) -> bool:
         self.emit("join_finished", self)
         return GLib.SOURCE_REMOVE
 
-    def __init__(
-        self, url: ClanURI, on_join: Callable[["JoinValue", Any], None]
-    ) -> None:
+    def __init__(self, url: ClanURI) -> None:
         super().__init__()
         self.url = url
-        self.connect("join_finished", on_join)
 
     def __join(self) -> None:
         add_history(self.url, all_machines=False)
-        GLib.idle_add(self.join_finished)
+        GLib.idle_add(self._join_finished)
 
     def join(self) -> None:
         threading.Thread(target=self.__join).start()
 
 
-class Join:
+class JoinList:
     """
     This is a singleton.
     It is initialized with the first call of use()
     """
 
-    _instance: "None | Join" = None
+    _instance: "None | JoinList" = None
     list_store: Gio.ListStore
 
     # Make sure the VMS class is used as a singleton
@@ -59,38 +52,35 @@ class Join:
         raise RuntimeError("Call use() instead")
 
     @classmethod
-    def use(cls: Any) -> "Join":
+    def use(cls: Any) -> "JoinList":
         if cls._instance is None:
             cls._instance = cls.__new__(cls)
             cls.list_store = Gio.ListStore.new(JoinValue)
 
         return cls._instance
 
-    def push(self, url: ClanURI, on_join: Callable[[JoinValue], None]) -> None:
+    def is_empty(self) -> bool:
+        return self.list_store.get_n_items() == 0
+
+    def push(self, value: JoinValue) -> None:
         """
         Add a join request.
         This method can add multiple join requests if called subsequently for each request.
         """
 
-        if url.get_id() in [item.url.get_id() for item in self.list_store]:
-            log.info(f"Join request already exists: {url}")
+        if value.url.get_id() in [item.url.get_id() for item in self.list_store]:
+            log.info(f"Join request already exists: {value.url}")
             return
 
-        def after_join(item: JoinValue, _: Any) -> None:
-            self.discard(item)
-            print("Refreshed list after join")
-            on_join(item)
+        value.connect("join_finished", self._on_join_finished)
 
-        self.list_store.append(JoinValue(url, after_join))
+        self.list_store.append(value)
 
-    def join(self, item: JoinValue) -> None:
-        try:
-            log.info(f"trying to join: {item.url}")
-            item.join()
-        except ClanError as e:
-            show_error_dialog(e)
+    def _on_join_finished(self, _source: GObject.Object, value: JoinValue) -> None:
+        log.info(f"Join finished: {value.url}")
+        self.discard(value)
 
-    def discard(self, item: JoinValue) -> None:
-        (has, idx) = self.list_store.find(item)
+    def discard(self, value: JoinValue) -> None:
+        (has, idx) = self.list_store.find(value)
         if has:
             self.list_store.remove(idx)
