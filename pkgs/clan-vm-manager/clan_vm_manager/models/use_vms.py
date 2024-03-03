@@ -18,6 +18,8 @@ from clan_cli.errors import ClanError
 from clan_cli.history.add import HistoryEntry
 from clan_cli.machines.machines import Machine
 
+from clan_vm_manager import assets
+
 from .executor import MPProcess, spawn
 from .gkvstore import GKVStore
 
@@ -341,6 +343,22 @@ class VMs:
     @property
     def clan_store(self) -> GKVStore[str, VMStore]:
         return self._clan_store
+
+    def create_vm_task(self, vm: HistoryEntry) -> bool:
+        self.push_history_entry(vm)
+        return GLib.SOURCE_REMOVE
+
+    def push_history_entry(self, entry: HistoryEntry) -> None:
+        if entry.flake.icon is None:
+            icon = assets.loc / "placeholder.jpeg"
+        else:
+            icon = entry.flake.icon
+
+        vm = VM(
+            icon=Path(icon),
+            data=entry,
+        )
+        self.push(vm)
 
     def push(self, vm: VM) -> None:
         url = vm.data.flake.flake_url
