@@ -30,10 +30,10 @@ cProfile Output Columns Explanation:
 """
 
 
-def print_profile(profiler: cProfile.Profile) -> None:
+def print_profile(profiler: cProfile.Profile, sortkey: pstats.SortKey) -> None:
     s = io.StringIO()
     ps = pstats.Stats(profiler, stream=s)
-    ps.sort_stats(pstats.SortKey.CUMULATIVE)
+    ps.sort_stats(sortkey)
     ps.print_stats(12)
 
     # Process the output to trim file paths
@@ -60,6 +60,7 @@ def print_profile(profiler: cProfile.Profile) -> None:
         print(new_line)
 
 
+# TODO: Add an RLock for every profiler, currently not thread safe
 class ProfilerStore:
     profilers: dict[str, cProfile.Profile]
 
@@ -76,7 +77,8 @@ class ProfilerStore:
     def on_exit(self) -> None:
         for key, profiler in self.profilers.items():
             print("=" * 7 + key + "=" * 7)
-            print_profile(profiler)
+            print_profile(profiler, pstats.SortKey.TIME)
+            print_profile(profiler, pstats.SortKey.CUMULATIVE)
         print(explanation)
 
 
