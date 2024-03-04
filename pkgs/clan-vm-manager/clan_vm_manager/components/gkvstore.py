@@ -19,7 +19,6 @@ V = TypeVar(
 
 
 class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
-    __gtype_name__ = "MyGKVStore"
     """
     A simple key-value store that implements the Gio.ListModel interface, with generic types for keys and values.
     Only use self[key] and del self[key] for accessing the items for better performance.
