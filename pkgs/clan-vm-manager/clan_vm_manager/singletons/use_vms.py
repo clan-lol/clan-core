@@ -7,7 +7,6 @@ from clan_cli.history.add import HistoryEntry
 
 from clan_vm_manager import assets
 from clan_vm_manager.components.gkvstore import GKVStore
-from clan_vm_manager.components.profiler import profile
 from clan_vm_manager.components.vmobj import VMObject
 
 gi.require_version("GObject", "2.0")
@@ -48,7 +47,6 @@ class ClanStore:
         self.push_history_entry(vm)
         return GLib.SOURCE_REMOVE
 
-    @profile
     def push_history_entry(self, entry: HistoryEntry) -> None:
         # TODO: We shouldn't do this here but in the list view
         if entry.flake.icon is None:
