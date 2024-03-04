@@ -37,3 +37,9 @@ gsettings set org.gtk.Settings.Debug enable-inspector-keybinding true
 # Start the application with the debugger attached
 GTK_DEBUG=interactive ./bin/clan-vm-manager --debug
 ```
+
+## Profiling
+To activate profiling execute:
+```
+PERF=1 ./bin/clan-vm-manager
+```
