@@ -1,5 +1,4 @@
 import logging
-from collections import OrderedDict
 from collections.abc import Callable
 from typing import Any, Generic, TypeVar
 
@@ -29,7 +28,8 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
         super().__init__()
         self.gtype = gtype
         self.key_gen = key_gen
-        self._items: "OrderedDict[K, V]" = OrderedDict()
+        # From Python 3.7 onwards dictionaries are ordered by default
+        self._items: "dict[K, V]" = dict()
 
     ##################################
     #                                #
@@ -175,7 +175,6 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
         else:
             # Add the new key-value pair
             self._items[key] = value
-            self._items.move_to_end(key)
             position = max(len(self._items) - 1, 0)
             self.items_changed(position, 0, 1)
 
