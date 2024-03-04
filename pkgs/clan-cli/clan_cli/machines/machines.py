@@ -125,7 +125,7 @@ class Machine:
         if hasattr(self, "flake_path"):
             return Path(self.flake_path)
 
-        self.flake_path = nix_metadata(self.flake)["path"]
+        self.flake_path: str = nix_metadata(self.flake)["path"]
         return Path(self.flake_path)
 
     @property
