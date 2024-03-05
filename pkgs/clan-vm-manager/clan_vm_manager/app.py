@@ -49,7 +49,20 @@ class MainApplication(Adw.Application):
         )
 
         self.window: Adw.ApplicationWindow | None = None
-        self.connect("activate", self.show_window)
+        self.connect("activate", self.on_activate)
+        self.connect("shutdown", self.on_shutdown)
+
+    def on_shutdown(self, *_args: Any) -> None:
+        log.debug("Shutting down Adw.Application")
+        log.debug(f"get_windows: {self.get_windows()}")
+        if self.window:
+            # TODO: Doesn't seem to raise the destroy signal. Need to investigate
+            # self.get_windows() returns an empty list. Desync between window and application?
+            self.window.close()
+            # Killing vms directly. This is dirty
+            self.window.kill_vms()
+        else:
+            log.error("No window to destroy")
 
     def do_command_line(self, command_line: Any) -> int:
         options = command_line.get_options_dict()
@@ -74,7 +87,9 @@ class MainApplication(Adw.Application):
         return 0
 
     def on_window_hide_unhide(self, *_args: Any) -> None:
-        assert self.window is not None
+        if not self.window:
+            log.error("No window to hide/unhide")
+            return
         if self.window.is_visible():
             self.window.hide()
         else:
@@ -83,13 +98,13 @@ class MainApplication(Adw.Application):
     def dummy_menu_entry(self) -> None:
         log.info("Dummy menu entry called")
 
-    def show_window(self, *_args: Any) -> None:
+    def on_activate(self, app: Any) -> None:
         if not self.window:
             self.init_style()
             self.window = MainWindow(config=ClanConfig(initial_view="list"))
             self.window.set_application(self)
 
-        self.window.present()
+        self.window.show()
 
     # TODO: For css styling
     def init_style(self) -> None:

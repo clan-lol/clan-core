@@ -79,7 +79,9 @@ class ProfilerStore:
             print("=" * 7 + key + "=" * 7)
             print_profile(profiler, pstats.SortKey.TIME)
             print_profile(profiler, pstats.SortKey.CUMULATIVE)
-        print(explanation)
+
+        if len(self.profilers) > 0:
+            print(explanation)
 
 
 def trim_path_to_three_levels(path: str) -> str:
@@ -108,9 +110,8 @@ def profile(func: Callable) -> Callable:
             res = func(*args, **kwargs)
             profiler.disable()
         except Exception as ex:
-            log.exception(ex)
             profiler.disable()
-            return None
+            raise ex
         return res
 
     if os.getenv("PERF", "0") == "1":
