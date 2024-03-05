@@ -72,6 +72,18 @@ class JoinList:
     def on_clan_store_items_changed(
         self, source: Any, position: int, removed: int, added: int
     ) -> None:
+        if added > 0:
+            # Rerendering the join list every time an item changes in the vmstore
+            ClanStore.use().clan_store.values()[position].connect(
+                "items-changed", self.on_vm_store_items_changed
+            )
+        self.list_store.items_changed(
+            0, self.list_store.get_n_items(), self.list_store.get_n_items()
+        )
+
+    def on_vm_store_items_changed(
+        self, source: Any, position: int, removed: int, added: int
+    ) -> None:
         self.list_store.items_changed(
             0, self.list_store.get_n_items(), self.list_store.get_n_items()
         )

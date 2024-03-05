@@ -166,7 +166,6 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
     # O(1) operation if the key does not exist, O(n) if it does
     def __setitem__(self, key: K, value: V) -> None:
         # If the key already exists, remove it O(n)
-        # TODO: We have to check if updating an existing key is working correctly
         if key in self._items:
             log.warning("Updating an existing key in GKVStore is O(n)")
             position = self.keys().index(key)
