@@ -4,7 +4,7 @@ from functools import partial
 from typing import Any
 
 import gi
-from clan_cli import history, machines
+from clan_cli import history
 from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.components.interfaces import ClanConfig
@@ -81,9 +81,10 @@ class ClanList(Gtk.Box):
         app.add_action(add_action)
 
         menu_model = Gio.Menu()
-        for vm in machines.list.list_machines(flake_url=vm.data.flake.flake_url):
-            if vm not in vm_store:
-                menu_model.append(vm, f"app.add::{vm}")
+        # TODO: Make this lazy, blocks UI startup for too long
+        # for vm in machines.list.list_machines(flake_url=vm.data.flake.flake_url):
+        #     if vm not in vm_store:
+        #         menu_model.append(vm, f"app.add::{vm}")
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         box.set_valign(Gtk.Align.CENTER)
