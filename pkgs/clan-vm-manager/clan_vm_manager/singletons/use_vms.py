@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import gi
+from clan_cli.clan_uri import ClanURI
 from clan_cli.history.add import HistoryEntry
 
 from clan_vm_manager import assets
@@ -87,11 +88,11 @@ class ClanStore:
     def remove(self, vm: VMObject) -> None:
         del self.clan_store[vm.data.flake.flake_url][vm.data.flake.flake_attr]
 
-    def get_vm(self, flake_url: str, flake_attr: str) -> None | VMObject:
-        clan = self.clan_store.get(flake_url)
+    def get_vm(self, uri: ClanURI) -> None | VMObject:
+        clan = self.clan_store.get(uri.get_internal())
         if clan is None:
             return None
-        return clan.get(flake_attr, None)
+        return clan.get(uri.params.flake_attr, None)
 
     def get_running_vms(self) -> list[VMObject]:
         return [

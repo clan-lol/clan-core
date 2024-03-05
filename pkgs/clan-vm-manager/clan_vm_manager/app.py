@@ -69,10 +69,10 @@ class MainApplication(Adw.Application):
         # convert GVariantDict -> GVariant -> dict
         options = options.end().unpack()
 
-        if "debug" in options:
+        if "debug" in options and self.window is None:
             setup_logging(logging.DEBUG, root_log_name=__name__.split(".")[0])
             setup_logging(logging.DEBUG, root_log_name="clan_cli")
-        else:
+        elif self.window is None:
             setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
         log.debug("Debug logging enabled")
 
@@ -81,7 +81,6 @@ class MainApplication(Adw.Application):
         self.activate()
 
         if len(args) > 1:
-            log.debug(f"Join request: {args[1]}")
             uri = args[1]
             self.emit("join_request", uri)
         return 0
