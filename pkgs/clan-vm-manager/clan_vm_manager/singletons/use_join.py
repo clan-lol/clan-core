@@ -63,19 +63,31 @@ class JoinList:
             cls._instance = cls.__new__(cls)
             cls.list_store = Gio.ListStore.new(JoinValue)
 
+            # Rerendering the join list every time an item changes in the clan_store
+            ClanStore.use().clan_store.connect(
+                "items-changed", cls._instance.on_clan_store_items_changed
+            )
         return cls._instance
+
+    def on_clan_store_items_changed(
+        self, source: Any, position: int, removed: int, added: int
+    ) -> None:
+        self.list_store.items_changed(
+            0, self.list_store.get_n_items(), self.list_store.get_n_items()
+        )
 
     def is_empty(self) -> bool:
         return self.list_store.get_n_items() == 0
 
     def push(
-        self, value: JoinValue, after_join: Callable[[JoinValue, JoinValue], None]
+        self, uri: ClanURI, after_join: Callable[[JoinValue, JoinValue], None]
     ) -> None:
         """
         Add a join request.
         This method can add multiple join requests if called subsequently for each request.
         """
 
+        value = JoinValue(uri)
         if value.url.get_id() in [item.url.get_id() for item in self.list_store]:
             log.info(f"Join request already exists: {value.url}. Ignoring.")
             return
