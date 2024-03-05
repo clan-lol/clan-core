@@ -63,7 +63,7 @@ class ClanStore:
     def push(self, vm: VMObject) -> None:
         url = vm.data.flake.flake_url
 
-        # Only write to the store if the VM is not already in it
+        # Only write to the store if the Clan is not already in it
         # Every write to the KVStore rerenders bound widgets to the clan_store
         if url not in self.clan_store:
             log.debug(f"Creating new VMStore for {url}")
@@ -71,9 +71,18 @@ class ClanStore:
             vm_store.append(vm)
             self.clan_store[url] = vm_store
         else:
-            log.debug(f"Appending VM {vm.data.flake.flake_attr} to store")
             vm_store = self.clan_store[url]
-            vm_store.append(vm)
+            machine = vm.data.flake.flake_attr
+            old_vm = vm_store.get(machine)
+
+            if old_vm:
+                log.info(
+                    f"VM {vm.data.flake.flake_attr} already exists in store. Updating data field."
+                )
+                old_vm.update(vm.data)
+            else:
+                log.debug(f"Appending VM {vm.data.flake.flake_attr} to store")
+                vm_store.append(vm)
 
     def remove(self, vm: VMObject) -> None:
         del self.clan_store[vm.data.flake.flake_url][vm.data.flake.flake_attr]

@@ -37,6 +37,9 @@ class VMObject(GObject.Object):
         self.emit("vm_status_changed", self)
         return GLib.SOURCE_REMOVE
 
+    def update(self, data: HistoryEntry) -> None:
+        self.data = data
+
     def __init__(
         self,
         icon: Path,
@@ -296,6 +299,7 @@ class VMObject(GObject.Object):
             return
         log.info(f"Killing VM {self.get_id()} now")
         self.vm_process.kill_group()
+        self.build_process.kill_group()
 
     def read_whole_log(self) -> str:
         if not self.vm_process.out_file.exists():
