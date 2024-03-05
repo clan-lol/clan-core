@@ -254,15 +254,15 @@ class VMObject(GObject.Object):
                     f"VM {self.get_id()} has not stopped after {self.KILL_TIMEOUT}s. Killing it"
                 )
                 self.vm_process.kill_group()
-                return
+                break
             if self.is_building():
                 log.info(f"VM {self.get_id()} is still building. Killing it")
                 self.build_process.kill_group()
-                return
+                break
             if not self.machine:
                 log.error(f"Machine object is None. Killing VM {self.get_id()}")
                 self.vm_process.kill_group()
-                return
+                break
 
             # Try to shutdown the VM gracefully using QMP
             try:
