@@ -65,6 +65,11 @@ class MainWindow(Adw.ApplicationWindow):
         for entry in list_history():
             GLib.idle_add(ClanStore.use().create_vm_task, entry)
 
-    def on_destroy(self, *_args: Any) -> None:
-        self.tray_icon.destroy()
+    def kill_vms(self) -> None:
+        log.debug("Killing all VMs")
         ClanStore.use().kill_all()
+
+    def on_destroy(self, *_args: Any) -> None:
+        log.info("====Destroying Adw.ApplicationWindow===")
+        ClanStore.use().kill_all()
+        self.tray_icon.destroy()

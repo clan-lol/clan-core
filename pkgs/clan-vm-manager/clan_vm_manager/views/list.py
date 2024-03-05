@@ -184,13 +184,15 @@ class ClanList(Gtk.Box):
         if boxed_list.has_css_class("no-shadow"):
             boxed_list.remove_css_class("no-shadow")
 
-        row = Adw.ActionRow()
+        log.debug("Rendering join row for %s", item.url)
 
+        row = Adw.ActionRow()
         row.set_title(item.url.params.flake_attr)
         row.set_subtitle(item.url.get_internal())
         row.add_css_class("trust")
 
-        if item.url.params.flake_attr in ClanStore.use().clan_store:
+        # Can't do this here because clan store is empty at this point
+        if item.url.get_internal() in ClanStore.use().clan_store:
             sub = row.get_subtitle()
             row.set_subtitle(
                 sub + "\nClan already exists. Joining again will update it"
@@ -223,8 +225,7 @@ class ClanList(Gtk.Box):
     def on_join_request(self, widget: Any, url: str) -> None:
         log.debug("Join request: %s", url)
         clan_uri = ClanURI.from_str(url)
-        value = JoinValue(url=clan_uri)
-        JoinList.use().push(value, self.on_after_join)
+        JoinList.use().push(clan_uri, self.on_after_join)
 
     def on_after_join(self, source: JoinValue, item: JoinValue) -> None:
         # If the join request list is empty disable the shadow artefact
