@@ -192,6 +192,7 @@ class ClanList(Gtk.Box):
         row.add_css_class("trust")
 
         vm = ClanStore.use().get_vm(item.url)
+
         # Can't do this here because clan store is empty at this point
         if vm is not None:
             sub = row.get_subtitle()
