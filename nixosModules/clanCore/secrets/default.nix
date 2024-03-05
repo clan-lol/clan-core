@@ -59,7 +59,7 @@
                   default = null;
                   description = ''
                     prompt text to ask for a value.
-                    This value will be passed to the script as the environment variabel $prompt_value.
+                    This value will be passed to the script as the environment variable $prompt_value.
                   '';
                 };
                 script = lib.mkOption {
