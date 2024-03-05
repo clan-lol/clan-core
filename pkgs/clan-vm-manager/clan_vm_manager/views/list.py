@@ -191,8 +191,9 @@ class ClanList(Gtk.Box):
         row.set_subtitle(item.url.get_internal())
         row.add_css_class("trust")
 
+        vm = ClanStore.use().get_vm(item.url)
         # Can't do this here because clan store is empty at this point
-        if item.url.get_internal() in ClanStore.use().clan_store:
+        if vm is not None:
             sub = row.get_subtitle()
             row.set_subtitle(
                 sub + "\nClan already exists. Joining again will update it"
