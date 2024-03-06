@@ -1,8 +1,9 @@
 import logging
 import sys
 
+from clan_cli.profiler import profile
+
 from clan_vm_manager.app import MainApplication
-from clan_vm_manager.components.profiler import profile
 
 log = logging.getLogger(__name__)
 

@@ -10,6 +10,7 @@ from . import backups, config, facts, flakes, flash, history, machines, secrets,
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
 from .errors import ClanCmdError, ClanError
+from .profiler import profile
 from .ssh import cli as ssh_cli
 
 log = logging.getLogger(__name__)
@@ -117,6 +118,7 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
 
 
 # this will be the entrypoint under /bin/clan (see pyproject.toml config)
+@profile
 def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
