@@ -7,6 +7,7 @@ import gi
 from clan_cli.clan_uri import ClanURI
 from clan_cli.history.add import HistoryEntry, add_history
 
+from clan_vm_manager.components.gkvstore import GKVStore
 from clan_vm_manager.singletons.use_vms import ClanStore
 
 gi.require_version("Gtk", "4.0")
@@ -20,14 +21,14 @@ class JoinValue(GObject.Object):
     # TODO: custom signals for async join
 
     __gsignals__: ClassVar = {
-        "join_finished": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object]),
+        "join_finished": (GObject.SignalFlags.RUN_FIRST, None, []),
     }
 
     url: ClanURI
     entry: HistoryEntry | None
 
     def _join_finished_task(self) -> bool:
-        self.emit("join_finished", self)
+        self.emit("join_finished")
         return GLib.SOURCE_REMOVE
 
     def __init__(self, url: ClanURI) -> None:
@@ -64,25 +65,11 @@ class JoinList:
             cls.list_store = Gio.ListStore.new(JoinValue)
 
             # Rerendering the join list every time an item changes in the clan_store
-            ClanStore.use().clan_store.connect(
-                "items-changed", cls._instance.on_clan_store_items_changed
-            )
+            ClanStore.use().register_on_deep_change(cls._instance._rerender_join_list)
         return cls._instance
 
-    def on_clan_store_items_changed(
-        self, source: Any, position: int, removed: int, added: int
-    ) -> None:
-        if added > 0:
-            # Rerendering the join list every time an item changes in the vmstore
-            ClanStore.use().clan_store.values()[position].connect(
-                "items-changed", self.on_vm_store_items_changed
-            )
-        self.list_store.items_changed(
-            0, self.list_store.get_n_items(), self.list_store.get_n_items()
-        )
-
-    def on_vm_store_items_changed(
-        self, source: Any, position: int, removed: int, added: int
+    def _rerender_join_list(
+        self, source: GKVStore, position: int, removed: int, added: int
     ) -> None:
         self.list_store.items_changed(
             0, self.list_store.get_n_items(), self.list_store.get_n_items()
@@ -91,9 +78,7 @@ class JoinList:
     def is_empty(self) -> bool:
         return self.list_store.get_n_items() == 0
 
-    def push(
-        self, uri: ClanURI, after_join: Callable[[JoinValue, JoinValue], None]
-    ) -> None:
+    def push(self, uri: ClanURI, after_join: Callable[[JoinValue], None]) -> None:
         """
         Add a join request.
         This method can add multiple join requests if called subsequently for each request.
@@ -109,10 +94,10 @@ class JoinList:
 
         self.list_store.append(value)
 
-    def _on_join_finished(self, _source: GObject.Object, value: JoinValue) -> None:
-        log.info(f"Join finished: {value.url}")
-        self.discard(value)
-        ClanStore.use().push_history_entry(value.entry)
+    def _on_join_finished(self, source: JoinValue) -> None:
+        log.info(f"Join finished: {source.url}")
+        self.discard(source)
+        ClanStore.use().push_history_entry(source.entry)
 
     def discard(self, value: JoinValue) -> None:
         (has, idx) = self.list_store.find(value)
