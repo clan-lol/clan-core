@@ -52,7 +52,7 @@ class MainApplication(Adw.Application):
         self.connect("activate", self.on_activate)
         self.connect("shutdown", self.on_shutdown)
 
-    def on_shutdown(self, *_args: Any) -> None:
+    def on_shutdown(self, source: "MainApplication") -> None:
         log.debug("Shutting down Adw.Application")
         log.debug(f"get_windows: {self.get_windows()}")
         if self.window:
@@ -97,7 +97,7 @@ class MainApplication(Adw.Application):
     def dummy_menu_entry(self) -> None:
         log.info("Dummy menu entry called")
 
-    def on_activate(self, app: Any) -> None:
+    def on_activate(self, source: "MainApplication") -> None:
         if not self.window:
             self.init_style()
             self.window = MainWindow(config=ClanConfig(initial_view="list"))
