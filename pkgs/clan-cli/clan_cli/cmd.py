@@ -4,6 +4,7 @@ import select
 import shlex
 import subprocess
 import sys
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import IO, Any
@@ -67,6 +68,8 @@ def run(
     error_msg: str | None = None,
 ) -> CmdOut:
     glog.debug(f"$: {shlex.join(cmd)} \nCaller: {get_caller()}")
+    tstart = datetime.now()
+
     # Start the subprocess
     process = subprocess.Popen(
         cmd,
@@ -78,6 +81,9 @@ def run(
     stdout_buf, stderr_buf = handle_output(process, log)
 
     rc = process.wait()
+    tend = datetime.now()
+
+    glog.debug(f"Command took {tend - tstart}s to run")
 
     # Wait for the subprocess to finish
     cmd_out = CmdOut(
