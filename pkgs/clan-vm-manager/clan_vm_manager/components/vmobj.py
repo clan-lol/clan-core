@@ -30,11 +30,11 @@ log = logging.getLogger(__name__)
 class VMObject(GObject.Object):
     # Define a custom signal with the name "vm_stopped" and a string argument for the message
     __gsignals__: ClassVar = {
-        "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [GObject.Object])
+        "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [])
     }
 
-    def vm_status_changed_task(self) -> bool:
-        self.emit("vm_status_changed", self)
+    def _vm_status_changed_task(self) -> bool:
+        self.emit("vm_status_changed")
         return GLib.SOURCE_REMOVE
 
     def update(self, data: HistoryEntry) -> None:
@@ -78,14 +78,14 @@ class VMObject(GObject.Object):
         # and block the signal while we change the state. This is cursed.
         self.switch = Gtk.Switch()
         self.switch_handler_id: int = self.switch.connect(
-            "notify::active", self.on_switch_toggle
+            "notify::active", self._on_switch_toggle
         )
-        self.connect("vm_status_changed", self.on_vm_status_changed)
+        self.connect("vm_status_changed", self._on_vm_status_changed)
 
         # Make sure the VM is killed when the reference to this object is dropped
-        self._finalizer = weakref.finalize(self, self.kill_ref_drop)
+        self._finalizer = weakref.finalize(self, self._kill_ref_drop)
 
-    def on_vm_status_changed(self, vm: "VMObject", _vm: "VMObject") -> None:
+    def _on_vm_status_changed(self, source: "VMObject") -> None:
         self.switch.set_state(self.is_running() and not self.is_building())
         if self.switch.get_sensitive() is False and not self.is_building():
             self.switch.set_sensitive(True)
@@ -99,7 +99,7 @@ class VMObject(GObject.Object):
             self.switch.handler_unblock(self.switch_handler_id)
             log.error(f"VM exited with error. Exitcode: {exitc}")
 
-    def on_switch_toggle(self, switch: Gtk.Switch, user_state: bool) -> None:
+    def _on_switch_toggle(self, switch: Gtk.Switch, user_state: bool) -> None:
         if switch.get_active():
             switch.set_state(False)
             self.start()
@@ -111,7 +111,7 @@ class VMObject(GObject.Object):
     # We use a context manager to create the machine object
     # and make sure it is destroyed when the context is exited
     @contextmanager
-    def create_machine(self) -> Generator[Machine, None, None]:
+    def _create_machine(self) -> Generator[Machine, None, None]:
         uri = ClanURI.from_str(
             url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
         )
@@ -137,7 +137,7 @@ class VMObject(GObject.Object):
             return GLib.SOURCE_REMOVE
 
     def __start(self) -> None:
-        with self.create_machine() as machine:
+        with self._create_machine() as machine:
             # Start building VM
             tstart = datetime.now()
             log.info(f"Building VM {self.get_id()}")
@@ -149,7 +149,7 @@ class VMObject(GObject.Object):
                 machine=machine,
                 tmpdir=log_dir,
             )
-            GLib.idle_add(self.vm_status_changed_task)
+            GLib.idle_add(self._vm_status_changed_task)
 
             # Start the logs watcher
             self._logs_id = GLib.timeout_add(
@@ -174,7 +174,7 @@ class VMObject(GObject.Object):
             # Check if the VM was built successfully
             if self.build_process.proc.exitcode != 0:
                 log.error(f"Failed to build VM {self.get_id()}")
-                GLib.idle_add(self.vm_status_changed_task)
+                GLib.idle_add(self._vm_status_changed_task)
                 return
             log.info(f"Successfully built VM {self.get_id()}")
 
@@ -186,7 +186,7 @@ class VMObject(GObject.Object):
                 vm=self.data.flake.vm,
             )
             log.debug(f"Started VM {self.get_id()}")
-            GLib.idle_add(self.vm_status_changed_task)
+            GLib.idle_add(self._vm_status_changed_task)
 
             # Start the logs watcher
             self._logs_id = GLib.timeout_add(50, self._get_logs_task, self.vm_process)
@@ -197,7 +197,7 @@ class VMObject(GObject.Object):
             # Wait for the VM to stop
             self.vm_process.proc.join()
             log.debug(f"VM {self.get_id()} has stopped")
-            GLib.idle_add(self.vm_status_changed_task)
+            GLib.idle_add(self._vm_status_changed_task)
 
     def start(self) -> None:
         if self.is_running():
@@ -273,7 +273,7 @@ class VMObject(GObject.Object):
 
             # Try 20 times to stop the VM
             time.sleep(self.KILL_TIMEOUT / 20)
-        GLib.idle_add(self.vm_status_changed_task)
+        GLib.idle_add(self._vm_status_changed_task)
         log.debug(f"VM {self.get_id()} has stopped")
 
     def shutdown(self) -> None:
@@ -288,7 +288,7 @@ class VMObject(GObject.Object):
         self._stop_thread = threading.Thread(target=self.__stop)
         self._stop_thread.start()
 
-    def kill_ref_drop(self) -> None:
+    def _kill_ref_drop(self) -> None:
         if self.is_running():
             log.warning("Killing VM due to reference drop")
             self.kill()

@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -39,6 +40,27 @@ class ClanStore:
             )
 
         return cls._instance
+
+    def register_on_deep_change(
+        self, callback: Callable[[GKVStore, int, int, int], None]
+    ) -> None:
+        """
+        Register a callback that is called when a clan_store or one of the included VMStores changes
+        """
+
+        def on_vmstore_change(
+            store: VMStore, position: int, removed: int, added: int
+        ) -> None:
+            callback(store, position, removed, added)
+
+        def on_clanstore_change(
+            store: "GKVStore", position: int, removed: int, added: int
+        ) -> None:
+            if added > 0:
+                store.register_on_change(on_vmstore_change)
+            callback(store, position, removed, added)
+
+        self.clan_store.register_on_change(on_clanstore_change)
 
     @property
     def clan_store(self) -> GKVStore[str, VMStore]:
