@@ -4,7 +4,7 @@ import datetime
 
 from clan_cli.flakes.inspect import inspect_flake
 
-from ..clan_uri import ClanParameters, ClanURI
+from ..clan_uri import ClanURI, MachineParams
 from ..errors import ClanCmdError
 from ..locked_open import write_history_file
 from ..nix import nix_metadata
@@ -28,9 +28,9 @@ def update_history() -> list[HistoryEntry]:
             )
             uri = ClanURI.from_str(
                 url=str(entry.flake.flake_url),
-                params=ClanParameters(entry.flake.flake_attr),
+                params=MachineParams(machine_name=entry.flake.flake_attr),
             )
-            flake = inspect_flake(uri.get_internal(), uri.params.flake_attr)
+            flake = inspect_flake(uri.get_url(), uri.machines[0].name)
             flake.flake_url = str(flake.flake_url)
             entry = HistoryEntry(
                 flake=flake, last_used=datetime.datetime.now().isoformat()
