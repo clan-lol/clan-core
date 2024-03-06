@@ -3,7 +3,6 @@
     ./backups.nix
     ./manual.nix
     ./imports.nix
-    ./meshnamed
     ./metadata.nix
     ./networking.nix
     ./nix-settings.nix

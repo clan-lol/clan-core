@@ -73,5 +73,3 @@ def test_generate_secret(
     assert has_secret(test_flake_with_core.path, "vm2-zerotier-identity-secret")
     ip = machine_get_fact(test_flake_with_core.path, "vm1", "zerotier-ip")
     assert ipaddress.IPv6Address(ip).is_private
-    meshname = machine_get_fact(test_flake_with_core.path, "vm1", "zerotier-meshname")
-    assert len(meshname) == 26
