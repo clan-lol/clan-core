@@ -101,7 +101,13 @@ def prepare_disk(
     return disk_img
 
 
-def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
+def run_vm(
+    vm: VmConfig,
+    *,
+    cachedir: Path | None = None,
+    socketdir: Path | None = None,
+    nix_options: list[str] = [],
+) -> None:
     machine = Machine(vm.machine_name, vm.flake_url)
     log.debug(f"Creating VM for {machine}")
 
@@ -109,72 +115,78 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
     # otherwise, when using /tmp, we risk running out of memory
     cache = user_cache_dir() / "clan"
     cache.mkdir(exist_ok=True)
-    with TemporaryDirectory(dir=cache) as cachedir, TemporaryDirectory() as sockets:
-        tmpdir = Path(cachedir)
 
-        # TODO: We should get this from the vm argument
-        nixos_config = build_vm(machine, tmpdir, nix_options)
+    if cachedir is None:
+        cache_tmp = TemporaryDirectory(dir=cache)
+        cachedir = Path(cache_tmp.name)
 
-        state_dir = vm_state_dir(str(vm.flake_url), machine.name)
-        state_dir.mkdir(parents=True, exist_ok=True)
+    if socketdir is None:
+        socket_tmp = TemporaryDirectory()
+        socketdir = Path(socket_tmp.name)
 
-        # specify socket files for qmp and qga
-        qmp_socket_file = Path(sockets) / "qmp.sock"
-        qga_socket_file = Path(sockets) / "qga.sock"
-        # Create symlinks to the qmp/qga sockets to be able to find them later.
-        # This indirection is needed because we cannot put the sockets directly
-        #   in the state_dir.
-        # The reason is, qemu has a length limit of 108 bytes for the qmp socket
-        #   path which is violated easily.
-        qmp_link = state_dir / "qmp.sock"
-        if os.path.lexists(qmp_link):
-            qmp_link.unlink()
-        qmp_link.symlink_to(qmp_socket_file)
+    # TODO: We should get this from the vm argument
+    nixos_config = build_vm(machine, cachedir, nix_options)
 
-        qga_link = state_dir / "qga.sock"
-        if os.path.lexists(qga_link):
-            qga_link.unlink()
-        qga_link.symlink_to(qga_socket_file)
+    state_dir = vm_state_dir(str(vm.flake_url), machine.name)
+    state_dir.mkdir(parents=True, exist_ok=True)
 
-        rootfs_img = prepare_disk(tmpdir)
-        state_img = state_dir / "state.qcow2"
-        if not state_img.exists():
-            state_img = prepare_disk(
-                directory=state_dir,
-                file_name="state.qcow2",
-                size="50G",
-            )
-        virtiofsd_socket = Path(sockets) / "virtiofsd.sock"
-        qemu_cmd = qemu_command(
-            vm,
-            nixos_config,
-            secrets_dir=Path(nixos_config["secrets_dir"]),
-            rootfs_img=rootfs_img,
-            state_img=state_img,
-            virtiofsd_socket=virtiofsd_socket,
-            qmp_socket_file=qmp_socket_file,
-            qga_socket_file=qga_socket_file,
+    # specify socket files for qmp and qga
+    qmp_socket_file = socketdir / "qmp.sock"
+    qga_socket_file = socketdir / "qga.sock"
+    # Create symlinks to the qmp/qga sockets to be able to find them later.
+    # This indirection is needed because we cannot put the sockets directly
+    #   in the state_dir.
+    # The reason is, qemu has a length limit of 108 bytes for the qmp socket
+    #   path which is violated easily.
+    qmp_link = state_dir / "qmp.sock"
+    if os.path.lexists(qmp_link):
+        qmp_link.unlink()
+    qmp_link.symlink_to(qmp_socket_file)
+
+    qga_link = state_dir / "qga.sock"
+    if os.path.lexists(qga_link):
+        qga_link.unlink()
+    qga_link.symlink_to(qga_socket_file)
+
+    rootfs_img = prepare_disk(cachedir)
+    state_img = state_dir / "state.qcow2"
+    if not state_img.exists():
+        state_img = prepare_disk(
+            directory=state_dir,
+            file_name="state.qcow2",
+            size="50G",
         )
+    virtiofsd_socket = socketdir / "virtiofsd.sock"
+    qemu_cmd = qemu_command(
+        vm,
+        nixos_config,
+        secrets_dir=Path(nixos_config["secrets_dir"]),
+        rootfs_img=rootfs_img,
+        state_img=state_img,
+        virtiofsd_socket=virtiofsd_socket,
+        qmp_socket_file=qmp_socket_file,
+        qga_socket_file=qga_socket_file,
+    )
 
-        packages = ["nixpkgs#qemu"]
+    packages = ["nixpkgs#qemu"]
 
-        env = os.environ.copy()
-        if vm.graphics and not vm.waypipe:
-            packages.append("nixpkgs#virt-viewer")
-            remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
-            env[
-                "XDG_DATA_DIRS"
-            ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
+    env = os.environ.copy()
+    if vm.graphics and not vm.waypipe:
+        packages.append("nixpkgs#virt-viewer")
+        remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
+        env[
+            "XDG_DATA_DIRS"
+        ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
 
-        with start_waypipe(
-            qemu_cmd.vsock_cid, f"[{vm.machine_name}] "
-        ), start_virtiofsd(virtiofsd_socket):
-            run(
-                nix_shell(packages, qemu_cmd.args),
-                env=env,
-                log=Log.BOTH,
-                error_msg=f"Could not start vm {machine}",
-            )
+    with start_waypipe(qemu_cmd.vsock_cid, f"[{vm.machine_name}] "), start_virtiofsd(
+        virtiofsd_socket
+    ):
+        run(
+            nix_shell(packages, qemu_cmd.args),
+            env=env,
+            log=Log.BOTH,
+            error_msg=f"Could not start vm {machine}",
+        )
 
 
 @dataclass
@@ -196,7 +208,7 @@ def run_command(args: argparse.Namespace) -> None:
 
     vm = inspect_vm(machine=machine)
 
-    run_vm(vm, run_options.nix_options)
+    run_vm(vm, nix_options=run_options.nix_options)
 
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
