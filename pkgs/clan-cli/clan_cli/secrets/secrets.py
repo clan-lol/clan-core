@@ -57,7 +57,7 @@ def collect_keys_for_path(path: Path) -> set[str]:
 def encrypt_secret(
     flake_dir: Path,
     secret: Path,
-    value: IO[str] | str | None,
+    value: IO[str] | str | bytes | None,
     add_users: list[str] = [],
     add_machines: list[str] = [],
     add_groups: list[str] = [],
