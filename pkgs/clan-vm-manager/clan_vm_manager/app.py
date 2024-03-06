@@ -54,7 +54,8 @@ class MainApplication(Adw.Application):
 
     def on_shutdown(self, source: "MainApplication") -> None:
         log.debug("Shutting down Adw.Application")
-        log.debug(f"get_windows: {self.get_windows()}")
+        if self.get_windows() == []:
+            log.warning("No windows to destroy")
         if self.window:
             # TODO: Doesn't seem to raise the destroy signal. Need to investigate
             # self.get_windows() returns an empty list. Desync between window and application?
