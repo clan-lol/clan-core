@@ -48,8 +48,13 @@
       cat /var/shared/qrcode.utf8
     fi
   '';
-  boot.loader.grub.efiInstallAsRemovable = true;
-  boot.loader.grub.efiSupport = true;
+
+  boot.loader.systemd-boot.enable = true;
+
+  # Grub doesn't find devices for both BIOS and UEFI?
+
+  #boot.loader.grub.efiInstallAsRemovable = true;
+  #boot.loader.grub.efiSupport = true;
   disko.devices = {
     disk = {
       stick = {
@@ -59,10 +64,10 @@
         content = {
           type = "gpt";
           partitions = {
-            boot = {
-              size = "1M";
-              type = "EF02"; # for grub MBR
-            };
+            #boot = {
+            #  size = "1M";
+            #  type = "EF02"; # for grub MBR
+            #};
             ESP = {
               size = "100M";
               type = "EF00";
