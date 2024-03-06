@@ -167,7 +167,7 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
     def __setitem__(self, key: K, value: V) -> None:
         # If the key already exists, remove it O(n)
         if key in self._items:
-            log.warning("Updating an existing key in GKVStore is O(n)")
+            log.debug("Updating an existing key in GKVStore is O(n)")
             position = self.keys().index(key)
             self._items[key] = value
             self.items_changed(position, 1, 1)
@@ -213,3 +213,8 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
 
     def last(self) -> V:
         return self.values()[-1]
+
+    def register_on_change(
+        self, callback: Callable[["GKVStore[K,V]", int, int, int], None]
+    ) -> None:
+        self.connect("items-changed", callback)

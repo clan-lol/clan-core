@@ -1,6 +1,5 @@
 import logging
 import threading
-from typing import Any
 
 import gi
 from clan_cli.history.list import list_history
@@ -69,7 +68,7 @@ class MainWindow(Adw.ApplicationWindow):
         log.debug("Killing all VMs")
         ClanStore.use().kill_all()
 
-    def on_destroy(self, *_args: Any) -> None:
+    def on_destroy(self, source: "Adw.ApplicationWindow") -> None:
         log.info("====Destroying Adw.ApplicationWindow===")
         ClanStore.use().kill_all()
         self.tray_icon.destroy()

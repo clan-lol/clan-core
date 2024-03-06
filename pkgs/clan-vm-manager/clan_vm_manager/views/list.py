@@ -102,7 +102,7 @@ class ClanList(Gtk.Box):
 
         return grp
 
-    def on_add(self, action: Any, parameter: Any) -> None:
+    def on_add(self, source: Any, parameter: Any) -> None:
         target = parameter.get_string()
         print("Adding new machine", target)
 
@@ -176,23 +176,25 @@ class ClanList(Gtk.Box):
 
         return row
 
-    def on_edit(self, action: Any, parameter: Any) -> None:
+    def on_edit(self, source: Any, parameter: Any) -> None:
         target = parameter.get_string()
 
         print("Editing settings for machine", target)
 
-    def render_join_row(self, boxed_list: Gtk.ListBox, item: JoinValue) -> Gtk.Widget:
+    def render_join_row(
+        self, boxed_list: Gtk.ListBox, join_val: JoinValue
+    ) -> Gtk.Widget:
         if boxed_list.has_css_class("no-shadow"):
             boxed_list.remove_css_class("no-shadow")
 
-        log.debug("Rendering join row for %s", item.url)
+        log.debug("Rendering join row for %s", join_val.url)
 
         row = Adw.ActionRow()
-        row.set_title(item.url.params.flake_attr)
-        row.set_subtitle(item.url.get_internal())
+        row.set_title(join_val.url.params.flake_attr)
+        row.set_subtitle(join_val.url.get_internal())
         row.add_css_class("trust")
 
-        vm = ClanStore.use().get_vm(item.url)
+        vm = ClanStore.use().get_vm(join_val.url)
 
         # Can't do this here because clan store is empty at this point
         if vm is not None:
@@ -202,19 +204,19 @@ class ClanList(Gtk.Box):
             )
 
         avatar = Adw.Avatar()
-        avatar.set_text(str(item.url.params.flake_attr))
+        avatar.set_text(str(join_val.url.params.flake_attr))
         avatar.set_show_initials(True)
         avatar.set_size(50)
         row.add_prefix(avatar)
 
         cancel_button = Gtk.Button(label="Cancel")
         cancel_button.add_css_class("error")
-        cancel_button.connect("clicked", partial(self.on_discard_clicked, item))
+        cancel_button.connect("clicked", partial(self.on_discard_clicked, join_val))
         self.cancel_button = cancel_button
 
         trust_button = Gtk.Button(label="Join")
         trust_button.add_css_class("success")
-        trust_button.connect("clicked", partial(self.on_trust_clicked, item))
+        trust_button.connect("clicked", partial(self.on_trust_clicked, join_val))
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         box.set_valign(Gtk.Align.CENTER)
@@ -225,22 +227,22 @@ class ClanList(Gtk.Box):
 
         return row
 
-    def on_join_request(self, widget: Any, url: str) -> None:
+    def on_join_request(self, source: Any, url: str) -> None:
         log.debug("Join request: %s", url)
         clan_uri = ClanURI.from_str(url)
         JoinList.use().push(clan_uri, self.on_after_join)
 
-    def on_after_join(self, source: JoinValue, item: JoinValue) -> None:
+    def on_after_join(self, source: JoinValue) -> None:
         # If the join request list is empty disable the shadow artefact
         if JoinList.use().is_empty():
             self.join_boxed_list.add_css_class("no-shadow")
 
-    def on_trust_clicked(self, value: JoinValue, widget: Gtk.Widget) -> None:
-        widget.set_sensitive(False)
+    def on_trust_clicked(self, value: JoinValue, source: Gtk.Widget) -> None:
+        source.set_sensitive(False)
         self.cancel_button.set_sensitive(False)
         value.join()
 
-    def on_discard_clicked(self, value: JoinValue, widget: Gtk.Widget) -> None:
+    def on_discard_clicked(self, value: JoinValue, source: Gtk.Widget) -> None:
         JoinList.use().discard(value)
         if JoinList.use().is_empty():
             self.join_boxed_list.add_css_class("no-shadow")
