@@ -160,7 +160,7 @@ examples.
 `clan secrets` stores each secrets in a single file, whereas [sops](https://github.com/Mic92/sops-nix)
 commonly allows to put all secrets in a yaml or json documents.
 
-If you already happend to use sops-nix, you can migrate by using the `clan secrets import-sops` command by importing these documents:
+If you already happened to use sops-nix, you can migrate by using the `clan secrets import-sops` command by importing these documents:
 
 ```shellSession
 % clan secrets import-sops --prefix matchbox- --group admins --machine matchbox nixos/matchbox/secrets/secrets.yaml
