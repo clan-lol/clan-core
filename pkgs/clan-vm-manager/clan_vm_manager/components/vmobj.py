@@ -14,7 +14,6 @@ from typing import IO, ClassVar
 import gi
 from clan_cli import vms
 from clan_cli.clan_uri import ClanScheme, ClanURI
-from clan_cli.errors import ClanError
 from clan_cli.history.add import HistoryEntry
 from clan_cli.machines.machines import Machine
 
@@ -102,6 +101,7 @@ class VMObject(GObject.Object):
     def _on_switch_toggle(self, switch: Gtk.Switch, user_state: bool) -> None:
         if switch.get_active():
             switch.set_state(False)
+            switch.set_sensitive(False)
             self.start()
         else:
             switch.set_state(True)
@@ -142,6 +142,8 @@ class VMObject(GObject.Object):
             tstart = datetime.now()
             log.info(f"Building VM {self.get_id()}")
             log_dir = Path(str(self.log_dir.name))
+
+            # Start the build process
             self.build_process = spawn(
                 on_except=None,
                 out_file=log_dir / "build.log",
@@ -150,7 +152,7 @@ class VMObject(GObject.Object):
                 tmpdir=log_dir,
             )
             GLib.idle_add(self._vm_status_changed_task)
-
+            self.switch.set_sensitive(True)
             # Start the logs watcher
             self._logs_id = GLib.timeout_add(
                 50, self._get_logs_task, self.build_process
@@ -184,6 +186,8 @@ class VMObject(GObject.Object):
                 out_file=Path(str(self.log_dir.name)) / "vm.log",
                 func=vms.run.run_vm,
                 vm=self.data.flake.vm,
+                cachedir=log_dir,
+                socketdir=log_dir,
             )
             log.debug(f"Started VM {self.get_id()}")
             GLib.idle_add(self._vm_status_changed_task)
@@ -268,7 +272,7 @@ class VMObject(GObject.Object):
             try:
                 with self.machine.vm.qmp_ctx() as qmp:
                     qmp.command("system_powerdown")
-            except (OSError, ClanError) as ex:
+            except Exception as ex:
                 log.debug(f"QMP command 'system_powerdown' ignored. Error: {ex}")
 
             # Try 20 times to stop the VM
@@ -298,8 +302,12 @@ class VMObject(GObject.Object):
             log.warning(f"Tried to kill VM {self.get_id()} is not running")
             return
         log.info(f"Killing VM {self.get_id()} now")
-        self.vm_process.kill_group()
-        self.build_process.kill_group()
+
+        if self.vm_process.proc.is_alive():
+            self.vm_process.kill_group()
+
+        if self.build_process.proc.is_alive():
+            self.build_process.kill_group()
 
     def read_whole_log(self) -> str:
         if not self.vm_process.out_file.exists():

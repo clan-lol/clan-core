@@ -18,8 +18,6 @@ log = logging.getLogger(__name__)
 
 
 class JoinValue(GObject.Object):
-    # TODO: custom signals for async join
-
     __gsignals__: ClassVar = {
         "join_finished": (GObject.SignalFlags.RUN_FIRST, None, []),
     }
