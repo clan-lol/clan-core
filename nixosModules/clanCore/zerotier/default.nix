@@ -87,14 +87,10 @@ in
       # having to re-import nixpkgs.
       services.zerotierone.package = lib.mkDefault (pkgs.zerotierone.overrideAttrs (_old: { meta = { }; }));
     })
-    (lib.mkIf ((facts.zerotier-meshname.value or null) != null) {
-      environment.etc."zerotier/hostname".text = "${facts.zerotier-meshname.value}.vpn";
-    })
     (lib.mkIf ((facts.zerotier-ip.value or null) != null) {
       environment.etc."zerotier/ip".text = facts.zerotier-ip.value;
     })
     (lib.mkIf (cfg.networkId != null) {
-      clan.networking.meshnamed.networks.vpn.subnet = cfg.subnet;
 
       systemd.network.networks."09-zerotier" = {
         matchConfig.Name = "zt*";
@@ -174,14 +170,12 @@ in
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
       clanCore.secrets.zerotier = {
         facts.zerotier-ip = { };
-        facts.zerotier-meshname = { };
         facts.zerotier-network-id = { };
         secrets.zerotier-identity-secret = { };
         generator.path = [ config.services.zerotierone.package pkgs.fakeroot pkgs.python3 ];
         generator.script = ''
           python3 ${./generate.py} --mode network \
             --ip "$facts/zerotier-ip" \
-            --meshname "$facts/zerotier-meshname" \
             --identity-secret "$secrets/zerotier-identity-secret" \
             --network-id "$facts/zerotier-network-id"
         '';
@@ -193,13 +187,11 @@ in
     (lib.mkIf (!cfg.controller.enable && cfg.networkId != null) {
       clanCore.secrets.zerotier = {
         facts.zerotier-ip = { };
-        facts.zerotier-meshname = { };
         secrets.zerotier-identity-secret = { };
         generator.path = [ config.services.zerotierone.package pkgs.python3 ];
         generator.script = ''
           python3 ${./generate.py} --mode identity \
             --ip "$facts/zerotier-ip" \
-            --meshname "$facts/zerotier-meshname" \
             --identity-secret "$secrets/zerotier-identity-secret" \
             --network-id ${cfg.networkId}
         '';

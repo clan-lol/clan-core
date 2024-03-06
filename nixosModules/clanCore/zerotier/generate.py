@@ -1,5 +1,4 @@
 import argparse
-import base64
 import contextlib
 import ipaddress
 import json
@@ -198,17 +197,12 @@ def compute_zerotier_ip(network_id: str, identity: Identity) -> ipaddress.IPv6Ad
     return ipaddress.IPv6Address(bytes(addr_parts))
 
 
-def compute_zerotier_meshname(ip: ipaddress.IPv6Address) -> str:
-    return base64.b32encode(ip.packed)[0:26].decode("ascii").lower()
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--mode", choices=["network", "identity"], required=True, type=str
     )
     parser.add_argument("--ip", type=Path, required=True)
-    parser.add_argument("--meshname", type=Path, required=True)
     parser.add_argument("--identity-secret", type=Path, required=True)
     parser.add_argument("--network-id", type=str, required=False)
     args = parser.parse_args()
@@ -227,11 +221,9 @@ def main() -> None:
         case _:
             raise ValueError(f"unknown mode {args.mode}")
     ip = compute_zerotier_ip(network_id, identity)
-    meshname = compute_zerotier_meshname(ip)
 
     args.identity_secret.write_text(identity.private)
     args.ip.write_text(ip.compressed)
-    args.meshname.write_text(meshname)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,6 @@
         inherit (config.packages) tea-create-pr;
       };
       pending-reviews = pkgs.callPackage ./pending-reviews { };
-      meshname = pkgs.callPackage ./meshname { };
     } // lib.optionalAttrs pkgs.stdenv.isLinux {
       wayland-proxy-virtwl = pkgs.callPackage ./wayland-proxy-virtwl { };
       waypipe = pkgs.waypipe.overrideAttrs

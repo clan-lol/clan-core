@@ -4,9 +4,7 @@
 
   services.maddy =
     let
-      # FIXME move this to public setting
-      meshname = config.clanCore.secrets.zerotier.facts.zerotier-meshname.value or null;
-      domain = if meshname == null then "${config.clanCore.machineName}.local" else "${meshname}.vpn";
+      domain = "${config.clanCore.machineName}.local";
     in
     {
       enable = true;
