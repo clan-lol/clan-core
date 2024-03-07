@@ -21,12 +21,6 @@ in
         (modulesPath + "/testing/test-instrumentation.nix") # we need these 2 modules always to be able to run the tests
         (modulesPath + "/profiles/qemu-guest.nix")
       ];
-      fileSystems."/nix/store" = lib.mkForce {
-        device = "nix-store";
-        fsType = "9p";
-        neededForBoot = true;
-        options = [ "trans=virtio" "version=9p2000.L" "cache=loose" ];
-      };
       clan.diskLayouts.singleDiskExt4.device = "/dev/vdb";
 
       environment.etc."install-successful".text = "ok";
@@ -92,22 +86,22 @@ in
 
               testScript = ''
                 def create_test_machine(oldmachine=None, args={}): # taken from <nixpkgs/nixos/tests/installer.nix>
+                    startCommand = "${pkgs.qemu_test}/bin/qemu-kvm"
+                    startCommand += " -cpu max -m 1024 -virtfs local,path=/nix/store,security_model=none,mount_tag=nix-store"
+                    startCommand += f' -drive file={oldmachine.state_dir}/empty0.qcow2,id=drive1,if=none,index=1,werror=report'
+                    startCommand += ' -device virtio-blk-pci,drive=drive1'
                     machine = create_machine({
-                      "qemuFlags":
-                        '-cpu max -m 1024 -virtfs local,path=/nix/store,security_model=none,mount_tag=nix-store,'
-                        f' -drive file={oldmachine.state_dir}/empty0.qcow2,id=drive1,if=none,index=1,werror=report'
-                        f' -device virtio-blk-pci,drive=drive1',
+                      "startCommand": startCommand,
                     } | args)
                     driver.machines.append(machine)
                     return machine
-
 
                 start_all()
 
                 client.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../lib/ssh/privkey} /root/.ssh/id_ed25519")
                 client.wait_until_succeeds("ssh -o StrictHostKeyChecking=accept-new -v root@target hostname")
 
-                client.succeed("clan --debug --flake ${../..} machines install test_install_machine root@target >&2")
+                client.succeed("clan --debug --flake ${../..} machines install --yes test_install_machine root@target >&2")
                 try:
                   target.shutdown()
                 except BrokenPipeError:
