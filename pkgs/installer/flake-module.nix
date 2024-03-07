@@ -12,7 +12,12 @@ let
     nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
   };
 
-  installer = lib.nixosSystem { modules = [ installerModule ]; };
+  installer = lib.nixosSystem {
+    modules = [
+      installerModule
+      { disko.memSize = 4096; } # FIXME: otherwise the image builder goes OOM
+    ];
+  };
 
   clan = self.lib.buildClan {
     clanName = "clan-core";
