@@ -79,8 +79,8 @@ def new_history_entry(url: str, machine: str) -> HistoryEntry:
 def add_all_to_history(uri: ClanURI) -> list[HistoryEntry]:
     history = list_history()
     new_entries: list[HistoryEntry] = []
-    for machine in list_machines(uri.get_internal()):
-        new_entry = _add_maschine_to_history_list(uri.get_internal(), machine, history)
+    for machine in list_machines(uri.get_url()):
+        new_entry = _add_maschine_to_history_list(uri.get_url(), machine, history)
         new_entries.append(new_entry)
     write_history_file(history)
     return new_entries
@@ -89,9 +89,7 @@ def add_all_to_history(uri: ClanURI) -> list[HistoryEntry]:
 def add_history(uri: ClanURI) -> HistoryEntry:
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
     history = list_history()
-    new_entry = _add_maschine_to_history_list(
-        uri.get_internal(), uri.params.flake_attr, history
-    )
+    new_entry = _add_maschine_to_history_list(uri.get_url(), uri.machine.name, history)
     write_history_file(history)
     return new_entry
 
@@ -121,9 +119,7 @@ def add_history_command(args: argparse.Namespace) -> None:
 
 # takes a (sub)parser and configures it
 def register_add_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
-        "uri", type=ClanURI.from_str, help="Path to the flake", default="."
-    )
+    parser.add_argument("uri", type=ClanURI, help="Path to the flake", default=".")
     parser.add_argument(
         "--all", help="Add all machines", default=False, action="store_true"
     )

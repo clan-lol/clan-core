@@ -62,8 +62,8 @@ class JoinList:
             cls._instance = cls.__new__(cls)
             cls.list_store = Gio.ListStore.new(JoinValue)
 
-            # Rerendering the join list every time an item changes in the clan_store
             ClanStore.use().register_on_deep_change(cls._instance._rerender_join_list)
+
         return cls._instance
 
     def _rerender_join_list(
@@ -83,7 +83,9 @@ class JoinList:
         """
 
         value = JoinValue(uri)
-        if value.url.get_id() in [item.url.get_id() for item in self.list_store]:
+        if value.url.machine.get_id() in [
+            item.url.machine.get_id() for item in self.list_store
+        ]:
             log.info(f"Join request already exists: {value.url}. Ignoring.")
             return
 
