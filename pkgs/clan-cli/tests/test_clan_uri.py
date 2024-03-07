@@ -55,7 +55,7 @@ def test_remote_with_clanparams() -> None:
     # Create a ClanURI object from a remote URI with parameters
     uri = ClanURI("clan://https://example.com")
 
-    assert uri.machines[0].name == "defaultVM"
+    assert uri.machine.name == "defaultVM"
 
     match uri.url:
         case ClanUrl.REMOTE.value(url):
@@ -65,11 +65,64 @@ def test_remote_with_clanparams() -> None:
 
 
 def test_remote_with_all_params() -> None:
-    uri = ClanURI("clan://https://example.com?password=12345#myVM#secondVM")
-    assert uri.machines[0].name == "myVM"
-    assert uri.machines[1].name == "secondVM"
+    uri = ClanURI("clan://https://example.com?password=12345#myVM#secondVM?dummy_opt=1")
+    assert uri.machine.name == "myVM"
+    assert uri._machines[1].name == "secondVM"
+    assert uri._machines[1].params.dummy_opt == "1"
     match uri.url:
         case ClanUrl.REMOTE.value(url):
             assert url == "https://example.com?password=12345"  # type: ignore
+        case _:
+            assert False
+
+
+def test_from_str_remote() -> None:
+    uri = ClanURI.from_str(url="https://example.com", machine_name="myVM")
+    assert uri.get_url() == "https://example.com"
+    assert uri.get_orig_uri() == "clan://https://example.com#myVM"
+    assert uri.machine.name == "myVM"
+    assert len(uri._machines) == 1
+    match uri.url:
+        case ClanUrl.REMOTE.value(url):
+            assert url == "https://example.com"  # type: ignore
+        case _:
+            assert False
+
+
+def test_from_str_local() -> None:
+    uri = ClanURI.from_str(url="~/Projects/democlan", machine_name="myVM")
+    assert uri.get_url().endswith("/Projects/democlan")
+    assert uri.get_orig_uri() == "clan://~/Projects/democlan#myVM"
+    assert uri.machine.name == "myVM"
+    assert len(uri._machines) == 1
+    match uri.url:
+        case ClanUrl.LOCAL.value(path):
+            assert str(path).endswith("/Projects/democlan")  # type: ignore
+        case _:
+            assert False
+
+
+def test_from_str_local_no_machine() -> None:
+    uri = ClanURI.from_str("~/Projects/democlan")
+    assert uri.get_url().endswith("/Projects/democlan")
+    assert uri.get_orig_uri() == "clan://~/Projects/democlan"
+    assert uri.machine.name == "defaultVM"
+    assert len(uri._machines) == 1
+    match uri.url:
+        case ClanUrl.LOCAL.value(path):
+            assert str(path).endswith("/Projects/democlan")  # type: ignore
+        case _:
+            assert False
+
+
+def test_from_str_local_no_machine2() -> None:
+    uri = ClanURI.from_str("~/Projects/democlan#syncthing-peer1")
+    assert uri.get_url().endswith("/Projects/democlan")
+    assert uri.get_orig_uri() == "clan://~/Projects/democlan#syncthing-peer1"
+    assert uri.machine.name == "syncthing-peer1"
+    assert len(uri._machines) == 1
+    match uri.url:
+        case ClanUrl.LOCAL.value(path):
+            assert str(path).endswith("/Projects/democlan")  # type: ignore
         case _:
             assert False

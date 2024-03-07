@@ -190,8 +190,8 @@ class ClanList(Gtk.Box):
         log.debug("Rendering join row for %s", join_val.url)
 
         row = Adw.ActionRow()
-        row.set_title(join_val.url.params.flake_attr)
-        row.set_subtitle(join_val.url.get_internal())
+        row.set_title(join_val.url.machine.name)
+        row.set_subtitle(str(join_val.url))
         row.add_css_class("trust")
 
         vm = ClanStore.use().get_vm(join_val.url)
@@ -204,7 +204,7 @@ class ClanList(Gtk.Box):
             )
 
         avatar = Adw.Avatar()
-        avatar.set_text(str(join_val.url.params.flake_attr))
+        avatar.set_text(str(join_val.url.machine.name))
         avatar.set_show_initials(True)
         avatar.set_size(50)
         row.add_prefix(avatar)
@@ -229,7 +229,7 @@ class ClanList(Gtk.Box):
 
     def on_join_request(self, source: Any, url: str) -> None:
         log.debug("Join request: %s", url)
-        clan_uri = ClanURI.from_str(url)
+        clan_uri = ClanURI(url)
         JoinList.use().push(clan_uri, self.on_after_join)
 
     def on_after_join(self, source: JoinValue) -> None:

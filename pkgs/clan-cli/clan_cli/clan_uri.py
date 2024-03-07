@@ -19,7 +19,10 @@ class ClanUrl(Enum):
         url: str  # The url field holds the HTTP URL
 
         def __str__(self) -> str:
-            return f"REMOTE({self.url})"  # The __str__ method returns a custom string representation
+            return f"{self.url}"  # The __str__ method returns a custom string representation
+
+        def __repr__(self) -> str:
+            return f"ClanUrl.REMOTE({self.url})"
 
     @member
     @dataclass
@@ -27,7 +30,10 @@ class ClanUrl(Enum):
         path: Path  # The path field holds the local path
 
         def __str__(self) -> str:
-            return f"LOCAL({self.path})"  # The __str__ method returns a custom string representation
+            return f"{self.path}"  # The __str__ method returns a custom string representation
+
+        def __repr__(self) -> str:
+            return f"ClanUrl.LOCAL({self.path})"
 
 
 # Parameters defined here will be DELETED from the nested uri
@@ -39,8 +45,12 @@ class MachineParams:
 
 @dataclass
 class MachineData:
+    url: ClanUrl
     name: str = "defaultVM"
     params: MachineParams = dataclasses.field(default_factory=MachineParams)
+
+    def get_id(self) -> str:
+        return f"{self.url}#{self.name}"
 
 
 # Define the ClanURI class
@@ -49,11 +59,11 @@ class ClanURI:
     _nested_uri: str
     _components: urllib.parse.ParseResult
     url: ClanUrl
-    machines: list[MachineData]
+    _machines: list[MachineData]
 
     # Initialize the class with a clan:// URI
     def __init__(self, uri: str) -> None:
-        self.machines = []
+        self._machines = []
 
         # users might copy whitespace along with the uri
         uri = uri.strip()
@@ -85,11 +95,12 @@ class ClanURI:
         )
         for machine_frag in machine_frags:
             machine = self._parse_machine_query(machine_frag)
-            self.machines.append(machine)
+            self._machines.append(machine)
 
         # If there are no machine fragments, add a default machine
         if len(machine_frags) == 0:
-            self.machines.append(MachineData())
+            default_machine = MachineData(url=self.url)
+            self._machines.append(default_machine)
 
     def _parse_url(self, comps: urllib.parse.ParseResult) -> ClanUrl:
         comb = (
@@ -126,20 +137,35 @@ class ClanURI:
                 # we need to make sure there are no conflicts
                 del query[dfield.name]
         params = MachineParams(**machine_params)
-        machine = MachineData(name=machine_name, params=params)
+        machine = MachineData(url=self.url, name=machine_name, params=params)
         return machine
+
+    @property
+    def machine(self) -> MachineData:
+        return self._machines[0]
 
     def get_orig_uri(self) -> str:
         return self._orig_uri
 
     def get_url(self) -> str:
-        match self.url:
-            case ClanUrl.LOCAL.value(path):
-                return str(path)
-            case ClanUrl.REMOTE.value(url):
-                return url
-            case _:
-                raise ClanError(f"Unsupported uri components: {self.url}")
+        return str(self.url)
+
+    @classmethod
+    def from_str(
+        cls,  # noqa
+        url: str,
+        machine_name: str | None = None,
+    ) -> "ClanURI":
+        clan_uri = ""
+        if not url.startswith("clan://"):
+            clan_uri += "clan://"
+
+        clan_uri += url
+
+        if machine_name:
+            clan_uri += f"#{machine_name}"
+
+        return cls(clan_uri)
 
     def __str__(self) -> str:
         return self.get_orig_uri()
