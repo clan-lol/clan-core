@@ -57,7 +57,7 @@ class ClanStore:
             store: "GKVStore", position: int, removed: int, added: int
         ) -> None:
             if added > 0:
-                store.register_on_change(on_vmstore_change)
+                store.values()[position].register_on_change(on_vmstore_change)
             callback(store, position, removed, added)
 
         self.clan_store.register_on_change(on_clanstore_change)
@@ -111,10 +111,11 @@ class ClanStore:
         del self.clan_store[vm.data.flake.flake_url][vm.data.flake.flake_attr]
 
     def get_vm(self, uri: ClanURI) -> None | VMObject:
-        clan = self.clan_store.get(uri.get_internal())
-        if clan is None:
+        vm_store = self.clan_store.get(str(uri.url))
+        if vm_store is None:
             return None
-        return clan.get(uri.params.flake_attr, None)
+        machine = vm_store.get(uri.machine.name, None)
+        return machine
 
     def get_running_vms(self) -> list[VMObject]:
         return [

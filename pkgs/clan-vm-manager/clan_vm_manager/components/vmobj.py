@@ -13,7 +13,7 @@ from typing import IO, ClassVar
 
 import gi
 from clan_cli import vms
-from clan_cli.clan_uri import ClanScheme, ClanURI
+from clan_cli.clan_uri import ClanURI, ClanUrl
 from clan_cli.history.add import HistoryEntry
 from clan_cli.machines.machines import Machine
 
@@ -116,12 +116,12 @@ class VMObject(GObject.Object):
             url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
         )
         match uri.scheme:
-            case ClanScheme.LOCAL.value(path):
+            case ClanUrl.LOCAL.value(path):
                 self.machine = Machine(
                     name=self.data.flake.flake_attr,
                     flake=path,  # type: ignore
                 )
-            case ClanScheme.REMOTE.value(url):
+            case ClanUrl.REMOTE.value(url):
                 self.machine = Machine(
                     name=self.data.flake.flake_attr,
                     flake=url,  # type: ignore
