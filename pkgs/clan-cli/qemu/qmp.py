@@ -1,6 +1,6 @@
 # mypy: ignore-errors
 
-""" QEMU Monitor Protocol Python class """
+"""QEMU Monitor Protocol Python class"""
 # Copyright (C) 2009, 2010 Red Hat Inc.
 #
 # Authors:

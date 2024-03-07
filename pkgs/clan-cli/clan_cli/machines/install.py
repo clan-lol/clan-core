@@ -63,6 +63,7 @@ class InstallOptions:
     machine: str
     target_host: str
     kexec: str | None
+    confirm: bool
 
 
 def install_command(args: argparse.Namespace) -> None:
@@ -71,9 +72,15 @@ def install_command(args: argparse.Namespace) -> None:
         machine=args.machine,
         target_host=args.target_host,
         kexec=args.kexec,
+        confirm=not args.yes,
     )
     machine = Machine(opts.machine, flake=opts.flake)
     machine.target_host_address = opts.target_host
+
+    if opts.confirm:
+        ask = input(f"Install {machine.name} to {opts.target_host}? [y/N] ")
+        if ask != "y":
+            return
 
     install_nixos(machine, kexec=opts.kexec)
 
@@ -83,6 +90,12 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         "--kexec",
         type=str,
         help="use another kexec tarball to bootstrap NixOS",
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="do not ask for confirmation",
+        default=False,
     )
     parser.add_argument(
         "machine",

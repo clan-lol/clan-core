@@ -174,12 +174,13 @@ def run_vm(
     if vm.graphics and not vm.waypipe:
         packages.append("nixpkgs#virt-viewer")
         remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
-        env[
-            "XDG_DATA_DIRS"
-        ] = f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
+        env["XDG_DATA_DIRS"] = (
+            f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
+        )
 
-    with start_waypipe(qemu_cmd.vsock_cid, f"[{vm.machine_name}] "), start_virtiofsd(
-        virtiofsd_socket
+    with (
+        start_waypipe(qemu_cmd.vsock_cid, f"[{vm.machine_name}] "),
+        start_virtiofsd(virtiofsd_socket),
     ):
         run(
             nix_shell(packages, qemu_cmd.args),
