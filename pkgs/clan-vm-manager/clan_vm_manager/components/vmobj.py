@@ -113,9 +113,9 @@ class VMObject(GObject.Object):
     @contextmanager
     def _create_machine(self) -> Generator[Machine, None, None]:
         uri = ClanURI.from_str(
-            url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
+            url=self.data.flake.flake_url, machine_name=self.data.flake.flake_attr
         )
-        match uri.scheme:
+        match uri.url:
             case ClanUrl.LOCAL.value(path):
                 self.machine = Machine(
                     name=self.data.flake.flake_attr,
