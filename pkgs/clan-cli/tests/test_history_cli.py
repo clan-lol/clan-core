@@ -6,7 +6,7 @@ from cli import Cli
 from fixtures_flakes import FlakeForTest
 from pytest import CaptureFixture
 
-from clan_cli.clan_uri import ClanParameters, ClanURI
+from clan_cli.clan_uri import ClanURI
 from clan_cli.dirs import user_history_file
 from clan_cli.history.add import HistoryEntry
 
@@ -19,8 +19,7 @@ def test_history_add(
     test_flake_with_core: FlakeForTest,
 ) -> None:
     cli = Cli()
-    params = ClanParameters(flake_attr="vm1")
-    uri = ClanURI.from_path(test_flake_with_core.path, params=params)
+    uri = ClanURI.from_str(str(test_flake_with_core.path), "vm1")
     cmd = [
         "history",
         "add",
@@ -40,8 +39,7 @@ def test_history_list(
     test_flake_with_core: FlakeForTest,
 ) -> None:
     cli = Cli()
-    params = ClanParameters(flake_attr="vm1")
-    uri = ClanURI.from_path(test_flake_with_core.path, params=params)
+    uri = ClanURI.from_str(str(test_flake_with_core.path), "vm1")
     cmd = [
         "history",
         "list",
