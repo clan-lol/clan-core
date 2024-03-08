@@ -111,7 +111,7 @@ class ClanStore:
         del self.clan_store[vm.data.flake.flake_url][vm.data.flake.flake_attr]
 
     def get_vm(self, uri: ClanURI) -> None | VMObject:
-        vm_store = self.clan_store.get(str(uri.url))
+        vm_store = self.clan_store.get(str(uri.flake_id))
         if vm_store is None:
             return None
         machine = vm_store.get(uri.machine.name, None)
