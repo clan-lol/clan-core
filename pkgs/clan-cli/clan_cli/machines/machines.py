@@ -66,7 +66,7 @@ class Machine:
         if machine is None:
             uri = ClanURI.from_str(str(flake), name)
             machine = uri.machine
-            self.flake: str | Path = machine.url.value
+            self.flake: str | Path = machine.flake_id._value
             self.name: str = machine.name
             self.data: MachineData = machine
         else:
@@ -77,12 +77,12 @@ class Machine:
         self._flake_path: Path | None = None
         self._deployment_info: None | dict[str, str] = deployment_info
 
-        state_dir = vm_state_dir(flake_url=str(self.data.url), vm_name=self.data.name)
+        state_dir = vm_state_dir(flake_url=str(self.flake), vm_name=self.data.name)
 
         self.vm: QMPWrapper = QMPWrapper(state_dir)
 
     def __str__(self) -> str:
-        return f"Machine(name={self.data.name}, flake={self.data.url})"
+        return f"Machine(name={self.data.name}, flake={self.data.flake_id})"
 
     def __repr__(self) -> str:
         return str(self)
@@ -139,12 +139,12 @@ class Machine:
         if self._flake_path:
             return self._flake_path
 
-        if self.data.url.is_local():
-            self._flake_path = Path(str(self.data.url))
-        elif self.data.url.is_remote():
-            self._flake_path = Path(nix_metadata(str(self.data.url))["path"])
+        if self.data.flake_id.is_local():
+            self._flake_path = self.data.flake_id.path
+        elif self.data.flake_id.is_remote():
+            self._flake_path = Path(nix_metadata(self.data.flake_id.url)["path"])
         else:
-            raise ClanError(f"Unsupported flake url: {self.data.url}")
+            raise ClanError(f"Unsupported flake url: {self.data.flake_id}")
 
         assert self._flake_path is not None
         return self._flake_path

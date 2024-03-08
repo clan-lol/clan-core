@@ -115,15 +115,15 @@ class VMObject(GObject.Object):
         uri = ClanURI.from_str(
             url=self.data.flake.flake_url, machine_name=self.data.flake.flake_attr
         )
-        if uri.url.is_local():
+        if uri.flake_id.is_local():
             self.machine = Machine(
                 name=self.data.flake.flake_attr,
-                flake=Path(str(uri.url)),
+                flake=uri.flake_id.path,
             )
-        if uri.url.is_remote():
+        if uri.flake_id.is_remote():
             self.machine = Machine(
                 name=self.data.flake.flake_attr,
-                flake=str(uri.url),
+                flake=uri.flake_id.url,
             )
         yield self.machine
         self.machine = None
