@@ -75,10 +75,7 @@ in
         };
         system.extraDependencies = dependencies;
         clanCore.state.test-backups.folders = [ "/var/test-backups" ];
-        clan.borgbackup = {
-          enable = true;
-          destinations.test_backup_server.repo = "borg@server:.";
-        };
+        clan.borgbackup.destinations.test_backup_server.repo = "borg@server:.";
       };
   };
   perSystem = { nodes, pkgs, ... }: {
