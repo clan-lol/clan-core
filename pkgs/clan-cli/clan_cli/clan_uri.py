@@ -16,24 +16,24 @@ class ClanUrl(Enum):
     @member
     @dataclass
     class REMOTE:
-        url: str  # The url field holds the HTTP URL
+        value: str  # The url field holds the HTTP URL
 
         def __str__(self) -> str:
-            return f"{self.url}"  # The __str__ method returns a custom string representation
+            return f"{self.value}"  # The __str__ method returns a custom string representation
 
         def __repr__(self) -> str:
-            return f"ClanUrl.REMOTE({self.url})"
+            return f"ClanUrl.REMOTE({self.value})"
 
     @member
     @dataclass
     class LOCAL:
-        path: Path  # The path field holds the local path
+        value: Path  # The path field holds the local path
 
         def __str__(self) -> str:
-            return f"{self.path}"  # The __str__ method returns a custom string representation
+            return f"{self.value}"  # The __str__ method returns a custom string representation
 
         def __repr__(self) -> str:
-            return f"ClanUrl.LOCAL({self.path})"
+            return f"ClanUrl.LOCAL({self.value})"
 
 
 # Parameters defined here will be DELETED from the nested uri
