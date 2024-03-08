@@ -10,22 +10,30 @@ from .errors import ClanError
 
 
 @dataclass
-class ClanUrl:
-    value: str | Path
+class FlakeId:
+    _value: str | Path
 
     def __str__(self) -> str:
-        return (
-            f"{self.value}"  # The __str__ method returns a custom string representation
-        )
+        return f"{self._value}"  # The __str__ method returns a custom string representation
+
+    @property
+    def path(self) -> Path:
+        assert isinstance(self._value, Path)
+        return self._value
+
+    @property
+    def url(self) -> str:
+        assert isinstance(self._value, str)
+        return self._value
 
     def __repr__(self) -> str:
-        return f"ClanUrl({self.value})"
+        return f"ClanUrl({self._value})"
 
     def is_local(self) -> bool:
-        return isinstance(self.value, Path)
+        return isinstance(self._value, Path)
 
     def is_remote(self) -> bool:
-        return isinstance(self.value, str)
+        return isinstance(self._value, str)
 
 
 # Parameters defined here will be DELETED from the nested uri
@@ -37,19 +45,19 @@ class MachineParams:
 
 @dataclass
 class MachineData:
-    url: ClanUrl
+    flake_id: FlakeId
     name: str = "defaultVM"
     params: MachineParams = dataclasses.field(default_factory=MachineParams)
 
     def get_id(self) -> str:
-        return f"{self.url}#{self.name}"
+        return f"{self.flake_id}#{self.name}"
 
 
 # Define the ClanURI class
 class ClanURI:
     _orig_uri: str
     _components: urllib.parse.ParseResult
-    url: ClanUrl
+    flake_id: FlakeId
     _machines: list[MachineData]
 
     # Initialize the class with a clan:// URI
@@ -77,7 +85,7 @@ class ClanURI:
         )
 
         # Parse the URL into a ClanUrl object
-        self.url = self._parse_url(clean_comps)
+        self.flake_id = self._parse_url(clean_comps)
 
         # Parse the fragment into a list of machine queries
         # Then parse every machine query into a MachineParameters object
@@ -90,10 +98,10 @@ class ClanURI:
 
         # If there are no machine fragments, add a default machine
         if len(machine_frags) == 0:
-            default_machine = MachineData(url=self.url)
+            default_machine = MachineData(flake_id=self.flake_id)
             self._machines.append(default_machine)
 
-    def _parse_url(self, comps: urllib.parse.ParseResult) -> ClanUrl:
+    def _parse_url(self, comps: urllib.parse.ParseResult) -> FlakeId:
         comb = (
             comps.scheme,
             comps.netloc,
@@ -104,11 +112,11 @@ class ClanURI:
         )
         match comb:
             case ("file", "", path, "", "", _) | ("", "", path, "", "", _):  # type: ignore
-                url = ClanUrl(Path(path).expanduser().resolve())
+                flake_id = FlakeId(Path(path).expanduser().resolve())
             case _:
-                url = ClanUrl(comps.geturl())
+                flake_id = FlakeId(comps.geturl())
 
-        return url
+        return flake_id
 
     def _parse_machine_query(self, machine_frag: str) -> MachineData:
         comp = urllib.parse.urlparse(machine_frag)
@@ -128,7 +136,7 @@ class ClanURI:
                 # we need to make sure there are no conflicts
                 del query[dfield.name]
         params = MachineParams(**machine_params)
-        machine = MachineData(url=self.url, name=machine_name, params=params)
+        machine = MachineData(flake_id=self.flake_id, name=machine_name, params=params)
         return machine
 
     @property
@@ -139,19 +147,7 @@ class ClanURI:
         return self._orig_uri
 
     def get_url(self) -> str:
-        return str(self.url)
-
-    def to_json(self) -> dict[str, Any]:
-        return {
-            "_orig_uri": self._orig_uri,
-            "url": str(self.url),
-            "machines": [dataclasses.asdict(m) for m in self._machines],
-        }
-
-    def from_json(self, data: dict[str, Any]) -> None:
-        self._orig_uri = data["_orig_uri"]
-        self.url = data["url"]
-        self._machines = [MachineData(**m) for m in data["machines"]]
+        return str(self.flake_id)
 
     @classmethod
     def from_str(
