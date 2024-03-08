@@ -4,7 +4,8 @@ import select
 import shlex
 import subprocess
 import sys
-from datetime import datetime
+import weakref
+from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import IO, Any
@@ -58,6 +59,45 @@ def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
     return stdout_buf.decode("utf-8"), stderr_buf.decode("utf-8")
 
 
+class TimeTable:
+    """
+    This class is used to store the time taken by each command
+    and print it at the end of the program if env PERF=1 is set.
+    """
+
+    def __init__(self) -> None:
+        self.table: dict[str, timedelta] = {}
+        weakref.finalize(self, self.table_print)
+
+    def table_print(self) -> None:
+        if os.getenv("PERF") != "1":
+            return
+        print("======== CMD TIMETABLE ========")
+
+        # Sort the table by time in descending order
+        sorted_table = sorted(
+            self.table.items(), key=lambda item: item[1], reverse=True
+        )
+
+        for k, v in sorted_table:
+            # Check if timedelta is greater than 1 second
+            if v.total_seconds() > 1:
+                # Print in red
+                print(f"\033[91mTook {v}s\033[0m for command: '{k}'")
+            else:
+                # Print in default color
+                print(f"Took {v} for command: '{k}'")
+
+    def add(self, cmd: str, time: timedelta) -> None:
+        if cmd in self.table:
+            self.table[cmd] += time
+        else:
+            self.table[cmd] = time
+
+
+TIME_TABLE = TimeTable()
+
+
 def run(
     cmd: list[str],
     *,
@@ -83,7 +123,8 @@ def run(
     rc = process.wait()
     tend = datetime.now()
 
-    glog.debug(f"Command took {tend - tstart}s to run")
+    global TIME_TABLE
+    TIME_TABLE.add(shlex.join(cmd), tend - tstart)
 
     # Wait for the subprocess to finish
     cmd_out = CmdOut(
