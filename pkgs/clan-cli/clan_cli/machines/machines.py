@@ -41,6 +41,15 @@ class QMPWrapper:
 
 
 class Machine:
+    flake: str | Path
+    name: str
+    data: MachineData
+    eval_cache: dict[str, str]
+    build_cache: dict[str, Path]
+    _flake_path: Path | None
+    _deployment_info: None | dict[str, str]
+    vm: QMPWrapper
+
     def __init__(
         self,
         name: str,
@@ -57,11 +66,11 @@ class Machine:
         if machine is None:
             uri = ClanURI.from_str(str(flake), name)
             machine = uri.machine
-            self.flake = str(machine.url.value)
-            self.name = machine.name
-            self.data = machine
+            self.flake: str | Path = machine.url.value
+            self.name: str = machine.name
+            self.data: MachineData = machine
         else:
-            self.data = machine
+            self.data: MachineData = machine
 
         self.eval_cache: dict[str, str] = {}
         self.build_cache: dict[str, Path] = {}
