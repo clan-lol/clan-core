@@ -6,6 +6,8 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+from clan_cli import clana
+
 from . import backups, config, facts, flakes, flash, history, machines, secrets, vms
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
@@ -109,6 +111,11 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         "flash", help="flash machines to usb sticks or into isos"
     )
     flash.register_parser(parser_flash)
+
+    parser_clana = subparsers.add_parser(
+        "clana", help="Describe a VM with natural language and launch it"
+    )
+    clana.register_parser(parser_clana)
 
     if argcomplete:
         argcomplete.autocomplete(parser)

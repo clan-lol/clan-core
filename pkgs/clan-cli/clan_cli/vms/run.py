@@ -3,7 +3,6 @@ import importlib
 import json
 import logging
 import os
-from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -177,28 +176,20 @@ def run_vm(vm: VmConfig, nix_options: list[str] = []) -> None:
             )
 
 
-@dataclass
-class RunOptions:
-    machine: str
-    flake: Path
-    nix_options: list[str] = field(default_factory=list)
-    waypipe: bool = False
+def run_command(
+    machine: str, flake: Path, option: list[str] = [], **args: argparse.Namespace
+) -> None:
+    machine_obj: Machine = Machine(machine, flake)
+
+    vm: VmConfig = inspect_vm(machine=machine_obj)
+
+    run_vm(vm, option)
 
 
-def run_command(args: argparse.Namespace) -> None:
-    run_options = RunOptions(
-        machine=args.machine,
-        flake=args.flake,
-        nix_options=args.option,
-    )
-
-    machine = Machine(run_options.machine, run_options.flake)
-
-    vm = inspect_vm(machine=machine)
-
-    run_vm(vm, run_options.nix_options)
+def _run_command(args: argparse.Namespace) -> None:
+    run_command(**args.vars())
 
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("machine", type=str, help="machine in the flake to run")
-    parser.set_defaults(func=run_command)
+    parser.set_defaults(func=_run_command)
