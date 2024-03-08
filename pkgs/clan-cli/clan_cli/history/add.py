@@ -17,13 +17,6 @@ from ..locked_open import read_history_file, write_history_file
 log = logging.getLogger(__name__)
 
 
-class EnhancedJSONEncoder(json.JSONEncoder):
-    def default(self, o: Any) -> Any:
-        if dataclasses.is_dataclass(o):
-            return dataclasses.asdict(o)
-        return super().default(o)
-
-
 @dataclasses.dataclass
 class HistoryEntry:
     last_used: str

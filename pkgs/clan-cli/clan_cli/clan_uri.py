@@ -3,37 +3,29 @@ import dataclasses
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from enum import Enum, member
 from pathlib import Path
 from typing import Any
 
 from .errors import ClanError
 
 
-# Define an enum with different members that have different values
-class ClanUrl(Enum):
-    # Use the dataclass decorator to add fields and methods to the members
-    @member
-    @dataclass
-    class REMOTE:
-        value: str  # The url field holds the HTTP URL
+@dataclass
+class ClanUrl:
+    value: str | Path
 
-        def __str__(self) -> str:
-            return f"{self.value}"  # The __str__ method returns a custom string representation
+    def __str__(self) -> str:
+        return (
+            f"{self.value}"  # The __str__ method returns a custom string representation
+        )
 
-        def __repr__(self) -> str:
-            return f"ClanUrl.REMOTE({self.value})"
+    def __repr__(self) -> str:
+        return f"ClanUrl({self.value})"
 
-    @member
-    @dataclass
-    class LOCAL:
-        value: Path  # The path field holds the local path
+    def is_local(self) -> bool:
+        return isinstance(self.value, Path)
 
-        def __str__(self) -> str:
-            return f"{self.value}"  # The __str__ method returns a custom string representation
-
-        def __repr__(self) -> str:
-            return f"ClanUrl.LOCAL({self.value})"
+    def is_remote(self) -> bool:
+        return isinstance(self.value, str)
 
 
 # Parameters defined here will be DELETED from the nested uri
@@ -56,7 +48,6 @@ class MachineData:
 # Define the ClanURI class
 class ClanURI:
     _orig_uri: str
-    _nested_uri: str
     _components: urllib.parse.ParseResult
     url: ClanUrl
     _machines: list[MachineData]
@@ -72,13 +63,13 @@ class ClanURI:
         # Check if the URI starts with clan://
         # If it does, remove the clan:// prefix
         if uri.startswith("clan://"):
-            self._nested_uri = uri[7:]
+            nested_uri = uri[7:]
         else:
             raise ClanError(f"Invalid uri: expected clan://, got {uri}")
 
         # Parse the URI into components
         # url://netloc/path;parameters?query#fragment
-        self._components = urllib.parse.urlparse(self._nested_uri)
+        self._components = urllib.parse.urlparse(nested_uri)
 
         # Replace the query string in the components with the new query string
         clean_comps = self._components._replace(
@@ -113,9 +104,9 @@ class ClanURI:
         )
         match comb:
             case ("file", "", path, "", "", _) | ("", "", path, "", "", _):  # type: ignore
-                url = ClanUrl.LOCAL.value(Path(path).expanduser().resolve())  # type: ignore
+                url = ClanUrl(Path(path).expanduser().resolve())
             case _:
-                url = ClanUrl.REMOTE.value(comps.geturl())  # type: ignore
+                url = ClanUrl(comps.geturl())
 
         return url
 
@@ -149,6 +140,18 @@ class ClanURI:
 
     def get_url(self) -> str:
         return str(self.url)
+
+    def to_json(self) -> dict[str, Any]:
+        return {
+            "_orig_uri": self._orig_uri,
+            "url": str(self.url),
+            "machines": [dataclasses.asdict(m) for m in self._machines],
+        }
+
+    def from_json(self, data: dict[str, Any]) -> None:
+        self._orig_uri = data["_orig_uri"]
+        self.url = data["url"]
+        self._machines = [MachineData(**m) for m in data["machines"]]
 
     @classmethod
     def from_str(
