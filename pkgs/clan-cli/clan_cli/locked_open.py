@@ -1,4 +1,3 @@
-import dataclasses
 import fcntl
 import json
 from collections.abc import Generator
@@ -6,14 +5,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
+from clan_cli.jsonrpc import ClanJSONEncoder
+
 from .dirs import user_history_file
-
-
-class EnhancedJSONEncoder(json.JSONEncoder):
-    def default(self, o: Any) -> Any:
-        if dataclasses.is_dataclass(o):
-            return dataclasses.asdict(o)
-        return super().default(o)
 
 
 @contextmanager
@@ -29,7 +23,7 @@ def _locked_open(filename: str | Path, mode: str = "r") -> Generator:
 
 def write_history_file(data: Any) -> None:
     with _locked_open(user_history_file(), "w+") as f:
-        f.write(json.dumps(data, cls=EnhancedJSONEncoder, indent=4))
+        f.write(json.dumps(data, cls=ClanJSONEncoder, indent=4))
 
 
 def read_history_file() -> list[dict]:
