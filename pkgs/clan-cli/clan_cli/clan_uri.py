@@ -3,37 +3,37 @@ import dataclasses
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from enum import Enum, member
 from pathlib import Path
 from typing import Any
 
 from .errors import ClanError
 
 
-# Define an enum with different members that have different values
-class ClanUrl(Enum):
-    # Use the dataclass decorator to add fields and methods to the members
-    @member
-    @dataclass
-    class REMOTE:
-        value: str  # The url field holds the HTTP URL
+@dataclass
+class FlakeId:
+    _value: str | Path
 
-        def __str__(self) -> str:
-            return f"{self.value}"  # The __str__ method returns a custom string representation
+    def __str__(self) -> str:
+        return f"{self._value}"  # The __str__ method returns a custom string representation
 
-        def __repr__(self) -> str:
-            return f"ClanUrl.REMOTE({self.value})"
+    @property
+    def path(self) -> Path:
+        assert isinstance(self._value, Path)
+        return self._value
 
-    @member
-    @dataclass
-    class LOCAL:
-        value: Path  # The path field holds the local path
+    @property
+    def url(self) -> str:
+        assert isinstance(self._value, str)
+        return self._value
 
-        def __str__(self) -> str:
-            return f"{self.value}"  # The __str__ method returns a custom string representation
+    def __repr__(self) -> str:
+        return f"ClanUrl({self._value})"
 
-        def __repr__(self) -> str:
-            return f"ClanUrl.LOCAL({self.value})"
+    def is_local(self) -> bool:
+        return isinstance(self._value, Path)
+
+    def is_remote(self) -> bool:
+        return isinstance(self._value, str)
 
 
 # Parameters defined here will be DELETED from the nested uri
@@ -45,20 +45,19 @@ class MachineParams:
 
 @dataclass
 class MachineData:
-    url: ClanUrl
+    flake_id: FlakeId
     name: str = "defaultVM"
     params: MachineParams = dataclasses.field(default_factory=MachineParams)
 
     def get_id(self) -> str:
-        return f"{self.url}#{self.name}"
+        return f"{self.flake_id}#{self.name}"
 
 
 # Define the ClanURI class
 class ClanURI:
     _orig_uri: str
-    _nested_uri: str
     _components: urllib.parse.ParseResult
-    url: ClanUrl
+    flake_id: FlakeId
     _machines: list[MachineData]
 
     # Initialize the class with a clan:// URI
@@ -72,13 +71,13 @@ class ClanURI:
         # Check if the URI starts with clan://
         # If it does, remove the clan:// prefix
         if uri.startswith("clan://"):
-            self._nested_uri = uri[7:]
+            nested_uri = uri[7:]
         else:
             raise ClanError(f"Invalid uri: expected clan://, got {uri}")
 
         # Parse the URI into components
         # url://netloc/path;parameters?query#fragment
-        self._components = urllib.parse.urlparse(self._nested_uri)
+        self._components = urllib.parse.urlparse(nested_uri)
 
         # Replace the query string in the components with the new query string
         clean_comps = self._components._replace(
@@ -86,7 +85,7 @@ class ClanURI:
         )
 
         # Parse the URL into a ClanUrl object
-        self.url = self._parse_url(clean_comps)
+        self.flake_id = self._parse_url(clean_comps)
 
         # Parse the fragment into a list of machine queries
         # Then parse every machine query into a MachineParameters object
@@ -99,10 +98,10 @@ class ClanURI:
 
         # If there are no machine fragments, add a default machine
         if len(machine_frags) == 0:
-            default_machine = MachineData(url=self.url)
+            default_machine = MachineData(flake_id=self.flake_id)
             self._machines.append(default_machine)
 
-    def _parse_url(self, comps: urllib.parse.ParseResult) -> ClanUrl:
+    def _parse_url(self, comps: urllib.parse.ParseResult) -> FlakeId:
         comb = (
             comps.scheme,
             comps.netloc,
@@ -113,11 +112,11 @@ class ClanURI:
         )
         match comb:
             case ("file", "", path, "", "", _) | ("", "", path, "", "", _):  # type: ignore
-                url = ClanUrl.LOCAL.value(Path(path).expanduser().resolve())  # type: ignore
+                flake_id = FlakeId(Path(path).expanduser().resolve())
             case _:
-                url = ClanUrl.REMOTE.value(comps.geturl())  # type: ignore
+                flake_id = FlakeId(comps.geturl())
 
-        return url
+        return flake_id
 
     def _parse_machine_query(self, machine_frag: str) -> MachineData:
         comp = urllib.parse.urlparse(machine_frag)
@@ -137,7 +136,7 @@ class ClanURI:
                 # we need to make sure there are no conflicts
                 del query[dfield.name]
         params = MachineParams(**machine_params)
-        machine = MachineData(url=self.url, name=machine_name, params=params)
+        machine = MachineData(flake_id=self.flake_id, name=machine_name, params=params)
         return machine
 
     @property
@@ -148,7 +147,7 @@ class ClanURI:
         return self._orig_uri
 
     def get_url(self) -> str:
-        return str(self.url)
+        return str(self.flake_id)
 
     @classmethod
     def from_str(

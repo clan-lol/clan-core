@@ -6,7 +6,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
 
-from clan_cli.clan_uri import ClanURI, ClanUrl, MachineData
+from clan_cli.clan_uri import ClanURI, MachineData
 from clan_cli.dirs import vm_state_dir
 from qemu.qmp import QEMUMonitorProtocol
 
@@ -66,7 +66,7 @@ class Machine:
         if machine is None:
             uri = ClanURI.from_str(str(flake), name)
             machine = uri.machine
-            self.flake: str | Path = machine.url.value
+            self.flake: str | Path = machine.flake_id._value
             self.name: str = machine.name
             self.data: MachineData = machine
         else:
@@ -77,12 +77,12 @@ class Machine:
         self._flake_path: Path | None = None
         self._deployment_info: None | dict[str, str] = deployment_info
 
-        state_dir = vm_state_dir(flake_url=str(self.data.url), vm_name=self.data.name)
+        state_dir = vm_state_dir(flake_url=str(self.flake), vm_name=self.data.name)
 
         self.vm: QMPWrapper = QMPWrapper(state_dir)
 
     def __str__(self) -> str:
-        return f"Machine(name={self.data.name}, flake={self.data.url})"
+        return f"Machine(name={self.data.name}, flake={self.data.flake_id})"
 
     def __repr__(self) -> str:
         return str(self)
@@ -139,11 +139,12 @@ class Machine:
         if self._flake_path:
             return self._flake_path
 
-        match self.data.url:
-            case ClanUrl.LOCAL.value(path):
-                self._flake_path = path
-            case ClanUrl.REMOTE.value(url):
-                self._flake_path = Path(nix_metadata(url)["path"])
+        if self.data.flake_id.is_local():
+            self._flake_path = self.data.flake_id.path
+        elif self.data.flake_id.is_remote():
+            self._flake_path = Path(nix_metadata(self.data.flake_id.url)["path"])
+        else:
+            raise ClanError(f"Unsupported flake url: {self.data.flake_id}")
 
         assert self._flake_path is not None
         return self._flake_path

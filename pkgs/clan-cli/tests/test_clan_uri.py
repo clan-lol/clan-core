@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from clan_cli.clan_uri import ClanURI, ClanUrl
+from clan_cli.clan_uri import ClanURI
 
 
 def test_get_url() -> None:
@@ -21,22 +21,13 @@ def test_get_url() -> None:
 def test_local_uri() -> None:
     # Create a ClanURI object from a local URI
     uri = ClanURI("clan://file:///home/user/Downloads")
-    match uri.url:
-        case ClanUrl.LOCAL.value(path):
-            assert path == Path("/home/user/Downloads")  # type: ignore
-        case _:
-            assert False
+    assert uri.flake_id.path == Path("/home/user/Downloads")
 
 
 def test_is_remote() -> None:
     # Create a ClanURI object from a remote URI
     uri = ClanURI("clan://https://example.com")
-
-    match uri.url:
-        case ClanUrl.REMOTE.value(url):
-            assert url == "https://example.com"  # type: ignore
-        case _:
-            assert False
+    assert uri.flake_id.url == "https://example.com"
 
 
 def test_direct_local_path() -> None:
@@ -56,12 +47,7 @@ def test_remote_with_clanparams() -> None:
     uri = ClanURI("clan://https://example.com")
 
     assert uri.machine.name == "defaultVM"
-
-    match uri.url:
-        case ClanUrl.REMOTE.value(url):
-            assert url == "https://example.com"  # type: ignore
-        case _:
-            assert False
+    assert uri.flake_id.url == "https://example.com"
 
 
 def test_remote_with_all_params() -> None:
@@ -69,11 +55,7 @@ def test_remote_with_all_params() -> None:
     assert uri.machine.name == "myVM"
     assert uri._machines[1].name == "secondVM"
     assert uri._machines[1].params.dummy_opt == "1"
-    match uri.url:
-        case ClanUrl.REMOTE.value(url):
-            assert url == "https://example.com?password=12345"  # type: ignore
-        case _:
-            assert False
+    assert uri.flake_id.url == "https://example.com?password=12345"
 
 
 def test_from_str_remote() -> None:
@@ -82,11 +64,7 @@ def test_from_str_remote() -> None:
     assert uri.get_orig_uri() == "clan://https://example.com#myVM"
     assert uri.machine.name == "myVM"
     assert len(uri._machines) == 1
-    match uri.url:
-        case ClanUrl.REMOTE.value(url):
-            assert url == "https://example.com"  # type: ignore
-        case _:
-            assert False
+    assert uri.flake_id.url == "https://example.com"
 
 
 def test_from_str_local() -> None:
@@ -95,11 +73,8 @@ def test_from_str_local() -> None:
     assert uri.get_orig_uri() == "clan://~/Projects/democlan#myVM"
     assert uri.machine.name == "myVM"
     assert len(uri._machines) == 1
-    match uri.url:
-        case ClanUrl.LOCAL.value(path):
-            assert str(path).endswith("/Projects/democlan")  # type: ignore
-        case _:
-            assert False
+    assert uri.flake_id.is_local()
+    assert str(uri.flake_id).endswith("/Projects/democlan")  # type: ignore
 
 
 def test_from_str_local_no_machine() -> None:
@@ -108,11 +83,8 @@ def test_from_str_local_no_machine() -> None:
     assert uri.get_orig_uri() == "clan://~/Projects/democlan"
     assert uri.machine.name == "defaultVM"
     assert len(uri._machines) == 1
-    match uri.url:
-        case ClanUrl.LOCAL.value(path):
-            assert str(path).endswith("/Projects/democlan")  # type: ignore
-        case _:
-            assert False
+    assert uri.flake_id.is_local()
+    assert str(uri.flake_id).endswith("/Projects/democlan")  # type: ignore
 
 
 def test_from_str_local_no_machine2() -> None:
@@ -121,8 +93,5 @@ def test_from_str_local_no_machine2() -> None:
     assert uri.get_orig_uri() == "clan://~/Projects/democlan#syncthing-peer1"
     assert uri.machine.name == "syncthing-peer1"
     assert len(uri._machines) == 1
-    match uri.url:
-        case ClanUrl.LOCAL.value(path):
-            assert str(path).endswith("/Projects/democlan")  # type: ignore
-        case _:
-            assert False
+    assert uri.flake_id.is_local()
+    assert str(uri.flake_id).endswith("/Projects/democlan")  # type: ignore
