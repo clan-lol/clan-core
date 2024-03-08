@@ -6,6 +6,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
 
+from clan_cli.clan_uri import ClanURI, ClanUrl, MachineData
 from clan_cli.dirs import vm_state_dir
 from qemu.qmp import QEMUMonitorProtocol
 
@@ -17,7 +18,7 @@ from ..ssh import Host, parse_deployment_address
 log = logging.getLogger(__name__)
 
 
-class VMAttr:
+class QMPWrapper:
     def __init__(self, state_dir: Path) -> None:
         # These sockets here are just symlinks to the real sockets which
         # are created by the run.py file. The reason being that we run into
@@ -40,11 +41,21 @@ class VMAttr:
 
 
 class Machine:
+    flake: str | Path
+    name: str
+    data: MachineData
+    eval_cache: dict[str, str]
+    build_cache: dict[str, Path]
+    _flake_path: Path | None
+    _deployment_info: None | dict[str, str]
+    vm: QMPWrapper
+
     def __init__(
         self,
         name: str,
         flake: Path | str,
         deployment_info: dict | None = None,
+        machine: MachineData | None = None,
     ) -> None:
         """
         Creates a Machine
@@ -52,20 +63,26 @@ class Machine:
         @clan_dir: the directory of the clan, optional, if not set it will be determined from the current working directory
         @machine_json: can be optionally used to skip evaluation of the machine, location of the json file with machine data
         """
-        self.name: str = name
-        self.flake: str | Path = flake
+        if machine is None:
+            uri = ClanURI.from_str(str(flake), name)
+            machine = uri.machine
+            self.flake: str | Path = machine.url.value
+            self.name: str = machine.name
+            self.data: MachineData = machine
+        else:
+            self.data: MachineData = machine
 
         self.eval_cache: dict[str, str] = {}
         self.build_cache: dict[str, Path] = {}
-
+        self._flake_path: Path | None = None
         self._deployment_info: None | dict[str, str] = deployment_info
 
-        state_dir = vm_state_dir(flake_url=str(self.flake), vm_name=self.name)
+        state_dir = vm_state_dir(flake_url=str(self.data.url), vm_name=self.data.name)
 
-        self.vm: VMAttr = VMAttr(state_dir)
+        self.vm: QMPWrapper = QMPWrapper(state_dir)
 
     def __str__(self) -> str:
-        return f"Machine(name={self.name}, flake={self.flake})"
+        return f"Machine(name={self.data.name}, flake={self.data.url})"
 
     def __repr__(self) -> str:
         return str(self)
@@ -86,7 +103,7 @@ class Machine:
             "deploymentAddress"
         )
         if val is None:
-            msg = f"the 'clan.networking.targetHost' nixos option is not set for machine '{self.name}'"
+            msg = f"the 'clan.networking.targetHost' nixos option is not set for machine '{self.data.name}'"
             raise ClanError(msg)
         return val
 
@@ -109,7 +126,7 @@ class Machine:
                 return json.loads(Path(self.deployment_info["secretsData"]).read_text())
             except json.JSONDecodeError as e:
                 raise ClanError(
-                    f"Failed to parse secretsData for machine {self.name} as json"
+                    f"Failed to parse secretsData for machine {self.data.name} as json"
                 ) from e
         return {}
 
@@ -119,19 +136,22 @@ class Machine:
 
     @property
     def flake_dir(self) -> Path:
-        if isinstance(self.flake, Path):
-            return self.flake
+        if self._flake_path:
+            return self._flake_path
 
-        if hasattr(self, "flake_path"):
-            return Path(self.flake_path)
+        match self.data.url:
+            case ClanUrl.LOCAL.value(path):
+                self._flake_path = path
+            case ClanUrl.REMOTE.value(url):
+                self._flake_path = Path(nix_metadata(url)["path"])
 
-        self.flake_path: str = nix_metadata(self.flake)["path"]
-        return Path(self.flake_path)
+        assert self._flake_path is not None
+        return self._flake_path
 
     @property
     def target_host(self) -> Host:
         return parse_deployment_address(
-            self.name, self.target_host_address, meta={"machine": self}
+            self.data.name, self.target_host_address, meta={"machine": self}
         )
 
     @property
@@ -145,7 +165,7 @@ class Machine:
             return self.target_host
         # enable ssh agent forwarding to allow the build host to access the target host
         return parse_deployment_address(
-            self.name,
+            self.data.name,
             build_host,
             forward_agent=True,
             meta={"machine": self, "target_host": self.target_host},
@@ -204,7 +224,7 @@ class Machine:
             args += [
                 "--expr",
                 f"""
-                    ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.name}" {{
+                    ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.data.name}" {{
                       extraConfig = builtins.fromJSON (builtins.readFile (builtins.fetchTree {{
                         type = "file";
                         url = if (builtins.compareVersions builtins.nixVersion "2.19") == -1 then "{file_info["path"]}" else "file:{file_info["path"]}";
@@ -214,15 +234,13 @@ class Machine:
                 """,
             ]
         else:
-            if isinstance(self.flake, Path):
-                if (self.flake / ".git").exists():
-                    flake = f"git+file://{self.flake}"
-                else:
-                    flake = f"path:{self.flake}"
+            if (self.flake_dir / ".git").exists():
+                flake = f"git+file://{self.flake_dir}"
             else:
-                flake = self.flake
+                flake = f"path:{self.flake_dir}"
+
             args += [
-                f'{flake}#clanInternals.machines."{system}".{self.name}.{attr}',
+                f'{flake}#clanInternals.machines."{system}".{self.data.name}.{attr}',
                 *nix_options,
             ]
 
