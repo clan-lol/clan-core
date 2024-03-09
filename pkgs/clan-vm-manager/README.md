@@ -12,10 +12,16 @@ Run this application
 ./bin/clan-vm-manager
 ```
 
-Join a new clan
+Join the default machine of a clan
 
 ```bash
 ./bin/clan-vm-manager [clan-uri]
+```
+
+Join a specific machine of a clan
+
+```bash
+./bin/clan-vm-manager [clan-uri]#[machine]
 ```
 
 For more available commands see the developer section below.
