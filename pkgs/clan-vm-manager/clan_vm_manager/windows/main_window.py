@@ -32,6 +32,7 @@ class MainWindow(Adw.ApplicationWindow):
         view.add_top_bar(header)
 
         app = Gio.Application.get_default()
+        assert app is not None
         self.tray_icon: TrayIcon = TrayIcon(app)
 
         # Initialize all ClanStore

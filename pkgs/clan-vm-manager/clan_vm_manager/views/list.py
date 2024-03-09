@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Callable
 from functools import partial
-from typing import Any
+from typing import Any, TypeVar
 
 import gi
 from clan_cli import history
@@ -17,9 +17,13 @@ from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
 
 log = logging.getLogger(__name__)
 
+ListItem = TypeVar("ListItem", bound=GObject.Object)
+CustomStore = TypeVar("CustomStore", bound=Gio.ListModel)
+
 
 def create_boxed_list(
-    model: Gio.ListStore, render_row: Callable[[Gtk.ListBox, GObject], Gtk.Widget]
+    model: CustomStore,
+    render_row: Callable[[Gtk.ListBox, ListItem], Gtk.Widget],
 ) -> Gtk.ListBox:
     boxed_list = Gtk.ListBox()
     boxed_list.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -47,8 +51,9 @@ class ClanList(Gtk.Box):
     def __init__(self, config: ClanConfig) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
-        self.app = Gio.Application.get_default()
-        self.app.connect("join_request", self.on_join_request)
+        app = Gio.Application.get_default()
+        assert app is not None
+        app.connect("join_request", self.on_join_request)
 
         self.log_label: Gtk.Label = Gtk.Label()
         self.__init_machines = history.add.list_history()
@@ -78,6 +83,7 @@ class ClanList(Gtk.Box):
         add_action = Gio.SimpleAction.new("add", GLib.VariantType.new("s"))
         add_action.connect("activate", self.on_add)
         app = Gio.Application.get_default()
+        assert app is not None
         app.add_action(add_action)
 
         menu_model = Gio.Menu()
@@ -158,6 +164,7 @@ class ClanList(Gtk.Box):
         open_action = Gio.SimpleAction.new("edit", GLib.VariantType.new("s"))
         open_action.connect("activate", self.on_edit)
         app = Gio.Application.get_default()
+        assert app is not None
         app.add_action(open_action)
         menu_model = Gio.Menu()
         menu_model.append("Edit", f"app.edit::{vm.get_id()}")
@@ -199,6 +206,7 @@ class ClanList(Gtk.Box):
         # Can't do this here because clan store is empty at this point
         if vm is not None:
             sub = row.get_subtitle()
+            assert sub is not None
             row.set_subtitle(
                 sub + "\nClan already exists. Joining again will update it"
             )

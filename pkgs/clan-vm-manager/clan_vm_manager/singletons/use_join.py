@@ -1,7 +1,7 @@
 import logging
 import threading
 from collections.abc import Callable
-from typing import Any, ClassVar
+from typing import Any, ClassVar, cast
 
 import gi
 from clan_cli.clan_uri import ClanURI
@@ -31,8 +31,8 @@ class JoinValue(GObject.Object):
 
     def __init__(self, url: ClanURI) -> None:
         super().__init__()
-        self.url = url
-        self.entry = None
+        self.url: ClanURI = url
+        self.entry: HistoryEntry | None = None
 
     def __join(self) -> None:
         new_entry = add_history(self.url)
@@ -84,7 +84,7 @@ class JoinList:
 
         value = JoinValue(uri)
         if value.url.machine.get_id() in [
-            item.url.machine.get_id() for item in self.list_store
+            cast(JoinValue, item).url.machine.get_id() for item in self.list_store
         ]:
             log.info(f"Join request already exists: {value.url}. Ignoring.")
             return
