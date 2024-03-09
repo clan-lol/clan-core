@@ -5,6 +5,7 @@ import gi
 from clan_cli.history.list import list_history
 
 from clan_vm_manager.components.interfaces import ClanConfig
+from clan_vm_manager.singletons.toast import ToastOverlay
 from clan_vm_manager.singletons.use_views import ViewStack
 from clan_vm_manager.singletons.use_vms import ClanStore
 from clan_vm_manager.views.details import Details
@@ -24,9 +25,12 @@ class MainWindow(Adw.ApplicationWindow):
         super().__init__()
         self.set_title("cLAN Manager")
         self.set_default_size(980, 650)
-
+        
+        overlay = ToastOverlay.use().overlay
         view = Adw.ToolbarView()
-        self.set_content(view)
+        overlay.set_child(view)
+
+        self.set_content(overlay)
 
         header = Adw.HeaderBar()
         view.add_top_bar(header)
