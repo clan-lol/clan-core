@@ -33,10 +33,8 @@ class MainApplication(Adw.Application):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
-            *args,
             application_id="org.clan.vm-manager",
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
-            **kwargs,
         )
 
         self.add_main_option(
@@ -48,7 +46,7 @@ class MainApplication(Adw.Application):
             None,
         )
 
-        self.window: Adw.ApplicationWindow | None = None
+        self.window: "MainWindow" | None = None
         self.connect("activate", self.on_activate)
         self.connect("shutdown", self.on_shutdown)
 
@@ -113,8 +111,10 @@ class MainApplication(Adw.Application):
         log.debug(f"Style css path: {resource_path}")
         css_provider = Gtk.CssProvider()
         css_provider.load_from_path(str(resource_path))
+        display = Gdk.Display.get_default()
+        assert display is not None
         Gtk.StyleContext.add_provider_for_display(
-            Gdk.Display.get_default(),
+            display,
             css_provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
         )

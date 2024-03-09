@@ -32,13 +32,6 @@ class VMObject(GObject.Object):
         "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [])
     }
 
-    def _vm_status_changed_task(self) -> bool:
-        self.emit("vm_status_changed")
-        return GLib.SOURCE_REMOVE
-
-    def update(self, data: HistoryEntry) -> None:
-        self.data = data
-
     def __init__(
         self,
         icon: Path,
@@ -47,16 +40,20 @@ class VMObject(GObject.Object):
         super().__init__()
 
         # Store the data from the history entry
-        self.data = data
+        self.data: HistoryEntry = data
 
         # Create a process object to store the VM process
-        self.vm_process = MPProcess("vm_dummy", mp.Process(), Path("./dummy"))
-        self.build_process = MPProcess("build_dummy", mp.Process(), Path("./dummy"))
+        self.vm_process: MPProcess = MPProcess(
+            "vm_dummy", mp.Process(), Path("./dummy")
+        )
+        self.build_process: MPProcess = MPProcess(
+            "build_dummy", mp.Process(), Path("./dummy")
+        )
         self._start_thread: threading.Thread = threading.Thread()
         self.machine: Machine | None = None
 
         # Watcher to stop the VM
-        self.KILL_TIMEOUT = 20  # seconds
+        self.KILL_TIMEOUT: int = 20  # seconds
         self._stop_thread: threading.Thread = threading.Thread()
 
         # Build progress bar vars
@@ -66,7 +63,7 @@ class VMObject(GObject.Object):
         self.prog_bar_id: int = 0
 
         # Create a temporary directory to store the logs
-        self.log_dir = tempfile.TemporaryDirectory(
+        self.log_dir: tempfile.TemporaryDirectory = tempfile.TemporaryDirectory(
             prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
         )
         self._logs_id: int = 0
@@ -75,14 +72,21 @@ class VMObject(GObject.Object):
         # To be able to set the switch state programmatically
         # we need to store the handler id returned by the connect method
         # and block the signal while we change the state. This is cursed.
-        self.switch = Gtk.Switch()
+        self.switch: Gtk.Switch = Gtk.Switch()
         self.switch_handler_id: int = self.switch.connect(
             "notify::active", self._on_switch_toggle
         )
         self.connect("vm_status_changed", self._on_vm_status_changed)
 
         # Make sure the VM is killed when the reference to this object is dropped
-        self._finalizer = weakref.finalize(self, self._kill_ref_drop)
+        self._finalizer: weakref.finalize = weakref.finalize(self, self._kill_ref_drop)
+
+    def _vm_status_changed_task(self) -> bool:
+        self.emit("vm_status_changed")
+        return GLib.SOURCE_REMOVE
+
+    def update(self, data: HistoryEntry) -> None:
+        self.data = data
 
     def _on_vm_status_changed(self, source: "VMObject") -> None:
         self.switch.set_state(self.is_running() and not self.is_building())
@@ -93,9 +97,8 @@ class VMObject(GObject.Object):
         exit_build = self.build_process.proc.exitcode
         exitc = exit_vm or exit_build
         if not self.is_running() and exitc != 0:
-            self.switch.handler_block(self.switch_handler_id)
-            self.switch.set_active(False)
-            self.switch.handler_unblock(self.switch_handler_id)
+            with self.switch.handler_block(self.switch_handler_id):
+                self.switch.set_active(False)
             log.error(f"VM exited with error. Exitcode: {exitc}")
 
     def _on_switch_toggle(self, switch: Gtk.Switch, user_state: bool) -> None:

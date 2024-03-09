@@ -24,7 +24,7 @@ mkShell (
       python3Packages.ipdb
       gtk4.dev
       libadwaita.devdoc # has the demo called 'adwaita-1-demo'
-    ] ++ clan-vm-manager.nativeBuildInputs;
+    ] ++ clan-vm-manager.nativeBuildInputs ++ clan-vm-manager.propagatedBuildInputs;
 
     PYTHONBREAKPOINT = "ipdb.set_trace";
 

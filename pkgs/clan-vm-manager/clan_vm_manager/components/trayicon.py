@@ -24,6 +24,9 @@ import sys
 from collections.abc import Callable
 from typing import Any, ClassVar
 
+import gi
+
+gi.require_version("Gtk", "4.0")
 from gi.repository import GdkPixbuf, Gio, GLib, Gtk
 
 
@@ -168,7 +171,7 @@ class ImplUnavailableError(Exception):
 
 
 class BaseImplementation:
-    def __init__(self, application: Gtk.Application) -> None:
+    def __init__(self, application: Any) -> None:
         self.application = application
         self.menu_items: dict[int, Any] = {}
         self.menu_item_id: int = 1
@@ -1090,8 +1093,8 @@ class Win32Implementation(BaseImplementation):
 
 
 class TrayIcon:
-    def __init__(self, application: Gtk.Application) -> None:
-        self.application: Gtk.Application = application
+    def __init__(self, application: Gio.Application) -> None:
+        self.application: Gio.Application = application
         self.available: bool = True
         self.implementation: Any = None
 

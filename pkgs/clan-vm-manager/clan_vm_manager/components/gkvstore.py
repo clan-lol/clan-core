@@ -134,8 +134,8 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
     def do_get_item(self, position: int) -> V | None:
         return self.get_item(position)
 
-    def get_item_type(self) -> GObject.GType:
-        return self.gtype.__gtype__
+    def get_item_type(self) -> Any:
+        return self.gtype.__gtype__  # type: ignore[attr-defined]
 
     def do_get_item_type(self) -> GObject.GType:
         return self.get_item_type()
@@ -187,10 +187,10 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
         return len(self._items)
 
     # O(1) operation
-    def __getitem__(self, key: K) -> V:
+    def __getitem__(self, key: K) -> V:  # type: ignore[override]
         return self._items[key]
 
-    def __contains__(self, key: K) -> bool:
+    def __contains__(self, key: K) -> bool:  # type: ignore[override]
         return key in self._items
 
     def __str__(self) -> str:
