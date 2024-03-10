@@ -86,3 +86,9 @@ Here are some important documentation links related to the Clan VM Manager:
 - [Python + GTK3 Tutorial](https://python-gtk-3-tutorial.readthedocs.io/en/latest/textview.html): Although the Clan VM Manager uses GTK4, this tutorial for GTK3 can still be useful as it covers the basics of building GTK-based applications with Python. It includes examples and explanations for various GTK widgets, including text views.
 
 - [GNOME Human Interface Guidelines](https://developer.gnome.org/hig/): This link provides the GNOME Human Interface Guidelines, which offer design and usability recommendations for creating GNOME applications. It covers topics such as layout, navigation, and interaction patterns.
+
+## Error handling
+
+> Error dialogs should be avoided where possible, since they are disruptive. 
+> 
+> For simple non-critical errors, toasts can be a good alternative.
