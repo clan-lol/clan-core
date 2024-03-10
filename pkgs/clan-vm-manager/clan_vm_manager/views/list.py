@@ -4,11 +4,11 @@ from functools import partial
 from typing import Any, TypeVar
 
 import gi
-from clan_cli import history
 from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.components.interfaces import ClanConfig
 from clan_vm_manager.components.vmobj import VMObject
+from clan_vm_manager.singletons.toast import ErrorToast, ToastOverlay
 from clan_vm_manager.singletons.use_join import JoinList, JoinValue
 from clan_vm_manager.singletons.use_vms import ClanStore, VMStore
 
@@ -56,7 +56,6 @@ class ClanList(Gtk.Box):
         app.connect("join_request", self.on_join_request)
 
         self.log_label: Gtk.Label = Gtk.Label()
-        self.__init_machines = history.add.list_history()
 
         # Add join list
         self.join_boxed_list = create_boxed_list(
@@ -86,7 +85,7 @@ class ClanList(Gtk.Box):
         assert app is not None
         app.add_action(add_action)
 
-        menu_model = Gio.Menu()
+        # menu_model = Gio.Menu()
         # TODO: Make this lazy, blocks UI startup for too long
         # for vm in machines.list.list_machines(flake_url=vm.data.flake.flake_url):
         #     if vm not in vm_store:
@@ -95,10 +94,16 @@ class ClanList(Gtk.Box):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         box.set_valign(Gtk.Align.CENTER)
 
-        add_button = Gtk.MenuButton()
-        add_button.set_has_frame(False)
-        add_button.set_menu_model(menu_model)
-        add_button.set_label("Add machine")
+        add_button = Gtk.Button()
+        add_button_content = Adw.ButtonContent.new()
+        add_button_content.set_label("Add machine")
+        add_button_content.set_icon_name("list-add-symbolic")
+        add_button.add_css_class("flat")
+        add_button.set_child(add_button_content)
+
+        # add_button.set_has_frame(False)
+        # add_button.set_menu_model(menu_model)
+        # add_button.set_label("Add machine")
         box.append(add_button)
 
         grp.set_header_suffix(box)
@@ -207,6 +212,12 @@ class ClanList(Gtk.Box):
         if vm is not None:
             sub = row.get_subtitle()
             assert sub is not None
+
+            ToastOverlay.use().add_toast_unique(
+                ErrorToast("Already exists. Joining again will update it").toast,
+                "warning.duplicate.join",
+            )
+
             row.set_subtitle(
                 sub + "\nClan already exists. Joining again will update it"
             )

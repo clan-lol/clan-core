@@ -17,6 +17,7 @@ avatar {
 }
 
 .join-list {
+    margin-top: 1px;
     margin-left: 2px;
     margin-right: 2px;
 
@@ -55,4 +56,11 @@ avatar {
 
 searchbar {
     margin-bottom: 25px; 
+}
+
+
+.log-view {
+    margin-top: 12px;
+    font-family: monospace;
+    padding: 8px;
 }
