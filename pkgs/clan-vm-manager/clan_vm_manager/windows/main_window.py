@@ -10,6 +10,7 @@ from clan_vm_manager.singletons.use_views import ViewStack
 from clan_vm_manager.singletons.use_vms import ClanStore
 from clan_vm_manager.views.details import Details
 from clan_vm_manager.views.list import ClanList
+from clan_vm_manager.views.logs import Logs
 
 gi.require_version("Adw", "1")
 
@@ -25,7 +26,7 @@ class MainWindow(Adw.ApplicationWindow):
         super().__init__()
         self.set_title("cLAN Manager")
         self.set_default_size(980, 650)
-        
+
         overlay = ToastOverlay.use().overlay
         view = Adw.ToolbarView()
         overlay.set_child(view)
@@ -52,6 +53,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         stack_view.add_named(scroll, "list")
         stack_view.add_named(Details(), "details")
+        stack_view.add_named(Logs(), "logs")
 
         stack_view.set_visible_child_name(config.initial_view)
 

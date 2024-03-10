@@ -57,3 +57,10 @@ avatar {
 searchbar {
     margin-bottom: 25px; 
 }
+
+
+.log-view {
+    margin-top: 12px;
+    font-family: monospace;
+    padding: 8px;
+}
