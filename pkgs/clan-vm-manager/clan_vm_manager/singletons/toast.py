@@ -8,7 +8,11 @@ gi.require_version("Adw", "1")
 
 from gi.repository import Adw
 
+from clan_vm_manager.singletons.use_views import ViewStack
+from clan_vm_manager.views.logs import Logs
+
 log = logging.getLogger(__name__)
+
 
 class ToastOverlay:
     """
@@ -16,8 +20,9 @@ class ToastOverlay:
     It should be used as a singleton in your application to prevent duplicate toasts
     Usage
     """
+
     # For some reason, the adw toast overlay cannot be subclassed
-    # Thats why it is added as a class property 
+    # Thats why it is added as a class property
     overlay: Adw.ToastOverlay
     active_toasts: set[str]
 
@@ -45,10 +50,20 @@ class ToastOverlay:
 class ErrorToast:
     toast: Adw.Toast
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         super().__init__()
         self.toast = Adw.Toast.new(f"Error: {message}")
         self.toast.set_priority(Adw.ToastPriority.HIGH)
 
+        self.toast.set_button_label("details")
 
-    
+        views = ViewStack.use().view
+
+        # we cannot check this type, python is not smart enough
+        logs_view: Logs = views.get_child_by_name("logs")  # type: ignore
+        logs_view.set_message(message)
+
+        self.toast.connect(
+            "button-clicked",
+            lambda _: views.set_visible_child_name("logs"),
+        )
