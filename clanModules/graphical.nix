@@ -1,0 +1,4 @@
+_:
+{
+  fonts.enableDefaultPackages = true;
+}
