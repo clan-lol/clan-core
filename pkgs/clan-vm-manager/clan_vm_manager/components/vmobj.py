@@ -116,7 +116,7 @@ class VMObject(GObject.Object):
     @contextmanager
     def _create_machine(self) -> Generator[Machine, None, None]:
         uri = ClanURI.from_str(
-            url=self.data.flake.flake_url, machine_name=self.data.flake.flake_attr
+            url=str(self.data.flake.flake_url), machine_name=self.data.flake.flake_attr
         )
         if uri.flake_id.is_local():
             self.machine = Machine(
@@ -128,6 +128,7 @@ class VMObject(GObject.Object):
                 name=self.data.flake.flake_attr,
                 flake=uri.flake_id.url,
             )
+        assert self.machine is not None
         yield self.machine
         self.machine = None
 
