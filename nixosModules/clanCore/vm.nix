@@ -24,6 +24,9 @@ let
     services.acpid.handlers.power.event = "button/power.*";
     services.acpid.handlers.power.action = "poweroff";
 
+    # only works on x11
+    services.spice-vdagentd.enable = config.services.xserver.enable;
+
     boot.initrd.systemd.enable = true;
 
     # currently needed for system.etc.overlay.enable
