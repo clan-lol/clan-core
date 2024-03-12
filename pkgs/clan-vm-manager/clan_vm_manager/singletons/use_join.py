@@ -97,6 +97,7 @@ class JoinList:
     def _on_join_finished(self, source: JoinValue) -> None:
         log.info(f"Join finished: {source.url}")
         self.discard(source)
+        assert source.entry is not None
         ClanStore.use().push_history_entry(source.entry)
 
     def discard(self, value: JoinValue) -> None:
