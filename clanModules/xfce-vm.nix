@@ -1,7 +1,7 @@
-{ config }: {
+{
   imports = [
-    config.clanCore.clanModules.vm-user
-    config.clanCore.clanModules.graphical
+    ./vm-user.nix
+    ./graphical.nix
   ];
 
   services.xserver = {
