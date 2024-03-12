@@ -11,6 +11,8 @@
     moonlight = ./moonlight.nix;
     sunshine = ./sunshine.nix;
     syncthing = ./syncthing.nix;
+    vm-user = ./vm-user.nix;
+    graphical = ./graphical.nix;
     xfce = ./xfce.nix;
     zt-tcp-relay = ./zt-tcp-relay.nix;
     localsend = ./localsend.nix;
