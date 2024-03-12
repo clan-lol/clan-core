@@ -73,18 +73,18 @@ class ClanStore:
     def push_history_entry(self, entry: HistoryEntry) -> None:
         # TODO: We shouldn't do this here but in the list view
         if entry.flake.icon is None:
-            icon = assets.loc / "placeholder.jpeg"
+            icon: Path = assets.loc / "placeholder.jpeg"
         else:
-            icon = entry.flake.icon
+            icon = Path(entry.flake.icon)
 
         vm = VMObject(
-            icon=Path(icon),
+            icon=icon,
             data=entry,
         )
         self.push(vm)
 
     def push(self, vm: VMObject) -> None:
-        url = vm.data.flake.flake_url
+        url = str(vm.data.flake.flake_url)
 
         # Only write to the store if the Clan is not already in it
         # Every write to the KVStore rerenders bound widgets to the clan_store
@@ -108,7 +108,7 @@ class ClanStore:
                 vm_store.append(vm)
 
     def remove(self, vm: VMObject) -> None:
-        del self.clan_store[vm.data.flake.flake_url][vm.data.flake.flake_attr]
+        del self.clan_store[str(vm.data.flake.flake_url)][vm.data.flake.flake_attr]
 
     def get_vm(self, uri: ClanURI) -> None | VMObject:
         vm_store = self.clan_store.get(str(uri.flake_id))
