@@ -178,7 +178,7 @@ python3.pkgs.buildPythonApplication {
       <(${argcomplete}/bin/register-python-argcomplete --shell fish clan)
   '';
   # Don't leak python packages into a devshell.
-  # It can be very confusing if you `nix run` than load the cli from the devshell instead.
+  # It can be very confusing if you `nix run` then load the cli from the devshell instead.
   postFixup = ''
     rm $out/nix-support/propagated-build-inputs
   '';
