@@ -3,7 +3,7 @@ let
   apps = pkgs.writeText "apps.json" (builtins.toJSON
     {
       env = {
-        PATH = "$(PATH):$(HOME)/.local/bin";
+        PATH = "$(PATH):$(HOME)/.local/bin:/run/current-system/sw/bin";
       };
       apps = [
         {
