@@ -31,7 +31,7 @@ in
 
   imports = [ (lib.mkRemovedOptionModule [ "clan" "borgbackup" "enable" ] "Just define clan.borgbackup.destinations to enable it") ];
 
-  config = lib.mkIf (cfg.destinations != [ ]) {
+  config = lib.mkIf (cfg.destinations != { }) {
     services.borgbackup.jobs = lib.mapAttrs
       (_: dest: {
         paths = lib.flatten (map (state: state.folders) (lib.attrValues config.clanCore.state));
