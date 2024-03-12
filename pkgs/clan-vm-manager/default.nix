@@ -44,7 +44,11 @@ python3.pkgs.buildPythonApplication {
   buildInputs = [ gtk4 libadwaita gnome.adwaita-icon-theme ];
 
   # We need to propagate the build inputs to nix fmt / treefmt
-  propagatedBuildInputs = [ pygobject3 clan-cli pygobject-stubs ];
+  propagatedBuildInputs = [
+    (python3.pkgs.toPythonModule clan-cli)
+    pygobject3
+    pygobject-stubs
+  ];
 
   # also re-expose dependencies so we test them in CI
   passthru = {
