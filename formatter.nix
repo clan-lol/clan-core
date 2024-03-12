@@ -15,7 +15,6 @@
     treefmt.programs.mypy.directories = {
       "pkgs/clan-cli".extraPythonPackages = self'.packages.clan-cli.pytestDependencies;
       "pkgs/clan-vm-manager".extraPythonPackages = self'.packages.clan-vm-manager.propagatedBuildInputs;
-      # "pkgs/clan-vm-manager".options = ["--verbose"];
     };
 
     treefmt.settings.formatter.nix = {
