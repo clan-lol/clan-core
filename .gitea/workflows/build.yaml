@@ -5,17 +5,17 @@ on:
     branches:
       - main
 jobs:
-  checks:
+  test:
     runs-on: nix
     steps:
       - uses: actions/checkout@v3
       - run: nix run --refresh github:Mic92/nix-fast-build -- --no-nom --eval-workers 20
-  check-links:
+  test-links:
     runs-on: nix
     steps:
       - uses: actions/checkout@v3
       - run: nix run --refresh --inputs-from .# nixpkgs#lychee .
-  checks-impure:
+  test-impure:
     runs-on: nix
     steps:
       - uses: actions/checkout@v3
