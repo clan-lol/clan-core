@@ -3,34 +3,35 @@ let
   cfg = config.clan.borgbackup;
 in
 {
-  options.clan.borgbackup = {
-    enable = lib.mkEnableOption "backups with borgbackup";
-    destinations = lib.mkOption {
-      type = lib.types.attrsOf (lib.types.submodule ({ name, ... }: {
-        options = {
-          name = lib.mkOption {
-            type = lib.types.str;
-            default = name;
-            description = "the name of the backup job";
-          };
-          repo = lib.mkOption {
-            type = lib.types.str;
-            description = "the borgbackup repository to backup to";
-          };
-          rsh = lib.mkOption {
-            type = lib.types.str;
-            default = "ssh -i ${config.clanCore.secrets.borgbackup.secrets."borgbackup.ssh".path} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
-            description = "the rsh to use for the backup";
-          };
-
+  options.clan.borgbackup.destinations = lib.mkOption {
+    type = lib.types.attrsOf (lib.types.submodule ({ name, ... }: {
+      options = {
+        name = lib.mkOption {
+          type = lib.types.str;
+          default = name;
+          description = "the name of the backup job";
         };
-      }));
-      description = ''
-        destinations where the machine should be backuped to
-      '';
-    };
+        repo = lib.mkOption {
+          type = lib.types.str;
+          description = "the borgbackup repository to backup to";
+        };
+        rsh = lib.mkOption {
+          type = lib.types.str;
+          default = "ssh -i ${config.clanCore.secrets.borgbackup.secrets."borgbackup.ssh".path} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
+          description = "the rsh to use for the backup";
+        };
+
+      };
+    }));
+    default = { };
+    description = ''
+      destinations where the machine should be backuped to
+    '';
   };
-  config = lib.mkIf cfg.enable {
+
+  imports = [ (lib.mkRemovedOptionModule [ "clan" "borgbackup" "enable" ] "Just define clan.borgbackup.destinations to enable it") ];
+
+  config = lib.mkIf (cfg.destinations != { }) {
     services.borgbackup.jobs = lib.mapAttrs
       (_: dest: {
         paths = lib.flatten (map (state: state.folders) (lib.attrValues config.clanCore.state));
