@@ -100,6 +100,7 @@
               config' = config;
             in
             lib.mkOption {
+              default = { };
               type = lib.types.attrsOf (lib.types.submodule ({ config, name, ... }: {
                 options = {
                   name = lib.mkOption {
