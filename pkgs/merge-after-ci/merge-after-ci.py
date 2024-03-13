@@ -17,8 +17,8 @@ subprocess.run(
         "origin",
         "main",
         "--assignees",
-        "clan-bot",
-        *([*args.reviewers] if args.reviewers else []),
+        ",".join(["clan-bot", *args.reviewers]),
+        *(["--labels", "needs-review"] if not args.no_review else []),
         *args.args,
     ]
 )
