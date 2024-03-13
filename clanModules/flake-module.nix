@@ -11,6 +11,7 @@
     moonlight = ./moonlight.nix;
     sunshine = ./sunshine.nix;
     syncthing = ./syncthing.nix;
+    sshd = ./sshd.nix;
     vm-user = ./vm-user.nix;
     graphical = ./graphical.nix;
     xfce = ./xfce.nix;
