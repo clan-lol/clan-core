@@ -2,7 +2,7 @@
   services.openssh.enable = true;
 
   services.openssh.hostKeys = [{
-    path = config.clanCore.secrets.borgbackup.secrets."ssh.id_ed25519".path;
+    path = config.clanCore.secrets.openssh.secrets."ssh.id_ed25519".path;
     type = "ed25519";
   }];
 
