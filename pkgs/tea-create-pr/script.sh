@@ -30,5 +30,4 @@ tea pr create \
   --description "$rest" \
   --head "$tempRemoteBranch" \
   --base "$targetBranch" \
-  --labels "needs-review" \
   "$@"
