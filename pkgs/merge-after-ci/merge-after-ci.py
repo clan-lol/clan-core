@@ -2,7 +2,7 @@ import argparse
 import subprocess
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--reviewers", nargs="*")
+parser.add_argument("--reviewers", nargs="*", default=[])
 parser.add_argument("--no-review", action="store_true")
 parser.add_argument("args", nargs="*")
 args = parser.parse_args()
