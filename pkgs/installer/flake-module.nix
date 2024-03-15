@@ -29,7 +29,7 @@ in
   flake.packages.x86_64-linux.install-iso = self.inputs.disko.lib.makeDiskImages {
     nixosConfig = installer;
   };
-  flake.nixosConfigurations = clan.nixosConfigurations;
+  flake.nixosConfigurations = { inherit (clan.nixosConfigurations) installer; };
   flake.clanInternals = clan.clanInternals;
   flake.apps.x86_64-linux.install-vm.program = installer.config.formats.vm.outPath;
   flake.apps.x86_64-linux.install-vm-nogui.program = installer.config.formats.vm-nogui.outPath;
