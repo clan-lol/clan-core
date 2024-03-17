@@ -45,6 +45,8 @@ def install_nixos(
             "--extra-files",
             str(tmpdir),
         ]
+        if machine.target_host.port:
+            cmd += ["--ssh-port", str(machine.target_host.port)]
         if kexec:
             cmd += ["--kexec", kexec]
         if debug:
