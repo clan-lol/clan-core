@@ -3,9 +3,7 @@ let
   installerModule = { config, pkgs, ... }: {
     imports = [
       self.nixosModules.installer
-      self.nixosModules.hidden-ssh-announce
       self.inputs.nixos-generators.nixosModules.all-formats
-      self.inputs.disko.nixosModules.disko
     ];
 
     system.stateVersion = config.system.nixos.version;
