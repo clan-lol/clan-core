@@ -1,3 +1,4 @@
+import base64
 import logging
 from collections.abc import Callable
 from functools import partial
@@ -175,7 +176,12 @@ class ClanList(Gtk.Box):
         open_action = Gio.SimpleAction.new("edit", GLib.VariantType.new("s"))
         open_action.connect("activate", self.on_edit)
 
-        build_logs_action = Gio.SimpleAction.new("logs", GLib.VariantType.new("s"))
+        action_id = base64.b64encode(vm.get_id().encode("utf-8")).decode("utf-8")
+
+        build_logs_action = Gio.SimpleAction.new(
+            f"logs.{action_id}", GLib.VariantType.new("s")
+        )
+
         build_logs_action.connect("activate", self.on_show_build_logs)
         build_logs_action.set_enabled(False)
 
@@ -204,7 +210,7 @@ class ClanList(Gtk.Box):
 
         menu_model = Gio.Menu()
         menu_model.append("Edit", f"app.edit::{vm.get_id()}")
-        menu_model.append("Show Logs", f"app.logs::{vm.get_id()}")
+        menu_model.append("Show Logs", f"app.logs.{action_id}::{vm.get_id()}")
 
         pref_button = Gtk.MenuButton()
         pref_button.set_icon_name("open-menu-symbolic")
@@ -245,7 +251,9 @@ class ClanList(Gtk.Box):
         name = vm.machine.name if vm.machine else "Unknown"
 
         logs.set_title(f"""📄<span weight="normal"> {name}</span>""")
-        logs.set_message("Loading ...")
+        # initial message. Streaming happens automatically when the file is changed by the build process
+        with open(vm.build_process.out_file) as f:
+            logs.set_message(f.read())
 
         views.set_visible_child_name("logs")
 
