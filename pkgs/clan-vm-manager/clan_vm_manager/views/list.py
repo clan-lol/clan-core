@@ -8,9 +8,15 @@ from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.components.interfaces import ClanConfig
 from clan_vm_manager.components.vmobj import VMObject
-from clan_vm_manager.singletons.toast import ErrorToast, ToastOverlay
+from clan_vm_manager.singletons.toast import (
+    LogToast,
+    ToastOverlay,
+    WarningToast,
+)
 from clan_vm_manager.singletons.use_join import JoinList, JoinValue
+from clan_vm_manager.singletons.use_views import ViewStack
 from clan_vm_manager.singletons.use_vms import ClanStore, VMStore
+from clan_vm_manager.views.logs import Logs
 
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
@@ -168,14 +174,42 @@ class ClanList(Gtk.Box):
         ## Drop down menu
         open_action = Gio.SimpleAction.new("edit", GLib.VariantType.new("s"))
         open_action.connect("activate", self.on_edit)
+
+        build_logs_action = Gio.SimpleAction.new("logs", GLib.VariantType.new("s"))
+        build_logs_action.connect("activate", self.on_show_build_logs)
+        build_logs_action.set_enabled(False)
+
         app = Gio.Application.get_default()
         assert app is not None
+
         app.add_action(open_action)
+        app.add_action(build_logs_action)
+
+        # set a callback function for conditionally enabling the build_logs action
+        def on_vm_build_notify(
+            vm: VMObject, is_building: bool, is_running: bool
+        ) -> None:
+            build_logs_action.set_enabled(is_building or is_running)
+            app.add_action(build_logs_action)
+            if is_building:
+                ToastOverlay.use().add_toast_unique(
+                    LogToast(
+                        """Build process running ...""",
+                        on_button_click=lambda: self.show_vm_build_logs(vm.get_id()),
+                    ).toast,
+                    f"info.build.running.{vm}",
+                )
+
+        vm.connect("vm_build_notify", on_vm_build_notify)
+
         menu_model = Gio.Menu()
         menu_model.append("Edit", f"app.edit::{vm.get_id()}")
+        menu_model.append("Show Logs", f"app.logs::{vm.get_id()}")
+
         pref_button = Gtk.MenuButton()
         pref_button.set_icon_name("open-menu-symbolic")
         pref_button.set_menu_model(menu_model)
+
         button_box.append(pref_button)
 
         ## VM switch button
@@ -190,8 +224,30 @@ class ClanList(Gtk.Box):
 
     def on_edit(self, source: Any, parameter: Any) -> None:
         target = parameter.get_string()
-
         print("Editing settings for machine", target)
+
+    def on_show_build_logs(self, _: Any, parameter: Any) -> None:
+        target = parameter.get_string()
+        self.show_vm_build_logs(target)
+
+    def show_vm_build_logs(self, target: str) -> None:
+        vm = ClanStore.use().set_logging_vm(target)
+        if vm is None:
+            raise ValueError(f"VM {target} not found")
+
+        views = ViewStack.use().view
+        # Reset the logs view
+        logs: Logs = views.get_child_by_name("logs")  # type: ignore
+
+        if logs is None:
+            raise ValueError("Logs view not found")
+
+        name = vm.machine.name if vm.machine else "Unknown"
+
+        logs.set_title(f"""📄<span weight="normal"> {name}</span>""")
+        logs.set_message("Loading ...")
+
+        views.set_visible_child_name("logs")
 
     def render_join_row(
         self, boxed_list: Gtk.ListBox, join_val: JoinValue
@@ -214,7 +270,9 @@ class ClanList(Gtk.Box):
             assert sub is not None
 
             ToastOverlay.use().add_toast_unique(
-                ErrorToast("Already exists. Joining again will update it").toast,
+                WarningToast(
+                    f"""<span weight="regular">{join_val.url.machine.name!s}</span> Already exists. Joining again will update it"""
+                ).toast,
                 "warning.duplicate.join",
             )
 

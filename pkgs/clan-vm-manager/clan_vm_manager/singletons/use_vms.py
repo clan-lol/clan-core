@@ -10,10 +10,12 @@ from clan_cli.history.add import HistoryEntry
 from clan_vm_manager import assets
 from clan_vm_manager.components.gkvstore import GKVStore
 from clan_vm_manager.components.vmobj import VMObject
+from clan_vm_manager.singletons.use_views import ViewStack
+from clan_vm_manager.views.logs import Logs
 
 gi.require_version("GObject", "2.0")
 gi.require_version("Gtk", "4.0")
-from gi.repository import GLib
+from gi.repository import Gio, GLib
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +28,10 @@ class VMStore(GKVStore):
 class ClanStore:
     _instance: "None | ClanStore" = None
     _clan_store: GKVStore[str, VMStore]
+
+    # set the vm that is outputting logs
+    # build logs are automatically streamed to the logs-view
+    _logging_vm: VMObject | None = None
 
     # Make sure the VMS class is used as a singleton
     def __init__(self) -> None:
@@ -40,6 +46,13 @@ class ClanStore:
             )
 
         return cls._instance
+
+    def set_logging_vm(self, ident: str) -> VMObject | None:
+        vm = self.get_vm(ClanURI(f"clan://{ident}"))
+        if vm is not None:
+            self._logging_vm = vm
+
+        return self._logging_vm
 
     def register_on_deep_change(
         self, callback: Callable[[GKVStore, int, int, int], None]
@@ -77,11 +90,40 @@ class ClanStore:
         else:
             icon = Path(entry.flake.icon)
 
-        vm = VMObject(
-            icon=icon,
-            data=entry,
-        )
+        def log_details(gfile: Gio.File) -> None:
+            self.log_details(vm, gfile)
+
+        vm = VMObject(icon=icon, data=entry, build_log_cb=log_details)
         self.push(vm)
+
+    def log_details(self, vm: VMObject, gfile: Gio.File) -> None:
+        views = ViewStack.use().view
+        logs_view: Logs = views.get_child_by_name("logs")  # type: ignore
+
+        def file_read_callback(
+            source_object: Gio.File, result: Gio.AsyncResult, _user_data: Any
+        ) -> None:
+            try:
+                # Finish the asynchronous read operation
+                res = source_object.load_contents_finish(result)
+                _success, contents, _etag_out = res
+
+                # Convert the byte array to a string and print it
+                logs_view.set_message(contents.decode("utf-8"))
+            except Exception as e:
+                print(f"Error reading file: {e}")
+
+        # only one vm can output logs at a time
+        if vm == self._logging_vm:
+            gfile.load_contents_async(None, file_read_callback, None)
+        else:
+            log.warning(
+                "Cannot log details of VM that is not the current logging VM.",
+                vm,
+                self._logging_vm,
+            )
+
+        # we cannot check this type, python is not smart enough
 
     def push(self, vm: VMObject) -> None:
         url = str(vm.data.flake.flake_url)

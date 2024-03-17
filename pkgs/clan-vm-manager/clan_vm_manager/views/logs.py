@@ -22,30 +22,26 @@ class Logs(Gtk.Box):
         app = Gio.Application.get_default()
         assert app is not None
 
-        self.banner = Adw.Banner.new("Error details")
+        self.banner = Adw.Banner.new("")
+        self.banner.set_use_markup(True)
         self.banner.set_revealed(True)
+        self.banner.set_button_label("Close")
 
-        close_button = Gtk.Button()
-        button_content = Adw.ButtonContent.new()
-        button_content.set_label("Back")
-        button_content.set_icon_name("go-previous-symbolic")
-        close_button.add_css_class("flat")
-        close_button.set_child(button_content)
-        close_button.connect(
-            "clicked",
+        self.banner.connect(
+            "button-clicked",
             lambda _: ViewStack.use().view.set_visible_child_name("list"),
         )
-
-        self.close_button = close_button
 
         self.text_view = Gtk.TextView()
         self.text_view.set_editable(False)
         self.text_view.set_wrap_mode(Gtk.WrapMode.WORD)
         self.text_view.add_css_class("log-view")
 
-        self.append(self.close_button)
         self.append(self.banner)
         self.append(self.text_view)
+
+    def set_title(self, title: str) -> None:
+        self.banner.set_title(title)
 
     def set_message(self, message: str) -> None:
         """

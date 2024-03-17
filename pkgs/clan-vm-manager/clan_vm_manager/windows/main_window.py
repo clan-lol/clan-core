@@ -46,22 +46,22 @@ class MainWindow(Adw.ApplicationWindow):
         # Initialize all views
         stack_view = ViewStack.use().view
 
+        clamp = Adw.Clamp()
+        clamp.set_child(stack_view)
+        clamp.set_maximum_size(1000)
+
         scroll = Gtk.ScrolledWindow()
         scroll.set_propagate_natural_height(True)
         scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scroll.set_child(ClanList(config))
+        scroll.set_child(clamp)
 
-        stack_view.add_named(scroll, "list")
+        stack_view.add_named(ClanList(config), "list")
         stack_view.add_named(Details(), "details")
         stack_view.add_named(Logs(), "logs")
 
         stack_view.set_visible_child_name(config.initial_view)
 
-        clamp = Adw.Clamp()
-        clamp.set_child(stack_view)
-        clamp.set_maximum_size(1000)
-
-        view.set_content(clamp)
+        view.set_content(scroll)
 
         self.connect("destroy", self.on_destroy)
 
