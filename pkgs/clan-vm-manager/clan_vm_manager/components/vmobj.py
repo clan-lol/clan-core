@@ -5,7 +5,7 @@ import tempfile
 import threading
 import time
 import weakref
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
@@ -21,7 +21,7 @@ from clan_vm_manager.components.executor import MPProcess, spawn
 
 gi.require_version("GObject", "2.0")
 gi.require_version("Gtk", "4.0")
-from gi.repository import GLib, GObject, Gtk
+from gi.repository import Gio, GLib, GObject, Gtk
 
 log = logging.getLogger(__name__)
 
@@ -29,18 +29,22 @@ log = logging.getLogger(__name__)
 class VMObject(GObject.Object):
     # Define a custom signal with the name "vm_stopped" and a string argument for the message
     __gsignals__: ClassVar = {
-        "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [])
+        "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, []),
+        "vm_build_notify": (GObject.SignalFlags.RUN_FIRST, None, [bool, bool]),
     }
 
     def __init__(
         self,
         icon: Path,
         data: HistoryEntry,
+        build_log_cb: Callable[[Gio.File], None],
     ) -> None:
         super().__init__()
 
         # Store the data from the history entry
         self.data: HistoryEntry = data
+
+        self.build_log_cb = build_log_cb
 
         # Create a process object to store the VM process
         self.vm_process: MPProcess = MPProcess(
@@ -89,6 +93,9 @@ class VMObject(GObject.Object):
         self.data = data
 
     def _on_vm_status_changed(self, source: "VMObject") -> None:
+        # Signal may be emited multiple times
+        self.emit("vm_build_notify", self.is_building(), self.is_running())
+
         self.switch.set_state(self.is_running() and not self.is_building())
         if self.switch.get_sensitive() is False and not self.is_building():
             self.switch.set_sensitive(True)
@@ -154,6 +161,14 @@ class VMObject(GObject.Object):
                 machine=machine,
                 tmpdir=log_dir,
             )
+
+            gfile = Gio.File.new_for_path(str(log_dir / "build.log"))
+            # Gio documentation:
+            # Obtains a file monitor for the given file.
+            # If no file notification mechanism exists, then regular polling of the file is used.
+            g_monitor = gfile.monitor_file(Gio.FileMonitorFlags.NONE, None)
+            g_monitor.connect("changed", self.on_logs_changed)
+
             GLib.idle_add(self._vm_status_changed_task)
             self.switch.set_sensitive(True)
             # Start the logs watcher
@@ -205,6 +220,18 @@ class VMObject(GObject.Object):
             self.vm_process.proc.join()
             log.debug(f"VM {self.get_id()} has stopped")
             GLib.idle_add(self._vm_status_changed_task)
+
+    def on_logs_changed(
+        self,
+        monitor: Gio.FileMonitor,
+        file: Gio.File,
+        other_file: Gio.File,
+        event_type: Gio.FileMonitorEvent,
+    ) -> None:
+        if event_type == Gio.FileMonitorEvent.CHANGES_DONE_HINT:
+            # File was changed and the changes were written to disk
+            # wire up the callback for setting the logs
+            self.build_log_cb(file)
 
     def start(self) -> None:
         if self.is_running():

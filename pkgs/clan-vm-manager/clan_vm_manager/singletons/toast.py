@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Callable
 from typing import Any
 
 import gi
@@ -50,20 +51,86 @@ class ToastOverlay:
 class ErrorToast:
     toast: Adw.Toast
 
-    def __init__(self, message: str) -> None:
+    def __init__(
+        self, message: str, persistent: bool = False, details: str = ""
+    ) -> None:
         super().__init__()
-        self.toast = Adw.Toast.new(f"Error: {message}")
-        self.toast.set_priority(Adw.ToastPriority.HIGH)
+        self.toast = Adw.Toast.new(
+            f"""<span foreground='red'>❌ Error </span> {message}"""
+        )
+        self.toast.set_use_markup(True)
 
-        self.toast.set_button_label("details")
+        self.toast.set_priority(Adw.ToastPriority.HIGH)
+        self.toast.set_button_label("Show more")
+
+        if persistent:
+            self.toast.set_timeout(0)
 
         views = ViewStack.use().view
 
         # we cannot check this type, python is not smart enough
         logs_view: Logs = views.get_child_by_name("logs")  # type: ignore
-        logs_view.set_message(message)
+        logs_view.set_message(details)
 
         self.toast.connect(
             "button-clicked",
             lambda _: views.set_visible_child_name("logs"),
+        )
+
+
+class WarningToast:
+    toast: Adw.Toast
+
+    def __init__(self, message: str, persistent: bool = False) -> None:
+        super().__init__()
+        self.toast = Adw.Toast.new(
+            f"<span foreground='orange'>⚠ Warning </span> {message}"
+        )
+        self.toast.set_use_markup(True)
+
+        self.toast.set_priority(Adw.ToastPriority.NORMAL)
+
+        if persistent:
+            self.toast.set_timeout(0)
+
+
+class SuccessToast:
+    toast: Adw.Toast
+
+    def __init__(self, message: str, persistent: bool = False) -> None:
+        super().__init__()
+        self.toast = Adw.Toast.new(f"<span foreground='green'>✅</span> {message}")
+        self.toast.set_use_markup(True)
+
+        self.toast.set_priority(Adw.ToastPriority.NORMAL)
+
+        if persistent:
+            self.toast.set_timeout(0)
+
+
+class LogToast:
+    toast: Adw.Toast
+
+    def __init__(
+        self,
+        message: str,
+        on_button_click: Callable[[], None],
+        button_label: str = "More",
+        persistent: bool = False,
+    ) -> None:
+        super().__init__()
+        self.toast = Adw.Toast.new(
+            f"""Logs are avilable <span weight="regular">{message}</span>"""
+        )
+        self.toast.set_use_markup(True)
+
+        self.toast.set_priority(Adw.ToastPriority.NORMAL)
+
+        if persistent:
+            self.toast.set_timeout(0)
+
+        self.toast.set_button_label(button_label)
+        self.toast.connect(
+            "button-clicked",
+            lambda _: on_button_click(),
         )
