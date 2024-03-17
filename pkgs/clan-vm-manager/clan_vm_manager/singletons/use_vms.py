@@ -117,11 +117,7 @@ class ClanStore:
         if vm == self._logging_vm:
             gfile.load_contents_async(None, file_read_callback, None)
         else:
-            log.warning(
-                "Cannot log details of VM that is not the current logging VM.",
-                vm,
-                self._logging_vm,
-            )
+            log.info("Log details of VM hidden, vm is not current logging VM.")
 
         # we cannot check this type, python is not smart enough
 
