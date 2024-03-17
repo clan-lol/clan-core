@@ -1,11 +1,11 @@
-{ lib
-, pkgs
-, modulesPath
-, ...
-}: {
-  systemd.tmpfiles.rules = [
-    "d /var/shared 0777 root root - -"
-  ];
+{
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
+{
+  systemd.tmpfiles.rules = [ "d /var/shared 0777 root root - -" ];
   imports = [
     (modulesPath + "/profiles/installation-device.nix")
     (modulesPath + "/profiles/all-hardware.nix")
@@ -21,7 +21,17 @@
     enable = true;
     script = pkgs.writeShellScript "write-hostname" ''
       set -efu
-      export PATH=${lib.makeBinPath (with pkgs; [ iproute2 coreutils jq qrencode ])}
+      export PATH=${
+        lib.makeBinPath (
+          with pkgs;
+          [
+            iproute2
+            coreutils
+            jq
+            qrencode
+          ]
+        )
+      }
 
       mkdir -p /var/shared
       echo "$1" > /var/shared/onion-hostname

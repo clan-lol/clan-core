@@ -1,4 +1,5 @@
-{ lib, ... }: {
+{ lib, ... }:
+{
   clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
   system.stateVersion = lib.version;
   sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";

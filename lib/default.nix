@@ -1,4 +1,9 @@
-{ lib, clan-core, nixpkgs, ... }:
+{
+  lib,
+  clan-core,
+  nixpkgs,
+  ...
+}:
 {
   jsonschema = import ./jsonschema { inherit lib; };
 

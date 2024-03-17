@@ -1,9 +1,10 @@
 {
   perSystem =
-    { pkgs
-    , self'
-    , config
-    , ...
+    {
+      pkgs,
+      self',
+      config,
+      ...
     }:
     let
       writers = pkgs.callPackage ./pkgs/builders/script-writers.nix { };
@@ -16,10 +17,9 @@
       # A python program to switch between dev-shells
       # usage: select-shell shell-name
       # the currently enabled dev-shell gets stored in ./.direnv/selected-shell
-      select-shell = writers.writePython3Bin "select-shell"
-        {
-          flakeIgnore = [ "E501" ];
-        } ./pkgs/scripts/select-shell.py;
+      select-shell = writers.writePython3Bin "select-shell" {
+        flakeIgnore = [ "E501" ];
+      } ./pkgs/scripts/select-shell.py;
     in
     {
       devShells.default = pkgs.mkShell {

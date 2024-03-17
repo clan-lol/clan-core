@@ -1,4 +1,10 @@
-{ config, lib, pkgs, ... }: {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
   # TODO: factor these out into a separate interface.nix.
   # Also think about moving these options out of `system.clan`.
   # Maybe we should not re-use the already polluted confg.system namespace
@@ -90,6 +96,8 @@
       inherit (config.clan.deployment) requireExplicitUpdate;
       inherit (config.clanCore) secretsUploadDirectory;
     };
-    system.clan.deployment.file = pkgs.writeText "deployment.json" (builtins.toJSON config.system.clan.deployment.data);
+    system.clan.deployment.file = pkgs.writeText "deployment.json" (
+      builtins.toJSON config.system.clan.deployment.data
+    );
   };
 }

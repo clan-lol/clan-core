@@ -1,4 +1,8 @@
-{ stdenv, python3, lib }:
+{
+  stdenv,
+  python3,
+  lib,
+}:
 
 stdenv.mkDerivation {
   name = "zerotier-members";

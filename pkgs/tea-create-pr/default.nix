@@ -1,9 +1,10 @@
-{ writeShellApplication
-, bash
-, coreutils
-, git
-, tea
-, openssh
+{
+  writeShellApplication,
+  bash,
+  coreutils,
+  git,
+  tea,
+  openssh,
 }:
 writeShellApplication {
   name = "tea-create-pr";

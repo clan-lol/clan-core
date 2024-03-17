@@ -1,19 +1,19 @@
-{ bash
-, callPackage
-, coreutils
-, git
-, lib
-, nix
-, openssh
-, tea
-, tea-create-pr
-, ...
+{
+  bash,
+  callPackage,
+  coreutils,
+  git,
+  lib,
+  nix,
+  openssh,
+  tea,
+  tea-create-pr,
+  ...
 }:
 let
   writers = callPackage ../builders/script-writers.nix { };
 in
-writers.writePython3Bin "merge-after-ci"
-{
+writers.writePython3Bin "merge-after-ci" {
   makeWrapperArgs = [
     "--prefix"
     "PATH"
@@ -28,6 +28,4 @@ writers.writePython3Bin "merge-after-ci"
       tea-create-pr
     ])
   ];
-}
-  ./merge-after-ci.py
-
+} ./merge-after-ci.py

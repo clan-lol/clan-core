@@ -1,4 +1,5 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, ... }:
+{
   networking.firewall.interfaces."zt+".allowedTCPPorts = [ 25 ]; # smtp with other hosts
   environment.systemPackages = [ pkgs.deltachat-desktop ];
 
@@ -134,9 +135,7 @@
           storage &local_mailboxes
         }
       '';
-      ensureAccounts = [
-        "user@${domain}"
-      ];
+      ensureAccounts = [ "user@${domain}" ];
       ensureCredentials = {
         "user@${domain}".passwordFile = pkgs.writeText "dummy" "foobar";
       };

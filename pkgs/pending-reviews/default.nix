@@ -1,6 +1,7 @@
-{ writeShellApplication
-, bash
-, curl
+{
+  writeShellApplication,
+  bash,
+  curl,
 }:
 writeShellApplication {
   name = "pending-reviews";
