@@ -13,7 +13,9 @@ from ..secrets.generate import generate_secrets
 log = logging.getLogger(__name__)
 
 
-def install_nixos(machine: Machine, kexec: str | None = None) -> None:
+def install_nixos(
+    machine: Machine, kexec: str | None = None, debug: bool = False
+) -> None:
     secrets_module = importlib.import_module(machine.secrets_module)
     log.info(f"installing {machine.name}")
     secret_store = secrets_module.SecretStore(machine=machine)
@@ -45,6 +47,8 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
         ]
         if kexec:
             cmd += ["--kexec", kexec]
+        if debug:
+            cmd.append("--debug")
         cmd.append(target_host)
 
         run(
@@ -63,6 +67,7 @@ class InstallOptions:
     target_host: str
     kexec: str | None
     confirm: bool
+    debug: bool
 
 
 def install_command(args: argparse.Namespace) -> None:
@@ -72,6 +77,7 @@ def install_command(args: argparse.Namespace) -> None:
         target_host=args.target_host,
         kexec=args.kexec,
         confirm=not args.yes,
+        debug=args.debug,
     )
     machine = Machine(opts.machine, flake=opts.flake)
     machine.target_host_address = opts.target_host
@@ -81,7 +87,7 @@ def install_command(args: argparse.Namespace) -> None:
         if ask != "y":
             return
 
-    install_nixos(machine, kexec=opts.kexec)
+    install_nixos(machine, kexec=opts.kexec, debug=opts.debug)
 
 
 def register_install_parser(parser: argparse.ArgumentParser) -> None:
@@ -94,6 +100,12 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         "--yes",
         action="store_true",
         help="do not ask for confirmation",
+        default=False,
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="print debug information",
         default=False,
     )
     parser.add_argument(
