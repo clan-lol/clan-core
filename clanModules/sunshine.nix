@@ -1,7 +1,7 @@
 { pkgs, options, ... }:
 let
-  apps = pkgs.writeText "apps.json" (builtins.toJSON
-    {
+  apps = pkgs.writeText "apps.json" (
+    builtins.toJSON {
       env = {
         PATH = "$(PATH):$(HOME)/.local/bin:/run/current-system/sw/bin";
       };
@@ -22,13 +22,12 @@ let
         }
         {
           name = "Steam Big Picture";
-          detached = [
-            "setsid steam steam://open/bigpicture"
-          ];
+          detached = [ "setsid steam steam://open/bigpicture" ];
           image-path = "steam.png";
         }
       ];
-    });
+    }
+  );
   sunshineConfiguration = pkgs.writeText "sunshine.conf" ''
     address_family = both
     channels = 5
@@ -78,11 +77,9 @@ in
       environment.systemPackages = [
         pkgs.sunshine
         (pkgs.writers.writeDashBin "sun" ''
-              ${pkgs.sunshine}/bin/sunshine -1 ${
-          pkgs.writeText "sunshine.conf" ''
-                  address_family = both
-                ''
-          } "$@"
+          ${pkgs.sunshine}/bin/sunshine -1 ${pkgs.writeText "sunshine.conf" ''
+            address_family = both
+          ''} "$@"
         '')
         # Create a dummy account, for easier setup,
         # don't use this account in actual production yet.
@@ -113,11 +110,7 @@ in
         };
       };
 
-
-      systemd.tmpfiles.rules = [
-        "d '/var/lib/sunshine' 0770 'user' 'users' - -"
-      ];
-
+      systemd.tmpfiles.rules = [ "d '/var/lib/sunshine' 0770 'user' 'users' - -" ];
 
       systemd.user.services.sunshine = {
         enable = true;
@@ -128,9 +121,7 @@ in
         serviceConfig = {
           Restart = "on-failure";
           RestartSec = "5s";
-          ReadWritePaths = [
-            "/var/lib/sunshine"
-          ];
+          ReadWritePaths = [ "/var/lib/sunshine" ];
         };
         wantedBy = [ "graphical-session.target" ];
       };

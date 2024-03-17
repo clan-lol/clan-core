@@ -1,7 +1,8 @@
-{ pkgs
-, lib
-, config
-, ...
+{
+  pkgs,
+  lib,
+  config,
+  ...
 }:
 {
   options.clan.services.waypipe = {
@@ -49,7 +50,10 @@
       isNormalUser = true;
       uid = 1000;
       password = "";
-      extraGroups = [ "wheel" "video" ];
+      extraGroups = [
+        "wheel"
+        "video"
+      ];
       shell = "/run/current-system/sw/bin/bash";
     };
 

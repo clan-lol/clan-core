@@ -1,16 +1,17 @@
-{ python3
-, runCommand
-, setuptools
-, copyDesktopItems
-, pygobject3
-, wrapGAppsHook
-, gtk4
-, gnome
-, pygobject-stubs
-, gobject-introspection
-, clan-cli
-, makeDesktopItem
-, libadwaita
+{
+  python3,
+  runCommand,
+  setuptools,
+  copyDesktopItems,
+  pygobject3,
+  wrapGAppsHook,
+  gtk4,
+  gnome,
+  pygobject-stubs,
+  gobject-introspection,
+  clan-cli,
+  makeDesktopItem,
+  libadwaita,
 }:
 let
   source = ./.;
@@ -41,7 +42,11 @@ python3.pkgs.buildPythonApplication {
     gobject-introspection
   ];
 
-  buildInputs = [ gtk4 libadwaita gnome.adwaita-icon-theme ];
+  buildInputs = [
+    gtk4
+    libadwaita
+    gnome.adwaita-icon-theme
+  ];
 
   # We need to propagate the build inputs to nix fmt / treefmt
   propagatedBuildInputs = [
@@ -73,7 +78,5 @@ python3.pkgs.buildPythonApplication {
   checkPhase = ''
     PYTHONPATH= $out/bin/clan-vm-manager --help
   '';
-  desktopItems = [
-    desktop-file
-  ];
+  desktopItems = [ desktop-file ];
 }

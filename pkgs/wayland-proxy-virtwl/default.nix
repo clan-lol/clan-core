@@ -1,4 +1,9 @@
-{ wayland-proxy-virtwl, fetchFromGitHub, libdrm, ocaml-ng }:
+{
+  wayland-proxy-virtwl,
+  fetchFromGitHub,
+  libdrm,
+  ocaml-ng,
+}:
 let
   ocaml-wayland = ocaml-ng.ocamlPackages_5_0.wayland.overrideAttrs (_old: {
     src = fetchFromGitHub {
@@ -16,13 +21,15 @@ wayland-proxy-virtwl.overrideAttrs (_old: {
     rev = "652fca9d4e006a2bdeba920dfaf53190c5373a7d";
     hash = "sha256-VgpqxjHgueK9eQSX987PF0KvscpzkScOzFkW3haYCOw=";
   };
-  buildInputs = [ libdrm ] ++ (with ocaml-ng.ocamlPackages_5_0; [
-    ocaml-wayland
-    dune-configurator
-    eio_main
-    ppx_cstruct
-    cmdliner
-    logs
-    ppx_cstruct
-  ]);
+  buildInputs =
+    [ libdrm ]
+    ++ (with ocaml-ng.ocamlPackages_5_0; [
+      ocaml-wayland
+      dune-configurator
+      eio_main
+      ppx_cstruct
+      cmdliner
+      logs
+      ppx_cstruct
+    ]);
 })

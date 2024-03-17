@@ -1,4 +1,10 @@
-{ pkgs, lib, config, ... }: {
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
+{
   options.clan.zt-tcp-relay = {
     port = lib.mkOption {
       type = lib.types.port;
@@ -13,7 +19,9 @@
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       serviceConfig = {
-        ExecStart = "${pkgs.callPackage ../pkgs/zt-tcp-relay {}}/bin/zt-tcp-relay --listen [::]:${builtins.toString config.clan.zt-tcp-relay.port}";
+        ExecStart = "${
+          pkgs.callPackage ../pkgs/zt-tcp-relay { }
+        }/bin/zt-tcp-relay --listen [::]:${builtins.toString config.clan.zt-tcp-relay.port}";
         Restart = "always";
         RestartSec = "5";
         dynamicUsers = true;

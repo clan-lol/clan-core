@@ -13,4 +13,3 @@
     system.clan.secretsModule = "clan_cli.secrets.modules.password_store";
   };
 }
-
