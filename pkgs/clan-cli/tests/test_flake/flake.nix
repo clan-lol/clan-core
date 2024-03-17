@@ -2,32 +2,41 @@
   # this placeholder is replaced by the path to nixpkgs
   inputs.nixpkgs.url = "__NIXPKGS__";
 
-  outputs = inputs':
+  outputs =
+    inputs':
     let
       # fake clan-core input
       fake-clan-core = {
         clanModules.fake-module = ./fake-module.nix;
       };
-      inputs = inputs' // { clan-core = fake-clan-core; };
+      inputs = inputs' // {
+        clan-core = fake-clan-core;
+      };
       machineSettings = (
-        if builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE" != ""
-        then builtins.fromJSON (builtins.readFile (builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE"))
-        else if builtins.pathExists ./machines/machine1/settings.json
-        then builtins.fromJSON (builtins.readFile ./machines/machine1/settings.json)
-        else { }
+        if builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE" != "" then
+          builtins.fromJSON (builtins.readFile (builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE"))
+        else if builtins.pathExists ./machines/machine1/settings.json then
+          builtins.fromJSON (builtins.readFile ./machines/machine1/settings.json)
+        else
+          { }
       );
-      machineImports =
-        map
-          (module: fake-clan-core.clanModules.${module})
-          (machineSettings.clanImports or [ ]);
+      machineImports = map (module: fake-clan-core.clanModules.${module}) (
+        machineSettings.clanImports or [ ]
+      );
     in
     {
       nixosConfigurations.machine1 = inputs.nixpkgs.lib.nixosSystem {
-        modules =
-          machineImports ++ [
-            ./nixosModules/machine1.nix
-            machineSettings
-            ({ lib, options, pkgs, ... }: {
+        modules = machineImports ++ [
+          ./nixosModules/machine1.nix
+          machineSettings
+          (
+            {
+              lib,
+              options,
+              pkgs,
+              ...
+            }:
+            {
               config = {
                 nixpkgs.hostPlatform = "x86_64-linux";
                 # speed up by not instantiating nixpkgs twice and disable documentation
@@ -51,8 +60,9 @@
                   The buildClan function will automatically import these modules for the current machine.
                 '';
               };
-            })
-          ];
+            }
+          )
+        ];
       };
     };
 }

@@ -1,4 +1,1 @@
-_:
-{
-  fonts.enableDefaultPackages = true;
-}
+_: { fonts.enableDefaultPackages = true; }

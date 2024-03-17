@@ -1,4 +1,5 @@
-{ inputs, ... }: {
+{ inputs, ... }:
+{
   flake.clanModules = {
     diskLayouts = {
       imports = [

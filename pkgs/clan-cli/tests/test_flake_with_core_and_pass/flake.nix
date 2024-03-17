@@ -5,30 +5,33 @@
   # this placeholder is replaced by the path to clan-core
   inputs.clan-core.url = "__CLAN_CORE__";
 
-  outputs = { self, clan-core }:
+  outputs =
+    { self, clan-core }:
     let
       clan = clan-core.lib.buildClan {
         directory = self;
         clanName = "test_flake_with_core_and_pass";
         machines = {
-          vm1 = { lib, ... }: {
-            clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
-            system.stateVersion = lib.version;
-            clanCore.secretStore = "password-store";
-            clanCore.secretsUploadDirectory = lib.mkForce "__CLAN_SOPS_KEY_DIR__/secrets";
+          vm1 =
+            { lib, ... }:
+            {
+              clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
+              system.stateVersion = lib.version;
+              clanCore.secretStore = "password-store";
+              clanCore.secretsUploadDirectory = lib.mkForce "__CLAN_SOPS_KEY_DIR__/secrets";
 
-            clan.networking.zerotier.controller.enable = true;
+              clan.networking.zerotier.controller.enable = true;
 
-            systemd.services.shutdown-after-boot = {
-              enable = true;
-              wantedBy = [ "multi-user.target" ];
-              after = [ "multi-user.target" ];
-              script = ''
-                #!/usr/bin/env bash
-                shutdown -h now
-              '';
+              systemd.services.shutdown-after-boot = {
+                enable = true;
+                wantedBy = [ "multi-user.target" ];
+                after = [ "multi-user.target" ];
+                script = ''
+                  #!/usr/bin/env bash
+                  shutdown -h now
+                '';
+              };
             };
-          };
         };
       };
     in
