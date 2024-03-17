@@ -26,6 +26,7 @@
         packages = [
           select-shell
           pkgs.tea
+          pkgs.nix
           self'.packages.tea-create-pr
           self'.packages.merge-after-ci
           self'.packages.pending-reviews
