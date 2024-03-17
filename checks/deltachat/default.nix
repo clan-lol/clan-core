@@ -1,24 +1,29 @@
-(import ../lib/container-test.nix) ({ pkgs, ... }: {
-  name = "secrets";
+(import ../lib/container-test.nix) (
+  { pkgs, ... }:
+  {
+    name = "secrets";
 
-  nodes.machine = { self, ... }: {
-    imports = [
-      self.clanModules.deltachat
-      self.nixosModules.clanCore
+    nodes.machine =
+      { self, ... }:
       {
-        clanCore.machineName = "machine";
-        clanCore.clanDir = ./.;
-      }
-    ];
-  };
-  testScript = ''
-    start_all()
-    machine.wait_for_unit("maddy")
-    # imap
-    machine.succeed("${pkgs.netcat}/bin/nc -z -v ::1 143")
-    # smtp submission
-    machine.succeed("${pkgs.netcat}/bin/nc -z -v ::1 587")
-    # smtp
-    machine.succeed("${pkgs.netcat}/bin/nc -z -v ::1 25")
-  '';
-})
+        imports = [
+          self.clanModules.deltachat
+          self.nixosModules.clanCore
+          {
+            clanCore.machineName = "machine";
+            clanCore.clanDir = ./.;
+          }
+        ];
+      };
+    testScript = ''
+      start_all()
+      machine.wait_for_unit("maddy")
+      # imap
+      machine.succeed("${pkgs.netcat}/bin/nc -z -v ::1 143")
+      # smtp submission
+      machine.succeed("${pkgs.netcat}/bin/nc -z -v ::1 587")
+      # smtp
+      machine.succeed("${pkgs.netcat}/bin/nc -z -v ::1 25")
+    '';
+  }
+)

@@ -1,4 +1,10 @@
-{ pkgs, options, lib, ... }: {
+{
+  pkgs,
+  options,
+  lib,
+  ...
+}:
+{
   options.clanCore.optionsNix = lib.mkOption {
     type = lib.types.raw;
     internal = true;

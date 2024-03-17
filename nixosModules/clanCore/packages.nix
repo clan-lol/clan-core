@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   # essential debugging tools for networked services
   environment.systemPackages = [
     pkgs.dnsutils

@@ -1,4 +1,5 @@
-{ self, ... }: {
+{ self, ... }:
+{
   flake.templates = {
     new-clan = {
       description = "Initialize a new clan flake";

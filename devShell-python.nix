@@ -1,9 +1,10 @@
 {
   perSystem =
-    { pkgs
-    , self'
-    , lib
-    , ...
+    {
+      pkgs,
+      self',
+      lib,
+      ...
     }:
     let
       python3 = pkgs.python3;
@@ -20,9 +21,7 @@
           ps.pygobject3
         ]
       );
-      linuxOnlyPackages = lib.optionals pkgs.stdenv.isLinux [
-        pkgs.xdg-utils
-      ];
+      linuxOnlyPackages = lib.optionals pkgs.stdenv.isLinux [ pkgs.xdg-utils ];
     in
     {
       devShells.python = pkgs.mkShell {

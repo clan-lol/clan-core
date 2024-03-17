@@ -1,7 +1,6 @@
-/*
-  An example nixos module declaring an interface.
-*/
-{ lib, ... }: {
+# An example nixos module declaring an interface.
+{ lib, ... }:
+{
   options = {
     # str
     name = lib.mkOption {
@@ -44,7 +43,11 @@
     # list of str
     kernelModules = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ "nvme" "xhci_pci" "ahci" ];
+      default = [
+        "nvme"
+        "xhci_pci"
+        "ahci"
+      ];
       description = "A list of enabled kernel modules";
     };
   };

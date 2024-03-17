@@ -1,7 +1,7 @@
-{ lib
-, buildGoModule
-, fetchFromGitHub
-,
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
 }:
 buildGoModule rec {
   pname = "go-ssb";
@@ -17,7 +17,10 @@ buildGoModule rec {
 
   vendorHash = "sha256-ZytuWFre7Cz6Qt01tLQoPEuNzDIyoC938OkdIrU8nZo=";
 
-  ldflags = [ "-s" "-w" ];
+  ldflags = [
+    "-s"
+    "-w"
+  ];
 
   # take very long
   doCheck = false;
