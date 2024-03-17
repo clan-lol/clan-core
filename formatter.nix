@@ -7,8 +7,6 @@
   ];
   perSystem = { self', pkgs, ... }: {
     treefmt.projectRootFile = "flake.nix";
-    treefmt.flakeCheck = true;
-    treefmt.flakeFormatter = true;
     treefmt.programs.shellcheck.enable = true;
 
     treefmt.programs.mypy.enable = true;
@@ -25,7 +23,7 @@
           # First deadnix
           ${lib.getExe pkgs.deadnix} --edit "$@"
           # Then nixpkgs-fmt
-          ${lib.getExe pkgs.nixpkgs-fmt} "$@"
+          ${lib.getExe pkgs.nixfmt-rfc-style} "$@"
         ''
         "--" # this argument is ignored by bash
       ];
