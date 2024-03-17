@@ -37,7 +37,7 @@
   };
   services.getty.autologinUser = lib.mkForce "root";
   programs.bash.interactiveShellInit = ''
-    if [ "$(tty)" = "/dev/tty1" ]; then
+    if [[ "$(tty)" =~ /dev/(tty1|hvc0|ttyS0)$ ]]; then
       echo -n 'waiting for tor to generate the hidden service'
       until test -e /var/shared/qrcode.utf8; do echo -n .; sleep 1; done
       echo
