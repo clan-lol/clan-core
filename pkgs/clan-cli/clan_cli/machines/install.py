@@ -16,7 +16,6 @@ log = logging.getLogger(__name__)
 def install_nixos(machine: Machine, kexec: str | None = None) -> None:
     secrets_module = importlib.import_module(machine.secrets_module)
     log.info(f"installing {machine.name}")
-    log.info(f"using secret store: {secrets_module.SecretStore}")
     secret_store = secrets_module.SecretStore(machine=machine)
 
     h = machine.target_host
