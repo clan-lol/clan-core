@@ -1,6 +1,5 @@
 import argparse
 import json
-import os
 import subprocess
 
 from ..errors import ClanError
@@ -14,7 +13,7 @@ def restore_service(
     backup_metadata = json.loads(machine.eval_nix("config.clanCore.backups"))
     backup_folders = json.loads(machine.eval_nix("config.clanCore.state"))
     folders = backup_folders[service]["folders"]
-    env = os.environ.copy()
+    env = {}
     env["NAME"] = backup.name
     env["FOLDERS"] = ":".join(folders)
 
