@@ -97,12 +97,12 @@ in
       list = ''
         set -efu
         # we need yes here to skip the changed url verification
-        ${
-          lib.concatMapStringsSep "\\\n" (
+        (${
+          lib.concatMapStringsSep "\n" (
             dest:
             ''yes y | borg-job-${dest.name} list --json | jq '[.archives[] | {"name": ("${dest.repo}::" + .name), "job_name": "${dest.name}"}]' ''
           ) (lib.attrValues cfg.destinations)
-        } | jq -s 'add'
+        }) | jq -s 'add'
       '';
       create = ''
         ${lib.concatMapStringsSep "\n" (dest: ''
