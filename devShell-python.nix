@@ -15,11 +15,9 @@
         ps:
         clan-cli.propagatedBuildInputs
         ++ clan-cli.devDependencies
-        ++ [
-          ps.pip
-          # clan-vm-manager deps
-          ps.pygobject3
-        ]
+        ++ [ ps.pip ]
+        ++ [ clan-vm-manager.externalPythonDeps ]
+        # clan-vm-manager deps
       );
       linuxOnlyPackages = lib.optionals pkgs.stdenv.isLinux [ pkgs.xdg-utils ];
     in

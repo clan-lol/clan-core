@@ -10,7 +10,8 @@
       treefmt.programs.mypy.enable = true;
       treefmt.programs.mypy.directories = {
         "pkgs/clan-cli".extraPythonPackages = self'.packages.clan-cli.pytestDependencies;
-        "pkgs/clan-vm-manager".extraPythonPackages = self'.packages.clan-vm-manager.propagatedBuildInputs;
+        "pkgs/clan-vm-manager".extraPythonPackages =
+          self'.packages.clan-vm-manager.externalPythonDeps ++ self'.packages.clan-cli.pytestDependencies;
       };
 
       treefmt.settings.formatter.nix = {
