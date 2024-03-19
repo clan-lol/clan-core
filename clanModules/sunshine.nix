@@ -1,4 +1,9 @@
-{ pkgs, config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 let
   ms-accept = pkgs.callPackage ../pkgs/moonlight-sunshine-accept { };
   sunshineConfiguration = pkgs.writeText "sunshine.conf" ''
@@ -56,7 +61,6 @@ in
     }
   ];
 
-
   environment.systemPackages = [
     ms-accept
     pkgs.sunshine
@@ -92,8 +96,12 @@ in
 
   systemd.tmpfiles.rules = [
     "d '/var/lib/sunshine' 0770 'user' 'users' - -"
-    "C '/var/lib/sunshine/sunshine.cert' 0644 'user' 'users' - ${config.clanCore.secrets.sunshine.secrets."sunshine.cert".path or ""}"
-    "C '/var/lib/sunshine/sunshine.key' 0644 'user' 'users' - ${config.clanCore.secrets.sunshine.secrets."sunshine.key".path or ""}"
+    "C '/var/lib/sunshine/sunshine.cert' 0644 'user' 'users' - ${
+      config.clanCore.secrets.sunshine.secrets."sunshine.cert".path or ""
+    }"
+    "C '/var/lib/sunshine/sunshine.key' 0644 'user' 'users' - ${
+      config.clanCore.secrets.sunshine.secrets."sunshine.key".path or ""
+    }"
   ];
 
   hardware.opengl.enable = true;
@@ -107,9 +115,7 @@ in
     serviceConfig = {
       Restart = "on-failure";
       RestartSec = "5s";
-      ReadWritePaths = [
-        "/var/lib/sunshine"
-      ];
+      ReadWritePaths = [ "/var/lib/sunshine" ];
       ReadOnlyPaths = [
         (config.clanCore.secrets.sunshine.secrets."sunshine.key".path or "")
         (config.clanCore.secrets.sunshine.secrets."sunshine.cert".path or "")
@@ -130,15 +136,15 @@ in
     startLimitBurst = 5;
     startLimitIntervalSec = 500;
     script = ''
-      ${ms-accept}/bin/moonlight-sunshine-accept sunshine init-state --uuid ${config.clanCore.secrets.sunshine.facts.sunshine-uuid.value or null} --state-file /var/lib/sunshine/state.json
+      ${ms-accept}/bin/moonlight-sunshine-accept sunshine init-state --uuid ${
+        config.clanCore.secrets.sunshine.facts.sunshine-uuid.value or null
+      } --state-file /var/lib/sunshine/state.json
     '';
     serviceConfig = {
       Restart = "on-failure";
       RestartSec = "5s";
       Type = "oneshot";
-      ReadWritePaths = [
-        "/var/lib/sunshine"
-      ];
+      ReadWritePaths = [ "/var/lib/sunshine" ];
     };
     wantedBy = [ "graphical-session.target" ];
   };
@@ -155,9 +161,7 @@ in
       Restart = "on-failure";
       RestartSec = "5s";
       Type = "oneshot";
-      ReadWritePaths = [
-        "/var/lib/sunshine"
-      ];
+      ReadWritePaths = [ "/var/lib/sunshine" ];
     };
     wantedBy = [ "graphical-session.target" ];
   };
@@ -168,7 +172,11 @@ in
     startLimitBurst = 5;
     startLimitIntervalSec = 500;
     script = ''
-      ${ms-accept}/bin/moonlight-sunshine-accept sunshine listen --port ${builtins.toString listenPort} --uuid ${config.clanCore.secrets.sunshine.facts.sunshine-uuid.value or null}  --state /var/lib/sunshine/state.json --cert '${config.clanCore.secrets.sunshine.facts."sunshine.cert".value or null}'
+      ${ms-accept}/bin/moonlight-sunshine-accept sunshine listen --port ${builtins.toString listenPort} --uuid ${
+        config.clanCore.secrets.sunshine.facts.sunshine-uuid.value or null
+      }  --state /var/lib/sunshine/state.json --cert '${
+        config.clanCore.secrets.sunshine.facts."sunshine.cert".value or null
+      }'
     '';
     serviceConfig = {
       # ExecStart = lib.concatStringsSep " " (lib.flatten 
@@ -182,9 +190,7 @@ in
       # );
       Restart = "on-failure";
       RestartSec = 5;
-      ReadWritePaths = [
-        "/var/lib/sunshine"
-      ];
+      ReadWritePaths = [ "/var/lib/sunshine" ];
     };
     wantedBy = [ "graphical-session.target" ];
   };

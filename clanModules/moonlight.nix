@@ -13,8 +13,12 @@ in
 
   systemd.tmpfiles.rules = [
     "d '/var/lib/moonlight' 0770 'user' 'users' - -"
-    "C '/var/lib/moonlight/moonlight.cert' 0644 'user' 'users' - ${config.clanCore.secrets.moonlight.secrets."moonlight.cert".path or ""}"
-    "C '/var/lib/moonlight/moonlight.key' 0644 'user' 'users' - ${config.clanCore.secrets.moonlight.secrets."moonlight.key".path or ""}"
+    "C '/var/lib/moonlight/moonlight.cert' 0644 'user' 'users' - ${
+      config.clanCore.secrets.moonlight.secrets."moonlight.cert".path or ""
+    }"
+    "C '/var/lib/moonlight/moonlight.key' 0644 'user' 'users' - ${
+      config.clanCore.secrets.moonlight.secrets."moonlight.key".path or ""
+    }"
   ];
 
   systemd.user.services.init-moonlight = {
@@ -37,13 +41,13 @@ in
         "/var/lib/moonlight/moonlight.cert"
       ];
     };
-
   };
 
   systemd.user.services.moonlight-join = {
     description = "Join sunshine hosts";
-    script = ''
-      ${ms-accept}/bin/moonlight-sunshine-accept moonlight join --port ${builtins.toString defaultPort} --cert '${config.clanCore.secrets.moonlight.facts."moonlight.cert".value or ""}' --host fd2e:25da:6035:c98f:cd99:93e0:b9b8:9ca1'';
+    script = ''${ms-accept}/bin/moonlight-sunshine-accept moonlight join --port ${builtins.toString defaultPort} --cert '${
+      config.clanCore.secrets.moonlight.facts."moonlight.cert".value or ""
+    }' --host fd2e:25da:6035:c98f:cd99:93e0:b9b8:9ca1'';
     serviceConfig = {
       Type = "oneshot";
       TimeoutSec = "infinity";
@@ -63,7 +67,6 @@ in
       Persistent = true;
       Unit = "moonlight-join.service";
     };
-
   };
 
   clanCore.secrets.moonlight = {
