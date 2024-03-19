@@ -24,7 +24,7 @@ let
     mimeTypes = [ "x-scheme-handler/clan" ];
   };
 in
-python3.pkgs.buildPythonApplication {
+python3.pkgs.buildPythonApplication rec {
   name = "clan-vm-manager";
   src = source;
   format = "pyproject";
@@ -51,13 +51,19 @@ python3.pkgs.buildPythonApplication {
   # We need to propagate the build inputs to nix fmt / treefmt
   propagatedBuildInputs = [
     (python3.pkgs.toPythonModule clan-cli)
-    pygobject3
-    pygobject-stubs
+    passthru.externalPythonDeps
   ];
 
   # also re-expose dependencies so we test them in CI
   passthru = {
     inherit desktop-file;
+    # Keep external dependencies in a separate lists to refer to thm elsewhere
+    # This helps avoiding issues like dev-shells accidentally depending on
+    #   nix derivations of local packages.
+    externalPythonDeps = [
+      pygobject3
+      pygobject-stubs
+    ];
     tests = {
       clan-vm-manager-no-breakpoints = runCommand "clan-vm-manager-no-breakpoints" { } ''
         if grep --include \*.py -Rq "breakpoint()" ${source}; then
