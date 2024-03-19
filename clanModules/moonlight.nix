@@ -7,7 +7,6 @@ in
   hardware.opengl.enable = true;
   environment.systemPackages = [
     pkgs.moonlight-qt
-    pkgs.libnotify
     ms-accept
   ];
 
