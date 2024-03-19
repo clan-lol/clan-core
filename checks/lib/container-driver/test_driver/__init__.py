@@ -258,7 +258,7 @@ class Driver:
 
         self.machines = []
         for container in containers:
-            name_match = re.match(r".*-nixos-system-(.+)-\d.+", container.name)
+            name_match = re.match(r".*-nixos-system-(.+)-(.+)", container.name)
             if not name_match:
                 raise ValueError(f"Unable to extract hostname from {container.name}")
             name = name_match.group(1)

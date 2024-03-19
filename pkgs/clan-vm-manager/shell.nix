@@ -1,11 +1,37 @@
-{ lib, runCommand, makeWrapper, stdenv, clan-vm-manager, gdb, gtk4, libadwaita, clan-cli, mkShell, ruff, desktop-file-utils, xdg-utils, mypy, python3, python3Packages }:
+{
+  lib,
+  runCommand,
+  makeWrapper,
+  stdenv,
+  clan-vm-manager,
+  gdb,
+  gtk4,
+  libadwaita,
+  clan-cli,
+  mkShell,
+  ruff,
+  desktop-file-utils,
+  xdg-utils,
+  mypy,
+  python3,
+  python3Packages,
+}:
 mkShell (
   let
-    pygdb = runCommand "pygdb" { buildInputs = [ gdb python3 makeWrapper ]; } ''
-      mkdir -p "$out/bin"
-      makeWrapper "${gdb}/bin/gdb" "$out/bin/pygdb" \
-        --add-flags '-ex "source ${python3}/share/gdb/libpython.py"'
-    '';
+    pygdb =
+      runCommand "pygdb"
+        {
+          buildInputs = [
+            gdb
+            python3
+            makeWrapper
+          ];
+        }
+        ''
+          mkdir -p "$out/bin"
+          makeWrapper "${gdb}/bin/gdb" "$out/bin/pygdb" \
+            --add-flags '-ex "source ${python3}/share/gdb/libpython.py"'
+        '';
   in
   {
     inherit (clan-vm-manager) propagatedBuildInputs buildInputs;
@@ -15,7 +41,6 @@ mkShell (
       pygdb
     ];
 
-
     # To debug clan-vm-manger execute pygdb --args python ./bin/clan-vm-manager
     nativeBuildInputs = [
       ruff
@@ -24,7 +49,7 @@ mkShell (
       python3Packages.ipdb
       gtk4.dev
       libadwaita.devdoc # has the demo called 'adwaita-1-demo'
-    ] ++ clan-vm-manager.nativeBuildInputs;
+    ] ++ clan-vm-manager.nativeBuildInputs ++ clan-vm-manager.propagatedBuildInputs;
 
     PYTHONBREAKPOINT = "ipdb.set_trace";
 

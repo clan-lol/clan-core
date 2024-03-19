@@ -1,21 +1,25 @@
 # tests for the nixos options to jsonschema converter
 # run these tests via `nix-unit ./test.nix`
-{ lib ? (import <nixpkgs> { }).lib
-, slib ? import ./. { inherit lib; }
+{
+  lib ? (import <nixpkgs> { }).lib,
+  slib ? import ./. { inherit lib; },
 }:
 let
   description = "Test Description";
 
-  evalType = type: default:
+  evalType =
+    type: default:
     let
       evaledConfig = lib.evalModules {
-        modules = [{
-          options.opt = lib.mkOption {
-            inherit type;
-            inherit default;
-            inherit description;
-          };
-        }];
+        modules = [
+          {
+            options.opt = lib.mkOption {
+              inherit type;
+              inherit default;
+              inherit description;
+            };
+          }
+        ];
       };
     in
     evaledConfig.options.opt;
@@ -25,11 +29,7 @@ in
   testNoDefaultNoDescription =
     let
       evaledConfig = lib.evalModules {
-        modules = [{
-          options.opt = lib.mkOption {
-            type = lib.types.bool;
-          };
-        }];
+        modules = [ { options.opt = lib.mkOption { type = lib.types.bool; }; } ];
       };
     in
     {
@@ -42,15 +42,17 @@ in
   testDescriptionIsAttrs =
     let
       evaledConfig = lib.evalModules {
-        modules = [{
-          options.opt = lib.mkOption {
-            type = lib.types.bool;
-            description = {
-              _type = "mdDoc";
-              text = description;
+        modules = [
+          {
+            options.opt = lib.mkOption {
+              type = lib.types.bool;
+              description = {
+                _type = "mdDoc";
+                text = description;
+              };
             };
-          };
-        }];
+          }
+        ];
       };
     in
     {
@@ -112,7 +114,11 @@ in
   testEnum =
     let
       default = "foo";
-      values = [ "foo" "bar" "baz" ];
+      values = [
+        "foo"
+        "bar"
+        "baz"
+      ];
     in
     {
       expr = slib.parseOption (evalType (lib.types.enum values) default);
@@ -124,7 +130,11 @@ in
 
   testListOfInt =
     let
-      default = [ 1 2 3 ];
+      default = [
+        1
+        2
+        3
+      ];
     in
     {
       expr = slib.parseOption (evalType (lib.types.listOf lib.types.int) default);
@@ -139,14 +149,26 @@ in
 
   testListOfUnspecified =
     let
-      default = [ 1 2 3 ];
+      default = [
+        1
+        2
+        3
+      ];
     in
     {
       expr = slib.parseOption (evalType (lib.types.listOf lib.types.unspecified) default);
       expected = {
         type = "array";
         items = {
-          type = [ "boolean" "integer" "number" "string" "array" "object" "null" ];
+          type = [
+            "boolean"
+            "integer"
+            "number"
+            "string"
+            "array"
+            "object"
+            "null"
+          ];
         };
         inherit default description;
       };
@@ -154,7 +176,11 @@ in
 
   testAttrs =
     let
-      default = { foo = 1; bar = 2; baz = 3; };
+      default = {
+        foo = 1;
+        bar = 2;
+        baz = 3;
+      };
     in
     {
       expr = slib.parseOption (evalType (lib.types.attrs) default);
@@ -167,7 +193,11 @@ in
 
   testAttrsOfInt =
     let
-      default = { foo = 1; bar = 2; baz = 3; };
+      default = {
+        foo = 1;
+        bar = 2;
+        baz = 3;
+      };
     in
     {
       expr = slib.parseOption (evalType (lib.types.attrsOf lib.types.int) default);
@@ -182,7 +212,11 @@ in
 
   testLazyAttrsOfInt =
     let
-      default = { foo = 1; bar = 2; baz = 3; };
+      default = {
+        foo = 1;
+        bar = 2;
+        baz = 3;
+      };
     in
     {
       expr = slib.parseOption (evalType (lib.types.lazyAttrsOf lib.types.int) default);
@@ -286,7 +320,10 @@ in
           inherit description;
         };
       };
-      default = { foo.opt = false; bar.opt = true; };
+      default = {
+        foo.opt = false;
+        bar.opt = true;
+      };
     in
     {
       expr = slib.parseOption (evalType (lib.types.attrsOf (lib.types.submodule subModule)) default);
@@ -315,7 +352,10 @@ in
           inherit description;
         };
       };
-      default = [{ opt = false; } { opt = true; }];
+      default = [
+        { opt = false; }
+        { opt = true; }
+      ];
     in
     {
       expr = slib.parseOption (evalType (lib.types.listOf (lib.types.submodule subModule)) default);
@@ -358,7 +398,15 @@ in
       expr = slib.parseOption (evalType lib.types.anything default);
       expected = {
         inherit default description;
-        type = [ "boolean" "integer" "number" "string" "array" "object" "null" ];
+        type = [
+          "boolean"
+          "integer"
+          "number"
+          "string"
+          "array"
+          "object"
+          "null"
+        ];
       };
     };
 
@@ -370,7 +418,15 @@ in
       expr = slib.parseOption (evalType lib.types.unspecified default);
       expected = {
         inherit default description;
-        type = [ "boolean" "integer" "number" "string" "array" "object" "null" ];
+        type = [
+          "boolean"
+          "integer"
+          "number"
+          "string"
+          "array"
+          "object"
+          "null"
+        ];
       };
     };
 
@@ -382,7 +438,15 @@ in
       expr = slib.parseOption (evalType lib.types.raw default);
       expected = {
         inherit default description;
-        type = [ "boolean" "integer" "number" "string" "array" "object" "null" ];
+        type = [
+          "boolean"
+          "integer"
+          "number"
+          "string"
+          "array"
+          "object"
+          "null"
+        ];
       };
     };
 }

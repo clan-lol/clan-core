@@ -1,4 +1,5 @@
-{ lib, ... }: {
+{ lib, ... }:
+{
   options.clan.jitsi.enable = lib.mkOption {
     type = lib.types.bool;
     default = false;

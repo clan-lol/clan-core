@@ -1,8 +1,5 @@
 test:
-{ pkgs
-, self
-, ...
-}:
+{ pkgs, self, ... }:
 let
   inherit (pkgs) lib;
   nixos-lib = import (pkgs.path + "/nixos/lib") { };

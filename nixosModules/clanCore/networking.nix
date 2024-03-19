@@ -49,7 +49,18 @@
   };
 
   imports = [
-    (lib.mkRenamedOptionModule [ "clan" "networking" "deploymentAddress" ] [ "clan" "networking" "targetHost" ])
+    (lib.mkRenamedOptionModule
+      [
+        "clan"
+        "networking"
+        "deploymentAddress"
+      ]
+      [
+        "clan"
+        "networking"
+        "targetHost"
+      ]
+    )
   ];
   config = {
     # conflicts with systemd-resolved
@@ -64,16 +75,18 @@
     systemd.network.wait-online.enable = false;
 
     # Provide a default network configuration but don't compete with network-manager or dhcpcd
-    systemd.network.networks."50-uplink" = lib.mkIf (!(config.networking.networkmanager.enable || config.networking.dhcpcd.enable)) {
-      matchConfig.Type = "ether";
-      networkConfig = {
-        DHCP = "yes";
-        LLDP = "yes";
-        LLMNR = "yes";
-        MulticastDNS = "yes";
-        IPv6AcceptRA = "yes";
-      };
-    };
+    systemd.network.networks."50-uplink" =
+      lib.mkIf (!(config.networking.networkmanager.enable || config.networking.dhcpcd.enable))
+        {
+          matchConfig.Type = "ether";
+          networkConfig = {
+            DHCP = "yes";
+            LLDP = "yes";
+            LLMNR = "yes";
+            MulticastDNS = "yes";
+            IPv6AcceptRA = "yes";
+          };
+        };
 
     # Use networkd instead of the pile of shell scripts
     networking.useNetworkd = lib.mkDefault true;

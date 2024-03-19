@@ -5,7 +5,7 @@ import tempfile
 import threading
 import time
 import weakref
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
@@ -13,7 +13,7 @@ from typing import IO, ClassVar
 
 import gi
 from clan_cli import vms
-from clan_cli.clan_uri import ClanScheme, ClanURI
+from clan_cli.clan_uri import ClanURI
 from clan_cli.history.add import HistoryEntry
 from clan_cli.machines.machines import Machine
 
@@ -21,7 +21,7 @@ from clan_vm_manager.components.executor import MPProcess, spawn
 
 gi.require_version("GObject", "2.0")
 gi.require_version("Gtk", "4.0")
-from gi.repository import GLib, GObject, Gtk
+from gi.repository import Gio, GLib, GObject, Gtk
 
 log = logging.getLogger(__name__)
 
@@ -29,34 +29,35 @@ log = logging.getLogger(__name__)
 class VMObject(GObject.Object):
     # Define a custom signal with the name "vm_stopped" and a string argument for the message
     __gsignals__: ClassVar = {
-        "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, [])
+        "vm_status_changed": (GObject.SignalFlags.RUN_FIRST, None, []),
+        "vm_build_notify": (GObject.SignalFlags.RUN_FIRST, None, [bool, bool]),
     }
-
-    def _vm_status_changed_task(self) -> bool:
-        self.emit("vm_status_changed")
-        return GLib.SOURCE_REMOVE
-
-    def update(self, data: HistoryEntry) -> None:
-        self.data = data
 
     def __init__(
         self,
         icon: Path,
         data: HistoryEntry,
+        build_log_cb: Callable[[Gio.File], None],
     ) -> None:
         super().__init__()
 
         # Store the data from the history entry
-        self.data = data
+        self.data: HistoryEntry = data
+
+        self.build_log_cb = build_log_cb
 
         # Create a process object to store the VM process
-        self.vm_process = MPProcess("vm_dummy", mp.Process(), Path("./dummy"))
-        self.build_process = MPProcess("build_dummy", mp.Process(), Path("./dummy"))
+        self.vm_process: MPProcess = MPProcess(
+            "vm_dummy", mp.Process(), Path("./dummy")
+        )
+        self.build_process: MPProcess = MPProcess(
+            "build_dummy", mp.Process(), Path("./dummy")
+        )
         self._start_thread: threading.Thread = threading.Thread()
         self.machine: Machine | None = None
 
         # Watcher to stop the VM
-        self.KILL_TIMEOUT = 20  # seconds
+        self.KILL_TIMEOUT: int = 20  # seconds
         self._stop_thread: threading.Thread = threading.Thread()
 
         # Build progress bar vars
@@ -66,7 +67,7 @@ class VMObject(GObject.Object):
         self.prog_bar_id: int = 0
 
         # Create a temporary directory to store the logs
-        self.log_dir = tempfile.TemporaryDirectory(
+        self.log_dir: tempfile.TemporaryDirectory = tempfile.TemporaryDirectory(
             prefix="clan_vm-", suffix=f"-{self.data.flake.flake_attr}"
         )
         self._logs_id: int = 0
@@ -75,16 +76,26 @@ class VMObject(GObject.Object):
         # To be able to set the switch state programmatically
         # we need to store the handler id returned by the connect method
         # and block the signal while we change the state. This is cursed.
-        self.switch = Gtk.Switch()
+        self.switch: Gtk.Switch = Gtk.Switch()
         self.switch_handler_id: int = self.switch.connect(
             "notify::active", self._on_switch_toggle
         )
         self.connect("vm_status_changed", self._on_vm_status_changed)
 
         # Make sure the VM is killed when the reference to this object is dropped
-        self._finalizer = weakref.finalize(self, self._kill_ref_drop)
+        self._finalizer: weakref.finalize = weakref.finalize(self, self._kill_ref_drop)
+
+    def _vm_status_changed_task(self) -> bool:
+        self.emit("vm_status_changed")
+        return GLib.SOURCE_REMOVE
+
+    def update(self, data: HistoryEntry) -> None:
+        self.data = data
 
     def _on_vm_status_changed(self, source: "VMObject") -> None:
+        # Signal may be emited multiple times
+        self.emit("vm_build_notify", self.is_building(), self.is_running())
+
         self.switch.set_state(self.is_running() and not self.is_building())
         if self.switch.get_sensitive() is False and not self.is_building():
             self.switch.set_sensitive(True)
@@ -93,9 +104,8 @@ class VMObject(GObject.Object):
         exit_build = self.build_process.proc.exitcode
         exitc = exit_vm or exit_build
         if not self.is_running() and exitc != 0:
-            self.switch.handler_block(self.switch_handler_id)
-            self.switch.set_active(False)
-            self.switch.handler_unblock(self.switch_handler_id)
+            with self.switch.handler_block(self.switch_handler_id):
+                self.switch.set_active(False)
             log.error(f"VM exited with error. Exitcode: {exitc}")
 
     def _on_switch_toggle(self, switch: Gtk.Switch, user_state: bool) -> None:
@@ -113,19 +123,19 @@ class VMObject(GObject.Object):
     @contextmanager
     def _create_machine(self) -> Generator[Machine, None, None]:
         uri = ClanURI.from_str(
-            url=self.data.flake.flake_url, flake_attr=self.data.flake.flake_attr
+            url=str(self.data.flake.flake_url), machine_name=self.data.flake.flake_attr
         )
-        match uri.scheme:
-            case ClanScheme.LOCAL.value(path):
-                self.machine = Machine(
-                    name=self.data.flake.flake_attr,
-                    flake=path,  # type: ignore
-                )
-            case ClanScheme.REMOTE.value(url):
-                self.machine = Machine(
-                    name=self.data.flake.flake_attr,
-                    flake=url,  # type: ignore
-                )
+        if uri.flake_id.is_local():
+            self.machine = Machine(
+                name=self.data.flake.flake_attr,
+                flake=uri.flake_id.path,
+            )
+        if uri.flake_id.is_remote():
+            self.machine = Machine(
+                name=self.data.flake.flake_attr,
+                flake=uri.flake_id.url,
+            )
+        assert self.machine is not None
         yield self.machine
         self.machine = None
 
@@ -151,6 +161,14 @@ class VMObject(GObject.Object):
                 machine=machine,
                 tmpdir=log_dir,
             )
+
+            gfile = Gio.File.new_for_path(str(log_dir / "build.log"))
+            # Gio documentation:
+            # Obtains a file monitor for the given file.
+            # If no file notification mechanism exists, then regular polling of the file is used.
+            g_monitor = gfile.monitor_file(Gio.FileMonitorFlags.NONE, None)
+            g_monitor.connect("changed", self.on_logs_changed)
+
             GLib.idle_add(self._vm_status_changed_task)
             self.switch.set_sensitive(True)
             # Start the logs watcher
@@ -202,6 +220,18 @@ class VMObject(GObject.Object):
             self.vm_process.proc.join()
             log.debug(f"VM {self.get_id()} has stopped")
             GLib.idle_add(self._vm_status_changed_task)
+
+    def on_logs_changed(
+        self,
+        monitor: Gio.FileMonitor,
+        file: Gio.File,
+        other_file: Gio.File,
+        event_type: Gio.FileMonitorEvent,
+    ) -> None:
+        if event_type == Gio.FileMonitorEvent.CHANGES_DONE_HINT:
+            # File was changed and the changes were written to disk
+            # wire up the callback for setting the logs
+            self.build_log_cb(file)
 
     def start(self) -> None:
         if self.is_running():

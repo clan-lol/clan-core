@@ -1,7 +1,7 @@
 import logging
 import threading
 from collections.abc import Callable
-from typing import Any, ClassVar
+from typing import Any, ClassVar, cast
 
 import gi
 from clan_cli.clan_uri import ClanURI
@@ -31,8 +31,8 @@ class JoinValue(GObject.Object):
 
     def __init__(self, url: ClanURI) -> None:
         super().__init__()
-        self.url = url
-        self.entry = None
+        self.url: ClanURI = url
+        self.entry: HistoryEntry | None = None
 
     def __join(self) -> None:
         new_entry = add_history(self.url)
@@ -62,8 +62,8 @@ class JoinList:
             cls._instance = cls.__new__(cls)
             cls.list_store = Gio.ListStore.new(JoinValue)
 
-            # Rerendering the join list every time an item changes in the clan_store
             ClanStore.use().register_on_deep_change(cls._instance._rerender_join_list)
+
         return cls._instance
 
     def _rerender_join_list(
@@ -83,7 +83,9 @@ class JoinList:
         """
 
         value = JoinValue(uri)
-        if value.url.get_id() in [item.url.get_id() for item in self.list_store]:
+        if value.url.machine.get_id() in [
+            cast(JoinValue, item).url.machine.get_id() for item in self.list_store
+        ]:
             log.info(f"Join request already exists: {value.url}. Ignoring.")
             return
 
@@ -95,6 +97,7 @@ class JoinList:
     def _on_join_finished(self, source: JoinValue) -> None:
         log.info(f"Join finished: {source.url}")
         self.discard(source)
+        assert source.entry is not None
         ClanStore.use().push_history_entry(source.entry)
 
     def discard(self, value: JoinValue) -> None:

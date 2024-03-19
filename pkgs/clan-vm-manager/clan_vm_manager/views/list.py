@@ -1,25 +1,36 @@
+import base64
 import logging
 from collections.abc import Callable
 from functools import partial
-from typing import Any
+from typing import Any, TypeVar
 
 import gi
-from clan_cli import history
 from clan_cli.clan_uri import ClanURI
 
 from clan_vm_manager.components.interfaces import ClanConfig
 from clan_vm_manager.components.vmobj import VMObject
+from clan_vm_manager.singletons.toast import (
+    LogToast,
+    ToastOverlay,
+    WarningToast,
+)
 from clan_vm_manager.singletons.use_join import JoinList, JoinValue
+from clan_vm_manager.singletons.use_views import ViewStack
 from clan_vm_manager.singletons.use_vms import ClanStore, VMStore
+from clan_vm_manager.views.logs import Logs
 
 gi.require_version("Adw", "1")
 from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
 
 log = logging.getLogger(__name__)
 
+ListItem = TypeVar("ListItem", bound=GObject.Object)
+CustomStore = TypeVar("CustomStore", bound=Gio.ListModel)
+
 
 def create_boxed_list(
-    model: Gio.ListStore, render_row: Callable[[Gtk.ListBox, GObject], Gtk.Widget]
+    model: CustomStore,
+    render_row: Callable[[Gtk.ListBox, ListItem], Gtk.Widget],
 ) -> Gtk.ListBox:
     boxed_list = Gtk.ListBox()
     boxed_list.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -47,11 +58,11 @@ class ClanList(Gtk.Box):
     def __init__(self, config: ClanConfig) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
 
-        self.app = Gio.Application.get_default()
-        self.app.connect("join_request", self.on_join_request)
+        app = Gio.Application.get_default()
+        assert app is not None
+        app.connect("join_request", self.on_join_request)
 
         self.log_label: Gtk.Label = Gtk.Label()
-        self.__init_machines = history.add.list_history()
 
         # Add join list
         self.join_boxed_list = create_boxed_list(
@@ -78,9 +89,10 @@ class ClanList(Gtk.Box):
         add_action = Gio.SimpleAction.new("add", GLib.VariantType.new("s"))
         add_action.connect("activate", self.on_add)
         app = Gio.Application.get_default()
+        assert app is not None
         app.add_action(add_action)
 
-        menu_model = Gio.Menu()
+        # menu_model = Gio.Menu()
         # TODO: Make this lazy, blocks UI startup for too long
         # for vm in machines.list.list_machines(flake_url=vm.data.flake.flake_url):
         #     if vm not in vm_store:
@@ -89,10 +101,16 @@ class ClanList(Gtk.Box):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         box.set_valign(Gtk.Align.CENTER)
 
-        add_button = Gtk.MenuButton()
-        add_button.set_has_frame(False)
-        add_button.set_menu_model(menu_model)
-        add_button.set_label("Add machine")
+        add_button = Gtk.Button()
+        add_button_content = Adw.ButtonContent.new()
+        add_button_content.set_label("Add machine")
+        add_button_content.set_icon_name("list-add-symbolic")
+        add_button.add_css_class("flat")
+        add_button.set_child(add_button_content)
+
+        # add_button.set_has_frame(False)
+        # add_button.set_menu_model(menu_model)
+        # add_button.set_label("Add machine")
         box.append(add_button)
 
         grp.set_header_suffix(box)
@@ -157,13 +175,47 @@ class ClanList(Gtk.Box):
         ## Drop down menu
         open_action = Gio.SimpleAction.new("edit", GLib.VariantType.new("s"))
         open_action.connect("activate", self.on_edit)
+
+        action_id = base64.b64encode(vm.get_id().encode("utf-8")).decode("utf-8")
+
+        build_logs_action = Gio.SimpleAction.new(
+            f"logs.{action_id}", GLib.VariantType.new("s")
+        )
+
+        build_logs_action.connect("activate", self.on_show_build_logs)
+        build_logs_action.set_enabled(False)
+
         app = Gio.Application.get_default()
+        assert app is not None
+
         app.add_action(open_action)
+        app.add_action(build_logs_action)
+
+        # set a callback function for conditionally enabling the build_logs action
+        def on_vm_build_notify(
+            vm: VMObject, is_building: bool, is_running: bool
+        ) -> None:
+            build_logs_action.set_enabled(is_building or is_running)
+            app.add_action(build_logs_action)
+            if is_building:
+                ToastOverlay.use().add_toast_unique(
+                    LogToast(
+                        """Build process running ...""",
+                        on_button_click=lambda: self.show_vm_build_logs(vm.get_id()),
+                    ).toast,
+                    f"info.build.running.{vm}",
+                )
+
+        vm.connect("vm_build_notify", on_vm_build_notify)
+
         menu_model = Gio.Menu()
         menu_model.append("Edit", f"app.edit::{vm.get_id()}")
+        menu_model.append("Show Logs", f"app.logs.{action_id}::{vm.get_id()}")
+
         pref_button = Gtk.MenuButton()
         pref_button.set_icon_name("open-menu-symbolic")
         pref_button.set_menu_model(menu_model)
+
         button_box.append(pref_button)
 
         ## VM switch button
@@ -178,8 +230,32 @@ class ClanList(Gtk.Box):
 
     def on_edit(self, source: Any, parameter: Any) -> None:
         target = parameter.get_string()
-
         print("Editing settings for machine", target)
+
+    def on_show_build_logs(self, _: Any, parameter: Any) -> None:
+        target = parameter.get_string()
+        self.show_vm_build_logs(target)
+
+    def show_vm_build_logs(self, target: str) -> None:
+        vm = ClanStore.use().set_logging_vm(target)
+        if vm is None:
+            raise ValueError(f"VM {target} not found")
+
+        views = ViewStack.use().view
+        # Reset the logs view
+        logs: Logs = views.get_child_by_name("logs")  # type: ignore
+
+        if logs is None:
+            raise ValueError("Logs view not found")
+
+        name = vm.machine.name if vm.machine else "Unknown"
+
+        logs.set_title(f"""📄<span weight="normal"> {name}</span>""")
+        # initial message. Streaming happens automatically when the file is changed by the build process
+        with open(vm.build_process.out_file) as f:
+            logs.set_message(f.read())
+
+        views.set_visible_child_name("logs")
 
     def render_join_row(
         self, boxed_list: Gtk.ListBox, join_val: JoinValue
@@ -190,8 +266,8 @@ class ClanList(Gtk.Box):
         log.debug("Rendering join row for %s", join_val.url)
 
         row = Adw.ActionRow()
-        row.set_title(join_val.url.params.flake_attr)
-        row.set_subtitle(join_val.url.get_internal())
+        row.set_title(join_val.url.machine.name)
+        row.set_subtitle(str(join_val.url))
         row.add_css_class("trust")
 
         vm = ClanStore.use().get_vm(join_val.url)
@@ -199,12 +275,21 @@ class ClanList(Gtk.Box):
         # Can't do this here because clan store is empty at this point
         if vm is not None:
             sub = row.get_subtitle()
+            assert sub is not None
+
+            ToastOverlay.use().add_toast_unique(
+                WarningToast(
+                    f"""<span weight="regular">{join_val.url.machine.name!s}</span> Already exists. Joining again will update it"""
+                ).toast,
+                "warning.duplicate.join",
+            )
+
             row.set_subtitle(
                 sub + "\nClan already exists. Joining again will update it"
             )
 
         avatar = Adw.Avatar()
-        avatar.set_text(str(join_val.url.params.flake_attr))
+        avatar.set_text(str(join_val.url.machine.name))
         avatar.set_show_initials(True)
         avatar.set_size(50)
         row.add_prefix(avatar)
@@ -229,7 +314,7 @@ class ClanList(Gtk.Box):
 
     def on_join_request(self, source: Any, url: str) -> None:
         log.debug("Join request: %s", url)
-        clan_uri = ClanURI.from_str(url)
+        clan_uri = ClanURI(url)
         JoinList.use().push(clan_uri, self.on_after_join)
 
     def on_after_join(self, source: JoinValue) -> None:
