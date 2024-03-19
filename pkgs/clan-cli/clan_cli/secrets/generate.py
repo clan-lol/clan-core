@@ -2,6 +2,7 @@ import argparse
 import importlib
 import logging
 import os
+import subprocess
 from collections.abc import Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -17,6 +18,15 @@ from .check import check_secrets
 from .modules import SecretStoreBase
 
 log = logging.getLogger(__name__)
+
+
+def read_multiline_input(prompt: str = "Finish with Ctrl-D") -> str:
+    """
+    Read multi-line input from stdin.
+    """
+    print(prompt, flush=True)
+    proc = subprocess.run(["cat"], stdout=subprocess.PIPE, text=True)
+    return proc.stdout
 
 
 def generate_service_secrets(
@@ -128,7 +138,12 @@ def generate_secrets(
     fact_store = facts_module.FactStore(machine=machine)
 
     if prompt is None:
-        prompt = lambda text: input(f"{text}: ")
+
+        def prompt_func(text: str) -> str:
+            print(f"{text}: ")
+            return read_multiline_input()
+
+        prompt = prompt_func
 
     with TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)

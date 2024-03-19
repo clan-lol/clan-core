@@ -1,6 +1,5 @@
-{ lib
-, ...
-}: {
+{ lib, ... }:
+{
   /*
     Declaring imports inside the module system does not trigger an infinite
     recursion in this case because buildClan generates the imports from the

@@ -1,16 +1,20 @@
-{ nix-unit, clan-cli, system, mkShell, writeScriptBin, openssh, ruff, python3 }:
+{
+  nix-unit,
+  clan-cli,
+  system,
+  mkShell,
+  writeScriptBin,
+  openssh,
+  ruff,
+  python3,
+}:
 let
   checkScript = writeScriptBin "check" ''
     nix build .#checks.${system}.{treefmt,clan-pytest} -L "$@"
   '';
 
   pythonWithDeps = python3.withPackages (
-    ps:
-    clan-cli.propagatedBuildInputs
-    ++ clan-cli.devDependencies
-    ++ [
-      ps.pip
-    ]
+    ps: clan-cli.propagatedBuildInputs ++ clan-cli.devDependencies ++ [ ps.pip ]
   );
 in
 mkShell {

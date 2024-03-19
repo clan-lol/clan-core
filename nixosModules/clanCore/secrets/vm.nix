@@ -7,4 +7,3 @@
     system.clan.factsModule = "clan_cli.facts.modules.vm";
   };
 }
-

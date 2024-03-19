@@ -1,9 +1,10 @@
 {
   perSystem =
-    { pkgs
-    , self'
-    , lib
-    , ...
+    {
+      pkgs,
+      self',
+      lib,
+      ...
     }:
     let
       python3 = pkgs.python3;
@@ -14,15 +15,11 @@
         ps:
         clan-cli.propagatedBuildInputs
         ++ clan-cli.devDependencies
-        ++ [
-          ps.pip
-          # clan-vm-manager deps
-          ps.pygobject3
-        ]
+        ++ [ ps.pip ]
+        ++ [ clan-vm-manager.externalPythonDeps ]
+        # clan-vm-manager deps
       );
-      linuxOnlyPackages = lib.optionals pkgs.stdenv.isLinux [
-        pkgs.xdg-utils
-      ];
+      linuxOnlyPackages = lib.optionals pkgs.stdenv.isLinux [ pkgs.xdg-utils ];
     in
     {
       devShells.python = pkgs.mkShell {
@@ -49,9 +46,9 @@
 
           ## PYTHON
 
-          tmp_path=$(realpath ./.direnv)
+          tmp_path="$(realpath ./.direnv/python)"
           repo_root=$(realpath .)
-          mkdir -p "$tmp_path/python/${pythonWithDeps.sitePackages}"
+          mkdir -p "$tmp_path/${pythonWithDeps.sitePackages}"
 
           # local dependencies
           localPackages=(
@@ -59,27 +56,40 @@
             $repo_root/pkgs/clan-vm-manager
           )
 
-          # Install the package in editable mode
-          # This allows executing `clan` from within the dev-shell using the current
-          # version of the code and its dependencies.
-          # TODO: this is slow. get rid of pip or add better caching
-          echo "==== Installing local python packages in editable mode ===="
+          # Install executable wrappers for local python packages scripts
+          # This is done by utilizing `pip install --editable`
+          # As a result, executables like `clan` can be executed from within the dev-shell
+          # while using the current version of the code and its dependencies.
           for package in "''${localPackages[@]}"; do
-            ${pythonWithDeps}/bin/pip install \
-              --quiet \
-              --disable-pip-version-check \
-              --no-index \
-              --no-build-isolation \
-              --prefix "$tmp_path/python" \
-              --editable "$package"
+            pname=$(basename "$package")
+            if
+              [ ! -e "$tmp_path/meta/$pname/pyproject.toml" ] \
+              || [ ! -e "$package/pyproject.toml" ] \
+              || ! cmp -s "$tmp_path/meta/$pname/pyproject.toml" "$package/pyproject.toml"
+            then
+              echo "==== Installing local python package $pname in editable mode ===="
+              mkdir -p "$tmp_path/meta/$pname"
+              cp $package/pyproject.toml $tmp_path/meta/$pname/pyproject.toml
+              ${python3.pkgs.pip}/bin/pip install \
+                --quiet \
+                --disable-pip-version-check \
+                --no-index \
+                --no-build-isolation \
+                --prefix "$tmp_path" \
+                --editable "$package"
+            fi
           done
 
-          export PATH="$tmp_path/python/bin:$PATH"
-          export PYTHONPATH="''${PYTHONPATH:+$PYTHONPATH:}$tmp_path/python/${pythonWithDeps.sitePackages}"
+          export PATH="$tmp_path/bin:$PATH"
+          export PYTHONPATH="''${PYTHONPATH:+$PYTHONPATH:}$tmp_path/${pythonWithDeps.sitePackages}"
 
           for package in "''${localPackages[@]}"; do
             export PYTHONPATH="$package:$PYTHONPATH"
           done
+
+
+
+          ## GUI
 
           if ! command -v xdg-mime &> /dev/null; then
             echo "Warning: 'xdg-mime' is not available. The desktop file cannot be installed."
@@ -93,7 +103,6 @@
           UI_BIN="clan-vm-manager"
 
           cp -f $DESKTOP_SRC $DESKTOP_DST
-          sleep 2
           sed -i "s|Exec=.*clan-vm-manager|Exec=$UI_BIN|" $DESKTOP_DST
           xdg-mime default $DESKTOP_FILE_NAME  x-scheme-handler/clan
           echo "==== Validating desktop file installation   ===="

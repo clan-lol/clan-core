@@ -1,7 +1,8 @@
-{ config
-, pkgs
-, lib
-, ...
+{
+  config,
+  pkgs,
+  lib,
+  ...
 }:
 {
   options.clan.syncthing = {
@@ -53,16 +54,16 @@
 
       assertions = [
         {
-          assertion =
-            lib.all (attr: builtins.hasAttr attr config.services.syncthing.settings.folders)
-              config.clan.syncthing.autoShares;
+          assertion = lib.all (
+            attr: builtins.hasAttr attr config.services.syncthing.settings.folders
+          ) config.clan.syncthing.autoShares;
           message = ''
             Syncthing: If you want to AutoShare a folder, you need to have it configured on the sharing device.
           '';
         }
       ];
 
-      # Activates inofify compatibilty on syncthing
+      # Activates inofify compatibility on syncthing
       boot.kernel.sysctl."fs.inotify.max_user_watches" = lib.mkDefault 524288;
 
       services.syncthing = {
@@ -80,12 +81,8 @@
 
         group = "syncthing";
 
-        key =
-          lib.mkDefault
-            config.clan.secrets.syncthing.secrets."syncthing.key".path or null;
-        cert =
-          lib.mkDefault
-            config.clan.secrets.syncthing.secrets."syncthing.cert".path or null;
+        key = lib.mkDefault config.clan.secrets.syncthing.secrets."syncthing.key".path or null;
+        cert = lib.mkDefault config.clan.secrets.syncthing.secrets."syncthing.cert".path or null;
 
         settings = {
           options = {
@@ -127,47 +124,33 @@
             set -x
             # query pending deviceID's
             APIKEY=$(cat ${apiKey})
-            PENDING=$(${
-              lib.getExe pkgs.curl
-            } -X GET -H "X-API-Key: $APIKEY" ${baseAddress}${getPendingDevices})
+            PENDING=$(${lib.getExe pkgs.curl} -X GET -H "X-API-Key: $APIKEY" ${baseAddress}${getPendingDevices})
             PENDING=$(echo $PENDING | ${lib.getExe pkgs.jq} keys[])
 
             # accept pending deviceID's
             for ID in $PENDING;do
-            ${
-              lib.getExe pkgs.curl
-            } -X POST -d "{\"deviceId\": $ID}" -H "Content-Type: application/json" -H "X-API-Key: $APIKEY" ${baseAddress}${postNewDevice}
+            ${lib.getExe pkgs.curl} -X POST -d "{\"deviceId\": $ID}" -H "Content-Type: application/json" -H "X-API-Key: $APIKEY" ${baseAddress}${postNewDevice}
 
             # get all shared folders by their ID
             for folder in ${builtins.toString config.clan.syncthing.autoShares}; do
-              SHARED_IDS=$(${
-                lib.getExe pkgs.curl
-              } -X GET -H "X-API-Key: $APIKEY" ${baseAddress}${SharedFolderById}"$folder" | ${
-                lib.getExe pkgs.jq
-              } ."devices")
-              PATCHED_IDS=$(echo $SHARED_IDS | ${
-                lib.getExe pkgs.jq
-              } ".+= [{\"deviceID\": $ID, \"introducedBy\": \"\", \"encryptionPassword\": \"\"}]")
-              ${
-                lib.getExe pkgs.curl
-              } -X PATCH -d "{\"devices\": $PATCHED_IDS}" -H "X-API-Key: $APIKEY" ${baseAddress}${SharedFolderById}"$folder"
+              SHARED_IDS=$(${lib.getExe pkgs.curl} -X GET -H "X-API-Key: $APIKEY" ${baseAddress}${SharedFolderById}"$folder" | ${lib.getExe pkgs.jq} ."devices")
+              PATCHED_IDS=$(echo $SHARED_IDS | ${lib.getExe pkgs.jq} ".+= [{\"deviceID\": $ID, \"introducedBy\": \"\", \"encryptionPassword\": \"\"}]")
+              ${lib.getExe pkgs.curl} -X PATCH -d "{\"devices\": $PATCHED_IDS}" -H "X-API-Key: $APIKEY" ${baseAddress}${SharedFolderById}"$folder"
               done
             done
           '';
         };
 
-      systemd.timers.syncthing-auto-accept =
-        lib.mkIf config.clan.syncthing.autoAcceptDevices
-          {
-            description = "Syncthing Auto Accept";
+      systemd.timers.syncthing-auto-accept = lib.mkIf config.clan.syncthing.autoAcceptDevices {
+        description = "Syncthing Auto Accept";
 
-            wantedBy = [ "syncthing-auto-accept.service" ];
+        wantedBy = [ "syncthing-auto-accept.service" ];
 
-            timerConfig = {
-              OnActiveSec = lib.mkDefault 60;
-              OnUnitActiveSec = lib.mkDefault 60;
-            };
-          };
+        timerConfig = {
+          OnActiveSec = lib.mkDefault 60;
+          OnUnitActiveSec = lib.mkDefault 60;
+        };
+      };
 
       systemd.services.syncthing-init-api-key =
         let
@@ -182,9 +165,7 @@
             set -efu pipefail
 
             APIKEY=$(cat ${apiKey})
-            ${
-              lib.getExe pkgs.gnused
-            } -i "s/<apikey>.*<\/apikey>/<apikey>$APIKEY<\/apikey>/" /var/lib/syncthing/config.xml
+            ${lib.getExe pkgs.gnused} -i "s/<apikey>.*<\/apikey>/<apikey>$APIKEY<\/apikey>/" /var/lib/syncthing/config.xml
             # sudo systemctl restart syncthing.service
             systemctl restart syncthing.service
           '';

@@ -1,12 +1,15 @@
-{ lib, config, pkgs, options, extendModules, modulesPath, ... }:
+{
+  lib,
+  config,
+  pkgs,
+  options,
+  extendModules,
+  modulesPath,
+  ...
+}:
 let
   # Flatten the list of state folders into a single list
-  stateFolders = lib.flatten (
-    lib.mapAttrsToList
-      (_item: attrs: attrs.folders)
-      config.clanCore.state
-  );
-
+  stateFolders = lib.flatten (lib.mapAttrsToList (_item: attrs: attrs.folders) config.clanCore.state);
 
   vmModule = {
     imports = [
@@ -24,12 +27,18 @@ let
     services.acpid.handlers.power.event = "button/power.*";
     services.acpid.handlers.power.action = "poweroff";
 
+    # only works on x11
+    services.spice-vdagentd.enable = config.services.xserver.enable;
+
     boot.initrd.systemd.enable = true;
 
     # currently needed for system.etc.overlay.enable
     boot.kernelPackages = pkgs.linuxPackages_latest;
 
-    boot.initrd.systemd.storePaths = [ pkgs.util-linux pkgs.e2fsprogs ];
+    boot.initrd.systemd.storePaths = [
+      pkgs.util-linux
+      pkgs.e2fsprogs
+    ];
     boot.initrd.systemd.emergencyAccess = true;
 
     # sysusers is faster than nixos's perl scripts
@@ -40,50 +49,72 @@ let
 
     boot.initrd.kernelModules = [ "virtiofs" ];
     virtualisation.writableStore = false;
-    virtualisation.fileSystems = lib.mkForce ({
-      "/nix/store" = {
-        device = "nix-store";
-        options = [ "x-systemd.requires=systemd-modules-load.service" "ro" ];
-        fsType = "virtiofs";
-      };
+    virtualisation.fileSystems = lib.mkForce (
+      {
+        "/nix/store" = {
+          device = "nix-store";
+          options = [
+            "x-systemd.requires=systemd-modules-load.service"
+            "ro"
+          ];
+          fsType = "virtiofs";
+        };
 
-      "/" = {
-        device = "/dev/vda";
-        fsType = "ext4";
-        options = [ "defaults" "x-systemd.makefs" "nobarrier" "noatime" "nodiratime" "data=writeback" "discard" ];
-      };
+        "/" = {
+          device = "/dev/vda";
+          fsType = "ext4";
+          options = [
+            "defaults"
+            "x-systemd.makefs"
+            "nobarrier"
+            "noatime"
+            "nodiratime"
+            "data=writeback"
+            "discard"
+          ];
+        };
 
-      "/vmstate" = {
-        device = "/dev/vdb";
-        options = [ "x-systemd.makefs" "noatime" "nodiratime" "discard" ];
-        noCheck = true;
-        fsType = "ext4";
-      };
+        "/vmstate" = {
+          device = "/dev/vdb";
+          options = [
+            "x-systemd.makefs"
+            "noatime"
+            "nodiratime"
+            "discard"
+          ];
+          noCheck = true;
+          fsType = "ext4";
+        };
 
-      ${config.clanCore.secretsUploadDirectory} = {
-        device = "secrets";
-        fsType = "9p";
-        neededForBoot = true;
-        options = [ "trans=virtio" "version=9p2000.L" "cache=loose" ];
-      };
-
-    } // lib.listToAttrs (map
-      (folder:
-        lib.nameValuePair folder {
-          device = "/vmstate${folder}";
-          fsType = "none";
-          options = [ "bind" ];
-        })
-      stateFolders));
+        ${config.clanCore.secretsUploadDirectory} = {
+          device = "secrets";
+          fsType = "9p";
+          neededForBoot = true;
+          options = [
+            "trans=virtio"
+            "version=9p2000.L"
+            "cache=loose"
+          ];
+        };
+      }
+      // lib.listToAttrs (
+        map (
+          folder:
+          lib.nameValuePair folder {
+            device = "/vmstate${folder}";
+            fsType = "none";
+            options = [ "bind" ];
+          }
+        ) stateFolders
+      )
+    );
   };
 
   # We cannot simply merge the VM config into the current system config, because
   # it is not necessarily a VM.
   # Instead we use extendModules to create a second instance of the current
   # system configuration, and then merge the VM config into that.
-  vmConfig = extendModules {
-    modules = [ vmModule ];
-  };
+  vmConfig = extendModules { modules = [ vmModule ]; };
 in
 {
   options = {
@@ -207,12 +238,14 @@ in
     };
     # for clan vm create
     system.clan.vm = {
-      create = pkgs.writeText "vm.json" (builtins.toJSON {
-        initrd = "${vmConfig.config.system.build.initialRamdisk}/${vmConfig.config.system.boot.loader.initrdFile}";
-        toplevel = vmConfig.config.system.build.toplevel;
-        regInfo = (pkgs.closureInfo { rootPaths = vmConfig.config.virtualisation.additionalPaths; });
-        inherit (config.clan.virtualisation) memorySize cores graphics;
-      });
+      create = pkgs.writeText "vm.json" (
+        builtins.toJSON {
+          initrd = "${vmConfig.config.system.build.initialRamdisk}/${vmConfig.config.system.boot.loader.initrdFile}";
+          toplevel = vmConfig.config.system.build.toplevel;
+          regInfo = (pkgs.closureInfo { rootPaths = vmConfig.config.virtualisation.additionalPaths; });
+          inherit (config.clan.virtualisation) memorySize cores graphics;
+        }
+      );
     };
 
     virtualisation = lib.optionalAttrs (options.virtualisation ? cores) {

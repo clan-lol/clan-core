@@ -13,10 +13,11 @@ from ..secrets.generate import generate_secrets
 log = logging.getLogger(__name__)
 
 
-def install_nixos(machine: Machine, kexec: str | None = None) -> None:
+def install_nixos(
+    machine: Machine, kexec: str | None = None, debug: bool = False
+) -> None:
     secrets_module = importlib.import_module(machine.secrets_module)
     log.info(f"installing {machine.name}")
-    log.info(f"using secret store: {secrets_module.SecretStore}")
     secret_store = secrets_module.SecretStore(machine=machine)
 
     h = machine.target_host
@@ -44,8 +45,12 @@ def install_nixos(machine: Machine, kexec: str | None = None) -> None:
             "--extra-files",
             str(tmpdir),
         ]
+        if machine.target_host.port:
+            cmd += ["--ssh-port", str(machine.target_host.port)]
         if kexec:
             cmd += ["--kexec", kexec]
+        if debug:
+            cmd.append("--debug")
         cmd.append(target_host)
 
         run(
@@ -63,6 +68,8 @@ class InstallOptions:
     machine: str
     target_host: str
     kexec: str | None
+    confirm: bool
+    debug: bool
 
 
 def install_command(args: argparse.Namespace) -> None:
@@ -71,11 +78,18 @@ def install_command(args: argparse.Namespace) -> None:
         machine=args.machine,
         target_host=args.target_host,
         kexec=args.kexec,
+        confirm=not args.yes,
+        debug=args.debug,
     )
     machine = Machine(opts.machine, flake=opts.flake)
     machine.target_host_address = opts.target_host
 
-    install_nixos(machine, kexec=opts.kexec)
+    if opts.confirm:
+        ask = input(f"Install {machine.name} to {opts.target_host}? [y/N] ")
+        if ask != "y":
+            return
+
+    install_nixos(machine, kexec=opts.kexec, debug=opts.debug)
 
 
 def register_install_parser(parser: argparse.ArgumentParser) -> None:
@@ -83,6 +97,18 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         "--kexec",
         type=str,
         help="use another kexec tarball to bootstrap NixOS",
+    )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="do not ask for confirmation",
+        default=False,
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="print debug information",
+        default=False,
     )
     parser.add_argument(
         "machine",

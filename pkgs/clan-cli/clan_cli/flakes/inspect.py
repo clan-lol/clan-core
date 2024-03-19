@@ -86,7 +86,6 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
 
     # Get the flake metadata
     meta = nix_metadata(flake_url)
-
     return FlakeConfig(
         vm=vm,
         flake_url=flake_url,

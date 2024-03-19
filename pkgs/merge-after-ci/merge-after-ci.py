@@ -2,7 +2,7 @@ import argparse
 import subprocess
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--reviewers", nargs="*")
+parser.add_argument("--reviewers", nargs="*", default=[])
 parser.add_argument("--no-review", action="store_true")
 parser.add_argument("args", nargs="*")
 args = parser.parse_args()
@@ -17,8 +17,8 @@ subprocess.run(
         "origin",
         "main",
         "--assignees",
-        "clan-bot",
-        *([*args.reviewers] if args.reviewers else []),
+        ",".join(["clan-bot", *args.reviewers]),
+        *(["--labels", "needs-review"] if not args.no_review else []),
         *args.args,
     ]
 )

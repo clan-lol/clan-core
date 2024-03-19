@@ -10,10 +10,12 @@ from clan_cli.history.add import HistoryEntry
 from clan_vm_manager import assets
 from clan_vm_manager.components.gkvstore import GKVStore
 from clan_vm_manager.components.vmobj import VMObject
+from clan_vm_manager.singletons.use_views import ViewStack
+from clan_vm_manager.views.logs import Logs
 
 gi.require_version("GObject", "2.0")
 gi.require_version("Gtk", "4.0")
-from gi.repository import GLib
+from gi.repository import Gio, GLib
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +28,10 @@ class VMStore(GKVStore):
 class ClanStore:
     _instance: "None | ClanStore" = None
     _clan_store: GKVStore[str, VMStore]
+
+    # set the vm that is outputting logs
+    # build logs are automatically streamed to the logs-view
+    _logging_vm: VMObject | None = None
 
     # Make sure the VMS class is used as a singleton
     def __init__(self) -> None:
@@ -40,6 +46,13 @@ class ClanStore:
             )
 
         return cls._instance
+
+    def set_logging_vm(self, ident: str) -> VMObject | None:
+        vm = self.get_vm(ClanURI(f"clan://{ident}"))
+        if vm is not None:
+            self._logging_vm = vm
+
+        return self._logging_vm
 
     def register_on_deep_change(
         self, callback: Callable[[GKVStore, int, int, int], None]
@@ -57,7 +70,7 @@ class ClanStore:
             store: "GKVStore", position: int, removed: int, added: int
         ) -> None:
             if added > 0:
-                store.register_on_change(on_vmstore_change)
+                store.values()[position].register_on_change(on_vmstore_change)
             callback(store, position, removed, added)
 
         self.clan_store.register_on_change(on_clanstore_change)
@@ -73,18 +86,43 @@ class ClanStore:
     def push_history_entry(self, entry: HistoryEntry) -> None:
         # TODO: We shouldn't do this here but in the list view
         if entry.flake.icon is None:
-            icon = assets.loc / "placeholder.jpeg"
+            icon: Path = assets.loc / "placeholder.jpeg"
         else:
-            icon = entry.flake.icon
+            icon = Path(entry.flake.icon)
 
-        vm = VMObject(
-            icon=Path(icon),
-            data=entry,
-        )
+        def log_details(gfile: Gio.File) -> None:
+            self.log_details(vm, gfile)
+
+        vm = VMObject(icon=icon, data=entry, build_log_cb=log_details)
         self.push(vm)
 
+    def log_details(self, vm: VMObject, gfile: Gio.File) -> None:
+        views = ViewStack.use().view
+        logs_view: Logs = views.get_child_by_name("logs")  # type: ignore
+
+        def file_read_callback(
+            source_object: Gio.File, result: Gio.AsyncResult, _user_data: Any
+        ) -> None:
+            try:
+                # Finish the asynchronous read operation
+                res = source_object.load_contents_finish(result)
+                _success, contents, _etag_out = res
+
+                # Convert the byte array to a string and print it
+                logs_view.set_message(contents.decode("utf-8"))
+            except Exception as e:
+                print(f"Error reading file: {e}")
+
+        # only one vm can output logs at a time
+        if vm == self._logging_vm:
+            gfile.load_contents_async(None, file_read_callback, None)
+        else:
+            log.info("Log details of VM hidden, vm is not current logging VM.")
+
+        # we cannot check this type, python is not smart enough
+
     def push(self, vm: VMObject) -> None:
-        url = vm.data.flake.flake_url
+        url = str(vm.data.flake.flake_url)
 
         # Only write to the store if the Clan is not already in it
         # Every write to the KVStore rerenders bound widgets to the clan_store
@@ -108,13 +146,14 @@ class ClanStore:
                 vm_store.append(vm)
 
     def remove(self, vm: VMObject) -> None:
-        del self.clan_store[vm.data.flake.flake_url][vm.data.flake.flake_attr]
+        del self.clan_store[str(vm.data.flake.flake_url)][vm.data.flake.flake_attr]
 
     def get_vm(self, uri: ClanURI) -> None | VMObject:
-        clan = self.clan_store.get(uri.get_internal())
-        if clan is None:
+        vm_store = self.clan_store.get(str(uri.flake_id))
+        if vm_store is None:
             return None
-        return clan.get(uri.params.flake_attr, None)
+        machine = vm_store.get(uri.machine.name, None)
+        return machine
 
     def get_running_vms(self) -> list[VMObject]:
         return [

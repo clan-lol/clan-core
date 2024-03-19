@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.clan.networking.zerotier;
   facts = config.clanCore.secrets.zerotier.facts or { };
@@ -76,16 +81,18 @@ in
     };
     settings = lib.mkOption {
       description = lib.mdDoc "override the network config in /var/lib/zerotier/bla/$network.json";
-      type = lib.types.submodule {
-        freeformType = (pkgs.formats.json { }).type;
-      };
+      type = lib.types.submodule { freeformType = (pkgs.formats.json { }).type; };
     };
   };
   config = lib.mkMerge [
     ({
       # Override license so that we can build zerotierone without
       # having to re-import nixpkgs.
-      services.zerotierone.package = lib.mkDefault (pkgs.zerotierone.overrideAttrs (_old: { meta = { }; }));
+      services.zerotierone.package = lib.mkDefault (
+        pkgs.zerotierone.overrideAttrs (_old: {
+          meta = { };
+        })
+      );
     })
     (lib.mkIf ((facts.zerotier-ip.value or null) != null) {
       environment.etc."zerotier/ip".text = facts.zerotier-ip.value;
@@ -104,29 +111,33 @@ in
 
       systemd.services.zerotierone.serviceConfig.ExecStartPre = [
         "+${pkgs.writeShellScript "init-zerotier" ''
-           cp ${config.clanCore.secrets.zerotier.secrets.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
-           zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
+          cp ${config.clanCore.secrets.zerotier.secrets.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+          zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
 
-           ${lib.optionalString (cfg.controller.enable) ''
-             mkdir -p /var/lib/zerotier-one/controller.d/network
-             ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON cfg.settings)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
-           ''}
-           ${lib.optionalString (cfg.moon.stableEndpoints != []) ''
-             if [[ ! -f /var/lib/zerotier-one/moon.json ]]; then
-               zerotier-idtool initmoon /var/lib/zerotier-one/identity.public > /var/lib/zerotier-one/moon.json
-             fi
-             ${genMoonScript}/bin/genmoon /var/lib/zerotier-one/moon.json ${builtins.toFile "moon.json" (builtins.toJSON cfg.moon.stableEndpoints)} /var/lib/zerotier-one/moons.d
-           ''}
+          ${lib.optionalString (cfg.controller.enable) ''
+            mkdir -p /var/lib/zerotier-one/controller.d/network
+            ln -sfT ${pkgs.writeText "net.json" (builtins.toJSON cfg.settings)} /var/lib/zerotier-one/controller.d/network/${cfg.networkId}.json
+          ''}
+          ${lib.optionalString (cfg.moon.stableEndpoints != [ ]) ''
+            if [[ ! -f /var/lib/zerotier-one/moon.json ]]; then
+              zerotier-idtool initmoon /var/lib/zerotier-one/identity.public > /var/lib/zerotier-one/moon.json
+            fi
+            ${genMoonScript}/bin/genmoon /var/lib/zerotier-one/moon.json ${builtins.toFile "moon.json" (builtins.toJSON cfg.moon.stableEndpoints)} /var/lib/zerotier-one/moons.d
+          ''}
 
-           # cleanup old networks
-           if [[ -d /var/lib/zerotier-one/networks.d ]]; then
-             find /var/lib/zerotier-one/networks.d \
-               -type f \
-               -name "*.conf" \
-               -not \( ${lib.concatMapStringsSep " -o " (netId: ''-name "${netId}.conf"'') config.services.zerotierone.joinNetworks} \) \
-               -delete
-           fi
-         ''}"
+          # cleanup old networks
+          if [[ -d /var/lib/zerotier-one/networks.d ]]; then
+            find /var/lib/zerotier-one/networks.d \
+              -type f \
+              -name "*.conf" \
+              -not \( ${
+                lib.concatMapStringsSep " -o " (
+                  netId: ''-name "${netId}.conf"''
+                ) config.services.zerotierone.joinNetworks
+              } \) \
+              -delete
+          fi
+        ''}"
       ];
       systemd.services.zerotierone.serviceConfig.ExecStartPost = [
         "+${pkgs.writeShellScript "configure-interface" ''
@@ -145,7 +156,7 @@ in
           ${lib.concatMapStringsSep "\n" (moon: ''
             zerotier-cli orbit ${moon} ${moon}
           '') cfg.moon.orbitMoons}
-         ''}"
+        ''}"
       ];
 
       networking.firewall.interfaces."zt+".allowedTCPPorts = [ 5353 ]; # mdns
@@ -172,7 +183,11 @@ in
         facts.zerotier-ip = { };
         facts.zerotier-network-id = { };
         secrets.zerotier-identity-secret = { };
-        generator.path = [ config.services.zerotierone.package pkgs.fakeroot pkgs.python3 ];
+        generator.path = [
+          config.services.zerotierone.package
+          pkgs.fakeroot
+          pkgs.python3
+        ];
         generator.script = ''
           python3 ${./generate.py} --mode network \
             --ip "$facts/zerotier-ip" \
@@ -188,7 +203,10 @@ in
       clanCore.secrets.zerotier = {
         facts.zerotier-ip = { };
         secrets.zerotier-identity-secret = { };
-        generator.path = [ config.services.zerotierone.package pkgs.python3 ];
+        generator.path = [
+          config.services.zerotierone.package
+          pkgs.python3
+        ];
         generator.script = ''
           python3 ${./generate.py} --mode identity \
             --ip "$facts/zerotier-ip" \
@@ -200,9 +218,7 @@ in
     (lib.mkIf (cfg.controller.enable && (facts.zerotier-network-id.value or null) != null) {
       clan.networking.zerotier.networkId = facts.zerotier-network-id.value;
       clan.networking.zerotier.settings = {
-        authTokens = [
-          null
-        ];
+        authTokens = [ null ];
         authorizationEndpoint = "";
         capabilities = [ ];
         clientId = "";
@@ -242,7 +258,9 @@ in
       environment.etc."zerotier/network-id".text = facts.zerotier-network-id.value;
       systemd.services.zerotierone.serviceConfig.ExecStartPost = [
         "+${pkgs.writeShellScript "whitelist-controller" ''
-          ${config.clanCore.clanPkgs.zerotier-members}/bin/zerotier-members allow ${builtins.substring 0 10 cfg.networkId}
+          ${config.clanCore.clanPkgs.zerotier-members}/bin/zerotier-members allow ${
+            builtins.substring 0 10 cfg.networkId
+          }
         ''}"
       ];
     })

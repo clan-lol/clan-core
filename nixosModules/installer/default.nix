@@ -1,11 +1,11 @@
-{ lib
-, pkgs
-, modulesPath
-, ...
-}: {
-  systemd.tmpfiles.rules = [
-    "d /var/shared 0777 root root - -"
-  ];
+{
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
+{
+  systemd.tmpfiles.rules = [ "d /var/shared 0777 root root - -" ];
   imports = [
     (modulesPath + "/profiles/installation-device.nix")
     (modulesPath + "/profiles/all-hardware.nix")
@@ -21,7 +21,17 @@
     enable = true;
     script = pkgs.writeShellScript "write-hostname" ''
       set -efu
-      export PATH=${lib.makeBinPath (with pkgs; [ iproute2 coreutils jq qrencode ])}
+      export PATH=${
+        lib.makeBinPath (
+          with pkgs;
+          [
+            iproute2
+            coreutils
+            jq
+            qrencode
+          ]
+        )
+      }
 
       mkdir -p /var/shared
       echo "$1" > /var/shared/onion-hostname
@@ -37,7 +47,7 @@
   };
   services.getty.autologinUser = lib.mkForce "root";
   programs.bash.interactiveShellInit = ''
-    if [ "$(tty)" = "/dev/tty1" ]; then
+    if [[ "$(tty)" =~ /dev/(tty1|hvc0|ttyS0)$ ]]; then
       echo -n 'waiting for tor to generate the hidden service'
       until test -e /var/shared/qrcode.utf8; do echo -n .; sleep 1; done
       echo
@@ -48,8 +58,13 @@
       cat /var/shared/qrcode.utf8
     fi
   '';
-  boot.loader.grub.efiInstallAsRemovable = true;
-  boot.loader.grub.efiSupport = true;
+
+  boot.loader.systemd-boot.enable = true;
+
+  # Grub doesn't find devices for both BIOS and UEFI?
+
+  #boot.loader.grub.efiInstallAsRemovable = true;
+  #boot.loader.grub.efiSupport = true;
   disko.devices = {
     disk = {
       stick = {
@@ -59,10 +74,10 @@
         content = {
           type = "gpt";
           partitions = {
-            boot = {
-              size = "1M";
-              type = "EF02"; # for grub MBR
-            };
+            #boot = {
+            #  size = "1M";
+            #  type = "EF02"; # for grub MBR
+            #};
             ESP = {
               size = "100M";
               type = "EF00";
