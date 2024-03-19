@@ -1,7 +1,8 @@
-{ lib
-, python3Packages
-, makeDesktopItem
-, copyDesktopItems
+{
+  lib,
+  python3Packages,
+  makeDesktopItem,
+  copyDesktopItems,
 }:
 let
   desktop-file = makeDesktopItem {
@@ -11,7 +12,6 @@ let
     startupWMClass = "moonlight-handler";
     mimeTypes = [ "x-scheme-handler/moonlight" ];
   };
-
 in
 python3Packages.buildPythonApplication {
   name = "moonlight-sunshine-accept";
@@ -26,9 +26,7 @@ python3Packages.buildPythonApplication {
     copyDesktopItems
   ];
 
-  desktopItems = [
-    desktop-file
-  ];
+  desktopItems = [ desktop-file ];
 
   meta = with lib; {
     description = "Moonlight Sunshine Bridge";
