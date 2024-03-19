@@ -9,11 +9,8 @@ from ..machines.machines import Machine
 
 @dataclass
 class Backup:
-    archive_id: str
-    date: str
-    provider: str
-    remote_path: str
-    job_name: str
+    name: str
+    job_name: str | None = None
 
 
 def list_provider(machine: Machine, provider: str) -> list[Backup]:
@@ -26,19 +23,14 @@ def list_provider(machine: Machine, provider: str) -> list[Backup]:
     )
     if proc.returncode != 0:
         # TODO this should be a warning, only raise exception if no providers succeed
-        ClanError(f"failed to list backups for provider {provider}")
+        msg = f"failed to list backups for provider {provider}: {proc.stdout}"
+        raise ClanError(msg)
     else:
         parsed_json = json.loads(proc.stdout)
-        # TODO move borg specific code to borgbackup.nix
-        for archive in parsed_json["archives"]:
-            backup = Backup(
-                archive_id=archive["archive"],
-                date=archive["time"],
-                provider=provider,
-                remote_path=parsed_json["repository"]["location"],
-                job_name=parsed_json["job-name"],
+        for archive in parsed_json:
+            results.append(
+                Backup(name=archive["name"], job_name=archive.get("job_name"))
             )
-            results.append(backup)
     return results
 
 
@@ -59,7 +51,7 @@ def list_command(args: argparse.Namespace) -> None:
     machine = Machine(name=args.machine, flake=args.flake)
     backups = list_backups(machine=machine, provider=args.provider)
     for backup in backups:
-        print(backup.archive_id)
+        print(backup.name)
 
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:

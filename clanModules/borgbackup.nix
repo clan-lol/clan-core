@@ -92,10 +92,14 @@ in
 
     clanCore.backups.providers.borgbackup = {
       # TODO list needs to run locally or on the remote machine
+
       list = ''
+        set -efu
         # we need yes here to skip the changed url verification
         ${lib.concatMapStringsSep "\n" (
-          dest: ''yes y | borg-job-${dest.name} list --json | jq -r '. + {"job-name": "${dest.name}"}' ''
+          dest: ''
+            yes y | borg-job-${dest.name} list --json | jq '{"backups": [.archives[] | {"name": ("${dest.repo}::" + .name), "job_name": "${dest.name}"}]}'
+          ''
         ) (lib.attrValues cfg.destinations)}
       '';
       create = ''
@@ -108,7 +112,7 @@ in
         set -efu
         cd /
         IFS=';' read -ra FOLDER <<< "$FOLDERS"
-        yes y | borg-job-"$JOB" extract --list "$LOCATION"::"$ARCHIVE_ID" "''${FOLDER[@]}"
+        yes y | borg-job-"$JOB_NAME" extract --list "$NAME" "''${FOLDER[@]}"
       '';
     };
   };
