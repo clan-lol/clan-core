@@ -73,7 +73,7 @@ in
     # don't use this account in actual production yet.
     (pkgs.writers.writeDashBin "init-sun" ''
       ${pkgs.sunshine}/bin/sunshine \
-      --creds "sun" "sun"
+      --creds "sunshine" "sunshine"
     '')
   ];
 
@@ -179,14 +179,6 @@ in
       }'
     '';
     serviceConfig = {
-      # ExecStart = lib.concatStringsSep " " (lib.flatten 
-      # [
-      # (lib.getExe ms-accept) "sunshine" "listen"
-      # "--port" (builtins.toString listenPort)
-      # "--uuid" (config.clanCore.secrets.sunshine.facts."sunshine-uuid".value or "")
-      # "--state" "/var/lib/sunshine/state.json"
-      # "--cert" (config.clanCore.secrets.sunshine.facts."sunshine.cert".value or "")
-      # ]
       # );
       Restart = "on-failure";
       RestartSec = 5;
@@ -194,20 +186,6 @@ in
     };
     wantedBy = [ "graphical-session.target" ];
   };
-
-  # xdg.configFile."sunshine/apps.json".text = builtins.toJSON {
-  #   env = "/run/current-system/sw/bin";
-  #   apps = [
-  #     {
-  #       name = "Steam";
-  #       output = "steam.txt";
-  #       detached = [
-  #         "${pkgs.util-linux}/bin/setsid ${pkgs.steam}/bin/steam steam://open/bigpicture"
-  #       ];
-  #       image-path = "steam.png";
-  #     }
-  #   ];
-  # };
 
   clanCore.secrets.sunshine = {
     secrets."sunshine.key" = { };
