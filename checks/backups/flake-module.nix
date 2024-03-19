@@ -1,34 +1,18 @@
 { self, ... }:
-let
-  clan = self.lib.buildClan {
-    clanName = "testclan";
-    directory = ../..;
-    machines = {
-      test_backup_client = {
-        clan.networking.targetHost = "client";
-        imports = [ self.nixosModules.test_backup_client ];
+{
+  flake.clanInternals =
+    (self.lib.buildClan {
+      clanName = "testclan";
+      directory = ../..;
+      machines.test-backup = {
+        imports = [ self.nixosModules.test-backup ];
         fileSystems."/".device = "/dev/null";
         boot.loader.grub.device = "/dev/null";
       };
-    };
-  };
-in
-{
-  flake.nixosConfigurations = {
-    inherit (clan.nixosConfigurations) test_backup_client;
-  };
-  flake.clanInternals = clan.clanInternals;
+    }).clanInternals;
   flake.nixosModules = {
-    test_backup_server =
-      { ... }:
-      {
-        imports = [ self.clanModules.borgbackup ];
-        services.sshd.enable = true;
-        services.borgbackup.repos.testrepo = {
-          authorizedKeys = [ (builtins.readFile ../lib/ssh/pubkey) ];
-        };
-      };
-    test_backup_client =
+
+    test-backup =
       {
         pkgs,
         lib,
@@ -39,17 +23,41 @@ in
         dependencies = [
           self
           pkgs.stdenv.drvPath
-          clan.clanInternals.machines.x86_64-linux.test_backup_client.config.system.clan.deployment.file
+          self.clanInternals.machines.${pkgs.hostPlatform.system}.test-backup.config.system.clan.deployment.file
         ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
         closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
       in
       {
-        imports = [ self.clanModules.borgbackup ];
-        networking.hostName = "client";
-        services.sshd.enable = true;
+        imports = [
+          self.clanModules.borgbackup
+          self.clanModules.sshd
+        ];
+        clan.networking.targetHost = "machine";
+        networking.hostName = "machine";
+        services.openssh.settings.UseDns = false;
+
+        programs.ssh.knownHosts = {
+          machine.hostNames = [ "machine" ];
+          machine.publicKey = builtins.readFile ../lib/ssh/pubkey;
+        };
+
         users.users.root.openssh.authorizedKeys.keyFiles = [ ../lib/ssh/pubkey ];
 
         systemd.tmpfiles.settings."vmsecrets" = {
+          "/root/.ssh/id_ed25519" = {
+            C.argument = "${../lib/ssh/privkey}";
+            z = {
+              mode = "0400";
+              user = "root";
+            };
+          };
+          "/etc/secrets/ssh.id_ed25519" = {
+            C.argument = "${../lib/ssh/privkey}";
+            z = {
+              mode = "0400";
+              user = "root";
+            };
+          };
           "/etc/secrets/borgbackup.ssh" = {
             C.argument = "${../lib/ssh/privkey}";
             z = {
@@ -66,9 +74,10 @@ in
           };
         };
         clanCore.secretStore = "vm";
+        clanCore.clanDir = ../..;
 
         environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
-        environment.etc."install-closure".source = "${closureInfo}/store-paths";
+        environment.etc.install-closure.source = "${closureInfo}/store-paths";
         nix.settings = {
           substituters = lib.mkForce [ ];
           hashed-mirrors = null;
@@ -77,7 +86,12 @@ in
         };
         system.extraDependencies = dependencies;
         clanCore.state.test-backups.folders = [ "/var/test-backups" ];
-        clan.borgbackup.destinations.test_backup_server.repo = "borg@server:.";
+        clan.borgbackup.destinations.test-backup.repo = "borg@machine:.";
+
+        services.borgbackup.repos.test-backups = {
+          path = "/var/lib/borgbackup/test-backups";
+          authorizedKeys = [ (builtins.readFile ../lib/ssh/pubkey) ];
+        };
       };
   };
   perSystem =
@@ -86,56 +100,35 @@ in
       checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux) {
         test-backups = (import ../lib/test-base.nix) {
           name = "test-backups";
-          nodes.server = {
-            imports = [
-              self.nixosModules.test_backup_server
-              self.nixosModules.clanCore
-              {
-                clanCore.machineName = "server";
-                clanCore.clanDir = ../..;
-              }
-            ];
-          };
-          nodes.client = {
-            imports = [
-              self.nixosModules.test_backup_client
-              self.nixosModules.clanCore
-              {
-                clanCore.machineName = "client";
-                clanCore.clanDir = ../..;
-              }
-            ];
-          };
+          nodes.machine.imports = [
+            self.nixosModules.clanCore
+            self.nixosModules.test-backup
+          ];
 
           testScript = ''
             import json
             start_all()
 
-            # setup
-            client.succeed("mkdir -m 700 /root/.ssh")
-            client.succeed(
-                "cat ${../lib/ssh/privkey} > /root/.ssh/id_ed25519"
-            )
-            client.succeed("chmod 600 /root/.ssh/id_ed25519")
-            client.wait_for_unit("sshd", timeout=30)
-            client.succeed("ssh -o StrictHostKeyChecking=accept-new root@client hostname")
-
             # dummy data
-            client.succeed("mkdir /var/test-backups")
-            client.succeed("echo testing > /var/test-backups/somefile")
+            machine.succeed("mkdir -p /var/test-backups")
+            machine.succeed("echo testing > /var/test-backups/somefile")
 
             # create
-            client.succeed("clan --debug --flake ${../..} backups create test_backup_client")
-            client.wait_until_succeeds("! systemctl is-active borgbackup-job-test_backup_server")
+            machine.succeed("ping -c1 machine >&2")
+            machine.succeed("ssh -i /etc/secrets/borgbackup.ssh -v machine hostname >&2")
+            machine.succeed("systemctl status >&2")
+            machine.succeed("systemctl start borgbackup-job-test-backup")
+            machine.succeed("clan --debug --flake ${self} backups create test-backup")
+            machine.wait_until_succeeds("! systemctl is-active borgbackup-job-test-backup >&2")
 
             # list
-            backup_id = json.loads(client.succeed("borg-job-test_backup_server list --json"))["archives"][0]["archive"]
-            assert(backup_id in client.succeed("clan --debug --flake ${../..} backups list test_backup_client"))
+            backup_id = json.loads(machine.succeed("borg-job-test-backup list --json"))["archives"][0]["archive"]
+            assert backup_id in machine.succeed("clan --debug --flake ${self} backups list test-backup"), "backup not listed"
 
             # restore
-            client.succeed("rm -f /var/test-backups/somefile")
-            client.succeed(f"clan --debug --flake ${../..} backups restore test_backup_client borgbackup {backup_id}")
-            assert(client.succeed("cat /var/test-backups/somefile").strip() == "testing")
+            machine.succeed("rm -f /var/test-backups/somefile")
+            machine.succeed(f"clan --debug --flake ${self} backups restore test-backup borgbackup {backup_id}")
+            assert machine.succeed("cat /var/test-backups/somefile").strip() == "testing", "restore failed"
           '';
         } { inherit pkgs self; };
       };
