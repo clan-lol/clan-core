@@ -114,20 +114,18 @@
             machine.succeed("echo testing > /var/test-backups/somefile")
 
             # create
-            machine.succeed("ping -c1 machine >&2")
-            machine.succeed("ssh -i /etc/secrets/borgbackup.ssh -v machine hostname >&2")
-            machine.succeed("systemctl status >&2")
-            machine.succeed("systemctl start borgbackup-job-test-backup")
             machine.succeed("clan --debug --flake ${self} backups create test-backup")
             machine.wait_until_succeeds("! systemctl is-active borgbackup-job-test-backup >&2")
 
             # list
             backup_id = json.loads(machine.succeed("borg-job-test-backup list --json"))["archives"][0]["archive"]
-            assert backup_id in machine.succeed("clan --debug --flake ${self} backups list test-backup"), "backup not listed"
+            out = machine.succeed("clan --debug --flake ${self} backups list test-backup")
+            print(out)
+            assert backup_id in out, f"backup {backup_id} not found in {out}"
 
             # restore
             machine.succeed("rm -f /var/test-backups/somefile")
-            machine.succeed(f"clan --debug --flake ${self} backups restore test-backup borgbackup {backup_id}")
+            machine.succeed(f"clan --debug --flake ${self} backups restore test-backup borgbackup borg@machine:.::{backup_id} >&2")
             assert machine.succeed("cat /var/test-backups/somefile").strip() == "testing", "restore failed"
           '';
         } { inherit pkgs self; };
