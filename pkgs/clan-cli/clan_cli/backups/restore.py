@@ -4,21 +4,15 @@ import subprocess
 
 from ..errors import ClanError
 from ..machines.machines import Machine
-from .list import Backup, list_backups
 
 
-def restore_service(
-    machine: Machine, backup: Backup, provider: str, service: str
-) -> None:
+def restore_service(machine: Machine, name: str, provider: str, service: str) -> None:
     backup_metadata = json.loads(machine.eval_nix("config.clanCore.backups"))
     backup_folders = json.loads(machine.eval_nix("config.clanCore.state"))
     folders = backup_folders[service]["folders"]
     env = {}
-    env["NAME"] = backup.name
+    env["NAME"] = name
     env["FOLDERS"] = ":".join(folders)
-
-    if backup.job_name is not None:
-        env["JOB_NAME"] = backup.job_name
 
     proc = machine.target_host.run(
         [
@@ -65,35 +59,22 @@ def restore_service(
 
 def restore_backup(
     machine: Machine,
-    backups: list[Backup],
     provider: str,
     name: str,
     service: str | None = None,
 ) -> None:
     if service is None:
-        for backup in backups:
-            if backup.name == name:
-                backup_folders = json.loads(machine.eval_nix("config.clanCore.state"))
-                for _service in backup_folders:
-                    restore_service(machine, backup, provider, _service)
-                break
-        else:
-            raise ClanError(f"backup {name} not found")
+        backup_folders = json.loads(machine.eval_nix("config.clanCore.state"))
+        for _service in backup_folders:
+            restore_service(machine, name, provider, _service)
     else:
-        for backup in backups:
-            if backup.name == name:
-                restore_service(machine, backup, provider, service)
-                break
-        else:
-            raise ClanError(f"backup {name} not found")
+        restore_service(machine, name, provider, service)
 
 
 def restore_command(args: argparse.Namespace) -> None:
     machine = Machine(name=args.machine, flake=args.flake)
-    backups = list_backups(machine=machine, provider=args.provider)
     restore_backup(
         machine=machine,
-        backups=backups,
         provider=args.provider,
         name=args.name,
         service=args.service,
