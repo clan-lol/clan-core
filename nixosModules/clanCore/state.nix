@@ -17,18 +17,18 @@
                 Folder where state resides in
               '';
             };
-            preRestoreScript = lib.mkOption {
-              type = lib.types.str;
-              default = ":";
+            preRestoreCommand = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
               description = ''
                 script to run before restoring the state dir from a backup
 
                 Utilize this to stop services which currently access these folders
               '';
             };
-            postRestoreScript = lib.mkOption {
-              type = lib.types.str;
-              default = ":";
+            postRestoreCommand = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
               description = ''
                 script to restore the service after the state dir was restored from a backup
 
