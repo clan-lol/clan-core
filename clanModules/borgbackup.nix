@@ -15,7 +15,7 @@ in
         {
           options = {
             name = lib.mkOption {
-              type = lib.types.str;
+              type = lib.types.strMatching "^[a-zA-Z0-9._-]+$";
               default = name;
               description = "the name of the backup job";
             };
@@ -96,11 +96,11 @@ in
       # TODO list needs to run locally or on the remote machine
       list = ''
         set -efu
-        # we need yes here to skip the changed url verification
         (${
           lib.concatMapStringsSep "\n" (
             dest:
-            ''yes y | borg-job-${dest.name} list --json | jq '[.archives[] | {"name": ("${dest.repo}::" + .name), "job_name": "${dest.name}"}]' ''
+            # we need yes here to skip the changed url verification
+            ''yes y | borg-job-${dest.name} list --json | jq '[.archives[] | {"name": ("${dest.name}::${dest.repo}::" + .name)}]' ''
           ) (lib.attrValues cfg.destinations)
         }) | jq -s 'add'
       '';
@@ -114,7 +114,8 @@ in
         set -efu
         cd /
         IFS=';' read -ra FOLDER <<< "$FOLDERS"
-        yes y | borg-job-"$JOB_NAME" extract --list "$NAME" "''${FOLDER[@]}"
+        job_name=$(echo "$NAME" | cut -d'::' -f1)
+        yes y | borg-job-"$job_name" extract --list "$NAME" "''${FOLDER[@]}"
       '';
     };
   };
