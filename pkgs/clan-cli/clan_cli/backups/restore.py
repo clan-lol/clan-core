@@ -4,42 +4,29 @@ import subprocess
 
 from ..errors import ClanError
 from ..machines.machines import Machine
-from .list import Backup, list_backups
 
 
-def restore_service(
-    machine: Machine, backup: Backup, provider: str, service: str
-) -> None:
+def restore_service(machine: Machine, name: str, provider: str, service: str) -> None:
     backup_metadata = json.loads(machine.eval_nix("config.clanCore.backups"))
     backup_folders = json.loads(machine.eval_nix("config.clanCore.state"))
     folders = backup_folders[service]["folders"]
     env = {}
-    env["NAME"] = backup.name
+    env["NAME"] = name
     env["FOLDERS"] = ":".join(folders)
 
-    if backup.job_name is not None:
-        env["JOB_NAME"] = backup.job_name
-
-    proc = machine.target_host.run(
-        [
-            "bash",
-            "-c",
-            backup_folders[service]["preRestoreScript"],
-        ],
-        stdout=subprocess.PIPE,
-        extra_env=env,
-    )
-    if proc.returncode != 0:
-        raise ClanError(
-            f"failed to run preRestoreScript: {backup_folders[service]['preRestoreScript']}, error was: {proc.stdout}"
+    if pre_restore := backup_folders[service]["preRestoreCommand"]:
+        proc = machine.target_host.run(
+            [pre_restore],
+            stdout=subprocess.PIPE,
+            extra_env=env,
         )
+        if proc.returncode != 0:
+            raise ClanError(
+                f"failed to run preRestoreCommand: {pre_restore}, error was: {proc.stdout}"
+            )
 
     proc = machine.target_host.run(
-        [
-            "bash",
-            "-c",
-            backup_metadata["providers"][provider]["restore"],
-        ],
+        [backup_metadata["providers"][provider]["restore"]],
         stdout=subprocess.PIPE,
         extra_env=env,
     )
@@ -48,52 +35,36 @@ def restore_service(
             f"failed to restore backup: {backup_metadata['providers'][provider]['restore']}"
         )
 
-    proc = machine.target_host.run(
-        [
-            "bash",
-            "-c",
-            backup_folders[service]["postRestoreScript"],
-        ],
-        stdout=subprocess.PIPE,
-        extra_env=env,
-    )
-    if proc.returncode != 0:
-        raise ClanError(
-            f"failed to run postRestoreScript: {backup_folders[service]['postRestoreScript']}, error was: {proc.stdout}"
+    if post_restore := backup_folders[service]["postRestoreCommand"]:
+        proc = machine.target_host.run(
+            [post_restore],
+            stdout=subprocess.PIPE,
+            extra_env=env,
         )
+        if proc.returncode != 0:
+            raise ClanError(
+                f"failed to run postRestoreCommand: {post_restore}, error was: {proc.stdout}"
+            )
 
 
 def restore_backup(
     machine: Machine,
-    backups: list[Backup],
     provider: str,
     name: str,
     service: str | None = None,
 ) -> None:
     if service is None:
-        for backup in backups:
-            if backup.name == name:
-                backup_folders = json.loads(machine.eval_nix("config.clanCore.state"))
-                for _service in backup_folders:
-                    restore_service(machine, backup, provider, _service)
-                break
-        else:
-            raise ClanError(f"backup {name} not found")
+        backup_folders = json.loads(machine.eval_nix("config.clanCore.state"))
+        for _service in backup_folders:
+            restore_service(machine, name, provider, _service)
     else:
-        for backup in backups:
-            if backup.name == name:
-                restore_service(machine, backup, provider, service)
-                break
-        else:
-            raise ClanError(f"backup {name} not found")
+        restore_service(machine, name, provider, service)
 
 
 def restore_command(args: argparse.Namespace) -> None:
     machine = Machine(name=args.machine, flake=args.flake)
-    backups = list_backups(machine=machine, provider=args.provider)
     restore_backup(
         machine=machine,
-        backups=backups,
         provider=args.provider,
         name=args.name,
         service=args.service,

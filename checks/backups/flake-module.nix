@@ -76,7 +76,15 @@
         clanCore.secretStore = "vm";
         clanCore.clanDir = ../..;
 
-        environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
+        environment.systemPackages = [
+          self.packages.${pkgs.system}.clan-cli
+          (pkgs.writeShellScriptBin "pre-restore-command" ''
+            touch /var/test-service/pre-restore-command
+          '')
+          (pkgs.writeShellScriptBin "post-restore-command" ''
+            touch /var/test-service/post-restore-command
+          '')
+        ];
         environment.etc.install-closure.source = "${closureInfo}/store-paths";
         nix.settings = {
           substituters = lib.mkForce [ ];
@@ -86,6 +94,12 @@
         };
         system.extraDependencies = dependencies;
         clanCore.state.test-backups.folders = [ "/var/test-backups" ];
+
+        clanCore.state.test-service = {
+          preRestoreCommand = "pre-restore-command";
+          postRestoreCommand = "post-restore-command";
+          folders = [ "/var/test-service" ];
+        };
         clan.borgbackup.destinations.test-backup.repo = "borg@machine:.";
 
         services.borgbackup.repos.test-backups = {
@@ -110,7 +124,7 @@
             start_all()
 
             # dummy data
-            machine.succeed("mkdir -p /var/test-backups")
+            machine.succeed("mkdir -p /var/test-backups /var/test-service")
             machine.succeed("echo testing > /var/test-backups/somefile")
 
             # create
@@ -119,14 +133,16 @@
 
             # list
             backup_id = json.loads(machine.succeed("borg-job-test-backup list --json"))["archives"][0]["archive"]
-            out = machine.succeed("clan --debug --flake ${self} backups list test-backup")
+            out = machine.succeed("clan --debug --flake ${self} backups list test-backup").strip()
             print(out)
             assert backup_id in out, f"backup {backup_id} not found in {out}"
 
             # restore
             machine.succeed("rm -f /var/test-backups/somefile")
-            machine.succeed(f"clan --debug --flake ${self} backups restore test-backup borgbackup borg@machine:.::{backup_id} >&2")
+            machine.succeed(f"clan --debug --flake ${self} backups restore test-backup borgbackup {out} >&2")
             assert machine.succeed("cat /var/test-backups/somefile").strip() == "testing", "restore failed"
+            machine.succeed("test -f /var/test-service/pre-restore-command")
+            machine.succeed("test -f /var/test-service/post-restore-command")
           '';
         } { inherit pkgs self; };
       };

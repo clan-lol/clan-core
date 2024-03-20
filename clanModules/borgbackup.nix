@@ -15,7 +15,7 @@ in
         {
           options = {
             name = lib.mkOption {
-              type = lib.types.str;
+              type = lib.types.strMatching "^[a-zA-Z0-9._-]+$";
               default = name;
               description = "the name of the backup job";
             };
@@ -90,32 +90,41 @@ in
       '';
     };
 
-    environment.systemPackages = [ pkgs.jq ];
-
-    clanCore.backups.providers.borgbackup = {
-      # TODO list needs to run locally or on the remote machine
-      list = ''
-        set -efu
-        # we need yes here to skip the changed url verification
-        ${
-          lib.concatMapStringsSep "\\\n" (
-            dest:
-            ''yes y | borg-job-${dest.name} list --json | jq '[.archives[] | {"name": ("${dest.repo}::" + .name), "job_name": "${dest.name}"}]' ''
-          ) (lib.attrValues cfg.destinations)
-        } | jq -s 'add'
-      '';
-      create = ''
+    environment.systemPackages = [
+      (pkgs.writeShellScriptBin "borgbackup-create" ''
+        set -efu -o pipefail
         ${lib.concatMapStringsSep "\n" (dest: ''
           systemctl start borgbackup-job-${dest.name}
         '') (lib.attrValues cfg.destinations)}
-      '';
-
-      restore = ''
+      '')
+      (pkgs.writeShellScriptBin "borgbackup-list" ''
         set -efu
+        (${
+          lib.concatMapStringsSep "\n" (
+            dest:
+            # we need yes here to skip the changed url verification
+            ''yes y | borg-job-${dest.name} list --json | jq '[.archives[] | {"name": ("${dest.name}::${dest.repo}::" + .name)}]' ''
+          ) (lib.attrValues cfg.destinations)
+        }) | ${pkgs.jq}/bin/jq -s 'add'
+      '')
+      (pkgs.writeShellScriptBin "borgbackup-restore" ''
+        set -efux
         cd /
         IFS=';' read -ra FOLDER <<< "$FOLDERS"
-        yes y | borg-job-"$JOB_NAME" extract --list "$NAME" "''${FOLDER[@]}"
-      '';
+        job_name=$(echo "$NAME" | ${pkgs.gawk}/bin/awk -F'::' '{print $1}')
+        backup_name=''${NAME#"$job_name"::}
+        if ! command -v borg-job-"$job_name" &> /dev/null; then
+          echo "borg-job-$job_name not found: Backup name is invalid" >&2
+          exit 1
+        fi
+        yes y | borg-job-"$job_name" extract --list "$backup_name" "''${FOLDER[@]}"
+      '')
+    ];
+
+    clanCore.backups.providers.borgbackup = {
+      list = "borgbackup-list";
+      create = "borgbackup-create";
+      restore = "borgbackup-restore";
     };
   };
 }
