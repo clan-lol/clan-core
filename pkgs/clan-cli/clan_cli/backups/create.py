@@ -14,7 +14,7 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
     if provider is None:
         for provider in backup_scripts["providers"]:
             proc = machine.target_host.run(
-                ["bash", "-c", backup_scripts["providers"][provider]["create"]],
+                [backup_scripts["providers"][provider]["create"]],
             )
             if proc.returncode != 0:
                 raise ClanError("failed to start backup")
@@ -24,7 +24,7 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
         if provider not in backup_scripts["providers"]:
             raise ClanError(f"provider {provider} not found")
         proc = machine.target_host.run(
-            ["bash", "-c", backup_scripts["providers"][provider]["create"]],
+            [backup_scripts["providers"][provider]["create"]],
         )
         if proc.returncode != 0:
             raise ClanError("failed to start backup")
