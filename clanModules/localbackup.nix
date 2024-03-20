@@ -51,6 +51,7 @@ in
           }
         )
       );
+      default = { };
       description = "List of directories where backups are stored";
     };
 
@@ -74,7 +75,7 @@ in
           trap "umount ${lib.escapeShellArg mountpoint}" EXIT
         '';
     in
-    lib.mkIf (cfg.targets != [ ]) {
+    lib.mkIf (cfg.targets != { }) {
       environment.systemPackages = [
         (pkgs.writeShellScriptBin "localbackup-create" ''
           set -efu -o pipefail
