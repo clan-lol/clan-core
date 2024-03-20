@@ -8,6 +8,7 @@
       ];
     };
     borgbackup = ./borgbackup.nix;
+    localbackup = ./localbackup.nix;
     deltachat = ./deltachat.nix;
     moonlight = ./moonlight.nix;
     sunshine = ./sunshine.nix;
