@@ -14,15 +14,16 @@ def restore_service(machine: Machine, name: str, provider: str, service: str) ->
     env["NAME"] = name
     env["FOLDERS"] = ":".join(folders)
 
-    proc = machine.target_host.run(
-        [backup_folders[service]["preRestoreScript"]],
-        stdout=subprocess.PIPE,
-        extra_env=env,
-    )
-    if proc.returncode != 0:
-        raise ClanError(
-            f"failed to run preRestoreScript: {backup_folders[service]['preRestoreScript']}, error was: {proc.stdout}"
+    if pre_restore := backup_folders[service]["preRestoreCommand"]:
+        proc = machine.target_host.run(
+            [pre_restore],
+            stdout=subprocess.PIPE,
+            extra_env=env,
         )
+        if proc.returncode != 0:
+            raise ClanError(
+                f"failed to run preRestoreCommand: {pre_restore}, error was: {proc.stdout}"
+            )
 
     proc = machine.target_host.run(
         [backup_metadata["providers"][provider]["restore"]],
@@ -34,15 +35,16 @@ def restore_service(machine: Machine, name: str, provider: str, service: str) ->
             f"failed to restore backup: {backup_metadata['providers'][provider]['restore']}"
         )
 
-    proc = machine.target_host.run(
-        [backup_folders[service]["postRestoreScript"]],
-        stdout=subprocess.PIPE,
-        extra_env=env,
-    )
-    if proc.returncode != 0:
-        raise ClanError(
-            f"failed to run postRestoreScript: {backup_folders[service]['postRestoreScript']}, error was: {proc.stdout}"
+    if post_restore := backup_folders[service]["postRestoreCommand"]:
+        proc = machine.target_host.run(
+            [post_restore],
+            stdout=subprocess.PIPE,
+            extra_env=env,
         )
+        if proc.returncode != 0:
+            raise ClanError(
+                f"failed to run postRestoreCommand: {post_restore}, error was: {proc.stdout}"
+            )
 
 
 def restore_backup(
