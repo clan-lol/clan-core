@@ -112,11 +112,12 @@ in
         cd /
         IFS=';' read -ra FOLDER <<< "$FOLDERS"
         job_name=$(echo "$NAME" | ${pkgs.gawk}/bin/awk -F'::' '{print $1}')
+        backup_name=''${NAME#"$job_name"::}
         if ! command -v borg-job-"$job_name" &> /dev/null; then
           echo "borg-job-$job_name not found: Backup name is invalid" >&2
           exit 1
         fi
-        yes y | borg-job-"$job_name" extract --list "$NAME" "''${FOLDER[@]}"
+        yes y | borg-job-"$job_name" extract --list "$backup_name" "''${FOLDER[@]}"
       '')
     ];
 
