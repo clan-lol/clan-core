@@ -155,7 +155,7 @@ in
     startLimitBurst = 5;
     startLimitIntervalSec = 500;
     script = ''
-      ${lib.getExe pkgs.sunshine} --creds sunshine sunshine
+      ${lib.getExe pkgs.sunshine} ${sunshineConfiguration} --creds sunshine sunshine
     '';
     serviceConfig = {
       Restart = "on-failure";
