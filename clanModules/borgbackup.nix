@@ -90,11 +90,14 @@ in
       '';
     };
 
-    environment.systemPackages = [ pkgs.jq ];
-
-    clanCore.backups.providers.borgbackup = {
-      # TODO list needs to run locally or on the remote machine
-      list = ''
+    environment.systemPackages = [
+      (pkgs.writeShellScriptBin "borgbackup-create" ''
+        set -efu -o pipefail
+        ${lib.concatMapStringsSep "\n" (dest: ''
+          systemctl start borgbackup-job-${dest.name}
+        '') (lib.attrValues cfg.destinations)}
+      '')
+      (pkgs.writeShellScriptBin "borgbackup-list" ''
         set -efu
         (${
           lib.concatMapStringsSep "\n" (
@@ -102,21 +105,25 @@ in
             # we need yes here to skip the changed url verification
             ''yes y | borg-job-${dest.name} list --json | jq '[.archives[] | {"name": ("${dest.name}::${dest.repo}::" + .name)}]' ''
           ) (lib.attrValues cfg.destinations)
-        }) | jq -s 'add'
-      '';
-      create = ''
-        ${lib.concatMapStringsSep "\n" (dest: ''
-          systemctl start borgbackup-job-${dest.name}
-        '') (lib.attrValues cfg.destinations)}
-      '';
-
-      restore = ''
-        set -efu
+        }) | ${pkgs.jq}/bin/jq -s 'add'
+      '')
+      (pkgs.writeShellScriptBin "borgbackup-restore" ''
+        set -efux
         cd /
         IFS=';' read -ra FOLDER <<< "$FOLDERS"
-        job_name=$(echo "$NAME" | cut -d'::' -f1)
+        job_name=$(echo "$NAME" | ${pkgs.gawk}/bin/awk -F'::' '{print $1}')
+        if ! command -v borg-job-"$job_name" &> /dev/null; then
+          echo "borg-job-$job_name not found: Backup name is invalid" >&2
+          exit 1
+        fi
         yes y | borg-job-"$job_name" extract --list "$NAME" "''${FOLDER[@]}"
-      '';
+      '')
+    ];
+
+    clanCore.backups.providers.borgbackup = {
+      list = "borgbackup-list";
+      create = "borgbackup-create";
+      restore = "borgbackup-restore";
     };
   };
 }

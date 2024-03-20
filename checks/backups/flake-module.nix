@@ -119,13 +119,13 @@
 
             # list
             backup_id = json.loads(machine.succeed("borg-job-test-backup list --json"))["archives"][0]["archive"]
-            out = machine.succeed("clan --debug --flake ${self} backups list test-backup")
+            out = machine.succeed("clan --debug --flake ${self} backups list test-backup").strip()
             print(out)
             assert backup_id in out, f"backup {backup_id} not found in {out}"
 
             # restore
             machine.succeed("rm -f /var/test-backups/somefile")
-            machine.succeed(f"clan --debug --flake ${self} backups restore test-backup borgbackup borg@machine:.::{backup_id} >&2")
+            machine.succeed(f"clan --debug --flake ${self} backups restore test-backup borgbackup {out} >&2")
             assert machine.succeed("cat /var/test-backups/somefile").strip() == "testing", "restore failed"
           '';
         } { inherit pkgs self; };

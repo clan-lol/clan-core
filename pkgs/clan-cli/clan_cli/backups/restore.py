@@ -15,11 +15,7 @@ def restore_service(machine: Machine, name: str, provider: str, service: str) ->
     env["FOLDERS"] = ":".join(folders)
 
     proc = machine.target_host.run(
-        [
-            "bash",
-            "-c",
-            backup_folders[service]["preRestoreScript"],
-        ],
+        [backup_folders[service]["preRestoreScript"]],
         stdout=subprocess.PIPE,
         extra_env=env,
     )
@@ -29,11 +25,7 @@ def restore_service(machine: Machine, name: str, provider: str, service: str) ->
         )
 
     proc = machine.target_host.run(
-        [
-            "bash",
-            "-c",
-            backup_metadata["providers"][provider]["restore"],
-        ],
+        [backup_metadata["providers"][provider]["restore"]],
         stdout=subprocess.PIPE,
         extra_env=env,
     )
@@ -43,11 +35,7 @@ def restore_service(machine: Machine, name: str, provider: str, service: str) ->
         )
 
     proc = machine.target_host.run(
-        [
-            "bash",
-            "-c",
-            backup_folders[service]["postRestoreScript"],
-        ],
+        [backup_folders[service]["postRestoreScript"]],
         stdout=subprocess.PIPE,
         extra_env=env,
     )
