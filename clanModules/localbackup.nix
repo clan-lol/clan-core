@@ -8,7 +8,7 @@ let
   cfg = config.clan.localbackup;
   rsnapshotConfig = target: states: ''
     config_version	1.2
-    snapshot_root	${target}
+    snapshot_root	${target.directory}
     sync_first	1
     cmd_cp	${pkgs.coreutils}/bin/cp
     cmd_rm	${pkgs.coreutils}/bin/rm
@@ -17,6 +17,13 @@ let
     cmd_logger	${pkgs.inetutils}/bin/logger
     cmd_du	${pkgs.coreutils}/bin/du
     cmd_rsnapshot_diff	${pkgs.rsnapshot}/bin/rsnapshot-diff
+    ${lib.optionalString (target.preExec != null) ''
+      cmd_preexec	${pkgs.writeShellScript "preexec.sh" target.preExec}
+    ''}
+
+    ${lib.optionalString (target.postExec != null) ''
+      cmd_postexec	${pkgs.writeShellScript "postexec.sh" target.postExec}
+    ''}
     retain	snapshot	${builtins.toString config.clan.localbackup.snapshots}
     ${lib.concatMapStringsSep "\n" (state: ''
       ${lib.concatMapStringsSep "\n" (folder: ''
@@ -46,6 +53,16 @@ in
                 type = lib.types.nullOr (lib.types.strMatching "^[a-zA-Z0-9./_-]+$");
                 default = null;
                 description = "mountpoint of the directory to backup. If set, the directory will be mounted before the backup and unmounted afterwards";
+              };
+              preExec = lib.mkOption {
+                type = lib.types.nullOr lib.types.lines;
+                default = null;
+                description = "Shell commands to run before the backup";
+              };
+              postExec = lib.mkOption {
+                type = lib.types.nullOr lib.types.lines;
+                default = null;
+                description = "Shell commands to run after the backup";
               };
             };
           }
@@ -90,8 +107,8 @@ in
             (
               echo "Creating backup '${target.name}'"
               ${setupMount target.mountpoint}
-              rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target.directory (lib.attrValues config.clanCore.state))}" sync
-              rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target.directory (lib.attrValues config.clanCore.state))}" snapshot
+              rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target (lib.attrValues config.clanCore.state))}" sync
+              rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target (lib.attrValues config.clanCore.state))}" snapshot
             )
           '') (builtins.attrValues cfg.targets)}
         '')
@@ -110,7 +127,7 @@ in
               (
                 ${setupMount target.mountpoint}
                 find ${lib.escapeShellArg target.directory} -mindepth 1 -maxdepth 1 -name "snapshot.*" -print0 -type d \
-                  | jq -Rs 'split("\u0000") | .[] | select(. != "") | { "name": ("${target.mountpoint}::" + .)}'
+                  | jq -Rs 'split("\u0000") | .[] | select(. != "") | { "name": ("${target.mountpoint or ""}::" + .)}'
               )
             '') (builtins.attrValues cfg.targets)
           }) | jq -s .
@@ -128,12 +145,14 @@ in
           mountpoint=$(awk -F'::' '{print $1}' <<< $NAME)
           backupname=''${NAME#$mountpoint::}
 
-          mkdir -p "$mountpoint"
-          if mountpoint -q "$mountpoint"; then
-            umount "$mountpoint"
+          if [[ ! -z $backupname ]]; then
+            mkdir -p "$mountpoint"
+            if mountpoint -q "$mountpoint"; then
+              umount "$mountpoint"
+            fi
+            mount "$mountpoint"
+            trap "umount $mountpoint" EXIT
           fi
-          mount "$mountpoint"
-          trap "umount $mountpoint" EXIT
 
           IFS=';' read -ra FOLDER <<< "$FOLDERS"
           for folder in "''${FOLDER[@]}"; do
