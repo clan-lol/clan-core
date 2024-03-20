@@ -10,18 +10,19 @@ class MoonlightPairing:
         self.found = threading.Event()
 
     def init_pairing(self, host: str, pin: str) -> bool:
+        # host = f"[{host}]"
         args = ["moonlight", "pair", host, "--pin", pin]
         print("Trying to pair")
         try:
-            self.process = subprocess.Popen(
-                args, stderr=subprocess.PIPE, stdout=subprocess.PIPE
-            )
+            print(f"Running command: {args}")
+            self.process = subprocess.Popen(args, stdout=subprocess.PIPE)
             print("Pairing initiated")
             thread = threading.Thread(
                 target=self.stream_output,
                 args=('Latest supported GFE server: "99.99.99.99"',),
             )
             thread.start()
+            print("Thread started")
             return True
         except Exception as e:
             print(
@@ -51,6 +52,8 @@ class MoonlightPairing:
                 self.found.set()
                 break
 
-    def wait_until_started(self) -> None:
-        self.found.wait()
-        print("Started up.")
+    def wait_until_started(self, timeout: int = 10) -> None:
+        if self.found.wait(timeout):
+            print("Started up.")
+        else:
+            print("Starting up took took too long. Terminated the process.")
