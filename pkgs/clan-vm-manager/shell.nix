@@ -33,7 +33,7 @@ mkShell (
             --add-flags '-ex "source ${python3}/share/gdb/libpython.py"'
         '';
   in
-  {
+  rec {
     inherit (clan-vm-manager) propagatedBuildInputs buildInputs;
 
     linuxOnlyPackages = lib.optionals stdenv.isLinux [
@@ -42,14 +42,14 @@ mkShell (
     ];
 
     # To debug clan-vm-manger execute pygdb --args python ./bin/clan-vm-manager
-    nativeBuildInputs = [
+    packages = [
       ruff
       desktop-file-utils
       mypy
       python3Packages.ipdb
       gtk4.dev
       libadwaita.devdoc # has the demo called 'adwaita-1-demo'
-    ] ++ clan-vm-manager.nativeBuildInputs ++ clan-vm-manager.propagatedBuildInputs;
+    ] ++ clan-vm-manager.devDependencies ++ linuxOnlyPackages;
 
     PYTHONBREAKPOINT = "ipdb.set_trace";
 

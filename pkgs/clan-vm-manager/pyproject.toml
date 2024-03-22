@@ -3,7 +3,6 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 
-
 [project]
 name = "clan-vm-manager"
 dynamic = ["version"]
@@ -14,6 +13,15 @@ exclude = ["result"]
 
 [tool.setuptools.package-data]
 clan_vm_manager = ["**/assets/*"]
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+faulthandler_timeout = 60
+log_level = "DEBUG"
+log_format = "%(levelname)s: %(message)s\n       %(pathname)s:%(lineno)d::%(funcName)s"
+addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --durations 5 --color=yes --new-first" # Add --pdb for debugging
+norecursedirs = "tests/helpers"
+markers = ["impure"]
 
 [tool.mypy]
 python_version = "3.11"
