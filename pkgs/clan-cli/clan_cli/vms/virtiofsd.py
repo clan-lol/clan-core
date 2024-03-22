@@ -17,6 +17,10 @@ def start_virtiofsd(socket_path: Path) -> Iterator[None]:
     virtiofsd = nix_shell(
         ["nixpkgs#virtiofsd"],
         [
+            "strace",
+            "-f",
+            "-o",
+            "/tmp/clan.org.cli/strace.log",
             "virtiofsd",
             "--socket-path",
             str(socket_path),
