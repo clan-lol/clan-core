@@ -27,6 +27,7 @@
             secrets = import ./secrets nixosTestArgs;
             container = import ./container nixosTestArgs;
             deltachat = import ./deltachat nixosTestArgs;
+            matrix-synapse = import ./matrix-synapse nixosTestArgs;
             zt-tcp-relay = import ./zt-tcp-relay nixosTestArgs;
             borgbackup = import ./borgbackup nixosTestArgs;
             syncthing = import ./syncthing nixosTestArgs;
