@@ -10,6 +10,7 @@
     borgbackup = ./borgbackup.nix;
     localbackup = ./localbackup.nix;
     deltachat = ./deltachat.nix;
+    matrix-synapse = ./matrix-synapse.nix;
     moonlight = ./moonlight.nix;
     sunshine = ./sunshine.nix;
     syncthing = ./syncthing.nix;
