@@ -202,7 +202,7 @@ def write_key(path: Path, publickey: str, overwrite: bool) -> None:
             flags |= os.O_EXCL
         fd = os.open(path / "key.json", flags)
     except FileExistsError:
-        raise ClanError(f"{path.name} already exists in {path}")
+        raise ClanError(f"{path.name} already exists in {path}. Use --force to overwrite.")
     with os.fdopen(fd, "w") as f:
         json.dump({"publickey": publickey, "type": "age"}, f, indent=2)
 
