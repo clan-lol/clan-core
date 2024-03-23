@@ -112,12 +112,12 @@ class Machine:
         self.deployment_info["targetHost"] = value
 
     @property
-    def secrets_module(self) -> str:
-        return self.deployment_info["secretsModule"]
+    def secret_facts_module(self) -> str:
+        return self.deployment_info["secretFactsModule"]
 
     @property
-    def facts_module(self) -> str:
-        return self.deployment_info["factsModule"]
+    def public_facts_module(self) -> str:
+        return self.deployment_info["publicFactsModule"]
 
     @property
     def secrets_data(self) -> dict[str, dict[str, Any]]:

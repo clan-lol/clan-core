@@ -10,12 +10,12 @@ from tempfile import TemporaryDirectory
 from clan_cli.cmd import run
 
 from ..errors import ClanError
-from ..facts.modules import FactStoreBase
 from ..git import commit_files
 from ..machines.machines import Machine
 from ..nix import nix_shell
 from .check import check_secrets
-from .modules import SecretStoreBase
+from .public_modules import FactStoreBase
+from .secret_modules import SecretStoreBase
 
 log = logging.getLogger(__name__)
 
@@ -29,11 +29,11 @@ def read_multiline_input(prompt: str = "Finish with Ctrl-D") -> str:
     return proc.stdout
 
 
-def generate_service_secrets(
+def generate_service_facts(
     machine: Machine,
     service: str,
-    secret_store: SecretStoreBase,
-    fact_store: FactStoreBase,
+    secret_facts_store: SecretStoreBase,
+    public_facts_store: FactStoreBase,
     tmpdir: Path,
     prompt: Callable[[str], str],
 ) -> None:
@@ -104,7 +104,7 @@ def generate_service_secrets(
                 msg = f"did not generate a file for '{secret_name}' when running the following command:\n"
                 msg += generator
                 raise ClanError(msg)
-            secret_path = secret_store.set(
+            secret_path = secret_facts_store.set(
                 service, secret_name, secret_file.read_bytes(), groups
             )
             if secret_path:
@@ -117,7 +117,7 @@ def generate_service_secrets(
                 msg = f"did not generate a file for '{name}' when running the following command:\n"
                 msg += machine.secrets_data[service]["generator"]
                 raise ClanError(msg)
-            fact_file = fact_store.set(service, name, fact_file.read_bytes())
+            fact_file = public_facts_store.set(service, name, fact_file.read_bytes())
             if fact_file:
                 files_to_commit.append(fact_file)
         commit_files(
@@ -127,15 +127,15 @@ def generate_service_secrets(
         )
 
 
-def generate_secrets(
+def generate_facts(
     machine: Machine,
     prompt: None | Callable[[str], str] = None,
 ) -> None:
-    secrets_module = importlib.import_module(machine.secrets_module)
-    secret_store = secrets_module.SecretStore(machine=machine)
+    secret_facts_module = importlib.import_module(machine.secret_facts_module)
+    secret_facts_store = secret_facts_module.SecretStore(machine=machine)
 
-    facts_module = importlib.import_module(machine.facts_module)
-    fact_store = facts_module.FactStore(machine=machine)
+    public_facts_module = importlib.import_module(machine.public_facts_module)
+    public_facts_store = public_facts_module.FactStore(machine=machine)
 
     if prompt is None:
 
@@ -148,11 +148,11 @@ def generate_secrets(
     with TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
         for service in machine.secrets_data:
-            generate_service_secrets(
+            generate_service_facts(
                 machine=machine,
                 service=service,
-                secret_store=secret_store,
-                fact_store=fact_store,
+                secret_facts_store=secret_facts_store,
+                public_facts_store=public_facts_store,
                 tmpdir=tmpdir,
                 prompt=prompt,
             )
@@ -162,12 +162,12 @@ def generate_secrets(
 
 def generate_command(args: argparse.Namespace) -> None:
     machine = Machine(name=args.machine, flake=args.flake)
-    generate_secrets(machine)
+    generate_facts(machine)
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "machine",
-        help="The machine to generate secrets for",
+        help="The machine to generate facts for",
     )
     parser.set_defaults(func=generate_command)

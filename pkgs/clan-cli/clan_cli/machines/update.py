@@ -9,10 +9,10 @@ from pathlib import Path
 
 from ..cmd import run
 from ..errors import ClanError
+from ..facts.generate import generate_facts
+from ..facts.upload import upload_secrets
 from ..machines.machines import Machine
 from ..nix import nix_build, nix_command, nix_config, nix_metadata
-from ..secrets.generate import generate_secrets
-from ..secrets.upload import upload_secrets
 from ..ssh import Host, HostGroup, HostKeyCheck, parse_deployment_address
 
 log = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ def deploy_nixos(hosts: HostGroup) -> None:
 
         machine: Machine = h.meta["machine"]
 
-        generate_secrets(machine)
+        generate_facts(machine)
         upload_secrets(machine)
 
         extra_args = h.meta.get("extra_args", [])

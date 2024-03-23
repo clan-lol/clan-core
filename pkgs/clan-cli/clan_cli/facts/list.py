@@ -8,9 +8,10 @@ from ..machines.machines import Machine
 log = logging.getLogger(__name__)
 
 
+# TODO get also secret facts
 def get_all_facts(machine: Machine) -> dict:
-    facts_module = importlib.import_module(machine.facts_module)
-    fact_store = facts_module.FactStore(machine=machine)
+    public_facts_module = importlib.import_module(machine.public_facts_module)
+    public_facts_store = public_facts_module.FactStore(machine=machine)
 
     # for service in machine.secrets_data:
     #     facts[service] = {}
@@ -20,7 +21,7 @@ def get_all_facts(machine: Machine) -> dict:
     #             facts[service][fact] = fact_content.decode()
     #         else:
     #             log.error(f"Fact {fact} for service {service} is missing")
-    return fact_store.get_all()
+    return public_facts_store.get_all()
 
 
 def get_command(args: argparse.Namespace) -> None:

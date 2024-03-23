@@ -44,7 +44,7 @@ in
   config = lib.mkIf (config.clanCore.secretStore == "sops") {
     clanCore.secretsDirectory = "/run/secrets";
     clanCore.secretsPrefix = config.clanCore.machineName + "-";
-    system.clan.secretsModule = "clan_cli.secrets.modules.sops";
+    system.clan.secretFactsModule = "clan_cli.facts.secret_modules.sops";
     sops.secrets = builtins.mapAttrs (name: _: {
       sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";
       format = "binary";
