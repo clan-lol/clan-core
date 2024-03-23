@@ -12,14 +12,14 @@ log = logging.getLogger(__name__)
 
 
 def upload_secrets(machine: Machine) -> None:
-    secrets_module = importlib.import_module(machine.secrets_module)
-    secret_store = secrets_module.SecretStore(machine=machine)
+    secret_facts_module = importlib.import_module(machine.secret_facts_module)
+    secret_facts_store = secret_facts_module.SecretStore(machine=machine)
 
-    if secret_store.update_check():
+    if secret_facts_store.update_check():
         log.info("Secrets already up to date")
         return
     with TemporaryDirectory() as tempdir:
-        secret_store.upload(Path(tempdir))
+        secret_facts_store.upload(Path(tempdir))
         host = machine.target_host
 
         ssh_cmd = host.ssh_cmd()

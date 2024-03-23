@@ -44,7 +44,7 @@ def test_generate_secret(
             "user1",
         ]
     )
-    cmd = ["--flake", str(test_flake_with_core.path), "secrets", "generate", "vm1"]
+    cmd = ["--flake", str(test_flake_with_core.path), "facts", "generate", "vm1"]
     cli.run(cmd)
     has_secret(test_flake_with_core.path, "vm1-age.key")
     has_secret(test_flake_with_core.path, "vm1-zerotier-identity-secret")
@@ -60,7 +60,7 @@ def test_generate_secret(
     secret1_mtime = identity_secret.lstat().st_mtime_ns
 
     # test idempotency
-    cli.run(["secrets", "generate", "vm1"])
+    cli.run(["facts", "generate", "vm1"])
     assert age_key.lstat().st_mtime_ns == age_key_mtime
     assert identity_secret.lstat().st_mtime_ns == secret1_mtime
 
@@ -68,7 +68,7 @@ def test_generate_secret(
         secrets_folder / "vm1-zerotier-identity-secret" / "machines" / "vm1"
     ).exists()
 
-    cli.run(["secrets", "generate", "vm2"])
+    cli.run(["facts", "generate", "vm2"])
     assert has_secret(test_flake_with_core.path, "vm2-age.key")
     assert has_secret(test_flake_with_core.path, "vm2-zerotier-identity-secret")
     ip = machine_get_fact(test_flake_with_core.path, "vm1", "zerotier-ip")
