@@ -6,9 +6,9 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from ..cmd import Log, run
+from ..facts.generate import generate_facts
 from ..machines.machines import Machine
 from ..nix import nix_shell
-from ..secrets.generate import generate_secrets
 
 log = logging.getLogger(__name__)
 
@@ -16,15 +16,15 @@ log = logging.getLogger(__name__)
 def install_nixos(
     machine: Machine, kexec: str | None = None, debug: bool = False
 ) -> None:
-    secrets_module = importlib.import_module(machine.secrets_module)
+    secret_facts_module = importlib.import_module(machine.secret_facts_module)
     log.info(f"installing {machine.name}")
-    secret_store = secrets_module.SecretStore(machine=machine)
+    secret_facts_store = secret_facts_module.SecretStore(machine=machine)
 
     h = machine.target_host
     target_host = f"{h.user or 'root'}@{h.host}"
     log.info(f"target host: {target_host}")
 
-    generate_secrets(machine)
+    generate_facts(machine)
 
     with TemporaryDirectory() as tmpdir_:
         tmpdir = Path(tmpdir_)
@@ -34,7 +34,7 @@ def install_nixos(
             upload_dir_ = upload_dir_[1:]
         upload_dir = tmpdir / upload_dir_
         upload_dir.mkdir(parents=True)
-        secret_store.upload(upload_dir)
+        secret_facts_store.upload(upload_dir)
 
         cmd = [
             "nixos-anywhere",

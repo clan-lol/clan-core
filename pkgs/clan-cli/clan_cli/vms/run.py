@@ -10,9 +10,9 @@ from tempfile import TemporaryDirectory
 from ..cmd import Log, run
 from ..dirs import module_root, user_cache_dir, vm_state_dir
 from ..errors import ClanError
+from ..facts.generate import generate_facts
 from ..machines.machines import Machine
 from ..nix import nix_shell
-from ..secrets.generate import generate_secrets
 from .inspect import VmConfig, inspect_vm
 from .qemu import qemu_command
 from .virtiofsd import start_virtiofsd
@@ -42,13 +42,13 @@ def build_vm(
     # TODO pass prompt here for the GTK gui
     secrets_dir = get_secrets(machine, tmpdir)
 
-    facts_module = importlib.import_module(machine.facts_module)
-    fact_store = facts_module.FactStore(machine=machine)
-    facts = fact_store.get_all()
+    public_facts_module = importlib.import_module(machine.public_facts_module)
+    public_facts_store = public_facts_module.FactStore(machine=machine)
+    public_facts = public_facts_store.get_all()
 
     nixos_config_file = machine.build_nix(
         "config.system.clan.vm.create",
-        extra_config=facts_to_nixos_config(facts),
+        extra_config=facts_to_nixos_config(public_facts),
         nix_options=nix_options,
     )
     try:
@@ -66,12 +66,12 @@ def get_secrets(
     secrets_dir = tmpdir / "secrets"
     secrets_dir.mkdir(parents=True, exist_ok=True)
 
-    secrets_module = importlib.import_module(machine.secrets_module)
-    secret_store = secrets_module.SecretStore(machine=machine)
+    secret_facts_module = importlib.import_module(machine.secret_facts_module)
+    secret_facts_store = secret_facts_module.SecretStore(machine=machine)
 
-    generate_secrets(machine)
+    generate_facts(machine)
 
-    secret_store.upload(secrets_dir)
+    secret_facts_store.upload(secrets_dir)
     return secrets_dir
 
 

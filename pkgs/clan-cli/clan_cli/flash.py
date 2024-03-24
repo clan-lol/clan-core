@@ -12,9 +12,9 @@ from typing import Any
 
 from .cmd import Log, run
 from .errors import ClanError
+from .facts.secret_modules import SecretStoreBase
 from .machines.machines import Machine
 from .nix import nix_shell
-from .secrets.modules import SecretStoreBase
 
 log = logging.getLogger(__name__)
 
@@ -22,8 +22,10 @@ log = logging.getLogger(__name__)
 def flash_machine(
     machine: Machine, disks: dict[str, str], dry_run: bool, debug: bool
 ) -> None:
-    secrets_module = importlib.import_module(machine.secrets_module)
-    secret_store: SecretStoreBase = secrets_module.SecretStore(machine=machine)
+    secret_facts_module = importlib.import_module(machine.secret_facts_module)
+    secret_facts_store: SecretStoreBase = secret_facts_module.SecretStore(
+        machine=machine
+    )
     with TemporaryDirectory() as tmpdir_:
         tmpdir = Path(tmpdir_)
         upload_dir = machine.secrets_upload_directory
@@ -34,7 +36,7 @@ def flash_machine(
             local_dir = tmpdir / upload_dir
 
         local_dir.mkdir(parents=True)
-        secret_store.upload(local_dir)
+        secret_facts_store.upload(local_dir)
         disko_install = []
 
         if os.geteuid() != 0:

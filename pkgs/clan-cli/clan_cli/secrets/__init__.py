@@ -1,14 +1,11 @@
 # !/usr/bin/env python3
 import argparse
 
-from .check import register_check_parser
-from .generate import register_generate_parser
 from .groups import register_groups_parser
 from .import_sops import register_import_sops_parser
 from .key import register_key_parser
 from .machines import register_machines_parser
 from .secrets import register_secrets_parser
-from .upload import register_upload_parser
 from .users import register_users_parser
 
 
@@ -32,17 +29,6 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
 
     import_sops_parser = subparser.add_parser("import-sops", help="import a sops file")
     register_import_sops_parser(import_sops_parser)
-
-    check_parser = subparser.add_parser("check", help="check if secrets are up to date")
-    register_check_parser(check_parser)
-
-    parser_generate = subparser.add_parser(
-        "generate", help="generate secrets for machines if they don't exist yet"
-    )
-    register_generate_parser(parser_generate)
-
-    parser_upload = subparser.add_parser("upload", help="upload secrets for machines")
-    register_upload_parser(parser_upload)
 
     parser_key = subparser.add_parser("key", help="create and show age keys")
     register_key_parser(parser_key)

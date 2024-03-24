@@ -10,6 +10,6 @@
   config = lib.mkIf (config.clanCore.secretStore == "password-store") {
     clanCore.secretsDirectory = config.clan.password-store.targetDirectory;
     clanCore.secretsUploadDirectory = config.clan.password-store.targetDirectory;
-    system.clan.secretsModule = "clan_cli.secrets.modules.password_store";
+    system.clan.secretFactsModule = "clan_cli.facts.secret_modules.password_store";
   };
 }
