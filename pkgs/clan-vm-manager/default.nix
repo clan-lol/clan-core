@@ -45,13 +45,16 @@ let
   runtimeDependencies = [ ];
 
   # Dependencies required for running tests
-  externalTestDeps = [
-    pytest # Testing framework
-    pytest-cov # Generate coverage reports
-    pytest-subprocess # fake the real subprocess behavior to make your tests more independent.
-    pytest-xdist # Run tests in parallel on multiple cores
-    pytest-timeout # Add timeouts to your tests
-  ];
+  externalTestDeps =
+    externalPythonDeps
+    ++ runtimeDependencies
+    ++ [
+      pytest # Testing framework
+      pytest-cov # Generate coverage reports
+      pytest-subprocess # fake the real subprocess behavior to make your tests more independent.
+      pytest-xdist # Run tests in parallel on multiple cores
+      pytest-timeout # Add timeouts to your tests
+    ];
 
   # Dependencies required for running tests
   testDependencies = runtimeDependencies ++ allPythonDeps ++ externalTestDeps;
