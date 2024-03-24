@@ -45,16 +45,16 @@ let
   runtimeDependencies = [ ];
 
   # Dependencies required for running tests
-  testDependencies =
-    runtimeDependencies
-    ++ allPythonDeps
-    ++ [
-      pytest # Testing framework
-      pytest-cov # Generate coverage reports
-      pytest-subprocess # fake the real subprocess behavior to make your tests more independent.
-      pytest-xdist # Run tests in parallel on multiple cores
-      pytest-timeout # Add timeouts to your tests
-    ];
+  externalTestDeps = [
+    pytest # Testing framework
+    pytest-cov # Generate coverage reports
+    pytest-subprocess # fake the real subprocess behavior to make your tests more independent.
+    pytest-xdist # Run tests in parallel on multiple cores
+    pytest-timeout # Add timeouts to your tests
+  ];
+
+  # Dependencies required for running tests
+  testDependencies = runtimeDependencies ++ allPythonDeps ++ externalTestDeps;
 
   # Setup Python environment with all dependencies for running tests
   pythonWithTestDeps = python3.withPackages (_ps: testDependencies);
@@ -114,8 +114,9 @@ python3.pkgs.buildPythonApplication rec {
   # Additional pass-through attributes
   passthru.desktop-file = desktop-file;
   passthru.externalPythonDeps = externalPythonDeps;
-  passthru.testDependencies = testDependencies;
+  passthru.externalTestDeps = externalTestDeps;
   passthru.runtimeDependencies = runtimeDependencies;
+  passthru.testDependencies = testDependencies;
 
   # Don't leak python packages into a devshell.
   # It can be very confusing if you `nix run` than load the cli from the devshell instead.

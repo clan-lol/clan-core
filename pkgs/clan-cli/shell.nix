@@ -24,6 +24,7 @@ mkShell {
   shellHook = ''
     export PATH=$(pwd)/bin:$PATH
 
+    # Needed for impure tests
     ln -sfT ${clan-cli.nixpkgs} clan_cli/nixpkgs
   '';
 }
