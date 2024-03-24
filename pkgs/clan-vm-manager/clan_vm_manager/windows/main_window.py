@@ -25,7 +25,7 @@ class MainWindow(Adw.ApplicationWindow):
     def __init__(self, config: ClanConfig) -> None:
         super().__init__()
         self.set_title("cLAN Manager")
-        self.set_default_size(980, 650)
+        self.set_default_size(980, 850)
 
         overlay = ToastOverlay.use().overlay
         view = Adw.ToolbarView()

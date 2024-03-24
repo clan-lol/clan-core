@@ -1,26 +1,21 @@
-import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "helpers"))
-sys.path.append(str(Path(__file__).parent.parent))  # Also add clan_cli to PYTHONPATH
-
-
 from clan_cli.custom_logger import setup_logging
 from clan_cli.nix import nix_shell
+
+sys.path.append(str(Path(__file__).parent / "helpers"))
+sys.path.append(
+    str(Path(__file__).parent.parent)
+)  # Also add clan vm manager to PYTHONPATH
 
 pytest_plugins = [
     "temporary_dir",
     "root",
-    "age_keys",
-    "sshd",
     "command",
-    "ports",
-    "host_group",
-    "fixtures_flakes",
+    "wayland",
 ]
 
 

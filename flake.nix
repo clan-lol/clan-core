@@ -35,7 +35,6 @@
         imports = [
           ./checks/flake-module.nix
           ./devShell.nix
-          ./devShell-python.nix
           ./formatter.nix
           ./templates/flake-module.nix
           ./clanModules/flake-module.nix

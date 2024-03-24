@@ -9,6 +9,6 @@ log = logging.getLogger(__name__)
 
 
 @profile
-def main() -> int:
+def main(argv: list[str] = sys.argv) -> int:
     app = MainApplication()
-    return app.run(sys.argv)
+    return app.run(argv)
