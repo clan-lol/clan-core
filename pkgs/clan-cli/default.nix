@@ -1,4 +1,5 @@
 {
+  # Inputs for the package
   age,
   lib,
   argcomplete,
@@ -10,14 +11,11 @@
   pytest-xdist,
   pytest-subprocess,
   pytest-timeout,
-  remote-pdb,
-  ipdb,
   python3,
   runCommand,
   setuptools,
   sops,
   stdenv,
-  wheel,
   fakeroot,
   rsync,
   bash,
@@ -30,33 +28,15 @@
   gnupg,
   e2fsprogs,
   mypy,
-  rope,
   clan-core-path,
 }:
 let
-
-  dependencies = [
-    argcomplete # optional dependency: if not enabled, shell completion will not work
+  # Dependencies that are directly used in the project
+  pythonDependencies = [
+    argcomplete # Enables shell completion; without it, this feature won't work.
   ];
 
-  pytestDependencies =
-    runtimeDependencies
-    ++ dependencies
-    ++ [
-      pytest
-      pytest-cov
-      pytest-subprocess
-      pytest-xdist
-      pytest-timeout
-      remote-pdb
-      ipdb
-      openssh
-      git
-      gnupg
-      stdenv.cc
-    ];
-
-  # Optional dependencies for clan cli, we re-expose them here to make sure they all build.
+  # Runtime dependencies required by the application
   runtimeDependencies = [
     bash
     nix
@@ -74,14 +54,31 @@ let
     e2fsprogs
   ];
 
+  # Dependencies required for running tests
+  testDependencies =
+    runtimeDependencies
+    ++ [
+      gnupg
+      stdenv.cc # Compiler used for certain native extensions
+    ]
+    ++ pythonDependencies
+    ++ [
+      pytest # Testing framework
+      pytest-cov # Generate coverage reports
+      pytest-subprocess # fake the real subprocess behavior to make your tests more independent.
+      pytest-xdist # Run tests in parallel on multiple cores
+      pytest-timeout # Add timeouts to your tests
+    ];
+
+  # Convert runtimeDependencies into an attribute set for easier access
   runtimeDependenciesAsSet = builtins.listToAttrs (
     builtins.map (p: lib.nameValuePair (lib.getName p.name) p) runtimeDependencies
   );
 
-  checkPython = python3.withPackages (_ps: pytestDependencies);
+  # Setup Python environment with all dependencies for running tests
+  pythonWithTestDeps = python3.withPackages (_ps: testDependencies);
 
-  # - vendor the jsonschema nix lib (copy instead of symlink).
-  # Interesting fact: using nixpkgs from flakes instead of nixpkgs.path is reduces evaluation time by 5s.
+  # Prepare the source code for the project, including copying over jsonschema and nixpkgs
   source = runCommand "clan-cli-source" { } ''
     cp -r ${./.} $out
     chmod -R +w $out
@@ -89,6 +86,8 @@ let
     ln -s ${nixpkgs'} $out/clan_cli/nixpkgs
     cp -r ${../../lib/jsonschema} $out/clan_cli/config/jsonschema
   '';
+
+  # Create a custom nixpkgs for use within the project
   nixpkgs' = runCommand "nixpkgs" { nativeBuildInputs = [ nix ]; } ''
     mkdir $out
     cat > $out/flake.nix << EOF
@@ -114,36 +113,36 @@ python3.pkgs.buildPythonApplication {
   src = source;
   format = "pyproject";
 
-  makeWrapperArgs = [
-    # This prevents problems with mixed glibc versions that might occur when the
-    # cli is called through a browser built against another glibc
-    "--unset LD_LIBRARY_PATH"
-  ];
+  # Arguments for the wrapper to unset LD_LIBRARY_PATH to avoid glibc version issues
+  makeWrapperArgs = [ "--unset LD_LIBRARY_PATH" ];
 
+  # Build-time dependencies.
   nativeBuildInputs = [
     setuptools
     installShellFiles
   ];
-  propagatedBuildInputs = dependencies;
 
-  # also re-expose dependencies so we test them in CI
+  propagatedBuildInputs = pythonDependencies;
+
+  # Define and expose the tests and checks to run in CI
   passthru.tests =
     (lib.mapAttrs' (n: lib.nameValuePair "clan-dep-${n}") runtimeDependenciesAsSet)
     // rec {
       clan-pytest-without-core =
-        runCommand "clan-pytest-without-core" { nativeBuildInputs = [ checkPython ] ++ pytestDependencies; }
+        runCommand "clan-pytest-without-core"
+          { nativeBuildInputs = [ pythonWithTestDeps ] ++ testDependencies; }
           ''
             cp -r ${source} ./src
             chmod +w -R ./src
             cd ./src
 
             export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
-            ${checkPython}/bin/python -m pytest -m "not impure and not with_core" ./tests
+            ${pythonWithTestDeps}/bin/python -m pytest -m "not impure and not with_core" ./tests
             touch $out
           '';
-      # separate the tests that can never be cached
       clan-pytest-with-core =
-        runCommand "clan-pytest-with-core" { nativeBuildInputs = [ checkPython ] ++ pytestDependencies; }
+        runCommand "clan-pytest-with-core"
+          { nativeBuildInputs = [ pythonWithTestDeps ] ++ testDependencies; }
           ''
             cp -r ${source} ./src
             chmod +w -R ./src
@@ -151,15 +150,11 @@ python3.pkgs.buildPythonApplication {
 
             export CLAN_CORE=${clan-core-path}
             export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
-            ${checkPython}/bin/python -m pytest -m "not impure and with_core" ./tests
+            ${pythonWithTestDeps}/bin/python -m pytest -m "not impure and with_core" ./tests
             touch $out
           '';
 
-      clan-pytest = runCommand "clan-pytest" { } ''
-        echo ${clan-pytest-without-core}
-        echo ${clan-pytest-with-core}
-        touch $out
-      '';
+      # Utility to check for leftover debugging breakpoints in the codebase
       check-for-breakpoints = runCommand "breakpoints" { } ''
         if grep --include \*.py -Rq "breakpoint()" ${source}; then
           echo "breakpoint() found in ${source}:"
@@ -170,18 +165,13 @@ python3.pkgs.buildPythonApplication {
       '';
     };
 
+  # Additional pass-through attributes
   passthru.nixpkgs = nixpkgs';
-  passthru.checkPython = checkPython;
-
-  passthru.devDependencies = [
-    rope
-    setuptools
-    wheel
-  ] ++ pytestDependencies;
-
-  passthru.pytestDependencies = pytestDependencies;
+  passthru.testDependencies = testDependencies;
+  passthru.pythonWithTestDeps = pythonWithTestDeps;
   passthru.runtimeDependencies = runtimeDependencies;
 
+  # Install shell completions for bash and fish using the argcomplete package
   postInstall = ''
     cp -r ${nixpkgs'} $out/${python3.sitePackages}/clan_cli/nixpkgs
     installShellCompletion --bash --name clan \
@@ -189,13 +179,17 @@ python3.pkgs.buildPythonApplication {
     installShellCompletion --fish --name clan.fish \
       <(${argcomplete}/bin/register-python-argcomplete --shell fish clan)
   '';
-  # Don't leak python packages into a devshell.
-  # It can be very confusing if you `nix run` then load the cli from the devshell instead.
+
+  # Clean up after the package to avoid leaking python packages into a devshell
   postFixup = ''
     rm $out/nix-support/propagated-build-inputs
   '';
+
+  # Run a basic check to ensure the application is executable
   checkPhase = ''
     PYTHONPATH= $out/bin/clan --help
   '';
+
+  # Specify the main program for this package
   meta.mainProgram = "clan";
 }

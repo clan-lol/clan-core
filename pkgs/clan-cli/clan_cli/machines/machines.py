@@ -8,7 +8,7 @@ from typing import Any
 
 from clan_cli.clan_uri import ClanURI, MachineData
 from clan_cli.dirs import vm_state_dir
-from qemu.qmp import QEMUMonitorProtocol
+from clan_cli.qemu.qmp import QEMUMonitorProtocol
 
 from ..cmd import run
 from ..errors import ClanError
