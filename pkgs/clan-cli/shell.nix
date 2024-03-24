@@ -22,9 +22,13 @@ mkShell {
   ] ++ devshellTestDeps;
 
   shellHook = ''
-    export PATH=$(pwd)/bin:$PATH
+    export GIT_ROOT="$(git rev-parse --show-toplevel)"
+    export PKG_ROOT="$GIT_ROOT/pkgs/clan-cli"
+
+    # Add clan command to PATH
+    export PATH="$PKG_ROOT/bin":"$PATH"
 
     # Needed for impure tests
-    ln -sfT ${clan-cli.nixpkgs} clan_cli/nixpkgs
+    ln -sfT ${clan-cli.nixpkgs} "$PKG_ROOT/clan_cli/nixpkgs"
   '';
 }
