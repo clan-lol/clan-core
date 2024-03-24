@@ -14,7 +14,9 @@
 
 let
   devshellTestDeps =
-    clan-vm-manager.testDependencies
+    clan-vm-manager.externalPythonDeps
+    ++ clan-vm-manager.externalTestDeps
+    ++ clan-vm-manager.runtimeDependencies
     ++ (with python3.pkgs; [
       rope
       mypy
@@ -42,5 +44,8 @@ mkShell {
 
   shellHook = ''
     export PATH=$(pwd)/bin:$PATH
+
+    # Add clan-cli to the python path so that we can import it without building it in nix first
+    export PYTHONPATH=$(pwd)/../clan-cli:$PYTHONPATH
   '';
 }
