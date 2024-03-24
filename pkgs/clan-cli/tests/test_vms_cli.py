@@ -12,8 +12,8 @@ from fixtures_flakes import FlakeForTest, generate_flake
 from root import CLAN_CORE
 
 from clan_cli.dirs import vm_state_dir
-from qemu.qga import QgaSession
-from qemu.qmp import QEMUMonitorProtocol
+from clan_cli.qemu.qga import QgaSession
+from clan_cli.qemu.qmp import QEMUMonitorProtocol
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
