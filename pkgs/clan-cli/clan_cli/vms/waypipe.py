@@ -26,7 +26,7 @@ def start_waypipe(cid: int | None, title_prefix: str) -> Iterator[None]:
         yield
         return
     waypipe = nix_shell(
-        ["git+https://git.clan.lol/clan/clan-core#waypipe"],
+        ["nixpkgs#waypipe"],
         [
             "waypipe",
             "--vsock",

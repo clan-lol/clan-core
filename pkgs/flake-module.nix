@@ -25,16 +25,6 @@
         }
         // lib.optionalAttrs pkgs.stdenv.isLinux {
           wayland-proxy-virtwl = pkgs.callPackage ./wayland-proxy-virtwl { };
-          waypipe = pkgs.waypipe.overrideAttrs (_old: {
-            # https://gitlab.freedesktop.org/mstoeckl/waypipe
-            src = pkgs.fetchFromGitLab {
-              domain = "gitlab.freedesktop.org";
-              owner = "mstoeckl";
-              repo = "waypipe";
-              rev = "4e4ff3bc1943cf7f6aeb56b06c060f40578d3570";
-              hash = "sha256-dxz4AmeJAweffyPCayvykworQNntHtHeq6PXMXWsM5k=";
-            };
-          });
           # halalify zerotierone
           zerotierone = pkgs.zerotierone.overrideAttrs (_old: {
             meta = _old.meta // {
