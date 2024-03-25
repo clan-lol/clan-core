@@ -159,7 +159,7 @@ def run_vm(
             file_name="state.qcow2",
             size="50G",
         )
-    virtiofsd_socket = socketdir / "virtiofsd.sock"
+    virtiofsd_socket = "/tmp/org.clan.cli" / "virtiofsd.sock"
     qemu_cmd = qemu_command(
         vm,
         nixos_config,
