@@ -117,8 +117,10 @@ def sops_manifest(keys: list[str]) -> Iterator[Path]:
         yield Path(manifest.name)
 
 
-def update_keys(secret_path: Path, keys: list[str]) -> None:
+def update_keys(secret_path: Path, keys: list[str]) -> list[Path]:
     with sops_manifest(keys) as manifest:
+        secret_path = secret_path / "secret"
+        time_before = secret_path.stat().st_mtime
         cmd = nix_shell(
             ["nixpkgs#sops"],
             [
@@ -127,10 +129,13 @@ def update_keys(secret_path: Path, keys: list[str]) -> None:
                 str(manifest),
                 "updatekeys",
                 "--yes",
-                str(secret_path / "secret"),
+                str(secret_path),
             ],
         )
         run(cmd, log=Log.BOTH, error_msg=f"Could not update keys for {secret_path}")
+        if time_before == secret_path.stat().st_mtime:
+            return []
+        return [secret_path]
 
 
 def encrypt_file(
@@ -202,7 +207,9 @@ def write_key(path: Path, publickey: str, overwrite: bool) -> None:
             flags |= os.O_EXCL
         fd = os.open(path / "key.json", flags)
     except FileExistsError:
-        raise ClanError(f"{path.name} already exists in {path}. Use --force to overwrite.")
+        raise ClanError(
+            f"{path.name} already exists in {path}. Use --force to overwrite."
+        )
     with os.fdopen(fd, "w") as f:
         json.dump({"publickey": publickey, "type": "age"}, f, indent=2)
 
