@@ -37,9 +37,21 @@ def _test_identities(
         ]
     )
     assert (sops_folder / what / "foo" / "key.json").exists()
-    with pytest.raises(ClanError):
-        cli.run(["secrets", what, "add", "foo", age_keys[0].pubkey])
 
+    with pytest.raises(ClanError):  # raises "foo already exists"
+        cli.run(
+            [
+                "--flake",
+                str(test_flake.path),
+                "secrets",
+                what,
+                "add",
+                "foo",
+                age_keys[0].pubkey,
+            ]
+        )
+
+    # rotate the key
     cli.run(
         [
             "--flake",
@@ -49,7 +61,7 @@ def _test_identities(
             "add",
             "-f",
             "foo",
-            age_keys[0].privkey,
+            age_keys[1].privkey,
         ]
     )
 
@@ -65,7 +77,7 @@ def _test_identities(
         ]
     )
     out = capsys.readouterr()  # empty the buffer
-    assert age_keys[0].pubkey in out.out
+    assert age_keys[1].pubkey in out.out
 
     capsys.readouterr()  # empty the buffer
     cli.run(["--flake", str(test_flake.path), "secrets", what, "list"])
@@ -291,7 +303,7 @@ def test_secrets(
             "machines",
             "add",
             "machine1",
-            age_keys[0].pubkey,
+            age_keys[1].pubkey,
         ]
     )
     cli.run(
@@ -309,6 +321,27 @@ def test_secrets(
     cli.run(["--flake", str(test_flake.path), "secrets", "machines", "list"])
     assert capsys.readouterr().out == "machine1\n"
 
+    with use_key(age_keys[1].privkey, monkeypatch):
+        capsys.readouterr()
+        cli.run(["--flake", str(test_flake.path), "secrets", "get", "key"])
+
+        assert capsys.readouterr().out == "foo"
+
+    # rotate machines key
+    cli.run(
+        [
+            "--flake",
+            str(test_flake.path),
+            "secrets",
+            "machines",
+            "add",
+            "-f",
+            "machine1",
+            age_keys[0].privkey,
+        ]
+    )
+
+    # should also rotate the encrypted secret
     with use_key(age_keys[0].privkey, monkeypatch):
         capsys.readouterr()
         cli.run(["--flake", str(test_flake.path), "secrets", "get", "key"])

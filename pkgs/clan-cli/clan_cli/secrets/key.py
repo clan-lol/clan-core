@@ -3,14 +3,8 @@ from pathlib import Path
 
 from .. import tty
 from ..errors import ClanError
-from .folders import sops_secrets_folder
-from .secrets import collect_keys_for_path, list_secrets
-from .sops import (
-    default_sops_key_path,
-    generate_private_key,
-    get_public_key,
-    update_keys,
-)
+from .secrets import update_secrets
+from .sops import default_sops_key_path, generate_private_key, get_public_key
 
 
 def generate_key() -> str:
@@ -44,12 +38,7 @@ def show_command(args: argparse.Namespace) -> None:
 
 def update_command(args: argparse.Namespace) -> None:
     flake_dir = Path(args.flake)
-    for name in list_secrets(flake_dir):
-        secret_path = sops_secrets_folder(flake_dir) / name
-        update_keys(
-            secret_path,
-            list(sorted(collect_keys_for_path(secret_path))),
-        )
+    update_secrets(flake_dir)
 
 
 def register_key_parser(parser: argparse.ArgumentParser) -> None:
