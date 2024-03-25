@@ -5,6 +5,7 @@ from ..errors import ClanError
 from ..git import commit_files
 from . import secrets
 from .folders import list_objects, remove_object, sops_users_folder
+from .secrets import update_secrets
 from .sops import read_key, write_key
 from .types import (
     VALID_USER_NAME,
@@ -16,9 +17,15 @@ from .types import (
 
 def add_user(flake_dir: Path, name: str, key: str, force: bool) -> None:
     path = sops_users_folder(flake_dir) / name
+
+    def filter_user_secrets(secret: Path) -> bool:
+        return secret.joinpath("users", name).exists()
+
     write_key(path, key, force)
+    paths = [path]
+    paths.extend(update_secrets(flake_dir, filter_secrets=filter_user_secrets))
     commit_files(
-        [path],
+        paths,
         flake_dir,
         f"Add user {name} to secrets",
     )

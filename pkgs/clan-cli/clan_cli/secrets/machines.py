@@ -6,6 +6,7 @@ from ..git import commit_files
 from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
 from .folders import list_objects, remove_object, sops_machines_folder
+from .secrets import update_secrets
 from .sops import read_key, write_key
 from .types import public_or_private_age_key_type, secret_name_type
 
@@ -13,6 +14,12 @@ from .types import public_or_private_age_key_type, secret_name_type
 def add_machine(flake_dir: Path, name: str, key: str, force: bool) -> None:
     path = sops_machines_folder(flake_dir) / name
     write_key(path, key, force)
+    paths = [path]
+
+    def filter_machine_secrets(secret: Path) -> bool:
+        return secret.joinpath("machines", name).exists()
+
+    paths.extend(update_secrets(flake_dir, filter_secrets=filter_machine_secrets))
     commit_files(
         [path],
         flake_dir,
