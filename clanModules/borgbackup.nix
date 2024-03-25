@@ -94,7 +94,7 @@ in
       (pkgs.writeShellScriptBin "borgbackup-create" ''
         set -efu -o pipefail
         ${lib.concatMapStringsSep "\n" (dest: ''
-          systemctl start borgbackup-job-${dest.name}
+          systemctl start --wait borgbackup-job-${dest.name}
         '') (lib.attrValues cfg.destinations)}
       '')
       (pkgs.writeShellScriptBin "borgbackup-list" ''
