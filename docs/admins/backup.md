@@ -11,14 +11,20 @@ and a backup client that will push it's data to the backup repository.
 
 ## Borgbackup client
 
-First you need to specify the remote server to backup to. Replace `hostname` with a reachable dns or ip address.
+First you need to specify the remote server to backup to. Replace `hostname` with a reachable dns or ip address of your
+backup machine.
 
 ```nix
 {
   clan.borgbackup.destinations = {
     myhostname = {
-      repo = "borg@hostname:/var/lib/borgbackup/myhostname";
+      repo = "borg@backuphost:/var/lib/borgbackup/myhostname";
     };
+  };
+
+  programs.ssh.knownHosts = {
+    machine.hostNames = [ "backuphost" ];
+    machine.publicKey = builtins.readFile ./machines/backuphost/facts/ssh.id_ed25519.pub;
   };
 }
 ```
@@ -44,7 +50,7 @@ Add the following configuration to your backup server:
 
 ```nix
 {
-  openssh.services.enable = true;
+  imports = [ inputs.clan-core.clanModules.sshd ];
   services.borgbackup.repos = {
     myhostname = {
       path = "/var/lib/borgbackup/myhostname";
@@ -64,7 +70,7 @@ Afterwards run `clan machines update` to update both the borgbackup server and t
 By default the backup is scheduled every night at 01:00 midnight. If machines are not online around this time,
 they will attempt to run the backup once they come back.
 
-When the next backup is scheduled, can be inspected like this on the device:
+When the next backup is scheduled, can be inspected like this on the machine running the backups
 
 ```
 $ systemctl list-timers | grep -E 'NEXT|borg'
@@ -72,8 +78,18 @@ NEXT                                   LEFT LAST                              PA
 Thu 2024-03-14 01:00:00 CET             17h Wed 2024-03-13 01:00:00 CET       6h ago borgbackup-job-myhostname.timer borgbackup-job-myhostname.service
 ```
 
-```
+One can also list existing backups in the clan-cli
 
 ```
+$ clan backups list mymachine
+mymachine-mymachine-2024-03-09T01:00:00
+mymachine-mymachine-2024-03-13T01:00:00
+```
 
+as well as triggering a manual backup:
 
+```
+$ clan backups create mymachine
+[mymachine] $ bash -c systemctl start borgbackup-job-mymachine
+successfully started backup
+```
