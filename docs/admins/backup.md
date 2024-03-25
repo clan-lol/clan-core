@@ -36,7 +36,7 @@ As a user you can also append to the list by adding your own directories to be b
 { clanCore.state.userdata.folders = [ "/home" "/root" ]; }
 ```
 
-Than run `clan facts generate <yourmachine>` replacing `<yourmachine>` with the actual machine name.
+Then run `clan facts generate <yourmachine>` replacing `<yourmachine>` with the actual machine name.
 This will generate the backup borg credentials and ssh keys for accessing the borgbackup repository.
 Your ssh public key will be stored in the root of the repository here at this location `./machines/<yourmachine>/facts/borgbackup.ssh.pub`.
 We need this for the next step.
