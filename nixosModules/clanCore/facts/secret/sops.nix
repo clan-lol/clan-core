@@ -41,10 +41,10 @@ in
       description = "The default groups to for encryption use when no groups are specified.";
     };
   };
-  config = lib.mkIf (config.clanCore.secretStore == "sops") {
-    clanCore.secretsDirectory = "/run/secrets";
-    clanCore.secretsPrefix = config.clanCore.machineName + "-";
-    system.clan.secretFactsModule = "clan_cli.facts.secret_modules.sops";
+  config = lib.mkIf (config.clanCore.facts.secretStore == "sops") {
+    clanCore.facts.secretDirectory = "/run/secrets";
+    clanCore.facts.secretModule = "clan_cli.facts.secret_modules.sops";
+    clanCore.facts.secretUploadDirectory = lib.mkDefault "/var/lib/sops-nix";
     sops.secrets = builtins.mapAttrs (name: _: {
       sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";
       format = "binary";
@@ -57,6 +57,5 @@ in
     sops.age.keyFile = lib.mkIf (builtins.pathExists (
       config.clanCore.clanDir + "/sops/secrets/${config.clanCore.machineName}-age.key/secret"
     )) (lib.mkDefault "/var/lib/sops-nix/key.txt");
-    clanCore.secretsUploadDirectory = lib.mkDefault "/var/lib/sops-nix";
   };
 }

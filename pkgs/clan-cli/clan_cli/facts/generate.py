@@ -54,13 +54,13 @@ def generate_service_facts(
         secrets_dir.mkdir(parents=True)
         env["secrets"] = str(secrets_dir)
         # compatibility for old outputs.nix users
-        if isinstance(machine.secrets_data[service]["generator"], str):
-            generator = machine.secrets_data[service]["generator"]
+        if isinstance(machine.facts_data[service]["generator"], str):
+            generator = machine.facts_data[service]["generator"]
         else:
-            generator = machine.secrets_data[service]["generator"]["finalScript"]
-            if machine.secrets_data[service]["generator"]["prompt"]:
+            generator = machine.facts_data[service]["generator"]["finalScript"]
+            if machine.facts_data[service]["generator"]["prompt"]:
                 prompt_value = prompt(
-                    machine.secrets_data[service]["generator"]["prompt"]
+                    machine.facts_data[service]["generator"]["prompt"]
                 )
                 env["prompt_value"] = prompt_value
         # fmt: off
@@ -90,7 +90,7 @@ def generate_service_facts(
         )
         files_to_commit = []
         # store secrets
-        for secret in machine.secrets_data[service]["secrets"]:
+        for secret in machine.facts_data[service]["secret"]:
             if isinstance(secret, str):
                 # TODO: This is the old NixOS module, can be dropped everyone has updated.
                 secret_name = secret
@@ -111,11 +111,11 @@ def generate_service_facts(
                 files_to_commit.append(secret_path)
 
         # store facts
-        for name in machine.secrets_data[service]["facts"]:
+        for name in machine.facts_data[service]["public"]:
             fact_file = facts_dir / name
             if not fact_file.is_file():
                 msg = f"did not generate a file for '{name}' when running the following command:\n"
-                msg += machine.secrets_data[service]["generator"]
+                msg += machine.facts_data[service]["generator"]
                 raise ClanError(msg)
             fact_file = public_facts_store.set(service, name, fact_file.read_bytes())
             if fact_file:
@@ -147,7 +147,7 @@ def generate_facts(
 
     with TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
-        for service in machine.secrets_data:
+        for service in machine.facts_data:
             generate_service_facts(
                 machine=machine,
                 service=service,

@@ -18,9 +18,9 @@ def check_secrets(machine: Machine, service: None | str = None) -> bool:
     if service:
         services = [service]
     else:
-        services = list(machine.secrets_data.keys())
+        services = list(machine.facts_data.keys())
     for service in services:
-        for secret_fact in machine.secrets_data[service]["secrets"]:
+        for secret_fact in machine.facts_data[service]["secret"]:
             if isinstance(secret_fact, str):
                 secret_name = secret_fact
             else:
@@ -31,7 +31,7 @@ def check_secrets(machine: Machine, service: None | str = None) -> bool:
                 )
                 missing_secret_facts.append((service, secret_name))
 
-        for public_fact in machine.secrets_data[service]["facts"]:
+        for public_fact in machine.facts_data[service]["public"]:
             if not public_facts_store.exists(service, public_fact):
                 log.info(
                     f"Public fact '{public_fact}' for service {service} is missing."

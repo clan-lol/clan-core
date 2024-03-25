@@ -14,9 +14,9 @@ class SecretStore(SecretStoreBase):
         self.machine = machine
 
         # no need to generate keys if we don't manage secrets
-        if not hasattr(self.machine, "secrets_data"):
+        if not hasattr(self.machine, "facts_data"):
             return
-        if not self.machine.secrets_data:
+        if not self.machine.facts_data:
             return
 
         if has_machine(self.machine.flake_dir, self.machine.name):

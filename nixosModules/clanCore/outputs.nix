@@ -44,33 +44,6 @@
           '';
           default = false;
         };
-        secretsUploadDirectory = lib.mkOption {
-          type = lib.types.path;
-          description = ''
-            the directory on the deployment server where secrets are uploaded
-          '';
-        };
-        publicFactsModule = lib.mkOption {
-          type = lib.types.str;
-          description = ''
-            the python import path to the facts module
-          '';
-          default = "clan_cli.facts.public_modules.in_repo";
-        };
-        secretFactsModule = lib.mkOption {
-          type = lib.types.str;
-          description = ''
-            the python import path to the secrets module
-          '';
-          default = "clan_cli.facts.secret_modules.sops";
-        };
-        secretsData = lib.mkOption {
-          type = lib.types.path;
-          description = ''
-            secret data as json for the generator
-          '';
-          default = pkgs.writers.writeJSON "secrets.json" config.clanCore.secrets;
-        };
         vm.create = lib.mkOption {
           type = lib.types.path;
           description = ''
@@ -92,10 +65,9 @@
   # optimization for faster secret generate/upload and machines update
   config = {
     system.clan.deployment.data = {
-      inherit (config.system.clan) publicFactsModule secretFactsModule secretsData;
+      inherit (config.clanCore) facts;
       inherit (config.clan.networking) targetHost buildHost;
       inherit (config.clan.deployment) requireExplicitUpdate;
-      inherit (config.clanCore) secretsUploadDirectory;
     };
     system.clan.deployment.file = pkgs.writeText "deployment.json" (
       builtins.toJSON config.system.clan.deployment.data
