@@ -68,7 +68,7 @@
         SDL_VIDEODRIVER=wayland
       '';
       script = ''
-        ${lib.getExe config.clanCore.clanPkgs.waypipe} \
+        ${lib.getExe pkgs.waypipe} \
         ${lib.escapeShellArgs config.clan.services.waypipe.flags} \
         ${lib.escapeShellArgs config.clan.services.waypipe.command}
       '';
