@@ -20,7 +20,7 @@ def start_virtiofsd(socket_path: Path) -> Iterator[None]:
             "strace",
             "-f",
             "-o",
-            "/tmp/org.clan.cli/strace.log",
+            "/tmp/clan-strace.log",
             "virtiofsd",
             "--socket-path",
             str(socket_path),

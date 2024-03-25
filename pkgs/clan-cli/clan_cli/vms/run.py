@@ -121,10 +121,13 @@ def run_vm(
         cachedir = Path(cache_tmp.name)
 
     if socketdir is None:
+        log.debug("Creating Socketdir")
         socket_tmp = TemporaryDirectory()
         socketdir = Path(socket_tmp.name)
+    else:
+        log.debug("Not creating socketdir.")
+        log.debug(f"Socketdir: {socketdir}")
 
-    # TODO: We should get this from the vm argument
     nixos_config = build_vm(machine, cachedir, nix_options)
 
     state_dir = vm_state_dir(str(vm.flake_url), machine.name)
