@@ -15,12 +15,12 @@ def start_virtiofsd(socket_path: Path) -> Iterator[None]:
     if shutil.which("newuidmap") is None:
         sandbox = "none"
     virtiofsd = nix_shell(
-        ["nixpkgs#virtiofsd"],
+        ["nixpkgs#virtiofsd" "nixpkgs#strace"],
         [
             "strace",
             "-f",
             "-o",
-            "/tmp/clan.org.cli/strace.log",
+            "/tmp/org.clan.cli/strace.log",
             "virtiofsd",
             "--socket-path",
             str(socket_path),

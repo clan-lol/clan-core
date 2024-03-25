@@ -37,6 +37,7 @@ def start_waypipe(cid: int | None, title_prefix: str) -> Iterator[None]:
             "client",
         ],
     )
+    print(waypipe)
     with subprocess.Popen(waypipe) as proc:
         try:
             while not test_vsock_port(3049):
