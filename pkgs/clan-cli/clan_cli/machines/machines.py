@@ -47,7 +47,7 @@ class Machine:
     eval_cache: dict[str, str]
     build_cache: dict[str, Path]
     _flake_path: Path | None
-    _deployment_info: None | dict[str, str]
+    _deployment_info: None | dict
     vm: QMPWrapper
 
     def __init__(
@@ -75,7 +75,7 @@ class Machine:
         self.eval_cache: dict[str, str] = {}
         self.build_cache: dict[str, Path] = {}
         self._flake_path: Path | None = None
-        self._deployment_info: None | dict[str, str] = deployment_info
+        self._deployment_info: None | dict = deployment_info
 
         state_dir = vm_state_dir(flake_url=str(self.flake), vm_name=self.data.name)
 
@@ -88,7 +88,7 @@ class Machine:
         return str(self)
 
     @property
-    def deployment_info(self) -> dict[str, str]:
+    def deployment_info(self) -> dict:
         if self._deployment_info is not None:
             return self._deployment_info
         self._deployment_info = json.loads(
@@ -113,26 +113,21 @@ class Machine:
 
     @property
     def secret_facts_module(self) -> str:
-        return self.deployment_info["secretFactsModule"]
+        return self.deployment_info["facts"]["secretModule"]
 
     @property
     def public_facts_module(self) -> str:
-        return self.deployment_info["publicFactsModule"]
+        return self.deployment_info["facts"]["publicModule"]
 
     @property
-    def secrets_data(self) -> dict[str, dict[str, Any]]:
-        if self.deployment_info["secretsData"]:
-            try:
-                return json.loads(Path(self.deployment_info["secretsData"]).read_text())
-            except json.JSONDecodeError as e:
-                raise ClanError(
-                    f"Failed to parse secretsData for machine {self.data.name} as json"
-                ) from e
+    def facts_data(self) -> dict[str, dict[str, Any]]:
+        if self.deployment_info["facts"]["services"]:
+            return self.deployment_info["facts"]["services"]
         return {}
 
     @property
     def secrets_upload_directory(self) -> str:
-        return self.deployment_info["secretsUploadDirectory"]
+        return self.deployment_info["facts"]["secretUploadDirectory"]
 
     @property
     def flake_dir(self) -> Path:
