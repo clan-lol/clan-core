@@ -158,7 +158,7 @@ in
               ]
             }
             name=$(awk -F'::' '{print $1}' <<< $NAME)
-            backupname=''${NAME#$mountpoint::}
+            backupname=''${NAME#$name::}
 
             if command -v localbackup-mount-$name; then
               localbackup-mount-$name
