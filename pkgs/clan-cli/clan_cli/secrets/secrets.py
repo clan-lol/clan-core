@@ -3,6 +3,7 @@ import getpass
 import os
 import shutil
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import IO
@@ -19,6 +20,23 @@ from .folders import (
 )
 from .sops import decrypt_file, encrypt_file, ensure_sops_key, read_key, update_keys
 from .types import VALID_SECRET_NAME, secret_name_type
+
+
+def update_secrets(
+    flake_dir: Path, filter_secrets: Callable[[Path], bool] = lambda _: True
+) -> list[Path]:
+    changed_files = []
+    for name in list_secrets(flake_dir):
+        secret_path = sops_secrets_folder(flake_dir) / name
+        if not filter_secrets(secret_path):
+            continue
+        changed_files.extend(
+            update_keys(
+                secret_path,
+                list(sorted(collect_keys_for_path(secret_path))),
+            )
+        )
+    return changed_files
 
 
 def collect_keys_for_type(folder: Path) -> set[str]:
