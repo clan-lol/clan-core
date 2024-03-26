@@ -1,13 +1,11 @@
 # Import necessary modules
 import os
+import shlex
 import subprocess
 import sys
 import time
 from collections.abc import Generator
 from pathlib import Path
-import shlex
-import subprocess
-from collections.abc import Generator
 
 # Assuming NewType is already imported or defined somewhere
 import pytest

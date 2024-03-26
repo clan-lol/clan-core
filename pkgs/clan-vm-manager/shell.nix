@@ -12,7 +12,7 @@
   libadwaita,
   freerdp,
   linux-pam,
-  tigervnc
+  tigervnc,
 }:
 
 let
