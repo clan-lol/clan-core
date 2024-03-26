@@ -413,7 +413,7 @@ class Host:
         timeout: float = math.inf,
         interactive: bool = False,
         verbose_ssh: bool = False,
-        tty: bool = True,
+        tty: bool = False,
     ) -> subprocess.CompletedProcess[str]:
         """
         Command to run on the host via ssh
@@ -477,7 +477,7 @@ class Host:
     def ssh_cmd(
         self,
         verbose_ssh: bool = False,
-        tty: bool = True,
+        tty: bool = False,
     ) -> list[str]:
         if self.user is not None:
             ssh_target = f"{self.user}@{self.host}"
@@ -565,7 +565,7 @@ class HostGroup:
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
-        tty: bool = True,
+        tty: bool = False,
     ) -> None:
         try:
             proc = host.run_local(
@@ -594,7 +594,7 @@ class HostGroup:
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
-        tty: bool = True,
+        tty: bool = False,
     ) -> None:
         try:
             proc = host.run(
@@ -640,7 +640,7 @@ class HostGroup:
         timeout: float = math.inf,
         interactive: bool = False,
         verbose_ssh: bool = False,
-        tty: bool = True,
+        tty: bool = False,
     ) -> Results:
         results: Results = []
         threads = []
@@ -684,7 +684,7 @@ class HostGroup:
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
-        tty: bool = True,
+        tty: bool = False,
     ) -> Results:
         """
         Command to run on the remote host via ssh
@@ -705,7 +705,7 @@ class HostGroup:
             check=check,
             verbose_ssh=verbose_ssh,
             timeout=timeout,
-            tty=True,
+            tty=tty,
         )
 
     def run_local(
