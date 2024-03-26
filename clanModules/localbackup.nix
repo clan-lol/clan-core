@@ -195,7 +195,7 @@ in
             ${lib.optionalString (target.preMountHook != null) target.preMountHook}
             ${lib.optionalString (target.mountpoint != null) ''
               if ! ${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg target.mountpoint}; then
-                ${pkgs.util-linux}/bin/mount ${lib.escapeShellArg target.mountpoint}
+                ${pkgs.util-linux}/bin/mount -o X-mount.mkdir ${lib.escapeShellArg target.mountpoint}
               fi
             ''}
             ${lib.optionalString (target.postMountHook != null) target.postMountHook}
