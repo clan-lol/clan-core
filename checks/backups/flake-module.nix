@@ -115,10 +115,10 @@
 
         clan.localbackup.targets.hdd = {
           directory = "/mnt/external-disk";
-          mountHook = ''
+          preMountHook = ''
             touch /run/mount-external-disk
           '';
-          unmountHook = ''
+          postUnmountHook = ''
             touch /run/unmount-external-disk
           '';
         };

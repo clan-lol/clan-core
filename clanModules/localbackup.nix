@@ -43,7 +43,7 @@ in
     targets = lib.mkOption {
       type = lib.types.attrsOf (
         lib.types.submodule (
-          { name, config, ... }:
+          { name, ... }:
           {
             options = {
               name = lib.mkOption {
@@ -60,14 +60,24 @@ in
                 default = null;
                 description = "mountpoint of the directory to backup. If set, the directory will be mounted before the backup and unmounted afterwards";
               };
-              mountHook = lib.mkOption {
+              preMountHook = lib.mkOption {
                 type = lib.types.nullOr lib.types.lines;
-                default = if config.mountpoint != null then "mount ${config.mountpoint}" else null;
+                default = null;
                 description = "Shell commands to run before the directory is mounted";
               };
-              unmountHook = lib.mkOption {
+              postMountHook = lib.mkOption {
                 type = lib.types.nullOr lib.types.lines;
-                default = if config.mountpoint != null then "umount ${config.mountpoint}" else null;
+                default = null;
+                description = "Shell commands to run after the directory is mounted";
+              };
+              preUnmountHook = lib.mkOption {
+                type = lib.types.nullOr lib.types.lines;
+                default = null;
+                description = "Shell commands to run before the directory is unmounted";
+              };
+              postUnmountHook = lib.mkOption {
+                type = lib.types.nullOr lib.types.lines;
+                default = null;
                 description = "Shell commands to run after the directory is unmounted";
               };
               preBackupHook = lib.mkOption {
@@ -182,16 +192,26 @@ in
           name: target:
           pkgs.writeShellScriptBin ("localbackup-mount-" + name) ''
             set -efu -o pipefail
-            ${target.mountHook}
+            ${lib.optionalString (target.preMountHook != null) target.preMountHook}
+            ${lib.optionalString (target.mountpoint != null) ''
+              if ! ${pkgs.util-linux}/bin/mountpoint -q ${lib.escapeShellArg target.mountpoint}; then
+                ${pkgs.util-linux}/bin/mount ${lib.escapeShellArg target.mountpoint}
+              fi
+            ''}
+            ${lib.optionalString (target.postMountHook != null) target.postMountHook}
           ''
-        ) (lib.filterAttrs (_name: target: target.mountHook != null) cfg.targets))
+        ) cfg.targets)
         ++ lib.mapAttrsToList (
           name: target:
           pkgs.writeShellScriptBin ("localbackup-unmount-" + name) ''
             set -efu -o pipefail
-            ${target.unmountHook}
+            ${lib.optionalString (target.preUnmountHook != null) target.preUnmountHook}
+            ${lib.optionalString (
+              target.mountpoint != null
+            ) "${pkgs.util-linux}/bin/umount ${lib.escapeShellArg target.mountpoint}"}
+            ${lib.optionalString (target.postUnmountHook != null) target.postUnmountHook}
           ''
-        ) (lib.filterAttrs (_name: target: target.unmountHook != null) cfg.targets);
+        ) cfg.targets;
 
       clanCore.backups.providers.localbackup = {
         # TODO list needs to run locally or on the remote machine
