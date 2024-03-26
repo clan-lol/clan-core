@@ -43,7 +43,7 @@ in
     targets = lib.mkOption {
       type = lib.types.attrsOf (
         lib.types.submodule (
-          { name, ... }:
+          { name, config, ... }:
           {
             options = {
               name = lib.mkOption {
