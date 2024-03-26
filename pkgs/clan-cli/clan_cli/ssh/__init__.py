@@ -270,37 +270,30 @@ class Host:
         cwd: None | str | Path = None,
         check: bool = True,
         timeout: float = math.inf,
-        interactive: bool = False,
     ) -> subprocess.CompletedProcess[str]:
         with ExitStack() as stack:
             read_std_fd, write_std_fd = (None, None)
             read_err_fd, write_err_fd = (None, None)
 
-            if not interactive and (stdout is None or stderr is None):
+            if stdout is None or stderr is None:
                 read_std_fd, write_std_fd = stack.enter_context(_pipe())
                 read_err_fd, write_err_fd = stack.enter_context(_pipe())
 
-            if interactive:
+            if stdout is None:
                 stdout_read = None
-                stderr_read = None
-                stdout_write: IO[str] | None = sys.stdout
-                stderr_write: IO[str] | None = sys.stderr
+                stdout_write = write_std_fd
+            elif stdout == subprocess.PIPE:
+                stdout_read, stdout_write = stack.enter_context(_pipe())
             else:
-                if stdout is None:
-                    stdout_read = None
-                    stdout_write = write_std_fd
-                elif stdout == subprocess.PIPE:
-                    stdout_read, stdout_write = stack.enter_context(_pipe())
-                else:
-                    raise Exception(f"unsupported value for stdout parameter: {stdout}")
+                raise Exception(f"unsupported value for stdout parameter: {stdout}")
 
-                if stderr is None:
-                    stderr_read = None
-                    stderr_write = write_err_fd
-                elif stderr == subprocess.PIPE:
-                    stderr_read, stderr_write = stack.enter_context(_pipe())
-                else:
-                    raise Exception(f"unsupported value for stderr parameter: {stderr}")
+            if stderr is None:
+                stderr_read = None
+                stderr_write = write_err_fd
+            elif stderr == subprocess.PIPE:
+                stderr_read, stderr_write = stack.enter_context(_pipe())
+            else:
+                raise Exception(f"unsupported value for stderr parameter: {stderr}")
 
             env = os.environ.copy()
             env.update(extra_env)
@@ -326,17 +319,14 @@ class Host:
                     stderr_write.close()
 
                 start = time.time()
-                if interactive:
-                    stdout_data, stderr_data = "", ""
-                else:
-                    stdout_data, stderr_data = self._prefix_output(
-                        displayed_cmd,
-                        read_std_fd,
-                        read_err_fd,
-                        stdout_read,
-                        stderr_read,
-                        timeout,
-                    )
+                stdout_data, stderr_data = self._prefix_output(
+                    displayed_cmd,
+                    read_std_fd,
+                    read_err_fd,
+                    stdout_read,
+                    stderr_read,
+                    timeout,
+                )
                 try:
                     ret = p.wait(timeout=max(0, timeout - (time.time() - start)))
                 except subprocess.TimeoutExpired:
@@ -366,7 +356,6 @@ class Host:
         cwd: None | str | Path = None,
         check: bool = True,
         timeout: float = math.inf,
-        interactive: bool = False,
     ) -> subprocess.CompletedProcess[str]:
         """
         Command to run locally for the host
@@ -398,7 +387,6 @@ class Host:
             cwd=cwd,
             check=check,
             timeout=timeout,
-            interactive=interactive,
         )
 
     def run(
@@ -411,7 +399,6 @@ class Host:
         cwd: None | str | Path = None,
         check: bool = True,
         timeout: float = math.inf,
-        interactive: bool = False,
         verbose_ssh: bool = False,
         tty: bool = False,
     ) -> subprocess.CompletedProcess[str]:
@@ -471,7 +458,6 @@ class Host:
             cwd=cwd,
             check=check,
             timeout=timeout,
-            interactive=interactive,
         )
 
     def ssh_cmd(
@@ -638,7 +624,6 @@ class HostGroup:
         cwd: None | str | Path = None,
         check: bool = True,
         timeout: float = math.inf,
-        interactive: bool = False,
         verbose_ssh: bool = False,
         tty: bool = False,
     ) -> Results:
@@ -658,7 +643,6 @@ class HostGroup:
                     cwd=cwd,
                     check=check,
                     timeout=timeout,
-                    interactive=interactive,
                     verbose_ssh=verbose_ssh,
                     tty=tty,
                 ),
