@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 class MainWindow(Adw.ApplicationWindow):
     def __init__(self, config: ClanConfig) -> None:
         super().__init__()
-        self.set_title("cLAN Manager")
+        self.set_title("clan Manager")
         self.set_default_size(980, 850)
 
         overlay = ToastOverlay.use().overlay

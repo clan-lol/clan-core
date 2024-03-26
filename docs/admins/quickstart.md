@@ -108,7 +108,7 @@ Absolutely, let's break down the migration step by step, explaining each action 
    - Inside `machines`, a new machine configuration is defined (in this case, `example-desktop`).
    - Inside `example-desktop` which is the target machine hostname, `nixpkgs.hostPlatform` specifies the host platform as `x86_64-linux`.
    - `clanInternals`: Is required to enable evaluation of the secret generation/upload script on every architecture
-   - `clanName`: Is required and needs to be globally unique, as else we have a cLAN name clash
+   - `clanName`: Is required and needs to be globally unique, as else we have a clan name clash
 
 4. **Rebuild and Switch**: Rebuild your NixOS configuration using the updated flake:
 

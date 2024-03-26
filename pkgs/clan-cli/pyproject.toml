@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clan-cli"
-description = "cLAN CLI tool"
+description = "clan cli tool"
 dynamic = ["version"]
 scripts = { clan = "clan_cli:main" }
 

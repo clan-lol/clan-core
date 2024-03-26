@@ -1,4 +1,4 @@
-# cLAN config
+# clan config
 
 `clan config` allows you to manage your nixos configuration via the terminal.
 Similar as how `git config` reads and sets git options, `clan config` does the same with your nixos options

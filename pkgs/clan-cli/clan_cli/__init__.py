@@ -41,7 +41,7 @@ class AppendOptionAction(argparse.Action):
 
 
 def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog=prog, description="cLAN tool")
+    parser = argparse.ArgumentParser(prog=prog, description="clan tool")
 
     parser.add_argument(
         "--debug",
