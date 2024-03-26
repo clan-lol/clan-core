@@ -1,4 +1,7 @@
 {
+  lib,
+  stdenv,
+  weston,
   python3,
   runCommand,
   setuptools,
@@ -54,7 +57,8 @@ let
       pytest-subprocess # fake the real subprocess behavior to make your tests more independent.
       pytest-xdist # Run tests in parallel on multiple cores
       pytest-timeout # Add timeouts to your tests
-    ];
+    ]
+    ++ (lib.optionals stdenv.isLinux [ weston ]);
 
   # Dependencies required for running tests
   testDependencies = runtimeDependencies ++ allPythonDeps ++ externalTestDeps;
