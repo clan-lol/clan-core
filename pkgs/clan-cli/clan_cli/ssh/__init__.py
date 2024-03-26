@@ -400,6 +400,7 @@ class Host:
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
+        tty: bool = True,
     ) -> subprocess.CompletedProcess[str]:
         """
         Command to run on the host via ssh
@@ -444,7 +445,7 @@ class Host:
             bash_cmd += cmd
         # FIXME we assume bash to be present here? Should be documented...
         ssh_cmd = [
-            *self.ssh_cmd(verbose_ssh=verbose_ssh),
+            *self.ssh_cmd(verbose_ssh=verbose_ssh, tty=tty),
             "--",
             f"{sudo}bash -c {quote(bash_cmd)} -- {' '.join(map(quote, bash_args))}",
         ]
@@ -462,6 +463,7 @@ class Host:
     def ssh_cmd(
         self,
         verbose_ssh: bool = False,
+        tty: bool = True,
     ) -> list[str]:
         if self.user is not None:
             ssh_target = f"{self.user}@{self.host}"
@@ -484,6 +486,8 @@ class Host:
             ssh_opts.extend(["-o", "UserKnownHostsFile=/dev/null"])
         if verbose_ssh or self.verbose_ssh:
             ssh_opts.extend(["-v"])
+        if tty:
+            ssh_opts.extend(["-t"])
 
         return ["ssh", ssh_target, *ssh_opts]
 
@@ -547,6 +551,7 @@ class HostGroup:
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
+        tty: bool = True,
     ) -> None:
         try:
             proc = host.run_local(
@@ -575,6 +580,7 @@ class HostGroup:
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
+        tty: bool = True,
     ) -> None:
         try:
             proc = host.run(
@@ -586,6 +592,7 @@ class HostGroup:
                 check=check,
                 verbose_ssh=verbose_ssh,
                 timeout=timeout,
+                tty=tty,
             )
             results.append(HostResult(host, proc))
         except Exception as e:
@@ -617,6 +624,7 @@ class HostGroup:
         cwd: None | str | Path = None,
         check: bool = True,
         verbose_ssh: bool = False,
+        tty: bool = True,
         timeout: float = math.inf,
     ) -> Results:
         results: Results = []
@@ -636,6 +644,7 @@ class HostGroup:
                     check=check,
                     verbose_ssh=verbose_ssh,
                     timeout=timeout,
+                    tty=tty,
                 ),
             )
             thread.start()
@@ -659,6 +668,7 @@ class HostGroup:
         check: bool = True,
         verbose_ssh: bool = False,
         timeout: float = math.inf,
+        tty: bool = True,
     ) -> Results:
         """
         Command to run on the remote host via ssh
@@ -679,6 +689,7 @@ class HostGroup:
             check=check,
             verbose_ssh=verbose_ssh,
             timeout=timeout,
+            tty=True,
         )
 
     def run_local(
