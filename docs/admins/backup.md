@@ -1,18 +1,87 @@
 # Backups
 
-When self-hosting services, it's important to have a robust backup and restore strategy.
-Therefore clan comes with a backup integration based on [borgbackup](https://www.borgbackup.org/).
-More backup backends may come in future as clan provides an interchangeable interface on top of the backup implementation.
+## Introduction to Backups
 
-# Getting started with borgbackup
+When you're managing your own services, creating regular backups is crucial to ensure your data's safety.
+This guide introduces you to Clan's built-in backup functionalities.
+Clan supports backing up your data to both local storage devices (like USB drives) and remote servers, using well-known tools like borgbackup and rsnapshot.
+We might add more options in the future, but for now, let's dive into how you can secure your data.
 
-Borgbackup consists of two components a backup repository that can be hosted on one machine and contains the backup
-and a backup client that will push it's data to the backup repository.
+## Backing Up Locally with Localbackup
 
-## Borgbackup client
+### What is Localbackup?
 
-First you need to specify the remote server to backup to. Replace `hostname` with a reachable dns or ip address of your
-backup machine.
+Localbackup lets you backup your data onto physical storage devices connected to your computer,
+such as USB hard drives or network-attached storage. It uses a tool called rsnapshot for this purpose.
+
+### Setting Up Localbackup
+
+1. **Identify Your Backup Device:**
+
+First, figure out which device you'll use for backups. You can see all connected devices by running this command in your terminal:
+
+```console
+lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
+```
+
+Look for the device you intend to use for backups and note its details.
+
+2. **Configure Your Backup Device:**
+
+Once you've identified your device, you'll need to add it to your configuration.
+Here's an example NixOS configuration for a device located at `/dev/sda2` with an `ext4` filesystem:
+
+```nix
+{
+  fileSystems."/mnt/hdd" = {
+    device = "/dev/sda2";
+    fsType = "ext4";
+    options = [ "defaults" "noauto" ];
+  };
+}
+```
+
+Replace `/dev/sda2` with your device and `/mnt/hdd` with your preferred mount point.
+
+3. **Set Backup Targets:** Next, define where on your device you'd like the backups to be stored:
+
+   ```nix
+   {
+     clan.localbackup.targets.hdd = {
+       directory = "/mnt/hdd/backup";
+       mountpoint = "/mnt/hdd";
+     };
+   }
+   ```
+
+   Change `/mnt/hdd` to the actual mount point you're using.
+
+4. **Create Backups:** To create a backup, run:
+
+   ```console
+   clan backups create mymachine
+   ```
+
+   This command saves snapshots of your data onto the backup device.
+
+5. **Listing Backups:** To see available backups, run:
+
+  ```console
+  clan backups list mymachine
+  ```
+
+## Remote Backups with Borgbackup
+
+### Overview of Borgbackup
+
+Borgbackup splits the backup process into two parts: a backup client that sends data to a backup server.
+The server stores the backups.
+
+### Setting Up the Borgbackup Client
+
+1. **Specify Backup Server:**
+
+Start by indicating where your backup data should be sent. Replace `hostname` with your server's address:
 
 ```nix
 {
@@ -21,75 +90,60 @@ backup machine.
       repo = "borg@backuphost:/var/lib/borgbackup/myhostname";
     };
   };
-
-  programs.ssh.knownHosts = {
-    machine.hostNames = [ "backuphost" ];
-    machine.publicKey = builtins.readFile ./machines/backuphost/facts/ssh.id_ed25519.pub;
-  };
 }
 ```
 
-Services in clan can specify custom folders that need a backup by setting `clanCore.state.<service>.folders` option.
-As a user you can also append to the list by adding your own directories to be backed up i.e.:
+2. **Select Folders to Backup:**
+
+Decide which folders you want to back up. For example, to backup your home and root directories:
 
 ```nix
 { clanCore.state.userdata.folders = [ "/home" "/root" ]; }
 ```
 
-Then run `clan facts generate <yourmachine>` replacing `<yourmachine>` with the actual machine name.
-This will generate the backup borg credentials and ssh keys for accessing the borgbackup repository.
-Your ssh public key will be stored in the root of the repository here at this location `./machines/<yourmachine>/facts/borgbackup.ssh.pub`.
-We need this for the next step.
+3. **Generate Backup Credentials:**
 
-## Borgbackup repository
+Run `clan facts generate <yourmachine>` to prepare your machine for backup, creating necessary SSH keys and credentials.
 
-In the next step we are going to set up the backup server.
-Choose here a machine with sufficient disk space.
-The machine needs to have the ssh daemon enabled as it is used in borgbackup for accessing the backup repository.
-Add the following configuration to your backup server:
+### Setting Up the Borgbackup Server
+
+1. **Configure Backup Repository:**
+
+On the server where backups will be stored, enable the SSH daemon and set up a repository for each client:
 
 ```nix
 {
-  imports = [ inputs.clan-core.clanModules.sshd ];
-  services.borgbackup.repos = {
-    myhostname = {
-      path = "/var/lib/borgbackup/myhostname";
-      authorizedKeys = [
-        (builtins.readFile ./machines/myhostname/facts/borgbackup.ssh.pub)
-      ];
-    };
+  services.borgbackup.repos.myhostname = {
+    path = "/var/lib/borgbackup/myhostname";
+    authorizedKeys = [
+      (builtins.readFile ./machines/myhostname/facts/borgbackup.ssh.pub)
+    ];
   };
 }
 ```
 
-Replace `myhostname` with the name of the machine you want to backup. The path to the public key needs to be relative to the
-configuration file, so you may have to adapt it if the configuration is not in the root directory of your clan flake.
+Ensure the path to the public key is correct.
 
-Afterwards run `clan machines update` to update both the borgbackup server and the borgbackup client.
+2. **Update Your Systems:** Apply your changes by running `clan machines update` to both the server and your client
 
-By default the backup is scheduled every night at 01:00 midnight. If machines are not online around this time,
-they will attempt to run the backup once they come back.
+### Managing Backups
 
-When the next backup is scheduled, can be inspected like this on the machine running the backups
+- **Scheduled Backups:**
 
-```
-$ systemctl list-timers | grep -E 'NEXT|borg'
-NEXT                                   LEFT LAST                              PASSED UNIT                               ACTIVATES
-Thu 2024-03-14 01:00:00 CET             17h Wed 2024-03-13 01:00:00 CET       6h ago borgbackup-job-myhostname.timer borgbackup-job-myhostname.service
-```
+  Backups are automatically performed nightly. To check the next scheduled backup, use:
 
-One can also list existing backups in the clan-cli
+  ```console
+  systemctl list-timers | grep -E 'NEXT|borg'
+  ```
 
-```
-$ clan backups list mymachine
-mymachine-mymachine-2024-03-09T01:00:00
-mymachine-mymachine-2024-03-13T01:00:00
-```
+- **Listing Backups:** To see available backups, run:
 
-as well as triggering a manual backup:
+  ```console
+  clan backups list mymachine
+  ```
 
-```
-$ clan backups create mymachine
-[mymachine] $ bash -c systemctl start borgbackup-job-mymachine
-successfully started backup
-```
+- **Manual Backups:** You can also initiate a backup manually:
+
+  ```console
+  clan backups create mymachine
+  ```
