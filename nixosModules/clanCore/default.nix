@@ -1,6 +1,7 @@
 {
   imports = [
     ./backups.nix
+    ./facts
     ./manual.nix
     ./imports.nix
     ./metadata.nix
@@ -10,7 +11,6 @@
     ./outputs.nix
     ./packages.nix
     ./schema.nix
-    ./secrets
     ./vm.nix
     ./wayland-proxy-virtwl.nix
     ./zerotier
