@@ -16,6 +16,7 @@ def temporary_home(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
         path = Path(env_dir).resolve()
         log.debug("Temp HOME directory: %s", str(path))
         monkeypatch.setenv("HOME", str(path))
+        monkeypatch.setenv("XDG_CONFIG_HOME", str(path / ".config"))
         monkeypatch.chdir(str(path))
         yield path
     else:
