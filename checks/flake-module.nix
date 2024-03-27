@@ -16,6 +16,15 @@
     {
       checks =
         let
+          # ensure all options can be rendered after importing clan into nixos
+          renderClanOptions =
+            let
+              docs = pkgs.nixosOptionsDoc {
+                options = (pkgs.nixos { imports = [ self.nixosModules.clanCore ]; }).options;
+                warningsAreErrors = false;
+              };
+            in
+            docs.optionsJSON;
           nixosTestArgs = {
             # reference to nixpkgs for the current system
             inherit pkgs;
@@ -45,7 +54,7 @@
               self'.legacyPackages.homeConfigurations or { }
             );
         in
-        nixosTests // schemaTests // flakeOutputs;
+        { inherit renderClanOptions; } // nixosTests // schemaTests // flakeOutputs;
       legacyPackages = {
         nixosTests =
           let
