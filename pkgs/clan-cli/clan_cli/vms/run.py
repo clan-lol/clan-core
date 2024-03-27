@@ -3,6 +3,7 @@ import importlib
 import json
 import logging
 import os
+from contextlib import ExitStack
 from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -108,86 +109,87 @@ def run_vm(
     socketdir: Path | None = None,
     nix_options: list[str] = [],
 ) -> None:
-    machine = Machine(vm.machine_name, vm.flake_url)
-    log.debug(f"Creating VM for {machine}")
+    with ExitStack() as stack:
+        machine = Machine(vm.machine_name, vm.flake_url)
+        log.debug(f"Creating VM for {machine}")
 
-    # store the temporary rootfs inside XDG_CACHE_HOME on the host
-    # otherwise, when using /tmp, we risk running out of memory
-    cache = user_cache_dir() / "clan"
-    cache.mkdir(exist_ok=True)
+        # store the temporary rootfs inside XDG_CACHE_HOME on the host
+        # otherwise, when using /tmp, we risk running out of memory
+        cache = user_cache_dir() / "clan"
+        cache.mkdir(exist_ok=True)
 
-    if cachedir is None:
-        cache_tmp = TemporaryDirectory(dir=cache)
-        cachedir = Path(cache_tmp.name)
+        if cachedir is None:
+            cache_tmp = stack.enter_context(TemporaryDirectory(dir=cache))
+            cachedir = Path(cache_tmp)
 
-    if socketdir is None:
-        socket_tmp = TemporaryDirectory()
-        socketdir = Path(socket_tmp.name)
+        if socketdir is None:
+            socket_tmp = stack.enter_context(TemporaryDirectory())
+            socketdir = Path(socket_tmp)
 
-    # TODO: We should get this from the vm argument
-    nixos_config = build_vm(machine, cachedir, nix_options)
+        # TODO: We should get this from the vm argument
+        nixos_config = build_vm(machine, cachedir, nix_options)
 
-    state_dir = vm_state_dir(str(vm.flake_url), machine.name)
-    state_dir.mkdir(parents=True, exist_ok=True)
+        state_dir = vm_state_dir(str(vm.flake_url), machine.name)
+        state_dir.mkdir(parents=True, exist_ok=True)
 
-    # specify socket files for qmp and qga
-    qmp_socket_file = socketdir / "qmp.sock"
-    qga_socket_file = socketdir / "qga.sock"
-    # Create symlinks to the qmp/qga sockets to be able to find them later.
-    # This indirection is needed because we cannot put the sockets directly
-    #   in the state_dir.
-    # The reason is, qemu has a length limit of 108 bytes for the qmp socket
-    #   path which is violated easily.
-    qmp_link = state_dir / "qmp.sock"
-    if os.path.lexists(qmp_link):
-        qmp_link.unlink()
-    qmp_link.symlink_to(qmp_socket_file)
+        # specify socket files for qmp and qga
+        qmp_socket_file = socketdir / "qmp.sock"
+        qga_socket_file = socketdir / "qga.sock"
+        # Create symlinks to the qmp/qga sockets to be able to find them later.
+        # This indirection is needed because we cannot put the sockets directly
+        #   in the state_dir.
+        # The reason is, qemu has a length limit of 108 bytes for the qmp socket
+        #   path which is violated easily.
+        qmp_link = state_dir / "qmp.sock"
+        if os.path.lexists(qmp_link):
+            qmp_link.unlink()
+        qmp_link.symlink_to(qmp_socket_file)
 
-    qga_link = state_dir / "qga.sock"
-    if os.path.lexists(qga_link):
-        qga_link.unlink()
-    qga_link.symlink_to(qga_socket_file)
+        qga_link = state_dir / "qga.sock"
+        if os.path.lexists(qga_link):
+            qga_link.unlink()
+        qga_link.symlink_to(qga_socket_file)
 
-    rootfs_img = prepare_disk(cachedir)
-    state_img = state_dir / "state.qcow2"
-    if not state_img.exists():
-        state_img = prepare_disk(
-            directory=state_dir,
-            file_name="state.qcow2",
-            size="50G",
-        )
-    virtiofsd_socket = socketdir / "virtiofsd.sock"
-    qemu_cmd = qemu_command(
-        vm,
-        nixos_config,
-        secrets_dir=Path(nixos_config["secrets_dir"]),
-        rootfs_img=rootfs_img,
-        state_img=state_img,
-        virtiofsd_socket=virtiofsd_socket,
-        qmp_socket_file=qmp_socket_file,
-        qga_socket_file=qga_socket_file,
-    )
-
-    packages = ["nixpkgs#qemu"]
-
-    env = os.environ.copy()
-    if vm.graphics and not vm.waypipe:
-        packages.append("nixpkgs#virt-viewer")
-        remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
-        env["XDG_DATA_DIRS"] = (
-            f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
+        rootfs_img = prepare_disk(cachedir)
+        state_img = state_dir / "state.qcow2"
+        if not state_img.exists():
+            state_img = prepare_disk(
+                directory=state_dir,
+                file_name="state.qcow2",
+                size="50G",
+            )
+        virtiofsd_socket = socketdir / "virtiofsd.sock"
+        qemu_cmd = qemu_command(
+            vm,
+            nixos_config,
+            secrets_dir=Path(nixos_config["secrets_dir"]),
+            rootfs_img=rootfs_img,
+            state_img=state_img,
+            virtiofsd_socket=virtiofsd_socket,
+            qmp_socket_file=qmp_socket_file,
+            qga_socket_file=qga_socket_file,
         )
 
-    with (
-        start_waypipe(qemu_cmd.vsock_cid, f"[{vm.machine_name}] "),
-        start_virtiofsd(virtiofsd_socket),
-    ):
-        run(
-            nix_shell(packages, qemu_cmd.args),
-            env=env,
-            log=Log.BOTH,
-            error_msg=f"Could not start vm {machine}",
-        )
+        packages = ["nixpkgs#qemu"]
+
+        env = os.environ.copy()
+        if vm.graphics and not vm.waypipe:
+            packages.append("nixpkgs#virt-viewer")
+            remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
+            env["XDG_DATA_DIRS"] = (
+                f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
+            )
+
+        with (
+            start_waypipe(qemu_cmd.vsock_cid, f"[{vm.machine_name}] "),
+            start_virtiofsd(virtiofsd_socket),
+        ):
+            run(
+                nix_shell(packages, qemu_cmd.args),
+                env=env,
+                log=Log.BOTH,
+                error_msg=f"Could not start vm {machine}",
+            )
 
 
 @dataclass
