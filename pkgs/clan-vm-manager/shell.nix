@@ -10,8 +10,6 @@
   python3,
   gtk4,
   libadwaita,
-  freerdp,
-  linux-pam,
   tigervnc,
 }:
 
@@ -34,8 +32,6 @@ mkShell {
       ruff
       gtk4.dev # has the demo called 'gtk4-widget-factory'
       libadwaita.devdoc # has the demo called 'adwaita-1-demo'
-      freerdp
-      linux-pam
       tigervnc
     ]
     ++ devshellTestDeps
@@ -53,6 +49,10 @@ mkShell {
 
     # Add clan-vm-manager command to PATH
     export PATH="$GIT_ROOT/pkgs/clan-vm-manager/bin":"$PATH"
+
+    # Add clan-vm-manager to the python path so that we can
+    # import it in the tests
+    export PYTHONPATH="$GIT_ROOT/pkgs/clan-vm-manager":"$PYTHONPATH"
 
     # Add clan-cli to the python path so that we can import it without building it in nix first
     export PYTHONPATH="$GIT_ROOT/pkgs/clan-cli":"$PYTHONPATH"

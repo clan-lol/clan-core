@@ -6,9 +6,33 @@ import sys
 import time
 from collections.abc import Generator
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 # Assuming NewType is already imported or defined somewhere
 import pytest
+
+
+def write_script(cmd: list[str], new_env: dict[str, str], name:str) -> None:
+    # Create the bash script content
+    script_content = "#!/bin/bash\n"
+    for key, value in new_env.items():
+        if '"' in value:
+            value = value.replace('"', '\\"')
+        if "'" in value:
+            value = value.replace("'", "\\'")
+        if '`' in value:
+            value = value.replace("`", "\\`")
+        script_content += f'export {key}="{value}"\n'
+    script_content += shlex.join(cmd)
+
+    # Write the bash script to a file
+    script_filename = name
+    with open(script_filename, "w") as script_file:
+        script_file.write(script_content)
+
+    print(f"You can find the script at {os.getcwd()}/{script_filename}")
+    # Make the script executable
+    os.chmod(script_filename, 0o755)
 
 
 class Compositor:
@@ -16,10 +40,27 @@ class Compositor:
         self.proc = proc
         self.env = env
 
+@pytest.fixture
+def weston_override_lib(test_root: Path) ->  Generator[Path, None, None]:
+    with TemporaryDirectory() as tmpdir:
+        # This enforces a login shell by overriding the login shell of `getpwnam(3)`
+        lib_path = Path(tmpdir) / "libweston_auth_override.so"
+        subprocess.run(
+            [
+                os.environ.get("CC", "cc"),
+                "-shared",
+                "-fPIC",
+                "-o",
+                lib_path,
+                str(test_root / "weston_auth_override.c"),
+            ],
+            check=True,
+        )
+        yield lib_path
+
 
 @pytest.fixture
-def wayland_comp(test_root: Path) -> Generator[Compositor, None, None]:
-    rdp_key = test_root / "data" / "rdp-security" / "rdp-security.key"
+def wayland_comp(test_root: Path, weston_override_lib: Path) -> Generator[Compositor, None, None]:
     tls_key = test_root / "data" / "rdp-security" / "tls.key"
     tls_cert = test_root / "data" / "rdp-security" / "tls.crt"
     wayland_display = "wayland-1"  # Define a unique WAYLAND_DISPLAY value
@@ -27,7 +68,7 @@ def wayland_comp(test_root: Path) -> Generator[Compositor, None, None]:
     new_env["WAYLAND_DISPLAY"] = wayland_display
     # Uncomment the next line if you need to force software rendering
     new_env["LIBGL_ALWAYS_SOFTWARE"] = "true"
-    new_env["LD_PRELOAD"] = str(test_root / "data" / "liboverride.so")
+    new_env["LD_PRELOAD"] = str(weston_override_lib)
     cmd = [
             "weston",
             "--width=1920",
@@ -38,7 +79,6 @@ def wayland_comp(test_root: Path) -> Generator[Compositor, None, None]:
             "--backend=vnc",
             f"--socket={wayland_display}",
         ]
-    write_script(cmd, new_env, "weston.sh")
 
     compositor = subprocess.Popen(
         cmd,
@@ -47,6 +87,9 @@ def wayland_comp(test_root: Path) -> Generator[Compositor, None, None]:
         # stdout=subprocess.PIPE,
         # stderr=subprocess.PIPE,
     )
+    time.sleep(0.4)
+    if compositor.poll() is not None:
+        raise Exception(f"Failed to start {cmd}")
     yield Compositor(compositor, new_env)
     compositor.kill()
 
@@ -64,25 +107,6 @@ class GtkApp:
     def poll(self) -> int | None:
         return self.proc.poll()
 
-
-def write_script(cmd: list[str], new_env: dict[str, str], name:str) -> None:
-    # Create the bash script content
-    script_content = "#!/bin/bash\n"
-    for key, value in new_env.items():
-        if '"' in value:
-            value = value.replace('"', '\\"')
-        script_content += f'export {key}="{value}"\n'
-    script_content += shlex.join(cmd)
-
-    # Write the bash script to a file
-    script_filename = name
-    with open(script_filename, "w") as script_file:
-        script_file.write(script_content)
-
-    # Make the script executable
-    os.chmod(script_filename, 0o755)
-
-
 @pytest.fixture
 def app(wayland_comp: Compositor) -> Generator[GtkApp, None, None]:
     # Define the new environment variables
@@ -92,7 +116,8 @@ def app(wayland_comp: Compositor) -> Generator[GtkApp, None, None]:
     # Define the command to be executed
     cmd = [f"{sys.executable}", "-m", "clan_vm_manager"]
 
-    write_script(cmd, new_env, "manager.sh")
+    write_script(cmd, new_env, "weston.sh")
+    breakpoint()
 
     # Execute the script
     rapp = subprocess.Popen(

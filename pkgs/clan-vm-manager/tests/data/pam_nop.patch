@@ -1,0 +1,46 @@
+diff --git a/libweston/auth.c b/libweston/auth.c
+index 2133abbe..e4d10eca 100644
+--- a/libweston/auth.c
++++ b/libweston/auth.c
+@@ -77,40 +77,5 @@ weston_pam_conv(int num_msg, const struct pam_message **msg,
+ WL_EXPORT bool
+ weston_authenticate_user(const char *username, const char *password)
+ {
+-	bool authenticated = false;
+-#ifdef HAVE_PAM
+-	struct pam_conv conv = {
+-		.conv = weston_pam_conv,
+-		.appdata_ptr = strdup(password),
+-	};
+-	struct pam_handle *pam;
+-	int ret;
+-
+-	conv.appdata_ptr = strdup(password);
+-
+-	ret = pam_start("weston-remote-access", username, &conv, &pam);
+-	if (ret != PAM_SUCCESS) {
+-		weston_log("PAM: start failed\n");
+-		goto out;
+-	}
+-
+-	ret = pam_authenticate(pam, 0);
+-	if (ret != PAM_SUCCESS) {
+-		weston_log("PAM: authentication failed\n");
+-		goto out;
+-	}
+-
+-	ret = pam_acct_mgmt(pam, 0);
+-	if (ret != PAM_SUCCESS) {
+-		weston_log("PAM: account check failed\n");
+-		goto out;
+-	}
+-
+-	authenticated = true;
+-out:
+-	ret = pam_end(pam, ret);
+-	assert(ret == PAM_SUCCESS);
+-	free(conv.appdata_ptr);
+-#endif
+-	return authenticated;
++	return true;
+ }
