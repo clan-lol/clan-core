@@ -34,15 +34,14 @@
         ];
         imports = [
           ./checks/flake-module.nix
-          ./devShell.nix
-          ./formatter.nix
-          ./templates/flake-module.nix
           ./clanModules/flake-module.nix
-
-          ./pkgs/flake-module.nix
-
+          ./devShell.nix
+          ./docs/flake-module.nix
+          ./formatter.nix
           ./lib/flake-module.nix
           ./nixosModules/flake-module.nix
+          ./pkgs/flake-module.nix
+          ./templates/flake-module.nix
           {
             options.flake = flake-parts.lib.mkSubmoduleOptions {
               clanInternals = lib.mkOption {
