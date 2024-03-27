@@ -36,7 +36,7 @@
                 };
               };
             };
-            clanCore.secretStore = "vm";
+            clanCore.facts.secretStore = "vm";
 
             clan.borgbackup.destinations.test.repo = "borg@localhost:.";
           }

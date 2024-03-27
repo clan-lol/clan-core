@@ -74,7 +74,7 @@
             };
           };
         };
-        clanCore.secretStore = "vm";
+        clanCore.facts.secretStore = "vm";
         clanCore.clanDir = ../..;
 
         environment.systemPackages = [
