@@ -106,6 +106,7 @@ def module_root() -> Path:
 
 
 def nixpkgs_flake() -> Path:
+    print("Module root", module_root())
     return (module_root() / "nixpkgs").resolve()
 
 
