@@ -28,6 +28,7 @@ in
               default = "ssh -i ${
                 config.clanCore.facts.services.borgbackup.secret."borgbackup.ssh".path
               } -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
+              defaultText = "ssh -i \${config.clanCore.facts.services.borgbackup.secret.\"borgbackup.ssh\".path} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
               description = "the rsh to use for the backup";
             };
           };
