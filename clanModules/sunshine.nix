@@ -97,10 +97,10 @@ in
   systemd.tmpfiles.rules = [
     "d '/var/lib/sunshine' 0770 'user' 'users' - -"
     "C '/var/lib/sunshine/sunshine.cert' 0644 'user' 'users' - ${
-      config.clanCore.secrets.sunshine.secrets."sunshine.cert".path or ""
+      config.clanCore.facts.services.sunshine.secret."sunshine.cert".path or ""
     }"
     "C '/var/lib/sunshine/sunshine.key' 0644 'user' 'users' - ${
-      config.clanCore.secrets.sunshine.secrets."sunshine.key".path or ""
+      config.clanCore.facts.services.sunshine.secret."sunshine.key".path or ""
     }"
   ];
 
@@ -117,8 +117,8 @@ in
       RestartSec = "5s";
       ReadWritePaths = [ "/var/lib/sunshine" ];
       ReadOnlyPaths = [
-        (config.clanCore.secrets.sunshine.secrets."sunshine.key".path or "")
-        (config.clanCore.secrets.sunshine.secrets."sunshine.cert".path or "")
+        (config.clanCore.facts.services.sunshine.secret."sunshine.key".path or "")
+        (config.clanCore.facts.services.sunshine.secret."sunshine.cert".path or "")
       ];
     };
     wantedBy = [ "graphical-session.target" ];
@@ -137,7 +137,7 @@ in
     startLimitIntervalSec = 500;
     script = ''
       ${ms-accept}/bin/moonlight-sunshine-accept sunshine init-state --uuid ${
-        config.clanCore.secrets.sunshine.facts.sunshine-uuid.value or null
+        config.clanCore.facts.services.sunshine.public.sunshine-uuid.value or null
       } --state-file /var/lib/sunshine/state.json
     '';
     serviceConfig = {
@@ -173,9 +173,9 @@ in
     startLimitIntervalSec = 500;
     script = ''
       ${ms-accept}/bin/moonlight-sunshine-accept sunshine listen --port ${builtins.toString listenPort} --uuid ${
-        config.clanCore.secrets.sunshine.facts.sunshine-uuid.value or null
+        config.clanCore.facts.services.sunshine.public.sunshine-uuid.value or null
       }  --state /var/lib/sunshine/state.json --cert '${
-        config.clanCore.secrets.sunshine.facts."sunshine.cert".value or null
+        config.clanCore.facts.services.sunshine.public."sunshine.cert".value or null
       }'
     '';
     serviceConfig = {
@@ -187,11 +187,11 @@ in
     wantedBy = [ "graphical-session.target" ];
   };
 
-  clanCore.secrets.sunshine = {
-    secrets."sunshine.key" = { };
-    secrets."sunshine.cert" = { };
-    facts."sunshine-uuid" = { };
-    facts."sunshine.cert" = { };
+  clanCore.facts.services.sunshine = {
+    secret."sunshine.key" = { };
+    secret."sunshine.cert" = { };
+    public."sunshine-uuid" = { };
+    public."sunshine.cert" = { };
     generator.path = [
       pkgs.coreutils
       ms-accept

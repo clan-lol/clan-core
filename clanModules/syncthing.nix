@@ -9,7 +9,7 @@
     id = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       example = "BABNJY4-G2ICDLF-QQEG7DD-N3OBNGF-BCCOFK6-MV3K7QJ-2WUZHXS-7DTW4AS";
-      default = config.clanCore.secrets.syncthing.facts."syncthing.pub".value or null;
+      default = config.clanCore.facts.services.syncthing.public."syncthing.pub".value or null;
     };
     introducer = lib.mkOption {
       description = ''
@@ -112,7 +112,7 @@
           getPendingDevices = "/rest/cluster/pending/devices";
           postNewDevice = "/rest/config/devices";
           SharedFolderById = "/rest/config/folders/";
-          apiKey = config.clanCore.secrets.syncthing.secrets."syncthing.api".path or null;
+          apiKey = config.clanCore.facts.services.syncthing.secret."syncthing.api".path or null;
         in
         lib.mkIf config.clan.syncthing.autoAcceptDevices {
           description = "Syncthing auto accept devices";
@@ -154,7 +154,7 @@
 
       systemd.services.syncthing-init-api-key =
         let
-          apiKey = config.clanCore.secrets.syncthing.secrets."syncthing.api".path or null;
+          apiKey = config.clanCore.facts.services.syncthing.secret."syncthing.api".path or null;
         in
         lib.mkIf config.clan.syncthing.autoAcceptDevices {
           description = "Set the api key";
@@ -176,11 +176,11 @@
           };
         };
 
-      clanCore.secrets.syncthing = {
-        secrets."syncthing.key" = { };
-        secrets."syncthing.cert" = { };
-        secrets."syncthing.api" = { };
-        facts."syncthing.pub" = { };
+      clanCore.facts.services.syncthing = {
+        secret."syncthing.key" = { };
+        secret."syncthing.cert" = { };
+        secret."syncthing.api" = { };
+        public."syncthing.pub" = { };
         generator.path = [
           pkgs.coreutils
           pkgs.gnugrep

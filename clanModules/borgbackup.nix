@@ -26,7 +26,7 @@ in
             rsh = lib.mkOption {
               type = lib.types.str;
               default = "ssh -i ${
-                config.clanCore.secrets.borgbackup.secrets."borgbackup.ssh".path
+                config.clanCore.facts.services.borgbackup.secret."borgbackup.ssh".path
               } -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
               description = "the rsh to use for the backup";
             };
@@ -63,7 +63,7 @@ in
 
       encryption = {
         mode = "repokey";
-        passCommand = "cat ${config.clanCore.secrets.borgbackup.secrets."borgbackup.repokey".path}";
+        passCommand = "cat ${config.clanCore.facts.services.borgbackup.secret."borgbackup.repokey".path}";
       };
 
       prune.keep = {
@@ -74,10 +74,10 @@ in
       };
     }) cfg.destinations;
 
-    clanCore.secrets.borgbackup = {
-      facts."borgbackup.ssh.pub" = { };
-      secrets."borgbackup.ssh" = { };
-      secrets."borgbackup.repokey" = { };
+    clanCore.facts.services.borgbackup = {
+      public."borgbackup.ssh.pub" = { };
+      secret."borgbackup.ssh" = { };
+      secret."borgbackup.repokey" = { };
       generator.path = [
         pkgs.openssh
         pkgs.coreutils
