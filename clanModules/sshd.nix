@@ -4,14 +4,14 @@
 
   services.openssh.hostKeys = [
     {
-      path = config.clanCore.secrets.openssh.secrets."ssh.id_ed25519".path;
+      path = config.clanCore.facts.services.openssh.secret."ssh.id_ed25519".path;
       type = "ed25519";
     }
   ];
 
-  clanCore.secrets.openssh = {
-    secrets."ssh.id_ed25519" = { };
-    facts."ssh.id_ed25519.pub" = { };
+  clanCore.facts.services.openssh = {
+    secret."ssh.id_ed25519" = { };
+    public."ssh.id_ed25519.pub" = { };
     generator.path = [
       pkgs.coreutils
       pkgs.openssh

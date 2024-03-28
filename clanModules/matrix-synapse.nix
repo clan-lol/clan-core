@@ -54,14 +54,14 @@ in
     systemd.services.matrix-synapse.serviceConfig.ExecStartPre = [
       "+${pkgs.writeScript "copy_registration_shared_secret" ''
         #!/bin/sh
-        cp ${config.clanCore.secrets.matrix-synapse.secrets.synapse-registration_shared_secret.path} /var/lib/matrix-synapse/registration_shared_secret.yaml
+        cp ${config.clanCore.facts.services.matrix-synapse.secret.synapse-registration_shared_secret.path} /var/lib/matrix-synapse/registration_shared_secret.yaml
         chown matrix-synapse:matrix-synapse /var/lib/matrix-synapse/registration_shared_secret.yaml
         chmod 600 /var/lib/matrix-synapse/registration_shared_secret.yaml
       ''}"
     ];
 
-    clanCore.secrets."matrix-synapse" = {
-      secrets."synapse-registration_shared_secret" = { };
+    clanCore.facts.services."matrix-synapse" = {
+      secret."synapse-registration_shared_secret" = { };
       generator.path = with pkgs; [
         coreutils
         pwgen

@@ -6,7 +6,7 @@
 }:
 let
   cfg = config.clan.networking.zerotier;
-  facts = config.clanCore.secrets.zerotier.facts or { };
+  facts = config.clanCore.facts.services.zerotier.public or { };
   genMoonScript = pkgs.runCommand "genmoon" { nativeBuildInputs = [ pkgs.python3 ]; } ''
     install -Dm755 ${./genmoon.py} $out/bin/genmoon
     patchShebangs $out/bin/genmoon
@@ -112,7 +112,7 @@ in
 
       systemd.services.zerotierone.serviceConfig.ExecStartPre = [
         "+${pkgs.writeShellScript "init-zerotier" ''
-          cp ${config.clanCore.secrets.zerotier.secrets.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+          cp ${config.clanCore.facts.services.zerotier.secret.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
           zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
 
           ${lib.optionalString (cfg.controller.enable) ''
@@ -180,10 +180,10 @@ in
     (lib.mkIf cfg.controller.enable {
       # only the controller needs to have the key in the repo, the other clients can be dynamic
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
-      clanCore.secrets.zerotier = {
-        facts.zerotier-ip = { };
-        facts.zerotier-network-id = { };
-        secrets.zerotier-identity-secret = { };
+      clanCore.facts.services.zerotier = {
+        public.zerotier-ip = { };
+        public.zerotier-network-id = { };
+        secret.zerotier-identity-secret = { };
         generator.path = [
           config.services.zerotierone.package
           pkgs.fakeroot
@@ -201,9 +201,9 @@ in
       environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
     })
     (lib.mkIf (!cfg.controller.enable && cfg.networkId != null) {
-      clanCore.secrets.zerotier = {
-        facts.zerotier-ip = { };
-        secrets.zerotier-identity-secret = { };
+      clanCore.facts.services.zerotier = {
+        public.zerotier-ip = { };
+        secret.zerotier-identity-secret = { };
         generator.path = [
           config.services.zerotierone.package
           pkgs.python3
