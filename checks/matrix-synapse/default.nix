@@ -19,7 +19,7 @@
           }
           {
             # secret override
-            clanCore.secrets.matrix-synapse.secrets.synapse-registration_shared_secret.path = "${./synapse-registration_shared_secret}";
+            clanCore.facts.services.matrix-synapse.secret.synapse-registration_shared_secret.path = "${./synapse-registration_shared_secret}";
             services.nginx.virtualHosts."matrix.clan.test" = {
               enableACME = lib.mkForce false;
               forceSSL = lib.mkForce false;

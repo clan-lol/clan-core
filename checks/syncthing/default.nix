@@ -19,7 +19,7 @@
               "syncthing.key".source = ./introducer/introducer_test_key;
               "syncthing.api".source = ./introducer/introducer_test_api;
             };
-            clanCore.secrets.syncthing.secrets."syncthing.api".path = "/etc/syncthing.api";
+            clanCore.facts.services.syncthing.secret."syncthing.api".path = "/etc/syncthing.api";
             services.syncthing.cert = "/etc/syncthing.pam";
             services.syncthing.key = "/etc/syncthing.key";
             # Doesn't test zerotier!
