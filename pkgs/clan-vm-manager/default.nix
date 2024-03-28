@@ -55,7 +55,6 @@ let
       pytest # Testing framework
       pytest-cov # Generate coverage reports
       pytest-subprocess # fake the real subprocess behavior to make your tests more independent.
-      pytest-xdist # Run tests in parallel on multiple cores
       pytest-timeout # Add timeouts to your tests
     ]
     ++ (lib.optionals stdenv.isLinux [ weston ]);

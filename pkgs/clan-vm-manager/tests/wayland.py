@@ -8,6 +8,9 @@ from collections.abc import Generator
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+
+import libvncclient
+
 # Assuming NewType is already imported or defined somewhere
 import pytest
 
@@ -40,6 +43,7 @@ class Compositor:
     def __init__(self, proc: subprocess.Popen, env: dict[str, str]) -> None:
         self.proc = proc
         self.env = env
+
 
 @pytest.fixture
 def weston_override_lib(temporary_home: Path, test_root: Path) ->  Generator[Path, None, None]:
@@ -85,13 +89,12 @@ def wayland_comp(test_root: Path, weston_override_lib: Path) -> Generator[Compos
     compositor = subprocess.Popen(
         cmd,
         env=new_env,
-        text=True,
-        # stdout=subprocess.PIPE,
-        # stderr=subprocess.PIPE,
+        text=True
     )
     time.sleep(0.4)
     if compositor.poll() is not None:
         raise Exception(f"Failed to start {cmd}")
+
     yield Compositor(compositor, new_env)
     compositor.kill()
 
@@ -119,7 +122,7 @@ def app(wayland_comp: Compositor) -> Generator[GtkApp, None, None]:
     cmd = [f"{sys.executable}", "-m", "clan_vm_manager"]
 
     write_script(cmd, new_env, "weston.sh")
-    breakpoint()
+
     # Execute the script
     rapp = subprocess.Popen(
         cmd,

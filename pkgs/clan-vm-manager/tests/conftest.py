@@ -8,6 +8,7 @@ from clan_cli.nix import nix_shell
 
 sys.path.append(str(Path(__file__).parent / "helpers"))
 
+
 pytest_plugins = [
     "temporary_dir",
     "root",

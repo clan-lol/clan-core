@@ -11,7 +11,8 @@
   gtk4,
   libadwaita,
   tigervnc,
-  openssl
+  openssl,
+  libvncserver
 }:
 
 let
@@ -35,6 +36,8 @@ mkShell {
       libadwaita.devdoc # has the demo called 'adwaita-1-demo'
       tigervnc
       openssl
+      libvncserver.dev
+      libvncserver
     ]
     ++ devshellTestDeps
 
@@ -47,6 +50,9 @@ mkShell {
   PYTHONBREAKPOINT = "ipdb.set_trace";
 
   shellHook = ''
+    export LIBVNC_INCLUDE=${libvncserver.dev}/include
+    export LIBVNC_LIB=${libvncserver}/lib
+
     export GIT_ROOT=$(git rev-parse --show-toplevel)
 
     # Add clan-vm-manager command to PATH
