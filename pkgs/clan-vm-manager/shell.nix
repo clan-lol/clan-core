@@ -11,6 +11,7 @@
   gtk4,
   libadwaita,
   tigervnc,
+  openssl
 }:
 
 let
@@ -33,6 +34,7 @@ mkShell {
       gtk4.dev # has the demo called 'gtk4-widget-factory'
       libadwaita.devdoc # has the demo called 'adwaita-1-demo'
       tigervnc
+      openssl
     ]
     ++ devshellTestDeps
 

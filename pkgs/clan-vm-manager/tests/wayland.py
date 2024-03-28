@@ -23,7 +23,8 @@ def write_script(cmd: list[str], new_env: dict[str, str], name:str) -> None:
         if '`' in value:
             value = value.replace("`", "\\`")
         script_content += f'export {key}="{value}"\n'
-    script_content += shlex.join(cmd)
+    strace_cmd = ["strace", "-f", "-o", "file-access.log" ,"-e", "trace=file"] + cmd
+    script_content += shlex.join(strace_cmd)
 
     # Write the bash script to a file
     script_filename = name
@@ -41,28 +42,28 @@ class Compositor:
         self.env = env
 
 @pytest.fixture
-def weston_override_lib(test_root: Path) ->  Generator[Path, None, None]:
-    with TemporaryDirectory() as tmpdir:
-        # This enforces a login shell by overriding the login shell of `getpwnam(3)`
-        lib_path = Path(tmpdir) / "libweston_auth_override.so"
-        subprocess.run(
-            [
-                os.environ.get("CC", "cc"),
-                "-shared",
-                "-fPIC",
-                "-o",
-                lib_path,
-                str(test_root / "weston_auth_override.c"),
-            ],
-            check=True,
-        )
-        yield lib_path
+def weston_override_lib(temporary_home: Path, test_root: Path) ->  Generator[Path, None, None]:
+    # with TemporaryDirectory() as tmpdir:
+    # This enforces a login shell by overriding the login shell of `getpwnam(3)`
+    lib_path = Path(temporary_home) / "libweston_auth_override.so"
+    subprocess.run(
+        [
+            os.environ.get("CC", "cc"),
+            "-shared",
+            "-fPIC",
+            "-o",
+            lib_path,
+            str(test_root / "weston_auth_override.c"),
+        ],
+        check=True,
+    )
+    yield lib_path
 
 
 @pytest.fixture
 def wayland_comp(test_root: Path, weston_override_lib: Path) -> Generator[Compositor, None, None]:
-    tls_key = test_root / "data" / "rdp-security" / "tls.key"
-    tls_cert = test_root / "data" / "rdp-security" / "tls.crt"
+    tls_key = test_root / "data" / "vnc-security" / "tls.key"
+    tls_cert = test_root / "data" / "vnc-security" / "tls.crt"
     wayland_display = "wayland-1"  # Define a unique WAYLAND_DISPLAY value
     new_env = os.environ.copy()
     new_env["WAYLAND_DISPLAY"] = wayland_display
@@ -71,6 +72,7 @@ def wayland_comp(test_root: Path, weston_override_lib: Path) -> Generator[Compos
     new_env["LD_PRELOAD"] = str(weston_override_lib)
     cmd = [
             "weston",
+            "--debug",
             "--width=1920",
             "--height=1080",
             "--port=5900",
@@ -118,7 +120,6 @@ def app(wayland_comp: Compositor) -> Generator[GtkApp, None, None]:
 
     write_script(cmd, new_env, "weston.sh")
     breakpoint()
-
     # Execute the script
     rapp = subprocess.Popen(
         cmd,
