@@ -40,6 +40,7 @@
     )
   ];
   options.clanCore.secrets = lib.mkOption {
+    visible = false;
     default = { };
     type = lib.types.attrsOf (
       lib.types.submodule (service: {
