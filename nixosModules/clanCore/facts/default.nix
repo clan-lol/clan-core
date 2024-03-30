@@ -99,11 +99,11 @@
                     script = lib.mkOption {
                       type = lib.types.str;
                       description = ''
-                        Script to generate the secret.
-                        The script will be called with the following variables:
+                        Shell script snippet to generate the secrets and facts.
+                        The script has access to the following environment variables:
                         - facts: path to a directory where facts can be stored
                         - secrets: path to a directory where secrets can be stored
-                        The script is expected to generate all secrets and facts defined in the module.
+                        The script is expected to generate all secrets and facts defined for this service.
                       '';
                     };
                     finalScript = lib.mkOption {
