@@ -5,6 +5,8 @@
   ...
 }:
 {
+  imports = [ ./zola-pages.nix ];
+
   perSystem =
     { pkgs, ... }:
     let
@@ -16,20 +18,22 @@
 
       clanCoreNixosModules = [ self.nixosModules.clanCore ] ++ allNixosModules;
 
-      # options = modules: (inputs.nixpkgs.legacyPackages.x86_64-linux.nixos { imports = modules; }).options;
-      options =
-        modules:
-        (lib.evalModules {
-          modules = modules;
-          # modules = modules ++ ["${inputs.nixpkgs}/nixos/modules/misc/assertions.nix"];
-          # specialArgs = { pkgs = pkgs; };
-        }).options;
+      # TODO: optimally we would not have to evaluate all nixos modules for every page
+      #   but some of our module options secretly depend on nixos modules.
+      #   We would have to get rid of these implicit dependencies and make them explicit
+      clanCoreNixos = pkgs.nixos { imports = clanCoreNixosModules; };
+
+      # using extendModules here instead of re-evaluating nixos every time
+      #   improves eval performance slightly (10%)
+      options = modules: (clanCoreNixos.extendModules { inherit modules; }).options;
 
       docs =
         options:
         pkgs.nixosOptionsDoc {
           options = options;
           warningsAreErrors = false;
+          # transform each option so that the declaration link points to git.clan.lol
+          #   and not to the /nix/store
           transformOptions =
             opt:
             opt
@@ -53,20 +57,13 @@
       outputsFor = name: docs: { packages."docs-md-${name}" = docs.optionsCommonMark; };
 
       clanModulesPages = lib.flip lib.mapAttrsToList self.clanModules (
-        name: module:
-        outputsFor "module-${name}" (
-          docs (options ([ module ] ++ clanCoreNixosModules)).clan.${name} or { }
-        )
+        name: module: outputsFor "module-${name}" (docs ((options [ module ]).clan.${name} or { }))
       );
     in
     {
-      imports =
-        clanModulesPages
-        # uncomment to render clanCore top-level options as extra pages
-        # ++ clanCorePages
-        ++ [
-          # renders all clanCore options as a single page
-          (outputsFor "core-options" (docs (options clanCoreNixosModules).clanCore))
-        ];
+      imports = clanModulesPages ++ [
+        # renders all clanCore options in a single page
+        (outputsFor "core-options" (docs (options [ ]).clanCore))
+      ];
     };
 }
