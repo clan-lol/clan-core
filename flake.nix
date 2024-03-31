@@ -36,7 +36,7 @@
           ./checks/flake-module.nix
           ./clanModules/flake-module.nix
           ./devShell.nix
-          ./docs/flake-module.nix
+          ./docs/flake-module
           ./formatter.nix
           ./lib/flake-module.nix
           ./nixosModules/flake-module.nix
