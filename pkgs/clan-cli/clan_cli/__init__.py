@@ -120,6 +120,10 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
 # this will be the entrypoint under /bin/clan (see pyproject.toml config)
 @profile
 def main() -> None:
+    from .flatpak import is_flatpak
+
+    print("Is flatpak?", is_flatpak())
+
     parser = create_parser()
     args = parser.parse_args()
 

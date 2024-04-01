@@ -23,6 +23,7 @@ class SopsKey:
 
 def get_public_key(privkey: str) -> str:
     cmd = nix_shell(["nixpkgs#age"], ["age-keygen", "-y"])
+    print(cmd)
     try:
         res = subprocess.run(
             cmd, input=privkey, stdout=subprocess.PIPE, text=True, check=True

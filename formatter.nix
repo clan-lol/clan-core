@@ -13,10 +13,6 @@
         "pkgs/clan-vm-manager".extraPythonPackages =
           self'.packages.clan-vm-manager.externalTestDeps ++ self'.packages.clan-cli.testDependencies;
       };
-      treefmt.settings.formatter.mypy.excludes = [
-        "*/flatpak-builder"
-        "*/build-dir"
-      ];
 
       treefmt.settings.formatter.nix = {
         command = "sh";
