@@ -69,9 +69,9 @@ in
   };
 
   clanCore.facts.services.moonlight = {
-    secrets."moonlight.key" = { };
-    secrets."moonlight.cert" = { };
-    facts."moonlight.cert" = { };
+    secret."moonlight.key" = { };
+    secret."moonlight.cert" = { };
+    public."moonlight.cert" = { };
     generator.path = [
       pkgs.coreutils
       ms-accept
