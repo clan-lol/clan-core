@@ -1,13 +1,23 @@
-id: org.clan.cli.Devel
+id: org.clan.manager.Devel
 runtime: org.freedesktop.Platform
 runtime-version: '23.08'
 sdk: org.freedesktop.Sdk
-command: clan
+command: clan-vm-manager
 modules:
+  - name: clan-vm-manager
+    buildsystem: simple
+    build-commands:
+      - pip3 install --prefix=/app ./pkgs/clan-vm-manager
+    build-options:
+     build-args:
+      - --share=network
+    sources:
+      - type: dir
+        path: ../../../
   - name: clan-cli
     buildsystem: simple
     build-commands:
-      - pip install --prefix=/app --no-deps ./pkgs/clan-cli
+      - pip3 install --prefix=/app --no-build-isolation --no-deps ./pkgs/clan-cli
     build-options:
      build-args:
       - --share=network
@@ -47,4 +57,3 @@ finish-args:
   - "--filesystem=~/.config/dconf:ro"
   - "--talk-name=ca.desrt.dconf"
   - "--env=GIO_EXTRA_MODULES=/app/lib/gio/modules/"
-
