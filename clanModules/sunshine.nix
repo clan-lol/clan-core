@@ -187,7 +187,7 @@ in
     wantedBy = [ "graphical-session.target" ];
   };
 
-  clanCore.facts.services.sunshine = {
+  clanCore.facts.services.ergochat = {
     secret."sunshine.key" = { };
     secret."sunshine.cert" = { };
     public."sunshine-uuid" = { };
