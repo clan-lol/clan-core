@@ -8,6 +8,7 @@
       ];
     };
     borgbackup = ./borgbackup.nix;
+    ergochat = ./ergochat.nix;
     deltachat = ./deltachat.nix;
     graphical = ./graphical.nix;
     localbackup = ./localbackup.nix;
