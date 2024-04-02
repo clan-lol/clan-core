@@ -40,7 +40,6 @@ def install_nixos(
             "nixos-anywhere",
             "-f",
             f"{machine.flake}#{machine.name}",
-            "-t",
             "--no-reboot",
             "--extra-files",
             str(tmpdir),
