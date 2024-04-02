@@ -6,7 +6,18 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-from . import backups, config, facts, flakes, flash, history, machines, secrets, vms
+from . import (
+    backups,
+    config,
+    facts,
+    flakes,
+    flash,
+    flatpak,
+    history,
+    machines,
+    secrets,
+    vms,
+)
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel
 from .errors import ClanCmdError, ClanError
@@ -129,6 +140,8 @@ def main() -> None:
     if args.debug:
         setup_logging(logging.DEBUG, root_log_name=__name__.split(".")[0])
         log.debug("Debug log activated")
+        if flatpak.is_flatpak():
+            log.debug("Running inside a flatpak sandbox")
     else:
         setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
 
