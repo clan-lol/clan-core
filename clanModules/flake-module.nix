@@ -8,19 +8,20 @@
       ];
     };
     borgbackup = ./borgbackup.nix;
-    localbackup = ./localbackup.nix;
     deltachat = ./deltachat.nix;
+    graphical = ./graphical.nix;
+    localbackup = ./localbackup.nix;
+    localsend = ./localsend.nix;
     matrix-synapse = ./matrix-synapse.nix;
     moonlight = ./moonlight.nix;
+    sshd = ./sshd.nix;
     sunshine = ./sunshine.nix;
     syncthing = ./syncthing.nix;
-    sshd = ./sshd.nix;
+    thelounge = ./thelounge.nix;
     vm-user = ./vm-user.nix;
-    graphical = ./graphical.nix;
+    waypipe = ./waypipe.nix;
     xfce = ./xfce.nix;
     xfce-vm = ./xfce-vm.nix;
     zt-tcp-relay = ./zt-tcp-relay.nix;
-    localsend = ./localsend.nix;
-    waypipe = ./waypipe.nix;
   };
 }
