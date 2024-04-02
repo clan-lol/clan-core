@@ -65,7 +65,9 @@
       ];
 
       # Activates inotify compatibility on syncthing
-      boot.kernel.sysctl."fs.inotify.max_user_watches" = lib.mkDefault 524288;
+      # use mkOverride 900 here as it otherwise would collide with the default of the
+      # upstream nixos xserver.nix
+      boot.kernel.sysctl."fs.inotify.max_user_watches" = lib.mkOverride 900 524288;
 
       services.syncthing = {
         enable = true;
