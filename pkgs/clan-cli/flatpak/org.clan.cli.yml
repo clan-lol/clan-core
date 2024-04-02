@@ -1,0 +1,55 @@
+id: org.clan.cli
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+command: clan
+modules:
+  - name: clan-cli
+    buildsystem: simple
+    build-commands:
+      - pip install --prefix=/app --no-deps ./pkgs/clan-cli
+    build-options:
+     build-args:
+      - --share=network
+    sources:
+      - type: git
+        branch: init-flatpak
+        # branch: init/flatpak
+        path: /home/kenji/git/clan-projects/clan-core
+        # url: https://git.clan.lol/clan/clan-core/
+        # branch: init/clan-cli-flatpak
+        # branch: main
+finish-args:
+  - "--share=network"
+  - "--filesystem=host"
+  - "--filesystem=host-etc"
+  - "--filesystem=/run/current-system/sw/bin/nix"
+  - "--filesystem=/run/opengl-driver/"
+  - "--filesystem=/nix/store/"
+  - "--filesystem=xdg-config/sops"
+  - "--filesystem=xdg-run/qemu"
+  - "--filesystem=/tmp:rw"
+  - "--filesystem=/tmp/org.clan.cli/:create"
+  - "--env=TMPDIR=/tmp/org.clan.cli/"
+  - "--device=all"
+  - "--allow=multiarch"
+  - "--allow=devel"
+  # - "--filesystem=/dev/vsock"
+  - "--env=PATH=/run/current-system/sw/bin"
+  - "--share=ipc"
+  # - "--unshare=ipc"
+  - "--socket=fallback-x11"
+  - "--socket=wayland"
+  - "--socket=pulseaudio"
+  - "--socket=system-bus"
+  - "--socket=session-bus"
+  - "--filesystem=xdg-run/gvfs"
+  - "--filesystem=xdg-run/gvfsd"
+  - "--filesystem=xdg-run/pipewire-0:rw"
+  - "--talk-name=org.clan.cli"
+  - "--system-talk-name=org.freedesktop.UDisks2"
+  - "--filesystem=xdg-run/dconf"
+  - "--filesystem=~/.config/dconf:ro"
+  - "--talk-name=ca.desrt.dconf"
+  - "--env=GIO_EXTRA_MODULES=/app/lib/gio/modules/"
+
