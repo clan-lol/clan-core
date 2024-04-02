@@ -7,7 +7,6 @@ out.log
 democlan
 example_clan
 result*
-/pkgs/clan-cli/clan_cli/nixpkgs
 /pkgs/clan-cli/clan_cli/webui/assets
 nixos.qcow2
 **/*.glade~
