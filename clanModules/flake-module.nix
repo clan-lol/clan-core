@@ -12,6 +12,7 @@
     deltachat = ./deltachat.nix;
     matrix-synapse = ./matrix-synapse.nix;
     moonlight = ./moonlight.nix;
+    nextcloud = ./nextcloud.nix;
     sunshine = ./sunshine.nix;
     syncthing = ./syncthing.nix;
     sshd = ./sshd.nix;
