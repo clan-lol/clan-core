@@ -20,3 +20,9 @@ __pycache__
 .reports
 .ruff_cache
 htmlcov
+
+# flatpak
+.flatpak-builder
+build
+build-dir
+repo
