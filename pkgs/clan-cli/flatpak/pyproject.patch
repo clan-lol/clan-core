@@ -1,0 +1,13 @@
+diff --git a/pkgs/clan-cli/pyproject.toml b/pkgs/clan-cli/pyproject.toml
+index 9193d90a..037632a1 100644
+--- a/pkgs/clan-cli/pyproject.toml
++++ b/pkgs/clan-cli/pyproject.toml
+@@ -9,7 +9,7 @@ dynamic = ["version"]
+ scripts = { clan = "clan_cli:main" }
+ 
+ [tool.setuptools.packages.find]
+-exclude = ["clan_cli.nixpkgs*", "result"]
++exclude = ["result"]
+ 
+ [tool.setuptools.package-data]
+ clan_cli = ["py.typed", "config/jsonschema/*", "webui/assets/**/*", "vms/mimetypes/**/*"]
