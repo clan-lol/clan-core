@@ -73,7 +73,9 @@ let
             // lib.optionalAttrs (pkgs != null) { nixpkgs.pkgs = lib.mkForce pkgs; }
           )
         ];
-      inherit specialArgs;
+      specialArgs = {
+        inherit clan-core;
+      } // specialArgs;
     };
 
   allMachines = machinesDirs // machines;
