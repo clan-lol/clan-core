@@ -116,7 +116,9 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
     add_parser.add_argument("user", help="the name of the user", type=user_name_type)
     add_parser.add_argument(
         "key",
-        help="public key or private key of the user",
+        help="public key or private key of the user."
+        "Execute 'clan secrets key --help' on how to retrieve a key."
+        "To fetch an age key from an SSH host key: ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age",
         type=public_or_private_age_key_type,
     )
     add_parser.set_defaults(func=add_command)
