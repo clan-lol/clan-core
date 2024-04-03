@@ -11,7 +11,7 @@ $ nix shell git+https://git.clan.lol/clan/clan-core
 2. Then use the following commands to initialize a new clan-flake:
 
 ```shellSession
-$ clan flake create my-clan
+$ clan flakes create my-clan
 ```
 
 This action will generate two primary files: `flake.nix` and `.clan-flake`.
