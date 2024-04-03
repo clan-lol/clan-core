@@ -103,7 +103,11 @@ def flash_command(args: argparse.Namespace) -> None:
     machine = Machine(opts.machine, flake=opts.flake)
     if opts.confirm and not opts.dry_run:
         disk_str = ", ".join(f"{name}={device}" for name, device in opts.disks.items())
-        ask = input(f"Install {machine.name} to {disk_str}? [y/N] ")
+        msg = f"Install {machine.name}"
+        if disk_str != "":
+            msg += f" to {disk_str}"
+        msg += "? [y/N] "
+        ask = input(msg)
         if ask != "y":
             return
     flash_machine(machine, disks=opts.disks, dry_run=opts.dry_run, debug=opts.debug)
