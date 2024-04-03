@@ -12,7 +12,7 @@ Add the clan tool to your flake inputs:
 clan.url = "git+https://git.clan.lol/clan/clan-core";
 ```
 
-and inside the mkFlake:
+and inside the buildClan:
 
 ```
 imports = [
