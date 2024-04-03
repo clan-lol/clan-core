@@ -18,6 +18,12 @@ from clan_cli.history.add import HistoryEntry
 from clan_cli.machines.machines import Machine
 
 from clan_vm_manager.components.executor import MPProcess, spawn
+from clan_vm_manager.singletons.toast import (
+    InfoToast,
+    SuccessToast,
+    ToastOverlay,
+    WarningToast,
+)
 
 gi.require_version("GObject", "2.0")
 gi.require_version("Gtk", "4.0")
@@ -96,7 +102,16 @@ class VMObject(GObject.Object):
         # Signal may be emited multiple times
         self.emit("vm_build_notify", self.is_building(), self.is_running())
 
-        self.switch.set_state(self.is_running() and not self.is_building())
+        prev_state = self.switch.get_state()
+        next_state = self.is_running() and not self.is_building()
+
+        self.switch.set_state(next_state)
+        if prev_state is False and next_state is True:
+            ToastOverlay.use().add_toast_unique(
+                SuccessToast(f"{source.data.flake.flake_attr} started").toast,
+                "success.vm.start",
+            )
+
         if self.switch.get_sensitive() is False and not self.is_building():
             self.switch.set_sensitive(True)
 
@@ -107,6 +122,10 @@ class VMObject(GObject.Object):
             with self.switch.handler_block(self.switch_handler_id):
                 self.switch.set_active(False)
             log.error(f"VM exited with error. Exitcode: {exitc}")
+            ToastOverlay.use().add_toast_unique(
+                WarningToast(f"VM exited with error. Exitcode: {exitc}").toast,
+                "warning.vm.exit",
+            )
 
     def _on_switch_toggle(self, switch: Gtk.Switch, user_state: bool) -> None:
         if switch.get_active():
@@ -309,6 +328,10 @@ class VMObject(GObject.Object):
             time.sleep(self.KILL_TIMEOUT / 20)
         GLib.idle_add(self._vm_status_changed_task)
         log.debug(f"VM {self.get_id()} has stopped")
+
+        ToastOverlay.use().add_toast_unique(
+            InfoToast(f"Stopped {self.get_id()}").toast, "info.vm.exit"
+        )
 
     def shutdown(self) -> None:
         if not self.is_running():

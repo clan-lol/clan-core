@@ -11,6 +11,7 @@ from clan_vm_manager.components.interfaces import ClanConfig
 from clan_vm_manager.components.vmobj import VMObject
 from clan_vm_manager.singletons.toast import (
     LogToast,
+    SuccessToast,
     ToastOverlay,
     WarningToast,
 )
@@ -318,6 +319,10 @@ class ClanList(Gtk.Box):
         JoinList.use().push(clan_uri, self.on_after_join)
 
     def on_after_join(self, source: JoinValue) -> None:
+        ToastOverlay.use().add_toast_unique(
+            SuccessToast(f"Added/updated {source.url.machine.name}").toast,
+            "success.join",
+        )
         # If the join request list is empty disable the shadow artefact
         if JoinList.use().is_empty():
             self.join_boxed_list.add_css_class("no-shadow")

@@ -5,6 +5,7 @@ from typing import Any, ClassVar
 import gi
 
 from clan_vm_manager import assets
+from clan_vm_manager.singletons.toast import InfoToast, ToastOverlay
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -52,6 +53,7 @@ class MainApplication(Adw.Application):
 
     def on_shutdown(self, source: "MainApplication") -> None:
         log.debug("Shutting down Adw.Application")
+
         if self.get_windows() == []:
             log.warning("No windows to destroy")
         if self.window:
@@ -74,6 +76,11 @@ class MainApplication(Adw.Application):
         elif self.window is None:
             setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
         log.debug("Debug logging enabled")
+
+        if "debug" in options:
+            ToastOverlay.use().add_toast_unique(
+                InfoToast("Debug logging enabled").toast, "info.debugging.enabled"
+            )
 
         args = command_line.get_arguments()
 
