@@ -94,6 +94,20 @@ class WarningToast:
             self.toast.set_timeout(0)
 
 
+class InfoToast:
+    toast: Adw.Toast
+
+    def __init__(self, message: str, persistent: bool = False) -> None:
+        super().__init__()
+        self.toast = Adw.Toast.new(f"<span>❕</span> {message}")
+        self.toast.set_use_markup(True)
+
+        self.toast.set_priority(Adw.ToastPriority.NORMAL)
+
+        if persistent:
+            self.toast.set_timeout(0)
+
+
 class SuccessToast:
     toast: Adw.Toast
 
