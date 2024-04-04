@@ -1,16 +1,15 @@
+clan-core:
 {
   config,
   lib,
   flake-parts-lib,
   inputs,
-  self,
   ...
 }:
 let
   inherit (lib) mkOption types;
   buildClan = import ../lib/build-clan {
-    inherit lib;
-    clan-core = self;
+    inherit lib clan-core;
     inherit (inputs) nixpkgs;
   };
 
@@ -70,4 +69,5 @@ in
         ;
     };
   };
+  _file = __curPos.file;
 }
