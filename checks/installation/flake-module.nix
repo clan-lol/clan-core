@@ -1,21 +1,12 @@
-{ self, ... }:
-let
-  clan = self.lib.buildClan {
-    clanName = "testclan";
-    directory = ../..;
-    machines = {
-      test_install_machine = {
-        clan.networking.targetHost = "test_install_machine";
-        imports = [ self.nixosModules.test_install_machine ];
-      };
-    };
-  };
-in
+{ self, lib, ... }:
 {
-  flake.nixosConfigurations = {
-    inherit (clan.nixosConfigurations) test_install_machine;
+  clan.machines.test_install_machine = {
+    clan.networking.targetHost = "test_install_machine";
+    fileSystems."/".device = lib.mkDefault "/dev/null";
+    boot.loader.grub.device = lib.mkDefault "/dev/null";
+
+    imports = [ self.nixosModules.test_install_machine ];
   };
-  flake.clanInternals = clan.clanInternals;
   flake.nixosModules = {
     test_install_machine =
       { lib, modulesPath, ... }:
@@ -43,10 +34,10 @@ in
     let
       dependencies = [
         self
+        self.nixosConfigurations.test_install_machine.config.system.build.toplevel
+        self.nixosConfigurations.test_install_machine.config.system.build.diskoScript
+        self.nixosConfigurations.test_install_machine.config.system.clan.deployment.file
         pkgs.stdenv.drvPath
-        clan.clanInternals.machines.x86_64-linux.test_install_machine.config.system.build.toplevel
-        clan.clanInternals.machines.x86_64-linux.test_install_machine.config.system.build.diskoScript
-        clan.clanInternals.machines.x86_64-linux.test_install_machine.config.system.clan.deployment.file
         pkgs.nixos-anywhere
       ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
