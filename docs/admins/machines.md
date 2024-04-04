@@ -21,7 +21,7 @@ In the example below, we demonstrate how to add a new user named `my-user` and s
 $ clan config --machine my-machine users.users.my-user.isNormalUser true
 
 # Set a password for the user
-$ clan config --machine my-machine users.users.my-user.hashedPassword $(mkpasswd)
+$ clan config --machine my-machine users.users.my-user.initialHashedPassword $(mkpasswd)
 ```
 
 _Note: The `$(mkpasswd)` command generates a hashed password. Ensure you have the `mkpasswd` utility installed or use an alternative method to generate a secure hashed password._

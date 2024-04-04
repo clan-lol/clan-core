@@ -1,17 +1,11 @@
 { self, ... }:
 {
-  flake.clanInternals =
-    (self.lib.buildClan {
-      clanName = "testclan";
-      directory = ../..;
-      machines.test-backup = {
-        imports = [ self.nixosModules.test-backup ];
-        fileSystems."/".device = "/dev/null";
-        boot.loader.grub.device = "/dev/null";
-      };
-    }).clanInternals;
+  clan.machines.test-backup = {
+    imports = [ self.nixosModules.test-backup ];
+    fileSystems."/".device = "/dev/null";
+    boot.loader.grub.device = "/dev/null";
+  };
   flake.nixosModules = {
-
     test-backup =
       {
         pkgs,
@@ -75,7 +69,6 @@
           };
         };
         clanCore.facts.secretStore = "vm";
-        clanCore.clanDir = ../..;
 
         environment.systemPackages = [
           self.packages.${pkgs.system}.clan-cli
