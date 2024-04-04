@@ -36,7 +36,7 @@
           ./checks/flake-module.nix
           ./clanModules/flake-module.nix
           ./flakeModules/flake-module.nix
-          ./flakeModules/clan.nix
+          (import ./flakeModules/clan.nix inputs.self)
           ./devShell.nix
           ./docs/flake-module
           ./formatter.nix

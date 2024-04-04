@@ -1,7 +1,7 @@
-{ config, ... }:
+{ self, config, ... }:
 {
   flake.flakeModules = {
-    clan = ./clan.nix;
+    clan = import ./clan.nix self;
     default = config.flake.flakeModules.clan;
   };
 }
