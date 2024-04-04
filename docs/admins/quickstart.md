@@ -38,8 +38,6 @@ After creating your flake, you can check out how to add [new machines](./machine
 
 # Migrating Existing NixOS Configuration Flake
 
-Absolutely, let's break down the migration step by step, explaining each action in detail:
-
 #### Before You Begin
 
 1. **Backup Your Current Configuration**: Always start by making a backup of your current NixOS configuration to ensure you can revert if needed.
@@ -74,13 +72,13 @@ Absolutely, let's break down the migration step by step, explaining each action 
 
    ```nix
    {
-       nixosConfigurations.example-desktop = nixpkgs.lib.nixosSystem {
-           system = "x86_64-linux";
-           modules = [
-               ./configuration.nix
-           ];
-           [...]
-       };
+     nixosConfigurations.example-desktop = nixpkgs.lib.nixosSystem {
+       system = "x86_64-linux";
+       modules = [
+           ./configuration.nix
+       ];
+       [...]
+     };
    }
    ```
 
@@ -88,18 +86,16 @@ Absolutely, let's break down the migration step by step, explaining each action 
 
    ```nix
    let clan = clan-core.lib.buildClan {
-       # this needs to point at the repository root
-       directory = self;
-       specialArgs = {};
-       clanName = "NEEDS_TO_BE_UNIQUE"; # TODO: Changeme
-       machines = {
-           example-desktop = {
-               nixpkgs.hostPlatform = "x86_64-linux";
-               imports = [
-                   ./configuration.nix
-               ];
-           };
+     # this needs to point at the repository root
+     directory = self;
+     specialArgs = {};
+     clanName = "NEEDS_TO_BE_UNIQUE"; # TODO: Changeme
+     machines = {
+       example-desktop = {
+         nixpkgs.hostPlatform = "x86_64-linux";
+         imports = [ ./configuration.nix ];
        };
+     };
    };
    in { inherit (clan) nixosConfigurations clanInternals; }
    ```
@@ -133,3 +129,72 @@ By following these steps, you've successfully migrated your NixOS Flake configur
 ## What's next
 
 After creating your flake, you can check out how to add [new machines](./machines.md)
+
+---
+
+# Integrating Clan with Flakes using Flake-Parts
+
+Clan supports integration with the Nix ecosystem through its flake module, making it compatible with [flake.parts](https://flake.parts/),
+a tool for modular Nix flakes composition.
+Here's how to set up Clan using flakes and flake-parts.
+
+### 1. Update Your Flake Inputs
+
+To begin, you'll need to add `clan-core` as a new dependency in your flake's inputs. This is alongside the already existing dependencies, such as `flake-parts` and `nixpkgs`. Here's how you can update your `flake.nix` file:
+
+```diff
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs.flake-parts.url = "github:hercules-ci/flake-parts";
+  inputs.flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+
++ inputs.clan-core.url = "git+https://git.clan.lol/clan/clan-core";
++ inputs.clan-core.inputs.nixpkgs.follows = "nixpkgs";
++ inputs.clan-core.inputs.flake-parts.follows = "flake-parts";
+```
+
+### 2. Import Clan-Core Flake Module
+
+After updating your flake inputs, the next step is to import the `clan-core` flake module into your project. This allows you to utilize Clan functionalities within your Nix project. Update your `flake.nix` file as shown below:
+
+```nix
+  outputs =
+    inputs@{ flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } (
+      {
+        imports = [
+          inputs.clan-core.flakeModules.default
+        ];
+      }
+    );
+```
+
+### 3. Configure Clan Settings and Define Machines
+
+Lastly, define your Clan configuration settings, including a unique clan name and the machines you want to manage with Clan.
+This is where you specify the characteristics of each machine,
+such as the platform and specific Nix configurations. Update your `flake.nix` like this:
+
+```nix
+  outputs =
+    inputs@{ flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } (
+      {
+        imports = [
+          inputs.clan-core.flakeModules.default
+        ];
+        clan = {
+          clanName = "NEEDS_TO_BE_UNIQUE"; # Please replace this with a unique name for your clan.
+          directory = inputs.self;
+          machines = {
+            example-desktop = {
+              nixpkgs.hostPlatform = "x86_64-linux";
+              imports = [ ./configuration.nix ];
+            };
+          };
+        };
+      }
+    );
+```
+
+For detailed information about configuring `flake-parts` and the available options within Clan,
+refer to the Clan module documentation located [here](https://git.clan.lol/clan/clan-core/src/branch/main/flakeModules/clan.nix).
