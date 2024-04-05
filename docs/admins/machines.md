@@ -1,28 +1,26 @@
-# Managing NixOS Machines
+# Managing NixOS Machines with Clan
 
-## Add Your First Machine
+Begin your journey in machine management by introducing a new machine into your Clan environment. Follow these streamlined steps to get started:
 
-To start managing a new machine, use the following commands to create and then list your machines:
+## Adding Your First Machine
 
-```shellSession
-$ clan machines create my-machine
-$ clan machines list
-my-machine
-```
+Begin your journey in machine management by introducing a new machine into your Clan environment. Follow these streamlined steps to get started:
 
-## Configure Your Machine
+1. **Create Your Machine**: Generate a new machine configuration using the Clan CLI with the command below:
 
-In the example below, we demonstrate how to add a new user named `my-user` and set a password. This user will be configured to log in to the machine `my-machine`.
+    ```bash
+    clan machines create my-machine
+    ```
 
-### Creating a New User
+2. **List Available Machines**: Verify the successful addition of your new machine and view any existing machines in your configuration:
 
-```shellSession
-# Add a new user
-$ clan config --machine my-machine users.users.my-user.isNormalUser true
+    ```bash
+    clan machines list
+    ```
 
-# Set a password for the user
-$ clan config --machine my-machine users.users.my-user.initialHashedPassword $(mkpasswd)
-```
+
+
+
 
 _Note: The `$(mkpasswd)` command generates a hashed password. Ensure you have the `mkpasswd` utility installed or use an alternative method to generate a secure hashed password._
 
