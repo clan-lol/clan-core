@@ -50,7 +50,7 @@
               name: md: ''
                 # generate header for zola with title, template, weight
                 title="${name}"
-                echo -e "+++\ntitle = \"$title\"\ntemplate = \"docs/page.html\"\nweight = 0\n+++" > "$out/${name}.md"
+                echo -e "+++\ntitle = \"$title\"\ntemplate = \"docs/page.html\"\n+++" > "$out/${name}.md"
                 cat <<EOF >> "$out/${name}.md"
                 ${makeIntro name}
                 EOF
