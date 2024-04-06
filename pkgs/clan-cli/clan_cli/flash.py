@@ -4,6 +4,7 @@ import logging
 import os
 import shlex
 import shutil
+import textwrap
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -20,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 def flash_machine(
-    machine: Machine, disks: dict[str, str], dry_run: bool, debug: bool
+    machine: Machine, mode: str, disks: dict[str, str], dry_run: bool, debug: bool
 ) -> None:
     secret_facts_module = importlib.import_module(machine.secret_facts_module)
     secret_facts_store: SecretStoreBase = secret_facts_module.SecretStore(
@@ -56,6 +57,7 @@ def flash_machine(
 
         disko_install.extend(["--extra-files", str(local_dir), upload_dir])
         disko_install.extend(["--flake", str(machine.flake) + "#" + machine.name])
+        disko_install.extend(["--mode", str(mode)])
 
         cmd = nix_shell(
             ["nixpkgs#disko"],
@@ -73,6 +75,7 @@ class FlashOptions:
     dry_run: bool
     confirm: bool
     debug: bool
+    mode: str
 
 
 class AppendDiskAction(argparse.Action):
@@ -99,6 +102,7 @@ def flash_command(args: argparse.Namespace) -> None:
         dry_run=args.dry_run,
         confirm=not args.yes,
         debug=args.debug,
+        mode=args.mode,
     )
     machine = Machine(opts.machine, flake=opts.flake)
     if opts.confirm and not opts.dry_run:
@@ -110,7 +114,9 @@ def flash_command(args: argparse.Namespace) -> None:
         ask = input(msg)
         if ask != "y":
             return
-    flash_machine(machine, disks=opts.disks, dry_run=opts.dry_run, debug=opts.debug)
+    flash_machine(
+        machine, opts.mode, disks=opts.disks, dry_run=opts.dry_run, debug=opts.debug
+    )
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:
@@ -128,6 +134,20 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         help="device to flash to",
         default={},
     )
+    mode_help = textwrap.dedent("""\
+        Specify the mode of operation. Valid modes are: format, mount."
+        Format will format the disk before installing.
+        Mount will mount the disk before installing.
+        Mount is useful for updating an existing system without losing data.
+        """)
+    parser.add_argument(
+        "--mode",
+        type=str,
+        help=mode_help,
+        choices=["format", "mount"],
+        default="format",
+    )
+
     parser.add_argument(
         "--yes",
         action="store_true",

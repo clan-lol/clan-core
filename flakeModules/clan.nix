@@ -22,7 +22,7 @@ in
       description = "The directory containing the clan subdirectory";
     };
     specialArgs = mkOption {
-      type = types.attrsOf types.str;
+      type = types.attrsOf types.raw;
       default = { };
       description = "Extra arguments to pass to nixosSystem i.e. useful to make self available";
     };
