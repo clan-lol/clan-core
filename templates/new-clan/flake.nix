@@ -10,9 +10,9 @@
       pkgs = clan-core.inputs.nixpkgs.legacyPackages.${system};
       clan = clan-core.lib.buildClan {
         directory = self;
-        clanName = "__CHANGE_ME__";
+        clanName = "__CHANGE_ME__"; # Ensure this is internet wide unique.
         machines = {
-          machine1 = {
+          jon = {
             nixpkgs.hostPlatform = system;
             imports = [
               # TODO: boot into the installer
@@ -21,6 +21,7 @@
               # local> scp -r root@machine1:/tmp/config ./machines/machine1
               # local> Edit ./machines/machine1/configuration.nix to your liking
               ./modules/disko.nix
+              ./machines/jon/configuration.nix
               clan-core.clanModules.sshd
               {
                 # Set this for clan commands use ssh i.e. `clan machines update`
@@ -33,11 +34,12 @@
               }
             ];
           };
-          machine2 = {
+          sara = {
             nixpkgs.hostPlatform = system;
             imports = [
               # ./machines/machine2/configuration.nix
               ./modules/disko.nix
+              ./machines/sara/configuration.nix
               clan-core.clanModules.sshd
               {
                 # Set this for clan commands use ssh i.e. `clan machines update`

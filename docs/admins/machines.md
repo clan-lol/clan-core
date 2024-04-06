@@ -2,37 +2,6 @@
 
 Begin your journey in machine management by introducing a new machine into your Clan environment. Follow these streamlined steps to get started:
 
-## Adding Your First Machine
-
-Begin your journey in machine management by introducing a new machine into your Clan environment. Follow these streamlined steps to get started:
-
-1. **Create Your Machine**: Generate a new machine configuration using the Clan CLI with the command below:
-
-    ```bash
-    clan machines create my-machine
-    ```
-
-2. **List Available Machines**: Verify the successful addition of your new machine and view any existing machines in your configuration:
-
-    ```bash
-    clan machines list
-    ```
-
-
-
-
-
-_Note: The `$(mkpasswd)` command generates a hashed password. Ensure you have the `mkpasswd` utility installed or use an alternative method to generate a secure hashed password._
-
-## Test Your Machine Configuration Inside a VM
-
-Before deploying your configuration to a live environment, you can run a virtual machine (VM) to test the settings:
-
-```shellSession
-$ clan vms run my-machine
-```
-
-This command run a VM based on the configuration of `my-machine`, allowing you to verify changes in a controlled environment.
 
 ## Installing a New Machine
 

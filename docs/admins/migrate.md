@@ -31,35 +31,51 @@ Transitioning your existing setup to Clan Core is straightforward with these det
       git add .
       ```
 
-1. **Update Flake Inputs**: Introduce a new input in your `flake.nix` for the Clan Core dependency:
+
+3. **Create Machines Directory**: Create a machines directory where you put all machine specific nix configs like the configuration.nix
+    1. Create the machines directory in your git root example: `/etc/nixos/machines/`
+        ```bash
+        mkdir machines
+        ```
+
+    2. Inside the machines directory create a directory named after the hostname of the machine you want to manage with clan.
+        ```bash
+        mkdir machines/jons-desktop
+        ```
+
+    3. Move your `configuration.nix` and included files into  `machines/jons-desktop`
+        ```bash
+        mv configuration.nix machines/jons-desktop/configuration.nix 
+        ```
+
+    4. Git add your new machines folder
+        ```bash
+        git add machines
+        ```
+
+4. **Update Flake Inputs**: Introduce a new input in your `flake.nix` for the Clan Core dependency:
 
    ```nix
    inputs.clan-core = {
      url = "git+https://git.clan.lol/clan/clan-core";
-     inputs.nixpkgs.follows = "nixpkgs"; # Only if your configuration uses nixpkgs stable.
+     inputs.nixpkgs.follows = "nixpkgs"; # Only if your configuration uses nixpkgs unstable.
    };
    ```
 
    Ensure to replace the placeholder URL with the actual Git repository URL for Clan Core. The `inputs.nixpkgs.follows` line indicates that your flake should use the same `nixpkgs` input as your main flake configuration.
 
-2. **Update Outputs**: Modify the `outputs` section of your `flake.nix` to accommodate Clan Core's provisioning method:
 
-   ```diff
-   -  outputs = { self, nixpkgs }: {
-   +  outputs = { self, nixpkgs, clan-core }:
-   ```
-
-3. **Revise System Build Function**: Transition from using `lib.nixosSystem` to `clan-core.lib.buildClan` for building your machine derivations:
+5. **Revise System Build Function**: Transition from using `lib.nixosSystem` to `clan-core.lib.buildClan` for building your machine derivations:
 
    - Previously:
 
      ```nix
      outputs = { self, nixpkgs }: {
-      nixosConfigurations.example-desktop = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.jons-desktop = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [ ./configuration.nix ];
       };
-     }
+     };
      ```
 
    - With Clan Core:
@@ -70,37 +86,48 @@ Transitioning your existing setup to Clan Core is straightforward with these det
         directory = self; # Point this to the repository root.
         clanName = "__CHANGE_ME__"; # Ensure this is internet wide unique.
         machines = {
-          example-desktop = {
+          jons-desktop = {
             nixpkgs.hostPlatform = "x86_64-linux";
-            imports = [ ./configuration.nix ];
+            imports = [
+              clan-core.clanModules.sshd ## Add openssh server for clan management
+              ./machines/jons-desktop/configuration.nix
+            ];
           };
         };
       };
      in { inherit (clan) nixosConfigurations clanInternals; };
      ```
 
-4. **Rebuild and Switch**: Apply your updated configuration:
+
+
+6. **Rebuild and Switch**: Apply your updated configuration:
 
    ```shellSession
    sudo nixos-rebuild switch --flake /etc/nixos
    ```
 
-   This rebuilds your system configuration and switches to it. The `--flake .` argument specifies that the current directory's flake should be used.
+   This rebuilds your system configuration and switches to it. The `--flake /etc/nixos` argument specifies that the `/etc/nixos` directory's flake should be used.
 
-5. **Test Configuration**: Ensure your new configuration builds correctly without any errors or warnings before proceeding.
+7. **Test Configuration**: Ensure your new configuration builds correctly without any errors or warnings before proceeding.
 
-6. **Reboot**: If the build is successful and no issues are detected, reboot your system:
+8. **Reboot**: If the build is successful and no issues are detected, reboot your system:
 
    ```shellSession
    sudo reboot
    ```
 
-7. **Verify**: After rebooting, verify that your system operates with the new configuration and that all services and applications are functioning as expected.
+9. **Verify**: After rebooting, verify that your system operates with the new configuration and that all services and applications are functioning as expected.
+
+
+# TODO:
+* How do I use clan machines install to setup my current machine?
+* I probably need the clan-core sshd module for that?
+* We need to tell them that configuration.nix of a machine NEEDS to be under the directory CLAN_ROOT/machines/<machine-name> I think?
 
 
 ## What's next
 
-After creating your flake, you can check out how to add [new machines](./machines.md)
+After creating your clan checkout [managing machines](./machines.md)
 
 ---
 
@@ -159,10 +186,10 @@ such as the platform and specific Nix configurations. Update your `flake.nix` li
           inputs.clan-core.flakeModules.default
         ];
         clan = {
-          clanName = "NEEDS_TO_BE_UNIQUE"; # Please replace this with a unique name for your clan.
+          clanName = "__CHANGE_ME__"; # Ensure this is internet wide unique.
           directory = inputs.self;
           machines = {
-            example-desktop = {
+            jons-desktop = {
               nixpkgs.hostPlatform = "x86_64-linux";
               imports = [ ./configuration.nix ];
             };
