@@ -9,7 +9,7 @@ Begin your journey in machine management by introducing a new machine into your 
 * clan machine check / build (CI is missing)
 * TODO: How to join others people zerotier
   * `services.zerotier.joinNetworks = [ "network-id" ]`
-* Approve over webinterface or cli
+* Controler needs to approve over webinterface or cli
 
 
 ## Installing a New Machine
