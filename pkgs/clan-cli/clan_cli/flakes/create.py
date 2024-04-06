@@ -6,7 +6,7 @@ from ..cmd import CmdOut, run
 from ..errors import ClanError
 from ..nix import nix_command, nix_shell
 
-DEFAULT_URL: str = "git+https://git.clan.lol/clan/clan-core?new-clan"
+DEFAULT_URL: str = "git+https://git.clan.lol/clan/clan-core"
 
 
 def create_flake(directory: Path, url: str) -> dict[str, CmdOut]:
