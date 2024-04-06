@@ -3,6 +3,15 @@
 Begin your journey in machine management by introducing a new machine into your Clan environment. Follow these streamlined steps to get started:
 
 
+
+# TODO:
+* clan facts generate
+* clan machine check / build (CI is missing)
+* TODO: How to join others people zerotier
+  * `services.zerotier.joinNetworks = [ "network-id" ]`
+* Approve over webinterface or cli
+
+
 ## Installing a New Machine
 
 Clan CLI, in conjunction with [nixos-anywhere](https://github.com/nix-community/nixos-anywhere), provides a seamless method for installing NixOS on various machines.
