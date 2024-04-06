@@ -1,4 +1,4 @@
-{config, clan, lib, pkgs, ...}:
+{ ... }:
 {
 
 }

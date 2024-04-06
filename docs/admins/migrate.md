@@ -83,13 +83,14 @@ Transitioning your existing setup to Clan Core is straightforward with these det
      ```nix
      outputs = { self, nixpkgs, clan-core }:
       let clan = clan-core.lib.buildClan {
+        specialArgs = { }; # Add arguments to every nix import in here
         directory = self; # Point this to the repository root.
         clanName = "__CHANGE_ME__"; # Ensure this is internet wide unique.
         machines = {
           jons-desktop = {
             nixpkgs.hostPlatform = "x86_64-linux";
             imports = [
-              clan-core.clanModules.sshd ## Add openssh server for clan management
+              clan-core.clanModules.sshd # Add openssh server for clan management
               ./machines/jons-desktop/configuration.nix
             ];
           };
@@ -186,12 +187,16 @@ such as the platform and specific Nix configurations. Update your `flake.nix` li
           inputs.clan-core.flakeModules.default
         ];
         clan = {
+          specialArgs = { }; # Add arguments to every nix import in here
           clanName = "__CHANGE_ME__"; # Ensure this is internet wide unique.
           directory = inputs.self;
           machines = {
             jons-desktop = {
               nixpkgs.hostPlatform = "x86_64-linux";
-              imports = [ ./configuration.nix ];
+              imports = [
+                clan-core.clanModules.sshd # Add openssh server for clan management
+                ./configuration.nix
+              ];
             };
           };
         };

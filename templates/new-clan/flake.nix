@@ -9,6 +9,7 @@
       system = "x86_64-linux";
       pkgs = clan-core.inputs.nixpkgs.legacyPackages.${system};
       clan = clan-core.lib.buildClan {
+        specialArgs = { }; # Add arguments to every nix import in here
         directory = self;
         clanName = "__CHANGE_ME__"; # Ensure this is internet wide unique.
         machines = {
