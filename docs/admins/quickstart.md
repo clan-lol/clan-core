@@ -39,7 +39,38 @@ Look for `.clan-flake`, `flake.lock`, and `flake.nix` among your files to confir
 ### **Understanding `.clan-flake`**
 The `.clan-flake` file, while optional, is instrumental in helping the Clan CLI identify your project's root directory, easing project management.
 
+### Edit Flake.nix
+Open the `flake.nix` file and set a unique `clanName` if you want you can also set an optional `clanIcon` or even a per `machineIcon`. These will be used by our future clan GUI.
+
+### Remote into the target machine
+**Right now clan assumes that you already have NixOS running on the target machine.**  
+If that is not the case you can use our [installer image](./install-iso.md) that automatically generates an endpoint reachable over TOR with a random ssh password.
+
+On the remote execute:
+1. Generate a hardware-config.nix 
+    ```bash
+    nixos-generate-config --root /etc/nixos --no-filesystems
+    ```
+2. Copy it over and put it into you `machines/jon/hardware-config.nix` folder
+    ```bash
+    scp -r root@<jon-ip>:/etc/nixos/hardware-config.nix ./machines/jon
+    ```
+3. Find the remote disk id by executing on the remote:
+    ```bash
+    lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
+    ```
+4. Edit the following fields inside the `flake.nix`
+    - `clan.networking.targetHost = pkgs.lib.mkDefault "root@<IP_ADDRESS>";`
+    - `clan.diskLayouts.singleDiskExt4 = {
+                  device = "/dev/disk/by-id/__CHANGE_ME__";
+                };`
+
+5. Generate secrets used by clan modules by executing
+    ```bash
+    clan facts generate
+    ```
+
 ### **Next Steps**
-Ready to expand? Explore how to add new machines to your project with the helpful documentation [here](./machines.md).
+Ready to expand? Explore how to install a new machine with the helpful documentation [here](./machines.md).
 
 ---
