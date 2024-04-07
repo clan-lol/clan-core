@@ -7,6 +7,10 @@ let
         self.nixosModules.installer
         self.inputs.nixos-generators.nixosModules.all-formats
       ];
+      # Provide convenience for connecting to wifi      
+      networking.networkmanager.enable = true;
+      networking.wireless.enable = false;
+      users.users.root.extraGroups = [ "networkmanager" ];
 
       system.stateVersion = config.system.nixos.version;
       nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
