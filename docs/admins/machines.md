@@ -26,23 +26,39 @@ nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
 
 ### Prepare the USB Flash Drive
 
-- Insert your USB flash drive into your computer.
-- Identify your flash drive with `lsblk`. Look for the device with a matching size.
-- Ensure all partitions on the drive are unmounted. Replace `sdX` in the command below with your device identifier (like `sdb`, etc.):
+1. Insert your USB flash drive into your computer.
 
-```bash
-sudo umount /dev/sdX*
-```
+2. Identify your flash drive with `lsblk`.
+    ```shellSession
+    $ lsblk
+    NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
+    sdb                                             8:0    1 117,2G  0 disk
+    └─sdb1                                          8:1    1 117,2G  0 part  /run/media/qubasa/INTENSO
+    nvme0n1                                       259:0    0   1,8T  0 disk
+    ├─nvme0n1p1                                   259:1    0   512M  0 part  /boot
+    └─nvme0n1p2                                   259:2    0   1,8T  0 part
+      └─luks-f7600028-9d83-4967-84bc-dd2f498bc486 254:0    0   1,8T  0 crypt /nix/store                                                                 /
+    ```
+
+    In this case it's `sdb`
+
+3. Ensure all partitions on the drive are unmounted. Replace `sdX` in the command below with your device identifier (like `sdb`, etc.):
+
+    ```bash
+    sudo umount /dev/sdb1
+    ```
 
 ### Write the Image to the USB Drive
 
 Use the `dd` utility to write the NixOS installer image to your USB drive:
 
-```bash
-sudo dd bs=4M conv=fsync oflag=direct status=progress if=./result/stick.raw of=/dev/sdX
-```
+  ```bash
+  sudo dd bs=4M conv=fsync oflag=direct status=progress if=./result/stick.raw of=/dev/sd<X>
+  ```
 
-In case your USB device is `sdb` use `of=/dev/sdb`
+  In case your USB device is `sdb` use `of=/dev/sdb`
+
+
 
 ### Boot and Connect
 

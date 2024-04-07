@@ -7,11 +7,22 @@ let
         self.nixosModules.installer
         self.inputs.nixos-generators.nixosModules.all-formats
       ];
-      # Provide convenience for connecting to wifi      
-      networking.networkmanager.enable = true;
+      # Provide convenience for connecting to wifi
       networking.wireless.enable = false;
-      users.users.root.extraGroups = [ "networkmanager" ];
 
+      # Use iwd instead of wpa_supplicant. It has a user friendly CLI
+      networking.wireless.iwd = {
+        settings = {
+          Network = {
+            EnableIPv6 = true;
+            RoutePriorityOffset = 300;
+          };
+          Settings = {
+            AutoConnect = true;
+          };
+        };
+        enable = true;
+      };
       system.stateVersion = config.system.nixos.version;
       nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
     };
@@ -34,7 +45,6 @@ in
     machines.installer = {
       imports = [ installerModule ];
       fileSystems."/".device = lib.mkDefault "/dev/null";
-      boot.loader.grub.device = lib.mkDefault "/dev/null";
     };
   };
   flake.apps.x86_64-linux.install-vm.program = installer.config.formats.vm.outPath;

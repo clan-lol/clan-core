@@ -59,12 +59,12 @@
     fi
   '';
 
-  boot.loader.systemd-boot.enable = true;
 
   # Grub doesn't find devices for both BIOS and UEFI?
-
-  #boot.loader.grub.efiInstallAsRemovable = true;
-  #boot.loader.grub.efiSupport = true;
+  # NOTE: We need grub here. Otherwise, the system won't boot in some machines.
+  # example: Lenovo E495 didn't boot without grub.
+  boot.loader.grub.efiInstallAsRemovable = true;
+  boot.loader.grub.efiSupport = true;
   disko.devices = {
     disk = {
       stick = {
@@ -74,10 +74,10 @@
         content = {
           type = "gpt";
           partitions = {
-            #boot = {
-            #  size = "1M";
-            #  type = "EF02"; # for grub MBR
-            #};
+            boot = {
+             size = "1M";
+             type = "EF02"; # for grub MBR
+            };
             ESP = {
               size = "100M";
               type = "EF00";
