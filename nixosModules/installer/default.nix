@@ -5,6 +5,12 @@
   ...
 }:
 {
+  ############################################
+  #                                          #
+  # For install image debugging execute:     #
+  # $ qemu-kvm result/stick.raw -snapshot    #
+  #                                          #
+  ############################################
   systemd.tmpfiles.rules = [ "d /var/shared 0777 root root - -" ];
   imports = [
     (modulesPath + "/profiles/installation-device.nix")
@@ -59,12 +65,15 @@
     fi
   '';
 
+  # boot.loader.systemd-boot.enable = true;
 
   # Grub doesn't find devices for both BIOS and UEFI?
+  # Mic92: Please write where this exactly breaks if you want to comment out grub again.
   # NOTE: We need grub here. Otherwise, the system won't boot in some machines.
   # example: Lenovo E495 didn't boot without grub.
   boot.loader.grub.efiInstallAsRemovable = true;
   boot.loader.grub.efiSupport = true;
+
   disko.devices = {
     disk = {
       stick = {
@@ -75,8 +84,9 @@
           type = "gpt";
           partitions = {
             boot = {
-             size = "1M";
-             type = "EF02"; # for grub MBR
+              priority = 1;
+              size = "1M";
+              type = "EF02"; # for grub MBR
             };
             ESP = {
               size = "100M";
