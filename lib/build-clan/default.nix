@@ -58,6 +58,7 @@ let
           (machines.${name} or { })
           (
             {
+              networking.hostName = lib.mkDefault name;
               clanCore.clanName = clanName;
               clanCore.clanIcon = clanIcon;
               clanCore.clanDir = directory;
