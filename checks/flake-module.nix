@@ -20,7 +20,11 @@
           renderClanOptions =
             let
               docs = pkgs.nixosOptionsDoc {
-                options = (pkgs.nixos { imports = [ self.nixosModules.clanCore ]; }).options;
+                options =
+                  (pkgs.nixos {
+                    imports = [ self.nixosModules.clanCore ];
+                    clanCore.clanDir = ./.;
+                  }).options;
                 warningsAreErrors = false;
               };
             in

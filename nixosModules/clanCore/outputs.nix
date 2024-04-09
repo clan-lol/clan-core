@@ -65,7 +65,14 @@
   # optimization for faster secret generate/upload and machines update
   config = {
     system.clan.deployment.data = {
-      inherit (config.clanCore) facts;
+      facts = {
+        inherit (config.clanCore.facts)
+          secretUploadDirectory
+          secretModule
+          publicModule
+          services
+          ;
+      };
       inherit (config.clan.networking) targetHost buildHost;
       inherit (config.clan.deployment) requireExplicitUpdate;
     };
