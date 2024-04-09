@@ -26,3 +26,4 @@ htmlcov
 build
 build-dir
 repo
+.env
