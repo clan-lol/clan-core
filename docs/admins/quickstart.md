@@ -57,7 +57,7 @@ On the remote execute:
     ```
 3. Find the remote disk id by executing on the remote:
     ```bash
-    lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
+    lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
     ```
 4. Edit the following fields inside the `flake.nix`
     - `clan.networking.targetHost = pkgs.lib.mkDefault "root@<IP_ADDRESS>";`
