@@ -46,7 +46,7 @@ in
     clanCore.facts.secretModule = "clan_cli.facts.secret_modules.sops";
     clanCore.facts.secretUploadDirectory = lib.mkDefault "/var/lib/sops-nix";
     sops.secrets = builtins.mapAttrs (name: _: {
-      name = lib.strings.removePrefix "${config.networking.hostName}-" name;
+      name = lib.strings.removePrefix "${config.clanCore.machineName}-" name;
       sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";
       format = "binary";
     }) secrets;
