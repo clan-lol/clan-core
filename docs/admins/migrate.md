@@ -17,7 +17,7 @@ cp -r /etc/nixos ~/nixos-backup
 
 If you haven't yet adopted Nix Flakes in your project, follow these steps to initialize a new `flake.nix` file in your project directory.
 
-> Note: Clan is based on flakes, it is possible to use cLan without flakes but not officially supported yet.
+> Note: Clan is based on flakes, it is possible to use Clan without flakes but not officially supported yet.
 
 ### Generate a Trivial flake.nix File
 
@@ -81,13 +81,13 @@ path: <some/hash>
 
 Create a directory where you put **all machine specific configs** like the `configuration.nix` or `hardware-configuration.nix`
 
-> Following this structure will allow you nicely organize all your different machines and allows the cLan-CLI to automatically detect and manage your machines.
+> Following this structure will allow you nicely organize all your different machines and allows the Clan-CLI to automatically detect and manage your machines.
 
 ```bash
 mkdir -p machines/jons-desktop
 ```
 
-> In this case `jons-desktop` is the hostname of the machine you want to manage with cLan.
+> In this case `jons-desktop` is the hostname of the machine you want to manage with Clan.
 
 Move your `configuration.nix` and included files into `machines/jons-desktop`
 
@@ -213,11 +213,11 @@ This rebuilds your system configuration and switches to it.
 
 ## What's next?
 
-After creating your cLan see [managing machines](./machines.md)
+After creating your Clan see [managing machines](./machines.md)
 
 Or continue with **flake-parts integration**
 
-## Integrating Clan with Flakes using `flake-parts``
+## Integrating Clan with Flakes using `flake-parts`
 
 Clan supports integration with [flake.parts](https://flake.parts/) a tool which allows modular compositions.
 
@@ -286,7 +286,7 @@ Below is a guide on how to structure this in your flake.nix:
             jons-desktop = {
               nixpkgs.hostPlatform = "x86_64-linux";
               imports = [
-                clan-core.clanModules.sshd # Add openssh server for cLan management
+                clan-core.clanModules.sshd # Add openssh server for Clan management
                 ./configuration.nix
               ];
             };
@@ -307,6 +307,6 @@ With your flake created, explore how to add new machines by reviewing the docume
 
 ## TODO
 
-* How do I use cLan machines install to setup my current machine?
+* How do I use Clan machines install to setup my current machine?
 * I probably need the clan-core sshd module for that?
 * We need to tell them that configuration.nix of a machine NEEDS to be under the directory CLAN_ROOT/machines/<machine-name> I think?
