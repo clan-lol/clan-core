@@ -1,4 +1,4 @@
-# ZeroTier Configuration with NixOS in Clan
+# 04 Overlay Networks in Clan
 
 This guide provides detailed instructions for configuring
 [ZeroTier VPN](https://zerotier.com) within Clan. Follow the
