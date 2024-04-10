@@ -16,7 +16,10 @@
         { nixpkgs.hostPlatform = "x86_64-linux"; }
       ];
 
-      clanCoreNixosModules = [ self.nixosModules.clanCore ] ++ allNixosModules;
+      clanCoreNixosModules = [
+        self.nixosModules.clanCore
+        { clanCore.clanDir = ./.; }
+      ] ++ allNixosModules;
 
       # TODO: optimally we would not have to evaluate all nixos modules for every page
       #   but some of our module options secretly depend on nixos modules.
