@@ -12,57 +12,61 @@
         directory = self;
         clanName = "__CHANGE_ME__"; # Ensure this is internet wide unique.
         clanIcon = null; # Optional, a path to an image file
-        # TODO: boot into the installer
-        # remote> nixos-generate-config --root /tmp/config --no-filesystems
+        # Prerequisite: boot into the installer
+
         # local> mkdir -p ./machines/machine1
-        # local> scp -r root@machine1:/tmp/config ./machines/machine1
         # local> Edit ./machines/machine1/configuration.nix to your liking
         machines = {
           jon = {
-            nixpkgs.hostPlatform = system;
             imports = [
               ./machines/jon/configuration.nix
+              ./machines/jon/hardware-configuration.nix
               clan-core.clanModules.sshd
               clan-core.clanModules.diskLayouts
+              clan-core.clanModules.root-password
             ];
-            config = {
-              clanCore.machineIcon = null; # Optional, a path to an image file
 
-              # Set this for clan commands use ssh i.e. `clan machines update`
-              clan.networking.targetHost = pkgs.lib.mkDefault "root@<IP_ADDRESS>";
+            nixpkgs.hostPlatform = system;
+            clanCore.machineIcon = null; # Optional, a path to an image file
 
-              # TODO: Example how to use disko for more complicated setups
+            # Set this for clan commands use ssh i.e. `clan machines update`
+            clan.networking.targetHost = pkgs.lib.mkDefault "root@jon";
 
-              # remote> lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
-              clan.diskLayouts.singleDiskExt4 = {
-                device = "/dev/disk/by-id/__CHANGE_ME__";
-              };
+            # TODO: Example how to use disko for more complicated setups
 
-              services.getty.autologinUser = "root";
-
-              # TODO: Document that there needs to be one controller
-              clan.networking.zerotier.controller.enable = true;
+            # remote> lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
+            clan.diskLayouts.singleDiskExt4 = {
+              device = "/dev/disk/by-id/__CHANGE_ME__";
             };
+
+            # TODO: Document that there needs to be one controller
+            clan.networking.zerotier.controller.enable = true;
           };
           sara = {
-            nixpkgs.hostPlatform = system;
             imports = [
               ./machines/sara/configuration.nix
+              ./machines/jon/hardware-configuration.nix
               clan-core.clanModules.sshd
               clan-core.clanModules.diskLayouts
+              clan-core.clanModules.root-password
             ];
-            config = {
-              clanCore.machineIcon = null; # Optional, a path to an image file
+            nixpkgs.hostPlatform = system;
+            clanCore.machineIcon = null; # Optional, a path to an image file
 
-              # Set this for clan commands use ssh i.e. `clan machines update`
-              clan.networking.targetHost = pkgs.lib.mkDefault "root@<IP_ADDRESS>";
+            # Set this for clan commands use ssh i.e. `clan machines update`
+            clan.networking.targetHost = pkgs.lib.mkDefault "root@sara";
 
-              # local> clan facts generate
+            # local> clan facts generate
 
-              clan.diskLayouts.singleDiskExt4 = {
-                device = "/dev/disk/by-id/__CHANGE_ME__";
-              };
+            # remote> lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
+            clan.diskLayouts.singleDiskExt4 = {
+              device = "/dev/disk/by-id/__CHANGE_ME__";
             };
+
+            clan.networking.zerotier.networking.enable = true;
+            # After jon is deployed, uncomment the following line
+            # This will allow sara to share the VPN overlay network with jon
+            # clan.networking.zerotier.networkId = builtins.readFile ../jon/facts/zerotier-network-id;
           };
         };
       };
