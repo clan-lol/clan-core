@@ -1,6 +1,7 @@
-# Managing Secrets with Clan
+# 06 Secrets with Clan
 
-Clan enables encryption of secrets within a Clan flake, ensuring secure sharing among users.
+Clan enables encryption of secrets (such as passwords & keys) ensuring security and ease-of-use among users.
+
 This documentation will guide you through managing secrets with the Clan CLI,
 which utilizes the [sops](https://github.com/getsops/sops) format and
 integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.

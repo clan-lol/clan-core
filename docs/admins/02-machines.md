@@ -1,4 +1,4 @@
-# 01 Managing NixOS Machines with Clan
+# 02 Machines with Clan
 
 Integrating a new machine into your Clan environment is a very easy yet flexible process, allowing for a straight forward management of multiple NixOS configurations.
 
