@@ -322,7 +322,7 @@ clan machines install jon root@192.168.188.50
 > `Install jon to root@192.168.188.50? [y/N]`
 > Confirm with `y` after checking that for correctness
 
-If you didn't generate any secrets yet. The deployment command will fail (Don't worry you can re-run it). See [secrets-management](./secrets-management.md) for how to generate your initial secrets.
+If you didn't generate any secrets yet. The deployment command will fail (Don't worry you can re-run it). See [secrets](./06-secrets.md) for how to generate your initial secrets.
 
 #### 🎉 🚀 Your machine is all set up
 
