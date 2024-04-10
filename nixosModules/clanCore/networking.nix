@@ -74,8 +74,14 @@
     systemd.services.NetworkManager-wait-online.enable = false;
     systemd.network.wait-online.enable = false;
 
-    systemd.network.networks."99-ethernet-default-dhcp".networkConfig.MulticastDNS = lib.mkDefault "yes";
-    systemd.network.networks."99-wireless-client-dhcp".networkConfig.MulticastDNS = lib.mkDefault "yes";
+    systemd.network.networks."99-ethernet-default-dhcp".networkConfig = {
+      MulticastDNS = lib.mkDefault "yes";
+      LLMNR = lib.mkDefault "yes";
+    };
+    systemd.network.networks."99-wireless-client-dhcp".networkConfig = {
+      MulticastDNS = lib.mkDefault "yes";
+      LLMNR = lib.mkDefault "yes";
+    };
 
     # Use networkd instead of the pile of shell scripts
     networking.useNetworkd = lib.mkDefault true;
