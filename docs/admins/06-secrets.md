@@ -2,80 +2,52 @@
 
 Clan enables encryption of secrets (such as passwords & keys) ensuring security and ease-of-use among users.
 
-This documentation will guide you through managing secrets with the Clan CLI,
-which utilizes the [sops](https://github.com/getsops/sops) format and
-integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.
+Clan utilizes the [sops](https://github.com/getsops/sops) format and integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.
 
-## 1. Generating Keys and Creating Secrets
+This documentation will guide you through managing secrets with the Clan CLI
 
-To begin, generate a key pair:
+## 1. Initializing Secrets
 
-```shellSession
-$ clan secrets key generate
+### Create Your Master Keypair
+
+To get started, you'll need to create **Your master keypair**.
+
+Don't worry — if you've already made one before, this step won't change or overwrite it.
+
+```bash
+clan secrets key generate
 ```
 
 **Output**:
 
-```
+```bash
 Public key: age1wkth7uhpkl555g40t8hjsysr20drq286netu8zptw50lmqz7j95sw2t3l7
-Generated age private key at '/home/joerg/.config/sops/age/keys.txt' for your user.
+
 Generated age private key at '/home/joerg/.config/sops/age/keys.txt' for your user. Please back it up on a secure location or you will lose access to your secrets.
 Also add your age public key to the repository with 'clan secrets users add YOUR_USER age1wkth7uhpkl555g40t8hjsysr20drq286netu8zptw50lmqz7j95sw2t3l7' (replace YOUR_USER with your actual username)
 ```
 
-⚠️ **Important**: Backup the generated private key securely, or risk losing access to your secrets.
+⚠️ **Important**: Make sure to keep a safe backup of the private key you've just created.
+If it's lost, you won't be able to get to your secrets anymore because they all need the master key to be unlocked.
 
-> Note: All generated secrets that the `clan CLI` places in your repository are safe to be commit into version control (i.e. with `git`).
+> Note: It's safe to add any secrets created by the clan CLI and placed in your repository to version control systems like `git`.
 
-Next, add your public key to the Clan flake repository:
+### Add Your Public Key
 
-```shellSession
-$ clan secrets users add <your_username> <your_public_key>
+```bash
+clan secrets users add <your_username> <your_public_key>
 ```
 
-Doing so creates this structure in your Clan flake:
+⚠️ **Important**: Choose the username same username as on your Setup/Source Machine that you use to control the deployment with.
 
-```
+Once run this will create the following files:
+
+```bash
 sops/
 └── users/
     └── <your_username>/
         └── key.json
 ```
-
-Now, to set your first secret:
-
-```shellSession
-$ clan secrets set mysecret
-Paste your secret:
-```
-
-Note: As you type your secret, keypresses won't be displayed. Press Enter to save the secret.
-
-Retrieve the stored secret:
-
-```shellSession
-$ clan secrets get mysecret
-```
-
-And list all secrets like this:
-
-```shellSession
-$ clan secrets list
-```
-
-Secrets in the repository follow this structure:
-
-```
-sops/
-├── secrets/
-│   └── <secret_name>/
-│       ├── secret
-│       └── users/
-│           └── <your_username>/
-```
-
-The content of the secret is stored encrypted inside the `secret` file under `mysecret`.
-By default, secrets are encrypted with your key to ensure readability.
 
 ## 2. Adding Machine Keys
 
@@ -90,6 +62,8 @@ For existing machines, add their keys:
 ```shellSession
 $ clan secrets machines add <machine_name> <age_key>
 ```
+
+### Advanced
 
 To fetch an age key from an SSH host key:
 
@@ -111,9 +85,36 @@ You can add machines/users to existing secrets without modifying the secret:
 $ clan secrets machines add-secret <machine_name> <secret_name>
 ```
 
-## 4. Utilizing Groups
+## 4. Adding Secrets
 
-For convenience, Clan CLI allows group creation to simplify access management. Here's how:
+```shellSession
+$ clan secrets set mysecret
+Paste your secret: 
+```
+
+> Note: As you type - your secret won't be displayed. Press Enter to save the secret.
+
+## 5. Retrieving Stored Secrets
+
+```shellSession
+$ clan secrets get mysecret
+```
+
+### List all Secrets
+
+```shellSession
+$ clan secrets list
+```
+
+## 6. Groups
+
+Clan CLI makes it easy to manage access by allowing you to create groups.
+
+All users within a group inherit access to all secrets of the group.
+
+This feature eases the process of handling permissions for multiple users.
+
+Here's how to get started:
 
 1. **Creating Groups**:
 
@@ -135,7 +136,24 @@ For convenience, Clan CLI allows group creation to simplify access management. H
    $ clan secrets groups add-secret <group_name> <secret_name>
    ```
 
-# NixOS integration
+## Further
+
+Secrets in the repository follow this structure:
+
+```bash
+sops/
+├── secrets/
+│   └── <secret_name>/
+│       ├── secret
+│       └── users/
+│           └── <your_username>/
+```
+
+The content of the secret is stored encrypted inside the `secret` file under `mysecret`.
+
+By default, secrets are encrypted with your key to ensure readability.
+
+### NixOS integration
 
 A NixOS machine will automatically import all secrets that are encrypted for the
 current machine. At runtime it will use the host key to decrypt all secrets into
@@ -157,7 +175,7 @@ can get a path to secrets like this `config.sops.secrets.<name>.path`. Example:
 See the [readme](https://github.com/Mic92/sops-nix) of sops-nix for more
 examples.
 
-# Importing existing sops-based keys / sops-nix
+### Migration: Importing existing sops-based keys / sops-nix
 
 `clan secrets` stores each secrets in a single file, whereas [sops](https://github.com/Mic92/sops-nix)
 commonly allows to put all secrets in a yaml or json documents.
