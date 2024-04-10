@@ -41,12 +41,14 @@ in
       description = "The default groups to for encryption use when no groups are specified.";
     };
   };
+
   config = lib.mkIf (config.clanCore.facts.secretStore == "sops") {
-    clanCore.facts.secretDirectory = "/run/secrets";
+    # Before we generate a secret we cannot know the path yet, so we need to set it to an empty string
+    clanCore.facts.secretPathFunction =
+      secret: config.sops.secrets.${secret.config.name}.path or "/no-such-path";
     clanCore.facts.secretModule = "clan_cli.facts.secret_modules.sops";
     clanCore.facts.secretUploadDirectory = lib.mkDefault "/var/lib/sops-nix";
     sops.secrets = builtins.mapAttrs (name: _: {
-      name = lib.strings.removePrefix "${config.clanCore.machineName}-" name;
       sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";
       format = "binary";
     }) secrets;
