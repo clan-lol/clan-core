@@ -53,13 +53,13 @@ sops/
 
 New machines in Clan come with age keys stored in `./sops/machines/<machine_name>`. To list these machines:
 
-```shellSession
+```bash
 $ clan secrets machines list
 ```
 
 For existing machines, add their keys:
 
-```shellSession
+```bash
 $ clan secrets machines add <machine_name> <age_key>
 ```
 
@@ -67,7 +67,7 @@ $ clan secrets machines add <machine_name> <age_key>
 
 To fetch an age key from an SSH host key:
 
-```shellSession
+```bash
 $ ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age
 ```
 
@@ -75,19 +75,19 @@ $ ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age
 
 By default, secrets are encrypted for your key. To specify which users and machines can access a secret:
 
-```shellSession
+```bash
 $ clan secrets set --machine <machine1> --machine <machine2> --user <user1> --user <user2> <secret_name>
 ```
 
 You can add machines/users to existing secrets without modifying the secret:
 
-```shellSession
+```bash
 $ clan secrets machines add-secret <machine_name> <secret_name>
 ```
 
 ## 4. Adding Secrets
 
-```shellSession
+```bash
 $ clan secrets set mysecret
 Paste your secret: 
 ```
@@ -96,13 +96,13 @@ Paste your secret:
 
 ## 5. Retrieving Stored Secrets
 
-```shellSession
+```bash
 $ clan secrets get mysecret
 ```
 
 ### List all Secrets
 
-```shellSession
+```bash
 $ clan secrets list
 ```
 
@@ -120,19 +120,19 @@ Here's how to get started:
 
    Assign users to a new group, e.g., `admins`:
 
-   ```shellSession
+   ```bash
    $ clan secrets groups add admins <username>
    ```
 
 2. **Listing Groups**:
 
-   ```shellSession
+   ```bash
    $ clan secrets groups list
    ```
 
 3. **Assigning Secrets to Groups**:
 
-   ```shellSession
+   ```bash
    $ clan secrets groups add-secret <group_name> <secret_name>
    ```
 
@@ -182,7 +182,7 @@ commonly allows to put all secrets in a yaml or json documents.
 
 If you already happened to use sops-nix, you can migrate by using the `clan secrets import-sops` command by importing these documents:
 
-```shellSession
+```bash
 % clan secrets import-sops --prefix matchbox- --group admins --machine matchbox nixos/matchbox/secrets/secrets.yaml
 ```
 
