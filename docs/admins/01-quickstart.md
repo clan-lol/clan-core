@@ -114,7 +114,7 @@ On the remote execute:
 Ready to expand? Explore how to install a new machine with the helpful documentation [here](./02-machines.md).
 Ready to explore more?
 
-- **Adding New Machines to your setup**. [Following our template](/templates/new-clan/flake.nix)
+- **Adding New Machines to your setup**. [Following our templates](./99-templates.md)
 
 - **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with a USB stick. [Learn how] (./02-machines.md).
 
