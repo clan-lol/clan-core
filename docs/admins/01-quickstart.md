@@ -1,4 +1,4 @@
-# Getting Started with Your First Clan Project
+# 01 Getting Started
 
 Welcome to your simple guide on starting a new Clan project!
 
@@ -7,14 +7,42 @@ Welcome to your simple guide on starting a new Clan project!
 We've put together a straightforward guide to help you out:
 
 - [**Starting with a New Clan Project**](#starting-with-a-new-clan-project): Create a new Clan from scratch.
-- [**Migrating Existing Flake Configuration**](migrate.md#migrating-existing-nixos-configuration-flake): How to switch your current setup to a Clan setup.
-- [**Integrating Clan using Flake-Parts**](./migrate.md#integrating-clan-with-flakes-using-flake-parts)
+- [**Integrating Clan using Flake-Parts**](./08-flake-parts.md)
 
 ---
 
-## Starting with a New Clan Project
+## **Starting with a New Clan Project**
 
-Create your own clan with these initial steps:
+Create your own clan with these initial steps.
+
+### Prerequisites
+
+#### Linux
+
+Clan depends on nix installed on your system. Run the following command to install nix.
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+```
+
+#### NixOS
+
+If you run NixOS the `nix` binary is already installed.
+
+You will also need to enable the `flakes` and `nix-commands` experimental features.
+
+```bash
+# /etc/nix/nix.conf or ~/.config/nix/nix.conf
+experimental-features = nix-command flakes
+```
+
+#### Other
+
+Clan doesn't offer dedicated support for other OS yet.
+
+### Step 1: Add Clan CLI to Your Shell
+
+Add the Clan CLI into your development workflow:
 
 ### Step 1: Add Clan CLI to Your Shell
 
@@ -56,7 +84,7 @@ Open the `flake.nix` file and set a unique `clanName` if you want you can also s
 
 **Right now clan assumes that you already have NixOS running on the target machine.**
 
-If that is not the case you can use our [installer image](./install-iso.md) that automatically generates an endpoint reachable over TOR with a random ssh password.
+If that is not the case you can use our [installer image](./03-install-iso.md) that automatically generates an endpoint reachable over TOR with a random ssh password.
 
 On the remote execute:
 1. Generate a hardware-config.nix 
@@ -83,11 +111,11 @@ On the remote execute:
     ```
 
 ### **Next Steps**
-Ready to expand? Explore how to install a new machine with the helpful documentation [here](./machines.md).
+Ready to expand? Explore how to install a new machine with the helpful documentation [here](./02-machines.md).
 Ready to explore more?
 
 - **Adding New Machines to your setup**. [Following our template](/templates/new-clan/flake.nix)
 
-- **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with a USB stick. [Learn how] (./machines.md).
+- **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with a USB stick. [Learn how] (./02-machines.md).
 
 ---

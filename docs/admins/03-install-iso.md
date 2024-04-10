@@ -1,4 +1,4 @@
-# Clan Hardware Installation
+# 03 Clan Hardware Installation
 
 For installations on physical hardware, create a NixOS installer image and transfer it to a bootable USB drive as described below.
 
@@ -12,13 +12,14 @@ To create a bootable USB flash drive with the NixOS installer:
 nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
 ```
 
-> Make sure you do this inside 
+> Make sure you do this inside
 
 ### Prepare the USB Flash Drive
 
 1. Insert your USB flash drive into your computer.
 
 2. Identify your flash drive with `lsblk`.
+
     ```shellSession
     $ lsblk
     NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
@@ -27,7 +28,7 @@ nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
     nvme0n1                                       259:0    0   1,8T  0 disk
     ├─nvme0n1p1                                   259:1    0   512M  0 part  /boot
     └─nvme0n1p2                                   259:2    0   1,8T  0 part
-      └─luks-f7600028-9d83-4967-84bc-dd2f498bc486 254:0    0   1,8T  0 crypt /nix/store                                                                 /
+      └─luks-f7600028-9d83-4967-84bc-dd2f498bc486 254:0    0   1,8T  0 crypt /nix/store
     ```
 
     In this case it's `sdb`
@@ -47,8 +48,6 @@ Use the `dd` utility to write the NixOS installer image to your USB drive:
   ```
 
   In case your USB device is `sdb` use `of=/dev/sdb`
-
-
 
 ### Boot and Connect
 
@@ -72,7 +71,8 @@ After writing the installer to the USB drive, use it to boot the target machine.
 
 3. Save your settings. Put in the USB stick and reboot.
 
-4.  Press one of keys outlined below to go into the Boot Menu
+4. Press one of keys outlined below to go into the Boot Menu
+
        - **Dell**: F12 (Boot Menu)
        - **HP**: F9 (Boot Menu)
        - **Lenovo**: F12 (ThinkPad Boot Menu)
@@ -85,41 +85,55 @@ After writing the installer to the USB drive, use it to boot the target machine.
        - **Apple**: Option (Alt) Key (Boot Menu for Mac)
        - If your hardware was not listed read the manufacturers instructions how to enter the boot Menu/BIOS Setup.
 
-
-
-
 5. Select `NixOS` to boot into the clan installer
-
 
 6. The installer will display an IP address and a root password, which you can use to connect via SSH.  
     Alternatively you can also use the displayed QR code.
 
 7. Set your keyboard language. Important for writing passwords correctly.
+
     ```bash
     loadkeys de
     ```
 
 8. If you only have Wifi available, execute:
+
     1. Bring up the `iwd` shell
+
         ```bash
         iwctl
         ```
-    2. List available networks. Double press tab after station for autocompleting your wlan device. In this case `wlan0` 
+
+    2. List available networks. Double press tab after station for device autocompletion. In this case `wlan0` is the only network wifi device.
+
         ```shellSession
         [iwd] station wlan0 get-networks
         ```
+
     3. Connect to a Wifi network. Replace `SSID` with the wlan network name.
+
         ```shellSession
         [iwd] station wlan0 connect SSID
         ```
+
 9. Now that you have internet re-execute the init script by pressing `Ctrl+D` or by executing:
+
     ```bash
     bash
     ```
 
 10. Connect to the machine over ssh
+
     ```bash
     ssh-copy-id -o PreferredAuthentications=password root@<ip>
     ```
+
     Use the root password displayed on your screen as login.
 
+---
+
+# Whats next?
+
+- Deploy a clan machine-configuration on your prepared machine
+
+---

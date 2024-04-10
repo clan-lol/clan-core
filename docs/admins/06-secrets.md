@@ -1,6 +1,7 @@
-# Managing Secrets with Clan
+# 06 Secrets with Clan
 
-Clan enables encryption of secrets within a Clan flake, ensuring secure sharing among users.
+Clan enables encryption of secrets (such as passwords & keys) ensuring security and ease-of-use among users.
+
 This documentation will guide you through managing secrets with the Clan CLI,
 which utilizes the [sops](https://github.com/getsops/sops) format and
 integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.
@@ -19,11 +20,12 @@ $ clan secrets key generate
 Public key: age1wkth7uhpkl555g40t8hjsysr20drq286netu8zptw50lmqz7j95sw2t3l7
 Generated age private key at '/home/joerg/.config/sops/age/keys.txt' for your user.
 Generated age private key at '/home/joerg/.config/sops/age/keys.txt' for your user. Please back it up on a secure location or you will lose access to your secrets.
-Also add your age public key to the repository with 'clan secrets users add youruser age1wkth7uhpkl555g40t8hjsysr20drq286netu8zptw50lmqz7j95sw2t3l7' (replace you
-user with your user name)
+Also add your age public key to the repository with 'clan secrets users add YOUR_USER age1wkth7uhpkl555g40t8hjsysr20drq286netu8zptw50lmqz7j95sw2t3l7' (replace YOUR_USER with your actual username)
 ```
 
 ⚠️ **Important**: Backup the generated private key securely, or risk losing access to your secrets.
+
+> Note: All generated secrets that the `clan CLI` places in your repository are safe to be commit into version control (i.e. with `git`).
 
 Next, add your public key to the Clan flake repository:
 
