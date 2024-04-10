@@ -24,25 +24,25 @@
               ./machines/jon/configuration.nix
               clan-core.clanModules.sshd
               clan-core.clanModules.diskLayouts
-              {
-                config.clanCore.machineIcon = null; # Optional, a path to an image file
-
-                # Set this for clan commands use ssh i.e. `clan machines update`
-                config.clan.networking.targetHost = pkgs.lib.mkDefault "root@<IP_ADDRESS>";
-
-                # TODO: Example how to use disko for more complicated setups
-
-                # remote> lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
-                config.clan.diskLayouts.singleDiskExt4 = {
-                  device = "/dev/disk/by-id/__CHANGE_ME__";
-                };
-
-                config.services.getty.autologinUser = "root";
-
-                # TODO: Document that there needs to be one controller
-                config.clan.networking.zerotier.controller.enable = true;
-              }
             ];
+            config = {
+              clanCore.machineIcon = null; # Optional, a path to an image file
+
+              # Set this for clan commands use ssh i.e. `clan machines update`
+              clan.networking.targetHost = pkgs.lib.mkDefault "root@<IP_ADDRESS>";
+
+              # TODO: Example how to use disko for more complicated setups
+
+              # remote> lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
+              clan.diskLayouts.singleDiskExt4 = {
+                device = "/dev/disk/by-id/__CHANGE_ME__";
+              };
+
+              services.getty.autologinUser = "root";
+
+              # TODO: Document that there needs to be one controller
+              clan.networking.zerotier.controller.enable = true;
+            };
           };
           sara = {
             nixpkgs.hostPlatform = system;
@@ -50,19 +50,19 @@
               ./machines/sara/configuration.nix
               clan-core.clanModules.sshd
               clan-core.clanModules.diskLayouts
-              {
-                config.clanCore.machineIcon = null; # Optional, a path to an image file
-
-                # Set this for clan commands use ssh i.e. `clan machines update`
-                config.clan.networking.targetHost = pkgs.lib.mkDefault "root@<IP_ADDRESS>";
-
-                # local> clan facts generate
-
-                config.clan.diskLayouts.singleDiskExt4 = {
-                  device = "/dev/disk/by-id/__CHANGE_ME__";
-                };
-              }
             ];
+            config = {
+              clanCore.machineIcon = null; # Optional, a path to an image file
+
+              # Set this for clan commands use ssh i.e. `clan machines update`
+              clan.networking.targetHost = pkgs.lib.mkDefault "root@<IP_ADDRESS>";
+
+              # local> clan facts generate
+
+              clan.diskLayouts.singleDiskExt4 = {
+                device = "/dev/disk/by-id/__CHANGE_ME__";
+              };
+            };
           };
         };
       };
