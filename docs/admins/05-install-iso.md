@@ -20,7 +20,7 @@ nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
 
 2. Identify your flash drive with `lsblk`.
 
-    ```shellSession
+    ```bash
     $ lsblk
     NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
     sdb                                             8:0    1 117,2G  0 disk
@@ -106,13 +106,13 @@ After writing the installer to the USB drive, use it to boot the target machine.
 
     2. List available networks. Double press tab after station for device autocompletion. In this case `wlan0` is the only network wifi device.
 
-        ```shellSession
+        ```bash
         [iwd] station wlan0 get-networks
         ```
 
     3. Connect to a Wifi network. Replace `SSID` with the wlan network name.
 
-        ```shellSession
+        ```bash
         [iwd] station wlan0 connect SSID
         ```
 

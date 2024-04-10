@@ -20,7 +20,7 @@ such as USB hard drives or network-attached storage. It uses a tool called rsnap
 
 First, figure out which device you'll use for backups. You can see all connected devices by running this command in your terminal:
 
-```console
+```bash
 lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
 ```
 
@@ -58,7 +58,7 @@ Replace `/dev/sda2` with your device and `/mnt/hdd` with your preferred mount po
 
 4. **Create Backups:** To create a backup, run:
 
-   ```console
+   ```bash
    clan backups create mymachine
    ```
 
@@ -66,7 +66,7 @@ Replace `/dev/sda2` with your device and `/mnt/hdd` with your preferred mount po
 
 5. **Listing Backups:** To see available backups, run:
 
-  ```console
+  ```bash
   clan backups list mymachine
   ```
 
@@ -132,18 +132,18 @@ Ensure the path to the public key is correct.
 
   Backups are automatically performed nightly. To check the next scheduled backup, use:
 
-  ```console
+  ```bash
   systemctl list-timers | grep -E 'NEXT|borg'
   ```
 
 - **Listing Backups:** To see available backups, run:
 
-  ```console
+  ```bash
   clan backups list mymachine
   ```
 
 - **Manual Backups:** You can also initiate a backup manually:
 
-  ```console
+  ```bash
   clan backups create mymachine
   ```
