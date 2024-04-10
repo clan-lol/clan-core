@@ -18,6 +18,7 @@
     sshd = ./sshd.nix;
     sunshine = ./sunshine.nix;
     syncthing = ./syncthing.nix;
+    root-password = ./root-password.nix;
     thelounge = ./thelounge.nix;
     vm-user = ./vm-user.nix;
     waypipe = ./waypipe.nix;
