@@ -1,4 +1,4 @@
-# Getting Started with Your First Clan Project
+# 01 Getting Started
 
 Welcome to your simple guide on starting a new Clan project!
 

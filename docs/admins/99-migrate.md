@@ -1,4 +1,4 @@
-# Migrating Existing NixOS Configuration Flake to Clan Core
+# 99 Migration guide
 
 Transitioning your existing setup to Clan Core is easy and straightforward. Follow this guide to ensure a smooth migration.
 
