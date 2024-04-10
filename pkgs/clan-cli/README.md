@@ -22,13 +22,13 @@ After you can use the local bin wrapper to test things in the cli:
 By default tests run in parallel using pytest-parallel.
 pytest-parallel however breaks `breakpoint()`. To disable it, use this:
 
-```console
+```bash
 pytest -n0 -s
 ```
 
 You can also run a single test like this:
 
-```console
+```bash
 pytest -n0 -s tests/test_secrets_cli.py::test_users
 ```
 
@@ -36,12 +36,12 @@ pytest -n0 -s tests/test_secrets_cli.py::test_users
 
 Run all impure checks
 
-```console
+```bash
 nix run .#impure-checks
 ```
 
 Run all checks
 
-```console
+```bash
 nix flake check
 ```

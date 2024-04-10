@@ -15,7 +15,7 @@ In this tutorial we will guide you through building and flashing it to a bootabl
 
 2. Identify your flash drive with `lsblk`
 
-    ```shellSession
+    ```bash
     $ lsblk
     NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
     sdb                                             8:0    1 117,2G  0 disk
@@ -84,7 +84,7 @@ See: Guide for Wifi Below
 
 ### Whats next?
 
-- [Deploying](): Deploying a Machine configuration
+- [Deploying Machines](./02-machines.md): Deploying a Machine configuration
 - [WiFi](#optional-connect-to-wifi): Guide for connecting to Wifi.
 
 ---
