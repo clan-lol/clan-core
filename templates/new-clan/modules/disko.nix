@@ -1,5 +1,5 @@
 {
-  config.disko.devices = {
+  disko.devices = {
     disk = {
       main = {
         type = "disk";

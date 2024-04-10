@@ -1,49 +1,61 @@
-# **Quick Start Guide to Initializing a New Clan Project**
+# Getting Started with Your First Clan Project
 
-This guide will lead you through initiating a new Clan project
+Welcome to your simple guide on starting a new Clan project!
 
-## **Overview**
+## What's Inside
 
-Dive into our structured guide tailored to meet your needs:
+We've put together a straightforward guide to help you out:
 
-- [**Starting with a New Clan Project**](#starting-with-a-new-clan-project): Kickstart your journey with Clan by setting up a new project from the ground up.
-- [**Migrating Existing Flake Configuration**](migrate.md#migrating-existing-nixos-configuration-flake): Transition your existing flake-based Nix configuration to harness the power of Clan Core.
-- [**Integrating Clan using Flake-Parts**](./migrate.md#integrating-clan-with-flakes-using-flake-parts): Enhance your Clan experience by integrating it with Flake-Parts.
+- [**Starting with a New Clan Project**](#starting-with-a-new-clan-project): Create a new Clan from scratch.
+- [**Migrating Existing Flake Configuration**](migrate.md#migrating-existing-nixos-configuration-flake): How to switch your current setup to a Clan setup.
+- [**Integrating Clan using Flake-Parts**](./migrate.md#integrating-clan-with-flakes-using-flake-parts)
 
 ---
 
-## **Starting with a New Clan Project**
+## Starting with a New Clan Project
 
-Embark on your Clan adventure with these initial steps:
+Create your own clan with these initial steps:
 
-### **Step 1: Add Clan CLI to Your Shell**
-Incorporate the Clan CLI into your development workflow with this simple command:
+### Step 1: Add Clan CLI to Your Shell
+
+Add the Clan CLI into your development workflow:
+
 ```shell
 nix shell git+https://git.clan.lol/clan/clan-core
 ```
 
-### **Step 2: Initialize Your Project**
-Set the foundation of your Clan project by initializing it as follows:
+### Step 2: Initialize Your Project
+
+Set the foundation of your Clan project by initializing it as follows
+
 ```shell
 clan flakes create my-clan
 ```
-This command crafts the essential `flake.nix` and `.clan-flake` files for your project.
 
-### **Step 3: Verify the Project Structure**
-Ensure the creation of your project files with a quick directory listing:
+This command creates the `flake.nix` and `.clan-flake` files for your project.
+
+### Step 3: Verify the Project Structure
+
+Ensure the creation of your project files with a quick directory listing
+
 ```shell
 cd my-clan && ls -la
 ```
-Look for `.clan-flake`, `flake.lock`, and `flake.nix` among your files to confirm successful setup.
 
-### **Understanding `.clan-flake`**
-The `.clan-flake` file, while optional, is instrumental in helping the Clan CLI identify your project's root directory, easing project management.
+You should see `.clan-flake`, `flake.lock`, and `flake.nix` among the files listed, which means you're all set up!
+
+---
+
+### Next Steps
 
 ### Edit Flake.nix
+
 Open the `flake.nix` file and set a unique `clanName` if you want you can also set an optional `clanIcon` or even a per `machineIcon`. These will be used by our future clan GUI.
 
 ### Remote into the target machine
-**Right now clan assumes that you already have NixOS running on the target machine.**  
+
+**Right now clan assumes that you already have NixOS running on the target machine.**
+
 If that is not the case you can use our [installer image](./install-iso.md) that automatically generates an endpoint reachable over TOR with a random ssh password.
 
 On the remote execute:
@@ -72,5 +84,10 @@ On the remote execute:
 
 ### **Next Steps**
 Ready to expand? Explore how to install a new machine with the helpful documentation [here](./machines.md).
+Ready to explore more?
+
+- **Adding New Machines to your setup**. [Following our template](/templates/new-clan/flake.nix)
+
+- **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with a USB stick. [Learn how] (./machines.md).
 
 ---
