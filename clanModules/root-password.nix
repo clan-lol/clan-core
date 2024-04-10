@@ -12,7 +12,7 @@
       mkpasswd
     ];
     generator.script = ''
-      xkcdpass -c 3 -d -  > $secrets/password
+      xkcdpass --numwords 3 --delimiter - --count 1 > $secrets/password
       cat $secrets/password | mkpasswd -s -m sha-512 > $secrets/passwordHash
     '';
   };

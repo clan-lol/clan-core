@@ -2,29 +2,30 @@
 
 Integrating a new machine into your Clan environment is a very easy yet flexible process, allowing for a straight forward management of multiple NixOS configurations.
 
-We'll walk you through adding a new computer to your Clan using a special tool that works through a USB stick.
+We'll walk you through adding a new computer to your Clan.
 
 ## Installing a New Machine
 
 Clan CLI, in conjunction with [nixos-anywhere](https://github.com/nix-community/nixos-anywhere), provides a seamless method for installing NixOS on various machines.
+
 This process involves preparing a suitable hardware and disk partitioning configuration and ensuring the target machine is accessible via SSH.
 
 ### Step 0. Prerequisites
 
-Boot the target machine using our [Installer](./03-Installer.md). Recommended for the most efficient workflow.
+Boot the target machine using our [Clan Installer](./03-Installer.md). Which is recommended for ensuring most efficient workflows.
 
 Alternatively you can use any linux machine if it is reachable via SSH and supports `kexec`.
 
-Confirm the machine is reachable via SSH from your main computer.
+Confirm the machine is reachable via SSH from your setup computer.
 
 ```bash
 ssh root@<your_target_machine_ip>
 ```
 
-- [x] Two Computers: You'll need the computer you're setting up and another one to control the setup process. Both should be able to connect over the network using SSH. This is usually already done if you're working with servers from providers like Hetzner.
-- [x] A clan machine configuration you want to deploy. [Check out our templates](/templates/new-clan/flake.nix)
-- [x] Initialized secrets: See [secrets](./06-secrets.md) for how to generate your secrets.
-- [x] (Optional) USB Flash Drive with our [Installer](./03-Installer.md)
+- [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
+- [x] **Machine configuration**: You want to deploy. [Check out our templates](./99-templates.md)
+- [x] Initialized secrets: See [secrets](./06-secrets.md) for how to initialize your secrets.
+- [x] (Optional) USB Flash Drive with the [Clan Installer](./03-Installer.md)
 
 ### Step 1. Identify Target Disk-ID
 
