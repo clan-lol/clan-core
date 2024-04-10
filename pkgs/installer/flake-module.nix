@@ -35,9 +35,6 @@ let
   };
 in
 {
-  flake.packages.x86_64-linux.install-iso = self.inputs.disko.lib.makeDiskImages {
-    nixosConfig = installer;
-  };
 
   clan = {
     clanName = "clan-core";
@@ -47,6 +44,7 @@ in
       fileSystems."/".device = lib.mkDefault "/dev/null";
     };
   };
+  flake.packages.x86_64-linux.install-iso = installer.config.formats.iso;
   flake.apps.x86_64-linux.install-vm.program = installer.config.formats.vm.outPath;
   flake.apps.x86_64-linux.install-vm-nogui.program = installer.config.formats.vm-nogui.outPath;
 }
