@@ -12,9 +12,38 @@ We've put together a straightforward guide to help you out:
 
 ---
 
-## Starting with a New Clan Project
+## **Starting with a New Clan Project**
 
-Create your own clan with these initial steps:
+Create your own clan with these initial steps.
+
+### Prerequisites
+
+#### Linux
+
+Clan depends on nix installed on your system. Run the following command to install nix.
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+```
+
+#### NixOS
+
+If you run NixOS the `nix` binary is already installed.
+
+You will also need to enable the `flakes` and `nix-commands` experimental features.
+
+```bash
+# /etc/nix/nix.conf or ~/.config/nix/nix.conf
+experimental-features = nix-command flakes
+```
+
+#### Other
+
+Clan doesn't offer dedicated support for other OS yet.
+
+### Step 1: Add Clan CLI to Your Shell
+
+Add the Clan CLI into your development workflow:
 
 ### Step 1: Add Clan CLI to Your Shell
 
