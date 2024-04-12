@@ -38,6 +38,7 @@ nav:
   - Contributing: contributing.md
 
 theme:
+  logo: static/logo.png
   name: material
   features:
     - navigation.instant
@@ -60,8 +61,8 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
 
-# extra_css:
-#   - stylesheets/extra.css
+extra_css:
+  - stylesheets/extra.css
 
 plugins:
   - search
