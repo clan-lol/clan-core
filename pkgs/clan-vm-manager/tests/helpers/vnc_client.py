@@ -45,7 +45,7 @@ from libvncclient import (
 path_to_lib = libvncclient._libs["libvncclient.so"].access["cdecl"]._name
 if path_to_lib.startswith("/nix/store/"):
     print("Using libvncclient from nix store")
-    exit(-1)
+
 
 
 libc = CDLL("libc.so.6")  # Use the correct path for your libc
