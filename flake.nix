@@ -38,7 +38,8 @@
           ./flakeModules/flake-module.nix
           (import ./flakeModules/clan.nix inputs.self)
           ./devShell.nix
-          ./docs/flake-module
+          # TODO: migrate this @davHau
+          # ./docs/flake-module
           ./docs/flake-module.nix
           ./formatter.nix
           ./lib/flake-module.nix
