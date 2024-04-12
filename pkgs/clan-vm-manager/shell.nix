@@ -10,6 +10,8 @@
   python3,
   gtk4,
   libadwaita,
+  tigervnc,
+  libvncserver,
 }:
 
 let
@@ -31,6 +33,9 @@ mkShell {
       ruff
       gtk4.dev # has the demo called 'gtk4-widget-factory'
       libadwaita.devdoc # has the demo called 'adwaita-1-demo'
+      tigervnc
+      libvncserver.dev
+      libvncserver
     ]
     ++ devshellTestDeps
 
@@ -40,14 +45,28 @@ mkShell {
       desktop-file-utils # verify desktop files
     ]);
 
+  # Use ipdb as the default debugger for python
+  PYTHONBREAKPOINT = "ipdb.set_trace";
+
+  hardeningDisabled = "all";
+
   shellHook = ''
+    export LIBVNC_INCLUDE=${libvncserver.dev}/include
+    export LIBVNC_LIB=${libvncserver}/lib
+
     export GIT_ROOT=$(git rev-parse --show-toplevel)
-    export PKG_ROOT=$GIT_ROOT/pkgs/clan-vm-manager
 
     # Add clan-vm-manager command to PATH
-    export PATH="$PKG_ROOT/bin":"$PATH"
+    export PATH="$GIT_ROOT/pkgs/clan-vm-manager/bin":"$PATH"
+
+    # Add clan-vm-manager to the python path so that we can
+    # import it in the tests
+    export PYTHONPATH="$GIT_ROOT/pkgs/clan-vm-manager":"$PYTHONPATH"
 
     # Add clan-cli to the python path so that we can import it without building it in nix first
     export PYTHONPATH="$GIT_ROOT/pkgs/clan-cli":"$PYTHONPATH"
+
+    # Add clan-cli to the PATH
+    export PATH="$GIT_ROOT/pkgs/clan-cli/bin":"$PATH"
   '';
 }
