@@ -36,6 +36,7 @@
     };
     machineName = lib.mkOption {
       type = lib.types.str;
+      default = "nixos";
       description = ''
         the name of the machine
       '';
