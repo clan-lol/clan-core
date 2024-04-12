@@ -8,6 +8,7 @@
 }:
 
 writeShellScriptBin "deploy-docs" ''
+  set -eux -o pipefail
   export PATH="${
     lib.makeBinPath [
       coreutils
