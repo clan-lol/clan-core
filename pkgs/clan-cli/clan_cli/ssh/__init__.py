@@ -150,9 +150,9 @@ class Host:
         Creates a Host
         @host the hostname to connect to via ssh
         @port the port to connect to via ssh
-        @forward_agent: wheter to forward ssh agent
+        @forward_agent: whether to forward ssh agent
         @command_prefix: string to prefix each line of the command output with, defaults to host
-        @host_key_check: wether to check ssh host keys
+        @host_key_check: whether to check ssh host keys
         @verbose_ssh: Enables verbose logging on ssh connections
         @meta: meta attributes associated with the host. Those can be accessed in custom functions passed to `run_function`
         """
