@@ -7,7 +7,5 @@
       packages = {
         docs = pkgs.python3.pkgs.callPackage ./default.nix { inherit (inputs) nixpkgs; };
       };
-
-      checks = self'.packages.clan-cli.tests;
     };
 }
