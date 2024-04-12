@@ -84,7 +84,7 @@ Open the `flake.nix` file and set a unique `clanName` if you want you can also s
 
 **Right now clan assumes that you already have NixOS running on the target machine.**
 
-If that is not the case you can use our [installer image](./03-install-iso.md) that automatically generates an endpoint reachable over TOR with a random ssh password.
+If that is not the case you can use our [installer image](./05-install-iso.md) that automatically generates an endpoint reachable over TOR with a random ssh password.
 
 On the remote execute:
 1. Generate a hardware-config.nix 
