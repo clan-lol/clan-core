@@ -45,7 +45,7 @@ nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
 Use the `dd` utility to write the NixOS installer image to your USB drive:
 
 ```bash
-sudo dd bs=4M conv=fsync oflag=direct status=progress if=./result/stick.raw of=/dev/sd<X>
+sudo dd bs=4M conv=fsync oflag=direct status=progress if=./result of=/dev/sd<X>
 ```
 
 In case your USB device is `sdb` use `of=/dev/sdb`
