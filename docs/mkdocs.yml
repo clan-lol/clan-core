@@ -28,7 +28,7 @@ exclude_docs: |
 
 nav:
   - Getting started:
-      - getting-started/index.md
+      - index.md
       - Deploy Machine: getting-started/machines.md
       - Installer: getting-started/installer.md
       - Setup Networking: getting-started/networking.md
