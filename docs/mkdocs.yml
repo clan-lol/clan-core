@@ -17,7 +17,6 @@ markdown_extensions:
   - pymdownx.highlight:
       use_pygments: true
   - pymdownx.superfences
-  - plantuml_markdown
   - toc:
       title: On this page
 

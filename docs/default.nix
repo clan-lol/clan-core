@@ -9,9 +9,6 @@ pkgs.stdenv.mkDerivation {
     ++ (with pkgs.python3Packages; [
       mkdocs
       mkdocs-material
-      mkdocs-drawio-exporter
-      mkdocs-swagger-ui-tag
-      plantuml-markdown
     ]);
 
   buildPhase = ''
