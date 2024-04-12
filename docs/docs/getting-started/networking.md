@@ -1,4 +1,4 @@
-# 04 Overlay Networks in Clan
+# Overlay Networks
 
 This guide provides detailed instructions for configuring
 [ZeroTier VPN](https://zerotier.com) within Clan. Follow the

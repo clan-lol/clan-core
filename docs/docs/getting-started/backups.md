@@ -1,4 +1,4 @@
-# 07 Backups
+# Backups
 
 ## Introduction to Backups
 
