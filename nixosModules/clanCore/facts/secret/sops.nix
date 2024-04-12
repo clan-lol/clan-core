@@ -45,7 +45,9 @@ in
   config = lib.mkIf (config.clanCore.facts.secretStore == "sops") {
     # Before we generate a secret we cannot know the path yet, so we need to set it to an empty string
     clanCore.facts.secretPathFunction =
-      secret: config.sops.secrets.${secret.config.name}.path or "/no-such-path";
+      secret:
+      config.sops.secrets.${"${config.clanCore.machineName}-${secret.config.name}"}.path
+        or "/no-such-path";
     clanCore.facts.secretModule = "clan_cli.facts.secret_modules.sops";
     clanCore.facts.secretUploadDirectory = lib.mkDefault "/var/lib/sops-nix";
     sops.secrets = builtins.mapAttrs (name: _: {
