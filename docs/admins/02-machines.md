@@ -46,6 +46,13 @@ nvme0n1     nvme-eui.e8238fa6bf530001001b448b4aec2929              476.9G
 Now change the following lines of your configuration you want to deploy.
 We need to set the hardware specific `disk-id` (i.e. `nvme-eui.e8238fa6bf530001001b448b4aec2929`)
 
+Import the clan `diskLayouts` Module.
+```
+imports = [
+  clan-core.clanModules.diskLayouts
+]
+```
+
 ```nix
 # flake.nix / configuration.nix
 clan.diskLayouts.singleDiskExt4 = {
