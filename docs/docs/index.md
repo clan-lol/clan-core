@@ -7,7 +7,7 @@ Welcome to your simple guide on starting a new Clan project!
 We've put together a straightforward guide to help you out:
 
 - [**Starting with a New Clan Project**](#starting-with-a-new-clan-project): Create a new Clan from scratch.
-- [**Integrating Clan using Flake-Parts**](flake-parts.md)
+- [**Integrating Clan using Flake-Parts**](getting-started/flake-parts.md)
 
 ---
 
@@ -80,7 +80,7 @@ Open the `flake.nix` file and set a unique `clanName` if you want you can also s
 
 **Right now clan assumes that you already have NixOS running on the target machine.**
 
-If that is not the case you can use our [installer image](installer.md) that automatically generates an endpoint reachable over TOR with a random ssh password.
+If that is not the case you can use our [installer image](getting-started/installer.md) that automatically generates an endpoint reachable over TOR with a random ssh password.
 
 On the remote execute:
 1. Generate a hardware-config.nix 
@@ -107,11 +107,11 @@ On the remote execute:
     ```
 
 ### **Next Steps**
-Ready to expand? Explore how to install a new machine with the helpful documentation [here](machines.md).
+Ready to expand? Explore how to install a new machine with the helpful documentation [here](getting-started/machines.md).
 Ready to explore more?
 
-- **Adding New Machines to your setup**. [Following our templates](../templates/index.md)
+- **Adding New Machines to your setup**. [Following our templates](templates/index.md)
 
-- **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with a USB stick. [Learn how](machines.md).
+- **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with a USB stick. [Learn how](getting-started/machines.md).
 
 ---
