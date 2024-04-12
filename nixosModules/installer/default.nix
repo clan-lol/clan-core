@@ -16,6 +16,7 @@
     (modulesPath + "/profiles/installation-device.nix")
     (modulesPath + "/profiles/all-hardware.nix")
     (modulesPath + "/profiles/base.nix")
+    (modulesPath + "/installer/cd-dvd/iso-image.nix")
   ];
   services.openssh.settings.PermitRootLogin = "yes";
   system.activationScripts.root-password = ''
@@ -64,4 +65,5 @@
       cat /var/shared/qrcode.utf8
     fi
   '';
+  isoImage.squashfsCompression = "zstd";
 }
