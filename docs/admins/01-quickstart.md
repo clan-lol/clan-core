@@ -116,6 +116,6 @@ Ready to explore more?
 
 - **Adding New Machines to your setup**. [Following our templates](./99-templates.md)
 
-- **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with a USB stick. [Learn how] (./02-machines.md).
+- **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with a USB stick. [Learn how](./02-machines.md).
 
 ---
