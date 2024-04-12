@@ -81,6 +81,12 @@ class Machine:
 
         self.vm: QMPWrapper = QMPWrapper(state_dir)
 
+    def flush_caches(self) -> None:
+        self._deployment_info = None
+        self._flake_path = None
+        self.build_cache.clear()
+        self.eval_cache.clear()
+
     def __str__(self) -> str:
         return f"Machine(name={self.data.name}, flake={self.data.flake_id})"
 
