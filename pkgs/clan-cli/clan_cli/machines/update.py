@@ -96,6 +96,11 @@ def deploy_nixos(hosts: HostGroup) -> None:
         ssh_arg = f"-p {h.port}" if h.port else ""
         env = os.environ.copy()
         env["NIX_SSHOPTS"] = ssh_arg
+        machine: Machine = h.meta["machine"]
+
+        generate_facts(machine)
+        upload_secrets(machine)
+
         path = upload_sources(".", target)
 
         if h.host_key_check != HostKeyCheck.STRICT:
@@ -104,11 +109,6 @@ def deploy_nixos(hosts: HostGroup) -> None:
             ssh_arg += " -o UserKnownHostsFile=/dev/null"
 
         ssh_arg += " -i " + h.key if h.key else ""
-
-        machine: Machine = h.meta["machine"]
-
-        generate_facts(machine)
-        upload_secrets(machine)
 
         extra_args = h.meta.get("extra_args", [])
         cmd = [
