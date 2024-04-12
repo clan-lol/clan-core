@@ -1,4 +1,4 @@
-# 08 Clan with `flake-parts`
+# Clan with `flake-parts`
 
 Clan supports integration with [flake.parts](https://flake.parts/) a tool which allows modular compositions.
 
@@ -82,7 +82,7 @@ refer to the Clan module documentation located [here](https://git.clan.lol/clan/
 
 ### Next Steps
 
-With your flake created, explore how to add new machines by reviewing the documentation provided [here](./02-machines.md).
+With your flake created, explore how to add new machines by reviewing the documentation provided [here](machines.md).
 
 ---
 

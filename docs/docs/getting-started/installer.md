@@ -1,4 +1,4 @@
-# 03 Clan Installer
+# Installer
 
 We offer a dedicated installer to assist remote installations.
 
@@ -84,7 +84,7 @@ See: Guide for Wifi Below
 
 ### Whats next?
 
-- [Deploying Machines](./02-machines.md): Deploying a Machine configuration
+- [Deploying Machines](machines.md): Deploying a Machine configuration
 - [WiFi](#optional-connect-to-wifi): Guide for connecting to Wifi.
 
 ---

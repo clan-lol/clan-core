@@ -1,4 +1,4 @@
-# 03 Clan Hardware Installation
+# Hardware Installation
 
 For installations on physical hardware, create a NixOS installer image and transfer it to a bootable USB drive as described below.
 
