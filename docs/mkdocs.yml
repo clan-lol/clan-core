@@ -1,0 +1,68 @@
+site_name: Design
+site_url: https://docs.clan.lol
+repo_url: https://git.clan.lol/clan/clan-core/
+repo_name: clan-core
+edit_uri: _edit/main/docs/docs/
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
+markdown_extensions:
+  - footnotes
+  - meta
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.superfences
+  - plantuml_markdown
+  - toc:
+      title: On this page
+
+exclude_docs: |
+  .*
+  !templates/
+  /drafts/
+
+nav:
+  - Getting started:
+      - getting-started/index.md
+      - Deploy Machine: getting-started/machines.md
+      - Installer: getting-started/installer.md
+      - Setup Networking: getting-started/networking.md
+      - Provision Secrets & Passwords: getting-started/secrets.md
+      - Backup & Restore: getting-started/backups.md
+      - Flake-parts: getting-started/flake-parts.md
+  - Templates: templates/index.md
+  - Contributing: contributing.md
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tabs
+  icon:
+    repo: fontawesome/brands/git
+
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+# extra_css:
+#   - stylesheets/extra.css
+
+plugins:
+  - search

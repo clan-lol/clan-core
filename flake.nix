@@ -39,6 +39,7 @@
           (import ./flakeModules/clan.nix inputs.self)
           ./devShell.nix
           ./docs/flake-module
+          ./docs/flake-module.nix
           ./formatter.nix
           ./lib/flake-module.nix
           ./nixosModules/flake-module.nix

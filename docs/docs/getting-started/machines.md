@@ -1,4 +1,4 @@
-# 02 Machines with Clan
+# Deploy Machine
 
 Integrating a new machine into your Clan environment is a very easy yet flexible process, allowing for a straight forward management of multiple NixOS configurations.
 
@@ -12,7 +12,7 @@ This process involves preparing a suitable hardware and disk partitioning config
 
 ### Step 0. Prerequisites
 
-Boot the target machine using our [Clan Installer](./03-Installer.md). Which is recommended for ensuring most efficient workflows.
+Boot the target machine using our [Clan Installer](installer.md). Which is recommended for ensuring most efficient workflows.
 
 Alternatively you can use any linux machine if it is reachable via SSH and supports `kexec`.
 
@@ -23,9 +23,9 @@ ssh root@<your_target_machine_ip>
 ```
 
 - [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
-- [x] **Machine configuration**: You want to deploy. [Check out our templates](./99-templates.md)
-- [x] Initialized secrets: See [secrets](./06-secrets.md) for how to initialize your secrets.
-- [x] (Optional) USB Flash Drive with the [Clan Installer](./03-Installer.md)
+- [x] **Machine configuration**: You want to deploy. [Check out our templates](../templates/index.md)
+- [x] Initialized secrets: See [secrets](secrets.md) for how to initialize your secrets.
+- [x] (Optional) USB Flash Drive with the [Clan Installer](installer.md)
 
 ### Step 1. Identify Target Disk-ID
 
