@@ -90,7 +90,7 @@
                       description = ''
                         name of the secret
                       '';
-                      default = secret.name;
+                      default = secret.config._module.args.name;
                     };
                     path = lib.mkOption {
                       type = lib.types.path;
