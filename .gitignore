@@ -11,6 +11,7 @@ result*
 /pkgs/clan-cli/clan_cli/webui/assets
 nixos.qcow2
 **/*.glade~
+/docs/out
 
 # python
 __pycache__

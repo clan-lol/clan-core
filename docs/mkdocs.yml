@@ -10,8 +10,6 @@ validation:
   unrecognized_links: warn
 
 markdown_extensions:
-
-markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.superfences
@@ -41,7 +39,10 @@ nav:
       - Backup & Restore: getting-started/backups.md
       - Flake-parts: getting-started/flake-parts.md
   - Templates: templates/index.md
-  - Contributing: contributing.md
+  - Contributing: contributing/contributing.md
+
+docs_dir: site
+site_dir: out
 
 theme:
   logo: static/logo.png
@@ -71,9 +72,6 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
-
-extra_css:
-  - stylesheets/extra.css
 
 plugins:
   - search
