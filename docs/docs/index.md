@@ -66,7 +66,7 @@ Ensure the creation of your project files with a quick directory listing
 cd my-clan && ls -la
 ```
 
-You should see `.clan-flake`, `flake.lock`, and `flake.nix` among the files listed, which means you're all set up!
+You should see `.clan-flake`, `flake.lock`, and `flake.nix` among the files listed, which means you're set up!
 
 ---
 
