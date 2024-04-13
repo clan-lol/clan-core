@@ -50,12 +50,16 @@ theme:
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
+      primary: teal
+      accent: deep purple
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
 
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
+      primary: teal
+      accent: deep purple
       scheme: slate
       toggle:
         icon: material/weather-sunny
