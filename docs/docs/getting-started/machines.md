@@ -12,9 +12,21 @@ This process involves preparing a suitable hardware and disk partitioning config
 
 ### Step 0. Prerequisites
 
-Boot the target machine using our [Clan Installer](installer.md). Which is recommended for ensuring most efficient workflows.
+- [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
 
-Alternatively you can use any linux machine if it is reachable via SSH and supports `kexec`.
+=== "**Physical Hardware**"
+
+    !!! How
+    
+        1. Create a NixOS installer image and transfer it to a bootable USB drive as described in the [installer](./installer.md).
+         
+        2. Boot the target machine and connect it to a network that makes it reachable from your setup computer.
+
+=== "**Cloud Machines**"
+
+    !!! How
+
+        Use any linux machine if it is reachable via SSH and supports `kexec`.
 
 Confirm the machine is reachable via SSH from your setup computer.
 
@@ -22,7 +34,6 @@ Confirm the machine is reachable via SSH from your setup computer.
 ssh root@<your_target_machine_ip>
 ```
 
-- [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
 - [x] **Machine configuration**: You want to deploy. [Check out our templates](../templates/index.md)
 - [x] Initialized secrets: See [secrets](secrets.md) for how to initialize your secrets.
 - [x] (Optional) USB Flash Drive with the [Clan Installer](installer.md)
