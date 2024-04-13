@@ -32,6 +32,7 @@ exclude_docs: |
 nav:
   - Getting started:
       - index.md
+      - Configure: getting-started/configure.md
       - Deploy Machine: getting-started/machines.md
       - Installer: getting-started/installer.md
       - Setup Networking: getting-started/networking.md
