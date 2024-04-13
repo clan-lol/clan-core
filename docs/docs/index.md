@@ -45,7 +45,7 @@ Clan doesn't offer dedicated support for other OS yet.
 Add the Clan CLI into your development workflow:
 
 ```shell
-nix shell git+https://git.clan.lol/clan/clan-core
+nix shell git+https://git.clan.lol/clan/clan-core#clan-cli
 ```
 
 ### Step 2: Initialize Your Project
