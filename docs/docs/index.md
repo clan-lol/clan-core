@@ -1,6 +1,6 @@
 # Getting Started
 
-Welcome to your simple guide on starting a new Clan project!
+Welcome to your simple guide on starting a new Clan project.
 
 ## What's Inside
 
@@ -38,7 +38,7 @@ experimental-features = nix-command flakes
 
 #### Other
 
-Clan doesn't offer dedicated support for other OS yet.
+Clan doesn't offer dedicated support for other operating systems yet.
 
 ### Step 1: Add Clan CLI to Your Shell
 
