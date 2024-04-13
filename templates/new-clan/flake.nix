@@ -19,14 +19,11 @@
         machines = {
           jon = {
             imports = [
+              ./modules/shared.nix
               ./machines/jon/configuration.nix
               ./machines/jon/hardware-configuration.nix
-              clan-core.clanModules.sshd
-              clan-core.clanModules.diskLayouts
-              clan-core.clanModules.root-password
             ];
 
-            nixpkgs.hostPlatform = system;
             clanCore.machineIcon = null; # Optional, a path to an image file
 
             # Set this for clan commands use ssh i.e. `clan machines update`
@@ -44,13 +41,11 @@
           };
           sara = {
             imports = [
+              ./modules/shared.nix
               ./machines/sara/configuration.nix
               ./machines/jon/hardware-configuration.nix
-              clan-core.clanModules.sshd
-              clan-core.clanModules.diskLayouts
-              clan-core.clanModules.root-password
             ];
-            nixpkgs.hostPlatform = system;
+
             clanCore.machineIcon = null; # Optional, a path to an image file
 
             # Set this for clan commands use ssh i.e. `clan machines update`
@@ -64,10 +59,16 @@
             };
 
             clan.networking.zerotier.networking.enable = true;
-            # After jon is deployed, uncomment the following line
-            # This will allow sara to share the VPN overlay network with jon
+            /* 
+              After jon is deployed, uncomment the following line
+              This will allow sara to share the VPN overlay network with jon
+            */
             # clan.networking.zerotier.networkId = builtins.readFile ../jon/facts/zerotier-network-id;
           };
+        };
+        
+        specialArgs = {
+          inherit system;
         };
       };
     in
