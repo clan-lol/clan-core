@@ -63,16 +63,12 @@
             };
 
             clan.networking.zerotier.networking.enable = true;
-            /* 
+            /*
               After jon is deployed, uncomment the following line
               This will allow sara to share the VPN overlay network with jon
             */
             # clan.networking.zerotier.networkId = builtins.readFile ../jon/facts/zerotier-network-id;
           };
-        };
-        
-        specialArgs = {
-          inherit system;
         };
       };
     in
