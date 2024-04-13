@@ -28,9 +28,9 @@ buildClan {
 }
 ```
 
-## Machine configuration guide
+## Machine configuration
 
-To add or configure a new machine in clan we provide these simple steps:
+Adding or configuring a new machine requires two simple steps:
 
 ### Step 1. Identify Target Disk-ID
 
@@ -78,7 +78,7 @@ To add or configure a new machine in clan we provide these simple steps:
     }
     ```
 
-## Step 2. Detect hardware specific drivers
+### Step 2. Detect hardware specific drivers
 
 1. Generate a `hardware-configuration.nix` for your target computer
 
@@ -88,7 +88,7 @@ To add or configure a new machine in clan we provide these simple steps:
 
 2. Move the generated file into `machines/jon/hardware-configuration.nix` folder.
 
-## Step 3. Initialize the facts
+### Initialize the facts
 
 !!! Info
     **All facts are automatically initialized.**
