@@ -66,7 +66,7 @@ Ensure that all project files exist by running:
 tree
 ```
 
-This should yield this:
+This should yield the following:
 
 ```bash
 .
