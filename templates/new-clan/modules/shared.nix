@@ -1,4 +1,4 @@
-{clan-core, ...}:
+{ clan-core, ... }:
 {
   imports = [
     clan-core.clanModules.sshd
