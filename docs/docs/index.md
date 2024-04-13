@@ -110,8 +110,8 @@ On the remote execute:
 Ready to expand? Explore how to install a new machine with the helpful documentation [here](getting-started/machines.md).
 Ready to explore more?
 
-- **Adding New Machines to your setup**. [Following our templates](templates/index.md)
+- **Adding New Machines to your setup**. [Follow our templates](templates/index.md)
 
-- **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with a USB stick. [Learn how](getting-started/machines.md).
+- **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with an USB stick. [Learn how](getting-started/machines.md).
 
 ---
