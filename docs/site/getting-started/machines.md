@@ -12,9 +12,12 @@ This process involves preparing a suitable hardware and disk partitioning config
 
 ### Step 0. Prerequisites
 
-- [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
-
 === "**Physical Hardware**"
+
+    - [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
+    - [x] **Machine configuration**: See our basic [configuration guide](./configure.md)
+    - [x] **Initialized secrets**: See [secrets](secrets.md) for how to initialize your secrets.
+    - [x] **USB Flash Drive**: See [Clan Installer](installer.md)
 
     !!! Steps
     
@@ -24,9 +27,13 @@ This process involves preparing a suitable hardware and disk partitioning config
 
 === "**Cloud Machines**"
 
+    - [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
+    - [x] **Machine configuration**: See our basic [configuration guide](./configure.md)
+    - [x] **Initialized secrets**: See [secrets](secrets.md) for how to initialize your secrets.
+
     !!! Steps
 
-        - Use any linux machine if it is reachable via SSH and supports `kexec`.
+        - Any cloud machine if it is reachable via SSH and supports `kexec`.
 
 Confirm the machine is reachable via SSH from your setup computer.
 
@@ -34,77 +41,11 @@ Confirm the machine is reachable via SSH from your setup computer.
 ssh root@<your_target_machine_ip>
 ```
 
-- [x] **Machine configuration**: You want to deploy. [Check out our templates](../templates/index.md)
-- [x] Initialized secrets: See [secrets](secrets.md) for how to initialize your secrets.
-- [x] (Optional) USB Flash Drive with the [Clan Installer](installer.md)
-
-### Step 1. Identify Target Disk-ID
-
-Run the following command:
-```bash
-lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
-```
-It should show something like:
-```bash
-NAME        ID-LINK                                         FSTYPE   SIZE MOUNTPOINT
-sda         usb-ST_16GB_AA6271026J1000000509-0:0                    14.9G 
-├─sda1      usb-ST_16GB_AA6271026J1000000509-0:0-part1                 1M 
-├─sda2      usb-ST_16GB_AA6271026J1000000509-0:0-part2      vfat     100M /boot
-└─sda3      usb-ST_16GB_AA6271026J1000000509-0:0-part3      ext4     2.9G /
-nvme0n1     nvme-eui.e8238fa6bf530001001b448b4aec2929              476.9G 
-├─nvme0n1p1 nvme-eui.e8238fa6bf530001001b448b4aec2929-part1 vfat     512M 
-├─nvme0n1p2 nvme-eui.e8238fa6bf530001001b448b4aec2929-part2 ext4   459.6G 
-└─nvme0n1p3 nvme-eui.e8238fa6bf530001001b448b4aec2929-part3 swap    16.8G
-```
-
-Now change the following lines of your configuration you want to deploy.
-We need to set the hardware specific `disk-id` (i.e. `nvme-eui.e8238fa6bf530001001b448b4aec2929`)
-
-Import the clan `diskLayouts` Module.
-```
-imports = [
-  clan-core.clanModules.diskLayouts
-]
-```
-
-```nix
-# flake.nix / configuration.nix
-clan.diskLayouts.singleDiskExt4 = {
-  device = "/dev/disk/by-id/<MY_DISK_ID>";
-}
-```
-
-Also set the targetHost: (i.e. user `root` hostname `jon`)
-The hostname is the **machine name** by default
-
-```nix
-clan.networking.targetHost = pkgs.lib.mkDefault "root@jon"
-```
-
-`cd` into your `my-clan` directory
-
-```bash
-my-clan (main)> tree
-.
-├── flake.lock
-├── flake.nix
-└── machines
-    └── jon
-        └── configuration.nix
-```
-
-And verify that the machine configuration is detected from the `clan` cli.
-
-```bash
-clan machines list
-#> jon
-```
-
-### Step 3. Deploy the machine
+### Step 1. Deploy the machine
 
 **Finally deployment time!** Use the following command to build and deploy the image via SSH onto your machine.
 
-Replace `<target_host>` with the **installer's ip address**:
+Replace `<target_host>` with the **target computers' ip address**:
 
 ```bash
 clan machines install my-machine <target_host>
