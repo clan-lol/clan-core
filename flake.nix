@@ -40,7 +40,7 @@
           ./devShell.nix
           # TODO: migrate this @davHau
           # ./docs/flake-module
-          ./docs/flake-module.nix
+          ./docs/nix/flake-module.nix
           ./formatter.nix
           ./lib/flake-module.nix
           ./nixosModules/flake-module.nix
