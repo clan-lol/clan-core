@@ -44,7 +44,7 @@ Clan doesn't offer dedicated support for other operating systems yet.
 
 Add the Clan CLI into your development workflow:
 
-```shell
+```bash
 nix shell git+https://git.clan.lol/clan/clan-core#clan-cli
 ```
 
@@ -52,7 +52,7 @@ nix shell git+https://git.clan.lol/clan/clan-core#clan-cli
 
 Set the foundation of your Clan project by initializing it as follows:
 
-```shell
+```bash
 clan flakes create my-clan
 ```
 
