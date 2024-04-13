@@ -109,7 +109,9 @@ clan machines install my-machine <target_host>
 
 > Note: This may take a while for building and for the file transfer.
 
-🎉 🚀 Your machine is all set up
+!!! success
+
+    Your machine is all set up. 🎉 🚀
 
 ---
 
