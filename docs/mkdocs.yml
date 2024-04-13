@@ -10,13 +10,19 @@ validation:
   unrecognized_links: warn
 
 markdown_extensions:
+
+markdown_extensions:
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
   - footnotes
   - meta
   - admonition
   - pymdownx.details
   - pymdownx.highlight:
       use_pygments: true
-  - pymdownx.superfences
   - toc:
       title: On this page
 
