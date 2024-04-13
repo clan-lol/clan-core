@@ -16,7 +16,7 @@ This process involves preparing a suitable hardware and disk partitioning config
 
 === "**Physical Hardware**"
 
-    !!! How
+    !!! Steps
     
         1. Create a NixOS installer image and transfer it to a bootable USB drive as described in the [installer](./installer.md).
          
@@ -24,9 +24,9 @@ This process involves preparing a suitable hardware and disk partitioning config
 
 === "**Cloud Machines**"
 
-    !!! How
+    !!! Steps
 
-        Use any linux machine if it is reachable via SSH and supports `kexec`.
+        - Use any linux machine if it is reachable via SSH and supports `kexec`.
 
 Confirm the machine is reachable via SSH from your setup computer.
 
