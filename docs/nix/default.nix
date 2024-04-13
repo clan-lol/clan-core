@@ -13,11 +13,10 @@ pkgs.stdenv.mkDerivation {
 
   buildPhase = ''
     mkdocs build --strict
-
     ls -la .
   '';
 
   installPhase = ''
-    cp -a site/ $out/
+    cp -a out/ $out/
   '';
 }
