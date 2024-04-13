@@ -134,7 +134,7 @@ class LogToast:
     ) -> None:
         super().__init__()
         self.toast = Adw.Toast.new(
-            f"""Logs are avilable <span weight="regular">{message}</span>"""
+            f"""Logs are available <span weight="regular">{message}</span>"""
         )
         self.toast.set_use_markup(True)
 
