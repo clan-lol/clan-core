@@ -1,6 +1,6 @@
 # Deploy Machine
 
-Integrating a new machine into your Clan environment is a very easy yet flexible process, allowing for a straight forward management of multiple NixOS configurations.
+Integrating a new machine into your Clan environment is an easy yet flexible process, allowing for a straight forward management of multiple NixOS configurations.
 
 We'll walk you through adding a new computer to your Clan.
 
@@ -153,7 +153,7 @@ clan config --machine my-machine clan.networking.buildHost root@host_or_ip
 
 ### Excluding a machine from `clan machine update`
 
-To exclude machines from beeing updated when running `clan machines update` without any machines specified,
+To exclude machines from being updated when running `clan machines update` without any machines specified,
 one can set the `clan.deployment.requireExplicitUpdate` option to true:
 
 ```bash
