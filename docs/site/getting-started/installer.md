@@ -84,7 +84,8 @@ For connecting via Wifi, please consult the guide below.
 
 ### Whats next?
 
-- [Deploying Machines](machines.md): Deploying a Machine configuration
+- [Configure Machines](configure.md): Customise machine configuration
+- [Deploying](machines.md): Deploying a Machine configuration
 - [WiFi](#optional-connect-to-wifi): Guide for connecting to Wifi.
 
 ---

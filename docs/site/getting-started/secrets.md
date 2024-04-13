@@ -1,4 +1,4 @@
-# Secrets
+# Secrets / Facts
 
 Clan enables encryption of secrets (such as passwords & keys) ensuring security and ease-of-use among users.
 

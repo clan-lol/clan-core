@@ -84,6 +84,15 @@ This should yield the following:
 5 directories, 6 files
 ```
 
+```bash
+clan machines list
+```
+
+```bash
+jon
+sara
+```
+
 !!! success
 
     You just successfully bootstrapped your first clan directory.
@@ -92,51 +101,12 @@ This should yield the following:
 
 ### What's Next?
 
-- [**Deploy Machines**](./getting-started/machines.md): Learn how to deploy to any remote machine.
-- **Machine Configuration**: Declare behavior and configuration of machines.
+- [**Machine Configuration**](getting-started/configure.md): Declare behavior and configuration of machines.
 
----
+- [**Deploy Machines**](getting-started/machines.md): Learn how to deploy to any remote machine.
 
-### Edit Flake.nix
+- [**Installer**](getting-started/installer.md): Setting up new computers remotely is easy with an USB stick.
 
-Open the `flake.nix` file and set a unique `clanName` if you want you can also set an optional `clanIcon` or even a per `machineIcon`. These will be used by our future clan GUI.
-
-### Remote into the target machine
-
-**Right now clan assumes that you already have NixOS running on the target machine.**
-
-If that is not the case you can use our [installer image](getting-started/installer.md) that automatically generates an endpoint reachable over TOR with a random ssh password.
-
-On the remote execute:
-1. Generate a hardware-config.nix 
-    ```bash
-    nixos-generate-config --root /etc/nixos --no-filesystems
-    ```
-2. Copy it over and put it into you `machines/jon/hardware-config.nix` folder
-    ```bash
-    scp -r root@<jon-ip>:/etc/nixos/hardware-config.nix ./machines/jon
-    ```
-3. Find the remote disk id by executing on the remote:
-    ```bash
-    lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
-    ```
-4. Edit the following fields inside the `flake.nix`
-    - `clan.networking.targetHost = pkgs.lib.mkDefault "root@<IP_ADDRESS>";`
-    - `clan.diskLayouts.singleDiskExt4 = {
-                  device = "/dev/disk/by-id/__CHANGE_ME__";
-                };`
-
-5. Generate secrets used by clan modules by executing
-    ```bash
-    clan facts generate
-    ```
-
-### **Next Steps**
-Ready to expand? Explore how to install a new machine with the helpful documentation [here](getting-started/machines.md).
-Ready to explore more?
-
-- **Adding New Machines to your setup**. [Follow our templates](templates/index.md)
-
-- **Use a USB drive to Set Up Machines**: Setting up new computers remotely is easy with an USB stick. [Learn how](getting-started/machines.md).
+- [**Check out out Templates**](templates/index.md)
 
 ---
