@@ -79,7 +79,7 @@ my-clan (main)> tree
         └── configuration.nix
 ```
 
-And verify the machine configuration is detected from `clan CLI`
+And verify that the machine configuration is detected from the `clan` cli.
 
 ```bash
 clan machines list
