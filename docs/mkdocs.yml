@@ -43,6 +43,7 @@ theme:
   features:
     - navigation.instant
     - navigation.tabs
+    - content.code.copy
   icon:
     repo: fontawesome/brands/git
 
