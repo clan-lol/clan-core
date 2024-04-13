@@ -99,7 +99,7 @@ class VMObject(GObject.Object):
         self.data = data
 
     def _on_vm_status_changed(self, source: "VMObject") -> None:
-        # Signal may be emited multiple times
+        # Signal may be emitted multiple times
         self.emit("vm_build_notify", self.is_building(), self.is_running())
 
         prev_state = self.switch.get_state()
@@ -202,7 +202,7 @@ class VMObject(GObject.Object):
             self.progress_bar.show()
             self.prog_bar_id = GLib.timeout_add(100, self._pulse_progress_bar_task)
             if self.prog_bar_id == 0:
-                log.error("Couldn't spawn a progess bar task")
+                log.error("Couldn't spawn a progress bar task")
 
             # Wait for the build to finish then hide the progress bar
             self.build_process.proc.join()
