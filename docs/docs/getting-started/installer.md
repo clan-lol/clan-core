@@ -72,13 +72,13 @@ For most hardware you can find the Key-combination below:
 
 **During Boot**
 
-Select `NixOS` to boot into the clan installer
+Select `NixOS` to boot into the clan installer.
 
 **After Booting**
 
-For deploying your configuration the machine needs to be connected via LAN (recommended)
+For deploying your configuration the machine needs to be connected via LAN (recommended).
 
-See: Guide for Wifi Below
+For connecting via Wifi, please consult the guide below.
 
 ---
 
