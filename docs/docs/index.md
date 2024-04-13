@@ -50,7 +50,7 @@ nix shell git+https://git.clan.lol/clan/clan-core#clan-cli
 
 ### Step 2: Initialize Your Project
 
-Set the foundation of your Clan project by initializing it as follows
+Set the foundation of your Clan project by initializing it as follows:
 
 ```shell
 clan flakes create my-clan
