@@ -60,17 +60,42 @@ This command creates the `flake.nix` and `.clan-flake` files for your project.
 
 ### Step 3: Verify the Project Structure
 
-Ensure the creation of your project files with a quick directory listing
+Ensure that all project files exist by running:
 
-```shell
-cd my-clan && ls -la
+```bash
+tree
 ```
 
-You should see `.clan-flake`, `flake.lock`, and `flake.nix` among the files listed, which means you're set up!
+This should yield the following:
+
+```bash
+.
+├── flake.nix
+├── machines
+│   ├── jon
+│   │   ├── configuration.nix
+│   │   └── hardware-configuration.nix
+│   └── sara
+│       ├── configuration.nix
+│       └── hardware-configuration.nix
+└── modules
+    └── shared.nix
+
+5 directories, 6 files
+```
+
+!!! success
+
+    You just successfully bootstrapped your first clan directory.
 
 ---
 
-### Next Steps
+### What's Next?
+
+- [**Deploy Machines**](./getting-started/machines.md): Learn how to deploy to any remote machine.
+- **Machine Configuration**: Declare behavior and configuration of machines.
+
+---
 
 ### Edit Flake.nix
 
