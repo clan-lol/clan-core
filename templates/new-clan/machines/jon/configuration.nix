@@ -1,6 +1,5 @@
 { ... }:
 {
-
   users.users.root.openssh.authorizedKeys.keys = [
     # IMPORTANT! Add your SSH key here
     # e.g. > cat ~/.ssh/id_ed25519.pub

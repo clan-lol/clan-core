@@ -24,6 +24,8 @@
               ./machines/jon/hardware-configuration.nix
             ];
 
+            nixpkgs.hostPlatform = system;
+
             clanCore.machineIcon = null; # Optional, a path to an image file
 
             # Set this for clan commands use ssh i.e. `clan machines update`
@@ -43,8 +45,10 @@
             imports = [
               ./modules/shared.nix
               ./machines/sara/configuration.nix
-              ./machines/jon/hardware-configuration.nix
+              ./machines/sara/hardware-configuration.nix
             ];
+
+            nixpkgs.hostPlatform = system;
 
             clanCore.machineIcon = null; # Optional, a path to an image file
 
