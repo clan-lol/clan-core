@@ -2,7 +2,7 @@
 pkgs.stdenv.mkDerivation {
   name = "clan-documentation";
 
-  src = ./.;
+  src = ../.;
 
   nativeBuildInputs =
     [ pkgs.python3 ]
