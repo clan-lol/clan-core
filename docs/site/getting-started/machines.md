@@ -40,9 +40,12 @@ ssh root@<your_target_machine_ip>
 
 ### Step 1. Identify Target Disk-ID
 
+Run the following command:
 ```bash
 lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
-# Should print something like:
+```
+It should show something like:
+```bash
 NAME        ID-LINK                                         FSTYPE   SIZE MOUNTPOINT
 sda         usb-ST_16GB_AA6271026J1000000509-0:0                    14.9G 
 ├─sda1      usb-ST_16GB_AA6271026J1000000509-0:0-part1                 1M 
