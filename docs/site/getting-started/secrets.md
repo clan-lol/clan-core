@@ -12,7 +12,8 @@ This documentation will guide you through managing secrets with the Clan CLI
 
 To get started, you'll need to create **Your master keypair**.
 
-Don't worry — if you've already made one before, this step won't change or overwrite it.
+!!! info
+    Don't worry — if you've already made one before, this step won't change or overwrite it.
 
 ```bash
 clan secrets key generate
@@ -20,17 +21,19 @@ clan secrets key generate
 
 **Output**:
 
-```bash
+```{.console, .no-copy}
 Public key: age1wkth7uhpkl555g40t8hjsysr20drq286netu8zptw50lmqz7j95sw2t3l7
 
 Generated age private key at '/home/joerg/.config/sops/age/keys.txt' for your user. Please back it up on a secure location or you will lose access to your secrets.
 Also add your age public key to the repository with 'clan secrets users add YOUR_USER age1wkth7uhpkl555g40t8hjsysr20drq286netu8zptw50lmqz7j95sw2t3l7' (replace YOUR_USER with your actual username)
 ```
 
-⚠️ **Important**: Make sure to keep a safe backup of the private key you've just created.
-If it's lost, you won't be able to get to your secrets anymore because they all need the master key to be unlocked.
+!!! warning 
+    Make sure to keep a safe backup of the private key you've just created.
+    If it's lost, you won't be able to get to your secrets anymore because they all need the master key to be unlocked.
 
-> Note: It's safe to add any secrets created by the clan CLI and placed in your repository to version control systems like `git`.
+!!! note 
+    It's safe to add any secrets created by the clan CLI and placed in your repository to version control systems like `git`.
 
 ### Add Your Public Key
 
@@ -38,11 +41,12 @@ If it's lost, you won't be able to get to your secrets anymore because they all 
 clan secrets users add <your_username> <your_public_key>
 ```
 
-⚠️ **Important**: Choose the username same username as on your Setup/Source Machine that you use to control the deployment with.
+!!! note 
+    Choose the same username as on your Setup/Source Machine that you use to control the deployment with.
 
 Once run this will create the following files:
 
-```bash
+```{.console, .no-copy}
 sops/
 └── users/
     └── <your_username>/
@@ -92,7 +96,8 @@ $ clan secrets set mysecret
 Paste your secret: 
 ```
 
-> Note: As you type - your secret won't be displayed. Press Enter to save the secret.
+!!! note 
+    As you type your secret won't be displayed. Press Enter to save the secret.
 
 ## 5. Retrieving Stored Secrets
 
@@ -140,7 +145,7 @@ Here's how to get started:
 
 Secrets in the repository follow this structure:
 
-```bash
+```{.console, .no-copy}
 sops/
 ├── secrets/
 │   └── <secret_name>/
@@ -157,9 +162,8 @@ By default, secrets are encrypted with your key to ensure readability.
 
 A NixOS machine will automatically import all secrets that are encrypted for the
 current machine. At runtime it will use the host key to decrypt all secrets into
-a in-memory, non-persistent filesystem using
-[sops-nix](https://github.com/Mic92/sops-nix). In your nixos configuration you
-can get a path to secrets like this `config.sops.secrets.<name>.path`. Example:
+an in-memory, non-persistent filesystem using [sops-nix](https://github.com/Mic92/sops-nix). 
+In your nixos configuration you can get a path to secrets like this `config.sops.secrets.<name>.path`. For example:
 
 ```nix
 { config, ...}: {
@@ -177,17 +181,16 @@ examples.
 
 ### Migration: Importing existing sops-based keys / sops-nix
 
-`clan secrets` stores each secrets in a single file, whereas [sops](https://github.com/Mic92/sops-nix)
-commonly allows to put all secrets in a yaml or json documents.
+`clan secrets` stores each secret in a single file, whereas [sops](https://github.com/Mic92/sops-nix) commonly allows to put all secrets in a yaml or json document.
 
-If you already happened to use sops-nix, you can migrate by using the `clan secrets import-sops` command by importing these documents:
+If you already happened to use sops-nix, you can migrate by using the `clan secrets import-sops` command by importing these files:
 
 ```bash
 % clan secrets import-sops --prefix matchbox- --group admins --machine matchbox nixos/matchbox/secrets/secrets.yaml
 ```
 
 This will create secrets for each secret found in `nixos/matchbox/secrets/secrets.yaml` in a ./sops folder of your repository.
-Each member of the group `admins` will be able
+Each member of the group `admins` in this case will be able to decrypt the secrets with their respective key.
 
 Since our clan secret module will auto-import secrets that are encrypted for a particular nixos machine,
 you can now remove `sops.secrets.<secrets> = { };` unless you need to specify more options for the secret like owner/group of the secret file.
