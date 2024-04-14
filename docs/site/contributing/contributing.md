@@ -1,1 +1,1 @@
-../../contributing.md
+../../CONTRIBUTING.md
