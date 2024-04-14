@@ -107,6 +107,6 @@ sara
 
 - [**Installer**](getting-started/installer.md): Setting up new computers remotely is easy with an USB stick.
 
-- [**Check out out Templates**](templates/index.md)
+- [**Check out our Templates**](templates/index.md)
 
 ---
