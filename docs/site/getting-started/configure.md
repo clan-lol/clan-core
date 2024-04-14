@@ -54,7 +54,7 @@ Adding or configuring a new machine requires two simple steps:
     └─nvme0n1p3 nvme-eui.e8238fa6bf530001001b448b4aec2929-part3 swap    16.8G
     ```
 
-2. Edit the following fields inside the `flake.nix`
+1. Edit the following fields inside the `flake.nix`
 
     ```nix title="clan-core.lib.buildClan"
     buildClan {
@@ -86,7 +86,7 @@ Adding or configuring a new machine requires two simple steps:
     ssh root@<target-computer> nixos-generate-config --no-filesystems --show-hardware-config > hardware-configuration.nix
     ```
 
-2. Move the generated file into `machines/jon/hardware-configuration.nix` folder.
+1. Move the generated file to `machines/jon/hardware-configuration.nix`.
 
 ### Initialize the facts
 
