@@ -18,19 +18,19 @@ Our mission is simple: to democratize computing by providing tools that empower 
 
 If you're new to cLAN and eager to dive in, start with our quickstart guide and explore the core functionalities that Clan offers:
 
-- **Quickstart Guide**: Check out [quickstart.md](docs/admins/01-quickstart.md) to get up and running with cLAN in no time.
+- **Quickstart Guide**: Check out https://docs.clan.lol/#starting-with-a-new-clan-project<!-- [docs/site/index.md](docs/site/index.md) --> to get up and running with cLAN in no time.
 
 ### Managing Secrets
 
 In the Clan ecosystem, security is paramount. Learn how to handle secrets effectively:
 
-- **Secrets Management**: Securely manage secrets by consulting [secrets.md](docs/admins/06-secrets.md).
+- **Secrets Management**: Securely manage secrets by consulting https://docs.clan.lol/getting-started/secrets/<!-- [secrets.md](docs/site/getting-started/secrets.md) -->.
 
 ### Contributing to cLAN
 
 The Clan project thrives on community contributions. We welcome everyone to contribute and collaborate:
 
-- **Contribution Guidelines**: Make a meaningful impact by following the steps in [contributing.md](docs/contributing/contributing.md).
+- **Contribution Guidelines**: Make a meaningful impact by following the steps in https://docs.clan.lol/contributing/contributing/<!-- [contributing.md](docs/CONTRIBUTING.md) -->.
 
 ## Join the Revolution
 
