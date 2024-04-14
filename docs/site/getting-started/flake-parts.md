@@ -1,12 +1,12 @@
 # Clan with `flake-parts`
 
-Clan supports integration with [flake.parts](https://flake.parts/) a tool which allows modular compositions.
+Clan supports integration with [flake.parts](https://flake.parts/) a tool which allows composing nixos modules in a modular way.
 
-Here's how to set up Clan using flakes and flake-parts.
+Here's how to set up Clan using `nix flakes` and `flake-parts`.
 
 ## 1. Update Your Flake Inputs
 
-To begin, you'll need to add `flake-parts` as a new dependency in your flake's inputs. This is alongside the already existing dependencies, such as `flake-parts` and `nixpkgs`. Here's how you can update your `flake.nix` file:
+To begin, you'll need to add `flake-parts` as a new dependency in your flake's inputs. This is alongside the already existing dependencies, such as `clan-core` and `nixpkgs`. Here's how you can update your `flake.nix` file:
 
 ```nix
 # flake.nix
