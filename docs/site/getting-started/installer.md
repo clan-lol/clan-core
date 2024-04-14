@@ -13,20 +13,23 @@ In this tutorial we will guide you through building and flashing it to a bootabl
 
 1. Insert your USB flash drive into your computer.
 
-2. Identify your flash drive with `lsblk`
+1. Identify your flash drive with `lsblk`:
 
-    ```bash
-    $ lsblk
-    NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
-    sdb                                             8:0    1 117,2G  0 disk
-    └─sdb1                                          8:1    1 117,2G  0 part  /run/media/qubasa/INTENSO
-    nvme0n1                                       259:0    0   1,8T  0 disk
-    ├─nvme0n1p1                                   259:1    0   512M  0 part  /boot
-    └─nvme0n1p2                                   259:2    0   1,8T  0 part
-      └─luks-f7600028-9d83-4967-84bc-dd2f498bc486 254:0    0   1,8T  0 crypt /nix/store                                                                 /
-    ```
+```bash
+$ lsblk
+```
 
-    In this case it's `sdb`
+```{.console, .no-copy}
+NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
+sdb                                             8:0    1 117,2G  0 disk
+└─sdb1                                          8:1    1 117,2G  0 part  /run/media/qubasa/INTENSO
+nvme0n1                                       259:0    0   1,8T  0 disk
+├─nvme0n1p1                                   259:1    0   512M  0 part  /boot
+└─nvme0n1p2                                   259:2    0   1,8T  0 part
+  └─luks-f7600028-9d83-4967-84bc-dd2f498bc486 254:0    0   1,8T  0 crypt /nix/store                                                                 /
+```
+
+In this case it is `sdb`.
 
 3. Ensure all partitions on the drive are unmounted. Replace `sdb1` in the command below with your device identifier (like `sdc1`, etc.):
 
@@ -48,27 +51,29 @@ Use the `dd` utility to write the NixOS installer image to your USB drive:
 sudo dd bs=4M conv=fsync oflag=direct status=progress if=./result of=/dev/sd<X>
 ```
 
-In case your USB device is `sdb` use `of=/dev/sdb`
+If your USB device is `sdb` use `of=/dev/sdb`.
 
 ### Step 4. Boot and Connect to your network
 
 After writing the installer to the USB drive, use it to boot the target machine.
 
-> i.e. Plug it into the target machine and select the USB drive as a temporary boot device.
+!!! info 
+    Plug it into the target machine and select the USB drive as a temporary boot device.
 
-For most hardware you can find the Key-combination below:
+??? tip "Here you can find the key combinations for selection used by most vendors."
+    - **Dell**: F12 (Boot Menu), F2/Del (BIOS Setup)
+    - **HP**: F9 (Boot Menu), Esc (Startup Menu)
+    - **Lenovo**: F12 (ThinkPad Boot Menu), F2/Fn+F2/Novo Button (IdeaPad Boot Menu/BIOS Setup)
+    - **Acer**: F12 (Boot Menu), F2/Del (BIOS Setup)
+    - **Asus**: F8/Esc (Boot Menu), F2/Del (BIOS Setup)
+    - **Toshiba**: F12/F2 (Boot Menu), Esc then F12 (Alternate Method)
+    - **Sony**: F11/Assist Button (Boot Menu/Recovery Options)
+    - **Samsung**: F2/F12/Esc (Boot Menu), F2 (BIOS Setup)
+    - **MSI**: F11 (Boot Menu), Del (BIOS Setup)
+    - **Apple**: Option (Alt) Key (Boot Menu for Mac)
+    - If your hardware was not listed read the manufacturers instructions how to enter the boot Menu/BIOS Setup.
 
-- **Dell**: F12 (Boot Menu), F2/Del (BIOS Setup)
-- **HP**: F9 (Boot Menu), Esc (Startup Menu)
-- **Lenovo**: F12 (ThinkPad Boot Menu), F2/Fn+F2/Novo Button (IdeaPad Boot Menu/BIOS Setup)
-- **Acer**: F12 (Boot Menu), F2/Del (BIOS Setup)
-- **Asus**: F8/Esc (Boot Menu), F2/Del (BIOS Setup)
-- **Toshiba**: F12/F2 (Boot Menu), Esc then F12 (Alternate Method)
-- **Sony**: F11/Assist Button (Boot Menu/Recovery Options)
-- **Samsung**: F2/F12/Esc (Boot Menu), F2 (BIOS Setup)
-- **MSI**: F11 (Boot Menu), Del (BIOS Setup)
-- **Apple**: Option (Alt) Key (Boot Menu for Mac)
-- If your hardware was not listed read the manufacturers instructions how to enter the boot Menu/BIOS Setup.
+
 
 **During Boot**
 
