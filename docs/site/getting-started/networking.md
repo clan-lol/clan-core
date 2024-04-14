@@ -70,7 +70,7 @@ To introduce a new machine to the VPN, adhere to the following steps:
    200 info d2c71971db 1.12.1 ONLINE
    ```
 
-!!! success
-    Congratulations! The new machine is now part of the VPN, and the ZeroTier
+!!! success "Congratulations!"
+    The new machine is now part of the VPN, and the ZeroTier
     configuration on NixOS within the Clan project is complete.
 
