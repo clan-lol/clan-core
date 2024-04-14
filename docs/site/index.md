@@ -68,7 +68,7 @@ tree
 
 This should yield the following:
 
-```bash
+``` { .console .no-copy }
 .
 ├── flake.nix
 ├── machines
@@ -88,7 +88,7 @@ This should yield the following:
 clan machines list
 ```
 
-```bash
+``` { .console .no-copy }
 jon
 sara
 ```
