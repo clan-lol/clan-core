@@ -153,3 +153,9 @@ If you need to inspect the Nix sandbox while running tests, follow these steps:
    cntr exec -w your_sandbox_name
    psgrep -a -x your_python_process_name
    ```
+
+
+# Standards
+
+Every new module name should be in kebab-case.
+Every fact definition, where possible should be in kebab-case.
