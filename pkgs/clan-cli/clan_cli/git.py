@@ -5,6 +5,7 @@ from clan_cli.errors import ClanError
 from clan_cli.nix import nix_shell
 
 from .cmd import Log, run
+from .locked_open import locked_open
 
 
 def commit_file(
@@ -55,38 +56,45 @@ def _commit_file_to_git(
     :param commit_message: The commit message.
     :raises ClanError: If the file is not in the git repository.
     """
-    for file_path in file_paths:
+    with locked_open(repo_dir / ".git" / "clan.lock", "w+"):
+        for file_path in file_paths:
+            cmd = nix_shell(
+                ["nixpkgs#git"],
+                ["git", "-C", str(repo_dir), "add", str(file_path)],
+            )
+            # add the file to the git index
+
+            run(
+                cmd,
+                log=Log.BOTH,
+                error_msg=f"Failed to add {file_path} file to git index",
+            )
+
+        # check if there is a diff
         cmd = nix_shell(
             ["nixpkgs#git"],
-            ["git", "-C", str(repo_dir), "add", str(file_path)],
+            ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code"]
+            + [str(file_path) for file_path in file_paths],
         )
-        # add the file to the git index
+        result = run(cmd, check=False, cwd=repo_dir)
+        # if there is no diff, return
+        if result.returncode == 0:
+            return
 
-        run(cmd, log=Log.BOTH, error_msg=f"Failed to add {file_path} file to git index")
+        # commit only that file
+        cmd = nix_shell(
+            ["nixpkgs#git"],
+            [
+                "git",
+                "-C",
+                str(repo_dir),
+                "commit",
+                "-m",
+                commit_message,
+            ]
+            + [str(file_path) for file_path in file_paths],
+        )
 
-    # check if there is a diff
-    cmd = nix_shell(
-        ["nixpkgs#git"],
-        ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code"]
-        + [str(file_path) for file_path in file_paths],
-    )
-    result = run(cmd, check=False, cwd=repo_dir)
-    # if there is no diff, return
-    if result.returncode == 0:
-        return
-
-    # commit only that file
-    cmd = nix_shell(
-        ["nixpkgs#git"],
-        [
-            "git",
-            "-C",
-            str(repo_dir),
-            "commit",
-            "-m",
-            commit_message,
-        ]
-        + [str(file_path) for file_path in file_paths],
-    )
-
-    run(cmd, error_msg=f"Failed to commit {file_paths} to git repository {repo_dir}")
+        run(
+            cmd, error_msg=f"Failed to commit {file_paths} to git repository {repo_dir}"
+        )
