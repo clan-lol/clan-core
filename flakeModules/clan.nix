@@ -50,7 +50,7 @@ in
     clanInternals = lib.mkOption {
       type = lib.types.submodule {
         options = {
-          all-machines-json = lib.mkOption { type = lib.types.attrsOf lib.types.str; };
+          all-machines-json = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           machines = lib.mkOption { type = lib.types.attrsOf (lib.types.attrsOf lib.types.unspecified); };
           machinesFunc = lib.mkOption { type = lib.types.attrsOf (lib.types.attrsOf lib.types.unspecified); };
         };
