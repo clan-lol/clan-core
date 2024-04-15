@@ -18,7 +18,7 @@ Our mission is simple: to democratize computing by providing tools that empower 
 
 If you're new to cLAN and eager to dive in, start with our quickstart guide and explore the core functionalities that Clan offers:
 
-- **Quickstart Guide**: Check out https://docs.clan.lol/#starting-with-a-new-clan-project<!-- [docs/site/index.md](docs/site/index.md) --> to get up and running with cLAN in no time.
+- **Quickstart Guide**: Check out [quickstart](https://docs.clan.lol/#starting-with-a-new-clan-project<!-- [docs/site/index.md](docs/site/index.md) -->) to get up and running with cLAN in no time.
 
 ### Managing Secrets
 
