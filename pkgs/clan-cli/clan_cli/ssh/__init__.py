@@ -18,6 +18,8 @@ from shlex import quote
 from threading import Thread
 from typing import IO, Any, Generic, TypeVar
 
+from ..errors import ClanError
+
 # https://no-color.org
 DISABLE_COLOR = not sys.stderr.isatty() or os.environ.get("NO_COLOR", "") != ""
 
@@ -285,7 +287,7 @@ class Host:
             elif stdout == subprocess.PIPE:
                 stdout_read, stdout_write = stack.enter_context(_pipe())
             else:
-                raise Exception(f"unsupported value for stdout parameter: {stdout}")
+                raise ClanError(f"unsupported value for stdout parameter: {stdout}")
 
             if stderr is None:
                 stderr_read = None
@@ -293,7 +295,7 @@ class Host:
             elif stderr == subprocess.PIPE:
                 stderr_read, stderr_write = stack.enter_context(_pipe())
             else:
-                raise Exception(f"unsupported value for stderr parameter: {stderr}")
+                raise ClanError(f"unsupported value for stderr parameter: {stderr}")
 
             env = os.environ.copy()
             env.update(extra_env)
@@ -610,7 +612,7 @@ class HostGroup:
                 )
                 errors += 1
         if errors > 0:
-            raise Exception(
+            raise ClanError(
                 f"{errors} hosts failed with an error. Check the logs above"
             )
 

@@ -11,7 +11,7 @@ from .dirs import user_history_file
 
 
 @contextmanager
-def _locked_open(filename: str | Path, mode: str = "r") -> Generator:
+def locked_open(filename: str | Path, mode: str = "r") -> Generator:
     """
     This is a context manager that provides an advisory write lock on the file specified by `filename` when entering the context, and releases the lock when leaving the context. The lock is acquired using the `fcntl` module's `LOCK_EX` flag, which applies an exclusive write lock to the file.
     """
@@ -22,12 +22,12 @@ def _locked_open(filename: str | Path, mode: str = "r") -> Generator:
 
 
 def write_history_file(data: Any) -> None:
-    with _locked_open(user_history_file(), "w+") as f:
+    with locked_open(user_history_file(), "w+") as f:
         f.write(json.dumps(data, cls=ClanJSONEncoder, indent=4))
 
 
 def read_history_file() -> list[dict]:
-    with _locked_open(user_history_file(), "r") as f:
+    with locked_open(user_history_file(), "r") as f:
         content: str = f.read()
         parsed: list[dict] = json.loads(content)
         return parsed
