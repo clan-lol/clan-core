@@ -189,7 +189,7 @@ If you already happened to use sops-nix, you can migrate by using the `clan secr
 % clan secrets import-sops --prefix matchbox- --group admins --machine matchbox nixos/matchbox/secrets/secrets.yaml
 ```
 
-This will create secrets for each secret found in `nixos/matchbox/secrets/secrets.yaml` in a ./sops folder of your repository.
+This will create secrets for each secret found in `nixos/matchbox/secrets/secrets.yaml` in a `./sops` folder of your repository.
 Each member of the group `admins` in this case will be able to decrypt the secrets with their respective key.
 
 Since our clan secret module will auto-import secrets that are encrypted for a particular nixos machine,
