@@ -11,6 +11,7 @@ from clan_cli.cmd import run
 
 from ..errors import ClanError
 from ..git import commit_files
+from ..machines.inventory import get_all_machines, get_selected_machines
 from ..machines.machines import Machine
 from ..nix import nix_shell
 from .check import check_secrets
@@ -127,53 +128,76 @@ def generate_service_facts(
     return True
 
 
-def generate_facts(
-    machine: Machine,
-    prompt: None | Callable[[str], str] = None,
+def prompt_func(text: str) -> str:
+    print(f"{text}: ")
+    return read_multiline_input()
+
+
+def _generate_facts_for_machine(
+    machine: Machine, tmpdir: Path, prompt: Callable[[str], str] = prompt_func
 ) -> bool:
+    local_temp = tmpdir / machine.name
+    local_temp.mkdir()
     secret_facts_module = importlib.import_module(machine.secret_facts_module)
     secret_facts_store = secret_facts_module.SecretStore(machine=machine)
 
     public_facts_module = importlib.import_module(machine.public_facts_module)
     public_facts_store = public_facts_module.FactStore(machine=machine)
 
-    if prompt is None:
+    machine_updated = False
+    for service in machine.facts_data:
+        machine_updated |= generate_service_facts(
+            machine=machine,
+            service=service,
+            secret_facts_store=secret_facts_store,
+            public_facts_store=public_facts_store,
+            tmpdir=local_temp,
+            prompt=prompt,
+        )
+    if machine_updated:
+        # flush caches to make sure the new secrets are available in evaluation
+        machine.flush_caches()
+    return machine_updated
 
-        def prompt_func(text: str) -> str:
-            print(f"{text}: ")
-            return read_multiline_input()
 
-        prompt = prompt_func
-
+def generate_facts(
+    machines: list[Machine], prompt: Callable[[str], str] = prompt_func
+) -> bool:
     was_regenerated = False
     with TemporaryDirectory() as tmp:
         tmpdir = Path(tmp)
-        for service in machine.facts_data:
-            was_regenerated |= generate_service_facts(
-                machine=machine,
-                service=service,
-                secret_facts_store=secret_facts_store,
-                public_facts_store=public_facts_store,
-                tmpdir=tmpdir,
-                prompt=prompt,
-            )
 
-    if was_regenerated:
-        # flush caches to make sure the new secrets are available in evaluation
-        machine.flush_caches()
-    else:
+        for machine in machines:
+            errors = 0
+            try:
+                was_regenerated |= _generate_facts_for_machine(machine, tmpdir, prompt)
+            except Exception as exc:
+                log.error(f"Failed to generate facts for {machine.name}: {exc}")
+                errors += 1
+            if errors > 0:
+                raise ClanError(
+                    f"Failed to generate facts for {errors} hosts. Check the logs above"
+                )
+
+    if not was_regenerated:
         print("All secrets and facts are already up to date")
     return was_regenerated
 
 
 def generate_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake=args.flake)
-    generate_facts(machine)
+    if len(args.machines) == 0:
+        machines = get_all_machines(args.flake)
+    else:
+        machines = get_selected_machines(args.flake, args.machines)
+    generate_facts(machines)
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "machine",
-        help="The machine to generate facts for",
+        "machines",
+        type=str,
+        help="machine to generate facts for. if empty, generate facts for all machines",
+        nargs="*",
+        default=[],
     )
     parser.set_defaults(func=generate_command)

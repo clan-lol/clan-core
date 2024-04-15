@@ -5,15 +5,15 @@ import os
 import shlex
 import subprocess
 import sys
-from pathlib import Path
 
-from ..cmd import run
 from ..errors import ClanError
 from ..facts.generate import generate_facts
 from ..facts.upload import upload_secrets
 from ..machines.machines import Machine
-from ..nix import nix_build, nix_command, nix_config, nix_metadata
-from ..ssh import Host, HostGroup, HostKeyCheck, parse_deployment_address
+from ..nix import nix_command, nix_metadata
+from ..ssh import HostKeyCheck
+from .inventory import get_all_machines, get_selected_machines
+from .machine_group import MachineGroup
 
 log = logging.getLogger(__name__)
 
@@ -86,31 +86,31 @@ def upload_sources(
         )
 
 
-def deploy_nixos(hosts: HostGroup) -> None:
+def deploy_nixos(machines: MachineGroup) -> None:
     """
     Deploy to all hosts in parallel
     """
 
-    def deploy(h: Host) -> None:
-        target = f"{h.user or 'root'}@{h.host}"
-        ssh_arg = f"-p {h.port}" if h.port else ""
+    def deploy(machine: Machine) -> None:
+        host = machine.build_host
+        target = f"{host.user or 'root'}@{host.host}"
+        ssh_arg = f"-p {host.port}" if host.port else ""
         env = os.environ.copy()
         env["NIX_SSHOPTS"] = ssh_arg
-        machine: Machine = h.meta["machine"]
 
-        generate_facts(machine)
+        generate_facts([machine])
         upload_secrets(machine)
 
         path = upload_sources(".", target)
 
-        if h.host_key_check != HostKeyCheck.STRICT:
+        if host.host_key_check != HostKeyCheck.STRICT:
             ssh_arg += " -o StrictHostKeyChecking=no"
-        if h.host_key_check == HostKeyCheck.NONE:
+        if host.host_key_check == HostKeyCheck.NONE:
             ssh_arg += " -o UserKnownHostsFile=/dev/null"
 
-        ssh_arg += " -i " + h.key if h.key else ""
+        ssh_arg += " -i " + host.key if host.key else ""
 
-        extra_args = h.meta.get("extra_args", [])
+        extra_args = host.meta.get("extra_args", [])
         cmd = [
             "nixos-rebuild",
             "switch",
@@ -127,82 +127,55 @@ def deploy_nixos(hosts: HostGroup) -> None:
             "--flake",
             f"{path}#{machine.name}",
         ]
-        if target_host := h.meta.get("target_host"):
+        if target_host := host.meta.get("target_host"):
             target_host = f"{target_host.user or 'root'}@{target_host.host}"
             cmd.extend(["--target-host", target_host])
-        ret = h.run(cmd, check=False)
+        ret = host.run(cmd, check=False)
         # re-retry switch if the first time fails
         if ret.returncode != 0:
-            ret = h.run(cmd)
+            ret = host.run(cmd)
 
-    hosts.run_function(deploy)
-
-
-# function to speedup eval if we want to evauluate all machines
-def get_all_machines(clan_dir: Path) -> HostGroup:
-    config = nix_config()
-    system = config["system"]
-    machines_json = run(
-        nix_build([f'{clan_dir}#clanInternals.all-machines-json."{system}"'])
-    ).stdout
-
-    machines = json.loads(Path(machines_json.rstrip()).read_text())
-
-    hosts = []
-    ignored_machines = []
-    for name, machine_data in machines.items():
-        if machine_data.get("requireExplicitUpdate", False):
-            continue
-
-        machine = Machine(name=name, flake=clan_dir, deployment_info=machine_data)
-        try:
-            hosts.append(machine.build_host)
-        except ClanError:
-            ignored_machines.append(name)
-            continue
-    if not hosts and ignored_machines != []:
-        print(
-            "WARNING: No machines to update. The following defined machines were ignored because they do not have `clan.networking.targetHost` nixos option set:",
-            file=sys.stderr,
-        )
-        for machine in ignored_machines:
-            print(machine, file=sys.stderr)
-    # very hacky. would be better to do a MachinesGroup instead
-    return HostGroup(hosts)
+    machines.run_function(deploy)
 
 
-def get_selected_machines(machine_names: list[str], flake_dir: Path) -> HostGroup:
-    hosts = []
-    for name in machine_names:
-        machine = Machine(name=name, flake=flake_dir)
-        hosts.append(machine.build_host)
-    return HostGroup(hosts)
-
-
-# FIXME: we want some kind of inventory here.
 def update(args: argparse.Namespace) -> None:
     if args.flake is None:
         raise ClanError("Could not find clan flake toplevel directory")
+    machines = []
     if len(args.machines) == 1 and args.target_host is not None:
         machine = Machine(name=args.machines[0], flake=args.flake)
         machine.target_host_address = args.target_host
-        host = parse_deployment_address(
-            args.machines[0],
-            args.target_host,
-            meta={"machine": machine},
-        )
-        machines = HostGroup([host])
+        machines.append(machine)
 
     elif args.target_host is not None:
         print("target host can only be specified for a single machine")
         exit(1)
     else:
         if len(args.machines) == 0:
-            machines = get_all_machines(args.flake)
-        else:
-            machines = get_selected_machines(args.machines, args.flake)
+            ignored_machines = []
+            for machine in get_all_machines(args.flake):
+                if machine.deployment_info.get("requireExplicitUpdate", False):
+                    continue
+                try:
+                    machine.build_host
+                except ClanError:  # check if we have a build host set
+                    ignored_machines.append(machine)
+                    continue
 
-    deploy_nixos(machines)
+                machines.append(machine)
+
+            if not machines and ignored_machines != []:
+                print(
+                    "WARNING: No machines to update. The following defined machines were ignored because they do not have `clan.networking.targetHost` nixos option set:",
+                    file=sys.stderr,
+                )
+                for machine in ignored_machines:
+                    print(machine, file=sys.stderr)
+
+        else:
+            machines = get_selected_machines(args.flake, args.machines)
+
+    deploy_nixos(MachineGroup(machines))
 
 
 def register_update_parser(parser: argparse.ArgumentParser) -> None:
