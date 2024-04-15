@@ -24,7 +24,7 @@ def install_nixos(
     target_host = f"{h.user or 'root'}@{h.host}"
     log.info(f"target host: {target_host}")
 
-    generate_facts(machine)
+    generate_facts([machine])
 
     with TemporaryDirectory() as tmpdir_:
         tmpdir = Path(tmpdir_)
