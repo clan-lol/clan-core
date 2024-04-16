@@ -1,8 +1,12 @@
 import argparse
 import json
+import logging
+import socket
 import subprocess
 
 from ..nix import nix_shell
+
+log = logging.getLogger(__name__)
 
 
 def ssh(
@@ -10,8 +14,12 @@ def ssh(
     user: str = "root",
     password: str | None = None,
     ssh_args: list[str] = [],
+    torify: bool = False,
 ) -> None:
-    packages = ["nixpkgs#tor", "nixpkgs#openssh"]
+    packages = ["nixpkgs#openssh"]
+    if torify:
+        packages.append("nixpkgs#tor")
+
     password_args = []
     if password:
         packages.append("nixpkgs#sshpass")
@@ -29,7 +37,12 @@ def ssh(
         "StrictHostKeyChecking=no",
         f"{user}@{host}",
     ]
-    cmd = nix_shell(packages, ["torify", *password_args, *_ssh_args])
+
+    cmd_args = [*password_args, *_ssh_args]
+    if torify:
+        cmd_args.insert(0, "torify")
+
+    cmd = nix_shell(packages, cmd_args)
     subprocess.run(cmd)
 
 
@@ -53,14 +66,39 @@ def qrcode_scan(picture_file: str) -> str:
     )
 
 
+def is_reachable(host: str) -> bool:
+    sock = socket.socket(
+        socket.AF_INET6 if ":" in host else socket.AF_INET, socket.SOCK_STREAM
+    )
+    sock.settimeout(2)
+    try:
+        sock.connect((host, 22))
+        sock.close()
+        return True
+    except OSError:
+        return False
+
+
+def connect_ssh_from_json(ssh_data: dict[str, str]) -> None:
+    for address in ssh_data["local_addresses"]:
+        log.debug(f"Trying to reach host on: {address}")
+        if is_reachable(address):
+            ssh(host=address, password=ssh_data["password"])
+            exit(0)
+        else:
+            log.debug(f"Could not reach host on {address}")
+    log.debug(f'Trying to reach host via torify on {ssh_data["onion_address"]}')
+    ssh(host=ssh_data["onion_address"], password=ssh_data["password"], torify=True)
+
+
 def main(args: argparse.Namespace) -> None:
     if args.json:
         with open(args.json) as file:
             ssh_data = json.load(file)
-        ssh(host=ssh_data["address"], password=ssh_data["password"])
+        connect_ssh_from_json(ssh_data)
     elif args.png:
         ssh_data = json.loads(qrcode_scan(args.png))
-        ssh(host=ssh_data["address"], password=ssh_data["password"])
+        connect_ssh_from_json(ssh_data)
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:

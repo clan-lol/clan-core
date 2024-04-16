@@ -33,7 +33,6 @@ def test_ssh_no_pass(
         "shell",
         fp.any(),
         "-c",
-        "torify",
         "ssh",
         "-o",
         "UserKnownHostsFile=/dev/null",
@@ -63,6 +62,63 @@ def test_ssh_with_pass(
         "shell",
         fp.any(),
         "-c",
+        "sshpass",
+        "-p",
+        fp.any(),
+    ]
+    fp.register(cmd)
+    cli.ssh(
+        host=host,
+        user=user,
+        password="XXX",
+    )
+    assert fp.call_count(cmd) == 1
+
+
+def test_ssh_no_pass_with_torify(
+    fp: pytest_subprocess.fake_process.FakeProcess, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    host = "somehost"
+    user = "user"
+    if os.environ.get("IN_NIX_SANDBOX"):
+        monkeypatch.delenv("IN_NIX_SANDBOX")
+    cmd: list[str | utils.Any] = [
+        "nix",
+        fp.any(),
+        "shell",
+        fp.any(),
+        "-c",
+        "torify",
+        "ssh",
+        "-o",
+        "UserKnownHostsFile=/dev/null",
+        "-o",
+        "StrictHostKeyChecking=no",
+        f"{user}@{host}",
+        fp.any(),
+    ]
+    fp.register(cmd)
+    cli.ssh(
+        host=host,
+        user=user,
+        torify=True,
+    )
+    assert fp.call_count(cmd) == 1
+
+
+def test_ssh_with_pass_with_torify(
+    fp: pytest_subprocess.fake_process.FakeProcess, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    host = "somehost"
+    user = "user"
+    if os.environ.get("IN_NIX_SANDBOX"):
+        monkeypatch.delenv("IN_NIX_SANDBOX")
+    cmd: list[str | utils.Any] = [
+        "nix",
+        fp.any(),
+        "shell",
+        fp.any(),
+        "-c",
         "torify",
         "sshpass",
         "-p",
@@ -73,6 +129,7 @@ def test_ssh_with_pass(
         host=host,
         user=user,
         password="XXX",
+        torify=True,
     )
     assert fp.call_count(cmd) == 1
 
