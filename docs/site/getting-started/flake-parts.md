@@ -35,6 +35,7 @@ After updating your flake inputs, the next step is to import the `clan-core` fla
     inputs@{ flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } (
       {
+        # 
         imports = [
           inputs.clan-core.flakeModules.default
         ];
@@ -49,45 +50,53 @@ Configure your clan settings and define machine configurations.
 Below is a guide on how to structure this in your flake.nix:
 
 ```nix
-  outputs =
-    inputs@{ flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } (
-      {
-        imports = [
-          inputs.clan-core.flakeModules.default
-        ];
-        clan = {
-          ## Clan wide settings. (Required)
-          clanName = "__CHANGE_ME__"; # Ensure to choose a unique name.
-          directory = self; # Point this to the repository root.
+  outputs = inputs@{ flake-parts, clan-core, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } ({self, pkgs, ...}: {
+      # We define our own systems below. you can still use this to add system specific outputs to your flake.
+      # See: https://flake.parts/getting-started
+      systems = [];
 
-          specialArgs = { }; # Add arguments to every nix import in here
-          
-          machines = {
-            jons-desktop = {
-              nixpkgs.hostPlatform = "x86_64-linux";
-              imports = [
-                clan-core.clanModules.sshd # Add openssh server for Clan management
-                ./configuration.nix
-              ];
+      # import clan-core modules
+      imports = [
+        clan-core.flakeModules.default
+      ];
+      # Define your clan
+      clan = {
+        # Clan wide settings. (Required)
+        clanName = ""; # Ensure to choose a unique name.
+
+        machines = {
+          jon = {
+            imports = [
+              ./machines/jon/configuration.nix
+              # ... more modules
+            ];
+            nixpkgs.hostPlatform = "x86_64-linux";
+            clanCore.machineIcon = null; # Optional, a path to an image file
+
+            # Set this for clan commands use ssh i.e. `clan machines update`
+            clan.networking.targetHost = pkgs.lib.mkDefault "root@jon";
+
+            # remote> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+            clan.diskLayouts.singleDiskExt4 = {
+              device = "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4aec2929";
             };
+
+            # There needs to be exactly one controller per clan
+            clan.networking.zerotier.controller.enable = true;
+            
           };
         };
-      }
-    );
+      };
+    });
 ```
 
 For detailed information about configuring `flake-parts` and the available options within Clan,
 refer to the Clan module documentation located [here](https://git.clan.lol/clan/clan-core/src/branch/main/flakeModules/clan.nix).
 
-### Next Steps
+## Whats next?
 
-With your flake created, explore how to add new machines by reviewing the documentation provided [here](machines.md).
+- [Configure Machines](configure.md): Customize machine configuration
+- [Deploying](machines.md): Deploying a Machine configuration
 
 ---
-
-## TODO
-
-* How do I use Clan machines install to setup my current machine?
-* I probably need the clan-core sshd module for that?
-* We need to tell them that configuration.nix of a machine NEEDS to be under the directory CLAN_ROOT/machines/<machine-name> I think?
