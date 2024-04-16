@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, module-docs, ... }:
 pkgs.stdenv.mkDerivation {
   name = "clan-documentation";
 
@@ -10,6 +10,11 @@ pkgs.stdenv.mkDerivation {
       mkdocs
       mkdocs-material
     ]);
+  configurePhase = ''
+    mkdir -p ./site/reference
+    cp -af ${module-docs}/* ./site/reference/
+
+  '';
 
   buildPhase = ''
     mkdocs build --strict
