@@ -81,8 +81,9 @@ Replace `host_or_ip` with the actual hostname or IP address of your target machi
 clan config --machine my-machine clan.networking.targetHost root@host_or_ip
 ```
 
-> Note: The use of `root@` in the target address implies SSH access as the `root` user.
-> Ensure that the root login is secured and only used when necessary.
+!!! warning
+    The use of `root@` in the target address implies SSH access as the `root` user.
+    Ensure that the root login is secured and only used when necessary.
 
 ### Updating Machine Configurations
 
