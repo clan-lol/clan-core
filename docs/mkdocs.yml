@@ -52,6 +52,7 @@ theme:
     - navigation.instant
     - navigation.tabs
     - content.code.copy
+    - content.tabs.link
   icon:
     repo: fontawesome/brands/git
 
