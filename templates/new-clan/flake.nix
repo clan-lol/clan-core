@@ -8,12 +8,14 @@
     let
       system = "x86_64-linux";
       pkgs = clan-core.inputs.nixpkgs.legacyPackages.${system};
+      # Usage see: https://docs.clan.lol
       clan = clan-core.lib.buildClan {
         directory = self;
         clanName = "__CHANGE_ME__"; # Ensure this is internet wide unique.
         clanIcon = null; # Optional, a path to an image file
-        # Prerequisite: boot into the installer
 
+        # Prerequisite: boot into the installer
+        # See: https://docs.clan.lol/getting-started/installer
         # local> mkdir -p ./machines/machine1
         # local> Edit ./machines/machine1/configuration.nix to your liking
         machines = {
@@ -21,7 +23,6 @@
             imports = [
               ./modules/shared.nix
               ./machines/jon/configuration.nix
-              ./machines/jon/hardware-configuration.nix
             ];
 
             nixpkgs.hostPlatform = system;
@@ -45,7 +46,6 @@
             imports = [
               ./modules/shared.nix
               ./machines/sara/configuration.nix
-              ./machines/sara/hardware-configuration.nix
             ];
 
             nixpkgs.hostPlatform = system;
