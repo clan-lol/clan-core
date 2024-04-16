@@ -10,6 +10,11 @@ validation:
   unrecognized_links: warn
 
 markdown_extensions:
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.superfences
@@ -40,6 +45,28 @@ nav:
       - Backup & Restore: getting-started/backups.md
       - Flake-parts: getting-started/flake-parts.md
   - Templates: templates/index.md
+  - Reference:
+      - ClanCore: reference/clan-core.md
+      - ClanModules:
+          - reference/borgbackup.md
+          - reference/deltachat.md
+          - reference/diskLayouts.md
+          - reference/ergochat.md
+          - reference/graphical.md
+          - reference/localbackup.md
+          - reference/localsend.md
+          - reference/matrix-synapse.md
+          - reference/moonlight.md
+          - reference/root-password.md
+          - reference/sshd.md
+          - reference/sunshine.md
+          - reference/syncthing.md
+          - reference/thelounge.md
+          - reference/vm-user.md
+          - reference/waypipe.md
+          - reference/xfce-vm.md
+          - reference/xfce.md
+          - reference/zt-tcp-relay.md
   - Contributing: contributing/contributing.md
 
 docs_dir: site
