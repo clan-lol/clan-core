@@ -4,32 +4,34 @@ We offer a dedicated installer to assist remote installations.
 
 In this tutorial we will guide you through building and flashing it to a bootable USB drive.
 
-## Step 0. Prerequisites
+## Creating and Using the **Clan Installer**
+
+### Step 0. Prerequisites
 
 - [x] A free USB Drive with at least 1.5GB (All data on it will be lost)
 - [x] Linux/NixOS Machine with Internet
 
-## Step 1. Identify the USB Flash Drive
+### Step 1. Identify the USB Flash Drive
 
 1. Insert your USB flash drive into your computer.
 
-1. Identify your flash drive with `lsblk`:
+2. Identify your flash drive with `lsblk`:
 
-```bash
-$ lsblk
-```
+    ```bash
+    $ lsblk
+    ```
 
-```{.console, .no-copy}
-NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
-sdb                                             8:0    1 117,2G  0 disk
-└─sdb1                                          8:1    1 117,2G  0 part  /run/media/qubasa/INTENSO
-nvme0n1                                       259:0    0   1,8T  0 disk
-├─nvme0n1p1                                   259:1    0   512M  0 part  /boot
-└─nvme0n1p2                                   259:2    0   1,8T  0 part
-  └─luks-f7600028-9d83-4967-84bc-dd2f498bc486 254:0    0   1,8T  0 crypt /nix/store                                                                 /
-```
+    ```{.console, .no-copy}
+    NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
+    sdb                                             8:0    1 117,2G  0 disk
+    └─sdb1                                          8:1    1 117,2G  0 part  /run/media/qubasa/INTENSO
+    nvme0n1                                       259:0    0   1,8T  0 disk
+    ├─nvme0n1p1                                   259:1    0   512M  0 part  /boot
+    └─nvme0n1p2                                   259:2    0   1,8T  0 part
+      └─luks-f7600028-9d83-4967-84bc-dd2f498bc486 254:0    0   1,8T  0 crypt /nix/store
+    ```
 
-In this case it is `sdb`.
+    !!! Info "In this case the USB device is `sdb`"
 
 3. Ensure all partitions on the drive are unmounted. Replace `sdb1` in the command below with your device identifier (like `sdc1`, etc.):
 
@@ -45,13 +47,19 @@ nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
 
 ### Step 3. Flash the Installer to the USB Drive
 
+!!! Danger "Specifying the wrong device can lead to unrecoverable data loss."
+
+    The `dd` utility will erase the disk. Make sure to specify the correct device (`of=...`)
+
+    If your USB device is `sdb` use `of=/dev/sdb`
+
+    
+
 Use the `dd` utility to write the NixOS installer image to your USB drive:
 
 ```bash
 sudo dd bs=4M conv=fsync oflag=direct status=progress if=./result of=/dev/sd<X>
 ```
-
-If your USB device is `sdb` use `of=/dev/sdb`.
 
 ### Step 4. Boot and Connect to your network
 
@@ -73,8 +81,6 @@ After writing the installer to the USB drive, use it to boot the target machine.
     - **Apple**: Option (Alt) Key (Boot Menu for Mac)
     - If your hardware was not listed read the manufacturers instructions how to enter the boot Menu/BIOS Setup.
 
-
-
 **During Boot**
 
 Select `NixOS` to boot into the clan installer.
@@ -83,19 +89,19 @@ Select `NixOS` to boot into the clan installer.
 
 For deploying your configuration the machine needs to be connected via LAN (recommended).
 
-For connecting via Wifi, please consult the guide below.
+For connecting via Wifi, please consult the [guide below](#optional-connect-to-wifi).
 
 ---
 
-### Whats next?
+## Whats next?
 
-- [Configure Machines](configure.md): Customise machine configuration
+- [Configure Machines](configure.md): Customize machine configuration
 - [Deploying](machines.md): Deploying a Machine configuration
 - [WiFi](#optional-connect-to-wifi): Guide for connecting to Wifi.
 
 ---
 
-### (Optional) Connect to Wifi
+## (Optional) Connect to Wifi
 
 If you don't have access via LAN the Installer offers support for connecting via Wifi.
 
@@ -114,7 +120,7 @@ Now run the following command to connect to your Wifi:
 ```bash
 # Identify your network device.
 device list
-# Replace 'wlan0' with your device name
+# Replace 'wlan0' with your wireless device name
 # Find your Wifi SSID.
 station wlan0 scan
 station wlan0 get-networks
@@ -137,4 +143,7 @@ IPv4 address          192.168.188.50 (Your new local ip)
 
 Press `ctrl-d` to exit `IWD`.
 
-Press `ctrl-d` **again** to update the displayed QR code and connection information.
+!!! Important
+    Press `ctrl-d` **again** to update the displayed QR code and connection information.
+
+You're all set up

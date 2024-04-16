@@ -4,6 +4,7 @@ clan-core:
   lib,
   flake-parts-lib,
   inputs,
+  self,
   ...
 }:
 let
@@ -20,6 +21,7 @@ in
     directory = mkOption {
       type = types.path;
       description = "The directory containing the clan subdirectory";
+      default = self; # default to the directory of the flake
     };
     specialArgs = mkOption {
       type = types.attrsOf types.raw;

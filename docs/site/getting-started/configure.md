@@ -10,23 +10,49 @@ In the `flake.nix` file:
 
 These icons will be used by our future GUI.
 
-```nix title="clan-core.lib.buildClan"
-buildClan {
-    # Set a unique name 
-    clanName = "Lobsters";
-    # Optional, a path to an image file
-    clanIcon = ./path/to/file; 
+=== "**buildClan**"
 
-    machines = {
-        jon = {
+    ```nix title="clan-core.lib.buildClan"
+    buildClan {
+        # Set a unique name 
+        clanName = "Lobsters";
+        # Optional, a path to an image file
+        clanIcon = ./path/to/file; 
+        # Should usually point to the directory of flake.nix
+        directory = ./.;
+
+        machines = {
+            jon = {
+                # ...
+                # Optional, a path to an image file
+                clanCore.machineIcon = ./path/to/file; 
+            };
             # ...
-            # Optional, a path to an image file
-            clanCore.machineIcon = ./path/to/file; 
-        };
-        # ...
+        }
     }
-}
-```
+    ```
+
+=== "**flakeParts**"
+
+    !!! info "See [Clan with flake-parts](./flake-parts.md) for help migrating to flake-parts."
+
+    ```nix title="clan-core.flakeModules.default"
+    clan = {
+        # Set a unique name 
+        clanName = "Lobsters";
+        # Optional, a path to an image file
+        clanIcon = ./path/to/file;
+
+        machines = {
+            jon = {
+                # ...
+                # Optional, a path to an image file
+                clanCore.machineIcon = ./path/to/file; 
+            };
+            # ...
+        }
+    };
+    ```
 
 ## Machine configuration
 
@@ -56,27 +82,55 @@ Adding or configuring a new machine requires two simple steps:
 
 1. Edit the following fields inside the `flake.nix`
 
-    ```nix title="clan-core.lib.buildClan"
-    buildClan {
-      # ...
-      machines = {
-        "jon" = {
-          # ...
+    === "**buildClan**"
 
-          # Change this to the correct ip-address or hostname
-          # The hostname is the machine name by default
-          clan.networking.targetHost = pkgs.lib.mkDefault "root@<hostname>"
-          
-          # Change this to the ID-LINK of the desired disk shown by 'lsblk'
-          clan.diskLayouts.singleDiskExt4 = {
-            device = "/dev/disk/by-id/__CHANGE_ME__";
-          }
-
+        ```nix title="clan-core.lib.buildClan"
+        buildClan {
           # ...
+          machines = {
+            "jon" = {
+              # ...
+
+              # Change this to the correct ip-address or hostname
+              # The hostname is the machine name by default
+              clan.networking.targetHost = pkgs.lib.mkDefault "root@<hostname>"
+              
+              # Change this to the ID-LINK of the desired disk shown by 'lsblk'
+              clan.diskLayouts.singleDiskExt4 = {
+                device = "/dev/disk/by-id/__CHANGE_ME__";
+              }
+
+              # ...
+            };
+          };     
+        }
+        ```
+
+    === "**flakeParts**"
+
+
+
+        ```nix title="clan-core.flakeModules.default"
+        clan = {
+          # ...
+          machines = {
+            "jon" = {
+              # ...
+
+              # Change this to the correct ip-address or hostname
+              # The hostname is the machine name by default
+              clan.networking.targetHost = pkgs.lib.mkDefault "root@<hostname>"
+              
+              # Change this to the ID-LINK of the desired disk shown by 'lsblk'
+              clan.diskLayouts.singleDiskExt4 = {
+                device = "/dev/disk/by-id/__CHANGE_ME__";
+              }
+
+              # ...
+            };
+          };     
         };
-      };     
-    }
-    ```
+        ```
 
 ### Step 2. Detect hardware specific drivers
 
@@ -86,7 +140,7 @@ Adding or configuring a new machine requires two simple steps:
     ssh root@<target-computer> nixos-generate-config --no-filesystems --show-hardware-config > hardware-configuration.nix
     ```
 
-1. Move the generated file to `machines/jon/hardware-configuration.nix`.
+2. Move the generated file to `machines/jon/hardware-configuration.nix`.
 
 ### Initialize the facts
 
