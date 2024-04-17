@@ -53,11 +53,28 @@ def render_option_header(name: str) -> str:
     return f"# {name}\n"
 
 
-def render_option(name: str, option: dict[str, Any]) -> str:
+def join_lines_with_indentation(lines: list[str], indent: int = 4) -> str:
+    """
+    Joins multiple lines with a specified number of whitespace characters as indentation.
+
+    Args:
+    lines (list of str): The lines of text to join.
+    indent (int): The number of whitespace characters to use as indentation for each line.
+
+    Returns:
+    str: The indented and concatenated string.
+    """
+    # Create the indentation string (e.g., four spaces)
+    indent_str = " " * indent
+    # Join each line with the indentation added at the beginning
+    return "\n".join(indent_str + line for line in lines)
+
+
+def render_option(name: str, option: dict[str, Any], level: int = 2) -> str:
     read_only = option.get("readOnly")
 
     res = f"""
-## {sanitize(name)}
+{"#" * level} {sanitize(name)} {{#{sanitize(name)}}}
 {"Readonly" if read_only else ""}
 {option.get("description", "No description available.")}
 
@@ -74,12 +91,13 @@ def render_option(name: str, option: dict[str, Any]) -> str:
         """
     example = option.get("example", {}).get("text")
     if example:
+        example_indented = join_lines_with_indentation(example.split("\n"))
         res += f"""
 
 ???+ example
 
     ```nix
-    {example}
+{example_indented}
     ```
 """
     if option.get("relatedPackages"):
@@ -100,15 +118,17 @@ def render_option(name: str, option: dict[str, Any]) -> str:
 
 
 def module_header(module_name: str) -> str:
-    return f"""# {module_name}
- 
-To use this module, import it like this:
+    return f"# {module_name}\n"
+
+
+def module_usage(module_name: str) -> str:
+    return f"""To use this module, import it like this:
 
 ```nix
-  {{config, lib, inputs, ...}}: {{
+{{config, lib, inputs, ...}}: {{
     imports = [ inputs.clan-core.clanModules.{module_name} ];
     # ...
-  }}
+}}
 ```
 """
 
@@ -133,7 +153,9 @@ def produce_clan_core_docs() -> None:
             # Create seperate files for nested options
             if len(option_name.split(".")) <= 2:
                 # i.e. clan-core.clanDir
-                output = core_outputs.get(outfile, module_header(module_name))
+                output = core_outputs.get(
+                    outfile, module_header(module_name) + module_usage(module_name)
+                )
                 output += render_option(option_name, info)
                 # Update the content
                 core_outputs[outfile] = output
@@ -182,11 +204,17 @@ def produce_clan_modules_docs() -> None:
             if readme_map.get(module_name, None):
                 output += f"{readme_map[module_name]}\n"
 
+            output += module_usage(module_name)
+
+            output += "\n## Module Options\n"
             for option_name, info in options.items():
-                output += render_option(option_name, info)
+                output += render_option(option_name, info, 3)
 
             outfile = Path(OUT) / f"clanModules/{module_name}.md"
-            outfile.parent.mkdir(parents=True, exist_ok=True)
+            outfile.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
             with open(outfile, "w") as of:
                 of.write(output)
 

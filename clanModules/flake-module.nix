@@ -9,7 +9,7 @@
     };
     borgbackup = ./borgbackup.nix;
     ergochat = ./ergochat.nix;
-    deltachat = ./deltachat.nix;
+    deltachat = ./deltachat;
     graphical = ./graphical.nix;
     localbackup = ./localbackup.nix;
     localsend = ./localsend.nix;
@@ -17,7 +17,7 @@
     moonlight = ./moonlight.nix;
     sshd = ./sshd.nix;
     sunshine = ./sunshine.nix;
-    syncthing = ./syncthing.nix;
+    syncthing = ./syncthing;
     root-password = ./root-password;
     thelounge = ./thelounge.nix;
     vm-user = ./vm-user.nix;

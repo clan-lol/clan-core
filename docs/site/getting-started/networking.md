@@ -10,7 +10,7 @@ include a new machine into the VPN.
 The VPN controller is initially essential for providing configuration to new
 peers. Once addresses are allocated, the controller's continuous operation is not essential.
 
-### Instructions:
+### Instructions
 
 1. **Designate a Machine**: Label a machine as the VPN controller in the clan,
    referred to as `<CONTROLLER>` henceforth in this guide.
@@ -74,3 +74,22 @@ To introduce a new machine to the VPN, adhere to the following steps:
     The new machine is now part of the VPN, and the ZeroTier
     configuration on NixOS within the Clan project is complete.
 
+## Decision
+
+We chose zerotier because in our tests it was the easiest solution to bootstrap. You can selfhost a controller and the controller doesn't need to be globally reachable.
+
+In the future we plan to add additional network technologies like tinc, head/tailscale, yggdrassil and mycelium.
+
+## Specification
+
+By default all machines within one clan are connected via the chosen network technology.
+
+```
+Clan 
+    Node A
+    <-> (zerotier / mycelium / ...) 
+    Node B
+```
+
+If you select multiple network technologies at the same time. e.g. (zerotier + yggdrassil)
+One of them is the primary network and the above statement holds for the primary network.

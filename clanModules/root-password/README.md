@@ -1,4 +1,4 @@
-## Usage
+Creates a root-password
 
 !!! tip "This module sets the password for the root user (automatically)."
 
