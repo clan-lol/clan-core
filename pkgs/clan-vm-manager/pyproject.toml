@@ -5,8 +5,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "clan-vm-manager"
+description = "clan vm manager"
 dynamic = ["version"]
 scripts = { clan-vm-manager = "clan_vm_manager:main" }
+
+[project.urls]
+Homepage = "https://clan.lol/"
+Documentation = "https://docs.clan.lol/"
+Repository = "https://git.clan.lol/clan/clan-core"
 
 [tool.setuptools.packages.find]
 exclude = ["result"]
