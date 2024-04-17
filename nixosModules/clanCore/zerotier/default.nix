@@ -103,7 +103,6 @@ in
       systemd.network.networks."09-zerotier" = {
         matchConfig.Name = "zt*";
         networkConfig = {
-          LLMNR = true;
           LLDP = true;
           MulticastDNS = true;
           KeepConfiguration = "static";
@@ -159,9 +158,6 @@ in
           '') cfg.moon.orbitMoons}
         ''}"
       ];
-
-      networking.firewall.interfaces."zt+".allowedTCPPorts = [ 5353 ]; # mdns
-      networking.firewall.interfaces."zt+".allowedUDPPorts = [ 5353 ]; # mdns
 
       networking.firewall.allowedTCPPorts = [ 9993 ]; # zerotier
       networking.firewall.allowedUDPPorts = [ 9993 ]; # zerotier
