@@ -47,6 +47,10 @@ def replace_store_path(text: str) -> Path:
     return Path(res)
 
 
+def render_option_header(name: str) -> str:
+    return f"# {name}\n"
+
+
 def render_option(name: str, option: dict[str, Any]) -> str:
     read_only = option.get("readOnly")
 
@@ -116,16 +120,38 @@ def produce_clan_core_docs() -> None:
     if not OUT:
         raise ValueError(f"Environment variables are not set correctly: $out={OUT}")
 
+    # A mapping of output file to content
+    core_outputs: dict[str, str] = {
+        "clan-core/index.md": "",
+    }
     with open(CLAN_CORE) as f:
         options: dict[str, dict[str, Any]] = json.load(f)
         module_name = "clan-core"
-        output = module_header(module_name)
         for option_name, info in options.items():
-            output += render_option(option_name, info)
+            outfile = f"{module_name}/index.md"
 
-        outfile = Path(OUT) / f"{module_name}.md"
-        with open(outfile, "w") as of:
-            of.write(output)
+            # Create seperate files for nested options
+            if len(option_name.split(".")) <= 2:
+                # i.e. clan-core.clanDir
+                output = module_header(module_name)
+                output += render_option(option_name, info)
+                core_outputs[outfile] += output
+
+            else:
+                # Clan sub-options
+                [_, sub] = option_name.split(".")[0:2]
+                outfile = f"{module_name}/{sub}.md"
+                # Get the content or write the header
+                output = core_outputs.get(outfile, render_option_header(sub))
+                output += render_option(option_name, info)
+                # Update the content
+                core_outputs[outfile] = output
+
+        print(core_outputs)
+        for outfile, output in core_outputs.items():
+            (Path(OUT) / outfile).parent.mkdir(parents=True, exist_ok=True)
+            with open(Path(OUT) / outfile, "w") as of:
+                of.write(output)
 
 
 def produce_clan_modules_docs() -> None:
@@ -149,7 +175,8 @@ def produce_clan_modules_docs() -> None:
             for option_name, info in options.items():
                 output += render_option(option_name, info)
 
-            outfile = Path(OUT) / f"{module_name}.md"
+            outfile = Path(OUT) / f"clanModules/{module_name}.md"
+            outfile.parent.mkdir(parents=True, exist_ok=True)
             with open(outfile, "w") as of:
                 of.write(output)
 
