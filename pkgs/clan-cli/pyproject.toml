@@ -3,10 +3,16 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "clan-cli"
-description = "cLAN CLI tool"
+name = "clan"
+description = "clan cli tool"
 dynamic = ["version"]
 scripts = { clan = "clan_cli:main" }
+license = {text = "MIT"}
+
+[project.urls]
+Homepage = "https://clan.lol/"
+Documentation = "https://docs.clan.lol/"
+Repository = "https://git.clan.lol/clan/clan-core"
 
 [tool.setuptools.packages.find]
 exclude = ["clan_cli.nixpkgs*", "result"]
