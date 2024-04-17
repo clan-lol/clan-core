@@ -38,6 +38,10 @@ def ssh(
         f"{user}@{host}",
     ]
 
+    if password:
+        _ssh_args.append("-o")
+        _ssh_args.append("IdentitiesOnly=yes")
+
     cmd_args = [*password_args, *_ssh_args]
     if torify:
         cmd_args.insert(0, "torify")
