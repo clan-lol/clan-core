@@ -12,12 +12,13 @@
       # { clanCore = «derivation JSON»; clanModules = { ${name} = «derivation JSON» }; }
       jsonDocs = import ./get-module-docs.nix {
         inherit (inputs) nixpkgs;
-        inherit pkgs;
+        inherit pkgs self;
         inherit (self.nixosModules) clanCore;
         inherit (self) clanModules;
       };
 
       clanModulesFileInfo = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModules);
+      clanModulesReadmes = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesReadmes);
 
       # Simply evaluated options (JSON)
       renderOptions =
@@ -43,6 +44,7 @@
         export CLAN_CORE=${jsonDocs.clanCore}/share/doc/nixos/options.json 
         # A file that contains the links to all clanModule docs
         export CLAN_MODULES=${clanModulesFileInfo}
+        export CLAN_MODULES_READMES=${clanModulesReadmes}
 
         mkdir $out
 
@@ -62,6 +64,9 @@
         };
         deploy-docs = pkgs.callPackage ./deploy-docs.nix { inherit (config.packages) docs; };
         inherit module-docs;
+      };
+      legacyPackages = {
+        foo = jsonDocs;
       };
     };
 }
