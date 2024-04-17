@@ -31,6 +31,8 @@ from typing import Any
 # Get environment variables
 CLAN_CORE = os.getenv("CLAN_CORE")
 CLAN_MODULES = os.environ.get("CLAN_MODULES")
+CLAN_MODULES_READMES = os.environ.get("CLAN_MODULES_READMES")
+
 OUT = os.environ.get("out")
 
 
@@ -74,9 +76,9 @@ def render_option(name: str, option: dict[str, Any]) -> str:
     if example:
         res += f"""
 
-??? example
+???+ example
 
-    ```nix  
+    ```nix
     {example}
     ```
 """
@@ -121,9 +123,7 @@ def produce_clan_core_docs() -> None:
         raise ValueError(f"Environment variables are not set correctly: $out={OUT}")
 
     # A mapping of output file to content
-    core_outputs: dict[str, str] = {
-        "clan-core/index.md": "",
-    }
+    core_outputs: dict[str, str] = {}
     with open(CLAN_CORE) as f:
         options: dict[str, dict[str, Any]] = json.load(f)
         module_name = "clan-core"
@@ -133,10 +133,10 @@ def produce_clan_core_docs() -> None:
             # Create seperate files for nested options
             if len(option_name.split(".")) <= 2:
                 # i.e. clan-core.clanDir
-                output = module_header(module_name)
+                output = core_outputs.get(outfile, module_header(module_name))
                 output += render_option(option_name, info)
-                core_outputs[outfile] += output
-
+                # Update the content
+                core_outputs[outfile] = output
             else:
                 # Clan sub-options
                 [_, sub] = option_name.split(".")[0:2]
@@ -147,7 +147,6 @@ def produce_clan_core_docs() -> None:
                 # Update the content
                 core_outputs[outfile] = output
 
-        print(core_outputs)
         for outfile, output in core_outputs.items():
             (Path(OUT) / outfile).parent.mkdir(parents=True, exist_ok=True)
             with open(Path(OUT) / outfile, "w") as of:
@@ -159,6 +158,10 @@ def produce_clan_modules_docs() -> None:
         raise ValueError(
             f"Environment variables are not set correctly: $CLAN_MODULES={CLAN_MODULES}"
         )
+    if not CLAN_MODULES_READMES:
+        raise ValueError(
+            f"Environment variables are not set correctly: $CLAN_MODULES_READMES={CLAN_MODULES_READMES}"
+        )
 
     if not OUT:
         raise ValueError(f"Environment variables are not set correctly: $out={OUT}")
@@ -166,12 +169,19 @@ def produce_clan_modules_docs() -> None:
     with open(CLAN_MODULES) as f:
         links: dict[str, str] = json.load(f)
 
+    with open(CLAN_MODULES_READMES) as readme:
+        readme_map: dict[str, str] = json.load(readme)
+
     # {'borgbackup': '/nix/store/hi17dwgy7963ddd4ijh81fv0c9sbh8sw-options.json', ... }
     for module_name, options_file in links.items():
         with open(Path(options_file) / "share/doc/nixos/options.json") as f:
             options: dict[str, dict[str, Any]] = json.load(f)
             print(f"Rendering options for {module_name}...")
             output = module_header(module_name)
+
+            if readme_map.get(module_name, None):
+                output += f"{readme_map[module_name]}\n"
+
             for option_name, info in options.items():
                 output += render_option(option_name, info)
 
