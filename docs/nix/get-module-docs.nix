@@ -3,6 +3,7 @@
   pkgs,
   clanCore,
   clanModules,
+  self,
 }:
 let
   allNixosModules = (import "${nixpkgs}/nixos/modules/module-list.nix") ++ [
@@ -36,10 +37,28 @@ let
     name: module: (evalDocs ((getOptions [ module ]).clan.${name} or { })).optionsJSON
   ) clanModules;
 
+  clanModulesReadmes = builtins.mapAttrs (
+    module_name: _module:
+    let
+      readme = "${self}/clanModules/${module_name}/README.md";
+      readmeContents =
+        if
+          builtins.trace "Trying to get Module README.md for ${module_name} from ${readme}"
+            # TODO: Edge cases
+            (builtins.pathExists readme)
+        then
+          (builtins.readFile readme)
+        else
+          null;
+    in
+    readmeContents
+  ) clanModules;
+
   # clanCore docs
   clanCoreDocs = (evalDocs (getOptions [ ]).clanCore).optionsJSON;
 in
 {
+  inherit clanModulesReadmes;
   clanCore = clanCoreDocs;
   clanModules = clanModulesDocs;
 }
