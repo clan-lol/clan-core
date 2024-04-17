@@ -25,7 +25,7 @@ This process involves preparing a suitable hardware and disk partitioning config
          
         2. Boot the target machine and connect it to a network that makes it reachable from your setup computer.
 
-=== "**Cloud Machines**"
+=== "**Baremetal Machines**"
 
     - [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
     - [x] **Machine configuration**: See our basic [configuration guide](./configure.md)
