@@ -70,7 +70,7 @@ def join_lines_with_indentation(lines: list[str], indent: int = 4) -> str:
     return "\n".join(indent_str + line for line in lines)
 
 
-def render_option(name: str, option: dict[str, Any], level: int = 2) -> str:
+def render_option(name: str, option: dict[str, Any], level: int = 3) -> str:
     read_only = option.get("readOnly")
 
     res = f"""
@@ -122,7 +122,9 @@ def module_header(module_name: str) -> str:
 
 
 def module_usage(module_name: str) -> str:
-    return f"""To use this module, import it like this:
+    return f"""## Usage
+
+To use this module, import it like this:
 
 ```nix
 {{config, lib, inputs, ...}}: {{
@@ -131,6 +133,14 @@ def module_usage(module_name: str) -> str:
 }}
 ```
 """
+
+
+clan_core_descr = """ClanCore delivers all the essential features for every clan. 
+It's always included in your setup, and you can customize your clan's behavior with the configuration [options](#module-options) provided below.
+
+"""
+
+options_head = "\n## Module Options\n"
 
 
 def produce_clan_core_docs() -> None:
@@ -154,7 +164,8 @@ def produce_clan_core_docs() -> None:
             if len(option_name.split(".")) <= 2:
                 # i.e. clan-core.clanDir
                 output = core_outputs.get(
-                    outfile, module_header(module_name) + module_usage(module_name)
+                    outfile,
+                    module_header(module_name) + clan_core_descr + options_head,
                 )
                 output += render_option(option_name, info)
                 # Update the content
@@ -206,9 +217,9 @@ def produce_clan_modules_docs() -> None:
 
             output += module_usage(module_name)
 
-            output += "\n## Module Options\n"
+            output += options_head if len(options.items()) else ""
             for option_name, info in options.items():
-                output += render_option(option_name, info, 3)
+                output += render_option(option_name, info)
 
             outfile = Path(OUT) / f"clanModules/{module_name}.md"
             outfile.parent.mkdir(
