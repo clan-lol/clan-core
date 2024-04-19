@@ -17,7 +17,7 @@ writeShellScriptBin "deploy-docs" ''
     ]
   }"
 
-  if [ -n "$SSH_HOMEPAGE_KEY" ]; then
+  if [ -n "''${SSH_HOMEPAGE_KEY:-}" ]; then
     echo "$SSH_HOMEPAGE_KEY" > ./ssh_key
     chmod 600 ./ssh_key
     sshExtraArgs="-i ./ssh_key"
