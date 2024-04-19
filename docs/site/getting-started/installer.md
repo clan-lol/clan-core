@@ -17,8 +17,8 @@ In this tutorial we will guide you through building and flashing it to a bootabl
 
 2. Identify your flash drive with `lsblk`:
 
-    ```bash
-    $ lsblk
+    ```shellSession
+    lsblk
     ```
 
     ```{.console, .no-copy}
@@ -35,14 +35,14 @@ In this tutorial we will guide you through building and flashing it to a bootabl
 
 3. Ensure all partitions on the drive are unmounted. Replace `sdb1` in the command below with your device identifier (like `sdc1`, etc.):
 
-```bash
+```shellSession
 sudo umount /dev/sdb1
 ```
 
-### Step 2. Build the Installer
+### Step 2. Download the Installer
 
-```bash
-nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
+```shellSession
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-unstable/nixos-installer-x86_64-linux.iso
 ```
 
 ### Step 3. Flash the Installer to the USB Drive
@@ -51,14 +51,14 @@ nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
 
     The `dd` utility will erase the disk. Make sure to specify the correct device (`of=...`)
 
-    If your USB device is `sdb` use `of=/dev/sdb`
+    For example if the USB device is `sdb` use `of=/dev/sdb`.
 
     
 
 Use the `dd` utility to write the NixOS installer image to your USB drive:
 
-```bash
-sudo dd bs=4M conv=fsync oflag=direct status=progress if=./result of=/dev/sd<X>
+```shellSession
+sudo dd bs=4M conv=fsync oflag=direct status=progress if=./nixos-installer-x86_64-linux.iso of=/dev/sd<X>
 ```
 
 ### Step 4. Boot and Connect to your network
@@ -105,7 +105,7 @@ For connecting via Wifi, please consult the [guide below](#optional-connect-to-w
 
 If you don't have access via LAN the Installer offers support for connecting via Wifi.
 
-```bash
+```shellSession
 iwctl
 ```
 
@@ -117,7 +117,7 @@ This will enter `iwd`
 
 Now run the following command to connect to your Wifi:
 
-```bash
+```shellSession
 # Identify your network device.
 device list
 # Replace 'wlan0' with your wireless device name
