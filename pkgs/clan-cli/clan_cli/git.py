@@ -29,6 +29,8 @@ def commit_files(
     repo_dir: Path,
     commit_message: str | None = None,
 ) -> None:
+    if not file_paths:
+        return
     # check that the file is in the git repository
     for file_path in file_paths:
         if not Path(file_path).resolve().is_relative_to(repo_dir.resolve()):

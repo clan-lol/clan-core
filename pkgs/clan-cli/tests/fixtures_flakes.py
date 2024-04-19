@@ -175,6 +175,18 @@ def test_flake(
     monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
     yield from create_flake(monkeypatch, temporary_home, "test_flake")
+    # check that git diff on ./sops is empty
+    if (temporary_home / "test_flake" / "sops").exists():
+        git_proc = sp.run(
+            ["git", "diff", "--exit-code", "./sops"],
+            cwd=temporary_home / "test_flake",
+            stderr=sp.PIPE,
+        )
+        if git_proc.returncode != 0:
+            log.error(git_proc.stderr.decode())
+            raise Exception(
+                "git diff on ./sops is not empty. This should not happen as all changes should be committed"
+            )
 
 
 @pytest.fixture

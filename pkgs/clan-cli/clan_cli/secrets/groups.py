@@ -2,6 +2,8 @@ import argparse
 import os
 from pathlib import Path
 
+from clan_cli.git import commit_files
+
 from ..errors import ClanError
 from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
@@ -87,19 +89,21 @@ def list_directory(directory: Path) -> str:
     return msg
 
 
-def update_group_keys(flake_dir: Path, group: str) -> None:
+def update_group_keys(flake_dir: Path, group: str) -> list[Path]:
+    updated_paths = []
     for secret_ in secrets.list_secrets(flake_dir):
         secret = sops_secrets_folder(flake_dir) / secret_
         if (secret / "groups" / group).is_symlink():
-            update_keys(
+            updated_paths += update_keys(
                 secret,
                 list(sorted(secrets.collect_keys_for_path(secret))),
             )
+    return updated_paths
 
 
 def add_member(
     flake_dir: Path, group_folder: Path, source_folder: Path, name: str
-) -> None:
+) -> list[Path]:
     source = source_folder / name
     if not source.exists():
         msg = f"{name} does not exist in {source_folder}: "
@@ -114,7 +118,7 @@ def add_member(
             )
         os.remove(user_target)
     user_target.symlink_to(os.path.relpath(source, user_target.parent))
-    update_group_keys(flake_dir, group_folder.parent.name)
+    return update_group_keys(flake_dir, group_folder.parent.name)
 
 
 def remove_member(flake_dir: Path, group_folder: Path, name: str) -> None:
@@ -136,8 +140,13 @@ def remove_member(flake_dir: Path, group_folder: Path, name: str) -> None:
 
 
 def add_user(flake_dir: Path, group: str, name: str) -> None:
-    add_member(
+    updated_files = add_member(
         flake_dir, users_folder(flake_dir, group), sops_users_folder(flake_dir), name
+    )
+    commit_files(
+        updated_files,
+        flake_dir,
+        f"Add user {name} to group {group}",
     )
 
 
@@ -154,11 +163,16 @@ def remove_user_command(args: argparse.Namespace) -> None:
 
 
 def add_machine(flake_dir: Path, group: str, name: str) -> None:
-    add_member(
+    updated_files = add_member(
         flake_dir,
         machines_folder(flake_dir, group),
         sops_machines_folder(flake_dir),
         name,
+    )
+    commit_files(
+        updated_files,
+        flake_dir,
+        f"Add machine {name} to group {group}",
     )
 
 
@@ -189,7 +203,14 @@ def add_secret_command(args: argparse.Namespace) -> None:
 
 
 def remove_secret(flake_dir: Path, group: str, name: str) -> None:
-    secrets.disallow_member(secrets.groups_folder(flake_dir, name), group)
+    updated_paths = secrets.disallow_member(
+        secrets.groups_folder(flake_dir, name), group
+    )
+    commit_files(
+        updated_paths,
+        flake_dir,
+        f"Remove group {group} from secret {name}",
+    )
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
