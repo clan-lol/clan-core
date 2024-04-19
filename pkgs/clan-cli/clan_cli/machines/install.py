@@ -38,7 +38,7 @@ def install_nixos(
 
         cmd = [
             "nixos-anywhere",
-            "-f",
+            "--flake",
             f"{machine.flake}#{machine.name}",
             "--no-reboot",
             "--extra-files",
