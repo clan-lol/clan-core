@@ -33,10 +33,13 @@ def list_objects(path: Path, is_valid: Callable[[str], bool]) -> list[str]:
     return objs
 
 
-def remove_object(path: Path, name: str) -> None:
+def remove_object(path: Path, name: str) -> list[Path]:
+    paths_to_commit = []
     try:
         shutil.rmtree(path / name)
+        paths_to_commit.append(path / name)
     except FileNotFoundError:
         raise ClanError(f"{name} not found in {path}")
     if not os.listdir(path):
         os.rmdir(path)
+    return paths_to_commit

@@ -34,7 +34,7 @@ def get_public_key(privkey: str) -> str:
     return res.stdout.strip()
 
 
-def generate_private_key() -> tuple[str, str]:
+def generate_private_key(out_file: Path | None = None) -> tuple[str, str]:
     cmd = nix_shell(["nixpkgs#age"], ["age-keygen"])
     try:
         proc = run(cmd)
@@ -50,6 +50,9 @@ def generate_private_key() -> tuple[str, str]:
             raise ClanError("Could not find public key in age-keygen output")
         if not private_key:
             raise ClanError("Could not find private key in age-keygen output")
+        if out_file:
+            out_file.parent.mkdir(parents=True, exist_ok=True)
+            out_file.write_text(res)
         return private_key, pubkey
     except subprocess.CalledProcessError as e:
         raise ClanError("Failed to generate private sops key") from e
