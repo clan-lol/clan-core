@@ -6,13 +6,19 @@ For installations on physical hardware, create a NixOS installer image and trans
 
 To create a bootable USB flash drive with the NixOS installer:
 
-### Build the Installer Image
+### Download the install iso
 
-```bash
-nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
+Either with wget:
+
+```shellSession
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-unstable/nixos-installer-x86_64-linux.iso
 ```
 
-> Make sure you do this inside
+or with curl:
+
+```shellSession
+curl -L https://github.com/nix-community/nixos-images/releases/download/nixos-unstable/nixos-installer-x86_64-linux.iso -o nixos-installer-x86_64-linux.iso
+```
 
 ### Prepare the USB Flash Drive
 
@@ -20,8 +26,8 @@ nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
 
 2. Identify your flash drive with `lsblk`.
 
-    ```bash
-    $ lsblk
+    ```shellSession
+    lsblk
     NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
     sdb                                             8:0    1 117,2G  0 disk
     └─sdb1                                          8:1    1 117,2G  0 part  /run/media/qubasa/INTENSO
@@ -35,7 +41,7 @@ nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
 
 3. Ensure all partitions on the drive are unmounted. Replace `sdX` in the command below with your device identifier (like `sdb`, etc.):
 
-    ```bash
+    ```shellSession
     sudo umount /dev/sdb1
     ```
 
@@ -43,11 +49,11 @@ nix build git+https://git.clan.lol/clan/clan-core.git#install-iso
 
 Use the `dd` utility to write the NixOS installer image to your USB drive:
 
-  ```bash
-  sudo dd bs=4M conv=fsync oflag=direct status=progress if=./result/stick.raw of=/dev/sd<X>
+  ```shellSession
+  sudo dd bs=4M conv=fsync oflag=direct status=progress if=./nixos-installer-x86_64-linux.iso of=/dev/sd<X>
   ```
 
-  In case your USB device is `sdb` use `of=/dev/sdb`
+  In this case, the USB device is `sdb` use `of=/dev/sdb`
 
 ### Boot and Connect
 
@@ -85,14 +91,15 @@ After writing the installer to the USB drive, use it to boot the target machine.
        - **Apple**: Option (Alt) Key (Boot Menu for Mac)
        - If your hardware was not listed read the manufacturers instructions how to enter the boot Menu/BIOS Setup.
 
+
 5. Select `NixOS` to boot into the clan installer
 
 6. The installer will display an IP address and a root password, which you can use to connect via SSH.  
     Alternatively you can also use the displayed QR code.
 
-7. Set your keyboard language. Important for writing passwords correctly.
+7. Set your keyboard language (i.e. `de` for German keyboards, default is English). Important for writing passwords correctly.
 
-    ```bash
+    ```shellSession
     loadkeys de
     ```
 
@@ -100,31 +107,31 @@ After writing the installer to the USB drive, use it to boot the target machine.
 
     1. Bring up the `iwd` shell
 
-        ```bash
+        ```shellSession
         iwctl
         ```
 
-    2. List available networks. Double press tab after station for device autocompletion. In this case `wlan0` is the only network wifi device.
+    2. List available networks. Double press tab after station for autocompleting your wlan device. In this case `wlan0`
 
-        ```bash
+        ```shellSession
         [iwd] station wlan0 get-networks
         ```
 
     3. Connect to a Wifi network. Replace `SSID` with the wlan network name.
 
-        ```bash
+        ```shellSession
         [iwd] station wlan0 connect SSID
         ```
 
 9. Now that you have internet re-execute the init script by pressing `Ctrl+D` or by executing:
 
-    ```bash
+    ```shellSession
     bash
     ```
 
 10. Connect to the machine over ssh
 
-    ```bash
+    ```shellSession
     ssh-copy-id -o PreferredAuthentications=password root@<ip>
     ```
 
