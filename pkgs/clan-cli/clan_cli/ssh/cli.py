@@ -85,7 +85,7 @@ def is_reachable(host: str) -> bool:
 
 
 def connect_ssh_from_json(ssh_data: dict[str, str]) -> None:
-    for address in ssh_data["local_addrs"]:
+    for address in ssh_data["addrs"]:
         log.debug(f"Trying to reach host on: {address}")
         if is_reachable(address):
             ssh(host=address, password=ssh_data["pass"])
