@@ -3,6 +3,7 @@ import json
 import logging
 import socket
 import subprocess
+from pathlib import Path
 
 from ..nix import nix_shell
 
@@ -97,8 +98,11 @@ def connect_ssh_from_json(ssh_data: dict[str, str]) -> None:
 
 def main(args: argparse.Namespace) -> None:
     if args.json:
-        with open(args.json) as file:
-            ssh_data = json.load(file)
+        json_file = Path(args.json)
+        if json_file.is_file():
+            ssh_data = json.loads(json_file.read_text())
+        else:
+            ssh_data = json.loads(args.json)
         connect_ssh_from_json(ssh_data)
     elif args.png:
         ssh_data = json.loads(qrcode_scan(args.png))
