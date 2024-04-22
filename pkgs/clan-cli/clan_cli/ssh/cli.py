@@ -85,15 +85,15 @@ def is_reachable(host: str) -> bool:
 
 
 def connect_ssh_from_json(ssh_data: dict[str, str]) -> None:
-    for address in ssh_data["addrs"]:
+    for address in ssh_data["local_addresses"]:
         log.debug(f"Trying to reach host on: {address}")
         if is_reachable(address):
-            ssh(host=address, password=ssh_data["pass"])
+            ssh(host=address, password=ssh_data["password"])
             exit(0)
         else:
             log.debug(f"Could not reach host on {address}")
     log.debug(f'Trying to reach host via torify on {ssh_data["tor"]}')
-    ssh(host=ssh_data["tor"], password=ssh_data["pass"], torify=True)
+    ssh(host=ssh_data["tor"], password=ssh_data["password"], torify=True)
 
 
 def main(args: argparse.Namespace) -> None:
