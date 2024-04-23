@@ -58,6 +58,7 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         "--debug",
         help="Enable debug logging",
         action="store_true",
+        default=False,
     )
 
     parser.add_argument(
