@@ -1,5 +1,24 @@
 { self, lib, ... }:
+
 let
+  wifiModule =
+    { ... }:
+    {
+      # use iwd instead of wpa_supplicant
+      networking.wireless.enable = false;
+
+      # Use iwd instead of wpa_supplicant. It has a user friendly CLI
+      networking.wireless.iwd = {
+        enable = true;
+        settings = {
+          Network = {
+            EnableIPv6 = true;
+            RoutePriorityOffset = 300;
+          };
+          Settings.AutoConnect = true;
+        };
+      };
+    };
   installerModule =
     {
       config,
@@ -9,6 +28,7 @@ let
     }:
     {
       imports = [
+        wifiModule
         self.nixosModules.installer
         self.inputs.nixos-generators.nixosModules.all-formats
         self.inputs.disko.nixosModules.disko
@@ -17,27 +37,11 @@ let
 
       isoImage.squashfsCompression = "zstd";
 
-      # Provide convenience for connecting to wifi
-      networking.wireless.enable = false;
-
-      # Use iwd instead of wpa_supplicant. It has a user friendly CLI
-      networking.wireless.iwd = {
-        settings = {
-          Network = {
-            EnableIPv6 = true;
-            RoutePriorityOffset = 300;
-          };
-          Settings = {
-            AutoConnect = true;
-          };
-        };
-        enable = true;
-      };
       system.stateVersion = config.system.nixos.version;
       nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
     };
 
-  installer = lib.nixosSystem {
+  installerSystem = lib.nixosSystem {
     modules = [
       self.inputs.disko.nixosModules.default
       installerModule
@@ -49,25 +53,10 @@ let
     { config, pkgs, ... }:
     {
       imports = [
+        wifiModule
         self.nixosModules.installer
         self.clanModules.diskLayouts
       ];
-      # Provide convenience for connecting to wifi
-      networking.wireless.enable = false;
-
-      # Use iwd instead of wpa_supplicant. It has a user friendly CLI
-      networking.wireless.iwd = {
-        settings = {
-          Network = {
-            EnableIPv6 = true;
-            RoutePriorityOffset = 300;
-          };
-          Settings = {
-            AutoConnect = true;
-          };
-        };
-        enable = true;
-      };
       system.stateVersion = config.system.nixos.version;
       nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
     };
@@ -76,17 +65,25 @@ in
   clan = {
     clanName = "clan-core";
     directory = self;
-    machines.installer = {
+
+    # To build a generic installer image (without ssh pubkeys),
+    # use the following command:
+    # $ nix build .#iso-installer
+    machines.iso-installer = {
       imports = [ installerModule ];
       fileSystems."/".device = lib.mkDefault "/dev/null";
     };
+
+    # To directly flash the installer to a disk, use the following command:
+    # $ clan flash flash-installer --disk main /dev/sdX --yes
+    # This will include your ssh public keys in the installer.
     machines.flash-installer = {
       imports = [ flashInstallerModule ];
-      clan.diskLayouts.singleDiskExt4.device = "/dev/sda";
-      boot.loader.grub.enable = lib.mkForce true;
+      clan.diskLayouts.singleDiskExt4.device = lib.mkDefault "/dev/null";
+      boot.loader.grub.enable = lib.mkDefault true;
     };
   };
-  flake.packages.x86_64-linux.install-iso = installer.config.formats.iso;
-  flake.apps.x86_64-linux.install-vm.program = installer.config.formats.vm.outPath;
-  flake.apps.x86_64-linux.install-vm-nogui.program = installer.config.formats.vm-nogui.outPath;
+  flake.packages.x86_64-linux.iso-installer = installerSystem.config.formats.iso;
+  flake.apps.x86_64-linux.install-vm.program = installerSystem.config.formats.vm.outPath;
+  flake.apps.x86_64-linux.install-vm-nogui.program = installerSystem.config.formats.vm-nogui.outPath;
 }
