@@ -1,6 +1,6 @@
 import logging
 import threading
-from typing import Callable
+from collections.abc import Callable
 
 import gi
 from clan_cli.history.list import list_history
