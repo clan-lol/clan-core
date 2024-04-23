@@ -1,5 +1,6 @@
 import logging
 import threading
+from typing import Callable
 
 import gi
 from clan_cli.history.list import list_history
@@ -41,7 +42,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.tray_icon: TrayIcon = TrayIcon(app)
 
         # Initialize all ClanStore
-        threading.Thread(target=self._populate_vms).start()
+        threading.Thread(
+            target=self._populate_vms, args=[self._set_clan_store_ready]
+        ).start()
 
         # Initialize all views
         stack_view = ViewStack.use().view
@@ -65,11 +68,16 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.connect("destroy", self.on_destroy)
 
-    def _populate_vms(self) -> None:
+    def _set_clan_store_ready(self) -> None:
+        ClanStore.use().clan_store.emit("is_ready")
+
+    def _populate_vms(self, done: Callable[[], None]) -> None:
         # Execute `clan flakes add <path>` to democlan for this to work
         # TODO: Make list_history a generator function
         for entry in list_history():
             GLib.idle_add(ClanStore.use().create_vm_task, entry)
+
+        GLib.idle_add(done)
 
     def kill_vms(self) -> None:
         log.debug("Killing all VMs")

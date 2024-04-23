@@ -7,8 +7,9 @@ from typing import Any, TypeVar
 import gi
 from clan_cli.clan_uri import ClanURI
 
-from clan_vm_manager import assets
+from clan_vm_manager.components.gkvstore import GKVStore
 from clan_vm_manager.components.interfaces import ClanConfig
+from clan_vm_manager.components.list_splash import EmptySplash
 from clan_vm_manager.components.vmobj import VMObject
 from clan_vm_manager.singletons.toast import (
     LogToast,
@@ -73,43 +74,29 @@ class ClanList(Gtk.Box):
         self.join_boxed_list.add_css_class("join-list")
         self.append(self.join_boxed_list)
 
+        clan_store = ClanStore.use().clan_store
+        clan_store.connect("is_ready", self.display_splash)
+
         self.group_list = create_boxed_list(
-            model=ClanStore.use().clan_store, render_row=self.render_group_row
+            model=clan_store, render_row=self.render_group_row
         )
         self.group_list.add_css_class("group-list")
         self.append(self.group_list)
 
-        # LIST SPLASH
-        clan_icon = assets.get_asset("clan.svg")
+        self.splash = EmptySplash(on_join=lambda x: self.on_join_request(x, x))
 
-        if not icon_path:
-            return ico_buffer
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, icon_size, icon_size)
-
-        empty_label = Gtk.Label(label="Welcome to Clan! Join your first clan.")
-        join_entry = Gtk.Entry()
-        join_entry.set_placeholder_text("clan://<url>")
-        join_entry.set_hexpand(True)
-
-        join_button = Gtk.Button(label="Join")
-        join_button.connect("clicked", lambda x: (), join_entry)
-
-        clamp = Adw.Clamp()
-        clamp.set_maximum_size(400)
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        vbox.append(empty_label)
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        hbox.append(join_entry)
-        hbox.append(join_button)
-        vbox.append(hbox)
-        clamp.set_child(vbox)
-
-        self.append(clamp)
+    def display_splash(self, source: GKVStore) -> None:
+        print("Displaying splash")
+        if (
+            ClanStore.use().clan_store.get_n_items() == 0
+            and JoinList.use().list_store.get_n_items() == 0
+        ):
+            self.append(self.splash)
 
     def render_group_row(
         self, boxed_list: Gtk.ListBox, vm_store: VMStore
     ) -> Gtk.Widget:
+        self.remove(self.splash)
 
         vm = vm_store.first()
         log.debug("Rendering group row for %s", vm.data.flake.flake_url)
