@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Union
 
 loc: Path = Path(__file__).parent
 
