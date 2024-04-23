@@ -83,6 +83,7 @@ theme:
   features:
     - navigation.instant
     - navigation.tabs
+    - content.code.annotate
     - content.code.copy
     - content.tabs.link
   icon:
