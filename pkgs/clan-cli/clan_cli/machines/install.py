@@ -56,7 +56,8 @@ def install_nixos(
 
         run(
             nix_shell(
-                ["nixpkgs#sshpass", "/home/kenji/git/nix-projects/nixos-anywhere"],
+                # ["nixpkgs#sshpass", "/home/kenji/git/nix-projects/nixos-anywhere"],
+                ["nixpkgs#sshpass", "nixpkgs#nixos-anywhere"],
                 cmd,
             ),
             log=Log.BOTH,
