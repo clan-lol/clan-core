@@ -7,7 +7,9 @@ from typing import Any, TypeVar
 import gi
 from clan_cli.clan_uri import ClanURI
 
+from clan_vm_manager.components.gkvstore import GKVStore
 from clan_vm_manager.components.interfaces import ClanConfig
+from clan_vm_manager.components.list_splash import EmptySplash
 from clan_vm_manager.components.vmobj import VMObject
 from clan_vm_manager.singletons.toast import (
     LogToast,
@@ -72,17 +74,33 @@ class ClanList(Gtk.Box):
         self.join_boxed_list.add_css_class("join-list")
         self.append(self.join_boxed_list)
 
+        clan_store = ClanStore.use().clan_store
+        clan_store.connect("is_ready", self.display_splash)
+
         self.group_list = create_boxed_list(
-            model=ClanStore.use().clan_store, render_row=self.render_group_row
+            model=clan_store, render_row=self.render_group_row
         )
         self.group_list.add_css_class("group-list")
         self.append(self.group_list)
 
+        self.splash = EmptySplash(on_join=lambda x: self.on_join_request(x, x))
+
+    def display_splash(self, source: GKVStore) -> None:
+        print("Displaying splash")
+        if (
+            ClanStore.use().clan_store.get_n_items() == 0
+            and JoinList.use().list_store.get_n_items() == 0
+        ):
+            self.append(self.splash)
+
     def render_group_row(
         self, boxed_list: Gtk.ListBox, vm_store: VMStore
     ) -> Gtk.Widget:
+        self.remove(self.splash)
+
         vm = vm_store.first()
         log.debug("Rendering group row for %s", vm.data.flake.flake_url)
+
         grp = Adw.PreferencesGroup()
         grp.set_title(vm.data.flake.clan_name)
         grp.set_description(vm.data.flake.flake_url)
