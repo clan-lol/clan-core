@@ -54,6 +54,23 @@ def read_public_key_contents(public_keys: list[Path]) -> list[str]:
     return public_key_contents
 
 
+def get_locale() -> tuple[str, str]:
+    """
+    Function to get the current default locale from the system.
+    """
+    default_locale = "en_US.UTF-8"
+    keymap = "en"
+
+    res = run(["locale", "lang_ab", "country_ab2", "charmap"])
+
+    if res.returncode == 0:
+        arr = res.stdout.strip().split("\n")
+        default_locale = f"{arr[0]}_{arr[1]}.{arr[2]}"
+        keymap = arr[0]
+
+    return (keymap, default_locale)
+
+
 def flash_machine(
     machine: Machine,
     *,
@@ -122,6 +139,8 @@ class FlashOptions:
     confirm: bool
     debug: bool
     mode: str
+    language: str
+    keymap: str
 
 
 class AppendDiskAction(argparse.Action):
@@ -150,6 +169,8 @@ def flash_command(args: argparse.Namespace) -> None:
         confirm=not args.yes,
         debug=args.debug,
         mode=args.mode,
+        language=args.lang,
+        keymap=args.keymap,
     )
 
     machine = Machine(opts.machine, flake=opts.flake)
@@ -181,17 +202,24 @@ def flash_command(args: argparse.Namespace) -> None:
     else:
         raise ClanError("Invalid state")
 
-    user_keys = {
+    console_keymap, default_locale = get_locale()
+    extra_config = {
         "users": {
             "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}}
-        }
+        },
+        "console": {
+            "keyMap": opts.keymap if opts.keymap else console_keymap,
+        },
+        "i18n": {
+            "defaultLocale": opts.language if opts.language else default_locale,
+        },
     }
 
     flash_machine(
         machine,
         mode=opts.mode,
         disks=opts.disks,
-        system_config=user_keys,
+        system_config=extra_config,
         dry_run=opts.dry_run,
         debug=opts.debug,
     )
@@ -231,6 +259,16 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         action="append",
         default=[],
         help="ssh pubkey file to add to the root user. Can be used multiple times",
+    )
+    parser.add_argument(
+        "--lang",
+        type=str,
+        help="system language",
+    )
+    parser.add_argument(
+        "--keymap",
+        type=str,
+        help="system keymap",
     )
     parser.add_argument(
         "--yes",
