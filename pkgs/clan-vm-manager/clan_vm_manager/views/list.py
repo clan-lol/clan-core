@@ -7,6 +7,7 @@ from typing import Any, TypeVar
 import gi
 from clan_cli.clan_uri import ClanURI
 
+from clan_vm_manager import assets
 from clan_vm_manager.components.interfaces import ClanConfig
 from clan_vm_manager.components.vmobj import VMObject
 from clan_vm_manager.singletons.toast import (
@@ -78,11 +79,41 @@ class ClanList(Gtk.Box):
         self.group_list.add_css_class("group-list")
         self.append(self.group_list)
 
+        # LIST SPLASH
+        clan_icon = assets.get_asset("clan.svg")
+
+        if not icon_path:
+            return ico_buffer
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, icon_size, icon_size)
+
+        empty_label = Gtk.Label(label="Welcome to Clan! Join your first clan.")
+        join_entry = Gtk.Entry()
+        join_entry.set_placeholder_text("clan://<url>")
+        join_entry.set_hexpand(True)
+
+        join_button = Gtk.Button(label="Join")
+        join_button.connect("clicked", lambda x: (), join_entry)
+
+        clamp = Adw.Clamp()
+        clamp.set_maximum_size(400)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        vbox.append(empty_label)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        hbox.append(join_entry)
+        hbox.append(join_button)
+        vbox.append(hbox)
+        clamp.set_child(vbox)
+
+        self.append(clamp)
+
     def render_group_row(
         self, boxed_list: Gtk.ListBox, vm_store: VMStore
     ) -> Gtk.Widget:
+
         vm = vm_store.first()
         log.debug("Rendering group row for %s", vm.data.flake.flake_url)
+
         grp = Adw.PreferencesGroup()
         grp.set_title(vm.data.flake.clan_name)
         grp.set_description(vm.data.flake.flake_url)
