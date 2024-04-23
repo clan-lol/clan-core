@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Callable
-from typing import Any, Generic, TypeVar, ClassVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 import gi
 

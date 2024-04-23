@@ -1,12 +1,13 @@
 import logging
-from typing import Callable, Optional, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 import gi
 
 from clan_vm_manager import assets
 
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GObject, Gtk, GdkPixbuf
+from gi.repository import Adw, GdkPixbuf, Gio, GObject, Gtk
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ class EmptySplash(Gtk.Box):
 
         self.append(clamp)
 
-    def load_image(self, file_path: str) -> Optional[GdkPixbuf.Pixbuf]:
+    def load_image(self, file_path: str) -> GdkPixbuf.Pixbuf | None:
         try:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file(file_path)
             return pixbuf
