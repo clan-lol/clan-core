@@ -63,6 +63,7 @@ This command creates the `flake.nix` and `.clan-flake` files for your project.
 Ensure that all project files exist by running:
 
 ```bash
+cd my-clan
 tree
 ```
 
