@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
 
 import gi
 from clan_cli.clan_uri import ClanURI
@@ -15,7 +15,7 @@ from clan_vm_manager.views.logs import Logs
 
 gi.require_version("GObject", "2.0")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gio, GLib
+from gi.repository import Gio, GLib, GObject
 
 log = logging.getLogger(__name__)
 
@@ -25,9 +25,17 @@ class VMStore(GKVStore):
         super().__init__(VMObject, lambda vm: vm.data.flake.flake_attr)
 
 
+class Emitter(GObject.GObject):
+    __gsignals__: ClassVar = {
+        "is_ready": (GObject.SignalFlags.RUN_FIRST, None, []),
+    }
+
+
 class ClanStore:
     _instance: "None | ClanStore" = None
     _clan_store: GKVStore[str, VMStore]
+
+    _emitter: Emitter
 
     # set the vm that is outputting logs
     # build logs are automatically streamed to the logs-view
@@ -44,8 +52,15 @@ class ClanStore:
             cls._clan_store = GKVStore(
                 VMStore, lambda store: store.first().data.flake.flake_url
             )
+            cls._emitter = Emitter()
 
         return cls._instance
+
+    def emit(self, signal: str) -> None:
+        self._emitter.emit(signal)
+
+    def connect(self, signal: str, cb: Callable[(...), Any]) -> None:
+        self._emitter.connect(signal, cb)
 
     def set_logging_vm(self, ident: str) -> VMObject | None:
         vm = self.get_vm(ClanURI(f"clan://{ident}"))

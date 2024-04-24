@@ -74,11 +74,11 @@ class ClanList(Gtk.Box):
         self.join_boxed_list.add_css_class("join-list")
         self.append(self.join_boxed_list)
 
-        clan_store = ClanStore.use().clan_store
+        clan_store = ClanStore.use()
         clan_store.connect("is_ready", self.display_splash)
 
         self.group_list = create_boxed_list(
-            model=clan_store, render_row=self.render_group_row
+            model=clan_store.clan_store, render_row=self.render_group_row
         )
         self.group_list.add_css_class("group-list")
         self.append(self.group_list)
@@ -338,7 +338,7 @@ class ClanList(Gtk.Box):
 
     def on_after_join(self, source: JoinValue) -> None:
         ToastOverlay.use().add_toast_unique(
-            SuccessToast(f"Added/updated {source.url.machine.name}").toast,
+            SuccessToast(f"Updated {source.url.machine.name}").toast,
             "success.join",
         )
         # If the join request list is empty disable the shadow artefact
