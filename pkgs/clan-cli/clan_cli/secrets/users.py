@@ -32,7 +32,12 @@ def add_user(flake_dir: Path, name: str, key: str, force: bool) -> None:
 
 
 def remove_user(flake_dir: Path, name: str) -> None:
-    remove_object(sops_users_folder(flake_dir), name)
+    removed_paths = remove_object(sops_users_folder(flake_dir), name)
+    commit_files(
+        removed_paths,
+        flake_dir,
+        f"Remove user {name}",
+    )
 
 
 def get_user(flake_dir: Path, name: str) -> str:
@@ -52,13 +57,25 @@ def list_users(flake_dir: Path) -> list[str]:
 
 
 def add_secret(flake_dir: Path, user: str, secret: str) -> None:
-    secrets.allow_member(
+    updated_paths = secrets.allow_member(
         secrets.users_folder(flake_dir, secret), sops_users_folder(flake_dir), user
+    )
+    commit_files(
+        updated_paths,
+        flake_dir,
+        f"Add {user} to secret",
     )
 
 
 def remove_secret(flake_dir: Path, user: str, secret: str) -> None:
-    secrets.disallow_member(secrets.users_folder(flake_dir, secret), user)
+    updated_paths = secrets.disallow_member(
+        secrets.users_folder(flake_dir, secret), user
+    )
+    commit_files(
+        updated_paths,
+        flake_dir,
+        f"Remove {user} from secret",
+    )
 
 
 def list_command(args: argparse.Namespace) -> None:

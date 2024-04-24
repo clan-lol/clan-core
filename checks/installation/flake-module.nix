@@ -63,7 +63,9 @@
             };
           };
           nodes.client = {
-            environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
+            environment.systemPackages = [
+              self.packages.${pkgs.system}.clan-cli
+            ] ++ self.packages.${pkgs.system}.clan-cli.runtimeDependencies;
             environment.etc."install-closure".source = "${closureInfo}/store-paths";
             virtualisation.memorySize = 2048;
             nix.settings = {

@@ -127,7 +127,7 @@ python3.pkgs.buildPythonApplication {
   # Define and expose the tests and checks to run in CI
   passthru.tests =
     (lib.mapAttrs' (n: lib.nameValuePair "clan-dep-${n}") runtimeDependenciesAsSet)
-    // rec {
+    // {
       clan-pytest-without-core =
         runCommand "clan-pytest-without-core"
           { nativeBuildInputs = [ pythonWithTestDeps ] ++ testDependencies; }
