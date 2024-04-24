@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Callable
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 import gi
 
@@ -23,10 +23,6 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
     Only use self[key] and del self[key] for accessing the items for better performance.
     This class could be optimized by having the objects remember their position in the list.
     """
-
-    __gsignals__: ClassVar = {
-        "is_ready": (GObject.SignalFlags.RUN_FIRST, None, []),
-    }
 
     def __init__(self, gtype: type[V], key_gen: Callable[[V], K]) -> None:
         super().__init__()

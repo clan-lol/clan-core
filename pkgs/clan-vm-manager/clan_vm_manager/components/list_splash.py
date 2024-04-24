@@ -43,8 +43,11 @@ class EmptySplash(Gtk.Box):
         join_button = Gtk.Button(label="Join")
         join_button.connect("clicked", self._on_join, join_entry)
 
+        join_entry.connect("activate", lambda e: self._on_join(join_button, e))
+
         clamp = Adw.Clamp()
         clamp.set_maximum_size(400)
+        clamp.set_margin_bottom(40)
         vbox.append(empty_label)
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         hbox.append(join_entry)
