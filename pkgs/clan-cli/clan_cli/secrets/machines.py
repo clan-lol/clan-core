@@ -21,14 +21,19 @@ def add_machine(flake_dir: Path, name: str, key: str, force: bool) -> None:
 
     paths.extend(update_secrets(flake_dir, filter_secrets=filter_machine_secrets))
     commit_files(
-        [path],
+        paths,
         flake_dir,
         f"Add machine {name} to secrets",
     )
 
 
 def remove_machine(flake_dir: Path, name: str) -> None:
-    remove_object(sops_machines_folder(flake_dir), name)
+    removed_paths = remove_object(sops_machines_folder(flake_dir), name)
+    commit_files(
+        removed_paths,
+        flake_dir,
+        f"Remove machine {name}",
+    )
 
 
 def get_machine(flake_dir: Path, name: str) -> str:
@@ -49,20 +54,27 @@ def list_machines(flake_dir: Path) -> list[str]:
 
 
 def add_secret(flake_dir: Path, machine: str, secret: str) -> None:
-    path = secrets.allow_member(
+    paths = secrets.allow_member(
         secrets.machines_folder(flake_dir, secret),
         sops_machines_folder(flake_dir),
         machine,
     )
     commit_files(
-        [path],
+        paths,
         flake_dir,
         f"Add {machine} to secret",
     )
 
 
 def remove_secret(flake_dir: Path, machine: str, secret: str) -> None:
-    secrets.disallow_member(secrets.machines_folder(flake_dir, secret), machine)
+    updated_paths = secrets.disallow_member(
+        secrets.machines_folder(flake_dir, secret), machine
+    )
+    commit_files(
+        updated_paths,
+        flake_dir,
+        f"Remove {machine} from secret {secret}",
+    )
 
 
 def list_command(args: argparse.Namespace) -> None:

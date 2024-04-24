@@ -16,6 +16,7 @@ class SecretStore(SecretStoreBase):
         # no need to generate keys if we don't manage secrets
         if not hasattr(self.machine, "facts_data"):
             return
+
         if not self.machine.facts_data:
             return
 

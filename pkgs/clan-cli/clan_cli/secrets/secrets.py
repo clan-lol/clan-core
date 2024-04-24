@@ -85,7 +85,7 @@ def encrypt_secret(
 
     files_to_commit = []
     for user in add_users:
-        files_to_commit.append(
+        files_to_commit.extend(
             allow_member(
                 users_folder(flake_dir, secret.name),
                 sops_users_folder(flake_dir),
@@ -95,7 +95,7 @@ def encrypt_secret(
         )
 
     for machine in add_machines:
-        files_to_commit.append(
+        files_to_commit.extend(
             allow_member(
                 machines_folder(flake_dir, secret.name),
                 sops_machines_folder(flake_dir),
@@ -105,7 +105,7 @@ def encrypt_secret(
         )
 
     for group in add_groups:
-        files_to_commit.append(
+        files_to_commit.extend(
             allow_member(
                 groups_folder(flake_dir, secret.name),
                 sops_groups_folder(flake_dir),
@@ -118,7 +118,7 @@ def encrypt_secret(
 
     if key.pubkey not in keys:
         keys.add(key.pubkey)
-        files_to_commit.append(
+        files_to_commit.extend(
             allow_member(
                 users_folder(flake_dir, secret.name),
                 sops_users_folder(flake_dir),
@@ -180,7 +180,7 @@ def list_directory(directory: Path) -> str:
 
 def allow_member(
     group_folder: Path, source_folder: Path, name: str, do_update_keys: bool = True
-) -> Path:
+) -> list[Path]:
     source = source_folder / name
     if not source.exists():
         msg = f"Cannot encrypt {group_folder.parent.name} for '{name}' group. '{name}' group does not exist in {source_folder}: "
@@ -196,15 +196,18 @@ def allow_member(
         os.remove(user_target)
 
     user_target.symlink_to(os.path.relpath(source, user_target.parent))
+    changed = [user_target]
     if do_update_keys:
-        update_keys(
-            group_folder.parent,
-            list(sorted(collect_keys_for_path(group_folder.parent))),
+        changed.extend(
+            update_keys(
+                group_folder.parent,
+                list(sorted(collect_keys_for_path(group_folder.parent))),
+            )
         )
-    return user_target
+    return changed
 
 
-def disallow_member(group_folder: Path, name: str) -> None:
+def disallow_member(group_folder: Path, name: str) -> list[Path]:
     target = group_folder / name
     if not target.exists():
         msg = f"{name} does not exist in group in {group_folder}: "
@@ -225,7 +228,7 @@ def disallow_member(group_folder: Path, name: str) -> None:
     if len(os.listdir(group_folder.parent)) == 0:
         os.rmdir(group_folder.parent)
 
-    update_keys(
+    return update_keys(
         target.parent.parent, list(sorted(collect_keys_for_path(group_folder.parent)))
     )
 

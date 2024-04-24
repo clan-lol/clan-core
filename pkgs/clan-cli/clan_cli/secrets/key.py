@@ -1,6 +1,8 @@
 import argparse
 from pathlib import Path
 
+from clan_cli.git import commit_files
+
 from .. import tty
 from ..errors import ClanError
 from .secrets import update_secrets
@@ -11,9 +13,7 @@ def generate_key() -> str:
     path = default_sops_key_path()
     if path.exists():
         raise ClanError(f"Key already exists at {path}")
-    priv_key, pub_key = generate_private_key()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(priv_key)
+    priv_key, pub_key = generate_private_key(out_file=path)
     return pub_key
 
 
@@ -38,7 +38,7 @@ def show_command(args: argparse.Namespace) -> None:
 
 def update_command(args: argparse.Namespace) -> None:
     flake_dir = Path(args.flake)
-    update_secrets(flake_dir)
+    commit_files(update_secrets(flake_dir), flake_dir, "Updated secrets with new keys.")
 
 
 def register_key_parser(parser: argparse.ArgumentParser) -> None:
