@@ -148,3 +148,12 @@ Adding or configuring a new machine requires two simple steps:
     **All facts are automatically initialized.**
 
 If you need additional help see our [facts chapter](./secrets.md)
+
+---
+
+## Whats next?
+
+- [Deploying](machines.md): Deploying a Machine configuration
+- [Secrets](secrets.md): Learn about secrets and facts
+
+---
