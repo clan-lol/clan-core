@@ -29,5 +29,13 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
     list_parser = subparser.add_parser("list", help="List machines")
     register_list_parser(list_parser)
 
-    install_parser = subparser.add_parser("install", help="Install a machine")
+    install_parser = subparser.add_parser(
+        "install",
+        help="Install a machine",
+        description="""
+        Install a configured machine over the network.
+        The target must be a Linux based system reachable via SSH.
+        Installing a machine means overwriting the target's disk.
+        """,
+    )
     register_install_parser(install_parser)
