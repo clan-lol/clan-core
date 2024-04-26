@@ -62,10 +62,7 @@ clan machines install my-machine <target_host>
 ## What's next ?
 
 - [**Update a Machine**](#update-your-machines): Learn how to update an existing machine?
-
-Coming Soon:
-
-- **Join Your Machines in a Private Network:**: Stay tuned for steps on linking all your machines into a secure mesh network with Clan.
+- [**Configure a Private Network**](./networking.md): Configuring a secure mesh network.
 
 ---
 
