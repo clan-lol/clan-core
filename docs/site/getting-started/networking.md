@@ -26,7 +26,7 @@ peers. Once addresses are allocated, the controller's continuous operation is no
 
 1. **Designate a Machine**: Label a machine as the VPN controller in the clan,
    referred to as `<CONTROLLER>` henceforth in this guide.
-1. **Add Configuration**: Input the following configuration to the NixOS
+2. **Add Configuration**: Input the following configuration to the NixOS
    configuration of the controller machine:
    ```nix
    clan.networking.zerotier.controller = {
@@ -34,7 +34,7 @@ peers. Once addresses are allocated, the controller's continuous operation is no
      public = true;
    };
    ```
-1. **Update the Controller Machine**: Execute the following:
+3. **Update the Controller Machine**: Execute the following:
    ```bash
    $ clan machines update <CONTROLLER>
    ```
@@ -56,22 +56,25 @@ To introduce a new machine to the VPN, adhere to the following steps:
    $ clan machines update <NEW_MACHINE>
    ```
    Replace `<NEW_MACHINE>` with the designated new machine name.
-1. **Retrieve the ZeroTier ID**: On the `new_machine`, execute:
-   ```bash
-   $ sudo zerotier-cli info
-   ```
-   Example Output: 
-   ```{.console, .no-copy}
-   200 info d2c71971db 1.12.1 OFFLINE
-   ```
-   , where `d2c71971db` is the ZeroTier ID.
-1. **Authorize the New Machine on the Controller**: On the controller machine,
-   execute:
-   ```bash
-   $ sudo zerotier-members allow <ID>
-   ```
-   Substitute `<ID>` with the ZeroTier ID obtained previously.
-1. **Verify Connection**: On the `new_machine`, re-execute:
+
+    !!! Note "For Private Networks"
+        1. **Retrieve the ZeroTier ID**: On the `new_machine`, execute:
+             ```bash
+             $ sudo zerotier-cli info
+             ```
+             Example Output: 
+             ```{.console, .no-copy}
+             200 info d2c71971db 1.12.1 OFFLINE
+             ```
+             , where `d2c71971db` is the ZeroTier ID.
+        2. **Authorize the New Machine on the Controller**: On the controller machine,
+             execute:
+             ```bash
+             $ sudo zerotier-members allow <ID>
+             ```
+             Substitute `<ID>` with the ZeroTier ID obtained previously.
+
+2. **Verify Connection**: On the `new_machine`, re-execute:
    ```bash
    $ sudo zerotier-cli info
    ```
