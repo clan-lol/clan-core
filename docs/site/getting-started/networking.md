@@ -5,12 +5,24 @@ This guide provides detailed instructions for configuring
 outlined steps to set up a machine as a VPN controller (`<CONTROLLER>`) and to
 include a new machine into the VPN.
 
-## 1. Setting Up the VPN Controller
+## Concept
+
+By default all machines within one clan are connected via a chosen network technology.
+
+```
+Clan 
+    Node A
+    <-> (zerotier / mycelium / ...)
+    Node B
+```
+
+If you select multiple network technologies at the same time. e.g. (zerotier + yggdrassil)
+You must choose one of them as primary network and the machines are always connected via the primary network.
+
+## 1. Set-Up the VPN Controller
 
 The VPN controller is initially essential for providing configuration to new
 peers. Once addresses are allocated, the controller's continuous operation is not essential.
-
-### Instructions
 
 1. **Designate a Machine**: Label a machine as the VPN controller in the clan,
    referred to as `<CONTROLLER>` henceforth in this guide.
@@ -28,11 +40,9 @@ peers. Once addresses are allocated, the controller's continuous operation is no
    ```
    Your machine is now operational as the VPN controller.
 
-## 2. Integrating a New Machine to the VPN
+## 2. Add Machines to the VPN
 
 To introduce a new machine to the VPN, adhere to the following steps:
-
-### Instructions:
 
 1. **Update Configuration**: On the new machine, incorporate the following to its
    configuration, substituting `<CONTROLLER>` with the controller machine name:
@@ -74,22 +84,11 @@ To introduce a new machine to the VPN, adhere to the following steps:
     The new machine is now part of the VPN, and the ZeroTier
     configuration on NixOS within the Clan project is complete.
 
-## Decision
+## Further
 
-We chose zerotier because in our tests it was the easiest solution to bootstrap. You can selfhost a controller and the controller doesn't need to be globally reachable.
-
+Currently you can only use **Zerotier** as networking technology because this is the first network stack we aim to support.
 In the future we plan to add additional network technologies like tinc, head/tailscale, yggdrassil and mycelium.
 
-## Specification
-
-By default all machines within one clan are connected via the chosen network technology.
-
-```
-Clan 
-    Node A
-    <-> (zerotier / mycelium / ...) 
-    Node B
-```
-
-If you select multiple network technologies at the same time. e.g. (zerotier + yggdrassil)
-One of them is the primary network and the above statement holds for the primary network.
+We chose zerotier because in our tests it was a straight forwards solution to bootstrap.
+It allows you to selfhost a controller and the controller doesn't need to be globally reachable.
+Which made it a good fit for starting the project.
