@@ -27,6 +27,7 @@
   qemu,
   gnupg,
   e2fsprogs,
+  mandown,
   mypy,
   clan-core-path,
 }:
@@ -120,6 +121,7 @@ python3.pkgs.buildPythonApplication {
   nativeBuildInputs = [
     setuptools
     installShellFiles
+    mandown
   ];
 
   propagatedBuildInputs = pythonDependencies;
@@ -178,6 +180,8 @@ python3.pkgs.buildPythonApplication {
       <(${argcomplete}/bin/register-python-argcomplete --shell bash clan)
     installShellCompletion --fish --name clan.fish \
       <(${argcomplete}/bin/register-python-argcomplete --shell fish clan)
+    mandown $src/man/clan.md > ./clan.1
+    installManPage ./clan.1
   '';
 
   # Clean up after the package to avoid leaking python packages into a devshell

@@ -42,6 +42,7 @@
       packages = {
         clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs;
+          mandown = pkgs.mandown;
           clan-core-path = clanCoreWithVendoredDeps;
         };
         default = self'.packages.clan-cli;
