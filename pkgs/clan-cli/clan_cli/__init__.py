@@ -107,7 +107,7 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
     facts.register_parser(parser_facts)
 
     parser_machine = subparsers.add_parser(
-        "machines", help="Manage machines and their configuration"
+        "machines", help="manage machines and their configuration"
     )
     machines.register_parser(parser_machine)
 
