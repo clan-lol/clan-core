@@ -19,7 +19,7 @@ from . import (
     vms,
 )
 from .custom_logger import setup_logging
-from .dirs import get_clan_flake_toplevel
+from .dirs import get_clan_flake_toplevel_or_env
 from .errors import ClanCmdError, ClanError
 from .profiler import profile
 from .ssh import cli as ssh_cli
@@ -77,8 +77,8 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--flake",
-        help="path to the flake where the clan resides in, can be a remote flake or local",
-        default=get_clan_flake_toplevel(),
+        help="path to the flake where the clan resides in, can be a remote flake or local, can be set through the [CLAN_DIR] environment variable",
+        default=get_clan_flake_toplevel_or_env(),
         type=flake_path,
     )
 
