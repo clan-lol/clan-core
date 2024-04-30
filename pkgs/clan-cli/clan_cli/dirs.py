@@ -7,6 +7,12 @@ from pathlib import Path
 log = logging.getLogger(__name__)
 
 
+def get_clan_flake_toplevel_or_env() -> Path | None:
+    if clan_dir := os.environ.get("CLAN_DIR"):
+        return Path(clan_dir)
+    return get_clan_flake_toplevel()
+
+
 def get_clan_flake_toplevel() -> Path | None:
     return find_toplevel([".clan-flake", ".git", ".hg", ".svn", "flake.nix"])
 
