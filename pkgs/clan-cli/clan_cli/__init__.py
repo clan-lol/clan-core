@@ -79,13 +79,16 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         "--flake",
         help="path to the flake where the clan resides in, can be a remote flake or local, can be set through the [CLAN_DIR] environment variable",
         default=get_clan_flake_toplevel_or_env(),
+        metavar="PATH",
         type=flake_path,
     )
 
     subparsers = parser.add_subparsers()
 
     parser_backups = subparsers.add_parser(
-        "backups", help="manage backups of clan machines"
+        "backups",
+        help="manage backups of clan machines",
+        description="manage backups of clan machines",
     )
     backups.register_parser(parser_backups)
 

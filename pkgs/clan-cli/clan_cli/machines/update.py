@@ -182,9 +182,10 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "machines",
         type=str,
-        help="machine to update. if empty, update all machines",
         nargs="*",
         default=[],
+        metavar="MACHINE",
+        help="machine to update. If no machine is specified, all machines will be updated.",
     )
     parser.add_argument(
         "--target-host",
