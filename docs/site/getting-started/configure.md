@@ -89,6 +89,10 @@ Adding or configuring a new machine requires two simple steps:
           # ...
           machines = {
             "jon" = {
+              imports = [
+                # ...
+                ./modules/disko.nix
+              ];
               # ...
 
               # Change this to the correct ip-address or hostname
@@ -96,7 +100,7 @@ Adding or configuring a new machine requires two simple steps:
               clan.networking.targetHost = pkgs.lib.mkDefault "root@<hostname>"
               
               # Change this to the ID-LINK of the desired disk shown by 'lsblk'
-              clan.diskLayouts.singleDiskExt4 = {
+              disko.devices.disk.main = {
                 device = "/dev/disk/by-id/__CHANGE_ME__";
               }
 
@@ -115,6 +119,10 @@ Adding or configuring a new machine requires two simple steps:
           # ...
           machines = {
             "jon" = {
+              imports = [
+                # ...
+                ./modules/disko.nix
+              ];
               # ...
 
               # Change this to the correct ip-address or hostname
@@ -122,7 +130,7 @@ Adding or configuring a new machine requires two simple steps:
               clan.networking.targetHost = pkgs.lib.mkDefault "root@<hostname>"
               
               # Change this to the ID-LINK of the desired disk shown by 'lsblk'
-              clan.diskLayouts.singleDiskExt4 = {
+              disko.devices.disk.main = {
                 device = "/dev/disk/by-id/__CHANGE_ME__";
               }
 
