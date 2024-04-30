@@ -2,8 +2,9 @@
 {
   options.clan.disk-layouts.singleDiskExt4 = {
     device = lib.mkOption {
-      type = lib.types.str;
+      type = lib.types.nullOr lib.types.str;
       example = "/dev/disk/by-id/ata-Samsung_SSD_850_EVO_250GB_S21PNXAGB12345";
+      default = null;
     };
   };
   config = {
@@ -15,6 +16,7 @@
           type = "disk";
           device = config.clan.disk-layouts.singleDiskExt4.device;
           content = {
+            device = lib.mkDefault config.clan.diskLayouts.singleDiskExt4.device;
             type = "gpt";
             partitions = {
               boot = {
