@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import shutil
@@ -171,11 +172,11 @@ def encrypt_file(
                 elif isinstance(content, bytes):
                     with open(f.name, "wb") as fd:
                         fd.write(content)
-                elif isinstance(content, IO):
+                elif isinstance(content, io.IOBase):
                     with open(f.name, "w") as fd:
                         shutil.copyfileobj(content, fd)
                 else:
-                    raise ClanError("Invalid content type")
+                    raise ClanError(f"Invalid content type: {type(content)}")
                 # we pass an empty manifest to pick up existing configuration of the user
                 args = ["sops", "--config", str(manifest)]
                 args.extend(["-i", "--encrypt", str(f.name)])
