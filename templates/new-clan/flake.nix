@@ -45,6 +45,7 @@
           sara = {
             imports = [
               ./modules/shared.nix
+              ./modules/disko.nix
               ./machines/sara/configuration.nix
             ];
 
@@ -58,7 +59,7 @@
             # local> clan facts generate
 
             # remote> lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
-            clan.diskLayouts.singleDiskExt4 = {
+            disko.devices.disk.main = {
               device = "/dev/disk/by-id/__CHANGE_ME__";
             };
 
