@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import shutil
@@ -171,7 +172,7 @@ def encrypt_file(
                 elif isinstance(content, bytes):
                     with open(f.name, "wb") as fd:
                         fd.write(content)
-                elif isinstance(content, IO):
+                elif isinstance(content, io.IOBase):
                     with open(f.name, "w") as fd:
                         shutil.copyfileobj(content, fd)
                 else:
