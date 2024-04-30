@@ -69,6 +69,7 @@ Below is a guide on how to structure this in your flake.nix:
           jon = {
             imports = [
               ./machines/jon/configuration.nix
+              ./modules/disko.nix
               # ... more modules
             ];
             nixpkgs.hostPlatform = "x86_64-linux";
@@ -78,7 +79,7 @@ Below is a guide on how to structure this in your flake.nix:
             clan.networking.targetHost = pkgs.lib.mkDefault "root@jon";
 
             # remote> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
-            clan.diskLayouts.singleDiskExt4 = {
+            disko.devices.disk.main = {
               device = "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4aec2929";
             };
 
