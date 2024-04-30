@@ -1,11 +1,7 @@
 import argparse
 from dataclasses import dataclass
-from typing import Tuple
+
 from clan_cli import create_parser
-import argparse
-import os
-from dataclasses import dataclass
-from typing import Tuple
 
 
 @dataclass
@@ -69,7 +65,7 @@ def get_subcommands(
     to: list[Category],
     level: int = 0,
     prefix: list[str] = [],
-) -> Tuple[list[Option], list[Option], list[Subcommand]]:
+) -> tuple[list[Option], list[Option], list[Subcommand]]:
     """
     Generate Markdown documentation for an argparse.ArgumentParser instance including its subcommands.
 
@@ -85,7 +81,6 @@ def get_subcommands(
     subcommands: list[Subcommand] = []
 
     for action in parser._actions:
-
         if isinstance(action, argparse._HelpAction):
             # Pseudoaction that holds the help message
             continue
@@ -117,7 +112,6 @@ def get_subcommands(
 
     for action in parser._actions:
         if isinstance(action, argparse._SubParsersAction):
-
             subparsers: dict[str, argparse.ArgumentParser] = action.choices
 
             for name, subparser in subparsers.items():
@@ -168,7 +162,6 @@ def collect_commands() -> list[Category]:
         if isinstance(action, argparse._SubParsersAction):
             subparsers: dict[str, argparse.ArgumentParser] = action.choices
             for name, subparser in subparsers.items():
-
                 (_options, _positionals, _subcommands) = get_subcommands(
                     subparser, to=result, level=2, prefix=[name]
                 )
@@ -183,7 +176,7 @@ def collect_commands() -> list[Category]:
                     )
                 )
 
-    def weight_cmd_groups(c: Category):
+    def weight_cmd_groups(c: Category) -> tuple[str, int, str]:
         sub = [o for o in result if o.title.startswith(c.title) and o.title != c.title]
         weight = len(c.title.split(" "))
         if sub:

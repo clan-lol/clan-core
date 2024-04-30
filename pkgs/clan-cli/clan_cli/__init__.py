@@ -81,7 +81,6 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         default=get_clan_flake_toplevel_or_env(),
         metavar="PATH",
         type=flake_path,
-        epilog="Default is dynamically determined based on the current directory.",
     )
 
     subparsers = parser.add_subparsers()
