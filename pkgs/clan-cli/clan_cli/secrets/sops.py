@@ -175,7 +175,7 @@ def encrypt_file(
                     with open(f.name, "w") as fd:
                         shutil.copyfileobj(content, fd)
                 else:
-                    raise ClanError("Invalid content type")
+                    raise ClanError(f"Invalid content type: {type(content)}")
                 # we pass an empty manifest to pick up existing configuration of the user
                 args = ["sops", "--config", str(manifest)]
                 args.extend(["-i", "--encrypt", str(f.name)])
