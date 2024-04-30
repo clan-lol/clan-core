@@ -7,7 +7,9 @@ clan [OPTION...] [SUBCOMMAND]
 
 ## DESCRIPTION
 
-**clan** supports managing and deploying various nixos configurations in a unified coherent way. Through the secrets subcommand secrets for machines can be set and retrieved.
+**clan** is the cli for managing and deploying various nixos configurations in a unified coherent way. 
+Secrets and passwords can be provisioned, set and retrieved.
+Machines can be remotely installed through the **install** subcommand.
 
 For more overview please refer to the reference material at docs.clan.lol.
 
