@@ -21,7 +21,6 @@
     root-password = ./root-password;
     thelounge = ./thelounge.nix;
     vm-user = ./vm-user.nix;
-    waypipe = ./waypipe.nix;
     xfce = ./xfce.nix;
     xfce-vm = ./xfce-vm.nix;
     zt-tcp-relay = ./zt-tcp-relay.nix;
