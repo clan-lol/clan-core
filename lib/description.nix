@@ -1,19 +1,26 @@
 { clan-core, ... }:
 
-{
-  getDescription =
+rec {
+  getReadme =
     modulename:
     let
       readme = "${clan-core}/clanModules/${modulename}/README.md";
       readmeContents =
-        if
-          builtins.trace "Trying to get Module README.md for ${modulename} from ${readme}"
-            # TODO: Edge cases
-            (builtins.pathExists readme)
-        then
+        if (builtins.pathExists readme) then
           (builtins.readFile readme)
         else
-          null;
+          throw "No README.md found for module ${modulename}";
     in
     readmeContents;
+
+  getShortDescription =
+    modulename:
+    let
+      content = (getReadme modulename);
+      parts = builtins.split "---" content;
+    in
+    if (builtins.length parts) > 0 then
+      builtins.head parts
+    else
+      throw "Short description delimiter `---` not found in README.md for module ${modulename}";
 }
