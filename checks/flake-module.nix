@@ -46,7 +46,6 @@
             syncthing = import ./syncthing nixosTestArgs;
             wayland-proxy-virtwl = import ./wayland-proxy-virtwl nixosTestArgs;
           };
-          schemaTests = pkgs.callPackages ./schemas.nix { inherit self; };
 
           flakeOutputs =
             lib.mapAttrs' (
@@ -58,7 +57,7 @@
               self'.legacyPackages.homeConfigurations or { }
             );
         in
-        { inherit renderClanOptions; } // nixosTests // schemaTests // flakeOutputs;
+        { inherit renderClanOptions; } // nixosTests // flakeOutputs;
       legacyPackages = {
         nixosTests =
           let

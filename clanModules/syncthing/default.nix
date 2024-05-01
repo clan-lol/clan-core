@@ -34,6 +34,10 @@
       '';
       type = lib.types.listOf lib.types.str;
       default = [ ];
+      example = [
+        "folder1"
+        "folder2"
+      ];
     };
   };
 
