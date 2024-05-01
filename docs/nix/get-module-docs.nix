@@ -38,20 +38,7 @@ let
   ) clanModules;
 
   clanModulesReadmes = builtins.mapAttrs (
-    module_name: _module:
-    let
-      readme = "${self}/clanModules/${module_name}/README.md";
-      readmeContents =
-        if
-          builtins.trace "Trying to get Module README.md for ${module_name} from ${readme}"
-            # TODO: Edge cases
-            (builtins.pathExists readme)
-        then
-          (builtins.readFile readme)
-        else
-          null;
-    in
-    readmeContents
+    module_name: _module: self.lib.modules.getDescription module_name
   ) clanModules;
 
   # clanCore docs
