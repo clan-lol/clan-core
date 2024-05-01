@@ -17,7 +17,10 @@ let
       location: ${lib.concatStringsSep "." option.loc}
     '';
 
-  isExcludedOption = option: (lib.elem (option.type.name or null) excludedTypes);
+  # Exclude the option if it's type is in the excludedTypes list
+  # or if the option has a defaultText attribute
+  isExcludedOption =
+    option: ((lib.elem (option.type.name or null) excludedTypes) || (option ? defaultText));
 
   filterExcluded = lib.filter (opt: !isExcludedOption opt);
 
@@ -67,6 +70,10 @@ rec {
     option:
     let
       default = lib.optionalAttrs (option ? default) { inherit (option) default; };
+      example = lib.optionalAttrs (option ? example) {
+        examples =
+          if (builtins.typeOf option.example) == "list" then option.example else [ option.example ];
+      };
       description = lib.optionalAttrs (option ? description) {
         description = option.description.text or option.description;
       };
@@ -93,7 +100,7 @@ rec {
         ];
         optionsList = filterExcluded optionsList';
       in
-      default // description // { anyOf = map parseOption optionsList; }
+      default // example // description // { anyOf = map parseOption optionsList; }
 
     # handle nested options (not a submodule)
     else if !option ? _type then
@@ -116,6 +123,7 @@ rec {
         };
       in
       default
+      // example
       // description
       // {
         anyOf = [
@@ -128,63 +136,77 @@ rec {
       option.type.name == "bool"
     # return jsonschema property definition for bool
     then
-      default // description // { type = "boolean"; }
+      default // example // description // { type = "boolean"; }
 
     # parse float
     else if
       option.type.name == "float"
     # return jsonschema property definition for float
     then
-      default // description // { type = "number"; }
+      default // example // description // { type = "number"; }
 
     # parse int
     else if
       (option.type.name == "int" || option.type.name == "positiveInt")
     # return jsonschema property definition for int
     then
-      default // description // { type = "integer"; }
+      default // example // description // { type = "integer"; }
+
+    # TODO: Add support for intMatching in jsonschema
+    # parse port type aka. "unsignedInt16"
+    else if option.type.name == "unsignedInt16" then
+      default // example // description // { type = "integer"; }
 
     # parse string
     else if
       option.type.name == "str"
     # return jsonschema property definition for string
     then
-      default // description // { type = "string"; }
+      default // example // description // { type = "string"; }
+
+    # TODO: Add support for stringMatching in jsonschema
+    # parse stringMatching
+    else if lib.strings.hasPrefix "strMatching" option.type.name then
+      default // example // description // { type = "string"; }
+
+    # TODO: Add support for separatedString in jsonschema
+    else if lib.strings.hasPrefix "separatedString" option.type.name then
+      default // example // description // { type = "string"; }
 
     # parse string
     else if
       option.type.name == "path"
     # return jsonschema property definition for path
     then
-      default // description // { type = "string"; }
+      default // example // description // { type = "string"; }
 
     # parse anything
     else if
       option.type.name == "anything"
     # return jsonschema property definition for anything
     then
-      default // description // { type = allBasicTypes; }
+      default // example // description // { type = allBasicTypes; }
 
     # parse unspecified
     else if
       option.type.name == "unspecified"
     # return jsonschema property definition for unspecified
     then
-      default // description // { type = allBasicTypes; }
+      default // example // description // { type = allBasicTypes; }
 
     # parse raw
     else if
       option.type.name == "raw"
     # return jsonschema property definition for raw
     then
-      default // description // { type = allBasicTypes; }
+      default // example // description // { type = allBasicTypes; }
 
     # parse enum
     else if
       option.type.name == "enum"
     # return jsonschema property definition for enum
     then
-      default // description // { enum = option.type.functor.payload; }
+      default // example // description // { enum = option.type.functor.payload; }
 
     # parse listOf submodule
     else if
@@ -192,6 +214,7 @@ rec {
     # return jsonschema property definition for listOf submodule
     then
       default
+      // example
       // description
       // {
         type = "array";
@@ -211,6 +234,7 @@ rec {
         };
       in
       default
+      // example
       // description
       // {
         type = "array";
@@ -222,7 +246,7 @@ rec {
       (option.type.name == "listOf") && (option.type.functor.wrapped.name == "unspecified")
     # return jsonschema property definition for list
     then
-      default // description // { type = "array"; }
+      default // example // description // { type = "array"; }
 
     # parse attrsOf submodule
     else if
@@ -230,6 +254,7 @@ rec {
     # return jsonschema property definition for attrsOf submodule
     then
       default
+      // example
       // description
       // {
         type = "object";
@@ -242,6 +267,7 @@ rec {
     # return jsonschema property definition for attrs
     then
       default
+      // example
       // description
       // {
         type = "object";
@@ -262,6 +288,7 @@ rec {
         };
       in
       default
+      // example
       // description
       // {
         type = "object";
