@@ -38,7 +38,7 @@
 
       clanModuleFunctionSchemas = lib.mapAttrsFlatten (modulename: module: {
         name = modulename;
-        description = self.lib.modules.getDescription modulename;
+        description = self.lib.modules.getShortDescription modulename;
         parameters = self.lib.jsonschema.parseOptions (optionsFromModule modulename module);
       }) clanModules;
     in

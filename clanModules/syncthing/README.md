@@ -1,7 +1,7 @@
 Syncthing is a free, open-source file synchronization application designed to allow users to synchronize files between multiple devices over the internet or local networks securely and privately. 
 
 It is an alternative to cloud-based file sharing services.
-
+---
 ## Usage
 
 We recommend configuring this module as an sync-service through the provided options. Although it provides a Web GUI through which more usage scenarios are supported.
