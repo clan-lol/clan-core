@@ -41,7 +41,7 @@ class QgaSession:
         )
 
     # run, wait for result, return exitcode and output
-    def run(self, cmd: str) -> tuple[int, str, str]:
+    def run(self, cmd: str, check: bool = False) -> tuple[int, str, str]:
         self.exec_cmd(cmd)
         result_pid = self.get_response()
         pid = result_pid["return"]["pid"]
@@ -74,4 +74,8 @@ class QgaSession:
             if "err-data" not in result["return"]
             else base64.b64decode(result["return"]["err-data"]).decode("utf-8")
         )
+        if check and exitcode != 0:
+            raise Exception(
+                f"Command on guest failed\nCommand: {cmd}\nExitcode {exitcode}\nStdout: {stdout}\nStderr: {stderr}"
+            )
         return exitcode, stdout, stderr
