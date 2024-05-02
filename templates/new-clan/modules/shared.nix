@@ -2,7 +2,7 @@
 {
   imports = [
     clan-core.clanModules.sshd
-    clan-core.clanModules.diskLayouts
+    clan-core.clanModules.disk-layouts
     clan-core.clanModules.root-password
   ];
 }

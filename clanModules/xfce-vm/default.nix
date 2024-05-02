@@ -1,9 +1,4 @@
 {
-  imports = [
-    ./vm-user.nix
-    ./graphical.nix
-  ];
-
   services.xserver = {
     enable = true;
     displayManager.autoLogin.enable = true;
