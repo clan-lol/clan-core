@@ -1,28 +1,25 @@
 { inputs, ... }:
 {
   flake.clanModules = {
-    diskLayouts = {
+    disk-layouts = {
       imports = [
-        ./diskLayouts.nix
+        ./disk-layouts
         inputs.disko.nixosModules.default
       ];
     };
-    borgbackup = ./borgbackup.nix;
-    ergochat = ./ergochat.nix;
+    borgbackup = ./borgbackup;
+    ergochat = ./ergochat;
     deltachat = ./deltachat;
-    graphical = ./graphical.nix;
-    localbackup = ./localbackup.nix;
-    localsend = ./localsend.nix;
-    matrix-synapse = ./matrix-synapse.nix;
-    moonlight = ./moonlight.nix;
-    sshd = ./sshd.nix;
-    sunshine = ./sunshine.nix;
+    localbackup = ./localbackup;
+    localsend = ./localsend;
+    matrix-synapse = ./matrix-synapse;
+    moonlight = ./moonlight;
+    sshd = ./sshd;
+    sunshine = ./sunshine;
     syncthing = ./syncthing;
     root-password = ./root-password;
-    thelounge = ./thelounge.nix;
-    vm-user = ./vm-user.nix;
-    xfce = ./xfce.nix;
-    xfce-vm = ./xfce-vm.nix;
-    zt-tcp-relay = ./zt-tcp-relay.nix;
+    thelounge = ./thelounge;
+    xfce = ./xfce;
+    zt-tcp-relay = ./zt-tcp-relay;
   };
 }

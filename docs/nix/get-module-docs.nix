@@ -38,7 +38,7 @@ let
   ) clanModules;
 
   clanModulesReadmes = builtins.mapAttrs (
-    module_name: _module: self.lib.modules.getDescription module_name
+    module_name: _module: self.lib.modules.getReadme module_name
   ) clanModules;
 
   # clanCore docs

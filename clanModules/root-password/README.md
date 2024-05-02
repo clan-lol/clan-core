@@ -1,6 +1,5 @@
-Creates a root-password
-
-!!! tip "This module sets the password for the root user (automatically)."
+Automatically generates and configures a password for the root user.
+---
 
 After the system was installed/deployed the following command can be used to display the root-password:
 
@@ -8,6 +7,5 @@ After the system was installed/deployed the following command can be used to dis
 clan secrets get {machine_name}-password
 ```
 
----
 
 See also: [Facts / Secrets](../../getting-started/secrets.md)
