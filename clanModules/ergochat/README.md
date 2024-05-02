@@ -1,1 +1,2 @@
+A modern IRC server
 ---
