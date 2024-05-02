@@ -12,11 +12,11 @@
       { lib, modulesPath, ... }:
       {
         imports = [
-          self.clanModules.diskLayouts
+          self.clanModules.disk-layouts
           (modulesPath + "/testing/test-instrumentation.nix") # we need these 2 modules always to be able to run the tests
           (modulesPath + "/profiles/qemu-guest.nix")
         ];
-        clan.diskLayouts.singleDiskExt4.device = "/dev/vdb";
+        clan.disk-layouts.singleDiskExt4.device = "/dev/vdb";
 
         environment.etc."install-successful".text = "ok";
 

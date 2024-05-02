@@ -20,7 +20,7 @@
       after = [ "network.target" ];
       serviceConfig = {
         ExecStart = "${
-          pkgs.callPackage ../pkgs/zt-tcp-relay { }
+          pkgs.callPackage ../../pkgs/zt-tcp-relay { }
         }/bin/zt-tcp-relay --listen [::]:${builtins.toString config.clan.zt-tcp-relay.port}";
         Restart = "always";
         RestartSec = "5";

@@ -1,6 +1,6 @@
 { config, lib, ... }:
 {
-  options.clan.diskLayouts.singleDiskExt4 = {
+  options.clan.disk-layouts.singleDiskExt4 = {
     device = lib.mkOption {
       type = lib.types.str;
       example = "/dev/disk/by-id/ata-Samsung_SSD_850_EVO_250GB_S21PNXAGB12345";
@@ -13,7 +13,7 @@
       disk = {
         main = {
           type = "disk";
-          device = config.clan.diskLayouts.singleDiskExt4.device;
+          device = config.clan.disk-layouts.singleDiskExt4.device;
           content = {
             type = "gpt";
             partitions = {
