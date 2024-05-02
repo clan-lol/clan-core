@@ -46,7 +46,7 @@
       checks = {
         module-schema = pkgs.runCommand "schema-checks" { } ''
           ${pkgs.check-jsonschema}/bin/check-jsonschema \
-            --check-metaschema ${packages.module-schema}
+            --check-metaschema --fill-defaults ${packages.module-schema}
           touch $out
         '';
       };
