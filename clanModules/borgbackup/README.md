@@ -1,2 +1,2 @@
-BorgBackup is an efficient backup program that uses data deduplication to store only changes, making it ideal for daily backups. It offers optional compression and authenticated encryption, ensuring secure backups even to untrusted targets.
+Efficient, deduplicating backup program with optional compression and secure encryption.
 ---

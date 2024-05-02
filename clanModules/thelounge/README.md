@@ -1,1 +1,2 @@
+Modern web IRC client
 ---

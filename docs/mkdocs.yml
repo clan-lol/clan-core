@@ -57,7 +57,6 @@ nav:
           - reference/clanModules/deltachat.md
           - reference/clanModules/disk-layouts.md
           - reference/clanModules/ergochat.md
-          - reference/clanModules/graphical.md
           - reference/clanModules/localbackup.md
           - reference/clanModules/localsend.md
           - reference/clanModules/matrix-synapse.md
@@ -67,8 +66,6 @@ nav:
           - reference/clanModules/sunshine.md
           - reference/clanModules/syncthing.md
           - reference/clanModules/thelounge.md
-          - reference/clanModules/vm-user.md
-          - reference/clanModules/xfce-vm.md
           - reference/clanModules/xfce.md
           - reference/clanModules/zt-tcp-relay.md
   - Contributing: contributing/contributing.md
