@@ -22,7 +22,7 @@ def pair(pin: str) -> str:
     user_and_pass = base64.b64encode(b"sunshine:sunshine").decode("ascii")
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Basic %s" % user_and_pass,
+        "Authorization": f"Basic {user_and_pass}",
     }
 
     # Define the parameters
@@ -47,7 +47,7 @@ def restart() -> None:
     user_and_pass = base64.b64encode(b"sunshine:sunshine").decode("ascii")
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Basic %s" % user_and_pass,
+        "Authorization": f"Basic {user_and_pass}",
     }
 
     # Define the parameters
