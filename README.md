@@ -1,6 +1,6 @@
-# cLAN Core Repository
+# Clan Core Repository
 
-Welcome to the cLAN Core Repository, the heart of the [clan.lol](https://clan.lol/) project! This monorepo is the foundation of Clan, a revolutionary open-source project aimed at restoring fun, freedom, and functionality to computing. Here, you'll find all the essential packages, NixOS modules, CLI tools, and tests needed to contribute to and work with the cLAN project. Clan leverages the Nix system to ensure reliability, security, and seamless management of digital environments, putting the power back into the hands of users.
+Welcome to the Clan Core Repository, the heart of the [clan.lol](https://clan.lol/) project! This monorepo is the foundation of Clan, a revolutionary open-source project aimed at restoring fun, freedom, and functionality to computing. Here, you'll find all the essential packages, NixOS modules, CLI tools, and tests needed to contribute to and work with the cLAN project. Clan leverages the Nix system to ensure reliability, security, and seamless management of digital environments, putting the power back into the hands of users.
 
 ## Why Clan?
 
@@ -14,11 +14,11 @@ Our mission is simple: to democratize computing by providing tools that empower 
 - **Robust Backup Management:** Long-term, self-hosted data preservation.
 - **Intuitive Secret Management:** Simplified encryption and password management processes.
 
-## Getting Started with cLAN
+## Getting Started with Clan
 
-If you're new to cLAN and eager to dive in, start with our quickstart guide and explore the core functionalities that Clan offers:
+If you're new to Clan and eager to dive in, start with our quickstart guide and explore the core functionalities that Clan offers:
 
-- **Quickstart Guide**: Check out [getting started](https://docs.clan.lol/#starting-with-a-new-clan-project)<!-- [docs/site/index.md](docs/site/index.md) --> to get up and running with cLAN in no time.
+- **Quickstart Guide**: Check out [getting started](https://docs.clan.lol/#starting-with-a-new-clan-project)<!-- [docs/site/index.md](docs/site/index.md) --> to get up and running with Clan in no time.
 
 ### Managing Secrets
 
@@ -26,7 +26,7 @@ In the Clan ecosystem, security is paramount. Learn how to handle secrets effect
 
 - **Secrets Management**: Securely manage secrets by consulting [secrets](https://docs.clan.lol/getting-started/secrets/)<!-- [secrets.md](docs/site/getting-started/secrets.md) -->.
 
-### Contributing to cLAN
+### Contributing to Clan
 
 The Clan project thrives on community contributions. We welcome everyone to contribute and collaborate:
 
@@ -34,7 +34,7 @@ The Clan project thrives on community contributions. We welcome everyone to cont
 
 ## Join the Revolution
 
-Clan is more than a tool; it's a movement towards a better digital future. By contributing to the cLAN project, you're part of changing technology for the better, together.
+Clan is more than a tool; it's a movement towards a better digital future. By contributing to the Clan project, you're part of changing technology for the better, together.
 
 ### Community and Support
 
