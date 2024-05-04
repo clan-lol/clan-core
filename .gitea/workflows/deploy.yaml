@@ -1,0 +1,13 @@
+name: deploy
+on:
+ push:
+    branches:
+      - main
+  jobs:
+    deploy-docs:
+      runs-on: nix
+      steps:
+        - uses: actions/checkout@v3
+        - run: nix run .#deploy-docs
+      env:
+        SSH_HOMEPAGE_KEY: ${{ secrets.SSH_HOMEPAGE_KEY }}
