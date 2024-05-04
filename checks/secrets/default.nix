@@ -4,10 +4,11 @@
   nodes.machine =
     { self, config, ... }:
     {
+      environment.etc."privkey.age".source = ./key.age;
       imports = [ (self.nixosModules.clanCore) ];
       environment.etc."secret".source = config.sops.secrets.secret.path;
       environment.etc."group-secret".source = config.sops.secrets.group-secret.path;
-      sops.age.keyFile = ./key.age;
+      sops.age.keyFile = "/etc/privkey.age";
 
       clanCore.clanDir = "${./.}";
       clanCore.machineName = "machine";
