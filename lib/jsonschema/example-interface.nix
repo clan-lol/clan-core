@@ -50,5 +50,26 @@
       ];
       description = "A list of enabled kernel modules";
     };
+    destinations = lib.mkOption {
+      type = lib.types.attrsOf (
+        lib.types.submodule (
+          { name, ... }:
+          {
+            options = {
+              name = lib.mkOption {
+                type = lib.types.strMatching "^[a-zA-Z0-9._-]+$";
+                default = name;
+                description = "the name of the backup job";
+              };
+              repo = lib.mkOption {
+                type = lib.types.str;
+                description = "the borgbackup repository to backup to";
+              };
+            };
+          }
+        )
+      );
+      default = { };
+    };
   };
 }

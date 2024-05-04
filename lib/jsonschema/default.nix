@@ -17,7 +17,7 @@ let
       location: ${lib.concatStringsSep "." option.loc}
     '';
 
-  # Exclude the option if it's type is in the excludedTypes list
+  # Exclude the option if its type is in the excludedTypes list
   # or if the option has a defaultText attribute
   isExcludedOption =
     option: ((lib.elem (option.type.name or null) excludedTypes) || (option ? defaultText));
@@ -25,6 +25,9 @@ let
   filterExcluded = lib.filter (opt: !isExcludedOption opt);
 
   filterExcludedAttrs = lib.filterAttrs (_name: opt: !isExcludedOption opt);
+
+  # Filter out options where the visible attribute is set to false
+  filterInvisibleOpts = lib.filterAttrs (_name: opt: opt.visible or true);
 
   allBasicTypes = [
     "boolean"
@@ -50,7 +53,7 @@ rec {
   parseOptions =
     options':
     let
-      options = filterExcludedAttrs (clean options');
+      options = filterInvisibleOpts (filterExcludedAttrs (clean options'));
       # parse options to jsonschema properties
       properties = lib.mapAttrs (_name: option: parseOption option) options;
       # TODO: figure out how to handle if prop.anyOf is used

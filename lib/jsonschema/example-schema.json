@@ -45,6 +45,27 @@
           "description": "A submodule option"
         }
       }
+    },
+    "destinations": {
+      "additionalProperties": {
+        "properties": {
+          "name": {
+            "default": "‹name›",
+            "description": "the name of the backup job",
+            "type": "string"
+          },
+          "repo": {
+            "description": "the borgbackup repository to backup to",
+            "type": "string"
+          }
+        },
+        "required": [
+          "repo"
+        ],
+        "type": "object"
+      },
+      "default": {},
+      "type": "object"
     }
   }
 }
