@@ -10,5 +10,11 @@
   },
   "services": {
     "opt": "this option doesn't make sense"
+  },
+  "destinations": {
+    "test-backup": {
+      "name": "John Doe",
+      "repo": "test-backup"
+    }
   }
 }

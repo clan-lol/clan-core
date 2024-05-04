@@ -7,7 +7,7 @@
 
       # Uncomment if you only want one module to be available
       # clanModules = {
-      #   syncthing = self.clanModules.syncthing;
+      #   borgbackup = self.clanModules.borgbackup;
       # };
 
       baseModule = {
@@ -30,6 +30,7 @@
             ];
           };
         in
+        # Filter out "injected" options that are not part of the module
         if (evaled.options.clan ? "${modulename}") then evaled.options.clan.${modulename} else { };
 
       clanModuleSchemas = lib.mapAttrs (
@@ -46,7 +47,7 @@
       checks = {
         module-schema = pkgs.runCommand "schema-checks" { } ''
           ${pkgs.check-jsonschema}/bin/check-jsonschema \
-            --check-metaschema --fill-defaults ${packages.module-schema}
+            --check-metaschema ${packages.module-schema}
           touch $out
         '';
       };
