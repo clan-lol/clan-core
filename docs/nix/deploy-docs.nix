@@ -8,7 +8,7 @@
 }:
 
 writeShellScriptBin "deploy-docs" ''
-  set -eux -o pipefail
+  set -eu -o pipefail
   export PATH="${
     lib.makeBinPath [
       coreutils
@@ -17,6 +17,12 @@ writeShellScriptBin "deploy-docs" ''
     ]
   }"
 
+  #########################################
+  #                                       #
+  # DO NOT PRINT THE SSH KEY TO THE LOGS  #
+  #                                       #
+  #########################################
+  set +x
   if [ -n "''${SSH_HOMEPAGE_KEY:-}" ]; then
     echo "$SSH_HOMEPAGE_KEY" > ./ssh_key
     chmod 600 ./ssh_key
@@ -24,6 +30,13 @@ writeShellScriptBin "deploy-docs" ''
   else
     sshExtraArgs=
   fi
+  set -x
+  ###########################
+  #                         #
+  #    END OF DANGER ZONE   #
+  #                         #
+  ###########################
+
 
   rsync \
     -e "ssh -o StrictHostKeyChecking=no $sshExtraArgs" \
