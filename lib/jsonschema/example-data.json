@@ -13,7 +13,8 @@
   },
   "destinations": {
     "test-backup": {
-      "name": "John Doe"
+      "name": "John Doe",
+      "repo": "test-backup"
     }
   }
 }
