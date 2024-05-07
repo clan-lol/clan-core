@@ -17,28 +17,28 @@ Create your own clan with these initial steps.
 
 ### Prerequisites
 
-#### Linux
+=== "**Linux**"
 
-Clan depends on nix installed on your system. Run the following command to install nix.
+    Clan depends on nix installed on your system. Run the following command to install nix.
 
-```bash
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-```
+    ```bash
+    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+    ```
 
-#### NixOS
+=== "**NixOS**"
 
-If you run NixOS the `nix` binary is already installed.
+    If you run NixOS the `nix` binary is already installed.
 
-You will also need to enable the `flakes` and `nix-commands` experimental features.
+    You will also need to enable the `flakes` and `nix-commands` experimental features.
 
-```bash
-# /etc/nix/nix.conf or ~/.config/nix/nix.conf
-experimental-features = nix-command flakes
-```
+    ```bash
+    # /etc/nix/nix.conf or ~/.config/nix/nix.conf
+    experimental-features = nix-command flakes
+    ```
 
-#### Other
+=== "**Other**"
 
-Clan doesn't offer dedicated support for other operating systems yet.
+    Clan doesn't offer dedicated support for other operating systems yet.
 
 ### Step 1: Add Clan CLI to Your Shell
 
@@ -57,6 +57,7 @@ clan flakes create my-clan
 ```
 
 This command creates the `flake.nix` and `.clan-flake` files for your project.
+It will also generate files from a default template, to help show general clan usage patterns.
 
 ### Step 3: Verify the Project Structure
 
