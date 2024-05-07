@@ -50,6 +50,11 @@ nix shell git+https://git.clan.lol/clan/clan-core#clan-cli
 
 You can find reference documentation for the `clan` cli program [here](./reference/cli/index.md).
 
+Alternatively you can check out the help pages directly:
+```terminalSession
+clan --help
+```
+
 ### Step 2: Initialize Your Project
 
 Set the foundation of your Clan project by initializing it as follows:
