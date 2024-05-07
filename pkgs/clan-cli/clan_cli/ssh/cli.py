@@ -1,4 +1,5 @@
 import argparse
+import ipaddress
 import json
 import logging
 import socket
@@ -94,6 +95,13 @@ def connect_ssh_from_json(ssh_data: dict[str, str]) -> None:
             log.debug(f"Could not reach host on {address}")
     log.debug(f'Trying to reach host via torify on {ssh_data["tor"]}')
     ssh(host=ssh_data["tor"], password=ssh_data["pass"], torify=True)
+
+
+def is_ipv6(ip: str) -> bool:
+    try:
+        return isinstance(ipaddress.ip_address(ip), ipaddress.IPv6Address)
+    except ValueError:
+        return False
 
 
 def main(args: argparse.Namespace) -> None:
