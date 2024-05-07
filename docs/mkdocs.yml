@@ -13,6 +13,7 @@ markdown_extensions:
   - admonition
   - attr_list
   - footnotes
+  - md_in_html
   - meta
   - plantuml_markdown
   - pymdownx.emoji:
@@ -46,13 +47,19 @@ nav:
       - Flake-parts: getting-started/flake-parts.md
   - Templates: templates/index.md
   - Reference:
-      - clan-core:
-          - reference/clan-core/index.md
-          - reference/clan-core/backups.md
-          - reference/clan-core/facts.md
-          - reference/clan-core/sops.md
-          - reference/clan-core/state.md
-      - clanModules:
+      - CLI:
+          - reference/cli/index.md
+          - reference/cli/backups.md
+          - reference/cli/config.md
+          - reference/cli/facts.md
+          - reference/cli/flakes.md
+          - reference/cli/flash.md
+          - reference/cli/history.md
+          - reference/cli/machines.md
+          - reference/cli/secrets.md
+          - reference/cli/ssh.md
+          - reference/cli/vms.md
+      - Clan Modules:
           - reference/clanModules/borgbackup.md
           - reference/clanModules/deltachat.md
           - reference/clanModules/disk-layouts.md
@@ -68,6 +75,12 @@ nav:
           - reference/clanModules/thelounge.md
           - reference/clanModules/xfce.md
           - reference/clanModules/zt-tcp-relay.md
+      - Clan Core:
+          - reference/clan-core/index.md
+          - reference/clan-core/backups.md
+          - reference/clan-core/facts.md
+          - reference/clan-core/sops.md
+          - reference/clan-core/state.md
   - Contributing: contributing/contributing.md
 
 docs_dir: site

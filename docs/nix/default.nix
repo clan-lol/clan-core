@@ -1,4 +1,9 @@
-{ pkgs, module-docs, ... }:
+{
+  pkgs,
+  module-docs,
+  clan-cli-docs,
+  ...
+}:
 let
   uml-c4 = pkgs.python3Packages.plantuml-markdown.override { plantuml = pkgs.plantuml-c4; };
 in
@@ -17,9 +22,9 @@ pkgs.stdenv.mkDerivation {
       mkdocs-material
     ]);
   configurePhase = ''
-    mkdir -p ./site/reference
+    mkdir -p ./site/reference/cli
     cp -af ${module-docs}/* ./site/reference/
-
+    cp -af ${clan-cli-docs}/* ./site/reference/cli/
   '';
 
   buildPhase = ''
