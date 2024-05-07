@@ -142,6 +142,9 @@ Adding or configuring a new machine requires two simple steps:
 
 ### Step 2. Detect hardware specific drivers
 
+!!! Tip
+    If you need to connect the `nixos-image` installer to the wifi, look [here](https://docs.clan.lol/getting-started/installer/#optional-connect-to-wifi).
+
 1. Generate a `hardware-configuration.nix` for your target computer
 
     ```bash
