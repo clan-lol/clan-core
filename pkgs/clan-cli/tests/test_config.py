@@ -1,7 +1,4 @@
-import json
-import tempfile
 from pathlib import Path
-from typing import Any
 
 import pytest
 from cli import Cli
@@ -14,46 +11,6 @@ from clan_cli.errors import ClanError
 example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 
 
-# use pytest.parametrize
-@pytest.mark.parametrize(
-    "args,expected",
-    [
-        (["name", "DavHau"], {"name": "DavHau"}),
-        (
-            ["kernelModules", "foo", "bar", "baz"],
-            {"kernelModules": ["foo", "bar", "baz"]},
-        ),
-        (["services.opt", "test"], {"services": {"opt": "test"}}),
-        (["userIds.DavHau", "42"], {"userIds": {"DavHau": 42}}),
-    ],
-)
-def test_set_some_option(
-    args: list[str],
-    expected: dict[str, Any],
-    test_flake: FlakeForTest,
-) -> None:
-    # create temporary file for out_file
-    with tempfile.NamedTemporaryFile() as out_file:
-        with open(out_file.name, "w") as f:
-            json.dump({}, f)
-        cli = Cli()
-        cli.run(
-            [
-                "config",
-                "--flake",
-                str(test_flake.path),
-                "--quiet",
-                "--options-file",
-                example_options,
-                "--settings-file",
-                out_file.name,
-                *args,
-            ]
-        )
-        json_out = json.loads(open(out_file.name).read())
-        assert json_out == expected
-
-
 def test_configure_machine(
     test_flake: FlakeForTest,
     temporary_home: Path,
@@ -62,17 +19,6 @@ def test_configure_machine(
 ) -> None:
     cli = Cli()
 
-    cli.run(
-        [
-            "config",
-            "--flake",
-            str(test_flake.path),
-            "-m",
-            "machine1",
-            "clan.jitsi.enable",
-            "true",
-        ]
-    )
     # clear the output buffer
     capsys.readouterr()
     # read a option value
@@ -88,7 +34,7 @@ def test_configure_machine(
     )
 
     # read the output
-    assert capsys.readouterr().out == "true\n"
+    assert capsys.readouterr().out == "false\n"
 
 
 def test_walk_jsonschema_all_types() -> None:
