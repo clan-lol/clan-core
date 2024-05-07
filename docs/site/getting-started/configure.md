@@ -148,10 +148,8 @@ Adding or configuring a new machine requires two simple steps:
 1. Generate a `hardware-configuration.nix` for your target computer
 
     ```bash
-    ssh root@<target-computer> nixos-generate-config --no-filesystems --show-hardware-config > hardware-configuration.nix
+    ssh root@<target-computer> nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
     ```
-
-2. Move the generated file to `machines/jon/hardware-configuration.nix`.
 
 ### Initialize the facts
 
