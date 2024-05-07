@@ -54,19 +54,17 @@
     in
     {
       devShells.docs = pkgs.callPackage ./shell.nix {
-        inherit (self'.packages) docs;
+        inherit (self'.packages) docs clan-cli-docs;
         inherit module-docs;
       };
       packages = {
         docs = pkgs.python3.pkgs.callPackage ./default.nix {
+          inherit (self'.packages) clan-cli-docs;
           inherit (inputs) nixpkgs;
           inherit module-docs;
         };
         deploy-docs = pkgs.callPackage ./deploy-docs.nix { inherit (config.packages) docs; };
         inherit module-docs;
-      };
-      legacyPackages = {
-        foo = jsonDocs;
       };
     };
 }

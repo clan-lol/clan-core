@@ -1,5 +1,6 @@
 import argparse
 from dataclasses import dataclass
+from pathlib import Path
 
 from clan_cli import create_parser
 
@@ -12,12 +13,45 @@ class Option:
     metavar: str | None = None
     epilog: str | None = None
 
+    def to_md_li(self, delim: str = "-") -> str:
+        # - **--example, `--e`**: <PATH> {description} (Default: `default` {epilog})
+        md_li = f"{delim} **{self.name}**: "
+        md_li += f"`<{self.metavar}>` " if self.metavar else ""
+        md_li += f"(Default: `{self.default}`) " if self.default else ""
+        md_li += indent_next(
+            f"\n{self.description.strip()}" if self.description else ""
+        )
+        md_li += indent_next(f"\n{self.epilog.strip()}" if self.epilog else "")
+
+        return md_li
+
 
 @dataclass
 class Subcommand:
     name: str
     description: str | None = None
     epilog: str | None = None
+
+    def to_md_li(self, parent: "Category") -> str:
+        md_li = f"""- **[{self.name}](#{"-".join(parent.title.split(" "))}-{self.name})**: """
+        md_li += indent_next(f"{self.description.strip()} " if self.description else "")
+        md_li += indent_next(f"\n{self.epilog.strip()}" if self.epilog else "")
+
+        return md_li
+
+
+icon_table = {
+    "backups": ":material-backup-restore: ",
+    "config": ":material-shape-outline: ",
+    "facts": ":simple-databricks: ",
+    "flakes": ":material-snowflake: ",
+    "flash": ":material-flash: ",
+    "history": ":octicons-history-24: ",
+    "machines": ":octicons-devices-24: ",
+    "secrets": ":octicons-passkey-fill-24: ",
+    "ssh": ":material-ssh: ",
+    "vms": ":simple-virtualbox: ",
+}
 
 
 @dataclass
@@ -37,6 +71,21 @@ class Category:
     epilog: str | None = None
     # What level of depth the category is at (i.e. 'backups list' is 2, 'backups' is 1, 'clan' is 0)
     level: int = 0
+
+    def to_md_li(self, level: int = 1) -> str:
+        md_li = ""
+        if level == self.level:
+            icon = icon_table.get(self.title, "")
+            md_li += f"""-   **[{icon}{self.title}](./{"-".join(self.title.split(" "))}.md)**\n\n"""
+            md_li += f"""{indent_all("---", 4)}\n\n"""
+            md_li += indent_all(
+                f"{self.description.strip()}\n" if self.description else "", 4
+            )
+            md_li += "\n"
+            md_li += indent_all(f"{self.epilog.strip()}\n" if self.epilog else "", 4)
+            md_li += "\n"
+
+        return md_li
 
 
 def indent_next(text: str, indent_size: int = 4) -> str:
@@ -176,21 +225,18 @@ def collect_commands() -> list[Category]:
                     )
                 )
 
-    def weight_cmd_groups(c: Category) -> tuple[str, int, str]:
+    def weight_cmd_groups(c: Category) -> tuple[str, str, int]:
         sub = [o for o in result if o.title.startswith(c.title) and o.title != c.title]
-        weight = len(c.title.split(" "))
+        weight = 10 - len(c.title.split(" "))
         if sub:
-            weight = len(sub[0].title.split(" "))
+            weight = 10 - len(sub[0].title.split(" "))
 
         # 1. Sort by toplevel name alphabetically
         # 2. sort by custom weight to keep groups together
         # 3. sort by title alphabetically
-        return (c.title.split(" ")[0], weight, c.title)
+        return (c.title.split(" ")[0], c.title, weight)
 
     result = sorted(result, key=weight_cmd_groups)
-
-    # for c in result:
-    #     print(c.title)
 
     return result
 
@@ -198,16 +244,79 @@ def collect_commands() -> list[Category]:
 if __name__ == "__main__":
     cmds = collect_commands()
 
-    # TODO: proper markdown
-    markdown = ""
+    folder = Path("out")
+    folder.mkdir(parents=True, exist_ok=True)
+
+    # Index file
+    markdown = "# CLI Overview\n\n"
+    categories_fmt = ""
+    for cat in cmds:
+        categories_fmt += f"{cat.to_md_li()}\n\n" if cat.to_md_li() else ""
+
+    if categories_fmt:
+        markdown += """## Overview\n\n"""
+        markdown += '<div class="grid cards" markdown>\n\n'
+        markdown += categories_fmt
+        markdown += "</div>"
+        markdown += "\n"
+
+    with open(folder / "index.md", "w") as f:
+        f.write(markdown)
+
+    # Each top level category is a separate file
+    files: dict[Path, str] = {}
+
+    for t in [cmd.title for cmd in cmds]:
+        print(t)
+
     for cmd in cmds:
-        markdown += f"## {cmd.title}\n\n"
-        markdown += f"{cmd.description}\n" if cmd.description else ""
-        markdown += f"{cmd.options}\n" if cmd.description else ""
-        markdown += f"{cmd.subcommands}\n" if cmd.description else ""
-        markdown += f"{cmd.positionals}\n" if cmd.description else ""
-        markdown += f"{cmd.epilog}\n" if cmd.description else ""
+        # Collect all commands starting with the same name into one file
+        filename = cmd.title.split(" ")[0]
+        markdown = files.get(folder / f"{filename}.md", "")
 
-        break
+        markdown += f"{'#'*(cmd.level)} {cmd.title.capitalize()}\n\n"
+        markdown += f"{cmd.description}\n\n" if cmd.description else ""
 
-    print(markdown)
+        # usage: clan vms run [-h] machine
+        markdown += f"""Usage: `clan {cmd.title}`\n\n"""
+
+        # options:
+        #   -h, --help  show this help message and exit
+
+        # Positional arguments
+        positionals_fmt = ""
+        for option in cmd.positionals:
+            positionals_fmt += f"""{option.to_md_li("1.")}\n"""
+
+        if len(cmd.positionals):
+            markdown += """!!! info "Positional arguments"\n"""
+            markdown += indent_all(positionals_fmt)
+            markdown += "\n"
+
+        options_fmt = ""
+        for option in cmd.options:
+            options_fmt += f"{option.to_md_li()}\n"
+
+        # options:
+        if len(cmd.options):
+            markdown += """??? info "Options"\n"""
+            markdown += indent_all(options_fmt)
+            markdown += "\n"
+
+        def asort(s: Subcommand) -> str:
+            return s.name
+
+        commands_fmt = ""
+        for sub_cmd in sorted(cmd.subcommands, key=asort):
+            commands_fmt += f"{sub_cmd.to_md_li(cmd)}\n"
+
+        if commands_fmt:
+            markdown += """!!! info "Commands"\n"""
+            markdown += indent_all(commands_fmt)
+            markdown += "\n"
+
+        files[folder / f"{filename}.md"] = markdown
+
+    for fname, content in files.items():
+        with open(fname, "w") as f:
+            f.write(content)
