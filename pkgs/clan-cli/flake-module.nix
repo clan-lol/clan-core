@@ -44,6 +44,19 @@
           inherit (inputs) nixpkgs;
           clan-core-path = clanCoreWithVendoredDeps;
         };
+        clan-cli-docs = pkgs.stdenv.mkDerivation {
+          name = "clan-cli-docs";
+          src = ./.;
+
+          buildInputs = [ pkgs.python3 ];
+
+          installPhase = ''
+            python docs.py
+            mkdir -p $out
+            cp -r out/* $out
+          '';
+        };
+
         default = self'.packages.clan-cli;
       };
 
