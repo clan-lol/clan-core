@@ -36,7 +36,7 @@
             # TODO: Example how to use disko for more complicated setups
 
             # remote> lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
-            disko.devices.disk.main = {
+            clan.disk-layouts.singleDiskExt4 = {
               device = "/dev/disk/by-id/__CHANGE_ME__";
             };
 
@@ -60,7 +60,7 @@
             # local> clan facts generate
 
             # remote> lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
-            disko.devices.disk.main = {
+            clan.disk-layouts.singleDiskExt4 = {
               device = "/dev/disk/by-id/__CHANGE_ME__";
             };
             /*
