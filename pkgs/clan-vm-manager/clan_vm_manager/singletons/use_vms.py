@@ -131,8 +131,6 @@ class ClanStore:
         # only one vm can output logs at a time
         if vm == self._logging_vm:
             gfile.load_contents_async(None, file_read_callback, None)
-        else:
-            log.info("Log details of VM hidden, vm is not current logging VM.")
 
         # we cannot check this type, python is not smart enough
 
