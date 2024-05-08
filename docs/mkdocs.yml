@@ -82,6 +82,7 @@ nav:
           - reference/clan-core/sops.md
           - reference/clan-core/state.md
   - Contributing: contributing/contributing.md
+  - FAQ: faq/index.md
 
 docs_dir: site
 site_dir: out
