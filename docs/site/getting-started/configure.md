@@ -84,7 +84,7 @@ Adding or configuring a new machine requires two simple steps:
 
     === "**buildClan**"
 
-        ```nix title="clan-core.lib.buildClan" hl_lines="17 13"
+        ```nix title="clan-core.lib.buildClan" hl_lines="17"
         buildClan {
           # ...
           machines = {
@@ -97,8 +97,8 @@ Adding or configuring a new machine requires two simple steps:
 
               # Change this to the correct ip-address or hostname
               # The hostname is the machine name by default
-              clan.networking.targetHost = pkgs.lib.mkDefault "root@<hostname>"
-              
+              clan.networking.targetHost = pkgs.lib.mkDefault "root@jon"
+
               # Change this to the ID-LINK of the desired disk shown by 'lsblk'
               disko.devices.disk.main = {
                 device = "/dev/disk/by-id/__CHANGE_ME__";
@@ -106,15 +106,13 @@ Adding or configuring a new machine requires two simple steps:
 
               # ...
             };
-          };     
+          };
         }
         ```
 
     === "**flakeParts**"
 
-
-
-        ```nix title="clan-core.flakeModules.default" hl_lines="17,13"
+        ```nix title="clan-core.flakeModules.default" hl_lines="17"
         clan = {
           # ...
           machines = {
@@ -127,8 +125,8 @@ Adding or configuring a new machine requires two simple steps:
 
               # Change this to the correct ip-address or hostname
               # The hostname is the machine name by default
-              clan.networking.targetHost = pkgs.lib.mkDefault "root@<hostname>"
-              
+              clan.networking.targetHost = pkgs.lib.mkDefault "root@jon"
+
               # Change this to the ID-LINK of the desired disk shown by 'lsblk'
               disko.devices.disk.main = {
                 device = "/dev/disk/by-id/__CHANGE_ME__";
@@ -136,14 +134,14 @@ Adding or configuring a new machine requires two simple steps:
 
               # ...
             };
-          };     
+          };
         };
         ```
 
-### Step 2. Detect hardware specific drivers
 
-!!! Tip
-    If you need to connect the `nixos-image` installer to the wifi, look [here](https://docs.clan.lol/getting-started/installer/#optional-connect-to-wifi).
+!!! Info "In this case `__CHANGE_ME__` should be `nvme-eui.e8238fa6bf530001001b448b4aec2929`"
+
+### Step 2. Detect hardware specific drivers
 
 1. Generate a `hardware-configuration.nix` for your target computer
 
@@ -151,18 +149,11 @@ Adding or configuring a new machine requires two simple steps:
     ssh root@flash-installer.local nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
     ```
 
-### Initialize the facts
-
-!!! Info
-    **All facts are automatically initialized.**
-
-If you need additional help see our [facts chapter](./secrets.md)
 
 ---
 
 ## Whats next?
 
-- [Deploying](machines.md): Deploying a Machine configuration
-- [Secrets](secrets.md): Learn about secrets and facts
+- [Secrets & Facts](secrets.md): Setting up secrets with nix-sops
 
 ---
