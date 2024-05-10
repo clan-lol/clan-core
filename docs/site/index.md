@@ -110,12 +110,6 @@ sara
 
 ### What's Next?
 
-- [**Machine Configuration**](getting-started/configure.md): Declare behavior and configuration of machines.
-
-- [**Deploy Machines**](getting-started/machines.md): Learn how to deploy to any remote machine.
-
 - [**Installer**](getting-started/installer.md): Setting up new computers remotely is easy with an USB stick.
-
-- [**Check out our Templates**](templates/index.md)
 
 ---

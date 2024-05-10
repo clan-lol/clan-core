@@ -1,10 +1,11 @@
 # Installer
 
-We offer a dedicated installer to assist remote installations.
+Our installer image simplifies the process of performing remote installations.
 
-In this tutorial we will guide you through building and flashing it to a bootable USB drive.
+Follow our step-by-step guide to create and transfer this image onto a bootable USB drive.
 
-## Creating and Using the **Clan Installer**
+!!! info 
+    If you already have a NixOS machine you can ssh into (in the cloud for example) you can skip this chapter and go directly to [Configure Machines](configure.md).
 
 ### Step 0. Prerequisites
 
@@ -21,7 +22,7 @@ In this tutorial we will guide you through building and flashing it to a bootabl
     lsblk
     ```
 
-    ```{.console, .no-copy}
+    ```shellSession hl_lines="2"
     NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
     sdb                                             8:0    1 117,2G  0 disk
     └─sdb1                                          8:1    1 117,2G  0 part  /run/media/qubasa/INTENSO
@@ -89,17 +90,6 @@ Select `NixOS` to boot into the clan installer.
 
 For deploying your configuration the machine needs to be connected via LAN (recommended).
 
-For connecting via Wifi, please consult the [guide below](#optional-connect-to-wifi).
-
----
-
-## Whats next?
-
-- [Configure Machines](configure.md): Customize machine configuration
-- [Deploying](machines.md): Deploying a Machine configuration
-- [WiFi](#optional-connect-to-wifi): Guide for connecting to Wifi.
-
----
 
 ## (Optional) Connect to Wifi
 
@@ -147,3 +137,11 @@ Press `ctrl-d` to exit `IWD`.
     Press `ctrl-d` **again** to update the displayed QR code and connection information.
 
 You're all set up
+
+---
+
+## Whats next?
+
+- [Configure Machines](configure.md): Customize machine configuration
+
+---

@@ -6,7 +6,6 @@ Clan utilizes the [sops](https://github.com/getsops/sops) format and integrates 
 
 This documentation will guide you through managing secrets with the Clan CLI
 
-## Initializing Secrets (Quickstart)
 
 ### Create Your Master Keypair
 
@@ -52,17 +51,17 @@ sops/
     └── <your_username>/
         └── key.json
 ```
+If you followed the quickstart tutorial all necessary secrets are initialized at this point.
 
 ---
 
-> If you followed the quickstart tutorial all necessary secrets are initialized at this point.
+## Whats next?
 
-- Continue with [deploying machines](./machines.md)
-- Learn about the [basics concept](#concept) of clan secrets
+- [Deployment](machines.md): How to remotely deploy your machine
 
 ---
 
-## Concept
+## Indepth Explanation
 
 The secrets system conceptually knows two different entities:
 
@@ -325,3 +324,11 @@ Each member of the group `admins` in this case will be able to decrypt the secre
 
 Since our clan secret module will auto-import secrets that are encrypted for a particular nixos machine,
 you can now remove `sops.secrets.<secrets> = { };` unless you need to specify more options for the secret like owner/group of the secret file.
+
+---
+
+## Whats next?
+
+- [Deployment](machines.md): How to remotely deploy your machine
+
+---
