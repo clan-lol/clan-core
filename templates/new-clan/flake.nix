@@ -35,8 +35,8 @@
 
             # TODO: Example how to use disko for more complicated setups
 
-            # remote> lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
-            clan.disk-layouts.singleDiskExt4 = {
+            # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+            disko.devices.disk.main = {
               device = "/dev/disk/by-id/__CHANGE_ME__";
             };
 
@@ -59,8 +59,8 @@
 
             # local> clan facts generate
 
-            # remote> lsblk --output NAME,PTUUID,FSTYPE,SIZE,MOUNTPOINT
-            clan.disk-layouts.singleDiskExt4 = {
+            # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+            disko.devices.disk.main = {
               device = "/dev/disk/by-id/__CHANGE_ME__";
             };
             /*
