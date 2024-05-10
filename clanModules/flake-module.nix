@@ -1,11 +1,8 @@
-{ inputs, ... }:
+{ ... }:
 {
   flake.clanModules = {
     disk-layouts = {
-      imports = [
-        ./disk-layouts
-        inputs.disko.nixosModules.default
-      ];
+      imports = [ ./disk-layouts ];
     };
     borgbackup = ./borgbackup;
     ergochat = ./ergochat;
