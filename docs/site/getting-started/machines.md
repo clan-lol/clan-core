@@ -35,28 +35,11 @@ This process involves preparing a suitable hardware and disk partitioning config
 
         - Any cloud machine if it is reachable via SSH and supports `kexec`.
 
-Confirm the machine is reachable via SSH from your setup computer.
-
-```bash
-ssh root@<your_target_machine_ip>
-```
 
 ### Step 1. Deploy the machine
 
 **Finally deployment time!** Use the following command to build and deploy the image via SSH onto your machine.
 
-=== "**SSH access**"
-
-
-
-    Replace `<target_host>` with the **target computers' ip address**:
-
-    ```bash
-    clan machines install my-machine <target_host>
-    ```
-
-    !!!note 
-        Building and deploying time will depend on hardware and connection speed.
 
 === "**Image Installer**"
 
@@ -121,35 +104,50 @@ ssh root@<your_target_machine_ip>
         4.  :man_raising_hand: I'm a code annotation! I can contain `code`, __formatted
             text__, images, ... basically anything that can be written in Markdown.
 
-    
     !!!tip
-        We recommend using KDE Connect for sharing the deployment information from the QR code with the deploying machine.
+        For easy sharing of deployment information via QR code, we highly recommend using [KDE Connect](https://apps.kde.org/de/kdeconnect/).
 
-    
-    The QR code can be used to deploy either with an image, that is decoded on the fly, or it's contained json information.
+    There are two ways to deploy your machine:
 
-    With the path to a `json` string, or the string itself:
-    ```terminal
-    clan machines install [MACHINE] --json [JSON]
+    1. **SSH with Password Authentication**
+        Run the following command to install using SSH:
+        ```bash
+        clan machines install [MACHINE] flash-installer.local
+        ```
+
+    2. **Scanning a QR Code for Installation Details**
+        You can input the information by following one of these methods:
+          - **Using a JSON String or File Path:**
+              Provide the path to a JSON string or input the string directly:
+              ```terminal
+              clan machines install [MACHINE] --json [JSON]
+              ```
+          - **Using an Image Containing the QR Code:**
+              Provide the path to an image file containing the relevant QR code:
+              ```terminal
+              clan machines install [MACHINE] --png [PATH]
+           ```
+
+    !!!note
+        If you are using our template `[MACHINE]` would be `jon`
+
+=== "**SSH access**"
+
+    Replace `<target_host>` with the **target computers' ip address**:
+
+    ```bash
+    clan machines install [MACHINE] <target_host>
     ```
-    With the path to an image containing the relevant QR code:
-    ```terminal
-    clan machines install [MACHINE] --png [PATH]
-    ```
+
+    !!!note 
+        Building and deploying time will depend on hardware and connection speed.
 
 
 !!! success
 
     Your machine is all set up. 🎉 🚀
 
----
 
-## What's next ?
-
-- [**Update a Machine**](#update-your-machines): Learn how to update an existing machine?
-- [**Configure a Private Network**](./networking.md): Configuring a secure mesh network.
-
----
 
 ## Update Your Machines
 
@@ -201,6 +199,12 @@ clan config --machine my-machine clan.deployment.requireExplicitUpdate true
 ```
 
 This is useful for machines that are not always online or are not part of the regular update cycle.
+
+---
+
+## What's next ?
+
+- [**Mesh VPN**](./networking.md): Configuring a secure mesh network.
 
 ---
 
