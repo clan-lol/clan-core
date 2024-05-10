@@ -27,6 +27,8 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.highlight:
       use_pygments: true
+      anchor_linenums: true
+      linenums: true
   - toc:
       title: On this page
 
