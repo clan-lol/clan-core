@@ -1,7 +1,7 @@
 { self, lib, ... }:
 let
   installerModule =
-    { config, pkgs, ... }:
+    { config, ... }:
     {
       imports = [
         self.nixosModules.installer
@@ -29,6 +29,7 @@ let
 
   installer = lib.nixosSystem {
     modules = [
+      self.inputs.disko.nixosModules.default
       installerModule
       { disko.memSize = 4096; } # FIXME: otherwise the image builder goes OOM
     ];

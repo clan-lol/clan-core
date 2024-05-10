@@ -1,19 +1,44 @@
 import argparse
+import logging
 from pathlib import Path
 
 from clan_cli.git import commit_files
 
-from .. import tty
 from ..errors import ClanError
 from .secrets import update_secrets
 from .sops import default_sops_key_path, generate_private_key, get_public_key
+
+log = logging.getLogger(__name__)
+
+
+def extract_public_key(filepath: Path) -> str:
+    """
+    Extracts the public key from a given text file.
+    """
+    try:
+        with open(filepath) as file:
+            for line in file:
+                # Check if the line contains the public key
+                if line.startswith("# public key:"):
+                    # Extract and return the public key part after the prefix
+                    return line.strip().split(": ")[1]
+    except FileNotFoundError:
+        raise ClanError(f"The file at {filepath} was not found.")
+    except Exception as e:
+        raise ClanError(f"An error occurred while extracting the public key: {e}")
+
+    raise ClanError(f"Could not find the public key in the file at {filepath}.")
 
 
 def generate_key() -> str:
     path = default_sops_key_path()
     if path.exists():
-        raise ClanError(f"Key already exists at {path}")
+        log.info(f"Key already exists at {path}")
+        return extract_public_key(path)
     priv_key, pub_key = generate_private_key(out_file=path)
+    log.info(
+        f"Generated age private key at '{default_sops_key_path()}' for your user. Please back it up on a secure location or you will lose access to your secrets."
+    )
     return pub_key
 
 
@@ -23,13 +48,9 @@ def show_key() -> str:
 
 def generate_command(args: argparse.Namespace) -> None:
     pub_key = generate_key()
-    tty.info(
-        f"Generated age private key at '{default_sops_key_path()}' for your user. Please back it up on a secure location or you will lose access to your secrets."
+    log.info(
+        f"Also add your age public key to the repository with: \nclan secrets users add <username> {pub_key}"
     )
-    tty.info(
-        f"Also add your age public key to the repository with 'clan secrets users add youruser {pub_key}' (replace youruser with your user name)"
-    )
-    pass
 
 
 def show_command(args: argparse.Namespace) -> None:

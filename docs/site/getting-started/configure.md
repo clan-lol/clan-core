@@ -63,12 +63,12 @@ Adding or configuring a new machine requires two simple steps:
 1. Find the remote disk id by executing:
 
     ```bash title="setup computer"
-    ssh root@<target-computer> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+    ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
     ```
 
     Which should show something like:
 
-    ```bash
+    ```bash hl_lines="6"
     NAME        ID-LINK                                         FSTYPE   SIZE MOUNTPOINT
     sda         usb-ST_16GB_AA6271026J1000000509-0:0                    14.9G 
     ├─sda1      usb-ST_16GB_AA6271026J1000000509-0:0-part1                 1M 
@@ -84,7 +84,7 @@ Adding or configuring a new machine requires two simple steps:
 
     === "**buildClan**"
 
-        ```nix title="clan-core.lib.buildClan"
+        ```nix title="clan-core.lib.buildClan" hl_lines="17 13"
         buildClan {
           # ...
           machines = {
@@ -114,7 +114,7 @@ Adding or configuring a new machine requires two simple steps:
 
 
 
-        ```nix title="clan-core.flakeModules.default"
+        ```nix title="clan-core.flakeModules.default" hl_lines="17,13"
         clan = {
           # ...
           machines = {
@@ -148,7 +148,7 @@ Adding or configuring a new machine requires two simple steps:
 1. Generate a `hardware-configuration.nix` for your target computer
 
     ```bash
-    ssh root@<target-computer> nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
+    ssh root@flash-installer.local nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
     ```
 
 ### Initialize the facts
