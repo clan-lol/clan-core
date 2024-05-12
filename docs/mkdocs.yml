@@ -56,7 +56,7 @@ nav:
           - reference/cli/flakes.md
           - reference/cli/flash.md
           - reference/cli/history.md
-          - reference/cli/deploy.md
+          - reference/cli/machines.md
           - reference/cli/secrets.md
           - reference/cli/ssh.md
           - reference/cli/vms.md
