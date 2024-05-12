@@ -98,6 +98,6 @@ refer to the Clan module documentation located [here](https://git.clan.lol/clan/
 ## Whats next?
 
 - [Configure Machines](configure.md): Customize machine configuration
-- [Deploying](machines.md): Deploying a Machine configuration
+- [Deploying](deploy.md): Deploying a Machine configuration
 
 ---
