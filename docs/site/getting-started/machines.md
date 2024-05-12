@@ -49,60 +49,60 @@ This process involves preparing a suitable hardware and disk partitioning config
     The installer will randomly generate a password and local addresses on boot, then run ssh with these preconfigured.
     The installer shows it's deployment relevant information in two formats, a text form, as well as a QR code.
 
-    ???example "An example view of a booted installer." 
-        This is an example of the booted installer.
 
-        ```{ .bash .annotate }
-        ┌─────────────────────────────────────────────────────────────────────────────────────┐
-        │ ┌───────────────────────────┐                                                       │
-        │ │███████████████████████████│ # This is the QR Code (1)                             │
-        │ │██ ▄▄▄▄▄ █▀▄█▀█▀▄█ ▄▄▄▄▄ ██│                                                       │
-        │ │██ █   █ █▀▄▄▄█ ▀█ █   █ ██│                                                       │
-        │ │██ █▄▄▄█ █▀▄ ▀▄▄▄█ █▄▄▄█ ██│                                                       │
-        │ │██▄▄▄▄▄▄▄█▄▀ ▀▄▀▄█▄▄▄▄▄▄▄██│                                                       │
-        │ │███▀▀▀ █▄▄█ ▀▄   ▄▀▄█   ███│                                                       │
-        │ │██▄██▄▄█▄▄▀▀██▄▀ ▄▄▄ ▄▀█▀██│                                                       │
-        │ │██ ▄▄▄▄▄ █▄▄▄▄ █ █▄█ █▀ ███│                                                       │
-        │ │██ █   █ █ █  █ ▄▄▄  ▄▀▀ ██│                                                       │
-        │ │██ █▄▄▄█ █ ▄ ▄    ▄ ▀█ ▄███│                                                       │
-        │ │██▄▄▄▄▄▄▄█▄▄▄▄▄▄█▄▄▄▄▄█▄███│                                                       │
-        │ │███████████████████████████│                                                       │
-        │ └───────────────────────────┘                                                       │
-        │ ┌─────────────────────────────────────────────────────────────────────────────────┐ │
-        │ │Root password: cheesy-capital-unwell  # password (2)                             │ │
-        │ │Local network addresses:                                                         │ │
-        │ │enp1s0           UP    192.168.178.169/24 metric 1024 fe80::21e:6ff:fe45:3c92/64 │ │
-        │ │enp2s0           DOWN                                                            │ │
-        │ │wlan0            DOWN # connect to wlan (3)                                      │ │
-        │ │Onion address: 6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion    │ │
-        │ │Multicast DNS: nixos-installer.local                                             │ │
-        │ └─────────────────────────────────────────────────────────────────────────────────┘ │
-        │ Press 'Ctrl-C' for console access                                                   │ 
-        │                                                                                     │
-        └─────────────────────────────────────────────────────────────────────────────────────┘
+    This is an example of the booted installer.
+
+    ```{ .bash .annotate }
+    ┌─────────────────────────────────────────────────────────────────────────────────────┐
+    │ ┌───────────────────────────┐                                                       │
+    │ │███████████████████████████│ # This is the QR Code (1)                             │
+    │ │██ ▄▄▄▄▄ █▀▄█▀█▀▄█ ▄▄▄▄▄ ██│                                                       │
+    │ │██ █   █ █▀▄▄▄█ ▀█ █   █ ██│                                                       │
+    │ │██ █▄▄▄█ █▀▄ ▀▄▄▄█ █▄▄▄█ ██│                                                       │
+    │ │██▄▄▄▄▄▄▄█▄▀ ▀▄▀▄█▄▄▄▄▄▄▄██│                                                       │
+    │ │███▀▀▀ █▄▄█ ▀▄   ▄▀▄█   ███│                                                       │
+    │ │██▄██▄▄█▄▄▀▀██▄▀ ▄▄▄ ▄▀█▀██│                                                       │
+    │ │██ ▄▄▄▄▄ █▄▄▄▄ █ █▄█ █▀ ███│                                                       │
+    │ │██ █   █ █ █  █ ▄▄▄  ▄▀▀ ██│                                                       │
+    │ │██ █▄▄▄█ █ ▄ ▄    ▄ ▀█ ▄███│                                                       │
+    │ │██▄▄▄▄▄▄▄█▄▄▄▄▄▄█▄▄▄▄▄█▄███│                                                       │
+    │ │███████████████████████████│                                                       │
+    │ └───────────────────────────┘                                                       │
+    │ ┌─────────────────────────────────────────────────────────────────────────────────┐ │
+    │ │Root password: cheesy-capital-unwell  # password (2)                             │ │
+    │ │Local network addresses:                                                         │ │
+    │ │enp1s0           UP    192.168.178.169/24 metric 1024 fe80::21e:6ff:fe45:3c92/64 │ │
+    │ │enp2s0           DOWN                                                            │ │
+    │ │wlan0            DOWN # connect to wlan (3)                                      │ │
+    │ │Onion address: 6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion    │ │
+    │ │Multicast DNS: nixos-installer.local                                             │ │
+    │ └─────────────────────────────────────────────────────────────────────────────────┘ │
+    │ Press 'Ctrl-C' for console access                                                   │ 
+    │                                                                                     │
+    └─────────────────────────────────────────────────────────────────────────────────────┘
+    ```
+
+    1.  This is not an actual QR code, because it is displayed rather poorly on text sites.
+        This would be the actual content of this specific QR code prettified:
+        ```json
+        {
+            "pass": "cheesy-capital-unwell",
+            "tor": "6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion",
+            "addrs": [
+            "2001:9e8:347:ca00:21e:6ff:fe45:3c92"
+            ]
+        }
         ```
- 
-        1.  This is not an actual QR code, because it is displayed rather poorly on text sites.
-            This would be the actual content of this specific QR code prettified:
-            ```json
-            {
-              "pass": "cheesy-capital-unwell",
-              "tor": "6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion",
-              "addrs": [
-                "2001:9e8:347:ca00:21e:6ff:fe45:3c92"
-              ]
-            }
-            ```
-            
-            To generate the actual QR code, that would be displayed use:
-            ```shellSession
-            echo '{"pass":"cheesy-capital-unwell","tor":"6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion","addrs":["2001:9e8:347:ca00:21e:6ff:fe45:3c92"]}' | nix run nixpkgs#qrencode -- -s 2 -m 2 -t utf8
-            ```
-        2.  The root password for the installer medium.
-            This password is autogenerated and meant to be easily typeable.
-        3.  See how to connect the installer medium to wlan [here](./installer.md#optional-connect-to-wifi).
-        4.  :man_raising_hand: I'm a code annotation! I can contain `code`, __formatted
-            text__, images, ... basically anything that can be written in Markdown.
+        
+        To generate the actual QR code, that would be displayed use:
+        ```shellSession
+        echo '{"pass":"cheesy-capital-unwell","tor":"6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion","addrs":["2001:9e8:347:ca00:21e:6ff:fe45:3c92"]}' | nix run nixpkgs#qrencode -- -s 2 -m 2 -t utf8
+        ```
+    2.  The root password for the installer medium.
+        This password is autogenerated and meant to be easily typeable.
+    3.  See how to connect the installer medium to wlan [here](./installer.md#optional-connect-to-wifi).
+    4.  :man_raising_hand: I'm a code annotation! I can contain `code`, __formatted
+        text__, images, ... basically anything that can be written in Markdown.
 
     !!!tip
         For easy sharing of deployment information via QR code, we highly recommend using [KDE Connect](https://apps.kde.org/de/kdeconnect/).
