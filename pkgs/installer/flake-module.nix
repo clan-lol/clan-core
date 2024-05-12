@@ -20,12 +20,7 @@ let
       };
     };
   installerModule =
-    {
-      config,
-      pkgs,
-      modulesPath,
-      ...
-    }:
+    { config, modulesPath, ... }:
     {
       imports = [
         wifiModule
@@ -50,12 +45,12 @@ let
   };
 
   flashInstallerModule =
-    { config, pkgs, ... }:
+    { config, ... }:
     {
       imports = [
         wifiModule
         self.nixosModules.installer
-        self.clanModules.diskLayouts
+        self.clanModules.disk-layouts
       ];
       system.stateVersion = config.system.nixos.version;
       nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
@@ -79,7 +74,7 @@ in
     # This will include your ssh public keys in the installer.
     machines.flash-installer = {
       imports = [ flashInstallerModule ];
-      clan.diskLayouts.singleDiskExt4.device = lib.mkDefault "/dev/null";
+      clan.disk-layouts.singleDiskExt4.device = lib.mkDefault "/dev/null";
       boot.loader.grub.enable = lib.mkDefault true;
     };
   };
