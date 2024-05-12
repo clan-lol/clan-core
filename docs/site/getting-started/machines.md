@@ -52,7 +52,7 @@ This process involves preparing a suitable hardware and disk partitioning config
 
     This is an example of the booted installer.
 
-    ```{ .bash .annotate }
+    ```{ .bash .annotate .no-copy }
     ┌─────────────────────────────────────────────────────────────────────────────────────┐
     │ ┌───────────────────────────┐                                                       │
     │ │███████████████████████████│ # This is the QR Code (1)                             │
@@ -93,7 +93,7 @@ This process involves preparing a suitable hardware and disk partitioning config
             ]
         }
         ```
-        
+
         To generate the actual QR code, that would be displayed use:
         ```shellSession
         echo '{"pass":"cheesy-capital-unwell","tor":"6evxy5yhzytwpnhc2vpscrbti3iktxdhpnf6yim6bbs25p4v6beemzyd.onion","addrs":["2001:9e8:347:ca00:21e:6ff:fe45:3c92"]}' | nix run nixpkgs#qrencode -- -s 2 -m 2 -t utf8

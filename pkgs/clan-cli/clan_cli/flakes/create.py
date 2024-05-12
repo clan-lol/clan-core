@@ -43,6 +43,10 @@ def create_flake(directory: Path, url: str) -> dict[str, CmdOut]:
     out = run(command, cwd=directory)
     response["git config"] = out
 
+    command = ["nix", "flake", "update"]
+    out = run(command, cwd=directory)
+    response["flake update"] = out
+
     return response
 
 
