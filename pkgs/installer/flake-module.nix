@@ -26,7 +26,6 @@ let
         wifiModule
         self.nixosModules.installer
         self.inputs.nixos-generators.nixosModules.all-formats
-        self.inputs.disko.nixosModules.disko
         (modulesPath + "/installer/cd-dvd/iso-image.nix")
       ];
 
