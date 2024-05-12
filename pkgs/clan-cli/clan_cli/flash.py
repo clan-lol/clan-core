@@ -3,6 +3,7 @@ import importlib
 import json
 import logging
 import os
+import re
 import shutil
 import textwrap
 from collections.abc import Sequence
@@ -54,21 +55,27 @@ def read_public_key_contents(public_keys: list[Path]) -> list[str]:
     return public_key_contents
 
 
-def get_locale() -> tuple[str, str]:
-    """
-    Function to get the current default locale from the system.
-    """
-    default_locale = "en_US.UTF-8"
+def get_keymap_and_locale() -> dict[str, str]:
+    locale = "en_US.UTF-8"
     keymap = "en"
 
-    res = run(["locale", "lang_ab", "country_ab2", "charmap"])
+    # Execute the `localectl status` command
+    result = run(["localectl", "status"])
 
-    if res.returncode == 0:
-        arr = res.stdout.strip().split("\n")
-        default_locale = f"{arr[0]}_{arr[1]}.{arr[2]}"
-        keymap = arr[0]
+    if result.returncode == 0:
+        output = result.stdout
 
-    return (keymap, default_locale)
+        # Extract the Keymap (X11 Layout)
+        keymap_match = re.search(r"X11 Layout:\s+(.*)", output)
+        if keymap_match:
+            keymap = keymap_match.group(1)
+
+        # Extract the System Locale (LANG only)
+        locale_match = re.search(r"System Locale:\s+LANG=(.*)", output)
+        if locale_match:
+            locale = locale_match.group(1)
+
+    return {"keymap": keymap, "locale": locale}
 
 
 def flash_machine(
@@ -206,16 +213,16 @@ def flash_command(args: argparse.Namespace) -> None:
     else:
         raise ClanError("Invalid state")
 
-    console_keymap, default_locale = get_locale()
+    localectl = get_keymap_and_locale()
     extra_config = {
         "users": {
             "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}}
         },
         "console": {
-            "keyMap": opts.keymap if opts.keymap else console_keymap,
+            "keyMap": opts.keymap if opts.keymap else localectl["keymap"],
         },
         "i18n": {
-            "defaultLocale": opts.language if opts.language else default_locale,
+            "defaultLocale": opts.language if opts.language else localectl["locale"],
         },
     }
 
