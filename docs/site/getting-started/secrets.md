@@ -57,7 +57,7 @@ If you followed the quickstart tutorial all necessary secrets are initialized at
 
 ## Whats next?
 
-- [Deployment](machines.md): How to remotely deploy your machine
+- [Deployment](deploy.md): How to remotely deploy your machine
 
 ---
 
@@ -329,6 +329,6 @@ you can now remove `sops.secrets.<secrets> = { };` unless you need to specify mo
 
 ## Whats next?
 
-- [Deployment](machines.md): How to remotely deploy your machine
+- [Deployment](deploy.md): How to remotely deploy your machine
 
 ---

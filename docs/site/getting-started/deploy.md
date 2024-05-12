@@ -128,9 +128,6 @@ This process involves preparing a suitable hardware and disk partitioning config
               clan machines install [MACHINE] --png [PATH]
            ```
 
-    !!!note
-        If you are using our template `[MACHINE]` would be `jon`
-
 === "**SSH access**"
 
     Replace `<target_host>` with the **target computers' ip address**:
@@ -139,14 +136,12 @@ This process involves preparing a suitable hardware and disk partitioning config
     clan machines install [MACHINE] <target_host>
     ```
 
-    !!!note 
-        Building and deploying time will depend on hardware and connection speed.
+
+If you are using our template `[MACHINE]` would be `jon`
 
 
 !!! success
-
     Your machine is all set up. 🎉 🚀
-
 
 
 ## Update Your Machines
@@ -155,11 +150,22 @@ Clan CLI enables you to remotely update your machines over SSH. This requires se
 
 ### Setting the Target Host
 
-Replace `host_or_ip` with the actual hostname or IP address of your target machine:
-
-```bash
-clan config --machine my-machine clan.networking.targetHost root@host_or_ip
+Replace `root@jon` with the actual hostname or IP address of your target machine:
+```nix hl_lines="9"
+buildClan {
+    # ...
+    machines = {
+        # "jon" will be the hostname of the machine
+        "jon" = {
+            # Set this for clan commands use ssh i.e. `clan machines update`
+            # If you change the hostname, you need to update this line to root@<new-hostname>
+            # This only works however if you have avahi running on your admin machine else use IP
+            clan.networking.targetHost = pkgs.lib.mkDefault "root@jon";
+        };
+    };
+};
 ```
+
 
 !!! warning
     The use of `root@` in the target address implies SSH access as the `root` user.
@@ -170,7 +176,7 @@ clan config --machine my-machine clan.networking.targetHost root@host_or_ip
 Execute the following command to update the specified machine:
 
 ```bash
-clan machines update my-machine
+clan machines update jon
 ```
 
 You can also update all configured machines simultaneously by omitting the machine name:
@@ -204,11 +210,7 @@ This is useful for machines that are not always online or are not part of the re
 
 ## What's next ?
 
-- [**Mesh VPN**](./networking.md): Configuring a secure mesh network.
+- [**Mesh VPN**](./mesh-vpn.md): Configuring a secure mesh network.
 
 ---
 
-# TODO:
-* TODO: How to join others people zerotier
-  * `services.zerotier.joinNetworks = [ "network-id" ]`
-* Controller needs to approve over webinterface or cli
