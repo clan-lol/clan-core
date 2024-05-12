@@ -84,7 +84,7 @@ Adding or configuring a new machine requires two simple steps:
 
     === "**buildClan**"
 
-        ```nix title="clan-core.lib.buildClan" hl_lines="17"
+        ```nix title="clan-core.lib.buildClan" hl_lines="17 22"
         buildClan {
           # ...
           machines = {
@@ -92,6 +92,7 @@ Adding or configuring a new machine requires two simple steps:
               imports = [
                 # ...
                 ./modules/disko.nix
+                ./machines/jon/configuration.nix
               ];
               # ...
 
@@ -104,6 +105,10 @@ Adding or configuring a new machine requires two simple steps:
                 device = "/dev/disk/by-id/__CHANGE_ME__";
               }
 
+              # e.g. > cat ~/.ssh/id_ed25519.pub
+              users.users.root.openssh.authorizedKeys.keys = [
+                  "<YOUR SSH_KEY>"
+              ];
               # ...
             };
           };
@@ -112,7 +117,7 @@ Adding or configuring a new machine requires two simple steps:
 
     === "**flakeParts**"
 
-        ```nix title="clan-core.flakeModules.default" hl_lines="17"
+        ```nix title="clan-core.flakeModules.default" hl_lines="17 22"
         clan = {
           # ...
           machines = {
@@ -120,6 +125,7 @@ Adding or configuring a new machine requires two simple steps:
               imports = [
                 # ...
                 ./modules/disko.nix
+                ./machines/jon/configuration.nix
               ];
               # ...
 
@@ -132,6 +138,10 @@ Adding or configuring a new machine requires two simple steps:
                 device = "/dev/disk/by-id/__CHANGE_ME__";
               }
 
+              # e.g. > cat ~/.ssh/id_ed25519.pub
+              users.users.root.openssh.authorizedKeys.keys = [
+                  "__YOUR_SSH_KEY__"
+              ];
               # ...
             };
           };
@@ -139,15 +149,20 @@ Adding or configuring a new machine requires two simple steps:
         ```
 
 
-!!! Info "In this case `__CHANGE_ME__` should be `nvme-eui.e8238fa6bf530001001b448b4aec2929`"
+!!! Info "Replace `__CHANGE_ME__` with the appropriate identifier, such as `nvme-eui.e8238fa6bf530001001b448b4aec2929`"
+!!! Info "Replace `__YOUR_SSH_KEY__` with your personal key, like `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILoMI0NC5eT9pHlQExrvR5ASV3iW9+BXwhfchq0smXUJ jon@jon-desktop`"
 
-### Step 2. Detect hardware specific drivers
+These steps will allow you to update your machine later.
 
-1. Generate a `hardware-configuration.nix` for your target computer
+#### Step 2: Detect Drivers
+1. Generate the `hardware-configuration.nix` file for your machine using the following command:
 
     ```bash
     ssh root@flash-installer.local nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
     ```
+
+#### Step 3: Custom Configuration
+1. In `./machines/jon/configuration.nix`, you can personalize the settings to suit your needs.
 
 
 ---

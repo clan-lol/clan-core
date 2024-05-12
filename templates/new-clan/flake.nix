@@ -33,14 +33,17 @@
             # Set this for clan commands use ssh i.e. `clan machines update`
             clan.networking.targetHost = pkgs.lib.mkDefault "root@jon";
 
-            # TODO: Example how to use disko for more complicated setups
-
             # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
             disko.devices.disk.main = {
               device = "/dev/disk/by-id/__CHANGE_ME__";
             };
 
-            # TODO: Document that there needs to be one controller
+            # IMPORTANT! Add your SSH key here
+            # e.g. > cat ~/.ssh/id_ed25519.pub
+            users.users.root.openssh.authorizedKeys.keys = [ "<YOUR SSH_KEY>" ];
+
+            # Zerotier needs one controller to accept new nodes. Once accepted
+            # the controller can be offline and routing still works.
             clan.networking.zerotier.controller.enable = true;
           };
           sara = {
@@ -57,12 +60,15 @@
             # Set this for clan commands use ssh i.e. `clan machines update`
             clan.networking.targetHost = pkgs.lib.mkDefault "root@sara";
 
-            # local> clan facts generate
-
             # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
             disko.devices.disk.main = {
               device = "/dev/disk/by-id/__CHANGE_ME__";
             };
+
+            # IMPORTANT! Add your SSH key here
+            # e.g. > cat ~/.ssh/id_ed25519.pub
+            users.users.root.openssh.authorizedKeys.keys = [ "<YOUR SSH_KEY>" ];
+
             /*
               After jon is deployed, uncomment the following line
               This will allow sara to share the VPN overlay network with jon
