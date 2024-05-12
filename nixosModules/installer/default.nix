@@ -55,6 +55,7 @@ in
   # https://github.com/nix-community/nixos-images/blob/main/nix/image-installer/module.nix#L46C3-L117C6  #
   #                                                                                                      #
   ########################################################################################################
+  systemd.tmpfiles.rules = [ "d /var/shared 0777 root root - -" ];
   services.openssh.settings.PermitRootLogin = lib.mkForce "prohibit-password";
 
   hidden-ssh-announce = {

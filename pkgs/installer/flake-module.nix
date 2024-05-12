@@ -50,11 +50,52 @@ let
       imports = [
         wifiModule
         self.nixosModules.installer
-        self.clanModules.disk-layouts
       ];
       system.stateVersion = config.system.nixos.version;
       nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
+    }
+    // flashDiskoConfig;
+
+  # Important: The partition names need to be different to the clan install 
+  flashDiskoConfig = {
+    boot.loader.grub.efiSupport = lib.mkDefault true;
+    boot.loader.grub.efiInstallAsRemovable = lib.mkDefault true;
+    disko.devices = {
+      disk = {
+        main = {
+          type = "disk";
+          device = lib.mkDefault "/dev/null";
+          content = {
+            type = "gpt";
+            partitions = {
+              installer-boot = {
+                size = "1M";
+                type = "EF02"; # for grub MBR
+                priority = 1;
+              };
+              installer-ESP = {
+                size = "512M";
+                type = "EF00";
+                content = {
+                  type = "filesystem";
+                  format = "vfat";
+                  mountpoint = "/boot";
+                };
+              };
+              installer-root = {
+                size = "100%";
+                content = {
+                  type = "filesystem";
+                  format = "ext4";
+                  mountpoint = "/";
+                };
+              };
+            };
+          };
+        };
+      };
     };
+  };
 in
 {
   clan = {
@@ -74,7 +115,6 @@ in
     # This will include your ssh public keys in the installer.
     machines.flash-installer = {
       imports = [ flashInstallerModule ];
-      clan.disk-layouts.singleDiskExt4.device = lib.mkDefault "/dev/null";
       boot.loader.grub.enable = lib.mkDefault true;
     };
   };
