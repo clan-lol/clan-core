@@ -191,6 +191,10 @@ def flash_command(args: argparse.Namespace) -> None:
         if ask == "y":
             pubkeys = list_available_ssh_keys()
             root_keys.extend(read_public_key_contents(pubkeys))
+        else:
+            raise ClanError(
+                "No SSH public keys provided. Use --ssh-pubkey to add keys."
+            )
     elif not opts.confirm and not root_keys:
         pubkeys = list_available_ssh_keys()
         root_keys.extend(read_public_key_contents(pubkeys))

@@ -25,8 +25,7 @@ let
       qrcode=$(gum style --border-foreground 240 --border normal "$(< /var/shared/qrcode.utf8)")
       msgs+=("$qrcode")
     fi
-    network_status="Root password: $(cat /var/shared/root-password)
-    Local network addresses:
+    network_status="Local network addresses:
     $(ip -brief -color addr | grep -v 127.0.0.1)
     $([[ -e /var/shared/onion-hostname ]] && echo "Onion address: $(cat /var/shared/onion-hostname)" || echo "Onion address: Waiting for tor network to be ready...")
     Multicast DNS: $(hostname).local"
@@ -56,13 +55,8 @@ in
   # https://github.com/nix-community/nixos-images/blob/main/nix/image-installer/module.nix#L46C3-L117C6  #
   #                                                                                                      #
   ########################################################################################################
-  systemd.tmpfiles.rules = [ "d /var/shared 0777 root root - -" ];
-  services.openssh.settings.PermitRootLogin = "yes";
-  system.activationScripts.root-password = ''
-    mkdir -p /var/shared
-    ${pkgs.xkcdpass}/bin/xkcdpass --numwords 3 --delimiter - --count 1 > /var/shared/root-password
-    echo "root:$(cat /var/shared/root-password)" | chpasswd
-  '';
+  services.openssh.settings.PermitRootLogin = lib.mkForce "prohibit-password";
+
   hidden-ssh-announce = {
     enable = true;
     script = pkgs.writeShellScript "write-hostname" ''
@@ -83,10 +77,9 @@ in
       echo "$1" > /var/shared/onion-hostname
       local_addrs=$(ip -json addr | jq '[map(.addr_info) | flatten | .[] | select(.scope == "global") | .local]')
       jq -nc \
-        --arg password "$(cat /var/shared/root-password)" \
         --arg onion_address "$(cat /var/shared/onion-hostname)" \
         --argjson local_addrs "$local_addrs" \
-        '{ pass: $password, tor: $onion_address, addrs: $local_addrs }' \
+        '{ pass: null, tor: $onion_address, addrs: $local_addrs }' \
         > /var/shared/login.json
       cat /var/shared/login.json | qrencode -s 2 -m 2 -t utf8 -o /var/shared/qrcode.utf8
     '';
