@@ -19,6 +19,7 @@
         # local> mkdir -p ./machines/machine1
         # local> Edit ./machines/machine1/configuration.nix to your liking
         machines = {
+          # "jon" will be the hostname of the machine
           jon = {
             imports = [
               ./modules/shared.nix
@@ -31,6 +32,8 @@
             clanCore.machineIcon = null; # Optional, a path to an image file
 
             # Set this for clan commands use ssh i.e. `clan machines update`
+            # If you change the hostname, you need to update this line to root@<new-hostname>
+            # This only works however if you have avahi running on your admin machine else use IP
             clan.networking.targetHost = pkgs.lib.mkDefault "root@jon";
 
             # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
@@ -46,6 +49,7 @@
             # the controller can be offline and routing still works.
             clan.networking.zerotier.controller.enable = true;
           };
+          # "sara" will be the hostname of the machine
           sara = {
             imports = [
               ./modules/shared.nix
@@ -58,6 +62,8 @@
             clanCore.machineIcon = null; # Optional, a path to an image file
 
             # Set this for clan commands use ssh i.e. `clan machines update`
+            # If you change the hostname, you need to update this line to root@<new-hostname>
+            # This only works however if you have avahi running on your admin machine else use IP
             clan.networking.targetHost = pkgs.lib.mkDefault "root@sara";
 
             # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT

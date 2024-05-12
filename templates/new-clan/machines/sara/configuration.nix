@@ -31,5 +31,6 @@ in
       "disk"
     ];
     uid = 1000;
+    openssh.authorizedKeys.keys = config.users.users.root.openssh.authorizedKeys.keys;
   };
 }
