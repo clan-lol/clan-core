@@ -84,7 +84,7 @@ Adding or configuring a new machine requires two simple steps:
 
     === "**buildClan**"
 
-        ```nix title="clan-core.lib.buildClan" hl_lines="17 22"
+        ```nix title="clan-core.lib.buildClan" hl_lines="18 23"
         buildClan {
           # ...
           machines = {
@@ -117,7 +117,7 @@ Adding or configuring a new machine requires two simple steps:
 
     === "**flakeParts**"
 
-        ```nix title="clan-core.flakeModules.default" hl_lines="17 22"
+        ```nix title="clan-core.flakeModules.default" hl_lines="18 23"
         clan = {
           # ...
           machines = {
