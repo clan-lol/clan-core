@@ -75,6 +75,7 @@ nav:
           - reference/clanModules/sunshine.md
           - reference/clanModules/syncthing.md
           - reference/clanModules/thelounge.md
+          - reference/clanModules/user-password.md
           - reference/clanModules/xfce.md
           - reference/clanModules/zt-tcp-relay.md
       - Clan Core:
