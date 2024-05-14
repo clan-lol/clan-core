@@ -12,6 +12,7 @@
   clan-cli,
   makeDesktopItem,
   libadwaita,
+  webkitgtk_6_0,
   pytest, # Testing framework
   pytest-cov, # Generate coverage reports
   pytest-subprocess, # fake the real subprocess behavior to make your tests more independent.
@@ -35,6 +36,7 @@ let
     pygobject-stubs
     gtk4
     libadwaita
+    webkitgtk_6_0
     gnome.adwaita-icon-theme
   ];
 
