@@ -66,6 +66,9 @@ Adding or configuring a new machine requires two simple steps:
     ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
     ```
 
+    !!! Note
+        Replace `flash-installer.local` with the IP address of the machine if you don't have the avahi service running which resolves mDNS local domains.
+
     Which should show something like:
 
     ```bash hl_lines="6"
@@ -155,14 +158,20 @@ Adding or configuring a new machine requires two simple steps:
 These steps will allow you to update your machine later.
 
 #### Step 2: Detect Drivers
-1. Generate the `hardware-configuration.nix` file for your machine using the following command:
+Generate the `hardware-configuration.nix` file for your machine using the following command:
 
-    ```bash
-    ssh root@flash-installer.local nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
-    ```
+```bash
+ssh root@flash-installer.local nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
+```
 
-#### Step 3: Custom Configuration
-1. In `./machines/jon/configuration.nix`, you can personalize the settings to suit your needs.
+#### Step 3: Custom Disk Formatting
+In `./modules/disko.nix` a simple `ext4` disk partioning is defined for the disko module.
+If you want a more complicated disk partioning setup look into the [disko examples](https://github.com/nix-community/disko/tree/master/example)
+
+
+#### Step 4: Custom Configuration
+In `./machines/jon/configuration.nix`, you can personalize the settings to suit your needs.
+
 
 
 ---

@@ -20,9 +20,9 @@ This process involves preparing a suitable hardware and disk partitioning config
     - [x] **USB Flash Drive**: See [Clan Installer](installer.md)
 
     !!! Steps
-    
+
         1. Create a NixOS installer image and transfer it to a bootable USB drive as described in the [installer](./installer.md).
-         
+
         2. Boot the target machine and connect it to a network that makes it reachable from your setup computer.
 
 === "**Remote Machines**"
@@ -191,8 +191,16 @@ If the machine does not have enough resources to run the NixOS evaluation or bui
 it is also possible to specify a build host instead.
 During an update, the cli will ssh into the build host and run `nixos-rebuild` from there.
 
-```bash
-clan config --machine my-machine clan.networking.buildHost root@host_or_ip
+
+```nix hl_lines="5"
+buildClan {
+    # ...
+    machines = {
+        "jon" = {
+            clan.networking.buildHost = "root@<host_or_ip>";
+        };
+    };
+};
 ```
 
 ### Excluding a machine from `clan machine update`
@@ -200,8 +208,15 @@ clan config --machine my-machine clan.networking.buildHost root@host_or_ip
 To exclude machines from being updated when running `clan machines update` without any machines specified,
 one can set the `clan.deployment.requireExplicitUpdate` option to true:
 
-```bash
-clan config --machine my-machine clan.deployment.requireExplicitUpdate true
+```nix hl_lines="5"
+buildClan {
+    # ...
+    machines = {
+        "jon" = {
+            clan.deployment.requireExplicitUpdate = true;
+        };
+    };
+};
 ```
 
 This is useful for machines that are not always online or are not part of the regular update cycle.
