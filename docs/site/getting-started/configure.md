@@ -157,21 +157,37 @@ Adding or configuring a new machine requires two simple steps:
 
 These steps will allow you to update your machine later.
 
-#### Step 2: Detect Drivers
-Generate the `hardware-configuration.nix` file for your machine using the following command:
+### Step 2: Detect Drivers
+
+Generate the `hardware-configuration.nix` file for your machine by executing the following command:
 
 ```bash
 ssh root@flash-installer.local nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
 ```
 
-#### Step 3: Custom Disk Formatting
-In `./modules/disko.nix` a simple `ext4` disk partioning is defined for the disko module.
-If you want a more complicated disk partioning setup look into the [disko examples](https://github.com/nix-community/disko/tree/master/example)
+This command connects to `flash-installer.local` as `root`, runs `nixos-generate-config` to detect hardware configurations (excluding filesystems), and writes them to `machines/jon/hardware-configuration.nix`.
 
+### Step 3: Custom Disk Formatting
 
-#### Step 4: Custom Configuration
-In `./machines/jon/configuration.nix`, you can personalize the settings to suit your needs.
+In `./modules/disko.nix`, a simple `ext4` disk partitioning scheme is defined for the Disko module. For more complex disk partitioning setups, refer to the [Disko examples](https://github.com/nix-community/disko/tree/master/example).
 
+### Step 4: Custom Configuration
+
+Modify `./machines/jon/configuration.nix` to personalize the system settings according to your requirements.
+
+### Step 5: Check Configuration
+
+Validate your configuration by running:
+
+```bash
+nix flake check
+```
+
+This command helps ensure that your system configuration is correct and free from errors.
+
+!!! Note
+
+    Integrate this step into your [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration) workflow to ensure that only valid Nix configurations are merged into your codebase. This practice helps maintain system stability and reduces integration issues.
 
 
 ---
