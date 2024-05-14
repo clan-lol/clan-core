@@ -10,6 +10,7 @@
   python3,
   gtk4,
   libadwaita,
+  nodejs_latest
 }:
 
 let
@@ -28,6 +29,7 @@ mkShell {
   inherit (clan-vm-manager) nativeBuildInputs;
   buildInputs =
     [
+      nodejs_latest
       ruff
       gtk4.dev # has the demo called 'gtk4-widget-factory'
       libadwaita.devdoc # has the demo called 'adwaita-1-demo'
