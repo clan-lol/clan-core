@@ -51,7 +51,7 @@
           buildInputs = [ pkgs.python3 ];
 
           installPhase = ''
-            python docs.py
+            python docs.py reference
             mkdir -p $out
             cp -r out/* $out
           '';

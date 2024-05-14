@@ -1,4 +1,5 @@
 import argparse
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -241,7 +242,11 @@ def collect_commands() -> list[Category]:
     return result
 
 
-if __name__ == "__main__":
+def build_command_reference() -> None:
+    """
+    Function that will build the reference
+    and write it to the out path.
+    """
     cmds = collect_commands()
 
     folder = Path("out")
@@ -320,3 +325,19 @@ if __name__ == "__main__":
     for fname, content in files.items():
         with open(fname, "w") as f:
             f.write(content)
+
+
+def main() -> None:
+    if len(sys.argv) != 2:
+        print("Usage: python docs.py <command>")
+        print("Available commands: reference")
+        sys.exit(1)
+
+    command = sys.argv[1]
+
+    if command == "reference":
+        build_command_reference()
+
+
+if __name__ == "__main__":
+    main()
