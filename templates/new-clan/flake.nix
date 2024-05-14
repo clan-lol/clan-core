@@ -43,7 +43,10 @@
 
             # IMPORTANT! Add your SSH key here
             # e.g. > cat ~/.ssh/id_ed25519.pub
-            users.users.root.openssh.authorizedKeys.keys = [ "<YOUR SSH_KEY>" ];
+            users.users.root.openssh.authorizedKeys.keys = throw ''
+              Don't forget to add your SSH key here!
+              users.users.root.openssh.authorizedKeys.keys = [ "<YOUR SSH_KEY>" ]
+            '';
 
             # Zerotier needs one controller to accept new nodes. Once accepted
             # the controller can be offline and routing still works.
@@ -73,7 +76,10 @@
 
             # IMPORTANT! Add your SSH key here
             # e.g. > cat ~/.ssh/id_ed25519.pub
-            users.users.root.openssh.authorizedKeys.keys = [ "<YOUR SSH_KEY>" ];
+            users.users.root.openssh.authorizedKeys.keys = throw ''
+              Don't forget to add your SSH key here!
+              users.users.root.openssh.authorizedKeys.keys = [ "<YOUR SSH_KEY>" ]
+            '';
 
             /*
               After jon is deployed, uncomment the following line
