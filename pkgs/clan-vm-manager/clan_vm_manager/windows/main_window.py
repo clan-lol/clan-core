@@ -11,7 +11,7 @@ from clan_vm_manager.singletons.use_vms import ClanStore
 from clan_vm_manager.views.details import Details
 from clan_vm_manager.views.list import ClanList
 from clan_vm_manager.views.logs import Logs
-from clan_vm_manager.views.webview import WebView
+from clan_vm_manager.views.webview import webview
 
 gi.require_version("Adw", "1")
 
@@ -59,7 +59,7 @@ class MainWindow(Adw.ApplicationWindow):
         stack_view.add_named(ClanList(config), "list")
         stack_view.add_named(Details(), "details")
         stack_view.add_named(Logs(), "logs")
-        stack_view.add_named(WebView().get_webview(), "webview")
+        stack_view.add_named(webview.get_webview(), "webview")
 
         stack_view.set_visible_child_name(config.initial_view)
 

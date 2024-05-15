@@ -13,6 +13,9 @@ nixos.qcow2
 **/*.glade~
 /docs/out
 
+# dream2nix
+.dream2nix
+
 # python
 __pycache__
 .coverage
@@ -28,3 +31,8 @@ build
 build-dir
 repo
 .env
+
+# node
+node_modules
+dist
+.webui
