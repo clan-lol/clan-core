@@ -1,3 +1,4 @@
+{ inputs, ... }:
 {
   perSystem =
     {
@@ -20,6 +21,14 @@
       select-shell = writers.writePython3Bin "select-shell" {
         flakeIgnore = [ "E501" ];
       } ./pkgs/scripts/select-shell.py;
+
+      pre-commit-check = inputs.pre-commit-hooks.lib.${pkgs.system}.run {
+        src = ./.;
+        hooks.treefmt = {
+          enable = true;
+          packageOverrides.treefmt = config.treefmt.build.wrapper;
+        };
+      };
     in
     {
       devShells.default = pkgs.mkShell {
@@ -34,8 +43,8 @@
           config.treefmt.build.wrapper
         ];
         shellHook = ''
-          # no longer used
-          rm -f "$(git rev-parse --show-toplevel)/.git/hooks/pre-commit"
+          # run treefmt before each commit
+          ${pre-commit-check.shellHook}
 
           echo -e "${ansiEscapes.green}switch to another dev-shell using: select-shell${ansiEscapes.reset}"
         '';
