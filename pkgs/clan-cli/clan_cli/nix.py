@@ -106,13 +106,7 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     if os.environ.get("IN_NIX_SANDBOX"):
         return cmd
     return [
-        *nix_command(
-            [
-                "shell",
-                "--inputs-from",
-                f"{nixpkgs_flake()!s}",
-            ]
-        ),
+        *nix_command(["shell", "--offline", "--inputs-from", f"{nixpkgs_flake()!s}"]),
         *packages,
         "-c",
         *cmd,

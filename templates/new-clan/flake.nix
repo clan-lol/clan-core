@@ -19,6 +19,7 @@
         # local> mkdir -p ./machines/machine1
         # local> Edit ./machines/machine1/configuration.nix to your liking
         machines = {
+          # "jon" will be the hostname of the machine
           jon = {
             imports = [
               ./modules/shared.nix
@@ -31,18 +32,27 @@
             clanCore.machineIcon = null; # Optional, a path to an image file
 
             # Set this for clan commands use ssh i.e. `clan machines update`
+            # If you change the hostname, you need to update this line to root@<new-hostname>
+            # This only works however if you have avahi running on your admin machine else use IP
             clan.networking.targetHost = pkgs.lib.mkDefault "root@jon";
-
-            # TODO: Example how to use disko for more complicated setups
 
             # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
             disko.devices.disk.main = {
               device = "/dev/disk/by-id/__CHANGE_ME__";
             };
 
-            # TODO: Document that there needs to be one controller
+            # IMPORTANT! Add your SSH key here
+            # e.g. > cat ~/.ssh/id_ed25519.pub
+            users.users.root.openssh.authorizedKeys.keys = throw ''
+              Don't forget to add your SSH key here!
+              users.users.root.openssh.authorizedKeys.keys = [ "<YOUR SSH_KEY>" ]
+            '';
+
+            # Zerotier needs one controller to accept new nodes. Once accepted
+            # the controller can be offline and routing still works.
             clan.networking.zerotier.controller.enable = true;
           };
+          # "sara" will be the hostname of the machine
           sara = {
             imports = [
               ./modules/shared.nix
@@ -55,14 +65,22 @@
             clanCore.machineIcon = null; # Optional, a path to an image file
 
             # Set this for clan commands use ssh i.e. `clan machines update`
+            # If you change the hostname, you need to update this line to root@<new-hostname>
+            # This only works however if you have avahi running on your admin machine else use IP
             clan.networking.targetHost = pkgs.lib.mkDefault "root@sara";
-
-            # local> clan facts generate
 
             # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
             disko.devices.disk.main = {
               device = "/dev/disk/by-id/__CHANGE_ME__";
             };
+
+            # IMPORTANT! Add your SSH key here
+            # e.g. > cat ~/.ssh/id_ed25519.pub
+            users.users.root.openssh.authorizedKeys.keys = throw ''
+              Don't forget to add your SSH key here!
+              users.users.root.openssh.authorizedKeys.keys = [ "<YOUR SSH_KEY>" ]
+            '';
+
             /*
               After jon is deployed, uncomment the following line
               This will allow sara to share the VPN overlay network with jon

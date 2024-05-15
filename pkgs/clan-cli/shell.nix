@@ -12,6 +12,7 @@ let
       rope
       setuptools
       wheel
+      ipdb
       pip
     ]);
 in
@@ -20,6 +21,8 @@ mkShell {
     nix-unit
     ruff
   ] ++ devshellTestDeps;
+
+  PYTHONBREAKPOINT = "ipdb.set_trace";
 
   shellHook = ''
     export GIT_ROOT="$(git rev-parse --show-toplevel)"
