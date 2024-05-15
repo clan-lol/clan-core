@@ -1,4 +1,7 @@
+{ lib, ... }:
 {
+  boot.loader.grub.efiSupport = lib.mkDefault true;
+  boot.loader.grub.efiInstallAsRemovable = lib.mkDefault true;
   disko.devices = {
     disk = {
       main = {
@@ -11,6 +14,7 @@
             boot = {
               size = "1M";
               type = "EF02"; # for grub MBR
+              priority = 1;
             };
             ESP = {
               size = "512M";

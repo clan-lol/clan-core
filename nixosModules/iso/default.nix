@@ -43,6 +43,7 @@ let
                   boot = {
                     size = "1M";
                     type = "EF02"; # for grub MBR
+                    priority = 1; # Needs to be first partition
                   };
                   ESP = {
                     size = "100M";

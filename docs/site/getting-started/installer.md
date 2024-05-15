@@ -39,28 +39,44 @@ Follow our step-by-step guide to create and transfer this image onto a bootable 
 ```shellSession
 sudo umount /dev/sdb1
 ```
+=== "**Linux OS**"
+    ### Step 2. Flash Custom Installer
 
-### Step 2. Download the Installer
+    Using clan flash enables the inclusion of ssh public keys and disables ssh password authentication.
+    It also includes the language and keymap currently used into the installer image.
 
-```shellSession
-wget https://github.com/nix-community/nixos-images/releases/download/nixos-unstable/nixos-installer-x86_64-linux.iso
-```
+    ```bash
+    clan flash flash-installer --disk main /dev/sd<X>
+    ```
 
-### Step 3. Flash the Installer to the USB Drive
+    !!! Danger "Specifying the wrong device can lead to unrecoverable data loss."
 
-!!! Danger "Specifying the wrong device can lead to unrecoverable data loss."
+        The `clan flash` utility will erase the disk. Make sure to specify the correct device
 
-    The `dd` utility will erase the disk. Make sure to specify the correct device (`of=...`)
 
-    For example if the USB device is `sdb` use `of=/dev/sdb`.
 
-    
+=== "**Other OS**"
+    ### Step 2. Download Generic Installer
 
-Use the `dd` utility to write the NixOS installer image to your USB drive:
+    ```shellSession
+    wget https://github.com/nix-community/nixos-images/releases/download/nixos-unstable/nixos-installer-x86_64-linux.iso
+    ```
 
-```shellSession
-sudo dd bs=4M conv=fsync oflag=direct status=progress if=./nixos-installer-x86_64-linux.iso of=/dev/sd<X>
-```
+    ### Step 3. Flash the Installer to the USB Drive
+
+    !!! Danger "Specifying the wrong device can lead to unrecoverable data loss."
+
+        The `dd` utility will erase the disk. Make sure to specify the correct device (`of=...`)
+
+        For example if the USB device is `sdb` use `of=/dev/sdb`.
+
+
+
+    Use the `dd` utility to write the NixOS installer image to your USB drive:
+
+    ```shellSession
+    sudo dd bs=4M conv=fsync oflag=direct status=progress if=./nixos-installer-x86_64-linux.iso of=/dev/sd<X>
+    ```
 
 ### Step 4. Boot and Connect to your network
 
@@ -110,6 +126,7 @@ Now run the following command to connect to your Wifi:
 ```shellSession
 # Identify your network device.
 device list
+
 # Replace 'wlan0' with your wireless device name
 # Find your Wifi SSID.
 station wlan0 scan

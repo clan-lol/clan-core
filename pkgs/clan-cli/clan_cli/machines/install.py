@@ -25,6 +25,7 @@ def install_nixos(
     kexec: str | None = None,
     debug: bool = False,
     password: str | None = None,
+    no_reboot: bool = False,
 ) -> None:
     secret_facts_module = importlib.import_module(machine.secret_facts_module)
     log.info(f"installing {machine.name}")
@@ -53,10 +54,12 @@ def install_nixos(
             "nixos-anywhere",
             "--flake",
             f"{machine.flake}#{machine.name}",
-            "--no-reboot",
             "--extra-files",
             str(tmpdir),
         ]
+
+        if no_reboot:
+            cmd.append("--no-reboot")
 
         if password:
             cmd += [
@@ -90,6 +93,7 @@ class InstallOptions:
     kexec: str | None
     confirm: bool
     debug: bool
+    no_reboot: bool
     json_ssh_deploy: dict[str, str] | None
 
 
@@ -121,6 +125,7 @@ def install_command(args: argparse.Namespace) -> None:
         kexec=args.kexec,
         confirm=not args.yes,
         debug=args.debug,
+        no_reboot=args.no_reboot,
         json_ssh_deploy=json_ssh_deploy,
     )
     machine = Machine(opts.machine, flake=opts.flake)
@@ -131,7 +136,13 @@ def install_command(args: argparse.Namespace) -> None:
         if ask != "y":
             return
 
-    install_nixos(machine, kexec=opts.kexec, debug=opts.debug, password=password)
+    install_nixos(
+        machine,
+        kexec=opts.kexec,
+        debug=opts.debug,
+        password=password,
+        no_reboot=opts.no_reboot,
+    )
 
 
 def find_reachable_host_from_deploy_json(deploy_json: dict[str, str]) -> str:
@@ -161,15 +172,15 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         help="use another kexec tarball to bootstrap NixOS",
     )
     parser.add_argument(
-        "--yes",
+        "--no-reboot",
         action="store_true",
-        help="do not ask for confirmation",
+        help="do not reboot after installation",
         default=False,
     )
     parser.add_argument(
-        "--debug",
+        "--yes",
         action="store_true",
-        help="print debug information",
+        help="do not ask for confirmation",
         default=False,
     )
     parser.add_argument(

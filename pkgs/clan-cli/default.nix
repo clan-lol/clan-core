@@ -23,11 +23,11 @@
   zbar,
   tor,
   git,
-  nixpkgs,
   qemu,
   gnupg,
   e2fsprogs,
   mypy,
+  nixpkgs,
   clan-core-path,
 }:
 let
@@ -95,17 +95,16 @@ let
       description = "dependencies for the clan-cli";
 
       inputs = {
-        nixpkgs.url = "nixpkgs";
+        nixpkgs.url = "path://${nixpkgs}";
       };
 
       outputs = _inputs: { };
     }
     EOF
     ln -s ${nixpkgs} $out/path
-    nix flake lock $out \
+    nix flake update $out \
       --store ./. \
-      --extra-experimental-features 'nix-command flakes' \
-      --override-input nixpkgs ${nixpkgs}
+      --extra-experimental-features 'nix-command flakes'
   '';
 in
 python3.pkgs.buildPythonApplication {

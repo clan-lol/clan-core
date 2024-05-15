@@ -40,6 +40,8 @@ mkShell {
       desktop-file-utils # verify desktop files
     ]);
 
+  PYTHONBREAKPOINT = "ipdb.set_trace";
+
   shellHook = ''
     export GIT_ROOT=$(git rev-parse --show-toplevel)
     export PKG_ROOT=$GIT_ROOT/pkgs/clan-vm-manager

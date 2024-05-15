@@ -42,8 +42,8 @@ nav:
       - Installer: getting-started/installer.md
       - Configure: getting-started/configure.md
       - Secrets & Facts: getting-started/secrets.md
-      - Deploy Machine: getting-started/machines.md
-      - Mesh VPN: getting-started/networking.md
+      - Deploy Machine: getting-started/deploy.md
+      - Mesh VPN: getting-started/mesh-vpn.md
       - Backup & Restore: getting-started/backups.md
       - Flake-parts: getting-started/flake-parts.md
   - Templates: templates/index.md

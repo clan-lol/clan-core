@@ -66,6 +66,9 @@ Adding or configuring a new machine requires two simple steps:
     ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
     ```
 
+    !!! Note
+        Replace `flash-installer.local` with the IP address of the machine if you don't have the avahi service running which resolves mDNS local domains.
+
     Which should show something like:
 
     ```bash hl_lines="6"
@@ -84,7 +87,7 @@ Adding or configuring a new machine requires two simple steps:
 
     === "**buildClan**"
 
-        ```nix title="clan-core.lib.buildClan" hl_lines="17"
+        ```nix title="clan-core.lib.buildClan" hl_lines="18 23"
         buildClan {
           # ...
           machines = {
@@ -92,6 +95,7 @@ Adding or configuring a new machine requires two simple steps:
               imports = [
                 # ...
                 ./modules/disko.nix
+                ./machines/jon/configuration.nix
               ];
               # ...
 
@@ -104,6 +108,10 @@ Adding or configuring a new machine requires two simple steps:
                 device = "/dev/disk/by-id/__CHANGE_ME__";
               }
 
+              # e.g. > cat ~/.ssh/id_ed25519.pub
+              users.users.root.openssh.authorizedKeys.keys = [
+                  "<YOUR SSH_KEY>"
+              ];
               # ...
             };
           };
@@ -112,7 +120,7 @@ Adding or configuring a new machine requires two simple steps:
 
     === "**flakeParts**"
 
-        ```nix title="clan-core.flakeModules.default" hl_lines="17"
+        ```nix title="clan-core.flakeModules.default" hl_lines="18 23"
         clan = {
           # ...
           machines = {
@@ -120,6 +128,7 @@ Adding or configuring a new machine requires two simple steps:
               imports = [
                 # ...
                 ./modules/disko.nix
+                ./machines/jon/configuration.nix
               ];
               # ...
 
@@ -132,6 +141,10 @@ Adding or configuring a new machine requires two simple steps:
                 device = "/dev/disk/by-id/__CHANGE_ME__";
               }
 
+              # e.g. > cat ~/.ssh/id_ed25519.pub
+              users.users.root.openssh.authorizedKeys.keys = [
+                  "__YOUR_SSH_KEY__"
+              ];
               # ...
             };
           };
@@ -139,15 +152,42 @@ Adding or configuring a new machine requires two simple steps:
         ```
 
 
-!!! Info "In this case `__CHANGE_ME__` should be `nvme-eui.e8238fa6bf530001001b448b4aec2929`"
+!!! Info "Replace `__CHANGE_ME__` with the appropriate identifier, such as `nvme-eui.e8238fa6bf530001001b448b4aec2929`"
+!!! Info "Replace `__YOUR_SSH_KEY__` with your personal key, like `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILoMI0NC5eT9pHlQExrvR5ASV3iW9+BXwhfchq0smXUJ jon@jon-desktop`"
 
-### Step 2. Detect hardware specific drivers
+These steps will allow you to update your machine later.
 
-1. Generate a `hardware-configuration.nix` for your target computer
+### Step 2: Detect Drivers
 
-    ```bash
-    ssh root@flash-installer.local nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
-    ```
+Generate the `hardware-configuration.nix` file for your machine by executing the following command:
+
+```bash
+ssh root@flash-installer.local nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
+```
+
+This command connects to `flash-installer.local` as `root`, runs `nixos-generate-config` to detect hardware configurations (excluding filesystems), and writes them to `machines/jon/hardware-configuration.nix`.
+
+### Step 3: Custom Disk Formatting
+
+In `./modules/disko.nix`, a simple `ext4` disk partitioning scheme is defined for the Disko module. For more complex disk partitioning setups, refer to the [Disko examples](https://github.com/nix-community/disko/tree/master/example).
+
+### Step 4: Custom Configuration
+
+Modify `./machines/jon/configuration.nix` to personalize the system settings according to your requirements.
+
+### Step 5: Check Configuration
+
+Validate your configuration by running:
+
+```bash
+nix flake check
+```
+
+This command helps ensure that your system configuration is correct and free from errors.
+
+!!! Note
+
+    Integrate this step into your [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration) workflow to ensure that only valid Nix configurations are merged into your codebase. This practice helps maintain system stability and reduces integration issues.
 
 
 ---
