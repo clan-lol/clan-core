@@ -1,23 +1,24 @@
 {
-  "name": "vite-template-solid",
-  "version": "0.0.0",
+  "name": "@clan/webview-ui",
+  "version": "0.0.1",
   "description": "",
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && npm run convert-html",
+    "convert-html": "node gtk.webview.js",
     "serve": "vite preview"
   },
   "license": "MIT",
   "devDependencies": {
-    "solid-devtools": "^0.29.2",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.11",
-    "vite-plugin-solid": "^2.8.2",
     "autoprefixer": "^10.4.19",
     "daisyui": "^4.11.1",
     "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.3"
+    "solid-devtools": "^0.29.2",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.3.3",
+    "vite-plugin-solid": "^2.8.2",
+    "vite": "^5.0.11"
   },
   "dependencies": {
     "solid-js": "^1.8.11"

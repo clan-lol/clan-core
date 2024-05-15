@@ -10,7 +10,7 @@
   python3,
   gtk4,
   libadwaita,
-  nodejs_latest
+  nodejs_latest,
 }:
 
 let

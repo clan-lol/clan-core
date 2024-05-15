@@ -10,6 +10,7 @@ const App: Component = () => {
     <CountProvider>
       <div class="w-full flex items-center flex-col gap-2 my-2">
         <div>Clan</div>
+        <p>Current route: {route()}</p>
 
         <div class="flex items-center">
           <button
@@ -18,18 +19,15 @@ const App: Component = () => {
           >
             Navigate to {route() === "home" ? "graph" : "home"}
           </button>
-          <Switch fallback={<p>{route()} not found</p>}>
-            <Match when={route() == "home"}>
-              <p>Current route: {route()}</p>
-            </Match>
-            <Match when={route() == "graph"}>
-              <p>Current route: {route()}</p>
-            </Match>
-          </Switch>
         </div>
-        <div class="flex items-center">
-          <Nested />
-        </div>
+        <Switch fallback={<p>{route()} not found</p>}>
+          <Match when={route() == "home"}>
+            <Nested />
+          </Match>
+          <Match when={route() == "graph"}>
+            <p></p>
+          </Match>
+        </Switch>
       </div>
     </CountProvider>
   );
