@@ -20,6 +20,8 @@ pkgs.stdenv.mkDerivation {
     ++ (with pkgs.python3Packages; [
       mkdocs
       mkdocs-material
+      mkdocs-rss-plugin
+      mkdocs-macros
     ]);
   configurePhase = ''
     mkdir -p ./site/reference/cli

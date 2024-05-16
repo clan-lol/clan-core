@@ -1,0 +1,22 @@
+authors:
+  Lassulus:
+    name: "Lassulus"
+    description: "Test description"
+    avatar: ""
+    url: "https://example.com/lassulus"
+  Mic92:
+    name: "Mic92"
+    description: "Test description"
+    avatar: ""
+    url: "https://example.com/mic92"
+  W:
+    name: "W"
+    description: "Test description"
+    avatar: ""
+    url: "https://example.com/w"
+  Qubasa:
+    name: "Qubasa"
+    description: "Test description"
+    avatar: ""
+    bio: "Author bio for Qubasa."
+    url: "https://example.com/qubasa"
