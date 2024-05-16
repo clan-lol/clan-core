@@ -130,7 +130,7 @@ def flash_machine(
         )
 
         cmd = nix_shell(
-            ["/home/lhebendanz/Projects/disko"],
+            ["nixpkgs#disko"],
             disko_install,
         )
         run(cmd, log=Log.BOTH, error_msg=f"Failed to flash {machine}")
