@@ -74,7 +74,7 @@ def render_option(name: str, option: dict[str, Any], level: int = 3) -> str:
     read_only = option.get("readOnly")
 
     res = f"""
-{"#" * level} {sanitize(name)} {{#{sanitize(name)}}}
+{"#" * level} {sanitize(name)}
 {"Readonly" if read_only else ""}
 {option.get("description", "No description available.")}
 
