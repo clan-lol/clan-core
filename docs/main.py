@@ -2,7 +2,7 @@ from typing import Any
 
 
 def define_env(env: Any) -> None:
-    static_dir = "../static/"
+    static_dir = "/static/"
     video_dir = "https://clan.lol/" + "videos/"
     asciinema_dir = static_dir + "asciinema-player/"
 
@@ -15,8 +15,7 @@ def define_env(env: Any) -> None:
 
     @env.macro
     def asciinema(name: str) -> str:
-        return f"""<div id="{name}"><link rel="stylesheet" type="text/css" href="{asciinema_dir}/asciinema-player.css" />
-            <link rel="stylesheet" type="text/css" href="{asciinema_dir}/custom-theme.css" />
+        return f"""<div id="{name}">
             <script src="{asciinema_dir}/asciinema-player.min.js"></script>
             <script>
                 AsciinemaPlayer.create('{video_dir + name}',
@@ -27,4 +26,5 @@ def define_env(env: Any) -> None:
                     speed: 1.5,
                     theme: "alabaster-auto"
                 }});
-            </script></div>"""
+            </script>
+        </div>"""
