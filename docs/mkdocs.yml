@@ -1,4 +1,4 @@
-site_name: cLAN Documentation
+site_name: cLAN Docs
 site_url: https://docs.clan.lol
 repo_url: https://git.clan.lol/clan/clan-core/
 repo_name: clan-core
@@ -90,7 +90,8 @@ docs_dir: site
 site_dir: out
 
 theme:
-  logo: static/logo.png
+  logo: static/clan-white.png
+  favicon: static/clan-dark.png
   name: material
   features:
     - navigation.instant
@@ -122,9 +123,22 @@ theme:
 
 extra_javascript:
   - static/main.js
+
 extra_css:
   - static/asciinema-player/custom-theme.css
   - static/asciinema-player/asciinema-player.css
+
+extra:
+  social:
+    - icon: fontawesome/regular/comment
+      link: https://matrix.to/#/#clan:lassul.us
+    - icon: fontawesome/brands/gitlab
+      link: https://git.clan.lol/clan/clan-core
+    - icon: fontawesome/brands/github
+      link: https://github.com/clan-lol/clan-core
+    - icon: fontawesome/solid/rss
+      link: /feed_rss_created.xml
+
 
 plugins:
   - search
@@ -134,6 +148,7 @@ plugins:
       match_path: blog/posts/.*
       use_git: false
       date_from_meta:
+        title: "Clan Blog"
         as_creation: "date"
         as_update: "date"
         datetime_format: "%Y-%m-%d %H:%M"

@@ -1,19 +1,6 @@
 # Getting Started
 
-Welcome to your simple guide on starting a new Clan project.
-
-## What's Inside
-
-We've put together a straightforward guide to help you out:
-
-- [**Starting with a New Clan Project**](#starting-with-a-new-clan-project): Create a new Clan from scratch.
-- [**Integrating Clan using Flake-Parts**](getting-started/flake-parts.md)
-
----
-
-## **Starting with a New Clan Project**
-
-Create your own clan with these initial steps.
+Create your own clan with these initial steps and manage a fleet of machines with one single testable git repository!
 
 ### Prerequisites
 

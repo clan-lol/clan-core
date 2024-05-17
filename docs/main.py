@@ -24,7 +24,7 @@ def define_env(env: Any) -> None:
                     autoPlay: true,
                     controls: false,
                     speed: 1.5,
-                    theme: "alabaster-auto"
+                    theme: "solarized-light"
                 }});
             </script>
         </div>"""
