@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Union
 
 import gi
-from clan_cli import machines
 
 gi.require_version("WebKit", "6.0")
 
@@ -90,6 +89,8 @@ class WebView:
         handler_fn = self.method_registry[method_name]
 
         # Start handler_fn in a new thread
+        # GLib.idle_add(handler_fn)
+
         thread = threading.Thread(
             target=self.threaded_handler,
             args=(handler_fn, payload.get("data"), method_name),
@@ -107,6 +108,8 @@ class WebView:
 
     def call_js(self, method_name: str, serialized: str) -> bool:
         # This function must be run on the main GTK thread to interact with the webview
+        # result = method_fn(data) # takes very long
+        # serialized = result
         self.webview.evaluate_javascript(
             f"""
             window.clan.{method_name}(`{serialized}`);
@@ -120,11 +123,3 @@ class WebView:
 
     def get_webview(self) -> WebKit.WebView:
         return self.webview
-
-
-webview = WebView()
-
-
-@webview.method
-def list_machines(data: None) -> list[str]:
-    return machines.list.list_machines(".")
