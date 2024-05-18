@@ -32,17 +32,13 @@ let
     mimeTypes = [ "x-scheme-handler/clan" ];
   };
 
-  webkitgtk = webkitgtk_6_0.overrideAttrs (_: {
-    meta.broken = false;
-  });
-
   # Dependencies that are directly used in the project but nor from internal python packages
   externalPythonDeps = [
     pygobject3
     pygobject-stubs
     gtk4
     libadwaita
-    webkitgtk
+    webkitgtk_6_0
     gnome.adwaita-icon-theme
   ];
 
@@ -50,7 +46,9 @@ let
   allPythonDeps = [ (python3.pkgs.toPythonModule clan-cli) ] ++ externalPythonDeps;
 
   # Runtime binary dependencies required by the application
-  runtimeDependencies = [ ];
+  runtimeDependencies = [
+
+  ];
 
   # Dependencies required for running tests
   externalTestDeps =
@@ -87,6 +85,7 @@ python3.pkgs.buildPythonApplication rec {
     setuptools
     copyDesktopItems
     wrapGAppsHook
+
     gobject-introspection
   ];
 
@@ -107,6 +106,19 @@ python3.pkgs.buildPythonApplication rec {
             chmod +w -R ./src
             cd ./src
 
+            export FONTCONFIG_FILE=${fontconfig.out}/etc/fonts/fonts.conf
+            export FONTCONFIG_PATH=${fontconfig.out}/etc/fonts
+
+            mkdir -p .home/.local/share/fonts
+            export HOME=.home
+
+            fc-cache --verbose 
+            # > fc-cache succeded 
+
+            echo "Loaded the following fonts ..."
+            fc-list
+
+            echo "STARTING ..."
             export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
             ${pythonWithTestDeps}/bin/python -m pytest -s -m "not impure" ./tests
             touch $out
@@ -142,8 +154,19 @@ python3.pkgs.buildPythonApplication rec {
     rm $out/nix-support/propagated-build-inputs
   '';
   checkPhase = ''
-    # TODO: figure out why the test cannot load the fonts
-    # PYTHONPATH= $out/bin/clan-vm-manager --help
+    export FONTCONFIG_FILE=${fontconfig.out}/etc/fonts/fonts.conf
+    export FONTCONFIG_PATH=${fontconfig.out}/etc/fonts
+
+    mkdir -p .home/.local/share/fonts
+    export HOME=.home
+
+    fc-cache --verbose 
+    # > fc-cache succeded 
+
+    echo "Loaded the following fonts ..."
+    fc-list
+
+    PYTHONPATH= $out/bin/clan-vm-manager --help
   '';
   desktopItems = [ desktop-file ];
 }
