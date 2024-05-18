@@ -32,13 +32,17 @@ let
     mimeTypes = [ "x-scheme-handler/clan" ];
   };
 
+  webkitgtk = webkitgtk_6_0.overrideAttrs (_: {
+    meta.broken = false;
+  });
+
   # Dependencies that are directly used in the project but nor from internal python packages
   externalPythonDeps = [
     pygobject3
     pygobject-stubs
     gtk4
     libadwaita
-    webkitgtk_6_0
+    webkitgtk
     gnome.adwaita-icon-theme
   ];
 
