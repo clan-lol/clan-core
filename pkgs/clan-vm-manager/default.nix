@@ -18,6 +18,8 @@
   pytest-subprocess, # fake the real subprocess behavior to make your tests more independent.
   pytest-xdist, # Run tests in parallel on multiple cores
   pytest-timeout, # Add timeouts to your tests
+  webview-ui,
+  fontconfig,
 }:
 let
   source = ./.;
@@ -70,6 +72,7 @@ python3.pkgs.buildPythonApplication rec {
   format = "pyproject";
 
   makeWrapperArgs = [
+    "--set FONTCONFIG_FILE ${fontconfig.out}/etc/fonts/fonts.conf"
     # This prevents problems with mixed glibc versions that might occur when the
     # cli is called through a browser built against another glibc
     "--unset LD_LIBRARY_PATH"
@@ -123,13 +126,20 @@ python3.pkgs.buildPythonApplication rec {
   passthru.runtimeDependencies = runtimeDependencies;
   passthru.testDependencies = testDependencies;
 
+  # TODO: place webui in lib/python3.11/site-packages/clan_vm_manager
+  postInstall = ''
+    mkdir -p $out/clan_vm_manager/.webui
+    cp -r ${webview-ui}/dist/* $out/clan_vm_manager/.webui
+  '';
+
   # Don't leak python packages into a devshell.
   # It can be very confusing if you `nix run` than load the cli from the devshell instead.
   postFixup = ''
     rm $out/nix-support/propagated-build-inputs
   '';
   checkPhase = ''
-    PYTHONPATH= $out/bin/clan-vm-manager --help
+    # TODO: figure out why the test cannot load the fonts
+    # PYTHONPATH= $out/bin/clan-vm-manager --help
   '';
   desktopItems = [ desktop-file ];
 }

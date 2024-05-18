@@ -7,7 +7,7 @@
         inherit (config.packages) clan-vm-manager webview-ui;
       };
       packages.clan-vm-manager = pkgs.python3.pkgs.callPackage ./default.nix {
-        inherit (config.packages) clan-cli;
+        inherit (config.packages) clan-cli webview-ui;
       };
 
       checks = config.packages.clan-vm-manager.tests;

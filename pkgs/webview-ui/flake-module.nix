@@ -1,16 +1,19 @@
 { inputs, ... }:
 {
   perSystem =
-    { system, pkgs, config, ... }:
-    let 
+    {
+      system,
+      pkgs,
+      config,
+      ...
+    }:
+    let
       node_modules-dev = config.packages.webview-ui.prepared-dev;
     in
     {
       packages.webview-ui = inputs.dream2nix.lib.evalModules {
         packageSets.nixpkgs = inputs.dream2nix.inputs.nixpkgs.legacyPackages.${system};
-        modules = [
-          ./default.nix
-        ];
+        modules = [ ./default.nix ];
       };
       devShells.webview-ui = pkgs.mkShell {
         inputsFrom = [ config.packages.webview-ui.out ];
