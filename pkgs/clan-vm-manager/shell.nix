@@ -10,7 +10,7 @@
   python3,
   gtk4,
   libadwaita,
-  nodejs_latest,
+  webview-ui,
 }:
 
 let
@@ -29,7 +29,6 @@ mkShell {
   inherit (clan-vm-manager) nativeBuildInputs;
   buildInputs =
     [
-      nodejs_latest
       ruff
       gtk4.dev # has the demo called 'gtk4-widget-factory'
       libadwaita.devdoc # has the demo called 'adwaita-1-demo'
@@ -53,5 +52,11 @@ mkShell {
 
     # Add clan-cli to the python path so that we can import it without building it in nix first
     export PYTHONPATH="$GIT_ROOT/pkgs/clan-cli":"$PYTHONPATH"
+
+    # Add the webview-ui to the .webui directory
+    rm -rf ./clan_vm_manager/.webui/*
+    mkdir -p ./clan_vm_manager/.webui
+    cp -a ${webview-ui}/dist/* ./clan_vm_manager/.webui
+    chmod -R +w ./clan_vm_manager/.webui
   '';
 }
