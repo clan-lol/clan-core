@@ -1,4 +1,4 @@
-site_name: cLAN Docs
+site_name: Clan Docs
 site_url: https://docs.clan.lol
 repo_url: https://git.clan.lol/clan/clan-core/
 repo_name: clan-core
@@ -148,7 +148,6 @@ plugins:
       match_path: blog/posts/.*
       use_git: false
       date_from_meta:
-        title: "Clan Blog"
         as_creation: "date"
         as_update: "date"
         datetime_format: "%Y-%m-%d %H:%M"
