@@ -284,6 +284,50 @@ def collect_commands() -> list[Category]:
     return result
 
 
+class ManPage:
+    def __init__(self, name: str, section: int):
+        self.name = name
+        self.section = section
+
+    def add_description(self, description: str) -> None:
+        self.description = description
+
+    # def add_option(self, option, description):
+    #     self.options[option] = description
+
+    def control(self, control: str, content: str) -> None:
+        self.manpage = self.manpage + f".{control} {content}"
+        self.manpage = self.manpage + "\n"
+
+    def render(self) -> str:
+        self.manpage = ""
+        self.control("TH", "Clan 1")
+        self.control("SH", "NAME")
+        # manpage = f"NAME\n\t{self.name} - {self.description}\n\nDESCRIPTION\n\t{self.description}\n\nOPTIONS\n"
+
+        # for option, desc in self.options.items():
+        #     manpage += f"\t-{option}\n\t\t{desc}\n"
+
+        return self.manpage
+
+
+def build_manpage() -> None:
+    """
+    Build the reference and write to the out path.
+    """
+    cmds = collect_commands()
+    # print(cmds)
+    # start the manpage with information collect_commands() doesn't expose
+    man = ManPage("clan", 1)
+    man.add_description("The clan cli tool.")
+
+    print(man.render())
+
+    # folder = Path("out")
+    # folder.mkdir(parents=True, exist_ok=True)
+    pass
+
+
 def build_command_reference() -> None:
     """
     Function that will build the reference
@@ -295,13 +339,12 @@ def build_command_reference() -> None:
     folder.mkdir(parents=True, exist_ok=True)
 
     # Index file
-    markdown = "# CLI Overview\n\n"
+    markdown = "#Overview\n\n"
     categories_fmt = ""
     for cat in cmds:
         categories_fmt += f"{cat.to_md_li()}\n\n" if cat.to_md_li() else ""
 
     if categories_fmt:
-        markdown += """## Overview\n\n"""
         markdown += '<div class="grid cards" markdown>\n\n'
         markdown += categories_fmt
         markdown += "</div>"
@@ -375,13 +418,15 @@ def build_command_reference() -> None:
 def main() -> None:
     if len(sys.argv) != 2:
         print("Usage: python docs.py <command>")
-        print("Available commands: reference")
+        print("Available commands: reference, manpage")
         sys.exit(1)
 
     command = sys.argv[1]
 
     if command == "reference":
         build_command_reference()
+    if command == "manpage":
+        build_manpage()
 
 
 if __name__ == "__main__":
