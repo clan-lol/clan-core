@@ -62,6 +62,7 @@ nav:
           - reference/clanModules/sshd.md
           - reference/clanModules/sunshine.md
           - reference/clanModules/syncthing.md
+          - reference/clanModules/static-hosts.md
           - reference/clanModules/thelounge.md
           - reference/clanModules/user-password.md
           - reference/clanModules/xfce.md
