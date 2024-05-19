@@ -42,6 +42,19 @@ def compute_zerotier_ip(network_id: str, identity: str) -> ipaddress.IPv6Address
     return ipaddress.IPv6Address(bytes(addr_parts))
 
 
+def compute_member_id(ipv6_addr: str) -> str:
+    addr = ipaddress.IPv6Address(ipv6_addr)
+    addr_bytes = bytearray(addr.packed)
+
+    # Extract the bytes corresponding to the member_id (node_id)
+    node_id_bytes = addr_bytes[10:16]
+    node_id = int.from_bytes(node_id_bytes, byteorder="big")
+
+    member_id = format(node_id, "x").zfill(10)[-10:]
+
+    return member_id
+
+
 # this is managed by the nixos module
 def get_network_id() -> str:
     p = Path("/etc/zerotier/network-id")
@@ -54,6 +67,11 @@ def get_network_id() -> str:
 
 def allow_member(args: argparse.Namespace) -> None:
     member_id = args.member_id
+    if args.member_ip:
+        member_ip = args.member_id
+        member_id = compute_member_id(member_ip)
+        print(member_id)
+        exit(0)
     network_id = get_network_id()
     token = ZEROTIER_STATE_DIR.joinpath("authtoken.secret").read_text()
     conn = http.client.HTTPConnection("localhost", 9993)
@@ -94,6 +112,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers(dest="command")
     parser_allow = subparser.add_parser("allow", help="Allow a member to join")
+    parser_allow.add_argument(
+        "--member-ip",
+        help="Allow a member to join by their zerotier ipv6 address",
+        action="store_true",
+    )
     parser_allow.add_argument("member_id")
     parser_allow.set_defaults(func=allow_member)
 
