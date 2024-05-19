@@ -14,6 +14,7 @@
     root-password = ./root-password;
     sshd = ./sshd;
     sunshine = ./sunshine;
+    static-hosts = ./static-hosts;
     syncthing = ./syncthing;
     thelounge = ./thelounge;
     user-password = ./root-password;
