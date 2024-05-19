@@ -16,7 +16,7 @@
     sunshine = ./sunshine;
     syncthing = ./syncthing;
     thelounge = ./thelounge;
-    user-password = ./root-password;
+    user-password = ./user-password;
     xfce = ./xfce;
     zt-tcp-relay = ./zt-tcp-relay;
   };
