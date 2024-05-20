@@ -23,7 +23,6 @@
           jon = {
             imports = [
               ./modules/shared.nix
-              ./modules/disko.nix
               ./machines/jon/configuration.nix
             ];
 
@@ -56,7 +55,6 @@
           sara = {
             imports = [
               ./modules/shared.nix
-              ./modules/disko.nix
               ./machines/sara/configuration.nix
             ];
 
