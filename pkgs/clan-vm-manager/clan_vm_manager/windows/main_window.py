@@ -67,7 +67,7 @@ class MainWindow(Adw.ApplicationWindow):
         def list_machines(data: None) -> list[str]:
             return machines.list.list_machines(".")
 
-        stack_view.add_named(webview.get_webview(), "webview")
+        stack_view.add_named(webview.get_webview(), "list")
 
         stack_view.set_visible_child_name(config.initial_view)
 
