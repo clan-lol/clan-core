@@ -1,5 +1,5 @@
-import dataclasses
 import json
+import logging
 import sys
 import threading
 from threading import Lock
@@ -18,6 +18,8 @@ site_index: Path = (
     / Path("../..")
     / Path("clan_vm_manager/.webui/index.html")
 ).resolve()
+
+log = logging.getLogger(__name__)
 
 
 class WebView:
@@ -44,8 +46,8 @@ class WebView:
         method_name = payload["method"]
         handler_fn = self.method_registry[method_name]
 
-        print(f"Received message: {payload}")
-        print(f"Queue size: {self.queue_size} (Wait)")
+        log.debug(f"Received message: {payload}")
+        log.debug(f"Queue size: {self.queue_size} (Wait)")
 
         def threaded_wrapper() -> bool:
             """
@@ -78,19 +80,14 @@ class WebView:
         self, handler_fn: Callable[[Any], Any], data: Any, method_name: str
     ) -> None:
         with self.mutex_lock:
-            print("Executing", method_name)
-            print("threading locked ...")
+            log.debug("Executing... ", method_name)
             result = handler_fn(data)
             serialized = json.dumps(result)
 
             # Use idle_add to queue the response call to js on the main GTK thread
             GLib.idle_add(self.return_data_to_js, method_name, serialized)
-        print("threading unlocked")
         self.queue_size -= 1
-        if self.queue_size > 0:
-            print(f"remaining queue size: {self.queue_size}")
-        else:
-            print(f"Queue empty")
+        log.debug(f"Done: Remaining queue size: {self.queue_size}")
 
     def return_data_to_js(self, method_name: str, serialized: str) -> bool:
         # This function must be run on the main GTK thread to interact with the webview
