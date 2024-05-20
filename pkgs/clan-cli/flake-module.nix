@@ -57,6 +57,16 @@
             cp -r out/* $out
           '';
         };
+        clan-ts-api = pkgs.stdenv.mkDerivation {
+          name = "clan-ts-api";
+          src = ./.;
+
+          buildInputs = [ pkgs.python3 ];
+
+          installPhase = ''
+            python api.py > $out
+          '';
+        };
 
         default = self'.packages.clan-cli;
       };

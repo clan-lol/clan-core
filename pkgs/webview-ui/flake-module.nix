@@ -9,9 +9,28 @@
     }:
     let
       node_modules-dev = config.packages.webview-ui.prepared-dev;
+
+      src_with_api = pkgs.stdenv.mkDerivation {
+        name = "with-api";
+        src = ./app;
+        buildInputs = [ pkgs.nodejs ];
+        installPhase = ''
+          mkdir -p $out
+          
+          mkdir -p $out/api
+          cat ${config.packages.clan-ts-api} > $out/api/index.ts
+
+          cp -r $src/* $out
+
+          ls -la $out/api
+        '';
+      }; 
     in
     {
       packages.webview-ui = inputs.dream2nix.lib.evalModules {
+        specialArgs = {
+          src =  src_with_api ;
+        };
         packageSets.nixpkgs = inputs.dream2nix.inputs.nixpkgs.legacyPackages.${system};
         modules = [ ./default.nix ];
       };
@@ -28,6 +47,9 @@
             echo -n $ID > .dream2nix/.node_modules_id
             echo "Ok: node_modules updated"
           fi
+
+          mkdir -p ./app/api
+          cat ${config.packages.clan-ts-api} > ./app/api/index.ts
         '';
       };
     };
