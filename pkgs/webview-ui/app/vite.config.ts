@@ -1,8 +1,14 @@
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 // import devtools from "solid-devtools/vite";
+import path from "node:path";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./"), // Adjust the path as needed
+    },
+  },
   plugins: [
     /* 
     Uncomment the following line to enable solid-devtools.

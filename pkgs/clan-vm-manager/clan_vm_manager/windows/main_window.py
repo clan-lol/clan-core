@@ -2,7 +2,7 @@ import logging
 import threading
 
 import gi
-from clan_cli import machines
+
 from clan_cli.history.list import list_history
 
 from clan_vm_manager.components.interfaces import ClanConfig
@@ -14,10 +14,11 @@ from clan_vm_manager.views.list import ClanList
 from clan_vm_manager.views.logs import Logs
 from clan_vm_manager.views.webview import WebView
 
+from clan_cli.api import API
+
 gi.require_version("Adw", "1")
 
 from gi.repository import Adw, Gio, GLib, Gtk
-
 from clan_vm_manager.components.trayicon import TrayIcon
 
 log = logging.getLogger(__name__)
@@ -61,11 +62,7 @@ class MainWindow(Adw.ApplicationWindow):
         stack_view.add_named(Details(), "details")
         stack_view.add_named(Logs(), "logs")
 
-        webview = WebView()
-
-        @webview.method
-        def list_machines(data: None) -> list[str]:
-            return machines.list.list_machines(".")
+        webview = WebView(methods=API._registry)
 
         stack_view.add_named(webview.get_webview(), "list")
 
