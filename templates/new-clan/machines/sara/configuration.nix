@@ -4,7 +4,13 @@ let
   username = config.networking.hostName;
 in
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [
+    ./hardware-configuration.nix
+    ./disko.nix
+  ];
+
+  # Locale service discovery and mDNS
+  services.avahi.enable = true;
 
   services.xserver.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
