@@ -66,6 +66,7 @@ nav:
           - reference/clanModules/thelounge.md
           - reference/clanModules/user-password.md
           - reference/clanModules/xfce.md
+          - reference/clanModules/zerotier-static-peers.md
           - reference/clanModules/zt-tcp-relay.md
       - CLI:
           - reference/cli/index.md
