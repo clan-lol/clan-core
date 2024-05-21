@@ -5,10 +5,6 @@
 In the `flake.nix` file:
 
 - [x] set a unique `clanName`.
-- [ ] set `clanIcon` (optional)
-- [ ] Set `machineIcon` per machine (optional)
-
-These icons will be used by our future GUI.
 
 === "**buildClan**"
 
@@ -16,16 +12,12 @@ These icons will be used by our future GUI.
     buildClan {
         # Set a unique name 
         clanName = "Lobsters";
-        # Optional, a path to an image file
-        clanIcon = ./path/to/file; 
         # Should usually point to the directory of flake.nix
         directory = ./.;
 
         machines = {
             jon = {
                 # ...
-                # Optional, a path to an image file
-                clanCore.machineIcon = ./path/to/file; 
             };
             # ...
         }
@@ -40,14 +32,10 @@ These icons will be used by our future GUI.
     clan = {
         # Set a unique name 
         clanName = "Lobsters";
-        # Optional, a path to an image file
-        clanIcon = ./path/to/file;
 
         machines = {
             jon = {
                 # ...
-                # Optional, a path to an image file
-                clanCore.machineIcon = ./path/to/file; 
             };
             # ...
         }
