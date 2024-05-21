@@ -3,9 +3,10 @@ import json
 import logging
 from pathlib import Path
 
+from clan_cli.api import API
+
 from ..cmd import run
 from ..nix import nix_config, nix_eval
-from clan_cli.api import API
 
 log = logging.getLogger(__name__)
 

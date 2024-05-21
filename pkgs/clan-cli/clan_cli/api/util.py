@@ -1,7 +1,7 @@
 import dataclasses
-from types import NoneType, UnionType
-from typing import Any, Callable, Union, get_type_hints
 import pathlib
+from types import NoneType, UnionType
+from typing import Any, Union
 
 
 def type_to_dict(t: Any, scope: str = "") -> dict:
@@ -46,7 +46,7 @@ def type_to_dict(t: Any, scope: str = "") -> dict:
                 "type": "object",
             }
 
-        raise BaseException(f"Error api type not yet supported {str(t)}")
+        raise BaseException(f"Error api type not yet supported {t!s}")
 
     elif isinstance(t, type):
         if t is str:
@@ -74,6 +74,6 @@ def type_to_dict(t: Any, scope: str = "") -> dict:
         if t is NoneType:
             return {"type": "null"}
 
-        raise BaseException(f"Error primitive type not supported {str(t)}")
+        raise BaseException(f"Error primitive type not supported {t!s}")
     else:
-        raise BaseException(f"Error type not supported {str(t)}")
+        raise BaseException(f"Error type not supported {t!s}")
