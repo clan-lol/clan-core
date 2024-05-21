@@ -1,9 +1,14 @@
-{ dream2nix, config, src, ... }:
+{
+  dream2nix,
+  config,
+  src,
+  ...
+}:
 {
   imports = [ dream2nix.modules.dream2nix.WIP-nodejs-builder-v3 ];
 
   mkDerivation = {
-    inherit src ;
+    inherit src;
   };
 
   deps =
@@ -14,6 +19,7 @@
 
   WIP-nodejs-builder-v3 = {
     packageLockFile = "${config.mkDerivation.src}/package-lock.json";
+    # config.groups.all.packages.${config.name}.${config.version}.
   };
   public.out = {
     checkPhase = ''
