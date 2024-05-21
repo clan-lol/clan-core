@@ -18,7 +18,13 @@
         name: _: !(lib.elem name config.clan.static-hosts.excludeHosts)
       ) machines;
     in
-    (lib.mapAttrs' (
-      machine: _: lib.nameValuePair (builtins.readFile (zerotierIpMachinePath machine)) [ machine ]
-    ) filteredMachines);
+    lib.filterAttrs (_: value: value != null) (
+      lib.mapAttrs' (
+        machine: _:
+        let
+          path = zerotierIpMachinePath machine;
+        in
+        if builtins.pathExists path then lib.nameValuePair (builtins.readFile path) [ machine ] else null
+      ) filteredMachines
+    );
 }
