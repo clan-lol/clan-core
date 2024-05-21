@@ -5,7 +5,7 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build && npm run convert-html",
+    "build": "npm run check && vite build && npm run convert-html",
     "convert-html": "node gtk.webview.js",
     "serve": "vite preview",
     "check": "tsc --noEmit --skipLibCheck"
