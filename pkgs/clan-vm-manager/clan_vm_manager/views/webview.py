@@ -2,16 +2,16 @@ import json
 import logging
 import sys
 import threading
-from threading import Lock
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Union
+from threading import Lock
+from typing import Any
 
 import gi
 
 gi.require_version("WebKit", "6.0")
 
-from gi.repository import GLib, GObject, WebKit
+from gi.repository import GLib, WebKit
 
 site_index: Path = (
     Path(sys.argv[0]).absolute()

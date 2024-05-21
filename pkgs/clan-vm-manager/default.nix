@@ -145,7 +145,7 @@ python3.pkgs.buildPythonApplication rec {
   # TODO: place webui in lib/python3.11/site-packages/clan_vm_manager
   postInstall = ''
     mkdir -p $out/clan_vm_manager/.webui
-    cp -r ${webview-ui}/dist/* $out/clan_vm_manager/.webui
+    cp -r ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/* $out/clan_vm_manager/.webui
   '';
 
   # Don't leak python packages into a devshell.

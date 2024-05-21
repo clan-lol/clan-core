@@ -1,9 +1,10 @@
 from collections.abc import Callable
+from typing import Any
 
 
 class _MethodRegistry:
-    def __init__(self):
-        self._registry = {}
+    def __init__(self) -> None:
+        self._registry: dict[str, Callable] = {}
 
     def register(self, fn: Callable) -> Callable:
         self._registry[fn.__name__] = fn
@@ -13,9 +14,10 @@ class _MethodRegistry:
         # Import only when needed
         import json
         from typing import get_type_hints
+
         from clan_cli.api.util import type_to_dict
 
-        api_schema = {
+        api_schema: dict[str, Any] = {
             "$comment": "An object containing API methods. ",
             "type": "object",
             "additionalProperties": False,
