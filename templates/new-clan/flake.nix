@@ -12,7 +12,6 @@
       clan = clan-core.lib.buildClan {
         directory = self;
         clanName = "__CHANGE_ME__"; # Ensure this is internet wide unique.
-        clanIcon = null; # Optional, a path to an image file
 
         # Prerequisite: boot into the installer
         # See: https://docs.clan.lol/getting-started/installer
@@ -27,8 +26,6 @@
             ];
 
             nixpkgs.hostPlatform = system;
-
-            clanCore.machineIcon = null; # Optional, a path to an image file
 
             # Set this for clan commands use ssh i.e. `clan machines update`
             # If you change the hostname, you need to update this line to root@<new-hostname>
@@ -59,8 +56,6 @@
             ];
 
             nixpkgs.hostPlatform = system;
-
-            clanCore.machineIcon = null; # Optional, a path to an image file
 
             # Set this for clan commands use ssh i.e. `clan machines update`
             # If you change the hostname, you need to update this line to root@<new-hostname>

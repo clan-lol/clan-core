@@ -73,7 +73,6 @@ Below is a guide on how to structure this in your flake.nix:
               # ... more modules
             ];
             nixpkgs.hostPlatform = "x86_64-linux";
-            clanCore.machineIcon = null; # Optional, a path to an image file
 
             # Set this for clan commands use ssh i.e. `clan machines update`
             clan.networking.targetHost = pkgs.lib.mkDefault "root@jon";
