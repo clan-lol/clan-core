@@ -1,11 +1,11 @@
 import { createSignal, createContext, useContext, JSXElement } from "solid-js";
-import { PYAPI } from "./message";
+import { pyApi } from "./message";
 
 export const makeCountContext = () => {
   const [machines, setMachines] = createSignal<string[]>([]);
   const [loading, setLoading] = createSignal(false);
 
-  PYAPI.list_machines.receive((machines) => {
+  pyApi.list_machines.receive((machines) => {
     setLoading(false);
     setMachines(machines);
   });
@@ -16,7 +16,7 @@ export const makeCountContext = () => {
       getMachines: () => {
         // When the gtk function sends its data the loading state will be set to false
         setLoading(true);
-        PYAPI.list_machines.dispatch(null);
+        pyApi.list_machines.dispatch(".");
       },
     },
   ] as const;

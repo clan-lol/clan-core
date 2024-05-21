@@ -56,7 +56,7 @@ mkShell {
     # Add the webview-ui to the .webui directory
     rm -rf ./clan_vm_manager/.webui/*
     mkdir -p ./clan_vm_manager/.webui
-    cp -a ${webview-ui}/dist/* ./clan_vm_manager/.webui
+    cp -a ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/* ./clan_vm_manager/.webui
     chmod -R +w ./clan_vm_manager/.webui
   '';
 }
