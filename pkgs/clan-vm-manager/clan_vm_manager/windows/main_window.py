@@ -2,7 +2,7 @@ import logging
 import threading
 
 import gi
-from clan_cli import machines
+from clan_cli.api import API
 from clan_cli.history.list import list_history
 
 from clan_vm_manager.components.interfaces import ClanConfig
@@ -61,11 +61,7 @@ class MainWindow(Adw.ApplicationWindow):
         stack_view.add_named(Details(), "details")
         stack_view.add_named(Logs(), "logs")
 
-        webview = WebView()
-
-        @webview.method
-        def list_machines(data: None) -> list[str]:
-            return machines.list.list_machines(".")
+        webview = WebView(methods=API._registry)
 
         stack_view.add_named(webview.get_webview(), "list")
 

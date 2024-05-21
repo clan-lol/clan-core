@@ -1,33 +1,32 @@
-{ inputs, ... }:
+{ ... }:
 {
   perSystem =
+    { pkgs, config, ... }:
     {
-      system,
-      pkgs,
-      config,
-      ...
-    }:
-    let
-      node_modules-dev = config.packages.webview-ui.prepared-dev;
-    in
-    {
-      packages.webview-ui = inputs.dream2nix.lib.evalModules {
-        packageSets.nixpkgs = inputs.dream2nix.inputs.nixpkgs.legacyPackages.${system};
-        modules = [ ./default.nix ];
+      packages.webview-ui = pkgs.buildNpmPackage {
+        pname = "clan-webview-ui";
+        version = "0.0.1";
+
+        src = ./app;
+
+        # npmDepsHash = "sha256-bRD2vzijhdOOvcEi6XaG/neSqhkVQMqIX/8bxvRQkTc=";
+        npmDeps = pkgs.fetchNpmDeps {
+          src = ./app;
+          hash = "sha256-bRD2vzijhdOOvcEi6XaG/neSqhkVQMqIX/8bxvRQkTc=";
+        };
+        # The prepack script runs the build script, which we'd rather do in the build phase.
+        npmPackFlags = [ "--ignore-scripts" ];
+
+        preBuild = ''
+          mkdir -p api
+          cat ${config.packages.clan-ts-api} > api/index.ts
+        '';
       };
       devShells.webview-ui = pkgs.mkShell {
-        inputsFrom = [ config.packages.webview-ui.out ];
+        inputsFrom = [ config.packages.webview-ui ];
         shellHook = ''
-          ID=${node_modules-dev}
-          currID=$(cat .dream2nix/.node_modules_id 2> /dev/null)
-
-          mkdir -p .dream2nix
-          if [[ "$ID" != "$currID" || ! -d "app/node_modules"  ]];
-          then
-            ${pkgs.rsync}/bin/rsync -a --chmod=ug+w  --delete ${node_modules-dev}/node_modules/ ./app/node_modules/
-            echo -n $ID > .dream2nix/.node_modules_id
-            echo "Ok: node_modules updated"
-          fi
+          mkdir -p ./app/api
+          cat ${config.packages.clan-ts-api} > ./app/api/index.ts
         '';
       };
     };

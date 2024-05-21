@@ -5,9 +5,10 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build && npm run convert-html",
+    "build": "npm run check && vite build && npm run convert-html",
     "convert-html": "node gtk.webview.js",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "check": "tsc --noEmit --skipLibCheck"
   },
   "license": "MIT",
   "devDependencies": {
@@ -17,10 +18,12 @@
     "solid-devtools": "^0.29.2",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.3.3",
-    "vite-plugin-solid": "^2.8.2",
-    "vite": "^5.0.11"
+    "vite": "^5.0.11",
+    "vite-plugin-solid": "^2.8.2"
   },
   "dependencies": {
+    "@types/node": "^20.12.12",
+    "json-schema-to-ts": "^3.1.0",
     "solid-js": "^1.8.11"
   }
 }
