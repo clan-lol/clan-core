@@ -70,8 +70,6 @@ def allow_member(args: argparse.Namespace) -> None:
     if args.member_ip:
         member_ip = args.member_id
         member_id = compute_member_id(member_ip)
-        print(member_id)
-        exit(0)
     network_id = get_network_id()
     token = ZEROTIER_STATE_DIR.joinpath("authtoken.secret").read_text()
     conn = http.client.HTTPConnection("localhost", 9993)
