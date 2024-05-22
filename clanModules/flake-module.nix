@@ -19,6 +19,7 @@
     thelounge = ./thelounge;
     user-password = ./user-password;
     xfce = ./xfce;
+    zerotier-static-peers = ./zerotier-static-peers;
     zt-tcp-relay = ./zt-tcp-relay;
   };
 }
