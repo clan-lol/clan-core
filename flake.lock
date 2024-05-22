@@ -40,22 +40,6 @@
         "type": "github"
       }
     },
-    "git-hooks": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1715912400,
-        "narHash": "sha256-7GYXKJP7bglYgofN3/PW5EBGaGOIKbBKSgFb6m4ttC4=",
-        "owner": "fricklerhandwerk",
-        "repo": "git-hooks",
-        "rev": "5a23214ca74a7656048fe1402c4e98f5cd2b3729",
-        "type": "github"
-      },
-      "original": {
-        "owner": "fricklerhandwerk",
-        "repo": "git-hooks",
-        "type": "github"
-      }
-    },
     "nixlib": {
       "locked": {
         "lastModified": 1712450863,
@@ -149,7 +133,6 @@
       "inputs": {
         "disko": "disko",
         "flake-parts": "flake-parts",
-        "git-hooks": "git-hooks",
         "nixos-generators": "nixos-generators",
         "nixos-images": "nixos-images",
         "nixpkgs": "nixpkgs",
