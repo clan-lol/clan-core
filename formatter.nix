@@ -66,7 +66,6 @@
             ];
           };
           accept = writeTextDir "config/vocabularies/${vocab}/accept.txt" ''
-            cLAN
             Nix
             NixOS
             Nixpkgs
@@ -89,7 +88,6 @@
           includes = [ "*.md" ];
           # TODO: too much at once, fix piecemeal
           excludes = [
-            "README.md"
             "docs/*"
             "clanModules/*"
             "pkgs/*"
