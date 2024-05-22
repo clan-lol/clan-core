@@ -9,6 +9,7 @@
     }:
     let
       writers = pkgs.callPackage ./pkgs/builders/script-writers.nix { };
+      inherit (pkgs.callPackage inputs.git-hooks { }) lib;
 
       ansiEscapes = {
         reset = ''\033[0m'';
@@ -22,13 +23,10 @@
         flakeIgnore = [ "E501" ];
       } ./pkgs/scripts/select-shell.py;
 
-      pre-commit-check = inputs.pre-commit-hooks.lib.${pkgs.system}.run {
-        src = ./.;
-        hooks.treefmt = {
-          enable = true;
-          packageOverrides.treefmt = config.treefmt.build.wrapper;
-        };
-      };
+      # run treefmt before each commit
+      install-pre-commit-hook =
+        with lib.git-hooks;
+        pre-commit (wrap.abort-on-change config.treefmt.build.wrapper);
     in
     {
       devShells.default = pkgs.mkShell {
@@ -43,8 +41,7 @@
           config.treefmt.build.wrapper
         ];
         shellHook = ''
-          # run treefmt before each commit
-          ${pre-commit-check.shellHook}
+          ${install-pre-commit-hook}
 
           echo -e "${ansiEscapes.green}switch to another dev-shell using: select-shell${ansiEscapes.reset}"
         '';
