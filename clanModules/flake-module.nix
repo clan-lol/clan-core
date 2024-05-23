@@ -17,6 +17,7 @@
     static-hosts = ./static-hosts;
     syncthing = ./syncthing;
     thelounge = ./thelounge;
+    trusted-nix-caches = ./trusted-nix-caches;
     user-password = ./user-password;
     xfce = ./xfce;
     zerotier-static-peers = ./zerotier-static-peers;
