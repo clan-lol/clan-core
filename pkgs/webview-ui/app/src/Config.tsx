@@ -1,13 +1,25 @@
-import { createSignal, createContext, useContext, JSXElement } from "solid-js";
-import { pyApi } from "./message";
+import {
+  createSignal,
+  createContext,
+  useContext,
+  JSXElement,
+  createEffect,
+} from "solid-js";
+import { OperationResponse, pyApi } from "./message";
 
 export const makeCountContext = () => {
-  const [machines, setMachines] = createSignal<string[]>([]);
+  const [machines, setMachines] = createSignal<
+    OperationResponse<"list_machines">
+  >({});
   const [loading, setLoading] = createSignal(false);
 
   pyApi.list_machines.receive((machines) => {
     setLoading(false);
     setMachines(machines);
+  });
+
+  createEffect(() => {
+    console.log("The count is now", machines());
   });
 
   return [
@@ -25,7 +37,10 @@ export const makeCountContext = () => {
 type CountContextType = ReturnType<typeof makeCountContext>;
 
 export const CountContext = createContext<CountContextType>([
-  { loading: () => false, machines: () => [] },
+  {
+    loading: () => false,
+    machines: () => ({}),
+  },
   {
     getMachines: () => {},
   },
