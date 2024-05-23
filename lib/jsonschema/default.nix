@@ -83,20 +83,20 @@ rec {
     in
 
     # either type
-    # TODO: if all nested optiosn are excluded, the parent sould be excluded too
+    # TODO: if all nested options are excluded, the parent should be excluded too
     if
-      option.type.name or null == "either"
+      option.type.name or null == "either" || option.type.name or null == "coercedTo"
     # return jsonschema property definition for either
     then
       let
         optionsList' = [
           {
-            type = option.type.nestedTypes.left;
+            type = option.type.nestedTypes.left or option.type.nestedTypes.coercedType;
             _type = "option";
             loc = option.loc;
           }
           {
-            type = option.type.nestedTypes.right;
+            type = option.type.nestedTypes.right or option.type.nestedTypes.finalType;
             _type = "option";
             loc = option.loc;
           }
@@ -157,12 +157,21 @@ rec {
 
     # TODO: Add support for intMatching in jsonschema
     # parse port type aka. "unsignedInt16"
-    else if option.type.name == "unsignedInt16" then
+    else if
+      option.type.name == "unsignedInt16"
+      || option.type.name == "unsignedInt"
+      || option.type.name == "pkcs11"
+      || option.type.name == "intBetween"
+    then
       default // example // description // { type = "integer"; }
 
     # parse string
+    # TODO: parse more precise string types
     else if
       option.type.name == "str"
+      || option.type.name == "singleLineStr"
+      || option.type.name == "passwdEntry str"
+      || option.type.name == "passwdEntry path"
     # return jsonschema property definition for string
     then
       default // example // description // { type = "string"; }
