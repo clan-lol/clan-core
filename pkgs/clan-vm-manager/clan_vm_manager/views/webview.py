@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import logging
 import sys
@@ -20,6 +21,23 @@ site_index: Path = (
 ).resolve()
 
 log = logging.getLogger(__name__)
+
+
+def dataclass_to_dict(obj: Any) -> Any:
+    """
+    Utility function to convert dataclasses to dictionaries
+    It converts all nested dataclasses, lists, tuples, and dictionaries to dictionaries
+
+    It does NOT convert member functions.
+    """
+    if dataclasses.is_dataclass(obj):
+        return {k: dataclass_to_dict(v) for k, v in dataclasses.asdict(obj).items()}
+    elif isinstance(obj, (list, tuple)):
+        return [dataclass_to_dict(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {k: dataclass_to_dict(v) for k, v in obj.items()}
+    else:
+        return obj
 
 
 class WebView:
@@ -82,7 +100,7 @@ class WebView:
         with self.mutex_lock:
             log.debug("Executing... ", method_name)
             result = handler_fn(data)
-            serialized = json.dumps(result)
+            serialized = json.dumps(dataclass_to_dict(result))
 
             # Use idle_add to queue the response call to js on the main GTK thread
             GLib.idle_add(self.return_data_to_js, method_name, serialized)

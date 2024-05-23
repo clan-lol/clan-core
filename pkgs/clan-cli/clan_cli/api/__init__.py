@@ -1,12 +1,14 @@
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TypeVar
+
+T = TypeVar("T")
 
 
 class _MethodRegistry:
     def __init__(self) -> None:
         self._registry: dict[str, Callable] = {}
 
-    def register(self, fn: Callable) -> Callable:
+    def register(self, fn: Callable[..., T]) -> Callable[..., T]:
         self._registry[fn.__name__] = fn
         return fn
 
