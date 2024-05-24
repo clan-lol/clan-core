@@ -52,7 +52,7 @@ This process involves preparing a suitable hardware and disk partitioning config
 
     This is an example of the booted installer.
 
-    ```{ .bash .annotate .no-copy }
+    ```{ .bash .annotate .no-copy .nohighlight}
     ┌─────────────────────────────────────────────────────────────────────────────────────┐
     │ ┌───────────────────────────┐                                                       │
     │ │███████████████████████████│ # This is the QR Code (1)                             │
@@ -151,7 +151,7 @@ Clan CLI enables you to remotely update your machines over SSH. This requires se
 ### Setting the Target Host
 
 Replace `root@jon` with the actual hostname or IP address of your target machine:
-```nix hl_lines="9"
+```{.nix hl_lines="9" .no-copy}
 buildClan {
     # ...
     machines = {
@@ -192,7 +192,7 @@ it is also possible to specify a build host instead.
 During an update, the cli will ssh into the build host and run `nixos-rebuild` from there.
 
 
-```nix hl_lines="5"
+```{.nix hl_lines="5" .no-copy}
 buildClan {
     # ...
     machines = {
@@ -208,7 +208,7 @@ buildClan {
 To exclude machines from being updated when running `clan machines update` without any machines specified,
 one can set the `clan.deployment.requireExplicitUpdate` option to true:
 
-```nix hl_lines="5"
+```{.nix hl_lines="5" .no-copy}
 buildClan {
     # ...
     machines = {

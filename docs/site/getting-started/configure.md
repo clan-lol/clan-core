@@ -59,7 +59,7 @@ Adding or configuring a new machine requires two simple steps:
 
     Which should show something like:
 
-    ```bash hl_lines="6"
+    ```{.shellSession hl_lines="6" .no-copy}
     NAME        ID-LINK                                         FSTYPE   SIZE MOUNTPOINT
     sda         usb-ST_16GB_AA6271026J1000000509-0:0                    14.9G 
     ├─sda1      usb-ST_16GB_AA6271026J1000000509-0:0-part1                 1M 
