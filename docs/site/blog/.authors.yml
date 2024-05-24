@@ -2,20 +2,20 @@ authors:
   Lassulus:
     name: "Lassulus"
     description: "Core Developer"
-    avatar: "https://clan.lol/profiles/lassulus.jpg"
+    avatar: "https://clan.lol/static/profiles/lassulus.jpg"
     url: "https://http://lassul.us/"
   Mic92:
     name: "Mic92"
     description: "Core Developer"
-    avatar: "https://clan.lol/profiles/mic92.jpg"
+    avatar: "https://clan.lol/static/profiles/mic92.jpg"
     url: "https://thalheim.io"
   W:
     name: "W"
     description: "Founder of Clan"
-    avatar: "https://clan.lol/profiles/w_profile.webp"
+    avatar: "https://clan.lol/static/profiles/w_profile.webp"
     url: ""
   Qubasa:
     name: "Qubasa"
     description: "Core Developer"
-    avatar: "https://clan.lol/profiles/qubasa.webp"
+    avatar: "https://clan.lol/static/profiles/qubasa.png"
     url: "https://github.com/Qubasa"
