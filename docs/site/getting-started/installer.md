@@ -22,7 +22,7 @@ Follow our step-by-step guide to create and transfer this image onto a bootable 
     lsblk
     ```
 
-    ```shellSession hl_lines="2"
+    ```{.shellSession hl_lines="2" .no-copy}
     NAME                                          MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
     sdb                                             8:0    1 117,2G  0 disk
     └─sdb1                                          8:1    1 117,2G  0 part  /run/media/qubasa/INTENSO
@@ -123,7 +123,7 @@ This will enter `iwd`
 
 Now run the following command to connect to your Wifi:
 
-```shellSession
+```{.shellSession .no-copy}
 # Identify your network device.
 device list
 

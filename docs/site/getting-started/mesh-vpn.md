@@ -9,7 +9,7 @@ include a new machine into the VPN.
 
 By default all machines within one clan are connected via a chosen network technology.
 
-```
+```{.no-copy}
 Clan 
     Node A
     <-> (zerotier / mycelium / ...)
@@ -36,7 +36,7 @@ peers. Once addresses are allocated, the controller's continuous operation is no
    ```
 3. **Update the Controller Machine**: Execute the following:
    ```bash
-   $ clan machines update <CONTROLLER>
+   clan machines update <CONTROLLER>
    ```
    Your machine is now operational as the VPN controller.
 
