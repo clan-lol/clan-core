@@ -5,14 +5,17 @@ from pathlib import Path
 
 from clan_cli.api import API
 
-from ..cmd import run
+from ..cmd import Log, run
 from ..nix import nix_config, nix_eval
 
 log = logging.getLogger(__name__)
 
 
 @API.register
-def list_machines(flake_url: Path | str) -> list[str]:
+def list_machines(
+    debug: bool,
+    flake_url: Path | str,
+) -> list[str]:
     config = nix_config()
     system = config["system"]
     cmd = nix_eval(
@@ -23,14 +26,18 @@ def list_machines(flake_url: Path | str) -> list[str]:
             "--json",
         ]
     )
-    proc = run(cmd)
+
+    if not debug:
+        proc = run(cmd, log=Log.NONE)
+    else:
+        proc = run(cmd)
 
     res = proc.stdout.strip()
     return json.loads(res)
 
 
 def list_command(args: argparse.Namespace) -> None:
-    for machine in list_machines(Path(args.flake)):
+    for machine in list_machines(args.debug, Path(args.flake)):
         print(machine)
 
 
