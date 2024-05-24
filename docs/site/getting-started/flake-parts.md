@@ -94,9 +94,4 @@ Below is a guide on how to structure this in your flake.nix:
 For detailed information about configuring `flake-parts` and the available options within Clan,
 refer to the Clan module documentation located [here](https://git.clan.lol/clan/clan-core/src/branch/main/flakeModules/clan.nix).
 
-## Whats next?
-
-- [Configure Machines](configure.md): Customize machine configuration
-- [Deploying](deploy.md): Deploying a Machine configuration
-
 ---
