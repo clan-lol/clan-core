@@ -2,6 +2,8 @@
   pkgs,
   module-docs,
   clan-cli-docs,
+  asciinema-player-js,
+  asciinema-player-css,
   ...
 }:
 let
@@ -27,6 +29,10 @@ pkgs.stdenv.mkDerivation {
     mkdir -p ./site/reference/cli
     cp -af ${module-docs}/* ./site/reference/
     cp -af ${clan-cli-docs}/* ./site/reference/cli/
+
+    mkdir -p ./site/static/asciinema-player
+    ln -snf ${asciinema-player-js} ./site/static/asciinema-player/asciinema-player.min.js
+    ln -snf ${asciinema-player-css} ./site/static/asciinema-player/asciinema-player.css
   '';
 
   buildPhase = ''
