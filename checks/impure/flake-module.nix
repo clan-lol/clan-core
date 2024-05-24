@@ -7,6 +7,8 @@
         #!${pkgs.bash}/bin/bash
         set -euo pipefail
 
+        unset CLAN_DIR
+
         export PATH="${
           lib.makeBinPath [
             pkgs.gitMinimal
