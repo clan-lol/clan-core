@@ -148,10 +148,10 @@ Connected network     FRITZ!Box (Your router device)
 IPv4 address          192.168.188.50 (Your new local ip)
 ```
 
-Press `ctrl-d` to exit `IWD`.
+Press ++ctrl+d++ to exit `IWD`.
 
 !!! Important
-    Press `ctrl-d` **again** to update the displayed QR code and connection information.
+    Press ++ctrl+d++ **again** to update the displayed QR code and connection information.
 
 You're all set up
 
