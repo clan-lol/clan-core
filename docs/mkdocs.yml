@@ -104,6 +104,8 @@ theme:
     - content.tabs.link
   icon:
     repo: fontawesome/brands/git
+  font:
+    code: Roboto Mono
 
   palette:
     # Palette toggle for light mode
