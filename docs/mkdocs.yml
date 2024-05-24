@@ -94,8 +94,8 @@ docs_dir: site
 site_dir: out
 
 theme:
-  logo: static/clan-white.png
-  favicon: static/clan-dark.png
+  logo: https://clan.lol/static/logo/clan-white.png
+  favicon: https://clan.lol/static/logo/clan-dark.png
   name: material
   features:
     - navigation.instant
