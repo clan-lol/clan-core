@@ -1,6 +1,6 @@
 ---
 title: "Dev Report: Introducing the NixOS to JSON Schema Converter"
-description: "We’ve developed a new library designed to extract interfaces from NixOS modules and convert them into JSON schemas"
+description: "Discover our new library designed to extract JSON schema interfaces from NixOS modules, streamlining frontend development"
 authors:
   - DavHau
 date: 2024-05-25
