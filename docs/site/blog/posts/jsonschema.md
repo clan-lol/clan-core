@@ -4,6 +4,7 @@ description: "Discover our new library designed to extract JSON schema interface
 authors:
   - DavHau
 date: 2024-05-25
+slug: jsonschema-converter
 ---
 
 ## Overview
