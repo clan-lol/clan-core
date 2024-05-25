@@ -183,12 +183,12 @@ Currently, our converter relies on the `options` attribute of evaluated NixOS mo
 
 ## Future Prospects
 
-We hope these experiments inspire the community, encouraging contributions and further development in this space. Share your ideas and contributions through our issue tracker or matrix channel!
+We hope these experiments inspire the community, encourage contributions and further development in this space. Share your ideas and contributions through our issue tracker or matrix channel!
 
 ## Links
 
 - [Comments on NixOS Discourse](https://discourse.nixos.org/t/introducing-the-nixos-to-json-schema-converter/45948)
 - [Source Code of the JSON Schema Library](https://git.clan.lol/clan/clan-core/src/branch/main/lib/jsonschema)
 - [Our Issue Tracker](https://git.clan.lol/clan/clan-core/issues)
-- [Our Matirx Channel](https://matrix.to/#/#clan:lassul.us)
+- [Our Matrix Channel](https://matrix.to/#/#clan:lassul.us)
 - [react-jsonschema-form Playground](https://rjsf-team.github.io/react-jsonschema-form/)
