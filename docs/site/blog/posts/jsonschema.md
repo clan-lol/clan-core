@@ -177,7 +177,7 @@ JSON schema mandates the declaration of all required fields upfront, which might
 
 Certain NixOS module types, like `types.functionTo` and `types.package`, do not map straightforwardly to JSON. For full compatibility, adjustments to NixOS modules might be necessary, such as substituting `listOf package` with `listOf str`.
 
-### Parsing NixOS Modules2
+### Parsing NixOS Modules
 
 Currently, our converter relies on the `options` attribute of evaluated NixOS modules, extracting information from the `type.name` attribute, which is suboptimal. Enhanced introspection capabilities within the NixOS module system would be beneficial.
 
