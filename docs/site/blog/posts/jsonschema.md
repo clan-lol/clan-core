@@ -187,6 +187,7 @@ We hope these experiments inspire the community, encouraging contributions and f
 
 ## Links
 
+- [Comments on NixOS Discourse](https://discourse.nixos.org/t/introducing-the-nixos-to-json-schema-converter/45948)
 - [Source Code of the JSON Schema Library](https://git.clan.lol/clan/clan-core/src/branch/main/lib/jsonschema)
 - [Our Issue Tracker](https://git.clan.lol/clan/clan-core/issues)
 - [Our Matirx Channel](https://matrix.to/#/#clan:lassul.us)
