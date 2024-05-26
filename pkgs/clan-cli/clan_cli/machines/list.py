@@ -42,7 +42,14 @@ def list_machines(debug: bool, flake_url: Path | str) -> dict[str, MachineInfo]:
     res = proc.stdout.strip()
     machines_dict = json.loads(res)
 
-    return {k: MachineInfo(**v) for k, v in machines_dict.items()}
+    return {
+        k: MachineInfo(
+            machine_name=v.get("machineName"),
+            machine_description=v.get("machineDescription", None),
+            machine_icon=v.get("machineIcon", None),
+        )
+        for k, v in machines_dict.items()
+    }
 
 
 def list_command(args: argparse.Namespace) -> None:
