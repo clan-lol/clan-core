@@ -6,7 +6,6 @@ import App from "./App";
 
 const root = document.getElementById("app");
 
-// @ts-ignore: add the clan scope to the window object so we can register callbacks for gtk
 window.clan = window.clan || {};
 
 if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
@@ -15,4 +14,5 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 render(() => <App />, root!);
