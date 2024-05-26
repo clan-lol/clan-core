@@ -42,10 +42,14 @@ def type_to_dict(t: Any, scope: str = "") -> dict:
             return {"type": "array", "items": type_to_dict(t.__args__[0], scope)}
 
         elif issubclass(origin, dict):
-            return {
-                "type": "object",
-                "additionalProperties": type_to_dict(t.__args__[1], scope),
-            }
+            value_type = t.__args__[1]
+            if value_type is Any:
+                return {"type": "object", "additionalProperties": True}
+            else:
+                return {
+                    "type": "object",
+                    "additionalProperties": type_to_dict(value_type, scope),
+                }
 
         raise BaseException(f"Error api type not yet supported {t!s}")
 

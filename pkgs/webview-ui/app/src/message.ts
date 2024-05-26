@@ -4,7 +4,7 @@ import { schema } from "@/api";
 export type API = FromSchema<typeof schema>;
 
 export type OperationNames = keyof API;
-export type OperationArgs<T extends OperationNames> = API[T]["argument"];
+export type OperationArgs<T extends OperationNames> = API[T]["arguments"];
 export type OperationResponse<T extends OperationNames> = API[T]["return"];
 
 declare global {
@@ -15,7 +15,10 @@ declare global {
     webkit: {
       messageHandlers: {
         gtk: {
-          postMessage: (message: { method: OperationNames; data: any }) => void;
+          postMessage: (message: {
+            method: OperationNames;
+            data: OperationArgs<OperationNames>;
+          }) => void;
         };
       };
     };
@@ -31,7 +34,7 @@ function createFunctions<K extends OperationNames>(
   return {
     dispatch: (args: OperationArgs<K>) => {
       console.log(
-        `Operation: ${operationName}, Arguments: ${JSON.stringify(args)}`
+        `Operation: ${String(operationName)}, Arguments: ${JSON.stringify(args)}`
       );
       // Send the data to the gtk app
       window.webkit.messageHandlers.gtk.postMessage({
@@ -69,7 +72,10 @@ const deserialize =
 // Create the API object
 
 const pyApi: PyApi = {} as PyApi;
-operationNames.forEach((name) => {
+operationNames.forEach((opName) => {
+  const name = opName as OperationNames;
+  // @ts-ignore: TODO make typescript happy
   pyApi[name] = createFunctions(name);
 });
+
 export { pyApi };

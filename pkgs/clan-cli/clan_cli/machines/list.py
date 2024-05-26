@@ -20,7 +20,7 @@ class MachineInfo:
 
 
 @API.register
-def list_machines(debug: bool, flake_url: Path | str) -> dict[str, MachineInfo]:
+def list_machines(flake_url: str | Path, debug: bool) -> dict[str, MachineInfo]:
     config = nix_config()
     system = config["system"]
     cmd = nix_eval(
@@ -57,7 +57,7 @@ def list_command(args: argparse.Namespace) -> None:
     print("Listing all machines:\n")
     print("Source: ", flake_path)
     print("-" * 40)
-    for name, machine in list_machines(args.debug, flake_path).items():
+    for name, machine in list_machines(flake_path, args.debug).items():
         description = machine.machine_description or "[no description]"
         print(f"{name}\n: {description}\n")
     print("-" * 40)
