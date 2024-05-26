@@ -74,7 +74,7 @@ const deserialize =
 const pyApi: PyApi = {} as PyApi;
 operationNames.forEach((opName) => {
   const name = opName as OperationNames;
-  // @ts-ignore: TODO make typescript happy
+  // @ts-expect-error - TODO: Fix this. Typescript is not recognizing the receive function correctly
   pyApi[name] = createFunctions(name);
 });
 
