@@ -27,7 +27,7 @@ export const Nested: Component = () => {
           <For each={list()}>
             {(entry, i) => (
               <li>
-                {i() + 1}: {entry.machineName}{" "}
+                {i() + 1}: {entry.machine_name}{" "}
                 {entry.machine_description || "No description"}
               </li>
             )}
