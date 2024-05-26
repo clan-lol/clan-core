@@ -98,7 +98,7 @@ def deploy_nixos(machines: MachineGroup) -> None:
         env = os.environ.copy()
         env["NIX_SSHOPTS"] = ssh_arg
 
-        generate_facts([machine])
+        generate_facts([machine], None)
         upload_secrets(machine)
 
         path = upload_sources(".", target)
