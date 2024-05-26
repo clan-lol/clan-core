@@ -62,8 +62,7 @@ class MainWindow(Adw.ApplicationWindow):
         stack_view.add_named(Logs(), "logs")
 
         webview = WebView(methods=API._registry)
-
-        stack_view.add_named(webview.get_webview(), "list")
+        stack_view.add_named(webview.get_webview(), "webview")
 
         stack_view.set_visible_child_name(config.initial_view)
 
