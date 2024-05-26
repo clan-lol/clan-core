@@ -134,7 +134,10 @@ def prompt_func(text: str) -> str:
 
 
 def _generate_facts_for_machine(
-    machine: Machine, tmpdir: Path, prompt: Callable[[str], str] = prompt_func
+    machine: Machine,
+    service: str | None,
+    tmpdir: Path,
+    prompt: Callable[[str], str] = prompt_func,
 ) -> bool:
     local_temp = tmpdir / machine.name
     local_temp.mkdir()
@@ -145,7 +148,19 @@ def _generate_facts_for_machine(
     public_facts_store = public_facts_module.FactStore(machine=machine)
 
     machine_updated = False
-    for service in machine.facts_data:
+
+    if service and service not in machine.facts_data:
+        services = list(machine.facts_data.keys())
+        raise ClanError(
+            f"Could not find service with name: {service}. The following services are available: {services}"
+        )
+
+    if service:
+        machine_service_facts = {service: machine.facts_data[service]}
+    else:
+        machine_service_facts = machine.facts_data
+
+    for service in machine_service_facts:
         machine_updated |= generate_service_facts(
             machine=machine,
             service=service,
@@ -161,7 +176,9 @@ def _generate_facts_for_machine(
 
 
 def generate_facts(
-    machines: list[Machine], prompt: Callable[[str], str] = prompt_func
+    machines: list[Machine],
+    service: str | None,
+    prompt: Callable[[str], str] = prompt_func,
 ) -> bool:
     was_regenerated = False
     with TemporaryDirectory() as tmp:
@@ -170,7 +187,9 @@ def generate_facts(
         for machine in machines:
             errors = 0
             try:
-                was_regenerated |= _generate_facts_for_machine(machine, tmpdir, prompt)
+                was_regenerated |= _generate_facts_for_machine(
+                    machine, service, tmpdir, prompt
+                )
             except Exception as exc:
                 log.error(f"Failed to generate facts for {machine.name}: {exc}")
                 errors += 1
@@ -189,7 +208,7 @@ def generate_command(args: argparse.Namespace) -> None:
         machines = get_all_machines(args.flake)
     else:
         machines = get_selected_machines(args.flake, args.machines)
-    generate_facts(machines)
+    generate_facts(machines, args.service)
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:
@@ -199,5 +218,11 @@ def register_generate_parser(parser: argparse.ArgumentParser) -> None:
         help="machine to generate facts for. if empty, generate facts for all machines",
         nargs="*",
         default=[],
+    )
+    parser.add_argument(
+        "--service",
+        type=str,
+        help="service to generate facts for, if empty, generate facts for every service",
+        default=None,
     )
     parser.set_defaults(func=generate_command)
