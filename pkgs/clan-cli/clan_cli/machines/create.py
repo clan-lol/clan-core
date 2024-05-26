@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 @dataclass
 class MachineCreateRequest:
     name: str
-    config: dict
+    config: dict[str, int]
 
 
 @API.register
