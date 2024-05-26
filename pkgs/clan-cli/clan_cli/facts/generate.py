@@ -33,6 +33,7 @@ def read_multiline_input(prompt: str = "Finish with Ctrl-D") -> str:
 def generate_service_facts(
     machine: Machine,
     service: str,
+    regenerate: bool,
     secret_facts_store: SecretStoreBase,
     public_facts_store: FactStoreBase,
     tmpdir: Path,
@@ -42,7 +43,7 @@ def generate_service_facts(
     # check if all secrets exist and generate them if at least one is missing
     needs_regeneration = not check_secrets(machine, service=service)
     log.debug(f"{service} needs_regeneration: {needs_regeneration}")
-    if not needs_regeneration:
+    if not (needs_regeneration or regenerate):
         return False
     if not isinstance(machine.flake, Path):
         msg = f"flake is not a Path: {machine.flake}"
@@ -136,6 +137,7 @@ def prompt_func(text: str) -> str:
 def _generate_facts_for_machine(
     machine: Machine,
     service: str | None,
+    regenerate: bool,
     tmpdir: Path,
     prompt: Callable[[str], str] = prompt_func,
 ) -> bool:
@@ -164,6 +166,7 @@ def _generate_facts_for_machine(
         machine_updated |= generate_service_facts(
             machine=machine,
             service=service,
+            regenerate=regenerate,
             secret_facts_store=secret_facts_store,
             public_facts_store=public_facts_store,
             tmpdir=local_temp,
@@ -178,6 +181,7 @@ def _generate_facts_for_machine(
 def generate_facts(
     machines: list[Machine],
     service: str | None,
+    regenerate: bool,
     prompt: Callable[[str], str] = prompt_func,
 ) -> bool:
     was_regenerated = False
@@ -188,7 +192,7 @@ def generate_facts(
             errors = 0
             try:
                 was_regenerated |= _generate_facts_for_machine(
-                    machine, service, tmpdir, prompt
+                    machine, service, regenerate, tmpdir, prompt
                 )
             except Exception as exc:
                 log.error(f"Failed to generate facts for {machine.name}: {exc}")
@@ -208,7 +212,7 @@ def generate_command(args: argparse.Namespace) -> None:
         machines = get_all_machines(args.flake)
     else:
         machines = get_selected_machines(args.flake, args.machines)
-    generate_facts(machines, args.service)
+    generate_facts(machines, args.service, args.regenerate)
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:
@@ -223,6 +227,13 @@ def register_generate_parser(parser: argparse.ArgumentParser) -> None:
         "--service",
         type=str,
         help="service to generate facts for, if empty, generate facts for every service",
+        default=None,
+    )
+    parser.add_argument(
+        "--regenerate",
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        help="whether to regenerate facts for the specified machine",
         default=None,
     )
     parser.set_defaults(func=generate_command)
