@@ -28,7 +28,7 @@ export const makeCountContext = () => {
       getMachines: () => {
         // When the gtk function sends its data the loading state will be set to false
         setLoading(true);
-        pyApi.list_machines.dispatch(".");
+        pyApi.list_machines.dispatch({ debug: true, flake_url: "." });
       },
     },
   ] as const;

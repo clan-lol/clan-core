@@ -9,6 +9,7 @@ from threading import Lock
 from typing import Any
 
 import gi
+from clan_cli.api import API
 
 gi.require_version("WebKit", "6.0")
 
@@ -95,11 +96,34 @@ class WebView:
         self.queue_size += 1
 
     def threaded_handler(
-        self, handler_fn: Callable[[Any], Any], data: Any, method_name: str
+        self,
+        handler_fn: Callable[
+            ...,
+            Any,
+        ],
+        data: dict[str, Any] | None,
+        method_name: str,
     ) -> None:
         with self.mutex_lock:
             log.debug("Executing... ", method_name)
-            result = handler_fn(data)
+            log.debug(f"{data}")
+            if data is None:
+                result = handler_fn()
+            else:
+                reconciled_arguments = {}
+                for k, v in data.items():
+                    # Some functions expect to be called with dataclass instances
+                    # But the js api returns dictionaries.
+                    # Introspect the function and create the expected dataclass from dict dynamically
+                    # Depending on the introspected argument_type
+                    arg_type = API.get_method_argtype(method_name, k)
+                    if dataclasses.is_dataclass(arg_type):
+                        reconciled_arguments[k] = arg_type(**v)
+                    else:
+                        reconciled_arguments[k] = v
+
+                result = handler_fn(**reconciled_arguments)
+
             serialized = json.dumps(dataclass_to_dict(result))
 
             # Use idle_add to queue the response call to js on the main GTK thread
