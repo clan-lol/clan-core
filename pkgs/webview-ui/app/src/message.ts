@@ -1,11 +1,11 @@
 import { FromSchema } from "json-schema-to-ts";
 import { schema } from "@/api";
 
-type API = FromSchema<typeof schema>;
+export type API = FromSchema<typeof schema>;
 
-type OperationNames = keyof API;
-type OperationArgs<T extends OperationNames> = API[T]["argument"];
-type OperationResponse<T extends OperationNames> = API[T]["return"];
+export type OperationNames = keyof API;
+export type OperationArgs<T extends OperationNames> = API[T]["argument"];
+export type OperationResponse<T extends OperationNames> = API[T]["return"];
 
 declare global {
   interface Window {
@@ -40,7 +40,7 @@ function createFunctions<K extends OperationNames>(
       });
     },
     receive: (fn: (response: OperationResponse<K>) => void) => {
-      window.clan.list_machines = deserialize(fn);
+      window.clan[operationName] = deserialize(fn);
     },
   };
 }
@@ -59,6 +59,7 @@ const deserialize =
   <T>(fn: (response: T) => void) =>
   (str: string) => {
     try {
+      console.debug("Received data: ", str);
       fn(JSON.parse(str) as T);
     } catch (e) {
       alert(`Error parsing JSON: ${e}`);

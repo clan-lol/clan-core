@@ -44,6 +44,7 @@ def type_to_dict(t: Any, scope: str = "") -> dict:
         elif issubclass(origin, dict):
             return {
                 "type": "object",
+                "additionalProperties": type_to_dict(t.__args__[1], scope),
             }
 
         raise BaseException(f"Error api type not yet supported {t!s}")
