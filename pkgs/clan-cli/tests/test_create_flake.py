@@ -26,6 +26,14 @@ def test_create_flake(
     cli.run(["machines", "create", "machine1"])
     capsys.readouterr()  # flush cache
 
+    # create a hardware-configuration.nix that doesn't throw an eval error
+
+    for patch_machine in ["jon", "sara"]:
+        with open(
+            flake_dir / "machines" / f"{patch_machine}/hardware-configuration.nix", "w"
+        ) as hw_config_nix:
+            hw_config_nix.write("{}")
+
     cli.run(["machines", "list"])
     assert "machine1" in capsys.readouterr().out
     flake_show = subprocess.run(
