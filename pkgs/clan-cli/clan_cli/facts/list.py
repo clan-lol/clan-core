@@ -26,7 +26,14 @@ def get_all_facts(machine: Machine) -> dict:
 
 def get_command(args: argparse.Namespace) -> None:
     machine = Machine(name=args.machine, flake=args.flake)
-    print(json.dumps(get_all_facts(machine), indent=4))
+
+    # the raw_facts are bytestrings making them not json serializable
+    raw_facts = get_all_facts(machine)
+    facts = dict()
+    for key in raw_facts["TODO"]:
+        facts[key] = raw_facts["TODO"][key].decode("utf8")
+
+    print(json.dumps(facts, indent=4))
 
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:
