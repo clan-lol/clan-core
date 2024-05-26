@@ -1,7 +1,25 @@
 from collections.abc import Callable
-from typing import Any, TypeVar
+from dataclasses import dataclass
+from typing import Any, Generic, Literal, TypeVar
 
 T = TypeVar("T")
+
+
+ResponseDataType = TypeVar("ResponseDataType")
+
+
+@dataclass
+class ApiError:
+    message: str
+    description: str | None
+    location: list[str] | None
+
+
+@dataclass
+class ApiResponse(Generic[ResponseDataType]):
+    status: Literal["success", "error"]
+    errors: list[ApiError] | None
+    data: ResponseDataType | None
 
 
 class _MethodRegistry:
