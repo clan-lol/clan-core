@@ -8,22 +8,29 @@
     "build": "npm run check && vite build && npm run convert-html",
     "convert-html": "node gtk.webview.js",
     "serve": "vite preview",
-    "check": "tsc --noEmit --skipLibCheck"
+    "check": "tsc --noEmit --skipLibCheck && eslint ./src"
   },
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.3.0",
+    "@types/node": "^20.12.12",
+    "@typescript-eslint/parser": "^7.10.0",
     "autoprefixer": "^10.4.19",
+    "classnames": "^2.5.1",
     "daisyui": "^4.11.1",
+    "eslint": "^8.57.0",
+    "json-schema-to-ts": "^3.1.0",
     "postcss": "^8.4.38",
+    "prettier": "^3.2.5",
     "solid-devtools": "^0.29.2",
     "tailwindcss": "^3.4.3",
-    "typescript": "^5.3.3",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.10.0",
     "vite": "^5.0.11",
-    "vite-plugin-solid": "^2.8.2"
+    "vite-plugin-solid": "^2.8.2",
+    "eslint-plugin-tailwindcss": "^3.17.0"
   },
   "dependencies": {
-    "@types/node": "^20.12.12",
-    "json-schema-to-ts": "^3.1.0",
     "solid-js": "^1.8.11"
   }
 }
