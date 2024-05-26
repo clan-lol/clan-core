@@ -32,7 +32,7 @@ def dataclass_to_dict(obj: Any) -> Any:
     """
     if dataclasses.is_dataclass(obj):
         return {k: dataclass_to_dict(v) for k, v in dataclasses.asdict(obj).items()}
-    elif isinstance(obj, (list, tuple)):
+    elif isinstance(obj, list | tuple):
         return [dataclass_to_dict(item) for item in obj]
     elif isinstance(obj, dict):
         return {k: dataclass_to_dict(v) for k, v in obj.items()}

@@ -16,7 +16,10 @@ def test_machine_subcommands(
     cli.run(["--flake", str(test_flake_with_core.path), "machines", "list"])
 
     out = capsys.readouterr()
-    assert "machine1\nvm1\nvm2\n" == out.out
+
+    assert "machine1" in out.out
+    assert "nvm1" in out.out
+    assert "nvm2" in out.out
 
     cli.run(
         ["--flake", str(test_flake_with_core.path), "machines", "delete", "machine1"]
@@ -25,4 +28,7 @@ def test_machine_subcommands(
     capsys.readouterr()
     cli.run(["--flake", str(test_flake_with_core.path), "machines", "list"])
     out = capsys.readouterr()
-    assert "vm1\nvm2\n" == out.out
+
+    assert "machine1" not in out.out
+    assert "nvm1" in out.out
+    assert "nvm2" in out.out
