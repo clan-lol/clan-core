@@ -39,9 +39,12 @@ type CountContextType = ReturnType<typeof makeCountContext>;
 export const CountContext = createContext<CountContextType>([
   {
     loading: () => false,
+
+    // eslint-disable-next-line
     machines: () => ({}),
   },
   {
+    // eslint-disable-next-line
     getMachines: () => {},
   },
 ]);
