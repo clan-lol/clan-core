@@ -151,7 +151,25 @@ For more detailed information, visit: https://docs.clan.lol/getting-started
     )
     config.register_parser(parser_config)
 
-    parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
+    parser_ssh = subparsers.add_parser(
+        "ssh",
+        help="ssh to a remote machine",
+        epilog=(
+            """
+This subcommand allows seamless ssh access to the nixos-image builders.
+
+Examples:
+
+  $ clan ssh [ssh_args ...] --json [JSON]
+  Will ssh in to the machine based on the deployment information contained in
+  the json string. [JSON] can either be a json formatted string itself, or point
+  towards a file containing the deployment information
+
+For more detailed information, visit: https://docs.clan.lol/getting-started/deploy
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     ssh_cli.register_parser(parser_ssh)
 
     parser_secrets = subparsers.add_parser(
