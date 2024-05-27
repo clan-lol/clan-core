@@ -85,9 +85,9 @@
       };
     in
     {
-      # all machines managed by cLAN
+      # all machines managed by Clan
       inherit (clan) nixosConfigurations clanInternals;
-      # add the cLAN cli tool to the dev shell
+      # add the Clan cli tool to the dev shell
       devShells.${system}.default = pkgs.mkShell {
         packages = [ clan-core.packages.${system}.clan-cli ];
       };
