@@ -53,6 +53,17 @@ class AppendOptionAction(argparse.Action):
 
 def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog=prog, description="The clan cli tool.")
+    parser = argparse.ArgumentParser(
+        prog=prog,
+        description="cLAN tool",
+        epilog=(
+            """
+Online reference for the clan cli tool: https://docs.clan.lol/reference/cli/
+For more detailed information, visit: https://docs.clan.lol
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
 
     parser.add_argument(
         "--debug",
@@ -90,28 +101,142 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         "backups",
         help="manage backups of clan machines",
         description="manage backups of clan machines",
+        epilog=(
+            """
+This subcommand provides an interface to backups that clan machines expose.
+
+Examples:
+
+  $ clan backups list [MACHINE]
+  List backups for the machine [MACHINE]
+
+  $ clan backups create [MACHINE]
+  Create a backup for the machine [MACHINE].
+
+  $ clan backups restore [MACHINE] [PROVIDER] [NAME]
+  The backup to restore for the machine [MACHINE] with the configured [PROVIDER]
+  with the name [NAME].
+
+For more detailed information, visit: https://docs.clan.lol/getting-started/backups/
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     backups.register_parser(parser_backups)
 
     parser_flake = subparsers.add_parser(
-        "flakes", help="create a clan flake inside the current directory"
+        "flakes",
+        help="create a clan flake inside the current directory",
+        epilog=(
+            """
+Examples:
+  $ clan flakes create [DIR]
+  Will create a new clan flake in the specified directory and create it if it
+  doesn't exist yet. The flake will be created from a default template.
+
+For more detailed information, visit: https://docs.clan.lol/getting-started
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     flakes.register_parser(parser_flake)
 
-    parser_config = subparsers.add_parser("config", help="set nixos configuration")
+    parser_config = subparsers.add_parser(
+        "config",
+        help="set nixos configuration",
+        epilog=(
+            """
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     config.register_parser(parser_config)
 
     parser_ssh = subparsers.add_parser("ssh", help="ssh to a remote machine")
     ssh_cli.register_parser(parser_ssh)
 
-    parser_secrets = subparsers.add_parser("secrets", help="manage secrets")
+    parser_secrets = subparsers.add_parser(
+        "secrets",
+        help="manage secrets",
+        epilog=(
+            """
+This subcommand provides an interface to secret facts.
+
+Examples:
+
+  $ clan secrets list [regex]
+  Will list secrets for all managed machines.
+  It accepts an optional regex, allowing easy filtering of returned secrets.
+
+  $ clan secrets get [SECRET]
+  Will display the content of the specified secret.
+
+For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     secrets.register_parser(parser_secrets)
 
-    parser_facts = subparsers.add_parser("facts", help="manage facts")
+    parser_facts = subparsers.add_parser(
+        "facts",
+        help="manage facts",
+        epilog=(
+            """
+
+This subcommand provides an interface to facts of clan machines.
+Facts are artifacts that a service can generate.
+There are public and secret facts. 
+Public facts can be referenced by other machines directly.
+Public facts can include: ip addresses, public keys.
+Secret facts can include: passwords, private keys.
+
+A service is an included clan-module that implements facts generation functionality.
+For example the zerotier module will generate private and public facts.
+In this case the public fact will be the resulting zerotier-ip of the machine.
+The secret fact will be the zerotier-identity-secret, which is used by zerotier
+to prove the machine has control of the zerotier-ip.
+
+Examples:
+
+  $ clan facts generate
+  Will generate facts for all machines.
+   
+  $ clan facts generate --service [SERVICE] --regenerate
+  Will regenerate facts, if they are already generated for a specific service.
+  This is especially useful for resetting certain passwords while leaving the rest
+  of the facts for a machine in place.
+
+For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     facts.register_parser(parser_facts)
 
     parser_machine = subparsers.add_parser(
-        "machines", help="manage machines and their configuration"
+        "machines",
+        help="manage machines and their configuration",
+        epilog=(
+            """
+This subcommand provides an interface to machines managed by clan.
+
+Examples:
+
+  $ clan machines list
+  List all the machines managed by clan.
+
+  $ clan machines update [MACHINES]
+  Will update the specified machine [MACHINE], if [MACHINE] is omitted, the command 
+  will attempt to update every configured machine.
+
+  $ clan machines install [MACHINES] [TARGET_HOST]
+  Will install the specified machine [MACHINE], to the specified [TARGET_HOST].
+
+For more detailed information, visit: https://docs.clan.lol/getting-started/deploy
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     machines.register_parser(parser_machine)
 
