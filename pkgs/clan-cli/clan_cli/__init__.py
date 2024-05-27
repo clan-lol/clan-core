@@ -126,6 +126,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/back
     parser_flake = subparsers.add_parser(
         "flakes",
         help="create a clan flake inside the current directory",
+        description="create a clan flake inside the current directory",
         epilog=(
             """
 Examples:
@@ -143,6 +144,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started
     parser_config = subparsers.add_parser(
         "config",
         help="set nixos configuration",
+        description="set nixos configuration",
         epilog=(
             """
         """
@@ -175,6 +177,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/depl
     parser_secrets = subparsers.add_parser(
         "secrets",
         help="manage secrets",
+        description="manage secrets",
         epilog=(
             """
 This subcommand provides an interface to secret facts.
@@ -198,6 +201,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/secr
     parser_facts = subparsers.add_parser(
         "facts",
         help="manage facts",
+        description="manage facts",
         epilog=(
             """
 
@@ -234,6 +238,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/secr
     parser_machine = subparsers.add_parser(
         "machines",
         help="manage machines and their configuration",
+        description="manage machines and their configuration",
         epilog=(
             """
 This subcommand provides an interface to machines managed by clan.
