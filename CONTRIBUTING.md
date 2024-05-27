@@ -1,4 +1,4 @@
-# Contributing to cLAN
+# Contributing to Clan
 
 ## Live-reloading documentation
 

@@ -27,7 +27,7 @@ let
     name = "org.clan.vm-manager";
     exec = "clan-vm-manager %u";
     icon = ./clan_vm_manager/assets/clan_white.png;
-    desktopName = "cLAN Manager";
+    desktopName = "Clan Manager";
     startupWMClass = "clan";
     mimeTypes = [ "x-scheme-handler/clan" ];
   };
