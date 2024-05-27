@@ -6,7 +6,7 @@ from pathlib import Path
 
 from clan_cli.api import API
 
-from ..cmd import Log, run
+from ..cmd import run_no_stdout
 from ..nix import nix_config, nix_eval
 
 log = logging.getLogger(__name__)
@@ -34,10 +34,7 @@ def list_machines(flake_url: str | Path, debug: bool) -> dict[str, MachineInfo]:
         ]
     )
 
-    if not debug:
-        proc = run(cmd, log=Log.NONE)
-    else:
-        proc = run(cmd)
+    proc = run_no_stdout(cmd)
 
     res = proc.stdout.strip()
     machines_dict = json.loads(res)

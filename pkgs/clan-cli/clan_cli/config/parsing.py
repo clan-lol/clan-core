@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from ..cmd import run
+from ..cmd import run_no_stdout
 from ..errors import ClanError
 from ..nix import nix_eval
 
@@ -32,7 +32,7 @@ def schema_from_module_file(
     """
     # run the nix expression and parse the output as json
     cmd = nix_eval(["--expr", nix_expr])
-    proc = run(cmd)
+    proc = run_no_stdout(cmd)
     return json.loads(proc.stdout)
 
 

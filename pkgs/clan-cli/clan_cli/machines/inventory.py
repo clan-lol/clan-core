@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from ..cmd import run
+from ..cmd import run_no_stdout
 from ..nix import nix_build, nix_config
 from .machines import Machine
 
@@ -10,7 +10,7 @@ from .machines import Machine
 def get_all_machines(flake_dir: Path) -> list[Machine]:
     config = nix_config()
     system = config["system"]
-    json_path = run(
+    json_path = run_no_stdout(
         nix_build([f'{flake_dir}#clanInternals.all-machines-json."{system}"'])
     ).stdout
 

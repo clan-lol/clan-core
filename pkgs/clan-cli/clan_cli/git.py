@@ -4,7 +4,7 @@ from pathlib import Path
 from clan_cli.errors import ClanError
 from clan_cli.nix import nix_shell
 
-from .cmd import Log, run
+from .cmd import Log, run, run_no_stdout
 from .locked_open import locked_open
 
 
@@ -78,7 +78,7 @@ def _commit_file_to_git(
             ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code"]
             + [str(file_path) for file_path in file_paths],
         )
-        result = run(cmd, check=False, cwd=repo_dir)
+        result = run_no_stdout(cmd, check=False, cwd=repo_dir)
         # if there is no diff, return
         if result.returncode == 0:
             return
@@ -97,6 +97,6 @@ def _commit_file_to_git(
             + [str(file_path) for file_path in file_paths],
         )
 
-        run(
+        run_no_stdout(
             cmd, error_msg=f"Failed to commit {file_paths} to git repository {repo_dir}"
         )

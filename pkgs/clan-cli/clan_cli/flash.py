@@ -12,7 +12,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
-from .cmd import Log, run
+from .cmd import Log, run, run_no_stdout
 from .errors import ClanError
 from .facts.secret_modules import SecretStoreBase
 from .machines.machines import Machine
@@ -60,7 +60,7 @@ def get_keymap_and_locale() -> dict[str, str]:
     keymap = "en"
 
     # Execute the `localectl status` command
-    result = run(["localectl", "status"])
+    result = run_no_stdout(["localectl", "status"])
 
     if result.returncode == 0:
         output = result.stdout

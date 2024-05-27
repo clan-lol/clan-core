@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from .cmd import run
+from .cmd import run_no_stdout
 from .dirs import nixpkgs_flake, nixpkgs_source
 
 
@@ -55,12 +55,12 @@ def nix_build(flags: list[str], gcroot: Path | None = None) -> list[str]:
 
 def nix_add_to_gcroots(nix_path: Path, dest: Path) -> None:
     cmd = ["nix-store", "--realise", f"{nix_path}", "--add-root", f"{dest}"]
-    run(cmd)
+    run_no_stdout(cmd)
 
 
 def nix_config() -> dict[str, Any]:
     cmd = nix_command(["show-config", "--json"])
-    proc = run(cmd)
+    proc = run_no_stdout(cmd)
     data = json.loads(proc.stdout)
     config = {}
     for key, value in data.items():
@@ -95,7 +95,7 @@ def nix_eval(flags: list[str]) -> list[str]:
 
 def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
     cmd = nix_command(["flake", "metadata", "--json", f"{flake_url}"])
-    proc = run(cmd)
+    proc = run_no_stdout(cmd)
     data = json.loads(proc.stdout)
     return data
 

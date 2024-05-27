@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any, get_origin
 
-from clan_cli.cmd import run
+from clan_cli.cmd import run_no_stdout
 from clan_cli.dirs import machine_settings_file
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_file
@@ -116,7 +116,7 @@ def options_for_machine(
         f"{clan_dir}#nixosConfigurations.{machine_name}.config.clanCore.optionsNix"
     )
     cmd = nix_eval(flags=flags)
-    proc = run(
+    proc = run_no_stdout(
         cmd,
         error_msg=f"Failed to read options for machine {machine_name}",
     )
@@ -136,7 +136,7 @@ def read_machine_option_value(
             f"{clan_dir}#nixosConfigurations.{machine_name}.config.{option}",
         ],
     )
-    proc = run(cmd, error_msg=f"Failed to read option {option}")
+    proc = run_no_stdout(cmd, error_msg=f"Failed to read option {option}")
 
     value = json.loads(proc.stdout)
     # print the value so that the output can be copied and fed as an input.

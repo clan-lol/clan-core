@@ -2,7 +2,7 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 
-from ..cmd import run
+from ..cmd import run_no_stdout
 from ..dirs import machine_gcroot
 from ..errors import ClanError
 from ..machines.list import list_machines
@@ -30,7 +30,7 @@ class FlakeConfig:
 
 
 def run_cmd(cmd: list[str]) -> str:
-    proc = run(cmd)
+    proc = run_no_stdout(cmd)
     return proc.stdout.strip()
 
 
