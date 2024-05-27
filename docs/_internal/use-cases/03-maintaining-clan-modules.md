@@ -1,10 +1,10 @@
-# cLAN module maintaining
+# Clan module maintaining
 
 ## General Description
 
-cLAN modules are pieces of software that can be used by admins to build a private or public infrastructure.
+Clan modules are pieces of software that can be used by admins to build a private or public infrastructure.
 
-cLAN modules should have the following properties:
+Clan modules should have the following properties:
 
 1. Documented: It should be clear what the module does and how to use it.
 1. Self contained: A module should be usable as is. If it requires any other software or settings, those should be delivered with the module itself.

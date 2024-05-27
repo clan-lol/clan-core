@@ -53,7 +53,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
         gcroot_icon: Path = machine_gcroot(flake_url=str(flake_url)) / vm.machine_name
         nix_add_to_gcroots(vm.machine_icon, gcroot_icon)
 
-    # Get the cLAN name
+    # Get the Clan name
     cmd = nix_eval(
         [
             f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clanCore.clanName'
@@ -70,7 +70,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     )
     res = run_cmd(cmd)
 
-    # If the icon is null, no icon is set for this cLAN
+    # If the icon is null, no icon is set for this Clan
     if res == "null":
         icon_path = None
     else:
@@ -113,7 +113,7 @@ def inspect_command(args: argparse.Namespace) -> None:
     res = inspect_flake(
         flake_url=inspect_options.flake, machine_name=inspect_options.machine
     )
-    print("cLAN name:", res.clan_name)
+    print("Clan name:", res.clan_name)
     print("Icon:", res.icon)
     print("Description:", res.description)
     print("Last updated:", res.last_updated)
