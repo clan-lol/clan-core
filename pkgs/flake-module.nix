@@ -25,6 +25,7 @@
           moonlight-sunshine-accept = pkgs.callPackage ./moonlight-sunshine-accept { };
           merge-after-ci = pkgs.callPackage ./merge-after-ci { inherit (config.packages) tea-create-pr; };
           pending-reviews = pkgs.callPackage ./pending-reviews { };
+          editor = pkgs.callPackage ./editor/clan-edit-codium.nix { };
         }
         // lib.optionalAttrs pkgs.stdenv.isLinux {
           wayland-proxy-virtwl = pkgs.callPackage ./wayland-proxy-virtwl { };
