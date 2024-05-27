@@ -83,7 +83,7 @@ let
     cp -r ${./.} $out
     chmod -R +w $out
     rm $out/clan_cli/config/jsonschema
-    ln -s ${nixpkgs'} $out/clan_cli/nixpkgs
+    ln -sf ${nixpkgs'} $out/clan_cli/nixpkgs
     cp -r ${../../lib/jsonschema} $out/clan_cli/config/jsonschema
   '';
 
@@ -101,7 +101,7 @@ let
       outputs = _inputs: { };
     }
     EOF
-    ln -s ${nixpkgs} $out/path
+    ln -sf ${nixpkgs} $out/path
     nix flake update $out \
       --store ./. \
       --extra-experimental-features 'nix-command flakes'
