@@ -52,10 +52,9 @@ class AppendOptionAction(argparse.Action):
 
 
 def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog=prog, description="The clan cli tool.")
     parser = argparse.ArgumentParser(
         prog=prog,
-        description="cLAN tool",
+        description="The clan cli tool.",
         epilog=(
             """
 Online reference for the clan cli tool: https://docs.clan.lol/reference/cli/
