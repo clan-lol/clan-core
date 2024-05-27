@@ -20,11 +20,11 @@ There are several reasons for choosing to self-host. These can include:
 
 Alice wants to self-host a mumble server for her family.
 
-- She visits to the cLAN website, and follows the instructions on how to install cLAN-OS on her server.
-- Alice logs into a terminal on her server via SSH (alternatively uses cLAN GUI app)
-- Using the cLAN CLI or GUI tool, alice creates a new private network for her family (VPN)
-- Alice now browses a list of curated cLAN modules and finds a module for mumble.
-- She adds this module to her network using the cLAN tool.
+- She visits to the Clan website, and follows the instructions on how to install Clan-OS on her server.
+- Alice logs into a terminal on her server via SSH (alternatively uses Clan GUI app)
+- Using the Clan CLI or GUI tool, alice creates a new private network for her family (VPN)
+- Alice now browses a list of curated Clan modules and finds a module for mumble.
+- She adds this module to her network using the Clan tool.
 - After that, she uses the clan tool to invite her family members to her network
 - Other family members join the private network via the invitation.
 - By accepting the invitation, other members automatically install all required software to interact with the network on their machine.
@@ -33,7 +33,7 @@ Alice wants to self-host a mumble server for her family.
 
 Alice wants to add a photos app to her private network
 
-- She uses the clan CLI or GUI tool to manage her existing private cLAN family network
+- She uses the clan CLI or GUI tool to manage her existing private Clan family network
 - She discovers a module for photoprism, and adds it to her server using the tool
 - Other members who are already part of her network, will receive a notification that an update is required to their environment
 - After accepting, all new software and services to interact with the new photoprism service will be installed automatically.
