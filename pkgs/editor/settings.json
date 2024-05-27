@@ -1,0 +1,21 @@
+{
+  "security.workspace.trust.enabled": false,
+  "nix.enableLanguageServer": true,
+  "nix.serverPath": "nixd",
+  "nix.formatterPath": "nixpkgs-fmt",
+  "nix.serverSettings": {
+    "nixd": {
+      "formatting": {
+        "command": "nixpkgs-fmt"
+      },
+      "options": {
+        "nixos": {
+          "expr": "(builtins.getFlake \"github:nixos/nixpkgs\").nixosConfigurations.<name>.options"
+        },
+        "home-manager": {
+          "expr": "(builtins.getFlake \"github:nix-community/home-manager\").homeConfigurations.<name>.options"
+        }
+      }
+    }
+  }
+}
