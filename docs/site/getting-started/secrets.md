@@ -4,10 +4,15 @@ Clan enables encryption of secrets (such as passwords & keys) ensuring security 
 
 Clan utilizes the [sops](https://github.com/getsops/sops) format and integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.
 
+This guide will walk you through:
 
-### Create Your Master Keypair
+- **Creating a Keypair for Your User**: Learn how to generate a keypair for $USER to securely control all secrets.
+- **Creating Your First Secret**: Step-by-step instructions on creating your initial secret.
+- **Assigning Machine Access to the Secret**: Understand how to grant a machine access to the newly created secret.
 
-To get started, you'll need to create **Your master keypair**.
+## Create Your Admin Keypair
+
+To get started, you'll need to create **Your admin keypair**.
 
 !!! info
     Don't worry — if you've already made one before, this step won't change or overwrite it.
@@ -27,7 +32,7 @@ Also add your age public key to the repository with 'clan secrets users add YOUR
 
 !!! warning
     Make sure to keep a safe backup of the private key you've just created.
-    If it's lost, you won't be able to get to your secrets anymore because they all need the master key to be unlocked.
+    If it's lost, you won't be able to get to your secrets anymore because they all need the admin key to be unlocked.
 
 !!! note
     It's safe to add any secrets created by the clan CLI and placed in your repository to version control systems like `git`.
@@ -35,7 +40,7 @@ Also add your age public key to the repository with 'clan secrets users add YOUR
 ### Add Your Public Key
 
 ```bash
-clan secrets users add <your_username> <your_public_key>
+clan secrets users add $USER <your_public_key>
 ```
 
 It's best to choose the same username as on your Setup/Admin Machine that you use to control the deployment with.
