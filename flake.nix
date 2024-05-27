@@ -21,8 +21,6 @@
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
-    git-hooks.url = "github:fricklerhandwerk/git-hooks";
-    git-hooks.flake = false;
   };
 
   outputs =
