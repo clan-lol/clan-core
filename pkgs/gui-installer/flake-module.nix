@@ -3,7 +3,16 @@
     { pkgs, ... }:
     let
       nfpmConfig = pkgs.writeText "clan-nfpm-config.yaml" (
-        builtins.toJSON { name = "clan-gui-installer"; }
+
+        builtins.toJSON {
+          name = "clan-gui-installer";
+          contents = [
+            {
+              src = "${./gui-installer.sh}";
+              dst = "/usr/bin/clan-vm-manager";
+            }
+          ];
+        }
       );
       installerFor =
         packager:
