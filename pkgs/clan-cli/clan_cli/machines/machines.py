@@ -10,7 +10,7 @@ from clan_cli.clan_uri import ClanURI, MachineData
 from clan_cli.dirs import vm_state_dir
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
 
-from ..cmd import run
+from ..cmd import run_no_stdout
 from ..errors import ClanError
 from ..nix import nix_build, nix_config, nix_eval, nix_metadata
 from ..ssh import Host, parse_deployment_address
@@ -197,7 +197,7 @@ class Machine:
             config_json.flush()
 
             file_info = json.loads(
-                run(
+                run_no_stdout(
                     nix_eval(
                         [
                             "--impure",
@@ -247,10 +247,10 @@ class Machine:
             ]
 
         if method == "eval":
-            output = run(nix_eval(args)).stdout.strip()
+            output = run_no_stdout(nix_eval(args)).stdout.strip()
             return output
         elif method == "build":
-            outpath = run(nix_build(args)).stdout.strip()
+            outpath = run_no_stdout(nix_build(args)).stdout.strip()
             return Path(outpath)
         else:
             raise ValueError(f"Unknown method {method}")
