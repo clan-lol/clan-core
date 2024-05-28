@@ -22,7 +22,7 @@ class Option:
         md_li += indent_next(
             f"\n{self.description.strip()}" if self.description else ""
         )
-        md_li += indent_next(f"\n{self.epilog.strip()}" if self.epilog else "")
+        # md_li += indent_next(f"\n{self.epilog.strip()}" if self.epilog else "")
 
         return md_li
 
@@ -82,9 +82,6 @@ class Category:
             md_li += indent_all(
                 f"{self.description.strip()}\n" if self.description else "", 4
             )
-            md_li += "\n"
-            md_li += indent_all(f"{self.epilog.strip()}\n" if self.epilog else "", 4)
-            md_li += "\n"
 
         return md_li
 
@@ -222,7 +219,7 @@ def get_subcommands(
                     Category(
                         title=f"{parent} {name}",
                         description=subparser.description,
-                        epilog=subparser.epilog,
+                        # epilog=subparser.epilog,
                         level=level,
                         options=_options,
                         positionals=_positionals,
