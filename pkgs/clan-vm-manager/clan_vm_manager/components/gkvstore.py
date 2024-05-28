@@ -29,7 +29,7 @@ class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
         self.gtype = gtype
         self.key_gen = key_gen
         # From Python 3.7 onwards dictionaries are ordered by default
-        self._items: "dict[K, V]" = dict()
+        self._items: dict[K, V] = dict()
 
     ##################################
     #                                #
