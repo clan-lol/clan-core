@@ -156,6 +156,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started
     parser_ssh = subparsers.add_parser(
         "ssh",
         help="ssh to a remote machine",
+        description="ssh to a remote machine",
         epilog=(
             """
 This subcommand allows seamless ssh access to the nixos-image builders.
@@ -262,14 +263,22 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/depl
     )
     machines.register_parser(parser_machine)
 
-    parser_vms = subparsers.add_parser("vms", help="manage virtual machines")
+    parser_vms = subparsers.add_parser(
+        "vms", help="manage virtual machines", description="manage virtual machines"
+    )
     vms.register_parser(parser_vms)
 
-    parser_history = subparsers.add_parser("history", help="manage history")
+    parser_history = subparsers.add_parser(
+        "history",
+        help="manage history",
+        description="manage history",
+    )
     history.register_parser(parser_history)
 
     parser_flash = subparsers.add_parser(
-        "flash", help="flash machines to usb sticks or into isos"
+        "flash",
+        help="flash machines to usb sticks or into isos",
+        description="flash machines to usb sticks or into isos",
     )
     flash.register_parser(parser_flash)
 
