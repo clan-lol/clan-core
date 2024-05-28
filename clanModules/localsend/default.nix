@@ -9,7 +9,7 @@
   # - cli frontend: https://github.com/localsend/localsend/issues/11
   # - ipv6 support: https://github.com/localsend/localsend/issues/549
   options.clan.localsend = {
-    enable = lib.mkEnableOption (lib.mdDoc "enable the localsend module");
+    enable = lib.mkEnableOption "enable the localsend module";
     defaultLocation = lib.mkOption {
       type = lib.types.str;
       description = "The default download location";
