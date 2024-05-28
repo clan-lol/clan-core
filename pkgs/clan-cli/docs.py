@@ -89,6 +89,50 @@ class Category:
         return md_li
 
 
+def epilog_to_md(text: str) -> str:
+    """
+    Convert the epilog to md
+    """
+    after_examples = False
+    md = ""
+    # md += text
+    for line in text.split("\n"):
+        if line.strip() == "Examples:":
+            after_examples = True
+            md += "### Examples"
+            md += "\n"
+        else:
+            if after_examples:
+                if line.strip().startswith("$"):
+                    md += f"`{line}`"
+                    md += "\n"
+                    md += "\n"
+                else:
+                    if contains_https_link(line):
+                        line = convert_to_markdown_link(line)
+                    md += line
+                    md += "\n"
+            else:
+                md += line
+                md += "\n"
+    return md
+
+
+import re
+
+
+def contains_https_link(line: str) -> bool:
+    pattern = r"https://\S+"
+    return re.search(pattern, line) is not None
+
+
+def convert_to_markdown_link(line: str) -> str:
+    pattern = r"(https://\S+)"
+
+    # Replacement pattern to convert it to a Markdown link
+    return re.sub(pattern, r"[\1](\1)", line)
+
+
 def indent_next(text: str, indent_size: int = 4) -> str:
     """
     Indent all lines in a string except the first line.
@@ -222,6 +266,7 @@ def collect_commands() -> list[Category]:
                         options=_options,
                         positionals=_positionals,
                         subcommands=_subcommands,
+                        epilog=subparser.epilog,
                         level=1,
                     )
                 )
@@ -280,6 +325,7 @@ def build_command_reference() -> None:
         markdown = files.get(folder / f"{filename}.md", "")
 
         markdown += f"{'#'*(cmd.level)} {cmd.title.capitalize()}\n\n"
+
         markdown += f"{cmd.description}\n\n" if cmd.description else ""
 
         # usage: clan vms run [-h] machine
@@ -319,6 +365,8 @@ def build_command_reference() -> None:
             markdown += """!!! info "Commands"\n"""
             markdown += indent_all(commands_fmt)
             markdown += "\n"
+
+        markdown += f"{epilog_to_md(cmd.epilog)}\n\n" if cmd.epilog else ""
 
         files[folder / f"{filename}.md"] = markdown
 
