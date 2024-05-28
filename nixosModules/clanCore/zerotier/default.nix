@@ -81,7 +81,7 @@ in
       };
     };
     settings = lib.mkOption {
-      description = lib.mdDoc "override the network config in /var/lib/zerotier/bla/$network.json";
+      description = "override the network config in /var/lib/zerotier/bla/$network.json";
       type = lib.types.submodule { freeformType = (pkgs.formats.json { }).type; };
     };
   };
