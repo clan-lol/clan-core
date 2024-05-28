@@ -22,9 +22,9 @@ Let's get your development environment up and running:
 
 2. **Install direnv**:
 
-   - Download the direnv package from [here](https://direnv.net/docs/installation.html) or run the following command:
+   - To automatically setup a devshell on entering the directory
      ```bash
-     curl -sfL https://direnv.net/install.sh | bash
+     nix profile install nixpkgs#nix-direnv-flakes
      ```
 
 3. **Add direnv to your shell**:
@@ -36,9 +36,14 @@ Let's get your development environment up and running:
    echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc && eval "$SHELL"
    ```
 
-4. **Clone the Repository and Navigate**:
-
-   - Clone this repository and navigate to it.
+4. **Create a Gitea Account**:
+   - Register an account on https://git.clan.lol
+   - Fork the [clan-core](https://git.clan.lol/clan/clan-core) repository
+   - Clone the repository and navigate to it
+   - Add a new remote called upstream:
+      ```bash
+      git remote add upstream gitea@git.clan.lol:clan/clan-core.git
+      ```
 
 5. **Allow .envrc**:
 
@@ -48,58 +53,67 @@ Let's get your development environment up and running:
      ```
    - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
 
-# Setting Up Your Git Workflow
-
-Let's set up your Git workflow to collaborate effectively:
-
-1. **Register Your Gitea Account Locally**:
-
-   - Execute the following command to add your Gitea account locally:
-     ```bash
-     tea login add
-     ```
-   - Fill out the prompt as follows:
-     - URL of Gitea instance: `https://git.clan.lol`
-     - Name of new Login [gitea.gchq.icu]: `gitea.gchq.icu:7171`
-     - Do you have an access token? No
-     - Username: YourUsername
-     - Password: YourPassword
-     - Set Optional settings: No
-
-2. **Git Workflow**:
-
-   1. Add your changes to Git using `git add <file1> <file2>`.
-   2. Run `nix fmt` to lint your files.
-   3. Commit your changes with a descriptive message: `git commit -a -m "My descriptive commit message"`.
-   4. Make sure your branch has the latest changes from upstream by executing:
+6. **(Optional) Install Git Hooks**:
+   - To syntax check your code you can run:
       ```bash
-      git fetch && git rebase origin/main --autostash
+      nix fmt
       ```
-   5. Use `git status` to check for merge conflicts.
-   6. If conflicts exist, resolve them. Here's a tutorial for resolving conflicts in [VSCode](https://code.visualstudio.com/docs/sourcecontrol/overview#_merge-conflicts).
-   7. After resolving conflicts, execute `git merge --continue` and repeat step 5 until there are no conflicts.
+   - To make this automatic install the git hooks
+      ```bash
+      ./scripts/pre-commit
+      ```
 
-3. **Create a Pull Request**:
-
-   - To automatically open a pull request that gets merged if all tests pass, execute:
-     ```bash
-     merge-after-ci
-     ```
-
-4. **Review Your Pull Request**:
-
-   - Visit https://git.clan.lol and go to the project page. Check under "Pull Requests" for any issues with your pull request.
-
-5. **Push Your Changes**:
-   - If there are issues, fix them and redo step 2. Afterward, execute:
-     ```bash
-     git push origin HEAD:YourUsername-main
-     ```
-   - This will directly push to your open pull request.
+7. **Open a Pull Request**:
+   - Go to the webinterface and open up a pull request
 
 # Debugging
 
 Here are some methods for debugging and testing the clan-cli:
+
+## See all possible packages and tests
+
+To quickly show all possible packages and tests execute:
+
+```bash
+nix flake show --system no-eval
+```
+
+Under `checks` you will find all tests that are executed in our CI. Under `packages` you find all our projects.
+
+```
+git+file:///home/lhebendanz/Projects/clan-core
+├───apps
+│   └───x86_64-linux
+│       ├───install-vm: app
+│       └───install-vm-nogui: app
+├───checks
+│   └───x86_64-linux
+│       ├───borgbackup omitted (use '--all-systems' to show)
+│       ├───check-for-breakpoints omitted (use '--all-systems' to show)
+│       ├───clan-dep-age omitted (use '--all-systems' to show)
+│       ├───clan-dep-bash omitted (use '--all-systems' to show)
+│       ├───clan-dep-e2fsprogs omitted (use '--all-systems' to show)
+│       ├───clan-dep-fakeroot omitted (use '--all-systems' to show)
+│       ├───clan-dep-git omitted (use '--all-systems' to show)
+│       ├───clan-dep-nix omitted (use '--all-systems' to show)
+│       ├───clan-dep-openssh omitted (use '--all-systems' to show)
+│       ├───"clan-dep-python3.11-mypy" omitted (use '--all-systems' to show)
+├───packages
+│   └───x86_64-linux
+│       ├───clan-cli omitted (use '--all-systems' to show)
+│       ├───clan-cli-docs omitted (use '--all-systems' to show)
+│       ├───clan-ts-api omitted (use '--all-systems' to show)
+│       ├───clan-vm-manager omitted (use '--all-systems' to show)
+│       ├───default omitted (use '--all-systems' to show)
+│       ├───deploy-docs omitted (use '--all-systems' to show)
+│       ├───docs omitted (use '--all-systems' to show)
+│       ├───editor omitted (use '--all-systems' to show)
+└───templates
+    ├───default: template: Initialize a new clan flake
+    └───new-clan: template: Initialize a new clan flake
+```
+
+You can execute every test separately by following the tree path `nix build .#checks.x86_64-linux.clan-pytest` for example.
 
 ## Test Locally in Devshell with Breakpoints
 
@@ -150,12 +164,14 @@ If you need to inspect the Nix sandbox while running tests, follow these steps:
 2. Use `cntr` and `psgrep` to attach to the Nix sandbox. This allows you to interactively debug your code while it's paused. For example:
 
    ```bash
-   cntr exec -w your_sandbox_name
    psgrep -a -x your_python_process_name
+   cntr attach <container id, container name or process id>
    ```
+
+Or you can also use the [nix breakpoint hook](https://nixos.org/manual/nixpkgs/stable/#breakpointhook)
 
 
 # Standards
 
-Every new module name should be in kebab-case.
-Every fact definition, where possible should be in kebab-case.
+- Every new module name should be in kebab-case.
+- Every fact definition, where possible should be in kebab-case.
