@@ -136,7 +136,7 @@ def get_subcommands(
             continue
 
         if isinstance(action, argparse._SubParsersAction):
-            continue  # Subparsers handled sperately
+            continue  # Subparsers handled separately
 
         option_strings = ", ".join(action.option_strings)
         if option_strings:

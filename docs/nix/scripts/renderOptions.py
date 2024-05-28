@@ -160,7 +160,7 @@ def produce_clan_core_docs() -> None:
         for option_name, info in options.items():
             outfile = f"{module_name}/index.md"
 
-            # Create seperate files for nested options
+            # Create separate files for nested options
             if len(option_name.split(".")) <= 2:
                 # i.e. clan-core.clanDir
                 output = core_outputs.get(
