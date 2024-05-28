@@ -106,15 +106,18 @@ In your nixos configuration you can get a path to secrets like this `config.sops
 
 ### Assigning Access
 
-By default, secrets are encrypted for your key. To specify which users and machines can access a secret:
+When using `clan secrets set <secret>` without arguments, secrets are encrypted for the key of the user named like your current $USER.
 
-```bash
-clan secrets set --machine <machine1> --machine <machine2> --user <user1> --user <user2> <secret_name>
-```
-You can also just add machines/users to existing secrets:
+To add machines/users to an existing secret use:
 
 ```bash
  clan secrets machines add-secret <machine_name> <secret_name>
+```
+
+Alternatively specify users and machines while creating a secret:
+
+```bash
+clan secrets set --machine <machine1> --machine <machine2> --user <user1> --user <user2> <secret_name>
 ```
 
 ## Advanced
@@ -188,9 +191,7 @@ Since our clan secret module will auto-import secrets that are encrypted for a p
 you can now remove `sops.secrets.<secrets> = { };` unless you need to specify more options for the secret like owner/group of the secret file.
 
 
-
 ## Indepth Explanation
-
 
 
 The secrets system conceptually knows two different entities:
