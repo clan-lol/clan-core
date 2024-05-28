@@ -140,3 +140,23 @@ def run(
         raise ClanCmdError(cmd_out)
 
     return cmd_out
+
+
+def run_no_stdout(
+    cmd: list[str],
+    *,
+    env: dict[str, str] | None = None,
+    cwd: Path = Path.cwd(),
+    log: Log = Log.STDERR,
+    check: bool = True,
+    error_msg: str | None = None,
+) -> CmdOut:
+    """
+    Like run, but automatically suppresses stdout, if not in DEBUG log level.
+    If in DEBUG log level the stdout of commands will be shown.
+    """
+    if logging.getLogger(__name__.split(".")[0]).isEnabledFor(logging.DEBUG):
+        return run(cmd, env=env, log=log, check=check, error_msg=error_msg)
+    else:
+        log = Log.NONE
+        return run(cmd, env=env, log=log, check=check, error_msg=error_msg)
