@@ -4,6 +4,8 @@
   clan-cli-docs,
   asciinema-player-js,
   asciinema-player-css,
+  roboto,
+  fira-code,
   ...
 }:
 let
@@ -33,6 +35,10 @@ pkgs.stdenv.mkDerivation {
     mkdir -p ./site/static/asciinema-player
     ln -snf ${asciinema-player-js} ./site/static/asciinema-player/asciinema-player.min.js
     ln -snf ${asciinema-player-css} ./site/static/asciinema-player/asciinema-player.css
+
+    # Link to fonts
+    ln -snf ${roboto}/share/fonts/truetype/Roboto-Regular.ttf ./site/static/
+    ln -snf ${fira-code}/share/fonts/truetype/FiraCode-VF.ttf ./site/static/
   '';
 
   buildPhase = ''
