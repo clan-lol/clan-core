@@ -40,13 +40,14 @@ def sanitize(text: str) -> str:
     return text.replace(">", "\\>")
 
 
-def replace_store_path(text: str) -> Path:
+def replace_store_path(text: str) -> tuple[str, str]:
     res = text
     if text.startswith("/nix/store/"):
         res = "https://git.clan.lol/clan/clan-core/src/branch/main/" + str(
             Path(*Path(text).parts[4:])
         )
-    return Path(res)
+    name = Path(res).name
+    return (res, name)
 
 
 def render_option_header(name: str) -> str:
@@ -108,9 +109,10 @@ def render_option(name: str, option: dict[str, Any], level: int = 3) -> str:
 """
 
     decls = option.get("declarations", [])
-    source_path = replace_store_path(decls[0])
+    source_path, name = replace_store_path(decls[0])
+    print(source_path, name)
     res += f"""
-:simple-git: [{source_path.name}]({source_path})
+:simple-git: [{name}]({source_path})
 """
     res += "\n"
 
