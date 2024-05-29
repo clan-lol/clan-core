@@ -26,6 +26,7 @@ def install_nixos(
     debug: bool = False,
     password: str | None = None,
     no_reboot: bool = False,
+    extra_args: list[str] = [],
 ) -> None:
     secret_facts_module = importlib.import_module(machine.secret_facts_module)
     log.info(f"installing {machine.name}")
@@ -56,6 +57,7 @@ def install_nixos(
             f"{machine.flake}#{machine.name}",
             "--extra-files",
             str(tmpdir),
+            *extra_args,
         ]
 
         if no_reboot:
@@ -95,6 +97,7 @@ class InstallOptions:
     debug: bool
     no_reboot: bool
     json_ssh_deploy: dict[str, str] | None
+    nix_options: list[str]
 
 
 def install_command(args: argparse.Namespace) -> None:
@@ -127,6 +130,7 @@ def install_command(args: argparse.Namespace) -> None:
         debug=args.debug,
         no_reboot=args.no_reboot,
         json_ssh_deploy=json_ssh_deploy,
+        nix_options=args.option,
     )
     machine = Machine(opts.machine, flake=opts.flake)
     machine.target_host_address = opts.target_host
@@ -142,6 +146,7 @@ def install_command(args: argparse.Namespace) -> None:
         debug=opts.debug,
         password=password,
         no_reboot=opts.no_reboot,
+        extra_args=opts.nix_options,
     )
 
 

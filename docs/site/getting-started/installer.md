@@ -46,7 +46,7 @@ sudo umount /dev/sdb1
     It also includes the language and keymap currently used into the installer image.
 
     ```bash
-    clan --flake git+https://git.clan.lol/clan/clan-core flash flash-installer --disk main /dev/sd<X>
+    clan flash --flake git+https://git.clan.lol/clan/clan-core flash-installer --disk main /dev/sd<X>
     ```
 
     !!! Danger "Specifying the wrong device can lead to unrecoverable data loss."

@@ -2,8 +2,8 @@
 {
   clan.machines.test_install_machine = {
     clan.networking.targetHost = "test_install_machine";
-    fileSystems."/".device = lib.mkDefault "/dev/null";
-    boot.loader.grub.device = lib.mkDefault "/dev/null";
+    fileSystems."/".device = lib.mkDefault "/dev/vdb";
+    boot.loader.grub.device = lib.mkDefault "/dev/vdb";
 
     imports = [ self.nixosModules.test_install_machine ];
   };
@@ -98,7 +98,7 @@
             client.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../lib/ssh/privkey} /root/.ssh/id_ed25519")
             client.wait_until_succeeds("ssh -o StrictHostKeyChecking=accept-new -v root@target hostname")
 
-            client.succeed("clan --debug --flake ${../..} machines install --yes test_install_machine root@target >&2")
+            client.succeed("clan machines install --debug --flake ${../..} --yes test_install_machine root@target >&2")
             try:
               target.shutdown()
             except BrokenPipeError:
