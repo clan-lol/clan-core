@@ -13,7 +13,6 @@
             clanCore.machineName = "machine";
             clanCore.clanDir = ./.;
             clan.matrix-synapse = {
-              enable = true;
               domain = "clan.test";
             };
           }
