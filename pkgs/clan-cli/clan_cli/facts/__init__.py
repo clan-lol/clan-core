@@ -16,10 +16,54 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         required=True,
     )
 
-    check_parser = subparser.add_parser("check", help="check if facts are up to date")
+    check_parser = subparser.add_parser(
+        "check",
+        help="check if facts are up to date",
+        epilog=(
+            """
+This subcommand allows checking if all facts are up to date.
+
+Examples:
+
+  $ clan facts check [MACHINE]
+  Will check facts for the specified machine.
+
+
+For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     register_check_parser(check_parser)
 
-    list_parser = subparser.add_parser("list", help="list all facts")
+    list_parser = subparser.add_parser(
+        "list",
+        help="list all facts",
+        epilog=(
+            """
+This subcommand allows listing all public facts for a specific machine.
+
+The resulting list will be a json string with the name of the fact as its key
+and the fact itself as it's value.
+
+This is how an example output might look like:
+```
+{
+"[FACT_NAME]": "[FACT]"
+}
+```
+
+Examples:
+
+  $ clan facts list [MACHINE]
+  Will list facts for the specified machine.
+
+   
+For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     register_list_parser(list_parser)
 
     parser_generate = subparser.add_parser(
@@ -62,5 +106,24 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/secr
     )
     register_generate_parser(parser_generate)
 
-    parser_upload = subparser.add_parser("upload", help="upload secrets for machines")
+    parser_upload = subparser.add_parser(
+        "upload",
+        help="upload secrets for machines",
+        epilog=(
+            """
+This subcommand allows uploading secrets to remote machines.
+
+If using sops as a secret backend it will upload the private key to the machine.
+If using password store it uploads all the secrets you manage to the machine.
+
+Examples:
+
+  $ clan facts upload [MACHINE]
+  Will upload secrets to a specific machine.
+   
+For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     register_upload_parser(parser_upload)
