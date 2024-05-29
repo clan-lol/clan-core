@@ -7,7 +7,7 @@ from .machines import Machine
 
 
 # function to speedup eval if we want to evauluate all machines
-def get_all_machines(flake_dir: Path) -> list[Machine]:
+def get_all_machines(flake_dir: Path, nix_options: list[str]) -> list[Machine]:
     config = nix_config()
     system = config["system"]
     json_path = run(
@@ -19,13 +19,20 @@ def get_all_machines(flake_dir: Path) -> list[Machine]:
     machines = []
     for name, machine_data in machines_json.items():
         machines.append(
-            Machine(name=name, flake=flake_dir, deployment_info=machine_data)
+            Machine(
+                name=name,
+                flake=flake_dir,
+                deployment_info=machine_data,
+                nix_options=nix_options,
+            )
         )
     return machines
 
 
-def get_selected_machines(flake_dir: Path, machine_names: list[str]) -> list[Machine]:
+def get_selected_machines(
+    flake_dir: Path, nix_options: list[str], machine_names: list[str]
+) -> list[Machine]:
     machines = []
     for name in machine_names:
-        machines.append(Machine(name=name, flake=flake_dir))
+        machines.append(Machine(name=name, flake=flake_dir, nix_options=nix_options))
     return machines

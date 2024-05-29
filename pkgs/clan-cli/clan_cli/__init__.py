@@ -75,12 +75,6 @@ def add_common_flags(parser: argparse.ArgumentParser) -> None:
         default=[],
     )
 
-    def flake_path(arg: str) -> str | Path:
-        flake_dir = Path(arg).resolve()
-        if flake_dir.exists() and flake_dir.is_dir():
-            return flake_dir
-        return arg
-
     parser.add_argument(
         "--flake",
         help="path to the flake where the clan resides in, can be a remote flake or local, can be set through the [CLAN_DIR] environment variable",
