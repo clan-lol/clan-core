@@ -19,6 +19,7 @@ export default tseslint.config(
         "error",
         {
           callees: ["cx"],
+          whitelist: ["material-icons"],
         },
       ],
     },
