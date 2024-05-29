@@ -33,6 +33,8 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
 
 
 def create_command(args: argparse.Namespace) -> None:
+    if args.flake is None:
+        raise ClanError("Could not find clan flake toplevel directory")
     machine = Machine(name=args.machine, flake=args.flake)
     create_backup(machine=machine, provider=args.provider)
 
