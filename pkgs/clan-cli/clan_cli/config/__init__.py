@@ -150,6 +150,15 @@ def read_machine_option_value(
     return out
 
 
+def get_option(args: argparse.Namespace) -> None:
+    print(
+        read_machine_option_value(
+            args.flake, args.machine, args.option, args.show_trace
+        )
+    )
+
+
+# Currently writing is disabled
 def get_or_set_option(args: argparse.Namespace) -> None:
     if args.value == []:
         print(
@@ -307,7 +316,7 @@ def register_parser(
         )
 
     # inject callback function to process the input later
-    parser.set_defaults(func=get_or_set_option)
+    parser.set_defaults(func=get_option)
     parser.add_argument(
         "--machine",
         "-m",
@@ -343,13 +352,6 @@ def register_parser(
         "option",
         help="Option to read or set (e.g. foo.bar)",
         type=str,
-    )
-
-    parser.add_argument(
-        "value",
-        # force this arg to be set
-        nargs="*",
-        help="option value to set (if omitted, the current value is printed)",
     )
 
 
