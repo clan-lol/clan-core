@@ -27,11 +27,11 @@ def _test_identities(
 
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             what,
             "add",
+            "--flake",
+            str(test_flake.path),
             "foo",
             age_keys[0].pubkey,
         ]
@@ -41,11 +41,11 @@ def _test_identities(
     with pytest.raises(ClanError):  # raises "foo already exists"
         cli.run(
             [
-                "--flake",
-                str(test_flake.path),
                 "secrets",
                 what,
                 "add",
+                "--flake",
+                str(test_flake.path),
                 "foo",
                 age_keys[0].pubkey,
             ]
@@ -54,11 +54,11 @@ def _test_identities(
     # rotate the key
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             what,
             "add",
+            "--flake",
+            str(test_flake.path),
             "-f",
             "foo",
             age_keys[1].privkey,
@@ -68,11 +68,11 @@ def _test_identities(
     capsys.readouterr()  # empty the buffer
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             what,
             "get",
+            "--flake",
+            str(test_flake.path),
             "foo",
         ]
     )
@@ -80,18 +80,18 @@ def _test_identities(
     assert age_keys[1].pubkey in out.out
 
     capsys.readouterr()  # empty the buffer
-    cli.run(["--flake", str(test_flake.path), "secrets", what, "list"])
+    cli.run(["secrets", what, "list", "--flake", str(test_flake.path)])
     out = capsys.readouterr()  # empty the buffer
     assert "foo" in out.out
 
-    cli.run(["--flake", str(test_flake.path), "secrets", what, "remove", "foo"])
+    cli.run(["secrets", what, "remove", "--flake", str(test_flake.path), "foo"])
     assert not (sops_folder / what / "foo" / "key.json").exists()
 
     with pytest.raises(ClanError):  # already removed
-        cli.run(["--flake", str(test_flake.path), "secrets", what, "remove", "foo"])
+        cli.run(["secrets", what, "remove", "--flake", str(test_flake.path), "foo"])
 
     capsys.readouterr()
-    cli.run(["--flake", str(test_flake.path), "secrets", what, "list"])
+    cli.run(["secrets", what, "list", "--flake", str(test_flake.path)])
     out = capsys.readouterr()
     assert "foo" not in out.out
 
@@ -113,17 +113,17 @@ def test_groups(
 ) -> None:
     cli = Cli()
     capsys.readouterr()  # empty the buffer
-    cli.run(["--flake", str(test_flake.path), "secrets", "groups", "list"])
+    cli.run(["secrets", "groups", "list", "--flake", str(test_flake.path)])
     assert capsys.readouterr().out == ""
 
     with pytest.raises(ClanError):  # machine does not exist yet
         cli.run(
             [
-                "--flake",
-                str(test_flake.path),
                 "secrets",
                 "groups",
                 "add-machine",
+                "--flake",
+                str(test_flake.path),
                 "group1",
                 "machine1",
             ]
@@ -131,33 +131,33 @@ def test_groups(
     with pytest.raises(ClanError):  # user does not exist yet
         cli.run(
             [
-                "--flake",
-                str(test_flake.path),
                 "secrets",
                 "groups",
                 "add-user",
+                "--flake",
+                str(test_flake.path),
                 "groupb1",
                 "user1",
             ]
         )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "machines",
             "add",
+            "--flake",
+            str(test_flake.path),
             "machine1",
             age_keys[0].pubkey,
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "add-machine",
+            "--flake",
+            str(test_flake.path),
             "group1",
             "machine1",
         ]
@@ -166,11 +166,11 @@ def test_groups(
     # Should this fail?
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "add-machine",
+            "--flake",
+            str(test_flake.path),
             "group1",
             "machine1",
         ]
@@ -178,51 +178,51 @@ def test_groups(
 
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "users",
             "add",
+            "--flake",
+            str(test_flake.path),
             "user1",
             age_keys[0].pubkey,
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "add-user",
+            "--flake",
+            str(test_flake.path),
             "group1",
             "user1",
         ]
     )
 
     capsys.readouterr()  # empty the buffer
-    cli.run(["--flake", str(test_flake.path), "secrets", "groups", "list"])
+    cli.run(["secrets", "groups", "list", "--flake", str(test_flake.path)])
     out = capsys.readouterr().out
     assert "user1" in out
     assert "machine1" in out
 
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "remove-user",
+            "--flake",
+            str(test_flake.path),
             "group1",
             "user1",
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "remove-machine",
+            "--flake",
+            str(test_flake.path),
             "group1",
             "machine1",
         ]
@@ -251,90 +251,90 @@ def test_secrets(
 ) -> None:
     cli = Cli()
     capsys.readouterr()  # empty the buffer
-    cli.run(["--flake", str(test_flake.path), "secrets", "list"])
+    cli.run(["secrets", "list", "--flake", str(test_flake.path)])
     assert capsys.readouterr().out == ""
 
     monkeypatch.setenv("SOPS_NIX_SECRET", "foo")
     monkeypatch.setenv("SOPS_AGE_KEY_FILE", str(test_flake.path / ".." / "age.key"))
-    cli.run(["--flake", str(test_flake.path), "secrets", "key", "generate"])
+    cli.run(["secrets", "key", "generate", "--flake", str(test_flake.path)])
     capsys.readouterr()  # empty the buffer
-    cli.run(["--flake", str(test_flake.path), "secrets", "key", "show"])
+    cli.run(["secrets", "key", "show", "--flake", str(test_flake.path)])
     key = capsys.readouterr().out
     assert key.startswith("age1")
     cli.run(
-        ["--flake", str(test_flake.path), "secrets", "users", "add", "testuser", key]
+        ["secrets", "users", "add", "--flake", str(test_flake.path), "testuser", key]
     )
 
     with pytest.raises(ClanError):  # does not exist yet
-        cli.run(["--flake", str(test_flake.path), "secrets", "get", "nonexisting"])
-    cli.run(["--flake", str(test_flake.path), "secrets", "set", "initialkey"])
+        cli.run(["secrets", "get", "--flake", str(test_flake.path), "nonexisting"])
+    cli.run(["secrets", "set", "--flake", str(test_flake.path), "initialkey"])
     capsys.readouterr()
-    cli.run(["--flake", str(test_flake.path), "secrets", "get", "initialkey"])
+    cli.run(["secrets", "get", "--flake", str(test_flake.path), "initialkey"])
     assert capsys.readouterr().out == "foo"
     capsys.readouterr()
-    cli.run(["--flake", str(test_flake.path), "secrets", "users", "list"])
+    cli.run(["secrets", "users", "list", "--flake", str(test_flake.path)])
     users = capsys.readouterr().out.rstrip().split("\n")
     assert len(users) == 1, f"users: {users}"
     owner = users[0]
 
     monkeypatch.setenv("EDITOR", "cat")
-    cli.run(["--flake", str(test_flake.path), "secrets", "set", "--edit", "initialkey"])
+    cli.run(["secrets", "set", "--edit", "--flake", str(test_flake.path), "initialkey"])
     monkeypatch.delenv("EDITOR")
 
-    cli.run(["--flake", str(test_flake.path), "secrets", "rename", "initialkey", "key"])
+    cli.run(["secrets", "rename", "--flake", str(test_flake.path), "initialkey", "key"])
 
     capsys.readouterr()  # empty the buffer
-    cli.run(["--flake", str(test_flake.path), "secrets", "list"])
+    cli.run(["secrets", "list", "--flake", str(test_flake.path)])
     assert capsys.readouterr().out == "key\n"
 
     capsys.readouterr()  # empty the buffer
-    cli.run(["--flake", str(test_flake.path), "secrets", "list", "nonexisting"])
+    cli.run(["secrets", "list", "--flake", str(test_flake.path), "nonexisting"])
     assert capsys.readouterr().out == ""
 
     capsys.readouterr()  # empty the buffer
-    cli.run(["--flake", str(test_flake.path), "secrets", "list", "key"])
+    cli.run(["secrets", "list", "--flake", str(test_flake.path), "key"])
     assert capsys.readouterr().out == "key\n"
 
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "machines",
             "add",
+            "--flake",
+            str(test_flake.path),
             "machine1",
             age_keys[1].pubkey,
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "machines",
             "add-secret",
+            "--flake",
+            str(test_flake.path),
             "machine1",
             "key",
         ]
     )
     capsys.readouterr()
-    cli.run(["--flake", str(test_flake.path), "secrets", "machines", "list"])
+    cli.run(["secrets", "machines", "list", "--flake", str(test_flake.path)])
     assert capsys.readouterr().out == "machine1\n"
 
     with use_key(age_keys[1].privkey, monkeypatch):
         capsys.readouterr()
-        cli.run(["--flake", str(test_flake.path), "secrets", "get", "key"])
+        cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
 
         assert capsys.readouterr().out == "foo"
 
     # rotate machines key
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "machines",
             "add",
+            "--flake",
+            str(test_flake.path),
             "-f",
             "machine1",
             age_keys[0].privkey,
@@ -344,17 +344,17 @@ def test_secrets(
     # should also rotate the encrypted secret
     with use_key(age_keys[0].privkey, monkeypatch):
         capsys.readouterr()
-        cli.run(["--flake", str(test_flake.path), "secrets", "get", "key"])
+        cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
 
         assert capsys.readouterr().out == "foo"
 
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "machines",
             "remove-secret",
+            "--flake",
+            str(test_flake.path),
             "machine1",
             "key",
         ]
@@ -362,37 +362,37 @@ def test_secrets(
 
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "users",
             "add",
+            "--flake",
+            str(test_flake.path),
             "user1",
             age_keys[1].pubkey,
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "users",
             "add-secret",
+            "--flake",
+            str(test_flake.path),
             "user1",
             "key",
         ]
     )
     capsys.readouterr()
     with use_key(age_keys[1].privkey, monkeypatch):
-        cli.run(["--flake", str(test_flake.path), "secrets", "get", "key"])
+        cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
     assert capsys.readouterr().out == "foo"
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "users",
             "remove-secret",
+            "--flake",
+            str(test_flake.path),
             "user1",
             "key",
         ]
@@ -401,44 +401,44 @@ def test_secrets(
     with pytest.raises(ClanError):  # does not exist yet
         cli.run(
             [
-                "--flake",
-                str(test_flake.path),
                 "secrets",
                 "groups",
                 "add-secret",
+                "--flake",
+                str(test_flake.path),
                 "admin-group",
                 "key",
             ]
         )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "add-user",
+            "--flake",
+            str(test_flake.path),
             "admin-group",
             "user1",
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "add-user",
+            "--flake",
+            str(test_flake.path),
             "admin-group",
             owner,
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "add-secret",
+            "--flake",
+            str(test_flake.path),
             "admin-group",
             "key",
         ]
@@ -447,10 +447,10 @@ def test_secrets(
     capsys.readouterr()  # empty the buffer
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "set",
+            "--flake",
+            str(test_flake.path),
             "--group",
             "admin-group",
             "key2",
@@ -459,28 +459,28 @@ def test_secrets(
 
     with use_key(age_keys[1].privkey, monkeypatch):
         capsys.readouterr()
-        cli.run(["--flake", str(test_flake.path), "secrets", "get", "key"])
+        cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
         assert capsys.readouterr().out == "foo"
 
     # extend group will update secrets
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "users",
             "add",
+            "--flake",
+            str(test_flake.path),
             "user2",
             age_keys[2].pubkey,
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "add-user",
+            "--flake",
+            str(test_flake.path),
             "admin-group",
             "user2",
         ]
@@ -488,16 +488,16 @@ def test_secrets(
 
     with use_key(age_keys[2].privkey, monkeypatch):  # user2
         capsys.readouterr()
-        cli.run(["--flake", str(test_flake.path), "secrets", "get", "key"])
+        cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
         assert capsys.readouterr().out == "foo"
 
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "remove-user",
+            "--flake",
+            str(test_flake.path),
             "admin-group",
             "user2",
         ]
@@ -505,24 +505,24 @@ def test_secrets(
     with pytest.raises(ClanError), use_key(age_keys[2].privkey, monkeypatch):
         # user2 is not in the group anymore
         capsys.readouterr()
-        cli.run(["--flake", str(test_flake.path), "secrets", "get", "key"])
+        cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
         print(capsys.readouterr().out)
 
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "remove-secret",
+            "--flake",
+            str(test_flake.path),
             "admin-group",
             "key",
         ]
     )
 
-    cli.run(["--flake", str(test_flake.path), "secrets", "remove", "key"])
-    cli.run(["--flake", str(test_flake.path), "secrets", "remove", "key2"])
+    cli.run(["secrets", "remove", "--flake", str(test_flake.path), "key"])
+    cli.run(["secrets", "remove", "--flake", str(test_flake.path), "key2"])
 
     capsys.readouterr()  # empty the buffer
-    cli.run(["--flake", str(test_flake.path), "secrets", "list"])
+    cli.run(["secrets", "list", "--flake", str(test_flake.path)])
     assert capsys.readouterr().out == ""

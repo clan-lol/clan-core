@@ -145,14 +145,14 @@
             machine.succeed("echo testing > /var/test-backups/somefile")
 
             # create
-            machine.succeed("clan --debug --flake ${self} backups create test-backup")
+            machine.succeed("clan backups create --debug --flake ${self} test-backup")
             machine.wait_until_succeeds("! systemctl is-active borgbackup-job-test-backup >&2")
             machine.succeed("test -f /run/mount-external-disk")
             machine.succeed("test -f /run/unmount-external-disk")
 
             # list
             backup_id = json.loads(machine.succeed("borg-job-test-backup list --json"))["archives"][0]["archive"]
-            out = machine.succeed("clan --debug --flake ${self} backups list test-backup").strip()
+            out = machine.succeed("clan backups list --debug --flake ${self} test-backup").strip()
             print(out)
             assert backup_id in out, f"backup {backup_id} not found in {out}"
             localbackup_id = "hdd::/mnt/external-disk/snapshot.0"
@@ -160,14 +160,14 @@
 
             ## borgbackup restore
             machine.succeed("rm -f /var/test-backups/somefile")
-            machine.succeed(f"clan --debug --flake ${self} backups restore test-backup borgbackup 'test-backup::borg@machine:.::{backup_id}' >&2")
+            machine.succeed(f"clan backups restore --debug --flake ${self} test-backup borgbackup 'test-backup::borg@machine:.::{backup_id}' >&2")
             assert machine.succeed("cat /var/test-backups/somefile").strip() == "testing", "restore failed"
             machine.succeed("test -f /var/test-service/pre-restore-command")
             machine.succeed("test -f /var/test-service/post-restore-command")
 
             ## localbackup restore
             machine.succeed("rm -f /var/test-backups/somefile /var/test-service/{pre,post}-restore-command")
-            machine.succeed(f"clan --debug --flake ${self} backups restore test-backup localbackup '{localbackup_id}' >&2")
+            machine.succeed(f"clan backups restore --debug --flake ${self} test-backup localbackup '{localbackup_id}' >&2")
             assert machine.succeed("cat /var/test-backups/somefile").strip() == "testing", "restore failed"
             machine.succeed("test -f /var/test-service/pre-restore-command")
             machine.succeed("test -f /var/test-service/post-restore-command")

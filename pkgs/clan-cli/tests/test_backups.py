@@ -11,10 +11,10 @@ def test_backups(
 
     cli.run(
         [
-            "--flake",
-            str(test_flake_with_core.path),
             "backups",
             "list",
+            "--flake",
+            str(test_flake_with_core.path),
             "vm1",
         ]
     )
