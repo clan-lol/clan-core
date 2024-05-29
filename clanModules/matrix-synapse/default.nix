@@ -18,14 +18,20 @@ let
 in
 {
   options.clan.matrix-synapse = {
-    enable = lib.mkEnableOption "Enable matrix-synapse";
     domain = lib.mkOption {
       type = lib.types.str;
       description = "The domain name of the matrix server";
       example = "example.com";
     };
   };
-  config = lib.mkIf cfg.enable {
+  imports = [
+    (lib.mkRemovedOptionModule [
+      "clan"
+      "matrix-synapse"
+      "enable"
+    ] "Importing the module will already enable the service.")
+  ];
+  config = {
     services.matrix-synapse = {
       enable = true;
       settings = {
