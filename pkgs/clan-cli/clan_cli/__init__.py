@@ -107,8 +107,6 @@ For more detailed information, visit: https://docs.clan.lol
         ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    add_common_flags(parser)
-
     subparsers = parser.add_subparsers()
 
     parser_backups = subparsers.add_parser(

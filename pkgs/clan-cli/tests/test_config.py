@@ -39,9 +39,9 @@ def test_set_some_option(
         cli = Cli()
         cli.run(
             [
+                "config",
                 "--flake",
                 str(test_flake.path),
-                "config",
                 "--quiet",
                 "--options-file",
                 example_options,
@@ -64,9 +64,9 @@ def test_configure_machine(
 
     cli.run(
         [
+            "config",
             "--flake",
             str(test_flake.path),
-            "config",
             "-m",
             "machine1",
             "clan.jitsi.enable",
@@ -78,9 +78,9 @@ def test_configure_machine(
     # read a option value
     cli.run(
         [
+            "config",
             "--flake",
             str(test_flake.path),
-            "config",
             "-m",
             "machine1",
             "clan.jitsi.enable",

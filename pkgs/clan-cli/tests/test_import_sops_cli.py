@@ -21,55 +21,55 @@ def test_import_sops(
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[1].privkey)
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "machines",
             "add",
+            "--flake",
+            str(test_flake.path),
             "machine1",
             age_keys[0].pubkey,
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "users",
             "add",
+            "--flake",
+            str(test_flake.path),
             "user1",
             age_keys[1].pubkey,
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "users",
             "add",
+            "--flake",
+            str(test_flake.path),
             "user2",
             age_keys[2].pubkey,
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "add-user",
+            "--flake",
+            str(test_flake.path),
             "group1",
             "user1",
         ]
     )
     cli.run(
         [
-            "--flake",
-            str(test_flake.path),
             "secrets",
             "groups",
             "add-user",
+            "--flake",
+            str(test_flake.path),
             "group1",
             "user2",
         ]
@@ -78,10 +78,10 @@ def test_import_sops(
     # To edit:
     # SOPS_AGE_KEY=AGE-SECRET-KEY-1U5ENXZQAY62NC78Y2WC0SEGRRMAEEKH79EYY5TH4GPFWJKEAY0USZ6X7YQ sops --age age14tva0txcrl0zes05x7gkx56qd6wd9q3nwecjac74xxzz4l47r44sv3fz62 ./data/secrets.yaml
     cmd = [
-        "--flake",
-        str(test_flake.path),
         "secrets",
         "import-sops",
+        "--flake",
+        str(test_flake.path),
         "--group",
         "group1",
         "--machine",
@@ -91,10 +91,10 @@ def test_import_sops(
 
     cli.run(cmd)
     capsys.readouterr()
-    cli.run(["--flake", str(test_flake.path), "secrets", "users", "list"])
+    cli.run(["secrets", "users", "list", "--flake", str(test_flake.path)])
     users = sorted(capsys.readouterr().out.rstrip().split())
     assert users == ["user1", "user2"]
 
     capsys.readouterr()
-    cli.run(["--flake", str(test_flake.path), "secrets", "get", "secret-key"])
+    cli.run(["secrets", "get", "--flake", str(test_flake.path), "secret-key"])
     assert capsys.readouterr().out == "secret-value"

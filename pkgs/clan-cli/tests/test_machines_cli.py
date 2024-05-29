@@ -9,11 +9,11 @@ def test_machine_subcommands(
 ) -> None:
     cli = Cli()
     cli.run(
-        ["--flake", str(test_flake_with_core.path), "machines", "create", "machine1"]
+        ["machines", "create", "--flake", str(test_flake_with_core.path), "machine1"]
     )
 
     capsys.readouterr()
-    cli.run(["--flake", str(test_flake_with_core.path), "machines", "list"])
+    cli.run(["machines", "list", "--flake", str(test_flake_with_core.path)])
 
     out = capsys.readouterr()
 
@@ -22,11 +22,11 @@ def test_machine_subcommands(
     assert "vm2" in out.out
 
     cli.run(
-        ["--flake", str(test_flake_with_core.path), "machines", "delete", "machine1"]
+        ["machines", "delete", "--flake", str(test_flake_with_core.path), "machine1"]
     )
 
     capsys.readouterr()
-    cli.run(["--flake", str(test_flake_with_core.path), "machines", "list"])
+    cli.run(["machines", "list", "--flake", str(test_flake_with_core.path)])
     out = capsys.readouterr()
 
     assert "machine1" not in out.out

@@ -86,7 +86,7 @@ def test_inspect(
     test_flake_with_core: FlakeForTest, capsys: pytest.CaptureFixture
 ) -> None:
     cli = Cli()
-    cli.run(["--flake", str(test_flake_with_core.path), "vms", "inspect", "vm1"])
+    cli.run(["vms", "inspect", "--flake", str(test_flake_with_core.path), "vm1"])
     out = capsys.readouterr()  # empty the buffer
     assert "Cores" in out.out
 

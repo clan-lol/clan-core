@@ -15,10 +15,10 @@ def test_flakes_inspect(
     cli = Cli()
     cli.run(
         [
-            "--flake",
-            str(test_flake_with_core.path),
             "flakes",
             "inspect",
+            "--flake",
+            str(test_flake_with_core.path),
             "--machine",
             "vm1",
         ]
