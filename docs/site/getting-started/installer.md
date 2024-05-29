@@ -42,12 +42,21 @@ sudo umount /dev/sdb1
 === "**Linux OS**"
     ### Step 2. Flash Custom Installer
 
-    Using clan flash enables the inclusion of ssh public keys and disables ssh password authentication.
-    It also includes the language and keymap currently used into the installer image.
+    Using clan flash enables the inclusion of ssh public keys.
+    It also allows to set language and keymap currently in the installer image.
 
     ```bash
-    clan flash --flake git+https://git.clan.lol/clan/clan-core flash-installer --disk main /dev/sd<X>
+    clan flash --flake git+https://git.clan.lol/clan/clan-core \
+      --ssh-pubkey $HOME/.ssh/id_ed25519.pub \
+      --keymap en \
+      --language en \
+      --disk main /dev/sd<X> \
+      flash-installer
     ```
+
+   The `--ssh-pubkey`, `--language` and `--keymap` are optional.
+   Replace `$HOME/.ssh/id_ed25519.pub` with a path to your SSH public key.
+   If you do not have an ssh key yet, you can generate one with `ssh-keygen -t ed25519` command.
 
     !!! Danger "Specifying the wrong device can lead to unrecoverable data loss."
 
