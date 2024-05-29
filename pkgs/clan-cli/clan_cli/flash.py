@@ -3,7 +3,6 @@ import importlib
 import json
 import logging
 import os
-import re
 import shutil
 import textwrap
 from collections.abc import Sequence
@@ -19,63 +18,6 @@ from .machines.machines import Machine
 from .nix import nix_shell
 
 log = logging.getLogger(__name__)
-
-
-def list_available_ssh_keys(ssh_dir: Path = Path("~/.ssh").expanduser()) -> list[Path]:
-    """
-    Function to list all available SSH public keys in the default .ssh directory.
-    Returns a list of paths to available public key files.
-    """
-    public_key_patterns = ["*.pub"]
-    available_keys: list[Path] = []
-
-    # Check for public key files
-    for pattern in public_key_patterns:
-        for key_path in ssh_dir.glob(pattern):
-            if key_path.is_file():
-                available_keys.append(key_path)
-
-    return available_keys
-
-
-def read_public_key_contents(public_keys: list[Path]) -> list[str]:
-    """
-    Function to read and return the contents of available SSH public keys.
-    Returns a list containing the contents of each public key.
-    """
-    public_key_contents = []
-
-    for key_path in public_keys:
-        try:
-            with open(key_path.expanduser()) as key_file:
-                public_key_contents.append(key_file.read().strip())
-        except FileNotFoundError:
-            log.error(f"Public key file not found: {key_path}")
-
-    return public_key_contents
-
-
-def get_keymap_and_locale() -> dict[str, str]:
-    locale = "en_US.UTF-8"
-    keymap = "en"
-
-    # Execute the `localectl status` command
-    result = run(["localectl", "status"])
-
-    if result.returncode == 0:
-        output = result.stdout
-
-        # Extract the Keymap (X11 Layout)
-        keymap_match = re.search(r"X11 Layout:\s+(.*)", output)
-        if keymap_match:
-            keymap = keymap_match.group(1)
-
-        # Extract the System Locale (LANG only)
-        locale_match = re.search(r"System Locale:\s+LANG=(.*)", output)
-        if locale_match:
-            locale = locale_match.group(1)
-
-    return {"keymap": keymap, "locale": locale}
 
 
 def flash_machine(
@@ -184,10 +126,10 @@ def flash_command(args: argparse.Namespace) -> None:
         confirm=not args.yes,
         debug=args.debug,
         mode=args.mode,
-        language=args.lang,
+        language=args.language,
         keymap=args.keymap,
         write_efi_boot_entries=args.write_efi_boot_entries,
-        nix_options=args.options,
+        nix_options=args.option,
     )
 
     machine = Machine(opts.machine, flake=opts.flake)
@@ -201,40 +143,22 @@ def flash_command(args: argparse.Namespace) -> None:
         if ask != "y":
             return
 
-    root_keys = read_public_key_contents(opts.ssh_keys_path)
-    if opts.confirm and not root_keys:
-        msg = "Should we add your SSH public keys to the root user? [y/N] "
-        ask = input(msg)
-        if ask == "y":
-            pubkeys = list_available_ssh_keys()
-            root_keys.extend(read_public_key_contents(pubkeys))
-        else:
-            raise ClanError(
-                "No SSH public keys provided. Use --ssh-pubkey to add keys."
-            )
-    elif not opts.confirm and not root_keys:
-        pubkeys = list_available_ssh_keys()
-        root_keys.extend(read_public_key_contents(pubkeys))
-    # If ssh-pubkeys set, we don't need to ask for confirmation
-    elif opts.confirm and root_keys:
-        pass
-    elif not opts.confirm and root_keys:
-        pass
-    else:
-        raise ClanError("Invalid state")
-
-    localectl = get_keymap_and_locale()
-    extra_config = {
-        "users": {
+    extra_config: dict[str, Any] = {}
+    if opts.ssh_keys_path:
+        root_keys = []
+        for key_path in opts.ssh_keys_path:
+            try:
+                root_keys.append(key_path.read_text())
+            except OSError as e:
+                raise ClanError(f"Cannot read SSH public key file: {key_path}: {e}")
+        extra_config["users"] = {
             "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}}
-        },
-        "console": {
-            "keyMap": opts.keymap if opts.keymap else localectl["keymap"],
-        },
-        "i18n": {
-            "defaultLocale": opts.language if opts.language else localectl["locale"],
-        },
-    }
+        }
+    if opts.keymap:
+        extra_config["console"] = {"keyMap": opts.keymap}
+
+    if opts.language:
+        extra_config["i18n"] = {"defaultLocale": opts.language}
 
     flash_machine(
         machine,
@@ -286,7 +210,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         help="ssh pubkey file to add to the root user. Can be used multiple times",
     )
     parser.add_argument(
-        "--lang",
+        "--language",
         type=str,
         help="system language",
     )
