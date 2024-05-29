@@ -25,9 +25,12 @@ fs.readFile(manifestPath, { encoding: "utf8" }, (err, data) => {
 
   // Add linked stylesheets
   assets.forEach((asset) => {
-    asset.css.forEach((cssEntry) => {
-      htmlContent += `\n    <link rel="stylesheet" href="${cssEntry}">`;
-    });
+    console.log(asset);
+    if (asset.src === "index.html") {
+      asset.css.forEach((cssEntry) => {
+        htmlContent += `\n    <link rel="stylesheet" href="${cssEntry}">`;
+      });
+    }
   });
 
   htmlContent += `
