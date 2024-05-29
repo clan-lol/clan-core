@@ -43,6 +43,7 @@ ensure_nix_installed() {
 start_clan_gui() {
   exec nix run \
     https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-vm-manager \
+    --no-accept-flake-config \
     --extra-experimental-features flakes nix-command -- "$@"
 }
 
