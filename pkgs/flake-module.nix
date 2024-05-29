@@ -29,7 +29,6 @@
           editor = pkgs.callPackage ./editor/clan-edit-codium.nix { };
         }
         // lib.optionalAttrs pkgs.stdenv.isLinux {
-          wayland-proxy-virtwl = pkgs.callPackage ./wayland-proxy-virtwl { };
           # halalify zerotierone
           zerotierone = pkgs.zerotierone.overrideAttrs (_old: {
             meta = _old.meta // {
