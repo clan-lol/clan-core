@@ -96,7 +96,7 @@ site_dir: out
 theme:
   font: false
   logo: https://clan.lol/static/logo/clan-white.png
-  favicon: https://clan.lol/static/logo/clan-dark.png
+  favicon: https://clan.lol/static/dark-favicon/128x128.png
   name: material
   features:
     - navigation.instant
