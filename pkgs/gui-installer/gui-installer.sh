@@ -8,8 +8,9 @@ clean_temp_dir() {
   rm -rf "$temp_dir"
 }
 
-is_nix_installed() {
-  if [ -n "$(command -v nix)" ]; then
+is_installed() {
+  name=$1
+  if [ -n "$(command -v "$name")" ]; then
     return 0
   else
     return 1
@@ -17,9 +18,18 @@ is_nix_installed() {
 }
 
 install_nix() {
-  curl --proto '=https' --tlsv1.2 -sSf -L \
-      https://install.determinate.systems/nix \
-    > "$temp_dir"/install_nix.sh
+  if is_installed curl; then
+    curl --proto '=https' --tlsv1.2 -sSf -L \
+        https://install.determinate.systems/nix \
+      > "$temp_dir"/install_nix.sh
+  elif is_installed wget; then
+    wget -qO- \
+        https://install.determinate.systems/nix \
+      > "$temp_dir"/install_nix.sh
+  else
+    echo "Either curl or wget is required to install Nix. Exiting."
+    exit 1
+  fi
   NIX_INSTALLER_DIAGNOSTIC_ENDPOINT="" sh "$temp_dir"/install_nix.sh install
 }
 
@@ -35,16 +45,17 @@ ask_then_install_nix() {
 }
 
 ensure_nix_installed() {
-  if ! is_nix_installed; then
+  if ! is_installed nix; then
     ask_then_install_nix
   fi
 }
 
 start_clan_gui() {
-  exec nix run \
-    https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-vm-manager \
-    --no-accept-flake-config \
-    --extra-experimental-features flakes nix-command -- "$@"
+  PATH="${PATH:+$PATH:}/nix/var/nix/profiles/default/bin" \
+    exec nix run \
+      https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-vm-manager \
+      --no-accept-flake-config \
+      --extra-experimental-features flakes nix-command -- "$@"
 }
 
 main() {
