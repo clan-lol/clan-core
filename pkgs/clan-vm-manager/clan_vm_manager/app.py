@@ -47,7 +47,7 @@ class MainApplication(Adw.Application):
             None,
         )
 
-        self.window: "MainWindow" | None = None
+        self.window: MainWindow | None = None
         self.connect("activate", self.on_activate)
         self.connect("shutdown", self.on_shutdown)
 
