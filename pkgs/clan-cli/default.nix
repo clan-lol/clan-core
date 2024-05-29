@@ -29,6 +29,7 @@
   mypy,
   nixpkgs,
   clan-core-path,
+  gitMinimal,
 }:
 let
   # Dependencies that are directly used in the project
@@ -113,7 +114,13 @@ python3.pkgs.buildPythonApplication {
   format = "pyproject";
 
   # Arguments for the wrapper to unset LD_LIBRARY_PATH to avoid glibc version issues
-  makeWrapperArgs = [ "--unset LD_LIBRARY_PATH" ];
+  makeWrapperArgs = [
+    "--unset LD_LIBRARY_PATH"
+    "--suffix"
+    "PATH"
+    ":"
+    "${gitMinimal}/bin/git"
+  ];
 
   # Build-time dependencies.
   nativeBuildInputs = [
