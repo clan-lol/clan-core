@@ -156,8 +156,8 @@ For more detailed information, visit: https://docs.clan.lol/getting-started
 
     parser_config = subparsers.add_parser(
         "config",
-        help="set nixos configuration",
-        description="set nixos configuration",
+        help="read a nixos configuration option",
+        description="read a nixos configuration option",
         epilog=(
             """
         """
