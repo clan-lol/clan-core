@@ -116,6 +116,8 @@ This subcommand allows uploading secrets to remote machines.
 If using sops as a secret backend it will upload the private key to the machine.
 If using password store it uploads all the secrets you manage to the machine.
 
+The default backend is sops.
+
 Examples:
 
   $ clan facts upload [MACHINE]
