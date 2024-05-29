@@ -14,9 +14,12 @@
          =  (import <nixpkgs/nixos/modules/module-list.nix>) ++ [ ({...}: {
          nixpkgs.hostPlatform = builtins.currentSystem;} ) ] ; })).options"
         },
-        "home-manager": {
-          "expr": "(builtins.getFlake \"github:nix-community/home-manager\").homeConfigurations.<name>.options"
-        }
+        "clan": {
+          "expr": "let pkgs = import <nixpkgs> { }; flake = builtins.getFlake \"https://git.clan.lol/clan/clan-core/archive/main.tar.gz\"; clanCore = flake.outputs.nixosModules.clanCore; clanModules = flake.outputs.clanModules; allNixosModules = (import <nixpkgs/nixos/modules/module-list.nix>) ++ [<nixpkgs/nixos/modules/misc/assertions.nix> {nixpkgs.hostPlatform = \"x86_64-linux\";}]; clanCoreNixosModules = [clanCore] ++ allNixosModules ++ (builtins.attrValues clanModules); clanCoreNixos = pkgs.nixos { imports = clanCoreNixosModules;}; in clanCoreNixos.options"
+        },
+	"clan-core": {
+	    "expr": "(builtins.getFlake \"/home/kenji/git/clan-projects/clan-core\").packages.x86_64-linux.editor.passthru.completion-options",
+	},
       }
     }
   }

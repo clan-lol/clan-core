@@ -37,4 +37,6 @@ writeShellApplication {
 
     exec ${lib.getExe codium} --user-data-dir "$DATA_DIR" "$@"
   '';
+
+  derivationArgs.passthru.completion-options = import ./completion-options.nix;
 }
