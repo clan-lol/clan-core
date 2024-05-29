@@ -209,9 +209,9 @@ def generate_facts(
 
 def generate_command(args: argparse.Namespace) -> None:
     if len(args.machines) == 0:
-        machines = get_all_machines(args.flake)
+        machines = get_all_machines(args.flake, args.option)
     else:
-        machines = get_selected_machines(args.flake, args.machines)
+        machines = get_selected_machines(args.flake, args.option, args.machines)
     generate_facts(machines, args.service, args.regenerate)
 
 

@@ -85,7 +85,9 @@ def flash_machine(
     disks: dict[str, str],
     system_config: dict[str, Any],
     dry_run: bool,
+    write_efi_boot_entries: bool,
     debug: bool,
+    extra_args: list[str] = [],
 ) -> None:
     secret_facts_module = importlib.import_module(machine.secret_facts_module)
     secret_facts_store: SecretStoreBase = secret_facts_module.SecretStore(
@@ -112,6 +114,8 @@ def flash_machine(
             disko_install.append("sudo")
 
         disko_install.append("disko-install")
+        if write_efi_boot_entries:
+            disko_install.append("--write-efi-boot-entries")
         if dry_run:
             disko_install.append("--dry-run")
         if debug:
@@ -128,6 +132,8 @@ def flash_machine(
                 json.dumps(system_config),
             ]
         )
+        disko_install.extend(["--option", "dry-run", "true"])
+        disko_install.extend(extra_args)
 
         cmd = nix_shell(
             ["nixpkgs#disko"],
@@ -148,6 +154,8 @@ class FlashOptions:
     mode: str
     language: str
     keymap: str
+    write_efi_boot_entries: bool
+    nix_options: list[str]
 
 
 class AppendDiskAction(argparse.Action):
@@ -178,6 +186,8 @@ def flash_command(args: argparse.Namespace) -> None:
         mode=args.mode,
         language=args.lang,
         keymap=args.keymap,
+        write_efi_boot_entries=args.write_efi_boot_entries,
+        nix_options=args.options,
     )
 
     machine = Machine(opts.machine, flake=opts.flake)
@@ -233,6 +243,8 @@ def flash_command(args: argparse.Namespace) -> None:
         system_config=extra_config,
         dry_run=opts.dry_run,
         debug=opts.debug,
+        write_efi_boot_entries=opts.write_efi_boot_entries,
+        extra_args=opts.nix_options,
     )
 
 
@@ -251,12 +263,14 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         help="device to flash to",
         default={},
     )
-    mode_help = textwrap.dedent("""\
+    mode_help = textwrap.dedent(
+        """\
         Specify the mode of operation. Valid modes are: format, mount."
         Format will format the disk before installing.
         Mount will mount the disk before installing.
         Mount is useful for updating an existing system without losing data.
-        """)
+        """
+    )
     parser.add_argument(
         "--mode",
         type=str,
@@ -290,6 +304,18 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--dry-run",
         help="Only build the system, don't flash it",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--write-efi-boot-entries",
+        help=textwrap.dedent(
+            """
+          Write EFI boot entries to the NVRAM of the system for the installed system.
+          Specify this option if you plan to boot from this disk on the current machine,
+          but not if you plan to move the disk to another machine.
+        """
+        ).strip(),
         default=False,
         action="store_true",
     )

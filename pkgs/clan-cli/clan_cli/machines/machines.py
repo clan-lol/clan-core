@@ -41,9 +41,10 @@ class QMPWrapper:
 
 
 class Machine:
-    flake: str | Path
     name: str
+    flake: str | Path
     data: MachineData
+    nix_options: list[str]
     eval_cache: dict[str, str]
     build_cache: dict[str, Path]
     _flake_path: Path | None
@@ -55,6 +56,7 @@ class Machine:
         name: str,
         flake: Path | str,
         deployment_info: dict | None = None,
+        nix_options: list[str] = [],
         machine: MachineData | None = None,
     ) -> None:
         """
@@ -76,6 +78,7 @@ class Machine:
         self.build_cache: dict[str, Path] = {}
         self._flake_path: Path | None = None
         self._deployment_info: None | dict = deployment_info
+        self.nix_options = nix_options
 
         state_dir = vm_state_dir(flake_url=str(self.flake), vm_name=self.data.name)
 
@@ -242,9 +245,9 @@ class Machine:
                 flake = f"path:{self.flake_dir}"
 
             args += [
-                f'{flake}#clanInternals.machines."{system}".{self.data.name}.{attr}',
-                *nix_options,
+                f'{flake}#clanInternals.machines."{system}".{self.data.name}.{attr}'
             ]
+        args += nix_options + self.nix_options
 
         if method == "eval":
             output = run_no_stdout(nix_eval(args)).stdout.strip()

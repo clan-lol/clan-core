@@ -110,11 +110,9 @@ def deploy_nixos(machines: MachineGroup) -> None:
 
         ssh_arg += " -i " + host.key if host.key else ""
 
-        extra_args = host.meta.get("extra_args", [])
         cmd = [
             "nixos-rebuild",
             "switch",
-            *extra_args,
             "--fast",
             "--option",
             "keep-going",
@@ -124,6 +122,7 @@ def deploy_nixos(machines: MachineGroup) -> None:
             "true",
             "--build-host",
             "",
+            *machine.nix_options,
             "--flake",
             f"{path}#{machine.name}",
         ]
@@ -143,7 +142,9 @@ def update(args: argparse.Namespace) -> None:
         raise ClanError("Could not find clan flake toplevel directory")
     machines = []
     if len(args.machines) == 1 and args.target_host is not None:
-        machine = Machine(name=args.machines[0], flake=args.flake)
+        machine = Machine(
+            name=args.machines[0], flake=args.flake, nix_options=args.option
+        )
         machine.target_host_address = args.target_host
         machines.append(machine)
 
@@ -153,7 +154,7 @@ def update(args: argparse.Namespace) -> None:
     else:
         if len(args.machines) == 0:
             ignored_machines = []
-            for machine in get_all_machines(args.flake):
+            for machine in get_all_machines(args.flake, args.option):
                 if machine.deployment_info.get("requireExplicitUpdate", False):
                     continue
                 try:
@@ -173,7 +174,7 @@ def update(args: argparse.Namespace) -> None:
                     print(machine, file=sys.stderr)
 
         else:
-            machines = get_selected_machines(args.flake, args.machines)
+            machines = get_selected_machines(args.flake, args.option, args.machines)
 
     deploy_nixos(MachineGroup(machines))
 
