@@ -6,6 +6,11 @@
       default = [ config.clanCore.machineName ];
       description = "Hosts that should be excluded";
     };
+    topLevelDomain = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = "Top level domain to reach hosts";
+    };
   };
 
   config.networking.hosts =
@@ -24,7 +29,15 @@
         let
           path = zerotierIpMachinePath machine;
         in
-        if builtins.pathExists path then lib.nameValuePair (builtins.readFile path) [ machine ] else null
+        if builtins.pathExists path then
+          lib.nameValuePair (builtins.readFile path) (
+            if (config.clan.static-hosts.topLevelDomain == "") then
+              [ machine ]
+            else
+              [ "${machine}.${config.clan.static-hosts.topLevelDomain}" ]
+          )
+        else
+          null
       ) filteredMachines
     );
 }
