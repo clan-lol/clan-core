@@ -6,6 +6,15 @@
 }:
 let
   cfg = config.clan.matrix-synapse;
+  nginx-vhost = "matrix.${config.clan.matrix-synapse.domain}";
+  element-web =
+    pkgs.runCommand "element-web-with-config" { nativeBuildInputs = [ pkgs.buildPackages.jq ]; } ''
+      cp -r ${pkgs.element-web} $out
+      chmod -R u+w $out
+      jq '."default_server_config"."m.homeserver" = { "base_url": "https://${nginx-vhost}:443", "server_name": "${config.clan.matrix-synapse.domain}" }' \
+        > $out/config.json < ${pkgs.element-web}/config.json
+      ln -s $out/config.json $out/config.${nginx-vhost}.json
+    '';
 in
 {
   options.clan.matrix-synapse = {
@@ -13,6 +22,7 @@ in
     domain = lib.mkOption {
       type = lib.types.str;
       description = "The domain name of the matrix server";
+      example = "example.com";
     };
   };
   config = lib.mkIf cfg.enable {
@@ -49,14 +59,40 @@ in
           }
         ];
       };
-      extraConfigFiles = [ "/var/lib/matrix-synapse/registration_shared_secret.yaml" ];
+      extraConfigFiles = [ "/run/synapse-registration-shared-secret.yaml" ];
     };
+    systemd.tmpfiles.settings."synapse" = {
+      "/run/synapse-registration-shared-secret.yaml" = {
+        C.argument = config.clanCore.facts.services.matrix-synapse.secret.synapse-registration_shared_secret.path;
+        z = {
+          mode = "0400";
+          user = "matrix-synapse";
+        };
+      };
+    };
+
     systemd.services.matrix-synapse.serviceConfig.ExecStartPre = [
-      "+${pkgs.writeScript "copy_registration_shared_secret" ''
-        #!/bin/sh
-        cp ${config.clanCore.facts.services.matrix-synapse.secret.synapse-registration_shared_secret.path} /var/lib/matrix-synapse/registration_shared_secret.yaml
-        chown matrix-synapse:matrix-synapse /var/lib/matrix-synapse/registration_shared_secret.yaml
-        chmod 600 /var/lib/matrix-synapse/registration_shared_secret.yaml
+      "+${pkgs.writeShellScript "create-matrix-synapse-db" ''
+        export PATH=${
+          lib.makeBinPath [
+            config.services.postgresql.package
+            pkgs.util-linux
+            pkgs.gnugrep
+          ]
+        }
+        psql() { runuser -u postgres -- psql "$@"; }
+        # wait for postgres to be ready
+        while ! runuser -u postgres pg_isready; do
+          sleep 1
+        done
+        if ! psql -tAc "SELECT 1 FROM pg_database WHERE datname = 'matrix-synapse'" | grep -q 1; then
+          psql -c "CREATE DATABASE \"matrix-synapse\" TEMPLATE template0 LC_COLLATE = 'C' LC_CTYPE = 'C'"
+        fi
+        # create user if it doesn't exist and make it owner of the database
+        if ! psql -tAc "SELECT 1 FROM pg_user WHERE usename = 'matrix-synapse'" | grep -q 1; then
+          psql -c "CREATE USER \"matrix-synapse\""
+          psql -c "ALTER DATABASE \"matrix-synapse\" OWNER TO \"matrix-synapse\""
+        fi
       ''}"
     ];
 
@@ -72,22 +108,6 @@ in
     };
 
     services.postgresql.enable = true;
-    # we need to use both ensusureDatabases and initialScript, because the former runs everytime but with the wrong collation
-    services.postgresql = {
-      ensureDatabases = [ "matrix-synapse" ];
-      ensureUsers = [
-        {
-          name = "matrix-synapse";
-          ensureDBOwnership = true;
-        }
-      ];
-      initialScript = pkgs.writeText "synapse-init.sql" ''
-        CREATE DATABASE "matrix-synapse"
-          TEMPLATE template0
-          LC_COLLATE = "C"
-          LC_CTYPE = "C";
-      '';
-    };
     services.nginx = {
       enable = true;
       virtualHosts = {
@@ -102,7 +122,7 @@ in
             return 200 '${
               builtins.toJSON {
                 "m.homeserver" = {
-                  "base_url" = "https://matrix.${cfg.domain}";
+                  "base_url" = "https://${nginx-vhost}";
                 };
                 "m.identity_server" = {
                   "base_url" = "https://vector.im";
@@ -111,15 +131,12 @@ in
             }';
           '';
         };
-        "matrix.${cfg.domain}" = {
+        ${nginx-vhost} = {
           forceSSL = true;
           enableACME = true;
-          locations."/_matrix" = {
-            proxyPass = "http://localhost:8008";
-          };
-          locations."/test".extraConfig = ''
-            return 200 "Hello, world!";
-          '';
+          locations."/_matrix".proxyPass = "http://localhost:8008";
+          locations."/_synapse".proxyPass = "http://localhost:8008";
+          locations."/".root = element-web;
         };
       };
     };
