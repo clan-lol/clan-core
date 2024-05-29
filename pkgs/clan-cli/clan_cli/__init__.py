@@ -51,19 +51,14 @@ class AppendOptionAction(argparse.Action):
         lst.append(values[1])
 
 
-def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog=prog,
-        description="The clan cli tool.",
-        epilog=(
-            """
-Online reference for the clan cli tool: https://docs.clan.lol/reference/cli/
-For more detailed information, visit: https://docs.clan.lol
-        """
-        ),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+def flake_path(arg: str) -> str | Path:
+    flake_dir = Path(arg).resolve()
+    if flake_dir.exists() and flake_dir.is_dir():
+        return flake_dir
+    return arg
 
+
+def add_common_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--debug",
         help="Enable debug logging",
@@ -93,6 +88,32 @@ For more detailed information, visit: https://docs.clan.lol
         metavar="PATH",
         type=flake_path,
     )
+
+
+def register_common_flags(parser: argparse.ArgumentParser) -> None:
+    has_subparsers = False
+    for action in parser._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            for choice, child_parser in action.choices.items():
+                has_subparsers = True
+                register_common_flags(child_parser)
+    if not has_subparsers:
+        add_common_flags(parser)
+
+
+def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog=prog,
+        description="The clan cli tool.",
+        epilog=(
+            """
+Online reference for the clan cli tool: https://docs.clan.lol/reference/cli/
+For more detailed information, visit: https://docs.clan.lol
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    add_common_flags(parser)
 
     subparsers = parser.add_subparsers()
 
@@ -208,7 +229,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/secr
 
 This subcommand provides an interface to facts of clan machines.
 Facts are artifacts that a service can generate.
-There are public and secret facts. 
+There are public and secret facts.
 Public facts can be referenced by other machines directly.
 Public facts can include: ip addresses, public keys.
 Secret facts can include: passwords, private keys.
@@ -223,7 +244,7 @@ Examples:
 
   $ clan facts generate
   Will generate facts for all machines.
-   
+
   $ clan facts generate --service [SERVICE] --regenerate
   Will regenerate facts, if they are already generated for a specific service.
   This is especially useful for resetting certain passwords while leaving the rest
@@ -250,7 +271,7 @@ Examples:
   List all the machines managed by clan.
 
   $ clan machines update [MACHINES]
-  Will update the specified machine [MACHINE], if [MACHINE] is omitted, the command 
+  Will update the specified machine [MACHINE], if [MACHINE] is omitted, the command
   will attempt to update every configured machine.
 
   $ clan machines install [MACHINES] [TARGET_HOST]
@@ -284,6 +305,8 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/depl
 
     if argcomplete:
         argcomplete.autocomplete(parser)
+
+    register_common_flags(parser)
 
     return parser
 
