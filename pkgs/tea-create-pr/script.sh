@@ -4,12 +4,14 @@ set -euo pipefail
 remoteFork="${1:-origin}"
 remoteUpstream="${2:-upstream}"
 targetBranch="${3:-main}"
-shift && shift
+shift && shift && shift
 TMPDIR="$(mktemp -d)"
 currentBranch="$(git rev-parse --abbrev-ref HEAD)"
-user="$(git config --get remote.origin.url | awk -F'[@:/]' '{print $3}' | tr -d '\n')"
+user_unparsed="$(tea whoami)"
+user="$(echo "$user_unparsed" | tr -d '\n' | cut -f4 -d' ')"
 tempRemoteBranch="$user-$currentBranch"
 root_dir=$(git rev-parse --show-toplevel)
+
 
 # Function to check if a remote exists
 check_remote() {
@@ -29,6 +31,7 @@ if ! check_remote "$remoteUpstream"; then
 fi
 
 upstream_url=$(git remote get-url "$remoteUpstream")
+git fetch "$remoteUpstream"
 repo=$(echo "$upstream_url" | sed -E 's#.*:([^/]+/[^.]+)\.git#\1#')
 
 treefmt -C "$root_dir"
@@ -48,6 +51,7 @@ fi
 
 git push --force -u "$remoteFork" HEAD:refs/heads/"$tempRemoteBranch"
 
+set -x
 tea pr create \
   --repo "$repo" \
   --head "$user:$tempRemoteBranch" \
