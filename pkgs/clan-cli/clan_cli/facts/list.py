@@ -3,6 +3,7 @@ import importlib
 import json
 import logging
 
+from ..completions import add_dynamic_completer, complete_machines
 from ..machines.machines import Machine
 
 log = logging.getLogger(__name__)
@@ -37,8 +38,10 @@ def get_command(args: argparse.Namespace) -> None:
 
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    machines_parser = parser.add_argument(
         "machine",
         help="The machine to print facts for",
     )
+    add_dynamic_completer(machines_parser, complete_machines)
+
     parser.set_defaults(func=get_command)

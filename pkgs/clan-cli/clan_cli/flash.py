@@ -12,6 +12,7 @@ from tempfile import TemporaryDirectory
 from typing import Any
 
 from .cmd import Log, run
+from .completions import add_dynamic_completer, complete_machines
 from .errors import ClanError
 from .facts.secret_modules import SecretStoreBase
 from .machines.machines import Machine
@@ -173,11 +174,13 @@ def flash_command(args: argparse.Namespace) -> None:
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    machines_parser = parser.add_argument(
         "machine",
         type=str,
         help="machine to install",
     )
+    add_dynamic_completer(machines_parser, complete_machines)
+
     parser.add_argument(
         "--disk",
         type=str,

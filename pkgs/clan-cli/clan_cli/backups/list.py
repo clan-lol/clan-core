@@ -3,6 +3,7 @@ import json
 import subprocess
 from dataclasses import dataclass
 
+from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
 from ..machines.machines import Machine
 
@@ -57,8 +58,9 @@ def list_command(args: argparse.Namespace) -> None:
 
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    machines_parser = parser.add_argument(
         "machine", type=str, help="machine in the flake to show backups of"
     )
+    add_dynamic_completer(machines_parser, complete_machines)
     parser.add_argument("--provider", type=str, help="backup provider to filter by")
     parser.set_defaults(func=list_command)
