@@ -285,7 +285,7 @@ def collect_commands() -> list[Category]:
 
 
 class ManPage:
-    def __init__(self, name: str, section: int):
+    def __init__(self, name: str, section: int) -> None:
         self.name = name
         self.section = section
 
@@ -295,18 +295,101 @@ class ManPage:
     # def add_option(self, option, description):
     #     self.options[option] = description
 
-    def control(self, control: str, content: str) -> None:
-        self.manpage = self.manpage + f".{control} {content}"
+    def control(self, control: str, content: str | None = None) -> None:
+        if content:
+            self.manpage = self.manpage + f".{control} {content}"
+        else:
+            self.manpage = self.manpage + f".{control}"
         self.manpage = self.manpage + "\n"
+
+    def line(self, content: str | None = None) -> None:
+        self.manpage = self.manpage + f"{content}"
+        self.manpage = self.manpage + "\n"
+
+    def newline(self) -> None:
+        self.manpage = self.manpage + "\n"
+
+    def paragraph(self) -> None:
+        self.newline()
+        self.control("PP")
+
+    def contribute(self) -> None:
+        """
+        Contributing section of the manpages
+        should only be shown on the root page.
+        """
+        self.control("SH", "CONTRIBUTE")
+        self.control(
+            "PP",
+        )
+        self.line("Bug reports, contributions and forks are welcome.")
+        self.newline()
+        self.control(
+            "PP",
+        )
+        self.line(
+            "The code lives on gitea, you can use the issue tracker to file bugs, or issues and give feedback."
+        )
+        self.newline()
+        self.line(self.link("https://git.clan.lol/clan/clan-core"))
+
+        self.paragraph()
+        self.line(
+            "There is a matrix channel available where you can give feedback, or get feedback."
+        )
+        self.line("Share your usage patterns or share tips and tricks.")
+        self.newline()
+        self.line(self.link("https://matrix.to/#/#clan:lassul.us"))
+
+    def link(self, link: str) -> str:
+        """
+        Format a link
+        """
+        return "\[la]" + link + "\[ra]"
 
     def render(self) -> str:
         self.manpage = ""
-        self.control("TH", "Clan 1")
+        self.control("nh")
+        self.control("TH", 'CLAN 1 2023 clan "User Manuals"')
         self.control("SH", "NAME")
+        self.control(
+            "PP",
+        )
+        # overview
+        self.line("clan - the clan cli tool")
+        self.newline()
+
+        # synopsis
+        self.control("SH", "SYNOPSIS")
+        self.control(
+            "PP",
+        )
+        self.line("clan [OPTIONS] [SUBCOMMAND]")
+        self.newline()
+
+        # description
+        self.control("SH", "DESCRIPTION")
+        self.control(
+            "PP",
+        )
+        self.line("clan is a distributed systems manager for your fingertips.")
+        self.line("It knows how to update your machines.")
+        self.line(
+            "It knows how to generate and manage secrets and facts for your services."
+        )
+        self.line(
+            "It knows which services have state in which directories and can manage backups for machines and services."
+        )
+        self.paragraph()
+
         # manpage = f"NAME\n\t{self.name} - {self.description}\n\nDESCRIPTION\n\t{self.description}\n\nOPTIONS\n"
+
+        # for options in self.options.items():
+        #     print(options)
 
         # for option, desc in self.options.items():
         #     manpage += f"\t-{option}\n\t\t{desc}\n"
+        self.contribute()
 
         return self.manpage
 
@@ -322,6 +405,12 @@ def build_manpage() -> None:
     man.add_description("The clan cli tool.")
 
     print(man.render())
+
+    for command in cmds:
+        if command.title == "facts":
+            print(command)
+
+    # TODO: gather all level one subcommands
 
     # folder = Path("out")
     # folder.mkdir(parents=True, exist_ok=True)
