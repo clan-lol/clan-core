@@ -46,6 +46,12 @@ class WebView:
         self.method_registry: dict[str, Callable] = methods
 
         self.webview = WebKit.WebView()
+
+        settings = self.webview.get_settings()
+        # settings.
+        settings.set_property("enable-developer-extras", True)
+        self.webview.set_settings(settings)
+
         self.manager = self.webview.get_user_content_manager()
         # Can be called with: window.webkit.messageHandlers.gtk.postMessage("...")
         # Important: it seems postMessage must be given some payload, otherwise it won't trigger the event
