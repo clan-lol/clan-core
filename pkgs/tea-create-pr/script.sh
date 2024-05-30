@@ -4,7 +4,7 @@ set -euo pipefail
 remoteFork="${1:-origin}"
 remoteUpstream="${2:-upstream}"
 targetBranch="${3:-main}"
-shift && shift
+shift && shift && shift
 TMPDIR="$(mktemp -d)"
 currentBranch="$(git rev-parse --abbrev-ref HEAD)"
 user_unparsed="$(tea whoami)"
@@ -51,6 +51,7 @@ fi
 
 git push --force -u "$remoteFork" HEAD:refs/heads/"$tempRemoteBranch"
 
+set -x
 tea pr create \
   --repo "$repo" \
   --head "$user:$tempRemoteBranch" \
