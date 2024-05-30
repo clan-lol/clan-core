@@ -1,4 +1,5 @@
 import argparse
+import shlex
 import subprocess
 
 parser = argparse.ArgumentParser()
@@ -11,14 +12,17 @@ args = parser.parse_args()
 if not args.reviewers and not args.no_review:
     parser.error("either --reviewers or --no-review must be given")
 
-subprocess.run(
-    [
-        "tea-create-pr",
-        "origin",
-        "main",
-        "--assignees",
-        ",".join(["clan-bot", *args.reviewers]),
-        *(["--labels", "needs-review"] if not args.no_review else []),
-        *args.args,
-    ]
-)
+cmd = [
+    "tea-create-pr",
+    "origin",
+    "upstream",
+    "main",
+    "--assignees",
+    ",".join(["clan-bot", *args.reviewers]),
+    *(["--labels", "needs-review"] if not args.no_review else []),
+    *args.args,
+]
+
+print("Running:", shlex.join(cmd))
+
+subprocess.run(cmd)
