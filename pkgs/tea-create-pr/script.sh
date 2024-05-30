@@ -30,11 +30,15 @@ if ! check_remote "$remoteUpstream"; then
   exit 1
 fi
 
+treefmt -C "$root_dir"
+
 upstream_url=$(git remote get-url "$remoteUpstream")
-git fetch "$remoteUpstream"
+set -x
+git fetch "$remoteUpstream" && git rebase "$remoteUpstream"/main --autostash
+set +x
 repo=$(echo "$upstream_url" | sed -E 's#.*:([^/]+/[^.]+)\.git#\1#')
 
-treefmt -C "$root_dir"
+
 git log --reverse --pretty="format:%s%n%n%b%n%n" "$remoteUpstream/$targetBranch..HEAD" > "$TMPDIR"/commit-msg
 
 
@@ -51,7 +55,7 @@ fi
 
 git push --force -u "$remoteFork" HEAD:refs/heads/"$tempRemoteBranch"
 
-set -x
+
 tea pr create \
   --repo "$repo" \
   --head "$user:$tempRemoteBranch" \
