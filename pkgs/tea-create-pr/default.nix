@@ -4,7 +4,6 @@
   coreutils,
   git,
   tea,
-  gawk,
   openssh,
 }:
 writeShellApplication {
@@ -15,7 +14,6 @@ writeShellApplication {
     git
     tea
     openssh
-    gawk
   ];
   text = builtins.readFile ./script.sh;
 }
