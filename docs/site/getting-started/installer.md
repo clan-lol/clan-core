@@ -54,9 +54,9 @@ sudo umount /dev/sdb1
       flash-installer
     ```
 
-   The `--ssh-pubkey`, `--language` and `--keymap` are optional.
-   Replace `$HOME/.ssh/id_ed25519.pub` with a path to your SSH public key.
-   If you do not have an ssh key yet, you can generate one with `ssh-keygen -t ed25519` command.
+    The `--ssh-pubkey`, `--language` and `--keymap` are optional.
+    Replace `$HOME/.ssh/id_ed25519.pub` with a path to your SSH public key.
+    If you do not have an ssh key yet, you can generate one with `ssh-keygen -t ed25519` command.
 
     !!! Danger "Specifying the wrong device can lead to unrecoverable data loss."
 
