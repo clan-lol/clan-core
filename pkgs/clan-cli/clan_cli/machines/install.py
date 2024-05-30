@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from ..cmd import Log, run
+from ..completions import add_dynamic_completer, complete_machines
 from ..facts.generate import generate_facts
 from ..machines.machines import Machine
 from ..nix import nix_shell
@@ -188,11 +189,14 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         help="do not ask for confirmation",
         default=False,
     )
-    parser.add_argument(
+
+    machines_parser = parser.add_argument(
         "machine",
         type=str,
         help="machine to install",
     )
+    add_dynamic_completer(machines_parser, complete_machines)
+
     parser.add_argument(
         "target_host",
         type=str,
