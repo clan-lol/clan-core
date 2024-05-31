@@ -5,8 +5,6 @@ import { route } from "@/src/App";
 export const MachineListView: Component = () => {
   const [{ machines, loading }, { getMachines }] = useCountContext();
 
-  const list = () => Object.values(machines());
-
   createEffect(() => {
     if (route() === "machines") getMachines();
   });
@@ -34,12 +32,12 @@ export const MachineListView: Component = () => {
             </div>
           </div>
         </Match>
-        <Match when={!loading() && Object.entries(machines()).length === 0}>
+        <Match when={!loading() && machines().length === 0}>
           No machines found
         </Match>
         <Match when={!loading()}>
           <ul>
-            <For each={list()}>
+            <For each={machines()}>
               {(entry) => (
                 <li>
                   <div class="card card-side m-2 bg-base-100 shadow-lg">
@@ -50,7 +48,8 @@ export const MachineListView: Component = () => {
                     </figure>
                     <div class="card-body flex-row justify-between">
                       <div class="flex flex-col">
-                        <h2 class="card-title">{entry.machine_name}</h2>
+                        <h2 class="card-title">{entry}</h2>
+                        {/*
                         <p
                           classList={{
                             "text-gray-400": !entry.machine_description,
@@ -59,6 +58,7 @@ export const MachineListView: Component = () => {
                         >
                           {entry.machine_description || "No description"}
                         </p>
+                        */}
                       </div>
                       <div>
                         <button class="btn btn-ghost">
