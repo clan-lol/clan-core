@@ -45,7 +45,22 @@ Let's get your development environment up and running:
       git remote add upstream gitea@git.clan.lol:clan/clan-core.git
       ```
 
-5. **Allow .envrc**:
+5. **Register Your Gitea Account Locally**:
+
+   - Execute the following command to add your Gitea account locally:
+     ```bash
+     tea login add
+     ```
+   - Fill out the prompt as follows:
+     - URL of Gitea instance: `https://git.clan.lol`
+     - Name of new Login [git.clan.lol]:
+     - Do you have an access token? No
+     - Username: YourUsername
+     - Password: YourPassword
+     - Set Optional settings: No
+
+
+6. **Allow .envrc**:
 
    - When you enter the directory, you'll receive an error message like this:
      ```bash
@@ -53,7 +68,7 @@ Let's get your development environment up and running:
      ```
    - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
 
-6. **(Optional) Install Git Hooks**:
+7. **(Optional) Install Git Hooks**:
    - To syntax check your code you can run:
       ```bash
       nix fmt
@@ -63,8 +78,11 @@ Let's get your development environment up and running:
       ./scripts/pre-commit
       ```
 
-7. **Open a Pull Request**:
-   - Go to the webinterface and open up a pull request
+8. **Open a Pull Request**:
+   - To automatically open up a pull request you can use our tool called:
+   ```
+   merge-after-ci --reviewers Mic92 Lassulus Qubasa
+   ```
 
 # Debugging
 
