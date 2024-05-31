@@ -81,30 +81,14 @@ in
       };
     };
 
-    systemd.services.matrix-synapse.serviceConfig.ExecStartPre = [
-      "+${pkgs.writeShellScript "create-matrix-synapse-db" ''
-        export PATH=${
-          lib.makeBinPath [
-            config.services.postgresql.package
-            pkgs.util-linux
-            pkgs.gnugrep
-          ]
-        }
-        psql() { runuser -u postgres -- psql "$@"; }
-        # wait for postgres to be ready
-        while ! runuser -u postgres pg_isready; do
-          sleep 1
-        done
-        if ! psql -tAc "SELECT 1 FROM pg_database WHERE datname = 'matrix-synapse'" | grep -q 1; then
-          psql -c "CREATE DATABASE \"matrix-synapse\" TEMPLATE template0 LC_COLLATE = 'C' LC_CTYPE = 'C'"
-        fi
-        # create user if it doesn't exist and make it owner of the database
-        if ! psql -tAc "SELECT 1 FROM pg_user WHERE usename = 'matrix-synapse'" | grep -q 1; then
-          psql -c "CREATE USER \"matrix-synapse\""
-          psql -c "ALTER DATABASE \"matrix-synapse\" OWNER TO \"matrix-synapse\""
-        fi
-      ''}"
-    ];
+    clan.postgresql.users.matrix-synapse = { };
+    clan.postgresql.databases.matrix-synapse.create.options = {
+      TEMPLATE = "template0";
+      LC_COLLATE = "C";
+      LC_CTYPE = "C";
+      ENCODING = "UTF8";
+      OWNER = "matrix-synapse";
+    };
 
     clanCore.facts.services."matrix-synapse" = {
       secret."synapse-registration_shared_secret" = { };
