@@ -17,6 +17,33 @@ let
   cfg = config.clan;
 in
 {
+  imports = [
+    # TODO: figure out how to print the deprecation warning
+    # "${inputs.nixpkgs}/nixos/modules/misc/assertions.nix"
+    (lib.mkRenamedOptionModule
+      [
+        "clan"
+        "clanName"
+      ]
+      [
+        "clan"
+        "meta"
+        "name"
+      ]
+    )
+    (lib.mkRenamedOptionModule
+      [
+        "clan"
+        "clanIcon"
+      ]
+      [
+        "clan"
+        "meta"
+        "icon"
+      ]
+    )
+  ];
+
   options.clan = {
     directory = mkOption {
       type = types.path;
@@ -33,15 +60,27 @@ in
       default = { };
       description = "Allows to include machine-specific modules i.e. machines.\${name} = { ... }";
     };
-    clanName = mkOption {
-      type = types.str;
-      description = "Needs to be (globally) unique, as this determines the folder name where the flake gets downloaded to.";
+
+    # Checks are performed in 'buildClan'
+    # Not everyone uses flake-parts
+    meta = {
+      name = lib.mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Needs to be (globally) unique, as this determines the folder name where the flake gets downloaded to.";
+      };
+      icon = mkOption {
+        type = types.nullOr types.path;
+        default = null;
+        description = "A path to an icon to be used for the clan in the GUI";
+      };
+      description = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "A short description of the clan";
+      };
     };
-    clanIcon = mkOption {
-      type = types.nullOr types.path;
-      default = null;
-      description = "A path to an icon to be used for the clan, should be the same for all machines";
-    };
+
     pkgsForSystem = mkOption {
       type = types.functionTo types.raw;
       default = _system: null;
@@ -52,6 +91,7 @@ in
     clanInternals = lib.mkOption {
       type = lib.types.submodule {
         options = {
+          meta = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           all-machines-json = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           machines = lib.mkOption { type = lib.types.attrsOf (lib.types.attrsOf lib.types.unspecified); };
           machinesFunc = lib.mkOption { type = lib.types.attrsOf (lib.types.attrsOf lib.types.unspecified); };
@@ -65,9 +105,8 @@ in
         directory
         specialArgs
         machines
-        clanName
-        clanIcon
         pkgsForSystem
+        meta
         ;
     };
   };

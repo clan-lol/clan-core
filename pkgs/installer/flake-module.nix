@@ -98,9 +98,6 @@ let
 in
 {
   clan = {
-    clanName = "clan-core";
-    directory = self;
-
     # To build a generic installer image (without ssh pubkeys),
     # use the following command:
     # $ nix build .#iso-installer
