@@ -27,7 +27,8 @@
         packages = [
           select-shell
           pkgs.tea
-          pkgs.nix
+          # Better error messages than nix 2.18
+          pkgs.nixVersions.latest
           self'.packages.tea-create-pr
           self'.packages.merge-after-ci
           self'.packages.pending-reviews
