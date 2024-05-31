@@ -1,7 +1,7 @@
 # Clan configuration file
 # TODO: This file is used as a template for the simple GUI workflow
 {
-  inputs.clan-core.url = "git+file:///home/johannes/git/clan-core";
+  inputs.clan-core.url = "git+https://git.clan.lol/clan/clan-core";
   outputs =
     { self, clan-core, ... }:
     let
