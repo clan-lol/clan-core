@@ -152,6 +152,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started
         ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
+
     flakes.register_parser(parser_flake)
 
     parser_config = subparsers.add_parser(

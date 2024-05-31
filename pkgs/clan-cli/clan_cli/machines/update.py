@@ -6,6 +6,7 @@ import shlex
 import subprocess
 import sys
 
+from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
 from ..facts.generate import generate_facts
 from ..facts.upload import upload_secrets
@@ -180,7 +181,7 @@ def update(args: argparse.Namespace) -> None:
 
 
 def register_update_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    machines_parser = parser.add_argument(
         "machines",
         type=str,
         nargs="*",
@@ -188,6 +189,9 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         metavar="MACHINE",
         help="machine to update. If no machine is specified, all machines will be updated.",
     )
+
+    add_dynamic_completer(machines_parser, complete_machines)
+
     parser.add_argument(
         "--target-host",
         type=str,

@@ -9,6 +9,7 @@ from tempfile import TemporaryDirectory
 
 from clan_cli.cmd import run
 
+from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
 from ..git import commit_files
 from ..machines.inventory import get_all_machines, get_selected_machines
@@ -216,13 +217,15 @@ def generate_command(args: argparse.Namespace) -> None:
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    machines_parser = parser.add_argument(
         "machines",
         type=str,
         help="machine to generate facts for. if empty, generate facts for all machines",
         nargs="*",
         default=[],
     )
+    add_dynamic_completer(machines_parser, complete_machines)
+
     parser.add_argument(
         "--service",
         type=str,
