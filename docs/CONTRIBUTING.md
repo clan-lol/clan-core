@@ -15,74 +15,74 @@ Let's get your development environment up and running:
 
 1. **Install Nix Package Manager**:
 
-   - You can install the Nix package manager by either [downloading the Nix installer](https://github.com/DeterminateSystems/nix-installer/releases) or running this command:
-     ```bash
-     curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-     ```
+      - You can install the Nix package manager by either [downloading the Nix installer](https://github.com/DeterminateSystems/nix-installer/releases) or running this command:
+        ```bash
+        curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+        ```
 
 2. **Install direnv**:
 
-   - To automatically setup a devshell on entering the directory
-     ```bash
-     nix profile install nixpkgs#nix-direnv-flakes
-     ```
+      - To automatically setup a devshell on entering the directory
+        ```bash
+        nix profile install nixpkgs#nix-direnv-flakes
+        ```
 
 3. **Add direnv to your shell**:
 
-   - Direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
-     You can do this by executing following command. The example below will setup direnv for `zsh` and `bash`
+      - Direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
+        You can do this by executing following command. The example below will setup direnv for `zsh` and `bash`
 
-   ```bash
-   echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc && eval "$SHELL"
-   ```
+      ```bash
+      echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc && eval "$SHELL"
+      ```
 
 4. **Create a Gitea Account**:
-   - Register an account on https://git.clan.lol
-   - Fork the [clan-core](https://git.clan.lol/clan/clan-core) repository
-   - Clone the repository and navigate to it
-   - Add a new remote called upstream:
-      ```bash
-      git remote add upstream gitea@git.clan.lol:clan/clan-core.git
-      ```
+      - Register an account on https://git.clan.lol
+      - Fork the [clan-core](https://git.clan.lol/clan/clan-core) repository
+      - Clone the repository and navigate to it
+      - Add a new remote called upstream:
+         ```bash
+         git remote add upstream gitea@git.clan.lol:clan/clan-core.git
+         ```
 
 5. **Register Your Gitea Account Locally**:
 
-   - Execute the following command to add your Gitea account locally:
-     ```bash
-     tea login add
-     ```
-   - Fill out the prompt as follows:
-     - URL of Gitea instance: `https://git.clan.lol`
-     - Name of new Login [git.clan.lol]:
-     - Do you have an access token? No
-     - Username: YourUsername
-     - Password: YourPassword
-     - Set Optional settings: No
+      - Execute the following command to add your Gitea account locally:
+        ```bash
+        tea login add
+        ```
+      - Fill out the prompt as follows:
+        - URL of Gitea instance: `https://git.clan.lol`
+        - Name of new Login [git.clan.lol]:
+        - Do you have an access token? No
+        - Username: YourUsername
+        - Password: YourPassword
+        - Set Optional settings: No
 
 
 6. **Allow .envrc**:
 
-   - When you enter the directory, you'll receive an error message like this:
-     ```bash
-     direnv: error .envrc is blocked. Run `direnv allow` to approve its content
-     ```
-   - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
+      - When you enter the directory, you'll receive an error message like this:
+        ```bash
+        direnv: error .envrc is blocked. Run `direnv allow` to approve its content
+        ```
+      - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
 
 7. **(Optional) Install Git Hooks**:
-   - To syntax check your code you can run:
-      ```bash
-      nix fmt
-      ```
-   - To make this automatic install the git hooks
-      ```bash
-      ./scripts/pre-commit
-      ```
+      - To syntax check your code you can run:
+         ```bash
+         nix fmt
+         ```
+      - To make this automatic install the git hooks
+         ```bash
+         ./scripts/pre-commit
+         ```
 
 8. **Open a Pull Request**:
-   - To automatically open up a pull request you can use our tool called:
-   ```
-   merge-after-ci --reviewers Mic92 Lassulus Qubasa
-   ```
+      - To automatically open up a pull request you can use our tool called:
+      ```
+      merge-after-ci --reviewers Mic92 Lassulus Qubasa
+      ```
 
 # Debugging
 
