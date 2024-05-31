@@ -176,7 +176,7 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         "remove-secret", help="remove a group's access to a secret"
     )
     remove_secret_parser.add_argument(
-        "machine", help="the name of the group", type=machine_name_type
+        "machine", help="the name of the machine", type=machine_name_type
     )
     remove_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type

@@ -21,6 +21,13 @@ def test_machine_subcommands(
     assert "vm1" in out.out
     assert "vm2" in out.out
 
+    capsys.readouterr()
+    cli.run(["machines", "show", "--flake", str(test_flake_with_core.path), "machine1"])
+    out = capsys.readouterr()
+    assert "machine1" in out.out
+    assert "Description" in out.out
+    print(out)
+
     cli.run(
         ["machines", "delete", "--flake", str(test_flake_with_core.path), "machine1"]
     )

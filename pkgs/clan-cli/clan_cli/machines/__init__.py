@@ -5,6 +5,7 @@ from .create import register_create_parser
 from .delete import register_delete_parser
 from .install import register_install_parser
 from .list import register_list_parser
+from .show import register_show_parser
 from .update import register_update_parser
 
 
@@ -61,6 +62,17 @@ Examples:
         formatter_class=argparse.RawTextHelpFormatter,
     )
     register_list_parser(list_parser)
+
+    show_parser = subparser.add_parser(
+        "show",
+        help="Show a machine",
+        epilog=(
+            """
+This subcommand shows the details of a machine managed by this clan like icon, description, etc
+"""
+        ),
+    )
+    register_show_parser(show_parser)
 
     install_parser = subparser.add_parser(
         "install",
