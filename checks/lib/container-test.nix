@@ -10,6 +10,7 @@ in
     hostPkgs = pkgs;
     # speed-up evaluation
     defaults = {
+      nix.package = pkgs.nixVersions.latest;
       documentation.enable = lib.mkDefault false;
       boot.isContainer = true;
 
