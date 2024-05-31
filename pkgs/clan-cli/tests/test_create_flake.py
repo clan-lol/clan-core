@@ -17,10 +17,12 @@ def test_create_flake(
     capsys: pytest.CaptureFixture,
     temporary_home: Path,
     cli: Cli,
+    clan_core: Path,
 ) -> None:
     flake_dir = temporary_home / "test-flake"
 
-    cli.run(["flakes", "create", str(flake_dir)])
+    url = f"{clan_core}#default"
+    cli.run(["flakes", "create", str(flake_dir), f"--url={url}"])
     assert (flake_dir / ".clan-flake").exists()
     monkeypatch.chdir(flake_dir)
     cli.run(["machines", "create", "machine1"])
@@ -55,10 +57,11 @@ def test_ui_template(
     capsys: pytest.CaptureFixture,
     temporary_home: Path,
     cli: Cli,
+    clan_core: Path,
 ) -> None:
     flake_dir = temporary_home / "test-flake"
-    url = "git+https://git.clan.lol/clan/clan-core#empty"
-    cli.run(["flakes", "create", str(flake_dir), "--url", url])
+    url = f"{clan_core}#empty"
+    cli.run(["flakes", "create", str(flake_dir), f"--url={url}"])
     assert (flake_dir / ".clan-flake").exists()
     monkeypatch.chdir(flake_dir)
     cli.run(["machines", "create", "machine1"])
