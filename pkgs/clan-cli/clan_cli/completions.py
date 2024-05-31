@@ -20,6 +20,10 @@ except ImportError:
     pass
 
 
+# The default completion timeout for commands
+COMPLETION_TIMEOUT: int = 3
+
+
 def clan_dir(flake: str | None) -> str | None:
     from .dirs import get_clan_flake_toplevel_or_env
 
@@ -59,7 +63,7 @@ def complete_machines(
 
     thread = threading.Thread(target=run_cmd)
     thread.start()
-    thread.join(timeout=3)
+    thread.join(timeout=COMPLETION_TIMEOUT)
 
     if thread.is_alive():
         return iter([])
