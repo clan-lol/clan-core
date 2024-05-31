@@ -2,6 +2,7 @@ import argparse
 import importlib
 import logging
 
+from ..completions import add_dynamic_completer, complete_machines
 from ..machines.machines import Machine
 
 log = logging.getLogger(__name__)
@@ -54,10 +55,12 @@ def check_command(args: argparse.Namespace) -> None:
 
 
 def register_check_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    machines_parser = parser.add_argument(
         "machine",
         help="The machine to check secrets for",
     )
+    add_dynamic_completer(machines_parser, complete_machines)
+
     parser.add_argument(
         "--service",
         help="the service to check",

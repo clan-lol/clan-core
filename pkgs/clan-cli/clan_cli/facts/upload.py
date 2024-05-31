@@ -5,6 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from ..cmd import Log, run
+from ..completions import add_dynamic_completer, complete_machines
 from ..machines.machines import Machine
 from ..nix import nix_shell
 
@@ -46,8 +47,10 @@ def upload_command(args: argparse.Namespace) -> None:
 
 
 def register_upload_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    machines_parser = parser.add_argument(
         "machine",
         help="The machine to upload secrets to",
     )
+    add_dynamic_completer(machines_parser, complete_machines)
+
     parser.set_defaults(func=upload_command)
