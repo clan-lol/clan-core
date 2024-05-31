@@ -24,10 +24,14 @@
   };
 
   outputs =
-    inputs@{ flake-parts, ... }:
+    inputs@{ flake-parts, self, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }:
       {
+        clan = {
+          # meta.name = "clan-core";
+          directory = self;
+        };
         systems = [
           "x86_64-linux"
           "aarch64-linux"
