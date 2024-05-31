@@ -51,7 +51,9 @@ in
 
   config = lib.mkIf (cfg.destinations != { }) {
     services.borgbackup.jobs = lib.mapAttrs (_: dest: {
-      paths = lib.flatten (map (state: state.folders) (lib.attrValues config.clanCore.state));
+      paths = lib.unique (
+        lib.flatten (map (state: state.folders) (lib.attrValues config.clanCore.state))
+      );
       exclude = [ "*.pyc" ];
       repo = dest.repo;
       environment.BORG_RSH = dest.rsh;
@@ -60,6 +62,23 @@ in
       persistentTimer = true;
       preHook = ''
         set -x
+        declare -A preCommandErrors
+        ${lib.concatMapStringsSep "\n" (state: ''
+          echo "Running pre-backup command for ${state.name}"
+          if ! ${state.preBackupCommand} then
+            preCommandErrors["${state.name}"]=1
+          fi
+        '') (lib.attrValues config.clanCore.state)}
+      '';
+      postPrune = ''
+        # report any preBackupCommand errors
+        if [[ ''${#preCommandErrors[@]} -gt 0 ]]; then
+          echo "PreBackupCommand failed for the following services:"
+          for state in "''${!preCommandErrors[@]}"; do
+            echo "  $state"
+          done
+          exit 1
+        fi
       '';
 
       encryption = {

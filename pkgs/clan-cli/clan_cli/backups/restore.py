@@ -17,7 +17,7 @@ def restore_service(machine: Machine, name: str, provider: str, service: str) ->
     folders = backup_folders[service]["folders"]
     env = {}
     env["NAME"] = name
-    env["FOLDERS"] = ":".join(folders)
+    env["FOLDERS"] = ":".join(set(folders))
 
     if pre_restore := backup_folders[service]["preRestoreCommand"]:
         proc = machine.target_host.run(
@@ -58,12 +58,23 @@ def restore_backup(
     name: str,
     service: str | None = None,
 ) -> None:
+    errors = []
     if service is None:
         backup_folders = json.loads(machine.eval_nix("config.clanCore.state"))
         for _service in backup_folders:
-            restore_service(machine, name, provider, _service)
+            try:
+                restore_service(machine, name, provider, _service)
+            except ClanError as e:
+                errors.append(f"{_service}: {e}")
     else:
-        restore_service(machine, name, provider, service)
+        try:
+            restore_service(machine, name, provider, service)
+        except ClanError as e:
+            errors.append(f"{service}: {e}")
+    if errors:
+        raise ClanError(
+            "Restore failed for the following services:\n" + "\n".join(errors)
+        )
 
 
 def restore_command(args: argparse.Namespace) -> None:
