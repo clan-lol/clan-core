@@ -7,15 +7,57 @@
   directory, # The directory containing the machines subdirectory
   specialArgs ? { }, # Extra arguments to pass to nixosSystem i.e. useful to make self available
   machines ? { }, # allows to include machine-specific modules i.e. machines.${name} = { ... }
-  clanName, # Needs to be (globally) unique, as this determines the folder name where the flake gets downloaded to.
+  # DEPRECATED: use meta.name instead
+  clanName ? null, # Needs to be (globally) unique, as this determines the folder name where the flake gets downloaded to.
+  # DEPRECATED: use meta.icon instead
   clanIcon ? null, # A path to an icon to be used for the clan, should be the same for all machines
+  meta ? { }, # A set containing clan meta: name :: string, icon :: string, description :: string
   pkgsForSystem ? (_system: null), # A map from arch to pkgs, if specified this nixpkgs will be only imported once for each system.
 # This improves performance, but all nipxkgs.* options will be ignored.
 }:
 let
+  deprecationWarnings = [
+    (lib.warnIf (
+      clanName != null
+    ) "clanName is deprecated, please use meta.name instead. ${clanName}" null)
+    (lib.warnIf (clanIcon != null) "clanIcon is deprecated, please use meta.icon instead" null)
+  ];
+
   machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (
     builtins.readDir (directory + /machines)
   );
+
+  mergedMeta =
+    let
+      metaFromFile =
+        if (builtins.pathExists "${directory}/clan/meta.json") then
+          let
+            settings = builtins.fromJSON (builtins.readFile "${directory}/clan/meta.json");
+          in
+          settings
+        else
+          { };
+      legacyMeta = lib.filterAttrs (_: v: v != null) {
+        name = clanName;
+        icon = clanIcon;
+      };
+      optionsMeta = lib.filterAttrs (_: v: v != null) meta;
+
+      warnings =
+        builtins.map (
+          name:
+          if
+            metaFromFile.${name} or null != optionsMeta.${name} or null && optionsMeta.${name} or null != null
+          then
+            lib.warn "meta.${name} is set in different places. (exlicit option meta.${name} overrides ${directory}/clan/meta.json)" null
+          else
+            null
+        ) (builtins.attrNames metaFromFile)
+        ++ [ (if (res.name or null == null) then (throw "meta.name should be set") else null) ];
+      res = metaFromFile // legacyMeta // optionsMeta;
+    in
+    # Print out warnings before returning the merged result
+    builtins.deepSeq warnings res;
 
   machineSettings =
     machineName:
@@ -58,11 +100,15 @@ let
           (machines.${name} or { })
           (
             {
-              networking.hostName = lib.mkDefault name;
-              clanCore.clanName = clanName;
-              clanCore.clanIcon = clanIcon;
+              # Settings
               clanCore.clanDir = directory;
+              # Inherited from clan wide settings
+              clanCore.clanName = meta.name or clanName;
+              clanCore.clanIcon = meta.icon or clanIcon;
+
+              # Machine specific settings
               clanCore.machineName = name;
+              networking.hostName = lib.mkDefault name;
               nixpkgs.hostPlatform = lib.mkDefault system;
 
               # speeds up nix commands by using the nixpkgs from the host system (especially useful in VMs)
@@ -127,10 +173,15 @@ let
     ) supportedSystems
   );
 in
-{
+builtins.deepSeq deprecationWarnings {
   inherit nixosConfigurations;
 
   clanInternals = {
+    # Evaluated clan meta
+    # Merged /clan/meta.json with overrides from buildClan
+    meta = mergedMeta;
+
+    # machine specifics
     machines = configsPerSystem;
     machinesFunc = configsFuncPerSystem;
     all-machines-json = lib.mapAttrs (
