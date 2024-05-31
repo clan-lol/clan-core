@@ -6,7 +6,8 @@
 }:
 let
   cfg = config.clan.localbackup;
-  rsnapshotConfig = target: states: ''
+  uniqueFolders = lib.unique (lib.flatten (lib.mapAttrsToList (name: state: state.folders) config.clanCore.state));
+  rsnapshotConfig = target: ''
     config_version	1.2
     snapshot_root	${target.directory}
     sync_first	1
@@ -21,6 +22,13 @@ let
       cmd_preexec	${pkgs.writeShellScript "preexec.sh" ''
         set -efu -o pipefail
         ${target.preBackupHook}
+
+        # FIXME: we currently fail the backup if the pre-backup command fails
+        # This is not ideal, but at least most of the time we run backup commands in foreground.
+        ${lib.concatMapStringsSep "\n" (state: ''
+          echo "Running pre-backup command for ${state.name}"
+          ${state.preBackupCommand}
+        '') (lib.attrValues config.clanCore.state)}
       ''}
     ''}
 
@@ -31,11 +39,9 @@ let
       ''}
     ''}
     retain	snapshot	${builtins.toString config.clan.localbackup.snapshots}
-    ${lib.concatMapStringsSep "\n" (state: ''
-      ${lib.concatMapStringsSep "\n" (folder: ''
+    ${lib.concatMapStringsSep "\n" (folder: ''
         backup	${folder}	${config.networking.hostName}/
-      '') state.folders}
-    '') states}
+    '') uniqueFolders}
   '';
 in
 {
@@ -132,8 +138,8 @@ in
               (
                 ${mountHook target}
                 echo "Creating backup '${target.name}'"
-                rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target (lib.attrValues config.clanCore.state))}" sync
-                rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target (lib.attrValues config.clanCore.state))}" snapshot
+                rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" sync
+                rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" snapshot
               )
             '') (builtins.attrValues cfg.targets)}
           '')

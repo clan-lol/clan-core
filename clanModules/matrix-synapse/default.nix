@@ -8,13 +8,14 @@ let
   cfg = config.clan.matrix-synapse;
   nginx-vhost = "matrix.${config.clan.matrix-synapse.domain}";
   element-web =
-    pkgs.runCommand "element-web-with-config" { nativeBuildInputs = [ pkgs.buildPackages.jq ]; } ''
-      cp -r ${pkgs.element-web} $out
-      chmod -R u+w $out
-      jq '."default_server_config"."m.homeserver" = { "base_url": "https://${nginx-vhost}:443", "server_name": "${config.clan.matrix-synapse.domain}" }' \
-        > $out/config.json < ${pkgs.element-web}/config.json
-      ln -s $out/config.json $out/config.${nginx-vhost}.json
-    '';
+    pkgs.runCommand "element-web-with-config" { nativeBuildInputs = [ pkgs.buildPackages.jq ]; }
+      ''
+        cp -r ${pkgs.element-web} $out
+        chmod -R u+w $out
+        jq '."default_server_config"."m.homeserver" = { "base_url": "https://${nginx-vhost}:443", "server_name": "${config.clan.matrix-synapse.domain}" }' \
+          > $out/config.json < ${pkgs.element-web}/config.json
+        ln -s $out/config.json $out/config.${nginx-vhost}.json
+      '';
 in
 {
   options.clan.matrix-synapse = {
@@ -71,7 +72,8 @@ in
     };
     systemd.tmpfiles.settings."synapse" = {
       "/run/synapse-registration-shared-secret.yaml" = {
-        C.argument = config.clanCore.facts.services.matrix-synapse.secret.synapse-registration_shared_secret.path;
+        C.argument =
+          config.clanCore.facts.services.matrix-synapse.secret.synapse-registration_shared_secret.path;
         z = {
           mode = "0400";
           user = "matrix-synapse";

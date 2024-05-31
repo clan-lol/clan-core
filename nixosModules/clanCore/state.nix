@@ -17,6 +17,15 @@
                 Folder where state resides in
               '';
             };
+            preBackupCommand = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = ''
+                script to run before backing up the state dir
+                This is for example useful for services that require an export of their state
+                e.g. a database dump
+              '';
+            };
             preRestoreCommand = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = null;
