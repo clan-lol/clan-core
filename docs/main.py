@@ -16,15 +16,26 @@ def define_env(env: Any) -> None:
     @env.macro
     def asciinema(name: str) -> str:
         return f"""<div id="{name}">
-            <script src="{asciinema_dir}/asciinema-player.min.js"></script>
             <script>
-                AsciinemaPlayer.create('{video_dir + name}',
-                document.getElementById("{name}"), {{
-                    loop: true,
-                    autoPlay: true,
-                    controls: false,
-                    speed: 1.5,
-                    theme: "solarized-light"
-                }});
+                // Function to load the script and then create the Asciinema player
+                function loadAsciinemaPlayer() {{
+                    var script = document.createElement('script');
+                    script.src = "{asciinema_dir}/asciinema-player.min.js";
+                    script.onload = function() {{
+                        AsciinemaPlayer.create('{video_dir + name}', document.getElementById("{name}"), {{
+                            loop: true,
+                            autoPlay: true,
+                            controls: false,
+                            speed: 1.5,
+                            theme: "solarized-light"
+                    }});
+                    }};
+                    document.head.appendChild(script);
+                }}
+
+                // Load the Asciinema player script
+                loadAsciinemaPlayer();
             </script>
+
+            <link rel="stylesheet" type="text/css" href="{asciinema_dir}/asciinema-player.css" />
         </div>"""
