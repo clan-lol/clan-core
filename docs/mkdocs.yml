@@ -1,4 +1,4 @@
-site_name: Clan Docs
+site_name: Clan Documentation
 site_url: https://docs.clan.lol
 repo_url: https://git.clan.lol/clan/clan-core/
 repo_name: clan-core
@@ -105,7 +105,8 @@ theme:
     - content.code.copy
     - content.tabs.link
   icon:
-    repo: fontawesome/brands/git
+    repo: fontawesome/brands/git-alt
+  custom_dir: overrides
 
   palette:
     # Palette toggle for light mode
@@ -128,8 +129,6 @@ theme:
 
 extra_css:
   - static/extra.css
-  - static/asciinema-player/custom-theme.css
-  - static/asciinema-player/asciinema-player.css
 
 extra:
   social:
