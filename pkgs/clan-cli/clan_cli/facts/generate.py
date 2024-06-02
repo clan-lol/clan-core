@@ -32,6 +32,7 @@ def read_multiline_input(prompt: str = "Finish with Ctrl-D") -> str:
     """
     print(prompt, flush=True)
     proc = subprocess.run(["cat"], stdout=subprocess.PIPE, text=True)
+    log.info("Input received. Processing...")
     return proc.stdout
 
 
