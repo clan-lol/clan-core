@@ -56,7 +56,7 @@ def handle_output(process: subprocess.Popen, log: Log) -> tuple[str, str]:
             sys.stderr.buffer.write(ret)
             sys.stderr.flush()
         stderr_buf += ret
-    return stdout_buf.decode("utf-8"), stderr_buf.decode("utf-8")
+    return stdout_buf.decode("utf-8", "replace"), stderr_buf.decode("utf-8", "replace")
 
 
 class TimeTable:
@@ -110,7 +110,7 @@ def run(
 ) -> CmdOut:
     if input:
         glog.debug(
-            f"""$: echo "{input.decode('utf-8')}" | {shlex.join(cmd)} \nCaller: {get_caller()}"""
+            f"""$: echo "{input.decode('utf-8', 'replace')}" | {shlex.join(cmd)} \nCaller: {get_caller()}"""
         )
     else:
         glog.debug(f"$: {shlex.join(cmd)} \nCaller: {get_caller()}")
