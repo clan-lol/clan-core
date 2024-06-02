@@ -3,9 +3,9 @@ import json
 import logging
 import os
 import shlex
-import subprocess
 import sys
 
+from ..cmd import run
 from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
 from ..facts.generate import generate_facts
@@ -54,11 +54,7 @@ def upload_sources(
                     path,
                 ]
             )
-            proc = subprocess.run(cmd, stdout=subprocess.PIPE, env=env, check=False)
-            if proc.returncode != 0:
-                raise ClanError(
-                    f"failed to upload sources: {shlex.join(cmd)} failed with {proc.returncode}"
-                )
+            run(cmd, env=env, error_msg="failed to upload sources")
             return path
 
     # Slow path: we need to upload all sources to the remote machine
@@ -74,16 +70,13 @@ def upload_sources(
         ]
     )
     log.info("run %s", shlex.join(cmd))
-    proc = subprocess.run(cmd, stdout=subprocess.PIPE, check=False)
-    if proc.returncode != 0:
-        raise ClanError(
-            f"failed to upload sources: {shlex.join(cmd)} failed with {proc.returncode}"
-        )
+    proc = run(cmd, error_msg="failed to upload sources")
+
     try:
         return json.loads(proc.stdout)["path"]
     except (json.JSONDecodeError, OSError) as e:
         raise ClanError(
-            f"failed to parse output of {shlex.join(cmd)}: {e}\nGot: {proc.stdout.decode('utf-8', 'replace')}"
+            f"failed to parse output of {shlex.join(cmd)}: {e}\nGot: {proc.stdout}"
         )
 
 
