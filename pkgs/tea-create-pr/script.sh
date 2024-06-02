@@ -30,7 +30,7 @@ if ! check_remote "$remoteUpstream"; then
   exit 1
 fi
 
-treefmt -C "$root_dir"
+treefmt --fail-on-change -C "$root_dir"
 
 upstream_url=$(git remote get-url "$remoteUpstream")
 set -x
