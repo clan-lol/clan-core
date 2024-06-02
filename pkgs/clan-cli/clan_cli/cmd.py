@@ -101,13 +101,19 @@ TIME_TABLE = TimeTable()
 def run(
     cmd: list[str],
     *,
+    input: bytes | None = None,  # noqa: A002
     env: dict[str, str] | None = None,
     cwd: Path = Path.cwd(),
     log: Log = Log.STDERR,
     check: bool = True,
     error_msg: str | None = None,
 ) -> CmdOut:
-    glog.debug(f"$: {shlex.join(cmd)} \nCaller: {get_caller()}")
+    if input:
+        glog.debug(
+            f"""$: echo "{input.decode('utf-8')}" | {shlex.join(cmd)} \nCaller: {get_caller()}"""
+        )
+    else:
+        glog.debug(f"$: {shlex.join(cmd)} \nCaller: {get_caller()}")
     tstart = datetime.now()
 
     # Start the subprocess
@@ -120,7 +126,10 @@ def run(
     )
     stdout_buf, stderr_buf = handle_output(process, log)
 
-    rc = process.wait()
+    if input:
+        process.communicate(input)
+    else:
+        process.wait()
     tend = datetime.now()
 
     global TIME_TABLE
@@ -136,7 +145,7 @@ def run(
         msg=error_msg,
     )
 
-    if check and rc != 0:
+    if check and process.returncode != 0:
         raise ClanCmdError(cmd_out)
 
     return cmd_out
