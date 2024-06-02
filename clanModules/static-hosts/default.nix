@@ -3,7 +3,8 @@
   options.clan.static-hosts = {
     excludeHosts = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ config.clanCore.machineName ];
+      default =
+        if config.clan.static-hosts.topLevelDomain != "" then [ ] else [ config.clanCore.machineName ];
       description = "Hosts that should be excluded";
     };
     topLevelDomain = lib.mkOption {
