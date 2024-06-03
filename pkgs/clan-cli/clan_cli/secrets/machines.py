@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
 from ..git import commit_files
 from ..machines.types import machine_name_type, validate_hostname
@@ -147,25 +148,28 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
 
     # Parser
     get_parser = subparser.add_parser("get", help="get a machine public key")
-    get_parser.add_argument(
+    get_machine_parser = get_parser.add_argument(
         "machine", help="the name of the machine", type=machine_name_type
     )
+    add_dynamic_completer(get_machine_parser, complete_machines)
     get_parser.set_defaults(func=get_command)
 
     # Parser
     remove_parser = subparser.add_parser("remove", help="remove a machine")
-    remove_parser.add_argument(
+    remove_machine_parser = remove_parser.add_argument(
         "machine", help="the name of the machine", type=machine_name_type
     )
+    add_dynamic_completer(remove_machine_parser, complete_machines)
     remove_parser.set_defaults(func=remove_command)
 
     # Parser
     add_secret_parser = subparser.add_parser(
         "add-secret", help="allow a machine to access a secret"
     )
-    add_secret_parser.add_argument(
+    machine_add_secret_parser = add_secret_parser.add_argument(
         "machine", help="the name of the machine", type=machine_name_type
     )
+    add_dynamic_completer(machine_add_secret_parser, complete_machines)
     add_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type
     )
@@ -175,9 +179,10 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
     remove_secret_parser = subparser.add_parser(
         "remove-secret", help="remove a group's access to a secret"
     )
-    remove_secret_parser.add_argument(
+    machine_remove_parser = remove_secret_parser.add_argument(
         "machine", help="the name of the machine", type=machine_name_type
     )
+    add_dynamic_completer(machine_remove_parser, complete_machines)
     remove_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type
     )
