@@ -1,5 +1,4 @@
 .direnv
-***/.vscode
 ***/.hypothesis
 out.log
 .coverage.*

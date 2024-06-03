@@ -1,6 +1,5 @@
 import argparse
 import getpass
-import logging
 import os
 import shutil
 import sys
@@ -9,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import IO
 
+from .. import tty
 from ..errors import ClanError
 from ..git import commit_files
 from .folders import (
@@ -20,13 +20,6 @@ from .folders import (
 )
 from .sops import decrypt_file, encrypt_file, ensure_sops_key, read_key, update_keys
 from .types import VALID_SECRET_NAME, secret_name_type
-
-log = logging.getLogger(__name__)
-
-
-def tty_is_interactive() -> bool:
-    """Returns true if the current process is interactive"""
-    return sys.stdin.isatty() and sys.stdout.isatty()
 
 
 def update_secrets(
@@ -56,11 +49,11 @@ def collect_keys_for_type(folder: Path) -> set[str]:
         try:
             target = p.resolve()
         except FileNotFoundError:
-            log.warn(f"Ignoring broken symlink {p}")
+            tty.warn(f"Ignoring broken symlink {p}")
             continue
         kind = target.parent.name
         if folder.name != kind:
-            log.warn(f"Expected {p} to point to {folder} but points to {target.parent}")
+            tty.warn(f"Expected {p} to point to {folder} but points to {target.parent}")
             continue
         keys.add(read_key(target))
     return keys
@@ -292,7 +285,7 @@ def set_command(args: argparse.Namespace) -> None:
         secret_value = None
     elif env_value:
         secret_value = env_value
-    elif tty_is_interactive():
+    elif tty.is_interactive():
         secret_value = getpass.getpass(prompt="Paste your secret: ")
     encrypt_secret(
         Path(args.flake),
