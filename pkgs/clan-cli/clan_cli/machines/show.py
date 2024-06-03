@@ -7,6 +7,7 @@ from pathlib import Path
 from clan_cli.api import API
 
 from ..cmd import run_no_stdout
+from ..completions import add_dynamic_completer, complete_machines
 from ..nix import nix_config, nix_eval
 from .types import machine_name_type
 
@@ -53,6 +54,7 @@ def show_command(args: argparse.Namespace) -> None:
 
 def register_show_parser(parser: argparse.ArgumentParser) -> None:
     parser.set_defaults(func=show_command)
-    parser.add_argument(
+    machine_parser = parser.add_argument(
         "machine", help="the name of the machine", type=machine_name_type
     )
+    add_dynamic_completer(machine_parser, complete_machines)
