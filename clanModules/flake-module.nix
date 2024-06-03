@@ -5,6 +5,7 @@
       imports = [ ./disk-layouts ];
     };
     borgbackup = ./borgbackup;
+    borgbackup-static = ./borgbackup-static;
     deltachat = ./deltachat;
     ergochat = ./ergochat;
     localbackup = ./localbackup;
