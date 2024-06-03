@@ -2,7 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from clan_cli.cmd import run
+from clan_cli.cmd import Log, run
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
 
@@ -16,13 +16,14 @@ class SecretStore(SecretStoreBase):
     def set(
         self, service: str, name: str, value: bytes, groups: list[str]
     ) -> Path | None:
-        subprocess.run(
+        run(
             nix_shell(
                 ["nixpkgs#pass"],
                 ["pass", "insert", "-m", f"machines/{self.machine.name}/{name}"],
             ),
             input=value,
-            check=True,
+            log=Log.BOTH,
+            error_msg=f"Failed to insert secret {name}",
         )
         return None  # we manage the files outside of the git repo
 
