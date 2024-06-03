@@ -20,7 +20,7 @@ let
     if builtins.pathExists fullPath then builtins.readFile fullPath else null
   ) machines;
   networkIds = lib.filter (machine: machine != null) networkIdsUnchecked;
-  networkId = builtins.elemAt networkIds 0;
+  networkId = if builtins.length networkIds == 0 then null else builtins.elemAt networkIds 0;
 in
 #TODO:trace on multiple found network-ids
 #TODO:trace on no single found networkId
