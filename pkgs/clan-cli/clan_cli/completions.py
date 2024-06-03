@@ -118,6 +118,32 @@ def complete_services_for_machine(
     return services_dict
 
 
+def complete_secrets(
+    prefix: str, parsed_args: argparse.Namespace, **kwargs: Any
+) -> Iterable[str]:
+    """
+    Provides completion functionality for clan secrets
+    """
+    from pathlib import Path
+
+    from .secrets.secrets import ListSecretsOptions, list_secrets
+
+    if (clan_dir_result := clan_dir(None)) is not None:
+        flake = clan_dir_result
+    else:
+        flake = "."
+
+    options = ListSecretsOptions(
+        flake=Path(flake),
+        pattern=None,
+    )
+
+    secrets = list_secrets(options.flake, options.pattern)
+
+    secrets_dict = {name: "secret" for name in secrets}
+    return secrets_dict
+
+
 def add_dynamic_completer(
     action: argparse.Action,
     completer: Callable[..., Iterable[str]],
