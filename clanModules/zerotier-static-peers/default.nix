@@ -38,7 +38,7 @@ in
       machines = builtins.readDir machineDir;
       zerotierIpMachinePath = machines: machineDir + machines + "/facts/zerotier-ip";
       filteredMachines = lib.filterAttrs (
-        name: _: !(lib.elem name config.clan.static-hosts.excludeHosts)
+        name: _: !(lib.elem name config.clan.zerotier-static-peers.excludeHosts)
       ) machines;
       hosts = lib.mapAttrsToList (host: _: host) (
         lib.mapAttrs' (
