@@ -111,7 +111,7 @@ in
       (pkgs.writeShellScriptBin "borgbackup-restore" ''
         set -efux
         cd /
-        IFS=';' read -ra FOLDER <<< "$FOLDERS"
+        IFS=':' read -ra FOLDER <<< "$FOLDERS"
         job_name=$(echo "$NAME" | ${pkgs.gawk}/bin/awk -F'::' '{print $1}')
         backup_name=''${NAME#"$job_name"::}
         if ! command -v borg-job-"$job_name" &> /dev/null; then
