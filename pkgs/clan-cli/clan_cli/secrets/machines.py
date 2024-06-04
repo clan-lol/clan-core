@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from ..completions import add_dynamic_completer, complete_machines
+from ..completions import add_dynamic_completer, complete_machines, complete_secrets
 from ..errors import ClanError
 from ..git import commit_files
 from ..machines.types import machine_name_type, validate_hostname
@@ -136,9 +136,10 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         default=False,
     )
-    add_parser.add_argument(
+    add_machine_action = add_parser.add_argument(
         "machine", help="the name of the machine", type=machine_name_type
     )
+    add_dynamic_completer(add_machine_action, complete_machines)
     add_parser.add_argument(
         "key",
         help="public key or private key of the user",
@@ -170,9 +171,10 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         "machine", help="the name of the machine", type=machine_name_type
     )
     add_dynamic_completer(machine_add_secret_parser, complete_machines)
-    add_secret_parser.add_argument(
+    add_secret_action = add_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type
     )
+    add_dynamic_completer(add_secret_action, complete_secrets)
     add_secret_parser.set_defaults(func=add_secret_command)
 
     # Parser
@@ -183,7 +185,8 @@ def register_machines_parser(parser: argparse.ArgumentParser) -> None:
         "machine", help="the name of the machine", type=machine_name_type
     )
     add_dynamic_completer(machine_remove_parser, complete_machines)
-    remove_secret_parser.add_argument(
+    remove_secret_action = remove_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type
     )
+    add_dynamic_completer(remove_secret_action, complete_secrets)
     remove_secret_parser.set_defaults(func=remove_secret_command)
