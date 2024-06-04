@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import IO
 
 from .. import tty
-from ..completions import add_dynamic_completer, complete_secrets
+from ..completions import add_dynamic_completer, complete_machines, complete_secrets
 from ..errors import ClanError
 from ..git import commit_files
 from .folders import (
@@ -340,13 +340,14 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
         default=[],
         help="the group to import the secrets to (can be repeated)",
     )
-    parser_set.add_argument(
+    machine_parser = parser_set.add_argument(
         "--machine",
         type=str,
         action="append",
         default=[],
         help="the machine to import the secrets to (can be repeated)",
     )
+    add_dynamic_completer(machine_parser, complete_machines)
     parser_set.add_argument(
         "--user",
         type=str,
