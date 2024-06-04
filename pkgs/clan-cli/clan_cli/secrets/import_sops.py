@@ -3,6 +3,12 @@ import json
 import sys
 from pathlib import Path
 
+from ..completions import (
+    add_dynamic_completer,
+    complete_groups,
+    complete_machines,
+    complete_users,
+)
 from ..cmd import run
 from ..errors import ClanError
 from ..nix import nix_shell
@@ -57,27 +63,30 @@ def register_import_sops_parser(parser: argparse.ArgumentParser) -> None:
         default=None,
         help="the input type of the sops file (yaml, json, ...). If not specified, it will be guessed from the file extension",
     )
-    parser.add_argument(
+    group_action = parser.add_argument(
         "--group",
         type=str,
         action="append",
         default=[],
         help="the group to import the secrets to",
     )
-    parser.add_argument(
+    add_dynamic_completer(group_action, complete_groups)
+    machine_action = parser.add_argument(
         "--machine",
         type=str,
         action="append",
         default=[],
         help="the machine to import the secrets to",
     )
-    parser.add_argument(
+    add_dynamic_completer(machine_action, complete_machines)
+    user_action = parser.add_argument(
         "--user",
         type=str,
         action="append",
         default=[],
         help="the user to import the secrets to",
     )
+    add_dynamic_completer(user_action, complete_users)
     parser.add_argument(
         "--prefix",
         type=str,
