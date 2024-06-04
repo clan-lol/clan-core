@@ -101,7 +101,6 @@ in
       '';
     };
 
-    services.postgresql.enable = true;
     services.nginx = {
       enable = true;
       virtualHosts = {

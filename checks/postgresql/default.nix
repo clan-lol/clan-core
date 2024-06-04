@@ -9,14 +9,14 @@
           self.clanModules.postgresql
           self.clanModules.localbackup
         ];
-        clan.postgresl.databases = [ "test" ];
+        clan.postgresl.databases.test = {};
         clan.localbackup.targets.hdd.directory = "/mnt/external-disk";
       };
     testScript = ''
       start_all()
       machine.succeed("systemctl status postgresql")
       machine.wait_for_unit("postgresql")
-      machine.succeed("localbackup-create")
+      machine.succeed("/run/current-system/sw/bin/localbackup-create >&2")
       machine.succeed("ls -la /var/backups/postgresql")
     '';
 })
