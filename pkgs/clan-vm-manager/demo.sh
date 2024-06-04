@@ -39,7 +39,7 @@ fi
 
 democlan="$1"
 
-check_git_tag "$democlan" "v2.2"
+check_git_tag "$democlan" "demo-v2.2"
 
 check_git_tag "." "v2.3"
 
