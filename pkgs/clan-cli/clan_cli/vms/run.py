@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from ..cmd import Log, run
+from ..completions import add_dynamic_completer, complete_machines
 from ..dirs import module_root, user_cache_dir, vm_state_dir
 from ..errors import ClanError
 from ..facts.generate import generate_facts
@@ -205,5 +206,8 @@ def run_command(
 
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("machine", type=str, help="machine in the flake to run")
+    machine_action = parser.add_argument(
+        "machine", type=str, help="machine in the flake to run"
+    )
+    add_dynamic_completer(machine_action, complete_machines)
     parser.set_defaults(func=lambda args: run_command(**args.__dict__))
