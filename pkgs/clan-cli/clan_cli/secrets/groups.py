@@ -4,7 +4,13 @@ from pathlib import Path
 
 from clan_cli.git import commit_files
 
-from ..completions import add_dynamic_completer, complete_machines
+from ..completions import (
+    add_dynamic_completer,
+    complete_groups,
+    complete_machines,
+    complete_secrets,
+    complete_users,
+)
 from ..errors import ClanError
 from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
@@ -190,7 +196,10 @@ def remove_machine_command(args: argparse.Namespace) -> None:
 
 
 def add_group_argument(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("group", help="the name of the group", type=group_name_type)
+    group_action = parser.add_argument(
+        "group", help="the name of the secret", type=group_name_type
+    )
+    add_dynamic_completer(group_action, complete_groups)
 
 
 def add_secret(flake_dir: Path, group: str, name: str) -> None:
@@ -255,9 +264,10 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
     # Add user
     add_user_parser = subparser.add_parser("add-user", help="add a user to group")
     add_group_argument(add_user_parser)
-    add_user_parser.add_argument(
+    add_user_action = add_user_parser.add_argument(
         "user", help="the name of the user to add", type=user_name_type
     )
+    add_dynamic_completer(add_user_action, complete_users)
     add_user_parser.set_defaults(func=add_user_command)
 
     # Remove user
@@ -265,31 +275,30 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
         "remove-user", help="remove a user from a group"
     )
     add_group_argument(remove_user_parser)
-    remove_user_parser.add_argument(
+    remove_user_action = remove_user_parser.add_argument(
         "user", help="the name of the user to remove", type=user_name_type
     )
+    add_dynamic_completer(remove_user_action, complete_users)
     remove_user_parser.set_defaults(func=remove_user_command)
 
     # Add secret
     add_secret_parser = subparser.add_parser(
-        "add-secret", help="allow a user to access a secret"
+        "add-secret", help="allow a groups to access a secret"
     )
-    add_secret_parser.add_argument(
-        "group", help="the name of the user", type=group_name_type
-    )
-    add_secret_parser.add_argument(
+    add_group_argument(add_secret_parser)
+    add_secret_action = add_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type
     )
+    add_dynamic_completer(add_secret_action, complete_secrets)
     add_secret_parser.set_defaults(func=add_secret_command)
 
     # Remove secret
     remove_secret_parser = subparser.add_parser(
         "remove-secret", help="remove a group's access to a secret"
     )
-    remove_secret_parser.add_argument(
-        "group", help="the name of the group", type=group_name_type
-    )
-    remove_secret_parser.add_argument(
+    add_group_argument(remove_secret_parser)
+    remove_secret_action = remove_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type
     )
+    add_dynamic_completer(remove_secret_action, complete_secrets)
     remove_secret_parser.set_defaults(func=remove_secret_command)
