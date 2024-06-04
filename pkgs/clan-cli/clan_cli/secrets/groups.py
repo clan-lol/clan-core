@@ -189,7 +189,7 @@ def remove_machine_command(args: argparse.Namespace) -> None:
 
 
 def add_group_argument(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("group", help="the name of the secret", type=group_name_type)
+    parser.add_argument("group", help="the name of the group", type=group_name_type)
 
 
 def add_secret(flake_dir: Path, group: str, name: str) -> None:
