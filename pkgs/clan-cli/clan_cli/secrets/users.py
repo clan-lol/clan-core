@@ -1,6 +1,11 @@
 import argparse
 from pathlib import Path
 
+from ..completions import (
+    add_dynamic_completer,
+    complete_secrets,
+    complete_users,
+)
 from ..errors import ClanError
 from ..git import commit_files
 from . import secrets
@@ -141,31 +146,41 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
     add_parser.set_defaults(func=add_command)
 
     get_parser = subparser.add_parser("get", help="get a user public key")
-    get_parser.add_argument("user", help="the name of the user", type=user_name_type)
+    get_user_action = get_parser.add_argument(
+        "user", help="the name of the user", type=user_name_type
+    )
+    add_dynamic_completer(get_user_action, complete_users)
     get_parser.set_defaults(func=get_command)
 
     remove_parser = subparser.add_parser("remove", help="remove a user")
-    remove_parser.add_argument("user", help="the name of the user", type=user_name_type)
+    remove_user_action = remove_parser.add_argument(
+        "user", help="the name of the user", type=user_name_type
+    )
+    add_dynamic_completer(remove_user_action, complete_users)
     remove_parser.set_defaults(func=remove_command)
 
     add_secret_parser = subparser.add_parser(
         "add-secret", help="allow a user to access a secret"
     )
-    add_secret_parser.add_argument(
-        "user", help="the name of the group", type=user_name_type
+    add_secret_user_action = add_secret_parser.add_argument(
+        "user", help="the name of the user", type=user_name_type
     )
-    add_secret_parser.add_argument(
+    add_dynamic_completer(add_secret_user_action, complete_users)
+    add_secrets_action = add_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type
     )
+    add_dynamic_completer(add_secrets_action, complete_secrets)
     add_secret_parser.set_defaults(func=add_secret_command)
 
     remove_secret_parser = subparser.add_parser(
         "remove-secret", help="remove a user's access to a secret"
     )
-    remove_secret_parser.add_argument(
+    remove_secret_user_action = remove_secret_parser.add_argument(
         "user", help="the name of the group", type=user_name_type
     )
-    remove_secret_parser.add_argument(
+    add_dynamic_completer(remove_secret_user_action, complete_users)
+    remove_secrets_action = remove_secret_parser.add_argument(
         "secret", help="the name of the secret", type=secret_name_type
     )
+    add_dynamic_completer(remove_secrets_action, complete_secrets)
     remove_secret_parser.set_defaults(func=remove_secret_command)
