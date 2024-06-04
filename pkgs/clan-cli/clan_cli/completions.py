@@ -144,6 +144,49 @@ def complete_secrets(
     return secrets_dict
 
 
+def complete_users(
+    prefix: str, parsed_args: argparse.Namespace, **kwargs: Any
+) -> Iterable[str]:
+    """
+    Provides completion functionality for clan users
+    """
+    from pathlib import Path
+
+    from .secrets.users import list_users
+
+    if (clan_dir_result := clan_dir(None)) is not None:
+        flake = clan_dir_result
+    else:
+        flake = "."
+
+    users = list_users(Path(flake))
+
+    users_dict = {name: "user" for name in users}
+    return users_dict
+
+
+def complete_groups(
+    prefix: str, parsed_args: argparse.Namespace, **kwargs: Any
+) -> Iterable[str]:
+    """
+    Provides completion functionality for clan groups
+    """
+    from pathlib import Path
+
+    from .secrets.groups import list_groups
+
+    if (clan_dir_result := clan_dir(None)) is not None:
+        flake = clan_dir_result
+    else:
+        flake = "."
+
+    groups_list = list_groups(Path(flake))
+    groups = [group.name for group in groups_list]
+
+    groups_dict = {name: "group" for name in groups}
+    return groups_dict
+
+
 def add_dynamic_completer(
     action: argparse.Action,
     completer: Callable[..., Iterable[str]],
