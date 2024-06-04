@@ -9,7 +9,13 @@ from pathlib import Path
 from typing import IO
 
 from .. import tty
-from ..completions import add_dynamic_completer, complete_machines, complete_secrets
+from ..completions import (
+    add_dynamic_completer,
+    complete_groups,
+    complete_machines,
+    complete_secrets,
+    complete_users,
+)
 from ..errors import ClanError
 from ..git import commit_files
 from .folders import (
@@ -333,13 +339,14 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
 
     parser_set = subparser.add_parser("set", help="set a secret")
     add_secret_argument(parser_set, False)
-    parser_set.add_argument(
+    set_group_action = parser_set.add_argument(
         "--group",
         type=str,
         action="append",
         default=[],
         help="the group to import the secrets to (can be repeated)",
     )
+    add_dynamic_completer(set_group_action, complete_groups)
     machine_parser = parser_set.add_argument(
         "--machine",
         type=str,
@@ -348,13 +355,14 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
         help="the machine to import the secrets to (can be repeated)",
     )
     add_dynamic_completer(machine_parser, complete_machines)
-    parser_set.add_argument(
+    set_user_action = parser_set.add_argument(
         "--user",
         type=str,
         action="append",
         default=[],
         help="the user to import the secrets to (can be repeated)",
     )
+    add_dynamic_completer(set_user_action, complete_users)
     parser_set.add_argument(
         "-e",
         "--edit",

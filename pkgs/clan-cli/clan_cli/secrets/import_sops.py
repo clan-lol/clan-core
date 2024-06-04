@@ -3,13 +3,13 @@ import json
 import sys
 from pathlib import Path
 
+from ..cmd import run
 from ..completions import (
     add_dynamic_completer,
     complete_groups,
     complete_machines,
     complete_users,
 )
-from ..cmd import run
 from ..errors import ClanError
 from ..nix import nix_shell
 from .secrets import encrypt_secret, sops_secrets_folder
