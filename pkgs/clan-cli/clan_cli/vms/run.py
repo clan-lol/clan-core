@@ -7,8 +7,8 @@ from contextlib import ExitStack
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from ..completions import add_dynamic_completer, complete_machines
 from ..cmd import Log, run
+from ..completions import add_dynamic_completer, complete_machines
 from ..dirs import module_root, user_cache_dir, vm_state_dir
 from ..errors import ClanError
 from ..facts.generate import generate_facts

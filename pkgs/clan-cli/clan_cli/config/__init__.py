@@ -8,8 +8,8 @@ import sys
 from pathlib import Path
 from typing import Any, get_origin
 
-from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.cmd import run
+from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.dirs import machine_settings_file
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_file

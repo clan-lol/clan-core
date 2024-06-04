@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..completions import add_dynamic_completer, complete_machines
 from ..machines.machines import Machine
 
 
@@ -45,5 +46,6 @@ def inspect_command(args: argparse.Namespace) -> None:
 
 
 def register_inspect_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("machine", type=str, default="defaultVM")
+    machine_action = parser.add_argument("machine", type=str, default="defaultVM")
+    add_dynamic_completer(machine_action, complete_machines)
     parser.set_defaults(func=inspect_command)
