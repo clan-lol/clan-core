@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from typing import Any, get_origin
 
+from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.cmd import run
 from clan_cli.dirs import machine_settings_file
 from clan_cli.errors import ClanError
@@ -317,13 +318,14 @@ def register_parser(
 
     # inject callback function to process the input later
     parser.set_defaults(func=get_option)
-    parser.add_argument(
+    set_machine_action = parser.add_argument(
         "--machine",
         "-m",
         help="Machine to configure",
         type=str,
         default="default",
     )
+    add_dynamic_completer(set_machine_action, complete_machines)
 
     parser.add_argument(
         "--show-trace",
