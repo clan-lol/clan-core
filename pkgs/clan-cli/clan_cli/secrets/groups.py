@@ -4,6 +4,7 @@ from pathlib import Path
 
 from clan_cli.git import commit_files
 
+from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
 from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
@@ -234,9 +235,10 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
         "add-machine", help="add a machine to group"
     )
     add_group_argument(add_machine_parser)
-    add_machine_parser.add_argument(
+    add_machine_action = add_machine_parser.add_argument(
         "machine", help="the name of the machines to add", type=machine_name_type
     )
+    add_dynamic_completer(add_machine_action, complete_machines)
     add_machine_parser.set_defaults(func=add_machine_command)
 
     # Remove machine
@@ -244,9 +246,10 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
         "remove-machine", help="remove a machine from group"
     )
     add_group_argument(remove_machine_parser)
-    remove_machine_parser.add_argument(
+    remove_machine_action = remove_machine_parser.add_argument(
         "machine", help="the name of the machines to remove", type=machine_name_type
     )
+    add_dynamic_completer(remove_machine_action, complete_machines)
     remove_machine_parser.set_defaults(func=remove_machine_command)
 
     # Add user
@@ -259,7 +262,7 @@ def register_groups_parser(parser: argparse.ArgumentParser) -> None:
 
     # Remove user
     remove_user_parser = subparser.add_parser(
-        "remove-user", help="remove a user from group"
+        "remove-user", help="remove a user from a group"
     )
     add_group_argument(remove_user_parser)
     remove_user_parser.add_argument(
