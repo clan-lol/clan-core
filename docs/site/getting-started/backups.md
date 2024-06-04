@@ -116,7 +116,7 @@ On the server where backups will be stored, enable the SSH daemon and set up a r
   services.borgbackup.repos.myhostname = {
     path = "/var/lib/borgbackup/myhostname";
     authorizedKeys = [
-      (builtins.readFile ./machines/myhostname/facts/borgbackup.ssh.pub)
+      (builtins.readFile  (config.clanCore.clanDir + "/machines/myhostname/facts/borgbackup.ssh.pub"))
     ];
   };
 }
