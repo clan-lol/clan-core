@@ -2,6 +2,11 @@ import argparse
 import json
 import subprocess
 
+from ..completions import (
+    add_dynamic_completer,
+    complete_backup_providers_for_machine,
+    complete_machines,
+)
 from ..errors import ClanError
 from ..machines.machines import Machine
 
@@ -74,10 +79,14 @@ def restore_command(args: argparse.Namespace) -> None:
 
 
 def register_restore_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    machine_action = parser.add_argument(
         "machine", type=str, help="machine in the flake to create backups of"
     )
-    parser.add_argument("provider", type=str, help="backup provider to use")
+    add_dynamic_completer(machine_action, complete_machines)
+    provider_action = parser.add_argument(
+        "provider", type=str, help="backup provider to use"
+    )
+    add_dynamic_completer(provider_action, complete_backup_providers_for_machine)
     parser.add_argument("name", type=str, help="Name of the backup to restore")
     parser.add_argument("--service", type=str, help="name of the service to restore")
     parser.set_defaults(func=restore_command)
