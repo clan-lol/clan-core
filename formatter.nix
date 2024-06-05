@@ -10,10 +10,9 @@
       treefmt.programs.mypy.enable = true;
       treefmt.programs.mypy.directories = {
         "pkgs/clan-cli".extraPythonPackages = self'.packages.clan-cli.testDependencies;
-        "pkgs/clan-vm-manager".extraPythonPackages =
-          # clan-vm-manager currently only exists on linux 
-          (self'.packages.clan-vm-manager.externalTestDeps or [ ])
-          ++ self'.packages.clan-cli.testDependencies;
+        "pkgs/clan-app".extraPythonPackages =
+          # clan-app currently only exists on linux
+          (self'.packages.clan-app.externalTestDeps or [ ]) ++ self'.packages.clan-cli.testDependencies;
       };
 
       treefmt.settings.formatter.nix = {
