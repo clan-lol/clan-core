@@ -106,7 +106,7 @@ class MainApplication(Adw.Application):
     def on_activate(self, source: "MainApplication") -> None:
         if not self.window:
             self.init_style()
-            self.window = MainWindow(config=ClanConfig(initial_view="list"))
+            self.window = MainWindow(config=ClanConfig(initial_view="webview"))
             self.window.set_application(self)
 
         self.window.show()
