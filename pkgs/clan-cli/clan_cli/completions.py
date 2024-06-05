@@ -44,23 +44,23 @@ def complete_machines(
 
     def run_cmd() -> None:
         try:
-            # In my tests this was consistently faster than:
-            # nix eval .#nixosConfigurations --apply builtins.attrNames
-            cmd = ["nix", "flake", "show", "--system", "no-eval", "--json"]
             if (clan_dir_result := clan_dir(None)) is not None:
-                cmd.append(clan_dir_result)
-            result = subprocess.run(
-                cmd,
-                check=True,
-                capture_output=True,
-                text=True,
+                flake = clan_dir_result
+            else:
+                flake = "."
+            services_result = json.loads(
+                run(
+                    nix_eval(
+                        flags=[
+                            f"{flake}#nixosConfigurations",
+                            "--apply",
+                            "builtins.attrNames",
+                        ],
+                    ),
+                ).stdout.strip()
             )
 
-            data = json.loads(result.stdout)
-            try:
-                machines.extend(data.get("nixosConfigurations").keys())
-            except KeyError:
-                pass
+            machines.extend(services_result)
         except subprocess.CalledProcessError:
             pass
 
