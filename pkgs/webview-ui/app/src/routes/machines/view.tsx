@@ -1,13 +1,30 @@
-import { For, Match, Switch, createEffect, type Component } from "solid-js";
+import {
+  For,
+  Match,
+  Switch,
+  createEffect,
+  createSignal,
+  type Component,
+} from "solid-js";
 import { useCountContext } from "../../Config";
 import { route } from "@/src/App";
 
 export const MachineListView: Component = () => {
   const [{ machines, loading }, { getMachines }] = useCountContext();
 
+  const [data, setData] = createSignal<string[]>([]);
   createEffect(() => {
     if (route() === "machines") getMachines();
   });
+
+  createEffect(() => {
+    const response = machines();
+    if (response?.status === "success") {
+      console.log(response.data);
+      setData(response.data);
+    }
+  });
+
   return (
     <div class="max-w-screen-lg">
       <div class="tooltip" data-tip="Refresh ">
@@ -32,12 +49,12 @@ export const MachineListView: Component = () => {
             </div>
           </div>
         </Match>
-        <Match when={!loading() && machines().length === 0}>
+        <Match when={!loading() && data().length === 0}>
           No machines found
         </Match>
         <Match when={!loading()}>
           <ul>
-            <For each={machines()}>
+            <For each={data()}>
               {(entry) => (
                 <li>
                   <div class="card card-side m-2 bg-base-100 shadow-lg">
