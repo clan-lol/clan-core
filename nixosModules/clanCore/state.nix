@@ -8,9 +8,16 @@
     default = { };
     type = lib.types.attrsOf (
       lib.types.submodule (
-        { ... }:
+        { name, ... }:
         {
           options = {
+            name = lib.mkOption {
+              type = lib.types.str;
+              default = name;
+              description = ''
+                Name of the state
+              '';
+            };
             folders = lib.mkOption {
               type = lib.types.listOf lib.types.str;
               description = ''

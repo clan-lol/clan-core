@@ -63,12 +63,15 @@ in
       preHook = ''
         set -x
         declare -A preCommandErrors
-        ${lib.concatMapStringsSep "\n" (state: ''
-          echo "Running pre-backup command for ${state.name}"
-          if ! ${state.preBackupCommand} then
-            preCommandErrors["${state.name}"]=1
-          fi
-        '') (lib.attrValues config.clanCore.state)}
+        ${lib.concatMapStringsSep "\n" (
+          state:
+          lib.optionalString (state.preBackupCommand != null) ''
+            echo "Running pre-backup command for ${state.name}"
+            if ! ( ${state.preBackupCommand} ) then
+              preCommandErrors["${state.name}"]=1
+            fi
+          ''
+        ) (lib.attrValues config.clanCore.state)}
       '';
       postPrune = ''
         # report any preBackupCommand errors
