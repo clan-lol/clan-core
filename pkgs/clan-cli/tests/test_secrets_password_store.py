@@ -56,7 +56,6 @@ def test_upload_secret(
     # test idempotency
     cli.run(["facts", "generate", "vm1"])
     assert identity_secret.lstat().st_mtime_ns == secret1_mtime
-
     flake = test_flake_with_core_and_pass.path.joinpath("flake.nix")
     host = host_group.hosts[0]
     addr = f"{host.user}@{host.host}:{host.port}?StrictHostKeyChecking=no&UserKnownHostsFile=/dev/null&IdentityFile={host.key}"
