@@ -72,6 +72,12 @@ const deserialize =
 // Create the API object
 
 const pyApi: PyApi = {} as PyApi;
+
+pyApi.create_clan.receive((r) => {
+  if (r.status === "success") {
+    r.status;
+  }
+});
 operationNames.forEach((opName) => {
   const name = opName as OperationNames;
   // @ts-expect-error - TODO: Fix this. Typescript is not recognizing the receive function correctly
