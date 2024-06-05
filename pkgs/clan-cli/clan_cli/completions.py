@@ -124,7 +124,7 @@ def complete_backup_providers_for_machine(
     """
     Provides completion functionality for machine backup providers.
     """
-    services: list[str] = []
+    providers: list[str] = []
     # TODO: consolidate, if multiple machines are used
     machines: list[str] = parsed_args.machines
 
@@ -134,7 +134,7 @@ def complete_backup_providers_for_machine(
                 flake = clan_dir_result
             else:
                 flake = "."
-            services_result = json.loads(
+            providers_result = json.loads(
                 run(
                     nix_eval(
                         flags=[
@@ -146,7 +146,7 @@ def complete_backup_providers_for_machine(
                 ).stdout.strip()
             )
 
-            services.extend(services_result)
+            providers.extend(providers_result)
         except subprocess.CalledProcessError:
             pass
 
@@ -157,8 +157,8 @@ def complete_backup_providers_for_machine(
     if thread.is_alive():
         return iter([])
 
-    services_dict = {name: "service" for name in services}
-    return services_dict
+    providers_dict = {name: "provider" for name in providers}
+    return providers_dict
 
 
 def complete_secrets(
