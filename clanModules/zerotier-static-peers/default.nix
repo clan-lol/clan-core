@@ -35,21 +35,26 @@ in
 
   config.systemd.services.zerotier-static-peers-autoaccept =
     let
-      machines = builtins.readDir machineDir;
       zerotierIpMachinePath = machines: machineDir + machines + "/facts/zerotier-ip";
+      networkIpsUnchecked = builtins.map (
+        machine:
+        let
+          fullPath = zerotierIpMachinePath machine;
+        in
+        if builtins.pathExists fullPath then machine else null
+      ) machines;
+      networkIps = lib.filter (machine: machine != null) networkIpsUnchecked;
+      machinesWithIp = lib.filterAttrs (name: _: (lib.elem name networkIps)) machinesFileSet;
       filteredMachines = lib.filterAttrs (
         name: _: !(lib.elem name config.clan.zerotier-static-peers.excludeHosts)
-      ) machines;
+      ) machinesWithIp;
       hosts = lib.mapAttrsToList (host: _: host) (
         lib.mapAttrs' (
           machine: _:
           let
             fullPath = zerotierIpMachinePath machine;
           in
-          if builtins.pathExists fullPath then
-            lib.nameValuePair (builtins.readFile fullPath) [ machine ]
-          else
-            null
+          lib.nameValuePair (builtins.readFile fullPath) [ machine ]
         ) filteredMachines
       );
     in
