@@ -8,9 +8,8 @@ import {
 import { OperationResponse, pyApi } from "./message";
 
 export const makeCountContext = () => {
-  const [machines, setMachines] = createSignal<
-    OperationResponse<"list_machines">
-  >([]);
+  const [machines, setMachines] =
+    createSignal<OperationResponse<"list_machines">>();
   const [loading, setLoading] = createSignal(false);
 
   pyApi.list_machines.receive((machines) => {
@@ -41,7 +40,7 @@ export const CountContext = createContext<CountContextType>([
     loading: () => false,
 
     // eslint-disable-next-line
-    machines: () => ([]),
+    machines: () => undefined,
   },
   {
     // eslint-disable-next-line

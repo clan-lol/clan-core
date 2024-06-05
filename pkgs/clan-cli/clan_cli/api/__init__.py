@@ -1,9 +1,11 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Generic, Literal, TypeVar
+from functools import wraps
+from typing import Annotated, Any, Generic, Literal, TypeVar, get_type_hints
+
+from clan_cli.errors import ClanError
 
 T = TypeVar("T")
-
 
 ResponseDataType = TypeVar("ResponseDataType")
 
@@ -16,22 +18,55 @@ class ApiError:
 
 
 @dataclass
-class ApiResponse(Generic[ResponseDataType]):
-    status: Literal["success", "error"]
-    errors: list[ApiError] | None
-    data: ResponseDataType | None
+class SuccessDataClass(Generic[ResponseDataType]):
+    status: Annotated[Literal["success"], "The status of the response."]
+    data: ResponseDataType
+
+
+@dataclass
+class ErrorDataClass:
+    status: Literal["error"]
+    errors: list[ApiError]
+
+
+ApiResponse = SuccessDataClass[ResponseDataType] | ErrorDataClass
 
 
 class _MethodRegistry:
     def __init__(self) -> None:
+        self._orig: dict[str, Callable[[Any], Any]] = {}
         self._registry: dict[str, Callable[[Any], Any]] = {}
 
     def register(self, fn: Callable[..., T]) -> Callable[..., T]:
-        self._registry[fn.__name__] = fn
+        self._orig[fn.__name__] = fn
+
+        @wraps(fn)
+        def wrapper(*args: Any, **kwargs: Any) -> ApiResponse[T]:
+            try:
+                data: T = fn(*args, **kwargs)
+                return SuccessDataClass(status="success", data=data)
+            except ClanError as e:
+                return ErrorDataClass(
+                    status="error",
+                    errors=[
+                        ApiError(
+                            message=e.msg,
+                            description=e.description,
+                            location=[fn.__name__, e.location],
+                        )
+                    ],
+                )
+
+        # @wraps preserves all metadata of fn
+        # we need to update the annotation, because our wrapper changes the return type
+        # This overrides the new return type annotation with the generic typeVar filled in
+        orig_return_type = get_type_hints(fn).get("return")
+        wrapper.__annotations__["return"] = ApiResponse[orig_return_type]  # type: ignore
+
+        self._registry[fn.__name__] = wrapper
         return fn
 
     def to_json_schema(self) -> dict[str, Any]:
-        # Import only when needed
         from typing import get_type_hints
 
         from clan_cli.api.util import type_to_dict
