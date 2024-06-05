@@ -16,7 +16,7 @@ from clan_app.views.webview import WebView
 
 gi.require_version("Adw", "1")
 
-from gi.repository import Adw, Gio, GLib, Gtk
+from gi.repository import Adw, Gio, GLib
 
 from clan_app.components.trayicon import TrayIcon
 
@@ -29,6 +29,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.set_title("Clan Manager")
         self.set_default_size(980, 850)
 
+        # Overlay for GTK side exclusive toasts
         overlay = ToastOverlay.use().overlay
         view = Adw.ToolbarView()
         overlay.set_child(view)
@@ -45,28 +46,16 @@ class MainWindow(Adw.ApplicationWindow):
         # Initialize all ClanStore
         threading.Thread(target=self._populate_vms).start()
 
-        # Initialize all views
         stack_view = ViewStack.use().view
-
-        clamp = Adw.Clamp()
-        clamp.set_child(stack_view)
-        clamp.set_maximum_size(1000)
-
-        scroll = Gtk.ScrolledWindow()
-        scroll.set_propagate_natural_height(True)
-        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scroll.set_child(clamp)
-
         stack_view.add_named(ClanList(config), "list")
         stack_view.add_named(Details(), "details")
         stack_view.add_named(Logs(), "logs")
 
         webview = WebView(methods=API._registry)
         stack_view.add_named(webview.get_webview(), "webview")
-
         stack_view.set_visible_child_name(config.initial_view)
 
-        view.set_content(scroll)
+        view.set_content(stack_view)
 
         self.connect("destroy", self.on_destroy)
 
