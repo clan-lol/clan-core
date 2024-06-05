@@ -51,6 +51,7 @@ nav:
       - Flake-parts: getting-started/flake-parts.md
   - Modules:
       - Clan Modules:
+          - reference/clanModules/borgbackup-static.md
           - reference/clanModules/borgbackup.md
           - reference/clanModules/deltachat.md
           - reference/clanModules/disk-layouts.md
@@ -61,9 +62,9 @@ nav:
           - reference/clanModules/moonlight.md
           - reference/clanModules/root-password.md
           - reference/clanModules/sshd.md
+          - reference/clanModules/static-hosts.md
           - reference/clanModules/sunshine.md
           - reference/clanModules/syncthing.md
-          - reference/clanModules/static-hosts.md
           - reference/clanModules/thelounge.md
           - reference/clanModules/trusted-nix-caches.md
           - reference/clanModules/user-password.md
