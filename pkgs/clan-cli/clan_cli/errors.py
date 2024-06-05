@@ -1,4 +1,5 @@
 import shutil
+from dataclasses import dataclass
 from math import floor
 from pathlib import Path
 
@@ -15,25 +16,17 @@ def text_heading(heading: str) -> str:
     return f"{'=' * filler} {heading} {'=' * filler}"
 
 
+@dataclass
 class CmdOut:
-    def __init__(
-        self,
-        stdout: str,
-        stderr: str,
-        cwd: Path,
-        command: str,
-        returncode: int,
-        msg: str | None,
-    ) -> None:
-        super().__init__()
-        self.stdout = stdout
-        self.stderr = stderr
-        self.cwd = cwd
-        self.command = command
-        self.returncode = returncode
-        self.msg = msg
+    stdout: str
+    stderr: str
+    cwd: Path
+    command: str
+    returncode: int
+    msg: str | None
 
-        self.error_str = f"""
+    def __str__(self) -> str:
+        error_str = f"""
 {text_heading(heading="Command")}
 {self.command}
 {text_heading(heading="Stderr")}
@@ -45,15 +38,30 @@ Message: {self.msg}
 Working Directory: '{self.cwd}'
 Return Code: {self.returncode}
         """
-
-    def __str__(self) -> str:
-        return self.error_str
+        return error_str
 
 
 class ClanError(Exception):
     """Base class for exceptions in this module."""
 
-    pass
+    description: str | None
+    location: str
+
+    def __init__(
+        self,
+        msg: str | None = None,
+        *,
+        description: str | None = None,
+        location: str | None = None,
+    ) -> None:
+        self.description = description
+        self.location = location or "Unknown location"
+        self.msg = msg or ""
+        if self.description:
+            exception_msg = f"{self.location}: {self.msg} - {self.description}"
+        else:
+            exception_msg = f"{self.location}: {self.msg}"
+        super().__init__(exception_msg)
 
 
 class ClanHttpError(ClanError):
