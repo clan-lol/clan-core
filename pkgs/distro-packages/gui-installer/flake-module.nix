@@ -9,7 +9,7 @@
           contents = [
             {
               src = "${./gui-installer.sh}";
-              dst = "/usr/bin/clan-vm-manager";
+              dst = "/usr/bin/clan-app";
             }
           ];
         }

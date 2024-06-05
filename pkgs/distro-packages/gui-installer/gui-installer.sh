@@ -53,7 +53,7 @@ ensure_nix_installed() {
 start_clan_gui() {
   PATH="${PATH:+$PATH:}/nix/var/nix/profiles/default/bin" \
     exec nix run \
-      https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-vm-manager \
+      https://git.clan.lol/clan/clan-core/archive/main.tar.gz#clan-app \
       --no-accept-flake-config \
       --extra-experimental-features flakes nix-command -- "$@"
 }
