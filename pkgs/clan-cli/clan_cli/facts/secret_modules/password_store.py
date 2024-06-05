@@ -2,7 +2,6 @@ import os
 import subprocess
 from pathlib import Path
 
-from clan_cli.cmd import Log, run
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
 
@@ -16,25 +15,25 @@ class SecretStore(SecretStoreBase):
     def set(
         self, service: str, name: str, value: bytes, groups: list[str]
     ) -> Path | None:
-        run(
+        subprocess.run(
             nix_shell(
                 ["nixpkgs#pass"],
                 ["pass", "insert", "-m", f"machines/{self.machine.name}/{name}"],
             ),
             input=value,
-            log=Log.BOTH,
-            error_msg=f"Failed to insert secret {name}",
+            check=True,
         )
         return None  # we manage the files outside of the git repo
 
     def get(self, service: str, name: str) -> bytes:
-        return run(
+        return subprocess.run(
             nix_shell(
                 ["nixpkgs#pass"],
                 ["pass", "show", f"machines/{self.machine.name}/{name}"],
             ),
-            error_msg=f"Failed to get secret {name}",
-        ).stdout.encode("utf-8")
+            check=True,
+            stdout=subprocess.PIPE,
+        ).stdout
 
     def exists(self, service: str, name: str) -> bool:
         password_store = os.environ.get(
@@ -49,7 +48,7 @@ class SecretStore(SecretStoreBase):
         )
         hashes = []
         hashes.append(
-            run(
+            subprocess.run(
                 nix_shell(
                     ["nixpkgs#git"],
                     [
@@ -62,15 +61,13 @@ class SecretStore(SecretStoreBase):
                         f"machines/{self.machine.name}",
                     ],
                 ),
-                check=False,
-            )
-            .stdout.encode("utf-8")
-            .strip()
+                stdout=subprocess.PIPE,
+            ).stdout.strip()
         )
         for symlink in Path(password_store).glob(f"machines/{self.machine.name}/**/*"):
             if symlink.is_symlink():
                 hashes.append(
-                    run(
+                    subprocess.run(
                         nix_shell(
                             ["nixpkgs#git"],
                             [
@@ -83,10 +80,8 @@ class SecretStore(SecretStoreBase):
                                 str(symlink),
                             ],
                         ),
-                        check=False,
-                    )
-                    .stdout.encode("utf-8")
-                    .strip()
+                        stdout=subprocess.PIPE,
+                    ).stdout.strip()
                 )
 
         # we sort the hashes to make sure that the order is always the same
