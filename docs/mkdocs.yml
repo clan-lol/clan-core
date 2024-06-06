@@ -64,6 +64,7 @@ nav:
           - reference/clanModules/sshd.md
           - reference/clanModules/static-hosts.md
           - reference/clanModules/sunshine.md
+          - reference/clanModules/syncthing-static-peers.md
           - reference/clanModules/syncthing.md
           - reference/clanModules/thelounge.md
           - reference/clanModules/trusted-nix-caches.md

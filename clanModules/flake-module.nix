@@ -17,6 +17,7 @@
     sunshine = ./sunshine;
     static-hosts = ./static-hosts;
     syncthing = ./syncthing;
+    syncthing-static-peers = ./syncthing-static-peers;
     thelounge = ./thelounge;
     trusted-nix-caches = ./trusted-nix-caches;
     user-password = ./user-password;
