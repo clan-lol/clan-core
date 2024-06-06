@@ -33,6 +33,18 @@
                 e.g. a database dump
               '';
             };
+
+            # TODO: implement this
+            #stopOnRestore = lib.mkOption {
+            #  type = lib.types.listOf lib.types.str;
+            #  default = [];
+            #  description = ''
+            #    List of services to stop before restoring the state dir from a backup
+
+            #    Utilize this to stop services which currently access these folders or or other services affected by the restore
+            #  '';
+            #};
+
             preRestoreCommand = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = null;
@@ -42,6 +54,7 @@
                 Utilize this to stop services which currently access these folders
               '';
             };
+
             postRestoreCommand = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = null;
