@@ -9,7 +9,8 @@ let
     db:
     let
       folder = "/var/backup/postgres/${db.name}";
-      current = "${folder}/dump.sql.zstd";
+      current = "${folder}/pg-dump";
+      compression = lib.optionalString (lib.versionAtLeast config.services.postgresql.package.version "16") "--compress=zstd";
     in
     {
       folders = [ folder ];
@@ -28,10 +29,9 @@ let
         done
 
         mkdir -p "${folder}"
-        runuser -u postgres -- pg_dump --compress=zstd --dbname=${db.name} -Fc -c > "${current}.tmp"
+        runuser -u postgres -- pg_dump ${compression} --dbname=${db.name} -Fc -c > "${current}.tmp"
         mv "${current}.tmp" ${current}
       '';
-
       postRestoreCommand = ''
         export PATH=${
           lib.makeBinPath [
@@ -52,10 +52,14 @@ let
         done
 
         if [[ -e "${current}" ]]; then
-          umask 077 # only root can read the backup
-          mkdir -p "${folder}"
-          runuser -u postgres -- dropdb "${db.name}"
-          runuser -u postgres -- pg_restore -C -d postgres "${current}"
+          (
+            systemctl stop ${lib.concatStringsSep " " db.restore.stopOnRestore}
+            trap "systemctl start ${lib.concatStringsSep " " db.restore.stopOnRestore}" EXIT
+
+            mkdir -p "${folder}"
+            runuser -u postgres -- dropdb "${db.name}"
+            runuser -u postgres -- pg_restore -C -d postgres "${current}"
+          )
         else
           echo No database backup found, skipping restore
         fi
@@ -111,10 +115,10 @@ in
                   OWNER = "foo";
                 };
               };
-              backup.enable = lib.mkOption {
-                type = lib.types.bool;
-                default = true;
-                description = "Backup the database.";
+              restore.stopOnRestore = lib.mkOption {
+                type = lib.types.listOf lib.types.str;
+                default = [ ];
+                description = "List of services to stop before restoring the database.";
               };
             };
           }
