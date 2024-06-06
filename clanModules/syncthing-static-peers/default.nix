@@ -22,7 +22,7 @@ let
     name = machine;
     value = {
       name = machine;
-      id = (builtins.readFile (syncthingPublicKeyPath machine));
+      id = (lib.removeSuffix "\n" (builtins.readFile (syncthingPublicKeyPath machine)));
     };
   }) syncthingPublicKeyMachines;
 in
