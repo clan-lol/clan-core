@@ -27,7 +27,7 @@ let
   }) syncthingPublicKeyMachines;
 in
 {
-  options.clan.static-syncthing-peers = {
+  options.clan.syncthing-static-peers = {
     excludeMachines = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       example = [ config.clanCore.machineName ];
@@ -66,8 +66,8 @@ in
         configDir = "/var/lib/syncthing";
         group = "syncthing";
 
-        key = lib.mkDefault config.clan.secrets.syncthing.secrets."syncthing.key".path or null;
-        cert = lib.mkDefault config.clan.secrets.syncthing.secrets."syncthing.cert".path or null;
+        key = lib.mkDefault config.clanCore.facts.services.syncthing.secret."syncthing.key".path or null;
+        cert = lib.mkDefault config.clanCore.facts.services.syncthing.secret."syncthing.cert".path or null;
       };
 
       clanCore.facts.services.syncthing = {
