@@ -184,6 +184,8 @@ python3.pkgs.buildPythonApplication {
       <(${argcomplete}/bin/register-python-argcomplete --shell bash clan)
     installShellCompletion --fish --name clan.fish \
       <(${argcomplete}/bin/register-python-argcomplete --shell fish clan)
+    installShellCompletion --zsh --name _clan \
+      <(${argcomplete}/bin/register-python-argcomplete --shell bash clan)
   '';
 
   # Clean up after the package to avoid leaking python packages into a devshell
