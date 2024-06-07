@@ -18,11 +18,28 @@ let
     if builtins.pathExists fullPath then machine else null
   ) machines;
   syncthingPublicKeyMachines = lib.filter (machine: machine != null) syncthingPublicKeysUnchecked;
+  zerotierIpMachinePath = machines: machineDir + machines + "/facts/zerotier-ip";
+  networkIpsUnchecked = builtins.map (
+    machine:
+    let
+      fullPath = zerotierIpMachinePath machine;
+    in
+    if builtins.pathExists fullPath then machine else null
+  ) machines;
+  networkIpMachines = lib.filter (machine: machine != null) networkIpsUnchecked;
   devices = builtins.map (machine: {
     name = machine;
     value = {
       name = machine;
       id = (lib.removeSuffix "\n" (builtins.readFile (syncthingPublicKeyPath machine)));
+      addresses =
+        [ "dynamic" ]
+        ++ (
+          if (lib.elem machine networkIpMachines) then
+            [ "tcp://[${(lib.removeSuffix "\n" (builtins.readFile (zerotierIpMachinePath machine)))}]:22000" ]
+          else
+            [ ]
+        );
     };
   }) syncthingPublicKeyMachines;
 in
