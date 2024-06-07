@@ -1,11 +1,16 @@
+{ self, ... }:
 {
   perSystem =
     { pkgs, ... }:
     let
       nfpmConfig = pkgs.writeText "clan-nfpm-config.yaml" (
-
         builtins.toJSON {
           name = "clan-gui-installer";
+          version = "0.0.${self.lastModifiedDate}";
+          maintainer = "cLAN core team";
+          homepage = "https://clan.lol";
+          description = "Peer-to-Peer self-hosting made easy for developers";
+          license = "MIT";
           contents = [
             {
               src = "${./gui-installer.sh}";
