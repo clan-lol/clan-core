@@ -1,5 +1,4 @@
 {
-  # Inputs for the package
   age,
   lib,
   argcomplete,
@@ -32,12 +31,10 @@
   gitMinimal,
 }:
 let
-  # Dependencies that are directly used in the project
   pythonDependencies = [
-    argcomplete # Enables shell completion; without it, this feature won't work.
+    argcomplete # Enables shell completions
   ];
 
-  # Runtime dependencies required by the application
   runtimeDependencies = [
     bash
     nix
@@ -55,7 +52,6 @@ let
     e2fsprogs
   ];
 
-  # Dependencies required for running tests
   testDependencies =
     runtimeDependencies
     ++ [
@@ -64,14 +60,13 @@ let
     ]
     ++ pythonDependencies
     ++ [
-      pytest # Testing framework
+      pytest
       pytest-cov # Generate coverage reports
       pytest-subprocess # fake the real subprocess behavior to make your tests more independent.
       pytest-xdist # Run tests in parallel on multiple cores
       pytest-timeout # Add timeouts to your tests
     ];
 
-  # Convert runtimeDependencies into an attribute set for easier access
   runtimeDependenciesAsSet = builtins.listToAttrs (
     builtins.map (p: lib.nameValuePair (lib.getName p.name) p) runtimeDependencies
   );
@@ -79,7 +74,6 @@ let
   # Setup Python environment with all dependencies for running tests
   pythonWithTestDeps = python3.withPackages (_ps: testDependencies);
 
-  # Prepare the source code for the project, including copying over jsonschema and nixpkgs
   source = runCommand "clan-cli-source" { } ''
     cp -r ${./.} $out
     chmod -R +w $out
@@ -122,7 +116,6 @@ python3.pkgs.buildPythonApplication {
     "${gitMinimal}/bin/git"
   ];
 
-  # Build-time dependencies.
   nativeBuildInputs = [
     setuptools
     installShellFiles
@@ -160,7 +153,6 @@ python3.pkgs.buildPythonApplication {
             touch $out
           '';
 
-      # Utility to check for leftover debugging breakpoints in the codebase
       check-for-breakpoints = runCommand "breakpoints" { } ''
         if grep --include \*.py -Rq "breakpoint()" ${source}; then
           echo "breakpoint() found in ${source}:"
@@ -171,13 +163,11 @@ python3.pkgs.buildPythonApplication {
       '';
     };
 
-  # Additional pass-through attributes
   passthru.nixpkgs = nixpkgs';
   passthru.testDependencies = testDependencies;
   passthru.pythonWithTestDeps = pythonWithTestDeps;
   passthru.runtimeDependencies = runtimeDependencies;
 
-  # Install shell completions for bash and fish using the argcomplete package
   postInstall = ''
     cp -r ${nixpkgs'} $out/${python3.sitePackages}/clan_cli/nixpkgs
     installShellCompletion --bash --name clan \
@@ -193,11 +183,9 @@ python3.pkgs.buildPythonApplication {
     rm $out/nix-support/propagated-build-inputs
   '';
 
-  # Run a basic check to ensure the application is executable
   checkPhase = ''
     PYTHONPATH= $out/bin/clan --help
   '';
 
-  # Specify the main program for this package
   meta.mainProgram = "clan";
 }
