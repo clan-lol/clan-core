@@ -125,8 +125,7 @@ def complete_backup_providers_for_machine(
     Provides completion functionality for machine backup providers.
     """
     providers: list[str] = []
-    # TODO: consolidate, if multiple machines are used
-    machines: list[str] = parsed_args.machines
+    machine: str = parsed_args.machine
 
     def run_cmd() -> None:
         try:
@@ -138,7 +137,7 @@ def complete_backup_providers_for_machine(
                 run(
                     nix_eval(
                         flags=[
-                            f"{flake}#nixosConfigurations.{machines[0]}.config.clanCore.backups.providers",
+                            f"{flake}#nixosConfigurations.{machine}.config.clanCore.backups.providers",
                             "--apply",
                             "builtins.attrNames",
                         ],
