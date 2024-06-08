@@ -8,6 +8,7 @@ from typing import Any
 
 # These imports are unused, but necessary for @API.register to run once.
 from clan_cli.api import directory
+from clan_cli.flakes import show
 
 __all__ = ["directory"]
 
@@ -112,7 +113,16 @@ For more detailed information, visit: https://docs.clan.lol
         ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
+
     subparsers = parser.add_subparsers()
+
+    # Commands directly under the root i.e. "clan show"
+    show_parser = subparsers.add_parser(
+        "show",
+        help="Show the clan meta if present.",
+        description="Final meta results from clan/meta.json and flake arguments.",
+    )
+    show_parser.set_defaults(func=show.show_command)
 
     parser_backups = subparsers.add_parser(
         "backups",
