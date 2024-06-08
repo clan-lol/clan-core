@@ -48,7 +48,12 @@ export const MachineListView: Component = () => {
         <button
           class="btn btn-ghost"
           onClick={() =>
-            pyApi.get_directory.dispatch({ current_path: "/home/" })
+            pyApi.open_file.dispatch({
+              file_request: {
+                title: "Open Clan",
+                mode: "select_folder",
+              },
+            })
           }
         >
           <span class="material-icons ">folder_open</span>
