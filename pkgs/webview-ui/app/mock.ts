@@ -1,6 +1,6 @@
 import { JSONSchemaFaker } from "json-schema-faker";
 import { schema } from "./api/index";
-import { OperationNames } from "./src/message";
+import { OperationNames } from "./src/api";
 
 const faker = JSONSchemaFaker;
 

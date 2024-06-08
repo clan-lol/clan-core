@@ -1,6 +1,6 @@
 import { describe, it, expectTypeOf } from "vitest";
 
-import { OperationNames, pyApi } from "@/src/message";
+import { OperationNames, pyApi } from "@/src/api";
 
 describe.concurrent("API types work properly", () => {
   // Test some basic types

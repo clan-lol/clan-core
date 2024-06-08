@@ -6,11 +6,28 @@ import {
   createSignal,
   type Component,
 } from "solid-js";
-import { useCountContext } from "../../Config";
+import { useMachineContext } from "../../Config";
 import { route } from "@/src/App";
+import { OperationResponse, pyApi } from "@/src/api";
+
+type FilesModel = Extract<
+  OperationResponse<"get_directory">,
+  { status: "success" }
+>["data"]["files"];
 
 export const MachineListView: Component = () => {
-  const [{ machines, loading }, { getMachines }] = useCountContext();
+  const [{ machines, loading }, { getMachines }] = useMachineContext();
+
+  const [files, setFiles] = createSignal<FilesModel>([]);
+  pyApi.get_directory.receive((r) => {
+    const { status } = r;
+    if (status === "error") return console.error(r.errors);
+    setFiles(r.data.files);
+  });
+
+  createEffect(() => {
+    console.log(files());
+  });
 
   const [data, setData] = createSignal<string[]>([]);
   createEffect(() => {
@@ -27,7 +44,17 @@ export const MachineListView: Component = () => {
 
   return (
     <div class="max-w-screen-lg">
-      <div class="tooltip" data-tip="Refresh ">
+      <div class="tooltip" data-tip="Open Clan">
+        <button
+          class="btn btn-ghost"
+          onClick={() =>
+            pyApi.get_directory.dispatch({ current_path: "/home/" })
+          }
+        >
+          <span class="material-icons ">folder_open</span>
+        </button>
+      </div>
+      <div class="tooltip" data-tip="Refresh">
         <button class="btn btn-ghost" onClick={() => getMachines()}>
           <span class="material-icons ">refresh</span>
         </button>
