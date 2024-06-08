@@ -6,6 +6,11 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+# These imports are unused, but necessary for @API.register to run once.
+from clan_cli.api import directory
+
+__all__ = ["directory"]
+
 from . import (
     backups,
     config,
