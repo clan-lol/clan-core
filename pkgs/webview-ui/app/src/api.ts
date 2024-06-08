@@ -7,6 +7,11 @@ export type OperationNames = keyof API;
 export type OperationArgs<T extends OperationNames> = API[T]["arguments"];
 export type OperationResponse<T extends OperationNames> = API[T]["return"];
 
+export type SuccessData<T extends OperationNames> = Extract<
+  OperationResponse<T>,
+  { status: "success" }
+>;
+
 declare global {
   interface Window {
     clan: {

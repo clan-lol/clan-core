@@ -1,5 +1,5 @@
 import { createSignal, type Component } from "solid-js";
-import { CountProvider } from "./Config";
+import { MachineProvider } from "./Config";
 import { Layout } from "./layout/layout";
 import { Route, Router } from "./Routes";
 
@@ -10,11 +10,11 @@ export { route, setRoute };
 
 const App: Component = () => {
   return (
-    <CountProvider>
+    <MachineProvider>
       <Layout>
         <Router route={route} />
       </Layout>
-    </CountProvider>
+    </MachineProvider>
   );
 };
 
