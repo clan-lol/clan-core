@@ -12,11 +12,12 @@ export type SuccessData<T extends OperationNames> = Extract<
   { status: "success" }
 >;
 
+export type ClanOperations = {
+  [K in OperationNames]: (str: string) => void;
+};
 declare global {
   interface Window {
-    clan: {
-      [K in OperationNames]: (str: string) => void;
-    };
+    clan: ClanOperations;
     webkit: {
       messageHandlers: {
         gtk: {
@@ -29,6 +30,8 @@ declare global {
     };
   }
 }
+// Make sure window.webkit is defined although the type is not correctly filled yet.
+window.clan = {} as ClanOperations;
 
 function createFunctions<K extends OperationNames>(
   operationName: K
@@ -82,6 +85,13 @@ operationNames.forEach((opName) => {
   const name = opName as OperationNames;
   // @ts-expect-error - TODO: Fix this. Typescript is not recognizing the receive function correctly
   pyApi[name] = createFunctions(name);
+});
+
+pyApi.open_file.receive((r) => {
+  const { status } = r;
+  if (status === "error") return console.error(r.errors);
+  console.log(r.data);
+  alert(r.data);
 });
 
 export { pyApi };

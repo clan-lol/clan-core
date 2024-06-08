@@ -34,6 +34,6 @@ if (import.meta.env.DEV) {
     },
   };
 }
-
+postMessage;
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 render(() => <App />, root!);

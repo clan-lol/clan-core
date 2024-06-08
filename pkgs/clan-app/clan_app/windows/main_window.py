@@ -12,7 +12,7 @@ from clan_app.singletons.use_vms import ClanStore
 from clan_app.views.details import Details
 from clan_app.views.list import ClanList
 from clan_app.views.logs import Logs
-from clan_app.views.webview import WebView
+from clan_app.views.webview import WebView, open_file
 
 gi.require_version("Adw", "1")
 
@@ -51,7 +51,11 @@ class MainWindow(Adw.ApplicationWindow):
         stack_view.add_named(Details(), "details")
         stack_view.add_named(Logs(), "logs")
 
+        # Override platform specific functions
+        API.register(open_file)
+
         webview = WebView(methods=API._registry)
+
         stack_view.add_named(webview.get_webview(), "webview")
         stack_view.set_visible_child_name(config.initial_view)
 
