@@ -9,6 +9,7 @@ import {
 import { useMachineContext } from "../../Config";
 import { route } from "@/src/App";
 import { OperationResponse, pyApi } from "@/src/api";
+import toast from "solid-toast";
 
 type FilesModel = Extract<
   OperationResponse<"get_directory">,
@@ -39,6 +40,17 @@ export const MachineListView: Component = () => {
     if (response?.status === "success") {
       console.log(response.data);
       setData(response.data);
+      toast.success("Machines loaded");
+    }
+    if (response?.status === "error") {
+      setData([]);
+      console.error(response.errors);
+      toast.error("Error loading machines");
+      response.errors.forEach((error) =>
+        toast.error(
+          `${error.message}: ${error.description} From ${error.location}`
+        )
+      );
     }
   });
 
