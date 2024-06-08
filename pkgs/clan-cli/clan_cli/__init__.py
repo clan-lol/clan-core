@@ -119,8 +119,23 @@ For more detailed information, visit: https://docs.clan.lol
     # Commands directly under the root i.e. "clan show"
     show_parser = subparsers.add_parser(
         "show",
-        help="Show the clan meta if present.",
-        description="Final meta results from clan/meta.json and flake arguments.",
+        help="Show meta about the clan if present.",
+        description="Show meta about the clan if present.",
+        epilog=(
+            """
+This command prints the metadata of a clan.
+
+Examples:
+
+  $ clan show --flake [PATH]
+  Name: My Empty Clan
+  Description: some nice description
+  Icon: A path to the png
+
+Note: The meta results from clan/meta.json and manual flake arguments. It may not be present for clans not created via the clan-app.
+
+"""
+        ),
     )
     show_parser.set_defaults(func=show.show_command)
 
