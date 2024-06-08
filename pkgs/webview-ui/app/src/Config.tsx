@@ -5,9 +5,9 @@ import {
   JSXElement,
   createEffect,
 } from "solid-js";
-import { OperationResponse, pyApi } from "./message";
+import { OperationResponse, pyApi } from "./api";
 
-export const makeCountContext = () => {
+export const makeMachineContext = () => {
   const [machines, setMachines] =
     createSignal<OperationResponse<"list_machines">>();
   const [loading, setLoading] = createSignal(false);
@@ -18,7 +18,7 @@ export const makeCountContext = () => {
   });
 
   createEffect(() => {
-    console.log("The count is now", machines());
+    console.log("The state is now", machines());
   });
 
   return [
@@ -33,9 +33,9 @@ export const makeCountContext = () => {
   ] as const;
   // `as const` forces tuple type inference
 };
-type CountContextType = ReturnType<typeof makeCountContext>;
+type MachineContextType = ReturnType<typeof makeMachineContext>;
 
-export const CountContext = createContext<CountContextType>([
+export const MachineContext = createContext<MachineContextType>([
   {
     loading: () => false,
 
@@ -48,12 +48,12 @@ export const CountContext = createContext<CountContextType>([
   },
 ]);
 
-export const useCountContext = () => useContext(CountContext);
+export const useMachineContext = () => useContext(MachineContext);
 
-export function CountProvider(props: { children: JSXElement }) {
+export function MachineProvider(props: { children: JSXElement }) {
   return (
-    <CountContext.Provider value={makeCountContext()}>
+    <MachineContext.Provider value={makeMachineContext()}>
       {props.children}
-    </CountContext.Provider>
+    </MachineContext.Provider>
   );
 }
