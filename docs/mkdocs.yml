@@ -82,6 +82,7 @@ nav:
           - reference/cli/history.md
           - reference/cli/machines.md
           - reference/cli/secrets.md
+          - reference/cli/show.md
           - reference/cli/ssh.md
           - reference/cli/vms.md
       - Clan Core:
