@@ -29,6 +29,9 @@ def substitute(
         line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
         if clan_core_flake:
             line = line.replace("__CLAN_CORE__", str(clan_core_flake))
+            line = line.replace(
+                "git+https://git.clan.lol/clan/clan-core", str(clan_core_flake)
+            )
         line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
         line = line.replace("__CLAN_SOPS_KEY_DIR__", str(flake))
         print(line, end="")
@@ -67,6 +70,7 @@ def generate_flake(
     # copy the template to a new temporary location
     flake = temporary_home / "flake"
     shutil.copytree(flake_template, flake)
+    sp.run(["chmod", "+w", "-R", str(flake)], check=True)
 
     # substitute `substitutions` in all files of the template
     for file in flake.rglob("*"):
@@ -107,7 +111,7 @@ def generate_flake(
 def create_flake(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
-    flake_template_name: str,
+    flake_template: str | Path,
     clan_core_flake: Path | None = None,
     # names referring to pre-defined machines from ../machines
     machines: list[str] = [],
@@ -119,13 +123,19 @@ def create_flake(
     Creates a flake with the given name and machines.
     The machine names map to the machines in ./test_machines
     """
-    template = Path(__file__).parent / flake_template_name
+    if isinstance(flake_template, Path):
+        template_path = flake_template
+    else:
+        template_path = Path(__file__).parent / flake_template
+
+    flake_template_name = template_path.name
 
     # copy the template to a new temporary location
     flake = temporary_home / flake_template_name
-    shutil.copytree(template, flake)
+    shutil.copytree(template_path, flake)
+    sp.run(["chmod", "+w", "-R", str(flake)], check=True)
 
-    # lookup the requested machines in ./test_machines and include them
+    # add the requested machines to the flake
     if machines:
         (flake / "machines").mkdir(parents=True, exist_ok=True)
     for machine_name in machines:
@@ -235,5 +245,21 @@ def test_flake_with_core_and_pass(
         monkeypatch,
         temporary_home,
         "test_flake_with_core_and_pass",
+        CLAN_CORE,
+    )
+
+
+@pytest.fixture
+def test_flake_minimal(
+    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
+) -> Iterator[FlakeForTest]:
+    if not (CLAN_CORE / "flake.nix").exists():
+        raise Exception(
+            "clan-core flake not found. This test requires the clan-core flake to be present"
+        )
+    yield from create_flake(
+        monkeypatch,
+        temporary_home,
+        CLAN_CORE / "templates" / "minimal",
         CLAN_CORE,
     )

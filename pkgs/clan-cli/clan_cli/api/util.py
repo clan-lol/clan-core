@@ -179,12 +179,15 @@ def type_to_dict(t: Any, scope: str = "", type_map: dict[TypeVar, type] = {}) ->
             raise JSchemaTypeError(
                 f"Usage of the Any type is not supported for API functions. In: {scope}"
             )
-
         if t is pathlib.Path:
             return {
                 # TODO: maybe give it a pattern for URI
                 "type": "string",
             }
+        if t is dict:
+            raise JSchemaTypeError(
+                "Error: generic dict type not supported. Use dict[str. Any] instead"
+            )
 
         # Optional[T] gets internally transformed Union[T,NoneType]
         if t is NoneType:

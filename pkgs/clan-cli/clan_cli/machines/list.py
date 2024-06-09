@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 
 @API.register
-def list_machines(flake_url: str | Path, debug: bool) -> list[str]:
+def list_machines(flake_url: str | Path, debug: bool = False) -> list[str]:
     config = nix_config()
     system = config["system"]
     cmd = nix_eval(

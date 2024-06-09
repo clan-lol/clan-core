@@ -2,6 +2,7 @@ import argparse
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from clan_cli.api import API
 from clan_cli.config.machine import set_config_for_machine
@@ -12,7 +13,7 @@ log = logging.getLogger(__name__)
 @dataclass
 class MachineCreateRequest:
     name: str
-    config: dict[str, int]
+    config: dict[str, Any]
 
 
 @API.register
