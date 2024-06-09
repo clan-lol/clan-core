@@ -9,7 +9,8 @@ from ..cmd import CmdOut, run
 from ..errors import ClanError
 from ..nix import nix_command, nix_shell
 
-DEFAULT_TEMPLATE_URL: str = "git+https://git.clan.lol/clan/clan-core"
+default_template_url: str = "git+https://git.clan.lol/clan/clan-core"
+minimal_template_url: str = "git+https://git.clan.lol/clan/clan-core#templates.minimal"
 
 
 @dataclass
@@ -21,7 +22,9 @@ class CreateClanResponse:
 
 
 @API.register
-def create_clan(directory: Path, template_url: str) -> CreateClanResponse:
+def create_clan(
+    directory: Path, template_url: str = minimal_template_url
+) -> CreateClanResponse:
     if not directory.exists():
         directory.mkdir()
     else:
@@ -78,7 +81,7 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
         "--url",
         type=str,
         help="url to the clan template",
-        default=DEFAULT_TEMPLATE_URL,
+        default=default_template_url,
     )
     parser.add_argument(
         "path", type=Path, help="Path to the clan directory", default=Path(".")
