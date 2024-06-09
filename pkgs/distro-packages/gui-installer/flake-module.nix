@@ -7,7 +7,7 @@
         builtins.toJSON {
           name = "clan-gui-installer";
           version = "0.0.${self.lastModifiedDate}";
-          maintainer = "cLAN core team";
+          maintainer = "clan core team";
           homepage = "https://clan.lol";
           description = "Peer-to-Peer self-hosting made easy for developers";
           license = "MIT";
