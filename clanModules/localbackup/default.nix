@@ -6,7 +6,10 @@
 }:
 let
   cfg = config.clan.localbackup;
-  rsnapshotConfig = target: states: ''
+  uniqueFolders = lib.unique (
+    lib.flatten (lib.mapAttrsToList (_name: state: state.folders) config.clanCore.state)
+  );
+  rsnapshotConfig = target: ''
     config_version	1.2
     snapshot_root	${target.directory}
     sync_first	1
@@ -17,12 +20,6 @@ let
     cmd_logger	${pkgs.inetutils}/bin/logger
     cmd_du	${pkgs.coreutils}/bin/du
     cmd_rsnapshot_diff	${pkgs.rsnapshot}/bin/rsnapshot-diff
-    ${lib.optionalString (target.preBackupHook != null) ''
-      cmd_preexec	${pkgs.writeShellScript "preexec.sh" ''
-        set -efu -o pipefail
-        ${target.preBackupHook}
-      ''}
-    ''}
 
     ${lib.optionalString (target.postBackupHook != null) ''
       cmd_postexec	${pkgs.writeShellScript "postexec.sh" ''
@@ -31,11 +28,9 @@ let
       ''}
     ''}
     retain	snapshot	${builtins.toString config.clan.localbackup.snapshots}
-    ${lib.concatMapStringsSep "\n" (state: ''
-      ${lib.concatMapStringsSep "\n" (folder: ''
-        backup	${folder}	${config.networking.hostName}/
-      '') state.folders}
-    '') states}
+    ${lib.concatMapStringsSep "\n" (folder: ''
+      backup	${folder}	${config.networking.hostName}/
+    '') uniqueFolders}
   '';
 in
 {
@@ -129,14 +124,30 @@ in
               ]
             }
             ${lib.concatMapStringsSep "\n" (target: ''
-              (
-                ${mountHook target}
-                echo "Creating backup '${target.name}'"
-                rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target (lib.attrValues config.clanCore.state))}" sync
-                rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target (lib.attrValues config.clanCore.state))}" snapshot
-              )
-            '') (builtins.attrValues cfg.targets)}
-          '')
+              ${mountHook target}
+              set -x
+              echo "Creating backup '${target.name}'"
+
+              ${lib.optionalString (target.preBackupHook != null) ''
+                (
+                  ${target.preBackupHook}
+                )
+              ''}
+
+              declare -A preCommandErrors
+              ${lib.concatMapStringsSep "\n" (
+                state:
+                lib.optionalString (state.preBackupCommand != null) ''
+                  echo "Running pre-backup command for ${state.name}"
+                  if ! ( ${state.preBackupCommand} ) then
+                    preCommandErrors["${state.name}"]=1
+                  fi
+                ''
+              ) (builtins.attrValues config.clanCore.state)}
+
+              rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" sync
+              rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" snapshot
+            '') (builtins.attrValues cfg.targets)}'')
           (pkgs.writeShellScriptBin "localbackup-list" ''
             set -efu -o pipefail
             export PATH=${
@@ -167,6 +178,14 @@ in
                 pkgs.gawk
               ]
             }
+            if [[ "''${NAME:-}" == "" ]]; then
+              echo "No backup name given via NAME environment variable"
+              exit 1
+            fi
+            if [[ "''${FOLDERS:-}" == "" ]]; then
+              echo "No folders given via FOLDERS environment variable"
+              exit 1
+            fi
             name=$(awk -F'::' '{print $1}' <<< $NAME)
             backupname=''${NAME#$name::}
 
@@ -182,8 +201,9 @@ in
               exit 1
             fi
 
-            IFS=';' read -ra FOLDER <<< "$FOLDERS"
+            IFS=':' read -ra FOLDER <<< "''$FOLDERS"
             for folder in "''${FOLDER[@]}"; do
+              mkdir -p "$folder"
               rsync -a "$backupname/${config.networking.hostName}$folder/" "$folder"
             done
           '')

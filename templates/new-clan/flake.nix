@@ -1,7 +1,7 @@
 {
   description = "<Put your description here>";
 
-  inputs.clan-core.url = "git+https://git.clan.lol/clan/clan-core";
+  inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
 
   outputs =
     { self, clan-core, ... }:

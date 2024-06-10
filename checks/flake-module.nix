@@ -44,6 +44,7 @@
             zt-tcp-relay = import ./zt-tcp-relay nixosTestArgs;
             borgbackup = import ./borgbackup nixosTestArgs;
             syncthing = import ./syncthing nixosTestArgs;
+            postgresql = import ./postgresql nixosTestArgs;
             wayland-proxy-virtwl = import ./wayland-proxy-virtwl nixosTestArgs;
           };
 

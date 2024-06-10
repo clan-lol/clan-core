@@ -12,6 +12,7 @@
     localsend = ./localsend;
     matrix-synapse = ./matrix-synapse;
     moonlight = ./moonlight;
+    postgresql = ./postgresql;
     root-password = ./root-password;
     sshd = ./sshd;
     sunshine = ./sunshine;
