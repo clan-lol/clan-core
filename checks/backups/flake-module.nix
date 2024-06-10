@@ -90,6 +90,9 @@
         clanCore.state.test-backups.folders = [ "/var/test-backups" ];
 
         clanCore.state.test-service = {
+          preBackupCommand = ''
+            touch /var/test-service/pre-backup-command
+          '';
           preRestoreCommand = "pre-restore-command";
           postRestoreCommand = "post-restore-command";
           folders = [ "/var/test-service" ];
@@ -164,13 +167,15 @@
             assert machine.succeed("cat /var/test-backups/somefile").strip() == "testing", "restore failed"
             machine.succeed("test -f /var/test-service/pre-restore-command")
             machine.succeed("test -f /var/test-service/post-restore-command")
+            machine.succeed("test -f /var/test-service/pre-backup-command")
 
             ## localbackup restore
-            machine.succeed("rm -f /var/test-backups/somefile /var/test-service/{pre,post}-restore-command")
+            machine.succeed("rm -rf /var/test-backups/somefile /var/test-service/ && mkdir -p /var/test-service")
             machine.succeed(f"clan backups restore --debug --flake ${self} test-backup localbackup '{localbackup_id}' >&2")
             assert machine.succeed("cat /var/test-backups/somefile").strip() == "testing", "restore failed"
             machine.succeed("test -f /var/test-service/pre-restore-command")
             machine.succeed("test -f /var/test-service/post-restore-command")
+            machine.succeed("test -f /var/test-service/pre-backup-command")
           '';
         } { inherit pkgs self; };
       };
