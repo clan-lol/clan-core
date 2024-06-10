@@ -6,6 +6,27 @@
 }:
 let
   cfg = config.clan.borgbackup;
+  preBackupScript = ''
+    declare -A preCommandErrors
+
+    ${lib.concatMapStringsSep "\n" (
+      state:
+      lib.optionalString (state.preBackupCommand != null) ''
+        echo "Running pre-backup command for ${state.name}"
+        if ! ( ${state.preBackupCommand} ) then
+          preCommandErrors["${state.name}"]=1
+        fi
+      ''
+    ) (lib.attrValues config.clanCore.state)}
+
+    if [[ ''${#preCommandErrors[@]} -gt 0 ]]; then
+      echo "PreBackupCommand failed for the following services:"
+      for state in "''${!preCommandErrors[@]}"; do
+        echo "  $state"
+      done
+      exit 1
+    fi
+  '';
 in
 {
   options.clan.borgbackup.destinations = lib.mkOption {
@@ -50,17 +71,26 @@ in
   ];
 
   config = lib.mkIf (cfg.destinations != { }) {
+    systemd.services = lib.mapAttrs' (
+      _: dest:
+      lib.nameValuePair "borgbackup-job-${dest.name}" {
+        # since borgbackup mounts the system read-only, we need to run in a ExecStartPre script, so we can generate additional files.
+        serviceConfig.ExecStartPre = [
+          (''+${pkgs.writeShellScript "borgbackup-job-${dest.name}-pre-backup-commands" preBackupScript}'')
+        ];
+      }
+    ) cfg.destinations;
+
     services.borgbackup.jobs = lib.mapAttrs (_: dest: {
-      paths = lib.flatten (map (state: state.folders) (lib.attrValues config.clanCore.state));
+      paths = lib.unique (
+        lib.flatten (map (state: state.folders) (lib.attrValues config.clanCore.state))
+      );
       exclude = [ "*.pyc" ];
       repo = dest.repo;
       environment.BORG_RSH = dest.rsh;
       compression = "auto,zstd";
       startAt = "*-*-* 01:00:00";
       persistentTimer = true;
-      preHook = ''
-        set -x
-      '';
 
       encryption = {
         mode = "repokey";
