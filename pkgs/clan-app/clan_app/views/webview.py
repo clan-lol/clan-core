@@ -71,6 +71,19 @@ def open_file(file_request: FileRequest) -> str | None:
         finally:
             main_loop.quit()
 
+    def on_save_finish(
+        file_dialog: Gtk.FileDialog, task: Gio.Task, main_loop: GLib.MainLoop
+    ) -> None:
+        try:
+            gfile = file_dialog.save_finish(task)
+            if gfile:
+                nonlocal selected_path
+                selected_path = gfile.get_path()
+        except Exception as e:
+            print(f"Error getting selected file: {e}")
+        finally:
+            main_loop.quit()
+
     dialog = Gtk.FileDialog()
 
     if file_request.title:
@@ -105,11 +118,15 @@ def open_file(file_request: FileRequest) -> str | None:
     # if select_folder
     if file_request.mode == "select_folder":
         dialog.select_folder(
-            callback=lambda dialog, task: on_folder_select(dialog, task, main_loop)
+            callback=lambda dialog, task: on_folder_select(dialog, task, main_loop),
         )
     elif file_request.mode == "open_file":
         dialog.open(
             callback=lambda dialog, task: on_file_select(dialog, task, main_loop)
+        )
+    elif file_request.mode == "save":
+        dialog.save(
+            callback=lambda dialog, task: on_save_finish(dialog, task, main_loop)
         )
 
     # Wait for the user to select a file or directory

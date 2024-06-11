@@ -1,6 +1,7 @@
 # !/usr/bin/env python3
 import argparse
 import json
+import os
 from dataclasses import dataclass, fields
 from pathlib import Path
 
@@ -47,11 +48,16 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
     if not directory.exists():
         directory.mkdir()
     else:
-        raise ClanError(
-            location=f"{directory.resolve()}",
-            msg="Cannot create clan",
-            description="Directory already exists",
-        )
+        # Directory already exists
+        # Check if it is empty
+        # Throw error otherwise
+        dir_content = os.listdir(directory)
+        if len(dir_content) != 0:
+            raise ClanError(
+                location=f"{directory.resolve()}",
+                msg="Cannot create clan",
+                description="Directory already exists and is not empty.",
+            )
 
     cmd_responses = {}
     command = nix_command(

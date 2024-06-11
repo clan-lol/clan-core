@@ -29,7 +29,6 @@ let
     ++ lib.optional (synapseCfg.settings ? user_directory) "user-search"
     ++ lib.optional (synapseCfg.settings.url_preview_enabled) "url-preview"
     ++ lib.optional (synapseCfg.settings.database.name == "psycopg2") "postgres";
-
 in
 {
   options.services.matrix-synapse.package = lib.mkOption { readOnly = false; };
