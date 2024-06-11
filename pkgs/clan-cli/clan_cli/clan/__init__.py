@@ -1,7 +1,7 @@
 # !/usr/bin/env python3
 import argparse
 
-from clan_cli.flakes.inspect import register_inspect_parser
+from clan_cli.clan.inspect import register_inspect_parser
 
 from .create import register_create_parser
 
@@ -14,7 +14,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         help="the command to run",
         required=True,
     )
-    create_parser = subparser.add_parser("create", help="Create a clan flake")
+    create_parser = subparser.add_parser("create", help="Create a clan")
     register_create_parser(create_parser)
-    inspect_parser = subparser.add_parser("inspect", help="Inspect a clan flake")
+    inspect_parser = subparser.add_parser("inspect", help="Inspect a clan ")
     register_inspect_parser(inspect_parser)
