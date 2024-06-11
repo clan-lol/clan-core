@@ -40,6 +40,7 @@ in
       example = "example.com";
     };
     users = lib.mkOption {
+      default = { };
       type = lib.types.attrsOf (
         lib.types.submodule (
           { name, ... }:
