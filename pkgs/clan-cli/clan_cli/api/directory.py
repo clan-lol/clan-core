@@ -19,7 +19,7 @@ class FileFilter:
 @dataclass
 class FileRequest:
     # Mode of the os dialog window
-    mode: Literal["open_file", "select_folder"]
+    mode: Literal["open_file", "select_folder", "save"]
     # Title of the os dialog window
     title: str | None = None
     # Pre-applied filters for the file dialog

@@ -87,11 +87,4 @@ operationNames.forEach((opName) => {
   pyApi[name] = createFunctions(name);
 });
 
-pyApi.open_file.receive((r) => {
-  const { status } = r;
-  if (status === "error") return console.error(r.errors);
-  console.log(r.data);
-  alert(r.data);
-});
-
 export { pyApi };
