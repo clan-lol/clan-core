@@ -102,6 +102,7 @@ in
           "turn:turn.matrix.org?transport=udp"
           "turn:turn.matrix.org?transport=tcp"
         ];
+        registration_shared_secret_path = "/run/synapse-registration-shared-secret";
         listeners = [
           {
             port = 8008;
@@ -122,11 +123,10 @@ in
           }
         ];
       };
-      extraConfigFiles = [ "/run/synapse-registration-shared-secret.yaml" ];
     };
 
     systemd.tmpfiles.settings."01-matrix" = {
-      "/run/synapse-registration-shared-secret.yaml" = {
+      "/run/synapse-registration-shared-secret" = {
         C.argument =
           config.clanCore.facts.services.matrix-synapse.secret.synapse-registration_shared_secret.path;
         z = {
@@ -154,7 +154,7 @@ in
             pwgen
           ];
           generator.script = ''
-            echo "registration_shared_secret: $(pwgen -s 32 1)" > "$secrets"/synapse-registration_shared_secret
+            echo -n "$(pwgen -s 32 1)" > "$secrets"/synapse-registration_shared_secret
           '';
         };
       }
@@ -182,7 +182,7 @@ in
             trap 'rm -f "$headers"' EXIT
 
             cat > "$headers" <<EOF
-            Authorization: Bearer $(cat /run/synapse-registration-shared-secret.yaml| sed -n 's/registration_shared_secret: //p')
+            Authorization: Bearer $(cat /run/synapse-registration-shared-secret)
             EOF
           ''
           + lib.concatMapStringsSep "\n" (user: ''
