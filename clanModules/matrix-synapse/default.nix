@@ -126,8 +126,6 @@ in
       extraConfigFiles = [ "/run/synapse-registration-shared-secret.yaml" ];
     };
 
-    security.wrappers = lib.mkForce { }; # unsupported in unprivileged containers
-
     systemd.tmpfiles.settings."01-matrix" = {
       "/run/synapse-registration-shared-secret.yaml" = {
         C.argument =
