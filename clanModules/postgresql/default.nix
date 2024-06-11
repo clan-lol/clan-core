@@ -32,38 +32,7 @@ let
         runuser -u postgres -- pg_dump ${compression} --dbname=${db.name} -Fc -c > "${current}.tmp"
         mv "${current}.tmp" ${current}
       '';
-      postRestoreCommand = ''
-        export PATH=${
-          lib.makeBinPath [
-            config.services.postgresql.package
-            config.systemd.package
-            pkgs.coreutils
-            pkgs.util-linux
-            pkgs.zstd
-          ]
-        }
-        while [[ "$(systemctl is-active postgresql)" == activating ]]; do
-          sleep 1
-        done
-        echo "Waiting for postgres to be ready..."
-        while ! runuser -u postgres -- psql --port=${builtins.toString config.services.postgresql.settings.port} -d postgres -c "" ; do
-          if ! systemctl is-active postgresql; then exit 1; fi
-          sleep 0.1
-        done
-
-        if [[ -e "${current}" ]]; then
-          (
-            systemctl stop ${lib.concatStringsSep " " db.restore.stopOnRestore}
-            trap "systemctl start ${lib.concatStringsSep " " db.restore.stopOnRestore}" EXIT
-
-            mkdir -p "${folder}"
-            runuser -u postgres -- dropdb "${db.name}"
-            runuser -u postgres -- pg_restore -C -d postgres "${current}"
-          )
-        else
-          echo No database backup found, skipping restore
-        fi
-      '';
+      postRestoreCommand = "postgres-db-restore-command-${db.name}";
     };
 
   createDatabase = db: ''
@@ -162,5 +131,45 @@ in
     clanCore.state = lib.mapAttrs' (
       _: db: lib.nameValuePair "postgresql-${db.name}" (createDatatbaseState db)
     ) config.clan.postgresql.databases;
+
+    environment.systemPackages = builtins.map (
+      db:
+      let
+        folder = "/var/backup/postgres/${db.name}";
+        current = "${folder}/pg-dump";
+      in
+      pkgs.writeShellScriptBin "postgres-db-restore-command-${db.name}" ''
+        export PATH=${
+          lib.makeBinPath [
+            config.services.postgresql.package
+            config.systemd.package
+            pkgs.coreutils
+            pkgs.util-linux
+            pkgs.zstd
+          ]
+        }
+        while [[ "$(systemctl is-active postgresql)" == activating ]]; do
+          sleep 1
+        done
+        echo "Waiting for postgres to be ready..."
+        while ! runuser -u postgres -- psql --port=${builtins.toString config.services.postgresql.settings.port} -d postgres -c "" ; do
+          if ! systemctl is-active postgresql; then exit 1; fi
+          sleep 0.1
+        done
+
+        if [[ -e "${current}" ]]; then
+          (
+            systemctl stop ${lib.concatStringsSep " " db.restore.stopOnRestore}
+            trap "systemctl start ${lib.concatStringsSep " " db.restore.stopOnRestore}" EXIT
+
+            mkdir -p "${folder}"
+            runuser -u postgres -- dropdb "${db.name}"
+            runuser -u postgres -- pg_restore -C -d postgres "${current}"
+          )
+        else
+          echo No database backup found, skipping restore
+        fi
+      ''
+    ) (builtins.attrValues config.clan.postgresql.databases);
   };
 }
