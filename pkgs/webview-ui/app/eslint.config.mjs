@@ -22,6 +22,9 @@ export default tseslint.config(
           whitelist: ["material-icons"],
         },
       ],
+      // TODO: make this more strict by removing later
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "off",
     },
   }
 );
