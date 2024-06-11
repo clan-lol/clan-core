@@ -78,7 +78,7 @@
     },
     "nixos-images": {
       "inputs": {
-        "nixos-stable": "nixos-stable",
+        "nixos-stable": [],
         "nixos-unstable": [
           "nixpkgs"
         ]
@@ -94,22 +94,6 @@
       "original": {
         "owner": "nix-community",
         "repo": "nixos-images",
-        "type": "github"
-      }
-    },
-    "nixos-stable": {
-      "locked": {
-        "lastModified": 1717555607,
-        "narHash": "sha256-WZ1s48OODmRJ3DHC+I/DtM3tDRuRJlNqMvxvAPTD7ec=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "0b8e7a1ae5a94da2e1ee3f3030a32020f6254105",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-24.05",
-        "repo": "nixpkgs",
         "type": "github"
       }
     },
