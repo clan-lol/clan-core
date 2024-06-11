@@ -22,7 +22,7 @@ let
 
     # required to react to system_powerdown qmp command
     # Some desktop managers like xfce override the poweroff signal and therefore
-    #   make it impossible to handle it via 'logind' diretly.
+    #   make it impossible to handle it via 'logind' directly.
     services.acpid.enable = true;
     services.acpid.handlers.power.event = "button/power.*";
     services.acpid.handlers.power.action = "poweroff";
