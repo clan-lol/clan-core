@@ -33,7 +33,7 @@ class ClanMetaInfo:
 
 @dataclass
 class CreateOptions:
-    directory: Path
+    directory: Path | str
     # Metadata for the clan
     # Metadata can be shown with `clan show`
     meta: ClanMetaInfo | None = None
@@ -43,7 +43,7 @@ class CreateOptions:
 
 @API.register
 def create_clan(options: CreateOptions) -> CreateClanResponse:
-    directory = options.directory
+    directory = Path(options.directory)
     template_url = options.template_url
     if not directory.exists():
         directory.mkdir()

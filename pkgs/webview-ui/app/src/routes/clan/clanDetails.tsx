@@ -8,7 +8,12 @@ import {
   createEffect,
   createSignal,
 } from "solid-js";
-import cx from "classnames";
+import {
+  SubmitHandler,
+  createForm,
+  email,
+  required,
+} from "@modular-forms/solid";
 
 interface ClanDetailsProps {
   directory: string;
@@ -23,8 +28,112 @@ interface MetaFieldsProps {
 
 const fn = (e: SubmitEvent) => {
   e.preventDefault();
-  console.log(e.currentTarget);
+  console.log("form submit", e.currentTarget);
 };
+
+export default function Login() {
+  const [, { Form, Field }] = createForm<ClanMeta>({
+    initialValues: { name: "MyClan" },
+  });
+
+  const handleSubmit: SubmitHandler<ClanMeta> = (values, event) => {
+    pyApi.open_file.dispatch({ file_request: { mode: "save" } });
+    pyApi.open_file.receive((r) => {
+      if (r.status === "success") {
+        if (r.data) {
+          pyApi.create_clan.dispatch({
+            options: { directory: r.data, meta: values },
+          });
+        }
+
+        return;
+      }
+    });
+    console.log("submit", values);
+  };
+  return (
+    <div class="card-body">
+      <Form onSubmit={handleSubmit}>
+        <Field
+          name="name"
+          validate={[required("Please enter a unique name for the clan.")]}
+        >
+          {(field, props) => (
+            <label class="form-control w-full max-w-xs">
+              <div class="label">
+                <span class="label-text block after:ml-0.5 after:text-primary after:content-['*']">
+                  Name
+                </span>
+              </div>
+
+              <input
+                {...props}
+                type="email"
+                required
+                placeholder="your.mail@example.com"
+                class="input w-full max-w-xs"
+                classList={{ "input-error": !!field.error }}
+                value={field.value}
+              />
+              <div class="label">
+                {field.error && (
+                  <span class="label-text-alt">{field.error}</span>
+                )}
+              </div>
+            </label>
+          )}
+        </Field>
+        <Field name="description">
+          {(field, props) => (
+            <label class="form-control w-full max-w-xs">
+              <div class="label">
+                <span class="label-text">Description</span>
+              </div>
+
+              <input
+                {...props}
+                required
+                type="text"
+                placeholder="Some words about your clan"
+                class="input w-full max-w-xs"
+                classList={{ "input-error": !!field.error }}
+                value={field.value || ""}
+              />
+              <div class="label">
+                {field.error && (
+                  <span class="label-text-alt">{field.error}</span>
+                )}
+              </div>
+            </label>
+          )}
+        </Field>
+        <Field name="icon">
+          {(field, props) => (
+            <label class="form-control w-full max-w-xs">
+              <div class="label">
+                <span class="label-text">Select icon</span>
+              </div>
+              <input
+                type="file"
+                class="file-input file-input-bordered w-full max-w-xs"
+              />
+              <div class="label">
+                {field.error && (
+                  <span class="label-text-alt">{field.error}</span>
+                )}
+              </div>
+            </label>
+          )}
+        </Field>
+        <div class="card-actions justify-end">
+          <button class="btn btn-primary" type="submit">
+            Create
+          </button>
+        </div>
+      </Form>
+    </div>
+  );
+}
 
 export const EditMetaFields = (props: MetaFieldsProps) => {
   const { meta, editable, actions, directory } = props;
@@ -41,8 +150,9 @@ export const EditMetaFields = (props: MetaFieldsProps) => {
         />
       </figure>
       <div class="card-body">
-        <form onSubmit={fn}>
-          <h2 class="card-title justify-between">
+        <Login />
+        {/* <form onSubmit={fn}> */}
+        {/* <h2 class="card-title justify-between">
             <input
               classList={{
                 [cx("text-slate-600")]: editing() !== "name",
@@ -85,8 +195,8 @@ export const EditMetaFields = (props: MetaFieldsProps) => {
               <span>{directory}</span>
             </div>
           </Show>
-          {actions}
-        </form>
+          {actions} */}
+        {/* </form> */}
       </div>
     </div>
   );
