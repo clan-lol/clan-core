@@ -2,7 +2,7 @@
 import argparse
 import datetime
 
-from clan_cli.flakes.inspect import inspect_flake
+from clan_cli.clan.inspect import inspect_flake
 
 from ..clan_uri import ClanURI
 from ..errors import ClanCmdError
