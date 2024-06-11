@@ -6,7 +6,7 @@ import json
 import logging
 from typing import Any
 
-from clan_cli.flakes.inspect import FlakeConfig, inspect_flake
+from clan_cli.clan.inspect import FlakeConfig, inspect_flake
 from clan_cli.machines.list import list_machines
 
 from ..clan_uri import ClanURI
