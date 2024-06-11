@@ -1,10 +1,10 @@
 import argparse
-import dataclasses
 import json
 import logging
 from pathlib import Path
 
 from clan_cli.api import API
+from clan_cli.clan.create import ClanMetaInfo
 from clan_cli.errors import ClanCmdError, ClanError
 
 from ..cmd import run_no_stdout
@@ -13,15 +13,8 @@ from ..nix import nix_eval
 log = logging.getLogger(__name__)
 
 
-@dataclasses.dataclass
-class ClanMeta:
-    name: str
-    description: str | None
-    icon: str | None
-
-
 @API.register
-def show_clan(uri: str | Path) -> ClanMeta:
+def show_clan_meta(uri: str | Path) -> ClanMetaInfo:
     cmd = nix_eval(
         [
             f"{uri}#clanInternals.meta",
@@ -40,7 +33,7 @@ def show_clan(uri: str | Path) -> ClanMeta:
         )
 
     clan_meta = json.loads(res)
-    return ClanMeta(
+    return ClanMetaInfo(
         name=clan_meta.get("name"),
         description=clan_meta.get("description", None),
         icon=clan_meta.get("icon", None),
@@ -49,7 +42,7 @@ def show_clan(uri: str | Path) -> ClanMeta:
 
 def show_command(args: argparse.Namespace) -> None:
     flake_path = Path(args.flake).resolve()
-    meta = show_clan(flake_path)
+    meta = show_clan_meta(flake_path)
 
     print(f"Name: {meta.name}")
     print(f"Description: {meta.description or ''}")
