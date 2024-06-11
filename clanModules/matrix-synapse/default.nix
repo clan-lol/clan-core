@@ -163,10 +163,7 @@ in
         name: user:
         lib.nameValuePair "matrix-password-${user.name}" {
           secret."matrix-password-${user.name}" = { };
-          generator.path = with pkgs; [
-            coreutils
-            pwgen
-          ];
+          generator.path = with pkgs; [ xkcdpass ];
           generator.script = ''
             xkcdpass -n 4 -d - > "$secrets"/${lib.escapeShellArg "matrix-password-${user.name}"}
           '';
