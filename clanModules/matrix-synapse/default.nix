@@ -187,7 +187,8 @@ in
           ''
           + lib.concatMapStringsSep "\n" (user: ''
             # only create user if it doesn't exist
-            if ! curl --header "$headers" "http://localhost:8008/_synapse/admin/v1/whois/${user.name}@${cfg.domain}" >&2; then
+            set -x
+            if ! curl --silent --header "@$headers" "http://localhost:8008/_synapse/admin/v1/whois/@${user.name}:${cfg.domain}" >&2; then
               /run/current-system/sw/bin/matrix-synapse-register_new_matrix_user --password-file ${
                 config.clanCore.facts.services."matrix-password-${user.name}".secret."matrix-password-${user.name}".path
               } --user "${user.name}" ${if user.admin then "--admin" else "--no-admin"}
