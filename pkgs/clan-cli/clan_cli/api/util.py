@@ -1,6 +1,7 @@
 import copy
 import dataclasses
 import pathlib
+from dataclasses import MISSING
 from types import NoneType, UnionType
 from typing import (
     Annotated,
@@ -77,20 +78,29 @@ def type_to_dict(t: Any, scope: str = "", type_map: dict[TypeVar, type] = {}) ->
             for f in fields
         }
 
-        required = []
+        required = set()
         for pn, pv in properties.items():
             if pv.get("type") is not None:
                 if "null" not in pv["type"]:
-                    required.append(pn)
+                    required.add(pn)
 
             elif pv.get("oneOf") is not None:
                 if "null" not in [i["type"] for i in pv.get("oneOf", [])]:
-                    required.append(pn)
+                    required.add(pn)
+
+        required_fields = {
+            f.name
+            for f in fields
+            if f.default is MISSING and f.default_factory is MISSING
+        }
+
+        # Find intersection
+        intersection = required & required_fields
 
         return {
             "type": "object",
             "properties": properties,
-            "required": required,
+            "required": list(intersection),
             # Dataclasses can only have the specified properties
             "additionalProperties": False,
         }

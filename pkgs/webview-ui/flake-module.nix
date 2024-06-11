@@ -11,7 +11,7 @@
 
         npmDeps = pkgs.fetchNpmDeps {
           src = ./app;
-          hash = "sha256-NauXhPRKC80yiAeyt5mEBLcPZw3aheZDYXx4vLvpRvI=";
+          hash = "sha256-3LjcHh+jCuarh9XmS+mOv7xaGgAHxf3L7fWnxxmxUGQ=";
         };
         # The prepack script runs the build script, which we'd rather do in the build phase.
         npmPackFlags = [ "--ignore-scripts" ];
