@@ -1,12 +1,11 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "node:fs";
+import postcss from "postcss";
+import path from "node:path";
+import css_url from "postcss-url";
 
-const distPath = path.resolve(__dirname, "dist");
+const distPath = path.resolve("dist");
 const manifestPath = path.join(distPath, ".vite/manifest.json");
 const outputPath = path.join(distPath, "index.html");
-
-const postcss = require("postcss");
-const css_url = require("postcss-url");
 
 fs.readFile(manifestPath, { encoding: "utf8" }, (err, data) => {
   if (err) {

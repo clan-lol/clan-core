@@ -17,6 +17,8 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
 console.log(import.meta.env);
 if (import.meta.env.DEV) {
   console.log("Development mode");
+  // Load the debugger in development mode
+  await import("solid-devtools");
   window.webkit = window.webkit || {
     messageHandlers: {
       gtk: {
@@ -28,12 +30,11 @@ if (import.meta.env.DEV) {
             console.log("mock", { mock });
 
             window.clan[method](JSON.stringify(mock));
-          }, 1000);
+          }, 200);
         },
       },
     },
   };
 }
-postMessage;
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 render(() => <App />, root!);
