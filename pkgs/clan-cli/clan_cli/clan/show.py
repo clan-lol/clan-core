@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
+from urllib.parse import urlparse
 
 from clan_cli.api import API
 from clan_cli.clan.create import ClanMetaInfo
@@ -22,6 +23,7 @@ def show_clan_meta(uri: str | Path) -> ClanMetaInfo:
         ]
     )
     res = "{}"
+
     try:
         proc = run_no_stdout(cmd)
         res = proc.stdout.strip()
@@ -33,10 +35,36 @@ def show_clan_meta(uri: str | Path) -> ClanMetaInfo:
         )
 
     clan_meta = json.loads(res)
+
+    # Check if icon is a URL such as http:// or https://
+    # Check if icon is an relative path
+    # All other schemas such as file://, ftp:// are not yet supported.
+    icon_path: str | None = None
+    if meta_icon := clan_meta.get("icon"):
+        scheme = urlparse(meta_icon).scheme
+        if scheme in ["http", "https"]:
+            icon_path = meta_icon
+        elif scheme in [""]:
+            if Path(meta_icon).is_absolute():
+                raise ClanError(
+                    "Invalid absolute path",
+                    location=f"show_clan {uri}",
+                    description="Icon path must be a URL or a relative path.",
+                )
+
+            else:
+                icon_path = str((Path(uri) / meta_icon).resolve())
+        else:
+            raise ClanError(
+                "Invalid schema",
+                location=f"show_clan {uri}",
+                description="Icon path must be a URL or a relative path.",
+            )
+
     return ClanMetaInfo(
         name=clan_meta.get("name"),
         description=clan_meta.get("description", None),
-        icon=clan_meta.get("icon", None),
+        icon=icon_path,
     )
 
 
