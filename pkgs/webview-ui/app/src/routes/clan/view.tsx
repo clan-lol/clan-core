@@ -1,7 +1,7 @@
 import { pyApi } from "@/src/api";
 import { Match, Switch, createEffect, createSignal } from "solid-js";
 import toast from "solid-toast";
-import { ClanDetails, EditMetaFields } from "./clanDetails";
+import { ClanDetails, ClanForm } from "./clanDetails";
 
 export const clan = () => {
   const [mode, setMode] = createSignal<"init" | "open" | "create">("init");
@@ -53,16 +53,16 @@ export const clan = () => {
           <ClanDetails directory={clanDir() || ""} />
         </Match>
         <Match when={mode() === "create"}>
-          <EditMetaFields
+          <ClanForm
             actions={
               <div class="card-actions justify-end">
                 <button
                   class="btn btn-primary"
-                  onClick={() => {
-                    pyApi.open_file.dispatch({
-                      file_request: { mode: "save" },
-                    });
-                  }}
+                  // onClick={() => {
+                  //   pyApi.open_file.dispatch({
+                  //     file_request: { mode: "save" },
+                  //   });
+                  // }}
                 >
                   Save
                 </button>

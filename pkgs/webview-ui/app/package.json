@@ -2,6 +2,7 @@
   "name": "@clan/webview-ui",
   "version": "0.0.1",
   "description": "",
+  "type": "module",
   "scripts": {
     "start": "vite",
     "dev": "vite",
