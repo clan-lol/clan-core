@@ -1,10 +1,10 @@
-{ python3, setuptools, ... }:
+{ python3, setuptools, mautrix, ... }:
 
 
 let
 
   pythonDependencies = [
-
+    mautrix
   ];
 
   runtimeDependencies = [ ];
