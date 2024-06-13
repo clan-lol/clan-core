@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from .cmd import run
+from .cmd import run, run_no_stdout
 from .dirs import nixpkgs_flake, nixpkgs_source
 
 
@@ -59,8 +59,8 @@ def nix_add_to_gcroots(nix_path: Path, dest: Path) -> None:
 
 
 def nix_config() -> dict[str, Any]:
-    cmd = nix_command(["config", "show", "--json"])
-    proc = run(cmd)
+    cmd = nix_command(["show-config", "--json"])
+    proc = run_no_stdout(cmd)
     data = json.loads(proc.stdout)
     config = {}
     for key, value in data.items():
