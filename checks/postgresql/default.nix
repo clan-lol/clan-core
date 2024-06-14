@@ -63,5 +63,10 @@
       output = machine.succeed("runuser -u postgres -- /run/current-system/sw/bin/psql --csv -c \"SELECT datdba::regrole FROM pg_database WHERE datname = 'test'\"")
       owner = output.split("\n")[1]
       assert owner == "test", f"Expected database owner to be 'test', got '{owner}'"
+
+      # check if restore works if the database does not exist
+      machine.succeed("runuser -u postgres -- dropdb test")
+      machine.succeed("${nodes.machine.clanCore.state.postgresql-test.postRestoreCommand}")
+      machine.succeed("runuser -u postgres -- /run/current-system/sw/bin/psql -d test -c '\dt' >&2")
     '';
 })
