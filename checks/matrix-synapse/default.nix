@@ -38,7 +38,7 @@
                 z.mode = "0700";
               };
               "/etc/secrets/synapse-registration_shared_secret" = {
-                f.argument = "registration_shared_secret: supersecret";
+                f.argument = "supersecret";
                 z = {
                   mode = "0400";
                   user = "root";
