@@ -151,7 +151,7 @@ class Machine:
         """
 
         # Always run command with shell opts
-        command = f"set -euo pipefail; {command}"
+        command = f"set -eo pipefail; source /etc/profile; set -u; {command}"
 
         proc = subprocess.run(
             [
