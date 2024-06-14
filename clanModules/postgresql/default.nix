@@ -159,8 +159,12 @@ in
 
         if [[ -e "${current}" ]]; then
           (
-            systemctl stop ${lib.concatStringsSep " " db.restore.stopOnRestore}
-            trap "systemctl start ${lib.concatStringsSep " " db.restore.stopOnRestore}" EXIT
+            ${
+              lib.optionalString (db.restore.stopOnRestore != [ ]) ''
+                systemctl stop ${builtins.toString db.restore.stopOnRestore}
+                trap "systemctl start ${builtins.toString db.restore.stopOnRestore}" EXIT
+              ''
+            }
 
             mkdir -p "${folder}"
             runuser -u postgres -- dropdb "${db.name}"
