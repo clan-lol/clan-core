@@ -73,8 +73,6 @@
       machine.wait_for_unit("matrix-synapse")
       machine.succeed("${pkgs.netcat}/bin/nc -z -v ::1 8008")
       machine.succeed("${pkgs.curl}/bin/curl -Ssf -L http://localhost/_matrix/static/ -H 'Host: matrix.clan.test'")
-      machine.succeed("${pkgs.curl}/bin/curl -Svf -L -H 'Authorization: Bearer supersecret' http://localhost:8008/_synapse/admin/v1/whois/@admin:clan.test >&2")
-      machine.succeed("${pkgs.curl}/bin/curl -Svf -L -H 'Authorization: Bearer supersecret' http://localhost:8008/_synapse/admin/v1/whois/@someuser:clan.test >&2")
     '';
   }
 )

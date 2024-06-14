@@ -82,8 +82,11 @@ in
         pkgs.matrix-synapse.override {
           matrix-synapse-unwrapped = pkgs.matrix-synapse.unwrapped.overrideAttrs (_old: {
             doInstallCheck = false; # too slow, nixpkgs maintainer already run this.
-            # see: https://github.com/element-hq/synapse/pull/17294
-            patches = [ ./0001-register_new_matrix_user-add-password-file-flag.patch ];
+            patches = [
+              # see: https://github.com/element-hq/synapse/pull/17304
+              ./0001-register_new_matrix_user-add-password-file-flag.patch
+              ./0002-register-new-matrix-user-add-a-flag-to-ignore-alread.patch
+            ];
           });
           extras = wantedExtras;
           plugins = synapseCfg.plugins;
@@ -177,22 +180,12 @@ in
               if ! kill -0 "$MAINPID"; then exit 1; fi
               sleep 1;
             done
-
-            headers=$(mktemp)
-            trap 'rm -f "$headers"' EXIT
-
-            cat > "$headers" <<EOF
-            Authorization: Bearer $(cat /run/synapse-registration-shared-secret)
-            EOF
           ''
           + lib.concatMapStringsSep "\n" (user: ''
             # only create user if it doesn't exist
-            set -x
-            if ! curl --silent --header "@$headers" "http://localhost:8008/_synapse/admin/v1/whois/@${user.name}:${cfg.domain}" >&2; then
-              /run/current-system/sw/bin/matrix-synapse-register_new_matrix_user --password-file ${
-                config.clanCore.facts.services."matrix-password-${user.name}".secret."matrix-password-${user.name}".path
-              } --user "${user.name}" ${if user.admin then "--admin" else "--no-admin"}
-            fi
+            /run/current-system/sw/bin/matrix-synapse-register_new_matrix_user --exists-ok --password-file ${
+              config.clanCore.facts.services."matrix-password-${user.name}".secret."matrix-password-${user.name}".path
+            } --user "${user.name}" ${if user.admin then "--admin" else "--no-admin"}
           '') (lib.attrValues cfg.users);
       in
       {
