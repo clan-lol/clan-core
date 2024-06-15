@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
+from inspect import Parameter, signature
 from typing import Annotated, Any, Generic, Literal, TypeVar, get_type_hints
 
 from clan_cli.errors import ClanError
@@ -21,15 +22,32 @@ class ApiError:
 class SuccessDataClass(Generic[ResponseDataType]):
     status: Annotated[Literal["success"], "The status of the response."]
     data: ResponseDataType
+    op_key: str | None
 
 
 @dataclass
 class ErrorDataClass:
     status: Literal["error"]
     errors: list[ApiError]
+    op_key: str | None
 
 
 ApiResponse = SuccessDataClass[ResponseDataType] | ErrorDataClass
+
+
+def update_wrapper_signature(wrapper: Callable, wrapped: Callable) -> None:
+    sig = signature(wrapped)
+    params = list(sig.parameters.values())
+
+    # Add 'op_key' parameter
+    op_key_param = Parameter(
+        "op_key", Parameter.KEYWORD_ONLY, default=None, annotation=str | None
+    )
+    params.append(op_key_param)
+
+    # Create a new signature
+    new_sig = sig.replace(parameters=params)
+    wrapper.__signature__ = new_sig  # type: ignore
 
 
 class _MethodRegistry:
@@ -41,13 +59,16 @@ class _MethodRegistry:
         self._orig[fn.__name__] = fn
 
         @wraps(fn)
-        def wrapper(*args: Any, **kwargs: Any) -> ApiResponse[T]:
+        def wrapper(
+            *args: Any, op_key: str | None = None, **kwargs: Any
+        ) -> ApiResponse[T]:
             try:
                 data: T = fn(*args, **kwargs)
-                return SuccessDataClass(status="success", data=data)
+                return SuccessDataClass(status="success", data=data, op_key=op_key)
             except ClanError as e:
                 return ErrorDataClass(
                     status="error",
+                    op_key=op_key,
                     errors=[
                         ApiError(
                             message=e.msg,
@@ -62,6 +83,11 @@ class _MethodRegistry:
         # This overrides the new return type annotation with the generic typeVar filled in
         orig_return_type = get_type_hints(fn).get("return")
         wrapper.__annotations__["return"] = ApiResponse[orig_return_type]  # type: ignore
+
+        # Add additional argument for the operation key
+        wrapper.__annotations__["op_key"] = str | None  # type: ignore
+
+        update_wrapper_signature(wrapper, fn)
 
         self._registry[fn.__name__] = wrapper
         return fn
@@ -91,6 +117,12 @@ class _MethodRegistry:
 
             return_type = serialized_hints.pop("return")
 
+            sig = signature(func)
+            required_args = []
+            for n, param in sig.parameters.items():
+                if param.default == Parameter.empty:
+                    required_args.append(n)
+
             api_schema["properties"][name] = {
                 "type": "object",
                 "required": ["arguments", "return"],
@@ -99,7 +131,7 @@ class _MethodRegistry:
                     "return": return_type,
                     "arguments": {
                         "type": "object",
-                        "required": [k for k in serialized_hints.keys()],
+                        "required": required_args,
                         "additionalProperties": False,
                         "properties": serialized_hints,
                     },
