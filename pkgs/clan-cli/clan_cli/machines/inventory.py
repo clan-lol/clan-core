@@ -6,7 +6,7 @@ from ..nix import nix_build, nix_config
 from .machines import Machine
 
 
-# function to speedup eval if we want to evauluate all machines
+# function to speedup eval if we want to evaluate all machines
 def get_all_machines(flake_dir: Path, nix_options: list[str]) -> list[Machine]:
     config = nix_config()
     system = config["system"]

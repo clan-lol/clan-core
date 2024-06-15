@@ -3,6 +3,7 @@ import argparse
 
 from .create import register_create_parser
 from .delete import register_delete_parser
+from .hardware import register_hw_generate
 from .install import register_install_parser
 from .list import register_list_parser
 from .show import register_show_parser
@@ -63,6 +64,25 @@ Examples:
     )
     register_list_parser(list_parser)
 
+    generate_hw_parser = subparser.add_parser(
+        "hw-generate",
+        help="Generate hardware specifics for a machine",
+        epilog=(
+            """
+This subcommand generates hardware specifics for a machine. Such as the host platform, available kernel modules, etc.
+
+Examples:
+
+  $ clan machines hw-generate [MACHINE] [TARGET_HOST]
+  Will generate hardware specifics for the the specified `[TARGET_HOST]` and place the result in hardware.nix for the given machine `[MACHINE]`.
+
+For more detailed information, visit: https://docs.clan.lol/getting-started/configure/#machine-configuration
+
+"""
+        ),
+    )
+    register_hw_generate(generate_hw_parser)
+
     show_parser = subparser.add_parser(
         "show",
         help="Show a machine",
@@ -92,7 +112,7 @@ Examples:
   Will install the specified machine [MACHINE], to the specified [TARGET_HOST].
 
   $ clan machines install [MACHINE] --json [JSON]
-  Will install the specified machine [MACHINE] to the host exposed by 
+  Will install the specified machine [MACHINE] to the host exposed by
   the deployment information of the [JSON] deployment string.
 
 For information on how to set up the installer see: https://docs.clan.lol/getting-started/installer/
