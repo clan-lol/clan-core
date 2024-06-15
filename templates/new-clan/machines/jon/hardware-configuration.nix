@@ -4,7 +4,11 @@ throw ''
 
   Run the following command:
 
+  'clan machines hw-generate <maschine_name> <hostname>'
+
+  OR:
+
   'ssh root@<hostname> nixos-generate-config --no-filesystems --show-hardware-config > hardware-configuration.nix'
 
-  Then replace this file with the generated "hardware-configuration.nix".
+  And manually eplace this file with the generated "hardware-configuration.nix".
 ''
