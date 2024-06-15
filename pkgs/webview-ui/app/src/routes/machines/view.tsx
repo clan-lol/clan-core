@@ -10,6 +10,7 @@ import { useMachineContext } from "../../Config";
 import { route } from "@/src/App";
 import { OperationResponse, pyApi } from "@/src/api";
 import toast from "solid-toast";
+import { MachineListItem } from "@/src/components/MachineListItem";
 
 type FilesModel = Extract<
   OperationResponse<"get_directory">,
@@ -99,37 +100,7 @@ export const MachineListView: Component = () => {
         <Match when={!loading()}>
           <ul>
             <For each={data()}>
-              {(entry) => (
-                <li>
-                  <div class="card card-side m-2 bg-base-100 shadow-lg">
-                    <figure class="pl-2">
-                      <span class="material-icons content-center text-5xl">
-                        devices_other
-                      </span>
-                    </figure>
-                    <div class="card-body flex-row justify-between">
-                      <div class="flex flex-col">
-                        <h2 class="card-title">{entry}</h2>
-                        {/*
-                        <p
-                          classList={{
-                            "text-gray-400": !entry.machine_description,
-                            "text-gray-600": !!entry.machine_description,
-                          }}
-                        >
-                          {entry.machine_description || "No description"}
-                        </p>
-                        */}
-                      </div>
-                      <div>
-                        <button class="btn btn-ghost">
-                          <span class="material-icons">more_vert</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              )}
+              {(entry) => <MachineListItem name={entry} />}
             </For>
           </ul>
         </Match>
