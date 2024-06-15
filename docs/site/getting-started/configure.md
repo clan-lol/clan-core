@@ -10,7 +10,7 @@ In the `flake.nix` file:
 
     ```nix title="clan-core.lib.buildClan"
     buildClan {
-        # Set a unique name 
+        # Set a unique name
         clanName = "Lobsters";
         # Should usually point to the directory of flake.nix
         directory = ./.;
@@ -30,7 +30,7 @@ In the `flake.nix` file:
 
     ```nix title="clan-core.flakeModules.default"
     clan = {
-        # Set a unique name 
+        # Set a unique name
         clanName = "Lobsters";
 
         machines = {
@@ -61,13 +61,13 @@ Adding or configuring a new machine requires two simple steps:
 
     ```{.shellSession hl_lines="6" .no-copy}
     NAME        ID-LINK                                         FSTYPE   SIZE MOUNTPOINT
-    sda         usb-ST_16GB_AA6271026J1000000509-0:0                    14.9G 
-    ├─sda1      usb-ST_16GB_AA6271026J1000000509-0:0-part1                 1M 
+    sda         usb-ST_16GB_AA6271026J1000000509-0:0                    14.9G
+    ├─sda1      usb-ST_16GB_AA6271026J1000000509-0:0-part1                 1M
     ├─sda2      usb-ST_16GB_AA6271026J1000000509-0:0-part2      vfat     100M /boot
     └─sda3      usb-ST_16GB_AA6271026J1000000509-0:0-part3      ext4     2.9G /
-    nvme0n1     nvme-eui.e8238fa6bf530001001b448b4aec2929              476.9G 
-    ├─nvme0n1p1 nvme-eui.e8238fa6bf530001001b448b4aec2929-part1 vfat     512M 
-    ├─nvme0n1p2 nvme-eui.e8238fa6bf530001001b448b4aec2929-part2 ext4   459.6G 
+    nvme0n1     nvme-eui.e8238fa6bf530001001b448b4aec2929              476.9G
+    ├─nvme0n1p1 nvme-eui.e8238fa6bf530001001b448b4aec2929-part1 vfat     512M
+    ├─nvme0n1p2 nvme-eui.e8238fa6bf530001001b448b4aec2929-part2 ext4   459.6G
     └─nvme0n1p3 nvme-eui.e8238fa6bf530001001b448b4aec2929-part3 swap    16.8G
     ```
 
@@ -150,10 +150,17 @@ These steps will allow you to update your machine later.
 Generate the `hardware-configuration.nix` file for your machine by executing the following command:
 
 ```bash
-ssh root@flash-installer.local nixos-generate-config --no-filesystems --show-hardware-config > machines/jon/hardware-configuration.nix
+clan machines hw-generate [MACHINE_NAME] [HOSTNAME]
 ```
 
-This command connects to `flash-installer.local` as `root`, runs `nixos-generate-config` to detect hardware configurations (excluding filesystems), and writes them to `machines/jon/hardware-configuration.nix`.
+replace `[MACHINE_NAME]` with the name of the machine i.e. `jon` and `[HOSTNAME]` with the `ip_adress` or `hostname` of the machine within the network. i.e. `flash-installer.local`
+
+!!! Example
+    ```bash
+    clan machines hw-generate jon flash-installer.local
+    ```
+
+    This command connects to `flash-installer.local` as `root`, runs `nixos-generate-config` to detect hardware configurations (excluding filesystems), and writes them to `machines/jon/hardware-configuration.nix`.
 
 ### Step 3: Custom Disk Formatting
 
