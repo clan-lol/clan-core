@@ -11,6 +11,10 @@ export type SuccessData<T extends OperationNames> = Extract<
   OperationResponse<T>,
   { status: "success" }
 >;
+export type ErrorData<T extends OperationNames> = Extract<
+  OperationResponse<T>,
+  { status: "error" }
+>;
 
 export type ClanOperations = {
   [K in OperationNames]: (str: string) => void;
@@ -33,6 +37,27 @@ declare global {
 // Make sure window.webkit is defined although the type is not correctly filled yet.
 window.clan = {} as ClanOperations;
 
+const operations = schema.properties;
+const operationNames = Object.keys(operations) as OperationNames[];
+
+type ObserverRegistry = {
+  [K in OperationNames]: ((response: OperationResponse<K>) => void)[];
+};
+const obs: ObserverRegistry = operationNames.reduce(
+  (acc, opName) => ({
+    ...acc,
+    [opName]: [],
+  }),
+  {} as ObserverRegistry
+);
+
+interface ReceiveOptions {
+  /**
+   * Calls only the registered function that has the same key as used with dispatch
+   *
+   */
+  fnKey: string;
+}
 function createFunctions<K extends OperationNames>(
   operationName: K
 ): {
@@ -41,23 +66,26 @@ function createFunctions<K extends OperationNames>(
 } {
   return {
     dispatch: (args: OperationArgs<K>) => {
-      console.log(
-        `Operation: ${String(operationName)}, Arguments: ${JSON.stringify(args)}`
-      );
+      // console.log(
+      //   `Operation: ${String(operationName)}, Arguments: ${JSON.stringify(args)}`
+      // );
       // Send the data to the gtk app
       window.webkit.messageHandlers.gtk.postMessage({
         method: operationName,
         data: args,
       });
     },
-    receive: (fn: (response: OperationResponse<K>) => void) => {
-      window.clan[operationName] = deserialize(fn);
+    receive: (
+      fn: (response: OperationResponse<K>) => void
+      // options?: ReceiveOptions
+    ) => {
+      obs[operationName].push(fn);
+      window.clan[operationName] = (s: string) => {
+        obs[operationName].forEach((f) => deserialize(f)(s));
+      };
     },
   };
 }
-
-const operations = schema.properties;
-const operationNames = Object.keys(operations) as OperationNames[];
 
 type PyApi = {
   [K in OperationNames]: {
@@ -70,7 +98,6 @@ const deserialize =
   <T>(fn: (response: T) => void) =>
   (str: string) => {
     try {
-      console.debug("Received data: ", str);
       fn(JSON.parse(str) as T);
     } catch (e) {
       alert(`Error parsing JSON: ${e}`);

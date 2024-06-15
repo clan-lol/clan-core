@@ -38,8 +38,10 @@ def dataclass_to_dict(obj: Any) -> Any:
         return [dataclass_to_dict(item) for item in obj]
     elif isinstance(obj, dict):
         return {k: dataclass_to_dict(v) for k, v in obj.items()}
-    else:
+    elif isinstance(obj, Path):
         return str(obj)
+    else:
+        return obj
 
 
 # Implement the abstract open_file function
@@ -265,6 +267,7 @@ class WebView:
                 result = handler_fn()
             else:
                 reconciled_arguments = {}
+                op_key = data.pop("op_key", None)
                 for k, v in data.items():
                     # Some functions expect to be called with dataclass instances
                     # But the js api returns dictionaries.
@@ -276,8 +279,13 @@ class WebView:
                     else:
                         reconciled_arguments[k] = v
 
-                result = handler_fn(**reconciled_arguments)
-            serialized = json.dumps(dataclass_to_dict(result))
+                r = handler_fn(**reconciled_arguments)
+                # Parse the result to a serializable dictionary
+                # Echo back the "op_key" to the js api
+                result = dataclass_to_dict(r)
+                result["op_key"] = op_key
+
+            serialized = json.dumps(result)
 
             # Use idle_add to queue the response call to js on the main GTK thread
             GLib.idle_add(self.return_data_to_js, method_name, serialized)
