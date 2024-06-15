@@ -14,7 +14,6 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   );
 }
 
-console.log(import.meta.env);
 if (import.meta.env.DEV) {
   console.log("Development mode");
   // Load the debugger in development mode
@@ -27,7 +26,7 @@ if (import.meta.env.DEV) {
           console.debug("Python API call", { method, data });
           setTimeout(() => {
             const mock = getFakeResponse(method, data);
-            console.log("mock", { mock });
+            console.log("Returning mock-data: ", { mock });
 
             window.clan[method](JSON.stringify(mock));
           }, 200);
