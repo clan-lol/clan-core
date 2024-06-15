@@ -67,10 +67,13 @@ Examples:
     generate_hw_parser = subparser.add_parser(
         "hw-generate",
         help="Generate hardware specifics for a machine",
+        description="""
+Generates hardware specifics for a machine. Such as the host platform, available kernel modules, etc.
+
+The target must be a Linux based system reachable via SSH.
+        """,
         epilog=(
             """
-This subcommand generates hardware specifics for a machine. Such as the host platform, available kernel modules, etc.
-
 Examples:
 
   $ clan machines hw-generate [MACHINE] [TARGET_HOST]
@@ -98,9 +101,9 @@ This subcommand shows the details of a machine managed by this clan like icon, d
         "install",
         help="Install a machine",
         description="""
-        Install a configured machine over the network.
-        The target must be a Linux based system reachable via SSH.
-        Installing a machine means overwriting the target's disk.
+Install a configured machine over the network.
+The target must be a Linux based system reachable via SSH.
+Installing a machine means overwriting the target's disk.
         """,
         epilog=(
             """
