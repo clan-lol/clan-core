@@ -32,7 +32,6 @@ export const MachineListItem = (props: MachineListItemProps) => {
   pyApi.show_machine.dispatch({
     op_key: name,
     machine_name: name,
-    debug: false,
     flake_url: currClanURI(),
   });
 

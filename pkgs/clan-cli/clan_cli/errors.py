@@ -58,9 +58,9 @@ class ClanError(Exception):
         self.location = location or "Unknown location"
         self.msg = msg or ""
         if self.description:
-            exception_msg = f"{self.location}: {self.msg} - {self.description}"
+            exception_msg = f"{self.location}: \n{self.msg} - {self.description}"
         else:
-            exception_msg = f"{self.location}: {self.msg}"
+            exception_msg = f"{self.location}: \n{self.msg}"
         super().__init__(exception_msg)
 
 
