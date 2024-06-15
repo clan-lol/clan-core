@@ -6,6 +6,7 @@ import {
   createEffect,
 } from "solid-js";
 import { OperationResponse, pyApi } from "./api";
+import { currClanURI } from "./App";
 
 export const makeMachineContext = () => {
   const [machines, setMachines] =
@@ -27,7 +28,10 @@ export const makeMachineContext = () => {
       getMachines: () => {
         // When the gtk function sends its data the loading state will be set to false
         setLoading(true);
-        pyApi.list_machines.dispatch({ debug: true, flake_url: "." });
+        pyApi.list_machines.dispatch({
+          debug: true,
+          flake_url: currClanURI(),
+        });
       },
     },
   ] as const;
