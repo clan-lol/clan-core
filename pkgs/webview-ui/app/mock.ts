@@ -11,15 +11,17 @@ faker.option({
 
 const getFakeResponse = (method: OperationNames, data: any) => {
   const fakeData = faker.generate(schema.properties[method].properties.return);
-
+  const { op_key } = data;
   if (method === "open_file") {
     return {
       status: "success",
       data: "/path/to/clan",
+      op_key,
     };
   }
 
-  return fakeData;
+  // @ts-expect-error: fakeData is guaranteed to always be some object
+  return { ...fakeData, op_key };
 };
 
 export { getFakeResponse };
