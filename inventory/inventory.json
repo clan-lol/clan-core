@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "name": "My clan",
+    "description": "My clan description",
+    "icon": "assets/clan-icon.png"
+  },
+  "services": {
+    "service_ref": {
+      "meta": {
+        "name": "backup"
+      },
+      "autoIncludeMachines": true,
+      "module": "core"
+    }
+  },
+  "machines": {
+    "jon_machine": {
+      "name": "jon_machine",
+      "description": "Jon's machine",
+      "icon": "assets/icon.png",
+      "system": "x86_64-linux"
+    }
+  },
+  "users": {
+    "mic": {
+      "autoInclude": false,
+      "schemas": ["ssh-user"],
+      "config": {
+        "sshKey": "...",
+        "username": "mic92"
+      }
+    }
+  }
+}

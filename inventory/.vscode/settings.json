@@ -1,0 +1,6 @@
+{
+    "cue.toolsPath": "/nix/store/x9471mp522cdi4c9gc8dchvyx6v01b3f-cue-0.8.2/bin/cue",
+    "[cue]": {
+        "editor.formatOnSave": false
+    }
+}
