@@ -1,21 +1,30 @@
 package services
 
 #service: services: [string]: {
-    autoIncludeMachines: bool,
+    // Required meta fields
     meta: {
         name: string,
+        icon?: string
+        description?: string,
     },
-    // TODO: this should be the list of avilable modules
+    // Required module specifies the behavior of the service.
     module: string,
-    machineConfig: {
-        [string]: {
-            config: {
-                defaultUser?: string
-            }
-        }
-    },
-    globalConfig: {
-        // Should be one of the avilable users
-        defaultUser?: string,
+
+    // We moved the machine sepcific config to "machines".
+    // It may be moved back depending on what makes more sense in the future.
+    // machineConfig: {
+    //     [string]: {
+    //         roles: string[],
+    //         config: {
+    //             defaultUser?: string
+    //         }
+    //     }
+    // },
+
+    // Configuration for the service
+    config: {
+        // Schema depends on the module.
+        // It declares the interface how the service can be configured.
+        ...
     }
 }
