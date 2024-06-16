@@ -1,6 +1,7 @@
 import {
   For,
   Match,
+  Show,
   Switch,
   createEffect,
   createSignal,
@@ -17,6 +18,11 @@ type FilesModel = Extract<
   { status: "success" }
 >["data"]["files"];
 
+type ServiceModel = Extract<
+  OperationResponse<"show_mdns">,
+  { status: "success" }
+>["data"]["services"];
+
 export const MachineListView: Component = () => {
   const [{ machines, loading }, { getMachines }] = useMachineContext();
 
@@ -25,6 +31,13 @@ export const MachineListView: Component = () => {
     const { status } = r;
     if (status === "error") return console.error(r.errors);
     setFiles(r.data.files);
+  });
+
+  const [services, setServices] = createSignal<ServiceModel>();
+  pyApi.show_mdns.receive((r) => {
+    const { status } = r;
+    if (status === "error") return console.error(r.errors);
+    setServices(r.data.services);
   });
 
   createEffect(() => {
@@ -72,11 +85,66 @@ export const MachineListView: Component = () => {
           <span class="material-icons ">folder_open</span>
         </button>
       </div>
+      <div class="tooltip" data-tip="Search install targets">
+        <button
+          class="btn btn-ghost"
+          onClick={() => pyApi.show_mdns.dispatch({})}
+        >
+          <span class="material-icons ">search</span>
+        </button>
+      </div>
       <div class="tooltip" data-tip="Refresh">
         <button class="btn btn-ghost" onClick={() => getMachines()}>
           <span class="material-icons ">refresh</span>
         </button>
       </div>
+      <Show when={services()}>
+        {(services) => (
+          <For each={Object.values(services())}>
+            {(service) => (
+              <div class="rounded-lg bg-white p-5 shadow-lg">
+                <h2 class="mb-2 text-xl font-semibold">{service.name}</h2>
+                <p>
+                  <span class="font-bold">Interface:</span>
+                  {service.interface}
+                </p>
+                <p>
+                  <span class="font-bold">Protocol:</span>
+                  {service.protocol}
+                </p>
+                <p>
+                  <span class="font-bold">Name</span>
+                  {service.name}
+                </p>
+                <p>
+                  <span class="font-bold">Type:</span>
+                  {service.type_}
+                </p>
+                <p>
+                  <span class="font-bold">Domain:</span>
+                  {service.domain}
+                </p>
+                <p>
+                  <span class="font-bold">Host:</span>
+                  {service.host}
+                </p>
+                <p>
+                  <span class="font-bold">IP:</span>
+                  {service.ip}
+                </p>
+                <p>
+                  <span class="font-bold">Port:</span>
+                  {service.port}
+                </p>
+                <p>
+                  <span class="font-bold">TXT:</span>
+                  {service.txt}
+                </p>
+              </div>
+            )}
+          </For>
+        )}
+      </Show>
       <Switch>
         <Match when={loading()}>
           {/* Loading skeleton */}

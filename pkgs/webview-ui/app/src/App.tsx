@@ -8,7 +8,7 @@ import { Toaster } from "solid-toast";
 const [route, setRoute] = createSignal<Route>("machines");
 
 const [currClanURI, setCurrClanURI] = createSignal<string>(
-  "/home/johannes/1_clans/myclan"
+  "/home/johannes/git/testing/xd"
 );
 
 export { currClanURI, setCurrClanURI };

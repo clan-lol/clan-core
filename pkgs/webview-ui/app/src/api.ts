@@ -100,6 +100,7 @@ const deserialize =
     try {
       fn(JSON.parse(str) as T);
     } catch (e) {
+      console.error(str);
       alert(`Error parsing JSON: ${e}`);
     }
   };

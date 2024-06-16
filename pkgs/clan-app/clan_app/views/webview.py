@@ -25,6 +25,10 @@ site_index: Path = (
 log = logging.getLogger(__name__)
 
 
+def sanitize_string(s: str) -> str:
+    return s.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def dataclass_to_dict(obj: Any) -> Any:
     """
     Utility function to convert dataclasses to dictionaries
@@ -33,13 +37,18 @@ def dataclass_to_dict(obj: Any) -> Any:
     It does NOT convert member functions.
     """
     if dataclasses.is_dataclass(obj):
-        return {k: dataclass_to_dict(v) for k, v in dataclasses.asdict(obj).items()}
+        return {
+            sanitize_string(k): dataclass_to_dict(v)
+            for k, v in dataclasses.asdict(obj).items()
+        }
     elif isinstance(obj, list | tuple):
         return [dataclass_to_dict(item) for item in obj]
     elif isinstance(obj, dict):
-        return {k: dataclass_to_dict(v) for k, v in obj.items()}
+        return {sanitize_string(k): dataclass_to_dict(v) for k, v in obj.items()}
     elif isinstance(obj, Path):
         return str(obj)
+    elif isinstance(obj, str):
+        return sanitize_string(obj)
     else:
         return obj
 
