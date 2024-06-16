@@ -21,6 +21,72 @@ class HardwareInfo:
 
 
 @API.register
+def show_machine_hardware_info(
+    clan_dir: str | Path, machine_name: str
+) -> HardwareInfo | None:
+    """
+    Show hardware information for a machine returns None if none exist.
+    """
+
+    hw_file = Path(f"{clan_dir}/machines/{machine_name}/hardware-configuration.nix")
+
+    is_template = hw_file.exists() and "throw" in hw_file.read_text()
+    if not hw_file.exists() or is_template:
+        return None
+
+    system = show_machine_hardware_platform(clan_dir, machine_name)
+    return HardwareInfo(system)
+
+
+@API.register
+def show_machine_deployment_target(
+    clan_dir: str | Path, machine_name: str
+) -> str | None:
+    """
+    Show hardware information for a machine returns None if none exist.
+    """
+    config = nix_config()
+    system = config["system"]
+    cmd = nix_eval(
+        [
+            f"{clan_dir}#clanInternals.machines.{system}.{machine_name}",
+            "--apply",
+            "machine: { inherit (machine.config.clan.networking) targetHost; }",
+            "--json",
+        ]
+    )
+    proc = run_no_stdout(cmd)
+    res = proc.stdout.strip()
+
+    target_host = json.loads(res)
+    return target_host.get("targetHost", None)
+
+
+@API.register
+def show_machine_hardware_platform(
+    clan_dir: str | Path, machine_name: str
+) -> str | None:
+    """
+    Show hardware information for a machine returns None if none exist.
+    """
+    config = nix_config()
+    system = config["system"]
+    cmd = nix_eval(
+        [
+            f"{clan_dir}#clanInternals.machines.{system}.{machine_name}",
+            "--apply",
+            "machine: { inherit (machine.config.nixpkgs.hostPlatform) system; }",
+            "--json",
+        ]
+    )
+    proc = run_no_stdout(cmd)
+    res = proc.stdout.strip()
+
+    host_platform = json.loads(res)
+    return host_platform.get("system", None)
+
+
+@API.register
 def generate_machine_hardware_info(
     clan_dir: str | Path,
     machine_name: str,
@@ -63,9 +129,7 @@ def generate_machine_hardware_info(
     hw_file.parent.mkdir(parents=True, exist_ok=True)
 
     # Check if the hardware-configuration.nix file is a template
-    is_template = False
-    if hw_file.exists():
-        is_template = "throw" in hw_file.read_text()
+    is_template = hw_file.exists() and "throw" in hw_file.read_text()
 
     if hw_file.exists() and not force and not is_template:
         raise ClanError(
@@ -78,25 +142,8 @@ def generate_machine_hardware_info(
         f.write(out.stdout)
         print(f"Successfully generated: {hw_file}")
 
-    # TODO: This could be its own API function?
-    config = nix_config()
-    system = config["system"]
-    cmd = nix_eval(
-        [
-            f"{clan_dir}#clanInternals.machines.{system}.{machine_name}",
-            "--apply",
-            "machine: { inherit (machine.config.nixpkgs.hostPlatform) system; }",
-            "--json",
-        ]
-    )
-    proc = run_no_stdout(cmd)
-    res = proc.stdout.strip()
-
-    host_platform = json.loads(res)
-
-    return HardwareInfo(
-        system=host_platform.get("system", None),
-    )
+    system = show_machine_hardware_platform(clan_dir, machine_name)
+    return HardwareInfo(system)
 
 
 def hw_generate_command(args: argparse.Namespace) -> None:
