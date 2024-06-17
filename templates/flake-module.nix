@@ -31,5 +31,9 @@
         clan-core = self;
       };
     in
-    evaled.nixosConfigurations.foo.config.system.build.vm;
+    {
+      type = "derivation";
+      name = "minimal-clan-flake-check";
+      inherit (evaled.nixosConfigurations.foo.config.system.build.vm) drvPath outPath;
+    };
 }
