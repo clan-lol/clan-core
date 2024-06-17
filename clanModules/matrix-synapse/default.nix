@@ -147,6 +147,7 @@ in
       ENCODING = "UTF8";
       OWNER = "matrix-synapse";
     };
+    clan.postgresql.databases.matrix-synapse.restore.stopOnRestore = [ "matrix-synapse" ];
 
     clanCore.facts.services =
       {
