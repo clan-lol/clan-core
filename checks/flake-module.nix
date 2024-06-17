@@ -23,7 +23,7 @@
                 options =
                   (pkgs.nixos {
                     imports = [ self.nixosModules.clanCore ];
-                    clanCore.clanDir = ./.;
+                    clan.core.clanDir = ./.;
                   }).options;
                 warningsAreErrors = false;
               };

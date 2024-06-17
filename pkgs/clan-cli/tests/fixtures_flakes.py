@@ -58,9 +58,11 @@ def generate_flake(
     Example:
         machine_configs = dict(
             my_machine=dict(
-                clanCore=dict(
-                    backups=dict(
-                        ...
+                clan=dict(
+                    core=dict(
+                        backups=dict(
+                            ...
+                        )
                     )
                 )
             )

@@ -50,7 +50,7 @@
 
       machine.succeed("""
       set -x
-      ${nodes.machine.clanCore.state.postgresql-test.postRestoreCommand}
+      ${nodes.machine.clan.core.state.postgresql-test.postRestoreCommand}
       """)
       machine.succeed("runuser -u postgres -- /run/current-system/sw/bin/psql -l >&2")
       machine.succeed("runuser -u postgres -- /run/current-system/sw/bin/psql -d test -c '\dt' >&2")

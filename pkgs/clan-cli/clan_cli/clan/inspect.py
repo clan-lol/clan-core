@@ -56,7 +56,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     # Get the Clan name
     cmd = nix_eval(
         [
-            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clanCore.clanName'
+            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.clanName'
         ]
     )
     res = run_cmd(cmd)
@@ -65,7 +65,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     # Get the clan icon path
     cmd = nix_eval(
         [
-            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clanCore.clanIcon'
+            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.clanIcon'
         ]
     )
     res = run_cmd(cmd)
@@ -78,7 +78,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
 
         cmd = nix_build(
             [
-                f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clanCore.clanIcon'
+                f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.clanIcon'
             ],
             machine_gcroot(flake_url=str(flake_url)) / "clanIcon",
         )

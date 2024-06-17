@@ -95,7 +95,7 @@ def complete_services_for_machine(
                 run(
                     nix_eval(
                         flags=[
-                            f"{flake}#nixosConfigurations.{machines[0]}.config.clanCore.facts.services",
+                            f"{flake}#nixosConfigurations.{machines[0]}.config.clan.core.facts.services",
                             "--apply",
                             "builtins.attrNames",
                         ],
@@ -137,7 +137,7 @@ def complete_backup_providers_for_machine(
                 run(
                     nix_eval(
                         flags=[
-                            f"{flake}#nixosConfigurations.{machine}.config.clanCore.backups.providers",
+                            f"{flake}#nixosConfigurations.{machine}.config.clan.core.backups.providers",
                             "--apply",
                             "builtins.attrNames",
                         ],

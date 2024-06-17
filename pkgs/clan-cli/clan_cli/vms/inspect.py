@@ -22,7 +22,7 @@ class VmConfig:
 
 
 def inspect_vm(machine: Machine) -> VmConfig:
-    data = json.loads(machine.eval_nix("config.clanCore.vm.inspect"))
+    data = json.loads(machine.eval_nix("config.clan.core.vm.inspect"))
     return VmConfig(flake_url=str(machine.flake), **data)
 
 

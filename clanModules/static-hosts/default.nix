@@ -4,7 +4,7 @@
     excludeHosts = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default =
-        if config.clan.static-hosts.topLevelDomain != "" then [ ] else [ config.clanCore.machineName ];
+        if config.clan.static-hosts.topLevelDomain != "" then [ ] else [ config.clan.core.machineName ];
       description = "Hosts that should be excluded";
     };
     topLevelDomain = lib.mkOption {
@@ -16,7 +16,7 @@
 
   config.networking.hosts =
     let
-      clanDir = config.clanCore.clanDir;
+      clanDir = config.clan.core.clanDir;
       machineDir = clanDir + "/machines/";
       zerotierIpMachinePath = machines: machineDir + machines + "/facts/zerotier-ip";
       machinesFileSet = builtins.readDir machineDir;

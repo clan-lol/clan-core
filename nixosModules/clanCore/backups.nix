@@ -1,7 +1,7 @@
 { lib, ... }:
 {
   imports = [ ./state.nix ];
-  options.clanCore.backups = {
+  options.clan.core.backups = {
     providers = lib.mkOption {
       type = lib.types.attrsOf (
         lib.types.submodule (
