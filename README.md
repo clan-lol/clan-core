@@ -40,6 +40,6 @@ Clan is more than a tool; it's a movement towards a better digital future. By co
 
 Connect with us and the Clan community for support and discussion:
 
-- [Matrix channel](https://matrix.to/#/#clan:lassul.us) for live discussions.
+- [Matrix channel](https://matrix.to/#/#clan:clan.lol) for live discussions.
 - IRC bridges (coming soon) for real-time chat support.
 

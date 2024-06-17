@@ -190,5 +190,5 @@ We hope these experiments inspire the community, encourage contributions and fur
 - [Comments on NixOS Discourse](https://discourse.nixos.org/t/introducing-the-nixos-to-json-schema-converter/45948)
 - [Source Code of the JSON Schema Library](https://git.clan.lol/clan/clan-core/src/branch/main/lib/jsonschema)
 - [Our Issue Tracker](https://git.clan.lol/clan/clan-core/issues)
-- [Our Matrix Channel](https://matrix.to/#/#clan:lassul.us)
+- [Our Matrix Channel](https://matrix.to/#/#clan:clan.lol)
 - [react-jsonschema-form Playground](https://rjsf-team.github.io/react-jsonschema-form/)
