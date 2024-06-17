@@ -12,14 +12,14 @@
           self.clanModules.syncthing
           self.nixosModules.clanCore
           {
-            clanCore.machineName = "introducer";
-            clanCore.clanDir = ./.;
+            clan.core.machineName = "introducer";
+            clan.core.clanDir = ./.;
             environment.etc = {
               "syncthing.pam".source = ./introducer/introducer_test_cert;
               "syncthing.key".source = ./introducer/introducer_test_key;
               "syncthing.api".source = ./introducer/introducer_test_api;
             };
-            clanCore.facts.services.syncthing.secret."syncthing.api".path = "/etc/syncthing.api";
+            clan.core.facts.services.syncthing.secret."syncthing.api".path = "/etc/syncthing.api";
             services.syncthing.cert = "/etc/syncthing.pam";
             services.syncthing.key = "/etc/syncthing.key";
             # Doesn't test zerotier!
@@ -53,8 +53,8 @@
           self.clanModules.syncthing
           self.nixosModules.clanCore
           {
-            clanCore.machineName = "peer1";
-            clanCore.clanDir = ./.;
+            clan.core.machineName = "peer1";
+            clan.core.clanDir = ./.;
             clan.syncthing.introducer = lib.strings.removeSuffix "\n" (
               builtins.readFile ./introducer/introducer_device_id
             );
@@ -75,8 +75,8 @@
           self.clanModules.syncthing
           self.nixosModules.clanCore
           {
-            clanCore.machineName = "peer2";
-            clanCore.clanDir = ./.;
+            clan.core.machineName = "peer2";
+            clan.core.clanDir = ./.;
             clan.syncthing.introducer = lib.strings.removeSuffix "\n" (
               builtins.readFile ./introducer/introducer_device_id
             );

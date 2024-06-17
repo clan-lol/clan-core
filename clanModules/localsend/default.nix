@@ -18,7 +18,7 @@
   };
 
   config = lib.mkIf config.clan.localsend.enable {
-    clanCore.state.localsend.folders = [
+    clan.core.state.localsend.folders = [
       "/var/localsend"
       config.clan.localsend.defaultLocation
     ];

@@ -47,6 +47,8 @@ def generate_flake(
     substitutions: dict[str, str] = {
         "__CHANGE_ME__": "_test_vm_persistence",
         "git+https://git.clan.lol/clan/clan-core": "path://" + str(CLAN_CORE),
+        "https://git.clan.lol/clan/clan-core/archive/main.tar.gz": "path://"
+        + str(CLAN_CORE),
     },
     # define the machines directly including their config
     machine_configs: dict[str, dict] = {},
@@ -58,9 +60,11 @@ def generate_flake(
     Example:
         machine_configs = dict(
             my_machine=dict(
-                clanCore=dict(
-                    backups=dict(
-                        ...
+                clan=dict(
+                    core=dict(
+                        backups=dict(
+                            ...
+                        )
                     )
                 )
             )

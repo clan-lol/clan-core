@@ -131,7 +131,7 @@ in
     systemd.tmpfiles.settings."01-matrix" = {
       "/run/synapse-registration-shared-secret" = {
         C.argument =
-          config.clanCore.facts.services.matrix-synapse.secret.synapse-registration_shared_secret.path;
+          config.clan.core.facts.services.matrix-synapse.secret.synapse-registration_shared_secret.path;
         z = {
           mode = "0400";
           user = "matrix-synapse";
@@ -149,7 +149,7 @@ in
     };
     clan.postgresql.databases.matrix-synapse.restore.stopOnRestore = [ "matrix-synapse" ];
 
-    clanCore.facts.services =
+    clan.core.facts.services =
       {
         "matrix-synapse" = {
           secret."synapse-registration_shared_secret" = { };

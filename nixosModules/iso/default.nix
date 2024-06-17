@@ -19,7 +19,9 @@ let
   };
 
   # Flatten the list of state folders into a single list
-  stateFolders = lib.flatten (lib.mapAttrsToList (_item: attrs: attrs.folders) config.clanCore.state);
+  stateFolders = lib.flatten (
+    lib.mapAttrsToList (_item: attrs: attrs.folders) config.clan.core.state
+  );
 
   # A module setting up bind mounts for all state folders
   stateMounts = {

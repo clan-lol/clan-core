@@ -20,7 +20,7 @@ class Backup:
 
 def list_provider(machine: Machine, provider: str) -> list[Backup]:
     results = []
-    backup_metadata = json.loads(machine.eval_nix("config.clanCore.backups"))
+    backup_metadata = json.loads(machine.eval_nix("config.clan.core.backups"))
     proc = machine.target_host.run(
         [backup_metadata["providers"][provider]["list"]],
         stdout=subprocess.PIPE,
@@ -40,7 +40,7 @@ def list_provider(machine: Machine, provider: str) -> list[Backup]:
 
 
 def list_backups(machine: Machine, provider: str | None = None) -> list[Backup]:
-    backup_metadata = json.loads(machine.eval_nix("config.clanCore.backups"))
+    backup_metadata = json.loads(machine.eval_nix("config.clan.core.backups"))
     results = []
     if provider is None:
         for _provider in backup_metadata["providers"]:

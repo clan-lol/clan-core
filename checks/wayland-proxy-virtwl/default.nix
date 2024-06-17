@@ -14,8 +14,8 @@ import ../lib/test-base.nix (
         imports = [
           self.nixosModules.clanCore
           {
-            clanCore.machineName = "machine";
-            clanCore.clanDir = ./.;
+            clan.core.machineName = "machine";
+            clan.core.clanDir = ./.;
           }
         ];
         services.wayland-proxy-virtwl.enable = true;

@@ -50,7 +50,7 @@ def verify_machine_config(
                                 # potentially the config might affect submodule options,
                                 #   therefore we need to import it
                                 config
-                                {{clanCore.clanDir = {flake};}}
+                                {{clan.core.clanDir = {flake};}}
                             ]
                             # add all clan modules specified via clanImports
                             ++ (map (name: clan-core.clanModules.${{name}}) config.clanImports or []);
