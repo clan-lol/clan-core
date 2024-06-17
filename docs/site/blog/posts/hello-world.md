@@ -61,7 +61,7 @@ Clan is for anyone and everyone who believes in the power of open source technol
 
 Ready to control your digital world? Clan is more than a tool—it's a movement. Secure your data, manage your systems easily, or connect with others how you like. Start with Clan for a better digital future.
 
-Connect with us on our [Matrix channel at clan.lol](https://matrix.to/#/#clan:lassul.us) or through our IRC bridges (coming soon).
+Connect with us on our [Matrix channel at clan.lol](https://matrix.to/#/#clan:clan.lol) or through our IRC bridges (coming soon).
 
 Want to see the code? Check it out [on our Gitea](https://git.clan.lol/clan/clan-core) or [on GitHub](https://github.com/clan-lol/clan-core).
 
