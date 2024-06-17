@@ -13,7 +13,7 @@ let
 
   clanCoreNixosModules = [
     clanCore
-    { clanCore.clanDir = ./.; }
+    { clan.core.clanDir = ./.; }
   ] ++ allNixosModules;
 
   # TODO: optimally we would not have to evaluate all nixos modules for every page
@@ -25,6 +25,8 @@ let
   #   improves eval performance slightly (10%)
   getOptions = modules: (clanCoreNixos.extendModules { inherit modules; }).options;
 
+  getOptionsWithoutCore = modules: builtins.removeAttrs (getOptions modules) [ "core" ];
+
   evalDocs =
     options:
     pkgs.nixosOptionsDoc {
@@ -34,7 +36,7 @@ let
 
   # clanModules docs
   clanModulesDocs = builtins.mapAttrs (
-    name: module: (evalDocs ((getOptions [ module ]).clan.${name} or { })).optionsJSON
+    name: module: (evalDocs ((getOptionsWithoutCore [ module ]).clan.${name} or { })).optionsJSON
   ) clanModules;
 
   clanModulesReadmes = builtins.mapAttrs (
@@ -42,7 +44,7 @@ let
   ) clanModules;
 
   # clanCore docs
-  clanCoreDocs = (evalDocs (getOptions [ ]).clanCore).optionsJSON;
+  clanCoreDocs = (evalDocs (getOptions [ ]).clan.core).optionsJSON;
 in
 {
   inherit clanModulesReadmes;

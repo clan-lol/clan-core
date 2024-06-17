@@ -7,7 +7,7 @@
 let
   cfg = config.clan.localbackup;
   uniqueFolders = lib.unique (
-    lib.flatten (lib.mapAttrsToList (_name: state: state.folders) config.clanCore.state)
+    lib.flatten (lib.mapAttrsToList (_name: state: state.folders) config.clan.core.state)
   );
   rsnapshotConfig = target: ''
     config_version	1.2
@@ -143,7 +143,7 @@ in
                     preCommandErrors["${state.name}"]=1
                   fi
                 ''
-              ) (builtins.attrValues config.clanCore.state)}
+              ) (builtins.attrValues config.clan.core.state)}
 
               rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" sync
               rsnapshot -c "${pkgs.writeText "rsnapshot.conf" (rsnapshotConfig target)}" snapshot
@@ -233,7 +233,7 @@ in
           ''
         ) cfg.targets;
 
-      clanCore.backups.providers.localbackup = {
+      clan.core.backups.providers.localbackup = {
         # TODO list needs to run locally or on the remote machine
         list = "localbackup-list";
         create = "localbackup-create";

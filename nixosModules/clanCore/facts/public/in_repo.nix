@@ -1,6 +1,6 @@
 { config, lib, ... }:
 {
-  config = lib.mkIf (config.clanCore.facts.publicStore == "in_repo") {
-    clanCore.facts.publicModule = "clan_cli.facts.public_modules.in_repo";
+  config = lib.mkIf (config.clan.core.facts.publicStore == "in_repo") {
+    clan.core.facts.publicModule = "clan_cli.facts.public_modules.in_repo";
   };
 }

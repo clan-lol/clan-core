@@ -114,7 +114,7 @@ def options_for_machine(
     if show_trace:
         flags.append("--show-trace")
     flags.append(
-        f"{clan_dir}#nixosConfigurations.{machine_name}.config.clanCore.optionsNix"
+        f"{clan_dir}#nixosConfigurations.{machine_name}.config.clan.core.optionsNix"
     )
     cmd = nix_eval(flags=flags)
     proc = run(

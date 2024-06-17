@@ -15,8 +15,8 @@
           self.clanModules.matrix-synapse
           self.nixosModules.clanCore
           {
-            clanCore.machineName = "machine";
-            clanCore.clanDir = ./.;
+            clan.core.machineName = "machine";
+            clan.core.clanDir = ./.;
 
             services.nginx.virtualHosts."matrix.clan.test" = {
               enableACME = lib.mkForce false;
@@ -26,7 +26,7 @@
             clan.matrix-synapse.users.admin.admin = true;
             clan.matrix-synapse.users.someuser = { };
 
-            clanCore.facts.secretStore = "vm";
+            clan.core.facts.secretStore = "vm";
 
             # because we use systemd-tmpfiles to copy the secrets, we need to a seperate systemd-tmpfiles call to provison them.
             boot.postBootCommands = "${config.systemd.package}/bin/systemd-tmpfiles --create /etc/tmpfiles.d/00-vmsecrets.conf";

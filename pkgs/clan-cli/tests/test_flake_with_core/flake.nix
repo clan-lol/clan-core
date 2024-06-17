@@ -18,8 +18,8 @@
               clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = lib.version;
               sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
-              clanCore.secretsUploadDirectory = "__CLAN_SOPS_KEY_DIR__";
-              clanCore.sops.defaultGroups = [ "admins" ];
+              clan.core.secretsUploadDirectory = "__CLAN_SOPS_KEY_DIR__";
+              clan.core.sops.defaultGroups = [ "admins" ];
               clan.virtualisation.graphics = false;
 
               clan.networking.zerotier.controller.enable = true;
@@ -41,7 +41,7 @@
               clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = lib.version;
               sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
-              clanCore.secretsUploadDirectory = "__CLAN_SOPS_KEY_DIR__";
+              clan.core.secretsUploadDirectory = "__CLAN_SOPS_KEY_DIR__";
               clan.networking.zerotier.networkId = "82b44b162ec6c013";
             };
         };

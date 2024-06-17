@@ -17,7 +17,7 @@ let
           preCommandErrors["${state.name}"]=1
         fi
       ''
-    ) (lib.attrValues config.clanCore.state)}
+    ) (lib.attrValues config.clan.core.state)}
 
     if [[ ''${#preCommandErrors[@]} -gt 0 ]]; then
       echo "PreBackupCommand failed for the following services:"
@@ -47,9 +47,9 @@ in
             rsh = lib.mkOption {
               type = lib.types.str;
               default = "ssh -i ${
-                config.clanCore.facts.services.borgbackup.secret."borgbackup.ssh".path
+                config.clan.core.facts.services.borgbackup.secret."borgbackup.ssh".path
               } -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=Yes";
-              defaultText = "ssh -i \${config.clanCore.facts.services.borgbackup.secret.\"borgbackup.ssh\".path} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
+              defaultText = "ssh -i \${config.clan.core.facts.services.borgbackup.secret.\"borgbackup.ssh\".path} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null";
               description = "the rsh to use for the backup";
             };
           };
@@ -83,7 +83,7 @@ in
 
     services.borgbackup.jobs = lib.mapAttrs (_: dest: {
       paths = lib.unique (
-        lib.flatten (map (state: state.folders) (lib.attrValues config.clanCore.state))
+        lib.flatten (map (state: state.folders) (lib.attrValues config.clan.core.state))
       );
       exclude = [ "*.pyc" ];
       repo = dest.repo;
@@ -94,7 +94,7 @@ in
 
       encryption = {
         mode = "repokey";
-        passCommand = "cat ${config.clanCore.facts.services.borgbackup.secret."borgbackup.repokey".path}";
+        passCommand = "cat ${config.clan.core.facts.services.borgbackup.secret."borgbackup.repokey".path}";
       };
 
       prune.keep = {
@@ -105,7 +105,7 @@ in
       };
     }) cfg.destinations;
 
-    clanCore.facts.services.borgbackup = {
+    clan.core.facts.services.borgbackup = {
       public."borgbackup.ssh.pub" = { };
       secret."borgbackup.ssh" = { };
       secret."borgbackup.repokey" = { };
@@ -152,7 +152,7 @@ in
       '')
     ];
 
-    clanCore.backups.providers.borgbackup = {
+    clan.core.backups.providers.borgbackup = {
       list = "borgbackup-list";
       create = "borgbackup-create";
       restore = "borgbackup-restore";

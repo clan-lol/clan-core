@@ -29,7 +29,7 @@ def show_machine(flake_url: str | Path, machine_name: str) -> MachineInfo:
         [
             f"{flake_url}#clanInternals.machines.{system}.{machine_name}",
             "--apply",
-            "machine: { inherit (machine.config.clanCore) machineDescription machineIcon machineName; }",
+            "machine: { inherit (machine.config.clan.core) machineDescription machineIcon machineName; }",
             "--json",
         ]
     )

@@ -1,6 +1,6 @@
 { lib, pkgs, ... }:
 {
-  options.clanCore = {
+  options.clan.core = {
     clanName = lib.mkOption {
       type = lib.types.str;
       description = ''

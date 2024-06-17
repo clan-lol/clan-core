@@ -101,13 +101,13 @@ let
           (
             {
               # Settings
-              clanCore.clanDir = directory;
+              clan.core.clanDir = directory;
               # Inherited from clan wide settings
-              clanCore.clanName = meta.name or clanName;
-              clanCore.clanIcon = meta.icon or clanIcon;
+              clan.core.clanName = meta.name or clanName;
+              clan.core.clanIcon = meta.icon or clanIcon;
 
               # Machine specific settings
-              clanCore.machineName = name;
+              clan.core.machineName = name;
               networking.hostName = lib.mkDefault name;
               nixpkgs.hostPlatform = lib.mkDefault system;
 

@@ -5,7 +5,7 @@
   ...
 }:
 let
-  clanDir = config.clanCore.clanDir;
+  clanDir = config.clan.core.clanDir;
   machineDir = clanDir + "/machines/";
   syncthingPublicKeyPath = machines: machineDir + machines + "/facts/syncthing.pub";
   machinesFileSet = builtins.readDir machineDir;
@@ -47,7 +47,7 @@ in
   options.clan.syncthing-static-peers = {
     excludeMachines = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      example = [ config.clanCore.machineName ];
+      example = [ config.clan.core.machineName ];
       default = [ ];
       description = ''
         Machines that should not be added.
@@ -83,11 +83,11 @@ in
         configDir = "/var/lib/syncthing";
         group = "syncthing";
 
-        key = lib.mkDefault config.clanCore.facts.services.syncthing.secret."syncthing.key".path or null;
-        cert = lib.mkDefault config.clanCore.facts.services.syncthing.secret."syncthing.cert".path or null;
+        key = lib.mkDefault config.clan.core.facts.services.syncthing.secret."syncthing.key".path or null;
+        cert = lib.mkDefault config.clan.core.facts.services.syncthing.secret."syncthing.cert".path or null;
       };
 
-      clanCore.facts.services.syncthing = {
+      clan.core.facts.services.syncthing = {
         secret."syncthing.key" = { };
         secret."syncthing.cert" = { };
         public."syncthing.pub" = { };

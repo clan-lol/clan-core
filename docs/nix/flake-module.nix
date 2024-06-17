@@ -50,7 +50,7 @@
       };
 
       module-docs = pkgs.runCommand "rendered" { nativeBuildInputs = [ pkgs.python3 ]; } ''
-        export CLAN_CORE=${jsonDocs.clanCore}/share/doc/nixos/options.json 
+        export CLAN_CORE=${jsonDocs.clanCore}/share/doc/nixos/options.json
         # A file that contains the links to all clanModule docs
         export CLAN_MODULES=${clanModulesFileInfo}
         export CLAN_MODULES_READMES=${clanModulesReadmes}

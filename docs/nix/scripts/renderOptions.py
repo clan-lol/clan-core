@@ -137,7 +137,7 @@ To use this module, import it like this:
 """
 
 
-clan_core_descr = """ClanCore delivers all the essential features for every clan. 
+clan_core_descr = """ClanCore delivers all the essential features for every clan.
 It's always included in your setup, and you can customize your clan's behavior with the configuration [options](#module-options) provided below.
 
 """
@@ -163,7 +163,7 @@ def produce_clan_core_docs() -> None:
             outfile = f"{module_name}/index.md"
 
             # Create separate files for nested options
-            if len(option_name.split(".")) <= 2:
+            if len(option_name.split(".")) <= 3:
                 # i.e. clan-core.clanDir
                 output = core_outputs.get(
                     outfile,
@@ -174,7 +174,7 @@ def produce_clan_core_docs() -> None:
                 core_outputs[outfile] = output
             else:
                 # Clan sub-options
-                [_, sub] = option_name.split(".")[0:2]
+                [_, sub] = option_name.split(".")[1:3]
                 outfile = f"{module_name}/{sub}.md"
                 # Get the content or write the header
                 output = core_outputs.get(outfile, render_option_header(sub))

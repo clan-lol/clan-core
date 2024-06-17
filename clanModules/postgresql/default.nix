@@ -128,7 +128,7 @@ in
       ${lib.concatStringsSep "\n" databaseClauses}
     '';
 
-    clanCore.state = lib.mapAttrs' (
+    clan.core.state = lib.mapAttrs' (
       _: db: lib.nameValuePair "postgresql-${db.name}" (createDatatbaseState db)
     ) config.clan.postgresql.databases;
 

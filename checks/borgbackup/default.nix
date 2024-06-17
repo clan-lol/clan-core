@@ -16,9 +16,9 @@
             };
           }
           {
-            clanCore.machineName = "machine";
-            clanCore.clanDir = ./.;
-            clanCore.state.testState.folders = [ "/etc/state" ];
+            clan.core.machineName = "machine";
+            clan.core.clanDir = ./.;
+            clan.core.state.testState.folders = [ "/etc/state" ];
             environment.etc.state.text = "hello world";
             systemd.tmpfiles.settings."vmsecrets" = {
               "/etc/secrets/borgbackup.ssh" = {
@@ -36,7 +36,7 @@
                 };
               };
             };
-            clanCore.facts.secretStore = "vm";
+            clan.core.facts.secretStore = "vm";
 
             clan.borgbackup.destinations.test.repo = "borg@localhost:.";
           }

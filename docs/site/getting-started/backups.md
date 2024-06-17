@@ -98,7 +98,7 @@ Start by indicating where your backup data should be sent. Replace `hostname` wi
 Decide which folders you want to back up. For example, to backup your home and root directories:
 
 ```nix
-{ clanCore.state.userdata.folders = [ "/home" "/root" ]; }
+{ clan.core.state.userdata.folders = [ "/home" "/root" ]; }
 ```
 
 3. **Generate Backup Credentials:**
@@ -116,7 +116,7 @@ On the server where backups will be stored, enable the SSH daemon and set up a r
   services.borgbackup.repos.myhostname = {
     path = "/var/lib/borgbackup/myhostname";
     authorizedKeys = [
-      (builtins.readFile  (config.clanCore.clanDir + "/machines/myhostname/facts/borgbackup.ssh.pub"))
+      (builtins.readFile  (config.clan.core.clanDir + "/machines/myhostname/facts/borgbackup.ssh.pub"))
     ];
   };
 }

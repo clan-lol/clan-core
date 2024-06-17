@@ -22,9 +22,9 @@
   config = {
     users.mutableUsers = false;
     users.users.${config.clan.user-password.user}.hashedPasswordFile =
-      config.clanCore.facts.services.user-password.secret.user-password-hash.path;
-    sops.secrets."${config.clanCore.machineName}-user-password-hash".neededForUsers = true;
-    clanCore.facts.services.user-password = {
+      config.clan.core.facts.services.user-password.secret.user-password-hash.path;
+    sops.secrets."${config.clan.core.machineName}-user-password-hash".neededForUsers = true;
+    clan.core.facts.services.user-password = {
       secret.user-password = { };
       secret.user-password-hash = { };
       generator.prompt = (
