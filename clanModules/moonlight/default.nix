@@ -13,10 +13,10 @@ in
   systemd.tmpfiles.rules = [
     "d '/var/lib/moonlight' 0770 'user' 'users' - -"
     "C '/var/lib/moonlight/moonlight.cert' 0644 'user' 'users' - ${
-      config.clanCore.facts.services.moonlight.secret."moonlight.cert".path or ""
+      config.clan.core.facts.services.moonlight.secret."moonlight.cert".path or ""
     }"
     "C '/var/lib/moonlight/moonlight.key' 0644 'user' 'users' - ${
-      config.clanCore.facts.services.moonlight.secret."moonlight.key".path or ""
+      config.clan.core.facts.services.moonlight.secret."moonlight.key".path or ""
     }"
   ];
 
@@ -45,7 +45,7 @@ in
   systemd.user.services.moonlight-join = {
     description = "Join sunshine hosts";
     script = ''${ms-accept}/bin/moonlight-sunshine-accept moonlight join --port ${builtins.toString defaultPort} --cert '${
-      config.clanCore.facts.services.moonlight.public."moonlight.cert".value or ""
+      config.clan.core.facts.services.moonlight.public."moonlight.cert".value or ""
     }' --host fd2e:25da:6035:c98f:cd99:93e0:b9b8:9ca1'';
     serviceConfig = {
       Type = "oneshot";
@@ -68,7 +68,7 @@ in
     };
   };
 
-  clanCore.facts.services.moonlight = {
+  clan.core.facts.services.moonlight = {
     secret."moonlight.key" = { };
     secret."moonlight.cert" = { };
     public."moonlight.cert" = { };

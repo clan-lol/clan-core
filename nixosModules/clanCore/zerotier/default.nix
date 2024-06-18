@@ -6,7 +6,7 @@
 }:
 let
   cfg = config.clan.networking.zerotier;
-  facts = config.clanCore.facts.services.zerotier.public or { };
+  facts = config.clan.core.facts.services.zerotier.public or { };
   genMoonScript = pkgs.runCommand "genmoon" { nativeBuildInputs = [ pkgs.python3 ]; } ''
     install -Dm755 ${./genmoon.py} $out/bin/genmoon
     patchShebangs $out/bin/genmoon
@@ -23,8 +23,8 @@ in
     };
     name = lib.mkOption {
       type = lib.types.str;
-      default = config.clanCore.clanName;
-      defaultText = "config.clanCore.clanName";
+      default = config.clan.core.clanName;
+      defaultText = "config.clan.core.clanName";
       description = ''
         zerotier network name
       '';
@@ -111,7 +111,7 @@ in
 
       systemd.services.zerotierone.serviceConfig.ExecStartPre = [
         "+${pkgs.writeShellScript "init-zerotier" ''
-          cp ${config.clanCore.facts.services.zerotier.secret.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
+          cp ${config.clan.core.facts.services.zerotier.secret.zerotier-identity-secret.path} /var/lib/zerotier-one/identity.secret
           zerotier-idtool getpublic /var/lib/zerotier-one/identity.secret > /var/lib/zerotier-one/identity.public
 
           ${lib.optionalString (cfg.controller.enable) ''
@@ -176,7 +176,7 @@ in
     (lib.mkIf cfg.controller.enable {
       # only the controller needs to have the key in the repo, the other clients can be dynamic
       # we generate the zerotier code manually for the controller, since it's part of the bootstrap command
-      clanCore.facts.services.zerotier = {
+      clan.core.facts.services.zerotier = {
         public.zerotier-ip = { };
         public.zerotier-network-id = { };
         secret.zerotier-identity-secret = { };
@@ -192,12 +192,12 @@ in
             --network-id "$facts/zerotier-network-id"
         '';
       };
-      clanCore.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
+      clan.core.state.zerotier.folders = [ "/var/lib/zerotier-one" ];
 
-      environment.systemPackages = [ config.clanCore.clanPkgs.zerotier-members ];
+      environment.systemPackages = [ config.clan.core.clanPkgs.zerotier-members ];
     })
     (lib.mkIf (!cfg.controller.enable && cfg.networkId != null) {
-      clanCore.facts.services.zerotier = {
+      clan.core.facts.services.zerotier = {
         public.zerotier-ip = { };
         secret.zerotier-identity-secret = { };
         generator.path = [
@@ -255,7 +255,7 @@ in
       environment.etc."zerotier/network-id".text = facts.zerotier-network-id.value;
       systemd.services.zerotierone.serviceConfig.ExecStartPost = [
         "+${pkgs.writeShellScript "whitelist-controller" ''
-          ${config.clanCore.clanPkgs.zerotier-members}/bin/zerotier-members allow ${
+          ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members allow ${
             builtins.substring 0 10 cfg.networkId
           }
         ''}"

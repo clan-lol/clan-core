@@ -16,7 +16,7 @@
       (
         { pkgs, lib, ... }:
         {
-          clanCore.clanPkgs = lib.mkDefault self.packages.${pkgs.hostPlatform.system};
+          clan.core.clanPkgs = lib.mkDefault self.packages.${pkgs.hostPlatform.system};
         }
       )
     ];

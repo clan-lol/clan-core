@@ -66,7 +66,7 @@
   config = {
     system.clan.deployment.data = {
       facts = {
-        inherit (config.clanCore.facts)
+        inherit (config.clan.core.facts)
           secretUploadDirectory
           secretModule
           publicModule

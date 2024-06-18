@@ -11,5 +11,5 @@ _: {
     };
   };
 
-  clanCore.state.thelounde.folders = [ "/var/lib/thelounge" ];
+  clan.core.state.thelounde.folders = [ "/var/lib/thelounge" ];
 }
