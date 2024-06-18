@@ -1,10 +1,10 @@
 { lib, ... }:
 {
   # defaults
-  config.clanCore.state.HOME.folders = [ "/home" ];
+  config.clan.core.state.HOME.folders = [ "/home" ];
 
   # interface
-  options.clanCore.state = lib.mkOption {
+  options.clan.core.state = lib.mkOption {
     default = { };
     type = lib.types.attrsOf (
       lib.types.submodule (

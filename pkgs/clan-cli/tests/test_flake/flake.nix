@@ -43,7 +43,7 @@
                 nixpkgs.pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
                 documentation.enable = false;
               };
-              options.clanCore.optionsNix = lib.mkOption {
+              options.clan.core.optionsNix = lib.mkOption {
                 type = lib.types.raw;
                 internal = true;
                 readOnly = true;

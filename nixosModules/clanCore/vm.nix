@@ -9,7 +9,9 @@
 }:
 let
   # Flatten the list of state folders into a single list
-  stateFolders = lib.flatten (lib.mapAttrsToList (_item: attrs: attrs.folders) config.clanCore.state);
+  stateFolders = lib.flatten (
+    lib.mapAttrsToList (_item: attrs: attrs.folders) config.clan.core.state
+  );
 
   vmModule = {
     imports = [
@@ -86,7 +88,7 @@ let
           fsType = "ext4";
         };
 
-        ${config.clanCore.secretsUploadDirectory} = {
+        ${config.clan.core.secretsUploadDirectory} = {
           device = "secrets";
           fsType = "9p";
           neededForBoot = true;
@@ -158,7 +160,7 @@ in
     # All important VM config variables needed by the vm runner
     # this is really just a remapping of values defined elsewhere
     # and therefore not intended to be set by the user
-    clanCore.vm.inspect = {
+    clan.core.vm.inspect = {
       clan_name = lib.mkOption {
         type = lib.types.str;
         internal = true;
@@ -228,11 +230,11 @@ in
 
   config = {
     # for clan vm inspect
-    clanCore.vm.inspect = {
-      clan_name = config.clanCore.clanName;
-      machine_icon = config.clanCore.machineIcon or config.clanCore.clanIcon;
-      machine_name = config.clanCore.machineName;
-      machine_description = config.clanCore.machineDescription;
+    clan.core.vm.inspect = {
+      clan_name = config.clan.core.clanName;
+      machine_icon = config.clan.core.machineIcon or config.clan.core.clanIcon;
+      machine_name = config.clan.core.machineName;
+      machine_description = config.clan.core.machineDescription;
       memory_size = config.clan.virtualisation.memorySize;
       inherit (config.clan.virtualisation) cores graphics waypipe;
     };

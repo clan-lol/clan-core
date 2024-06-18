@@ -10,5 +10,5 @@ _: {
     };
   };
 
-  clanCore.state.ergochat.folders = [ "/var/lib/ergo" ];
+  clan.core.state.ergochat.folders = [ "/var/lib/ergo" ];
 }

@@ -1,6 +1,6 @@
 { lib, config, ... }:
 let
-  clanDir = config.clanCore.clanDir;
+  clanDir = config.clan.core.clanDir;
   machineDir = clanDir + "/machines/";
 in
 {
@@ -9,7 +9,7 @@ in
   options.clan.borgbackup-static = {
     excludeMachines = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      example = [ config.clanCore.machineName ];
+      example = [ config.clan.core.machineName ];
       default = [ ];
       description = ''
         Machines that should not be backuped.
@@ -20,7 +20,7 @@ in
     };
     includeMachines = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      example = [ config.clanCore.machineName ];
+      example = [ config.clan.core.machineName ];
       default = [ ];
       description = ''
         Machines that should be backuped.
@@ -62,7 +62,9 @@ in
       }) machinesWithKey;
     in
     lib.mkIf
-      (builtins.any (target: target == config.clanCore.machineName) config.clan.borgbackup-static.targets)
+      (builtins.any (
+        target: target == config.clan.core.machineName
+      ) config.clan.borgbackup-static.targets)
       (if (builtins.listToAttrs hosts) != null then builtins.listToAttrs hosts else { });
 
   config.clan.borgbackup.destinations =
@@ -70,12 +72,12 @@ in
       destinations = builtins.map (d: {
         name = d;
         value = {
-          repo = "borg@${d}:/var/lib/borgbackup/${config.clanCore.machineName}";
+          repo = "borg@${d}:/var/lib/borgbackup/${config.clan.core.machineName}";
         };
       }) config.clan.borgbackup-static.targets;
     in
     lib.mkIf (builtins.any (
-      target: target == config.clanCore.machineName
+      target: target == config.clan.core.machineName
     ) config.clan.borgbackup-static.includeMachines) (builtins.listToAttrs destinations);
 
   config.assertions = [

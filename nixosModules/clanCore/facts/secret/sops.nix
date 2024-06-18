@@ -5,8 +5,8 @@
   ...
 }:
 let
-  secretsDir = config.clanCore.clanDir + "/sops/secrets";
-  groupsDir = config.clanCore.clanDir + "/sops/groups";
+  secretsDir = config.clan.core.clanDir + "/sops/secrets";
+  groupsDir = config.clan.core.clanDir + "/sops/groups";
 
   # My symlink is in the nixos module detected as a directory also it works in the repl. Is this because of pure evaluation?
   containsSymlink =
@@ -16,7 +16,7 @@ let
 
   containsMachine =
     parent: name: type:
-    type == "directory" && containsSymlink "${parent}/${name}/machines/${config.clanCore.machineName}";
+    type == "directory" && containsSymlink "${parent}/${name}/machines/${config.clan.core.machineName}";
 
   containsMachineOrGroups =
     name: type:
@@ -34,7 +34,7 @@ let
 in
 {
   options = {
-    clanCore.sops.defaultGroups = lib.mkOption {
+    clan.core.sops.defaultGroups = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
       example = [ "admins" ];
@@ -42,16 +42,16 @@ in
     };
   };
 
-  config = lib.mkIf (config.clanCore.facts.secretStore == "sops") {
+  config = lib.mkIf (config.clan.core.facts.secretStore == "sops") {
     # Before we generate a secret we cannot know the path yet, so we need to set it to an empty string
-    clanCore.facts.secretPathFunction =
+    clan.core.facts.secretPathFunction =
       secret:
-      config.sops.secrets.${"${config.clanCore.machineName}-${secret.config.name}"}.path
+      config.sops.secrets.${"${config.clan.core.machineName}-${secret.config.name}"}.path
         or "/no-such-path";
-    clanCore.facts.secretModule = "clan_cli.facts.secret_modules.sops";
-    clanCore.facts.secretUploadDirectory = lib.mkDefault "/var/lib/sops-nix";
+    clan.core.facts.secretModule = "clan_cli.facts.secret_modules.sops";
+    clan.core.facts.secretUploadDirectory = lib.mkDefault "/var/lib/sops-nix";
     sops.secrets = builtins.mapAttrs (name: _: {
-      sopsFile = config.clanCore.clanDir + "/sops/secrets/${name}/secret";
+      sopsFile = config.clan.core.clanDir + "/sops/secrets/${name}/secret";
       format = "binary";
     }) secrets;
     # To get proper error messages about missing secrets we need a dummy secret file that is always present
@@ -60,7 +60,7 @@ in
     );
 
     sops.age.keyFile = lib.mkIf (builtins.pathExists (
-      config.clanCore.clanDir + "/sops/secrets/${config.clanCore.machineName}-age.key/secret"
+      config.clan.core.clanDir + "/sops/secrets/${config.clan.core.machineName}-age.key/secret"
     )) (lib.mkDefault "/var/lib/sops-nix/key.txt");
   };
 }

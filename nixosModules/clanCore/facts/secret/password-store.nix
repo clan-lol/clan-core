@@ -8,10 +8,10 @@
     '';
   };
 
-  config = lib.mkIf (config.clanCore.facts.secretStore == "password-store") {
-    clanCore.facts.secretPathFunction =
+  config = lib.mkIf (config.clan.core.facts.secretStore == "password-store") {
+    clan.core.facts.secretPathFunction =
       secret: "${config.clan.password-store.targetDirectory}/${secret.config.name}";
-    clanCore.facts.secretUploadDirectory = config.clan.password-store.targetDirectory;
-    clanCore.facts.secretModule = "clan_cli.facts.secret_modules.password_store";
+    clan.core.facts.secretUploadDirectory = config.clan.password-store.targetDirectory;
+    clan.core.facts.secretModule = "clan_cli.facts.secret_modules.password_store";
   };
 }

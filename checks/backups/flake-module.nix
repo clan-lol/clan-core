@@ -68,7 +68,7 @@
             };
           };
         };
-        clanCore.facts.secretStore = "vm";
+        clan.core.facts.secretStore = "vm";
 
         environment.systemPackages = [
           self.packages.${pkgs.system}.clan-cli
@@ -87,9 +87,9 @@
           flake-registry = pkgs.writeText "flake-registry" ''{"flakes":[],"version":2}'';
         };
         system.extraDependencies = dependencies;
-        clanCore.state.test-backups.folders = [ "/var/test-backups" ];
+        clan.core.state.test-backups.folders = [ "/var/test-backups" ];
 
-        clanCore.state.test-service = {
+        clan.core.state.test-service = {
           preBackupCommand = ''
             touch /var/test-service/pre-backup-command
           '';

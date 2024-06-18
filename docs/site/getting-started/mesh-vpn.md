@@ -48,7 +48,7 @@ To introduce a new machine to the VPN, adhere to the following steps:
    configuration, substituting `<CONTROLLER>` with the controller machine name:
    ```nix
    { config, ... }: {
-     clan.networking.zerotier.networkId = builtins.readFile (config.clanCore.clanDir + "/machines/<CONTROLLER>/facts/zerotier-network-id");
+     clan.networking.zerotier.networkId = builtins.readFile (config.clan.core.clanDir + "/machines/<CONTROLLER>/facts/zerotier-network-id");
    }
    ```
 1. **Update the New Machine**: Execute:

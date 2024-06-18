@@ -5,12 +5,12 @@
 
   services.openssh.hostKeys = [
     {
-      path = config.clanCore.facts.services.openssh.secret."ssh.id_ed25519".path;
+      path = config.clan.core.facts.services.openssh.secret."ssh.id_ed25519".path;
       type = "ed25519";
     }
   ];
 
-  clanCore.facts.services.openssh = {
+  clan.core.facts.services.openssh = {
     secret."ssh.id_ed25519" = { };
     public."ssh.id_ed25519.pub" = { };
     generator.path = [
