@@ -2,6 +2,7 @@ import { Accessor, For, Match, Switch } from "solid-js";
 import { MachineListView } from "./routes/machines/view";
 import { colors } from "./routes/colors/view";
 import { clan } from "./routes/clan/view";
+import { HostList } from "./routes/hosts/view";
 
 export type Route = keyof typeof routes;
 
@@ -14,6 +15,11 @@ export const routes = {
   machines: {
     child: MachineListView,
     label: "Machines",
+    icon: "devices_other",
+  },
+  hosts: {
+    child: HostList,
+    label: "hosts",
     icon: "devices_other",
   },
   colors: {
