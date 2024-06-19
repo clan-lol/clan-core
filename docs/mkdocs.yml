@@ -74,17 +74,18 @@ nav:
           - reference/clanModules/zerotier-static-peers.md
           - reference/clanModules/zt-tcp-relay.md
       - CLI:
-          - reference/cli/index.md
           - reference/cli/backups.md
           - reference/cli/config.md
           - reference/cli/facts.md
           - reference/cli/flakes.md
           - reference/cli/flash.md
           - reference/cli/history.md
+          - reference/cli/index.md
           - reference/cli/machines.md
           - reference/cli/secrets.md
           - reference/cli/show.md
           - reference/cli/ssh.md
+          - reference/cli/state.md
           - reference/cli/vms.md
       - Clan Core:
           - reference/clan-core/index.md
