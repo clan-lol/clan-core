@@ -1,0 +1,58 @@
+{
+  "machines": {
+    "jon_machine": {
+      "name": "jon",
+      "description": "Jon's machine",
+      "icon": "assets/icon.png",
+      "services": {
+        "matrix": {
+          "roles": ["server"]
+        }
+      }
+    },
+    "anna_machine": {
+      "name": "anna",
+      "description": "anna's machine"
+    }
+  },
+  "meta": {
+    "name": "clan name"
+  },
+  "services": {
+    "sync-home": {
+      "meta": {
+        "name": "My Home Sync"
+      },
+      "module": "syncthing",
+      "config": {
+        "folders": ["/sync/my_f"]
+      }
+    },
+    "matrix": {
+      "meta": {
+        "name": "Our matrix chat",
+        "description": "Matrix chat service for our clan"
+      },
+      "module": "matrix-synapse",
+      "config": {
+        "compression": "zstd"
+      }
+    },
+    "backup": {
+      "meta": {
+        "name": "My daily backup"
+      },
+      "module": "borgbackup",
+      "config": {}
+    },
+    "borgbackup_1": {
+      "meta": {
+        "name": "My weekly backup"
+      },
+      "module": "borgbackup",
+      "config": {
+        "compression": "lz4"
+      }
+    }
+  }
+}
