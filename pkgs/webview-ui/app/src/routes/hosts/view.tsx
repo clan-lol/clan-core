@@ -1,16 +1,12 @@
 import {
   For,
-  Match,
   Show,
-  Switch,
   createEffect,
   createSignal,
   type Component,
 } from "solid-js";
-import { useMachineContext } from "../../Config";
 import { route } from "@/src/App";
 import { OperationResponse, pyApi } from "@/src/api";
-import toast from "solid-toast";
 
 type ServiceModel = Extract<
   OperationResponse<"show_mdns">,
@@ -40,13 +36,13 @@ export const HostList: Component = () => {
           <span class="material-icons ">refresh</span>
         </button>
       </div>
-      <div class="flex gap-2 flex-wrap">
+      <div class="flex flex-wrap gap-2">
         <Show when={services()}>
           {(services) => (
             <For each={Object.values(services())}>
               {(service) => (
-                <div class="rounded-lg bg-white p-5 shadow-lg w-[30rem]">
-                  <div class="stats shadow flex flex-col">
+                <div class="w-[30rem] rounded-lg bg-white p-5 shadow-lg">
+                  <div class="stats flex flex-col shadow">
                     <div class="stat">
                       <div class="stat-title">Host</div>
                       <div class="stat-value">{service.host}</div>
@@ -61,7 +57,7 @@ export const HostList: Component = () => {
                   </div>
 
                   <div class="join join-vertical w-full px-0">
-                    <div class="collapse collapse-arrow join-item">
+                    <div class="collapse join-item collapse-arrow">
                       <input type="radio" name="my-accordion-4" />
                       <div class="collapse-title text-xl font-medium">
                         Details
