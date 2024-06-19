@@ -18,21 +18,19 @@
       "meta": {
         "name": "My backup"
       },
-      "module": "borbackup-static",
+      "module": "borgbackup-static",
       "machineConfig": {
-        "vyr": {
+        "vyr_machine": {
           "roles": ["server"]
         },
-        "vi": {
+        "vi_machine": {
           "roles": ["client"]
         },
         "camina_machine": {
           "roles": ["client"]
         }
       },
-      "config": {
-        "folders": ["/home", "/root", "/var", "/etc"]
-      }
+      "config": {}
     }
   }
 }
