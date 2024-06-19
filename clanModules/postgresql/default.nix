@@ -14,7 +14,7 @@ let
     in
     {
       folders = [ folder ];
-      preBackupCommand = ''
+      preBackupScript = ''
         export PATH=${
           lib.makeBinPath [
             config.services.postgresql.package
@@ -32,7 +32,38 @@ let
         runuser -u postgres -- pg_dump ${compression} --dbname=${db.name} -Fc -c > "${current}.tmp"
         mv "${current}.tmp" ${current}
       '';
-      postRestoreCommand = "postgres-db-restore-command-${db.name}";
+      postRestoreScript = ''
+        export PATH=${
+          lib.makeBinPath [
+            config.services.postgresql.package
+            config.systemd.package
+            pkgs.coreutils
+            pkgs.util-linux
+            pkgs.zstd
+          ]
+        }
+        while [[ "$(systemctl is-active postgresql)" == activating ]]; do
+          sleep 1
+        done
+        echo "Waiting for postgres to be ready..."
+        while ! runuser -u postgres -- psql --port=${builtins.toString config.services.postgresql.settings.port} -d postgres -c "" ; do
+          if ! systemctl is-active postgresql; then exit 1; fi
+          sleep 0.1
+        done
+
+        if [[ -e "${current}" ]]; then
+          (
+            systemctl stop ${lib.concatStringsSep " " db.restore.stopOnRestore}
+            trap "systemctl start ${lib.concatStringsSep " " db.restore.stopOnRestore}" EXIT
+
+            mkdir -p "${folder}"
+            runuser -u postgres -- dropdb "${db.name}"
+            runuser -u postgres -- pg_restore -C -d postgres "${current}"
+          )
+        else
+          echo No database backup found, skipping restore
+        fi
+      '';
     };
 
   createDatabase = db: ''
