@@ -1,9 +1,11 @@
+import json
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from clan_cli.errors import ClanError
+from clan_cli.nix import nix_shell, run_no_stdout
 
 from . import API
 
@@ -81,3 +83,46 @@ def get_directory(current_path: str) -> Directory:
                 )
 
     return directory
+
+
+@dataclass
+class BlkInfo:
+    name: str
+    rm: str
+    size: str
+    ro: bool
+    mountpoints: list[str]
+    type_: Literal["disk"]
+
+
+@dataclass
+class Blockdevices:
+    blockdevices: list[BlkInfo]
+
+
+def blk_from_dict(data: dict) -> BlkInfo:
+    return BlkInfo(
+        name=data["name"],
+        rm=data["rm"],
+        size=data["size"],
+        ro=data["ro"],
+        mountpoints=data["mountpoints"],
+        type_=data["type"],  # renamed here
+    )
+
+
+@API.register
+def show_block_devices() -> Blockdevices:
+    """
+    Abstract api method to show block devices.
+    It must return a list of block devices.
+    """
+    cmd = nix_shell(["nixpkgs#util-linux"], ["lsblk", "--json"])
+    proc = run_no_stdout(cmd)
+    res = proc.stdout.strip()
+
+    blk_info: dict[str, Any] = json.loads(res)
+
+    return Blockdevices(
+        blockdevices=[blk_from_dict(device) for device in blk_info["blockdevices"]]
+    )
