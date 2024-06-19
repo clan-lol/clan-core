@@ -1,5 +1,6 @@
-{ ... }:
+{ inputs, self, ... }:
 {
+  flake.inventory = import ./default.nix { inherit inputs self; };
   perSystem =
     { pkgs, config, ... }:
     {
@@ -13,6 +14,7 @@
           mkdir -p $out
         '';
       };
+
       devShells.inventory-schema = pkgs.mkShell { inputsFrom = [ config.packages.inventory-schema ]; };
 
       checks.inventory-schema-checks = pkgs.stdenv.mkDerivation {
