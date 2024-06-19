@@ -1,5 +1,7 @@
 package services
 
+#ServiceRole: "server" | "client" | "both"
+
 #service: services: [string]: {
     // Required meta fields
     meta: {
@@ -12,14 +14,14 @@ package services
 
     // We moved the machine sepcific config to "machines".
     // It may be moved back depending on what makes more sense in the future.
-    // machineConfig: {
-    //     [string]: {
-    //         roles: string[],
-    //         config: {
-    //             defaultUser?: string
-    //         }
-    //     }
-    // },
+    machineConfig: {
+        [string]: {
+            roles?: [ ...#ServiceRole ],
+            config?: {
+                ...
+            }
+        }
+    },
 
     // Configuration for the service
     config: {

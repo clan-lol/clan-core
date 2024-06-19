@@ -1,0 +1,45 @@
+{
+  "machines": {
+    "camina_machine": {
+      "name": "camina"
+    },
+    "vyr": {
+      "name": "vyr"
+    },
+    "vi": {
+      "name": "vi"
+    }
+  },
+  "meta": {
+    "name": "kenjis clan"
+  },
+  "services": {
+    "sync_files": {
+      "meta": {
+        "name": "My sync"
+      },
+      "module": "syncthing-static-peers",
+      "machineConfig": {
+        "vyr": {},
+        "vi": {},
+        "camina_machine": {}
+      },
+      "config": {
+        "folders": {
+          "test": {
+            "path": "~/data/docs",
+            "devices": ["camina", "vyr", "vi"]
+          },
+          "videos": {
+            "path": "~/data/videos",
+            "devices": ["camina", "vyr", "ezra"]
+          },
+          "playlist": {
+            "path": "~/data/playlist",
+            "devices": ["camina", "vyr", "ezra"]
+          }
+        }
+      }
+    }
+  }
+}
