@@ -1,0 +1,36 @@
+{
+  "machines": {
+    "camina_machine": {
+      "name": "camina"
+    },
+    "vyr_machine": {
+      "name": "vyr"
+    },
+    "vi_machine": {
+      "name": "vi"
+    }
+  },
+  "meta": {
+    "name": "kenjis clan"
+  },
+  "services": {
+    "backup": {
+      "meta": {
+        "name": "My backup"
+      },
+      "module": "borbackup-static",
+      "machineConfig": {
+        "vyr_machine": {
+          "roles": ["server"]
+        },
+        "vi_machine": {
+          "roles": ["peer"]
+        },
+        "camina_machine": {
+          "roles": ["peer"]
+        }
+      },
+      "config": {}
+    }
+  }
+}
