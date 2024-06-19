@@ -66,6 +66,12 @@ in
               name = lib.mkOption {
                 type = lib.types.str;
                 default = name;
+                description = "Database name.";
+              };
+              service = lib.mkOption {
+                type = lib.types.str;
+                default = name;
+                description = "Service name that we associate with the database.";
               };
               # set to false, in case the upstream module uses ensureDatabase option
               create.enable = lib.mkOption {
@@ -87,7 +93,7 @@ in
               restore.stopOnRestore = lib.mkOption {
                 type = lib.types.listOf lib.types.str;
                 default = [ ];
-                description = "List of services to stop before restoring the database.";
+                description = "List of systemd services to stop before restoring the database.";
               };
             };
           }
@@ -129,7 +135,7 @@ in
     '';
 
     clan.core.state = lib.mapAttrs' (
-      _: db: lib.nameValuePair "postgresql-${db.name}" (createDatatbaseState db)
+      _: db: lib.nameValuePair db.service (createDatatbaseState db)
     ) config.clan.postgresql.databases;
 
     environment.systemPackages = builtins.map (
