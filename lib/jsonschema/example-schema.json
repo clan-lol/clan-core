@@ -59,9 +59,8 @@
             "type": "string"
           }
         },
-        "required": [
-          "repo"
-        ],
+        "required": ["repo"],
+        "additionalProperties": false,
         "type": "object"
       },
       "default": {},

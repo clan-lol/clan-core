@@ -47,7 +47,7 @@ rec {
     let
       evaled = lib.evalModules { modules = [ module ]; };
     in
-    parseOptions evaled.options;
+    { "$schema" = "http://json-schema.org/draft-07/schema#"; } // parseOptions evaled.options;
 
   # parses a set of evaluated nixos options to a jsonschema
   parseOptions =
@@ -66,6 +66,7 @@ rec {
     // {
       type = "object";
       inherit properties;
+      additionalProperties = false;
     };
 
   # parses and evaluated nixos option to a jsonschema property definition
