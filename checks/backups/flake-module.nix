@@ -70,15 +70,7 @@
         };
         clan.core.facts.secretStore = "vm";
 
-        environment.systemPackages = [
-          self.packages.${pkgs.system}.clan-cli
-          (pkgs.writeShellScriptBin "pre-restore-command" ''
-            touch /var/test-service/pre-restore-command
-          '')
-          (pkgs.writeShellScriptBin "post-restore-command" ''
-            touch /var/test-service/post-restore-command
-          '')
-        ];
+        environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
         environment.etc.install-closure.source = "${closureInfo}/store-paths";
         nix.settings = {
           substituters = lib.mkForce [ ];
@@ -90,11 +82,15 @@
         clan.core.state.test-backups.folders = [ "/var/test-backups" ];
 
         clan.core.state.test-service = {
-          preBackupCommand = ''
+          preBackupScript = ''
             touch /var/test-service/pre-backup-command
           '';
-          preRestoreCommand = "pre-restore-command";
-          postRestoreCommand = "post-restore-command";
+          preRestoreScript = ''
+            touch /var/test-service/pre-restore-command
+          '';
+          postRestoreScript = ''
+            touch /var/test-service/post-restore-command
+          '';
           folders = [ "/var/test-service" ];
         };
         clan.borgbackup.destinations.test-backup.repo = "borg@machine:.";
