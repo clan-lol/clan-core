@@ -40,6 +40,7 @@ let
             pkgs.coreutils
             pkgs.util-linux
             pkgs.zstd
+            pkgs.gnugrep
           ]
         }
         while [[ "$(systemctl is-active postgresql)" == activating ]]; do
@@ -57,7 +58,9 @@ let
             trap "systemctl start ${lib.concatStringsSep " " db.restore.stopOnRestore}" EXIT
 
             mkdir -p "${folder}"
-            runuser -u postgres -- dropdb "${db.name}"
+            if runuser -u postgres -- psql -d postgres -c "SELECT 1 FROM pg_database WHERE datname = '${db.name}'" | grep -q 1; then
+              runuser -u postgres -- dropdb "${db.name}"
+            fi
             runuser -u postgres -- pg_restore -C -d postgres "${current}"
           )
         else
