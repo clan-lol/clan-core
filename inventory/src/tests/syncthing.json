@@ -14,29 +14,29 @@
     "name": "kenjis clan"
   },
   "services": {
-    "sync_files": {
-      "meta": {
-        "name": "My sync"
-      },
-      "module": "syncthing-static-peers",
-      "machineConfig": {
-        "vyr_machine": {},
-        "vi_machine": {},
-        "camina_machine": {}
-      },
-      "config": {
-        "folders": {
-          "test": {
-            "path": "~/data/docs",
-            "devices": ["camina_machine", "vyr_machine", "vi_machine"]
-          },
-          "videos": {
-            "path": "~/data/videos",
-            "devices": ["camina_machine", "vyr_machine"]
-          },
-          "playlist": {
-            "path": "~/data/playlist",
-            "devices": ["camina_machine", "vi_machine"]
+    "syncthing-static-peers": {
+      "instance_1": {
+        "meta": {
+          "name": "My sync"
+        },
+        "roles": {
+          "peer": ["vyr_machine", "vi_machine", "camina_machine"]
+        },
+        "machines": {},
+        "config": {
+          "folders": {
+            "test": {
+              "path": "~/data/docs",
+              "devices": ["camina_machine", "vyr_machine", "vi_machine"]
+            },
+            "videos": {
+              "path": "~/data/videos",
+              "devices": ["camina_machine", "vyr_machine"]
+            },
+            "playlist": {
+              "path": "~/data/playlist",
+              "devices": ["camina_machine", "vi_machine"]
+            }
           }
         }
       }

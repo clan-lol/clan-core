@@ -1,16 +1,28 @@
-{ inputs, self, ... }:
+{ self, lib, ... }:
 let
   clan-core = self;
-  system = "x86_64-linux";
-  pkgs = clan-core.inputs.nixpkgs.legacyPackages.${system};
 
   # syncthing_inventory = builtins.fromJSON (builtins.readFile ./src/tests/syncthing.json);
   syncthing_inventory = builtins.fromJSON (builtins.readFile ./src/tests/borgbackup.json);
 
-  machines = machinesFromInventory {
-    inherit clan-core;
-    lib = pkgs.lib;
-  } syncthing_inventory;
+  machines = machinesFromInventory syncthing_inventory;
+
+  resolveGroups =
+    inventory: members:
+    lib.unique (
+      builtins.foldl' (
+        acc: currMember:
+        let
+          groupName = builtins.substring 6 (builtins.stringLength currMember - 6) currMember;
+          groupMembers =
+            if inventory.groups.machines ? ${groupName} then
+              inventory.groups.machines.${groupName}
+            else
+              throw "Machine group ${currMember} not found. Key: groups.machines.${groupName} not in inventory.";
+        in
+        if lib.hasPrefix "group:" currMember then (acc ++ groupMembers) else acc ++ [ currMember ]
+      ) [ ] members
+    );
 
   /*
     Returns a NixOS configuration for every machine in the inventory.
@@ -18,48 +30,51 @@ let
     machinesFromInventory :: Inventory -> { ${machine_name} :: NixOSConfiguration }
   */
   machinesFromInventory =
-    { lib, clan-core, ... }:
     inventory:
     # For every machine in the inventory, build a NixOS configuration
     # For each machine generate config, forEach service, if the machine is used.
     builtins.mapAttrs (
-      machine_name: _:
-      builtins.foldl' (
-        acc: service_name:
-        let
-          service_config = inventory.services.${service_name};
-          isInService = builtins.elem machine_name (builtins.attrNames service_config.machineConfig);
+      machineName: _:
+      lib.foldlAttrs (
+        # [ Modules ], String, { ${instance_name} :: ServiceConfig }
+        acc: moduleName: serviceConfigs:
+        acc
+        # Collect service config
+        ++ (lib.foldlAttrs (
+          # [ Modules ], String, ServiceConfig
+          acc2: instanceName: serviceConfig:
+          let
+            resolvedRoles = builtins.mapAttrs (
+              _roleName: members: resolveGroups inventory members
+            ) serviceConfig.roles;
 
-          machine_service_config = (service_config.machineConfig.${machine_name} or { }).config or { };
-          global_config = inventory.services.${service_name}.config;
-          module_name = inventory.services.${service_name}.module;
-        in
-        # Possible roles: "server", "client", "peer"
-        if
-          builtins.trace ''
-            isInService ${builtins.toJSON isInService},
-            ${builtins.toJSON machine_name} ${builtins.toJSON (builtins.attrNames service_config.machineConfig)}
-          '' isInService
-        then
-          acc
-          ++ [
-            {
-              imports = [ clan-core.clanModules.${module_name} ];
-              config.clan.${module_name} = lib.mkMerge [
-                global_config
-                machine_service_config
-              ];
-            }
-            {
-              config.clan.${module_name} = {
-                # TODO: filter, show only the roles that are needed by the machine
-                roles = builtins.mapAttrs (_m: c: c.roles) service_config.machineConfig;
-              };
-            }
-          ]
-        else
-          acc
-      ) [ ] (builtins.attrNames inventory.services)
+            isInService = builtins.any (members: builtins.elem machineName members) (
+              builtins.attrValues resolvedRoles
+            );
+
+            machineServiceConfig = (serviceConfig.machines.${machineName} or { }).config or { };
+            globalConfig = serviceConfig.config;
+          in
+          if isInService then
+            acc2
+            ++ [
+              {
+                imports = [ clan-core.clanModules.${moduleName} ];
+                config.clan.${moduleName} = lib.mkMerge [
+                  globalConfig
+                  machineServiceConfig
+                ];
+              }
+              {
+                config.clan.inventory.${instanceName} = {
+                  roles = resolvedRoles;
+                };
+              }
+            ]
+          else
+            acc2
+        ) [ ] serviceConfigs)
+      ) [ ] inventory.services
     ) inventory.machines;
 in
 {
@@ -81,9 +96,4 @@ in
     };
   };
   intern = machines;
-  # inherit (clan) nixosConfigurations clanInternals;
-  # add the Clan cli tool to the dev shell
-  devShells.${system}.default = pkgs.mkShell {
-    packages = [ clan-core.packages.${system}.clan-cli ];
-  };
 }
