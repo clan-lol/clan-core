@@ -1,22 +1,34 @@
-package services
+package schema
 
-#ServiceRole: "server" | "client" | "both"
+#groups: groups: {
+    // Machine groups
+    machines: {
+        // Group name mapped to list[machineName]
+        // "group1": ["machine1", "machine2"]
+        [string]: [...string]
+    }
+}
 
-#service: services: [string]: {
+#machine: machines: [string]: {
+    name: string,
+    description?: string,
+    icon?: string
+}
+
+#role: string
+
+#service: services: [string]: [string]: {
     // Required meta fields
     meta: {
         name: string,
         icon?: string
         description?: string,
     },
-    // Required module specifies the behavior of the service.
-    module: string,
-
     // We moved the machine sepcific config to "machines".
     // It may be moved back depending on what makes more sense in the future.
-    machineConfig: {
+    roles: [#role]: [...string],
+    machines: {
         [string]: {
-            roles?: [ ...#ServiceRole ],
             config?: {
                 ...
             }

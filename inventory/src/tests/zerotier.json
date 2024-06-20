@@ -14,23 +14,22 @@
     "name": "kenjis clan"
   },
   "services": {
-    "backup": {
-      "meta": {
-        "name": "My backup"
-      },
-      "module": "borbackup-static",
-      "machineConfig": {
-        "vyr_machine": {
-          "roles": ["server"]
+    "zerotier-static": {
+      "instance_1": {
+        "meta": {
+          "name": "My Network"
         },
-        "vi_machine": {
-          "roles": ["peer"]
+        "roles": {
+          "server": ["vyr_machine"],
+          "peer": ["vi_machine", "camina_machine"]
         },
-        "camina_machine": {
-          "roles": ["peer"]
-        }
-      },
-      "config": {}
+        "machines": {
+          "vyr_machine": {
+            "config": {}
+          }
+        },
+        "config": {}
+      }
     }
   }
 }

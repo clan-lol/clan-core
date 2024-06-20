@@ -1,6 +1,11 @@
-{ inputs, self, ... }:
 {
-  flake.inventory = import ./default.nix { inherit inputs self; };
+  inputs,
+  self,
+  lib,
+  ...
+}:
+{
+  flake.inventory = import ./default.nix { inherit inputs self lib; };
   perSystem =
     { pkgs, config, ... }:
     {
