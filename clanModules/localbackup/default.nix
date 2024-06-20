@@ -125,7 +125,6 @@ in
             }
             ${lib.concatMapStringsSep "\n" (target: ''
               ${mountHook target}
-              set -x
               echo "Creating backup '${target.name}'"
 
               ${lib.optionalString (target.preBackupHook != null) ''
@@ -139,7 +138,7 @@ in
                 state:
                 lib.optionalString (state.preBackupCommand != null) ''
                   echo "Running pre-backup command for ${state.name}"
-                  if ! ( ${state.preBackupCommand} ) then
+                  if ! /run/current-system/sw/bin/${state.preBackupCommand}; then
                     preCommandErrors["${state.name}"]=1
                   fi
                 ''
