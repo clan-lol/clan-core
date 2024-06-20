@@ -185,7 +185,7 @@ in
           + lib.concatMapStringsSep "\n" (user: ''
             # only create user if it doesn't exist
             /run/current-system/sw/bin/matrix-synapse-register_new_matrix_user --exists-ok --password-file ${
-              config.clanCore.facts.services."matrix-password-${user.name}".secret."matrix-password-${user.name}".path
+              config.clan.core.facts.services."matrix-password-${user.name}".secret."matrix-password-${user.name}".path
             } --user "${user.name}" ${if user.admin then "--admin" else "--no-admin"}
           '') (lib.attrValues cfg.users);
       in

@@ -14,7 +14,7 @@ let
     in
     {
       folders = [ folder ];
-      preBackupCommand = ''
+      preBackupScript = ''
         export PATH=${
           lib.makeBinPath [
             config.services.postgresql.package
@@ -32,7 +32,41 @@ let
         runuser -u postgres -- pg_dump ${compression} --dbname=${db.name} -Fc -c > "${current}.tmp"
         mv "${current}.tmp" ${current}
       '';
-      postRestoreCommand = "postgres-db-restore-command-${db.name}";
+      postRestoreScript = ''
+        export PATH=${
+          lib.makeBinPath [
+            config.services.postgresql.package
+            config.systemd.package
+            pkgs.coreutils
+            pkgs.util-linux
+            pkgs.zstd
+            pkgs.gnugrep
+          ]
+        }
+        while [[ "$(systemctl is-active postgresql)" == activating ]]; do
+          sleep 1
+        done
+        echo "Waiting for postgres to be ready..."
+        while ! runuser -u postgres -- psql --port=${builtins.toString config.services.postgresql.settings.port} -d postgres -c "" ; do
+          if ! systemctl is-active postgresql; then exit 1; fi
+          sleep 0.1
+        done
+
+        if [[ -e "${current}" ]]; then
+          (
+            systemctl stop ${lib.concatStringsSep " " db.restore.stopOnRestore}
+            trap "systemctl start ${lib.concatStringsSep " " db.restore.stopOnRestore}" EXIT
+
+            mkdir -p "${folder}"
+            if runuser -u postgres -- psql -d postgres -c "SELECT 1 FROM pg_database WHERE datname = '${db.name}'" | grep -q 1; then
+              runuser -u postgres -- dropdb "${db.name}"
+            fi
+            runuser -u postgres -- pg_restore -C -d postgres "${current}"
+          )
+        else
+          echo No database backup found, skipping restore
+        fi
+      '';
     };
 
   createDatabase = db: ''
@@ -66,6 +100,12 @@ in
               name = lib.mkOption {
                 type = lib.types.str;
                 default = name;
+                description = "Database name.";
+              };
+              service = lib.mkOption {
+                type = lib.types.str;
+                default = name;
+                description = "Service name that we associate with the database.";
               };
               # set to false, in case the upstream module uses ensureDatabase option
               create.enable = lib.mkOption {
@@ -87,7 +127,7 @@ in
               restore.stopOnRestore = lib.mkOption {
                 type = lib.types.listOf lib.types.str;
                 default = [ ];
-                description = "List of services to stop before restoring the database.";
+                description = "List of systemd services to stop before restoring the database.";
               };
             };
           }
@@ -129,7 +169,7 @@ in
     '';
 
     clan.core.state = lib.mapAttrs' (
-      _: db: lib.nameValuePair "postgresql-${db.name}" (createDatatbaseState db)
+      _: db: lib.nameValuePair db.service (createDatatbaseState db)
     ) config.clan.postgresql.databases;
 
     environment.systemPackages = builtins.map (

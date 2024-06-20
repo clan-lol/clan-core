@@ -13,14 +13,14 @@ let
       state:
       lib.optionalString (state.preBackupCommand != null) ''
         echo "Running pre-backup command for ${state.name}"
-        if ! ( ${state.preBackupCommand} ) then
+        if ! /run/current-system/sw/bin/${state.preBackupCommand}; then
           preCommandErrors["${state.name}"]=1
         fi
       ''
     ) (lib.attrValues config.clan.core.state)}
 
     if [[ ''${#preCommandErrors[@]} -gt 0 ]]; then
-      echo "PreBackupCommand failed for the following services:"
+      echo "pre-backup commands failed for the following services:"
       for state in "''${!preCommandErrors[@]}"; do
         echo "  $state"
       done
