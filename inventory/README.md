@@ -1,6 +1,13 @@
 # Inventory
 
-Questions:
+The inventory is our concept for distributed services. Users can configure multiple machines with minimal effort.
+
+- The inventory acts as a declarative source of truth for all machine configurations.
+- Users can easily add or remove machines and services.
+- Ensures that all machines and services are configured consistently, across multiple nixosConfigs.
+- Defaults and predefined roles in our modules minimizes the need for manual configuration.
+
+Design questions:
 
 - [x] Must roles be a list ?
     -> Yes. In zerotier you can be "moon" and "controller" at the same time.
@@ -31,9 +38,9 @@ Questions:
 Architecture
 
 ```
-machine < machine_module        < inventory
+nixosConfig < machine_module        < inventory
 ---------------------------------------------
-nixos   < borgbackup            < borgbackup-static > UI
+nixos   < borgbackup            + borgbackup-static > UI
 
         creates the config      Maps from high level services to the borgbackup clan module
         for ONE machine
