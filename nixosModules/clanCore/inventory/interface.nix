@@ -30,7 +30,7 @@ let
 in
 {
   # clan.inventory.${moduleName}.${instanceName} = { ... }
-  options.clan.inventory = lib.mkOption {
+  options.clan.services = lib.mkOption {
     type = lib.types.attrsOf (lib.types.attrsOf instanceOptions);
   };
 }

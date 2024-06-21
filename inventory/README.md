@@ -47,10 +47,12 @@ Architecture
 ```
 nixosConfig < machine_module        < inventory
 ---------------------------------------------
-nixos   < borgbackup            + borgbackup-static > UI
+nixos   < borgbackup            <- inventory <-> UI
 
         creates the config      Maps from high level services to the borgbackup clan module
-        for ONE machine
+        for ONE machine         Inventory is completely serializable.
+                                UI can interact with the inventory to define machines, and services
+                                Defining Users is out of scope for the first prototype.
 ```
 
 - [ ] Why do we need 2 modules?
