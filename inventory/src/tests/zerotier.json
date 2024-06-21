@@ -14,14 +14,15 @@
     "name": "kenjis clan"
   },
   "services": {
-    "zerotier-static": {
+    "zerotier": {
       "instance_1": {
         "meta": {
           "name": "My Network"
         },
         "roles": {
-          "server": ["vyr_machine"],
-          "peer": ["vi_machine", "camina_machine"]
+          "controller": { "machines": ["vyr_machine"] },
+          "moon": { "machines": ["vyr_machine"] },
+          "peer": { "machines": ["vi_machine", "camina_machine"] }
         },
         "machines": {
           "vyr_machine": {

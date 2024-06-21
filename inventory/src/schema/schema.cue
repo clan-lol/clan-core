@@ -1,18 +1,10 @@
 package schema
 
-#groups: groups: {
-    // Machine groups
-    machines: {
-        // Group name mapped to list[machineName]
-        // "group1": ["machine1", "machine2"]
-        [string]: [...string]
-    }
-}
-
 #machine: machines: [string]: {
     name: string,
     description?: string,
     icon?: string
+    tags: [...string]
 }
 
 #role: string
@@ -26,7 +18,10 @@ package schema
     },
     // We moved the machine sepcific config to "machines".
     // It may be moved back depending on what makes more sense in the future.
-    roles: [#role]: [...string],
+    roles: [#role]: {
+        machines: [...string],
+        tags: [...string],
+    }
     machines: {
         [string]: {
             config?: {

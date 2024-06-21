@@ -3,19 +3,24 @@
 The inventory is our concept for distributed services. Users can configure multiple machines with minimal effort.
 
 - The inventory acts as a declarative source of truth for all machine configurations.
-- Users can easily add or remove machines and services.
+- Users can easily add or remove machines to/from services.
 - Ensures that all machines and services are configured consistently, across multiple nixosConfigs.
 - Defaults and predefined roles in our modules minimizes the need for manual configuration.
 
 Design questions:
 
+- [ ] Is the service config interface the same as the module config interface ?
+
+- [ ] As a user i dont want to see borgbackup as the high level category ?
+
 - [x] Must roles be a list ?
-    -> Yes. In zerotier you can be "moon" and "controller" at the same time.
+    -> Yes. In zerotier a machine can be "moon" and "controller" at the same time.
 
 - [x] Is role client different from peer ? Do we have one example where we use client and peer together and they are different?
     -> There are many roles. And they depend on the service.
 
 - [x] Should we use the module name in the path of the service?
+    -> YES
     ```json
     // ${module_name}.${instance_name}
     services.borgbackup-static.backup1 = {
@@ -32,8 +37,10 @@ Design questions:
     Neutral: Module name is hard to change. Exists anyways.
 
 - [x] Should the machine specific service config be part of the service?
-    ->  The config implements the schema of the module, which is declared in the service.
-    ->  If the config is placed in the machine, it becomes unclear that the scope is ONLY the service and NOT the global nixos config.
+    -> NO. because ...
+    - The config implements the schema of the module, which is declared in the service.
+    - If the config is placed in the machine, it becomes unclear that the scope is ONLY the service and NOT the global nixos config.
+    - If the config is placed in the machine it is de-located into another top-level field. In the module this complicates access.
 
 Architecture
 

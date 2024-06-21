@@ -20,6 +20,4 @@ import (
 
 	// // A map of machines
 	schema.#machine
-
-	schema.#groups
 }

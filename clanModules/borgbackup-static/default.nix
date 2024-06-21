@@ -2,62 +2,57 @@
 let
   clanDir = config.clan.core.clanDir;
   machineDir = clanDir + "/machines/";
-
-  # cfg.roles = config.clan.borgbackup-static;
-
-  # machine < machine_module  < inventory
-  #  nixos  < borgbackup      < borgbackup-static > UI
-  #                           metadata
-  #              Developer    User field descriptions
-
-  roles = config.clan.borgbackup-static.inventory.roles;
-
-  machine_name = config.clan.core.machineName;
 in
-{
+lib.warn "This module is deprecated use the service via the service interface instead." {
   imports = [ ../borgbackup ];
-  # imports = if myRole == "server" then [ ../borgbackup/roles/server.nix ];
-  # Inventory / Interface.nix
-  # options.clan.inventory.borgbackup-static.description.
-  # options.clan.borgbackup-static.roles = lib.mkOption {
-  #   type = lib.types.attrsOf (lib.types.listOf lib.types.str);
-  # };
 
-  # Can be used via inventory.json
-  #
-  # .borgbackup-static.inventory.roles
-  #
-  options.clan.borgbackup-static.inventory = lib.mkOption {
-    type = lib.types.submodule {
-      # imports = [./inventory/interface.nix];
-
-      # idea
-      # config.metadata = builtins.fromTOML ...
-      # config.defaultRoles = ["client"];
-
-      # -> interface.nix
-      options = {
-        roles = lib.mkOption { type = lib.types.attrsOf (lib.types.listOf lib.types.str); };
-      };
+  options.clan.borgbackup-static = {
+    excludeMachines = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      example = [ config.clan.core.machineName ];
+      default = [ ];
+      description = ''
+        Machines that should not be backuped.
+        Mutually exclusive with includeMachines.
+        If this is not empty, every other machine except the targets in the clan will be backuped by this module.
+        If includeMachines is set, only the included machines will be backuped.
+      '';
+    };
+    includeMachines = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      example = [ config.clan.core.machineName ];
+      default = [ ];
+      description = ''
+        Machines that should be backuped.
+        Mutually exclusive with excludeMachines.
+      '';
+    };
+    targets = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = ''
+        Machines that should act as target machines for backups.
+      '';
     };
   };
 
   config.services.borgbackup.repos =
     let
-
-      filteredMachines = builtins.attrNames (lib.filterAttrs (_: v: builtins.elem "client" v) roles);
-
+      machines = builtins.readDir machineDir;
       borgbackupIpMachinePath = machines: machineDir + machines + "/facts/borgbackup.ssh.pub";
-      machinesMaybeKey = builtins.map (
-        machine:
+      filteredMachines =
+        if ((builtins.length config.clan.borgbackup-static.includeMachines) != 0) then
+          lib.filterAttrs (name: _: (lib.elem name config.clan.borgbackup-static.includeMachines)) machines
+        else
+          lib.filterAttrs (name: _: !(lib.elem name config.clan.borgbackup-static.excludeMachines)) machines;
+      machinesMaybeKey = lib.mapAttrsToList (
+        machine: _:
         let
           fullPath = borgbackupIpMachinePath machine;
         in
         if builtins.pathExists fullPath then machine else null
       ) filteredMachines;
-
       machinesWithKey = lib.filter (x: x != null) machinesMaybeKey;
-
       hosts = builtins.map (machine: {
         name = machine;
         value = {
@@ -66,20 +61,41 @@ in
         };
       }) machinesWithKey;
     in
-    lib.mkIf (builtins.elem "server" roles.${machine_name}) (
-      if (builtins.listToAttrs hosts) != null then builtins.listToAttrs hosts else { }
-    );
+    lib.mkIf
+      (builtins.any (
+        target: target == config.clan.core.machineName
+      ) config.clan.borgbackup-static.targets)
+      (if (builtins.listToAttrs hosts) != null then builtins.listToAttrs hosts else { });
 
   config.clan.borgbackup.destinations =
     let
-      servers = builtins.attrNames (lib.filterAttrs (_n: v: (builtins.elem "server" v)) roles);
-
-      destinations = builtins.map (server_name: {
-        name = server_name;
+      destinations = builtins.map (d: {
+        name = d;
         value = {
-          repo = "borg@${server_name}:/var/lib/borgbackup/${machine_name}";
+          repo = "borg@${d}:/var/lib/borgbackup/${config.clan.core.machineName}";
         };
-      }) servers;
+      }) config.clan.borgbackup-static.targets;
     in
-    lib.mkIf (builtins.elem "client" roles.${machine_name}) (builtins.listToAttrs destinations);
+    lib.mkIf (builtins.any (
+      target: target == config.clan.core.machineName
+    ) config.clan.borgbackup-static.includeMachines) (builtins.listToAttrs destinations);
+
+  config.assertions = [
+    {
+      assertion =
+        !(
+          ((builtins.length config.clan.borgbackup-static.excludeMachines) != 0)
+          && ((builtins.length config.clan.borgbackup-static.includeMachines) != 0)
+        );
+      message = ''
+        The options:
+        config.clan.borgbackup-static.excludeMachines = [${builtins.toString config.clan.borgbackup-static.excludeMachines}]
+        and
+        config.clan.borgbackup-static.includeMachines = [${builtins.toString config.clan.borgbackup-static.includeMachines}]
+        are mutually exclusive.
+        Use excludeMachines to exclude certain machines and backup the other clan machines.
+        Use include machines to only backup certain machines.
+      '';
+    }
+  ];
 }
