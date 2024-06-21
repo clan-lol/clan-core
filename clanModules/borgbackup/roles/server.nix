@@ -3,7 +3,8 @@ let
   clanDir = config.clan.core.clanDir;
   machineDir = clanDir + "/machines/";
   inherit (config.clan.core) machineName;
-  instances = config.clan.inventory.borgbackup;
+
+  instances = config.clan.services.borgbackup;
 
   # roles = { ${role_name} :: { machines :: [string] } }
   allClients = lib.foldlAttrs (
@@ -20,7 +21,6 @@ in
 {
   config.services.borgbackup.repos =
     let
-      filteredMachines = allClients;
 
       borgbackupIpMachinePath = machines: machineDir + machines + "/facts/borgbackup.ssh.pub";
       machinesMaybeKey = builtins.map (
@@ -29,7 +29,7 @@ in
           fullPath = borgbackupIpMachinePath machine;
         in
         if builtins.pathExists fullPath then machine else null
-      ) filteredMachines;
+      ) allClients;
 
       machinesWithKey = lib.filter (x: x != null) machinesMaybeKey;
 

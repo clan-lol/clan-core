@@ -1,6 +1,6 @@
 { config, lib, ... }:
 let
-  instances = config.clan.inventory.borgbackup;
+  instances = config.clan.services.borgbackup;
   # roles = { ${role_name} :: { machines :: [string] } }
   allServers = lib.foldlAttrs (
     acc: _instanceName: instanceConfig:

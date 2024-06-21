@@ -92,7 +92,7 @@ let
                 ];
               }
               {
-                config.clan.inventory.${moduleName}.${instanceName} = {
+                config.clan.services.${moduleName}.${instanceName} = {
                   roles = resolvedRoles;
                   # inherit inverseRoles;
                 };
@@ -107,7 +107,8 @@ in
 {
   inherit clan-core;
 
-  new_clan = clan-core.lib.buildInventory {
+  # Extension of the build clan interface
+  new_clan = clan-core.lib.buildClan {
     # High level services.
     # If you need multiple instances of a service configure them via:
     # inventory.services.[serviceName].[instanceName] = ...
