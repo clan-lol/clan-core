@@ -2,12 +2,13 @@ import ipaddress
 from typing import TYPE_CHECKING
 
 import pytest
+from age_keys import is_valid_age_key
 from cli import Cli
 from fixtures_flakes import FlakeForTest
 
 from clan_cli.machines.facts import machine_get_fact
 from clan_cli.secrets.folders import sops_secrets_folder
-from clan_cli.secrets.secrets import has_secret
+from clan_cli.secrets.secrets import decrypt_secret, has_secret
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
@@ -59,6 +60,10 @@ def test_generate_secret(
     age_key_mtime = age_key.lstat().st_mtime_ns
     secret1_mtime = identity_secret.lstat().st_mtime_ns
 
+    # Assert that the age key is valid
+    age_secert = decrypt_secret(test_flake_with_core.path, "vm1-age.key")
+    assert is_valid_age_key(age_secert)
+
     # test idempotency for vm1 and also generate for vm2
     cli.run(["facts", "generate", "--flake", str(test_flake_with_core.path)])
     assert age_key.lstat().st_mtime_ns == age_key_mtime
@@ -72,3 +77,7 @@ def test_generate_secret(
     assert has_secret(test_flake_with_core.path, "vm2-zerotier-identity-secret")
     ip = machine_get_fact(test_flake_with_core.path, "vm1", "zerotier-ip")
     assert ipaddress.IPv6Address(ip).is_private
+
+    # Assert that the age key is valid
+    age_secert = decrypt_secret(test_flake_with_core.path, "vm2-age.key")
+    assert is_valid_age_key(age_secert)

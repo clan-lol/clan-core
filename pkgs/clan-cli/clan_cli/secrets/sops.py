@@ -75,12 +75,12 @@ def get_user_name(flake_dir: Path, user: str) -> str:
 def ensure_user_or_machine(flake_dir: Path, pub_key: str) -> SopsKey:
     key = SopsKey(pub_key, username="")
     folders = [sops_users_folder(flake_dir), sops_machines_folder(flake_dir)]
+
     for folder in folders:
         if folder.exists():
             for user in folder.iterdir():
                 if not (user / "key.json").exists():
                     continue
-
                 if read_key(user) == pub_key:
                     key.username = user.name
                     return key
