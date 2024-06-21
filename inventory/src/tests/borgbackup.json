@@ -1,39 +1,51 @@
 {
   "machines": {
     "camina_machine": {
-      "name": "camina"
+      "name": "camina",
+      "tags": ["laptop"]
     },
     "vyr_machine": {
       "name": "vyr"
     },
     "vi_machine": {
-      "name": "vi"
-    }
-  },
-  "groups": {
-    "machines": {
-      "laptops": ["camina_machine", "vi_machine"],
-      "all": ["camina_machine", "vi_machine", "vyr_machine"]
+      "name": "vi",
+      "tags": ["laptop"]
     }
   },
   "meta": {
     "name": "kenjis clan"
   },
   "services": {
-    "borgbackup-static": {
+    "borgbackup": {
       "instance_1": {
         "meta": {
           "name": "My backup"
         },
         "roles": {
-          "server": ["vyr_machine"],
-          "client": ["group:laptops"]
+          "server": {
+            "machines": ["vyr_machine"]
+          },
+          "client": {
+            "machines": ["vyr_machine"],
+            "tags": ["laptop"]
+          }
         },
-        "machines": {
-          "vyr_machine": {},
-          "vi_machine": {},
-          "camina_machine": {}
+        "machines": {},
+        "config": {}
+      },
+      "instance_2": {
+        "meta": {
+          "name": "My backup"
         },
+        "roles": {
+          "server": {
+            "machines": ["vi_machine"]
+          },
+          "client": {
+            "machines": ["camina_machine"]
+          }
+        },
+        "machines": {},
         "config": {}
       }
     }

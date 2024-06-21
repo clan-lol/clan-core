@@ -14,13 +14,15 @@
     "name": "kenjis clan"
   },
   "services": {
-    "syncthing-static-peers": {
+    "syncthing": {
       "instance_1": {
         "meta": {
           "name": "My sync"
         },
         "roles": {
-          "peer": ["vyr_machine", "vi_machine", "camina_machine"]
+          "peer": {
+            "machines": ["vyr_machine", "vi_machine", "camina_machine"]
+          }
         },
         "machines": {},
         "config": {
