@@ -1,4 +1,6 @@
 import ipaddress
+import subprocess
+import tempfile
 from typing import TYPE_CHECKING
 
 import pytest
@@ -12,6 +14,26 @@ from clan_cli.secrets.secrets import decrypt_secret, has_secret
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
+
+
+def is_valid_ssh_key(secret_key: str, ssh_pub: str) -> bool:
+    # create tempfile and write secret_key to it
+    with tempfile.NamedTemporaryFile() as temp:
+        temp.write(secret_key.encode("utf-8"))
+        temp.flush()
+        # Run the ssh-keygen command with the -y flag to check the key format
+        result = subprocess.run(
+            ["ssh-keygen", "-y", "-f", temp.name], capture_output=True, text=True
+        )
+
+        if result.returncode == 0:
+            if result.stdout != ssh_pub:
+                raise ValueError(
+                    f"Expected '{ssh_pub}' got '{result.stdout}' for ssh key: {secret_key}"
+                )
+            return True
+        else:
+            raise ValueError(f"Invalid ssh key: {secret_key}")
 
 
 @pytest.mark.impure
@@ -47,9 +69,10 @@ def test_generate_secret(
     )
     cmd = ["facts", "generate", "--flake", str(test_flake_with_core.path), "vm1"]
     cli.run(cmd)
-    has_secret(test_flake_with_core.path, "vm1-age.key")
-    has_secret(test_flake_with_core.path, "vm1-zerotier-identity-secret")
-    has_secret(test_flake_with_core.path, "vm1-zerotier-subnet")
+    assert has_secret(test_flake_with_core.path, "vm1-ssh.id_ed25519")
+    assert has_secret(test_flake_with_core.path, "vm1-password")
+    assert has_secret(test_flake_with_core.path, "vm1-age.key")
+    assert has_secret(test_flake_with_core.path, "vm1-zerotier-identity-secret")
     network_id = machine_get_fact(
         test_flake_with_core.path, "vm1", "zerotier-network-id"
     )
@@ -61,8 +84,20 @@ def test_generate_secret(
     secret1_mtime = identity_secret.lstat().st_mtime_ns
 
     # Assert that the age key is valid
-    age_secert = decrypt_secret(test_flake_with_core.path, "vm1-age.key")
-    assert is_valid_age_key(age_secert)
+    age_secret = decrypt_secret(test_flake_with_core.path, "vm1-age.key")
+    assert is_valid_age_key(age_secret)
+
+    # Assert that the ssh key is valid
+    ssh_secret = decrypt_secret(test_flake_with_core.path, "vm1-ssh.id_ed25519")
+    ssh_pub = machine_get_fact(test_flake_with_core.path, "vm1", "ssh.id_ed25519.pub")
+    assert is_valid_ssh_key(ssh_secret, ssh_pub)
+
+    pwd_secret = decrypt_secret(test_flake_with_core.path, "vm1-password")
+    # remove last newline
+    pwd_secret = pwd_secret[:-1]
+    assert pwd_secret.isprintable()
+    assert pwd_secret.isascii()
+
 
     # test idempotency for vm1 and also generate for vm2
     cli.run(["facts", "generate", "--flake", str(test_flake_with_core.path)])
@@ -73,11 +108,18 @@ def test_generate_secret(
         secrets_folder / "vm1-zerotier-identity-secret" / "machines" / "vm1"
     ).exists()
 
+    assert has_secret(test_flake_with_core.path, "vm2-password")
+    assert has_secret(test_flake_with_core.path, "vm2-ssh.id_ed25519")
     assert has_secret(test_flake_with_core.path, "vm2-age.key")
     assert has_secret(test_flake_with_core.path, "vm2-zerotier-identity-secret")
     ip = machine_get_fact(test_flake_with_core.path, "vm1", "zerotier-ip")
     assert ipaddress.IPv6Address(ip).is_private
 
     # Assert that the age key is valid
-    age_secert = decrypt_secret(test_flake_with_core.path, "vm2-age.key")
-    assert is_valid_age_key(age_secert)
+    age_secret = decrypt_secret(test_flake_with_core.path, "vm2-age.key")
+    assert is_valid_age_key(age_secret)
+
+    # Assert that the ssh key is valid
+    ssh_secret = decrypt_secret(test_flake_with_core.path, "vm2-ssh.id_ed25519")
+    ssh_pub = machine_get_fact(test_flake_with_core.path, "vm2", "ssh.id_ed25519.pub")
+    assert is_valid_ssh_key(ssh_secret, ssh_pub)
