@@ -348,6 +348,9 @@ def main() -> None:
 
         log.error(e)
         sys.exit(1)
+    except KeyboardInterrupt:
+        log.warning("Interrupted by user")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
