@@ -7,11 +7,12 @@ let
   instances = config.clan.services.borgbackup;
 
   # roles = { ${role_name} :: { machines :: [string] } }
+
   allClients = lib.foldlAttrs (
     acc: _instanceName: instanceConfig:
     acc
     ++ (
-      if builtins.elem machineName instanceConfig.roles.server.machines then
+      if (builtins.elem machineName instanceConfig.roles.server.machines) then
         instanceConfig.roles.client.machines
       else
         [ ]
@@ -21,7 +22,6 @@ in
 {
   config.services.borgbackup.repos =
     let
-
       borgbackupIpMachinePath = machines: machineDir + machines + "/facts/borgbackup.ssh.pub";
       machinesMaybeKey = builtins.map (
         machine:

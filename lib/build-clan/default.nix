@@ -12,10 +12,79 @@
   # DEPRECATED: use meta.icon instead
   clanIcon ? null, # A path to an icon to be used for the clan, should be the same for all machines
   meta ? { }, # A set containing clan meta: name :: string, icon :: string, description :: string
-  pkgsForSystem ? (_system: null), # A map from arch to pkgs, if specified this nixpkgs will be only imported once for each system.
-# This improves performance, but all nipxkgs.* options will be ignored.
+  # A map from arch to pkgs, if specified this nixpkgs will be only imported once for each system.
+  # This improves performance, but all nipxkgs.* options will be ignored.
+  pkgsForSystem ? (_system: null),
+  /*
+    Distributed services configuration.
+
+    This configures a default instance in the inventory with the name "default".
+
+    If you need multiple instances of a service configure them via:
+    inventory.services.[serviceName].[instanceName] = ...
+  */
+  services ? { },
+  /*
+    Low level inventory configuration.
+    Overrides the services configuration.
+  */
+  inventory ? { },
 }:
 let
+  _inventory =
+    (
+      if services != { } && inventory == { } then
+        { services = lib.mapAttrs (_name: value: { default = value; }) services; }
+      else if services == { } && inventory != { } then
+        inventory
+      else if services != { } && inventory != { } then
+        throw "Either services or inventory should be set, but not both."
+      else
+        { }
+    )
+    // {
+      machines = lib.mapAttrs (
+        name: config:
+        (lib.attrByPath [
+          "clan"
+          "meta"
+        ] { } config)
+        // {
+          name = (
+            lib.attrByPath [
+              "clan"
+              "meta"
+              "name"
+            ] name config
+          );
+          tags = lib.attrByPath [
+            "clan"
+            "tags"
+          ] [ ] config;
+        }
+      ) machines;
+    };
+
+  buildInventory = import ./inventory.nix { inherit lib clan-core; };
+
+  pkgs = import nixpkgs { };
+
+  inventoryFile = builtins.toFile "inventory.json" (builtins.toJSON _inventory);
+
+  # a Derivation that can be forced to validate the inventory
+  # It is not used directly here.
+  validatedFile = pkgs.stdenv.mkDerivation {
+    name = "validated-inventory";
+    src = ../../inventory/src;
+    buildInputs = [ pkgs.cue ];
+    installPhase = ''
+      cue vet ${inventoryFile} root.cue -d "#Root"
+      cp ${inventoryFile} $out
+    '';
+  };
+
+  serviceConfigs = buildInventory _inventory;
+
   deprecationWarnings = [
     (lib.warnIf (
       clanName != null
@@ -98,6 +167,7 @@ let
           clan-core.nixosModules.clanCore
           extraConfig
           (machines.${name} or { })
+          { imports = serviceConfigs.${name} or { }; }
           (
             {
               # Settings
@@ -180,6 +250,7 @@ builtins.deepSeq deprecationWarnings {
     # Evaluated clan meta
     # Merged /clan/meta.json with overrides from buildClan
     meta = mergedMeta;
+    inherit _inventory validatedFile;
 
     # machine specifics
     machines = configsPerSystem;
