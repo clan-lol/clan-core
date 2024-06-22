@@ -90,7 +90,7 @@ let
                 ];
               }
               {
-                config.clan.services.${moduleName}.${instanceName} = {
+                config.clan.inventory.services.${moduleName}.${instanceName} = {
                   roles = resolvedRoles;
                   # TODO: Add inverseRoles to the service config if needed
                   # inherit inverseRoles;

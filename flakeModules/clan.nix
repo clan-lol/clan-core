@@ -13,7 +13,6 @@ let
     inherit lib clan-core;
     inherit (inputs) nixpkgs;
   };
-
   cfg = config.clan;
 in
 {
@@ -91,6 +90,7 @@ in
     clanInternals = lib.mkOption {
       type = lib.types.submodule {
         options = {
+          inventory = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           meta = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           all-machines-json = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           machines = lib.mkOption { type = lib.types.attrsOf (lib.types.attrsOf lib.types.unspecified); };

@@ -4,7 +4,7 @@ let
   machineDir = clanDir + "/machines/";
   inherit (config.clan.core) machineName;
 
-  instances = config.clan.services.borgbackup;
+  instances = config.clan.inventory.services.borgbackup;
 
   # roles = { ${role_name} :: { machines :: [string] } }
 

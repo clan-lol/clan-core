@@ -31,59 +31,62 @@
   inventory ? { },
 }:
 let
-  _inventory =
-    (
-      if services != { } && inventory == { } then
-        { services = lib.mapAttrs (_name: value: { default = value; }) services; }
-      else if services == { } && inventory != { } then
+  # Internal inventory, this is the result of merging all potential inventory sources:
+  # - Default instances configured via 'services'
+  # - The inventory overrides
+  #   - Machines that exist in inventory.machines
+  # - Machines explicitly configured via 'machines' argument
+  # - Machines that exist in the machines directory
+  # Checks on the module level:
+  # - Each service role must reference a valid machine after all machines are merged
+  mergedInventory =
+    (lib.evalModules {
+      modules = [
+        ./interface.nix
+        { inherit meta; }
+        # Default instances configured via 'services'
+        {
+          services = lib.mapAttrs (_name: value: {
+            default = value // {
+              meta.name = lib.mkDefault _name;
+            };
+          }) services;
+        }
+        # The inventory overrides
         inventory
-      else if services != { } && inventory != { } then
-        throw "Either services or inventory should be set, but not both."
-      else
-        { }
-    )
-    // {
-      machines = lib.mapAttrs (
-        name: config:
-        (lib.attrByPath [
-          "clan"
-          "meta"
-        ] { } config)
-        // {
-          name = (
-            lib.attrByPath [
+        # Machines explicitly configured via 'machines' argument
+        {
+          # { ${name} :: meta // { name, tags } }
+          machines = lib.mapAttrs (
+            name: config:
+            (lib.attrByPath [
               "clan"
               "meta"
-              "name"
-            ] name config
-          );
-          tags = lib.attrByPath [
-            "clan"
-            "tags"
-          ] [ ] config;
+            ] { } config)
+            // {
+              # meta.name default is the attribute name of the machine
+              name = lib.mkDefault (
+                lib.attrByPath [
+                  "clan"
+                  "meta"
+                  "name"
+                ] name config
+              );
+              tags = lib.attrByPath [
+                "clan"
+                "tags"
+              ] [ ] config;
+            }
+          ) machines;
         }
-      ) machines;
-    };
+        # Machines that exist in the machines directory
+        { machines = lib.mapAttrs (name: _: { inherit name; }) machinesDirs; }
+      ];
+    }).config;
 
   buildInventory = import ./inventory.nix { inherit lib clan-core; };
 
-  pkgs = import nixpkgs { };
-
-  inventoryFile = builtins.toFile "inventory.json" (builtins.toJSON _inventory);
-
-  # a Derivation that can be forced to validate the inventory
-  # It is not used directly here.
-  validatedFile = pkgs.stdenv.mkDerivation {
-    name = "validated-inventory";
-    src = ../../inventory/src;
-    buildInputs = [ pkgs.cue ];
-    installPhase = ''
-      cue vet ${inventoryFile} root.cue -d "#Root"
-      cp ${inventoryFile} $out
-    '';
-  };
-
-  serviceConfigs = buildInventory _inventory;
+  serviceConfigs = buildInventory mergedInventory;
 
   deprecationWarnings = [
     (lib.warnIf (
@@ -167,6 +170,8 @@ let
           clan-core.nixosModules.clanCore
           extraConfig
           (machines.${name} or { })
+          # Inherit the inventory assertions ?
+          { inherit (mergedInventory) assertions; }
           { imports = serviceConfigs.${name} or { }; }
           (
             {
@@ -250,7 +255,7 @@ builtins.deepSeq deprecationWarnings {
     # Evaluated clan meta
     # Merged /clan/meta.json with overrides from buildClan
     meta = mergedMeta;
-    inherit _inventory validatedFile;
+    inventory = mergedInventory;
 
     # machine specifics
     machines = configsPerSystem;
