@@ -29,9 +29,7 @@ let
   };
 in
 {
-  # clan.inventory.${moduleName}.${instanceName} = { ... }
-  # TODO: resolve clash with clan.services.waypipe
-  options.clan.services = lib.mkOption {
+  options.clan.inventory.services = lib.mkOption {
     type = lib.types.attrsOf (lib.types.attrsOf instanceOptions);
   };
 }
