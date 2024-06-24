@@ -16,15 +16,6 @@
   # This improves performance, but all nipxkgs.* options will be ignored.
   pkgsForSystem ? (_system: null),
   /*
-    Distributed services configuration.
-
-    This configures a default instance in the inventory with the name "default".
-
-    If you need multiple instances of a service configure them via:
-    inventory.services.[serviceName].[instanceName] = ...
-  */
-  services ? { },
-  /*
     Low level inventory configuration.
     Overrides the services configuration.
   */
@@ -44,15 +35,15 @@ let
       modules = [
         ./interface.nix
         { inherit meta; }
-        # Default instances configured via 'services'
-        {
-          services = lib.mapAttrs (_name: value: {
-            default = value // {
-              meta.name = lib.mkDefault _name;
-            };
-          }) services;
-        }
-        # The inventory overrides
+        (
+          if
+            builtins.pathExists "${directory}/inventory.json"
+          # Is recursively applied. Any explicit nix will override.
+          then
+            lib.mkDefault (builtins.fromJSON (builtins.readFile "${directory}/inventory.json"))
+          else
+            { }
+        )
         inventory
         # Machines explicitly configured via 'machines' argument
         {
@@ -79,13 +70,17 @@ let
             }
           ) machines;
         }
-        # Machines that exist in the machines directory
-        { machines = lib.mapAttrs (name: _: { inherit name; }) machinesDirs; }
+
+        # Deprecated interface
+        (if clanName != null then { meta.name = clanName; } else { })
+        (if clanIcon != null then { meta.icon = clanIcon; } else { })
       ];
     }).config;
 
   buildInventory = import ./inventory.nix { inherit lib clan-core; };
 
+  # map from machine name to service configuration
+  # { ${machineName} :: Config }
   serviceConfigs = buildInventory mergedInventory;
 
   deprecationWarnings = [
@@ -94,62 +89,6 @@ let
     ) "clanName is deprecated, please use meta.name instead. ${clanName}" null)
     (lib.warnIf (clanIcon != null) "clanIcon is deprecated, please use meta.icon instead" null)
   ];
-
-  machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (
-    builtins.readDir (directory + /machines)
-  );
-
-  mergedMeta =
-    let
-      metaFromFile =
-        if (builtins.pathExists "${directory}/clan/meta.json") then
-          let
-            settings = builtins.fromJSON (builtins.readFile "${directory}/clan/meta.json");
-          in
-          settings
-        else
-          { };
-      legacyMeta = lib.filterAttrs (_: v: v != null) {
-        name = clanName;
-        icon = clanIcon;
-      };
-      optionsMeta = lib.filterAttrs (_: v: v != null) meta;
-
-      warnings =
-        builtins.map (
-          name:
-          if
-            metaFromFile.${name} or null != optionsMeta.${name} or null && optionsMeta.${name} or null != null
-          then
-            lib.warn "meta.${name} is set in different places. (exlicit option meta.${name} overrides ${directory}/clan/meta.json)" null
-          else
-            null
-        ) (builtins.attrNames metaFromFile)
-        ++ [ (if (res.name or null == null) then (throw "meta.name should be set") else null) ];
-      res = metaFromFile // legacyMeta // optionsMeta;
-    in
-    # Print out warnings before returning the merged result
-    builtins.deepSeq warnings res;
-
-  machineSettings =
-    machineName:
-    # CLAN_MACHINE_SETTINGS_FILE allows to override the settings file temporarily
-    # This is useful for doing a dry-run before writing changes into the settings.json
-    # Using CLAN_MACHINE_SETTINGS_FILE requires passing --impure to nix eval
-    if builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE" != "" then
-      builtins.fromJSON (builtins.readFile (builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE"))
-    else
-      lib.optionalAttrs (builtins.pathExists "${directory}/machines/${machineName}/settings.json") (
-        builtins.fromJSON (builtins.readFile (directory + /machines/${machineName}/settings.json))
-      );
-
-  # Read additional imports specified via a config option in settings.json
-  # This is not an infinite recursion, because the imports are discovered here
-  #   before calling evalModules.
-  # It is still useful to have the imports as an option, as this allows for type
-  #   checking and easy integration with the config frontend(s)
-  machineImports =
-    machineSettings: map (module: clan-core.clanModules.${module}) (machineSettings.clanImports or [ ]);
 
   # TODO: remove default system once we have a hardware-config mechanism
   nixosConfiguration =
@@ -160,47 +99,41 @@ let
       extraConfig ? { },
     }:
     nixpkgs.lib.nixosSystem {
-      modules =
-        let
-          settings = machineSettings name;
-        in
-        (machineImports settings)
-        ++ [
-          settings
-          clan-core.nixosModules.clanCore
-          extraConfig
-          (machines.${name} or { })
-          # Inherit the inventory assertions ?
-          { inherit (mergedInventory) assertions; }
-          { imports = serviceConfigs.${name} or { }; }
-          (
-            {
-              # Settings
-              clan.core.clanDir = directory;
-              # Inherited from clan wide settings
-              clan.core.clanName = meta.name or clanName;
-              clan.core.clanIcon = meta.icon or clanIcon;
+      modules = [
+        clan-core.nixosModules.clanCore
+        extraConfig
+        (machines.${name} or { })
+        # Inherit the inventory assertions ?
+        { inherit (mergedInventory) assertions; }
+        { imports = serviceConfigs.${name} or { }; }
+        (
+          {
+            # Settings
+            clan.core.clanDir = directory;
+            # Inherited from clan wide settings
+            clan.core.clanName = meta.name or clanName;
+            clan.core.clanIcon = meta.icon or clanIcon;
 
-              # Machine specific settings
-              clan.core.machineName = name;
-              networking.hostName = lib.mkDefault name;
-              nixpkgs.hostPlatform = lib.mkDefault system;
+            # Machine specific settings
+            clan.core.machineName = name;
+            networking.hostName = lib.mkDefault name;
+            nixpkgs.hostPlatform = lib.mkDefault system;
 
-              # speeds up nix commands by using the nixpkgs from the host system (especially useful in VMs)
-              nix.registry.nixpkgs.to = {
-                type = "path";
-                path = lib.mkDefault nixpkgs;
-              };
-            }
-            // lib.optionalAttrs (pkgs != null) { nixpkgs.pkgs = lib.mkForce pkgs; }
-          )
-        ];
+            # speeds up nix commands by using the nixpkgs from the host system (especially useful in VMs)
+            nix.registry.nixpkgs.to = {
+              type = "path";
+              path = lib.mkDefault nixpkgs;
+            };
+          }
+          // lib.optionalAttrs (pkgs != null) { nixpkgs.pkgs = lib.mkForce pkgs; }
+        )
+      ];
       specialArgs = {
         inherit clan-core;
       } // specialArgs;
     };
 
-  allMachines = machinesDirs // machines;
+  allMachines = mergedInventory.machines or { };
 
   supportedSystems = [
     "x86_64-linux"
@@ -252,10 +185,10 @@ builtins.deepSeq deprecationWarnings {
   inherit nixosConfigurations;
 
   clanInternals = {
-    # Evaluated clan meta
-    # Merged /clan/meta.json with overrides from buildClan
-    meta = mergedMeta;
+    meta = mergedInventory.meta;
     inventory = mergedInventory;
+
+    invFile = "${directory}/inventory.json";
 
     # machine specifics
     machines = configsPerSystem;
