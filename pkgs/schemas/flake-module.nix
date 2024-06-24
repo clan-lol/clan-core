@@ -10,37 +10,21 @@
       #   borgbackup = self.clanModules.borgbackup;
       # };
 
-      baseModule = {
-        imports = (import (pkgs.path + "/nixos/modules/module-list.nix")) ++ [
-          {
-            nixpkgs.hostPlatform = "x86_64-linux";
-            clan.core.clanName = "dummy";
-          }
-        ];
-      };
-
       optionsFromModule =
-        modulename: module:
+        mName:
         let
-          evaled = lib.evalModules {
-            modules = [
-              module
-              baseModule
-              self.nixosModules.clanCore
-            ];
-          };
+          eval = self.lib.evalClanModules [ mName ];
         in
-        # Filter out "injected" options that are not part of the module
-        if (evaled.options.clan ? "${modulename}") then evaled.options.clan.${modulename} else { };
+        if (eval.options.clan ? "${mName}") then eval.options.clan.${mName} else { };
 
       clanModuleSchemas = lib.mapAttrs (
-        modulename: module: self.lib.jsonschema.parseOptions (optionsFromModule modulename module)
+        modulename: _: self.lib.jsonschema.parseOptions (optionsFromModule modulename)
       ) clanModules;
 
-      clanModuleFunctionSchemas = lib.mapAttrsFlatten (modulename: module: {
+      clanModuleFunctionSchemas = lib.mapAttrsFlatten (modulename: _: {
         name = modulename;
         description = self.lib.modules.getShortDescription modulename;
-        parameters = self.lib.jsonschema.parseOptions (optionsFromModule modulename module);
+        parameters = self.lib.jsonschema.parseOptions (optionsFromModule modulename);
       }) clanModules;
     in
     rec {
