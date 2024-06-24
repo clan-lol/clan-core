@@ -53,8 +53,6 @@
           ./nixosModules/flake-module.nix
           ./pkgs/flake-module.nix
           ./templates/flake-module.nix
-
-          ./inventory/flake-module.nix
         ];
       }
     );

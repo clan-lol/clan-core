@@ -33,7 +33,7 @@ let
   mergedInventory =
     (lib.evalModules {
       modules = [
-        ./interface.nix
+        clan-core.lib.inventory.interface
         { inherit meta; }
         (
           if
@@ -77,7 +77,7 @@ let
       ];
     }).config;
 
-  buildInventory = import ./inventory.nix { inherit lib clan-core; };
+  inherit (clan-core.lib.inventory) buildInventory;
 
   # map from machine name to service configuration
   # { ${machineName} :: Config }
