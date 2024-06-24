@@ -7,7 +7,7 @@
 {
   imports = [ ./jsonschema/flake-module.nix ];
   flake.lib = import ./default.nix {
-    inherit lib;
+    inherit lib inputs;
     inherit (inputs) nixpkgs;
     clan-core = self;
   };
