@@ -83,6 +83,7 @@ def test_generate_secret(
 
     # Assert that the age key is valid
     age_secret = decrypt_secret(test_flake_with_core.path, "vm1-age.key")
+    assert age_secret.isprintable()
     assert is_valid_age_key(age_secret)
 
     # # Assert that the ssh key is valid
@@ -100,6 +101,9 @@ def test_generate_secret(
     ).exists()
 
     assert has_secret(test_flake_with_core.path, "vm2-password")
+    assert has_secret(test_flake_with_core.path, "vm2-password-hash")
+    assert has_secret(test_flake_with_core.path, "vm2-user-password")
+    assert has_secret(test_flake_with_core.path, "vm2-user-password-hash")
     assert has_secret(test_flake_with_core.path, "vm2-ssh.id_ed25519")
     assert has_secret(test_flake_with_core.path, "vm2-age.key")
     assert has_secret(test_flake_with_core.path, "vm2-zerotier-identity-secret")
@@ -109,6 +113,7 @@ def test_generate_secret(
 
     # Assert that the age key is valid
     age_secret = decrypt_secret(test_flake_with_core.path, "vm2-age.key")
+    assert age_secret.isprintable()
     assert is_valid_age_key(age_secret)
 
     # Assert that the ssh key is valid
@@ -116,8 +121,18 @@ def test_generate_secret(
     ssh_pub = machine_get_fact(test_flake_with_core.path, "vm2", "ssh.id_ed25519.pub")
     assert is_valid_ssh_key(ssh_secret, ssh_pub)
 
+    # Assert that root-password is valid
     pwd_secret = decrypt_secret(test_flake_with_core.path, "vm2-password")
-    # remove last newline
-    pwd_secret = pwd_secret[:-1]
     assert pwd_secret.isprintable()
     assert pwd_secret.isascii()
+    pwd_hash = decrypt_secret(test_flake_with_core.path, "vm2-password-hash")
+    assert pwd_hash.isprintable()
+    assert pwd_hash.isascii()
+
+    # Assert that user-password is valid
+    pwd_secret = decrypt_secret(test_flake_with_core.path, "vm2-user-password")
+    assert pwd_secret.isprintable()
+    assert pwd_secret.isascii()
+    pwd_hash = decrypt_secret(test_flake_with_core.path, "vm2-user-password-hash")
+    assert pwd_hash.isprintable()
+    assert pwd_hash.isascii()

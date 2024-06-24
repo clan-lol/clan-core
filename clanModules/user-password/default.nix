@@ -37,12 +37,12 @@
         mkpasswd
       ];
       generator.script = ''
-        if [[ -n $prompt_value ]]; then
-          echo $prompt_value | tr -d '\n' > $secrets/user-password
+        if [[ -n ''${prompt_value-} ]]; then
+          echo $prompt_value | tr -d "\n" > $secrets/user-password
         else
-          xkcdpass --numwords 3 --delimiter - --count 1 | tr -d '\n' > $secrets/user-password
+          xkcdpass --numwords 3 --delimiter - --count 1 | tr -d "\n" > $secrets/user-password
         fi
-        cat $secrets/user-password | mkpasswd -s -m sha-512 > $secrets/user-password-hash
+        cat $secrets/user-password | mkpasswd -s -m sha-512 | tr -d "\n" > $secrets/user-password-hash
       '';
     };
   };
