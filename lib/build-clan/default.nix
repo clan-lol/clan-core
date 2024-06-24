@@ -188,7 +188,7 @@ builtins.deepSeq deprecationWarnings {
     meta = mergedInventory.meta;
     inventory = mergedInventory;
 
-    invFile = "${directory}/inventory.json";
+    inventoryFile = "${directory}/inventory.json";
 
     # machine specifics
     machines = configsPerSystem;

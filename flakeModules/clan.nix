@@ -91,6 +91,8 @@ in
       type = lib.types.submodule {
         options = {
           inventory = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
+          inventoryFile = lib.mkOption { type = lib.types.unspecified; };
+
           meta = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           all-machines-json = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           machines = lib.mkOption { type = lib.types.attrsOf (lib.types.attrsOf lib.types.unspecified); };
