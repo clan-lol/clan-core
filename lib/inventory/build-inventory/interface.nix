@@ -78,6 +78,7 @@ in
   };
 
   options.services = lib.mkOption {
+    default = { };
     type = t.attrsOf (
       t.attrsOf (
         t.submodule {
