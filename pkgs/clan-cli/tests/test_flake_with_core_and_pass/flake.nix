@@ -15,6 +15,14 @@
           vm1 =
             { lib, ... }:
             {
+              imports = [
+                clan-core.clanModules.sshd
+                clan-core.clanModules.root-password
+                clan-core.clanModules.user-password
+              ];
+              clan.user-password.user = "alice";
+              clan.user-password.prompt = false;
+
               clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = lib.version;
               clan.core.secretStore = "password-store";

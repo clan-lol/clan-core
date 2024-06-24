@@ -1,5 +1,3 @@
-import subprocess
-
 import pytest
 
 
@@ -7,18 +5,6 @@ class KeyPair:
     def __init__(self, pubkey: str, privkey: str) -> None:
         self.pubkey = pubkey
         self.privkey = privkey
-
-
-def is_valid_age_key(secret_key: str) -> bool:
-    # Run the age-keygen command with the -y flag to check the key format
-    result = subprocess.run(
-        ["age-keygen", "-y"], input=secret_key, capture_output=True, text=True
-    )
-
-    if result.returncode == 0:
-        return True
-    else:
-        raise ValueError(f"Invalid age key: {secret_key}")
 
 
 KEYS = [
