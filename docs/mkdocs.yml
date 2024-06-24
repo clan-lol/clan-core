@@ -49,7 +49,7 @@ nav:
       - Mesh VPN: getting-started/mesh-vpn.md
       - Backup & Restore: getting-started/backups.md
       - Flake-parts: getting-started/flake-parts.md
-  - Modules:
+  - Reference:
       - Clan Modules:
           - reference/clanModules/borgbackup-static.md
           - reference/clanModules/borgbackup.md

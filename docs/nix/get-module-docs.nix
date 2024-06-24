@@ -43,11 +43,16 @@ let
     module_name: _module: self.lib.modules.getReadme module_name
   ) clanModules;
 
+  clanModulesMeta = builtins.mapAttrs (
+    module_name: _module:
+    (self.lib.evalClanModules [ module_name ]).config.clan.${module_name}.meta or { }
+  ) clanModules;
+
   # clanCore docs
   clanCoreDocs = (evalDocs (getOptions [ ]).clan.core).optionsJSON;
 in
 {
-  inherit clanModulesReadmes;
+  inherit clanModulesReadmes clanModulesMeta;
   clanCore = clanCoreDocs;
   clanModules = clanModulesDocs;
 }
