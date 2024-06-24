@@ -4,22 +4,18 @@ let
 in
 {
   clan = clan-core.lib.buildClan {
-
     meta.name = "kenjis clan";
     # Should usually point to the directory of flake.nix
     directory = self;
 
-    # service config
-    # Useful alias: "inventory.services.borgbackup.default"
-    services = {
-      borgbackup = {
-        roles.server.machines = [ "vyr_machine" ];
-        roles.client.tags = [ "laptop" ];
+    inventory = {
+      services = {
+        borgbackup.instance_1 = {
+          roles.server.machines = [ "vyr_machine" ];
+          roles.client.tags = [ "laptop" ];
+        };
       };
     };
-
-    # merged with
-    inventory = builtins.fromJSON (builtins.readFile ./src/tests/borgbackup.json);
 
     # merged with
     machines = {
