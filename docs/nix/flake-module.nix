@@ -19,6 +19,7 @@
 
       clanModulesFileInfo = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModules);
       clanModulesReadmes = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesReadmes);
+      clanModulesMeta = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesMeta);
 
       # Simply evaluated options (JSON)
       renderOptions =
@@ -54,6 +55,7 @@
         # A file that contains the links to all clanModule docs
         export CLAN_MODULES=${clanModulesFileInfo}
         export CLAN_MODULES_READMES=${clanModulesReadmes}
+        export CLAN_MODULES_META=${clanModulesMeta}
 
         mkdir $out
 

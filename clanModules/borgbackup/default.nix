@@ -30,39 +30,37 @@ let
 
   # Each .nix file in the roles directory is a role
   # TODO: Helper function to set available roles within module meta.
-  # roles = lib.pipe ./roles [
-  #   (p: if builtins.pathExists p then p else throw "Role directory does not exist")
-  #   builtins.readDir
-  #   (lib.filterAttrs (_n: v: v == "regular"))
-  #   lib.attrNames
-  #   (map (fileName: lib.removeSuffix ".nix" fileName))
-  # ];
+  roles =
+    if builtins.pathExists ./roles then
+      lib.pipe ./roles [
+        builtins.readDir
+        (lib.filterAttrs (_n: v: v == "regular"))
+        lib.attrNames
+        (map (fileName: lib.removeSuffix ".nix" fileName))
+      ]
+    else
+      null;
 
   # TODO: make this an interface of every module
   # Maybe load from readme.md
   metaInfoOption = lib.mkOption {
     readOnly = true;
     default = {
-      description = "A category for the service. This is used to group services in the clan ui";
+      description = "Borgbackup is a backup program. Optionally, it supports compression and authenticated encryption.";
+      availableRoles = roles;
+      category = "backup";
     };
     type = lib.types.submodule {
       options = {
-        description = lib.mkOption {
+        description = lib.mkOption { type = lib.types.str; };
+        availableRoles = lib.mkOption { type = lib.types.nullOr (lib.types.listOf lib.types.str); };
+        category = lib.mkOption {
           description = "A category for the service. This is used to group services in the clan ui";
-          type = lib.types.str;
+          type = lib.types.enum [
+            "backup"
+            "network"
+          ];
         };
-        # icon = lib.mkOption {
-        #   description = "A category for the service. This is used to group services in the clan ui";
-        #   type = lib.types.str;
-        # };
-        # screenshots = lib.mkOption {
-        #   description = "A category for the service. This is used to group services in the clan ui";
-        #   type = lib.types.str;
-        # };
-        # category = lib.mkOption {
-        #   description = "A category for the service. This is used to group services in the clan ui";
-        #   type = lib.types.enum ["backup" "network"];
-        # };
       };
     };
   };
@@ -105,11 +103,6 @@ in
   };
 
   imports = [
-    {
-      config.clan.borgbackup.meta = {
-        description = "backup";
-      };
-    }
     (lib.mkRemovedOptionModule [
       "clan"
       "borgbackup"
