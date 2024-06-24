@@ -26,8 +26,10 @@ in
     {
       expr = slib.parseOptions evaled.options;
       expected = {
+        additionalProperties = false;
         properties = {
           foo = {
+            additionalProperties = false;
             properties = {
               bar = {
                 type = "boolean";

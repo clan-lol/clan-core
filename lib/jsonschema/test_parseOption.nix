@@ -278,6 +278,7 @@ in
       expr = slib.parseOption (evalType (lib.types.submodule subModule) { });
       expected = {
         type = "object";
+        additionalProperties = false;
         properties = {
           opt = {
             type = "boolean";
@@ -301,6 +302,7 @@ in
       expr = slib.parseOption (evalType (lib.types.submodule subModule) { });
       expected = {
         type = "object";
+        additionalProperties = false;
         properties = {
           opt = {
             type = "boolean";
@@ -331,6 +333,7 @@ in
         type = "object";
         additionalProperties = {
           type = "object";
+          additionalProperties = false;
           properties = {
             opt = {
               type = "boolean";
@@ -363,6 +366,7 @@ in
         type = "array";
         items = {
           type = "object";
+          additionalProperties = false;
           properties = {
             opt = {
               type = "boolean";
