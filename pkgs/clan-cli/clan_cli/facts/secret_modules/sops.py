@@ -47,7 +47,9 @@ class SecretStore(SecretStoreBase):
         return path
 
     def get(self, service: str, name: str) -> bytes:
-        raise NotImplementedError()
+        return decrypt_secret(
+            self.machine.flake_dir, f"{self.machine.name}-{name}"
+        ).encode("utf-8")
 
     def exists(self, service: str, name: str) -> bool:
         return has_secret(
