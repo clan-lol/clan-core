@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "name": {
       "type": "string",
@@ -38,6 +39,7 @@
     },
     "services": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "opt": {
           "type": "string",
