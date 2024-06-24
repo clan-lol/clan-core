@@ -3,6 +3,7 @@
 out.log
 .coverage.*
 **/qubeclan
+pkgs/repro-hook
 **/testdir
 democlan
 example_clan
