@@ -98,7 +98,6 @@ def test_generate_secret(
     assert pwd_secret.isprintable()
     assert pwd_secret.isascii()
 
-
     # test idempotency for vm1 and also generate for vm2
     cli.run(["facts", "generate", "--flake", str(test_flake_with_core.path)])
     assert age_key.lstat().st_mtime_ns == age_key_mtime
