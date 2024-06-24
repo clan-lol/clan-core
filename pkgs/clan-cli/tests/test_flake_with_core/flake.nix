@@ -15,11 +15,6 @@
           vm1 =
             { lib, ... }:
             {
-              imports = [
-                clan-core.clanModules.sshd
-                clan-core.clanModules.root-password
-              ];
-
               clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = lib.version;
               sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
