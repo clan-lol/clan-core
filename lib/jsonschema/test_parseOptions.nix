@@ -4,16 +4,9 @@
   lib ? (import <nixpkgs> { }).lib,
   slib ? import ./. { inherit lib; },
 }:
-let
-  evaledOptions =
-    let
-      evaledConfig = lib.evalModules { modules = [ ./example-interface.nix ]; };
-    in
-    evaledConfig.options;
-in
 {
   testParseOptions = {
-    expr = slib.parseOptions evaledOptions;
+    expr = slib.parseModule ./example-interface.nix;
     expected = builtins.fromJSON (builtins.readFile ./example-schema.json);
   };
 
@@ -26,8 +19,10 @@ in
     {
       expr = slib.parseOptions evaled.options;
       expected = {
+        additionalProperties = false;
         properties = {
           foo = {
+            additionalProperties = false;
             properties = {
               bar = {
                 type = "boolean";

@@ -1,5 +1,7 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "name": {
       "type": "string",
@@ -38,6 +40,7 @@
     },
     "services": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "opt": {
           "type": "string",
@@ -59,9 +62,8 @@
             "type": "string"
           }
         },
-        "required": [
-          "repo"
-        ],
+        "required": ["repo"],
+        "additionalProperties": false,
         "type": "object"
       },
       "default": {},
