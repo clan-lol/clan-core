@@ -44,6 +44,14 @@ Let's get your development environment up and running:
          ```bash
          git remote add upstream gitea@git.clan.lol:clan/clan-core.git
          ```
+5. **Create an access token**:
+      - Log in to Gitea.
+      - Go to your account settings.
+      - Navigate to the Applications section.
+      - Click Generate New Token.
+      - Name your token and select all available scopes.
+      - Generate the token and copy it for later use.
+      - Your access token is now ready to use with all permissions.
 
 5. **Register Your Gitea Account Locally**:
 
@@ -54,9 +62,8 @@ Let's get your development environment up and running:
       - Fill out the prompt as follows:
         - URL of Gitea instance: `https://git.clan.lol`
         - Name of new Login [git.clan.lol]:
-        - Do you have an access token? No
-        - Username: YourUsername
-        - Password: YourPassword
+        - Do you have an access token? Yes
+        - Token: <yourtoken>
         - Set Optional settings: No
 
 
