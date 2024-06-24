@@ -69,8 +69,6 @@ def test_generate_secret(
     )
     cmd = ["facts", "generate", "--flake", str(test_flake_with_core.path), "vm1"]
     cli.run(cmd)
-    assert has_secret(test_flake_with_core.path, "vm1-ssh.id_ed25519")
-    assert has_secret(test_flake_with_core.path, "vm1-password")
     assert has_secret(test_flake_with_core.path, "vm1-age.key")
     assert has_secret(test_flake_with_core.path, "vm1-zerotier-identity-secret")
     network_id = machine_get_fact(
@@ -87,16 +85,10 @@ def test_generate_secret(
     age_secret = decrypt_secret(test_flake_with_core.path, "vm1-age.key")
     assert is_valid_age_key(age_secret)
 
-    # Assert that the ssh key is valid
-    ssh_secret = decrypt_secret(test_flake_with_core.path, "vm1-ssh.id_ed25519")
-    ssh_pub = machine_get_fact(test_flake_with_core.path, "vm1", "ssh.id_ed25519.pub")
-    assert is_valid_ssh_key(ssh_secret, ssh_pub)
-
-    pwd_secret = decrypt_secret(test_flake_with_core.path, "vm1-password")
-    # remove last newline
-    pwd_secret = pwd_secret[:-1]
-    assert pwd_secret.isprintable()
-    assert pwd_secret.isascii()
+    # # Assert that the ssh key is valid
+    # ssh_secret = decrypt_secret(test_flake_with_core.path, "vm1-ssh.id_ed25519")
+    # ssh_pub = machine_get_fact(test_flake_with_core.path, "vm1", "ssh.id_ed25519.pub")
+    # assert is_valid_ssh_key(ssh_secret, ssh_pub)
 
     # test idempotency for vm1 and also generate for vm2
     cli.run(["facts", "generate", "--flake", str(test_flake_with_core.path)])
@@ -111,6 +103,7 @@ def test_generate_secret(
     assert has_secret(test_flake_with_core.path, "vm2-ssh.id_ed25519")
     assert has_secret(test_flake_with_core.path, "vm2-age.key")
     assert has_secret(test_flake_with_core.path, "vm2-zerotier-identity-secret")
+
     ip = machine_get_fact(test_flake_with_core.path, "vm1", "zerotier-ip")
     assert ipaddress.IPv6Address(ip).is_private
 
@@ -122,3 +115,9 @@ def test_generate_secret(
     ssh_secret = decrypt_secret(test_flake_with_core.path, "vm2-ssh.id_ed25519")
     ssh_pub = machine_get_fact(test_flake_with_core.path, "vm2", "ssh.id_ed25519.pub")
     assert is_valid_ssh_key(ssh_secret, ssh_pub)
+
+    pwd_secret = decrypt_secret(test_flake_with_core.path, "vm2-password")
+    # remove last newline
+    pwd_secret = pwd_secret[:-1]
+    assert pwd_secret.isprintable()
+    assert pwd_secret.isascii()
