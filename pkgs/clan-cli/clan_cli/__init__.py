@@ -21,6 +21,7 @@ from . import (
     history,
     machines,
     secrets,
+    state,
     vms,
 )
 from .custom_logger import setup_logging
@@ -306,6 +307,38 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/depl
         description="flash machines to usb sticks or into isos",
     )
     flash.register_parser(parser_flash)
+
+    parser_state = subparsers.add_parser(
+        "state",
+        help="query state information about machines",
+        description="query state information about machines",
+        epilog=(
+            """
+This subcommand provides an interface to the state managed by clan.
+
+State can be folders and databases that modules depend on managed by clan.
+
+State directories can be added to on a per machine basis:
+```
+  config.clanCore.state.[SERVICE_NAME].folders = [
+    "/home"
+    "/root"
+  ];
+```
+Here [SERVICE_NAME] can be set freely, if the user sets them extra `userdata`
+can be a good choice.
+
+Examples:
+
+  $ clan state list [MACHINE]
+  List state of the machines managed by clan.
+
+For more detailed information, visit: https://docs.clan.lol/getting-started/backups
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    state.register_parser(parser_state)
 
     if argcomplete:
         argcomplete.autocomplete(parser)
