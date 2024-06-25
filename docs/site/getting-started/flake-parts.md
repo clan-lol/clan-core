@@ -16,7 +16,7 @@ inputs = {
   # New flake-parts input
   flake-parts.url = "github:hercules-ci/flake-parts";
   flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
-  
+
   clan-core = {
     url = "git+https://git.clan.lol/clan/clan-core";
     inputs.nixpkgs.follows = "nixpkgs"; # Needed if your configuration uses nixpkgs unstable.
@@ -35,7 +35,7 @@ After updating your flake inputs, the next step is to import the `clan-core` fla
     inputs@{ flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } (
       {
-        # 
+        #
         imports = [
           inputs.clan-core.flakeModules.default
         ];
@@ -63,7 +63,7 @@ Below is a guide on how to structure this in your flake.nix:
       # Define your clan
       clan = {
         # Clan wide settings. (Required)
-        clanName = ""; # Ensure to choose a unique name.
+        meta.name = ""; # Ensure to choose a unique name.
 
         machines = {
           jon = {
@@ -84,7 +84,7 @@ Below is a guide on how to structure this in your flake.nix:
 
             # There needs to be exactly one controller per clan
             clan.networking.zerotier.controller.enable = true;
-            
+
           };
         };
       };

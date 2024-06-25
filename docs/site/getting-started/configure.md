@@ -4,14 +4,14 @@
 
 In the `flake.nix` file:
 
-- [x] set a unique `clanName`.
+- [x] set a unique `name`.
 
 === "**buildClan**"
 
     ```nix title="clan-core.lib.buildClan"
     buildClan {
         # Set a unique name
-        clanName = "Lobsters";
+        meta.name = "Lobsters";
         # Should usually point to the directory of flake.nix
         directory = ./.;
 
@@ -31,7 +31,7 @@ In the `flake.nix` file:
     ```nix title="clan-core.flakeModules.default"
     clan = {
         # Set a unique name
-        clanName = "Lobsters";
+        meta.name = "Lobsters";
 
         machines = {
             jon = {
