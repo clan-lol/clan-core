@@ -12,7 +12,7 @@
       # { clanCore = «derivation JSON»; clanModules = { ${name} = «derivation JSON» }; }
       jsonDocs = import ./get-module-docs.nix {
         inherit (inputs) nixpkgs;
-        inherit pkgs self;
+        inherit pkgs;
         inherit (self.nixosModules) clanCore;
         inherit (self) clanModules;
       };
