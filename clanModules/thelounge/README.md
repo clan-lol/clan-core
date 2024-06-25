@@ -1,2 +1,3 @@
-Modern web IRC client
+---
+description = "Modern web IRC client"
 ---

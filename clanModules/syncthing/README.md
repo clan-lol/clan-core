@@ -1,4 +1,5 @@
-A secure, file synchronization app for devices over networks, offering a private alternative to cloud services.
+---
+description = "A secure, file synchronization app for devices over networks, offering a private alternative to cloud services."
 ---
 ## Usage
 
