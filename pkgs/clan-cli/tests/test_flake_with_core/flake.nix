@@ -10,7 +10,7 @@
     let
       clan = clan-core.lib.buildClan {
         directory = self;
-        clanName = "test_flake_with_core";
+        meta.name = "test_flake_with_core";
         machines = {
           vm1 =
             { lib, ... }:
