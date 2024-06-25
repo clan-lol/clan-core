@@ -1,0 +1,36 @@
+{
+  "machines": {
+    "camina_machine": {
+      "name": "camina"
+    },
+    "vyr_machine": {
+      "name": "vyr"
+    },
+    "vi_machine": {
+      "name": "vi"
+    }
+  },
+  "meta": {
+    "name": "kenjis clan"
+  },
+  "services": {
+    "zerotier": {
+      "instance_1": {
+        "meta": {
+          "name": "My Network"
+        },
+        "roles": {
+          "controller": { "machines": ["vyr_machine"] },
+          "moon": { "machines": ["vyr_machine"] },
+          "peer": { "machines": ["vi_machine", "camina_machine"] }
+        },
+        "machines": {
+          "vyr_machine": {
+            "config": {}
+          }
+        },
+        "config": {}
+      }
+    }
+  }
+}

@@ -12,52 +12,82 @@
   # DEPRECATED: use meta.icon instead
   clanIcon ? null, # A path to an icon to be used for the clan, should be the same for all machines
   meta ? { }, # A set containing clan meta: name :: string, icon :: string, description :: string
-  pkgsForSystem ? (_system: null), # A map from arch to pkgs, if specified this nixpkgs will be only imported once for each system.
-# This improves performance, but all nipxkgs.* options will be ignored.
+  # A map from arch to pkgs, if specified this nixpkgs will be only imported once for each system.
+  # This improves performance, but all nipxkgs.* options will be ignored.
+  pkgsForSystem ? (_system: null),
+  /*
+    Low level inventory configuration.
+    Overrides the services configuration.
+  */
+  inventory ? { },
 }:
 let
-  deprecationWarnings = [
-    (lib.warnIf (
-      clanName != null
-    ) "clanName is deprecated, please use meta.name instead. ${clanName}" null)
-    (lib.warnIf (clanIcon != null) "clanIcon is deprecated, please use meta.icon instead" null)
-  ];
+  # Internal inventory, this is the result of merging all potential inventory sources:
+  # - Default instances configured via 'services'
+  # - The inventory overrides
+  #   - Machines that exist in inventory.machines
+  # - Machines explicitly configured via 'machines' argument
+  # - Machines that exist in the machines directory
+  # Checks on the module level:
+  # - Each service role must reference a valid machine after all machines are merged
+  mergedInventory =
+    (lib.evalModules {
+      modules = [
+        clan-core.lib.inventory.interface
+        { inherit meta; }
+        (
+          if
+            builtins.pathExists "${directory}/inventory.json"
+          # Is recursively applied. Any explicit nix will override.
+          then
+            lib.mkDefault (builtins.fromJSON (builtins.readFile "${directory}/inventory.json"))
+          else
+            { }
+        )
+        inventory
+        # Machines explicitly configured via 'machines' argument
+        {
+          # { ${name} :: meta // { name, tags } }
+          machines = lib.mapAttrs (
+            name: config:
+            (lib.attrByPath [
+              "clan"
+              "meta"
+            ] { } config)
+            // {
+              # meta.name default is the attribute name of the machine
+              name = lib.mkDefault (
+                lib.attrByPath [
+                  "clan"
+                  "meta"
+                  "name"
+                ] name config
+              );
+              tags = lib.attrByPath [
+                "clan"
+                "tags"
+              ] [ ] config;
+            }
+          ) machines;
+        }
+        # Will be deprecated
+        { machines = lib.mapAttrs (_n: _: lib.mkDefault { }) machinesDirs; }
+
+        # Deprecated interface
+        (if clanName != null then { meta.name = clanName; } else { })
+        (if clanIcon != null then { meta.icon = clanIcon; } else { })
+      ];
+    }).config;
+
+  inherit (clan-core.lib.inventory) buildInventory;
+
+  # map from machine name to service configuration
+  # { ${machineName} :: Config }
+  serviceConfigs = buildInventory mergedInventory;
 
   machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (
     builtins.readDir (directory + /machines)
   );
-
-  mergedMeta =
-    let
-      metaFromFile =
-        if (builtins.pathExists "${directory}/clan/meta.json") then
-          let
-            settings = builtins.fromJSON (builtins.readFile "${directory}/clan/meta.json");
-          in
-          settings
-        else
-          { };
-      legacyMeta = lib.filterAttrs (_: v: v != null) {
-        name = clanName;
-        icon = clanIcon;
-      };
-      optionsMeta = lib.filterAttrs (_: v: v != null) meta;
-
-      warnings =
-        builtins.map (
-          name:
-          if
-            metaFromFile.${name} or null != optionsMeta.${name} or null && optionsMeta.${name} or null != null
-          then
-            lib.warn "meta.${name} is set in different places. (exlicit option meta.${name} overrides ${directory}/clan/meta.json)" null
-          else
-            null
-        ) (builtins.attrNames metaFromFile)
-        ++ [ (if (res.name or null == null) then (throw "meta.name should be set") else null) ];
-      res = metaFromFile // legacyMeta // optionsMeta;
-    in
-    # Print out warnings before returning the merged result
-    builtins.deepSeq warnings res;
 
   machineSettings =
     machineName:
@@ -71,13 +101,15 @@ let
         builtins.fromJSON (builtins.readFile (directory + /machines/${machineName}/settings.json))
       );
 
-  # Read additional imports specified via a config option in settings.json
-  # This is not an infinite recursion, because the imports are discovered here
-  #   before calling evalModules.
-  # It is still useful to have the imports as an option, as this allows for type
-  #   checking and easy integration with the config frontend(s)
   machineImports =
     machineSettings: map (module: clan-core.clanModules.${module}) (machineSettings.clanImports or [ ]);
+
+  deprecationWarnings = [
+    (lib.warnIf (
+      clanName != null
+    ) "clanName is deprecated, please use meta.name instead. ${clanName}" null)
+    (lib.warnIf (clanIcon != null) "clanIcon is deprecated, please use meta.icon instead" null)
+  ];
 
   # TODO: remove default system once we have a hardware-config mechanism
   nixosConfiguration =
@@ -98,6 +130,9 @@ let
           clan-core.nixosModules.clanCore
           extraConfig
           (machines.${name} or { })
+          # Inherit the inventory assertions ?
+          { inherit (mergedInventory) assertions; }
+          { imports = serviceConfigs.${name} or { }; }
           (
             {
               # Settings
@@ -125,7 +160,7 @@ let
       } // specialArgs;
     };
 
-  allMachines = machinesDirs // machines;
+  allMachines = mergedInventory.machines or { };
 
   supportedSystems = [
     "x86_64-linux"
@@ -177,9 +212,10 @@ builtins.deepSeq deprecationWarnings {
   inherit nixosConfigurations;
 
   clanInternals = {
-    # Evaluated clan meta
-    # Merged /clan/meta.json with overrides from buildClan
-    meta = mergedMeta;
+    meta = mergedInventory.meta;
+    inventory = mergedInventory;
+
+    inventoryFile = "${directory}/inventory.json";
 
     # machine specifics
     machines = configsPerSystem;

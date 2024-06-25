@@ -11,7 +11,19 @@
       # Usage see: https://docs.clan.lol
       clan = clan-core.lib.buildClan {
         directory = self;
-        clanName = "__CHANGE_ME__"; # Ensure this is internet wide unique.
+        meta.name = "__CHANGE_ME__"; # Ensure this is internet wide unique.
+
+        # Distributed services, uncomment to enable.
+        # inventory = {
+        #   services = {
+        #     # This example configures a BorgBackup service
+        #     # Check: https://docs.clan.lol/reference/clanModules which ones are available in Inventory
+        #     borgbackup.instance_1 = {
+        #       roles.server.machines = [ "jon" ];
+        #       roles.client.machines = [ "sara" ];
+        #     };
+        #   };
+        # };
 
         # Prerequisite: boot into the installer
         # See: https://docs.clan.lol/getting-started/installer
