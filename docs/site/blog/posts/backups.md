@@ -11,7 +11,7 @@ Our goal with [Clan](https://clan.lol/) is to give users control over their data
 However, with great power comes great responsibility, and owning your data means you also need to take care of backups yourself.
 
 In our experience, setting up automatic backups is often a tedious process as it requires custom integration of the backup software and
-the services that produce the state. More importantly than the backup is the restore.
+the services that produce the state. More important than the backup is the restore.
 Restores are often not well tested or documented, and if not working correctly, they can render the backup useless.
 
 In Clan, we want to make backup and restore a first-class citizen.
@@ -59,7 +59,7 @@ postRestoreCommand = ''
 Our CLI unifies the different backup providers in one [interface](https://docs.clan.lol/reference/cli/backups/).
 
 As of now, we support backups using [BorgBackup](https://www.borgbackup.org/) and
-a backup module called "localbackup" based on [rsnapshot](https://rsnapshot.org/), optimized for backup on locally-attached storage media.
+a backup module called "localbackup" based on [rsnapshot](https://rsnapshot.org/), optimized for backup on locally attached storage media.
 
 To use different backup software, a module needs to set the options provided by our backup interface.
 The following Nix code is a toy example that uses the `tar` program to perform backup and restore to illustrate how the backup interface works:
