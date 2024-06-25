@@ -38,7 +38,7 @@ class CommandFormatter(logging.Formatter):
             "%(prefix_color)s[%(command_prefix)s]%(color_reset)s %(color)s%(message)s%(color_reset)s"
         )
         self.hostnames: list[str] = []
-        self.hostname_color_offset = 1  # first host shouldn't get agressive red
+        self.hostname_color_offset = 1  # first host shouldn't get aggressive red
 
     def format(self, record: logging.LogRecord) -> str:
         colorcode = 0
@@ -362,10 +362,10 @@ class Host:
         """
         Command to run locally for the host
 
-        @cmd the commmand to run
+        @cmd the command to run
         @stdout if not None stdout of the command will be redirected to this file i.e. stdout=subprocess.PIPE
         @stderr if not None stderr of the command will be redirected to this file i.e. stderr=subprocess.PIPE
-        @extra_env environment variables to override whe running the command
+        @extra_env environment variables to override when running the command
         @cwd current working directory to run the process in
         @timeout: Timeout in seconds for the command to complete
 
@@ -407,11 +407,11 @@ class Host:
         """
         Command to run on the host via ssh
 
-        @cmd the commmand to run
+        @cmd the command to run
         @stdout if not None stdout of the command will be redirected to this file i.e. stdout=subprocss.PIPE
         @stderr if not None stderr of the command will be redirected to this file i.e. stderr=subprocess.PIPE
         @become_root if the ssh_user is not root than sudo is prepended
-        @extra_env environment variables to override whe running the command
+        @extra_env environment variables to override when running the command
         @cwd current working directory to run the process in
         @verbose_ssh: Enables verbose logging on ssh connections
         @timeout: Timeout in seconds for the command to complete
@@ -706,11 +706,11 @@ class HostGroup:
     ) -> Results:
         """
         Command to run locally for each host in the group in parallel
-        @cmd the commmand to run
+        @cmd the command to run
         @stdout if not None stdout of the command will be redirected to this file i.e. stdout=subprocss.PIPE
         @stderr if not None stderr of the command will be redirected to this file i.e. stderr=subprocess.PIPE
         @cwd current working directory to run the process in
-        @extra_env environment variables to override whe running the command
+        @extra_env environment variables to override when running the command
         @timeout: Timeout in seconds for the command to complete
 
         @return a lists of tuples containing Host and the result of the command for this Host
