@@ -12,14 +12,14 @@
       # { clanCore = «derivation JSON»; clanModules = { ${name} = «derivation JSON» }; }
       jsonDocs = import ./get-module-docs.nix {
         inherit (inputs) nixpkgs;
-        inherit pkgs self;
+        inherit pkgs;
         inherit (self.nixosModules) clanCore;
         inherit (self) clanModules;
       };
 
       clanModulesFileInfo = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModules);
-      clanModulesReadmes = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesReadmes);
-      clanModulesMeta = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesMeta);
+      # clanModulesReadmes = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesReadmes);
+      # clanModulesMeta = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesMeta);
 
       # Simply evaluated options (JSON)
       renderOptions =
@@ -30,6 +30,7 @@
             nativeBuildInputs = [
               pkgs.python3
               pkgs.mypy
+              self'.packages.clan-cli
             ];
           }
           ''
@@ -50,18 +51,25 @@
         sha256 = "sha256-GZMeZFFGvP5GMqqh516mjJKfQaiJ6bL38bSYOXkaohc=";
       };
 
-      module-docs = pkgs.runCommand "rendered" { nativeBuildInputs = [ pkgs.python3 ]; } ''
-        export CLAN_CORE=${jsonDocs.clanCore}/share/doc/nixos/options.json
-        # A file that contains the links to all clanModule docs
-        export CLAN_MODULES=${clanModulesFileInfo}
-        export CLAN_MODULES_READMES=${clanModulesReadmes}
-        export CLAN_MODULES_META=${clanModulesMeta}
+      module-docs =
+        pkgs.runCommand "rendered"
+          {
+            nativeBuildInputs = [
+              pkgs.python3
+              self'.packages.clan-cli
+            ];
+          }
+          ''
+            export CLAN_CORE_PATH=${self}
+            export CLAN_CORE_DOCS=${jsonDocs.clanCore}/share/doc/nixos/options.json
+            # A file that contains the links to all clanModule docs
+            export CLAN_MODULES=${clanModulesFileInfo}
 
-        mkdir $out
+            mkdir $out
 
-        # The python script will place mkDocs files in the output directory
-        python3 ${renderOptions}
-      '';
+            # The python script will place mkDocs files in the output directory
+            python3 ${renderOptions}
+          '';
     in
     {
       devShells.docs = pkgs.callPackage ./shell.nix {

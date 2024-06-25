@@ -5,11 +5,12 @@ from pathlib import Path
 from types import ModuleType
 
 # These imports are unused, but necessary for @API.register to run once.
-from clan_cli.api import directory, mdns_discovery
+from clan_cli.api import directory, mdns_discovery, modules
 from clan_cli.arg_actions import AppendOptionAction
 from clan_cli.clan import show
 
-__all__ = ["directory", "mdns_discovery"]
+# API endpoints that are not used in the cli.
+__all__ = ["directory", "mdns_discovery", "modules"]
 
 from . import (
     backups,

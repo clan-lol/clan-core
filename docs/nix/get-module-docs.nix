@@ -3,7 +3,6 @@
   pkgs,
   clanCore,
   clanModules,
-  self,
 }:
 let
   allNixosModules = (import "${nixpkgs}/nixos/modules/module-list.nix") ++ [
@@ -39,20 +38,10 @@ let
     name: module: (evalDocs ((getOptionsWithoutCore [ module ]).clan.${name} or { })).optionsJSON
   ) clanModules;
 
-  clanModulesReadmes = builtins.mapAttrs (
-    module_name: _module: self.lib.modules.getReadme module_name
-  ) clanModules;
-
-  clanModulesMeta = builtins.mapAttrs (
-    module_name: _module:
-    (self.lib.evalClanModules [ module_name ]).config.clan.${module_name}.meta or { }
-  ) clanModules;
-
   # clanCore docs
   clanCoreDocs = (evalDocs (getOptions [ ]).clan.core).optionsJSON;
 in
 {
-  inherit clanModulesReadmes clanModulesMeta;
   clanCore = clanCoreDocs;
   clanModules = clanModulesDocs;
 }

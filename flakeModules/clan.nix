@@ -93,6 +93,8 @@ in
           inventory = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           inventoryFile = lib.mkOption { type = lib.types.unspecified; };
 
+          clanModules = lib.mkOption { type = lib.types.attrsOf lib.types.path; };
+          source = lib.mkOption { type = lib.types.path; };
           meta = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           all-machines-json = lib.mkOption { type = lib.types.attrsOf lib.types.unspecified; };
           machines = lib.mkOption { type = lib.types.attrsOf (lib.types.attrsOf lib.types.unspecified); };

@@ -1,4 +1,5 @@
-Statically configure the `zerotier` peers of a clan network.
+---
+description = "Statically configure the `zerotier` peers of a clan network."
 ---
 Statically configure the `zerotier` peers of a clan network.
 

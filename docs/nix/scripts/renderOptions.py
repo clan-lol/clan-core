@@ -28,12 +28,12 @@ import os
 from pathlib import Path
 from typing import Any
 
-# Get environment variables
-CLAN_CORE = os.getenv("CLAN_CORE")
-CLAN_MODULES = os.environ.get("CLAN_MODULES")
-CLAN_MODULES_READMES = os.environ.get("CLAN_MODULES_READMES")
-CLAN_MODULES_META = os.environ.get("CLAN_MODULES_META")
+from clan_cli.api.modules import Frontmatter, extract_frontmatter, get_roles
 
+# Get environment variables
+CLAN_CORE_PATH = os.getenv("CLAN_CORE_PATH")
+CLAN_CORE_DOCS = os.getenv("CLAN_CORE_DOCS")
+CLAN_MODULES = os.environ.get("CLAN_MODULES")
 
 OUT = os.environ.get("out")
 
@@ -124,7 +124,7 @@ def render_option(name: str, option: dict[str, Any], level: int = 3) -> str:
 
 
 def module_header(module_name: str) -> str:
-    return f"# {module_name}\n"
+    return f"# {module_name}\n\n"
 
 
 def module_usage(module_name: str) -> str:
@@ -150,9 +150,9 @@ options_head = "\n## Module Options\n"
 
 
 def produce_clan_core_docs() -> None:
-    if not CLAN_CORE:
+    if not CLAN_CORE_DOCS:
         raise ValueError(
-            f"Environment variables are not set correctly: $CLAN_CORE={CLAN_CORE}"
+            f"Environment variables are not set correctly: $CLAN_CORE_DOCS={CLAN_CORE_DOCS}"
         )
 
     if not OUT:
@@ -160,7 +160,7 @@ def produce_clan_core_docs() -> None:
 
     # A mapping of output file to content
     core_outputs: dict[str, str] = {}
-    with open(CLAN_CORE) as f:
+    with open(CLAN_CORE_DOCS) as f:
         options: dict[str, dict[str, Any]] = json.load(f)
         module_name = "clan-core"
         for option_name, info in options.items():
@@ -192,13 +192,11 @@ def produce_clan_core_docs() -> None:
                 of.write(output)
 
 
-def render_meta(meta: dict[str, Any], module_name: str) -> str:
-    roles = meta.get("availableRoles", None)
-
+def render_roles(roles: list[str] | None, module_name: str) -> str:
     if roles:
         roles_list = "\n".join([f"    - `{r}`" for r in roles])
         return f"""
-???+ tip "Inventory (WIP)"
+???+ tip "Inventory usage"
 
     Predefined roles:
 
@@ -226,14 +224,10 @@ def produce_clan_modules_docs() -> None:
         raise ValueError(
             f"Environment variables are not set correctly: $CLAN_MODULES={CLAN_MODULES}"
         )
-    if not CLAN_MODULES_READMES:
-        raise ValueError(
-            f"Environment variables are not set correctly: $CLAN_MODULES_READMES={CLAN_MODULES_READMES}"
-        )
 
-    if not CLAN_MODULES_META:
+    if not CLAN_CORE_PATH:
         raise ValueError(
-            f"Environment variables are not set correctly: $CLAN_MODULES_META={CLAN_MODULES_META}"
+            f"Environment variables are not set correctly: $CLAN_CORE_PATH={CLAN_CORE_PATH}"
         )
 
     if not OUT:
@@ -242,27 +236,36 @@ def produce_clan_modules_docs() -> None:
     with open(CLAN_MODULES) as f:
         links: dict[str, str] = json.load(f)
 
-    with open(CLAN_MODULES_READMES) as readme:
-        readme_map: dict[str, str] = json.load(readme)
+    # with open(CLAN_MODULES_READMES) as readme:
+    #     readme_map: dict[str, str] = json.load(readme)
 
-    with open(CLAN_MODULES_META) as f:
-        meta_map: dict[str, Any] = json.load(f)
-        print(meta_map)
+    # with open(CLAN_MODULES_META) as f:
+    #     meta_map: dict[str, Any] = json.load(f)
+    #     print(meta_map)
 
     # {'borgbackup': '/nix/store/hi17dwgy7963ddd4ijh81fv0c9sbh8sw-options.json', ... }
     for module_name, options_file in links.items():
+        readme_file = Path(CLAN_CORE_PATH) / "clanModules" / module_name / "README.md"
+        print(module_name, readme_file)
+        with open(readme_file) as f:
+            readme = f.read()
+            frontmatter: Frontmatter
+            frontmatter, readme_content = extract_frontmatter(readme, str(readme_file))
+            print(frontmatter, readme_content)
+
         with open(Path(options_file) / "share/doc/nixos/options.json") as f:
             options: dict[str, dict[str, Any]] = json.load(f)
             print(f"Rendering options for {module_name}...")
             output = module_header(module_name)
 
-            if readme_map.get(module_name, None):
-                output += f"{readme_map[module_name]}\n"
+            if frontmatter.description:
+                output += f"**{frontmatter.description}**\n\n"
+            output += f"{readme_content}\n"
 
-            # Add meta information:
-            # - Inventory implementation status
-            if meta_map.get(module_name, None):
-                output += render_meta(meta_map.get(module_name, {}), module_name)
+            # get_roles(str) -> list[str] | None
+            roles = get_roles(str(Path(CLAN_CORE_PATH) / "clanModules" / module_name))
+            if roles:
+                output += render_roles(roles, module_name)
 
             output += module_usage(module_name)
 
