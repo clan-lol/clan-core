@@ -45,6 +45,13 @@ let
   # Maybe load from readme.md
   metaInfoOption = lib.mkOption {
     readOnly = true;
+    description = ''
+      Meta is used to retrieve information about this module.
+
+      - `availableRoles` is a list of roles that can be assigned via the inventory.
+      - `category` is used to group services in the clan marketplace.
+      - `description` is a short description of the service for the clan marketplace.
+    '';
     default = {
       description = "Borgbackup is a backup program. Optionally, it supports compression and authenticated encryption.";
       availableRoles = roles;
