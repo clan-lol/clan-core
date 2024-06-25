@@ -71,7 +71,7 @@ let
           ) machines;
         }
         # Will be deprecated
-        # {machines = lib.mapAttrs (n: _: {}) machinesDirs;}
+        { machines = lib.mkDefault (lib.mapAttrs (_n: _: { }) machinesDirs); }
 
         # Deprecated interface
         (if clanName != null then { meta.name = clanName; } else { })
@@ -85,9 +85,9 @@ let
   # { ${machineName} :: Config }
   serviceConfigs = buildInventory mergedInventory;
 
-  # machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (
-  #   builtins.readDir (directory + /machines)
-  # );
+  machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (
+    builtins.readDir (directory + /machines)
+  );
 
   machineSettings =
     machineName:
