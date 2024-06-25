@@ -1,9 +1,6 @@
 { ... }:
 {
   flake.clanModules = {
-    disk-layouts = {
-      imports = [ ./disk-layouts ];
-    };
     borgbackup = ./borgbackup;
     borgbackup-static = ./borgbackup-static;
     deltachat = ./deltachat;

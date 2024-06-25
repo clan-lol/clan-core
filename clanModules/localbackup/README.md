@@ -1,2 +1,3 @@
-Automatically backups current machine to local directory.
+---
+description = "Automatically backups current machine to local directory."
 ---

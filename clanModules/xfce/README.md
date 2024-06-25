@@ -1,2 +1,3 @@
-A lightweight desktop manager
+---
+description = "A lightweight desktop manager"
 ---

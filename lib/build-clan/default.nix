@@ -212,6 +212,9 @@ builtins.deepSeq deprecationWarnings {
   inherit nixosConfigurations;
 
   clanInternals = {
+    inherit (clan-core) clanModules;
+    source = "${clan-core}";
+
     meta = mergedInventory.meta;
     inventory = mergedInventory;
 

@@ -1,4 +1,5 @@
-Automatically generates and configures a password for the specified user account.
+---
+description = "Automatically generates and configures a password for the specified user account."
 ---
 
 If setting the option prompt to true, the user will be prompted to type in their desired password.

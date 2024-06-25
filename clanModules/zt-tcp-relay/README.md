@@ -1,2 +1,3 @@
-Enable ZeroTier VPN over TCP for networks where UDP is blocked.
+---
+description = "Enable ZeroTier VPN over TCP for networks where UDP is blocked."
 ---
