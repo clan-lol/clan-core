@@ -31,7 +31,7 @@
       { ... }:
       {
         clan = {
-          # meta.name = "clan-core";
+          meta.name = "clan-core";
           directory = self;
         };
         systems = [
