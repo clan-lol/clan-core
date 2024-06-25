@@ -20,6 +20,9 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
             """
   List state of the machines managed by clan.
 
+  The backup commands are commands that will exist on the deployed machine.
+  They can be introspected by checking under `/run/current-system/sw/bin/[COMMAND]`
+
   Examples:
 
   $ clan state list [MACHINE]
