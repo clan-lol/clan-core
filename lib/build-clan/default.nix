@@ -71,7 +71,7 @@ let
           ) machines;
         }
         # Will be deprecated
-        { machines = lib.mkDefault (lib.mapAttrs (_n: _: { }) machinesDirs); }
+        { machines = lib.mapAttrs (_n: _: lib.mkDefault { }) machinesDirs; }
 
         # Deprecated interface
         (if clanName != null then { meta.name = clanName; } else { })
