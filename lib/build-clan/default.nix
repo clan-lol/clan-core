@@ -126,6 +126,7 @@ let
         in
         (machineImports settings)
         ++ [
+          settings
           clan-core.nixosModules.clanCore
           extraConfig
           (machines.${name} or { })
