@@ -122,14 +122,6 @@ Note: The meta results from clan/meta.json and manual flake arguments. It may no
     )
     show_parser.set_defaults(func=show.show_command)
 
-    modules_parser = subparsers.add_parser("modules", help="Show modules")
-    modules_parser.add_argument(
-        "module_name",
-        help="name of the module",
-        type=str,
-    )
-    modules_parser.set_defaults(func=modules.command)
-
     parser_backups = subparsers.add_parser(
         "backups",
         help="manage backups of clan machines",
