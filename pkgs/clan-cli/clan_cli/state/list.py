@@ -58,11 +58,11 @@ def list_state_folders(machine: str, service: None | str = None) -> None:
             for folder in folders:
                 print(f"  - {folder}")
         if pre_backup := state.get(service)["preBackupCommand"]:
-            print(f"preBackupCommand: {pre_backup}")
+            print(f"  preBackupCommand: {pre_backup}")
         if pre_restore := state.get(service)["preRestoreCommand"]:
-            print(f"preRestoreCommand: {pre_restore}")
+            print(f"  preRestoreCommand: {pre_restore}")
         if post_restore := state.get(service)["postRestoreCommand"]:
-            print(f"postRestoreCommand: {post_restore}")
+            print(f"  postRestoreCommand: {post_restore}")
         print("")
 
 
