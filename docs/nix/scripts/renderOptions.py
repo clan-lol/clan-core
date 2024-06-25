@@ -78,7 +78,9 @@ def render_option(name: str, option: dict[str, Any], level: int = 3) -> str:
 
     res = f"""
 {"#" * level} {sanitize(name)}
-{"Readonly" if read_only else ""}
+
+{"**Readonly**" if read_only else ""}
+
 {option.get("description", "No description available.")}
 
 **Type**: `{option["type"]}`
@@ -190,6 +192,35 @@ def produce_clan_core_docs() -> None:
                 of.write(output)
 
 
+def render_meta(meta: dict[str, Any], module_name: str) -> str:
+    roles = meta.get("availableRoles", None)
+
+    if roles:
+        roles_list = "\n".join([f"    - `{r}`" for r in roles])
+        return f"""
+???+ tip "Inventory (WIP)"
+
+    Predefined roles:
+
+{roles_list}
+
+    Usage:
+
+    ```{{.nix hl_lines="4"}}
+    buildClan {{
+      inventory.services = {{
+        {module_name}.instance_1 = {{
+            roles.{roles[0]}.machines = [ "sara_machine" ];
+            # ...
+        }};
+      }};
+    }}
+    ```
+
+"""
+    return ""
+
+
 def produce_clan_modules_docs() -> None:
     if not CLAN_MODULES:
         raise ValueError(
@@ -218,38 +249,6 @@ def produce_clan_modules_docs() -> None:
         meta_map: dict[str, Any] = json.load(f)
         print(meta_map)
 
-    def render_meta(meta: dict[str, Any], module_name: str) -> str:
-        roles = meta.get("availableRoles", None)
-
-        if roles:
-            roles_list = "\n".join([f"    - `{r}`" for r in roles])
-            return f"""
-???+ tip "Inventory (WIP)"
-
-    Predefined roles:
-
-{roles_list}
-
-    Usage:
-
-    ```{{.nix hl_lines="4"}}
-    buildClan {{
-      inventory.services = {{
-        {module_name}.instance_1 = {{
-            roles.{roles[0]}.machines = [ "sara_machine" ];
-            # ...
-        }};
-      }};
-    }}
-    ```
-
-"""
-        return """
-???+ example "Inventory (WIP)"
-    This module does not support the inventory yet.
-
-        """
-
     # {'borgbackup': '/nix/store/hi17dwgy7963ddd4ijh81fv0c9sbh8sw-options.json', ... }
     for module_name, options_file in links.items():
         with open(Path(options_file) / "share/doc/nixos/options.json") as f:
@@ -262,7 +261,8 @@ def produce_clan_modules_docs() -> None:
 
             # Add meta information:
             # - Inventory implementation status
-            output += render_meta(meta_map.get(module_name, {}), module_name)
+            if meta_map.get(module_name, None):
+                output += render_meta(meta_map.get(module_name, {}), module_name)
 
             output += module_usage(module_name)
 

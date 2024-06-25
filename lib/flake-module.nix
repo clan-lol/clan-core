@@ -5,7 +5,10 @@
   ...
 }:
 {
-  imports = [ ./jsonschema/flake-module.nix ];
+  imports = [
+    ./jsonschema/flake-module.nix
+    ./inventory/flake-module.nix
+  ];
   flake.lib = import ./default.nix {
     inherit lib inputs;
     inherit (inputs) nixpkgs;
