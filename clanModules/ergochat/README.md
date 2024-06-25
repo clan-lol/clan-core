@@ -1,2 +1,3 @@
-A modern IRC server
+---
+description = "A modern IRC server"
 ---

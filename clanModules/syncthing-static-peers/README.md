@@ -1,2 +1,3 @@
-Statically configure syncthing peers through clan
+---
+description = "Statically configure syncthing peers through clan"
 ---

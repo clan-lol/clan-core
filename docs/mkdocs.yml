@@ -54,7 +54,6 @@ nav:
           - reference/clanModules/borgbackup-static.md
           - reference/clanModules/borgbackup.md
           - reference/clanModules/deltachat.md
-          - reference/clanModules/disk-layouts.md
           - reference/clanModules/ergochat.md
           - reference/clanModules/localbackup.md
           - reference/clanModules/localsend.md

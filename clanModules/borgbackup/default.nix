@@ -27,54 +27,51 @@ let
       exit 1
     fi
   '';
-
-  # Each .nix file in the roles directory is a role
-  # TODO: Helper function to set available roles within module meta.
-  roles =
-    if builtins.pathExists ./roles then
-      lib.pipe ./roles [
-        builtins.readDir
-        (lib.filterAttrs (_n: v: v == "regular"))
-        lib.attrNames
-        (map (fileName: lib.removeSuffix ".nix" fileName))
-      ]
-    else
-      null;
-
-  # TODO: make this an interface of every module
-  # Maybe load from readme.md
-  metaInfoOption = lib.mkOption {
-    readOnly = true;
-    description = ''
-      Meta is used to retrieve information about this module.
-
-      - `availableRoles` is a list of roles that can be assigned via the inventory.
-      - `category` is used to group services in the clan marketplace.
-      - `description` is a short description of the service for the clan marketplace.
-    '';
-    default = {
-      description = "Borgbackup is a backup program. Optionally, it supports compression and authenticated encryption.";
-      availableRoles = roles;
-      category = "backup";
-    };
-    type = lib.types.submodule {
-      options = {
-        description = lib.mkOption { type = lib.types.str; };
-        availableRoles = lib.mkOption { type = lib.types.nullOr (lib.types.listOf lib.types.str); };
-        category = lib.mkOption {
-          description = "A category for the service. This is used to group services in the clan ui";
-          type = lib.types.enum [
-            "backup"
-            "network"
-          ];
-        };
-      };
-    };
-  };
 in
+# Each .nix file in the roles directory is a role
+# TODO: Helper function to set available roles within module meta.
+# roles =
+#   if builtins.pathExists ./roles then
+#     lib.pipe ./roles [
+#       builtins.readDir
+#       (lib.filterAttrs (_n: v: v == "regular"))
+#       lib.attrNames
+#       (map (fileName: lib.removeSuffix ".nix" fileName))
+#     ]
+#   else
+#     null;
+# TODO: make this an interface of every module
+# Maybe load from readme.md
+# metaInfoOption = lib.mkOption {
+#   readOnly = true;
+#   description = ''
+#     Meta is used to retrieve information about this module.
+#     - `availableRoles` is a list of roles that can be assigned via the inventory.
+#     - `category` is used to group services in the clan marketplace.
+#     - `description` is a short description of the service for the clan marketplace.
+#   '';
+#   default = {
+#     description = "Borgbackup is a backup program. Optionally, it supports compression and authenticated encryption.";
+#     availableRoles = roles;
+#     category = "backup";
+#   };
+#   type = lib.types.submodule {
+#     options = {
+#       description = lib.mkOption { type = lib.types.str; };
+#       availableRoles = lib.mkOption { type = lib.types.nullOr (lib.types.listOf lib.types.str); };
+#       category = lib.mkOption {
+#         description = "A category for the service. This is used to group services in the clan ui";
+#         type = lib.types.enum [
+#           "backup"
+#           "network"
+#         ];
+#       };
+#     };
+#   };
+# };
 {
 
-  options.clan.borgbackup.meta = metaInfoOption;
+  # options.clan.borgbackup.meta = metaInfoOption;
 
   options.clan.borgbackup.destinations = lib.mkOption {
     type = lib.types.attrsOf (

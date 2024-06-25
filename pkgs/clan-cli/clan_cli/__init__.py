@@ -5,11 +5,12 @@ from pathlib import Path
 from types import ModuleType
 
 # These imports are unused, but necessary for @API.register to run once.
-from clan_cli.api import directory, mdns_discovery
+from clan_cli.api import directory, mdns_discovery, modules
 from clan_cli.arg_actions import AppendOptionAction
 from clan_cli.clan import show
 
-__all__ = ["directory", "mdns_discovery"]
+# API endpoints that are not used in the cli.
+__all__ = ["directory", "mdns_discovery", "modules"]
 
 from . import (
     backups,
@@ -120,6 +121,14 @@ Note: The meta results from clan/meta.json and manual flake arguments. It may no
         ),
     )
     show_parser.set_defaults(func=show.show_command)
+
+    modules_parser = subparsers.add_parser("modules", help="Show modules")
+    modules_parser.add_argument(
+        "module_name",
+        help="name of the module",
+        type=str,
+    )
+    modules_parser.set_defaults(func=modules.command)
 
     parser_backups = subparsers.add_parser(
         "backups",

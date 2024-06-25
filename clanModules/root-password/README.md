@@ -1,4 +1,5 @@
-Automatically generates and configures a password for the root user.
+---
+description = "Automatically generates and configures a password for the root user."
 ---
 
 After the system was installed/deployed the following command can be used to display the root-password:

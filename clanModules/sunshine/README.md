@@ -1,2 +1,3 @@
-A desktop streaming server optimized for remote gaming and synchronized movie viewing.
+---
+description = "A desktop streaming server optimized for remote gaming and synchronized movie viewing."
 ---
