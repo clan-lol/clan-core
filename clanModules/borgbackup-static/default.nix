@@ -3,7 +3,7 @@ let
   clanDir = config.clan.core.clanDir;
   machineDir = clanDir + "/machines/";
 in
-{
+lib.warn "This module is deprecated use the service via the inventory interface instead." {
   imports = [ ../borgbackup ];
 
   options.clan.borgbackup-static = {

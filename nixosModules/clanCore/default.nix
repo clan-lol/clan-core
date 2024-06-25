@@ -14,5 +14,8 @@
     ./vm.nix
     ./wayland-proxy-virtwl.nix
     ./zerotier
+    # Inventory
+    ./inventory/interface.nix
+    ./meta/interface.nix
   ];
 }

@@ -1,8 +1,7 @@
 package inventory
 
 import (
-	"clan.lol/inventory/services"
-	"clan.lol/inventory/machines"
+	"clan.lol/inventory/schema"
 )
 
 @jsonschema(schema="http://json-schema.org/schema#")
@@ -16,9 +15,9 @@ import (
 		icon?: string
 	}
 
-	// A map of services
-	services.#service
+	// // A map of services
+	schema.#service
 
-	// A map of machines
-	machines.#machine
+	// // A map of machines
+	schema.#machine
 }
