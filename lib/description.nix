@@ -18,7 +18,7 @@ rec {
       content = getReadme modulename;
       parts = lib.splitString "---" content;
       # Partition the parts into the first part (the readme content) and the rest (the metadata)
-      parsed = builtins.partition ({ index }: if index >= 2 then false else true) (
+      parsed = builtins.partition ({ index, ... }: if index >= 2 then false else true) (
         lib.filter ({ index, ... }: index != 0) (lib.imap0 (index: part: { inherit index part; }) parts)
       );
 
