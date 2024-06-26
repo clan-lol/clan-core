@@ -19,6 +19,7 @@ self.lib.buildClan {
   machines = {
     "backup_server" = {
       clan.tags = [ "all" ];
+      # ... rest of the machine config
     };
     "client_1_machine" = {
       clan.tags = [

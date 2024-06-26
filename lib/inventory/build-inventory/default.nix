@@ -13,13 +13,18 @@ let
         ++ (builtins.foldl' (
           acc: tag:
           let
+            # For error printing
+            availableTags = lib.foldlAttrs (
+              acc: _: v:
+              v.tags or [ ] ++ acc
+            ) [ ] inventory.machines;
+
             tagMembers = builtins.attrNames (
               lib.filterAttrs (_n: v: builtins.elem tag v.tags or [ ]) inventory.machines
             );
           in
-          # throw "Machine tag ${tag} not found. Not machine with: tag ${tagName} not in inventory.";
           if tagMembers == [ ] then
-            throw "Machine tag ${tag} not found. Not machine with: tag ${tag} not in inventory."
+            throw "Tag: '${tag}' not found. Available tags: ${builtins.toJSON (lib.unique availableTags)}"
           else
             acc ++ tagMembers
         ) [ ] members.tags or [ ]);
@@ -76,7 +81,7 @@ let
               if builtins.pathExists path then
                 path
               else
-                throw "Role doesnt have a module: ${role}. Path: ${path} not found."
+                throw "Module doesn't have role: '${role}'. Path: ${path} not found."
             ) inverseRoles.${machineName} or [ ];
           in
           if isInService then
@@ -101,6 +106,6 @@ let
             acc2
         ) [ ] serviceConfigs)
       ) [ ] inventory.services
-    ) inventory.machines;
+    ) inventory.machines or { };
 in
 machines
