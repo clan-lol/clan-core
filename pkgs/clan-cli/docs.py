@@ -105,8 +105,9 @@ def epilog_to_md(text: str) -> str:
                     md += "\n"
                     md += "\n"
                 else:
-                    if contains_https_link(line):
-                        line = convert_to_markdown_link(line)
+                    # TODO: check, if the link is already a markdown link, only convert if not
+                    # if contains_https_link(line):
+                    #     line = convert_to_markdown_link(line)
                     md += line
                     md += "\n"
             else:
