@@ -23,8 +23,7 @@
 
       clanModuleFunctionSchemas = lib.mapAttrsFlatten (modulename: _: {
         name = modulename;
-        # TODO: migrate to new toml format
-        # description = self.lib.modules.getShortDescription modulename;
+        description = self.lib.modules.getShortDescription modulename;
         parameters = self.lib.jsonschema.parseOptions (optionsFromModule modulename);
       }) clanModules;
     in
