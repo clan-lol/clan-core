@@ -36,6 +36,30 @@ def read_multiline_input(prompt: str = "Finish with Ctrl-D") -> str:
     return proc.stdout
 
 
+def bubblewrap_cmd(generator: str, facts_dir: Path, secrets_dir: Path) -> list[str]:
+    # fmt: off
+    return nix_shell(
+        [
+            "nixpkgs#bash",
+            "nixpkgs#bubblewrap",
+        ],
+        [
+            "bwrap",
+            "--ro-bind", "/nix/store", "/nix/store",
+            "--tmpfs",  "/usr/lib/systemd",
+            "--dev", "/dev",
+            "--bind", str(facts_dir), str(facts_dir),
+            "--bind", str(secrets_dir), str(secrets_dir),
+            "--unshare-all",
+            "--unshare-user",
+            "--uid", "1000",
+            "--",
+            "bash", "-c", generator
+        ],
+    )
+    # fmt: on
+
+
 def generate_service_facts(
     machine: Machine,
     service: str,
@@ -70,27 +94,10 @@ def generate_service_facts(
         if machine.facts_data[service]["generator"]["prompt"]:
             prompt_value = prompt(machine.facts_data[service]["generator"]["prompt"])
             env["prompt_value"] = prompt_value
-    # fmt: off
-    cmd = nix_shell(
-        [
-            "nixpkgs#bash",
-            "nixpkgs#bubblewrap",
-        ],
-        [
-            "bwrap",
-            "--ro-bind", "/nix/store", "/nix/store",
-            "--tmpfs",  "/usr/lib/systemd",
-            "--dev", "/dev",
-            "--bind", str(facts_dir), str(facts_dir),
-            "--bind", str(secrets_dir), str(secrets_dir),
-            "--unshare-all",
-            "--unshare-user",
-            "--uid", "1000",
-            "--",
-            "bash", "-c", generator
-        ],
-    )
-    # fmt: on
+    if sys.platform == "linux":
+        cmd = bubblewrap_cmd(generator, facts_dir, secrets_dir)
+    else:
+        cmd = ["bash", "-c", generator]
     run(
         cmd,
         env=env,
