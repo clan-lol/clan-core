@@ -1,6 +1,7 @@
 # !/usr/bin/env python3
 import argparse
 
+from ..hyperlink import help_hyperlink
 from .check import register_check_parser
 from .generate import register_generate_parser
 from .list import register_list_parser
@@ -20,7 +21,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         "check",
         help="check if facts are up to date",
         epilog=(
-            """
+            f"""
 This subcommand allows checking if all facts are up to date.
 
 Examples:
@@ -29,7 +30,7 @@ Examples:
   Will check facts for the specified machine.
 
 
-For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -40,7 +41,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/secr
         "list",
         help="list all facts",
         epilog=(
-            """
+            f"""
 This subcommand allows listing all public facts for a specific machine.
 
 The resulting list will be a json string with the name of the fact as its key
@@ -48,9 +49,9 @@ and the fact itself as it's value.
 
 This is how an example output might look like:
 ```
-{
+\u007b
 "[FACT_NAME]": "[FACT]"
-}
+\u007d
 ```
 
 Examples:
@@ -59,7 +60,7 @@ Examples:
   Will list facts for the specified machine.
 
    
-For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -70,7 +71,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/secr
         "generate",
         help="generate public and secret facts for machines",
         epilog=(
-            """
+            f"""
 This subcommand allows control of the generation of facts.
 Often this function will be invoked automatically on deploying machines,
 but there are situations the user may want to have more granular control,
@@ -99,7 +100,7 @@ Examples:
   This is especially useful for resetting certain passwords while leaving the rest
   of the facts for a machine in place.
 
-For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -110,7 +111,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/secr
         "upload",
         help="upload secrets for machines",
         epilog=(
-            """
+            f"""
 This subcommand allows uploading secrets to remote machines.
 
 If using sops as a secret backend it will upload the private key to the machine.
@@ -123,7 +124,7 @@ Examples:
   $ clan facts upload [MACHINE]
   Will upload secrets to a specific machine.
    
-For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
