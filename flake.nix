@@ -51,6 +51,7 @@
           ./formatter.nix
           ./lib/flake-module.nix
           ./nixosModules/flake-module.nix
+          ./nixosModules/clanCore/vars/flake-module.nix
           ./pkgs/flake-module.nix
           ./templates/flake-module.nix
         ];
