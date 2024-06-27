@@ -196,7 +196,7 @@ def type_to_dict(t: Any, scope: str = "", type_map: dict[TypeVar, type] = {}) ->
             }
         if t is dict:
             raise JSchemaTypeError(
-                "Error: generic dict type not supported. Use dict[str. Any] instead"
+                "Error: generic dict type not supported. Use dict[str, Any] instead"
             )
 
         # Optional[T] gets internally transformed Union[T,NoneType]

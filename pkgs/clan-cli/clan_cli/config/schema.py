@@ -2,18 +2,22 @@ import json
 import os
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import Any
 
+from clan_cli.api import API
 from clan_cli.cmd import run
 from clan_cli.dirs import nixpkgs_source
 from clan_cli.errors import ClanError, ClanHttpError
 from clan_cli.nix import nix_eval
 
 
+@API.register
 def machine_schema(
     flake_dir: Path,
-    config: dict,
+    config: dict[str, Any],
     clan_imports: list[str] | None = None,
-) -> dict:
+    option_path: list[str] = ["clan"],
+) -> dict[str, Any]:
     # use nix eval to lib.evalModules .#nixosConfigurations.<machine_name>.options.clan
     with NamedTemporaryFile(mode="w", dir=flake_dir) as clan_machine_settings_file:
         env = os.environ.copy()
@@ -89,9 +93,9 @@ def machine_schema(
                                 # add all clan modules specified via clanImports
                                 ++ (map (name: clan-core.clanModules.${{name}}) config.clanImports or []);
                         }};
-                        clanOptions = fakeMachine.options.clan;
+                        options = fakeMachine.options{"." + ".".join(option_path) if option_path else ""};
                         jsonschemaLib = import {Path(__file__).parent / "jsonschema"} {{ inherit lib; }};
-                        jsonschema = jsonschemaLib.parseOptions clanOptions;
+                        jsonschema = jsonschemaLib.parseOptions options;
                     in
                         jsonschema
                     """,
