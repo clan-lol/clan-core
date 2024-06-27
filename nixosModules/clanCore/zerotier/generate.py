@@ -111,12 +111,11 @@ def zerotier_controller() -> Iterator[ZerotierController]:
         home = tempdir / "zerotier-one"
         home.mkdir()
         cmd = [
-            "fakeroot",
-            "--",
             "zerotier-one",
             f"-p{controller_port}",
             str(home),
         ]
+
         with subprocess.Popen(
             cmd,
             preexec_fn=os.setsid,
