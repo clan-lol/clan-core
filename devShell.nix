@@ -26,6 +26,7 @@
       devShells.default = pkgs.mkShell {
         packages = [
           select-shell
+          pkgs.nix-unit
           pkgs.tea
           # Better error messages than nix 2.18
           pkgs.nixVersions.latest

@@ -30,7 +30,7 @@ in
       };
 
       # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests
-      legacyPackages.evalTests = import ./tests {
+      legacyPackages.evalTests-inventory = import ./tests {
         inherit buildInventory;
         clan-core = self;
       };
@@ -42,7 +42,7 @@ in
           nix-unit --eval-store "$HOME" \
             --extra-experimental-features flakes \
             ${inputOverrides} \
-            --flake ${self}#legacyPackages.${system}.evalTests
+            --flake ${self}#legacyPackages.${system}.evalTests-inventory
 
           touch $out
         '';
