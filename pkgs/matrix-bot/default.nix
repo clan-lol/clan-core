@@ -1,17 +1,17 @@
-{ python3, setuptools, mautrix, ... }:
-
+{
+  python3,
+  setuptools,
+  matrix-nio,
+  ...
+}:
 
 let
 
-  pythonDependencies = [
-    mautrix
-  ];
+  pythonDependencies = [ matrix-nio ];
 
   runtimeDependencies = [ ];
 
-  testDependencies =
-    runtimeDependencies ++ [
-    ];
+  testDependencies = pythonDependencies ++ runtimeDependencies ++ [ ];
 
 in
 python3.pkgs.buildPythonApplication {
@@ -19,9 +19,7 @@ python3.pkgs.buildPythonApplication {
   src = ./.;
   format = "pyproject";
 
-  nativeBuildInputs = [
-    setuptools
-  ];
+  nativeBuildInputs = [ setuptools ];
 
   propagatedBuildInputs = pythonDependencies;
 
