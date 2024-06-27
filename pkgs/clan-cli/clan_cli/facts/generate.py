@@ -3,6 +3,7 @@ import importlib
 import logging
 import os
 import subprocess
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
