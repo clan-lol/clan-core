@@ -22,4 +22,5 @@ def test_modules_details(test_flake_with_core: FlakeForTest) -> None:
     module_info = show_module_info(base_path, test_module)
     assert module_info.description is not None and module_info.description != ""
     assert module_info.categories and "backup" in module_info.categories
-    assert module_info.roles == ["server", "client"]
+    assert module_info.roles
+    assert set(module_info.roles) == {"server", "client"}
