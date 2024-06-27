@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "matrix-bot"
 description = "matrix bot for release messages from git commits"
 dynamic = ["version"]
-scripts = { clan = "matrix_bot:main" }
+scripts = { mbot = "matrix_bot:main" }
 license = {text = "MIT"}
 
 [project.urls]

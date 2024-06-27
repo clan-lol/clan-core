@@ -1,36 +1,47 @@
-import argparse
 import logging
-import sys
+from pathlib import Path
 
-from matrix_bot.custom_logger import setup_logging
+import aiohttp
+
+from matrix_bot.gitea import GiteaData
+from matrix_bot.matrix import MatrixData
 
 log = logging.getLogger(__name__)
 
+curr_dir = Path(__file__).parent
 
-def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        prog=prog,
-        description="A gitea bot for matrix",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+from nio import (
+    AsyncClient,
+    ProfileGetAvatarResponse,
+    RoomMessageText,
+)
 
-    parser.add_argument(
-        "--debug",
-        help="Enable debug logging",
-        action="store_true",
-        default=False,
-    )
+from matrix_bot.bot import bot_run, message_callback
+from matrix_bot.matrix import set_avatar, upload_image
 
-    return parser
-def main():
-    parser = create_parser()
-    args = parser.parse_args()
 
-    if len(sys.argv) == 1:
-        parser.print_help()
+async def bot_main(
+    matrix: MatrixData,
+    gitea: GiteaData,
+) -> None:
+    log.info(f"Connecting to {matrix.server} as {matrix.user}")
+    client = AsyncClient(matrix.server, matrix.user)
+    client.add_event_callback(message_callback, RoomMessageText)
 
-    if args.debug:
-        setup_logging(logging.DEBUG, root_log_name=__name__.split(".")[0])
-        log.debug("Debug log activated")
+    log.info(await client.login(matrix.password))
+
+    avatar: ProfileGetAvatarResponse = await client.get_avatar()
+    if not avatar.avatar_url:
+        mxc_url = await upload_image(client, matrix.avatar)
+        log.info(f"Uploaded avatar to {mxc_url}")
+        await set_avatar(client, mxc_url)
     else:
-        setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
+        log.info(f"Bot already has an avatar {avatar.avatar_url}")
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            await bot_run(client, session, matrix, gitea)
+    except Exception as e:
+        log.exception(e)
+    finally:
+        await client.close()

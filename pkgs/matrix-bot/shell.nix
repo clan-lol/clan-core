@@ -16,10 +16,7 @@ let
     ]);
 in
 mkShell {
-  buildInputs = [
-
-    ruff
-  ] ++ devshellTestDeps;
+  buildInputs = [ ruff ] ++ devshellTestDeps;
 
   PYTHONBREAKPOINT = "ipdb.set_trace";
 
