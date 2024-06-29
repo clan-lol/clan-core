@@ -3,7 +3,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 
 import aiohttp
@@ -15,7 +15,6 @@ class GiteaData:
     owner: str
     repo: str
     access_token: str | None = None
-    trigger_labels: list[str] = field(default_factory=list)
 
 
 def endpoint_url(gitea: GiteaData, endpoint: str) -> str:

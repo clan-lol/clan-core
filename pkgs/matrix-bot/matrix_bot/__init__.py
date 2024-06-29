@@ -70,13 +70,6 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         default="https://git.clan.lol",
     )
 
-    parser.add_argument(
-        "--trigger-labels",
-        help="The labels that trigger the bot",
-        default=["needs-review"],
-        nargs="+",
-    )
-
     return parser
 
 
@@ -106,7 +99,6 @@ def main() -> None:
         url=args.gitea_url,
         owner=args.repo_owner,
         repo=args.repo_name,
-        trigger_labels=args.trigger_labels,
         access_token=os.getenv("GITEA_ACCESS_TOKEN"),
     )
 
