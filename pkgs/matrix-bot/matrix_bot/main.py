@@ -10,11 +10,7 @@ log = logging.getLogger(__name__)
 
 curr_dir = Path(__file__).parent
 
-from nio import (
-    AsyncClient,
-    ProfileGetAvatarResponse,
-    RoomMessageText,
-)
+from nio import AsyncClient, ClientConfig, ProfileGetAvatarResponse, RoomMessageText
 
 from matrix_bot.bot import bot_run, message_callback
 from matrix_bot.matrix import set_avatar, upload_image
@@ -24,8 +20,13 @@ async def bot_main(
     matrix: MatrixData,
     gitea: GiteaData,
 ) -> None:
+    # Setup client configuration to handle encryption
+    client_config = ClientConfig(
+        encryption_enabled=False,
+    )
+
     log.info(f"Connecting to {matrix.server} as {matrix.user}")
-    client = AsyncClient(matrix.server, matrix.user)
+    client = AsyncClient(matrix.server, matrix.user, config=client_config)
     client.add_event_callback(message_callback, RoomMessageText)
 
     log.info(await client.login(matrix.password))

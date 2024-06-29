@@ -7,8 +7,10 @@ from dataclasses import dataclass
 
 from nio import (
     AsyncClient,
+    JoinedMembersResponse,
     JoinResponse,
     ProfileSetAvatarResponse,
+    RoomMember,
     RoomSendResponse,
     UploadResponse,
 )
@@ -31,6 +33,14 @@ async def set_avatar(client: AsyncClient, mxc_url: str) -> None:
 
 
 from nio import AsyncClient
+
+
+async def get_room_members(client: AsyncClient, room: JoinResponse) -> list[RoomMember]:
+    users: JoinedMembersResponse = await client.joined_members(room.room_id)
+
+    if not users.transport_response.ok:
+        raise Exception(f"Failed to get users {users}")
+    return users.members
 
 
 async def send_message(
