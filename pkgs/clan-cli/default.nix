@@ -15,7 +15,6 @@
   setuptools,
   sops,
   stdenv,
-  fakeroot,
   rsync,
   bash,
   sshpass,
@@ -38,7 +37,6 @@ let
   runtimeDependencies = [
     bash
     nix
-    fakeroot
     openssh
     sshpass
     zbar
