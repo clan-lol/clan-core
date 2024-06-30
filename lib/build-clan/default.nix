@@ -107,7 +107,7 @@ let
   deprecationWarnings = [
     (lib.warnIf (
       clanName != null
-    ) "clanName is deprecated, please use meta.name instead. ${clanName}" null)
+    ) "clanName in buildClan is deprecated, please use meta.name instead." null)
     (lib.warnIf (clanIcon != null) "clanIcon is deprecated, please use meta.icon instead" null)
   ];
 

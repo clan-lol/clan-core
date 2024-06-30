@@ -45,53 +45,53 @@
         ];
         includes = [ "*.py" ];
       };
-      treefmt.settings.formatter.vale =
-        with pkgs;
-        let
-          vocab = "cLAN";
-          style = "Docs";
-          config = writeText "vale.ini" ''
-            StylesPath = ${styles}
-            Vocab = ${vocab}
+      # FIXME: currently broken in CI
+      #treefmt.settings.formatter.vale =
+      #  let
+      #    vocab = "cLAN";
+      #    style = "Docs";
+      #    config = pkgs.writeText "vale.ini" ''
+      #      StylesPath = ${styles}
+      #      Vocab = ${vocab}
 
-            [*.md]
-            BasedOnStyles = Vale, ${style}
-            Vale.Terms = No
-          '';
-          styles = symlinkJoin {
-            name = "vale-style";
-            paths = [
-              accept
-              headings
-            ];
-          };
-          accept = writeTextDir "config/vocabularies/${vocab}/accept.txt" ''
-            Nix
-            NixOS
-            Nixpkgs
-            clan.lol
-            Clan
-            monorepo
-          '';
-          headings = writeTextDir "${style}/headings.yml" ''
-            extends: capitalization
-            message: "'%s' should be in sentence case"
-            level: error
-            scope: heading
-            # $title, $sentence, $lower, $upper, or a pattern.
-            match: $sentence
-          '';
-        in
-        {
-          command = "${vale}/bin/vale";
-          options = [ "--config=${config}" ];
-          includes = [ "*.md" ];
-          # TODO: too much at once, fix piecemeal
-          excludes = [
-            "docs/*"
-            "clanModules/*"
-            "pkgs/*"
-          ];
-        };
+      #      [*.md]
+      #      BasedOnStyles = Vale, ${style}
+      #      Vale.Terms = No
+      #    '';
+      #    styles = pkgs.symlinkJoin {
+      #      name = "vale-style";
+      #      paths = [
+      #        accept
+      #        headings
+      #      ];
+      #    };
+      #    accept = pkgs.writeTextDir "config/vocabularies/${vocab}/accept.txt" ''
+      #      Nix
+      #      NixOS
+      #      Nixpkgs
+      #      clan.lol
+      #      Clan
+      #      monorepo
+      #    '';
+      #    headings = pkgs.writeTextDir "${style}/headings.yml" ''
+      #      extends: capitalization
+      #      message: "'%s' should be in sentence case"
+      #      level: error
+      #      scope: heading
+      #      # $title, $sentence, $lower, $upper, or a pattern.
+      #      match: $sentence
+      #    '';
+      #  in
+      #  {
+      #    command = "${pkgs.vale}/bin/vale";
+      #    options = [ "--config=${config}" ];
+      #    includes = [ "*.md" ];
+      #    # TODO: too much at once, fix piecemeal
+      #    excludes = [
+      #      "docs/*"
+      #      "clanModules/*"
+      #      "pkgs/*"
+      #    ];
+      #  };
     };
 }
