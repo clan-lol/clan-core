@@ -41,23 +41,34 @@ in
     internal = true;
     default = [ ];
   };
-  config.assertions = lib.foldlAttrs (
-    ass1: serviceName: c:
-    ass1
-    ++ lib.foldlAttrs (
-      ass2: instanceName: instanceConfig:
-      let
-        serviceMachineNames = lib.attrNames instanceConfig.machines;
-        topLevelMachines = lib.attrNames config.machines;
-        # All machines must be defined in the top-level machines
-        assertions = builtins.map (m: {
-          assertion = builtins.elem m topLevelMachines;
-          message = "${serviceName}.${instanceName}.machines.${m}. Should be one of [ ${builtins.concatStringsSep " | " topLevelMachines} ]";
-        }) serviceMachineNames;
-      in
-      ass2 ++ assertions
-    ) [ ] c
-  ) [ ] config.services;
+  config.assertions =
+    let
+      serviceAssertions = lib.foldlAttrs (
+        ass1: serviceName: c:
+        ass1
+        ++ lib.foldlAttrs (
+          ass2: instanceName: instanceConfig:
+          let
+            serviceMachineNames = lib.attrNames instanceConfig.machines;
+            topLevelMachines = lib.attrNames config.machines;
+            # All machines must be defined in the top-level machines
+            assertions = builtins.map (m: {
+              assertion = builtins.elem m topLevelMachines;
+              message = "${serviceName}.${instanceName}.machines.${m}. Should be one of [ ${builtins.concatStringsSep " | " topLevelMachines} ]";
+            }) serviceMachineNames;
+          in
+          ass2 ++ assertions
+        ) [ ] c
+      ) [ ] config.services;
+      machineAssertions = map (
+        { name, value }:
+        {
+          assertion = true;
+          message = "Machine ${name} should define its host system in the inventory. ()";
+        }
+      ) (lib.attrsToList (lib.filterAttrs (_n: v: v.system or null == null) config.machines));
+    in
+    machineAssertions ++ serviceAssertions;
 
   options.meta = metaOptions;
 
@@ -71,6 +82,10 @@ in
             default = [ ];
             apply = lib.unique;
             type = t.listOf t.str;
+          };
+          system = lib.mkOption {
+            default = null;
+            type = t.nullOr t.str;
           };
         };
       }
