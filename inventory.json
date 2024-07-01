@@ -1,0 +1,12 @@
+{
+  "machines": {
+    "minimal_inventory_machine": {
+      "name": "foo",
+      "system": "x86_64-linux",
+      "description": "A nice thing",
+      "icon": "./path/to/icon.png",
+      "tags": ["1", "2", "3"]
+    }
+  },
+  "services": {}
+}
