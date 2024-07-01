@@ -22,7 +22,7 @@ package schema
         machines: [...string],
         tags: [...string],
     }
-    machines: {
+    machines?: {
         [string]: {
             config?: {
                 ...
@@ -30,8 +30,8 @@ package schema
         }
     },
 
-    // Configuration for the service
-    config: {
+    // Global Configuration for the service
+    config?: {
         // Schema depends on the module.
         // It declares the interface how the service can be configured.
         ...
