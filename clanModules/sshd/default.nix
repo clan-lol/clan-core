@@ -2,6 +2,10 @@
 {
   services.openssh.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
+  # We might want to remove this once, openssh is fixed everywhere:
+  # Workaround for CVE-2024-6387
+  # https://github.com/NixOS/nixpkgs/pull/323753#issuecomment-2199762128
+  services.openssh.settings.LoginGraceTime = 0;
 
   services.openssh.hostKeys = [
     {
