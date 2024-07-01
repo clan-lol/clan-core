@@ -40,7 +40,7 @@ let
     # For every machine in the inventory, build a NixOS configuration
     # For each machine generate config, forEach service, if the machine is used.
     builtins.mapAttrs (
-      machineName: _:
+      machineName: machineConfig:
       lib.foldlAttrs (
         # [ Modules ], String, { ${instance_name} :: ServiceConfig }
         acc: moduleName: serviceConfigs:
@@ -106,6 +106,12 @@ let
             acc2
         ) [ ] serviceConfigs)
       ) [ ] inventory.services
+      # Append each machine config
+      ++ [
+        (lib.optionalAttrs (machineConfig.system or null != null) {
+          config.nixpkgs.hostPlatform = machineConfig.system;
+        })
+      ]
     ) inventory.machines or { };
 in
 machines

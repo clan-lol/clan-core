@@ -40,7 +40,7 @@ let
             builtins.pathExists "${directory}/inventory.json"
           # Is recursively applied. Any explicit nix will override.
           then
-            lib.mkDefault (builtins.fromJSON (builtins.readFile "${directory}/inventory.json"))
+            (builtins.fromJSON (builtins.readFile "${directory}/inventory.json"))
           else
             { }
         )
@@ -67,11 +67,27 @@ let
                 "clan"
                 "tags"
               ] [ ] config;
+
+              system = lib.attrByPath [
+                "nixpkgs"
+                "hostSystem"
+              ] null config;
             }
           ) machines;
         }
+
         # Will be deprecated
-        { machines = lib.mapAttrs (_n: _: lib.mkDefault { }) machinesDirs; }
+        {
+          machines = lib.mapAttrs (
+            name: _:
+            # Use mkForce to make sure users migrate to the inventory system.
+            # When the settings.json exists the evaluation will print the deprecation warning.
+            lib.mkForce {
+              inherit name;
+              system = (machineSettings name).nixpkgs.hostSystem or null;
+            }
+          ) machinesDirs;
+        }
 
         # Deprecated interface
         (if clanName != null then { meta.name = clanName; } else { })
@@ -91,14 +107,24 @@ let
 
   machineSettings =
     machineName:
+    let
+      warn = lib.warn ''
+        Usage of Settings.json is only supported for test compatibility.
+        !!! Consider using the inventory system. !!!
+
+        File: ${directory + /machines/${machineName}/settings.json}
+
+        If there are still features missing in the inventory system, please open an issue on the clan-core repository.
+      '';
+    in
     # CLAN_MACHINE_SETTINGS_FILE allows to override the settings file temporarily
     # This is useful for doing a dry-run before writing changes into the settings.json
     # Using CLAN_MACHINE_SETTINGS_FILE requires passing --impure to nix eval
     if builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE" != "" then
-      builtins.fromJSON (builtins.readFile (builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE"))
+      warn (builtins.fromJSON (builtins.readFile (builtins.getEnv "CLAN_MACHINE_SETTINGS_FILE")))
     else
       lib.optionalAttrs (builtins.pathExists "${directory}/machines/${machineName}/settings.json") (
-        builtins.fromJSON (builtins.readFile (directory + /machines/${machineName}/settings.json))
+        warn (builtins.fromJSON (builtins.readFile (directory + /machines/${machineName}/settings.json)))
       );
 
   machineImports =

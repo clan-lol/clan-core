@@ -67,14 +67,18 @@
     in
     {
       expr = {
+        # A machine that includes the backup service should have 3 imports
+        # - one for some service agnostic properties of the machine itself
+        # - One for the service itself (default.nix)
+        # - one for the role (roles/client.nix)
         client_1_machine = builtins.length configs.client_1_machine;
         client_2_machine = builtins.length configs.client_2_machine;
         not_used_machine = builtins.length configs.not_used_machine;
       };
       expected = {
-        client_1_machine = 2;
-        client_2_machine = 2;
-        not_used_machine = 0;
+        client_1_machine = 3;
+        client_2_machine = 3;
+        not_used_machine = 1;
       };
     };
 
