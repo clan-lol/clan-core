@@ -50,13 +50,6 @@ def test_remote_with_clanparams() -> None:
     assert uri.flake_id.url == "https://example.com"
 
 
-def test_remote_with_all_params() -> None:
-    uri = ClanURI("clan://https://example.com?password=12345#myVM#secondVM")
-    assert uri.machine.name == "myVM"
-    assert uri._machines[1].name == "secondVM"
-    assert uri.flake_id.url == "https://example.com?password=12345"
-
-
 def test_from_str_remote() -> None:
     uri = ClanURI.from_str(url="https://example.com", machine_name="myVM")
     assert uri.get_url() == "https://example.com"

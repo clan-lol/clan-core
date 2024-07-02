@@ -77,19 +77,11 @@ class ClanURI:
         # Parse the URL into a ClanUrl object
         self.flake_id = self._parse_url(clean_comps)
 
-        # Parse the fragment into a list of machine queries
-        # Then parse every machine query into a MachineParameters object
-        machine_frags = list(
-            filter(lambda x: len(x) > 0, self._components.fragment.split("#"))
-        )
-        for machine_frag in machine_frags:
-            machine = self._parse_machine_query(machine_frag)
-            self._machines.append(machine)
+        if self._components.fragment == "":
+            self._machines.append(MachineData(flake_id=self.flake_id))
+            return
 
-        # If there are no machine fragments, add a default machine
-        if len(machine_frags) == 0:
-            default_machine = MachineData(flake_id=self.flake_id)
-            self._machines.append(default_machine)
+        self._machines.append(self._parse_machine_query(self._components.fragment))
 
     def _parse_url(self, comps: urllib.parse.ParseResult) -> FlakeId:
         comb = (
