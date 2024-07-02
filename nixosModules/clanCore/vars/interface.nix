@@ -12,6 +12,7 @@ let
     str
     submoduleWith
     ;
+  # the original types.submodule has strange behavior
   submodule = module: submoduleWith { modules = [ module ]; };
   options = lib.mapAttrs (_: mkOption);
   subOptions = opts: submodule { options = options opts; };
@@ -23,7 +24,7 @@ in
         Settings for the generated variables.
       '';
       type = submodule {
-        freeFormType = anything;
+        freeformType = anything;
         imports = [ ./settings.nix ];
       };
     };
