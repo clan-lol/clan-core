@@ -1,10 +1,8 @@
+import asyncio
 import logging
 from pathlib import Path
 
 import aiohttp
-
-from matrix_bot.gitea import GiteaData
-from matrix_bot.matrix import MatrixData
 
 log = logging.getLogger(__name__)
 
@@ -12,13 +10,16 @@ curr_dir = Path(__file__).parent
 
 from nio import AsyncClient, ClientConfig, ProfileGetAvatarResponse, RoomMessageText
 
-from matrix_bot.bot import bot_run, message_callback
-from matrix_bot.matrix import set_avatar, upload_image
+from .changelog_bot import changelog_bot
+from .gitea import GiteaData
+from .matrix import MatrixData, set_avatar, upload_image
+from .review_bot import message_callback, review_requested_bot
 
 
 async def bot_main(
     matrix: MatrixData,
     gitea: GiteaData,
+    data_dir: Path,
 ) -> None:
     # Setup client configuration to handle encryption
     client_config = ClientConfig(
@@ -41,7 +42,10 @@ async def bot_main(
 
     try:
         async with aiohttp.ClientSession() as session:
-            await bot_run(client, session, matrix, gitea)
+            while True:
+                await changelog_bot(client, session, matrix, gitea, data_dir)
+                await review_requested_bot(client, session, matrix, gitea, data_dir)
+                await asyncio.sleep(60 * 5)
     except Exception as e:
         log.exception(e)
     finally:

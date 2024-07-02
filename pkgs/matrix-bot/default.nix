@@ -2,12 +2,20 @@
   python3,
   setuptools,
   matrix-nio,
+  aiofiles,
+  aiohttp,
+  markdown2,
   ...
 }:
 
 let
 
-  pythonDependencies = [ matrix-nio ];
+  pythonDependencies = [
+    matrix-nio
+    aiofiles
+    aiohttp
+    markdown2
+  ];
 
   runtimeDependencies = [ ];
 
