@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "matrix-bot"
+description = "matrix bot for release messages from git commits"
+dynamic = ["version"]
+scripts = { mbot = "matrix_bot:main" }
+license = {text = "MIT"}
+
+[project.urls]
+Homepage = "https://clan.lol/"
+Documentation = "https://docs.clan.lol/"
+Repository = "https://git.clan.lol/clan/clan-core"
+
+[tool.setuptools.packages.find]
+exclude = ["result"]
+
+[tool.setuptools.package-data]
+matrix_bot = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+faulthandler_timeout = 60
+log_level = "DEBUG"
+log_format = "%(levelname)s: %(message)s\n       %(pathname)s:%(lineno)d::%(funcName)s"
+addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --durations 5 --color=yes --new-first" # Add --pdb for debugging
+norecursedirs = "tests/helpers"
+markers = ["impure", "with_core"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_redundant_casts = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = "argcomplete.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "ipdb.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pytest.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "setuptools.*"
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+lint.select = [ "E", "F", "I", "U", "N", "RUF", "ANN", "A" ]
+lint.ignore = ["E501", "E402", "E731", "ANN101", "ANN401", "A003"]
