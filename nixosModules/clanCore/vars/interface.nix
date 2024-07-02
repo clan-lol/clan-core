@@ -5,8 +5,10 @@ let
     anything
     attrsOf
     bool
+    either
     enum
     listOf
+    path
     str
     submoduleWith
     ;
@@ -26,6 +28,12 @@ in
       };
     };
     generators = {
+      default = {
+        imports = [
+          # default implementation of the generator
+          ./generator.nix
+        ];
+      };
       type = submodule {
         freeformType = attrsOf (subOptions {
           dependencies = {
@@ -109,7 +117,17 @@ in
                 - $prompts: The directory containing the prompted values as files
               The script should produce the files specified in the 'files' attribute under $out.
             '';
-            type = str;
+            type = either str path;
+          };
+          finalScript = {
+            description = ''
+              The final generator script, wrapped, so:
+                - all required programs are in PATH
+                - sandbox is set up correctly
+            '';
+            type = lib.types.str;
+            readOnly = true;
+            internal = true;
           };
         });
       };
