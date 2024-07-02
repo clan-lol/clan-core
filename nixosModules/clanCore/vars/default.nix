@@ -1,7 +1,7 @@
 { lib, ... }:
 {
   options.clan.core.vars = lib.mkOption {
-    internal = true;
+    visible = false;
     description = ''
       Generated Variables
 
