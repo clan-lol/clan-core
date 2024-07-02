@@ -51,10 +51,9 @@ def test_remote_with_clanparams() -> None:
 
 
 def test_remote_with_all_params() -> None:
-    uri = ClanURI("clan://https://example.com?password=12345#myVM#secondVM?dummy_opt=1")
+    uri = ClanURI("clan://https://example.com?password=12345#myVM#secondVM")
     assert uri.machine.name == "myVM"
     assert uri._machines[1].name == "secondVM"
-    assert uri._machines[1].params.dummy_opt == "1"
     assert uri.flake_id.url == "https://example.com?password=12345"
 
 

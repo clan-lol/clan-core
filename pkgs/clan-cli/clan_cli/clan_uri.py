@@ -1,10 +1,8 @@
 # Import the urllib.parse, enum and dataclasses modules
-import dataclasses
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 from .errors import ClanError
 
@@ -36,18 +34,10 @@ class FlakeId:
         return isinstance(self._value, str)
 
 
-# Parameters defined here will be DELETED from the nested uri
-# so make sure there are no conflicts with other webservices
-@dataclass
-class MachineParams:
-    dummy_opt: str = "dummy"
-
-
 @dataclass
 class MachineData:
     flake_id: FlakeId
     name: str = "defaultVM"
-    params: MachineParams = dataclasses.field(default_factory=MachineParams)
 
     def get_id(self) -> str:
         return f"{self.flake_id}#{self.name}"
@@ -120,23 +110,9 @@ class ClanURI:
 
     def _parse_machine_query(self, machine_frag: str) -> MachineData:
         comp = urllib.parse.urlparse(machine_frag)
-        query = urllib.parse.parse_qs(comp.query)
         machine_name = comp.path
 
-        machine_params: dict[str, Any] = {}
-        for dfield in dataclasses.fields(MachineParams):
-            if dfield.name in query:
-                values = query[dfield.name]
-                if len(values) > 1:
-                    raise ClanError(f"Multiple values for parameter: {dfield.name}")
-                machine_params[dfield.name] = values[0]
-
-                # Remove the field from the query dictionary
-                # clan uri and nested uri share one namespace for query parameters
-                # we need to make sure there are no conflicts
-                del query[dfield.name]
-        params = MachineParams(**machine_params)
-        machine = MachineData(flake_id=self.flake_id, name=machine_name, params=params)
+        machine = MachineData(flake_id=self.flake_id, name=machine_name)
         return machine
 
     @property
