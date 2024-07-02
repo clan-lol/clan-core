@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, pkgs, ... }:
 let
   eval =
     module:
@@ -7,6 +7,7 @@ let
         ../interface.nix
         module
       ];
+      specialArgs.pkgs = pkgs;
     }).config;
 
   usage_simple = {
@@ -64,7 +65,43 @@ in
       config = eval { generators.imports = [ generator_module ]; };
     in
     {
-      expr = lib.trace (lib.attrNames config.generators) config.generators ? my-generator;
+      expr = config.generators ? my-generator;
+      expected = true;
+    };
+
+  # script can be text
+  test_script_text =
+    let
+      config = eval {
+        # imports = [ usage_simple ];
+        generators.my_secret.script = ''
+          echo "Hello, world!"
+        '';
+      };
+    in
+    {
+      expr = config.generators.my_secret.script;
+      expected = "echo \"Hello, world!\"\n";
+    };
+
+  # script can be a derivation
+  test_script_writer =
+    let
+      config = eval {
+        # imports = [ usage_simple ];
+        generators.my_secret.script = derivation {
+          system = pkgs.system;
+          name = "my-script";
+          builder = "/bin/sh";
+          args = [
+            "-c"
+            ''touch $out''
+          ];
+        };
+      };
+    in
+    {
+      expr = lib.hasPrefix builtins.storeDir config.generators.my_secret.script;
       expected = true;
     };
 }
