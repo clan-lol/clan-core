@@ -28,6 +28,7 @@ from . import (
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel_or_env
 from .errors import ClanCmdError, ClanError
+from .hyperlink import help_hyperlink
 from .profiler import profile
 from .ssh import cli as ssh_cli
 
@@ -89,9 +90,9 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         prog=prog,
         description="The clan cli tool.",
         epilog=(
-            """
-Online reference for the clan cli tool: https://docs.clan.lol/reference/cli/
-For more detailed information, visit: https://docs.clan.lol
+            f"""
+Online reference for the clan cli tool: {help_hyperlink("cli reference", "https://docs.clan.lol/reference/cli/")}
+For more detailed information, visit: {help_hyperlink("docs", "https://docs.clan.lol")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -127,7 +128,7 @@ Note: The meta results from clan/meta.json and manual flake arguments. It may no
         help="manage backups of clan machines",
         description="manage backups of clan machines",
         epilog=(
-            """
+            f"""
 This subcommand provides an interface to backups that clan machines expose.
 
 Examples:
@@ -142,7 +143,7 @@ Examples:
   The backup to restore for the machine [MACHINE] with the configured [PROVIDER]
   with the name [NAME].
 
-For more detailed information, visit: https://docs.clan.lol/getting-started/backups/
+For more detailed information visit: {help_hyperlink("backups", "https://docs.clan.lol/getting-started/backups")}.
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -154,13 +155,13 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/back
         help="create a clan flake inside the current directory",
         description="create a clan flake inside the current directory",
         epilog=(
-            """
+            f"""
 Examples:
   $ clan flakes create [DIR]
   Will create a new clan flake in the specified directory and create it if it
   doesn't exist yet. The flake will be created from a default template.
 
-For more detailed information, visit: https://docs.clan.lol/getting-started
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -185,7 +186,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started
         help="ssh to a remote machine",
         description="ssh to a remote machine",
         epilog=(
-            """
+            f"""
 This subcommand allows seamless ssh access to the nixos-image builders.
 
 Examples:
@@ -195,7 +196,7 @@ Examples:
   the json string. [JSON] can either be a json formatted string itself, or point
   towards a file containing the deployment information
 
-For more detailed information, visit: https://docs.clan.lol/getting-started/deploy
+For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/deploy")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -207,7 +208,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/depl
         help="manage secrets",
         description="manage secrets",
         epilog=(
-            """
+            f"""
 This subcommand provides an interface to secret facts.
 
 Examples:
@@ -219,7 +220,7 @@ Examples:
   $ clan secrets get [SECRET]
   Will display the content of the specified secret.
 
-For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -231,7 +232,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/secr
         help="manage facts",
         description="manage facts",
         epilog=(
-            """
+            f"""
 
 This subcommand provides an interface to facts of clan machines.
 Facts are artifacts that a service can generate.
@@ -256,7 +257,7 @@ Examples:
   This is especially useful for resetting certain passwords while leaving the rest
   of the facts for a machine in place.
 
-For more detailed information, visit: https://docs.clan.lol/getting-started/secrets/
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -268,7 +269,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/secr
         help="manage machines and their configuration",
         description="manage machines and their configuration",
         epilog=(
-            """
+            f"""
 This subcommand provides an interface to machines managed by clan.
 
 Examples:
@@ -283,7 +284,7 @@ Examples:
   $ clan machines install [MACHINES] [TARGET_HOST]
   Will install the specified machine [MACHINE], to the specified [TARGET_HOST].
 
-For more detailed information, visit: https://docs.clan.lol/getting-started/deploy
+For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/deploy")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -314,7 +315,7 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/depl
         help="query state information about machines",
         description="query state information about machines",
         epilog=(
-            """
+            f"""
 This subcommand provides an interface to the state managed by clan.
 
 State can be folders and databases that modules depend on managed by clan.
@@ -334,7 +335,7 @@ Examples:
   $ clan state list [MACHINE]
   List state of the machines managed by clan.
 
-For more detailed information, visit: https://docs.clan.lol/getting-started/backups
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/backups")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
