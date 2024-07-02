@@ -1,4 +1,3 @@
-import argparse
 import json
 import re
 import tomllib
@@ -81,6 +80,7 @@ class ModuleInfo:
     description: str
     categories: list[str] | None
     roles: list[str] | None
+    readme: str | None = None
 
 
 def get_modules(base_path: str) -> dict[str, str]:
@@ -142,9 +142,5 @@ def show_module_info(base_path: str, module_name: str) -> ModuleInfo:
         description=frontmatter.description,
         categories=frontmatter.categories,
         roles=get_roles(module_path),
+        readme=readme_content,
     )
-
-
-def command(args: argparse.Namespace) -> None:
-    res = show_module_info(args.flake, args.module_name)
-    print(res)
