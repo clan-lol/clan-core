@@ -2,7 +2,7 @@
   lib,
   config,
   pkgs,
-  inputs,
+  self,
   ...
 }:
 let
@@ -65,9 +65,7 @@ in
       serviceConfig.ExecStart = pkgs.writeScript "static-zerotier-peers-autoaccept" ''
         #!/bin/sh
         ${lib.concatMapStringsSep "\n" (host: ''
-          ${
-            inputs.clan-core.packages.${pkgs.system}.zerotier-members
-          }/bin/zerotier-members allow --member-ip ${host}
+          ${self.packages.${pkgs.system}.zerotier-members}/bin/zerotier-members allow --member-ip ${host}
         '') hosts}
       '';
     };
