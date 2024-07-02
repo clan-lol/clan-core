@@ -1,19 +1,17 @@
-{ lib, machineDir, ... }:
+{ lib, ... }:
+machineDir:
 let
 
   allMachineNames = lib.mapAttrsToList (name: _: name) (builtins.readDir machineDir);
 
-  getFactPath = fact: machine:
-    "${machineDir}/${machine}/facts/${fact}";
+  getFactPath = fact: machine: "${machineDir}/${machine}/facts/${fact}";
 
-  readFact = fact: machine:
+  readFact =
+    fact: machine:
     let
       path = getFactPath fact machine;
     in
-    if builtins.pathExists path then
-      builtins.readFile path
-    else
-      null;
+    if builtins.pathExists path then builtins.readFile path else null;
 
   # Example:
   #
@@ -22,7 +20,8 @@ let
   #   machineA = "1.2.3.4";
   #   machineB = "5.6.7.8";
   # };
-  readFactFromAllMachines = fact:
+  readFactFromAllMachines =
+    fact:
     let
       machines = allMachineNames;
       facts = lib.genAttrs machines (readFact fact);
@@ -47,18 +46,27 @@ let
   #       "synching.pub" = "23456719";
   #     };
   # };
-  readFactsFromAllMachines = facts:
+  readFactsFromAllMachines =
+    facts:
     let
       # machine -> fact -> factvalue
-      machinesFactsAttrs = lib.genAttrs allMachineNames (machine: lib.genAttrs facts (fact: readFact fact machine));
+      machinesFactsAttrs = lib.genAttrs allMachineNames (
+        machine: lib.genAttrs facts (fact: readFact fact machine)
+      );
       # remove all machines which don't have all facts set
-      filteredMachineFactAttrs =
-        lib.filterAttrs (_machine: values: builtins.all (fact: values.${fact} != null) facts)
-          machinesFactsAttrs;
+      filteredMachineFactAttrs = lib.filterAttrs (
+        _machine: values: builtins.all (fact: values.${fact} != null) facts
+      ) machinesFactsAttrs;
     in
     filteredMachineFactAttrs;
 
-
-
 in
-{ inherit allMachineNames getFactPath readFact readFactFromAllMachines readFactsFromAllMachines; }
+{
+  inherit
+    allMachineNames
+    getFactPath
+    readFact
+    readFactFromAllMachines
+    readFactsFromAllMachines
+    ;
+}
