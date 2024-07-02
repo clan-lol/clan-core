@@ -37,8 +37,9 @@ class FlakeId:
 
 
 # Define the ClanURI class
+@dataclass
 class ClanURI:
-    flake_id: FlakeId
+    flake: FlakeId
     machine_name: str
 
     # Initialize the class with a clan:// URI
@@ -62,7 +63,7 @@ class ClanURI:
         clean_comps = components._replace(query=components.query, fragment="")
 
         # Parse the URL into a ClanUrl object
-        self.flake_id = self._parse_url(clean_comps)
+        self.flake = self._parse_url(clean_comps)
         self.machine_name = "defaultVM"
         if components.fragment:
             self.machine_name = components.fragment
@@ -85,7 +86,7 @@ class ClanURI:
         return flake_id
 
     def get_url(self) -> str:
-        return str(self.flake_id)
+        return str(self.flake)
 
     @classmethod
     def from_str(

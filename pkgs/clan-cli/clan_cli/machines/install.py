@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from ..clan_uri import FlakeId
 from ..cmd import Log, run
 from ..completions import add_dynamic_completer, complete_machines
 from ..facts.generate import generate_facts
@@ -90,7 +91,7 @@ def install_nixos(
 
 @dataclass
 class InstallOptions:
-    flake: Path
+    flake: FlakeId
     machine: str
     target_host: str
     kexec: str | None
@@ -123,7 +124,7 @@ def install_command(args: argparse.Namespace) -> None:
         password = None
 
     opts = InstallOptions(
-        flake=args.flake,
+        flake=FlakeId(args.flake),
         machine=args.machine,
         target_host=target_host,
         kexec=args.kexec,

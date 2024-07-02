@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..clan_uri import FlakeId
 from ..completions import add_dynamic_completer, complete_machines
 from ..machines.machines import Machine
 
@@ -29,13 +30,13 @@ def inspect_vm(machine: Machine) -> VmConfig:
 @dataclass
 class InspectOptions:
     machine: str
-    flake: Path
+    flake: FlakeId
 
 
 def inspect_command(args: argparse.Namespace) -> None:
     inspect_options = InspectOptions(
         machine=args.machine,
-        flake=args.flake or Path.cwd(),
+        flake=FlakeId(args.flake or Path.cwd()),
     )
 
     machine = Machine(inspect_options.machine, inspect_options.flake)

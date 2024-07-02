@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from ..clan_uri import FlakeId
 from ..cmd import run
 from ..nix import nix_build, nix_config
 from .machines import Machine
@@ -21,8 +22,8 @@ def get_all_machines(flake_dir: Path, nix_options: list[str]) -> list[Machine]:
         machines.append(
             Machine(
                 name=name,
-                flake=flake_dir,
-                deployment_info=machine_data,
+                flake=FlakeId(flake_dir),
+                cached_deployment=machine_data,
                 nix_options=nix_options,
             )
         )
@@ -34,5 +35,7 @@ def get_selected_machines(
 ) -> list[Machine]:
     machines = []
     for name in machine_names:
-        machines.append(Machine(name=name, flake=flake_dir, nix_options=nix_options))
+        machines.append(
+            Machine(name=name, flake=FlakeId(flake_dir), nix_options=nix_options)
+        )
     return machines
