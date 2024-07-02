@@ -104,21 +104,24 @@ def get_modules(base_path: str) -> dict[str, str]:
 
 
 @API.register
-def list_modules(base_path: str) -> list[str]:
+def list_modules(base_path: str) -> dict[str, ModuleInfo]:
     """
     Show information about a module
     """
     modules = get_modules(base_path)
-    return [m for m in modules.keys()]
+    return {
+        module_name: get_module_info(module_name, module_path)
+        for module_name, module_path in modules.items()
+    }
 
 
-@API.register
-def show_module_info(base_path: str, module_name: str) -> ModuleInfo:
+def get_module_info(
+    module_name: str,
+    module_path: str,
+) -> ModuleInfo:
     """
-    Show information about a module
+    Retrieves information about a module
     """
-    modules = get_modules(base_path)
-    module_path = modules.get(module_name, None)
     if not module_path:
         raise ClanError(
             "Module not found",
