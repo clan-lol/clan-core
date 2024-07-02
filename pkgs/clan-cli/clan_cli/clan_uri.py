@@ -9,6 +9,7 @@ from .errors import ClanError
 
 @dataclass
 class FlakeId:
+    # FIXME: this is such a footgun if you accidnetally pass a string
     _value: str | Path
 
     def __str__(self) -> str:
@@ -26,9 +27,6 @@ class FlakeId:
         assert isinstance(self._value, str)
         return self._value
 
-    def __repr__(self) -> str:
-        return f"ClanUrl({self._value})"
-
     def is_local(self) -> bool:
         return isinstance(self._value, Path)
 
@@ -37,8 +35,9 @@ class FlakeId:
 
 
 # Define the ClanURI class
+@dataclass
 class ClanURI:
-    flake_id: FlakeId
+    flake: FlakeId
     machine_name: str
 
     # Initialize the class with a clan:// URI
@@ -62,7 +61,7 @@ class ClanURI:
         clean_comps = components._replace(query=components.query, fragment="")
 
         # Parse the URL into a ClanUrl object
-        self.flake_id = self._parse_url(clean_comps)
+        self.flake = self._parse_url(clean_comps)
         self.machine_name = "defaultVM"
         if components.fragment:
             self.machine_name = components.fragment
@@ -85,7 +84,7 @@ class ClanURI:
         return flake_id
 
     def get_url(self) -> str:
-        return str(self.flake_id)
+        return str(self.flake)
 
     @classmethod
     def from_str(
@@ -103,6 +102,3 @@ class ClanURI:
             clan_uri += f"#{machine_name}"
 
         return cls(clan_uri)
-
-    def __repr__(self) -> str:
-        return f"ClanURI({self})"
