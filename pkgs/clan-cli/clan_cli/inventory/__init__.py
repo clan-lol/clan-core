@@ -1,4 +1,4 @@
-import re
+import json
 from dataclasses import asdict, dataclass, is_dataclass
 from pathlib import Path
 from typing import Any, Literal
@@ -55,16 +55,6 @@ class Machine:
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Machine":
-        if "name" not in d:
-            raise ClanError("name not found in machine")
-
-        hostname_regex = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$"
-        if not re.match(hostname_regex, d["name"]):
-            raise ClanError(
-                "Machine name must be a valid hostname",
-                description=f"""Machine name: {d["name"]}""",
-            )
-
         return Machine(**d)
 
 
@@ -94,15 +84,9 @@ class Service:
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Service":
-        if "meta" not in d:
-            raise ClanError("meta not found in service")
-
-        if "roles" not in d:
-            raise ClanError("roles not found in service")
-
         return Service(
-            meta=ServiceMeta(**d["meta"]),
-            roles={name: Role(**role) for name, role in d["roles"].items()},
+            meta=ServiceMeta(**d.get("meta", {})),
+            roles={name: Role(**role) for name, role in d.get("roles", {}).items()},
             machines={
                 name: MachineServiceConfig(**machine)
                 for name, machine in d.get("machines", {}).items()
@@ -117,22 +101,39 @@ class Inventory:
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Inventory":
-        if "machines" not in d:
-            raise ClanError("machines not found in inventory")
-
-        if "services" not in d:
-            raise ClanError("services not found in inventory")
-
         return Inventory(
             machines={
                 name: Machine.from_dict(machine)
-                for name, machine in d["machines"].items()
+                for name, machine in d.get("machines", {}).items()
             },
             services={
                 name: {
                     role: Service.from_dict(service)
                     for role, service in services.items()
                 }
-                for name, services in d["services"].items()
+                for name, services in d.get("services", {}).items()
             },
         )
+
+    @staticmethod
+    def get_path(flake_dir: str | Path) -> Path:
+        return Path(flake_dir) / "inventory.json"
+
+    @staticmethod
+    def load_file(flake_dir: str | Path) -> "Inventory":
+        inventory = Inventory(machines={}, services={})
+        inventory_file = Inventory.get_path(flake_dir)
+        if inventory_file.exists():
+            with open(inventory_file) as f:
+                try:
+                    res = json.load(f)
+                    inventory = Inventory.from_dict(res)
+                except json.JSONDecodeError as e:
+                    raise ClanError(f"Error decoding inventory file: {e}")
+
+        return inventory
+
+    def persist(self, flake_dir: str | Path) -> None:
+        inventory_file = Inventory.get_path(flake_dir)
+        with open(inventory_file, "w") as f:
+            json.dump(dataclass_to_dict(self), f, indent=2)

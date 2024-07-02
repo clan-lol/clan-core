@@ -4,22 +4,19 @@ import logging
 from pathlib import Path
 
 from clan_cli.api import API
+from clan_cli.inventory import Machine
 
 from ..cmd import run_no_stdout
-from ..nix import nix_config, nix_eval
+from ..nix import nix_eval
 
 log = logging.getLogger(__name__)
 
 
 @API.register
-def list_machines(flake_url: str | Path, debug: bool = False) -> list[str]:
-    config = nix_config()
-    system = config["system"]
+def list_machines(flake_url: str | Path, debug: bool = False) -> dict[str, Machine]:
     cmd = nix_eval(
         [
-            f"{flake_url}#clanInternals.machines.{system}",
-            "--apply",
-            "builtins.attrNames",
+            f"{flake_url}#clanInternals.inventory.machines",
             "--json",
         ]
     )
@@ -27,12 +24,13 @@ def list_machines(flake_url: str | Path, debug: bool = False) -> list[str]:
     proc = run_no_stdout(cmd)
 
     res = proc.stdout.strip()
-    return json.loads(res)
+    data = {name: Machine.from_dict(v) for name, v in json.loads(res).items()}
+    return data
 
 
 def list_command(args: argparse.Namespace) -> None:
     flake_path = Path(args.flake).resolve()
-    for name in list_machines(flake_path, args.debug):
+    for name in list_machines(flake_path, args.debug).keys():
         print(name)
 
 
