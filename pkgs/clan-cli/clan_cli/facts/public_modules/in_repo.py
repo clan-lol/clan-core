@@ -12,9 +12,13 @@ class FactStore(FactStoreBase):
         self.works_remotely = False
 
     def set(self, service: str, name: str, value: bytes) -> Path | None:
-        if isinstance(self.machine.flake, Path):
+        if self.machine.flake.is_local():
             fact_path = (
-                self.machine.flake / "machines" / self.machine.name / "facts" / name
+                self.machine.flake.path
+                / "machines"
+                / self.machine.name
+                / "facts"
+                / name
             )
             fact_path.parent.mkdir(parents=True, exist_ok=True)
             fact_path.touch()

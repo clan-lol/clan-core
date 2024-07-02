@@ -208,8 +208,7 @@ def complete_secrets(
     """
     Provides completion functionality for clan secrets
     """
-    from pathlib import Path
-
+    from .clan_uri import FlakeId
     from .secrets.secrets import ListSecretsOptions, list_secrets
 
     if (clan_dir_result := clan_dir(None)) is not None:
@@ -218,11 +217,11 @@ def complete_secrets(
         flake = "."
 
     options = ListSecretsOptions(
-        flake=Path(flake),
+        flake=FlakeId(flake),
         pattern=None,
     )
 
-    secrets = list_secrets(options.flake, options.pattern)
+    secrets = list_secrets(options.flake.path, options.pattern)
 
     secrets_dict = {name: "secret" for name in secrets}
     return secrets_dict

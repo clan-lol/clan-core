@@ -2,6 +2,7 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..clan_uri import FlakeId
 from ..cmd import run
 from ..dirs import machine_gcroot
 from ..errors import ClanError
@@ -45,7 +46,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
             f"Machine {machine_name} not found in {flake_url}. Available machines: {', '.join(machines)}"
         )
 
-    machine = Machine(machine_name, flake_url)
+    machine = Machine(machine_name, FlakeId(flake_url))
     vm = inspect_vm(machine)
 
     # Make symlink to gcroots from vm.machine_icon
@@ -102,16 +103,16 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
 @dataclass
 class InspectOptions:
     machine: str
-    flake: Path
+    flake: FlakeId
 
 
 def inspect_command(args: argparse.Namespace) -> None:
     inspect_options = InspectOptions(
         machine=args.machine,
-        flake=args.flake or Path.cwd(),
+        flake=FlakeId(args.flake or Path.cwd()),
     )
     res = inspect_flake(
-        flake_url=inspect_options.flake, machine_name=inspect_options.machine
+        flake_url=str(inspect_options.flake), machine_name=inspect_options.machine
     )
     print("Clan name:", res.clan_name)
     print("Icon:", res.icon)
