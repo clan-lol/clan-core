@@ -2,7 +2,6 @@
   lib,
   config,
   pkgs,
-  self,
   ...
 }:
 let
@@ -61,11 +60,11 @@ in
     lib.mkIf (config.clan.networking.zerotier.controller.enable) {
       wantedBy = [ "multi-user.target" ];
       after = [ "zerotierone.service" ];
-      path = [ pkgs.zerotierone ];
+      path = [ config.clan.core.clanPkgs.zerotierone ];
       serviceConfig.ExecStart = pkgs.writeScript "static-zerotier-peers-autoaccept" ''
         #!/bin/sh
         ${lib.concatMapStringsSep "\n" (host: ''
-          ${self.packages.${pkgs.system}.zerotier-members}/bin/zerotier-members allow --member-ip ${host}
+          ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members allow --member-ip ${host}
         '') hosts}
       '';
     };
