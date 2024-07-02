@@ -23,6 +23,11 @@ type ServiceModel = Extract<
   { status: "success" }
 >["data"]["services"];
 
+type MachinesModel = Extract<
+  OperationResponse<"list_machines">,
+  { status: "success" }
+>["data"];
+
 export const MachineListView: Component = () => {
   const [{ machines, loading }, { getMachines }] = useMachineContext();
 
@@ -44,10 +49,12 @@ export const MachineListView: Component = () => {
     console.log(files());
   });
 
-  const [data, setData] = createSignal<string[]>([]);
+  const [data, setData] = createSignal<MachinesModel>({});
   createEffect(() => {
     if (route() === "machines") getMachines();
   });
+
+  const unpackedMachines = () => Object.entries(data());
 
   createEffect(() => {
     const response = machines();
@@ -57,7 +64,7 @@ export const MachineListView: Component = () => {
       toast.success("Machines loaded");
     }
     if (response?.status === "error") {
-      setData([]);
+      setData({});
       console.error(response.errors);
       toast.error("Error loading machines");
       response.errors.forEach((error) =>
@@ -162,13 +169,13 @@ export const MachineListView: Component = () => {
             </div>
           </div>
         </Match>
-        <Match when={!loading() && data().length === 0}>
+        <Match when={!loading() && unpackedMachines().length === 0}>
           No machines found
         </Match>
         <Match when={!loading()}>
           <ul>
-            <For each={data()}>
-              {(entry) => <MachineListItem name={entry} />}
+            <For each={unpackedMachines()}>
+              {([name, info]) => <MachineListItem name={name} info={info} />}
             </For>
           </ul>
         </Match>

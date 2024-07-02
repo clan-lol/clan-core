@@ -7,7 +7,8 @@ from clan_cli.config.machine import (
     verify_machine_config,
 )
 from clan_cli.config.schema import machine_schema
-from clan_cli.machines.create import MachineCreateRequest, create_machine
+from clan_cli.inventory import Machine
+from clan_cli.machines.create import create_machine
 from clan_cli.machines.list import list_machines
 
 
@@ -19,17 +20,24 @@ def test_schema_for_machine(test_flake_with_core: FlakeForTest) -> None:
 
 @pytest.mark.with_core
 def test_create_machine_on_minimal_clan(test_flake_minimal: FlakeForTest) -> None:
-    assert list_machines(test_flake_minimal.path) == []
+    assert list_machines(test_flake_minimal.path) == {}
     create_machine(
         test_flake_minimal.path,
-        MachineCreateRequest(
-            name="foo", config=dict(nixpkgs=dict(hostSystem="x86_64-linux"))
+        Machine(
+            name="foo",
+            system="x86_64-linux",
+            description="A test machine",
+            tags=["test"],
+            icon=None,
         ),
     )
-    assert list_machines(test_flake_minimal.path) == ["foo"]
+    assert list(list_machines(test_flake_minimal.path).keys()) == ["foo"]
+
+    # Writes into settings.json
     set_config_for_machine(
         test_flake_minimal.path, "foo", dict(services=dict(openssh=dict(enable=True)))
     )
+
     config = config_for_machine(test_flake_minimal.path, "foo")
     assert config["services"]["openssh"]["enable"]
     assert verify_machine_config(test_flake_minimal.path, "foo") is None
