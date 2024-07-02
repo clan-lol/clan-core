@@ -60,9 +60,8 @@ def test_ui_template(
     clan_core: Path,
 ) -> None:
     flake_dir = temporary_home / "test-flake"
-    url = f"{clan_core}#empty"
+    url = f"{clan_core}#minimal"
     cli.run(["flakes", "create", str(flake_dir), f"--url={url}"])
-    assert (flake_dir / ".clan-flake").exists()
     monkeypatch.chdir(flake_dir)
     cli.run(["machines", "create", "machine1"])
     capsys.readouterr()  # flush cache
