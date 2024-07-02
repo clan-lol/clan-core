@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
 
-from clan_cli.clan_uri import ClanURI, MachineData
+from clan_cli.clan_uri import ClanURI, FlakeId
 
 from ..cmd import run_no_stdout
 from ..errors import ClanError
@@ -16,8 +16,7 @@ log = logging.getLogger(__name__)
 
 class Machine:
     name: str
-    flake: str | Path
-    data: MachineData
+    flake: FlakeId
     nix_options: list[str]
     eval_cache: dict[str, str]
     build_cache: dict[str, Path]
@@ -30,7 +29,6 @@ class Machine:
         flake: Path | str,
         deployment_info: dict | None = None,
         nix_options: list[str] = [],
-        machine: MachineData | None = None,
     ) -> None:
         """
         Creates a Machine
@@ -38,14 +36,9 @@ class Machine:
         @clan_dir: the directory of the clan, optional, if not set it will be determined from the current working directory
         @machine_json: can be optionally used to skip evaluation of the machine, location of the json file with machine data
         """
-        if machine is None:
-            uri = ClanURI.from_str(str(flake), name)
-            machine = uri.machine
-            self.flake: str | Path = machine.flake_id._value
-            self.name: str = machine.name
-            self.data: MachineData = machine
-        else:
-            self.data: MachineData = machine
+        uri = ClanURI.from_str(str(flake), name)
+        self.flake_id = uri.flake_id
+        self.name: str = uri.machine_name
 
         self.eval_cache: dict[str, str] = {}
         self.build_cache: dict[str, Path] = {}
@@ -60,7 +53,7 @@ class Machine:
         self.eval_cache.clear()
 
     def __str__(self) -> str:
-        return f"Machine(name={self.data.name}, flake={self.data.flake_id})"
+        return f"Machine(name={self.name}, flake={self.flake_id})"
 
     def __repr__(self) -> str:
         return str(self)
@@ -81,7 +74,7 @@ class Machine:
             "deploymentAddress"
         )
         if val is None:
-            msg = f"the 'clan.networking.targetHost' nixos option is not set for machine '{self.data.name}'"
+            msg = f"the 'clan.networking.targetHost' nixos option is not set for machine '{self.name}'"
             raise ClanError(msg)
         return val
 
@@ -112,12 +105,12 @@ class Machine:
         if self._flake_path:
             return self._flake_path
 
-        if self.data.flake_id.is_local():
-            self._flake_path = self.data.flake_id.path
-        elif self.data.flake_id.is_remote():
-            self._flake_path = Path(nix_metadata(self.data.flake_id.url)["path"])
+        if self.flake_id.is_local():
+            self._flake_path = self.flake_id.path
+        elif self.flake_id.is_remote():
+            self._flake_path = Path(nix_metadata(self.flake_id.url)["path"])
         else:
-            raise ClanError(f"Unsupported flake url: {self.data.flake_id}")
+            raise ClanError(f"Unsupported flake url: {self.flake_id}")
 
         assert self._flake_path is not None
         return self._flake_path
@@ -125,7 +118,7 @@ class Machine:
     @property
     def target_host(self) -> Host:
         return parse_deployment_address(
-            self.data.name, self.target_host_address, meta={"machine": self}
+            self.name, self.target_host_address, meta={"machine": self}
         )
 
     @property
@@ -139,7 +132,7 @@ class Machine:
             return self.target_host
         # enable ssh agent forwarding to allow the build host to access the target host
         return parse_deployment_address(
-            self.data.name,
+            self.name,
             build_host,
             forward_agent=True,
             meta={"machine": self, "target_host": self.target_host},
@@ -198,7 +191,7 @@ class Machine:
             args += [
                 "--expr",
                 f"""
-                    ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.data.name}" {{
+                    ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.name}" {{
                       extraConfig = builtins.fromJSON (builtins.readFile (builtins.fetchTree {{
                         type = "file";
                         url = if (builtins.compareVersions builtins.nixVersion "2.19") == -1 then "{file_info["path"]}" else "file:{file_info["path"]}";
@@ -213,9 +206,7 @@ class Machine:
             else:
                 flake = f"path:{self.flake_dir}"
 
-            args += [
-                f'{flake}#clanInternals.machines."{system}".{self.data.name}.{attr}'
-            ]
+            args += [f'{flake}#clanInternals.machines."{system}".{self.name}.{attr}']
         args += nix_options + self.nix_options
 
         if method == "eval":
