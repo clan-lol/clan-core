@@ -6,6 +6,7 @@ from pathlib import Path
 
 from clan_cli.cmd import run_no_stdout
 from clan_cli.errors import ClanCmdError, ClanError
+from clan_cli.inventory import Inventory, Service
 from clan_cli.nix import nix_eval
 
 from . import API
@@ -147,3 +148,26 @@ def get_module_info(
         roles=get_roles(module_path),
         readme=readme_content,
     )
+
+
+@API.register
+def update_module_instance(
+    base_path: str, module_name: str, instance_name: str, instance_config: Service
+) -> Inventory:
+    inventory = Inventory.load_file(base_path)
+
+    module_instances = inventory.services.get(module_name, {})
+    module_instances[instance_name] = instance_config
+
+    inventory.services[module_name] = module_instances
+
+    inventory.persist(
+        base_path, f"Updated module instance {module_name}/{instance_name}"
+    )
+
+    return inventory
+
+
+@API.register
+def get_inventory(base_path: str) -> Inventory:
+    return Inventory.load_file(base_path)

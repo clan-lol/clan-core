@@ -21,7 +21,7 @@ def create_machine(flake_dir: str | Path, machine: Machine) -> None:
 
     inventory = Inventory.load_file(flake_dir)
     inventory.machines.update({machine.name: machine})
-    inventory.persist(flake_dir)
+    inventory.persist(flake_dir, f"Create machine {machine.name}")
 
     commit_file(Inventory.get_path(flake_dir), Path(flake_dir))
 
