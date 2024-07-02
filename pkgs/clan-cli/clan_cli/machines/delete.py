@@ -18,7 +18,7 @@ def delete_machine(base_dir: str | Path, name: str) -> None:
     if machine is None:
         raise ClanError(f"Machine {name} does not exist")
 
-    inventory.persist(base_dir)
+    inventory.persist(base_dir, f"Delete machine {name}")
 
     folder = specific_machine_dir(Path(base_dir), name)
     if folder.exists():
