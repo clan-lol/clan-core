@@ -27,5 +27,5 @@ def read_locked_file(path: Path) -> dict[str, Any]:
         return {}
     with locked_open(path, "r") as f:
         content: str = f.read()
-        parsed: list[dict] = json.loads(content)
+        parsed: dict[str, Any] = json.loads(content)
         return parsed

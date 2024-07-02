@@ -37,7 +37,7 @@ async def review_requested_bot(
     data_dir: Path,
 ) -> None:
     # If you made a new room and haven't joined as that user, you can use
-    room: JoinResponse = await client.join(matrix.room)
+    room: JoinResponse = await client.join(matrix.review_room)
 
     if not room.transport_response.ok:
         log.error("This can happen if the room doesn't exist or the bot isn't invited")
@@ -51,7 +51,7 @@ async def review_requested_bot(
     pulls = await fetch_pull_requests(gitea, http, limit=50, state=PullState.ALL)
 
     # Read the last updated pull request
-    last_updated_path = data_dir / "last_updated.json"
+    last_updated_path = data_dir / "last_review_run.json"
     last_updated = read_locked_file(last_updated_path)
 
     # Check if the pull request is mergeable and needs review
@@ -75,9 +75,7 @@ async def review_requested_bot(
 
             # Send a message to the room and mention the users
             log.info(f"Pull request {pull['title']} needs review")
-            message = (
-                f"Review Requested:\n<code>{pull['title']}</code>\n{pull['html_url']}"
-            )
+            message = f"Review Requested:\n[{pull['title']}]({pull['html_url']})"
             await send_message(client, room, message, user_ids=ping_users)
 
             # Write the new last updated pull request

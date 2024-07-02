@@ -62,7 +62,7 @@ async def send_message(
         formatted_message = f"{mention_list}: {formatted_message}"
 
     content = {
-        "msgtype": "m.notice",
+        "msgtype": "m.text" if user_ids else "m.notice",
         "format": "org.matrix.custom.html",
         "body": message,
         "formatted_body": formatted_message,
@@ -82,4 +82,7 @@ class MatrixData:
     user: str
     avatar: Path
     password: str
-    room: str
+    changelog_room: str
+    review_room: str
+    changelog_frequency: int
+    publish_day: str

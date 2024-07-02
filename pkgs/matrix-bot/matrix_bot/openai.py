@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 import os
-from pathlib import Path
 
 import aiohttp
 
@@ -20,25 +19,14 @@ def api_key() -> str:
 
 from typing import Any
 
-import aiofiles
 
-
-async def create_jsonl_file(
+async def create_jsonl_data(
     *,
     user_prompt: str,
     system_prompt: str,
-    jsonl_path: Path,
     model: str = "gpt-4o",
     max_tokens: int = 1000,
-) -> None:
-    """
-    Read the content of a file and create a JSONL file with a request to summarize the content.
-
-    :param jsonl_path: The path where the JSONL file will be saved.
-    :param model: The model to use for summarization.
-    :param max_tokens: The maximum number of tokens for the summary.
-    """
-
+) -> bytes:
     summary_request = {
         "custom_id": "request-1",
         "method": "POST",
@@ -53,24 +41,15 @@ async def create_jsonl_file(
         },
     }
 
-    async with aiofiles.open(jsonl_path, "w") as f:
-        await f.write(json.dumps(summary_request) + "\n")
+    return json.dumps(summary_request).encode("utf-8")
 
 
 async def upload_and_process_file(
-    *, session: aiohttp.ClientSession, jsonl_path: Path, api_key: str = api_key()
+    *, session: aiohttp.ClientSession, jsonl_data: bytes, api_key: str = api_key()
 ) -> dict[str, Any]:
     """
     Upload a JSONL file to OpenAI's Batch API and process it asynchronously.
-
-    :param session: An aiohttp.ClientSession object.
-    :param jsonl_path: The path of the JSONL file to upload.
-    :param api_key: OpenAI API key for authentication.
-    :return: The response from the Batch API.
     """
-    # Step 1: Upload the JSONL file to OpenAI's Files API
-    async with aiofiles.open(jsonl_path, "rb") as f:
-        file_data = await f.read()
 
     upload_url = "https://api.openai.com/v1/files"
     headers = {
@@ -78,7 +57,7 @@ async def upload_and_process_file(
     }
     data = aiohttp.FormData()
     data.add_field(
-        "file", file_data, filename=jsonl_path.name, content_type="application/jsonl"
+        "file", jsonl_data, filename="changelog.jsonl", content_type="application/jsonl"
     )
     data.add_field("purpose", "batch")
 
