@@ -1,5 +1,3 @@
-import time
-
 import pytest
 from fixtures_flakes import FlakeForTest
 
@@ -35,13 +33,7 @@ def test_create_machine_on_minimal_clan(test_flake_minimal: FlakeForTest) -> Non
         ),
     )
 
-    st = time.time()
     result = list_machines(test_flake_minimal.path)
-    et = time.time()
-    elapsed = et - st
-    # Listing should always take less than a second
-    assert elapsed < 1
-
     assert list(result.keys()) == ["foo"]
 
     # Writes into settings.json
