@@ -21,6 +21,7 @@ def test_schema_for_machine(test_flake_with_core: FlakeForTest) -> None:
 @pytest.mark.with_core
 def test_create_machine_on_minimal_clan(test_flake_minimal: FlakeForTest) -> None:
     assert list_machines(test_flake_minimal.path) == {}
+
     create_machine(
         test_flake_minimal.path,
         Machine(
@@ -31,7 +32,9 @@ def test_create_machine_on_minimal_clan(test_flake_minimal: FlakeForTest) -> Non
             icon=None,
         ),
     )
-    assert list(list_machines(test_flake_minimal.path).keys()) == ["foo"]
+
+    result = list_machines(test_flake_minimal.path)
+    assert list(result.keys()) == ["foo"]
 
     # Writes into settings.json
     set_config_for_machine(
