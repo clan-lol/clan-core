@@ -16,6 +16,7 @@ in
       legacyPackages.evalTests-module-clan-vars = import ./eval-tests {
         inherit lib;
         clan-core = self;
+        pkgs = inputs.nixpkgs.legacyPackages.${system};
       };
       checks.module-clan-vars-eval = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
         export HOME="$(realpath .)"
