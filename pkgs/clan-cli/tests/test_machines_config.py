@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from fixtures_flakes import FlakeForTest
 
@@ -21,6 +23,7 @@ def test_schema_for_machine(test_flake_with_core: FlakeForTest) -> None:
 @pytest.mark.with_core
 def test_create_machine_on_minimal_clan(test_flake_minimal: FlakeForTest) -> None:
     assert list_machines(test_flake_minimal.path) == {}
+
     create_machine(
         test_flake_minimal.path,
         Machine(
@@ -31,7 +34,15 @@ def test_create_machine_on_minimal_clan(test_flake_minimal: FlakeForTest) -> Non
             icon=None,
         ),
     )
-    assert list(list_machines(test_flake_minimal.path).keys()) == ["foo"]
+
+    st = time.time()
+    result = list_machines(test_flake_minimal.path)
+    et = time.time()
+    elapsed = et - st
+    # Listing should always take less than a second
+    assert elapsed < 1
+
+    assert list(result.keys()) == ["foo"]
 
     # Writes into settings.json
     set_config_for_machine(
