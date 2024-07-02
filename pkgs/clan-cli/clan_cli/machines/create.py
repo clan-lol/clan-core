@@ -15,14 +15,15 @@ log = logging.getLogger(__name__)
 def create_machine(flake_dir: str | Path, machine: Machine) -> None:
     hostname_regex = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$"
     if not re.match(hostname_regex, machine.name):
-        raise ClanError("Machine name must be a valid hostname")
+        raise ClanError(
+            "Machine name must be a valid hostname", location="Create Machine"
+        )
 
     inventory = Inventory.load_file(flake_dir)
     inventory.machines.update({machine.name: machine})
     inventory.persist(flake_dir)
 
-    if flake_dir is not None:
-        commit_file(Inventory.get_path(flake_dir), Path(flake_dir))
+    commit_file(Inventory.get_path(flake_dir), Path(flake_dir))
 
 
 def create_command(args: argparse.Namespace) -> None:
