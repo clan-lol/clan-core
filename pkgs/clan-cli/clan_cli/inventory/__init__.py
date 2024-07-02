@@ -1,9 +1,10 @@
 import json
-from dataclasses import asdict, dataclass, is_dataclass
+from dataclasses import asdict, dataclass, field, is_dataclass
 from pathlib import Path
 from typing import Any, Literal
 
 from clan_cli.errors import ClanError
+from clan_cli.git import commit_file
 
 
 def sanitize_string(s: str) -> str:
@@ -51,7 +52,7 @@ class Machine:
     system: Literal["x86_64-linux"] | str | None = None
     description: str | None = None
     icon: str | None = None
-    tags: list[str] | None = None
+    tags: list[str] = field(default_factory=list)
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Machine":
@@ -72,25 +73,29 @@ class ServiceMeta:
 
 @dataclass
 class Role:
-    machines: list[str] | None = None
-    tags: list[str] | None = None
+    machines: list[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
 
 @dataclass
 class Service:
     meta: ServiceMeta
     roles: dict[str, Role]
-    machines: dict[str, MachineServiceConfig] | None = None
+    machines: dict[str, MachineServiceConfig] = field(default_factory=dict)
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Service":
         return Service(
             meta=ServiceMeta(**d.get("meta", {})),
             roles={name: Role(**role) for name, role in d.get("roles", {}).items()},
-            machines={
-                name: MachineServiceConfig(**machine)
-                for name, machine in d.get("machines", {}).items()
-            },
+            machines=(
+                {
+                    name: MachineServiceConfig(**machine)
+                    for name, machine in d.get("machines", {}).items()
+                }
+                if d.get("machines")
+                else {}
+            ),
         )
 
 
@@ -133,7 +138,10 @@ class Inventory:
 
         return inventory
 
-    def persist(self, flake_dir: str | Path) -> None:
+    def persist(self, flake_dir: str | Path, message: str) -> None:
         inventory_file = Inventory.get_path(flake_dir)
+
         with open(inventory_file, "w") as f:
             json.dump(dataclass_to_dict(self), f, indent=2)
+
+        commit_file(inventory_file, Path(flake_dir), commit_message=message)
