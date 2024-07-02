@@ -1,3 +1,4 @@
+import json
 import re
 from dataclasses import asdict, dataclass, is_dataclass
 from pathlib import Path
@@ -136,3 +137,26 @@ class Inventory:
                 for name, services in d["services"].items()
             },
         )
+
+    @staticmethod
+    def get_path(flake_dir: str | Path) -> Path:
+        return Path(flake_dir) / "inventory.json"
+
+    @staticmethod
+    def load_file(flake_dir: str | Path) -> "Inventory":
+        inventory = Inventory(machines={}, services={})
+        inventory_file = Inventory.get_path(flake_dir)
+        if inventory_file.exists():
+            with open(inventory_file) as f:
+                try:
+                    res = json.load(f)
+                    inventory = Inventory.from_dict(res)
+                except json.JSONDecodeError as e:
+                    raise ClanError(f"Error decoding inventory file: {e}")
+
+        return inventory
+
+    def persist(self, flake_dir: str | Path) -> None:
+        inventory_file = Inventory.get_path(flake_dir)
+        with open(inventory_file, "w") as f:
+            json.dump(dataclass_to_dict(self), f, indent=2)

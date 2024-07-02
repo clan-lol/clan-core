@@ -1,6 +1,6 @@
 {
   "machines": {
-    "minimal_inventory_machine": {
+    "minimal-inventory-machine": {
       "name": "foo",
       "system": "x86_64-linux",
       "description": "A nice thing",

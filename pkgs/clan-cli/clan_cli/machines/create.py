@@ -1,5 +1,4 @@
 import argparse
-import json
 import logging
 import re
 from pathlib import Path
@@ -7,7 +6,7 @@ from pathlib import Path
 from clan_cli.api import API
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_file
-from clan_cli.inventory import Inventory, Machine, dataclass_to_dict
+from clan_cli.inventory import Inventory, Machine
 
 log = logging.getLogger(__name__)
 
@@ -18,26 +17,12 @@ def create_machine(flake_dir: str | Path, machine: Machine) -> None:
     if not re.match(hostname_regex, machine.name):
         raise ClanError("Machine name must be a valid hostname")
 
-    inventory = Inventory(machines={}, services={})
-
-    inventory_file = Path(flake_dir) / "inventory.json"
-    if inventory_file.exists():
-        with open(inventory_file) as f:
-            try:
-                res = json.load(f)
-                inventory = Inventory.from_dict(res)
-
-            except json.JSONDecodeError as e:
-                raise ClanError(f"Error decoding inventory file: {e}")
-
+    inventory = Inventory.load_file(flake_dir)
     inventory.machines.update({machine.name: machine})
-
-    with open(inventory_file, "w") as g:
-        d = dataclass_to_dict(inventory)
-        json.dump(d, g, indent=2)
+    inventory.persist(flake_dir)
 
     if flake_dir is not None:
-        commit_file(inventory_file, Path(flake_dir))
+        commit_file(Inventory.get_path(flake_dir), Path(flake_dir))
 
 
 def create_command(args: argparse.Namespace) -> None:
