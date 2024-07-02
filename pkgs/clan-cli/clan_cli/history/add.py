@@ -82,7 +82,7 @@ def add_all_to_history(uri: ClanURI) -> list[HistoryEntry]:
 def add_history(uri: ClanURI) -> HistoryEntry:
     user_history_file().parent.mkdir(parents=True, exist_ok=True)
     history = list_history()
-    new_entry = _add_maschine_to_history_list(uri.get_url(), uri.machine.name, history)
+    new_entry = _add_maschine_to_history_list(uri.get_url(), uri.machine_name, history)
     write_history_file(history)
     return new_entry
 
