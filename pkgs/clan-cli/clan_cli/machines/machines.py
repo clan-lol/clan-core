@@ -1,14 +1,10 @@
 import json
 import logging
-from collections.abc import Generator
-from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
 
 from clan_cli.clan_uri import ClanURI, MachineData
-from clan_cli.dirs import vm_state_dir
-from clan_cli.qemu.qmp import QEMUMonitorProtocol
 
 from ..cmd import run_no_stdout
 from ..errors import ClanError
@@ -16,28 +12,6 @@ from ..nix import nix_build, nix_config, nix_eval, nix_metadata
 from ..ssh import Host, parse_deployment_address
 
 log = logging.getLogger(__name__)
-
-
-class QMPWrapper:
-    def __init__(self, state_dir: Path) -> None:
-        # These sockets here are just symlinks to the real sockets which
-        # are created by the run.py file. The reason being that we run into
-        # file path length issues on Linux. If no qemu process is running
-        # the symlink will be dangling.
-        self._qmp_socket: Path = state_dir / "qmp.sock"
-        self._qga_socket: Path = state_dir / "qga.sock"
-
-    @contextmanager
-    def qmp_ctx(self) -> Generator[QEMUMonitorProtocol, None, None]:
-        rpath = self._qmp_socket.resolve()
-        if not rpath.exists():
-            raise ClanError(f"qmp socket {rpath} does not exist. Is the VM running?")
-        qmp = QEMUMonitorProtocol(str(rpath))
-        qmp.connect()
-        try:
-            yield qmp
-        finally:
-            qmp.close()
 
 
 class Machine:
@@ -49,7 +23,6 @@ class Machine:
     build_cache: dict[str, Path]
     _flake_path: Path | None
     _deployment_info: None | dict
-    vm: QMPWrapper
 
     def __init__(
         self,
@@ -79,10 +52,6 @@ class Machine:
         self._flake_path: Path | None = None
         self._deployment_info: None | dict = deployment_info
         self.nix_options = nix_options
-
-        state_dir = vm_state_dir(flake_url=str(self.flake), vm_name=self.data.name)
-
-        self.vm: QMPWrapper = QMPWrapper(state_dir)
 
     def flush_caches(self) -> None:
         self._deployment_info = None
