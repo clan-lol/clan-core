@@ -29,11 +29,12 @@ async def message_callback(room: MatrixRoom, event: RoomMessageText) -> None:
     )
 
 
-async def bot_run(
+async def review_requested_bot(
     client: AsyncClient,
     http: aiohttp.ClientSession,
     matrix: MatrixData,
     gitea: GiteaData,
+    data_dir: Path,
 ) -> None:
     # If you made a new room and haven't joined as that user, you can use
     room: JoinResponse = await client.join(matrix.room)
@@ -50,7 +51,7 @@ async def bot_run(
     pulls = await fetch_pull_requests(gitea, http, limit=50, state=PullState.ALL)
 
     # Read the last updated pull request
-    last_updated_path = Path("last_updated.json")
+    last_updated_path = data_dir / "last_updated.json"
     last_updated = read_locked_file(last_updated_path)
 
     # Check if the pull request is mergeable and needs review
@@ -79,12 +80,10 @@ async def bot_run(
             )
             await send_message(client, room, message, user_ids=ping_users)
 
-    # Write the new last updated pull request
-    write_locked_file(last_updated_path, last_updated)
+            # Write the new last updated pull request
+            write_locked_file(last_updated_path, last_updated)
 
     # Time taken
     tend = time.time()
     tdiff = round(tend - tstart)
     log.debug(f"Time taken: {tdiff}s")
-
-    # await client.sync_forever(timeout=30000)  # milliseconds

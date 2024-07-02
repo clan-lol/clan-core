@@ -13,6 +13,7 @@ from matrix_bot.matrix import MatrixData
 log = logging.getLogger(__name__)
 
 curr_dir = Path(__file__).parent
+data_dir = curr_dir / "data"
 
 
 def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
@@ -70,6 +71,13 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         default="https://git.clan.lol",
     )
 
+    parser.add_argument(
+        "--data-dir",
+        help="The directory to store data",
+        default=data_dir,
+        type=Path,
+    )
+
     return parser
 
 
@@ -102,8 +110,10 @@ def main() -> None:
         access_token=os.getenv("GITEA_ACCESS_TOKEN"),
     )
 
+    args.data_dir.mkdir(parents=True, exist_ok=True)
+
     try:
-        asyncio.run(bot_main(matrix, gitea))
+        asyncio.run(bot_main(matrix, gitea, args.data_dir))
     except KeyboardInterrupt:
         print("User Interrupt", file=sys.stderr)
 

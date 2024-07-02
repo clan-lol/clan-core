@@ -2,9 +2,9 @@ import logging
 from pathlib import Path
 
 log = logging.getLogger(__name__)
-
 from dataclasses import dataclass
 
+from markdown2 import markdown
 from nio import (
     AsyncClient,
     JoinedMembersResponse,
@@ -32,9 +32,6 @@ async def set_avatar(client: AsyncClient, mxc_url: str) -> None:
         raise Exception(f"Failed to set avatar {response}")
 
 
-from nio import AsyncClient
-
-
 async def get_room_members(client: AsyncClient, room: JoinResponse) -> list[RoomMember]:
     users: JoinedMembersResponse = await client.joined_members(room.room_id)
 
@@ -52,7 +49,9 @@ async def send_message(
     """
     Send a message in a Matrix room, optionally mentioning users.
     """
+
     # If user_ids are provided, format the message to mention them
+    formatted_message = markdown(message)
     if user_ids:
         mention_list = ", ".join(
             [
@@ -60,17 +59,13 @@ async def send_message(
                 for user_id in user_ids
             ]
         )
-        body = f"{mention_list}: {message}"
-        formatted_body = f"{mention_list}: {message}"
-    else:
-        body = message
-        formatted_body = message
+        formatted_message = f"{mention_list}: {formatted_message}"
 
     content = {
-        "msgtype": "m.text",
+        "msgtype": "m.notice",
         "format": "org.matrix.custom.html",
-        "body": body,
-        "formatted_body": formatted_body,
+        "body": message,
+        "formatted_body": formatted_message,
     }
 
     res: RoomSendResponse = await client.room_send(
