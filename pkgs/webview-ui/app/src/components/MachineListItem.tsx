@@ -1,12 +1,14 @@
-import { For, Match, Show, Switch, createSignal } from "solid-js";
+import { Match, Show, Switch, createSignal } from "solid-js";
 import { ErrorData, SuccessData, pyApi } from "../api";
 import { currClanURI } from "../App";
 
+type MachineDetails = SuccessData<"list_machines">["data"][string];
+
 interface MachineListItemProps {
   name: string;
+  info: MachineDetails;
 }
 
-type MachineDetails = Record<string, SuccessData<"show_machine">["data"]>;
 type HWInfo = Record<string, SuccessData<"show_machine_hardware_info">["data"]>;
 type DeploymentInfo = Record<
   string,
@@ -15,25 +17,11 @@ type DeploymentInfo = Record<
 
 type MachineErrors = Record<string, ErrorData<"show_machine">["errors"]>;
 
-const [details, setDetails] = createSignal<MachineDetails>({});
 const [hwInfo, setHwInfo] = createSignal<HWInfo>({});
 
 const [deploymentInfo, setDeploymentInfo] = createSignal<DeploymentInfo>({});
 
 const [errors, setErrors] = createSignal<MachineErrors>({});
-
-pyApi.show_machine.receive((r) => {
-  if (r.status === "error") {
-    const { op_key } = r;
-    if (op_key) {
-      setErrors((e) => ({ ...e, [op_key]: r.errors }));
-    }
-    console.error(r.errors);
-  }
-  if (r.status === "success") {
-    setDetails((d) => ({ ...d, [r.data.machine_name]: r.data }));
-  }
-});
 
 pyApi.show_machine_hardware_info.receive((r) => {
   const { op_key } = r;
@@ -64,13 +52,7 @@ pyApi.show_machine_deployment_target.receive((r) => {
 });
 
 export const MachineListItem = (props: MachineListItemProps) => {
-  const { name } = props;
-
-  pyApi.show_machine.dispatch({
-    op_key: name,
-    machine_name: name,
-    flake_url: currClanURI(),
-  });
+  const { name, info } = props;
 
   pyApi.show_machine_hardware_info.dispatch({
     op_key: name,
@@ -97,16 +79,14 @@ export const MachineListItem = (props: MachineListItemProps) => {
             <h2 class="card-title">{name}</h2>
             <div class="text-slate-600">
               <Show
-                when={details()[name]}
+                when={info}
                 fallback={
                   <Switch fallback={<div class="skeleton h-8 w-full"></div>}>
-                    <Match when={!details()[name]?.machine_description}>
-                      No description
-                    </Match>
+                    <Match when={!info.description}>No description</Match>
                   </Switch>
                 }
               >
-                {(d) => d()?.machine_description}
+                {(d) => d()?.description}
               </Show>
             </div>
             <div class="flex flex-row flex-wrap gap-4 py-2">
