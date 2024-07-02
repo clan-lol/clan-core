@@ -1,9 +1,10 @@
 import asyncio
 import datetime
+import json
 import logging
 import subprocess
 from pathlib import Path
-import json
+
 import aiohttp
 from nio import (
     AsyncClient,
@@ -14,13 +15,30 @@ from matrix_bot.gitea import (
     GiteaData,
 )
 
+from .locked_open import read_locked_file, write_locked_file
 from .matrix import MatrixData, send_message
-from .openai import create_jsonl_file, upload_and_process_file
+from .openai import create_jsonl_data, upload_and_process_file
 
 log = logging.getLogger(__name__)
 
 
-def write_file_with_date_prefix(content: str, directory: Path, suffix: str) -> Path:
+def last_ndays_to_today(ndays: int) -> (str, str):
+    # Get today's date
+    today = datetime.datetime.now()
+
+    # Calculate the date one week ago
+    last_week = today - datetime.timedelta(days=ndays)
+
+    # Format both dates to "YYYY-MM-DD"
+    todate = today.strftime("%Y-%m-%d")
+    fromdate = last_week.strftime("%Y-%m-%d")
+
+    return (fromdate, todate)
+
+
+def write_file_with_date_prefix(
+    content: str, directory: Path, *, ndays: int, suffix: str
+) -> Path:
     """
     Write content to a file with the current date as filename prefix.
 
@@ -32,10 +50,10 @@ def write_file_with_date_prefix(content: str, directory: Path, suffix: str) -> P
     directory.mkdir(parents=True, exist_ok=True)
 
     # Get the current date
-    current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    fromdate, todate = last_ndays_to_today(ndays)
 
     # Create the filename
-    filename = f"{current_date}_{suffix}.txt"
+    filename = f"{fromdate}__{todate}_{suffix}.txt"
     file_path = directory / filename
 
     # Write the content to the file
@@ -54,11 +72,11 @@ async def git_pull(repo_path: Path) -> None:
     await process.wait()
 
 
-async def git_log(repo_path: str) -> str:
+async def git_log(repo_path: str, ndays: int) -> str:
     cmd = [
         "git",
         "log",
-        "--since=1 week ago",
+        f"--since={ndays} days ago",
         "--pretty=format:%h - %an, %ar : %s",
         "--stat",
         "--patch",
@@ -86,8 +104,36 @@ async def changelog_bot(
     gitea: GiteaData,
     data_dir: Path,
 ) -> None:
+    last_run_path = data_dir / "last_changelog_run.json"
+    last_run = read_locked_file(last_run_path)
+
+    if last_run == {}:
+        fromdate, todate = last_ndays_to_today(matrix.changelog_frequency)
+        last_run = {
+            "fromdate": fromdate,
+            "todate": todate,
+            "ndays": matrix.changelog_frequency,
+        }
+        log.debug(f"First run. Setting last_run to {last_run}")
+        today = datetime.datetime.now()
+        today_weekday = today.strftime("%A")
+        if today_weekday != matrix.publish_day:
+            log.debug(f"Changelog not due yet. Due on {matrix.publish_day}")
+            return
+    else:
+        last_date = datetime.datetime.strptime(last_run["todate"], "%Y-%m-%d")
+        today = datetime.datetime.now()
+        today_weekday = today.strftime("%A")
+        delta = datetime.timedelta(days=matrix.changelog_frequency)
+        if today - last_date <= delta:
+            log.debug(f"Changelog not due yet. Due in {delta.days} days")
+            return
+        elif today_weekday != matrix.publish_day:
+            log.debug(f"Changelog not due yet. Due on {matrix.publish_day}")
+            return
+
     # If you made a new room and haven't joined as that user, you can use
-    room: JoinResponse = await client.join(matrix.room)
+    room: JoinResponse = await client.join(matrix.review_room)
 
     if not room.transport_response.ok:
         log.error("This can happen if the room doesn't exist or the bot isn't invited")
@@ -108,10 +154,13 @@ async def changelog_bot(
     await git_pull(repo_path)
 
     # git log
-    diff = await git_log(repo_path)
+    diff = await git_log(repo_path, matrix.changelog_frequency)
 
-    system_prompt = """
-Generate a concise changelog for the past week,
+    fromdate, todate = last_ndays_to_today(matrix.changelog_frequency)
+    log.info(f"Generating changelog from {fromdate} to {todate}")
+
+    system_prompt = f"""
+Generate a concise changelog for the past week from {fromdate} to {todate},
 focusing only on new features and summarizing bug fixes into a single entry.
 Ensure the following:
 
@@ -123,20 +172,22 @@ The changelog is as follows:
 ---
     """
 
-    jsonl_path = data_dir / "changelog.jsonl"
-
     # Step 1: Create the JSONL file
-    await create_jsonl_file(
-        user_prompt=diff, system_prompt=system_prompt, jsonl_path=jsonl_path
-    )
+    jsonl_data = await create_jsonl_data(user_prompt=diff, system_prompt=system_prompt)
 
     # Step 2: Upload the JSONL file and process it
-    results = await upload_and_process_file(session=http, jsonl_path=jsonl_path)
-    result_file = write_file_with_date_prefix(json.dumps(results, indent=4), data_dir, "result")
+    results = await upload_and_process_file(session=http, jsonl_data=jsonl_data)
 
+    # Write the results to a file in the changelogs directory
+    result_file = write_file_with_date_prefix(
+        json.dumps(results, indent=4),
+        data_dir / "changelogs",
+        ndays=matrix.changelog_frequency,
+        suffix="result",
+    )
     log.info(f"LLM result written to: {result_file}")
 
-    # Join all changelogs with a separator (e.g., two newlines)
+    # Join responses together
     all_changelogs = []
     for result in results:
         choices = result["response"]["body"]["choices"]
@@ -144,5 +195,8 @@ The changelog is as follows:
         all_changelogs.append(changelog)
     full_changelog = "\n\n".join(all_changelogs)
 
+    # Write the last run to the file
+    write_locked_file(last_run_path, last_run)
+    log.info(f"Changelog generated:\n{full_changelog}")
 
     await send_message(client, room, full_changelog)

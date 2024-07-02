@@ -60,9 +60,45 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "--matrix-room",
-        help="The matrix room to join",
+        "--changelog-room",
+        help="The matrix room to join for the changelog bot",
         default="#bot-test:gchq.icu",
+    )
+
+    parser.add_argument(
+        "--review-room",
+        help="The matrix room to join for the review bot",
+        default="#bot-test:gchq.icu",
+    )
+
+    parser.add_argument(
+        "--changelog-frequency",
+        help="The frequency to check for changelog updates in days",
+        default=7,
+        type=int,
+    )
+
+    def valid_weekday(value: str) -> str:
+        days = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ]
+        if value not in days:
+            raise argparse.ArgumentTypeError(
+                f"{value} is not a valid weekday. Choose from {', '.join(days)}"
+            )
+        return value
+
+    parser.add_argument(
+        "--publish-day",
+        help="The day of the week to publish the changelog. Ignored if changelog-frequency is less than 7 days.",
+        default="Wednesday",
+        type=valid_weekday,
     )
 
     parser.add_argument(
@@ -99,7 +135,10 @@ def main() -> None:
         server=args.server,
         user=args.user,
         avatar=args.avatar,
-        room=args.matrix_room,
+        changelog_room=args.changelog_room,
+        changelog_frequency=args.changelog_frequency,
+        publish_day=args.publish_day,
+        review_room=args.review_room,
         password=password,
     )
 
