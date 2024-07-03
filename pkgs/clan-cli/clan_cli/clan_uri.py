@@ -12,6 +12,11 @@ class FlakeId:
     # FIXME: this is such a footgun if you accidnetally pass a string
     _value: str | Path
 
+    def __post_init__(self) -> None:
+        assert isinstance(
+            self._value, str | Path
+        ), f"Flake {self._value} has an invalid type: {type(self._value)}"
+
     def __str__(self) -> str:
         return str(
             self._value
