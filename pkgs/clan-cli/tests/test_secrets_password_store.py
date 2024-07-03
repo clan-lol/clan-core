@@ -6,6 +6,7 @@ from cli import Cli
 from fixtures_flakes import FlakeForTest
 from validator import is_valid_ssh_key
 
+from clan_cli.clan_uri import FlakeId
 from clan_cli.facts.secret_modules.password_store import SecretStore
 from clan_cli.machines.facts import machine_get_fact
 from clan_cli.machines.machines import Machine
@@ -48,7 +49,9 @@ def test_upload_secret(
     )
     cli.run(["facts", "generate", "vm1"])
 
-    store = SecretStore(Machine(name="vm1", flake=test_flake_with_core_and_pass.path))
+    store = SecretStore(
+        Machine(name="vm1", flake=FlakeId(test_flake_with_core_and_pass.path))
+    )
 
     network_id = machine_get_fact(
         test_flake_with_core_and_pass.path, "vm1", "zerotier-network-id"

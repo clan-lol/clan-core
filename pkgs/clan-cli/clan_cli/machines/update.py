@@ -5,6 +5,7 @@ import os
 import shlex
 import sys
 
+from ..clan_uri import FlakeId
 from ..cmd import run
 from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
@@ -80,7 +81,7 @@ def upload_sources(
         )
 
 
-def deploy_nixos(machines: MachineGroup) -> None:
+def deploy_machine(machines: MachineGroup) -> None:
     """
     Deploy to all hosts in parallel
     """
@@ -137,7 +138,7 @@ def update(args: argparse.Namespace) -> None:
     machines = []
     if len(args.machines) == 1 and args.target_host is not None:
         machine = Machine(
-            name=args.machines[0], flake=args.flake, nix_options=args.option
+            name=args.machines[0], flake=FlakeId(args.flake), nix_options=args.option
         )
         machine.target_host_address = args.target_host
         machines.append(machine)
@@ -149,7 +150,7 @@ def update(args: argparse.Namespace) -> None:
         if len(args.machines) == 0:
             ignored_machines = []
             for machine in get_all_machines(args.flake, args.option):
-                if machine.deployment_info.get("requireExplicitUpdate", False):
+                if machine.deployment.get("requireExplicitUpdate", False):
                     continue
                 try:
                     machine.build_host
@@ -170,7 +171,7 @@ def update(args: argparse.Namespace) -> None:
         else:
             machines = get_selected_machines(args.flake, args.option, args.machines)
 
-    deploy_nixos(MachineGroup(machines))
+    deploy_machine(MachineGroup(machines))
 
 
 def register_update_parser(parser: argparse.ArgumentParser) -> None:
@@ -189,5 +190,10 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         "--target-host",
         type=str,
         help="address of the machine to update, in the format of user@host:1234",
+    )
+    parser.add_argument(
+        "--darwin",
+        type=str,
+        help="Hack to deploy darwin machines. This will be removed in the future when we have full darwin integration.",
     )
     parser.set_defaults(func=update)

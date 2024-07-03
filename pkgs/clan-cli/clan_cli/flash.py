@@ -11,6 +11,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
+from .clan_uri import FlakeId
 from .cmd import Log, run
 from .completions import add_dynamic_completer, complete_machines
 from .errors import ClanError
@@ -87,7 +88,7 @@ def flash_machine(
 
 @dataclass
 class FlashOptions:
-    flake: Path
+    flake: FlakeId
     machine: str
     disks: dict[str, str]
     ssh_keys_path: list[Path]
@@ -119,7 +120,7 @@ class AppendDiskAction(argparse.Action):
 
 def flash_command(args: argparse.Namespace) -> None:
     opts = FlashOptions(
-        flake=args.flake,
+        flake=FlakeId(args.flake),
         machine=args.machine,
         disks=args.disk,
         ssh_keys_path=args.ssh_pubkey,

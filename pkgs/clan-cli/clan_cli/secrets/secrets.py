@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import IO
 
 from .. import tty
+from ..clan_uri import FlakeId
 from ..completions import (
     add_dynamic_completer,
     complete_groups,
@@ -263,16 +264,16 @@ def list_secrets(flake_dir: Path, pattern: str | None = None) -> list[str]:
 
 @dataclass
 class ListSecretsOptions:
-    flake: Path
+    flake: FlakeId
     pattern: str | None
 
 
 def list_command(args: argparse.Namespace) -> None:
     options = ListSecretsOptions(
-        flake=args.flake,
+        flake=FlakeId(args.flake),
         pattern=args.pattern,
     )
-    lst = list_secrets(options.flake, options.pattern)
+    lst = list_secrets(options.flake.path, options.pattern)
     if len(lst) > 0:
         print("\n".join(lst))
 

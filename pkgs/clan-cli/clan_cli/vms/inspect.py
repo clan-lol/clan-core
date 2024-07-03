@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..clan_uri import FlakeId
 from ..completions import add_dynamic_completer, complete_machines
 from ..machines.machines import Machine
 
@@ -12,7 +13,7 @@ class VmConfig:
     machine_name: str
     machine_icon: Path
     machine_description: str
-    flake_url: str | Path
+    flake_url: FlakeId
     clan_name: str
 
     cores: int
@@ -23,19 +24,19 @@ class VmConfig:
 
 def inspect_vm(machine: Machine) -> VmConfig:
     data = json.loads(machine.eval_nix("config.clan.core.vm.inspect"))
-    return VmConfig(flake_url=str(machine.flake), **data)
+    return VmConfig(flake_url=machine.flake, **data)
 
 
 @dataclass
 class InspectOptions:
     machine: str
-    flake: Path
+    flake: FlakeId
 
 
 def inspect_command(args: argparse.Namespace) -> None:
     inspect_options = InspectOptions(
         machine=args.machine,
-        flake=args.flake or Path.cwd(),
+        flake=FlakeId(args.flake or Path.cwd()),
     )
 
     machine = Machine(inspect_options.machine, inspect_options.flake)

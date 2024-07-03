@@ -9,10 +9,13 @@ from .errors import ClanError
 
 @dataclass
 class FlakeId:
+    # FIXME: this is such a footgun if you accidnetally pass a string
     _value: str | Path
 
     def __str__(self) -> str:
-        return f"{self._value}"  # The __str__ method returns a custom string representation
+        return str(
+            self._value
+        )  # The __str__ method returns a custom string representation
 
     @property
     def path(self) -> Path:
@@ -24,9 +27,6 @@ class FlakeId:
         assert isinstance(self._value, str)
         return self._value
 
-    def __repr__(self) -> str:
-        return f"ClanUrl({self._value})"
-
     def is_local(self) -> bool:
         return isinstance(self._value, Path)
 
@@ -34,26 +34,14 @@ class FlakeId:
         return isinstance(self._value, str)
 
 
-@dataclass
-class MachineData:
-    flake_id: FlakeId
-    name: str = "defaultVM"
-
-    def get_id(self) -> str:
-        return f"{self.flake_id}#{self.name}"
-
-
 # Define the ClanURI class
+@dataclass
 class ClanURI:
-    _orig_uri: str
-    _components: urllib.parse.ParseResult
-    flake_id: FlakeId
-    _machines: list[MachineData]
+    flake: FlakeId
+    machine_name: str
 
     # Initialize the class with a clan:// URI
     def __init__(self, uri: str) -> None:
-        self._machines = []
-
         # users might copy whitespace along with the uri
         uri = uri.strip()
         self._orig_uri = uri
@@ -67,21 +55,16 @@ class ClanURI:
 
         # Parse the URI into components
         # url://netloc/path;parameters?query#fragment
-        self._components = urllib.parse.urlparse(nested_uri)
+        components: urllib.parse.ParseResult = urllib.parse.urlparse(nested_uri)
 
         # Replace the query string in the components with the new query string
-        clean_comps = self._components._replace(
-            query=self._components.query, fragment=""
-        )
+        clean_comps = components._replace(query=components.query, fragment="")
 
         # Parse the URL into a ClanUrl object
-        self.flake_id = self._parse_url(clean_comps)
-
-        if self._components.fragment == "":
-            self._machines.append(MachineData(flake_id=self.flake_id))
-            return
-
-        self._machines.append(self._parse_machine_query(self._components.fragment))
+        self.flake = self._parse_url(clean_comps)
+        self.machine_name = "defaultVM"
+        if components.fragment:
+            self.machine_name = components.fragment
 
     def _parse_url(self, comps: urllib.parse.ParseResult) -> FlakeId:
         comb = (
@@ -100,22 +83,8 @@ class ClanURI:
 
         return flake_id
 
-    def _parse_machine_query(self, machine_frag: str) -> MachineData:
-        comp = urllib.parse.urlparse(machine_frag)
-        machine_name = comp.path
-
-        machine = MachineData(flake_id=self.flake_id, name=machine_name)
-        return machine
-
-    @property
-    def machine(self) -> MachineData:
-        return self._machines[0]
-
-    def get_orig_uri(self) -> str:
-        return self._orig_uri
-
     def get_url(self) -> str:
-        return str(self.flake_id)
+        return str(self.flake)
 
     @classmethod
     def from_str(
@@ -133,9 +102,3 @@ class ClanURI:
             clan_uri += f"#{machine_name}"
 
         return cls(clan_uri)
-
-    def __str__(self) -> str:
-        return self.get_orig_uri()
-
-    def __repr__(self) -> str:
-        return f"ClanURI({self})"
