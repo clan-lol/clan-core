@@ -13,7 +13,7 @@ from matrix_bot.matrix import MatrixData
 log = logging.getLogger(__name__)
 
 curr_dir = Path(__file__).parent
-data_dir = curr_dir / "data"
+data_dir = Path(os.getcwd()) / "data"
 
 
 def create_parser(prog: str | None = None) -> argparse.ArgumentParser:

@@ -6,8 +6,6 @@ import aiohttp
 
 log = logging.getLogger(__name__)
 
-curr_dir = Path(__file__).parent
-
 from nio import AsyncClient, ClientConfig, ProfileGetAvatarResponse, RoomMessageText
 
 from .changelog_bot import changelog_bot
