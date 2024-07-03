@@ -158,7 +158,7 @@ def remove_secret(flake_dir: Path, secret: str) -> None:
 
 
 def remove_command(args: argparse.Namespace) -> None:
-    remove_secret(Path(args.flake), args.secret)
+    remove_secret(args.flake.path, args.secret)
 
 
 def add_secret_argument(parser: argparse.ArgumentParser, autocomplete: bool) -> None:
@@ -270,7 +270,7 @@ class ListSecretsOptions:
 
 def list_command(args: argparse.Namespace) -> None:
     options = ListSecretsOptions(
-        flake=FlakeId(args.flake),
+        flake=args.flake,
         pattern=args.pattern,
     )
     lst = list_secrets(options.flake.path, options.pattern)
@@ -287,7 +287,7 @@ def decrypt_secret(flake_dir: Path, secret: str) -> str:
 
 
 def get_command(args: argparse.Namespace) -> None:
-    print(decrypt_secret(Path(args.flake), args.secret), end="")
+    print(decrypt_secret(args.flake.path, args.secret), end="")
 
 
 def set_command(args: argparse.Namespace) -> None:
@@ -300,8 +300,8 @@ def set_command(args: argparse.Namespace) -> None:
     elif tty.is_interactive():
         secret_value = getpass.getpass(prompt="Paste your secret: ")
     encrypt_secret(
-        Path(args.flake),
-        sops_secrets_folder(Path(args.flake)) / args.secret,
+        args.flake.path,
+        sops_secrets_folder(args.flake.path) / args.secret,
         secret_value,
         args.user,
         args.machine,
@@ -310,7 +310,7 @@ def set_command(args: argparse.Namespace) -> None:
 
 
 def rename_command(args: argparse.Namespace) -> None:
-    flake_dir = Path(args.flake)
+    flake_dir = args.flake.path
     old_path = sops_secrets_folder(flake_dir) / args.secret
     new_path = sops_secrets_folder(flake_dir) / args.new_name
     if not old_path.exists():

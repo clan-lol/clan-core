@@ -109,7 +109,7 @@ class InspectOptions:
 def inspect_command(args: argparse.Namespace) -> None:
     inspect_options = InspectOptions(
         machine=args.machine,
-        flake=FlakeId(args.flake or Path.cwd()),
+        flake=args.flake or FlakeId(Path.cwd()),
     )
     res = inspect_flake(
         flake_url=str(inspect_options.flake), machine_name=inspect_options.machine

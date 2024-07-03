@@ -74,7 +74,7 @@ def list_groups(flake_dir: Path) -> list[Group]:
 
 
 def list_command(args: argparse.Namespace) -> None:
-    for group in list_groups(Path(args.flake)):
+    for group in list_groups(args.flake.path):
         print(group.name)
         if group.machines:
             print("machines:")
@@ -158,7 +158,7 @@ def add_user(flake_dir: Path, group: str, name: str) -> None:
 
 
 def add_user_command(args: argparse.Namespace) -> None:
-    add_user(Path(args.flake), args.group, args.user)
+    add_user(args.flake.path, args.group, args.user)
 
 
 def remove_user(flake_dir: Path, group: str, name: str) -> None:
@@ -166,7 +166,7 @@ def remove_user(flake_dir: Path, group: str, name: str) -> None:
 
 
 def remove_user_command(args: argparse.Namespace) -> None:
-    remove_user(Path(args.flake), args.group, args.user)
+    remove_user(args.flake.path, args.group, args.user)
 
 
 def add_machine(flake_dir: Path, group: str, name: str) -> None:
@@ -184,7 +184,7 @@ def add_machine(flake_dir: Path, group: str, name: str) -> None:
 
 
 def add_machine_command(args: argparse.Namespace) -> None:
-    add_machine(Path(args.flake), args.group, args.machine)
+    add_machine(args.flake.path, args.group, args.machine)
 
 
 def remove_machine(flake_dir: Path, group: str, name: str) -> None:
@@ -192,7 +192,7 @@ def remove_machine(flake_dir: Path, group: str, name: str) -> None:
 
 
 def remove_machine_command(args: argparse.Namespace) -> None:
-    remove_machine(Path(args.flake), args.group, args.machine)
+    remove_machine(args.flake.path, args.group, args.machine)
 
 
 def add_group_argument(parser: argparse.ArgumentParser) -> None:
@@ -209,7 +209,7 @@ def add_secret(flake_dir: Path, group: str, name: str) -> None:
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
-    add_secret(Path(args.flake), args.group, args.secret)
+    add_secret(args.flake.path, args.group, args.secret)
 
 
 def remove_secret(flake_dir: Path, group: str, name: str) -> None:
@@ -224,7 +224,7 @@ def remove_secret(flake_dir: Path, group: str, name: str) -> None:
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    remove_secret(Path(args.flake), args.group, args.secret)
+    remove_secret(args.flake.path, args.group, args.secret)
 
 
 def register_groups_parser(parser: argparse.ArgumentParser) -> None:

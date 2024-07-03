@@ -69,7 +69,7 @@ def show_clan_meta(uri: str | Path) -> ClanMetaInfo:
 
 
 def show_command(args: argparse.Namespace) -> None:
-    flake_path = Path(args.flake).resolve()
+    flake_path = args.flake.path
     meta = show_clan_meta(flake_path)
 
     print(f"Name: {meta.name}")
