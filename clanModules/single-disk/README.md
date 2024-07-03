@@ -1,7 +1,6 @@
 ---
 description = "Configures partitioning of the main disk"
 categories = ["disk-layout"]
-required = true
 ---
 # Primary Disk Layout
 
