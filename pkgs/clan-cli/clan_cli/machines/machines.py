@@ -1,10 +1,11 @@
 import json
 import logging
+from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
 
-from clan_cli.clan_uri import ClanURI, MachineData
+from clan_cli.clan_uri import FlakeId
 
 from ..cmd import run_no_stdout
 from ..errors import ClanError
@@ -14,118 +15,83 @@ from ..ssh import Host, parse_deployment_address
 log = logging.getLogger(__name__)
 
 
+@dataclass
 class Machine:
     name: str
-    flake: str | Path
-    data: MachineData
-    nix_options: list[str]
-    eval_cache: dict[str, str]
-    build_cache: dict[str, Path]
-    _flake_path: Path | None
-    _deployment_info: None | dict
+    flake: FlakeId
+    nix_options: list[str] = field(default_factory=list)
+    cached_deployment: None | dict = None
 
-    def __init__(
-        self,
-        name: str,
-        flake: Path | str,
-        deployment_info: dict | None = None,
-        nix_options: list[str] = [],
-        machine: MachineData | None = None,
-    ) -> None:
-        """
-        Creates a Machine
-        @name: the name of the machine
-        @clan_dir: the directory of the clan, optional, if not set it will be determined from the current working directory
-        @machine_json: can be optionally used to skip evaluation of the machine, location of the json file with machine data
-        """
-        if machine is None:
-            uri = ClanURI.from_str(str(flake), name)
-            machine = uri.machine
-            self.flake: str | Path = machine.flake_id._value
-            self.name: str = machine.name
-            self.data: MachineData = machine
-        else:
-            self.data: MachineData = machine
-
-        self.eval_cache: dict[str, str] = {}
-        self.build_cache: dict[str, Path] = {}
-        self._flake_path: Path | None = None
-        self._deployment_info: None | dict = deployment_info
-        self.nix_options = nix_options
+    _eval_cache: dict[str, str] = field(default_factory=dict)
+    _build_cache: dict[str, Path] = field(default_factory=dict)
 
     def flush_caches(self) -> None:
-        self._deployment_info = None
-        self._flake_path = None
-        self.build_cache.clear()
-        self.eval_cache.clear()
+        self.cached_deployment = None
+        self._build_cache.clear()
+        self._eval_cache.clear()
 
     def __str__(self) -> str:
-        return f"Machine(name={self.data.name}, flake={self.data.flake_id})"
+        return f"Machine(name={self.name}, flake={self.flake})"
 
     def __repr__(self) -> str:
         return str(self)
 
     @property
-    def deployment_info(self) -> dict:
-        if self._deployment_info is not None:
-            return self._deployment_info
-        self._deployment_info = json.loads(
+    def deployment(self) -> dict:
+        if self.cached_deployment is not None:
+            return self.cached_deployment
+        deployment = json.loads(
             self.build_nix("config.system.clan.deployment.file").read_text()
         )
-        return self._deployment_info
+        self.cached_deployment = deployment
+        return deployment
 
     @property
     def target_host_address(self) -> str:
         # deploymentAddress is deprecated.
-        val = self.deployment_info.get("targetHost") or self.deployment_info.get(
+        val = self.deployment.get("targetHost") or self.deployment.get(
             "deploymentAddress"
         )
         if val is None:
-            msg = f"the 'clan.networking.targetHost' nixos option is not set for machine '{self.data.name}'"
+            msg = f"the 'clan.networking.targetHost' nixos option is not set for machine '{self.name}'"
             raise ClanError(msg)
         return val
 
     @target_host_address.setter
     def target_host_address(self, value: str) -> None:
-        self.deployment_info["targetHost"] = value
+        self.deployment["targetHost"] = value
 
     @property
     def secret_facts_module(self) -> str:
-        return self.deployment_info["facts"]["secretModule"]
+        return self.deployment["facts"]["secretModule"]
 
     @property
     def public_facts_module(self) -> str:
-        return self.deployment_info["facts"]["publicModule"]
+        return self.deployment["facts"]["publicModule"]
 
     @property
     def facts_data(self) -> dict[str, dict[str, Any]]:
-        if self.deployment_info["facts"]["services"]:
-            return self.deployment_info["facts"]["services"]
+        if self.deployment["facts"]["services"]:
+            return self.deployment["facts"]["services"]
         return {}
 
     @property
     def secrets_upload_directory(self) -> str:
-        return self.deployment_info["facts"]["secretUploadDirectory"]
+        return self.deployment["facts"]["secretUploadDirectory"]
 
     @property
     def flake_dir(self) -> Path:
-        if self._flake_path:
-            return self._flake_path
-
-        if self.data.flake_id.is_local():
-            self._flake_path = self.data.flake_id.path
-        elif self.data.flake_id.is_remote():
-            self._flake_path = Path(nix_metadata(self.data.flake_id.url)["path"])
+        if self.flake.is_local():
+            return self.flake.path
+        elif self.flake.is_remote():
+            return Path(nix_metadata(self.flake.url)["path"])
         else:
-            raise ClanError(f"Unsupported flake url: {self.data.flake_id}")
-
-        assert self._flake_path is not None
-        return self._flake_path
+            raise ClanError(f"Unsupported flake url: {self.flake}")
 
     @property
     def target_host(self) -> Host:
         return parse_deployment_address(
-            self.data.name, self.target_host_address, meta={"machine": self}
+            self.name, self.target_host_address, meta={"machine": self}
         )
 
     @property
@@ -134,12 +100,12 @@ class Machine:
         The host where the machine is built and deployed from.
         Can be the same as the target host.
         """
-        build_host = self.deployment_info.get("buildHost")
+        build_host = self.deployment.get("buildHost")
         if build_host is None:
             return self.target_host
         # enable ssh agent forwarding to allow the build host to access the target host
         return parse_deployment_address(
-            self.data.name,
+            self.name,
             build_host,
             forward_agent=True,
             meta={"machine": self, "target_host": self.target_host},
@@ -198,7 +164,7 @@ class Machine:
             args += [
                 "--expr",
                 f"""
-                    ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.data.name}" {{
+                    ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.name}" {{
                       extraConfig = builtins.fromJSON (builtins.readFile (builtins.fetchTree {{
                         type = "file";
                         url = if (builtins.compareVersions builtins.nixVersion "2.19") == -1 then "{file_info["path"]}" else "file:{file_info["path"]}";
@@ -213,9 +179,7 @@ class Machine:
             else:
                 flake = f"path:{self.flake_dir}"
 
-            args += [
-                f'{flake}#clanInternals.machines."{system}".{self.data.name}.{attr}'
-            ]
+            args += [f'{flake}#clanInternals.machines."{system}".{self.name}.{attr}']
         args += nix_options + self.nix_options
 
         if method == "eval":
@@ -239,12 +203,12 @@ class Machine:
         eval a nix attribute of the machine
         @attr: the attribute to get
         """
-        if attr in self.eval_cache and not refresh and extra_config is None:
-            return self.eval_cache[attr]
+        if attr in self._eval_cache and not refresh and extra_config is None:
+            return self._eval_cache[attr]
 
         output = self.nix("eval", attr, extra_config, impure, nix_options)
         if isinstance(output, str):
-            self.eval_cache[attr] = output
+            self._eval_cache[attr] = output
             return output
         else:
             raise ClanError("eval_nix returned not a string")
@@ -262,12 +226,12 @@ class Machine:
         @attr: the attribute to get
         """
 
-        if attr in self.build_cache and not refresh and extra_config is None:
-            return self.build_cache[attr]
+        if attr in self._build_cache and not refresh and extra_config is None:
+            return self._build_cache[attr]
 
         output = self.nix("build", attr, extra_config, impure, nix_options)
         if isinstance(output, Path):
-            self.build_cache[attr] = output
+            self._build_cache[attr] = output
             return output
         else:
             raise ClanError("build_nix returned not a Path")

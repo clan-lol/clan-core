@@ -7,6 +7,7 @@ from contextlib import ExitStack
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from ..clan_uri import FlakeId
 from ..cmd import Log, run
 from ..completions import add_dynamic_completer, complete_machines
 from ..dirs import module_root, user_cache_dir, vm_state_dir
@@ -198,7 +199,7 @@ def run_command(
     option: list[str] = [],
     **kwargs: dict[str, str],
 ) -> None:
-    machine_obj: Machine = Machine(machine, flake)
+    machine_obj: Machine = Machine(machine, FlakeId(flake))
 
     vm: VmConfig = inspect_vm(machine=machine_obj)
 
