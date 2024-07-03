@@ -8,7 +8,6 @@
     ./schemas/flake-module.nix
     ./webview-ui/flake-module.nix
     ./distro-packages/flake-module.nix
-    ./matrix-bot/flake-module.nix
   ];
 
   perSystem =
