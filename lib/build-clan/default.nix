@@ -152,6 +152,13 @@ let
         in
         (machineImports settings)
         ++ [
+          {
+            # Autoinclude configuration.nix and hardware-configuration.nix
+            imports = builtins.filter (p: builtins.pathExists p) [
+              "${directory}/machines/${name}/configuration.nix"
+              "${directory}/machines/${name}/hardware-configuration.nix"
+            ];
+          }
           settings
           clan-core.nixosModules.clanCore
           extraConfig
