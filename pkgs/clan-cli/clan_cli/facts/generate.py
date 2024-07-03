@@ -208,13 +208,14 @@ def generate_facts(
                 was_regenerated |= _generate_facts_for_machine(
                     machine, service, regenerate, tmpdir, prompt
                 )
-            except Exception as exc:
+            except (OSError, ClanError) as exc:
                 log.error(f"Failed to generate facts for {machine.name}: {exc}")
                 errors += 1
             if errors > 0:
-                raise ClanError(
+                msg = (
                     f"Failed to generate facts for {errors} hosts. Check the logs above"
                 )
+                raise ClanError(msg)
 
     if not was_regenerated:
         print("All secrets and facts are already up to date")

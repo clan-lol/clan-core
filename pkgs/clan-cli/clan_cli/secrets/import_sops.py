@@ -40,15 +40,15 @@ def import_sops(args: argparse.Namespace) -> None:
                     file=sys.stderr,
                 )
                 continue
-            if (sops_secrets_folder(Path(args.flake)) / k / "secret").exists():
+            if (sops_secrets_folder(args.flake.path) / k / "secret").exists():
                 print(
                     f"WARNING: {k} already exists, skipping",
                     file=sys.stderr,
                 )
                 continue
             encrypt_secret(
-                Path(args.flake),
-                sops_secrets_folder(Path(args.flake)) / k,
+                args.flake.path,
+                sops_secrets_folder(args.flake.path) / k,
                 v,
                 add_groups=args.group,
                 add_machines=args.machine,

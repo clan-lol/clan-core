@@ -124,7 +124,7 @@ def install_command(args: argparse.Namespace) -> None:
         password = None
 
     opts = InstallOptions(
-        flake=FlakeId(args.flake),
+        flake=args.flake,
         machine=args.machine,
         target_host=target_host,
         kexec=args.kexec,

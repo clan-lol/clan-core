@@ -8,11 +8,11 @@ from .machines import Machine
 
 
 # function to speedup eval if we want to evaluate all machines
-def get_all_machines(flake_dir: Path, nix_options: list[str]) -> list[Machine]:
+def get_all_machines(flake: FlakeId, nix_options: list[str]) -> list[Machine]:
     config = nix_config()
     system = config["system"]
     json_path = run(
-        nix_build([f'{flake_dir}#clanInternals.all-machines-json."{system}"'])
+        nix_build([f'{flake}#clanInternals.all-machines-json."{system}"'])
     ).stdout
 
     machines_json = json.loads(Path(json_path.rstrip()).read_text())
@@ -22,7 +22,7 @@ def get_all_machines(flake_dir: Path, nix_options: list[str]) -> list[Machine]:
         machines.append(
             Machine(
                 name=name,
-                flake=FlakeId(flake_dir),
+                flake=flake,
                 cached_deployment=machine_data,
                 nix_options=nix_options,
             )
@@ -31,11 +31,9 @@ def get_all_machines(flake_dir: Path, nix_options: list[str]) -> list[Machine]:
 
 
 def get_selected_machines(
-    flake_dir: Path, nix_options: list[str], machine_names: list[str]
+    flake: FlakeId, nix_options: list[str], machine_names: list[str]
 ) -> list[Machine]:
     machines = []
     for name in machine_names:
-        machines.append(
-            Machine(name=name, flake=FlakeId(flake_dir), nix_options=nix_options)
-        )
+        machines.append(Machine(name=name, flake=flake, nix_options=nix_options))
     return machines

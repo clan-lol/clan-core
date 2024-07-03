@@ -12,6 +12,11 @@ class FlakeId:
     # FIXME: this is such a footgun if you accidnetally pass a string
     _value: str | Path
 
+    def __post_init__(self) -> None:
+        assert isinstance(
+            self._value, str | Path
+        ), f"Flake {self._value} has an invalid type: {type(self._value)}"
+
     def __str__(self) -> str:
         return str(
             self._value
@@ -19,12 +24,12 @@ class FlakeId:
 
     @property
     def path(self) -> Path:
-        assert isinstance(self._value, Path)
+        assert isinstance(self._value, Path), f"Flake {self._value} is not a local path"
         return self._value
 
     @property
     def url(self) -> str:
-        assert isinstance(self._value, str)
+        assert isinstance(self._value, str), f"Flake {self._value} is not a remote url"
         return self._value
 
     def is_local(self) -> bool:

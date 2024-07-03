@@ -36,7 +36,7 @@ class InspectOptions:
 def inspect_command(args: argparse.Namespace) -> None:
     inspect_options = InspectOptions(
         machine=args.machine,
-        flake=FlakeId(args.flake or Path.cwd()),
+        flake=args.flake or FlakeId(Path.cwd()),
     )
 
     machine = Machine(inspect_options.machine, inspect_options.flake)
