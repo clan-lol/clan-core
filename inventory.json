@@ -8,5 +8,25 @@
       "tags": ["1", "2", "3"]
     }
   },
-  "services": {}
+  "services": {
+    "single-disk": {
+      "default": {
+        "meta": {
+          "name": "single-disk"
+        },
+        "roles": {
+          "default": {
+            "machines": ["minimal-inventory-machine"]
+          }
+        },
+        "machines": {
+          "minimal-inventory-machine": {
+            "config": {
+              "device": "/dev/null"
+            }
+          }
+        }
+      }
+    }
+  }
 }

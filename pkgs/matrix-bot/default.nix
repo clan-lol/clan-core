@@ -20,7 +20,6 @@ let
   runtimeDependencies = [ ];
 
   testDependencies = pythonDependencies ++ runtimeDependencies ++ [ ];
-
 in
 python3.pkgs.buildPythonApplication {
   name = "matrix-bot";

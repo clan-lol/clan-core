@@ -1,4 +1,0 @@
-{
-  "fileSystems": { "/": { "device": "/dev/null" } },
-  "boot": { "loader": { "grub": { "device": "/dev/null" } } }
-}
