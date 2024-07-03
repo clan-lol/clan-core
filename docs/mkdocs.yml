@@ -61,6 +61,7 @@ nav:
           - reference/clanModules/moonlight.md
           - reference/clanModules/postgresql.md
           - reference/clanModules/root-password.md
+          - reference/clanModules/single-disk.md
           - reference/clanModules/sshd.md
           - reference/clanModules/static-hosts.md
           - reference/clanModules/sunshine.md
