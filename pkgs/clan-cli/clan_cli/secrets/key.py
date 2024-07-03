@@ -58,7 +58,7 @@ def show_command(args: argparse.Namespace) -> None:
 
 
 def update_command(args: argparse.Namespace) -> None:
-    flake_dir = Path(args.flake)
+    flake_dir = args.flake.path
     commit_files(update_secrets(flake_dir), flake_dir, "Updated secrets with new keys.")
 
 

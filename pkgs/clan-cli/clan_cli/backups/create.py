@@ -2,7 +2,6 @@ import argparse
 import json
 import logging
 
-from ..clan_uri import FlakeId
 from ..completions import (
     add_dynamic_completer,
     complete_backup_providers_for_machine,
@@ -41,7 +40,7 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
 def create_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         raise ClanError("Could not find clan flake toplevel directory")
-    machine = Machine(name=args.machine, flake=FlakeId(args.flake))
+    machine = Machine(name=args.machine, flake=args.flake)
     create_backup(machine=machine, provider=args.provider)
 
 

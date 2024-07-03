@@ -45,8 +45,7 @@ def show_machine(flake_url: str | Path, machine_name: str) -> MachineInfo:
 
 
 def show_command(args: argparse.Namespace) -> None:
-    flake_path = Path(args.flake).resolve()
-    machine = show_machine(flake_path, args.machine)
+    machine = show_machine(args.flake.path, args.machine)
     print(f"Name: {machine.machine_name}")
     print(f"Description: {machine.machine_description or ''}")
     print(f"Icon: {machine.machine_icon or ''}")

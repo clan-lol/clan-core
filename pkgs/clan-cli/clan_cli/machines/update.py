@@ -5,7 +5,6 @@ import os
 import shlex
 import sys
 
-from ..clan_uri import FlakeId
 from ..cmd import run
 from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
@@ -138,7 +137,7 @@ def update(args: argparse.Namespace) -> None:
     machines = []
     if len(args.machines) == 1 and args.target_host is not None:
         machine = Machine(
-            name=args.machines[0], flake=FlakeId(args.flake), nix_options=args.option
+            name=args.machines[0], flake=args.flake, nix_options=args.option
         )
         machine.target_host_address = args.target_host
         machines.append(machine)

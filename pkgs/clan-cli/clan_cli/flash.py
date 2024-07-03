@@ -120,7 +120,7 @@ class AppendDiskAction(argparse.Action):
 
 def flash_command(args: argparse.Namespace) -> None:
     opts = FlashOptions(
-        flake=FlakeId(args.flake),
+        flake=args.flake,
         machine=args.machine,
         disks=args.disk,
         ssh_keys_path=args.ssh_pubkey,

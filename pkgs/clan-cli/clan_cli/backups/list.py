@@ -3,7 +3,6 @@ import json
 import subprocess
 from dataclasses import dataclass
 
-from ..clan_uri import FlakeId
 from ..completions import (
     add_dynamic_completer,
     complete_backup_providers_for_machine,
@@ -56,7 +55,7 @@ def list_backups(machine: Machine, provider: str | None = None) -> list[Backup]:
 def list_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         raise ClanError("Could not find clan flake toplevel directory")
-    machine = Machine(name=args.machine, flake=FlakeId(args.flake))
+    machine = Machine(name=args.machine, flake=args.flake)
     backups = list_backups(machine=machine, provider=args.provider)
     for backup in backups:
         print(backup.name)

@@ -29,7 +29,7 @@ def list_machines(flake_url: str | Path, debug: bool = False) -> dict[str, Machi
 
 
 def list_command(args: argparse.Namespace) -> None:
-    flake_path = Path(args.flake).resolve()
+    flake_path = args.flake.path
     for name in list_machines(flake_path, args.debug).keys():
         print(name)
 

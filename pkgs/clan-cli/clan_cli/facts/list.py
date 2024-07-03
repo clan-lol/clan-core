@@ -3,7 +3,6 @@ import importlib
 import json
 import logging
 
-from ..clan_uri import FlakeId
 from ..completions import add_dynamic_completer, complete_machines
 from ..machines.machines import Machine
 
@@ -27,7 +26,7 @@ def get_all_facts(machine: Machine) -> dict:
 
 
 def get_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake=FlakeId(args.flake))
+    machine = Machine(name=args.machine, flake=args.flake)
 
     # the raw_facts are bytestrings making them not json serializable
     raw_facts = get_all_facts(machine)

@@ -25,6 +25,7 @@ from . import (
     state,
     vms,
 )
+from .clan_uri import FlakeId
 from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel_or_env
 from .errors import ClanCmdError, ClanError
@@ -41,11 +42,18 @@ except ImportError:
     pass
 
 
-def flake_path(arg: str) -> str | Path:
+def flake_path(arg: str) -> FlakeId:
     flake_dir = Path(arg).resolve()
     if flake_dir.exists() and flake_dir.is_dir():
-        return flake_dir
-    return arg
+        return FlakeId(flake_dir)
+    return FlakeId(arg)
+
+
+def default_flake() -> FlakeId | None:
+    val = get_clan_flake_toplevel_or_env()
+    if val:
+        return FlakeId(val)
+    return None
 
 
 def add_common_flags(parser: argparse.ArgumentParser) -> None:
@@ -68,7 +76,7 @@ def add_common_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--flake",
         help="path to the flake where the clan resides in, can be a remote flake or local, can be set through the [CLAN_DIR] environment variable",
-        default=get_clan_flake_toplevel_or_env(),
+        default=default_flake(),
         metavar="PATH",
         type=flake_path,
     )

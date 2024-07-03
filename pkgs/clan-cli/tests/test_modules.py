@@ -5,6 +5,7 @@ import pytest
 from fixtures_flakes import FlakeForTest
 
 from clan_cli.api.modules import list_modules, update_module_instance
+from clan_cli.clan_uri import FlakeId
 from clan_cli.inventory import Machine, Role, Service, ServiceMeta
 from clan_cli.machines.create import create_machine
 from clan_cli.nix import nix_eval, run_no_stdout
@@ -50,7 +51,9 @@ def test_add_module_to_inventory(
             age_keys[0].pubkey,
         ]
     )
-    create_machine(base_path, Machine(name="machine1", tags=[], system="x86_64-linux"))
+    create_machine(
+        FlakeId(base_path), Machine(name="machine1", tags=[], system="x86_64-linux")
+    )
     update_module_instance(
         base_path,
         "borgbackup",
