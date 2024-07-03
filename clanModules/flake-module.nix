@@ -7,6 +7,7 @@
     ergochat = ./ergochat;
     localbackup = ./localbackup;
     localsend = ./localsend;
+    single-disk = ./single-disk;
     matrix-synapse = ./matrix-synapse;
     moonlight = ./moonlight;
     postgresql = ./postgresql;

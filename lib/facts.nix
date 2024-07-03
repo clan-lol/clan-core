@@ -59,7 +59,6 @@ let
       ) machinesFactsAttrs;
     in
     filteredMachineFactAttrs;
-
 in
 {
   inherit
