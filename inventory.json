@@ -1,4 +1,7 @@
 {
+  "meta": {
+    "name": "Minimal inventory"
+  },
   "machines": {
     "minimal-inventory-machine": {
       "name": "foo",
