@@ -59,6 +59,7 @@ nav:
           - reference/clanModules/localsend.md
           - reference/clanModules/matrix-synapse.md
           - reference/clanModules/moonlight.md
+          - reference/clanModules/packages.md
           - reference/clanModules/postgresql.md
           - reference/clanModules/root-password.md
           - reference/clanModules/single-disk.md

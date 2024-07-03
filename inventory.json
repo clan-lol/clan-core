@@ -9,6 +9,48 @@
     }
   },
   "services": {
+    "packages": {
+      "editors": {
+        "meta": {
+          "name": "Some editor packages"
+        },
+        "roles": {
+          "default": {
+            "machines": ["minimal-inventory-machine"]
+          }
+        },
+        "machines": {
+          "minimal-inventory-machine": {
+            "config": {
+              "packages": ["zed-editor"]
+            }
+          }
+        },
+        "config": {
+          "packages": ["vim"]
+        }
+      },
+      "browsing": {
+        "meta": {
+          "name": "Web browsing packages"
+        },
+        "roles": {
+          "default": {
+            "machines": ["minimal-inventory-machine"]
+          }
+        },
+        "machines": {
+          "minimal-inventory-machine": {
+            "config": {
+              "packages": ["chromium"]
+            }
+          }
+        },
+        "config": {
+          "packages": ["firefox"]
+        }
+      }
+    },
     "single-disk": {
       "default": {
         "meta": {
