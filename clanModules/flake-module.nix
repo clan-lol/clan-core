@@ -10,6 +10,7 @@
     single-disk = ./single-disk;
     matrix-synapse = ./matrix-synapse;
     moonlight = ./moonlight;
+    packages = ./packages;
     postgresql = ./postgresql;
     root-password = ./root-password;
     sshd = ./sshd;
