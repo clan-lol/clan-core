@@ -19,12 +19,12 @@ class FlakeId:
 
     @property
     def path(self) -> Path:
-        assert isinstance(self._value, Path)
+        assert isinstance(self._value, Path), f"Flake {self._value} is not a local path"
         return self._value
 
     @property
     def url(self) -> str:
-        assert isinstance(self._value, str)
+        assert isinstance(self._value, str), f"Flake {self._value} is not a remote url"
         return self._value
 
     def is_local(self) -> bool:

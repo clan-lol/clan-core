@@ -3,27 +3,28 @@ import logging
 import re
 from pathlib import Path
 
-from clan_cli.api import API
-from clan_cli.errors import ClanError
-from clan_cli.git import commit_file
-from clan_cli.inventory import Inventory, Machine
+from ..api import API
+from ..clan_uri import FlakeId
+from ..errors import ClanError
+from ..git import commit_file
+from ..inventory import Inventory, Machine
 
 log = logging.getLogger(__name__)
 
 
 @API.register
-def create_machine(flake_dir: str | Path, machine: Machine) -> None:
+def create_machine(flake: FlakeId, machine: Machine) -> None:
     hostname_regex = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$"
     if not re.match(hostname_regex, machine.name):
         raise ClanError(
             "Machine name must be a valid hostname", location="Create Machine"
         )
 
-    inventory = Inventory.load_file(flake_dir)
+    inventory = Inventory.load_file(flake.path)
     inventory.machines.update({machine.name: machine})
-    inventory.persist(flake_dir, f"Create machine {machine.name}")
+    inventory.persist(flake.path, f"Create machine {machine.name}")
 
-    commit_file(Inventory.get_path(flake_dir), Path(flake_dir))
+    commit_file(Inventory.get_path(flake.path), Path(flake.path))
 
 
 def create_command(args: argparse.Namespace) -> None:

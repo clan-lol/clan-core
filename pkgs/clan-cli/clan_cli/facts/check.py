@@ -2,7 +2,6 @@ import argparse
 import importlib
 import logging
 
-from ..clan_uri import FlakeId
 from ..completions import add_dynamic_completer, complete_machines
 from ..machines.machines import Machine
 
@@ -50,7 +49,7 @@ def check_secrets(machine: Machine, service: None | str = None) -> bool:
 def check_command(args: argparse.Namespace) -> None:
     machine = Machine(
         name=args.machine,
-        flake=FlakeId(args.flake),
+        flake=args.flake,
     )
     check_secrets(machine, service=args.service)
 

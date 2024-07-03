@@ -1,6 +1,7 @@
 import pytest
 from fixtures_flakes import FlakeForTest
 
+from clan_cli.clan_uri import FlakeId
 from clan_cli.config.machine import (
     config_for_machine,
     set_config_for_machine,
@@ -23,7 +24,7 @@ def test_create_machine_on_minimal_clan(test_flake_minimal: FlakeForTest) -> Non
     assert list_machines(test_flake_minimal.path) == {}
 
     create_machine(
-        test_flake_minimal.path,
+        FlakeId(test_flake_minimal.path),
         Machine(
             name="foo",
             system="x86_64-linux",

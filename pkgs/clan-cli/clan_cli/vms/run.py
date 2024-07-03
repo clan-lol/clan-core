@@ -7,7 +7,6 @@ from contextlib import ExitStack
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from ..clan_uri import FlakeId
 from ..cmd import Log, run
 from ..completions import add_dynamic_completer, complete_machines
 from ..dirs import module_root, user_cache_dir, vm_state_dir
@@ -194,16 +193,13 @@ def run_vm(
 
 
 def run_command(
-    machine: str,
-    flake: Path,
-    option: list[str] = [],
-    **kwargs: dict[str, str],
+    args: argparse.Namespace,
 ) -> None:
-    machine_obj: Machine = Machine(machine, FlakeId(flake))
+    machine_obj: Machine = Machine(args.machine, args.flake)
 
     vm: VmConfig = inspect_vm(machine=machine_obj)
 
-    run_vm(vm, nix_options=option)
+    run_vm(vm, nix_options=args.option)
 
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
@@ -211,4 +207,4 @@ def register_run_parser(parser: argparse.ArgumentParser) -> None:
         "machine", type=str, help="machine in the flake to run"
     )
     add_dynamic_completer(machine_action, complete_machines)
-    parser.set_defaults(func=lambda args: run_command(**args.__dict__))
+    parser.set_defaults(func=lambda args: run_command(args))

@@ -147,7 +147,7 @@ def generate_machine_hardware_info(
 
 
 def hw_generate_command(args: argparse.Namespace) -> None:
-    flake_path = Path(args.flake).resolve()
+    flake_path = args.flake.path
     hw_info = generate_machine_hardware_info(
         flake_path, args.machine, args.hostname, args.password, args.force
     )

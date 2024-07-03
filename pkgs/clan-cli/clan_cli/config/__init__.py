@@ -178,12 +178,12 @@ def get_or_set_option(args: argparse.Namespace) -> None:
                 options = json.load(f)
         # compute settings json file location
         if args.settings_file is None:
-            settings_file = machine_settings_file(Path(args.flake), args.machine)
+            settings_file = machine_settings_file(args.flake.path, args.machine)
         else:
             settings_file = args.settings_file
         # set the option with the given value
         set_option(
-            flake_dir=Path(args.flake),
+            flake_dir=args.flake.path,
             option=args.option,
             value=args.value,
             options=options,

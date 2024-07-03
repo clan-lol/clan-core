@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from ..clan_uri import FlakeId
 from ..cmd import Log, run
 from ..completions import add_dynamic_completer, complete_machines
 from ..machines.machines import Machine
@@ -45,7 +44,7 @@ def upload_secrets(machine: Machine) -> None:
 
 
 def upload_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake=FlakeId(args.flake))
+    machine = Machine(name=args.machine, flake=args.flake)
     upload_secrets(machine)
 
 
