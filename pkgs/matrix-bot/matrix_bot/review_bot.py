@@ -1,6 +1,7 @@
 import logging
 
 log = logging.getLogger(__name__)
+import datetime
 import time
 from pathlib import Path
 
@@ -51,18 +52,20 @@ async def review_requested_bot(
     pulls = await fetch_pull_requests(gitea, http, limit=50, state=PullState.ALL)
 
     # Read the last updated pull request
-    last_updated_path = data_dir / "last_review_run.json"
-    last_updated = read_locked_file(last_updated_path)
+    ping_hist_path = data_dir / "last_review_run.json"
+    ping_hist = read_locked_file(ping_hist_path)
 
     # Check if the pull request is mergeable and needs review
     # and if the pull request is newer than the last updated pull request
     for pull in pulls:
         requested_reviewers = pull["requested_reviewers"]
+        pid = str(pull["id"])
         if requested_reviewers and pull["mergeable"]:
-            if last_updated == {}:
-                last_updated = pull
-            elif pull["updated_at"] < last_updated["updated_at"]:
-                last_updated = pull
+            last_time_updated = ping_hist.get(pid, {}).get(
+                "updated_at", datetime.datetime.min.isoformat()
+            )
+            if ping_hist == {} or pull["updated_at"] > last_time_updated:
+                ping_hist[pid] = pull
             else:
                 continue
 
@@ -79,7 +82,7 @@ async def review_requested_bot(
             await send_message(client, room, message, user_ids=ping_users)
 
             # Write the new last updated pull request
-            write_locked_file(last_updated_path, last_updated)
+            write_locked_file(ping_hist_path, ping_hist)
 
     # Time taken
     tend = time.time()
