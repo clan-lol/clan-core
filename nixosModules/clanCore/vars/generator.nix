@@ -8,7 +8,7 @@
   finalScript = lib.mkOptionDefault ''
     set -eu -o pipefail
 
-    export PATH="${lib.makeBinPath config.path}:${pkgs.coreutils}/bin"
+    export PATH="${lib.makeBinPath config.runtimeInputs}:${pkgs.coreutils}/bin"
 
     ${lib.optionalString (pkgs.stdenv.hostPlatform.isLinux) ''
       # prepare sandbox user on platforms where this is supported
