@@ -67,9 +67,19 @@
     publicDirectory = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;
+      description = ''
+        The directory where public facts are stored.
+      '';
     };
 
     services = lib.mkOption {
+      description = ''
+        Services to generate secrets and facts for.
+        Each service can have a generator script which generates the secrets and facts.
+        The generator script is expected to generate all secrets and facts defined for this service.
+
+        A `service` does not need to ba analogous to a systemd service, it can be any group of facts and secrets that need to be generated together.
+      '';
       default = { };
       type = lib.types.attrsOf (
         lib.types.submodule (service: {
@@ -82,6 +92,9 @@
               '';
             };
             generator = lib.mkOption {
+              description = ''
+                The generator to generate the secrets and facts for this service.
+              '';
               type = lib.types.submodule (
                 { config, ... }:
                 {
@@ -151,6 +164,9 @@
               );
             };
             secret = lib.mkOption {
+              description = ''
+                Secret facts to generate for this service.
+              '';
               default = { };
               type = lib.types.attrsOf (
                 lib.types.submodule (secret: {
@@ -182,11 +198,11 @@
                     };
                 })
               );
-              description = ''
-                path where the secret is located in the filesystem
-              '';
             };
             public = lib.mkOption {
+              description = ''
+                Public facts to generate for this service.
+              '';
               default = { };
               type = lib.types.attrsOf (
                 lib.types.submodule (fact: {
@@ -208,6 +224,9 @@
                         config.clan.core.clanDir + "/machines/${config.clan.core.machineName}/facts/${fact.config.name}";
                     };
                     value = lib.mkOption {
+                      description = ''
+                        The value of the public fact.
+                      '';
                       defaultText = lib.literalExpression "\${config.clan.core.clanDir}/\${fact.config.path}";
                       type = lib.types.nullOr lib.types.str;
                       default =
@@ -231,15 +250,5 @@
 
     ./public/in_repo.nix
     ./public/vm.nix
-
-    # (lib.mkRenamedOptionModule
-    #   [
-    #     "clanCore"
-    #   ]
-    #   [
-    #     "clan"
-    #     "core"
-    #   ]
-    # )
   ];
 }

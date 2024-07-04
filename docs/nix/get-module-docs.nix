@@ -30,7 +30,7 @@ let
     options:
     pkgs.nixosOptionsDoc {
       options = options;
-      warningsAreErrors = false;
+      warningsAreErrors = true;
     };
 
   # clanModules docs
