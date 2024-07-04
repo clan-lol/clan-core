@@ -113,12 +113,13 @@ def render_option(name: str, option: dict[str, Any], level: int = 3) -> str:
 """
 
     decls = option.get("declarations", [])
-    source_path, name = replace_store_path(decls[0])
-    print(source_path, name)
-    res += f"""
+    if decls:
+        source_path, name = replace_store_path(decls[0])
+        print(source_path, name)
+        res += f"""
 :simple-git: [{name}]({source_path})
 """
-    res += "\n"
+        res += "\n"
 
     return res
 
