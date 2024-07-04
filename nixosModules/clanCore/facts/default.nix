@@ -106,8 +106,9 @@
                       description = ''
                         Shell script snippet to generate the secrets and facts.
                         The script has access to the following environment variables:
-                        - facts: path to a directory where facts can be stored
-                        - secrets: path to a directory where secrets can be stored
+                          - prompt_value: prompted value in case a prompt was defined
+                          - facts: path to a directory where facts can be stored
+                          - secrets: path to a directory where secrets can be stored
                         The script is expected to generate all secrets and facts defined for this service.
                       '';
                     };
