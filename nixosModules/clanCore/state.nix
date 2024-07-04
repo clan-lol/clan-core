@@ -7,6 +7,9 @@
 {
   # interface
   options.clan.core.state = lib.mkOption {
+    description = ''
+      Define state directories to backup and restore
+    '';
     default = { };
     type = lib.types.attrsOf (
       lib.types.submodule (
