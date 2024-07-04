@@ -8,6 +8,7 @@ let
     either
     enum
     listOf
+    package
     path
     str
     submoduleWith
@@ -31,7 +32,7 @@ in
     generators = {
       default = {
         imports = [
-          # default implementation of the generator
+          # implementation of the generator
           ./generator.nix
         ];
       };
@@ -109,6 +110,14 @@ in
               };
             });
           };
+          runtimeInputs = {
+            description = ''
+              A list of packages that the generator script requires.
+              These packages will be available in the PATH when the script is run.
+            '';
+            type = listOf package;
+            default = [ ];
+          };
           script = {
             description = ''
               The script to run to generate the files.
@@ -129,6 +138,7 @@ in
             type = lib.types.str;
             readOnly = true;
             internal = true;
+            visible = false;
           };
         });
       };
