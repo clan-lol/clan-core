@@ -5,7 +5,7 @@
   ...
 }:
 let
-  cfg = config.clan.networking.zerotier;
+  cfg = config.clan.core.networking.zerotier;
   facts = config.clan.core.facts.services.zerotier.public or { };
   genMoonScript = pkgs.runCommand "genmoon" { nativeBuildInputs = [ pkgs.python3 ]; } ''
     install -Dm755 ${./genmoon.py} $out/bin/genmoon
@@ -13,7 +13,7 @@ let
   '';
 in
 {
-  options.clan.networking.zerotier = {
+  options.clan.core.networking.zerotier = {
     networkId = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
@@ -231,8 +231,8 @@ in
       };
     })
     (lib.mkIf (cfg.controller.enable && (facts.zerotier-network-id.value or null) != null) {
-      clan.networking.zerotier.networkId = facts.zerotier-network-id.value;
-      clan.networking.zerotier.settings = {
+      clan.core.networking.zerotier.networkId = facts.zerotier-network-id.value;
+      clan.core.networking.zerotier.settings = {
         authTokens = [ null ];
         authorizationEndpoint = "";
         capabilities = [ ];
