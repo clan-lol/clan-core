@@ -7,6 +7,10 @@
 {
   options.clan.syncthing = {
     id = lib.mkOption {
+      description = ''
+        The ID of the machine.
+        It is generated automatically by default.
+      '';
       type = lib.types.nullOr lib.types.str;
       example = "BABNJY4-G2ICDLF-QQEG7DD-N3OBNGF-BCCOFK6-MV3K7QJ-2WUZHXS-7DTW4AS";
       default = config.clan.core.facts.services.syncthing.public."syncthing.pub".value or null;

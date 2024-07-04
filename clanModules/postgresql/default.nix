@@ -91,6 +91,7 @@ in
   options.clan.postgresql = {
     # we are reimplemeting ensureDatabase and ensureUser options here to allow to create databases with options
     databases = lib.mkOption {
+      description = "Databases to create";
       default = { };
       type = lib.types.attrsOf (
         lib.types.submodule (
@@ -114,6 +115,7 @@ in
                 description = "Create the database if it does not exist.";
               };
               create.options = lib.mkOption {
+                description = "Options to pass to the CREATE DATABASE command.";
                 type = lib.types.lazyAttrsOf lib.types.str;
                 default = { };
                 example = {
@@ -135,12 +137,14 @@ in
       );
     };
     users = lib.mkOption {
+      description = "Users to create";
       default = { };
       type = lib.types.attrsOf (
         lib.types.submodule (
           { name, ... }:
           {
             options.name = lib.mkOption {
+              description = "User name";
               type = lib.types.str;
               default = name;
             };

@@ -64,6 +64,9 @@
     publicDirectory = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;
+      description = ''
+        The directory where public facts are stored.
+      '';
     };
   };
 }
