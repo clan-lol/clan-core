@@ -89,7 +89,7 @@ Adding or configuring a new machine requires two simple steps:
 
               # Change this to the correct ip-address or hostname
               # The hostname is the machine name by default
-              clan.networking.targetHost = pkgs.lib.mkDefault "root@jon"
+              clan.core.networking.targetHost = pkgs.lib.mkDefault "root@jon"
 
               # Change this to the ID-LINK of the desired disk shown by 'lsblk'
               disko.devices.disk.main = {
@@ -122,7 +122,7 @@ Adding or configuring a new machine requires two simple steps:
 
               # Change this to the correct ip-address or hostname
               # The hostname is the machine name by default
-              clan.networking.targetHost = pkgs.lib.mkDefault "root@jon"
+              clan.core.networking.targetHost = pkgs.lib.mkDefault "root@jon"
 
               # Change this to the ID-LINK of the desired disk shown by 'lsblk'
               disko.devices.disk.main = {
