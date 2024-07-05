@@ -11,6 +11,7 @@
   gtk4,
   libadwaita,
   webview-ui,
+  self',
 }:
 
 let
@@ -27,6 +28,9 @@ let
 in
 mkShell {
   inherit (clan-app) nativeBuildInputs;
+
+  inputsFrom = [ self'.devShells.default ];
+
   buildInputs =
     [
       ruff

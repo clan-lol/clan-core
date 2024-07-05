@@ -1,7 +1,12 @@
 { ... }:
 {
   perSystem =
-    { pkgs, config, ... }:
+    {
+      pkgs,
+      config,
+      self',
+      ...
+    }:
     {
       packages.webview-ui = pkgs.buildNpmPackage {
         pname = "clan-webview-ui";
@@ -22,7 +27,10 @@
         '';
       };
       devShells.webview-ui = pkgs.mkShell {
-        inputsFrom = [ config.packages.webview-ui ];
+        inputsFrom = [
+          config.packages.webview-ui
+          self'.devShells.default
+        ];
         shellHook = ''
           mkdir -p ./app/api
           cat ${config.packages.clan-ts-api} > ./app/api/index.ts
