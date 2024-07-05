@@ -51,7 +51,7 @@ def show_machine_deployment_target(
         [
             f"{clan_dir}#clanInternals.machines.{system}.{machine_name}",
             "--apply",
-            "machine: { inherit (machine.config.clan.core.networking) targetHost; }",
+            "machine: { inherit (machine.config.clan.networking) targetHost; }",
             "--json",
         ]
     )

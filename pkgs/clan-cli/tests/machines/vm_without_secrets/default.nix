@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
+  clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
   system.stateVersion = lib.version;
   clan.virtualisation.graphics = false;
 
