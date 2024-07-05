@@ -1,7 +1,7 @@
 { self, lib, ... }:
 {
   clan.machines.test_install_machine = {
-    clan.core.networking.targetHost = "test_install_machine";
+    clan.networking.targetHost = "test_install_machine";
     fileSystems."/".device = lib.mkDefault "/dev/vdb";
     boot.loader.grub.device = lib.mkDefault "/dev/vdb";
 

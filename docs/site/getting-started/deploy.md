@@ -160,7 +160,7 @@ buildClan {
             # Set this for clan commands use ssh i.e. `clan machines update`
             # If you change the hostname, you need to update this line to root@<new-hostname>
             # This only works however if you have avahi running on your admin machine else use IP
-            clan.core.networking.targetHost = pkgs.lib.mkDefault "root@jon";
+            clan.networking.targetHost = pkgs.lib.mkDefault "root@jon";
         };
     };
 };
@@ -197,7 +197,7 @@ buildClan {
     # ...
     machines = {
         "jon" = {
-            clan.core.networking.buildHost = "root@<host_or_ip>";
+            clan.networking.buildHost = "root@<host_or_ip>";
         };
     };
 };

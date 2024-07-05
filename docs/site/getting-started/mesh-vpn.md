@@ -29,7 +29,7 @@ peers. Once addresses are allocated, the controller's continuous operation is no
 2. **Add Configuration**: Input the following configuration to the NixOS
    configuration of the controller machine:
    ```nix
-   clan.core.networking.zerotier.controller = {
+   clan.networking.zerotier.controller = {
      enable = true;
      public = true;
    };
@@ -48,7 +48,7 @@ To introduce a new machine to the VPN, adhere to the following steps:
    configuration, substituting `<CONTROLLER>` with the controller machine name:
    ```nix
    { config, ... }: {
-     clan.core.networking.zerotier.networkId = builtins.readFile (config.clan.core.clanDir + "/machines/<CONTROLLER>/facts/zerotier-network-id");
+     clan.networking.zerotier.networkId = builtins.readFile (config.clan.core.clanDir + "/machines/<CONTROLLER>/facts/zerotier-network-id");
    }
    ```
 1. **Update the New Machine**: Execute:

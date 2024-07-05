@@ -23,12 +23,12 @@
               clan.user-password.user = "alice";
               clan.user-password.prompt = false;
 
-              clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
+              clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = lib.version;
               clan.core.secretStore = "password-store";
               clan.core.secretsUploadDirectory = lib.mkForce "__CLAN_SOPS_KEY_DIR__/secrets";
 
-              clan.core.networking.zerotier.controller.enable = true;
+              clan.networking.zerotier.controller.enable = true;
 
               systemd.services.shutdown-after-boot = {
                 enable = true;

@@ -98,7 +98,7 @@
         settings = {
           options = {
             urAccepted = -1;
-            allowedNetworks = [ config.clan.core.networking.zerotier.subnet ];
+            allowedNetworks = [ config.clan.networking.zerotier.subnet ];
           };
           devices =
             { }
