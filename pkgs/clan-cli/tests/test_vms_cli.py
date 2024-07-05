@@ -7,8 +7,8 @@ from time import sleep
 from typing import TYPE_CHECKING
 
 import pytest
-from cli import Cli
 from fixtures_flakes import FlakeForTest, generate_flake
+from helpers.cli import Cli
 from root import CLAN_CORE
 
 from clan_cli.dirs import vm_state_dir

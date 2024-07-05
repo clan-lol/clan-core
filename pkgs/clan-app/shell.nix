@@ -51,6 +51,9 @@ mkShell {
     export GIT_ROOT=$(git rev-parse --show-toplevel)
     export PKG_ROOT=$GIT_ROOT/pkgs/clan-app
 
+    # Add current package to PYTHONPATH
+    export PYTHONPATH="$PKG_ROOT''${PYTHONPATH:+:$PYTHONPATH:}"
+
     # Add clan-app command to PATH
     export PATH="$PKG_ROOT/bin":"$PATH"
 

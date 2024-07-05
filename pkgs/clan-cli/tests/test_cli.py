@@ -1,5 +1,5 @@
 import pytest
-from cli import Cli
+from helpers.cli import Cli
 
 
 def test_help(capsys: pytest.CaptureFixture) -> None:

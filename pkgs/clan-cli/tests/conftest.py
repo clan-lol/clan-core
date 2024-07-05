@@ -1,13 +1,7 @@
-import os
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "helpers"))
-sys.path.append(str(Path(__file__).parent.parent))  # Also add clan_cli to PYTHONPATH
-
 
 from clan_cli.custom_logger import setup_logging
 from clan_cli.nix import nix_shell

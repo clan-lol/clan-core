@@ -13,7 +13,7 @@ from clan_cli.nix import nix_eval, run_no_stdout
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
-from cli import Cli
+from helpers.cli import Cli
 
 from clan_cli.machines.facts import machine_get_fact
 
