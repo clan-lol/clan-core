@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from cli import Cli
+from helpers.cli import Cli
 
 
 @pytest.fixture

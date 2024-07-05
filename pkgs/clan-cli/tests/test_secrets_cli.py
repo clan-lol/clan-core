@@ -5,8 +5,8 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 import pytest
-from cli import Cli
 from fixtures_flakes import FlakeForTest
+from helpers.cli import Cli
 
 from clan_cli.errors import ClanError
 

@@ -1,13 +1,9 @@
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
 from clan_cli.custom_logger import setup_logging
 from clan_cli.nix import nix_shell
-
-sys.path.append(str(Path(__file__).parent / "helpers"))
-sys.path.append(str(Path(__file__).parent.parent))  # Also add clan app to PYTHONPATH
 
 pytest_plugins = [
     "temporary_dir",
