@@ -74,9 +74,12 @@
     {
       devShells.docs = pkgs.callPackage ./shell.nix {
         inherit (self'.packages) docs clan-cli-docs;
-        inherit module-docs;
-        inherit asciinema-player-js;
-        inherit asciinema-player-css;
+        inherit
+          asciinema-player-js
+          asciinema-player-css
+          module-docs
+          self'
+          ;
       };
       packages = {
         docs = pkgs.python3.pkgs.callPackage ./default.nix {

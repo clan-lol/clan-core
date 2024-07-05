@@ -13,6 +13,7 @@ in
       lib,
       config,
       system,
+      self',
       ...
     }:
     let
@@ -26,6 +27,7 @@ in
         inputsFrom = with config.checks; [
           lib-inventory-schema
           lib-inventory-eval
+          self'.devShells.default
         ];
       };
 
