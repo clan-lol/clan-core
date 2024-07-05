@@ -113,7 +113,6 @@ def generate_flake(
 
 
 def create_flake(
-    monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
     flake_template: str | Path,
     clan_core_flake: Path | None = None,
@@ -188,7 +187,7 @@ def create_flake(
 def test_flake(
     monkeypatch: pytest.MonkeyPatch, temporary_home: Path
 ) -> Iterator[FlakeForTest]:
-    yield from create_flake(monkeypatch, temporary_home, "test_flake")
+    yield from create_flake(temporary_home, "test_flake")
     # check that git diff on ./sops is empty
     if (temporary_home / "test_flake" / "sops").exists():
         git_proc = sp.run(
@@ -212,7 +211,6 @@ def test_flake_with_core(
             "clan-core flake not found. This test requires the clan-core flake to be present"
         )
     yield from create_flake(
-        monkeypatch,
         temporary_home,
         "test_flake_with_core",
         CLAN_CORE,
@@ -246,7 +244,6 @@ def test_flake_with_core_and_pass(
             "clan-core flake not found. This test requires the clan-core flake to be present"
         )
     yield from create_flake(
-        monkeypatch,
         temporary_home,
         "test_flake_with_core_and_pass",
         CLAN_CORE,
@@ -262,7 +259,6 @@ def test_flake_minimal(
             "clan-core flake not found. This test requires the clan-core flake to be present"
         )
     yield from create_flake(
-        monkeypatch,
         temporary_home,
         CLAN_CORE / "templates" / "minimal",
         CLAN_CORE,
