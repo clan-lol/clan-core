@@ -2,8 +2,8 @@ import json
 from typing import TYPE_CHECKING
 
 import pytest
-from cli import Cli
 from fixtures_flakes import FlakeForTest
+from helpers.cli import Cli
 from pytest import CaptureFixture
 
 from clan_cli.dirs import user_history_file

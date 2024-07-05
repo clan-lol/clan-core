@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import pytest
-from cli import Cli
 from fixtures_flakes import FlakeForTest
+from helpers.cli import Cli
 
 from clan_cli import config
 from clan_cli.config import parsing

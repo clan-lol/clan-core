@@ -2,9 +2,9 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from cli import Cli
 from fixtures_flakes import FlakeForTest
-from validator import is_valid_ssh_key
+from helpers.cli import Cli
+from helpers.validator import is_valid_ssh_key
 
 from clan_cli.clan_uri import FlakeId
 from clan_cli.facts.secret_modules.password_store import SecretStore
