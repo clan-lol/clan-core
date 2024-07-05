@@ -7,10 +7,14 @@
   asciinema-player-css,
   roboto,
   fira-code,
+  self',
   ...
 }:
 pkgs.mkShell {
-  inputsFrom = [ docs ];
+  inputsFrom = [
+    docs
+    self'.devShells.default
+  ];
   shellHook = ''
     mkdir -p ./site/reference/cli
     cp -af ${module-docs}/* ./site/reference/
