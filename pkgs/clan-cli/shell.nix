@@ -4,6 +4,7 @@
   mkShell,
   ruff,
   python3,
+  self',
 }:
 let
   devshellTestDeps =
@@ -21,6 +22,8 @@ mkShell {
     nix-unit
     ruff
   ] ++ devshellTestDeps;
+
+  inputsFrom = [ self'.devShells.default ];
 
   PYTHONBREAKPOINT = "ipdb.set_trace";
 
