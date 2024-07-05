@@ -27,7 +27,7 @@
           self.clanModules.localbackup
           self.clanModules.sshd
         ];
-        clan.networking.targetHost = "machine";
+        clan.core.networking.targetHost = "machine";
         networking.hostName = "machine";
         services.openssh.settings.UseDns = false;
 
