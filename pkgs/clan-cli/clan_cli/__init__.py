@@ -272,6 +272,43 @@ For more detailed information, visit: {help_hyperlink("secrets", "https://docs.c
     )
     facts.register_parser(parser_facts)
 
+    # like facts but with vars instead of facts
+    parser_vars = subparsers.add_parser(
+        "vars",
+        help="manage vars",
+        description="manage vars",
+        epilog=(
+            f"""
+This subcommand provides an interface to vars of clan machines.
+Vars are variables that a service can generate.
+There are public and secret vars.
+Public vars can be referenced by other machines directly.
+Public vars can include: ip addresses, public keys.
+Secret vars can include: passwords, private keys.
+
+A service is an included clan-module that implements vars generation functionality.
+For example the zerotier module will generate private and public vars.
+In this case the public var will be the resulting zerotier-ip of the machine.
+The secret var will be the zerotier-identity-secret, which is used by zerotier
+to prove the machine has control of the zerotier-ip.
+
+Examples:
+
+    $ clan vars generate
+    Will generate vars for all machines.
+
+    $ clan vars generate --service [SERVICE] --regenerate
+    Will regenerate vars, if they are already generated for a specific service.
+    This is especially useful for resetting certain passwords while leaving the rest
+    of the vars for a machine in place.
+
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    facts.register_parser(parser_vars)
+
     parser_machine = subparsers.add_parser(
         "machines",
         help="manage machines and their configuration",
