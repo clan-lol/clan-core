@@ -1,6 +1,6 @@
 { config, lib, ... }:
 {
-  options.clan.core = {
+  options.clan = {
     networking = {
       targetHost = lib.mkOption {
         description = ''
@@ -53,34 +53,10 @@
       [
         "clan"
         "networking"
-      ]
-      [
-        "clan"
-        "core"
-        "networking"
-      ]
-    )
-    (lib.mkRenamedOptionModule
-      [
-        "clan"
-        "deployment"
-      ]
-      [
-        "clan"
-        "core"
-        "deployment"
-      ]
-    )
-    (lib.mkRenamedOptionModule
-      [
-        "clan"
-        "core"
-        "networking"
         "deploymentAddress"
       ]
       [
         "clan"
-        "core"
         "networking"
         "targetHost"
       ]

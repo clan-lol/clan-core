@@ -73,7 +73,7 @@
           services
           ;
       };
-      inherit (config.clan.core.networking) targetHost buildHost;
+      inherit (config.clan.networking) targetHost buildHost;
       inherit (config.clan.deployment) requireExplicitUpdate;
     };
     system.clan.deployment.file = pkgs.writeText "deployment.json" (

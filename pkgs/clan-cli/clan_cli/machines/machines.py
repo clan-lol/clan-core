@@ -53,7 +53,7 @@ class Machine:
             "deploymentAddress"
         )
         if val is None:
-            msg = f"the 'clan.core.networking.targetHost' nixos option is not set for machine '{self.name}'"
+            msg = f"the 'clan.networking.targetHost' nixos option is not set for machine '{self.name}'"
             raise ClanError(msg)
         return val
 
