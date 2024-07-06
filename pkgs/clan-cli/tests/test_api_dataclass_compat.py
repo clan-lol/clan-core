@@ -5,7 +5,7 @@ import sys
 from dataclasses import is_dataclass
 from pathlib import Path
 
-from clan_cli.api.util import type_to_dict
+from clan_cli.api.util import JSchemaTypeError, type_to_dict
 from clan_cli.errors import ClanError
 
 
@@ -100,10 +100,21 @@ def load_dataclass_from_file(
 
     if dataclass_type and is_dataclass(dataclass_type):
         return dataclass_type
-    return None
+
+    raise ClanError(f"Could not load dataclass {class_name} from file: {file_path}")
 
 
 def test_all_dataclasses() -> None:
+    """
+    This Test ensures that all dataclasses are compatible with the API.
+
+    It will load all dataclasses from the clan_cli directory and
+    generate a JSON schema for each of them.
+
+    It will fail if any dataclass cannot be converted to JSON schema.
+    This means the dataclass in its current form is not compatible with the API.
+    """
+
     # Excludes:
     # - API includes Type Generic wrappers, that are not known in the init file.
     excludes = ["api/__init__.py"]
@@ -112,14 +123,24 @@ def test_all_dataclasses() -> None:
     dataclasses = find_dataclasses_in_directory(cli_path, excludes)
 
     for file, dataclass in dataclasses:
-        print(f"Found dataclass {dataclass} in {file}")
-        # The parent directory of the clan_cli is the projects root directory
+        print(f"checking dataclass {dataclass} in file: {file}")
         try:
             dclass = load_dataclass_from_file(file, dataclass, str(cli_path.parent))
-            json_schema = type_to_dict(dclass, scope=f"FILE {file} {dataclass}")
-        except Exception as e:
+            type_to_dict(dclass)
+        except JSchemaTypeError as e:
             print(f"Error loading dataclass {dataclass} from {file}: {e}")
             raise ClanError(
-                f"Error loading dataclass {dataclass} from {file}: {e}",
+                f"""
+--------------------------------------------------------------------------------
+Error converting dataclass 'class {dataclass}()' from {file}
+
+Details:
+ {e}
+
+Help:
+- Converting public fields to PRIVATE by prefixing them with underscore ('_')
+- Ensure all private fields are initialized the API wont provide initial values for them.
+--------------------------------------------------------------------------------
+""",
                 location=__file__,
             )
