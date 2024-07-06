@@ -5,7 +5,7 @@ package schema
     description?: string,
     icon?: string
     tags: [...string]
-    system: string
+    system?: string
 }
 
 #role: string

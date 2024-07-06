@@ -75,10 +75,6 @@ def load_dataclass_from_file(
     module_name = (
         os.path.relpath(file_path, root_dir).replace(os.path.sep, ".").rstrip(".py")
     )
-    # spec = importlib.util.spec_from_file_location(module_name, file_path)
-    # module = importlib.util.module_from_spec(spec)
-    # spec.loader.exec_module(module)
-    # breakpoint()
     try:
         sys.path.insert(0, root_dir)
         spec = importlib.util.spec_from_file_location(module_name, file_path)
