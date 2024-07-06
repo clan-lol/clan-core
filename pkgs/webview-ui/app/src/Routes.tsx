@@ -4,6 +4,7 @@ import { colors } from "./routes/colors/view";
 import { clan } from "./routes/clan/view";
 import { HostList } from "./routes/hosts/view";
 import { BlockDevicesView } from "./routes/blockdevices/view";
+import { Flash } from "./routes/flash/view";
 
 export type Route = keyof typeof routes;
 
@@ -21,6 +22,11 @@ export const routes = {
   hosts: {
     child: HostList,
     label: "hosts",
+    icon: "devices_other",
+  },
+  flash: {
+    child: Flash,
+    label: "create_flash_installer",
     icon: "devices_other",
   },
   blockdevices: {

@@ -55,6 +55,34 @@ class _MethodRegistry:
         self._orig: dict[str, Callable[[Any], Any]] = {}
         self._registry: dict[str, Callable[[Any], Any]] = {}
 
+    def register_abstract(self, fn: Callable[..., T]) -> Callable[..., T]:
+        @wraps(fn)
+        def wrapper(
+            *args: Any, op_key: str | None = None, **kwargs: Any
+        ) -> ApiResponse[T]:
+            raise NotImplementedError(
+                f"""{fn.__name__} - The platform didn't implement this function.
+
+---
+# Example
+
+The function 'open_file()' depends on the platform.
+
+def open_file(file_request: FileRequest) -> str | None:
+    # In GTK we open a file dialog window
+    # In Android we open a file picker dialog
+    # and so on.
+    pass
+
+# At runtime the clan-app must override platform specific functions
+API.register(open_file)
+---
+                """
+            )
+
+        self.register(wrapper)
+        return fn
+
     def register(self, fn: Callable[..., T]) -> Callable[..., T]:
         self._orig[fn.__name__] = fn
 
