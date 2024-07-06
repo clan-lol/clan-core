@@ -20,7 +20,7 @@ class Machine:
     name: str
     flake: FlakeId
     nix_options: list[str] = field(default_factory=list)
-    cached_deployment: None | dict = None
+    cached_deployment: None | dict[str, Any] = None
 
     _eval_cache: dict[str, str] = field(default_factory=dict)
     _build_cache: dict[str, Path] = field(default_factory=dict)
