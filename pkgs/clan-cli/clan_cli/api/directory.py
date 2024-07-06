@@ -28,13 +28,13 @@ class FileRequest:
     filters: FileFilter | None = None
 
 
-@API.register
+@API.register_abstract
 def open_file(file_request: FileRequest) -> str | None:
     """
     Abstract api method to open a file dialog window.
     It must return the name of the selected file or None if no file was selected.
     """
-    raise NotImplementedError("Each specific platform should implement this function.")
+    pass
 
 
 @dataclass
