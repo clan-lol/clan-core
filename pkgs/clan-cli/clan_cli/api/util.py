@@ -76,6 +76,7 @@ def type_to_dict(t: Any, scope: str = "", type_map: dict[TypeVar, type] = {}) ->
         properties = {
             f.name: type_to_dict(f.type, f"{scope} {t.__name__}.{f.name}", type_map)
             for f in fields
+            if not f.name.startswith("_")
         }
 
         required = set()
@@ -127,7 +128,7 @@ def type_to_dict(t: Any, scope: str = "", type_map: dict[TypeVar, type] = {}) ->
         if origin is None:
             # Non-generic user-defined or built-in type
             # TODO: handle custom types
-            raise JSchemaTypeError("Unhandled Type: ", origin)
+            raise JSchemaTypeError(f"{scope} Unhandled Type: ", origin)
 
         elif origin is Literal:
             # Handle Literal values for enums in JSON Schema
@@ -172,7 +173,7 @@ def type_to_dict(t: Any, scope: str = "", type_map: dict[TypeVar, type] = {}) ->
             new_map.update(inspect_dataclass_fields(t))
             return type_to_dict(origin, scope, new_map)
 
-        raise JSchemaTypeError(f"Error api type not yet supported {t!s}")
+        raise JSchemaTypeError(f"{scope} - Error api type not yet supported {t!s}")
 
     elif isinstance(t, type):
         if t is str:
@@ -187,7 +188,7 @@ def type_to_dict(t: Any, scope: str = "", type_map: dict[TypeVar, type] = {}) ->
             return {"type": "object"}
         if t is Any:
             raise JSchemaTypeError(
-                f"Usage of the Any type is not supported for API functions. In: {scope}"
+                f"{scope} - Usage of the Any type is not supported for API functions. In: {scope}"
             )
         if t is pathlib.Path:
             return {
@@ -196,13 +197,13 @@ def type_to_dict(t: Any, scope: str = "", type_map: dict[TypeVar, type] = {}) ->
             }
         if t is dict:
             raise JSchemaTypeError(
-                "Error: generic dict type not supported. Use dict[str, Any] instead"
+                f"{scope} - Generic 'dict' type not supported. Use dict[str, Any] or any more expressive type."
             )
 
         # Optional[T] gets internally transformed Union[T,NoneType]
         if t is NoneType:
             return {"type": "null"}
 
-        raise JSchemaTypeError(f"Error primitive type not supported {t!s}")
+        raise JSchemaTypeError(f"{scope} - Error primitive type not supported {t!s}")
     else:
-        raise JSchemaTypeError(f"Error type not supported {t!s}")
+        raise JSchemaTypeError(f"{scope} - Error type not supported {t!s}")
