@@ -26,6 +26,7 @@ pkgs.stdenv.mkDerivation {
       mkdocs-material
       mkdocs-rss-plugin
       mkdocs-macros
+      filelock # FIXME: this should be already provided by mkdocs-rss-plugin
     ]);
   configurePhase = ''
     mkdir -p ./site/reference/cli
