@@ -17,19 +17,8 @@ let
         ln -s $out/config.json $out/config.${nginx-vhost}.json
       '';
 
-  # FIXME: This was taken from upstream. Drop this when our patch is upstream
-  synapseCfg = config.services.matrix-synapse;
-  wantedExtras =
-    synapseCfg.extras
-    ++ lib.optional (synapseCfg.settings ? oidc_providers) "oidc"
-    ++ lib.optional (synapseCfg.settings ? jwt_config) "jwt"
-    ++ lib.optional (synapseCfg.settings ? saml2_config) "saml2"
-    ++ lib.optional (synapseCfg.settings ? redis) "redis"
-    ++ lib.optional (synapseCfg.settings ? sentry) "sentry"
-    ++ lib.optional (synapseCfg.settings ? user_directory) "user-search"
-    ++ lib.optional (synapseCfg.settings.url_preview_enabled) "url-preview"
-    ++ lib.optional (synapseCfg.settings.database.name == "psycopg2") "postgres";
 in
+# FIXME: This was taken from upstream. Drop this when our patch is upstream
 {
   options.services.matrix-synapse.package = lib.mkOption { readOnly = false; };
   options.clan.matrix-synapse = {
@@ -78,21 +67,6 @@ in
   ];
   config = {
     services.matrix-synapse = {
-      package = lib.mkForce (
-        pkgs.matrix-synapse.override {
-          matrix-synapse-unwrapped = pkgs.matrix-synapse.unwrapped.overrideAttrs (_old: {
-            doInstallCheck = false; # too slow, nixpkgs maintainer already run this.
-            patches = [
-              # see: https://github.com/element-hq/synapse/pull/17304
-              ./0001-register_new_matrix_user-add-password-file-flag.patch
-              ./0002-register-new-matrix-user-add-a-flag-to-ignore-alread.patch
-            ];
-          });
-          extras = wantedExtras;
-          plugins = synapseCfg.plugins;
-        }
-      );
-
       enable = true;
       settings = {
         server_name = cfg.domain;
