@@ -6,7 +6,7 @@
   pygobject3,
   wrapGAppsHook,
   gtk4,
-  gnome,
+  adwaita-icon-theme,
   pygobject-stubs,
   gobject-introspection,
   clan-cli,
@@ -39,7 +39,7 @@ let
     gtk4
     libadwaita
     webkitgtk_6_0
-    gnome.adwaita-icon-theme
+    adwaita-icon-theme
   ];
 
   # Deps including python packages from the local project

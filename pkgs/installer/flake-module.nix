@@ -19,29 +19,6 @@ let
         };
       };
     };
-  installerModule =
-    { config, modulesPath, ... }:
-    {
-      imports = [
-        wifiModule
-        self.nixosModules.installer
-        self.inputs.nixos-generators.nixosModules.all-formats
-        (modulesPath + "/installer/cd-dvd/iso-image.nix")
-      ];
-
-      isoImage.squashfsCompression = "zstd";
-
-      system.stateVersion = config.system.nixos.version;
-      nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
-    };
-
-  installerSystem = lib.nixosSystem {
-    modules = [
-      self.inputs.disko.nixosModules.default
-      installerModule
-      { disko.memSize = 4096; } # FIXME: otherwise the image builder goes OOM
-    ];
-  };
 
   flashInstallerModule =
     { config, ... }:
@@ -98,14 +75,6 @@ let
 in
 {
   clan = {
-    # To build a generic installer image (without ssh pubkeys),
-    # use the following command:
-    # $ nix build .#iso-installer
-    machines.iso-installer = {
-      imports = [ installerModule ];
-      fileSystems."/".device = lib.mkDefault "/dev/null";
-    };
-
     # To directly flash the installer to a disk, use the following command:
     # $ clan flash flash-installer --disk main /dev/sdX --yes
     # This will include your ssh public keys in the installer.
@@ -114,7 +83,4 @@ in
       boot.loader.grub.enable = lib.mkDefault true;
     };
   };
-  flake.packages.x86_64-linux.iso-installer = installerSystem.config.formats.iso;
-  flake.apps.x86_64-linux.install-vm.program = installerSystem.config.formats.vm.outPath;
-  flake.apps.x86_64-linux.install-vm-nogui.program = installerSystem.config.formats.vm-nogui.outPath;
 }

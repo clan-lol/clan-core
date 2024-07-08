@@ -81,11 +81,11 @@ def cast(value: Any, input_type: Any, opt_description: str) -> Any:
             else:
                 raise ClanError(f"Invalid value {value} for boolean")
         # handle lists
-        elif get_origin(input_type) == list:
+        elif get_origin(input_type) is list:
             subtype = input_type.__args__[0]
             return [cast([x], subtype, opt_description) for x in value]
         # handle dicts
-        elif get_origin(input_type) == dict:
+        elif get_origin(input_type) is dict:
             if not isinstance(value, dict):
                 raise ClanError(
                     f"Cannot set {opt_description} directly. Specify a suboption like {opt_description}.<name>"

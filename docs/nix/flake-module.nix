@@ -38,7 +38,7 @@
             patchShebangs --build $out
 
             ruff format --check --diff $out
-            ruff --line-length 88 $out
+            ruff check --line-length 88 $out
             mypy --strict $out
           '';
 
