@@ -1,12 +1,12 @@
 { lib, ... }:
 {
-  clan.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
+  clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
   system.stateVersion = lib.version;
   sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
   clan.core.secretsUploadDirectory = "__CLAN_SOPS_KEY_DIR__";
   clan.virtualisation.graphics = false;
 
-  clan.networking.zerotier.controller.enable = true;
+  clan.core.networking.zerotier.controller.enable = true;
   networking.useDHCP = false;
 
   systemd.services.shutdown-after-boot = {
