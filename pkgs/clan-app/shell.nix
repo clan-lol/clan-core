@@ -61,9 +61,7 @@ mkShell {
     export PYTHONPATH="$GIT_ROOT/pkgs/clan-cli":"$PYTHONPATH"
 
     # Add the webview-ui to the .webui directory
-    rm -rf ./clan_app/.webui/*
-    mkdir -p ./clan_app/.webui
-    cp -a ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/* ./clan_app/.webui
-    chmod -R +w ./clan_app/.webui
+    ln -nsf ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/ ./clan_app/.webui
+
   '';
 }
