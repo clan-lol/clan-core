@@ -11,7 +11,7 @@ let
     let
       path = getFactPath fact machine;
     in
-    if builtins.pathExists path then builtins.readFile path else null;
+    if builtins.pathExists (lib.traceVal path) then builtins.readFile path else null;
 
   # Example:
   #
