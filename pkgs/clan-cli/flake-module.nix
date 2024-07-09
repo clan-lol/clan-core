@@ -58,6 +58,7 @@
             python docs.py reference
             mkdir -p $out
             cp -r out/* $out
+            ls -lah $out
           '';
         };
         clan-ts-api = pkgs.stdenv.mkDerivation {
