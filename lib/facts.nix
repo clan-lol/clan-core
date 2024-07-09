@@ -1,10 +1,10 @@
 { lib, ... }:
-machineDir:
+clanDir:
 let
 
-  allMachineNames = lib.mapAttrsToList (name: _: name) (builtins.readDir machineDir);
+  allMachineNames = lib.mapAttrsToList (name: _: name) (builtins.readDir clanDir);
 
-  getFactPath = fact: machine: "${machineDir}/${machine}/facts/${fact}";
+  getFactPath = fact: machine: "${clanDir}/${machine}/facts/${fact}";
 
   readFact =
     fact: machine:
