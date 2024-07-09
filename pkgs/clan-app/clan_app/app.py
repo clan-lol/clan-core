@@ -10,6 +10,8 @@ from clan_app.singletons.toast import InfoToast, ToastOverlay
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
+from pathlib import Path
+
 from clan_cli.custom_logger import setup_logging
 from gi.repository import Adw, Gdk, Gio, Gtk
 
@@ -47,6 +49,19 @@ class MainApplication(Adw.Application):
             None,
         )
 
+        self.add_main_option(
+            "content-uri",
+            GLib.OptionFlags.NONE,
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.STRING,
+            "set the webview content uri",
+            None,
+        )
+
+        site_index: Path = (
+            Path(__file__).parent.parent / Path("clan_app/.webui/index.html")
+        ).resolve()
+        self.content_uri = f"file://{site_index}"
         self.window: MainWindow | None = None
         self.connect("activate", self.on_activate)
         self.connect("shutdown", self.on_shutdown)
@@ -82,13 +97,22 @@ class MainApplication(Adw.Application):
                 InfoToast("Debug logging enabled").toast, "info.debugging.enabled"
             )
 
+        if "content-uri" in options:
+            self.content_uri = options["content-uri"]
+            log.debug(f"Setting content uri to {self.content_uri}")
+
         args = command_line.get_arguments()
 
         self.activate()
 
+        # Check if there are arguments that are not inside the options
         if len(args) > 1:
-            uri = args[1]
-            self.emit("join_request", uri)
+            non_option_args = [arg for arg in args[1:] if arg not in options.values()]
+            breakpoint()
+            if non_option_args:
+                uri = non_option_args[0]
+                self.emit("join_request", uri)
+
         return 0
 
     def on_window_hide_unhide(self, *_args: Any) -> None:
@@ -106,7 +130,9 @@ class MainApplication(Adw.Application):
     def on_activate(self, source: "MainApplication") -> None:
         if not self.window:
             self.init_style()
-            self.window = MainWindow(config=ClanConfig(initial_view="webview"))
+            self.window = MainWindow(
+                config=ClanConfig(initial_view="webview", content_uri=self.content_uri)
+            )
             self.window.set_application(self)
 
         self.window.show()

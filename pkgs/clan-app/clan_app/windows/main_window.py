@@ -54,7 +54,7 @@ class MainWindow(Adw.ApplicationWindow):
         # Override platform specific functions
         API.register(open_file)
 
-        webview = WebView(methods=API._registry)
+        webview = WebView(methods=API._registry, content_uri=config.content_uri)
 
         stack_view.add_named(webview.get_webview(), "webview")
         stack_view.set_visible_child_name(config.initial_view)
