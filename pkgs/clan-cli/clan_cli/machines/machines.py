@@ -20,7 +20,7 @@ class Machine:
     name: str
     flake: FlakeId
     nix_options: list[str] = field(default_factory=list)
-    cached_deployment: None | dict = None
+    cached_deployment: None | dict[str, Any] = None
 
     _eval_cache: dict[str, str] = field(default_factory=dict)
     _build_cache: dict[str, Path] = field(default_factory=dict)
@@ -70,9 +70,23 @@ class Machine:
         return self.deployment["facts"]["publicModule"]
 
     @property
+    def secret_vars_module(self) -> str:
+        return self.deployment["vars"]["secretModule"]
+
+    @property
+    def public_vars_module(self) -> str:
+        return self.deployment["vars"]["publicModule"]
+
+    @property
     def facts_data(self) -> dict[str, dict[str, Any]]:
         if self.deployment["facts"]["services"]:
             return self.deployment["facts"]["services"]
+        return {}
+
+    @property
+    def vars_generators(self) -> dict[str, dict[str, Any]]:
+        if self.deployment["vars"]["generators"]:
+            return self.deployment["vars"]["generators"]
         return {}
 
     @property

@@ -1,5 +1,26 @@
-{ lib, ... }:
 {
+  lib,
+  config,
+  pkgs,
+  ...
+}:
+let
+  inherit (lib.types) submoduleWith;
+  submodule =
+    module:
+    submoduleWith {
+      specialArgs.pkgs = pkgs;
+      modules = [ module ];
+    };
+in
+{
+  imports = [
+    ./public/in_repo.nix
+    # ./public/vm.nix
+    # ./secret/password-store.nix
+    ./secret/sops.nix
+    # ./secret/vm.nix
+  ];
   options.clan.core.vars = lib.mkOption {
     visible = false;
     description = ''
@@ -11,6 +32,20 @@
         - generate secrets like private keys automatically when they are needed
         - output multiple values like private and public keys simultaneously
     '';
-    type = lib.types.submoduleWith { modules = [ ./interface.nix ]; };
+    type = submodule { imports = [ ./interface.nix ]; };
+  };
+
+  config.system.clan.deployment.data = {
+    vars = {
+      generators = lib.flip lib.mapAttrs config.clan.core.vars.generators (
+        _name: generator: {
+          inherit (generator) finalScript;
+          files = lib.flip lib.mapAttrs generator.files (_name: file: { inherit (file) secret; });
+        }
+      );
+      inherit (config.clan.core.vars.settings) secretUploadDirectory secretModule publicModule;
+    };
+    inherit (config.clan.networking) targetHost buildHost;
+    inherit (config.clan.deployment) requireExplicitUpdate;
   };
 }

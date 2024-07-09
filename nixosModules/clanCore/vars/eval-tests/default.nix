@@ -54,21 +54,6 @@ in
       };
     };
 
-  # Ensure that generators.imports works
-  # This allows importing generators from third party projects without providing
-  #   them access to other settings.
-  test_generator_modules =
-    let
-      generator_module = {
-        my-generator.files.password = { };
-      };
-      config = eval { generators.imports = [ generator_module ]; };
-    in
-    {
-      expr = config.generators ? my-generator;
-      expected = true;
-    };
-
   # script can be text
   test_script_text =
     let

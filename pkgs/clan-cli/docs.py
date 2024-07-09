@@ -254,6 +254,9 @@ def collect_commands() -> list[Category]:
         if isinstance(action, argparse._SubParsersAction):
             subparsers: dict[str, argparse.ArgumentParser] = action.choices
             for name, subparser in subparsers.items():
+                if str(subparser.description).startswith("WIP"):
+                    print(f"Excluded {name} from documentation as it is marked as WIP")
+                    continue
                 (_options, _positionals, _subcommands) = get_subcommands(
                     subparser, to=result, level=2, prefix=[name]
                 )

@@ -108,7 +108,7 @@ def test_type_from_schema_path_simple() -> None:
     schema = dict(
         type="boolean",
     )
-    assert parsing.type_from_schema_path(schema, []) == bool
+    assert parsing.type_from_schema_path(schema, []) is bool
 
 
 def test_type_from_schema_path_nested() -> None:
@@ -125,8 +125,8 @@ def test_type_from_schema_path_nested() -> None:
             age=dict(type="integer"),
         ),
     )
-    assert parsing.type_from_schema_path(schema, ["age"]) == int
-    assert parsing.type_from_schema_path(schema, ["name", "first"]) == str
+    assert parsing.type_from_schema_path(schema, ["age"]) is int
+    assert parsing.type_from_schema_path(schema, ["name", "first"]) is str
 
 
 def test_type_from_schema_path_dynamic_attrs() -> None:
@@ -140,16 +140,16 @@ def test_type_from_schema_path_dynamic_attrs() -> None:
             ),
         ),
     )
-    assert parsing.type_from_schema_path(schema, ["age"]) == int
-    assert parsing.type_from_schema_path(schema, ["users", "foo"]) == str
+    assert parsing.type_from_schema_path(schema, ["age"]) is int
+    assert parsing.type_from_schema_path(schema, ["users", "foo"]) is str
 
 
 def test_map_type() -> None:
     with pytest.raises(ClanError):
         config.map_type("foo")
-    assert config.map_type("string") == str
-    assert config.map_type("integer") == int
-    assert config.map_type("boolean") == bool
+    assert config.map_type("string") is str
+    assert config.map_type("integer") is int
+    assert config.map_type("boolean") is bool
     assert config.map_type("attribute set of string") == dict[str, str]
     assert config.map_type("attribute set of integer") == dict[str, int]
     assert config.map_type("null or string") == str | None

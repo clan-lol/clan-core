@@ -30,6 +30,16 @@ in
       default = [ config.clan.core.machineName ];
       description = "Hosts that should be excluded";
     };
+    networkIps = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Extra zerotier network Ips that should be accepted";
+    };
+    networkIds = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Extra zerotier network Ids that should be accepted";
+    };
   };
 
   config.systemd.services.zerotier-static-peers-autoaccept =
@@ -56,6 +66,7 @@ in
           lib.nameValuePair (builtins.readFile fullPath) [ machine ]
         ) filteredMachines
       );
+      allHostIPs = config.clan.zerotier-static-peers.networkIps ++ hosts;
     in
     lib.mkIf (config.clan.core.networking.zerotier.controller.enable) {
       wantedBy = [ "multi-user.target" ];
@@ -65,7 +76,10 @@ in
         #!/bin/sh
         ${lib.concatMapStringsSep "\n" (host: ''
           ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members allow --member-ip ${host}
-        '') hosts}
+        '') allHostIPs}
+        ${lib.concatMapStringsSep "\n" (host: ''
+          ${config.clan.core.clanPkgs.zerotier-members}/bin/zerotier-members allow ${host}
+        '') config.clan.zerotier-static-peers.networkIds}
       '';
     };
 
