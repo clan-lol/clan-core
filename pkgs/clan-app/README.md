@@ -1,4 +1,35 @@
-# clan app
+Sure, here's an improved version of your README:
+
+# Clan App
+
+A powerful application that allows users to create and manage their own clans.
+
+## Getting Started
+
+Follow the instructions below to set up your development environment and start the application.
+
+
+1. **Navigate to the Webview UI Directory:**
+
+   Go to the `clan-core/pkgs/webview-ui/app` directory and start the web server by executing:
+
+   ```bash
+   vite
+   ```
+
+2. **Start the Clan App:**
+
+   In the `clan-app` directory, execute the following command:
+
+   ```bash
+   clan-app --debug --content-uri http://localhost:3000
+   ```
+
+This will start the application in debug mode and link it to the web server running at `http://localhost:3000`.
+
+
+
+# clan app (old)
 
 Provides users with the simple functionality to manage their locally registered clans.
 

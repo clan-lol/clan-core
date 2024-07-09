@@ -32,6 +32,27 @@
           self'.devShells.default
         ];
         shellHook = ''
+          export GIT_ROOT="$(git rev-parse --show-toplevel)"
+          export PKG_ROOT="$GIT_ROOT/pkgs/webview-ui"
+          export NODE_PATH="$PKG_ROOT/app/node_modules"
+          export PATH="$NODE_PATH/.bin:$PATH"
+
+          # Define the yellow color code
+          YELLOW='\033[1;33m'
+          # Define the reset color code
+          NC='\033[0m'
+
+          # Check if the directory does not exist
+          if [ ! -d "$PKG_ROOT/app/node_modules" ]; then
+            echo -e "$YELLOW The directory $PKG_ROOT/app/node_modules does not exist.$NC"
+            echo -e "$YELLOW Please run 'npm install' in the app directory.$NC"
+            echo -e "$YELLOW This will install the necessary dependencies.$NC"
+            echo -e "$YELLOW To serve the webview run 'vite'.$NC"
+          else
+            echo "The directory $PKG_ROOT/app/node_modules exists."
+          fi
+
+
           mkdir -p ./app/api
           cat ${config.packages.clan-ts-api} > ./app/api/index.ts
         '';

@@ -1,7 +1,6 @@
 import dataclasses
 import json
 import logging
-import sys
 import threading
 from collections.abc import Callable
 from dataclasses import fields, is_dataclass
@@ -17,10 +16,6 @@ from clan_cli.api.directory import FileRequest
 gi.require_version("WebKit", "6.0")
 
 from gi.repository import Gio, GLib, Gtk, WebKit
-
-site_index: Path = (
-    Path(sys.argv[0]).absolute() / Path("../..") / Path("clan_app/.webui/index.html")
-).resolve()
 
 log = logging.getLogger(__name__)
 
@@ -201,7 +196,7 @@ def from_dict(t: type, data: dict[str, Any] | None) -> Any:
 
 
 class WebView:
-    def __init__(self, methods: dict[str, Callable]) -> None:
+    def __init__(self, content_uri: str, methods: dict[str, Callable]) -> None:
         self.method_registry: dict[str, Callable] = methods
 
         self.webview = WebKit.WebView()
@@ -217,7 +212,7 @@ class WebView:
         self.manager.register_script_message_handler("gtk")
         self.manager.connect("script-message-received", self.on_message_received)
 
-        self.webview.load_uri(f"file://{site_index}")
+        self.webview.load_uri(content_uri)
 
         # global mutex lock to ensure functions run sequentially
         self.mutex_lock = Lock()
