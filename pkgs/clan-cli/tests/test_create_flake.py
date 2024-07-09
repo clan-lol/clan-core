@@ -3,12 +3,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from helpers.cli import Cli
-
-
-@pytest.fixture
-def cli() -> Cli:
-    return Cli()
+from helpers import cli
 
 
 @pytest.mark.impure
@@ -16,7 +11,6 @@ def test_create_flake(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture,
     temporary_home: Path,
-    cli: Cli,
     clan_core: Path,
 ) -> None:
     flake_dir = temporary_home / "test-flake"
@@ -56,7 +50,6 @@ def test_ui_template(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture,
     temporary_home: Path,
-    cli: Cli,
     clan_core: Path,
 ) -> None:
     flake_dir = temporary_home / "test-flake"

@@ -8,8 +8,7 @@ from clan_app import main
 log = logging.getLogger(__name__)
 
 
-class Cli:
-    def run(self, args: list[str]) -> None:
-        cmd = shlex.join(["clan", *args])
-        log.debug(f"$ {cmd} \nCaller: {get_caller()}")
-        main(args)
+def run(args: list[str]) -> None:
+    cmd = shlex.join(["clan", *args])
+    log.debug(f"$ {cmd} \nCaller: {get_caller()}")
+    main(args)

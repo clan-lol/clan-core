@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from fixtures_flakes import FlakeForTest, generate_flake
-from helpers.cli import Cli
+from helpers import cli
 from root import CLAN_CORE
 
 from clan_cli.dirs import vm_state_dir
@@ -25,7 +25,7 @@ def run_vm_in_thread(machine_name: str) -> None:
     # runs machine and prints exceptions
     def run() -> None:
         try:
-            Cli().run(["vms", "run", machine_name])
+            cli.run(["vms", "run", machine_name])
         except Exception:
             # print exception details
             print(traceback.format_exc(), file=sys.stderr)
@@ -85,7 +85,6 @@ def qga_connect(state_dir: Path) -> QgaSession:
 def test_inspect(
     test_flake_with_core: FlakeForTest, capsys: pytest.CaptureFixture
 ) -> None:
-    cli = Cli()
     cli.run(["vms", "inspect", "--flake", str(test_flake_with_core.path), "vm1"])
     out = capsys.readouterr()  # empty the buffer
     assert "Cores" in out.out
@@ -100,7 +99,6 @@ def test_run(
 ) -> None:
     monkeypatch.chdir(test_flake_with_core.path)
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
-    cli = Cli()
     cli.run(
         [
             "secrets",

@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from fixtures_flakes import FlakeForTest
-from helpers.cli import Cli
+from helpers import cli
 from pytest import CaptureFixture
 
 from clan_cli.dirs import user_history_file
@@ -17,7 +17,6 @@ if TYPE_CHECKING:
 def test_history_add(
     test_flake_with_core: FlakeForTest,
 ) -> None:
-    cli = Cli()
     cmd = [
         "history",
         "add",
@@ -36,7 +35,6 @@ def test_history_list(
     capsys: CaptureFixture,
     test_flake_with_core: FlakeForTest,
 ) -> None:
-    cli = Cli()
     cmd = [
         "history",
         "list",

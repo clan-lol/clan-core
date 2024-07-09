@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from fixtures_flakes import FlakeForTest
-from helpers.cli import Cli
+from helpers import cli
 from helpers.validator import is_valid_age_key, is_valid_ssh_key
 
 from clan_cli.clan_uri import FlakeId
@@ -24,7 +24,6 @@ def test_generate_secret(
 ) -> None:
     monkeypatch.chdir(test_flake_with_core.path)
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
-    cli = Cli()
     cli.run(
         [
             "secrets",
