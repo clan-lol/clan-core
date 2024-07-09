@@ -4,10 +4,10 @@ let
 
   allMachineNames = lib.mapAttrsToList (name: _: name) (builtins.readDir clanDir);
 
-  getFactPath = fact: machine: "${clanDir}/${machine}/facts/${fact}";
+  getFactPath = machine: fact: "${clanDir}/${machine}/facts/${fact}";
 
   readFact =
-    fact: machine:
+    machine: fact:
     let
       path = getFactPath fact machine;
     in
@@ -24,7 +24,7 @@ let
     fact:
     let
       machines = allMachineNames;
-      facts = lib.genAttrs machines (readFact fact);
+      facts = lib.genAttrs machines (machine: readFact machine fact);
       filteredFacts = lib.filterAttrs (_machine: fact: fact != null) facts;
     in
     filteredFacts;
@@ -51,7 +51,7 @@ let
     let
       # machine -> fact -> factvalue
       machinesFactsAttrs = lib.genAttrs allMachineNames (
-        machine: lib.genAttrs facts (fact: readFact fact machine)
+        machine: lib.genAttrs facts (fact: readFact machine fact)
       );
       # remove all machines which don't have all facts set
       filteredMachineFactAttrs = lib.filterAttrs (
