@@ -14,11 +14,13 @@ class SecretStore(SecretStoreBase):
         self.machine = machine
 
         # no need to generate keys if we don't manage secrets
-        if not hasattr(self.machine, "facts_data"):
+        if not hasattr(self.machine, "vars_data") or not self.machine.vars_generators:
             return
-
-        if not self.machine.facts_data:
-            return
+        for generator in self.machine.vars_generators.values():
+            if "files" in generator:
+                for file in generator["files"].values():
+                    if file["secret"]:
+                        return
 
         if has_machine(self.machine.flake_dir, self.machine.name):
             return
@@ -32,10 +34,11 @@ class SecretStore(SecretStoreBase):
         add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)
 
     def set(
-        self, service: str, name: str, value: bytes, groups: list[str]
+        self, generator_name: str, name: str, value: bytes, groups: list[str]
     ) -> Path | None:
         path = (
-            sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}"
+            sops_secrets_folder(self.machine.flake_dir)
+            / f"{self.machine.name}-{generator_name}-{name}"
         )
         encrypt_secret(
             self.machine.flake_dir,

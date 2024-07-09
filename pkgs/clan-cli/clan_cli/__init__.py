@@ -23,6 +23,7 @@ from . import (
     machines,
     secrets,
     state,
+    vars,
     vms,
 )
 from .clan_uri import FlakeId
@@ -275,8 +276,8 @@ For more detailed information, visit: {help_hyperlink("secrets", "https://docs.c
     # like facts but with vars instead of facts
     parser_vars = subparsers.add_parser(
         "vars",
-        help="manage vars",
-        description="manage vars",
+        help="WIP: manage vars",
+        description="WIP: manage vars",
         epilog=(
             f"""
 This subcommand provides an interface to vars of clan machines.
@@ -307,7 +308,7 @@ For more detailed information, visit: {help_hyperlink("secrets", "https://docs.c
         ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    facts.register_parser(parser_vars)
+    vars.register_parser(parser_vars)
 
     parser_machine = subparsers.add_parser(
         "machines",

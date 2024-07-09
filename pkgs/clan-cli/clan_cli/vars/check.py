@@ -8,40 +8,36 @@ from ..machines.machines import Machine
 log = logging.getLogger(__name__)
 
 
-def check_secrets(machine: Machine, service: None | str = None) -> bool:
-    secret_facts_module = importlib.import_module(machine.secret_facts_module)
-    secret_facts_store = secret_facts_module.SecretStore(machine=machine)
-    public_facts_module = importlib.import_module(machine.public_facts_module)
-    public_facts_store = public_facts_module.FactStore(machine=machine)
+def check_secrets(machine: Machine, generator_name: None | str = None) -> bool:
+    secret_vars_module = importlib.import_module(machine.secret_vars_module)
+    secret_vars_store = secret_vars_module.SecretStore(machine=machine)
+    public_vars_module = importlib.import_module(machine.public_vars_module)
+    public_vars_store = public_vars_module.FactStore(machine=machine)
 
-    missing_secret_facts = []
-    missing_public_facts = []
-    if service:
-        services = [service]
+    missing_secret_vars = []
+    missing_public_vars = []
+    if generator_name:
+        services = [generator_name]
     else:
-        services = list(machine.facts_data.keys())
-    for service in services:
-        for secret_fact in machine.facts_data[service]["secret"]:
-            if isinstance(secret_fact, str):
-                secret_name = secret_fact
-            else:
-                secret_name = secret_fact["name"]
-            if not secret_facts_store.exists(service, secret_name):
+        services = list(machine.vars_generators.keys())
+    for generator_name in services:
+        for name, file in machine.vars_generators[generator_name]["files"].items():
+            if file["secret"] and not secret_vars_store.exists(generator_name, name):
                 log.info(
-                    f"Secret fact '{secret_fact}' for service '{service}' in machine {machine.name} is missing."
+                    f"Secret fact '{name}' for service '{generator_name}' in machine {machine.name} is missing."
                 )
-                missing_secret_facts.append((service, secret_name))
-
-        for public_fact in machine.facts_data[service]["public"]:
-            if not public_facts_store.exists(service, public_fact):
+                missing_secret_vars.append((generator_name, name))
+            if not file["secret"] and not public_vars_store.exists(
+                generator_name, name
+            ):
                 log.info(
-                    f"Public fact '{public_fact}' for service '{service}' in machine {machine.name} is missing."
+                    f"Public fact '{name}' for service '{generator_name}' in machine {machine.name} is missing."
                 )
-                missing_public_facts.append((service, public_fact))
+                missing_public_vars.append((generator_name, name))
 
-    log.debug(f"missing_secret_facts: {missing_secret_facts}")
-    log.debug(f"missing_public_facts: {missing_public_facts}")
-    if missing_secret_facts or missing_public_facts:
+    log.debug(f"missing_secret_vars: {missing_secret_vars}")
+    log.debug(f"missing_public_vars: {missing_public_vars}")
+    if missing_secret_vars or missing_public_vars:
         return False
     return True
 
@@ -51,7 +47,7 @@ def check_command(args: argparse.Namespace) -> None:
         name=args.machine,
         flake=args.flake,
     )
-    check_secrets(machine, service=args.service)
+    check_secrets(machine, generator_name=args.service)
 
 
 def register_check_parser(parser: argparse.ArgumentParser) -> None:
