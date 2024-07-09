@@ -108,7 +108,6 @@ class MainApplication(Adw.Application):
         # Check if there are arguments that are not inside the options
         if len(args) > 1:
             non_option_args = [arg for arg in args[1:] if arg not in options.values()]
-            breakpoint()
             if non_option_args:
                 uri = non_option_args[0]
                 self.emit("join_request", uri)
