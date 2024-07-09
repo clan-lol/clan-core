@@ -9,7 +9,7 @@ let
   readFact =
     machine: fact:
     let
-      path = getFactPath fact machine;
+      path = getFactPath machine fact;
     in
     if builtins.pathExists path then builtins.readFile path else null;
 
