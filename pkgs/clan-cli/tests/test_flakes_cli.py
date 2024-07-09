@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from fixtures_flakes import FlakeForTest
-from helpers.cli import Cli
+from helpers import cli
 
 if TYPE_CHECKING:
     pass
@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 def test_flakes_inspect(
     test_flake_with_core: FlakeForTest, capsys: pytest.CaptureFixture
 ) -> None:
-    cli = Cli()
     cli.run(
         [
             "flakes",

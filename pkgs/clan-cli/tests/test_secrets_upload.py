@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from fixtures_flakes import FlakeForTest
-from helpers.cli import Cli
+from helpers import cli
 
 from clan_cli.ssh import HostGroup
 
@@ -20,7 +20,6 @@ def test_secrets_upload(
     monkeypatch.chdir(test_flake_with_core.path)
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
 
-    cli = Cli()
     cli.run(
         [
             "secrets",

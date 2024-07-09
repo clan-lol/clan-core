@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from fixtures_flakes import FlakeForTest
-from helpers.cli import Cli
+from helpers import cli
 
 from clan_cli import config
 from clan_cli.config import parsing
@@ -13,12 +13,8 @@ example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
 
 def test_configure_machine(
     test_flake: FlakeForTest,
-    temporary_home: Path,
     capsys: pytest.CaptureFixture,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    cli = Cli()
-
     # clear the output buffer
     capsys.readouterr()
     # read a option value
