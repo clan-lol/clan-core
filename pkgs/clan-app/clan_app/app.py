@@ -13,10 +13,9 @@ gi.require_version("Adw", "1")
 from pathlib import Path
 
 from clan_cli.custom_logger import setup_logging
-from gi.repository import Adw, Gdk, Gio, Gtk
+from gi.repository import Adw, Gdk, Gio, Gtk, GLib, GObject
 
 from clan_app.components.interfaces import ClanConfig
-from clan_app.singletons.use_join import GLib, GObject
 
 from .windows.main_window import MainWindow
 
@@ -75,8 +74,7 @@ class MainApplication(Adw.Application):
             # TODO: Doesn't seem to raise the destroy signal. Need to investigate
             # self.get_windows() returns an empty list. Desync between window and application?
             self.window.close()
-            # Killing vms directly. This is dirty
-            self.window.kill_vms()
+
         else:
             log.error("No window to destroy")
 
