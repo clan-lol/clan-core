@@ -109,7 +109,8 @@ let
     machineName:
     let
       warn = lib.warn ''
-        Usage of Settings.json is only supported for test compatibility.
+        The use of ./machines/<machine>/settings.json is deprecated.
+        If your settings.json is empty, you can safely remove it.
         !!! Consider using the inventory system. !!!
 
         File: ${directory + /machines/${machineName}/settings.json}
