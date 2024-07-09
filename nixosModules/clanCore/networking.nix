@@ -1,6 +1,6 @@
 { config, lib, ... }:
 {
-  options.clan = {
+  options.clan.core = {
     networking = {
       targetHost = lib.mkOption {
         description = ''
@@ -49,14 +49,43 @@
   };
 
   imports = [
+    # TODO: use mkRenamedOptionModule once this is fixed: https://github.com/NixOS/nixpkgs/issues/324802
+    (lib.doRename rec {
+      from = [
+        "clan"
+        "networking"
+      ];
+      to = [
+        "clan"
+        "core"
+        "networking"
+      ];
+      visible = false;
+      warn = true;
+      use = lib.trace "Obsolete option `${lib.showOption from}' is used. It was renamed to `${lib.showOption to}'.";
+      withPriority = false;
+    })
     (lib.mkRenamedOptionModule
       [
         "clan"
+        "deployment"
+      ]
+      [
+        "clan"
+        "core"
+        "deployment"
+      ]
+    )
+    (lib.mkRenamedOptionModule
+      [
+        "clan"
+        "core"
         "networking"
         "deploymentAddress"
       ]
       [
         "clan"
+        "core"
         "networking"
         "targetHost"
       ]

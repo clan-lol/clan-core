@@ -68,7 +68,7 @@ in
       );
       allHostIPs = config.clan.zerotier-static-peers.networkIps ++ hosts;
     in
-    lib.mkIf (config.clan.networking.zerotier.controller.enable) {
+    lib.mkIf (config.clan.core.networking.zerotier.controller.enable) {
       wantedBy = [ "multi-user.target" ];
       after = [ "zerotierone.service" ];
       path = [ config.clan.core.clanPkgs.zerotierone ];
@@ -83,5 +83,5 @@ in
       '';
     };
 
-  config.clan.networking.zerotier.networkId = lib.mkDefault networkId;
+  config.clan.core.networking.zerotier.networkId = lib.mkDefault networkId;
 }
