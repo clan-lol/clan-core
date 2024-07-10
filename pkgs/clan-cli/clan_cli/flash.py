@@ -11,6 +11,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
+from clan_cli.api import API
+
 from .clan_uri import FlakeId
 from .cmd import Log, run
 from .completions import add_dynamic_completer, complete_machines
@@ -22,6 +24,7 @@ from .nix import nix_shell
 log = logging.getLogger(__name__)
 
 
+@API.register
 def flash_machine(
     machine: Machine,
     *,
