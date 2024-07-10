@@ -22,7 +22,7 @@ export const BlockDevicesView: Component = () => {
 
   return (
     <div>
-      <div class="tooltip" data-tip="Refresh">
+      <div class="tooltip tooltip-bottom" data-tip="Refresh">
         <button
           class="btn btn-ghost"
           onClick={() => pyApi.show_block_devices.dispatch({})}

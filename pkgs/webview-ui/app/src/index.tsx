@@ -18,22 +18,24 @@ if (import.meta.env.DEV) {
   console.log("Development mode");
   // Load the debugger in development mode
   await import("solid-devtools");
-  window.webkit = window.webkit || {
-    messageHandlers: {
-      gtk: {
-        postMessage: (postMessage) => {
-          const { method, data } = postMessage;
-          console.debug("Python API call", { method, data });
-          setTimeout(() => {
-            const mock = getFakeResponse(method, data);
-            console.log("Returning mock-data: ", { mock });
 
-            window.clan[method](JSON.stringify(mock));
-          }, 200);
-        },
-      },
-    },
-  };
+  // Uncomment this block to use the Mock API
+  // window.webkit = window.webkit || {
+  //   messageHandlers: {
+  //     gtk: {
+  //       postMessage: (postMessage) => {
+  //         const { method, data } = postMessage;
+  //         console.debug("Python API call", { method, data });
+  //         setTimeout(() => {
+  //           const mock = getFakeResponse(method, data);
+  //           console.log("Returning mock-data: ", { mock });
+
+  //           window.clan[method](JSON.stringify(mock));
+  //         }, 200);
+  //       },
+  //     },
+  //   },
+  // };
 }
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 render(() => <App />, root!);
