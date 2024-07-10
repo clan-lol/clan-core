@@ -8,7 +8,12 @@ import {
   createEffect,
   createSignal,
 } from "solid-js";
-import { SubmitHandler, createForm, required } from "@modular-forms/solid";
+import {
+  SubmitHandler,
+  createForm,
+  required,
+  custom,
+} from "@modular-forms/solid";
 import toast from "solid-toast";
 import { setCurrClanURI, setRoute } from "@/src/App";
 import { isValidHostname } from "@/util";
@@ -21,14 +26,21 @@ interface ClanFormProps {
   actions: JSX.Element;
 }
 
+type CreateForm = Meta & {
+  template_url: string;
+};
+
 export const ClanForm = (props: ClanFormProps) => {
   const { actions } = props;
-  const [formStore, { Form, Field }] = createForm<ClanMeta>({
-    initialValues: {},
+  const [formStore, { Form, Field }] = createForm<CreateForm>({
+    initialValues: {
+      template_url: "git+https://git.clan.lol/clan/clan-core#templates.minimal",
+    },
   });
 
-  const handleSubmit: SubmitHandler<ClanMeta> = (values, event) => {
+  const handleSubmit: SubmitHandler<CreateForm> = (values, event) => {
     console.log("submit", values);
+    const { template_url, ...meta } = values;
     pyApi.open_file.dispatch({
       file_request: {
         mode: "save",
@@ -70,7 +82,7 @@ export const ClanForm = (props: ClanFormProps) => {
           });
 
           pyApi.create_clan.dispatch({
-            options: { directory: target_dir, meta: values },
+            options: { directory: target_dir, meta, template_url },
             op_key: "create_clan",
           });
         }),
@@ -84,7 +96,7 @@ export const ClanForm = (props: ClanFormProps) => {
   };
 
   return (
-    <div class="card card-compact w-96 bg-base-100 shadow-xl">
+    <div class="card card-normal">
       <Form onSubmit={handleSubmit}>
         <Field name="icon">
           {(field, props) => (
@@ -111,79 +123,92 @@ export const ClanForm = (props: ClanFormProps) => {
           )}
         </Field>
         <div class="card-body">
-          <div class="card-body">
-            <Field
-              name="name"
-              validate={[required("Please enter a unique name for the clan.")]}
-            >
-              {(field, props) => (
-                <label class="form-control w-full max-w-xs">
-                  <div class="label">
-                    <span class="label-text block after:ml-0.5 after:text-primary after:content-['*']">
-                      Name
-                    </span>
-                  </div>
+          <Field
+            name="name"
+            validate={[required("Please enter a unique name for the clan.")]}
+          >
+            {(field, props) => (
+              <label class="form-control w-full">
+                <div class="label">
+                  <span class="label-text block after:ml-0.5 after:text-primary after:content-['*']">
+                    Name
+                  </span>
+                </div>
 
-                  <input
-                    {...props}
-                    required
-                    placeholder="Clan Name"
-                    class="input w-full max-w-xs"
-                    classList={{ "input-error": !!field.error }}
-                    value={field.value}
-                  />
-                  <div class="label">
-                    {field.error && (
-                      <span class="label-text-alt">{field.error}</span>
-                    )}
-                  </div>
-                </label>
-              )}
-            </Field>
-            <Field name="description">
-              {(field, props) => (
-                <label class="form-control w-full max-w-xs">
-                  <div class="label">
-                    <span class="label-text">Description</span>
-                  </div>
+                <input
+                  {...props}
+                  required
+                  placeholder="Clan Name"
+                  class="input input-bordered"
+                  classList={{ "input-error": !!field.error }}
+                  value={field.value}
+                />
+                <div class="label">
+                  {field.error && (
+                    <span class="label-text-alt">{field.error}</span>
+                  )}
+                </div>
+              </label>
+            )}
+          </Field>
+          <Field name="description">
+            {(field, props) => (
+              <label class="form-control w-full">
+                <div class="label">
+                  <span class="label-text">Description</span>
+                </div>
 
-                  <input
-                    {...props}
-                    required
-                    type="text"
-                    placeholder="Some words about your clan"
-                    class="input w-full max-w-xs"
-                    classList={{ "input-error": !!field.error }}
-                    value={field.value || ""}
-                  />
-                  <div class="label">
-                    {field.error && (
-                      <span class="label-text-alt">{field.error}</span>
-                    )}
-                  </div>
-                </label>
-              )}
-            </Field>
-            {actions}
-          </div>
+                <input
+                  {...props}
+                  required
+                  type="text"
+                  placeholder="Some words about your clan"
+                  class="input input-bordered"
+                  classList={{ "input-error": !!field.error }}
+                  value={field.value || ""}
+                />
+                <div class="label">
+                  {field.error && (
+                    <span class="label-text-alt">{field.error}</span>
+                  )}
+                </div>
+              </label>
+            )}
+          </Field>
+          <Field name="template_url" validate={[required("This is required")]}>
+            {(field, props) => (
+              <div class="collapse collapse-arrow" tabindex="0">
+                <input type="checkbox" />
+                <div class="collapse-title link font-medium ">Advanced</div>
+                <div class="collapse-content">
+                  <label class="form-control w-full">
+                    <div class="label ">
+                      <span class="label-text  after:ml-0.5 after:text-primary after:content-['*']">
+                        Template to use
+                      </span>
+                    </div>
+                    <input
+                      {...props}
+                      required
+                      type="text"
+                      placeholder="Template to use"
+                      class="input input-bordered"
+                      classList={{ "input-error": !!field.error }}
+                      value={field.value}
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
+          </Field>
+          {actions}
         </div>
       </Form>
     </div>
   );
 };
 
-// export const EditMetaFields = (props: MetaFieldsProps) => {
-//   const { meta, editable, actions, directory } = props;
-
-//   const [editing, setEditing] = createSignal<
-//     keyof MetaFieldsProps["meta"] | null
-//   >(null);
-//   return (
-
-//   );
-// };
-
-type ClanMeta = Extract<
+type Meta = Extract<
   OperationResponse<"show_clan_meta">,
   { status: "success" }
 >["data"];
@@ -198,7 +223,7 @@ export const ClanDetails = (props: ClanDetailsProps) => {
       >["errors"]
     | null
   >(null);
-  const [data, setData] = createSignal<ClanMeta>();
+  const [data, setData] = createSignal<Meta>();
 
   const loadMeta = () => {
     pyApi.show_clan_meta.dispatch({ uri: directory });
@@ -226,7 +251,6 @@ export const ClanDetails = (props: ClanDetailsProps) => {
           const meta = data();
           return (
             <ClanForm
-              meta={meta}
               actions={
                 <div class="card-actions justify-between">
                   <button class="btn btn-link" onClick={() => loadMeta()}>
