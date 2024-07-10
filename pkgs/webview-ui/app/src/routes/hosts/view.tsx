@@ -28,7 +28,7 @@ export const HostList: Component = () => {
 
   return (
     <div>
-      <div class="tooltip" data-tip="Refresh install targets">
+      <div class="tooltip tooltip-bottom" data-tip="Refresh install targets">
         <button
           class="btn btn-ghost"
           onClick={() => pyApi.show_mdns.dispatch({})}

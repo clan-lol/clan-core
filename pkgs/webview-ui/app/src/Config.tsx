@@ -26,12 +26,16 @@ export const makeMachineContext = () => {
     { loading, machines },
     {
       getMachines: () => {
+        const clan_dir = currClanURI();
+
+        if (clan_dir) {
+          setLoading(true);
+          pyApi.list_machines.dispatch({
+            debug: true,
+            flake_url: clan_dir,
+          });
+        }
         // When the gtk function sends its data the loading state will be set to false
-        setLoading(true);
-        pyApi.list_machines.dispatch({
-          debug: true,
-          flake_url: currClanURI(),
-        });
       },
     },
   ] as const;
