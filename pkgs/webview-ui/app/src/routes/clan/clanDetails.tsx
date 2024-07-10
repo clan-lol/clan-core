@@ -10,7 +10,8 @@ import {
 } from "solid-js";
 import { SubmitHandler, createForm, required } from "@modular-forms/solid";
 import toast from "solid-toast";
-import { effect } from "solid-js/web";
+import { setCurrClanURI, setRoute } from "@/src/App";
+import { isValidHostname } from "@/util";
 
 interface ClanDetailsProps {
   directory: string;
@@ -29,7 +30,10 @@ export const ClanForm = (props: ClanFormProps) => {
   const handleSubmit: SubmitHandler<ClanMeta> = (values, event) => {
     console.log("submit", values);
     pyApi.open_file.dispatch({
-      file_request: { mode: "save" },
+      file_request: {
+        mode: "save",
+      },
+
       op_key: "create_clan",
     });
 
@@ -37,17 +41,45 @@ export const ClanForm = (props: ClanFormProps) => {
       if (r.op_key !== "create_clan") {
         return;
       }
-
       if (r.status !== "success") {
-        toast.error("Failed to create clan");
+        toast.error("Cannot select clan directory");
+        return;
+      }
+      const target_dir = r?.data;
+      if (!target_dir) {
+        toast.error("Cannot select clan directory");
         return;
       }
 
-      if (r.data) {
-        pyApi.create_clan.dispatch({
-          options: { directory: r.data, meta: values },
-        });
+      if (!isValidHostname(target_dir)) {
+        toast.error(`Directory name must be valid URI: ${target_dir}`);
+        return;
       }
+
+      toast.promise(
+        new Promise<void>((resolve, reject) => {
+          pyApi.create_clan.receive((r) => {
+            if (r.status === "error") {
+              reject();
+              console.error(r.errors);
+            }
+            resolve();
+            // Navigate to the new clan
+            setCurrClanURI(target_dir);
+            setRoute("machines");
+          });
+
+          pyApi.create_clan.dispatch({
+            options: { directory: target_dir, meta: values },
+            op_key: "create_clan",
+          });
+        }),
+        {
+          loading: "Creating clan...",
+          success: "Clan Successfully Created",
+          error: "Failed to create clan",
+        }
+      );
     });
   };
 

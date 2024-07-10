@@ -4,12 +4,6 @@ import toast from "solid-toast";
 import { ClanDetails, ClanForm } from "./clanDetails";
 
 export const CreateClan = () => {
-  // const [mode, setMode] = createSignal<"init" | "open" | "create">("init");
-  const [clanDir, setClanDir] = createSignal<string | null>(null);
-
-  // createEffect(() => {
-  //   console.log(mode());
-  // });
   return (
     <div>
       <ClanForm
