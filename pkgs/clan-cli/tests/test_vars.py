@@ -1,17 +1,15 @@
+import os
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
+from age_keys import SopsSetup
 from fixtures_flakes import generate_flake
 from helpers import cli
 from root import CLAN_CORE
 
-if TYPE_CHECKING:
-    pass
-
 
 @pytest.mark.impure
-def test_generate_secret(
+def test_generate_public_var(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
     # age_keys: list["KeyPair"],
@@ -41,8 +39,58 @@ def test_generate_secret(
         ),
     )
     monkeypatch.chdir(flake.path)
-    cmd = ["vars", "generate", "--flake", str(flake.path), "my_machine"]
-    cli.run(cmd)
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     assert (
         flake.path / "machines" / "my_machine" / "vars" / "my_generator" / "my_secret"
     ).is_file()
+
+
+@pytest.mark.impure
+def test_generate_secret_var(
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    sops_setup: SopsSetup,
+) -> None:
+    flake = generate_flake(
+        temporary_home,
+        flake_template=CLAN_CORE / "templates" / "minimal",
+        machine_configs=dict(
+            my_machine=dict(
+                clan=dict(
+                    core=dict(
+                        vars=dict(
+                            generators=dict(
+                                my_generator=dict(
+                                    files=dict(
+                                        my_secret=dict(
+                                            secret=True,
+                                        )
+                                    ),
+                                    script="echo hello > $out/my_secret",
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        ),
+    )
+    monkeypatch.chdir(flake.path)
+    cli.run(
+        [
+            "secrets",
+            "users",
+            "add",
+            "--flake",
+            str(flake.path),
+            os.environ.get("USER", "user"),
+            sops_setup.keys[0].pubkey,
+        ]
+    )
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+    assert not (
+        flake.path / "machines" / "my_machine" / "vars" / "my_generator" / "my_secret"
+    ).is_file()
+    assert (
+        flake.path / "sops" / "secrets" / "vars-my_machine-my_generator-my_secret"
+    ).is_dir()

@@ -7,6 +7,11 @@ class KeyPair:
         self.privkey = privkey
 
 
+class SopsSetup:
+    def __init__(self, keys: list[KeyPair]) -> None:
+        self.keys = keys
+
+
 KEYS = [
     KeyPair(
         "age1dhwqzkah943xzc34tc3dlmfayyevcmdmxzjezdgdy33euxwf59vsp3vk3c",
@@ -29,3 +34,14 @@ def age_keys() -> list[KeyPair]:
     Root directory of the tests
     """
     return KEYS
+
+
+@pytest.fixture
+def sops_setup(
+    monkeypatch: pytest.MonkeyPatch,
+) -> SopsSetup:
+    """
+    Root directory of the tests
+    """
+    monkeypatch.setenv("SOPS_AGE_KEY", KEYS[0].privkey)
+    return SopsSetup(KEYS)

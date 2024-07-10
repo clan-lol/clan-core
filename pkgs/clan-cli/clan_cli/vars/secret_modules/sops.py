@@ -14,13 +14,16 @@ class SecretStore(SecretStoreBase):
         self.machine = machine
 
         # no need to generate keys if we don't manage secrets
-        if not hasattr(self.machine, "vars_data") or not self.machine.vars_generators:
+        if not self.machine.vars_generators:
             return
+        has_secrets = False
         for generator in self.machine.vars_generators.values():
             if "files" in generator:
                 for file in generator["files"].values():
                     if file["secret"]:
-                        return
+                        has_secrets = True
+        if not has_secrets:
+            return
 
         if has_machine(self.machine.flake_dir, self.machine.name):
             return
@@ -38,7 +41,7 @@ class SecretStore(SecretStoreBase):
     ) -> Path | None:
         path = (
             sops_secrets_folder(self.machine.flake_dir)
-            / f"{self.machine.name}-{generator_name}-{name}"
+            / f"vars-{self.machine.name}-{generator_name}-{name}"
         )
         encrypt_secret(
             self.machine.flake_dir,
@@ -49,15 +52,15 @@ class SecretStore(SecretStoreBase):
         )
         return path
 
-    def get(self, service: str, name: str) -> bytes:
+    def get(self, generator_name: str, name: str) -> bytes:
         return decrypt_secret(
-            self.machine.flake_dir, f"{self.machine.name}-{name}"
+            self.machine.flake_dir, f"vars-{self.machine.name}-{generator_name}-{name}"
         ).encode("utf-8")
 
-    def exists(self, service: str, name: str) -> bool:
+    def exists(self, generator_name: str, name: str) -> bool:
         return has_secret(
             self.machine.flake_dir,
-            f"{self.machine.name}-{name}",
+            f"vars-{self.machine.name}-{generator_name}-{name}",
         )
 
     def upload(self, output_dir: Path) -> None:
