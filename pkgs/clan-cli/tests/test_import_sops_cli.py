@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from fixtures_flakes import FlakeForTest
-from helpers.cli import Cli
+from helpers import cli
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
@@ -16,8 +16,6 @@ def test_import_sops(
     monkeypatch: pytest.MonkeyPatch,
     age_keys: list["KeyPair"],
 ) -> None:
-    cli = Cli()
-
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[1].privkey)
     cli.run(
         [

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 from fixtures_flakes import FlakeForTest
-from helpers.cli import Cli
+from helpers import cli
 from helpers.validator import is_valid_ssh_key
 
 from clan_cli.clan_uri import FlakeId
@@ -37,7 +37,6 @@ def test_upload_secret(
         %no-protection
     """
     )
-    cli = Cli()
     subprocess.run(
         nix_shell(
             ["nixpkgs#gnupg"], ["gpg", "--batch", "--gen-key", str(gpg_key_spec)]

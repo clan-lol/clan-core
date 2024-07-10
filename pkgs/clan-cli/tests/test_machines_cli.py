@@ -1,13 +1,12 @@
 import pytest
 from fixtures_flakes import FlakeForTest
-from helpers.cli import Cli
+from helpers import cli
 
 
 @pytest.mark.impure
 def test_machine_subcommands(
     test_flake_with_core: FlakeForTest, capsys: pytest.CaptureFixture
 ) -> None:
-    cli = Cli()
     cli.run(
         ["machines", "create", "--flake", str(test_flake_with_core.path), "machine1"]
     )

@@ -13,7 +13,7 @@ from clan_cli.nix import nix_eval, run_no_stdout
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
-from helpers.cli import Cli
+from helpers import cli
 
 from clan_cli.machines.facts import machine_get_fact
 
@@ -39,7 +39,6 @@ def test_add_module_to_inventory(
     monkeypatch.chdir(test_flake_with_core.path)
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
 
-    cli = Cli()
     cli.run(
         [
             "secrets",
