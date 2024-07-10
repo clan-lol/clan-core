@@ -1,14 +1,12 @@
 import pytest
 from fixtures_flakes import FlakeForTest
-from helpers.cli import Cli
+from helpers import cli
 
 
 @pytest.mark.impure
 def test_backups(
     test_flake_with_core: FlakeForTest,
 ) -> None:
-    cli = Cli()
-
     cli.run(
         [
             "backups",

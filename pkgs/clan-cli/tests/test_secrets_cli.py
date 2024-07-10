@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from fixtures_flakes import FlakeForTest
-from helpers.cli import Cli
+from helpers import cli
 
 from clan_cli.errors import ClanError
 
@@ -22,7 +22,6 @@ def _test_identities(
     capsys: pytest.CaptureFixture,
     age_keys: list["KeyPair"],
 ) -> None:
-    cli = Cli()
     sops_folder = test_flake.path / "sops"
 
     cli.run(
@@ -111,7 +110,6 @@ def test_machines(
 def test_groups(
     test_flake: FlakeForTest, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
 ) -> None:
-    cli = Cli()
     capsys.readouterr()  # empty the buffer
     cli.run(["secrets", "groups", "list", "--flake", str(test_flake.path)])
     assert capsys.readouterr().out == ""
@@ -249,7 +247,6 @@ def test_secrets(
     monkeypatch: pytest.MonkeyPatch,
     age_keys: list["KeyPair"],
 ) -> None:
-    cli = Cli()
     capsys.readouterr()  # empty the buffer
     cli.run(["secrets", "list", "--flake", str(test_flake.path)])
     assert capsys.readouterr().out == ""

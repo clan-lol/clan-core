@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from fixtures_flakes import generate_flake
-from helpers.cli import Cli
+from helpers import cli
 from root import CLAN_CORE
 
 if TYPE_CHECKING:
@@ -41,7 +41,6 @@ def test_generate_secret(
         ),
     )
     monkeypatch.chdir(flake.path)
-    cli = Cli()
     cmd = ["vars", "generate", "--flake", str(flake.path), "my_machine"]
     cli.run(cmd)
     assert (
