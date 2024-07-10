@@ -8,45 +8,49 @@ import {
   createEffect,
   createSignal,
 } from "solid-js";
-import {
-  SubmitHandler,
-  createForm,
-  email,
-  required,
-} from "@modular-forms/solid";
+import { SubmitHandler, createForm, required } from "@modular-forms/solid";
+import toast from "solid-toast";
+import { effect } from "solid-js/web";
 
 interface ClanDetailsProps {
   directory: string;
 }
 
 interface ClanFormProps {
-  directory?: string;
-  meta: ClanMeta;
   actions: JSX.Element;
-  editable?: boolean;
 }
 
 export const ClanForm = (props: ClanFormProps) => {
-  const { meta, actions, editable = true, directory } = props;
+  const { actions } = props;
   const [formStore, { Form, Field }] = createForm<ClanMeta>({
-    initialValues: meta,
+    initialValues: {},
   });
 
   const handleSubmit: SubmitHandler<ClanMeta> = (values, event) => {
-    pyApi.open_file.dispatch({ file_request: { mode: "save" } });
-    pyApi.open_file.receive((r) => {
-      if (r.status === "success") {
-        if (r.data) {
-          pyApi.create_clan.dispatch({
-            options: { directory: r.data, meta: values },
-          });
-        }
+    console.log("submit", values);
+    pyApi.open_file.dispatch({
+      file_request: { mode: "save" },
+      op_key: "create_clan",
+    });
 
+    pyApi.open_file.receive((r) => {
+      if (r.op_key !== "create_clan") {
         return;
       }
+
+      if (r.status !== "success") {
+        toast.error("Failed to create clan");
+        return;
+      }
+
+      if (r.data) {
+        pyApi.create_clan.dispatch({
+          options: { directory: r.data, meta: values },
+        });
+      }
     });
-    console.log("submit", values);
   };
+
   return (
     <div class="card card-compact w-96 bg-base-100 shadow-xl">
       <Form onSubmit={handleSubmit}>
@@ -71,20 +75,6 @@ export const ClanForm = (props: ClanFormProps) => {
                   )}
                 </Show>
               </figure>
-              <label class="form-control w-full max-w-xs">
-                <div class="label">
-                  <span class="label-text">Select icon</span>
-                </div>
-                <input
-                  type="file"
-                  class="file-input file-input-bordered w-full max-w-xs"
-                />
-                <div class="label">
-                  {field.error && (
-                    <span class="label-text-alt">{field.error}</span>
-                  )}
-                </div>
-              </label>
             </>
           )}
         </Field>
@@ -104,9 +94,8 @@ export const ClanForm = (props: ClanFormProps) => {
 
                   <input
                     {...props}
-                    type="email"
                     required
-                    placeholder="your.mail@example.com"
+                    placeholder="Clan Name"
                     class="input w-full max-w-xs"
                     classList={{ "input-error": !!field.error }}
                     value={field.value}
@@ -205,7 +194,6 @@ export const ClanDetails = (props: ClanDetailsProps) => {
           const meta = data();
           return (
             <ClanForm
-              directory={directory}
               meta={meta}
               actions={
                 <div class="card-actions justify-between">

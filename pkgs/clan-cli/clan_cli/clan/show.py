@@ -5,8 +5,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from clan_cli.api import API
-from clan_cli.clan.create import ClanMetaInfo
 from clan_cli.errors import ClanCmdError, ClanError
+from clan_cli.inventory import InventoryMeta
 
 from ..cmd import run_no_stdout
 from ..nix import nix_eval
@@ -15,10 +15,10 @@ log = logging.getLogger(__name__)
 
 
 @API.register
-def show_clan_meta(uri: str | Path) -> ClanMetaInfo:
+def show_clan_meta(uri: str | Path) -> InventoryMeta:
     cmd = nix_eval(
         [
-            f"{uri}#clanInternals.meta",
+            f"{uri}#clanInternals.inventory.meta",
             "--json",
         ]
     )
@@ -27,11 +27,11 @@ def show_clan_meta(uri: str | Path) -> ClanMetaInfo:
     try:
         proc = run_no_stdout(cmd)
         res = proc.stdout.strip()
-    except ClanCmdError:
+    except ClanCmdError as e:
         raise ClanError(
-            "Clan might not have meta attributes",
+            "Evaluation failed on meta attribute",
             location=f"show_clan {uri}",
-            description="Evaluation failed on clanInternals.meta attribute",
+            description=str(e.cmd),
         )
 
     clan_meta = json.loads(res)
@@ -61,7 +61,7 @@ def show_clan_meta(uri: str | Path) -> ClanMetaInfo:
                 description="Icon path must be a URL or a relative path.",
             )
 
-    return ClanMetaInfo(
+    return InventoryMeta(
         name=clan_meta.get("name"),
         description=clan_meta.get("description", None),
         icon=icon_path,
@@ -73,8 +73,8 @@ def show_command(args: argparse.Namespace) -> None:
     meta = show_clan_meta(flake_path)
 
     print(f"Name: {meta.name}")
-    print(f"Description: {meta.description or ''}")
-    print(f"Icon: {meta.icon or ''}")
+    print(f"Description: {meta.description or '-'}")
+    print(f"Icon: {meta.icon or '-'}")
 
 
 def register_parser(parser: argparse.ArgumentParser) -> None:
