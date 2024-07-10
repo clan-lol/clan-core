@@ -16,7 +16,6 @@ let
           > $out/config.json < ${pkgs.element-web}/config.json
         ln -s $out/config.json $out/config.${nginx-vhost}.json
       '';
-
 in
 # FIXME: This was taken from upstream. Drop this when our patch is upstream
 {

@@ -15,7 +15,7 @@ const getFakeResponse = (method: OperationNames, data: any) => {
   if (method === "open_file") {
     return {
       status: "success",
-      data: "/path/to/clan",
+      data: "/home/johannes/git/clan-core",
       op_key,
     };
   }

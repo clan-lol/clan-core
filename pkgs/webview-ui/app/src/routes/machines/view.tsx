@@ -8,7 +8,7 @@ import {
   type Component,
 } from "solid-js";
 import { useMachineContext } from "../../Config";
-import { route } from "@/src/App";
+import { route, setCurrClanURI } from "@/src/App";
 import { OperationResponse, pyApi } from "@/src/api";
 import toast from "solid-toast";
 import { MachineListItem } from "@/src/components/MachineListItem";
@@ -27,6 +27,17 @@ type MachinesModel = Extract<
   OperationResponse<"list_machines">,
   { status: "success" }
 >["data"];
+
+pyApi.open_file.receive((r) => {
+  if (r.op_key === "open_clan") {
+    console.log(r);
+    if (r.status === "error") return console.error(r.errors);
+
+    if (r.data) {
+      setCurrClanURI(r.data);
+    }
+  }
+});
 
 export const MachineListView: Component = () => {
   const [{ machines, loading }, { getMachines }] = useMachineContext();
@@ -77,7 +88,7 @@ export const MachineListView: Component = () => {
 
   return (
     <div class="max-w-screen-lg">
-      <div class="tooltip" data-tip="Open Clan">
+      <div class="tooltip tooltip-bottom" data-tip="Open Clan">
         <button
           class="btn btn-ghost"
           onClick={() =>
@@ -86,13 +97,14 @@ export const MachineListView: Component = () => {
                 title: "Open Clan",
                 mode: "select_folder",
               },
+              op_key: "open_clan",
             })
           }
         >
           <span class="material-icons ">folder_open</span>
         </button>
       </div>
-      <div class="tooltip" data-tip="Search install targets">
+      <div class="tooltip tooltip-bottom" data-tip="Search install targets">
         <button
           class="btn btn-ghost"
           onClick={() => pyApi.show_mdns.dispatch({})}
@@ -100,7 +112,7 @@ export const MachineListView: Component = () => {
           <span class="material-icons ">search</span>
         </button>
       </div>
-      <div class="tooltip" data-tip="Refresh">
+      <div class="tooltip tooltip-bottom" data-tip="Refresh">
         <button class="btn btn-ghost" onClick={() => getMachines()}>
           <span class="material-icons ">refresh</span>
         </button>
