@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 
 
 def sanitize_string(s: str) -> str:
-    return s.replace("\\", "\\\\").replace('"', '\\"')
+    return s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
 
 def dataclass_to_dict(obj: Any) -> Any:
