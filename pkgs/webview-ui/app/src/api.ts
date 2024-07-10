@@ -94,12 +94,30 @@ type PyApi = {
   };
 };
 
+function download(filename: string, text: string) {
+  const element = document.createElement("a");
+  element.setAttribute(
+    "href",
+    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+  );
+  element.setAttribute("download", filename);
+
+  element.style.display = "none";
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
+
 const deserialize =
   <T>(fn: (response: T) => void) =>
   (str: string) => {
     try {
       fn(JSON.parse(str) as T);
     } catch (e) {
+      console.log("Error parsing JSON: ", e);
+      console.log({ download: () => download("error.json", str) });
       console.error(str);
       alert(`Error parsing JSON: ${e}`);
     }
