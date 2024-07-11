@@ -17,6 +17,8 @@ const [clanList, setClanList] = makePersisted(createSignal<string[]>([]), {
   storage: localStorage,
 });
 
+clanList() && setActiveURI(clanList()[0]);
+
 export { clanList, setClanList };
 
 const App: Component = () => {
