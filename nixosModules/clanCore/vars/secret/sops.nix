@@ -38,7 +38,7 @@ in
     fileModule = file: {
       path =
         lib.mkIf file.secret
-          config.sops.secrets.${"${config.clan.core.machineName}-${file.config.name}"}.path
+          config.sops.secrets.${"vars-${config.clan.core.machineName}-${file.config.generatorName}-${file.config.name}"}.path
             or "/no-such-path";
     };
     secretModule = "clan_cli.vars.secret_modules.sops";
