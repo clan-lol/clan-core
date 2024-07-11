@@ -1,17 +1,13 @@
 import { Component, JSXElement, Show } from "solid-js";
 import { Header } from "./header";
 import { Sidebar } from "../Sidebar";
-import { route, setRoute } from "../App";
-import { effect } from "solid-js/web";
+import { clanList, route, setRoute } from "../App";
 
 interface LayoutProps {
   children: JSXElement;
 }
 
 export const Layout: Component<LayoutProps> = (props) => {
-  effect(() => {
-    console.log(route());
-  });
   return (
     <>
       <div class="drawer bg-base-100 lg:drawer-open">
@@ -24,12 +20,13 @@ export const Layout: Component<LayoutProps> = (props) => {
           <Show when={route() !== "welcome"}>
             <Header />
           </Show>
-
           {props.children}
         </div>
         <div
           class="drawer-side z-40"
-          classList={{ "!hidden": route() === "welcome" }}
+          classList={{
+            "!hidden": route() === "welcome" || clanList().length === 0,
+          }}
         >
           <label
             for="toplevel-drawer"
