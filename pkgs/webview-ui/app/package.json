@@ -39,8 +39,10 @@
   },
   "dependencies": {
     "@modular-forms/solid": "^0.21.0",
+    "@solid-primitives/storage": "^3.7.1",
     "@tanstack/solid-query": "^5.44.0",
     "material-icons": "^1.13.12",
+    "nanoid": "^5.0.7",
     "solid-js": "^1.8.11",
     "solid-toast": "^0.5.0"
   }

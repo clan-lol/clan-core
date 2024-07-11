@@ -1,5 +1,6 @@
 import { FromSchema } from "json-schema-to-ts";
 import { schema } from "@/api";
+import { nanoid } from "nanoid";
 
 export type API = FromSchema<typeof schema>;
 
@@ -41,47 +42,44 @@ const operations = schema.properties;
 const operationNames = Object.keys(operations) as OperationNames[];
 
 type ObserverRegistry = {
-  [K in OperationNames]: ((response: OperationResponse<K>) => void)[];
+  [K in OperationNames]: Record<
+    string,
+    (response: OperationResponse<K>) => void
+  >;
 };
-const obs: ObserverRegistry = operationNames.reduce(
+const registry: ObserverRegistry = operationNames.reduce(
   (acc, opName) => ({
     ...acc,
-    [opName]: [],
+    [opName]: {},
   }),
   {} as ObserverRegistry
 );
 
-interface ReceiveOptions {
-  /**
-   * Calls only the registered function that has the same key as used with dispatch
-   *
-   */
-  fnKey: string;
-}
 function createFunctions<K extends OperationNames>(
   operationName: K
 ): {
   dispatch: (args: OperationArgs<K>) => void;
-  receive: (fn: (response: OperationResponse<K>) => void) => void;
+  receive: (fn: (response: OperationResponse<K>) => void, id: string) => void;
 } {
   return {
     dispatch: (args: OperationArgs<K>) => {
-      // console.log(
-      //   `Operation: ${String(operationName)}, Arguments: ${JSON.stringify(args)}`
-      // );
       // Send the data to the gtk app
       window.webkit.messageHandlers.gtk.postMessage({
         method: operationName,
         data: args,
       });
     },
-    receive: (
-      fn: (response: OperationResponse<K>) => void
-      // options?: ReceiveOptions
-    ) => {
-      obs[operationName].push(fn);
+    receive: (fn: (response: OperationResponse<K>) => void, id: string) => {
+      // @ts-expect-error: This should work although typescript doesn't let us write
+      registry[operationName][id] = fn;
+
       window.clan[operationName] = (s: string) => {
-        obs[operationName].forEach((f) => deserialize(f)(s));
+        const f = (response: OperationResponse<K>) => {
+          if (response.op_key === id) {
+            registry[operationName][id](response);
+          }
+        };
+        deserialize(f)(s);
       };
     },
   };
@@ -90,8 +88,41 @@ function createFunctions<K extends OperationNames>(
 type PyApi = {
   [K in OperationNames]: {
     dispatch: (args: OperationArgs<K>) => void;
-    receive: (fn: (response: OperationResponse<K>) => void) => void;
+    receive: (fn: (response: OperationResponse<K>) => void, id: string) => void;
   };
+};
+
+function download(filename: string, text: string) {
+  const element = document.createElement("a");
+  element.setAttribute(
+    "href",
+    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+  );
+  element.setAttribute("download", filename);
+
+  element.style.display = "none";
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
+
+export const callApi = <K extends OperationNames>(
+  method: K,
+  args: OperationArgs<K>
+) => {
+  return new Promise<OperationResponse<K>>((resolve, reject) => {
+    const id = nanoid();
+    pyApi[method].receive((response) => {
+      if (response.status === "error") {
+        reject(response);
+      }
+      resolve(response);
+    }, id);
+
+    pyApi[method].dispatch({ ...args, op_key: id });
+  });
 };
 
 const deserialize =
@@ -100,6 +131,8 @@ const deserialize =
     try {
       fn(JSON.parse(str) as T);
     } catch (e) {
+      console.log("Error parsing JSON: ", e);
+      console.log({ download: () => download("error.json", str) });
       console.error(str);
       alert(`Error parsing JSON: ${e}`);
     }

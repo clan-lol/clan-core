@@ -100,13 +100,22 @@ class Service:
 
 
 @dataclass
+class InventoryMeta:
+    name: str
+    description: str | None = None
+    icon: str | None = None
+
+
+@dataclass
 class Inventory:
+    meta: InventoryMeta
     machines: dict[str, Machine]
     services: dict[str, dict[str, Service]]
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Inventory":
         return Inventory(
+            meta=InventoryMeta(**d.get("meta", {})),
             machines={
                 name: Machine.from_dict(machine)
                 for name, machine in d.get("machines", {}).items()
@@ -126,7 +135,9 @@ class Inventory:
 
     @staticmethod
     def load_file(flake_dir: str | Path) -> "Inventory":
-        inventory = Inventory(machines={}, services={})
+        inventory = Inventory(
+            machines={}, services={}, meta=InventoryMeta(name="New Clan")
+        )
         inventory_file = Inventory.get_path(flake_dir)
         if inventory_file.exists():
             with open(inventory_file) as f:

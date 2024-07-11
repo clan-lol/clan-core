@@ -16,15 +16,15 @@ type ServiceModel = Extract<
 export const HostList: Component = () => {
   const [services, setServices] = createSignal<ServiceModel>();
 
-  pyApi.show_mdns.receive((r) => {
-    const { status } = r;
-    if (status === "error") return console.error(r.errors);
-    setServices(r.data.services);
-  });
+  // pyApi.show_mdns.receive((r) => {
+  //   const { status } = r;
+  //   if (status === "error") return console.error(r.errors);
+  //   setServices(r.data.services);
+  // });
 
-  createEffect(() => {
-    if (route() === "hosts") pyApi.show_mdns.dispatch({});
-  });
+  // createEffect(() => {
+  //   if (route() === "hosts") pyApi.show_mdns.dispatch({});
+  // });
 
   return (
     <div>
