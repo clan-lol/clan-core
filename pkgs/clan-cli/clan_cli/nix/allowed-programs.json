@@ -1,0 +1,15 @@
+[
+  "age",
+  "bash",
+  "e2fsprogs",
+  "git",
+  "mypy",
+  "nix",
+  "openssh",
+  "qemu",
+  "rsync",
+  "sops",
+  "sshpass",
+  "tor",
+  "zbar"
+]
