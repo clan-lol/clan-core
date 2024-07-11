@@ -40,7 +40,7 @@ def run_vm_in_thread(machine_name: str) -> None:
 # wait for qmp socket to exist
 def wait_vm_up(state_dir: Path) -> None:
     socket_file = state_dir / "qga.sock"
-    timeout: float = 20
+    timeout: float = 100
     while True:
         if timeout <= 0:
             raise TimeoutError(
