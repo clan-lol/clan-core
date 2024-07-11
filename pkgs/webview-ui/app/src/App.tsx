@@ -1,24 +1,35 @@
 import { createSignal, type Component } from "solid-js";
-import { MachineProvider } from "./Config";
 import { Layout } from "./layout/layout";
 import { Route, Router } from "./Routes";
 import { Toaster } from "solid-toast";
+import { effect } from "solid-js/web";
+import { makePersisted } from "@solid-primitives/storage";
 
 // Some global state
 const [route, setRoute] = createSignal<Route>("machines");
 export { route, setRoute };
 
-const [currClanURI, setCurrClanURI] = createSignal<string | null>(null);
-export { currClanURI, setCurrClanURI };
+const [activeURI, setActiveURI] = createSignal<string | null>(null);
+export { activeURI, setActiveURI };
+
+const [clanList, setClanList] = makePersisted(createSignal<string[]>([]), {
+  name: "clanList",
+  storage: localStorage,
+});
+
+export { clanList, setClanList };
 
 const App: Component = () => {
+  effect(() => {
+    if (clanList().length === 0) {
+      setRoute("welcome");
+    }
+  });
   return [
     <Toaster position="top-right" />,
-    <MachineProvider>
-      <Layout>
-        <Router route={route} />
-      </Layout>
-    </MachineProvider>,
+    <Layout>
+      <Router route={route} />
+    </Layout>,
   ];
 };
 

@@ -5,6 +5,8 @@ import { CreateClan } from "./routes/clan/view";
 import { HostList } from "./routes/hosts/view";
 import { BlockDevicesView } from "./routes/blockdevices/view";
 import { Flash } from "./routes/flash/view";
+import { Settings } from "./routes/settings";
+import { Welcome } from "./routes/welcome";
 
 export type Route = keyof typeof routes;
 
@@ -38,6 +40,16 @@ export const routes = {
     child: colors,
     label: "Colors",
     icon: "color_lens",
+  },
+  settings: {
+    child: Settings,
+    label: "Settings",
+    icon: "settings",
+  },
+  welcome: {
+    child: Welcome,
+    label: "welcome",
+    icon: "settings",
   },
 };
 
