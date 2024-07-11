@@ -40,9 +40,11 @@ def test_generate_public_var(
     )
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    assert (
+    secret_path = (
         flake.path / "machines" / "my_machine" / "vars" / "my_generator" / "my_secret"
-    ).is_file()
+    )
+    assert secret_path.is_file()
+    assert secret_path.read_text() == "hello\n"
 
 
 @pytest.mark.impure

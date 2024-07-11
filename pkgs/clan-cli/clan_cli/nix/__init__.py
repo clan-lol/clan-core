@@ -4,8 +4,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from .cmd import run, run_no_stdout
-from .dirs import nixpkgs_flake, nixpkgs_source
+from ..cmd import run, run_no_stdout
+from ..dirs import nixpkgs_flake, nixpkgs_source
 
 
 def nix_command(flags: list[str]) -> list[str]:
@@ -108,6 +108,52 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     return [
         *nix_command(["shell", "--inputs-from", f"{nixpkgs_flake()!s}"]),
         *packages,
+        "-c",
+        *cmd,
+    ]
+
+
+# lazy loads list of allowed and static programs
+class Programs:
+    allowed_programs = None
+    static_programs = None
+
+    @classmethod
+    def is_allowed(cls: type["Programs"], program: str) -> bool:
+        if cls.allowed_programs is None:
+            with open(Path(__file__).parent / "allowed-programs.json") as f:
+                cls.allowed_programs = json.load(f)
+        return program in cls.allowed_programs
+
+    @classmethod
+    def is_static(cls: type["Programs"], program: str) -> bool:
+        """
+        Determines if a program is statically shipped with this clan distribution
+        """
+        if cls.static_programs is None:
+            cls.static_programs = os.environ.get("CLAN_STATIC_PROGRAMS", "").split(":")
+        return program in cls.static_programs
+
+
+# Alternative implementation of nix_shell() to replace nix_shell() at some point
+#   Features:
+#     - allow list for programs (need to be specified in allowed-programs.json)
+#     - be abe to compute a closure of all deps for testing
+#     - build clan distributions that ship some or all packages (eg. clan-cli-full)
+def run_cmd(programs: list[str], cmd: list[str]) -> list[str]:
+    for program in programs:
+        if not Programs.is_allowed(program):
+            raise ValueError(f"Program not allowed: {program}")
+    if os.environ.get("IN_NIX_SANDBOX"):
+        return cmd
+    missing_packages = [
+        f"nixpkgs#{program}" for program in programs if not Programs.is_static(program)
+    ]
+    if not missing_packages:
+        return cmd
+    return [
+        *nix_command(["shell", "--inputs-from", f"{nixpkgs_flake()!s}"]),
+        *missing_packages,
         "-c",
         *cmd,
     ]
