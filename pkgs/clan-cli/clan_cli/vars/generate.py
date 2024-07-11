@@ -99,7 +99,7 @@ def execute_generator(
     # store secrets
     files = machine.vars_generators[generator_name]["files"]
     for file_name, file in files.items():
-        groups = file.get("groups", [])
+        groups = machine.deployment["sops"]["defaultGroups"]
 
         secret_file = generator_dir / file_name
         if not secret_file.is_file():
