@@ -63,17 +63,10 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
     )
     out = run(command, cwd=directory)
 
-    # Write inventory.json file
-    inventory = Inventory.load_file(directory)
-    if options.meta is not None:
-        inventory.meta = options.meta
-
+    ## Begin: setup git
     command = nix_shell(["nixpkgs#git"], ["git", "init"])
     out = run(command, cwd=directory)
     cmd_responses["git init"] = out
-
-    # Persist also create a commit message for each change
-    inventory.persist(directory, "Init inventory")
 
     command = nix_shell(["nixpkgs#git"], ["git", "add", "."])
     out = run(command, cwd=directory)
@@ -88,6 +81,14 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
     )
     out = run(command, cwd=directory)
     cmd_responses["git config"] = out
+    ## End: setup git
+
+    # Write inventory.json file
+    inventory = Inventory.load_file(directory)
+    if options.meta is not None:
+        inventory.meta = options.meta
+    # Persist creates a commit message for each change
+    inventory.persist(directory, "Init inventory")
 
     command = ["nix", "flake", "update"]
     out = run(command, cwd=directory)
