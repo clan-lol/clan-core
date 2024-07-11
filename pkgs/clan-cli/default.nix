@@ -1,54 +1,40 @@
 {
-  age,
-  lib,
+  # callPackage args
   argcomplete,
+  gitMinimal,
+  gnupg,
   installShellFiles,
+  lib,
   nix,
-  openssh,
-  pytest,
+  pkgs,
   pytest-cov,
-  pytest-xdist,
   pytest-subprocess,
   pytest-timeout,
+  pytest-xdist,
+  pytest,
   python3,
   runCommand,
   setuptools,
-  sops,
   stdenv,
-  rsync,
-  bash,
-  sshpass,
-  zbar,
-  tor,
-  git,
-  qemu,
-  gnupg,
-  e2fsprogs,
-  mypy,
-  nixpkgs,
+
+  # custom args
   clan-core-path,
-  gitMinimal,
+  nixpkgs,
+  includedRuntimeDeps,
 }:
 let
   pythonDependencies = [
     argcomplete # Enables shell completions
   ];
 
-  runtimeDependencies = [
-    bash
-    nix
-    openssh
-    sshpass
-    zbar
-    tor
-    age
-    rsync
-    sops
-    git
-    mypy
-    qemu
-    e2fsprogs
-  ];
+  # load nixpkgs runtime dependencies from a json file
+  # This file represents an allow list at the same time that is checked by the run_cmd
+  #   implementation in nix.py
+  runtimeDependenciesAsSet = lib.genAttrs (lib.importJSON ./clan_cli/nix/allowed-programs.json) (
+    name: pkgs.${name}
+  );
+
+  runtimeDependencies = lib.attrValues runtimeDependenciesAsSet;
 
   testDependencies =
     runtimeDependencies
@@ -64,10 +50,6 @@ let
       pytest-xdist # Run tests in parallel on multiple cores
       pytest-timeout # Add timeouts to your tests
     ];
-
-  runtimeDependenciesAsSet = builtins.listToAttrs (
-    builtins.map (p: lib.nameValuePair (lib.getName p.name) p) runtimeDependencies
-  );
 
   # Setup Python environment with all dependencies for running tests
   pythonWithTestDeps = python3.withPackages (_ps: testDependencies);
@@ -106,13 +88,28 @@ python3.pkgs.buildPythonApplication {
   format = "pyproject";
 
   # Arguments for the wrapper to unset LD_LIBRARY_PATH to avoid glibc version issues
-  makeWrapperArgs = [
-    "--unset LD_LIBRARY_PATH"
-    "--suffix"
-    "PATH"
-    ":"
-    "${gitMinimal}/bin/git"
-  ];
+  makeWrapperArgs =
+    [
+      "--unset LD_LIBRARY_PATH"
+
+      # TODO: remove gitMinimal here and use the one from runtimeDependencies
+      "--suffix"
+      "PATH"
+      ":"
+      "${gitMinimal}/bin/git"
+    ]
+    # include selected runtime dependencies in the PATH
+    ++ lib.concatMap (p: [
+      "--prefix"
+      "PATH"
+      ":"
+      p
+    ]) includedRuntimeDeps
+    ++ [
+      "--set"
+      "CLAN_STATIC_PROGRAMS"
+      (lib.concatStringsSep ":" includedRuntimeDeps)
+    ];
 
   nativeBuildInputs = [
     setuptools
@@ -165,6 +162,7 @@ python3.pkgs.buildPythonApplication {
   passthru.testDependencies = testDependencies;
   passthru.pythonWithTestDeps = pythonWithTestDeps;
   passthru.runtimeDependencies = runtimeDependencies;
+  passthru.runtimeDependenciesAsSet = runtimeDependenciesAsSet;
 
   postInstall = ''
     cp -r ${nixpkgs'} $out/${python3.sitePackages}/clan_cli/nixpkgs
