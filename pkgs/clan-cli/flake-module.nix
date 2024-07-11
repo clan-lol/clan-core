@@ -40,13 +40,22 @@
     {
 
       devShells.clan-cli = pkgs.callPackage ./shell.nix {
-        inherit (self'.packages) clan-cli;
+        inherit (self'.packages) clan-cli clan-cli-full;
         inherit self';
       };
       packages = {
         clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs;
           clan-core-path = clanCoreWithVendoredDeps;
+          includedRuntimeDeps = [
+            "age"
+            "git"
+          ];
+        };
+        clan-cli-full = pkgs.python3.pkgs.callPackage ./default.nix {
+          inherit (inputs) nixpkgs;
+          clan-core-path = clanCoreWithVendoredDeps;
+          includedRuntimeDeps = lib.importJSON ./clan_cli/nix/allowed-programs.json;
         };
         clan-cli-docs = pkgs.stdenv.mkDerivation {
           name = "clan-cli-docs";

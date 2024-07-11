@@ -2,7 +2,7 @@ from pathlib import Path
 
 # from clan_cli.dirs import find_git_repo_root
 from clan_cli.errors import ClanError
-from clan_cli.nix import nix_shell
+from clan_cli.nix import run_cmd
 
 from .cmd import Log, run
 from .locked_open import locked_open
@@ -60,8 +60,8 @@ def _commit_file_to_git(
     """
     with locked_open(repo_dir / ".git" / "clan.lock", "w+"):
         for file_path in file_paths:
-            cmd = nix_shell(
-                ["nixpkgs#git"],
+            cmd = run_cmd(
+                ["git"],
                 ["git", "-C", str(repo_dir), "add", str(file_path)],
             )
             # add the file to the git index
@@ -73,8 +73,8 @@ def _commit_file_to_git(
             )
 
         # check if there is a diff
-        cmd = nix_shell(
-            ["nixpkgs#git"],
+        cmd = run_cmd(
+            ["git"],
             ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code"]
             + [str(file_path) for file_path in file_paths],
         )
@@ -84,8 +84,8 @@ def _commit_file_to_git(
             return
 
         # commit only that file
-        cmd = nix_shell(
-            ["nixpkgs#git"],
+        cmd = run_cmd(
+            ["git"],
             [
                 "git",
                 "-C",
