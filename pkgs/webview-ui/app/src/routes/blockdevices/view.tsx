@@ -8,24 +8,24 @@ type DevicesModel = Extract<
 >["data"]["blockdevices"];
 
 export const BlockDevicesView: Component = () => {
-  const [devices, setServices] = createSignal<DevicesModel>();
+  const [devices, setDevices] = createSignal<DevicesModel>();
 
-  pyApi.show_block_devices.receive((r) => {
-    const { status } = r;
-    if (status === "error") return console.error(r.errors);
-    setServices(r.data.blockdevices);
-  });
+  // pyApi.show_block_devices.receive((r) => {
+  //   const { status } = r;
+  //   if (status === "error") return console.error(r.errors);
+  //   setServices(r.data.blockdevices);
+  // });
 
-  createEffect(() => {
-    if (route() === "blockdevices") pyApi.show_block_devices.dispatch({});
-  });
+  // createEffect(() => {
+  //   if (route() === "blockdevices") pyApi.show_block_devices.dispatch({});
+  // });
 
   return (
     <div>
       <div class="tooltip tooltip-bottom" data-tip="Refresh">
         <button
           class="btn btn-ghost"
-          onClick={() => pyApi.show_block_devices.dispatch({})}
+          // onClick={() => pyApi.show_block_devices.dispatch({})}
         >
           <span class="material-icons ">refresh</span>
         </button>

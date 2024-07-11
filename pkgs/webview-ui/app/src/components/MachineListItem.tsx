@@ -1,6 +1,5 @@
 import { Match, Show, Switch, createSignal } from "solid-js";
 import { ErrorData, SuccessData, pyApi } from "../api";
-import { currClanURI } from "../App";
 
 type MachineDetails = SuccessData<"list_machines">["data"][string];
 
@@ -23,51 +22,51 @@ const [deploymentInfo, setDeploymentInfo] = createSignal<DeploymentInfo>({});
 
 const [errors, setErrors] = createSignal<MachineErrors>({});
 
-pyApi.show_machine_hardware_info.receive((r) => {
-  const { op_key } = r;
-  if (r.status === "error") {
-    console.error(r.errors);
-    if (op_key) {
-      setHwInfo((d) => ({ ...d, [op_key]: { system: null } }));
-    }
-    return;
-  }
-  if (op_key) {
-    setHwInfo((d) => ({ ...d, [op_key]: r.data }));
-  }
-});
+// pyApi.show_machine_hardware_info.receive((r) => {
+//   const { op_key } = r;
+//   if (r.status === "error") {
+//     console.error(r.errors);
+//     if (op_key) {
+//       setHwInfo((d) => ({ ...d, [op_key]: { system: null } }));
+//     }
+//     return;
+//   }
+//   if (op_key) {
+//     setHwInfo((d) => ({ ...d, [op_key]: r.data }));
+//   }
+// });
 
-pyApi.show_machine_deployment_target.receive((r) => {
-  const { op_key } = r;
-  if (r.status === "error") {
-    console.error(r.errors);
-    if (op_key) {
-      setDeploymentInfo((d) => ({ ...d, [op_key]: null }));
-    }
-    return;
-  }
-  if (op_key) {
-    setDeploymentInfo((d) => ({ ...d, [op_key]: r.data }));
-  }
-});
+// pyApi.show_machine_deployment_target.receive((r) => {
+//   const { op_key } = r;
+//   if (r.status === "error") {
+//     console.error(r.errors);
+//     if (op_key) {
+//       setDeploymentInfo((d) => ({ ...d, [op_key]: null }));
+//     }
+//     return;
+//   }
+//   if (op_key) {
+//     setDeploymentInfo((d) => ({ ...d, [op_key]: r.data }));
+//   }
+// });
 
 export const MachineListItem = (props: MachineListItemProps) => {
   const { name, info } = props;
 
-  const clan_dir = currClanURI();
-  if (clan_dir) {
-    pyApi.show_machine_hardware_info.dispatch({
-      op_key: name,
-      clan_dir,
-      machine_name: name,
-    });
+  // const clan_dir = currClanURI();
+  // if (clan_dir) {
+  //   pyApi.show_machine_hardware_info.dispatch({
+  //     op_key: name,
+  //     clan_dir,
+  //     machine_name: name,
+  //   });
 
-    pyApi.show_machine_deployment_target.dispatch({
-      op_key: name,
-      clan_dir,
-      machine_name: name,
-    });
-  }
+  //   pyApi.show_machine_deployment_target.dispatch({
+  //     op_key: name,
+  //     clan_dir,
+  //     machine_name: name,
+  //   });
+  // }
 
   return (
     <li>

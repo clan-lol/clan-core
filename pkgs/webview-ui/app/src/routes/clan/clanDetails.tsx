@@ -15,31 +15,24 @@ import {
   custom,
 } from "@modular-forms/solid";
 import toast from "solid-toast";
-import { setCurrClanURI, setRoute } from "@/src/App";
-import { isValidHostname } from "@/util";
+import { setActiveURI, setRoute } from "@/src/App";
 
 interface ClanDetailsProps {
   directory: string;
-}
-
-interface ClanFormProps {
-  actions: JSX.Element;
 }
 
 type CreateForm = Meta & {
   template_url: string;
 };
 
-export const ClanForm = (props: ClanFormProps) => {
-  const { actions } = props;
+export const ClanForm = () => {
   const [formStore, { Form, Field }] = createForm<CreateForm>({
     initialValues: {
       template_url: "git+https://git.clan.lol/clan/clan-core#templates.minimal",
     },
   });
 
-  const handleSubmit: SubmitHandler<CreateForm> = (values, event) => {
-    console.log("submit", values);
+  const handleSubmit: SubmitHandler<CreateForm> = async (values, event) => {
     const { template_url, ...meta } = values;
     pyApi.open_file.dispatch({
       file_request: {
@@ -49,55 +42,60 @@ export const ClanForm = (props: ClanFormProps) => {
       op_key: "create_clan",
     });
 
-    pyApi.open_file.receive((r) => {
-      if (r.op_key !== "create_clan") {
-        return;
-      }
-      if (r.status !== "success") {
-        toast.error("Cannot select clan directory");
-        return;
-      }
-      const target_dir = r?.data;
-      if (!target_dir) {
-        toast.error("Cannot select clan directory");
-        return;
-      }
+    // await new Promise<void>((done) => {
+    //   pyApi.open_file.receive((r) => {
+    //     if (r.op_key !== "create_clan") {
+    //       done();
+    //       return;
+    //     }
+    //     if (r.status !== "success") {
+    //       toast.error("Cannot select clan directory");
+    //       done();
+    //       return;
+    //     }
+    //     const target_dir = r?.data;
+    //     if (!target_dir) {
+    //       toast.error("Cannot select clan directory");
+    //       done();
+    //       return;
+    //     }
 
-      if (!isValidHostname(target_dir)) {
-        toast.error(`Directory name must be valid URI: ${target_dir}`);
-        return;
-      }
+    //     console.log({ formStore });
 
-      toast.promise(
-        new Promise<void>((resolve, reject) => {
-          pyApi.create_clan.receive((r) => {
-            if (r.status === "error") {
-              reject();
-              console.error(r.errors);
-            }
-            resolve();
-            // Navigate to the new clan
-            setCurrClanURI(target_dir);
-            setRoute("machines");
-          });
+    //     toast.promise(
+    //       new Promise<void>((resolve, reject) => {
+    //         pyApi.create_clan.receive((r) => {
+    //           done();
+    //           if (r.status === "error") {
+    //             reject();
+    //             console.error(r.errors);
+    //             return;
+    //           }
+    //           resolve();
 
-          pyApi.create_clan.dispatch({
-            options: { directory: target_dir, meta, template_url },
-            op_key: "create_clan",
-          });
-        }),
-        {
-          loading: "Creating clan...",
-          success: "Clan Successfully Created",
-          error: "Failed to create clan",
-        }
-      );
-    });
+    //           // Navigate to the new clan
+    //           setCurrClanURI(target_dir);
+    //           setRoute("machines");
+    //         });
+
+    //         pyApi.create_clan.dispatch({
+    //           options: { directory: target_dir, meta, template_url },
+    //           op_key: "create_clan",
+    //         });
+    //       }),
+    //       {
+    //         loading: "Creating clan...",
+    //         success: "Clan Successfully Created",
+    //         error: "Failed to create clan",
+    //       }
+    //     );
+    //   });
+    // });
   };
 
   return (
     <div class="card card-normal">
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit} shouldActive>
         <Field name="icon">
           {(field, props) => (
             <>
@@ -201,7 +199,17 @@ export const ClanForm = (props: ClanFormProps) => {
               </div>
             )}
           </Field>
-          {actions}
+          {
+            <div class="card-actions justify-end">
+              <button
+                class="btn btn-primary"
+                type="submit"
+                disabled={formStore.submitting}
+              >
+                Create
+              </button>
+            </div>
+          }
         </div>
       </Form>
     </div>
@@ -212,71 +220,3 @@ type Meta = Extract<
   OperationResponse<"show_clan_meta">,
   { status: "success" }
 >["data"];
-
-export const ClanDetails = (props: ClanDetailsProps) => {
-  const { directory } = props;
-  const [loading, setLoading] = createSignal(false);
-  const [errors, setErrors] = createSignal<
-    | Extract<
-        OperationResponse<"show_clan_meta">,
-        { status: "error" }
-      >["errors"]
-    | null
-  >(null);
-  const [data, setData] = createSignal<Meta>();
-
-  const loadMeta = () => {
-    pyApi.show_clan_meta.dispatch({ uri: directory });
-    setLoading(true);
-  };
-
-  createEffect(() => {
-    loadMeta();
-    pyApi.show_clan_meta.receive((response) => {
-      setLoading(false);
-      if (response.status === "error") {
-        setErrors(response.errors);
-        return console.error(response.errors);
-      }
-      setData(response.data);
-    });
-  });
-  return (
-    <Switch fallback={"loading"}>
-      <Match when={loading()}>
-        <div>Loading</div>
-      </Match>
-      <Match when={data()}>
-        {(data) => {
-          const meta = data();
-          return (
-            <ClanForm
-              actions={
-                <div class="card-actions justify-between">
-                  <button class="btn btn-link" onClick={() => loadMeta()}>
-                    Refresh
-                  </button>
-                  <button class="btn btn-primary">Open</button>
-                </div>
-              }
-            />
-          );
-        }}
-      </Match>
-      <Match when={errors()}>
-        <button class="btn btn-secondary" onClick={() => loadMeta()}>
-          Retry
-        </button>
-        <For each={errors()}>
-          {(item) => (
-            <div class="flex flex-col gap-3">
-              <span class="bg-red-400 text-white">{item.message}</span>
-              <span class="bg-red-400 text-white">{item.description}</span>
-              <span class="bg-red-400 text-white">{item.location}</span>
-            </div>
-          )}
-        </For>
-      </Match>
-    </Switch>
-  );
-};
