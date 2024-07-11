@@ -5,12 +5,14 @@ import {
   required,
   setValue,
 } from "@modular-forms/solid";
-import { activeURI, setClanList, setActiveURI, setRoute } from "@/src/App";
-
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-type SettingsForm = {
-  base_dir: string | null;
-};
+import {
+  activeURI,
+  setClanList,
+  setActiveURI,
+  setRoute,
+  clanList,
+} from "@/src/App";
+import { For } from "solid-js";
 
 export const registerClan = async () => {
   try {
@@ -20,7 +22,10 @@ export const registerClan = async () => {
     console.log(loc);
     if (loc.status === "success" && loc.data) {
       // @ts-expect-error: data is a string
-      setClanList((s) => [...s, loc.data]);
+      setClanList((s) => {
+        const res = new Set([...s, loc.data]);
+        return Array.from(res);
+      });
       setRoute((r) => {
         if (r === "welcome") return "machines";
         return r;
@@ -33,66 +38,79 @@ export const registerClan = async () => {
 };
 
 export const Settings = () => {
-  const [formStore, { Form, Field }] = createForm<SettingsForm>({
-    initialValues: {
-      base_dir: activeURI(),
-    },
-  });
-
-  const handleSubmit: SubmitHandler<SettingsForm> = async (values, event) => {
-    //
-  };
-
   return (
     <div class="card card-normal">
-      <Form onSubmit={handleSubmit} shouldActive>
-        <div class="card-body">
-          <Field name="base_dir" validate={[required("Clan URI is required")]}>
-            {(field, props) => (
-              <label class="form-control w-full">
-                <div class="label">
-                  <span class="label-text block after:ml-0.5 after:text-primary">
-                    Directory
-                  </span>
-                </div>
-                <div class="stats shadow">
-                  <div class="stat">
-                    <div class="stat-figure text-primary">
-                      <span class="material-icons">inventory</span>
-                    </div>
-                    <div class="stat-title">Clan URI</div>
-                    <div
-                      class="stat-value"
-                      classList={{ "text-slate-500": !field.value }}
+      <div class="card-body">
+        <div class="label">
+          <div class="label-text">Registered Clans</div>
+          <button
+            class="btn btn-square btn-primary"
+            onClick={() => {
+              registerClan();
+            }}
+          >
+            <span class="material-icons">add</span>
+          </button>
+        </div>
+        <div class="stats stats-vertical shadow">
+          <For each={clanList()}>
+            {(value) => (
+              <div class="stat">
+                <div class="stat-figure text-primary">
+                  <div class="join">
+                    <button
+                      class=" join-item btn-sm"
+                      classList={{
+                        "btn btn-ghost btn-outline": activeURI() !== value,
+                        "badge badge-primary": activeURI() === value,
+                      }}
+                      disabled={activeURI() === value}
+                      onClick={() => {
+                        setActiveURI(value);
+                      }}
                     >
-                      {field.value || "Not set"}
-                      <button
-                        class="btn btn-ghost mx-4"
-                        onClick={async () => {
-                          const location = await registerClan();
-                          if (location) {
-                            setActiveURI(location);
-                            setValue(formStore, "base_dir", location);
-                          }
-                        }}
-                      >
-                        <span class="material-icons">edit</span>
-                      </button>
-                    </div>
-                    <div class="stat-desc">Where the clan source resides</div>
+                      {activeURI() === value ? "active" : "select"}
+                    </button>
+                    <button
+                      class="btn btn-ghost btn-outline join-item btn-sm"
+                      onClick={() => {
+                        setClanList((s) =>
+                          s.filter((v, idx) => {
+                            if (v == value) {
+                              setActiveURI(
+                                clanList()[idx - 1] ||
+                                  clanList()[idx + 1] ||
+                                  null
+                              );
+                              return false;
+                            }
+                            return true;
+                          })
+                        );
+                        // if (activeURI() === value) {
+                        //   setActiveURI();
+                        // }
+                      }}
+                    >
+                      Remove URI
+                    </button>
                   </div>
                 </div>
+                <div class="stat-title">Clan URI</div>
 
-                <div class="label">
-                  {field.error && (
-                    <span class="label-text-alt">{field.error}</span>
-                  )}
+                <div
+                  class="stat-desc text-lg"
+                  classList={{
+                    "text-primary": activeURI() === value,
+                  }}
+                >
+                  {value}
                 </div>
-              </label>
+              </div>
             )}
-          </Field>
+          </For>
         </div>
-      </Form>
+      </div>
     </div>
   );
 };
