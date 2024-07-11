@@ -1,6 +1,6 @@
 {
   "meta": {
-    "name": "Minimal inventory"
+    "name": "clan-core"
   },
   "machines": {
     "minimal-inventory-machine": {

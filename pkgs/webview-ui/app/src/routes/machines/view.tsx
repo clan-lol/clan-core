@@ -7,117 +7,86 @@ import {
   createSignal,
   type Component,
 } from "solid-js";
-import { useMachineContext } from "../../Config";
-import { route, setCurrClanURI } from "@/src/App";
-import { OperationResponse, pyApi } from "@/src/api";
+import { activeURI, route, setActiveURI } from "@/src/App";
+import { OperationResponse, callApi, pyApi } from "@/src/api";
 import toast from "solid-toast";
 import { MachineListItem } from "@/src/components/MachineListItem";
 
-type FilesModel = Extract<
-  OperationResponse<"get_directory">,
-  { status: "success" }
->["data"]["files"];
+// type FilesModel = Extract<
+//   OperationResponse<"get_directory">,
+//   { status: "success" }
+// >["data"]["files"];
 
-type ServiceModel = Extract<
-  OperationResponse<"show_mdns">,
-  { status: "success" }
->["data"]["services"];
+// type ServiceModel = Extract<
+//   OperationResponse<"show_mdns">,
+//   { status: "success" }
+// >["data"]["services"];
 
 type MachinesModel = Extract<
   OperationResponse<"list_machines">,
   { status: "success" }
 >["data"];
 
-pyApi.open_file.receive((r) => {
-  if (r.op_key === "open_clan") {
-    console.log(r);
-    if (r.status === "error") return console.error(r.errors);
+// pyApi.open_file.receive((r) => {
+//   if (r.op_key === "open_clan") {
+//     console.log(r);
+//     if (r.status === "error") return console.error(r.errors);
 
-    if (r.data) {
-      setCurrClanURI(r.data);
-    }
-  }
-});
+//     if (r.data) {
+//       setCurrClanURI(r.data);
+//     }
+//   }
+// });
 
 export const MachineListView: Component = () => {
-  const [{ machines, loading }, { getMachines }] = useMachineContext();
+  // const [files, setFiles] = createSignal<FilesModel>([]);
 
-  const [files, setFiles] = createSignal<FilesModel>([]);
-  pyApi.get_directory.receive((r) => {
-    const { status } = r;
-    if (status === "error") return console.error(r.errors);
-    setFiles(r.data.files);
-  });
+  // pyApi.get_directory.receive((r) => {
+  //   const { status } = r;
+  //   if (status === "error") return console.error(r.errors);
+  //   setFiles(r.data.files);
+  // });
 
-  const [services, setServices] = createSignal<ServiceModel>();
-  pyApi.show_mdns.receive((r) => {
-    const { status } = r;
-    if (status === "error") return console.error(r.errors);
-    setServices(r.data.services);
-  });
+  // const [services, setServices] = createSignal<ServiceModel>();
+  // pyApi.show_mdns.receive((r) => {
+  //   const { status } = r;
+  //   if (status === "error") return console.error(r.errors);
+  //   setServices(r.data.services);
+  // });
 
-  createEffect(() => {
-    console.log(files());
-  });
+  const [machines, setMachines] = createSignal<MachinesModel>({});
+  const [loading, setLoading] = createSignal<boolean>(false);
 
-  const [data, setData] = createSignal<MachinesModel>({});
-  createEffect(() => {
-    if (route() === "machines") getMachines();
-  });
-
-  const unpackedMachines = () => Object.entries(data());
-
-  createEffect(() => {
-    const response = machines();
-    if (response?.status === "success") {
-      console.log(response.data);
-      setData(response.data);
-      toast.success("Machines loaded");
+  const listMachines = async () => {
+    const uri = activeURI();
+    if (!uri) {
+      return;
     }
-    if (response?.status === "error") {
-      setData({});
-      console.error(response.errors);
-      toast.error("Error loading machines");
-      response.errors.forEach((error) =>
-        toast.error(
-          `${error.message}: ${error.description} From ${error.location}`
-        )
-      );
+    setLoading(true);
+    const response = await callApi("list_machines", {
+      flake_url: uri,
+    });
+    setLoading(false);
+    if (response.status === "success") {
+      setMachines(response.data);
     }
+  };
+
+  createEffect(() => {
+    if (route() === "machines") listMachines();
   });
+
+  const unpackedMachines = () => Object.entries(machines());
 
   return (
     <div class="max-w-screen-lg">
-      <div class="tooltip tooltip-bottom" data-tip="Open Clan">
-        <button
-          class="btn btn-ghost"
-          onClick={() =>
-            pyApi.open_file.dispatch({
-              file_request: {
-                title: "Open Clan",
-                mode: "select_folder",
-              },
-              op_key: "open_clan",
-            })
-          }
-        >
-          <span class="material-icons ">folder_open</span>
-        </button>
-      </div>
-      <div class="tooltip tooltip-bottom" data-tip="Search install targets">
-        <button
-          class="btn btn-ghost"
-          onClick={() => pyApi.show_mdns.dispatch({})}
-        >
-          <span class="material-icons ">search</span>
-        </button>
-      </div>
+      <div class="tooltip tooltip-bottom" data-tip="Open Clan"></div>
       <div class="tooltip tooltip-bottom" data-tip="Refresh">
-        <button class="btn btn-ghost" onClick={() => getMachines()}>
+        <button class="btn btn-ghost" onClick={() => listMachines()}>
           <span class="material-icons ">refresh</span>
         </button>
       </div>
-      <Show when={services()}>
+      {/* <Show when={services()}>
         {(services) => (
           <For each={Object.values(services())}>
             {(service) => (
@@ -163,7 +132,7 @@ export const MachineListView: Component = () => {
             )}
           </For>
         )}
-      </Show>
+      </Show> */}
       <Switch>
         <Match when={loading()}>
           {/* Loading skeleton */}

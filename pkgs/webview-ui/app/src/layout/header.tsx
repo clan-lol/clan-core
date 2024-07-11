@@ -1,4 +1,4 @@
-import { currClanURI } from "../App";
+import { activeURI, setRoute } from "../App";
 
 export const Header = () => {
   return (
@@ -14,12 +14,12 @@ export const Header = () => {
         </span>
       </div>
       <div class="flex-1">
-        <a class="text-xl">{currClanURI() || "Clan"}</a>
+        <a class="text-xl">{activeURI()}</a>
       </div>
       <div class="flex-none">
-        <span class="tooltip tooltip-bottom" data-tip="Account">
-          <button class="btn btn-square btn-ghost">
-            <span class="material-icons">account_circle</span>
+        <span class="tooltip tooltip-bottom" data-tip="Settings">
+          <button class="link" onClick={() => setRoute("settings")}>
+            <span class="material-icons">settings</span>
           </button>
         </span>
       </div>

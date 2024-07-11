@@ -28,7 +28,6 @@ Follow the instructions below to set up your development environment and start t
 This will start the application in debug mode and link it to the web server running at `http://localhost:3000`.
 
 
-
 # clan app (old)
 
 Provides users with the simple functionality to manage their locally registered clans.

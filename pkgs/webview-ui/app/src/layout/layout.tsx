@@ -1,13 +1,17 @@
-import { Component, JSXElement } from "solid-js";
+import { Component, JSXElement, Show } from "solid-js";
 import { Header } from "./header";
 import { Sidebar } from "../Sidebar";
 import { route, setRoute } from "../App";
+import { effect } from "solid-js/web";
 
 interface LayoutProps {
   children: JSXElement;
 }
 
 export const Layout: Component<LayoutProps> = (props) => {
+  effect(() => {
+    console.log(route());
+  });
   return (
     <>
       <div class="drawer bg-base-100 lg:drawer-open">
@@ -17,11 +21,16 @@ export const Layout: Component<LayoutProps> = (props) => {
           class="drawer-toggle hidden"
         />
         <div class="drawer-content">
-          <Header />
+          <Show when={route() !== "welcome"}>
+            <Header />
+          </Show>
 
           {props.children}
         </div>
-        <div class="drawer-side z-40">
+        <div
+          class="drawer-side z-40"
+          classList={{ "!hidden": route() === "welcome" }}
+        >
           <label
             for="toplevel-drawer"
             aria-label="close sidebar"

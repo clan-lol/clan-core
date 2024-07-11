@@ -24,16 +24,17 @@ type BlockDevices = Extract<
   OperationResponse<"show_block_devices">,
   { status: "success" }
 >["data"]["blockdevices"];
+
 export const Flash = () => {
   const [formStore, { Form, Field }] = createForm<FlashFormValues>({});
 
   const [devices, setDevices] = createSignal<BlockDevices>([]);
-  pyApi.show_block_devices.receive((r) => {
-    console.log("block devices", r);
-    if (r.status === "success") {
-      setDevices(r.data.blockdevices);
-    }
-  });
+  // pyApi.show_block_devices.receive((r) => {
+  //   console.log("block devices", r);
+  //   if (r.status === "success") {
+  //     setDevices(r.data.blockdevices);
+  //   }
+  // });
 
   const handleSubmit: SubmitHandler<FlashFormValues> = (values, event) => {
     // pyApi.open_file.dispatch({ file_request: { mode: "save" } });
@@ -50,11 +51,11 @@ export const Flash = () => {
     console.log("submit", values);
   };
 
-  effect(() => {
-    if (route() === "flash") {
-      pyApi.show_block_devices.dispatch({});
-    }
-  });
+  // effect(() => {
+  //   if (route() === "flash") {
+  //     pyApi.show_block_devices.dispatch({});
+  //   }
+  // });
   return (
     <div class="">
       <Form onSubmit={handleSubmit}>
