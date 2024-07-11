@@ -2,8 +2,10 @@
   imports = [
     ./backups.nix
     ./facts
-    ./manual.nix
     ./imports.nix
+    ./inventory/interface.nix
+    ./manual.nix
+    ./meta/interface.nix
     ./metadata.nix
     ./networking.nix
     ./nix-settings.nix
@@ -11,12 +13,10 @@
     ./outputs.nix
     ./packages.nix
     ./schema.nix
+    ./sops.nix
+    ./vars
     ./vm.nix
     ./wayland-proxy-virtwl.nix
     ./zerotier
-    # Inventory
-    ./inventory/interface.nix
-    ./meta/interface.nix
-    ./vars
   ];
 }

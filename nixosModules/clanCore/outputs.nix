@@ -73,6 +73,7 @@
           services
           ;
       };
+      sops.defaultGroups = config.clan.core.sops.defaultGroups;
       inherit (config.clan.core.networking) targetHost buildHost;
       inherit (config.clan.deployment) requireExplicitUpdate;
     };

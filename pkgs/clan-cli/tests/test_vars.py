@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 from pathlib import Path
 
 import pytest
@@ -8,35 +9,28 @@ from helpers import cli
 from root import CLAN_CORE
 
 
+def def_value() -> defaultdict:
+    return defaultdict(def_value)
+
+
+# allows defining nested dictionary in a single line
+nested_dict = lambda: defaultdict(def_value)
+
+
 @pytest.mark.impure
 def test_generate_public_var(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
     # age_keys: list["KeyPair"],
 ) -> None:
+    config = nested_dict()
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["files"]["my_secret"]["secret"] = False
+    my_generator["script"] = "echo hello > $out/my_secret"
     flake = generate_flake(
         temporary_home,
         flake_template=CLAN_CORE / "templates" / "minimal",
-        machine_configs=dict(
-            my_machine=dict(
-                clan=dict(
-                    core=dict(
-                        vars=dict(
-                            generators=dict(
-                                my_generator=dict(
-                                    files=dict(
-                                        my_secret=dict(
-                                            secret=False,
-                                        )
-                                    ),
-                                    script="echo hello > $out/my_secret",
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        ),
+        machine_configs=dict(my_machine=config),
     )
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
@@ -48,34 +42,21 @@ def test_generate_public_var(
 
 
 @pytest.mark.impure
-def test_generate_secret_var(
+def test_generate_secret_var_with_default_group(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
     sops_setup: SopsSetup,
 ) -> None:
+    user = os.environ.get("USER", "user")
+    config = nested_dict()
+    config["clan"]["core"]["sops"]["defaultGroups"] = ["my_group"]
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["files"]["my_secret"]["secret"] = True
+    my_generator["script"] = "echo hello > $out/my_secret"
     flake = generate_flake(
         temporary_home,
         flake_template=CLAN_CORE / "templates" / "minimal",
-        machine_configs=dict(
-            my_machine=dict(
-                clan=dict(
-                    core=dict(
-                        vars=dict(
-                            generators=dict(
-                                my_generator=dict(
-                                    files=dict(
-                                        my_secret=dict(
-                                            secret=True,
-                                        )
-                                    ),
-                                    script="echo hello > $out/my_secret",
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        ),
+        machine_configs=dict(my_machine=config),
     )
     monkeypatch.chdir(flake.path)
     cli.run(
@@ -85,10 +66,11 @@ def test_generate_secret_var(
             "add",
             "--flake",
             str(flake.path),
-            os.environ.get("USER", "user"),
+            user,
             sops_setup.keys[0].pubkey,
         ]
     )
+    cli.run(["secrets", "groups", "add-user", "my_group", user])
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     assert not (
         flake.path / "machines" / "my_machine" / "vars" / "my_generator" / "my_secret"
@@ -96,3 +78,11 @@ def test_generate_secret_var(
     assert (
         flake.path / "sops" / "secrets" / "vars-my_machine-my_generator-my_secret"
     ).is_dir()
+    assert (
+        flake.path
+        / "sops"
+        / "secrets"
+        / "vars-my_machine-my_generator-my_secret"
+        / "groups"
+        / "my_group"
+    ).exists()

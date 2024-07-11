@@ -33,15 +33,6 @@ let
   secrets = filterDir containsMachineOrGroups secretsDir;
 in
 {
-  options = {
-    clan.core.sops.defaultGroups = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      example = [ "admins" ];
-      description = "The default groups to for encryption use when no groups are specified.";
-    };
-  };
-
   config = lib.mkIf (config.clan.core.facts.secretStore == "sops") {
     # Before we generate a secret we cannot know the path yet, so we need to set it to an empty string
     clan.core.facts.secretPathFunction =
