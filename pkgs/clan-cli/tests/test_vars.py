@@ -1,6 +1,8 @@
 import os
 from collections import defaultdict
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import pytest
 from age_keys import SopsSetup
@@ -14,7 +16,7 @@ def def_value() -> defaultdict:
 
 
 # allows defining nested dictionary in a single line
-nested_dict = lambda: defaultdict(def_value)
+nested_dict: Callable[[], dict[str, Any]] = lambda: defaultdict(def_value)
 
 
 @pytest.mark.impure
