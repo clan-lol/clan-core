@@ -220,6 +220,11 @@ def render_roles(roles: list[str] | None, module_name: str) -> str:
     return ""
 
 
+clan_modules_descr = """Clan modules are [NixOS modules](https://wiki.nixos.org/wiki/NixOS_modules) which have been enhanced with additional features provided by Clan, with certain option types restricted to enable configuration through a graphical interface.
+
+"""
+
+
 def produce_clan_modules_docs() -> None:
     if not CLAN_MODULES:
         raise ValueError(
@@ -245,6 +250,12 @@ def produce_clan_modules_docs() -> None:
     #     print(meta_map)
 
     # {'borgbackup': '/nix/store/hi17dwgy7963ddd4ijh81fv0c9sbh8sw-options.json', ... }
+
+    modules_index = "# Modules Overview\n\n"
+    modules_index += clan_modules_descr
+    modules_index += "## Overview\n\n"
+    modules_index += '<div class="grid cards" markdown>\n\n'
+
     for module_name, options_file in links.items():
         readme_file = Path(CLAN_CORE_PATH) / "clanModules" / module_name / "README.md"
         print(module_name, readme_file)
@@ -253,6 +264,8 @@ def produce_clan_modules_docs() -> None:
             frontmatter: Frontmatter
             frontmatter, readme_content = extract_frontmatter(readme, str(readme_file))
             print(frontmatter, readme_content)
+
+        modules_index += build_option_card(module_name, frontmatter)
 
         with open(Path(options_file) / "share/doc/nixos/options.json") as f:
             options: dict[str, dict[str, Any]] = json.load(f)
@@ -281,6 +294,39 @@ def produce_clan_modules_docs() -> None:
             )
             with open(outfile, "w") as of:
                 of.write(output)
+
+    modules_index += "</div>"
+    modules_index += "\n"
+    modules_outfile = Path(OUT) / "clanModules/index.md"
+
+    with open(modules_outfile, "w") as of:
+        of.write(modules_index)
+
+
+def build_option_card(module_name: str, frontmatter: Frontmatter) -> str:
+    """
+    Build the overview index card for each reference target option.
+    """
+
+    def indent_all(text: str, indent_size: int = 4) -> str:
+        """
+        Indent all lines in a string.
+        """
+        indent = " " * indent_size
+        lines = text.split("\n")
+        indented_text = indent + ("\n" + indent).join(lines)
+        return indented_text
+
+    def to_md_li(module_name: str, frontmatter: Frontmatter) -> str:
+        md_li = (
+            f"""-   **[{module_name}](./{"-".join(module_name.split(" "))}.md)**\n\n"""
+        )
+        md_li += f"""{indent_all("---", 4)}\n\n"""
+        fmd = f"\n{frontmatter.description.strip()}" if frontmatter.description else ""
+        md_li += f"""{indent_all(fmd, 4)}"""
+        return md_li
+
+    return f"{to_md_li(module_name, frontmatter)}\n\n"
 
 
 if __name__ == "__main__":
