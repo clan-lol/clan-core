@@ -95,7 +95,7 @@ def machine_schema(
                         }};
                         options = fakeMachine.options{"." + ".".join(option_path) if option_path else ""};
                         jsonschemaLib = import {Path(__file__).parent / "jsonschema"} {{ inherit lib; }} {{}};
-                        jsonschema = jsonschemaLib.parseOptions options;
+                        jsonschema = jsonschemaLib.parseOptions options {{}};
                     in
                         jsonschema
                     """,
