@@ -2,7 +2,7 @@
 # run these tests via `nix-unit ./test.nix`
 {
   lib ? (import <nixpkgs> { }).lib,
-  slib ? import ./. { inherit lib; },
+  slib ? (import ./. { inherit lib; } { }),
 }:
 let
   description = "Test Description";
@@ -236,7 +236,7 @@ in
     {
       expr = slib.parseOption (evalType (lib.types.nullOr lib.types.bool) default);
       expected = {
-        anyOf = [
+        oneOf = [
           { type = "null"; }
           { type = "boolean"; }
         ];
@@ -251,10 +251,10 @@ in
     {
       expr = slib.parseOption (evalType (lib.types.nullOr (lib.types.nullOr lib.types.bool)) default);
       expected = {
-        anyOf = [
+        oneOf = [
           { type = "null"; }
           {
-            anyOf = [
+            oneOf = [
               { type = "null"; }
               { type = "boolean"; }
             ];
@@ -386,7 +386,7 @@ in
     {
       expr = slib.parseOption (evalType (lib.types.either lib.types.bool lib.types.str) default);
       expected = {
-        anyOf = [
+        oneOf = [
           { type = "boolean"; }
           { type = "string"; }
         ];
