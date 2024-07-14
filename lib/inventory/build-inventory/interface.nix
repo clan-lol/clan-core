@@ -129,7 +129,7 @@ in
       # Machine assertions
       # - A machine must define their host system
       machineAssertions = map (
-        { name }:
+        { name, ... }:
         {
           assertion = true;
           message = "Machine ${name} should define its host system in the inventory. ()";
