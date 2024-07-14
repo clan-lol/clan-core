@@ -5,6 +5,8 @@
     let
       clanModules = self.clanModules;
 
+      jsonLib = self.lib.jsonschema { };
+
       # Uncomment if you only want one module to be available
       # clanModules = {
       #   borgbackup = self.clanModules.borgbackup;
@@ -18,13 +20,13 @@
         if (eval.options.clan ? "${mName}") then eval.options.clan.${mName} else { };
 
       clanModuleSchemas = lib.mapAttrs (
-        modulename: _: self.lib.jsonschema.parseOptions (optionsFromModule modulename)
+        modulename: _: jsonLib.parseOptions (optionsFromModule modulename) { }
       ) clanModules;
 
       clanModuleFunctionSchemas = lib.mapAttrsFlatten (modulename: _: {
         name = modulename;
         description = self.lib.modules.getShortDescription modulename;
-        parameters = self.lib.jsonschema.parseOptions (optionsFromModule modulename);
+        parameters = jsonLib.parseOptions (optionsFromModule modulename) { };
       }) clanModules;
     in
     rec {
