@@ -32,9 +32,6 @@ let
   # - Each service role must reference a valid machine after all machines are merged
   mergedInventory =
     (lib.evalModules {
-      specialArgs = {
-        inherit clan-core;
-      };
       modules = [
         clan-core.lib.inventory.interface
         { inherit meta; }
