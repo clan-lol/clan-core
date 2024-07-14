@@ -22,87 +22,11 @@ in
         inherit lib;
       };
 
-      optionsFromModule =
-        mName:
-        let
-          eval = self.lib.evalClanModules [ mName ];
-        in
-        if (eval.options.clan ? "${mName}") then eval.options.clan.${mName} else { };
-
-      modulesSchema = lib.mapAttrs (
-        moduleName: _: jsonLib'.parseOptions (optionsFromModule moduleName) { }
-      ) self.clanModules;
-
-      jsonLib = self.lib.jsonschema {
-        # includeDefaults = false;
-      };
-      jsonLib' = self.lib.jsonschema {
-        # includeDefaults = false;
-        header = { };
-      };
-      inventorySchema = jsonLib.parseModule (import ./build-inventory/interface.nix);
-
-      getRoles =
-        modulePath:
-        let
-          rolesDir = "${modulePath}/roles";
-        in
-        if builtins.pathExists rolesDir then
-          lib.pipe rolesDir [
-            builtins.readDir
-            (lib.filterAttrs (_n: v: v == "regular"))
-            lib.attrNames
-            (map (fileName: lib.removeSuffix ".nix" fileName))
-          ]
-        else
-          null;
-
-      schema = inventorySchema // {
-        properties = inventorySchema.properties // {
-          services = {
-            type = "object";
-            additionalProperties = false;
-            properties = lib.mapAttrs (moduleName: moduleSchema: {
-              type = "object";
-              additionalProperties = {
-                type = "object";
-                additionalProperties = false;
-                properties = {
-                  meta =
-                    inventorySchema.properties.services.additionalProperties.additionalProperties.properties.meta;
-                  config = moduleSchema;
-                  roles = {
-                    type = "object";
-                    additionalProperties = false;
-                    required = [ ];
-                    properties = lib.listToAttrs (
-                      map
-                        (role: {
-                          name = role;
-                          value =
-                            inventorySchema.properties.services.additionalProperties.additionalProperties.properties.roles.additionalProperties;
-                        })
-                        (
-                          let
-                            roles = getRoles self.clanModules.${moduleName};
-                          in
-                          if roles == null then [ ] else roles
-                        )
-                    );
-                  };
-                  machines =
-                    lib.recursiveUpdate
-                      inventorySchema.properties.services.additionalProperties.additionalProperties.properties.machines
-                      { additionalProperties.properties.config = moduleSchema; };
-                };
-              };
-            }) modulesSchema;
-          };
-        };
-      };
+      getSchema = import ./interface-to-schema.nix { inherit lib self; };
     in
     {
-      legacyPackages.inventorySchema = schema;
+      legacyPackages.inventorySchema = getSchema { };
+      legacyPackages.inventorySchemaPretty = getSchema { includeDefaults = false; };
 
       devShells.inventory-schema = pkgs.mkShell {
         inputsFrom = with config.checks; [
@@ -119,6 +43,19 @@ in
         src = ./.;
         buildPhase = ''
           export SCHEMA=${builtins.toFile "inventory-schema.json" (builtins.toJSON self'.legacyPackages.inventorySchema)}
+          cp $SCHEMA schema.json
+          cue import -f -p compose -l '#Root:' schema.json
+          mkdir $out
+          cp schema.cue $out
+          cp schema.json $out
+        '';
+      };
+      packages.inventory-schema-pretty = pkgs.stdenv.mkDerivation {
+        name = "inventory-schema-pretty";
+        buildInputs = [ pkgs.cue ];
+        src = ./.;
+        buildPhase = ''
+          export SCHEMA=${builtins.toFile "inventory-schema.json" (builtins.toJSON self'.legacyPackages.inventorySchemaPretty)}
           cp $SCHEMA schema.json
           cue import -f -p compose -l '#Root:' schema.json
           mkdir $out
