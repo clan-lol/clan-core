@@ -52,6 +52,7 @@ nav:
       - Flake-parts: getting-started/flake-parts.md
   - Concepts:
       - Configuration: concepts/configuration.md
+      - Inventory: concepts/inventory.md
   - Reference:
       - Clan Modules:
           - reference/clanModules/borgbackup-static.md
