@@ -18,7 +18,7 @@ Repository = "https://git.clan.lol/clan/clan-core"
 exclude = ["clan_cli.nixpkgs*", "result"]
 
 [tool.setuptools.package-data]
-clan_cli = ["py.typed", "config/jsonschema/*", "webui/assets/**/*", "vms/mimetypes/**/*"]
+clan_cli = ["py.typed", "config/jsonschema/*", "webui/assets/**/*", "vms/mimetypes/**/*", "**/allowed-programs.json"]
 
 [tool.pytest.ini_options]
 testpaths = "tests"
