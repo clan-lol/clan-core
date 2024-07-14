@@ -47,22 +47,35 @@ rec {
     let
       evaled = lib.evalModules { modules = [ module ]; };
     in
-    { "$schema" = "http://json-schema.org/draft-07/schema#"; } // parseOptions evaled.options;
+    parseOptions evaled.options { };
+
+  parseOptions' = lib.flip parseOptions { addHeader = false; };
 
   # parses a set of evaluated nixos options to a jsonschema
   parseOptions =
-    options':
+    options:
+    {
+      # The top-level header object should specify at least the schema version
+      # Can be customized if needed
+      header ? {
+        "$schema" = "http://json-schema.org/draft-07/schema#";
+      },
+      # By default the header is not added to the schema
+      addHeader ? true,
+    }:
     let
-      options = filterInvisibleOpts (filterExcludedAttrs (clean options'));
+      options' = filterInvisibleOpts (filterExcludedAttrs (clean options));
       # parse options to jsonschema properties
-      properties = lib.mapAttrs (_name: option: parseOption option) options;
+      properties = lib.mapAttrs (_name: option: parseOption option) options';
       # TODO: figure out how to handle if prop.anyOf is used
       isRequired = prop: !(prop ? default || prop.type or null == "object");
       requiredProps = lib.filterAttrs (_: prop: isRequired prop) properties;
       required = lib.optionalAttrs (requiredProps != { }) { required = lib.attrNames requiredProps; };
+      header' = if addHeader then header else { };
     in
     # return jsonschema
-    required
+    header'
+    // required
     // {
       type = "object";
       inherit properties;
@@ -108,7 +121,7 @@ rec {
 
     # handle nested options (not a submodule)
     else if !option ? _type then
-      parseOptions option
+      parseOptions' option
 
     # throw if not an option
     else if option._type != "option" && option._type != "option-type" then
@@ -231,7 +244,7 @@ rec {
       // description
       // {
         type = "array";
-        items = parseOptions (option.type.functor.wrapped.getSubOptions option.loc);
+        items = parseOptions' (option.type.functor.wrapped.getSubOptions option.loc);
       }
 
     # parse list
@@ -271,7 +284,7 @@ rec {
       // description
       // {
         type = "object";
-        additionalProperties = parseOptions (option.type.nestedTypes.elemType.getSubOptions option.loc);
+        additionalProperties = parseOptions' (option.type.nestedTypes.elemType.getSubOptions option.loc);
       }
 
     # parse attrs
@@ -322,7 +335,7 @@ rec {
     # return jsonschema property definition for submodule
     # then (lib.attrNames (option.type.getSubOptions option.loc).opt)
     then
-      parseOptions (option.type.getSubOptions option.loc)
+      parseOptions' (option.type.getSubOptions option.loc)
 
     # throw error if option type is not supported
     else
