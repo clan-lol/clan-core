@@ -17,8 +17,9 @@
       };
     in
     {
-      expr = slib.parseOptions evaled.options;
+      expr = slib.parseOptions evaled.options { };
       expected = {
+        "$schema" = "http://json-schema.org/draft-07/schema#";
         additionalProperties = false;
         properties = {
           foo = {

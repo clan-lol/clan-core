@@ -18,13 +18,13 @@
         if (eval.options.clan ? "${mName}") then eval.options.clan.${mName} else { };
 
       clanModuleSchemas = lib.mapAttrs (
-        modulename: _: self.lib.jsonschema.parseOptions (optionsFromModule modulename)
+        modulename: _: self.lib.jsonschema.parseOptions (optionsFromModule modulename) { }
       ) clanModules;
 
       clanModuleFunctionSchemas = lib.mapAttrsFlatten (modulename: _: {
         name = modulename;
         description = self.lib.modules.getShortDescription modulename;
-        parameters = self.lib.jsonschema.parseOptions (optionsFromModule modulename);
+        parameters = self.lib.jsonschema.parseOptions (optionsFromModule modulename) { };
       }) clanModules;
     in
     rec {
