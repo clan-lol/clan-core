@@ -94,8 +94,8 @@ def machine_schema(
                                 ++ (map (name: clan-core.clanModules.${{name}}) config.clanImports or []);
                         }};
                         options = fakeMachine.options{"." + ".".join(option_path) if option_path else ""};
-                        jsonschemaLib = import {Path(__file__).parent / "jsonschema"} {{ inherit lib; }};
-                        jsonschema = jsonschemaLib.parseOptions options;
+                        jsonschemaLib = import {Path(__file__).parent / "jsonschema"} {{ inherit lib; }} {{}};
+                        jsonschema = jsonschemaLib.parseOptions options {{}};
                     in
                         jsonschema
                     """,

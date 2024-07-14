@@ -2,7 +2,7 @@
 # run these tests via `nix-unit ./test.nix`
 {
   lib ? (import <nixpkgs> { }).lib,
-  slib ? import ./. { inherit lib; },
+  slib ? (import ./. { inherit lib; } { }),
 }:
 {
   testParseOptions = {
@@ -17,8 +17,9 @@
       };
     in
     {
-      expr = slib.parseOptions evaled.options;
+      expr = slib.parseOptions evaled.options { };
       expected = {
+        "$schema" = "http://json-schema.org/draft-07/schema#";
         additionalProperties = false;
         properties = {
           foo = {
