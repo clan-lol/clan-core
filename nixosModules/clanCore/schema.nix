@@ -1,6 +1,6 @@
 { options, lib, ... }:
 let
-  jsonschema = import ../../lib/jsonschema { inherit lib; };
+  jsonschema = import ../../lib/jsonschema { inherit lib; } { };
 in
 {
   options.clanSchema = lib.mkOption {
