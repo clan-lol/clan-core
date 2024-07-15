@@ -85,8 +85,7 @@ let
             ) inverseRoles.${machineName} or [ ];
 
             roleServiceConfigs = builtins.map (
-              role:
-              serviceConfig.roles.${role}.config or { }
+              role: serviceConfig.roles.${role}.config or { }
             ) inverseRoles.${machineName} or [ ];
           in
           if isInService then
@@ -94,11 +93,13 @@ let
             ++ [
               {
                 imports = [ clan-core.clanModules.${moduleName} ] ++ roleModules;
-                config.clan.${moduleName} = lib.mkMerge [
-                  globalConfig
-                  machineServiceConfig
-                  roleServiceConfigs
-                ];
+                config.clan.${moduleName} = lib.mkMerge (
+                  [
+                    globalConfig
+                    machineServiceConfig
+                  ]
+                  ++ roleServiceConfigs
+                );
               }
               {
                 config.clan.inventory.services.${moduleName}.${instanceName} = {

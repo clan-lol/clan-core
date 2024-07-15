@@ -19,7 +19,10 @@
         },
         "roles": {
           "default": {
-            "machines": ["minimal-inventory-machine"]
+            "machines": ["minimal-inventory-machine"],
+            "config": {
+              "packages": ["vim"]
+            }
           }
         },
         "machines": {
