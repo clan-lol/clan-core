@@ -106,7 +106,10 @@ let
 
   # map from machine name to service configuration
   # { ${machineName} :: Config }
-  serviceConfigs = buildInventory mergedInventory;
+  serviceConfigs = buildInventory {
+    inventory = mergedInventory;
+    inherit directory;
+  };
 
   machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (
     builtins.readDir (directory + /machines)
