@@ -2,11 +2,11 @@
   "security.workspace.trust.enabled": false,
   "nix.enableLanguageServer": true,
   "nix.serverPath": "nixd",
-  "nix.formatterPath": "nixpkgs-fmt",
+  "nix.formatterPath": "nixfmt",
   "nix.serverSettings": {
     "nixd": {
       "formatting": {
-        "command": "nixpkgs-fmt"
+        "command": "nixfmt"
       },
       "options": {
         "nixos": {
