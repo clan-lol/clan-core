@@ -13,7 +13,7 @@ gi.require_version("Adw", "1")
 from pathlib import Path
 
 from clan_cli.custom_logger import setup_logging
-from gi.repository import Adw, Gdk, Gio, Gtk, GLib, GObject
+from gi.repository import Adw, Gdk, Gio, GLib, GObject, Gtk
 
 from clan_app.components.interfaces import ClanConfig
 
@@ -69,7 +69,7 @@ class MainApplication(Adw.Application):
         log.debug("Shutting down Adw.Application")
 
         if self.get_windows() == []:
-            log.warning("No windows to destroy")
+            log.debug("No windows to destroy")
         if self.window:
             # TODO: Doesn't seem to raise the destroy signal. Need to investigate
             # self.get_windows() returns an empty list. Desync between window and application?

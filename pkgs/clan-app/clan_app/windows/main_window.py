@@ -1,21 +1,16 @@
 import logging
-import threading
 
 import gi
 from clan_cli.api import API
-from clan_cli.history.list import list_history
 
 from clan_app.components.interfaces import ClanConfig
 from clan_app.singletons.toast import ToastOverlay
 from clan_app.singletons.use_views import ViewStack
-
-
-from clan_app.views.webview import WebView, open_file
+from clan_app.views.webview import WebExecutor
 
 gi.require_version("Adw", "1")
 
-from gi.repository import Adw, Gio, GLib
-
+from gi.repository import Adw, Gio
 
 log = logging.getLogger(__name__)
 
@@ -41,10 +36,10 @@ class MainWindow(Adw.ApplicationWindow):
 
         stack_view = ViewStack.use().view
 
-        # Override platform specific functions
-        API.register(open_file)
 
-        webview = WebView(methods=API._registry, content_uri=config.content_uri)
+        webview = WebExecutor(
+            abstr_methods=API._orig_annotations, content_uri=config.content_uri
+        )
 
         stack_view.add_named(webview.get_webview(), "webview")
         stack_view.set_visible_child_name(config.initial_view)
@@ -54,5 +49,4 @@ class MainWindow(Adw.ApplicationWindow):
         self.connect("destroy", self.on_destroy)
 
     def on_destroy(self, source: "Adw.ApplicationWindow") -> None:
-        log.debug("====Destroying Adw.ApplicationWindow===")
-
+        log.debug("Destroying Adw.ApplicationWindow")
