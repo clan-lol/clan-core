@@ -1,16 +1,16 @@
 { config, lib, ... }:
 let
-  t = lib.types;
+  types = lib.types;
 
   metaOptions = {
-    name = lib.mkOption { type = t.str; };
+    name = lib.mkOption { type = types.str; };
     description = lib.mkOption {
       default = null;
-      type = t.nullOr t.str;
+      type = types.nullOr types.str;
     };
     icon = lib.mkOption {
       default = null;
-      type = t.nullOr t.str;
+      type = types.nullOr types.str;
     };
   };
 
@@ -21,34 +21,20 @@ let
     merge = lib.mergeEqualOption;
   };
 
-  allTags = lib.unique (
-    lib.foldlAttrs (
-      tags: _: m:
-      tags ++ m.tags or [ ]
-    ) [ ] config.machines
-  );
-
-  tagRef = lib.mkOptionType {
-    name = "str";
-    description = "Tags :: [${builtins.concatStringsSep " | " allTags}]";
-    check = v: lib.isString v && builtins.elem v allTags;
-    merge = lib.mergeEqualOption;
-  };
-
   moduleConfig = lib.mkOption {
     default = { };
-    type = t.attrsOf t.anything;
+    type = types.attrsOf types.anything;
   };
 
   importsOption = lib.mkOption {
     default = [ ];
-    type = t.listOf t.str;
+    type = types.listOf types.str;
   };
 in
 {
   options = {
     assertions = lib.mkOption {
-      type = t.listOf t.unspecified;
+      type = types.listOf types.unspecified;
       internal = true;
       visible = false;
       default = [ ];
@@ -57,18 +43,18 @@ in
 
     machines = lib.mkOption {
       default = { };
-      type = t.attrsOf (
-        t.submodule {
+      type = types.attrsOf (
+        types.submodule {
           options = {
             inherit (metaOptions) name description icon;
             tags = lib.mkOption {
               default = [ ];
               apply = lib.unique;
-              type = t.listOf t.str;
+              type = types.listOf types.str;
             };
             system = lib.mkOption {
               default = null;
-              type = t.nullOr t.str;
+              type = types.nullOr types.str;
             };
           };
         }
@@ -77,16 +63,16 @@ in
 
     services = lib.mkOption {
       default = { };
-      type = t.attrsOf (
-        t.attrsOf (
-          t.submodule {
+      type = types.attrsOf (
+        types.attrsOf (
+          types.submodule {
             options.meta = metaOptions;
             options.imports = importsOption;
             options.config = moduleConfig;
             options.machines = lib.mkOption {
               default = { };
-              type = t.attrsOf (
-                t.submodule {
+              type = types.attrsOf (
+                types.submodule {
                   options.imports = importsOption;
                   options.config = moduleConfig;
                 }
@@ -94,16 +80,16 @@ in
             };
             options.roles = lib.mkOption {
               default = { };
-              type = t.attrsOf (
-                t.submodule {
+              type = types.attrsOf (
+                types.submodule {
                   options.machines = lib.mkOption {
                     default = [ ];
-                    type = t.listOf machineRef;
+                    type = types.listOf types.str;
                   };
                   options.tags = lib.mkOption {
                     default = [ ];
                     apply = lib.unique;
-                    type = t.listOf tagRef;
+                    type = types.listOf types.str;
                   };
                   options.config = moduleConfig;
                   options.imports = importsOption;
