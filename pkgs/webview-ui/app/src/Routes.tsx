@@ -7,6 +7,7 @@ import { BlockDevicesView } from "./routes/blockdevices/view";
 import { Flash } from "./routes/flash/view";
 import { Settings } from "./routes/settings";
 import { Welcome } from "./routes/welcome";
+import { Deploy } from "./routes/deploy";
 
 export type Route = keyof typeof routes;
 
@@ -50,6 +51,11 @@ export const routes = {
     child: Welcome,
     label: "welcome",
     icon: "settings",
+  },
+  deploy: {
+    child: Deploy,
+    label: "deploy",
+    icon: "content_copy",
   },
 };
 
