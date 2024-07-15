@@ -3,7 +3,7 @@
   coreutils,
   nil,
   nixd,
-  nixpkgs-fmt,
+  nixfmt-rfc-style,
   direnv,
   vscode-extensions,
   vscode-with-extensions,
@@ -25,7 +25,7 @@ writeShellApplication {
     coreutils
     nil
     nixd
-    nixpkgs-fmt
+    nixfmt-rfc-style
     direnv
   ];
   text = ''
