@@ -48,13 +48,18 @@ sudo umount /dev/sdb1
     ```bash
     clan flash --flake git+https://git.clan.lol/clan/clan-core \
       --ssh-pubkey $HOME/.ssh/id_ed25519.pub \
-      --keymap en \
-      --language en \
+      --keymap us \
+      --language en_US.utf-8 \
       --disk main /dev/sd<X> \
       flash-installer
     ```
 
     The `--ssh-pubkey`, `--language` and `--keymap` are optional.
+    You can get a list of all keymaps with the following command:
+
+    ```
+    $ find $(nix-build 'https://github.com/NixOS/nixpkgs/archive/refs/heads/nixpkgs-unstable.tar.gz' --no-out-link -A kbd)/share/keymaps -type f -name '*.map.gz'
+    ```
     Replace `$HOME/.ssh/id_ed25519.pub` with a path to your SSH public key.
     If you do not have an ssh key yet, you can generate one with `ssh-keygen -t ed25519` command.
 
