@@ -1,25 +1,13 @@
-import { OperationResponse, pyApi } from "@/src/api";
-import {
-  For,
-  JSX,
-  Match,
-  Show,
-  Switch,
-  createEffect,
-  createSignal,
-} from "solid-js";
+import { OperationResponse, callApi, pyApi } from "@/src/api";
+import { Show } from "solid-js";
 import {
   SubmitHandler,
   createForm,
   required,
-  custom,
+  reset,
 } from "@modular-forms/solid";
 import toast from "solid-toast";
 import { setActiveURI, setRoute } from "@/src/App";
-
-interface ClanDetailsProps {
-  directory: string;
-}
 
 type CreateForm = Meta & {
   template_url: string;
@@ -28,69 +16,44 @@ type CreateForm = Meta & {
 export const ClanForm = () => {
   const [formStore, { Form, Field }] = createForm<CreateForm>({
     initialValues: {
+      name: "",
+      description: "",
       template_url: "git+https://git.clan.lol/clan/clan-core#templates.minimal",
     },
   });
 
   const handleSubmit: SubmitHandler<CreateForm> = async (values, event) => {
     const { template_url, ...meta } = values;
-    pyApi.open_file.dispatch({
-      file_request: {
-        mode: "save",
-      },
 
-      op_key: "create_clan",
+    const response = await callApi("open_file", {
+      file_request: { mode: "save" },
     });
 
-    // await new Promise<void>((done) => {
-    //   pyApi.open_file.receive((r) => {
-    //     if (r.op_key !== "create_clan") {
-    //       done();
-    //       return;
-    //     }
-    //     if (r.status !== "success") {
-    //       toast.error("Cannot select clan directory");
-    //       done();
-    //       return;
-    //     }
-    //     const target_dir = r?.data;
-    //     if (!target_dir) {
-    //       toast.error("Cannot select clan directory");
-    //       done();
-    //       return;
-    //     }
+    if (response.status !== "success") {
+      toast.error("Cannot select clan directory");
+      return;
+    }
+    const target_dir = response?.data;
+    if (!target_dir) {
+      toast.error("Cannot select clan directory");
+      return;
+    }
 
-    //     console.log({ formStore });
-
-    //     toast.promise(
-    //       new Promise<void>((resolve, reject) => {
-    //         pyApi.create_clan.receive((r) => {
-    //           done();
-    //           if (r.status === "error") {
-    //             reject();
-    //             console.error(r.errors);
-    //             return;
-    //           }
-    //           resolve();
-
-    //           // Navigate to the new clan
-    //           setCurrClanURI(target_dir);
-    //           setRoute("machines");
-    //         });
-
-    //         pyApi.create_clan.dispatch({
-    //           options: { directory: target_dir, meta, template_url },
-    //           op_key: "create_clan",
-    //         });
-    //       }),
-    //       {
-    //         loading: "Creating clan...",
-    //         success: "Clan Successfully Created",
-    //         error: "Failed to create clan",
-    //       }
-    //     );
-    //   });
-    // });
+    await toast.promise(
+      (async () => {
+        await callApi("create_clan", {
+          options: { directory: target_dir, meta, template_url },
+        });
+        setActiveURI(target_dir);
+        setRoute("machines");
+      })(),
+      {
+        loading: "Creating clan...",
+        success: "Clan Successfully Created",
+        error: "Failed to create clan",
+      }
+    );
+    reset(formStore);
   };
 
   return (
@@ -135,6 +98,7 @@ export const ClanForm = () => {
 
                 <input
                   {...props}
+                  disabled={formStore.submitting}
                   required
                   placeholder="Clan Name"
                   class="input input-bordered"
@@ -158,6 +122,7 @@ export const ClanForm = () => {
 
                 <input
                   {...props}
+                  disabled={formStore.submitting}
                   required
                   type="text"
                   placeholder="Some words about your clan"
@@ -188,6 +153,7 @@ export const ClanForm = () => {
                     <input
                       {...props}
                       required
+                      disabled={formStore.submitting}
                       type="text"
                       placeholder="Template to use"
                       class="input input-bordered"
