@@ -39,8 +39,6 @@ exclude_docs: |
   /drafts/
 
 nav:
-  - Blog:
-      - blog/index.md
   - Getting started:
       - index.md
       - Installer: getting-started/installer.md
@@ -101,6 +99,8 @@ nav:
           - reference/clan-core/deployment.md
           - reference/clan-core/networking.md
   - Contributing: contributing/contributing.md
+  - Blog:
+      - blog/index.md
 
 docs_dir: site
 site_dir: out
