@@ -59,6 +59,14 @@ in
       default = { };
       description = "Allows to include machine-specific modules i.e. machines.\${name} = { ... }";
     };
+    inventory = mkOption {
+      type = types.submodule { imports = [ ../lib/inventory/build-inventory/interface.nix ]; };
+      default = { };
+      description = ''
+        An abstract service layer for consistently configuring distributed services across machine boundaries.
+        See https://docs.clan.lol/concepts/inventory/ for more details.
+      '';
+    };
 
     # Checks are performed in 'buildClan'
     # Not everyone uses flake-parts
@@ -109,6 +117,7 @@ in
         directory
         specialArgs
         machines
+        inventory
         pkgsForSystem
         meta
         ;
