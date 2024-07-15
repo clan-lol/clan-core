@@ -60,7 +60,8 @@ in
       description = "Allows to include machine-specific modules i.e. machines.\${name} = { ... }";
     };
     inventory = mkOption {
-      type = types.submodule { imports = [ ../lib/inventory/build-inventory/interface.nix ]; };
+      #type = types.submodule { imports = [ ../lib/inventory/build-inventory/interface.nix ]; };
+      type = types.attrsOf types.raw;
       default = { };
       description = ''
         An abstract service layer for consistently configuring distributed services across machine boundaries.
@@ -117,10 +118,10 @@ in
         directory
         specialArgs
         machines
-        inventory
         pkgsForSystem
         meta
         ;
+        inventory = (lib.traceValSeq cfg.inventory);
     };
   };
   _file = __curPos.file;
