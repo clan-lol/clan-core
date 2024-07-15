@@ -78,15 +78,22 @@ let
 
         # Will be deprecated
         {
-          machines = lib.mapAttrs (
-            name: _:
-            # Use mkForce to make sure users migrate to the inventory system.
-            # When the settings.json exists the evaluation will print the deprecation warning.
-            lib.mkForce {
-              inherit name;
-              system = (machineSettings name).nixpkgs.hostSystem or null;
-            }
-          ) machinesDirs;
+          machines =
+            lib.mapAttrs
+              (
+                name: _:
+                # Use mkForce to make sure users migrate to the inventory system.
+                # When the settings.json exists the evaluation will print the deprecation warning.
+                lib.mkForce {
+                  inherit name;
+                  system = (machineSettings name).nixpkgs.hostSystem or null;
+                }
+              )
+              (
+                lib.filterAttrs (
+                  machineName: _: builtins.pathExists "${directory}/machines/${machineName}/settings.json"
+                ) machinesDirs
+              );
         }
 
         # Deprecated interface
