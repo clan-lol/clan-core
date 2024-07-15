@@ -39,6 +39,12 @@ let
     default = { };
     type = t.attrsOf t.anything;
   };
+
+  importsOption = lib.mkOption {
+    default = [ ];
+    type = t.listOf t.str;
+    # apply = map (pathOrString: "${pathOrString}");
+  };
 in
 {
   options = {
@@ -76,10 +82,16 @@ in
         t.attrsOf (
           t.submodule {
             options.meta = metaOptions;
+            options.imports = importsOption;
             options.config = moduleConfig;
             options.machines = lib.mkOption {
               default = { };
-              type = t.attrsOf (t.submodule { options.config = moduleConfig; });
+              type = t.attrsOf (
+                t.submodule {
+                  options.imports = importsOption;
+                  options.config = moduleConfig;
+                }
+              );
             };
             options.roles = lib.mkOption {
               default = { };
@@ -95,6 +107,7 @@ in
                     type = t.listOf tagRef;
                   };
                   options.config = moduleConfig;
+                  options.imports = importsOption;
                 }
               );
             };

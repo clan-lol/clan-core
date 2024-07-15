@@ -1,7 +1,7 @@
 # Generate partial NixOS configurations for every machine in the inventory
 # This function is responsible for generating the module configuration for every machine in the inventory.
 { lib, clan-core }:
-inventory:
+{ inventory, directory }:
 let
   machines = machinesFromInventory inventory;
 
@@ -72,6 +72,12 @@ let
             machineServiceConfig = (serviceConfig.machines.${machineName} or { }).config or { };
             globalConfig = serviceConfig.config or { };
 
+            globalImports = serviceConfig.imports or [ ];
+            machineImports = serviceConfig.machines.${machineName}.imports or [ ];
+            roleServiceImports = builtins.foldl' (
+              acc: role: acc ++ serviceConfig.roles.${role}.imports or [ ]
+            ) [ ] inverseRoles.${machineName} or [ ];
+
             # TODO: maybe optimize this dont lookup the role in inverse roles. Imports are not lazy
             roleModules = builtins.map (
               role:
@@ -87,12 +93,18 @@ let
             roleServiceConfigs = builtins.map (
               role: serviceConfig.roles.${role}.config or { }
             ) inverseRoles.${machineName} or [ ];
+            dbg = v: lib.traceSeq v v;
+
+            customImports = map (s: "${directory}/${s}") (
+              globalImports ++ machineImports ++ roleServiceImports
+            );
           in
+
           if isInService then
             acc2
             ++ [
               {
-                imports = [ clan-core.clanModules.${moduleName} ] ++ roleModules;
+                imports = dbg ([ clan-core.clanModules.${moduleName} ] ++ roleModules ++ customImports);
                 config.clan.${moduleName} = lib.mkMerge (
                   [
                     globalConfig
