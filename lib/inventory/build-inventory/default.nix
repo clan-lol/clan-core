@@ -83,6 +83,11 @@ let
               else
                 throw "Module doesn't have role: '${role}'. Path: ${path} not found."
             ) inverseRoles.${machineName} or [ ];
+
+            roleServiceConfigs = builtins.map (
+              role:
+              serviceConfig.roles.${role}.config or { }
+            ) inverseRoles.${machineName} or [ ];
           in
           if isInService then
             acc2
@@ -92,6 +97,7 @@ let
                 config.clan.${moduleName} = lib.mkMerge [
                   globalConfig
                   machineServiceConfig
+                  roleServiceConfigs
                 ];
               }
               {
