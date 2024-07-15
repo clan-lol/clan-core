@@ -4,10 +4,7 @@ let
   username = config.networking.hostName;
 in
 {
-  imports = [
-    ./hardware-configuration.nix
-    ./disko.nix
-  ];
+  imports = [ ./hardware-configuration.nix ];
 
   # Locale service discovery and mDNS
   services.avahi.enable = true;
