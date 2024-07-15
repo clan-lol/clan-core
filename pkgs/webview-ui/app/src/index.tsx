@@ -3,7 +3,10 @@ import { render } from "solid-js/web";
 
 import "./index.css";
 import App from "./App";
-import { getFakeResponse } from "../mock";
+import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+
+const client = new QueryClient();
+
 const root = document.getElementById("app");
 
 window.clan = window.clan || {};
@@ -18,24 +21,14 @@ if (import.meta.env.DEV) {
   console.log("Development mode");
   // Load the debugger in development mode
   await import("solid-devtools");
-
-  // Uncomment this block to use the Mock API
-  // window.webkit = window.webkit || {
-  //   messageHandlers: {
-  //     gtk: {
-  //       postMessage: (postMessage) => {
-  //         const { method, data } = postMessage;
-  //         console.debug("Python API call", { method, data });
-  //         setTimeout(() => {
-  //           const mock = getFakeResponse(method, data);
-  //           console.log("Returning mock-data: ", { mock });
-
-  //           window.clan[method](JSON.stringify(mock));
-  //         }, 200);
-  //       },
-  //     },
-  //   },
-  // };
 }
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-render(() => <App />, root!);
+
+render(
+  () => (
+    <QueryClientProvider client={client}>
+      <App />
+    </QueryClientProvider>
+  ),
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  root!
+);
