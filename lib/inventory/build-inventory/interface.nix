@@ -43,7 +43,6 @@ let
   importsOption = lib.mkOption {
     default = [ ];
     type = t.listOf t.str;
-    # apply = map (pathOrString: "${pathOrString}");
   };
 in
 {

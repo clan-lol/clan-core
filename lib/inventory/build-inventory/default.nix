@@ -93,7 +93,6 @@ let
             roleServiceConfigs = builtins.map (
               role: serviceConfig.roles.${role}.config or { }
             ) inverseRoles.${machineName} or [ ];
-            dbg = v: lib.traceSeq v v;
 
             customImports = map (s: "${directory}/${s}") (
               globalImports ++ machineImports ++ roleServiceImports
@@ -104,7 +103,7 @@ let
             acc2
             ++ [
               {
-                imports = dbg ([ clan-core.clanModules.${moduleName} ] ++ roleModules ++ customImports);
+                imports = [ clan-core.clanModules.${moduleName} ] ++ roleModules ++ customImports;
                 config.clan.${moduleName} = lib.mkMerge (
                   [
                     globalConfig
