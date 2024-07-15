@@ -99,7 +99,6 @@
               */
               # clan.core.networking.zerotier.networkId = builtins.readFile ../jon/facts/zerotier-network-id;
             };
-
           };
       };
       perSystem =
