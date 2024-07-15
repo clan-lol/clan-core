@@ -205,6 +205,8 @@ class WebView:
         # settings.
         settings.set_property("enable-developer-extras", True)
         self.webview.set_settings(settings)
+        # Fixme. This filtering is incomplete, it only triggers if a user clicks a link
+        self.webview.connect("decide-policy", self.on_decide_policy)
 
         self.manager = self.webview.get_user_content_manager()
         # Can be called with: window.webkit.messageHandlers.gtk.postMessage("...")
@@ -213,10 +215,37 @@ class WebView:
         self.manager.connect("script-message-received", self.on_message_received)
 
         self.webview.load_uri(content_uri)
+        self.content_uri = content_uri
 
         # global mutex lock to ensure functions run sequentially
         self.mutex_lock = Lock()
         self.queue_size = 0
+
+    def on_decide_policy(
+        self,
+        webview: WebKit.WebView,
+        decision: WebKit.PolicyDecision,
+        decision_type: WebKit.PolicyDecisionType,
+    ) -> bool:
+        if decision_type != WebKit.PolicyDecisionType.NAVIGATION_ACTION:
+            return False  # Continue with the default handler
+
+        navigation_action = decision.get_navigation_action()
+        request = navigation_action.get_request()
+        uri = request.get_uri()
+        if self.content_uri.startswith("http://") and uri.startswith(self.content_uri):
+            log.debug(f"Allow navigation request: {uri}")
+            return False
+        elif self.content_uri.startswith("file://") and uri.startswith(
+            self.content_uri
+        ):
+            log.debug(f"Allow navigation request: {uri}")
+            return False
+        log.warning(
+            f"Do not allow navigation request: {uri}. Current content uri: {self.content_uri}"
+        )
+        decision.ignore()
+        return True  # Stop other handlers from being invoked
 
     def on_message_received(
         self, user_content_manager: WebKit.UserContentManager, message: Any

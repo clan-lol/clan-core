@@ -94,6 +94,7 @@ in
                     apply = lib.unique;
                     type = t.listOf tagRef;
                   };
+                  options.config = moduleConfig;
                 }
               );
             };

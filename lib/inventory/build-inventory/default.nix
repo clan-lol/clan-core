@@ -83,16 +83,23 @@ let
               else
                 throw "Module doesn't have role: '${role}'. Path: ${path} not found."
             ) inverseRoles.${machineName} or [ ];
+
+            roleServiceConfigs = builtins.map (
+              role: serviceConfig.roles.${role}.config or { }
+            ) inverseRoles.${machineName} or [ ];
           in
           if isInService then
             acc2
             ++ [
               {
                 imports = [ clan-core.clanModules.${moduleName} ] ++ roleModules;
-                config.clan.${moduleName} = lib.mkMerge [
-                  globalConfig
-                  machineServiceConfig
-                ];
+                config.clan.${moduleName} = lib.mkMerge (
+                  [
+                    globalConfig
+                    machineServiceConfig
+                  ]
+                  ++ roleServiceConfigs
+                );
               }
               {
                 config.clan.inventory.services.${moduleName}.${instanceName} = {
