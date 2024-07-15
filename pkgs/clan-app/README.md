@@ -14,6 +14,7 @@ Follow the instructions below to set up your development environment and start t
    Go to the `clan-core/pkgs/webview-ui/app` directory and start the web server by executing:
 
    ```bash
+   npm i
    vite
    ```
 
