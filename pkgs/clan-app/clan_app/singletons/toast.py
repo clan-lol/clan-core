@@ -9,8 +9,6 @@ gi.require_version("Adw", "1")
 
 from gi.repository import Adw
 
-from clan_app.singletons.use_views import ViewStack
-
 log = logging.getLogger(__name__)
 
 
@@ -45,7 +43,6 @@ class ToastOverlay:
             self.active_toasts.add(key)
             self.overlay.add_toast(toast)
             toast.connect("dismissed", lambda toast: self.active_toasts.remove(key))
-
 
 
 class WarningToast:

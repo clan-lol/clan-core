@@ -52,7 +52,7 @@ def update_wrapper_signature(wrapper: Callable, wrapped: Callable) -> None:
 
 class _MethodRegistry:
     def __init__(self) -> None:
-        self._orig: dict[str, Callable[[Any], Any]] = {}
+        self._orig_annotations: dict[str, Callable[[Any], Any]] = {}
         self._registry: dict[str, Callable[[Any], Any]] = {}
 
     def register_abstract(self, fn: Callable[..., T]) -> Callable[..., T]:
@@ -84,7 +84,13 @@ API.register(open_file)
         return fn
 
     def register(self, fn: Callable[..., T]) -> Callable[..., T]:
-        self._orig[fn.__name__] = fn
+
+        if fn.__name__ in self._registry:
+            raise ValueError(f"Function {fn.__name__} already registered")
+        if fn.__name__ in self._orig_annotations:
+            raise ValueError(f"Function {fn.__name__} already registered")
+        # make copy of original function
+        self._orig_annotations[fn.__name__] = fn.__annotations__.copy()
 
         @wraps(fn)
         def wrapper(
@@ -118,6 +124,7 @@ API.register(open_file)
         update_wrapper_signature(wrapper, fn)
 
         self._registry[fn.__name__] = wrapper
+
         return fn
 
     def to_json_schema(self) -> dict[str, Any]:
