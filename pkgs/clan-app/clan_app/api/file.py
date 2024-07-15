@@ -84,5 +84,3 @@ class open_file(ImplFunc[[FileRequest], str | None]):
             dialog.save(callback=on_save_finish)
 
         return GLib.SOURCE_REMOVE
-
-

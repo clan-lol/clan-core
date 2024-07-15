@@ -1,14 +1,13 @@
 import dataclasses
 import json
 import logging
-from collections.abc import Callable
 from typing import Any
 
 import gi
-from clan_cli.api import API
+from clan_cli.api import MethodRegistry
 
-import clan_app
-from clan_app.api import GResult, ImplApi, ImplFunc
+from clan_app.api import GObjApi, GResult, ImplFunc
+from clan_app.api.file import open_file
 from clan_app.components.serializer import dataclass_to_dict, from_dict
 
 gi.require_version("WebKit", "6.0")
@@ -18,19 +17,21 @@ log = logging.getLogger(__name__)
 
 
 class WebExecutor(GObject.Object):
-    def __init__(self, content_uri: str, abstr_methods: dict[str, Callable]) -> None:
+    def __init__(self, content_uri: str, plain_api: MethodRegistry) -> None:
         super().__init__()
+        self.plain_api: MethodRegistry = plain_api
+        self.webview: WebKit.WebView = WebKit.WebView()
 
-        self.webview = WebKit.WebView()
-
-        settings = self.webview.get_settings()
+        settings: WebKit.Settings = self.webview.get_settings()
         # settings.
         settings.set_property("enable-developer-extras", True)
         self.webview.set_settings(settings)
         # Fixme. This filtering is incomplete, it only triggers if a user clicks a link
         self.webview.connect("decide-policy", self.on_decide_policy)
 
-        self.manager = self.webview.get_user_content_manager()
+        self.manager: WebKit.UserContentManager = (
+            self.webview.get_user_content_manager()
+        )
         # Can be called with: window.webkit.messageHandlers.gtk.postMessage("...")
         # Important: it seems postMessage must be given some payload, otherwise it won't trigger the event
         self.manager.register_script_message_handler("gtk")
@@ -39,10 +40,10 @@ class WebExecutor(GObject.Object):
         self.webview.load_uri(content_uri)
         self.content_uri = content_uri
 
-        self.api = ImplApi()
-        self.api.register_all(clan_app.api)
-        #self.api.validate(abstr_methods)
+        self.api: GObjApi = GObjApi(self.plain_api.functions)
 
+        self.api.register_overwrite(open_file)
+        self.api.check_signature(self.plain_api.annotations)
 
     def on_decide_policy(
         self,
@@ -73,16 +74,13 @@ class WebExecutor(GObject.Object):
     def on_message_received(
         self, user_content_manager: WebKit.UserContentManager, message: Any
     ) -> None:
-        json_msg = message.to_json(4)
+        json_msg = message.to_json(4)  # 4 is num of indents
         log.debug(f"Webview Request: {json_msg}")
         payload = json.loads(json_msg)
         method_name = payload["method"]
 
         # Get the function gobject from the api
         function_obj = self.api.get_obj(method_name)
-        if function_obj is None:
-            log.error(f"Method '{method_name}' not found in api")
-            return
 
         # Create an instance of the function gobject
         fn_instance = function_obj()
@@ -102,7 +100,7 @@ class WebExecutor(GObject.Object):
             # But the js api returns dictionaries.
             # Introspect the function and create the expected dataclass from dict dynamically
             # Depending on the introspected argument_type
-            arg_class = API.get_method_argtype(method_name, k)
+            arg_class = self.plain_api.get_method_argtype(method_name, k)
             if dataclasses.is_dataclass(arg_class):
                 reconciled_arguments[k] = from_dict(arg_class, v)
             else:
@@ -113,7 +111,6 @@ class WebExecutor(GObject.Object):
             reconciled_arguments,
             op_key,
         )
-
 
     def on_result(self, source: ImplFunc, data: GResult) -> None:
         result = dict()
