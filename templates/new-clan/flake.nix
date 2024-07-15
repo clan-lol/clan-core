@@ -34,6 +34,7 @@
           jon = {
             imports = [
               ./modules/shared.nix
+              ./modules/disko.nix
               ./machines/jon/configuration.nix
             ];
 
@@ -45,9 +46,7 @@
             clan.core.networking.targetHost = pkgs.lib.mkDefault "root@jon";
 
             # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
-            disko.devices.disk.main = {
-              device = "/dev/disk/by-id/__CHANGE_ME__";
-            };
+            disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
 
             # IMPORTANT! Add your SSH key here
             # e.g. > cat ~/.ssh/id_ed25519.pub
@@ -64,6 +63,7 @@
           sara = {
             imports = [
               ./modules/shared.nix
+              ./modules/disko.nix
               ./machines/sara/configuration.nix
             ];
 
@@ -75,9 +75,7 @@
             clan.core.networking.targetHost = pkgs.lib.mkDefault "root@sara";
 
             # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
-            disko.devices.disk.main = {
-              device = "/dev/disk/by-id/__CHANGE_ME__";
-            };
+            disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
 
             # IMPORTANT! Add your SSH key here
             # e.g. > cat ~/.ssh/id_ed25519.pub
