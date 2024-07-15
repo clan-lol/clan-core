@@ -9,9 +9,6 @@ gi.require_version("Adw", "1")
 
 from gi.repository import Adw
 
-from clan_app.singletons.use_views import ViewStack
-from clan_app.views.logs import Logs
-
 log = logging.getLogger(__name__)
 
 
@@ -46,36 +43,6 @@ class ToastOverlay:
             self.active_toasts.add(key)
             self.overlay.add_toast(toast)
             toast.connect("dismissed", lambda toast: self.active_toasts.remove(key))
-
-
-class ErrorToast:
-    toast: Adw.Toast
-
-    def __init__(
-        self, message: str, persistent: bool = False, details: str = ""
-    ) -> None:
-        super().__init__()
-        self.toast = Adw.Toast.new(
-            f"""<span foreground='red'>❌ Error </span> {message}"""
-        )
-        self.toast.set_use_markup(True)
-
-        self.toast.set_priority(Adw.ToastPriority.HIGH)
-        self.toast.set_button_label("Show more")
-
-        if persistent:
-            self.toast.set_timeout(0)
-
-        views = ViewStack.use().view
-
-        # we cannot check this type, python is not smart enough
-        logs_view: Logs = views.get_child_by_name("logs")  # type: ignore
-        logs_view.set_message(details)
-
-        self.toast.connect(
-            "button-clicked",
-            lambda _: views.set_visible_child_name("logs"),
-        )
 
 
 class WarningToast:
