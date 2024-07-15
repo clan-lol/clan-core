@@ -14,6 +14,9 @@
 		},
 		{
 			"path": "../../lib/build-clan"
+		},
+		{
+			"path": "../webview-ui"
 		}
 	],
 	"settings": {
@@ -25,6 +28,7 @@
 			"**/.mypy_cache": true,
 			"**/.reports": true,
 			"**/.ruff_cache": true,
+			"**/.webui": true,
 			"**/result/**": true,
 			"/nix/store/**": true
 		},
