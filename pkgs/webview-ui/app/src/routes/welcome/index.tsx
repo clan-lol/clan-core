@@ -24,6 +24,14 @@ export const Welcome = () => {
             >
               Or select folder
             </button>
+            <button
+              class="link w-full text-right text-secondary"
+              onClick={async () => {
+                setRoute("machines");
+              }}
+            >
+              Skip (Debug)
+            </button>
           </div>
         </div>
       </div>
