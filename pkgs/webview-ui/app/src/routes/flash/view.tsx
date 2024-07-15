@@ -1,6 +1,7 @@
 import { route } from "@/src/App";
-import { OperationArgs, OperationResponse, pyApi } from "@/src/api";
+import { OperationArgs, OperationResponse, callApi, pyApi } from "@/src/api";
 import { SubmitHandler, createForm, required } from "@modular-forms/solid";
+import { createQuery } from "@tanstack/solid-query";
 import { For, createSignal } from "solid-js";
 import { effect } from "solid-js/web";
 
@@ -28,36 +29,35 @@ type BlockDevices = Extract<
 export const Flash = () => {
   const [formStore, { Form, Field }] = createForm<FlashFormValues>({});
 
-  const [devices, setDevices] = createSignal<BlockDevices>([]);
-  // pyApi.show_block_devices.receive((r) => {
-  //   console.log("block devices", r);
-  //   if (r.status === "success") {
-  //     setDevices(r.data.blockdevices);
-  //   }
-  // });
+  const {
+    data: devices,
+    refetch: loadDevices,
+    isFetching,
+  } = createQuery(() => ({
+    queryKey: ["TanStack Query"],
+    queryFn: async () => {
+      const result = await callApi("show_block_devices", {});
+      if (result.status === "error") throw new Error("Failed to fetch data");
+      return result.data;
+    },
+    staleTime: 1000 * 60 * 1, // 1 minutes
+  }));
 
-  const handleSubmit: SubmitHandler<FlashFormValues> = (values, event) => {
-    // pyApi.open_file.dispatch({ file_request: { mode: "save" } });
-    // pyApi.open_file.receive((r) => {
-    //   if (r.status === "success") {
-    //     if (r.data) {
-    //       pyApi.create_clan.dispatch({
-    //         options: { directory: r.data, meta: values },
-    //       });
-    //     }
-    //     return;
-    //   }
+  const handleSubmit = async (values: FlashFormValues) => {
+    // TODO: Rework Flash machine API
+    // Its unusable in its current state
+    // await callApi("flash_machine", {
+    //   machine: {
+    //     name: "",
+    //   },
+    //   disks:  {values.disk },
+    //   dry_run: true,
     // });
     console.log("submit", values);
   };
 
-  // effect(() => {
-  //   if (route() === "flash") {
-  //     pyApi.show_block_devices.dispatch({});
-  //   }
-  // });
   return (
-    <div class="">
+    <div class="px-2">
       <Form onSubmit={handleSubmit}>
         <Field
           name="machine.flake"
@@ -70,7 +70,7 @@ export const Flash = () => {
                 <input
                   type="text"
                   class="grow"
-                  placeholder="Clan URI"
+                  placeholder="machine.flake"
                   required
                   {...props}
                 />
@@ -96,7 +96,7 @@ export const Flash = () => {
                 <input
                   type="text"
                   class="grow"
-                  placeholder="Machine Name"
+                  placeholder="machine.name"
                   required
                   {...props}
                 />
@@ -115,9 +115,15 @@ export const Flash = () => {
           {(field, props) => (
             <>
               <label class="form-control input-bordered flex w-full items-center gap-2">
-                <select required class="select w-full" {...props}>
+                <select
+                  required
+                  class="select select-bordered w-full"
+                  {...props}
+                >
                   {/* <span class="material-icons">devices</span> */}
-                  <For each={devices()}>
+                  <option disabled>Select a disk</option>
+
+                  <For each={devices?.blockdevices}>
                     {(device) => (
                       <option value={device.name}>
                         {device.name} / {device.size} bytes
@@ -126,6 +132,11 @@ export const Flash = () => {
                   </For>
                 </select>
                 <div class="label">
+                  {isFetching && (
+                    <span class="label-text-alt">
+                      <span class="loading loading-bars"></span>
+                    </span>
+                  )}
                   {field.error && (
                     <span class="label-text-alt font-bold text-error">
                       {field.error}
