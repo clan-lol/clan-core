@@ -17,7 +17,7 @@ let
             availableTags = lib.foldlAttrs (
               acc: _: v:
               v.tags or [ ] ++ acc
-            ) [ ] inventory.machines;
+            ) [ ] (lib.traceValSeq inventory.machines);
 
             tagMembers = builtins.attrNames (
               lib.filterAttrs (_n: v: builtins.elem tag v.tags or [ ]) inventory.machines
