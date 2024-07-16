@@ -30,8 +30,8 @@ let
   # load nixpkgs runtime dependencies from a json file
   # This file represents an allow list at the same time that is checked by the run_cmd
   #   implementation in nix.py
-  runtimeDependenciesAsSet = lib.genAttrs (lib.importJSON ./clan_cli/nix/allowed-programs.json) (
-    name: pkgs.${name}
+  runtimeDependenciesAsSet = lib.filterAttrs (_name: pkg: !pkg.meta.unsupported or false) (
+    lib.genAttrs (lib.importJSON ./clan_cli/nix/allowed-programs.json) (name: pkgs.${name})
   );
 
   runtimeDependencies = lib.attrValues runtimeDependenciesAsSet;
