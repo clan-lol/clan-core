@@ -36,6 +36,15 @@ def dataclass_to_dict(obj: Any) -> Any:
 
 
 @dataclass
+class DeploymentInfo:
+    """
+    Deployment information for a machine.
+    """
+
+    target_host: str | None = None
+
+
+@dataclass
 class Machine:
     """
     Inventory machine model.
@@ -49,14 +58,25 @@ class Machine:
     """
 
     name: str
-    system: Literal["x86_64-linux"] | str | None = None
     description: str | None = None
     icon: str | None = None
     tags: list[str] = field(default_factory=list)
+    system: Literal["x86_64-linux"] | str | None = None
+
+    deployment_info: DeploymentInfo | None = None
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Machine":
-        return Machine(**d)
+        return Machine(
+            name=d["name"],
+            description=d.get("description", None),
+            icon=d.get("icon", None),
+            tags=d.get("tags", []),
+            system=d.get("system", None),
+            deployment_info=DeploymentInfo(
+                target_host=d.get("deploymentInfo", {}).get("targetHost", None)
+            ),
+        )
 
 
 @dataclass
