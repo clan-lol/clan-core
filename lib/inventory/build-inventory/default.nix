@@ -7,7 +7,14 @@ let
 
   resolveTags =
     # Inventory, { machines :: [string], tags :: [string] }
-    { serviceName, instanceName, roleName, inventory, members}: {
+    {
+      serviceName,
+      instanceName,
+      roleName,
+      inventory,
+      members,
+    }:
+    {
       machines =
         members.machines or [ ]
         ++ (builtins.foldl' (
@@ -25,7 +32,7 @@ let
           in
           if tagMembers == [ ] then
             throw ''
-              inventory.services.${serviceName}.${instanceName}: - ${roleName} tags: no machine with '${tag}' found.
+              inventory.services.${serviceName}.${instanceName}: - ${roleName} tags: no machine with tag '${tag}' found.
               Available tags: ${builtins.toJSON (lib.unique availableTags)}
             ''
           else
@@ -54,8 +61,15 @@ let
           acc2: instanceName: serviceConfig:
           let
             resolvedRoles = builtins.mapAttrs (
-              roleName: members: resolveTags {
-                inherit serviceName instanceName roleName inventory members;
+              roleName: members:
+              resolveTags {
+                inherit
+                  serviceName
+                  instanceName
+                  roleName
+                  inventory
+                  members
+                  ;
               }
             ) serviceConfig.roles;
 

@@ -167,7 +167,7 @@
       expr = configs;
       expectedError = {
         type = "ThrownError";
-        msg = "Tag: '\\w+' not found";
+        msg = "no machine with tag '\\w+' found";
       };
     };
 }
