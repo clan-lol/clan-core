@@ -12,7 +12,7 @@ from typing import IO
 from ..cmd import Log, run
 from ..dirs import user_config_dir
 from ..errors import ClanError
-from ..nix import nix_shell
+from ..nix import run_cmd
 from .folders import sops_machines_folder, sops_users_folder
 
 
@@ -23,7 +23,7 @@ class SopsKey:
 
 
 def get_public_key(privkey: str) -> str:
-    cmd = nix_shell(["nixpkgs#age"], ["age-keygen", "-y"])
+    cmd = run_cmd(["age"], ["age-keygen", "-y"])
     try:
         res = subprocess.run(
             cmd, input=privkey, stdout=subprocess.PIPE, text=True, check=True
@@ -36,7 +36,7 @@ def get_public_key(privkey: str) -> str:
 
 
 def generate_private_key(out_file: Path | None = None) -> tuple[str, str]:
-    cmd = nix_shell(["nixpkgs#age"], ["age-keygen"])
+    cmd = run_cmd(["age"], ["age-keygen"])
     try:
         proc = run(cmd)
         res = proc.stdout.strip()
@@ -125,8 +125,8 @@ def update_keys(secret_path: Path, keys: list[str]) -> list[Path]:
     with sops_manifest(keys) as manifest:
         secret_path = secret_path / "secret"
         time_before = secret_path.stat().st_mtime
-        cmd = nix_shell(
-            ["nixpkgs#sops"],
+        cmd = run_cmd(
+            ["sops"],
             [
                 "sops",
                 "--config",
@@ -152,7 +152,7 @@ def encrypt_file(
         if not content:
             args = ["sops", "--config", str(manifest)]
             args.extend([str(secret_path)])
-            cmd = nix_shell(["nixpkgs#sops"], args)
+            cmd = run_cmd(["sops"], args)
             # Don't use our `run` here, because it breaks editor integration.
             # We never need this in our UI.
             p = subprocess.run(cmd, check=False)
@@ -180,7 +180,7 @@ def encrypt_file(
                 # we pass an empty manifest to pick up existing configuration of the user
                 args = ["sops", "--config", str(manifest)]
                 args.extend(["-i", "--encrypt", str(f.name)])
-                cmd = nix_shell(["nixpkgs#sops"], args)
+                cmd = run_cmd(["sops"], args)
                 run(cmd, log=Log.BOTH)
                 # atomic copy of the encrypted file
                 with NamedTemporaryFile(dir=folder, delete=False) as f2:
@@ -195,8 +195,8 @@ def encrypt_file(
 
 def decrypt_file(secret_path: Path) -> str:
     with sops_manifest([]) as manifest:
-        cmd = nix_shell(
-            ["nixpkgs#sops"],
+        cmd = run_cmd(
+            ["sops"],
             ["sops", "--config", str(manifest), "--decrypt", str(secret_path)],
         )
     res = run(cmd, error_msg=f"Could not decrypt {secret_path}")

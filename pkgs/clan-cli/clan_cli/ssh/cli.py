@@ -6,7 +6,7 @@ import socket
 import subprocess
 from pathlib import Path
 
-from ..nix import nix_shell
+from ..nix import run_cmd
 
 log = logging.getLogger(__name__)
 
@@ -18,13 +18,13 @@ def ssh(
     ssh_args: list[str] = [],
     torify: bool = False,
 ) -> None:
-    packages = ["nixpkgs#openssh"]
+    packages = ["openssh"]
     if torify:
-        packages.append("nixpkgs#tor")
+        packages.append("tor")
 
     password_args = []
     if password:
-        packages.append("nixpkgs#sshpass")
+        packages.append("sshpass")
         password_args = [
             "sshpass",
             "-p",
@@ -48,15 +48,15 @@ def ssh(
     if torify:
         cmd_args.insert(0, "torify")
 
-    cmd = nix_shell(packages, cmd_args)
+    cmd = run_cmd(packages, cmd_args)
     subprocess.run(cmd)
 
 
 def qrcode_scan(picture_file: str) -> str:
     return (
         subprocess.run(
-            nix_shell(
-                ["nixpkgs#zbar"],
+            run_cmd(
+                ["zbar"],
                 [
                     "zbarimg",
                     "--quiet",

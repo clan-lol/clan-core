@@ -7,7 +7,7 @@ from tempfile import TemporaryDirectory
 from ..cmd import Log, run
 from ..completions import add_dynamic_completer, complete_machines
 from ..machines.machines import Machine
-from ..nix import nix_shell
+from ..nix import run_cmd
 
 log = logging.getLogger(__name__)
 
@@ -25,8 +25,8 @@ def upload_secrets(machine: Machine) -> None:
 
         ssh_cmd = host.ssh_cmd()
         run(
-            nix_shell(
-                ["nixpkgs#rsync"],
+            run_cmd(
+                ["rsync"],
                 [
                     "rsync",
                     "-e",
