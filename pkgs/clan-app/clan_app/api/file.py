@@ -5,6 +5,7 @@ gi.require_version("Gtk", "4.0")
 
 import logging
 
+from clan_cli.api import ErrorDataClass, SuccessDataClass
 from clan_cli.api.directory import FileRequest
 from gi.repository import Gio, GLib, Gtk
 
@@ -15,17 +16,23 @@ log = logging.getLogger(__name__)
 
 # This implements the abstract function open_file with one argument, file_request,
 # which is a FileRequest object and returns a string or None.
-class open_file(ImplFunc[[FileRequest], str | None]):
+class open_file(
+    ImplFunc[[FileRequest, str], SuccessDataClass[str | None] | ErrorDataClass]
+):
     def __init__(self) -> None:
         super().__init__()
 
-    def async_run(self, file_request: FileRequest) -> bool:
+    def async_run(self, file_request: FileRequest, op_key: str) -> bool:
         def on_file_select(file_dialog: Gtk.FileDialog, task: Gio.Task) -> None:
             try:
                 gfile = file_dialog.open_finish(task)
                 if gfile:
                     selected_path = gfile.get_path()
-                    self.returns(selected_path)
+                    self.returns(
+                        SuccessDataClass(
+                            op_key=op_key, data=selected_path, status="success"
+                        )
+                    )
             except Exception as e:
                 print(f"Error getting selected file or directory: {e}")
 
@@ -34,7 +41,11 @@ class open_file(ImplFunc[[FileRequest], str | None]):
                 gfile = file_dialog.select_folder_finish(task)
                 if gfile:
                     selected_path = gfile.get_path()
-                    self.returns(selected_path)
+                    self.returns(
+                        SuccessDataClass(
+                            op_key=op_key, data=selected_path, status="success"
+                        )
+                    )
             except Exception as e:
                 print(f"Error getting selected directory: {e}")
 
@@ -43,7 +54,11 @@ class open_file(ImplFunc[[FileRequest], str | None]):
                 gfile = file_dialog.save_finish(task)
                 if gfile:
                     selected_path = gfile.get_path()
-                    self.returns(selected_path)
+                    self.returns(
+                        SuccessDataClass(
+                            op_key=op_key, data=selected_path, status="success"
+                        )
+                    )
             except Exception as e:
                 print(f"Error getting selected file: {e}")
 
