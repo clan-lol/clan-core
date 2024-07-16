@@ -1,6 +1,14 @@
+import inspect
 import logging
 from collections.abc import Callable
-from typing import Any, ClassVar, Generic, ParamSpec, TypeVar, cast
+from typing import (
+    Any,
+    ClassVar,
+    Generic,
+    ParamSpec,
+    TypeVar,
+    cast,
+)
 
 from gi.repository import GLib, GObject
 
@@ -12,9 +20,8 @@ class GResult(GObject.Object):
     op_key: str
     method_name: str
 
-    def __init__(self, result: Any, method_name: str, op_key: str) -> None:
+    def __init__(self, result: Any, method_name: str) -> None:
         super().__init__()
-        self.op_key = op_key
         self.result = result
         self.method_name = method_name
 
@@ -32,9 +39,13 @@ class ImplFunc(GObject.Object, Generic[P, B]):
     def returns(self, result: B, *, method_name: str | None = None) -> None:
         if method_name is None:
             method_name = self.__class__.__name__
-        if self.op_key is None:
-            raise ValueError(f"op_key is not set for the function {method_name}")
-        self.emit("returns", GResult(result, method_name, self.op_key))
+
+        self.emit("returns", GResult(result, method_name))
+
+    def _signature_check(self, *args: P.args, **kwargs: P.kwargs) -> B:
+        raise RuntimeError(
+            "This method is only for typechecking and should never be called"
+        )
 
     def await_result(self, fn: Callable[["ImplFunc[..., Any]", B], None]) -> None:
         self.connect("returns", fn)
@@ -42,8 +53,7 @@ class ImplFunc(GObject.Object, Generic[P, B]):
     def async_run(self, *args: P.args, **kwargs: P.kwargs) -> bool:
         raise NotImplementedError("Method 'async_run' must be implemented")
 
-    def _async_run(self, data: Any, op_key: str) -> bool:
-        self.op_key = op_key
+    def _async_run(self, data: Any) -> bool:
         result = GLib.SOURCE_REMOVE
         try:
             result = self.async_run(**data)
@@ -62,33 +72,33 @@ class GObjApi:
     def overwrite_fn(self, obj: type[ImplFunc]) -> None:
         fn_name = obj.__name__
 
-        if not isinstance(obj, type(ImplFunc)):
-            raise ValueError(f"Object '{fn_name}' is not an instance of ImplFunc")
-
         if fn_name in self._obj_registry:
             raise ValueError(f"Function '{fn_name}' already registered")
         self._obj_registry[fn_name] = obj
 
-    def check_signature(self, method_annotations: dict[str, dict[str, Any]]) -> None:
+    def check_signature(self, fn_signatures: dict[str, inspect.Signature]) -> None:
         overwrite_fns = self._obj_registry
 
         # iterate over the methods and check if all are implemented
-        for m_name, m_annotations in method_annotations.items():
+        for m_name, m_signature in fn_signatures.items():
             if m_name not in overwrite_fns:
                 continue
             else:
-                # check if the signature of the abstract method matches the implementation
-                # abstract signature
-                values = list(m_annotations.values())
-                expected_signature = (tuple(values[:-1]), values[-1:][0])
+                # check if the signature of the overriden method matches
+                # the implementation signature
+                exp_args = []
+                exp_return = m_signature.return_annotation
+                for param in dict(m_signature.parameters).values():
+                    exp_args.append(param.annotation)
+                exp_signature = (tuple(exp_args), exp_return)
 
                 # implementation signature
                 obj = dict(overwrite_fns[m_name].__dict__)
                 obj_type = obj["__orig_bases__"][0]
                 got_signature = obj_type.__args__
 
-                if expected_signature != got_signature:
-                    log.error(f"Expected signature: {expected_signature}")
+                if exp_signature != got_signature:
+                    log.error(f"Expected signature: {exp_signature}")
                     log.error(f"Actual signature: {got_signature}")
                     raise ValueError(
                         f"Overwritten method '{m_name}' has different signature than the implementation"
