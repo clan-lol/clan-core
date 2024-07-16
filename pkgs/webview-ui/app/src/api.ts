@@ -20,6 +20,12 @@ export type ErrorData<T extends OperationNames> = Extract<
 export type ClanOperations = {
   [K in OperationNames]: (str: string) => void;
 };
+
+export interface GtkResponse<T> {
+  result: T;
+  op_key: string;
+}
+
 declare global {
   interface Window {
     clan: ClanOperations;
@@ -74,9 +80,9 @@ function createFunctions<K extends OperationNames>(
       registry[operationName][id] = fn;
 
       window.clan[operationName] = (s: string) => {
-        const f = (response: OperationResponse<K>) => {
+        const f = (response: GtkResponse<OperationResponse<K>>) => {
           if (response.op_key === id) {
-            registry[operationName][id](response);
+            registry[operationName][id](response.result);
           }
         };
         deserialize(f)(s);
@@ -126,10 +132,12 @@ export const callApi = <K extends OperationNames>(
 };
 
 const deserialize =
-  <T>(fn: (response: T) => void) =>
+  <T>(fn: (response: GtkResponse<T>) => void) =>
   (str: string) => {
     try {
-      fn(JSON.parse(str) as T);
+      const r = JSON.parse(str) as GtkResponse<T>;
+      console.log("Received: ", r);
+      fn(r);
     } catch (e) {
       console.log("Error parsing JSON: ", e);
       console.log({ download: () => download("error.json", str) });

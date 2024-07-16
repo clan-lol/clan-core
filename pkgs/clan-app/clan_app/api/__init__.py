@@ -29,8 +29,7 @@ class ImplFunc(GObject.Object, Generic[P, B]):
         "returns": (GObject.SignalFlags.RUN_FIRST, None, [GResult]),
     }
 
-    def returns(self, result: B) -> None:
-        method_name = self.__class__.__name__
+    def returns(self, method_name: str, result: B) -> None:
         if self.op_key is None:
             raise ValueError(f"op_key is not set for the function {method_name}")
         self.emit("returns", GResult(result, method_name, self.op_key))
@@ -109,7 +108,7 @@ class GObjApi:
             def async_run(self, *args: Any, **kwargs: dict[str, Any]) -> bool:
                 assert plain_method is not None
                 result = plain_method(*args, **kwargs)
-                self.returns(result)
+                self.returns(method_name=name, result=result)
                 return GLib.SOURCE_REMOVE
 
         return cast(type[ImplFunc], GenericFnRuntime)
