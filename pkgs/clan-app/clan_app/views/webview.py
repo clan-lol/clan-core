@@ -26,9 +26,10 @@ class WebExecutor(GObject.Object):
         # settings.
         settings.set_property("enable-developer-extras", True)
         self.webview.set_settings(settings)
-        # Fixme. This filtering is incomplete, it only triggers if a user clicks a link
+        # FIXME: This filtering is incomplete, it only triggers if a user clicks a link
         self.webview.connect("decide-policy", self.on_decide_policy)
-
+        # For when the page is fully loaded
+        self.webview.connect("load-changed", self.on_load_changed)
         self.manager: WebKit.UserContentManager = (
             self.webview.get_user_content_manager()
         )
@@ -44,6 +45,14 @@ class WebExecutor(GObject.Object):
 
         self.api.overwrite_fn(open_file)
         self.api.check_signature(self.jschema_api.signatures)
+
+    def on_load_changed(
+        self, webview: WebKit.WebView, load_event: WebKit.LoadEvent
+    ) -> None:
+        if load_event == WebKit.LoadEvent.FINISHED:
+            if log.isEnabledFor(logging.DEBUG):
+                inspector = webview.get_inspector()
+                inspector.show()
 
     def on_decide_policy(
         self,
