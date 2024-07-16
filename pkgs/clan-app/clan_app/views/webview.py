@@ -42,20 +42,20 @@ class WebExecutor(GObject.Object):
 
         self.api: GObjApi = GObjApi(self.plain_api.functions)
 
-        self.api.register_overwrite(open_file)
+        self.api.overwrite_fn(open_file)
         self.api.check_signature(self.plain_api.annotations)
 
     def on_decide_policy(
         self,
         webview: WebKit.WebView,
-        decision: WebKit.PolicyDecision,
+        decision: WebKit.NavigationPolicyDecision,
         decision_type: WebKit.PolicyDecisionType,
     ) -> bool:
         if decision_type != WebKit.PolicyDecisionType.NAVIGATION_ACTION:
             return False  # Continue with the default handler
 
-        navigation_action = decision.get_navigation_action()
-        request = navigation_action.get_request()
+        navigation_action: WebKit.NavigationAction = decision.get_navigation_action()
+        request: WebKit.URIRequest = navigation_action.get_request()
         uri = request.get_uri()
         if self.content_uri.startswith("http://") and uri.startswith(self.content_uri):
             log.debug(f"Allow navigation request: {uri}")
@@ -117,7 +117,7 @@ class WebExecutor(GObject.Object):
         result["result"] = dataclass_to_dict(data.result)
         result["op_key"] = data.op_key
         serialized = json.dumps(result, indent=4)
-        log.debug(f"Result: {serialized}")
+        log.debug(f"Result for {data.method_name}: {serialized}")
         # Use idle_add to queue the response call to js on the main GTK thread
         self.return_data_to_js(data.method_name, serialized)
 
