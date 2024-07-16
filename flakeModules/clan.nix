@@ -121,7 +121,7 @@ in
         pkgsForSystem
         meta
         ;
-        inventory = (lib.traceValSeq cfg.inventory);
+      inventory = (lib.traceValSeq cfg.inventory);
     };
   };
   _file = __curPos.file;

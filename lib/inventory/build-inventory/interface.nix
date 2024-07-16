@@ -14,13 +14,6 @@ let
     };
   };
 
-  machineRef = lib.mkOptionType {
-    name = "str";
-    description = "Machine :: [${builtins.concatStringsSep " | " (builtins.attrNames config.machines)}]";
-    check = v: lib.isString v && builtins.elem v (builtins.attrNames config.machines);
-    merge = lib.mergeEqualOption;
-  };
-
   moduleConfig = lib.mkOption {
     default = { };
     type = types.attrsOf types.anything;
