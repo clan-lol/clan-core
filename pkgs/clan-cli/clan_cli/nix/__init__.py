@@ -100,19 +100,6 @@ def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
     return data
 
 
-def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
-    # we cannot use nix-shell inside the nix sandbox
-    # in our tests we just make sure we have all the packages
-    if os.environ.get("IN_NIX_SANDBOX") or os.environ.get("CLAN_NO_DYNAMIC_DEPS"):
-        return cmd
-    return [
-        *nix_command(["shell", "--inputs-from", f"{nixpkgs_flake()!s}"]),
-        *packages,
-        "-c",
-        *cmd,
-    ]
-
-
 # lazy loads list of allowed and static programs
 class Programs:
     allowed_programs = None
@@ -135,7 +122,7 @@ class Programs:
         return program in cls.static_programs
 
 
-# Alternative implementation of nix_shell() to replace nix_shell() at some point
+# Alternative implementation of run_cmd() to replace run_cmd() at some point
 #   Features:
 #     - allow list for programs (need to be specified in allowed-programs.json)
 #     - be abe to compute a closure of all deps for testing
@@ -143,7 +130,9 @@ class Programs:
 def run_cmd(programs: list[str], cmd: list[str]) -> list[str]:
     for program in programs:
         if not Programs.is_allowed(program):
-            raise ValueError(f"Program not allowed: {program}")
+            raise ValueError(
+                f"Program {program} is not allowed because it is not part of clan_cli/nix/allowed-programs.json."
+            )
     if os.environ.get("IN_NIX_SANDBOX"):
         return cmd
     missing_packages = [

@@ -11,7 +11,7 @@ from ..completions import (
     complete_users,
 )
 from ..errors import ClanError
-from ..nix import nix_shell
+from ..nix import run_cmd
 from .secrets import encrypt_secret, sops_secrets_folder
 
 
@@ -28,7 +28,7 @@ def import_sops(args: argparse.Namespace) -> None:
         if args.input_type:
             cmd += ["--input-type", args.input_type]
         cmd += ["--output-type", "json", "--decrypt", args.sops_file]
-        cmd = nix_shell(["nixpkgs#sops"], cmd)
+        cmd = run_cmd(["sops"], cmd)
 
         res = run(cmd, error_msg=f"Could not import sops file {file}")
         secrets = json.loads(res.stdout)
