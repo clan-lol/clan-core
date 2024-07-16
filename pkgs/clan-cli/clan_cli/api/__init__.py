@@ -22,14 +22,12 @@ class ApiError:
 class SuccessDataClass(Generic[ResponseDataType]):
     status: Annotated[Literal["success"], "The status of the response."]
     data: ResponseDataType
-    op_key: str | None
 
 
 @dataclass
 class ErrorDataClass:
     status: Literal["error"]
     errors: list[ApiError]
-    op_key: str | None
 
 
 ApiResponse = SuccessDataClass[ResponseDataType] | ErrorDataClass
@@ -109,11 +107,10 @@ API.register(open_file)
         ) -> ApiResponse[T]:
             try:
                 data: T = fn(*args, **kwargs)
-                return SuccessDataClass(status="success", data=data, op_key=op_key)
+                return SuccessDataClass(status="success", data=data)
             except ClanError as e:
                 return ErrorDataClass(
                     status="error",
-                    op_key=op_key,
                     errors=[
                         ApiError(
                             message=e.msg,

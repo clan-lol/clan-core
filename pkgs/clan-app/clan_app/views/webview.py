@@ -116,7 +116,6 @@ class WebExecutor(GObject.Object):
         result = dict()
         result["result"] = dataclass_to_dict(data.result)
         result["op_key"] = data.op_key
-
         serialized = json.dumps(result, indent=4)
         log.debug(f"Result: {serialized}")
         # Use idle_add to queue the response call to js on the main GTK thread
