@@ -14,7 +14,7 @@ Follow the instructions below to set up your development environment and start t
    Go to the `clan-core/pkgs/webview-ui/app` directory and start the web server by executing:
 
    ```bash
-   npm i
+   npm install
    vite
    ```
 
@@ -28,36 +28,6 @@ Follow the instructions below to set up your development environment and start t
 
 This will start the application in debug mode and link it to the web server running at `http://localhost:3000`.
 
-
-# clan app (old)
-
-Provides users with the simple functionality to manage their locally registered clans.
-
-![app-preview](screenshots/image.png)
-
-## Available commands
-
-Run this application
-
-```bash
-./bin/clan-app
-```
-
-Join the default machine of a clan
-
-```bash
-./bin/clan-app [clan-uri]
-```
-
-Join a specific machine of a clan
-
-```bash
-./bin/clan-app [clan-uri]#[machine]
-```
-
-For more available commands see the developer section below.
-
-## Developing this Application
 
 ### Debugging Style and Layout
 
@@ -108,13 +78,9 @@ gtk4-icon-browser
 
 Here are some important documentation links related to the Clan App:
 
-- [Adw PyGobject Reference](http://lazka.github.io/pgi-docs/index.html#Adw-1): This link provides the PyGObject reference documentation for the Adw library, which is used in the Clan App. It contains detailed information about the Adw widgets and their usage.
-
 - [GTK4 PyGobject Reference](http://lazka.github.io/pgi-docs/index.html#Gtk-4.0): This link provides the PyGObject reference documentation for GTK4, the toolkit used for building the user interface of the clan app. It includes information about GTK4 widgets, signals, and other features.
 
 - [Adw Widget Gallery](https://gnome.pages.gitlab.gnome.org/libadwaita/doc/main/widget-gallery.html): This link showcases a widget gallery for Adw, allowing you to see the available widgets and their visual appearance. It can be helpful for designing the user interface of the clan app.
-
-- [Python + GTK3 Tutorial](https://python-gtk-3-tutorial.readthedocs.io/en/latest/textview.html): Although the clan app uses GTK4, this tutorial for GTK3 can still be useful as it covers the basics of building GTK-based applications with Python. It includes examples and explanations for various GTK widgets, including text views.
 
 - [GNOME Human Interface Guidelines](https://developer.gnome.org/hig/): This link provides the GNOME Human Interface Guidelines, which offer design and usability recommendations for creating GNOME applications. It covers topics such as layout, navigation, and interaction patterns.
 
