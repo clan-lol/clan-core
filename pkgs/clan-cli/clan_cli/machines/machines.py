@@ -166,7 +166,10 @@ class Machine:
         if extra_config is not None:
             metadata = nix_metadata(self.flake_dir)
             url = metadata["url"]
-            if "dirtyRevision" in metadata:
+            if (
+                "dirtyRevision" in metadata
+                or "dirtyRev" in metadata["locks"]["nodes"]["clan-core"]["locked"]
+            ):
                 # if not impure:
                 #     raise ClanError(
                 #         "The machine has a dirty revision, and impure mode is not allowed"

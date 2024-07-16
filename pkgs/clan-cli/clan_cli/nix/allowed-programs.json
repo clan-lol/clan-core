@@ -1,6 +1,7 @@
 [
   "age",
   "bash",
+  "bubblewrap",
   "e2fsprogs",
   "git",
   "mypy",
@@ -8,8 +9,10 @@
   "openssh",
   "qemu",
   "rsync",
+  "pass",
   "sops",
   "sshpass",
   "tor",
+  "virtiofsd",
   "zbar"
 ]
