@@ -17,5 +17,7 @@
   "sshpass",
   "tor",
   "virtiofsd",
-  "zbar"
+  "zbar",
+  "util-linux",
+  "avahi"
 ]
