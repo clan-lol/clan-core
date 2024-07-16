@@ -5,7 +5,6 @@ from typing import Any, ClassVar
 import gi
 
 from clan_app import assets
-from clan_app.singletons.toast import InfoToast, ToastOverlay
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -89,11 +88,6 @@ class MainApplication(Adw.Application):
         elif self.window is None:
             setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
         log.debug("Debug logging enabled")
-
-        if "debug" in options:
-            ToastOverlay.use().add_toast_unique(
-                InfoToast("Debug logging enabled").toast, "info.debugging.enabled"
-            )
 
         if "content-uri" in options:
             self.content_uri = options["content-uri"]
