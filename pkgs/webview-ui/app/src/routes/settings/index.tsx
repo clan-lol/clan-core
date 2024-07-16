@@ -19,7 +19,7 @@ export const registerClan = async () => {
     const loc = await callApi("open_file", {
       file_request: { mode: "select_folder" },
     });
-    console.log(loc);
+    console.log({ loc }, loc.status);
     if (loc.status === "success" && loc.data) {
       // @ts-expect-error: data is a string
       setClanList((s) => {
