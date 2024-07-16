@@ -19,7 +19,7 @@ from .completions import add_dynamic_completer, complete_machines
 from .errors import ClanError
 from .facts.secret_modules import SecretStoreBase
 from .machines.machines import Machine
-from .nix import nix_shell
+from .nix import run_cmd
 
 log = logging.getLogger(__name__)
 
@@ -82,8 +82,8 @@ def flash_machine(
         disko_install.extend(["--option", "dry-run", "true"])
         disko_install.extend(extra_args)
 
-        cmd = nix_shell(
-            ["nixpkgs#disko"],
+        cmd = run_cmd(
+            ["disko"],
             disko_install,
         )
         run(cmd, log=Log.BOTH, error_msg=f"Failed to flash {machine}")

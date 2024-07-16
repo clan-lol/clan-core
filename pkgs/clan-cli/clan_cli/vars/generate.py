@@ -19,7 +19,7 @@ from ..errors import ClanError
 from ..git import commit_files
 from ..machines.inventory import get_all_machines, get_selected_machines
 from ..machines.machines import Machine
-from ..nix import nix_shell
+from ..nix import run_cmd
 from .check import check_secrets
 from .public_modules import FactStoreBase
 from .secret_modules import SecretStoreBase
@@ -39,10 +39,10 @@ def read_multiline_input(prompt: str = "Finish with Ctrl-D") -> str:
 
 def bubblewrap_cmd(generator: str, generator_dir: Path) -> list[str]:
     # fmt: off
-    return nix_shell(
+    return run_cmd(
         [
-            "nixpkgs#bash",
-            "nixpkgs#bubblewrap",
+            "bash",
+            "bubblewrap",
         ],
         [
             "bwrap",

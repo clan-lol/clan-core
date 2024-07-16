@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell
+from clan_cli.nix import run_cmd
 
 from . import SecretStoreBase
 
@@ -16,8 +16,8 @@ class SecretStore(SecretStoreBase):
         self, service: str, name: str, value: bytes, groups: list[str]
     ) -> Path | None:
         subprocess.run(
-            nix_shell(
-                ["nixpkgs#pass"],
+            run_cmd(
+                ["pass"],
                 ["pass", "insert", "-m", f"machines/{self.machine.name}/{name}"],
             ),
             input=value,
@@ -27,8 +27,8 @@ class SecretStore(SecretStoreBase):
 
     def get(self, service: str, name: str) -> bytes:
         return subprocess.run(
-            nix_shell(
-                ["nixpkgs#pass"],
+            run_cmd(
+                ["pass"],
                 ["pass", "show", f"machines/{self.machine.name}/{name}"],
             ),
             check=True,
@@ -49,8 +49,8 @@ class SecretStore(SecretStoreBase):
         hashes = []
         hashes.append(
             subprocess.run(
-                nix_shell(
-                    ["nixpkgs#git"],
+                run_cmd(
+                    ["git"],
                     [
                         "git",
                         "-C",
@@ -68,8 +68,8 @@ class SecretStore(SecretStoreBase):
             if symlink.is_symlink():
                 hashes.append(
                     subprocess.run(
-                        nix_shell(
-                            ["nixpkgs#git"],
+                        run_cmd(
+                            ["git"],
                             [
                                 "git",
                                 "-C",

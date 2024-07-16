@@ -12,7 +12,7 @@ from ..cmd import Log, run
 from ..completions import add_dynamic_completer, complete_machines
 from ..facts.generate import generate_facts
 from ..machines.machines import Machine
-from ..nix import nix_shell
+from ..nix import run_cmd
 from ..ssh.cli import is_ipv6, is_reachable, qrcode_scan
 
 log = logging.getLogger(__name__)
@@ -81,8 +81,8 @@ def install_nixos(
         cmd.append(target_host)
 
         run(
-            nix_shell(
-                ["nixpkgs#nixos-anywhere"],
+            run_cmd(
+                ["nixos-anywhere"],
                 cmd,
             ),
             log=Log.BOTH,
