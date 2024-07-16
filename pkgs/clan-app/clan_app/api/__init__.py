@@ -29,7 +29,9 @@ class ImplFunc(GObject.Object, Generic[P, B]):
         "returns": (GObject.SignalFlags.RUN_FIRST, None, [GResult]),
     }
 
-    def returns(self, method_name: str, result: B) -> None:
+    def returns(self, result: B, *, method_name: str | None = None) -> None:
+        if method_name is None:
+            method_name = self.__class__.__name__
         if self.op_key is None:
             raise ValueError(f"op_key is not set for the function {method_name}")
         self.emit("returns", GResult(result, method_name, self.op_key))
@@ -57,7 +59,7 @@ class GObjApi:
         self._methods: dict[str, Callable[..., Any]] = methods
         self._obj_registry: dict[str, type[ImplFunc]] = {}
 
-    def register_overwrite(self, obj: type[ImplFunc]) -> None:
+    def overwrite_fn(self, obj: type[ImplFunc]) -> None:
         fn_name = obj.__name__
 
         if not isinstance(obj, type(ImplFunc)):
