@@ -13,7 +13,7 @@ from ..dirs import module_root, user_cache_dir, vm_state_dir
 from ..errors import ClanError
 from ..facts.generate import generate_facts
 from ..machines.machines import Machine
-from ..nix import nix_shell
+from ..nix import run_cmd
 from .inspect import VmConfig, inspect_vm
 from .qemu import qemu_command
 from .virtiofsd import start_virtiofsd
@@ -82,8 +82,8 @@ def prepare_disk(
     file_name: str = "disk.img",
 ) -> Path:
     disk_img = directory / file_name
-    cmd = nix_shell(
-        ["nixpkgs#qemu"],
+    cmd = run_cmd(
+        ["qemu"],
         [
             "qemu-img",
             "create",
@@ -170,11 +170,11 @@ def run_vm(
             qga_socket_file=qga_socket_file,
         )
 
-        packages = ["nixpkgs#qemu"]
+        packages = ["qemu"]
 
         env = os.environ.copy()
         if vm.graphics and not vm.waypipe:
-            packages.append("nixpkgs#virt-viewer")
+            packages.append("virt-viewer")
             remote_viewer_mimetypes = module_root() / "vms" / "mimetypes"
             env["XDG_DATA_DIRS"] = (
                 f"{remote_viewer_mimetypes}:{env.get('XDG_DATA_DIRS', '')}"
@@ -185,7 +185,7 @@ def run_vm(
             start_virtiofsd(virtiofsd_socket),
         ):
             run(
-                nix_shell(packages, qemu_cmd.args),
+                run_cmd(packages, qemu_cmd.args),
                 env=env,
                 log=Log.BOTH,
                 error_msg=f"Could not start vm {machine}",

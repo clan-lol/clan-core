@@ -10,7 +10,7 @@ from clan_cli.inventory import Inventory, InventoryMeta
 
 from ..cmd import CmdOut, run
 from ..errors import ClanError
-from ..nix import nix_command, nix_shell
+from ..nix import nix_command, run_cmd
 
 default_template_url: str = "git+https://git.clan.lol/clan/clan-core"
 minimal_template_url: str = "git+https://git.clan.lol/clan/clan-core#templates.minimal"
@@ -64,21 +64,19 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
     out = run(command, cwd=directory)
 
     ## Begin: setup git
-    command = nix_shell(["nixpkgs#git"], ["git", "init"])
+    command = run_cmd(["git"], ["git", "init"])
     out = run(command, cwd=directory)
     cmd_responses["git init"] = out
 
-    command = nix_shell(["nixpkgs#git"], ["git", "add", "."])
+    command = run_cmd(["git"], ["git", "add", "."])
     out = run(command, cwd=directory)
     cmd_responses["git add"] = out
 
-    command = nix_shell(["nixpkgs#git"], ["git", "config", "user.name", "clan-tool"])
+    command = run_cmd(["git"], ["git", "config", "user.name", "clan-tool"])
     out = run(command, cwd=directory)
     cmd_responses["git config"] = out
 
-    command = nix_shell(
-        ["nixpkgs#git"], ["git", "config", "user.email", "clan@example.com"]
-    )
+    command = run_cmd(["git"], ["git", "config", "user.email", "clan@example.com"])
     out = run(command, cwd=directory)
     cmd_responses["git config"] = out
     ## End: setup git
