@@ -30,6 +30,15 @@ let
   # - Machines that exist in the machines directory
   # Checks on the module level:
   # - Each service role must reference a valid machine after all machines are merged
+
+  clanToInventory =
+    config:
+    { clanPath, inventoryPath }:
+    let
+      v = lib.attrByPath clanPath null config;
+    in
+    lib.optionalAttrs (v != null) (lib.setAttrByPath inventoryPath v);
+
   mergedInventory =
     (lib.evalModules {
       modules = [
@@ -63,23 +72,36 @@ let
                   "name"
                 ] name config
               );
-              tags = lib.attrByPath [
+            }
+            # tags
+            // (clanToInventory config {
+              clanPath = [
                 "clan"
                 "tags"
-              ] [ ] config;
-
-              system = lib.attrByPath [
+              ];
+              inventoryPath = [ "tags" ];
+            })
+            # system
+            // (clanToInventory config {
+              clanPath = [
                 "nixpkgs"
                 "hostSystem"
-              ] null config;
-
-              deploymentInfo.targetHost = lib.attrByPath [
+              ];
+              inventoryPath = [ "system" ];
+            })
+            # deploymentInfo.targetHost
+            // (clanToInventory config {
+              clanPath = [
                 "clan"
                 "core"
                 "networking"
                 "targetHost"
-              ] null config;
-            }
+              ];
+              inventoryPath = [
+                "deploymentInfo"
+                "targetHost"
+              ];
+            })
           ) machines;
         }
 
