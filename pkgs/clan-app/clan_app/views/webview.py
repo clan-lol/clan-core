@@ -89,12 +89,19 @@ class WebExecutor(GObject.Object):
         # Extract the data from the payload
         data = payload.get("data")
         if data is None:
-            log.error(f"Method '{method_name}' has no data field. Skipping execution.")
+            log.error(
+                f"JS function call '{method_name}' has no data field. Skipping execution."
+            )
+            return
+
+        if data.get("op_key") is None:
+            log.error(
+                f"JS function call '{method_name}' has no op_key field. Skipping execution."
+            )
             return
 
         # Initialize dataclasses from the payload
         reconciled_arguments = {}
-
         for k, v in data.items():
             # Some functions expect to be called with dataclass instances
             # But the js api returns dictionaries.
