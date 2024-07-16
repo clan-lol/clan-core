@@ -2,25 +2,31 @@
 {
   test_inventory_empty = {
     # Empty inventory should return an empty module
-    expr = buildInventory { };
+    expr = buildInventory {
+      inventory = { };
+      directory = ./.;
+    };
     expected = { };
   };
   test_inventory_role_imports =
     let
       configs = buildInventory {
-        services = {
-          borgbackup.instance_1 = {
-            roles.server.machines = [ "backup_server" ];
-            roles.client.machines = [
-              "client_1_machine"
-              "client_2_machine"
-            ];
+        directory = ./.;
+        inventory = {
+          services = {
+            borgbackup.instance_1 = {
+              roles.server.machines = [ "backup_server" ];
+              roles.client.machines = [
+                "client_1_machine"
+                "client_2_machine"
+              ];
+            };
           };
-        };
-        machines = {
-          "backup_server" = { };
-          "client_1_machine" = { };
-          "client_2_machine" = { };
+          machines = {
+            "backup_server" = { };
+            "client_1_machine" = { };
+            "client_2_machine" = { };
+          };
         };
       };
     in
@@ -49,18 +55,21 @@
   test_inventory_tag_resolve =
     let
       configs = buildInventory {
-        services = {
-          borgbackup.instance_1 = {
-            roles.client.tags = [ "backup" ];
+        directory = ./.;
+        inventory = {
+          services = {
+            borgbackup.instance_1 = {
+              roles.client.tags = [ "backup" ];
+            };
           };
-        };
-        machines = {
-          "not_used_machine" = { };
-          "client_1_machine" = {
-            tags = [ "backup" ];
-          };
-          "client_2_machine" = {
-            tags = [ "backup" ];
+          machines = {
+            "not_used_machine" = { };
+            "client_1_machine" = {
+              tags = [ "backup" ];
+            };
+            "client_2_machine" = {
+              tags = [ "backup" ];
+            };
           };
         };
       };
@@ -85,14 +94,17 @@
   test_inventory_multiple_roles =
     let
       configs = buildInventory {
-        services = {
-          borgbackup.instance_1 = {
-            roles.client.machines = [ "machine_1" ];
-            roles.server.machines = [ "machine_1" ];
+        directory = ./.;
+        inventory = {
+          services = {
+            borgbackup.instance_1 = {
+              roles.client.machines = [ "machine_1" ];
+              roles.server.machines = [ "machine_1" ];
+            };
           };
-        };
-        machines = {
-          "machine_1" = { };
+          machines = {
+            "machine_1" = { };
+          };
         };
       };
     in
@@ -112,13 +124,16 @@
   test_inventory_role_doesnt_exist =
     let
       configs = buildInventory {
-        services = {
-          borgbackup.instance_1 = {
-            roles.roleXYZ.machines = [ "machine_1" ];
+        directory = ./.;
+        inventory = {
+          services = {
+            borgbackup.instance_1 = {
+              roles.roleXYZ.machines = [ "machine_1" ];
+            };
           };
-        };
-        machines = {
-          "machine_1" = { };
+          machines = {
+            "machine_1" = { };
+          };
         };
       };
     in
@@ -132,15 +147,18 @@
   test_inventory_tag_doesnt_exist =
     let
       configs = buildInventory {
-        services = {
-          borgbackup.instance_1 = {
-            roles.client.machines = [ "machine_1" ];
-            roles.client.tags = [ "tagXYZ" ];
+        directory = ./.;
+        inventory = {
+          services = {
+            borgbackup.instance_1 = {
+              roles.client.machines = [ "machine_1" ];
+              roles.client.tags = [ "tagXYZ" ];
+            };
           };
-        };
-        machines = {
-          "machine_1" = {
-            tags = [ "tagABC" ];
+          machines = {
+            "machine_1" = {
+              tags = [ "tagABC" ];
+            };
           };
         };
       };
@@ -149,7 +167,7 @@
       expr = configs;
       expectedError = {
         type = "ThrownError";
-        msg = "Tag: '\\w+' not found";
+        msg = "no machine with tag '\\w+' found";
       };
     };
 }

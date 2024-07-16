@@ -1,13 +1,20 @@
 # Generate partial NixOS configurations for every machine in the inventory
 # This function is responsible for generating the module configuration for every machine in the inventory.
 { lib, clan-core }:
-inventory:
+{ inventory, directory }:
 let
   machines = machinesFromInventory inventory;
 
   resolveTags =
     # Inventory, { machines :: [string], tags :: [string] }
-    inventory: members: {
+    {
+      serviceName,
+      instanceName,
+      roleName,
+      inventory,
+      members,
+    }:
+    {
       machines =
         members.machines or [ ]
         ++ (builtins.foldl' (
@@ -17,14 +24,17 @@ let
             availableTags = lib.foldlAttrs (
               acc: _: v:
               v.tags or [ ] ++ acc
-            ) [ ] inventory.machines;
+            ) [ ] (lib.traceValSeq inventory.machines);
 
             tagMembers = builtins.attrNames (
               lib.filterAttrs (_n: v: builtins.elem tag v.tags or [ ]) inventory.machines
             );
           in
           if tagMembers == [ ] then
-            throw "Tag: '${tag}' not found. Available tags: ${builtins.toJSON (lib.unique availableTags)}"
+            throw ''
+              inventory.services.${serviceName}.${instanceName}: - ${roleName} tags: no machine with tag '${tag}' found.
+              Available tags: ${builtins.toJSON (lib.unique availableTags)}
+            ''
           else
             acc ++ tagMembers
         ) [ ] members.tags or [ ]);
@@ -43,7 +53,7 @@ let
       machineName: machineConfig:
       lib.foldlAttrs (
         # [ Modules ], String, { ${instance_name} :: ServiceConfig }
-        acc: moduleName: serviceConfigs:
+        acc: serviceName: serviceConfigs:
         acc
         # Collect service config
         ++ (lib.foldlAttrs (
@@ -51,7 +61,16 @@ let
           acc2: instanceName: serviceConfig:
           let
             resolvedRoles = builtins.mapAttrs (
-              _roleName: members: resolveTags inventory members
+              roleName: members:
+              resolveTags {
+                inherit
+                  serviceName
+                  instanceName
+                  roleName
+                  inventory
+                  members
+                  ;
+              }
             ) serviceConfig.roles;
 
             isInService = builtins.any (members: builtins.elem machineName members.machines) (
@@ -72,11 +91,17 @@ let
             machineServiceConfig = (serviceConfig.machines.${machineName} or { }).config or { };
             globalConfig = serviceConfig.config or { };
 
+            globalImports = serviceConfig.imports or [ ];
+            machineImports = serviceConfig.machines.${machineName}.imports or [ ];
+            roleServiceImports = builtins.foldl' (
+              acc: role: acc ++ serviceConfig.roles.${role}.imports or [ ]
+            ) [ ] inverseRoles.${machineName} or [ ];
+
             # TODO: maybe optimize this dont lookup the role in inverse roles. Imports are not lazy
             roleModules = builtins.map (
               role:
               let
-                path = "${clan-core.clanModules.${moduleName}}/roles/${role}.nix";
+                path = "${clan-core.clanModules.${serviceName}}/roles/${role}.nix";
               in
               if builtins.pathExists path then
                 path
@@ -87,13 +112,18 @@ let
             roleServiceConfigs = builtins.map (
               role: serviceConfig.roles.${role}.config or { }
             ) inverseRoles.${machineName} or [ ];
+
+            customImports = map (s: "${directory}/${s}") (
+              globalImports ++ machineImports ++ roleServiceImports
+            );
           in
+
           if isInService then
             acc2
             ++ [
               {
-                imports = [ clan-core.clanModules.${moduleName} ] ++ roleModules;
-                config.clan.${moduleName} = lib.mkMerge (
+                imports = [ clan-core.clanModules.${serviceName} ] ++ roleModules ++ customImports;
+                config.clan.${serviceName} = lib.mkMerge (
                   [
                     globalConfig
                     machineServiceConfig
@@ -102,7 +132,7 @@ let
                 );
               }
               {
-                config.clan.inventory.services.${moduleName}.${instanceName} = {
+                config.clan.inventory.services.${serviceName}.${instanceName} = {
                   roles = resolvedRoles;
                   # TODO: Add inverseRoles to the service config if needed
                   # inherit inverseRoles;
