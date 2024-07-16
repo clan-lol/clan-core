@@ -17,9 +17,9 @@ log = logging.getLogger(__name__)
 
 
 class WebExecutor(GObject.Object):
-    def __init__(self, content_uri: str, plain_api: MethodRegistry) -> None:
+    def __init__(self, content_uri: str, jschema_api: MethodRegistry) -> None:
         super().__init__()
-        self.plain_api: MethodRegistry = plain_api
+        self.jschema_api: MethodRegistry = jschema_api
         self.webview: WebKit.WebView = WebKit.WebView()
 
         settings: WebKit.Settings = self.webview.get_settings()
@@ -40,10 +40,10 @@ class WebExecutor(GObject.Object):
         self.webview.load_uri(content_uri)
         self.content_uri = content_uri
 
-        self.api: GObjApi = GObjApi(self.plain_api.functions)
+        self.api: GObjApi = GObjApi(self.jschema_api.functions)
 
         self.api.overwrite_fn(open_file)
-        self.api.check_signature(self.plain_api.annotations)
+        self.api.check_signature(self.jschema_api.signatures)
 
     def on_decide_policy(
         self,
@@ -94,30 +94,25 @@ class WebExecutor(GObject.Object):
 
         # Initialize dataclasses from the payload
         reconciled_arguments = {}
-        op_key = data.pop("op_key", None)
+
         for k, v in data.items():
             # Some functions expect to be called with dataclass instances
             # But the js api returns dictionaries.
             # Introspect the function and create the expected dataclass from dict dynamically
             # Depending on the introspected argument_type
-            arg_class = self.plain_api.get_method_argtype(method_name, k)
+            arg_class = self.jschema_api.get_method_argtype(method_name, k)
             if dataclasses.is_dataclass(arg_class):
                 reconciled_arguments[k] = from_dict(arg_class, v)
             else:
                 reconciled_arguments[k] = v
 
-        GLib.idle_add(
-            fn_instance._async_run,
-            reconciled_arguments,
-            op_key,
-        )
+        GLib.idle_add(fn_instance._async_run, reconciled_arguments)
 
     def on_result(self, source: ImplFunc, data: GResult) -> None:
-        result = dict()
-        result["result"] = dataclass_to_dict(data.result)
-        result["op_key"] = data.op_key
+        result = dataclass_to_dict(data.result)
         serialized = json.dumps(result, indent=4)
         log.debug(f"Result for {data.method_name}: {serialized}")
+
         # Use idle_add to queue the response call to js on the main GTK thread
         self.return_data_to_js(data.method_name, serialized)
 

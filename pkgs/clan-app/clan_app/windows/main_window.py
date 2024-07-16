@@ -36,7 +36,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         stack_view = ViewStack.use().view
 
-        webexec = WebExecutor(plain_api=API, content_uri=config.content_uri)
+        webexec = WebExecutor(jschema_api=API, content_uri=config.content_uri)
 
         stack_view.add_named(webexec.get_webview(), "webview")
         stack_view.set_visible_child_name(config.initial_view)
