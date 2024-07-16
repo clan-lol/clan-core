@@ -72,6 +72,13 @@ let
                 "nixpkgs"
                 "hostSystem"
               ] null config;
+
+              deploymentInfo.targetHost = lib.attrByPath [
+                "clan"
+                "core"
+                "networking"
+                "targetHost"
+              ] null config;
             }
           ) machines;
         }

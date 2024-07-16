@@ -49,6 +49,17 @@ in
               default = null;
               type = types.nullOr types.str;
             };
+            deploymentInfo = lib.mkOption {
+              default = { };
+              type = types.submodule {
+                options = {
+                  targetHost = lib.mkOption {
+                    default = null;
+                    type = types.nullOr types.str;
+                  };
+                };
+              };
+            };
           };
         }
       );
