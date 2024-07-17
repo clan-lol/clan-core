@@ -28,7 +28,13 @@ in
         let
           fullPath = borgbackupIpMachinePath machine;
         in
-        if builtins.pathExists fullPath then machine else null
+        if builtins.pathExists fullPath then
+          machine
+        else
+          lib.warn ''
+            Machine ${machine} does not have a borgbackup key at ${fullPath},
+            run `clan facts generate ${machine}` to generate it.
+          '' null
       ) allClients;
 
       machinesWithKey = lib.filter (x: x != null) machinesMaybeKey;
