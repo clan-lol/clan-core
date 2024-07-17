@@ -26,7 +26,7 @@ let
   desktop-file = makeDesktopItem {
     name = "org.clan.app";
     exec = "clan-app %u";
-    icon = ./clan_app/assets/clan_white.png;
+    icon = "clan-white";
     desktopName = "Clan App";
     startupWMClass = "clan";
     mimeTypes = [ "x-scheme-handler/clan" ];
@@ -142,10 +142,11 @@ python3.pkgs.buildPythonApplication rec {
   passthru.runtimeDependencies = runtimeDependencies;
   passthru.testDependencies = testDependencies;
 
-  # TODO: place webui in lib/python3.11/site-packages/clan_app
   postInstall = ''
-    mkdir -p $out/clan_app/.webui
-    cp -r ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/* $out/clan_app/.webui
+    mkdir -p $out/${python3.sitePackages}/clan_app/.webui
+    cp -r ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/* $out/${python3.sitePackages}/clan_app/.webui
+    mkdir -p $out/share/icons/hicolor
+    cp -r ./clan_app/assets/white-favicons/* $out/share/icons/hicolor
   '';
 
   # Don't leak python packages into a devshell.
