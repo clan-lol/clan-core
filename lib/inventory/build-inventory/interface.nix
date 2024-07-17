@@ -41,6 +41,7 @@ in
           options = {
             inherit (metaOptions) name description icon;
             tags = lib.mkOption {
+
               default = [ ];
               apply = lib.unique;
               type = types.listOf types.str;
@@ -49,16 +50,10 @@ in
               default = null;
               type = types.nullOr types.str;
             };
-            deploy = lib.mkOption {
-              default = { };
-              type = types.submodule {
-                options = {
-                  targetHost = lib.mkOption {
-                    default = null;
-                    type = types.nullOr types.str;
-                  };
-                };
-              };
+            deploy.targetHost = lib.mkOption {
+              description = "Configuration for the deployment of the machine";
+              default = null;
+              type = types.nullOr types.str;
             };
           };
         }

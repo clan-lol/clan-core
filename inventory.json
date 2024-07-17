@@ -26,9 +26,6 @@
         },
         "roles": {
           "default": {
-            "config": {
-              "packages": ["vim"]
-            },
             "imports": [],
             "machines": ["test-inventory-machine"],
             "tags": []

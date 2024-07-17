@@ -318,7 +318,7 @@ rec {
     # return jsonschema property definition for submodule
     # then (lib.attrNames (option.type.getSubOptions option.loc).opt)
     then
-      parseOptions' (option.type.getSubOptions option.loc)
+      example // description // parseOptions' (option.type.getSubOptions option.loc)
     # throw error if option type is not supported
     else
       notSupported option;
