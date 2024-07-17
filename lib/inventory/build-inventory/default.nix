@@ -24,7 +24,7 @@ let
             availableTags = lib.foldlAttrs (
               acc: _: v:
               v.tags or [ ] ++ acc
-            ) [ ] (lib.traceValSeq inventory.machines);
+            ) [ ] (inventory.machines);
 
             tagMembers = builtins.attrNames (
               lib.filterAttrs (_n: v: builtins.elem tag v.tags or [ ]) inventory.machines
@@ -147,6 +147,9 @@ let
       ++ [
         (lib.optionalAttrs (machineConfig.system or null != null) {
           config.nixpkgs.hostPlatform = machineConfig.system;
+        })
+        (lib.optionalAttrs (machineConfig.deploy.targetHost or null != null) {
+          config.clan.core.networking.targetHost = machineConfig.deploy.targetHost;
         })
       ]
     ) inventory.machines or { };
