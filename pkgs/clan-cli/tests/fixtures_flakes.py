@@ -32,6 +32,10 @@ def substitute(
             line = line.replace(
                 "git+https://git.clan.lol/clan/clan-core", str(clan_core_flake)
             )
+            line = line.replace(
+                "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
+                str(clan_core_flake),
+            )
         line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
         line = line.replace("__CLAN_SOPS_KEY_DIR__", str(flake))
         print(line, end="")

@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from fixtures_flakes import substitute
 from helpers import cli
 
 
@@ -17,7 +18,15 @@ def test_create_flake(
 
     url = f"{clan_core}#default"
     cli.run(["flakes", "create", str(flake_dir), f"--url={url}"])
+
     assert (flake_dir / ".clan-flake").exists()
+
+    # Replace the inputs.clan.url in the template flake.nix
+    substitute(
+        flake_dir / "flake.nix",
+        clan_core,
+    )
+
     monkeypatch.chdir(flake_dir)
     cli.run(["machines", "create", "machine1"])
     capsys.readouterr()  # flush cache
@@ -55,6 +64,13 @@ def test_ui_template(
     flake_dir = temporary_home / "test-flake"
     url = f"{clan_core}#minimal"
     cli.run(["flakes", "create", str(flake_dir), f"--url={url}"])
+
+    # Replace the inputs.clan.url in the template flake.nix
+    substitute(
+        flake_dir / "flake.nix",
+        clan_core,
+    )
+
     monkeypatch.chdir(flake_dir)
     cli.run(["machines", "create", "machine1"])
     capsys.readouterr()  # flush cache
