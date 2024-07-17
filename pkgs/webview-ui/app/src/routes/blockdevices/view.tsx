@@ -15,6 +15,7 @@ export const BlockDevicesView: Component = () => {
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
+    staleTime: 1000 * 60 * 5,
   }));
 
   return (
