@@ -80,9 +80,9 @@ function createFunctions<K extends OperationNames>(
       registry[operationName][id] = fn;
 
       window.clan[operationName] = (s: string) => {
-        const f = (response: GtkResponse<OperationResponse<K>>) => {
+        const f = (response: OperationResponse<K>) => {
           if (response.op_key === id) {
-            registry[operationName][id](response.result);
+            registry[operationName][id](response);
           }
         };
         deserialize(f)(s);
@@ -121,6 +121,7 @@ export const callApi = <K extends OperationNames>(
   return new Promise<OperationResponse<K>>((resolve, reject) => {
     const id = nanoid();
     pyApi[method].receive((response) => {
+      console.log("Received response: ", { response });
       if (response.status === "error") {
         reject(response);
       }
@@ -132,10 +133,10 @@ export const callApi = <K extends OperationNames>(
 };
 
 const deserialize =
-  <T>(fn: (response: GtkResponse<T>) => void) =>
+  <T>(fn: (response: T) => void) =>
   (str: string) => {
     try {
-      const r = JSON.parse(str) as GtkResponse<T>;
+      const r = JSON.parse(str) as T;
       console.log("Received: ", r);
       fn(r);
     } catch (e) {
