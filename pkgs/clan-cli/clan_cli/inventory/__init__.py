@@ -1,3 +1,5 @@
+# ruff: noqa: N815
+# ruff: noqa: N806
 import json
 from dataclasses import asdict, dataclass, field, is_dataclass
 from pathlib import Path
@@ -41,7 +43,7 @@ class DeploymentInfo:
     Deployment information for a machine.
     """
 
-    target_host: str | None = None
+    targetHost: str | None = None
 
 
 @dataclass
@@ -58,30 +60,28 @@ class Machine:
     """
 
     name: str
+    deploy: DeploymentInfo = field(default_factory=DeploymentInfo)
     description: str | None = None
     icon: str | None = None
     tags: list[str] = field(default_factory=list)
     system: Literal["x86_64-linux"] | str | None = None
 
-    deploy: DeploymentInfo | None = None
-
     @staticmethod
-    def from_dict(d: dict[str, Any]) -> "Machine":
+    def from_dict(data: dict[str, Any]) -> "Machine":
+        targetHost = data.get("deploy", {}).get("targetHost", None)
         return Machine(
-            name=d["name"],
-            description=d.get("description", None),
-            icon=d.get("icon", None),
-            tags=d.get("tags", []),
-            system=d.get("system", None),
-            deploy=DeploymentInfo(
-                target_host=d.get("deploy", {}).get("targetHost", None)
-            ),
+            name=data["name"],
+            description=data.get("description", None),
+            icon=data.get("icon", None),
+            tags=data.get("tags", []),
+            system=data.get("system", None),
+            deploy=DeploymentInfo(targetHost),
         )
 
 
 @dataclass
 class MachineServiceConfig:
-    config: dict[str, Any] | None = None
+    config: dict[str, Any] = field(default_factory=dict)
     imports: list[str] = field(default_factory=list)
 
 
@@ -94,7 +94,7 @@ class ServiceMeta:
 
 @dataclass
 class Role:
-    config: dict[str, Any] | None = None
+    config: dict[str, Any] = field(default_factory=dict)
     imports: list[str] = field(default_factory=list)
     machines: list[str] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
@@ -104,7 +104,7 @@ class Role:
 class Service:
     meta: ServiceMeta
     roles: dict[str, Role]
-    config: dict[str, Any] | None = None
+    config: dict[str, Any] = field(default_factory=dict)
     imports: list[str] = field(default_factory=list)
     machines: dict[str, MachineServiceConfig] = field(default_factory=dict)
 
@@ -121,7 +121,7 @@ class Service:
                 if d.get("machines")
                 else {}
             ),
-            config=d.get("config", None),
+            config=d.get("config", {}),
             imports=d.get("imports", []),
         )
 

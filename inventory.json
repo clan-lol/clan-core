@@ -7,13 +7,13 @@
   "machines": {
     "test-inventory-machine": {
       "name": "foo",
+      "deploy": {
+        "targetHost": null
+      },
       "description": "A nice thing",
       "icon": "./path/to/icon.png",
       "tags": ["1", "2", "3"],
-      "system": "x86_64-linux",
-      "deploy": {
-        "targetHost": "root@remote.com"
-      }
+      "system": "x86_64-linux"
     }
   },
   "services": {
@@ -26,14 +26,16 @@
         },
         "roles": {
           "default": {
-            "machines": ["test-inventory-machine"],
-            "tags": [],
             "config": {
               "packages": ["vim"]
             },
-            "imports": []
+            "imports": [],
+            "machines": ["test-inventory-machine"],
+            "tags": []
           }
         },
+        "config": {},
+        "imports": [],
         "machines": {
           "test-inventory-machine": {
             "config": {
@@ -41,9 +43,7 @@
             },
             "imports": []
           }
-        },
-        "config": null,
-        "imports": []
+        }
       },
       "browsing": {
         "meta": {
@@ -53,12 +53,14 @@
         },
         "roles": {
           "default": {
+            "config": {},
+            "imports": [],
             "machines": ["test-inventory-machine"],
-            "tags": [],
-            "config": null,
-            "imports": []
+            "tags": []
           }
         },
+        "config": {},
+        "imports": [],
         "machines": {
           "test-inventory-machine": {
             "config": {
@@ -66,9 +68,7 @@
             },
             "imports": []
           }
-        },
-        "config": null,
-        "imports": []
+        }
       }
     },
     "single-disk": {
@@ -80,12 +80,14 @@
         },
         "roles": {
           "default": {
+            "config": {},
+            "imports": [],
             "machines": ["test-inventory-machine"],
-            "tags": [],
-            "config": null,
-            "imports": []
+            "tags": []
           }
         },
+        "config": {},
+        "imports": [],
         "machines": {
           "test-inventory-machine": {
             "config": {
@@ -93,9 +95,7 @@
             },
             "imports": []
           }
-        },
-        "config": null,
-        "imports": []
+        }
       }
     }
   }
