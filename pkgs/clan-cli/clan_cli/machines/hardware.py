@@ -9,7 +9,7 @@ from clan_cli.errors import ClanError
 
 from ..cmd import run, run_no_stdout
 from ..completions import add_dynamic_completer, complete_machines
-from ..nix import nix_config, nix_eval, run_cmd
+from ..nix import nix_config, nix_eval, nix_shell
 from .types import machine_name_type
 
 log = logging.getLogger(__name__)
@@ -98,12 +98,12 @@ def generate_machine_hardware_info(
     Generate hardware information for a machine
     and place the resulting *.nix file in the machine's directory.
     """
-    cmd = run_cmd(
+    cmd = nix_shell(
         [
-            "openssh",
-            "sshpass",
+            "nixpkgs#openssh",
+            "nixpkgs#sshpass",
             # Provides nixos-generate-config on non-NixOS systems
-            "nixos-install-tools",
+            "nixpkgs#nixos-install-tools",
         ],
         [
             *(["sshpass", "-p", f"{password}"] if password else []),
