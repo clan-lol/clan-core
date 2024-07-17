@@ -129,6 +129,10 @@ def run_gen(args: argparse.Namespace) -> None:
     with open(args.output, "w") as f:
         f.write(
             """
+# DON NOT EDIT THIS FILE MANUALLY. IT IS GENERATED.
+# UPDATE:
+# ruff: noqa: N815
+# ruff: noqa: N806
 from dataclasses import dataclass
 from typing import Any\n\n
 """
