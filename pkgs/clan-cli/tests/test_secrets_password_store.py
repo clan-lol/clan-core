@@ -10,7 +10,7 @@ from clan_cli.clan_uri import FlakeId
 from clan_cli.facts.secret_modules.password_store import SecretStore
 from clan_cli.machines.facts import machine_get_fact
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import run_cmd
+from clan_cli.nix import nix_shell
 from clan_cli.ssh import HostGroup
 
 
@@ -38,10 +38,14 @@ def test_upload_secret(
     """
     )
     subprocess.run(
-        run_cmd(["gnupg"], ["gpg", "--batch", "--gen-key", str(gpg_key_spec)]),
+        nix_shell(
+            ["nixpkgs#gnupg"], ["gpg", "--batch", "--gen-key", str(gpg_key_spec)]
+        ),
         check=True,
     )
-    subprocess.run(run_cmd(["pass"], ["pass", "init", "test@local"]), check=True)
+    subprocess.run(
+        nix_shell(["nixpkgs#pass"], ["pass", "init", "test@local"]), check=True
+    )
     cli.run(["facts", "generate", "vm1"])
 
     store = SecretStore(

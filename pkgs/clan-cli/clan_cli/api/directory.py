@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from clan_cli.errors import ClanError
-from clan_cli.nix import run_cmd, run_no_stdout
+from clan_cli.nix import nix_shell, run_no_stdout
 
 from . import API
 
@@ -117,7 +117,7 @@ def show_block_devices() -> Blockdevices:
     Abstract api method to show block devices.
     It must return a list of block devices.
     """
-    cmd = run_cmd(["util-linux"], ["lsblk", "--json"])
+    cmd = nix_shell(["nixpkgs#util-linux"], ["lsblk", "--json"])
     proc = run_no_stdout(cmd)
     res = proc.stdout.strip()
 

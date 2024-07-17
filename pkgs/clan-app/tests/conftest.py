@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 from clan_cli.custom_logger import setup_logging
-from clan_cli.nix import run_cmd
+from clan_cli.nix import nix_shell
 
 pytest_plugins = [
     "temporary_dir",
@@ -27,12 +27,12 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 @pytest.fixture
 def git_repo(tmp_path: Path) -> Path:
     # initialize a git repository
-    cmd = run_cmd(["git"], ["git", "init"])
+    cmd = nix_shell(["nixpkgs#git"], ["git", "init"])
     subprocess.run(cmd, cwd=tmp_path, check=True)
     # set user.name and user.email
-    cmd = run_cmd(["git"], ["git", "config", "user.name", "test"])
+    cmd = nix_shell(["nixpkgs#git"], ["git", "config", "user.name", "test"])
     subprocess.run(cmd, cwd=tmp_path, check=True)
-    cmd = run_cmd(["git"], ["git", "config", "user.email", "test@test.test"])
+    cmd = nix_shell(["nixpkgs#git"], ["git", "config", "user.email", "test@test.test"])
     subprocess.run(cmd, cwd=tmp_path, check=True)
     # return the path to the git repository
     return tmp_path
