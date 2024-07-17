@@ -39,7 +39,7 @@ in
     vars = {
       generators = lib.flip lib.mapAttrs config.clan.core.vars.generators (
         _name: generator: {
-          inherit (generator) finalScript;
+          inherit (generator) dependencies finalScript;
           files = lib.flip lib.mapAttrs generator.files (_name: file: { inherit (file) secret; });
         }
       );

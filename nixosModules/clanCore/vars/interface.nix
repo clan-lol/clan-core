@@ -44,7 +44,7 @@ in
               description = ''
                 A list of other generators that this generator depends on.
                 The output values of these generators will be available to the generator script as files.
-                For example, the file 'file1' of a dependency named 'dep1' will be available via $dependencies/dep1/file1.
+                For example, the file 'file1' of a dependency named 'dep1' will be available via $in/dep1/file1.
               '';
               type = listOf str;
               default = [ ];
@@ -147,7 +147,7 @@ in
               description = ''
                 The script to run to generate the files.
                 The script will be run with the following environment variables:
-                  - $dependencies: The directory containing the output values of all declared dependencies
+                  - $in: The directory containing the output values of all declared dependencies
                   - $out: The output directory to put the generated files
                   - $prompts: The directory containing the prompted values as files
                 The script should produce the files specified in the 'files' attribute under $out.
