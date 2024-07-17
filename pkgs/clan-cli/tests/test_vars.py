@@ -2,6 +2,7 @@ import os
 from collections import defaultdict
 from collections.abc import Callable
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any
 
 import pytest
@@ -21,6 +22,50 @@ def def_value() -> defaultdict:
 
 # allows defining nested dictionary in a single line
 nested_dict: Callable[[], dict[str, Any]] = lambda: defaultdict(def_value)
+
+
+def test_get_subgraph() -> None:
+    from clan_cli.vars.generate import _get_subgraph
+
+    graph = dict(
+        a={"b", "c"},
+        b={"c"},
+        c=set(),
+        d=set(),
+    )
+    assert _get_subgraph(graph, "a") == {
+        "a": {"b", "c"},
+        "b": {"c"},
+        "c": set(),
+    }
+    assert _get_subgraph(graph, "b") == {"b": {"c"}, "c": set()}
+
+
+def test_dependencies_as_files() -> None:
+    from clan_cli.vars.generate import dependencies_as_dir
+
+    decrypted_dependencies = dict(
+        gen_1=dict(
+            var_1a=b"var_1a",
+            var_1b=b"var_1b",
+        ),
+        gen_2=dict(
+            var_2a=b"var_2a",
+            var_2b=b"var_2b",
+        ),
+    )
+    with TemporaryDirectory() as tmpdir:
+        dep_tmpdir = dependencies_as_dir(decrypted_dependencies, Path(tmpdir))
+        assert dep_tmpdir.is_dir()
+        assert (dep_tmpdir / "gen_1" / "var_1a").read_bytes() == b"var_1a"
+        assert (dep_tmpdir / "gen_1" / "var_1b").read_bytes() == b"var_1b"
+        assert (dep_tmpdir / "gen_2" / "var_2a").read_bytes() == b"var_2a"
+        assert (dep_tmpdir / "gen_2" / "var_2b").read_bytes() == b"var_2b"
+        # ensure the files are not world readable
+        assert (dep_tmpdir / "gen_1" / "var_1a").stat().st_mode & 0o777 == 0o600
+        assert (dep_tmpdir / "gen_1" / "var_1b").stat().st_mode & 0o777 == 0o600
+        assert (dep_tmpdir / "gen_2" / "var_2a").stat().st_mode & 0o777 == 0o600
+        assert (dep_tmpdir / "gen_2" / "var_2b").stat().st_mode & 0o777 == 0o600
 
 
 @pytest.mark.impure
@@ -155,3 +200,35 @@ def test_generate_secret_for_multiple_machines(
     assert sops_store2.exists("my_generator", "my_secret")
     assert sops_store1.get("my_generator", "my_secret").decode() == "machine1\n"
     assert sops_store2.get("my_generator", "my_secret").decode() == "machine2\n"
+
+
+@pytest.mark.impure
+def test_dependant_generators(
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+) -> None:
+    config = nested_dict()
+    parent_gen = config["clan"]["core"]["vars"]["generators"]["parent_generator"]
+    parent_gen["files"]["my_value"]["secret"] = False
+    parent_gen["script"] = "echo hello > $out/my_value"
+    child_gen = config["clan"]["core"]["vars"]["generators"]["child_generator"]
+    child_gen["files"]["my_value"]["secret"] = False
+    child_gen["dependencies"] = ["parent_generator"]
+    child_gen["script"] = "cat $in/parent_generator/my_value > $out/my_value"
+    flake = generate_flake(
+        temporary_home,
+        flake_template=CLAN_CORE / "templates" / "minimal",
+        machine_configs=dict(my_machine=config),
+    )
+    monkeypatch.chdir(flake.path)
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+    parent_file_path = (
+        flake.path / "machines" / "my_machine" / "vars" / "child_generator" / "my_value"
+    )
+    assert parent_file_path.is_file()
+    assert parent_file_path.read_text() == "hello\n"
+    child_file_path = (
+        flake.path / "machines" / "my_machine" / "vars" / "child_generator" / "my_value"
+    )
+    assert child_file_path.is_file()
+    assert child_file_path.read_text() == "hello\n"
