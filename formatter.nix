@@ -13,10 +13,16 @@
       treefmt.programs.deadnix.enable = true;
 
       treefmt.programs.mypy.directories = {
-        "pkgs/clan-cli".extraPythonPackages = self'.packages.clan-cli.testDependencies;
-        "pkgs/clan-app".extraPythonPackages =
-          # clan-app currently only exists on linux
-          (self'.packages.clan-app.externalTestDeps or [ ]) ++ self'.packages.clan-cli.testDependencies;
+        "pkgs/clan-cli" = {
+          extraPythonPackages = self'.packages.clan-cli.testDependencies;
+          modules = [ "clan_cli" ];
+        };
+        "pkgs/clan-app" = {
+          extraPythonPackages =
+            # clan-app currently only exists on linux
+            (self'.packages.clan-app.externalTestDeps or [ ]) ++ self'.packages.clan-cli.testDependencies;
+          modules = [ "clan_app" ];
+        };
       };
       treefmt.programs.ruff.check = true;
       treefmt.programs.ruff.format = true;
