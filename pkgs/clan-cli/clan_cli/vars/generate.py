@@ -8,6 +8,7 @@ from collections.abc import Callable
 from graphlib import TopologicalSorter
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Any
 
 from clan_cli.cmd import run
 
@@ -71,7 +72,7 @@ def decrypt_dependencies(
 ) -> dict[str, dict[str, bytes]]:
     generator = machine.vars_generators[generator_name]
     dependencies = set(generator["dependencies"])
-    decrypted_dependencies = {}
+    decrypted_dependencies: dict[str, Any] = {}
     for dep_generator in dependencies:
         decrypted_dependencies[dep_generator] = {}
         dep_files = machine.vars_generators[dep_generator]["files"]
@@ -242,6 +243,7 @@ def _generate_vars_for_machine(
     # process generators in topological order
     sorter = TopologicalSorter(graph)
     for generator_name in sorter.static_order():
+        assert generator_name is not None
         machine_updated |= execute_generator(
             machine=machine,
             generator_name=generator_name,
