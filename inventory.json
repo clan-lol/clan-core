@@ -1,77 +1,99 @@
 {
   "meta": {
-    "name": "clan-core"
+    "name": "clan-core",
+    "description": null,
+    "icon": null
   },
   "machines": {
-    "minimal-inventory-machine": {
+    "test-inventory-machine": {
       "name": "foo",
-      "system": "x86_64-linux",
+      "deploy": {
+        "targetHost": null
+      },
       "description": "A nice thing",
       "icon": "./path/to/icon.png",
-      "tags": ["1", "2", "3"]
+      "tags": ["1", "2", "3"],
+      "system": "x86_64-linux"
     }
   },
   "services": {
     "packages": {
       "editors": {
         "meta": {
-          "name": "Some editor packages"
+          "name": "Some editor packages",
+          "description": null,
+          "icon": null
         },
         "roles": {
           "default": {
-            "machines": ["minimal-inventory-machine"],
             "config": {
               "packages": ["vim"]
-            }
+            },
+            "imports": [],
+            "machines": ["test-inventory-machine"],
+            "tags": []
           }
         },
+        "config": {},
+        "imports": [],
         "machines": {
-          "minimal-inventory-machine": {
+          "test-inventory-machine": {
             "config": {
               "packages": ["zed-editor"]
-            }
+            },
+            "imports": []
           }
-        },
-        "config": {
-          "packages": ["vim"]
         }
       },
       "browsing": {
         "meta": {
-          "name": "Web browsing packages"
+          "name": "Web browsing packages",
+          "description": null,
+          "icon": null
         },
         "roles": {
           "default": {
-            "machines": ["minimal-inventory-machine"]
+            "config": {},
+            "imports": [],
+            "machines": ["test-inventory-machine"],
+            "tags": []
           }
         },
+        "config": {},
+        "imports": [],
         "machines": {
-          "minimal-inventory-machine": {
+          "test-inventory-machine": {
             "config": {
               "packages": ["chromium"]
-            }
+            },
+            "imports": []
           }
-        },
-        "config": {
-          "packages": ["firefox"]
         }
       }
     },
     "single-disk": {
       "default": {
         "meta": {
-          "name": "single-disk"
+          "name": "single-disk",
+          "description": null,
+          "icon": null
         },
         "roles": {
           "default": {
-            "machines": ["minimal-inventory-machine"]
+            "config": {},
+            "imports": [],
+            "machines": ["test-inventory-machine"],
+            "tags": []
           }
         },
+        "config": {},
+        "imports": [],
         "machines": {
-          "minimal-inventory-machine": {
+          "test-inventory-machine": {
             "config": {
               "device": "/dev/null"
-            }
+            },
+            "imports": []
           }
         }
       }

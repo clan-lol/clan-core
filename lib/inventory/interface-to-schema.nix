@@ -53,7 +53,9 @@ let
           properties = {
             meta =
               inventorySchema.properties.services.additionalProperties.additionalProperties.properties.meta;
-            config = moduleSchema;
+            config = {
+              title = "${moduleName}-config";
+            } // moduleSchema;
             roles = {
               type = "object";
               additionalProperties = false;
@@ -62,14 +64,24 @@ let
                 map (role: {
                   name = role;
                   value =
-                    inventorySchema.properties.services.additionalProperties.additionalProperties.properties.roles.additionalProperties;
+                    lib.recursiveUpdate
+                      inventorySchema.properties.services.additionalProperties.additionalProperties.properties.roles.additionalProperties
+                      {
+                        properties.config = {
+                          title = "${moduleName}-config";
+                        } // moduleSchema;
+                      };
                 }) (rolesOf moduleName)
               );
             };
             machines =
               lib.recursiveUpdate
                 inventorySchema.properties.services.additionalProperties.additionalProperties.properties.machines
-                { additionalProperties.properties.config = moduleSchema; };
+                {
+                  additionalProperties.properties.config = {
+                    title = "${moduleName}-config";
+                  } // moduleSchema;
+                };
           };
         };
       };
@@ -95,4 +107,21 @@ let
       };
     };
 in
-schema
+{
+  /*
+    The abstract inventory without the exact schema for each module filled
+
+    InventorySchema<T extends Any> :: {
+      serviceConfig :: dict[str, T];
+    }
+  */
+  abstractSchema = inventorySchema;
+  /*
+    The inventory with each module schema filled.
+
+    InventorySchema<T extends ModuleSchema> :: {
+      ${serviceConfig} :: T; # <- each concrete module name is filled
+    }
+  */
+  schemaWithModules = schema;
+}

@@ -23,10 +23,19 @@ in
       };
 
       getSchema = import ./interface-to-schema.nix { inherit lib self; };
+
+      # The schema for the inventory, without default values, from the module system.
+      # This is better suited for human reading and for generating code.
+      bareSchema = getSchema { includeDefaults = false; };
+      # The schema for the inventory with default values, from the module system.
+      # This is better suited for validation, since default values are included.
+      fullSchema = getSchema { };
     in
     {
-      legacyPackages.inventorySchema = getSchema { };
-      legacyPackages.inventorySchemaPretty = getSchema { includeDefaults = false; };
+      legacyPackages.inventory = {
+        inherit fullSchema;
+        inherit bareSchema;
+      };
 
       devShells.inventory-schema = pkgs.mkShell {
         inputsFrom = with config.checks; [
@@ -42,7 +51,7 @@ in
         buildInputs = [ pkgs.cue ];
         src = ./.;
         buildPhase = ''
-          export SCHEMA=${builtins.toFile "inventory-schema.json" (builtins.toJSON self'.legacyPackages.inventorySchema)}
+          export SCHEMA=${builtins.toFile "inventory-schema.json" (builtins.toJSON fullSchema.schemaWithModules)}
           cp $SCHEMA schema.json
           cue import -f -p compose -l '#Root:' schema.json
           mkdir $out
@@ -55,7 +64,7 @@ in
         buildInputs = [ pkgs.cue ];
         src = ./.;
         buildPhase = ''
-          export SCHEMA=${builtins.toFile "inventory-schema.json" (builtins.toJSON self'.legacyPackages.inventorySchemaPretty)}
+          export SCHEMA=${builtins.toFile "inventory-schema.json" (builtins.toJSON bareSchema.schemaWithModules)}
           cp $SCHEMA schema.json
           cue import -f -p compose -l '#Root:' schema.json
           mkdir $out

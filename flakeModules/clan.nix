@@ -120,8 +120,8 @@ in
         machines
         pkgsForSystem
         meta
+        inventory
         ;
-      inventory = (lib.traceValSeq cfg.inventory);
     };
   };
   _file = __curPos.file;
