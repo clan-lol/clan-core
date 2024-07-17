@@ -27,6 +27,7 @@
           merge-after-ci = pkgs.callPackage ./merge-after-ci { inherit (config.packages) tea-create-pr; };
           pending-reviews = pkgs.callPackage ./pending-reviews { };
           editor = pkgs.callPackage ./editor/clan-edit-codium.nix { };
+          classgen = pkgs.callPackage ./classgen { };
         }
         // lib.optionalAttrs pkgs.stdenv.isLinux {
           # halalify zerotierone
