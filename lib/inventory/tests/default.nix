@@ -85,9 +85,9 @@
         not_used_machine = builtins.length configs.not_used_machine;
       };
       expected = {
-        client_1_machine = 3;
-        client_2_machine = 3;
-        not_used_machine = 1;
+        client_1_machine = 4;
+        client_2_machine = 4;
+        not_used_machine = 2;
       };
     };
 
