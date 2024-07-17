@@ -49,7 +49,7 @@ in
               default = null;
               type = types.nullOr types.str;
             };
-            deploymentInfo = lib.mkOption {
+            deploy = lib.mkOption {
               default = { };
               type = types.submodule {
                 options = {

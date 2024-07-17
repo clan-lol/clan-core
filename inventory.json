@@ -11,8 +11,8 @@
       "icon": "./path/to/icon.png",
       "tags": ["1", "2", "3"],
       "system": "x86_64-linux",
-      "deployment_info": {
-        "target_host": "root@remote.com"
+      "deploy": {
+        "targetHost": "root@remote.com"
       }
     }
   },

@@ -148,8 +148,8 @@ let
         (lib.optionalAttrs (machineConfig.system or null != null) {
           config.nixpkgs.hostPlatform = machineConfig.system;
         })
-        (lib.optionalAttrs (machineConfig.deploymentInfo.targetHost or null != null) {
-          config.clan.core.networking.targetHost = machineConfig.deploymentInfo.targetHost;
+        (lib.optionalAttrs (machineConfig.deploy.targetHost or null != null) {
+          config.clan.core.networking.targetHost = machineConfig.deploy.targetHost;
         })
       ]
     ) inventory.machines or { };

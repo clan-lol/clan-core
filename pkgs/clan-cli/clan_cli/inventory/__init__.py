@@ -63,7 +63,7 @@ class Machine:
     tags: list[str] = field(default_factory=list)
     system: Literal["x86_64-linux"] | str | None = None
 
-    deployment_info: DeploymentInfo | None = None
+    deploy: DeploymentInfo | None = None
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Machine":
@@ -73,8 +73,8 @@ class Machine:
             icon=d.get("icon", None),
             tags=d.get("tags", []),
             system=d.get("system", None),
-            deployment_info=DeploymentInfo(
-                target_host=d.get("deploymentInfo", {}).get("targetHost", None)
+            deploy=DeploymentInfo(
+                target_host=d.get("deploy", {}).get("targetHost", None)
             ),
         )
 
