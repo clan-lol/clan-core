@@ -82,6 +82,7 @@ class Machine:
 @dataclass
 class MachineServiceConfig:
     config: dict[str, Any] | None = None
+    imports: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -93,6 +94,8 @@ class ServiceMeta:
 
 @dataclass
 class Role:
+    config: dict[str, Any] | None = None
+    imports: list[str] = field(default_factory=list)
     machines: list[str] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
 
@@ -101,6 +104,8 @@ class Role:
 class Service:
     meta: ServiceMeta
     roles: dict[str, Role]
+    config: dict[str, Any] | None = None
+    imports: list[str] = field(default_factory=list)
     machines: dict[str, MachineServiceConfig] = field(default_factory=dict)
 
     @staticmethod
@@ -116,6 +121,8 @@ class Service:
                 if d.get("machines")
                 else {}
             ),
+            config=d.get("config", None),
+            imports=d.get("imports", []),
         )
 
 
