@@ -6,7 +6,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from ..errors import ClanError
-from ..nix import run_cmd
+from ..nix import nix_shell
 
 
 @contextlib.contextmanager
@@ -14,8 +14,8 @@ def start_virtiofsd(socket_path: Path) -> Iterator[None]:
     sandbox = "namespace"
     if shutil.which("newuidmap") is None:
         sandbox = "none"
-    virtiofsd = run_cmd(
-        ["virtiofsd"],
+    virtiofsd = nix_shell(
+        ["nixpkgs#virtiofsd"],
         [
             "virtiofsd",
             "--socket-path",

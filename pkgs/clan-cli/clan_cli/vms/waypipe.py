@@ -5,7 +5,7 @@ import time
 from collections.abc import Iterator
 
 from ..errors import ClanError
-from ..nix import run_cmd
+from ..nix import nix_shell
 
 VMADDR_CID_HYPERVISOR = 2
 
@@ -25,8 +25,8 @@ def start_waypipe(cid: int | None, title_prefix: str) -> Iterator[None]:
     if cid is None:
         yield
         return
-    waypipe = run_cmd(
-        ["waypipe"],
+    waypipe = nix_shell(
+        ["nixpkgs#waypipe"],
         [
             "waypipe",
             "--vsock",
