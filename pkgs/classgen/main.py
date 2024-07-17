@@ -3,26 +3,33 @@ import json
 from typing import Any
 
 
-# Function to map JSON schema types to Python types
-def map_json_type(json_type: Any, nested_type: str = "Any") -> str:
+# Function to map JSON schemas and types to Python types
+def map_json_type(
+    json_type: Any, nested_types: set[str] = {"Any"}, parent: Any = None
+) -> set[str]:
     if isinstance(json_type, list):
-        return " | ".join(map(map_json_type, json_type))
+        res = set()
+        for t in json_type:
+            res |= map_json_type(t)
+        return res
     if isinstance(json_type, dict):
         return map_json_type(json_type.get("type"))
     elif json_type == "string":
-        return "str"
+        return {"str"}
     elif json_type == "integer":
-        return "int"
+        return {"int"}
     elif json_type == "boolean":
-        return "bool"
+        return {"bool"}
     elif json_type == "array":
-        return f"list[{nested_type}]"  # Further specification can be handled if needed
+        assert nested_types, f"Array type not found for {parent}"
+        return {f"""list[{" | ".join(nested_types)}]"""}
     elif json_type == "object":
-        return f"dict[str, {nested_type}]"
+        assert nested_types, f"dict type not found for {parent}"
+        return {f"""dict[str, {" | ".join(nested_types)}]"""}
     elif json_type == "null":
-        return "None"
+        return {"None"}
     else:
-        return "Any"
+        raise ValueError(f"Python type not found for {json_type}")
 
 
 known_classes = set()
@@ -32,9 +39,9 @@ root_class = "Inventory"
 # Recursive function to generate dataclasses from JSON schema
 def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> str:
     properties = schema.get("properties", {})
-    required = schema.get("required", [])
 
-    fields = []
+    required_fields = []
+    fields_with_default = []
     nested_classes = []
 
     for prop, prop_info in properties.items():
@@ -42,77 +49,107 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
 
         prop_type = prop_info.get("type", None)
         union_variants = prop_info.get("oneOf", [])
+        # Collect all types
+        field_types = set()
 
         title = prop_info.get("title", prop.removesuffix("s"))
         title_sanitized = "".join([p.capitalize() for p in title.split("-")])
         nested_class_name = f"""{class_name if class_name != root_class and not prop_info.get("title") else ""}{title_sanitized}"""
 
-        # if nested_class_name == "ServiceBorgbackupRoleServerConfig":
-        #     breakpoint()
-
         if (prop_type is None) and (not union_variants):
             raise ValueError(f"Type not found for property {prop} {prop_info}")
 
-        # Unions fields (oneOf)
-        # str | int | None
-        python_type = None
-
         if union_variants:
-            python_type = map_json_type(union_variants)
+            field_types = map_json_type(union_variants)
+
         elif prop_type == "array":
             item_schema = prop_info.get("items")
+
             if isinstance(item_schema, dict):
-                python_type = map_json_type(
-                    prop_type,
-                    map_json_type(item_schema),
+                field_types = map_json_type(
+                    prop_type, map_json_type(item_schema), field_name
                 )
-        else:
-            python_type = map_json_type(
-                prop_type,
-                map_json_type([i for i in prop_info.get("items", [])]),
-            )
 
-        assert python_type, f"Python type not found for {prop} {prop_info}"
+        elif prop_type == "object":
+            inner_type = prop_info.get("additionalProperties")
+            if inner_type and inner_type.get("type") == "object":
+                # Inner type is a class
+                field_types = map_json_type(prop_type, {nested_class_name}, field_name)
 
-        if prop in required:
-            field_def = f"{prop}: {python_type}"
-        else:
-            field_def = f"{prop}: {python_type} | None = None"
+                #
+                if nested_class_name not in known_classes:
+                    nested_classes.append(
+                        generate_dataclass(inner_type, nested_class_name)
+                    )
+                    known_classes.add(nested_class_name)
 
-        if prop_type == "object":
-            map_type = prop_info.get("additionalProperties")
-            if map_type:
-                # breakpoint()
-                if map_type.get("type") == "object":
-                    # Non trivial type
-                    if nested_class_name not in known_classes:
-                        nested_classes.append(
-                            generate_dataclass(map_type, nested_class_name)
-                        )
-                        known_classes.add(nested_class_name)
-                    field_def = f"{field_name}: dict[str, {nested_class_name}]"
-                else:
-                    # Trivial type
-                    field_def = f"{field_name}: dict[str, {map_json_type(map_type)}]"
-            else:
+            elif inner_type and inner_type.get("type") != "object":
+                # Trivial type
+                field_types = map_json_type(inner_type)
+
+            elif not inner_type:
+                # The type is a class
+                field_types = {nested_class_name}
                 if nested_class_name not in known_classes:
                     nested_classes.append(
                         generate_dataclass(prop_info, nested_class_name)
                     )
                     known_classes.add(nested_class_name)
+        else:
+            field_types = map_json_type(
+                prop_type,
+                nested_types=set(),
+                parent=field_name,
+            )
 
-                field_def = f"{field_name}: {nested_class_name}"
+        assert field_types, f"Python type not found for {prop} {prop_info}"
 
-        elif prop_type == "array":
-            items = prop_info.get("items", {})
-            if items.get("type") == "object":
-                nested_class_name = prop.capitalize()
-                nested_classes.append(generate_dataclass(items, nested_class_name))
-                field_def = f"{field_name}: List[{nested_class_name}]"
+        serialised_types = " | ".join(field_types)
+        field_def = f"{field_name}: {serialised_types}"
 
-        fields.append(field_def)
+        if "default" in prop_info or field_name not in prop_info.get("required", []):
+            if "default" in prop_info:
+                default_value = prop_info.get("default")
+                if default_value is None:
+                    field_types |= {"None"}
+                    serialised_types = " | ".join(field_types)
+                    field_def = f"{field_name}: {serialised_types} = None"
+                elif isinstance(default_value, list):
+                    field_def = f"{field_def} = field(default_factory=list)"
+                elif isinstance(default_value, dict):
+                    field_types |= {"dict[str,Any]"}
+                    serialised_types = " | ".join(field_types)
+                    field_def = f"{field_name}: {serialised_types} = field(default_factory=dict)"
+                elif default_value == "‹name›":
+                    # Special case for nix submodules
+                    pass
+                else:
+                    # Other default values unhandled yet.
+                    raise ValueError(
+                        f"Unhandled default value for field '{field_name}' - default value: {default_value}"
+                    )
 
-    fields_str = "\n    ".join(fields)
+                fields_with_default.append(field_def)
+
+            if "default" not in prop_info:
+                # Field is not required and but also specifies no default value
+                # Trying to infer default value from type
+                if "dict" in str(serialised_types):
+                    field_def = f"{field_name}: {serialised_types} = field(default_factory=dict)"
+                    fields_with_default.append(field_def)
+                elif "list" in str(serialised_types):
+                    field_def = f"{field_name}: {serialised_types} = field(default_factory=list)"
+                    fields_with_default.append(field_def)
+                elif "None" in str(serialised_types):
+                    field_def = f"{field_name}: {serialised_types} = None"
+                    fields_with_default.append(field_def)
+                else:
+                    # Field is not required and but also specifies no default value
+                    required_fields.append(field_def)
+        else:
+            required_fields.append(field_def)
+
+    fields_str = "\n    ".join(required_fields + fields_with_default)
     nested_classes_str = "\n\n".join(nested_classes)
 
     class_def = f"@dataclass\nclass {class_name}:\n    {fields_str}\n"
@@ -130,10 +167,10 @@ def run_gen(args: argparse.Namespace) -> None:
         f.write(
             """
 # DON NOT EDIT THIS FILE MANUALLY. IT IS GENERATED.
-# UPDATE:
+# UPDATE
 # ruff: noqa: N815
 # ruff: noqa: N806
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any\n\n
 """
         )

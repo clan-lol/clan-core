@@ -9,7 +9,7 @@
     { self', pkgs, ... }:
     let
       flakeLock = lib.importJSON (self + /flake.lock);
-      flakeInputs = (builtins.removeAttrs inputs [ "self" ]);
+      flakeInputs = builtins.removeAttrs inputs [ "self" ];
       flakeLockVendoredDeps = flakeLock // {
         nodes =
           flakeLock.nodes
@@ -38,7 +38,6 @@
           '';
     in
     {
-
       devShells.clan-cli = pkgs.callPackage ./shell.nix {
         inherit (self'.packages) clan-cli clan-cli-full;
         inherit self';
@@ -84,6 +83,35 @@
         default = self'.packages.clan-cli;
       };
 
-      checks = self'.packages.clan-cli.tests;
+      checks = self'.packages.clan-cli.tests // {
+        inventory-classes-up-to-date = pkgs.stdenv.mkDerivation {
+          name = "inventory-classes-up-to-date";
+          src = ./clan_cli/inventory;
+
+          env = {
+            classFile = "classes.py";
+          };
+          installPhase = ''
+            ${self'.packages.classgen}/bin/classgen ${self'.packages.inventory-schema-pretty}/schema.json b_classes.py
+            file1=$classFile
+            file2=b_classes.py
+
+            echo "Comparing $file1 and $file2"
+            if cmp -s "$file1" "$file2"; then
+                echo "Files are identical"
+                echo "Classes file is up to date"
+            else
+                echo "Classes file is out of date or has been modified"
+                echo "run ./update.sh in the inventory directory to update the classes file"
+                echo "--------------------------------\n"
+                diff "$file1" "$file2"
+                echo "--------------------------------\n\n"
+                exit 1
+            fi
+
+            touch $out
+          '';
+        };
+      };
     };
 }
