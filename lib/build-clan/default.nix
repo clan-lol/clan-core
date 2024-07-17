@@ -89,7 +89,7 @@ let
               ];
               inventoryPath = [ "system" ];
             })
-            # deploymentInfo.targetHost
+            # deploy.targetHost
             // (clanToInventory config {
               clanPath = [
                 "clan"
@@ -98,7 +98,7 @@ let
                 "targetHost"
               ];
               inventoryPath = [
-                "deploymentInfo"
+                "deploy"
                 "targetHost"
               ];
             })
