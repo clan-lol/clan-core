@@ -179,11 +179,12 @@ def run_gen(args: argparse.Namespace) -> None:
 
     with open(args.output, "w") as f:
         f.write(
-            """
-# DON NOT EDIT THIS FILE MANUALLY. IT IS GENERATED.
-# UPDATE
+            """# DON NOT EDIT THIS FILE MANUALLY. IT IS GENERATED.
+#
 # ruff: noqa: N815
 # ruff: noqa: N806
+# ruff: noqa: F401
+# fmt: off
 from dataclasses import dataclass, field
 from typing import Any\n\n
 """
