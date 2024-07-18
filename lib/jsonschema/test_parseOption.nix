@@ -279,6 +279,7 @@ in
       expected = {
         type = "object";
         additionalProperties = false;
+        description = "Test Description";
         properties = {
           opt = {
             type = "boolean";
@@ -303,6 +304,7 @@ in
       expected = {
         type = "object";
         additionalProperties = false;
+        description = "Test Description";
         properties = {
           opt = {
             type = "boolean";
