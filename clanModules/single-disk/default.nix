@@ -2,7 +2,8 @@
 {
   options.clan.single-disk = {
     device = lib.mkOption {
-      type = lib.types.str;
+      default = null;
+      type = lib.types.nullOr lib.types.str;
       description = "The primary disk device to install the system on";
       # Question: should we set a default here?
       # default = "/dev/null";

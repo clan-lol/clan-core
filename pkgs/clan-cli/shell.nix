@@ -45,5 +45,9 @@ mkShell {
 
     # Needed for impure tests
     ln -sfT ${clan-cli.nixpkgs} "$PKG_ROOT/clan_cli/nixpkgs"
+
+    # Generate classes.py from inventory schema
+    # This file is in .gitignore
+    ${self'.packages.classgen}/bin/classgen ${self'.packages.inventory-schema}/schema.json $PKG_ROOT/clan_cli/inventory/classes.py
   '';
 }

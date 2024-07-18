@@ -1,6 +1,6 @@
 import dataclasses
 import json
-from dataclasses import asdict, fields, is_dataclass
+from dataclasses import fields, is_dataclass
 from pathlib import Path
 from types import UnionType
 from typing import Any, get_args, get_origin
@@ -8,11 +8,33 @@ from typing import Any, get_args, get_origin
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_file
 
-from .classes import Inventory as NixInventory
-from .classes import Machine, Service
-from .classes import Meta as InventoryMeta
+from .classes import (
+    Inventory,
+    Machine,
+    MachineDeploy,
+    Meta,
+    Service,
+    ServiceBorgbackup,
+    ServiceBorgbackupMeta,
+    ServiceBorgbackupRole,
+    ServiceBorgbackupRoleClient,
+    ServiceBorgbackupRoleServer,
+)
 
-__all__ = ["Service", "Machine", "InventoryMeta"]
+# Re export classes here
+# This allows to rename classes in the generated code
+__all__ = [
+    "Service",
+    "Machine",
+    "Meta",
+    "Inventory",
+    "MachineDeploy",
+    "ServiceBorgbackup",
+    "ServiceBorgbackupMeta",
+    "ServiceBorgbackupRole",
+    "ServiceBorgbackupRoleClient",
+    "ServiceBorgbackupRoleServer",
+]
 
 
 def sanitize_string(s: str) -> str:
@@ -28,8 +50,11 @@ def dataclass_to_dict(obj: Any) -> Any:
     """
     if is_dataclass(obj):
         return {
-            sanitize_string(k): dataclass_to_dict(v)
-            for k, v in asdict(obj).items()  # type: ignore
+            # Use either the original name or name
+            sanitize_string(
+                field.metadata.get("original_name", field.name)
+            ): dataclass_to_dict(getattr(obj, field.name))
+            for field in fields(obj)  # type: ignore
         }
     elif isinstance(obj, list | tuple):
         return [dataclass_to_dict(item) for item in obj]
@@ -77,12 +102,13 @@ def from_dict(t: type, data: dict[str, Any] | None) -> Any:
         # Attempt to create an instance of the data_class
         field_values = {}
         for field in fields(t):
-            field_value = data.get(field.name)
+            original_name = field.metadata.get("original_name", field.name)
+
+            field_value = data.get(original_name)
+
             field_type = get_inner_type(field.type)  # type: ignore
 
-            if field.name in data:
-                # The field is present
-
+            if original_name in data:
                 # If the field is another dataclass, recursively instantiate it
                 if is_dataclass(field_type):
                     field_value = from_dict(field_type, field_value)
@@ -111,7 +137,7 @@ def from_dict(t: type, data: dict[str, Any] | None) -> Any:
                 # Fields with default value
                 # a: Int = 1
                 # b: list = Field(default_factory=list)
-                if field.name in data or field_value is not None:
+                if original_name in data or field_value is not None:
                     field_values[field.name] = field_value
             else:
                 # Fields without default value
@@ -121,54 +147,54 @@ def from_dict(t: type, data: dict[str, Any] | None) -> Any:
         return t(**field_values)
 
     except (TypeError, ValueError) as e:
-        print(f"Failed to instantiate {t.__name__}: {e}")
+        print(f"Failed to instantiate {t.__name__}: {e} {data}")
         return None
+        # raise ClanError(f"Failed to instantiate {t.__name__}: {e}")
 
 
-class Inventory:
-    nix_inventory: NixInventory
+def get_path(flake_dir: str | Path) -> Path:
+    """
+    Get the path to the inventory file in the flake directory
+    """
+    return (Path(flake_dir) / "inventory.json").resolve()
 
-    def __init__(self) -> None:
-        self.nix_inventory = NixInventory(
-            meta=InventoryMeta(name="New Clan"), machines={}, services=Service()
-        )
 
-    @staticmethod
-    def get_path(flake_dir: str | Path) -> Path:
-        return (Path(flake_dir) / "inventory.json").resolve()
+# Default inventory
+default_inventory = Inventory(
+    meta=Meta(name="New Clan"), machines={}, services=Service()
+)
 
-    @staticmethod
-    def load_file(flake_dir: str | Path) -> "Inventory":
-        inventory = from_dict(
-            NixInventory,
-            {
-                "meta": {"name": "New Clan"},
-                "machines": {},
-                "services": {},
-            },
-        )
 
-        NixInventory(
-            meta=InventoryMeta(name="New Clan"), machines={}, services=Service()
-        )
+def load_inventory(
+    flake_dir: str | Path, default: Inventory = default_inventory
+) -> Inventory:
+    """
+    Load the inventory file from the flake directory
+    If not file is found, returns the default inventory
+    """
+    inventory = default_inventory
 
-        inventory_file = Inventory.get_path(flake_dir)
-        if inventory_file.exists():
-            with open(inventory_file) as f:
-                try:
-                    res = json.load(f)
-                    inventory = from_dict(NixInventory, res)
-                except json.JSONDecodeError as e:
-                    raise ClanError(f"Error decoding inventory file: {e}")
+    inventory_file = get_path(flake_dir)
+    if inventory_file.exists():
+        with open(inventory_file) as f:
+            try:
+                res = json.load(f)
+                inventory = from_dict(Inventory, res)
+            except json.JSONDecodeError as e:
+                # Error decoding the inventory file
+                raise ClanError(f"Error decoding inventory file: {e}")
 
-        res = Inventory()
-        res.nix_inventory = inventory
-        return Inventory()
+    return inventory
 
-    def persist(self, flake_dir: str | Path, message: str) -> None:
-        inventory_file = Inventory.get_path(flake_dir)
 
-        with open(inventory_file, "w") as f:
-            json.dump(dataclass_to_dict(self.nix_inventory), f, indent=2)
+def save_inventory(inventory: Inventory, flake_dir: str | Path, message: str) -> None:
+    """ "
+    Write the inventory to the flake directory
+    and commit it to git with the given message
+    """
+    inventory_file = get_path(flake_dir)
 
-        commit_file(inventory_file, Path(flake_dir), commit_message=message)
+    with open(inventory_file, "w") as f:
+        json.dump(dataclass_to_dict(inventory), f, indent=2)
+
+    commit_file(inventory_file, Path(flake_dir), commit_message=message)

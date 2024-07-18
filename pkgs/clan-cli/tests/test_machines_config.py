@@ -8,7 +8,7 @@ from clan_cli.config.machine import (
     verify_machine_config,
 )
 from clan_cli.config.schema import machine_schema
-from clan_cli.inventory import Machine
+from clan_cli.inventory import Machine, MachineDeploy
 from clan_cli.machines.create import create_machine
 from clan_cli.machines.list import list_machines
 
@@ -31,6 +31,7 @@ def test_create_machine_on_minimal_clan(test_flake_minimal: FlakeForTest) -> Non
             description="A test machine",
             tags=["test"],
             icon=None,
+            deploy=MachineDeploy(),
         ),
     )
 

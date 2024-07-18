@@ -1,3 +1,4 @@
+# ruff: noqa: RUF001
 import argparse
 import json
 from typing import Any
@@ -105,7 +106,13 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
         assert field_types, f"Python type not found for {prop} {prop_info}"
 
         serialised_types = " | ".join(field_types)
+        field_meta = None
+        if field_name != prop:
+            field_meta = f"""{{"original_name": "{prop}"}}"""
+
         field_def = f"{field_name}: {serialised_types}"
+        if field_meta:
+            field_def = f"{field_def} = field(metadata={field_meta})"
 
         if "default" in prop_info or field_name not in prop_info.get("required", []):
             if "default" in prop_info:
@@ -113,16 +120,23 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
                 if default_value is None:
                     field_types |= {"None"}
                     serialised_types = " | ".join(field_types)
-                    field_def = f"{field_name}: {serialised_types} = None"
+
+                    field_def = f"""{field_name}: {serialised_types} = field(default=None {f", metadata={field_meta}" if field_meta else ""})"""
                 elif isinstance(default_value, list):
-                    field_def = f"{field_def} = field(default_factory=list)"
+                    field_def = f"""{field_def} = field(default_factory=list {f", metadata={field_meta}" if field_meta else ""})"""
                 elif isinstance(default_value, dict):
-                    field_types |= {"dict[str,Any]"}
                     serialised_types = " | ".join(field_types)
-                    field_def = f"{field_name}: {serialised_types} = field(default_factory=dict)"
+                    if serialised_types == nested_class_name:
+                        field_def = f"""{field_name}: {serialised_types} = field(default_factory={nested_class_name} {f", metadata={field_meta}" if field_meta else ""})"""
+                    elif f"dict[str, {nested_class_name}]" in serialised_types:
+                        field_def = f"""{field_name}: {serialised_types} = field(default_factory=dict {f", metadata={field_meta}" if field_meta else ""})"""
+                    else:
+                        field_def = f"""{field_name}: {serialised_types} | dict[str,Any] = field(default_factory=dict {f", metadata={field_meta}" if field_meta else ""})"""
                 elif default_value == "‹name›":
                     # Special case for nix submodules
                     pass
+                elif isinstance(default_value, str):
+                    field_def = f"""{field_name}: {serialised_types} = field(default = '{default_value}' {f", metadata={field_meta}" if field_meta else ""})"""
                 else:
                     # Other default values unhandled yet.
                     raise ValueError(
@@ -135,13 +149,13 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
                 # Field is not required and but also specifies no default value
                 # Trying to infer default value from type
                 if "dict" in str(serialised_types):
-                    field_def = f"{field_name}: {serialised_types} = field(default_factory=dict)"
+                    field_def = f"""{field_name}: {serialised_types} = field(default_factory=dict {f", metadata={field_meta}" if field_meta else ""})"""
                     fields_with_default.append(field_def)
                 elif "list" in str(serialised_types):
-                    field_def = f"{field_name}: {serialised_types} = field(default_factory=list)"
+                    field_def = f"""{field_name}: {serialised_types} = field(default_factory=list {f", metadata={field_meta}" if field_meta else ""})"""
                     fields_with_default.append(field_def)
                 elif "None" in str(serialised_types):
-                    field_def = f"{field_name}: {serialised_types} = None"
+                    field_def = f"""{field_name}: {serialised_types} = field(default=None {f", metadata={field_meta}" if field_meta else ""})"""
                     fields_with_default.append(field_def)
                 else:
                     # Field is not required and but also specifies no default value

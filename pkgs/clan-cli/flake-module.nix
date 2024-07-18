@@ -45,6 +45,7 @@
       packages = {
         clan-cli = pkgs.python3.pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs;
+          inherit (self'.packages) inventory-schema classgen;
           clan-core-path = clanCoreWithVendoredDeps;
           includedRuntimeDeps = [
             "age"
@@ -53,6 +54,7 @@
         };
         clan-cli-full = pkgs.python3.pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs;
+          inherit (self'.packages) inventory-schema classgen;
           clan-core-path = clanCoreWithVendoredDeps;
           includedRuntimeDeps = lib.importJSON ./clan_cli/nix/allowed-programs.json;
         };
@@ -63,6 +65,8 @@
           buildInputs = [ pkgs.python3 ];
 
           installPhase = ''
+            ${self'.packages.classgen}/bin/classgen ${self'.packages.inventory-schema}/schema.json ./clan_cli/inventory/classes.py
+
             python docs.py reference
             mkdir -p $out
             cp -r out/* $out
@@ -76,6 +80,8 @@
           buildInputs = [ pkgs.python3 ];
 
           installPhase = ''
+            ${self'.packages.classgen}/bin/classgen ${self'.packages.inventory-schema}/schema.json ./clan_cli/inventory/classes.py
+
             python api.py > $out
           '';
         };
@@ -83,35 +89,6 @@
         default = self'.packages.clan-cli;
       };
 
-      checks = self'.packages.clan-cli.tests // {
-        inventory-classes-up-to-date = pkgs.stdenv.mkDerivation {
-          name = "inventory-classes-up-to-date";
-          src = ./clan_cli/inventory;
-
-          env = {
-            classFile = "classes.py";
-          };
-          installPhase = ''
-            ${self'.packages.classgen}/bin/classgen ${self'.packages.inventory-schema-pretty}/schema.json b_classes.py
-            file1=$classFile
-            file2=b_classes.py
-
-            echo "Comparing $file1 and $file2"
-            if cmp -s "$file1" "$file2"; then
-                echo "Files are identical"
-                echo "Classes file is up to date"
-            else
-                echo "Classes file is out of date or has been modified"
-                echo "run ./update.sh in the inventory directory to update the classes file"
-                echo "--------------------------------\n"
-                diff "$file1" "$file2"
-                echo "--------------------------------\n\n"
-                exit 1
-            fi
-
-            touch $out
-          '';
-        };
-      };
+      checks = self'.packages.clan-cli.tests;
     };
 }
