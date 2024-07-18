@@ -9,10 +9,12 @@ democlan
 example_clan
 result*
 /pkgs/clan-cli/clan_cli/nixpkgs
+/pkgs/clan-cli/clan_cli/inventory/classes.py
 /pkgs/clan-cli/clan_cli/webui/assets
 nixos.qcow2
 **/*.glade~
 /docs/out
+
 
 # dream2nix
 .dream2nix

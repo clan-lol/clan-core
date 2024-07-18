@@ -4,9 +4,19 @@ from typing import TYPE_CHECKING
 import pytest
 from fixtures_flakes import FlakeForTest
 
-from clan_cli.api.modules import list_modules, update_module_instance
+from clan_cli.api.modules import list_modules
 from clan_cli.clan_uri import FlakeId
-from clan_cli.inventory import Machine, Role, Service, ServiceMeta
+from clan_cli.inventory import (
+    Machine,
+    MachineDeploy,
+    ServiceBorgbackup,
+    ServiceBorgbackupMeta,
+    ServiceBorgbackupRole,
+    ServiceBorgbackupRoleClient,
+    ServiceBorgbackupRoleServer,
+    load_inventory,
+    save_inventory,
+)
 from clan_cli.machines.create import create_machine
 from clan_cli.nix import nix_eval, run_no_stdout
 
@@ -51,20 +61,29 @@ def test_add_module_to_inventory(
         ]
     )
     create_machine(
-        FlakeId(base_path), Machine(name="machine1", tags=[], system="x86_64-linux")
-    )
-    update_module_instance(
-        base_path,
-        "borgbackup",
-        "borgbackup1",
-        Service(
-            meta=ServiceMeta(name="borgbackup"),
-            roles={
-                "client": Role(machines=["machine1"]),
-                "server": Role(machines=["machine1"]),
-            },
+        FlakeId(base_path),
+        Machine(
+            name="machine1", tags=[], system="x86_64-linux", deploy=MachineDeploy()
         ),
     )
+
+    inventory = load_inventory(base_path)
+
+    inventory.services.borgbackup = {
+        "borg1": ServiceBorgbackup(
+            meta=ServiceBorgbackupMeta(name="borg1"),
+            roles=ServiceBorgbackupRole(
+                client=ServiceBorgbackupRoleClient(
+                    machines=["machine1"],
+                ),
+                server=ServiceBorgbackupRoleServer(
+                    machines=["machine1"],
+                ),
+            ),
+        )
+    }
+
+    save_inventory(inventory, base_path, "Add borgbackup service")
 
     cmd = ["facts", "generate", "--flake", str(test_flake_with_core.path), "machine1"]
     cli.run(cmd)
