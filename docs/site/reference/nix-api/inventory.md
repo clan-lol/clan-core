@@ -1,57 +1,185 @@
-# Inventory
+# Inventory API
 
-`Inventory` is an abstract service layer for consistently configuring distributed services across machine boundaries.
+*Inventory* is an abstract service layer for consistently configuring distributed services across machine boundaries.
 
-The following is the specification of the inventory in `cuelang`
+The following is a specification of the inventory in [cuelang](https://cuelang.org/) format.
 
 ```cue
-{
-    meta: {
-        // A name of the clan (primarily shown by the UI)
-        name: string
-        // A description of the clan
-        description?: string
-        // The icon path
-        icon?: string
-    }
+package compose
 
-    // A map of services
-    services: [string]: [string]: {
-        // Required meta fields
-        meta: {
-            name: string,
-            icon?: string
-            description?: string,
-        },
-        // Machines are added via the avilable roles
-        // Membership depends only on this field
-        roles: [string]: {
-            machines: [...string],
-            tags: [...string],
-        }
-        machines?: {
-            [string]: {
-                config?: {
-                    ...
-                }
-            }
-        },
+#Root: {
+	@jsonschema(schema="http://json-schema.org/draft-07/schema#")
+	machines?: [string]: {
+		deploy?: {
+			// Configuration for the deployment of the machine
+			targetHost: null | string
+		}
+		description: null | string
+		icon:        null | string
+		name:        string
+		system:      null | string
+		tags: [...string]
+	}
+	meta?: {
+		description: null | string
+		icon:        null | string
+		name:        string
+	}
+	services?: {
+		borgbackup?: [string]: {
+			// borgbackup-config
+			config?: {
+				// destinations where the machine should be backuped to
+				destinations?: {
+					[string]: {
+						// the name of the backup job
+						name: string
 
-        // Global Configuration for the service
-        // Applied to all machines.
-        config?: {
-            // Schema depends on the module.
-            // It declares the interface how the service can be configured.
-            ...
-        }
-    }
-    // A map of machines, extends the machines of `buildClan`
-    machines: [string]: {
-        name: string,
-        description?: string,
-        icon?: string
-        tags: [...string]
-        system: string
-    }
+						// the borgbackup repository to backup to
+						repo: string
+					}
+				}
+			} | *{
+				...
+			}
+			machines?: [string]: {
+				// borgbackup-config
+				config?: {
+					// destinations where the machine should be backuped to
+					destinations?: {
+						[string]: {
+							// the name of the backup job
+							name: string
+
+							// the borgbackup repository to backup to
+							repo: string
+						}
+					}
+				} | *{
+					...
+				}
+				imports: [...string]
+			}
+			meta?: {
+				description: null | string
+				icon:        null | string
+				name:        string
+			}
+			roles?: {
+				client?: {
+					// borgbackup-config
+					config?: {
+						// destinations where the machine should be backuped to
+						destinations?: {
+							[string]: {
+								// the name of the backup job
+								name: string
+
+								// the borgbackup repository to backup to
+								repo: string
+							}
+						}
+					} | *{
+						...
+					}
+					imports: [...string]
+					machines: [...string]
+					tags: [...string]
+				}
+				server?: {
+					// borgbackup-config
+					config?: {
+						// destinations where the machine should be backuped to
+						destinations?: {
+							[string]: {
+								// the name of the backup job
+								name: string
+
+								// the borgbackup repository to backup to
+								repo: string
+							}
+						}
+					} | *{
+						...
+					}
+					imports: [...string]
+					machines: [...string]
+					tags: [...string]
+				}
+			}
+		}
+		packages?: [string]: {
+			// packages-config
+			config?: {
+				// The packages to install on the machine
+				packages: [...string]
+			} | *{
+				...
+			}
+			machines?: [string]: {
+				// packages-config
+				config?: {
+					// The packages to install on the machine
+					packages: [...string]
+				} | *{
+					...
+				}
+				imports: [...string]
+			}
+			meta?: {
+				description: null | string
+				icon:        null | string
+				name:        string
+			}
+			roles?: default?: {
+				// packages-config
+				config?: {
+					// The packages to install on the machine
+					packages: [...string]
+				} | *{
+					...
+				}
+				imports: [...string]
+				machines: [...string]
+				tags: [...string]
+			}
+		}
+		"single-disk"?: [string]: {
+			// single-disk-config
+			config?: {
+				// The primary disk device to install the system on
+				device: null | string
+			} | *{
+				...
+			}
+			machines?: [string]: {
+				// single-disk-config
+				config?: {
+					// The primary disk device to install the system on
+					device: null | string
+				} | *{
+					...
+				}
+				imports: [...string]
+			}
+			meta?: {
+				description: null | string
+				icon:        null | string
+				name:        string
+			}
+			roles?: default?: {
+				// single-disk-config
+				config?: {
+					// The primary disk device to install the system on
+					device: null | string
+				} | *{
+					...
+				}
+				imports: [...string]
+				machines: [...string]
+				tags: [...string]
+			}
+		}
+	}
 }
 ```
