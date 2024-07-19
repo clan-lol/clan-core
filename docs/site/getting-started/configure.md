@@ -1,5 +1,31 @@
 # Configuration - How to configure clan with your own machines
 
+Managing machine configurations can be done in the following ways:
+
+- writing `nix` expressions in a `flake.nix` file,
+- placing `autoincluded` files into your machine directory,
+- configuring everything in a simple UI (upcoming).
+
+Clan currently offers the following methods to configure machines:
+
+!!! Success "Recommended for nix people"
+
+    - flake.nix (i.e. via `buildClan`)
+        - `machine` argument
+        - `inventory` argument
+
+    - machines/`machine_name`/configuration.nix (`autoincluded` if it exists)
+
+???+ Note "Used by CLI & UI"
+
+    - inventory.json
+    - machines/`machine_name`/hardware-configuration.nix (`autoincluded` if it exists)
+
+
+!!! Warning "Deprecated"
+
+    machines/`machine_name`/settings.json
+
 ## Global configuration
 
 In the `flake.nix` file:

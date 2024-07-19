@@ -48,11 +48,13 @@ nav:
       - Mesh VPN: getting-started/mesh-vpn.md
       - Backup & Restore: getting-started/backups.md
       - Flake-parts: getting-started/flake-parts.md
-  - Concepts:
-      - Configuration: concepts/configuration.md
-      - Inventory: concepts/inventory.md
+  - Guides:
+      - guides/index.md
+      - Inventory: guides/inventory.md
   - Reference:
+      - reference/index.md
       - Clan Modules:
+          - reference/clanModules/index.md
           - reference/clanModules/borgbackup-static.md
           - reference/clanModules/borgbackup.md
           - reference/clanModules/deltachat.md
@@ -77,13 +79,13 @@ nav:
           - reference/clanModules/zerotier-static-peers.md
           - reference/clanModules/zt-tcp-relay.md
       - CLI:
+          - reference/cli/index.md
           - reference/cli/backups.md
           - reference/cli/config.md
           - reference/cli/facts.md
           - reference/cli/flakes.md
           - reference/cli/flash.md
           - reference/cli/history.md
-          - reference/cli/index.md
           - reference/cli/machines.md
           - reference/cli/secrets.md
           - reference/cli/show.md
@@ -98,6 +100,10 @@ nav:
           - reference/clan-core/state.md
           - reference/clan-core/deployment.md
           - reference/clan-core/networking.md
+      - Nix API:
+          - reference/nix-api/index.md
+          - buildClan: reference/nix-api/buildclan.md
+          - Inventory: reference/nix-api/inventory.md
   - Contributing: contributing/contributing.md
   - Blog:
       - blog/index.md
