@@ -2,31 +2,35 @@
 
 `Inventory` is an abstract service layer for consistently configuring distributed services across machine boundaries.
 
-## Meta
+See [Inventory API Documentation](../reference/nix-api/inventory.md)
+
+This guide will walk you through setting up a backup-service, where the inventory becomes useful.
+
+## Prerequisites Meta (optional)
 
 Metadata about the clan, will be displayed upfront in the upcomming clan-app, make sure to choose a unique name.
+
+Make sure to set `name` either via `inventory.meta` OR via `clan.meta`.
 
 ```{.nix hl_lines="3-8"}
 buildClan {
     inventory = {
         meta = {
-            # The following options are available
-            # name:        string # Required, name of the clan.
-            # description: null | string
-            # icon:        null | string
+            name = "Superclan"
+            description = "Awesome backups and family stuff"
         };
     };
 }
 ```
 
-## Machines
+## How to add machines
 
-Machines and a small pieve of their configuration can be added via `inventory.machines`.
+Machines can be added via `inventory.machines` OR via `buildClan` directly.
 
 !!! Note
     It doesn't matter where the machine gets introduced to buildClan - All delarations are valid, duplications are merged.
 
-    However the clan-app (UI) will create machines in the inventory, because it cannot create arbitrary nixos configs.
+    However the clan-app (UI) will create machines in the inventory, because it cannot create arbitrary nix code or nixos configs.
 
 In the following example `backup_server` is one machine - it may specify parts of its configuration in different places.
 
@@ -78,9 +82,10 @@ A module can be added to one or multiple machines via `Roles`. clan's `Role` int
 Each service can still be customized and configured according to the modules options.
 
 - Per instance configuration via `services.<serviceName>.<instanceName>.config`
+- Per role configuration via `services.<serviceName>.<instanceName>.roles.<roleName>.config`
 - Per machine configuration via `services.<serviceName>.<instanceName>.machines.<machineName>.config`
 
-### Configuration Examples
+### Setting up the Backup Service
 
 !!! Example "Borgbackup Example"
 
@@ -112,49 +117,33 @@ Each service can still be customized and configured according to the modules opt
     }
     ```
 
-!!! Example "Packages Example"
+### Scalabling the Backup
 
-    This example shows how to add `pkgs.firefox` via the inventory interface.
+The inventory allows machines to set **Tags**
 
-    ```{.nix hl_lines="8-11"}
-    buildClan {
-        inventory = {
-            machines = {
-                "sara" = {};
-                "jon" = {};
-            };
-            services = {
-                packages.set_1 = {
-                    roles.default.machines = [ "jon" "sara" ];
-                    # Packages is a configuration option of the "packages" clanModule
-                    config.packages = ["firefox"];
-                };
-            };
-        };
-    }
-    ```
-
-### Tags
-
-It is possible to add services to multiple machines via tags. The service instance gets added in the specified role. In this case `role = "default"`
+It is possible to add services to multiple machines via tags. The service instance gets added in the specified role. In this case `role = "client"`
 
 !!! Example "Tags Example"
 
-    ```{.nix hl_lines="5 8 13"}
+    ```{.nix hl_lines="9 12 17"}
     buildClan {
         inventory = {
             machines = {
-                "sara" = {
-                    tags = ["browsing"];
+                "backup_server" = {
+                    # Don't include any nixos config here
+                    # See inventory.Machines for available options
                 };
                 "jon" = {
-                    tags = ["browsing"];
+                    tags = [ "backup" ];
+                };
+                "sara" = {
+                    tags = [ "backup" ];
                 };
             };
             services = {
-                packages.set_1 = {
-                    roles.default.tags = [ "browsing" ];
-                    config.packages = ["firefox"];
+                borgbackup.instance_1 = {
+                    roles.client.tags = [ "backup" ];
+                    roles.server.machines = [ "backup_server" ];
                 };
             };
         };
@@ -164,9 +153,8 @@ It is possible to add services to multiple machines via tags. The service instan
 ### Multiple Service Instances
 
 !!! danger "Important"
-    Not all modules support multiple instances yet.
-
-Some modules have support for adding multiple instances of the same service in different roles or configurations.
+    Not all modules implement support for multiple instances yet.
+    Multiple instance usage could create complexity, refer to each modules documentation, for intended usage.
 
 !!! Example
 
@@ -194,9 +182,11 @@ Some modules have support for adding multiple instances of the same service in d
     }
     ```
 
-### Schema specification
+### API specification
 
-The complete schema specification can be retrieved via:
+**The complete schema specification is available [here](../reference/nix-api/inventory.md)**
+
+Or it can build anytime via:
 
 ```sh
 nix build git+https://git.clan.lol/clan/clan-core#inventory-schema
