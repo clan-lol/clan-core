@@ -48,7 +48,7 @@ class ServiceBorgbackupMachine:
 
 
 @dataclass
-class ServiceBorgbackupMeta:
+class ServiceMeta:
     name: str
     description: str | None = field(default=None )
     icon: str | None = field(default=None )
@@ -78,7 +78,7 @@ class ServiceBorgbackupRole:
 
 @dataclass
 class ServiceBorgbackup:
-    meta: ServiceBorgbackupMeta
+    meta: ServiceMeta
     roles: ServiceBorgbackupRole
     config: BorgbackupConfig = field(default_factory=BorgbackupConfig )
     machines: dict[str, ServiceBorgbackupMachine] = field(default_factory=dict )
@@ -96,13 +96,6 @@ class ServicePackageMachine:
 
 
 @dataclass
-class ServicePackageMeta:
-    name: str
-    description: str | None = field(default=None )
-    icon: str | None = field(default=None )
-
-
-@dataclass
 class ServicePackageRoleDefault:
     config: PackagesConfig = field(default_factory=PackagesConfig )
     imports: list[str] = field(default_factory=list )
@@ -117,7 +110,7 @@ class ServicePackageRole:
 
 @dataclass
 class ServicePackage:
-    meta: ServicePackageMeta
+    meta: ServiceMeta
     roles: ServicePackageRole
     config: PackagesConfig = field(default_factory=PackagesConfig )
     machines: dict[str, ServicePackageMachine] = field(default_factory=dict )
@@ -135,13 +128,6 @@ class ServiceSingleDiskMachine:
 
 
 @dataclass
-class ServiceSingleDiskMeta:
-    name: str
-    description: str | None = field(default=None )
-    icon: str | None = field(default=None )
-
-
-@dataclass
 class ServiceSingleDiskRoleDefault:
     config: SingleDiskConfig = field(default_factory=SingleDiskConfig )
     imports: list[str] = field(default_factory=list )
@@ -156,7 +142,7 @@ class ServiceSingleDiskRole:
 
 @dataclass
 class ServiceSingleDisk:
-    meta: ServiceSingleDiskMeta
+    meta: ServiceMeta
     roles: ServiceSingleDiskRole
     config: SingleDiskConfig = field(default_factory=SingleDiskConfig )
     machines: dict[str, ServiceSingleDiskMachine] = field(default_factory=dict )
