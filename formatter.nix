@@ -12,25 +12,32 @@
       treefmt.programs.nixfmt.package = pkgs.nixfmt-rfc-style;
       treefmt.programs.deadnix.enable = true;
 
-      treefmt.programs.mypy.directories = {
-        "pkgs/clan-cli" = {
-          extraPythonPackages = self'.packages.clan-cli.testDependencies;
-          modules = [ "clan_cli" ];
-        };
-        "pkgs/clan-app" = {
-          extraPythonPackages =
-            # clan-app currently only exists on linux
-            (self'.packages.clan-app.externalTestDeps or [ ]) ++ self'.packages.clan-cli.testDependencies;
-          modules = [ "clan_app" ];
-        };
-        "pkgs/clan-vm-manager" = {
-          extraPythonPackages =
-            # clan-app currently only exists on linux
-
-            self'.packages.clan-vm-manager.testDependencies ++ self'.packages.clan-cli.testDependencies;
-          modules = [ "clan_vm_manager" ];
-        };
-      };
+      treefmt.programs.mypy.directories =
+        {
+          "pkgs/clan-cli" = {
+            extraPythonPackages = self'.packages.clan-cli.testDependencies;
+            modules = [ "clan_cli" ];
+          };
+          "pkgs/clan-app" = {
+            extraPythonPackages =
+              # clan-app currently only exists on linux
+              (self'.packages.clan-app.externalTestDeps or [ ]) ++ self'.packages.clan-cli.testDependencies;
+            modules = [ "clan_app" ];
+          };
+        }
+        // (
+          if pkgs.stdenv.isLinux then
+            {
+              "pkgs/clan-vm-manager" = {
+                extraPythonPackages =
+                  # clan-app currently only exists on linux
+                  self'.packages.clan-vm-manager.testDependencies ++ self'.packages.clan-cli.testDependencies;
+                modules = [ "clan_vm_manager" ];
+              };
+            }
+          else
+            { }
+        );
       treefmt.programs.ruff.check = true;
       treefmt.programs.ruff.format = true;
 
