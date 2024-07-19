@@ -48,6 +48,9 @@ nav:
       - Mesh VPN: getting-started/mesh-vpn.md
       - Backup & Restore: getting-started/backups.md
       - Flake-parts: getting-started/flake-parts.md
+  - Guides:
+      - guides/index.md
+      - Inventory: guides/inventory.md
   - Reference:
       - reference/index.md
       - Clan Modules:

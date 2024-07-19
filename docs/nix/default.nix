@@ -2,6 +2,7 @@
   pkgs,
   module-docs,
   clan-cli-docs,
+  inventory-api-docs,
   asciinema-player-js,
   asciinema-player-css,
   roboto,
@@ -32,6 +33,7 @@ pkgs.stdenv.mkDerivation {
     mkdir -p ./site/reference/cli
     cp -af ${module-docs}/* ./site/reference/
     cp -af ${clan-cli-docs}/* ./site/reference/cli/
+    cp -af ${inventory-api-docs} ./site/reference/nix-api/inventory.md
 
     mkdir -p ./site/static/asciinema-player
     ln -snf ${asciinema-player-js} ./site/static/asciinema-player/asciinema-player.min.js

@@ -46,6 +46,29 @@ in
       };
 
       # Inventory schema with concrete module implementations
+      packages.inventory-api-docs = pkgs.stdenv.mkDerivation {
+        name = "inventory-schema";
+        buildInputs = [ ];
+        src = ./.;
+        buildPhase = ''
+          cat <<EOF > "$out"
+          # Inventory API
+
+          *Inventory* is an abstract service layer for consistently configuring distributed services across machine boundaries.
+
+          The following is a specification of the inventory in [cuelang](https://cuelang.org/) format.
+
+          \`\`\`cue
+          EOF
+
+          cat ${self'.packages.inventory-schema-pretty}/schema.cue >> $out
+
+          cat <<EOF >> $out
+          \`\`\`
+          EOF
+        '';
+      };
+
       packages.inventory-schema = pkgs.stdenv.mkDerivation {
         name = "inventory-schema";
         buildInputs = [ pkgs.cue ];
