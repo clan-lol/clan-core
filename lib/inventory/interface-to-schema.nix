@@ -51,8 +51,10 @@ let
           type = "object";
           additionalProperties = false;
           properties = {
-            meta =
-              inventorySchema.properties.services.additionalProperties.additionalProperties.properties.meta;
+            meta = {
+              title = "service-meta";
+            } // inventorySchema.properties.services.additionalProperties.additionalProperties.properties.meta;
+
             config = {
               title = "${moduleName}-config";
               default = { };

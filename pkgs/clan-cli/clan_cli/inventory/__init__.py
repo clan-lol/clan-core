@@ -15,10 +15,10 @@ from .classes import (
     Meta,
     Service,
     ServiceBorgbackup,
-    ServiceBorgbackupMeta,
     ServiceBorgbackupRole,
     ServiceBorgbackupRoleClient,
     ServiceBorgbackupRoleServer,
+    ServiceMeta,
 )
 
 # Re export classes here
@@ -30,7 +30,7 @@ __all__ = [
     "Inventory",
     "MachineDeploy",
     "ServiceBorgbackup",
-    "ServiceBorgbackupMeta",
+    "ServiceMeta",
     "ServiceBorgbackupRole",
     "ServiceBorgbackupRoleClient",
     "ServiceBorgbackupRoleServer",

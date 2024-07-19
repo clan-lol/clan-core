@@ -157,8 +157,43 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
                 elif "None" in str(serialised_types):
                     field_def = f"""{field_name}: {serialised_types} = field(default=None {f", metadata={field_meta}" if field_meta else ""})"""
                     fields_with_default.append(field_def)
+
+                elif class_name.endswith("Config"):
+                    # SingleDiskConfig
+                    # PackagesConfig
+                    # ...
+                    # Config classes MUST always be optional
+                    raise ValueError(
+                        f"""
+                        #################################################
+                        Clan module '{class_name}' specifies a top-level option '{field_name}' without a default value.
+
+                        To fix this:
+                        - Add a default value to the option
+
+                        lib.mkOption {{
+                            type = lib.types.nullOr lib.types.str;
+                            default = null; # <- Add a default value here
+                        }};
+
+                        # Other options
+
+                        - make the field nullable
+
+                        lib.mkOption {{
+                            #      ╔══════════════╗ <- Nullable type
+                            type = lib.types.nullOr lib.types.str;
+                        }};
+
+                        - Use lib.types.attrsOf if suitable
+                        - Use lib.types.listOf if suitable
+
+
+                        Or report this problem to the clan team. So the class generator can be improved.
+                        #################################################
+                        """
+                    )
                 else:
-                    # Field is not required and but also specifies no default value
                     required_fields.append(field_def)
         else:
             required_fields.append(field_def)
