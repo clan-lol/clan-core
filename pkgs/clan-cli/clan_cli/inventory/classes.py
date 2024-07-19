@@ -10,24 +10,24 @@ from typing import Any
 
 @dataclass
 class MachineDeploy:
-    targetHost: str | None = field(default = None)
+    targetHost: None | str = field(default = None)
 
 
 @dataclass
 class Machine:
     deploy: MachineDeploy
     name: str
-    description: str | None = field(default = None)
-    icon: str | None = field(default = None)
-    system: str | None = field(default = None)
+    description: None | str = field(default = None)
+    icon: None | str = field(default = None)
+    system: None | str = field(default = None)
     tags: list[str] = field(default_factory = list)
 
 
 @dataclass
 class Meta:
     name: str
-    description: str | None = field(default = None)
-    icon: str | None = field(default = None)
+    description: None | str = field(default = None)
+    icon: None | str = field(default = None)
 
 
 @dataclass
@@ -50,8 +50,8 @@ class ServiceBorgbackupMachine:
 @dataclass
 class ServiceMeta:
     name: str
-    description: str | None = field(default = None)
-    icon: str | None = field(default = None)
+    description: None | str = field(default = None)
+    icon: None | str = field(default = None)
 
 
 @dataclass
@@ -118,7 +118,7 @@ class ServicePackage:
 
 @dataclass
 class SingleDiskConfig:
-    device: str | None = field(default = None)
+    device: None | str = field(default = None)
 
 
 @dataclass

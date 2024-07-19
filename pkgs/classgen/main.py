@@ -160,7 +160,8 @@ def get_field_def(
     default_factory: str | None = None,
     type_apendix: str = "",
 ) -> str:
-    serialised_types = " | ".join(field_types) + type_apendix
+    sorted_field_types = sorted(field_types)
+    serialised_types = " | ".join(sorted_field_types) + type_apendix
     if not default and not default_factory and not field_meta:
         return f"{field_name}: {serialised_types}"
     field_init = "field("
@@ -242,7 +243,6 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
 
         assert field_types, f"Python type not found for {prop} {prop_info}"
 
-        # serialised_types = " | ".join(field_types)
         field_meta = None
         if field_name != prop:
             field_meta = f"""{{"original_name": "{prop}"}}"""
