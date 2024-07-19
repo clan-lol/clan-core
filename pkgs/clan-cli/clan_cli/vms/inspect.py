@@ -21,6 +21,10 @@ class VmConfig:
     graphics: bool
     waypipe: bool = False
 
+    def __post_init__(self) -> None:
+        if isinstance(self.flake_url, str):
+            self.flake_url = FlakeId(self.flake_url)
+
 
 def inspect_vm(machine: Machine) -> VmConfig:
     data = json.loads(machine.eval_nix("config.clan.core.vm.inspect"))

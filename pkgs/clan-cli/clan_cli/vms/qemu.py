@@ -1,8 +1,13 @@
 import os
 import random
+from collections.abc import Generator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
+from clan_cli.qemu.qmp import QEMUMonitorProtocol
+
+from ..errors import ClanError
 from .inspect import VmConfig
 
 
@@ -145,3 +150,25 @@ def qemu_command(
     else:
         command.append("-nographic")
     return QemuCommand(command, vsock_cid=vsock_cid)
+
+
+class QMPWrapper:
+    def __init__(self, state_dir: Path) -> None:
+        # These sockets here are just symlinks to the real sockets which
+        # are created by the run.py file. The reason being that we run into
+        # file path length issues on Linux. If no qemu process is running
+        # the symlink will be dangling.
+        self._qmp_socket: Path = state_dir / "qmp.sock"
+        self._qga_socket: Path = state_dir / "qga.sock"
+
+    @contextmanager
+    def qmp_ctx(self) -> Generator[QEMUMonitorProtocol, None, None]:
+        rpath = self._qmp_socket.resolve()
+        if not rpath.exists():
+            raise ClanError(f"qmp socket {rpath} does not exist. Is the VM running?")
+        qmp = QEMUMonitorProtocol(str(rpath))
+        qmp.connect()
+        try:
+            yield qmp
+        finally:
+            qmp.close()

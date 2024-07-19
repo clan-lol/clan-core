@@ -18,9 +18,7 @@ class FlakeId:
         ), f"Flake {self._value} has an invalid type: {type(self._value)}"
 
     def __str__(self) -> str:
-        return str(
-            self._value
-        )  # The __str__ method returns a custom string representation
+        return str(self._value)
 
     @property
     def path(self) -> Path:
