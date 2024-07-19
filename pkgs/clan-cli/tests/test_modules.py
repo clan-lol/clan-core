@@ -10,10 +10,10 @@ from clan_cli.inventory import (
     Machine,
     MachineDeploy,
     ServiceBorgbackup,
-    ServiceBorgbackupMeta,
     ServiceBorgbackupRole,
     ServiceBorgbackupRoleClient,
     ServiceBorgbackupRoleServer,
+    ServiceMeta,
     load_inventory,
     save_inventory,
 )
@@ -71,7 +71,7 @@ def test_add_module_to_inventory(
 
     inventory.services.borgbackup = {
         "borg1": ServiceBorgbackup(
-            meta=ServiceBorgbackupMeta(name="borg1"),
+            meta=ServiceMeta(name="borg1"),
             roles=ServiceBorgbackupRole(
                 client=ServiceBorgbackupRoleClient(
                     machines=["machine1"],
