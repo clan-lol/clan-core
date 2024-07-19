@@ -6,7 +6,7 @@ from pathlib import Path
 
 from clan_cli.api import API
 from clan_cli.arg_actions import AppendOptionAction
-from clan_cli.inventory import Inventory, InventoryMeta
+from clan_cli.inventory import Meta, load_inventory, save_inventory
 
 from ..cmd import CmdOut, run
 from ..errors import ClanError
@@ -29,7 +29,7 @@ class CreateOptions:
     directory: Path | str
     # Metadata for the clan
     # Metadata can be shown with `clan show`
-    meta: InventoryMeta | None = None
+    meta: Meta | None = None
     # URL to the template to use. Defaults to the "minimal" template
     template_url: str = minimal_template_url
 
@@ -84,11 +84,11 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
     ## End: setup git
 
     # Write inventory.json file
-    inventory = Inventory.load_file(directory)
+    inventory = load_inventory(directory)
     if options.meta is not None:
         inventory.meta = options.meta
     # Persist creates a commit message for each change
-    inventory.persist(directory, "Init inventory")
+    save_inventory(inventory, directory, "Init inventory")
 
     command = ["nix", "flake", "update"]
     out = run(command, cwd=directory)
@@ -113,7 +113,7 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
 
     parser.add_argument(
         "--meta",
-        help=f"""Metadata to set for the clan. Available options are: {", ".join([f.name for f in fields(InventoryMeta)]) }""",
+        help=f"""Metadata to set for the clan. Available options are: {", ".join([f.name for f in fields(Meta)]) }""",
         nargs=2,
         metavar=("name", "value"),
         action=AppendOptionAction,

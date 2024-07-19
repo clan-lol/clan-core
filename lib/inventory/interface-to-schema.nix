@@ -55,6 +55,7 @@ let
               inventorySchema.properties.services.additionalProperties.additionalProperties.properties.meta;
             config = {
               title = "${moduleName}-config";
+              default = { };
             } // moduleSchema;
             roles = {
               type = "object";
@@ -69,6 +70,7 @@ let
                       {
                         properties.config = {
                           title = "${moduleName}-config";
+                          default = { };
                         } // moduleSchema;
                       };
                 }) (rolesOf moduleName)
@@ -80,6 +82,7 @@ let
                 {
                   additionalProperties.properties.config = {
                     title = "${moduleName}-config";
+                    default = { };
                   } // moduleSchema;
                 };
           };

@@ -1,16 +1,44 @@
-# ruff: noqa: N815
-# ruff: noqa: N806
+import dataclasses
 import json
-from dataclasses import asdict, dataclass, field, is_dataclass
+from dataclasses import fields, is_dataclass
 from pathlib import Path
-from typing import Any, Literal
+from types import UnionType
+from typing import Any, get_args, get_origin
 
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_file
 
+from .classes import (
+    Inventory,
+    Machine,
+    MachineDeploy,
+    Meta,
+    Service,
+    ServiceBorgbackup,
+    ServiceBorgbackupMeta,
+    ServiceBorgbackupRole,
+    ServiceBorgbackupRoleClient,
+    ServiceBorgbackupRoleServer,
+)
+
+# Re export classes here
+# This allows to rename classes in the generated code
+__all__ = [
+    "Service",
+    "Machine",
+    "Meta",
+    "Inventory",
+    "MachineDeploy",
+    "ServiceBorgbackup",
+    "ServiceBorgbackupMeta",
+    "ServiceBorgbackupRole",
+    "ServiceBorgbackupRoleClient",
+    "ServiceBorgbackupRoleServer",
+]
+
 
 def sanitize_string(s: str) -> str:
-    return s.replace("\\", "\\\\").replace('"', '\\"')
+    return s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
 
 def dataclass_to_dict(obj: Any) -> Any:
@@ -22,8 +50,11 @@ def dataclass_to_dict(obj: Any) -> Any:
     """
     if is_dataclass(obj):
         return {
-            sanitize_string(k): dataclass_to_dict(v)
-            for k, v in asdict(obj).items()  # type: ignore
+            # Use either the original name or name
+            sanitize_string(
+                field.metadata.get("original_name", field.name)
+            ): dataclass_to_dict(getattr(obj, field.name))
+            for field in fields(obj)  # type: ignore
         }
     elif isinstance(obj, list | tuple):
         return [dataclass_to_dict(item) for item in obj]
@@ -37,149 +68,133 @@ def dataclass_to_dict(obj: Any) -> Any:
         return obj
 
 
-@dataclass
-class DeploymentInfo:
+def is_union_type(type_hint: type) -> bool:
+    return type(type_hint) is UnionType
+
+
+def get_inner_type(type_hint: type) -> type:
+    if is_union_type(type_hint):
+        # Return the first non-None type
+        return next(t for t in get_args(type_hint) if t is not type(None))
+    return type_hint
+
+
+def get_second_type(type_hint: type[dict]) -> type:
     """
-    Deployment information for a machine.
+    Get the value type of a dictionary type hint
     """
+    args = get_args(type_hint)
+    if len(args) == 2:
+        # Return the second argument, which should be the value type (Machine)
+        return args[1]
 
-    targetHost: str | None = None
+    raise ValueError(f"Invalid type hint for dict: {type_hint}")
 
 
-@dataclass
-class Machine:
+def from_dict(t: type, data: dict[str, Any] | None) -> Any:
     """
-    Inventory machine model.
-
-    DO NOT EDIT THIS CLASS.
-    Any changes here must be reflected in the inventory interface file and potentially other nix files.
-
-    - Persisted to the inventory.json file
-    - Source of truth to generate each clan machine.
-    - For hardware deployment, the machine must declare the host system.
+    Dynamically instantiate a data class from a dictionary, handling nested data classes.
     """
+    if data is None:
+        return None
 
-    name: str
-    deploy: DeploymentInfo = field(default_factory=DeploymentInfo)
-    description: str | None = None
-    icon: str | None = None
-    tags: list[str] = field(default_factory=list)
-    system: Literal["x86_64-linux"] | str | None = None
+    try:
+        # Attempt to create an instance of the data_class
+        field_values = {}
+        for field in fields(t):
+            original_name = field.metadata.get("original_name", field.name)
 
-    @staticmethod
-    def from_dict(data: dict[str, Any]) -> "Machine":
-        targetHost = data.get("deploy", {}).get("targetHost", None)
-        return Machine(
-            name=data["name"],
-            description=data.get("description", None),
-            icon=data.get("icon", None),
-            tags=data.get("tags", []),
-            system=data.get("system", None),
-            deploy=DeploymentInfo(targetHost),
-        )
+            field_value = data.get(original_name)
 
+            field_type = get_inner_type(field.type)  # type: ignore
 
-@dataclass
-class MachineServiceConfig:
-    config: dict[str, Any] = field(default_factory=dict)
-    imports: list[str] = field(default_factory=list)
+            if original_name in data:
+                # If the field is another dataclass, recursively instantiate it
+                if is_dataclass(field_type):
+                    field_value = from_dict(field_type, field_value)
+                elif isinstance(field_type, Path | str) and isinstance(
+                    field_value, str
+                ):
+                    field_value = (
+                        Path(field_value) if field_type == Path else field_value
+                    )
+                elif get_origin(field_type) is dict and isinstance(field_value, dict):
+                    # The field is a dictionary with a specific type
+                    inner_type = get_second_type(field_type)
+                    field_value = {
+                        k: from_dict(inner_type, v) for k, v in field_value.items()
+                    }
+                elif get_origin is list and isinstance(field_value, list):
+                    # The field is a list with a specific type
+                    inner_type = get_args(field_type)[0]
+                    field_value = [from_dict(inner_type, v) for v in field_value]
 
+            # Set the value
+            if (
+                field.default is not dataclasses.MISSING
+                or field.default_factory is not dataclasses.MISSING
+            ):
+                # Fields with default value
+                # a: Int = 1
+                # b: list = Field(default_factory=list)
+                if original_name in data or field_value is not None:
+                    field_values[field.name] = field_value
+            else:
+                # Fields without default value
+                # a: Int
+                field_values[field.name] = field_value
 
-@dataclass
-class ServiceMeta:
-    name: str
-    description: str | None = None
-    icon: str | None = None
+        return t(**field_values)
 
-
-@dataclass
-class Role:
-    config: dict[str, Any] = field(default_factory=dict)
-    imports: list[str] = field(default_factory=list)
-    machines: list[str] = field(default_factory=list)
-    tags: list[str] = field(default_factory=list)
-
-
-@dataclass
-class Service:
-    meta: ServiceMeta
-    roles: dict[str, Role]
-    config: dict[str, Any] = field(default_factory=dict)
-    imports: list[str] = field(default_factory=list)
-    machines: dict[str, MachineServiceConfig] = field(default_factory=dict)
-
-    @staticmethod
-    def from_dict(d: dict[str, Any]) -> "Service":
-        return Service(
-            meta=ServiceMeta(**d.get("meta", {})),
-            roles={name: Role(**role) for name, role in d.get("roles", {}).items()},
-            machines=(
-                {
-                    name: MachineServiceConfig(**machine)
-                    for name, machine in d.get("machines", {}).items()
-                }
-                if d.get("machines")
-                else {}
-            ),
-            config=d.get("config", {}),
-            imports=d.get("imports", []),
-        )
+    except (TypeError, ValueError) as e:
+        print(f"Failed to instantiate {t.__name__}: {e} {data}")
+        return None
+        # raise ClanError(f"Failed to instantiate {t.__name__}: {e}")
 
 
-@dataclass
-class InventoryMeta:
-    name: str
-    description: str | None = None
-    icon: str | None = None
+def get_path(flake_dir: str | Path) -> Path:
+    """
+    Get the path to the inventory file in the flake directory
+    """
+    return (Path(flake_dir) / "inventory.json").resolve()
 
 
-@dataclass
-class Inventory:
-    meta: InventoryMeta
-    machines: dict[str, Machine]
-    services: dict[str, dict[str, Service]]
+# Default inventory
+default_inventory = Inventory(
+    meta=Meta(name="New Clan"), machines={}, services=Service()
+)
 
-    @staticmethod
-    def from_dict(d: dict[str, Any]) -> "Inventory":
-        return Inventory(
-            meta=InventoryMeta(**d.get("meta", {})),
-            machines={
-                name: Machine.from_dict(machine)
-                for name, machine in d.get("machines", {}).items()
-            },
-            services={
-                name: {
-                    role: Service.from_dict(service)
-                    for role, service in services.items()
-                }
-                for name, services in d.get("services", {}).items()
-            },
-        )
 
-    @staticmethod
-    def get_path(flake_dir: str | Path) -> Path:
-        return Path(flake_dir) / "inventory.json"
+def load_inventory(
+    flake_dir: str | Path, default: Inventory = default_inventory
+) -> Inventory:
+    """
+    Load the inventory file from the flake directory
+    If not file is found, returns the default inventory
+    """
+    inventory = default_inventory
 
-    @staticmethod
-    def load_file(flake_dir: str | Path) -> "Inventory":
-        inventory = Inventory(
-            machines={}, services={}, meta=InventoryMeta(name="New Clan")
-        )
-        inventory_file = Inventory.get_path(flake_dir)
-        if inventory_file.exists():
-            with open(inventory_file) as f:
-                try:
-                    res = json.load(f)
-                    inventory = Inventory.from_dict(res)
-                except json.JSONDecodeError as e:
-                    raise ClanError(f"Error decoding inventory file: {e}")
+    inventory_file = get_path(flake_dir)
+    if inventory_file.exists():
+        with open(inventory_file) as f:
+            try:
+                res = json.load(f)
+                inventory = from_dict(Inventory, res)
+            except json.JSONDecodeError as e:
+                # Error decoding the inventory file
+                raise ClanError(f"Error decoding inventory file: {e}")
 
-        return inventory
+    return inventory
 
-    def persist(self, flake_dir: str | Path, message: str) -> None:
-        inventory_file = Inventory.get_path(flake_dir)
 
-        with open(inventory_file, "w") as f:
-            json.dump(dataclass_to_dict(self), f, indent=2)
+def save_inventory(inventory: Inventory, flake_dir: str | Path, message: str) -> None:
+    """ "
+    Write the inventory to the flake directory
+    and commit it to git with the given message
+    """
+    inventory_file = get_path(flake_dir)
 
-        commit_file(inventory_file, Path(flake_dir), commit_message=message)
+    with open(inventory_file, "w") as f:
+        json.dump(dataclass_to_dict(inventory), f, indent=2)
+
+    commit_file(inventory_file, Path(flake_dir), commit_message=message)

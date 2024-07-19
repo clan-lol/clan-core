@@ -7,7 +7,7 @@ from ..api import API
 from ..clan_uri import FlakeId
 from ..errors import ClanError
 from ..git import commit_file
-from ..inventory import Inventory, Machine
+from ..inventory import Machine, MachineDeploy, get_path, load_inventory, save_inventory
 
 log = logging.getLogger(__name__)
 
@@ -20,11 +20,11 @@ def create_machine(flake: FlakeId, machine: Machine) -> None:
             "Machine name must be a valid hostname", location="Create Machine"
         )
 
-    inventory = Inventory.load_file(flake.path)
+    inventory = load_inventory(flake.path)
     inventory.machines.update({machine.name: machine})
-    inventory.persist(flake.path, f"Create machine {machine.name}")
+    save_inventory(inventory, flake.path, f"Create machine {machine.name}")
 
-    commit_file(Inventory.get_path(flake.path), Path(flake.path))
+    commit_file(get_path(flake.path), Path(flake.path))
 
 
 def create_command(args: argparse.Namespace) -> None:
@@ -36,6 +36,7 @@ def create_command(args: argparse.Namespace) -> None:
             description=args.description,
             tags=args.tags,
             icon=args.icon,
+            deploy=MachineDeploy(),
         ),
     )
 
