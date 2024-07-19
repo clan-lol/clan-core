@@ -1,6 +1,8 @@
 # ruff: noqa: RUF001
 import argparse
 import json
+from collections.abc import Callable
+from functools import partial
 from typing import Any
 
 
@@ -35,6 +37,142 @@ def map_json_type(
 
 known_classes = set()
 root_class = "Inventory"
+
+
+def field_def_from_default_type(
+    field_name: str,
+    field_types: set[str],
+    class_name: str,
+    finalize_field: Callable[..., str],
+) -> str | None:
+    if "dict" in str(field_types):
+        return finalize_field(
+            field_types=field_types,
+            default_factory="dict",
+        )
+
+    if "list" in str(field_types):
+        return finalize_field(
+            field_types=field_types,
+            default_factory="list",
+        )
+    if "None" in str(field_types):
+        return finalize_field(
+            field_types=field_types,
+            default="None",
+        )
+
+    if class_name.endswith("Config"):
+        # SingleDiskConfig
+        # PackagesConfig
+        # ...
+        # Config classes MUST always be optional
+        raise ValueError(
+            f"""
+            #################################################
+            Clan module '{class_name}' specifies a top-level option '{field_name}' without a default value.
+
+            To fix this:
+            - Add a default value to the option
+
+            lib.mkOption {{
+                type = lib.types.nullOr lib.types.str;
+                default = null; # <- Add a default value here
+            }};
+
+            # Other options
+
+            - make the field nullable
+
+            lib.mkOption {{
+                #      ╔══════════════╗ <- Nullable type
+                type = lib.types.nullOr lib.types.str;
+            }};
+
+            - Use lib.types.attrsOf if suitable
+            - Use lib.types.listOf if suitable
+
+
+            Or report this problem to the clan team. So the class generator can be improved.
+            #################################################
+            """
+        )
+
+    return None
+
+
+def field_def_from_default_value(
+    default_value: Any,
+    field_name: str,
+    field_types: set[str],
+    nested_class_name: str,
+    finalize_field: Callable[..., str],
+) -> str | None:
+    # default_value = prop_info.get("default")
+    if default_value is None:
+        return finalize_field(
+            field_types=field_types | {"None"},
+            default="None",
+        )
+    elif isinstance(default_value, list):
+        return finalize_field(
+            field_types=field_types,
+            default_factory="list",
+        )
+    elif isinstance(default_value, dict):
+        serialised_types = " | ".join(field_types)
+        if serialised_types == nested_class_name:
+            return finalize_field(
+                field_types=field_types,
+                default_factory=nested_class_name,
+            )
+
+        elif f"dict[str, {nested_class_name}]" in serialised_types:
+            return finalize_field(
+                field_types=field_types,
+                default_factory="dict",
+            )
+        else:
+            return finalize_field(
+                field_types=field_types,
+                default_factory="dict",
+                type_apendix=" | dict[str,Any]",
+            )
+    elif default_value == "‹name›":
+        return None
+    elif isinstance(default_value, str):
+        return finalize_field(
+            field_types=field_types,
+            default=f"'{default_value}'",
+        )
+    else:
+        # Other default values unhandled yet.
+        raise ValueError(
+            f"Unhandled default value for field '{field_name}' - default value: {default_value}"
+        )
+
+
+def get_field_def(
+    field_name: str,
+    field_meta: str | None,
+    field_types: set[str],
+    default: str | None = None,
+    default_factory: str | None = None,
+    type_apendix: str = "",
+) -> str:
+    sorted_field_types = sorted(field_types)
+    serialised_types = " | ".join(sorted_field_types) + type_apendix
+    if not default and not default_factory and not field_meta:
+        return f"{field_name}: {serialised_types}"
+    field_init = "field("
+    if default:
+        field_init += f"default = {default}"
+    if default_factory:
+        field_init += f"default_factory = {default_factory}"
+    if field_meta:
+        field_init += f", metadata = {field_meta}"
+
+    return f"{field_name}: {serialised_types} = {field_init})"
 
 
 # Recursive function to generate dataclasses from JSON schema
@@ -105,97 +243,54 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
 
         assert field_types, f"Python type not found for {prop} {prop_info}"
 
-        serialised_types = " | ".join(field_types)
         field_meta = None
         if field_name != prop:
             field_meta = f"""{{"original_name": "{prop}"}}"""
 
-        field_def = f"{field_name}: {serialised_types}"
-        if field_meta:
-            field_def = f"{field_def} = field(metadata={field_meta})"
+        finalize_field = partial(get_field_def, field_name, field_meta)
 
         if "default" in prop_info or field_name not in prop_info.get("required", []):
             if "default" in prop_info:
                 default_value = prop_info.get("default")
-                if default_value is None:
-                    field_types |= {"None"}
-                    serialised_types = " | ".join(field_types)
+                field_def = field_def_from_default_value(
+                    default_value=default_value,
+                    field_name=field_name,
+                    field_types=field_types,
+                    nested_class_name=nested_class_name,
+                    finalize_field=finalize_field,
+                )
+                if field_def:
+                    fields_with_default.append(field_def)
 
-                    field_def = f"""{field_name}: {serialised_types} = field(default=None {f", metadata={field_meta}" if field_meta else ""})"""
-                elif isinstance(default_value, list):
-                    field_def = f"""{field_def} = field(default_factory=list {f", metadata={field_meta}" if field_meta else ""})"""
-                elif isinstance(default_value, dict):
-                    serialised_types = " | ".join(field_types)
-                    if serialised_types == nested_class_name:
-                        field_def = f"""{field_name}: {serialised_types} = field(default_factory={nested_class_name} {f", metadata={field_meta}" if field_meta else ""})"""
-                    elif f"dict[str, {nested_class_name}]" in serialised_types:
-                        field_def = f"""{field_name}: {serialised_types} = field(default_factory=dict {f", metadata={field_meta}" if field_meta else ""})"""
-                    else:
-                        field_def = f"""{field_name}: {serialised_types} | dict[str,Any] = field(default_factory=dict {f", metadata={field_meta}" if field_meta else ""})"""
-                elif default_value == "‹name›":
-                    # Special case for nix submodules
-                    pass
-                elif isinstance(default_value, str):
-                    field_def = f"""{field_name}: {serialised_types} = field(default = '{default_value}' {f", metadata={field_meta}" if field_meta else ""})"""
-                else:
-                    # Other default values unhandled yet.
-                    raise ValueError(
-                        f"Unhandled default value for field '{field_name}' - default value: {default_value}"
+                if not field_def:
+                    # Finalize without the default value
+                    field_def = finalize_field(
+                        field_types=field_types,
                     )
-
-                fields_with_default.append(field_def)
+                    required_fields.append(field_def)
 
             if "default" not in prop_info:
                 # Field is not required and but also specifies no default value
                 # Trying to infer default value from type
-                if "dict" in str(serialised_types):
-                    field_def = f"""{field_name}: {serialised_types} = field(default_factory=dict {f", metadata={field_meta}" if field_meta else ""})"""
+                field_def = field_def_from_default_type(
+                    field_name=field_name,
+                    field_types=field_types,
+                    class_name=class_name,
+                    finalize_field=finalize_field,
+                )
+
+                if field_def:
                     fields_with_default.append(field_def)
-                elif "list" in str(serialised_types):
-                    field_def = f"""{field_name}: {serialised_types} = field(default_factory=list {f", metadata={field_meta}" if field_meta else ""})"""
-                    fields_with_default.append(field_def)
-                elif "None" in str(serialised_types):
-                    field_def = f"""{field_name}: {serialised_types} = field(default=None {f", metadata={field_meta}" if field_meta else ""})"""
-                    fields_with_default.append(field_def)
-
-                elif class_name.endswith("Config"):
-                    # SingleDiskConfig
-                    # PackagesConfig
-                    # ...
-                    # Config classes MUST always be optional
-                    raise ValueError(
-                        f"""
-                        #################################################
-                        Clan module '{class_name}' specifies a top-level option '{field_name}' without a default value.
-
-                        To fix this:
-                        - Add a default value to the option
-
-                        lib.mkOption {{
-                            type = lib.types.nullOr lib.types.str;
-                            default = null; # <- Add a default value here
-                        }};
-
-                        # Other options
-
-                        - make the field nullable
-
-                        lib.mkOption {{
-                            #      ╔══════════════╗ <- Nullable type
-                            type = lib.types.nullOr lib.types.str;
-                        }};
-
-                        - Use lib.types.attrsOf if suitable
-                        - Use lib.types.listOf if suitable
-
-
-                        Or report this problem to the clan team. So the class generator can be improved.
-                        #################################################
-                        """
+                if not field_def:
+                    field_def = finalize_field(
+                        field_types=field_types,
                     )
-                else:
                     required_fields.append(field_def)
+
         else:
+            field_def = finalize_field(
+                field_types=field_types,
+            )
             required_fields.append(field_def)
 
     fields_str = "\n    ".join(required_fields + fields_with_default)

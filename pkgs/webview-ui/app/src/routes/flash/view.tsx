@@ -34,7 +34,7 @@ export const Flash = () => {
     refetch: loadDevices,
     isFetching,
   } = createQuery(() => ({
-    queryKey: ["TanStack Query"],
+    queryKey: ["block_devices"],
     queryFn: async () => {
       const result = await callApi("show_block_devices", {});
       if (result.status === "error") throw new Error("Failed to fetch data");
