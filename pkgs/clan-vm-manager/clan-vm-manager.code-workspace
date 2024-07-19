@@ -1,0 +1,43 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../clan-cli/clan_cli"
+		},
+		{
+			"path": "../clan-cli/tests"
+		},
+		{
+			"path": "../../nixosModules"
+		},
+		{
+			"path": "../../lib/build-clan"
+		}
+	],
+	"settings": {
+		"python.linting.mypyEnabled": true,
+		"files.exclude": {
+			"**/__pycache__": true,
+			"**/.direnv": true,
+			"**/.hypothesis": true,
+			"**/.mypy_cache": true,
+			"**/.reports": true,
+			"**/.ruff_cache": true,
+			"**/result/**": true,
+			"/nix/store/**": true
+		},
+		"search.exclude": {
+			"**/__pycache__": true,
+			"**/.direnv": true,
+			"**/.hypothesis": true,
+			"**/.mypy_cache": true,
+			"**/.reports": true,
+			"**/.ruff_cache": true,
+			"**/result/": true,
+			"/nix/store/**": true
+		},
+		"files.autoSave": "off"
+	}
+}
