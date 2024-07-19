@@ -110,7 +110,7 @@ def run_vm(
     nix_options: list[str] = [],
 ) -> None:
     with ExitStack() as stack:
-        machine = Machine(vm.machine_name, vm.flake_url)
+        machine = Machine(name=vm.machine_name, flake=vm.flake_url)
         log.debug(f"Creating VM for {machine}")
 
         # store the temporary rootfs inside XDG_CACHE_HOME on the host
