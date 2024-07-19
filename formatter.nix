@@ -26,8 +26,8 @@
         "pkgs/clan-vm-manager" = {
           extraPythonPackages =
             # clan-app currently only exists on linux
-            (self'.packages.clan-vm-manager.externalTestDeps or [ ])
-            ++ self'.packages.clan-vm-manager.testDependencies
+
+            self'.packages.clan-vm-manager.testDependencies
             ++ self'.packages.clan-cli.testDependencies;
           modules = [ "clan_vm_manager" ];
         };
