@@ -25,6 +25,9 @@ class Machine:
     _eval_cache: dict[str, str] = field(default_factory=dict)
     _build_cache: dict[str, Path] = field(default_factory=dict)
 
+    def get_id(self) -> str:
+        return f"{self.flake}#{self.name}"
+
     def flush_caches(self) -> None:
         self.cached_deployment = None
         self._build_cache.clear()
