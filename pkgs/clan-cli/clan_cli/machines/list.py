@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from clan_cli.api import API
-from clan_cli.inventory import Machine
+from clan_cli.inventory import Machine, from_dict
 
 from ..cmd import run_no_stdout
 from ..nix import nix_eval
@@ -24,7 +24,7 @@ def list_machines(flake_url: str | Path, debug: bool = False) -> dict[str, Machi
     proc = run_no_stdout(cmd)
 
     res = proc.stdout.strip()
-    data = {name: Machine.from_dict(v) for name, v in json.loads(res).items()}
+    data = {name: from_dict(Machine, v) for name, v in json.loads(res).items()}
     return data
 
 

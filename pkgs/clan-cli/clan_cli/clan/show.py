@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 from clan_cli.api import API
 from clan_cli.errors import ClanCmdError, ClanError
-from clan_cli.inventory import InventoryMeta
+from clan_cli.inventory import Meta
 
 from ..cmd import run_no_stdout
 from ..nix import nix_eval
@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 @API.register
-def show_clan_meta(uri: str | Path) -> InventoryMeta:
+def show_clan_meta(uri: str | Path) -> Meta:
     cmd = nix_eval(
         [
             f"{uri}#clanInternals.inventory.meta",
@@ -61,7 +61,7 @@ def show_clan_meta(uri: str | Path) -> InventoryMeta:
                 description="Icon path must be a URL or a relative path.",
             )
 
-    return InventoryMeta(
+    return Meta(
         name=clan_meta.get("name"),
         description=clan_meta.get("description", None),
         icon=icon_path,
