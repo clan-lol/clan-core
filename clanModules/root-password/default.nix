@@ -9,9 +9,9 @@
   users.users.root.hashedPasswordFile =
     config.clan.core.facts.services.root-password.secret.password-hash.path;
 
-  sops.secrets."${config.clan.core.machineName}-password-hash".neededForUsers = lib.mkIf (
-    config.clan.core.facts.secretStore == "sops"
-  ) true;
+  sops.secrets = lib.mkIf (config.clan.core.facts.secretStore == "sops") {
+    "${config.clan.core.machineName}-password-hash".neededForUsers = true;
+  };
 
   clan.core.facts.services.root-password = {
     secret.password = { };
