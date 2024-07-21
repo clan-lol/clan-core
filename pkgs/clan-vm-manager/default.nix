@@ -1,25 +1,25 @@
 {
-  python3,
-  runCommand,
-  setuptools,
-  copyDesktopItems,
-  pygobject3,
-  wrapGAppsHook,
-  gtk4,
-  gnome,
-  pygobject-stubs,
-  gobject-introspection,
+  adwaita-icon-theme,
   clan-cli,
-  makeDesktopItem,
+  copyDesktopItems,
+  fontconfig,
+  gobject-introspection,
+  gtk4,
   libadwaita,
-  webkitgtk_6_0,
+  makeDesktopItem,
+  pygobject-stubs,
+  pygobject3,
   pytest, # Testing framework
   pytest-cov, # Generate coverage reports
   pytest-subprocess, # fake the real subprocess behavior to make your tests more independent.
-  pytest-xdist, # Run tests in parallel on multiple cores
   pytest-timeout, # Add timeouts to your tests
+  pytest-xdist, # Run tests in parallel on multiple cores
+  python3,
+  runCommand,
+  setuptools,
+  webkitgtk_6_0,
   webview-ui,
-  fontconfig,
+  wrapGAppsHook,
 }:
 let
   source = ./.;
@@ -39,7 +39,7 @@ let
     gtk4
     libadwaita
     webkitgtk_6_0
-    gnome.adwaita-icon-theme
+    adwaita-icon-theme
   ];
 
   # Deps including python packages from the local project
@@ -112,8 +112,8 @@ python3.pkgs.buildPythonApplication rec {
             mkdir -p .home/.local/share/fonts
             export HOME=.home
 
-            fc-cache --verbose 
-            # > fc-cache succeded 
+            fc-cache --verbose
+            # > fc-cache succeded
 
             echo "Loaded the following fonts ..."
             fc-list
@@ -160,8 +160,8 @@ python3.pkgs.buildPythonApplication rec {
     mkdir -p .home/.local/share/fonts
     export HOME=.home
 
-    fc-cache --verbose 
-    # > fc-cache succeded 
+    fc-cache --verbose
+    # > fc-cache succeded
 
     echo "Loaded the following fonts ..."
     fc-list
