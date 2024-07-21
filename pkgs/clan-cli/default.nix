@@ -63,6 +63,7 @@ let
     rm $out/clan_cli/config/jsonschema
     ln -sf ${nixpkgs'} $out/clan_cli/nixpkgs
     cp -r ${../../lib/jsonschema} $out/clan_cli/config/jsonschema
+    cp -r ${../../templates} $out/clan_cli/templates
 
     ${classgen}/bin/classgen ${inventory-schema}/schema.json $out/clan_cli/inventory/classes.py
   '';
