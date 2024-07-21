@@ -88,7 +88,7 @@ let
           fsType = "ext4";
         };
 
-        ${config.clan.core.secretsUploadDirectory} = {
+        ${config.clan.core.facts.secretUploadDirectory} = {
           device = "secrets";
           fsType = "9p";
           neededForBoot = true;
