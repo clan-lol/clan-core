@@ -106,6 +106,16 @@ in
     '';
   };
 
+  options.clan.borgbackup.exclude = lib.mkOption {
+    type = lib.types.listOf lib.types.str;
+    example = [ "*.pyc" ];
+    default = [];
+    description = ''
+      Directories/Files to exclude from the backup.
+      Use * as a wildcard.
+    '';
+  };
+
   imports = [
     (lib.mkRemovedOptionModule [
       "clan"
@@ -129,7 +139,7 @@ in
       paths = lib.unique (
         lib.flatten (map (state: state.folders) (lib.attrValues config.clan.core.state))
       );
-      exclude = [ "*.pyc" ];
+      exclude = cfg.exclude;
       repo = dest.repo;
       environment.BORG_RSH = dest.rsh;
       compression = "auto,zstd";
