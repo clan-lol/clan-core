@@ -18,9 +18,11 @@ minimal_template_url: str = "git+https://git.clan.lol/clan/clan-core#templates.m
 
 @dataclass
 class CreateClanResponse:
-    git_init: CmdOut
+    flake_init: CmdOut
+    git_init: CmdOut | None
     git_add: CmdOut
-    git_config: CmdOut
+    git_config_username: CmdOut | None
+    git_config_email: CmdOut | None
     flake_update: CmdOut
 
 
@@ -32,6 +34,10 @@ class CreateOptions:
     meta: Meta | None = None
     # URL to the template to use. Defaults to the "minimal" template
     template_url: str = minimal_template_url
+
+
+def git_command(directory: Path, *args: str) -> list[str]:
+    return nix_shell(["nixpkgs#git"], ["git", "-C", str(directory), *args])
 
 
 @API.register
@@ -52,7 +58,6 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
                 description="Directory already exists and is not empty.",
             )
 
-    cmd_responses = {}
     command = nix_command(
         [
             "flake",
@@ -61,27 +66,27 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
             template_url,
         ]
     )
-    out = run(command, cwd=directory)
+    flake_init = run(command, cwd=directory)
 
-    ## Begin: setup git
-    command = nix_shell(["nixpkgs#git"], ["git", "init"])
-    out = run(command, cwd=directory)
-    cmd_responses["git init"] = out
+    git_init = None
+    if not directory.joinpath(".git").exists():
+        git_init = run(git_command(directory, "init"))
+    git_add = run(git_command(directory, "add", "."))
 
-    command = nix_shell(["nixpkgs#git"], ["git", "add", "."])
-    out = run(command, cwd=directory)
-    cmd_responses["git add"] = out
+    # check if username is set
+    has_username = run(git_command(directory, "config", "user.name"), check=False)
+    git_config_username = None
+    if has_username.returncode != 0:
+        git_config_username = run(
+            git_command(directory, "config", "user.name", "clan-tool")
+        )
 
-    command = nix_shell(["nixpkgs#git"], ["git", "config", "user.name", "clan-tool"])
-    out = run(command, cwd=directory)
-    cmd_responses["git config"] = out
-
-    command = nix_shell(
-        ["nixpkgs#git"], ["git", "config", "user.email", "clan@example.com"]
-    )
-    out = run(command, cwd=directory)
-    cmd_responses["git config"] = out
-    ## End: setup git
+    has_username = run(git_command(directory, "config", "user.email"), check=False)
+    git_config_email = None
+    if has_username.returncode != 0:
+        git_config_email = run(
+            git_command(directory, "config", "user.email", "clan@example.com")
+        )
 
     # Write inventory.json file
     inventory = load_inventory(directory)
@@ -90,15 +95,17 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
     # Persist creates a commit message for each change
     save_inventory(inventory, directory, "Init inventory")
 
-    command = ["nix", "flake", "update"]
-    out = run(command, cwd=directory)
-    cmd_responses["flake update"] = out
+    flake_update = run(
+        nix_shell(["nixpkgs#nix"], ["nix", "flake", "update"]), cwd=directory
+    )
 
     response = CreateClanResponse(
-        git_init=cmd_responses["git init"],
-        git_add=cmd_responses["git add"],
-        git_config=cmd_responses["git config"],
-        flake_update=cmd_responses["flake update"],
+        flake_init=flake_init,
+        git_init=git_init,
+        git_add=git_add,
+        git_config_username=git_config_username,
+        git_config_email=git_config_email,
+        flake_update=flake_update,
     )
     return response
 
