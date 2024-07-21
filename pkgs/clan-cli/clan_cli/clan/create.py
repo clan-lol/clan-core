@@ -9,11 +9,9 @@ from clan_cli.arg_actions import AppendOptionAction
 from clan_cli.inventory import Meta, load_inventory, save_inventory
 
 from ..cmd import CmdOut, run
+from ..dirs import clan_templates
 from ..errors import ClanError
 from ..nix import nix_command, nix_shell
-
-default_template_url: str = "git+https://git.clan.lol/clan/clan-core"
-minimal_template_url: str = "git+https://git.clan.lol/clan/clan-core#templates.minimal"
 
 
 @dataclass
@@ -33,7 +31,7 @@ class CreateOptions:
     # Metadata can be shown with `clan show`
     meta: Meta | None = None
     # URL to the template to use. Defaults to the "minimal" template
-    template_url: str = minimal_template_url
+    template: str = "minimal"
 
 
 def git_command(directory: Path, *args: str) -> list[str]:
@@ -43,7 +41,7 @@ def git_command(directory: Path, *args: str) -> list[str]:
 @API.register
 def create_clan(options: CreateOptions) -> CreateClanResponse:
     directory = Path(options.directory).resolve()
-    template_url = options.template_url
+    template_url = f"{clan_templates()}#{options.template}"
     if not directory.exists():
         directory.mkdir()
     else:
@@ -112,10 +110,11 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "--url",
+        "--template",
         type=str,
-        help="url to the clan template",
-        default=default_template_url,
+        choices=["default", "minimal"],
+        help="Clan template name",
+        default="default",
     )
 
     parser.add_argument(
@@ -135,7 +134,7 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
         create_clan(
             CreateOptions(
                 directory=args.path,
-                template_url=args.url,
+                template=args.template,
             )
         )
 

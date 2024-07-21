@@ -4,6 +4,8 @@ import sys
 import urllib
 from pathlib import Path
 
+from .errors import ClanError
+
 log = logging.getLogger(__name__)
 
 
@@ -39,6 +41,18 @@ def find_toplevel(top_level_files: list[str]) -> Path | None:
                 return path
             path = path.parent
     return None
+
+
+def clan_templates() -> Path:
+    template_path = module_root().parent.parent / "templates"
+    if template_path.exists():
+        return template_path
+    else:
+        template_path = module_root() / "templates"
+        if not template_path.exists():
+            msg = f"BUG! clan core not found at {template_path}. This is an issue with packaging the cli"
+            raise ClanError(msg)
+        return template_path
 
 
 def user_config_dir() -> Path:
