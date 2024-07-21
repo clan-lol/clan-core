@@ -42,7 +42,7 @@ def git_command(directory: Path, *args: str) -> list[str]:
 
 @API.register
 def create_clan(options: CreateOptions) -> CreateClanResponse:
-    directory = Path(options.directory)
+    directory = Path(options.directory).resolve()
     template_url = options.template_url
     if not directory.exists():
         directory.mkdir()
