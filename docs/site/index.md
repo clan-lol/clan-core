@@ -24,11 +24,10 @@ Create your own clan with these initial steps and manage a fleet of machines wit
 
     If you run NixOS the `nix` binary is already installed.
 
-    You will also need to enable the `flakes` and `nix-commands` experimental features.
+    You will also need to enable the `flakes` and `nix-commands` experimental features in your configuration.nix:
 
-    ```bash
-    # /etc/nix/nix.conf or ~/.config/nix/nix.conf
-    experimental-features = nix-command flakes
+    ```nix
+    { nix.settings.experimental-features = [ "nix-command" "flakes" ]; }
     ```
 
 === "**Other**"
