@@ -25,8 +25,8 @@
 
               clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = lib.version;
-              clan.core.secretStore = "password-store";
-              clan.core.secretsUploadDirectory = lib.mkForce "__CLAN_SOPS_KEY_DIR__/secrets";
+              clan.core.facts.secretStore = "password-store";
+              clan.core.facts.secretUploadDirectory = lib.mkForce "__CLAN_SOPS_KEY_DIR__/secrets";
 
               clan.core.networking.zerotier.controller.enable = true;
 
