@@ -23,7 +23,11 @@
     users.mutableUsers = false;
     users.users.${config.clan.user-password.user}.hashedPasswordFile =
       config.clan.core.facts.services.user-password.secret.user-password-hash.path;
-    sops.secrets."${config.clan.core.machineName}-user-password-hash".neededForUsers = true;
+
+    sops.secrets = lib.mkIf (config.clan.core.facts.secretStore == "sops") {
+      "${config.clan.core.machineName}-user-password-hash".neededForUsers =  true;
+    };
+
     clan.core.facts.services.user-password = {
       secret.user-password = { };
       secret.user-password-hash = { };
