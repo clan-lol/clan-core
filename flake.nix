@@ -1,11 +1,6 @@
 {
   description = "clan.lol base operating system";
 
-  nixConfig.extra-substituters = [ "https://cache.clan.lol" ];
-  nixConfig.extra-trusted-public-keys = [
-    "cache.clan.lol-1:3KztgSAB5R1M+Dz7vzkBGzXdodizbgLXGXKXlcQLA28="
-  ];
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
     disko.url = "github:nix-community/disko";

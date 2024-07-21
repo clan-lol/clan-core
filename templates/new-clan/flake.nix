@@ -11,7 +11,7 @@
       # Usage see: https://docs.clan.lol
       clan = clan-core.lib.buildClan {
         directory = self;
-        meta.name = "__CHANGE_ME__"; # Ensure this is internet wide unique.
+        meta.name = "__CHANGE_ME__"; # Ensure this is unique among all clans you want to use.
 
         # Distributed services, uncomment to enable.
         # inventory = {
@@ -45,7 +45,9 @@
             # This only works however if you have avahi running on your admin machine else use IP
             clan.core.networking.targetHost = pkgs.lib.mkDefault "root@jon";
 
-            # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+            # You can get your disk id by running the following command on the installer:
+            # Replace <IP> with the IP of the installer printed on the screen or by running the `ip addr` command.
+            # ssh root@<IP> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
             disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
 
             # IMPORTANT! Add your SSH key here
@@ -74,7 +76,9 @@
             # This only works however if you have avahi running on your admin machine else use IP
             clan.core.networking.targetHost = pkgs.lib.mkDefault "root@sara";
 
-            # ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+            # You can get your disk id by running the following command on the installer:
+            # Replace <IP> with the IP of the installer printed on the screen or by running the `ip addr` command.
+            # ssh root@<IP> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
             disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
 
             # IMPORTANT! Add your SSH key here
