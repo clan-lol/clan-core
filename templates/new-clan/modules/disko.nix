@@ -1,5 +1,7 @@
 { lib, ... }:
 {
+  # TO NOT EDIT THIS FILE AFTER INSTALLATION of a machine
+  # Otherwise your system might not boot because of missing partitions / filesystems
   boot.loader.grub.efiSupport = lib.mkDefault true;
   boot.loader.grub.efiInstallAsRemovable = lib.mkDefault true;
   disko.devices = {
@@ -23,6 +25,7 @@
                 type = "filesystem";
                 format = "vfat";
                 mountpoint = "/boot";
+                mountOptions = [ "nofail" ];
               };
             };
             root = {
@@ -30,6 +33,8 @@
               content = {
                 type = "filesystem";
                 format = "ext4";
+                # format = "btrfs";
+                # format = "bcachefs";
                 mountpoint = "/";
               };
             };

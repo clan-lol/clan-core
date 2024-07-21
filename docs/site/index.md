@@ -84,7 +84,7 @@ This should yield the following:
 └── modules
     └── shared.nix
 
-5 directories, 6 files
+5 directories, 9 files
 ```
 
 ```bash

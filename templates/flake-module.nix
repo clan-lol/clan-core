@@ -1,6 +1,6 @@
 { self, inputs, ... }:
 {
-  flake = (import ./flake.nix).outputs {} // {
+  flake = (import ./flake.nix).outputs { } // {
     checks.x86_64-linux.template-minimal =
       let
         path = self.templates.minimal.path;
