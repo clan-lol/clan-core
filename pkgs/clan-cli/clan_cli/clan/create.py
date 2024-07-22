@@ -32,6 +32,7 @@ class CreateOptions:
     meta: Meta | None = None
     # URL to the template to use. Defaults to the "minimal" template
     template: str = "minimal"
+    setup_json_inventory: bool = True
 
 
 def git_command(directory: Path, *args: str) -> list[str]:
@@ -87,11 +88,12 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
         )
 
     # Write inventory.json file
-    inventory = load_inventory(directory)
-    if options.meta is not None:
-        inventory.meta = options.meta
-    # Persist creates a commit message for each change
-    save_inventory(inventory, directory, "Init inventory")
+    if options.setup_json_inventory:
+        inventory = load_inventory(directory)
+        if options.meta is not None:
+            inventory.meta = options.meta
+        # Persist creates a commit message for each change
+        save_inventory(inventory, directory, "Init inventory")
 
     flake_update = run(
         nix_shell(["nixpkgs#nix"], ["nix", "flake", "update"]), cwd=directory
@@ -133,8 +135,7 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
     def create_flake_command(args: argparse.Namespace) -> None:
         create_clan(
             CreateOptions(
-                directory=args.path,
-                template=args.template,
+                directory=args.path, template=args.template, setup_json_inventory=False
             )
         )
 
