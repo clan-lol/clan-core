@@ -32,7 +32,7 @@
       secret.user-password = { };
       secret.user-password-hash = { };
       generator.prompt = (
-        lib.mkIf config.clan.user-password.prompt "Set the password for your $user: ${config.clan.user-password.user}.
+        lib.mkIf config.clan.user-password.prompt "Set the password for your user '${config.clan.user-password.user}'.
       You can autogenerate a password, if you leave this prompt blank."
       );
       generator.path = with pkgs; [
