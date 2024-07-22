@@ -1,6 +1,7 @@
 import os
 from collections import defaultdict
 from collections.abc import Callable
+from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -55,7 +56,8 @@ def test_dependencies_as_files() -> None:
         ),
     )
     with TemporaryDirectory() as tmpdir:
-        dep_tmpdir = dependencies_as_dir(decrypted_dependencies, Path(tmpdir))
+        dep_tmpdir = Path(tmpdir)
+        dependencies_as_dir(decrypted_dependencies, dep_tmpdir)
         assert dep_tmpdir.is_dir()
         assert (dep_tmpdir / "gen_1" / "var_1a").read_bytes() == b"var_1a"
         assert (dep_tmpdir / "gen_1" / "var_1b").read_bytes() == b"var_1b"
@@ -232,3 +234,40 @@ def test_dependant_generators(
     )
     assert child_file_path.is_file()
     assert child_file_path.read_text() == "hello\n"
+
+
+@pytest.mark.impure
+@pytest.mark.parametrize(
+    ("prompt_type", "input_value"),
+    [
+        ("line", "my input"),
+        ("multiline", "my\nmultiline\ninput\n"),
+        # The hidden type cannot easily be tested, as getpass() reads from /dev/tty directly
+        # ("hidden", "my hidden input"),
+    ],
+)
+def test_prompt(
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    prompt_type: str,
+    input_value: str,
+) -> None:
+    config = nested_dict()
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["files"]["my_value"]["secret"] = False
+    my_generator["prompts"]["prompt1"]["description"] = "dream2nix"
+    my_generator["prompts"]["prompt1"]["type"] = prompt_type
+    my_generator["script"] = "cat $prompts/prompt1 > $out/my_value"
+    flake = generate_flake(
+        temporary_home,
+        flake_template=CLAN_CORE / "templates" / "minimal",
+        machine_configs=dict(my_machine=config),
+    )
+    monkeypatch.chdir(flake.path)
+    monkeypatch.setattr("sys.stdin", StringIO(input_value))
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+    var_file_path = (
+        flake.path / "machines" / "my_machine" / "vars" / "my_generator" / "my_value"
+    )
+    assert var_file_path.is_file()
+    assert var_file_path.read_text() == input_value

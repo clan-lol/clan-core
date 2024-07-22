@@ -108,8 +108,9 @@ in
                 Prompts are available to the generator script as files.
                 For example, a prompt named 'prompt1' will be available via $prompts/prompt1
               '';
+              default = { };
               type = attrsOf (submodule {
-                options = {
+                options = options {
                   description = {
                     description = ''
                       The description of the prompted value
