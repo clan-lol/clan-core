@@ -1,13 +1,17 @@
 import argparse
 import logging
 import re
-from pathlib import Path
 
 from ..api import API
 from ..clan_uri import FlakeId
 from ..errors import ClanError
-from ..git import commit_file
-from ..inventory import Machine, MachineDeploy, get_path, load_inventory, save_inventory
+from ..inventory import (
+    Machine,
+    MachineDeploy,
+    load_inventory_eval,
+    load_inventory_json,
+    save_inventory,
+)
 
 log = logging.getLogger(__name__)
 
@@ -20,11 +24,14 @@ def create_machine(flake: FlakeId, machine: Machine) -> None:
             "Machine name must be a valid hostname", location="Create Machine"
         )
 
-    inventory = load_inventory(flake.path)
+    inventory = load_inventory_json(flake.path)
+    full_inventory = load_inventory_eval(flake.path)
+
+    if machine.name in full_inventory.machines.keys():
+        raise ClanError(f"Machine with the name {machine.name} already exists")
+
     inventory.machines.update({machine.name: machine})
     save_inventory(inventory, flake.path, f"Create machine {machine.name}")
-
-    commit_file(get_path(flake.path), Path(flake.path))
 
 
 def create_command(args: argparse.Namespace) -> None:
