@@ -13,33 +13,45 @@ class SecretStore(SecretStoreBase):
         self.machine = machine
 
     def set(
-        self, service: str, name: str, value: bytes, groups: list[str]
+        self, generator_name: str, name: str, value: bytes, groups: list[str]
     ) -> Path | None:
         subprocess.run(
             nix_shell(
                 ["nixpkgs#pass"],
-                ["pass", "insert", "-m", f"machines/{self.machine.name}/{name}"],
+                [
+                    "pass",
+                    "insert",
+                    "-m",
+                    f"machines/{self.machine.name}/{generator_name}/{name}",
+                ],
             ),
             input=value,
             check=True,
         )
         return None  # we manage the files outside of the git repo
 
-    def get(self, service: str, name: str) -> bytes:
+    def get(self, generator_name: str, name: str) -> bytes:
         return subprocess.run(
             nix_shell(
                 ["nixpkgs#pass"],
-                ["pass", "show", f"machines/{self.machine.name}/{name}"],
+                [
+                    "pass",
+                    "show",
+                    f"machines/{self.machine.name}/{generator_name}/{name}",
+                ],
             ),
             check=True,
             stdout=subprocess.PIPE,
         ).stdout
 
-    def exists(self, service: str, name: str) -> bool:
+    def exists(self, generator_name: str, name: str) -> bool:
         password_store = os.environ.get(
             "PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store"
         )
-        secret_path = Path(password_store) / f"machines/{self.machine.name}/{name}.gpg"
+        secret_path = (
+            Path(password_store)
+            / f"machines/{self.machine.name}/{generator_name}/{name}.gpg"
+        )
         return secret_path.exists()
 
     def generate_hash(self) -> bytes:
