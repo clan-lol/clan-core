@@ -11,7 +11,7 @@ if [ "$ALREADY_INSTALLED" = "true" ]; then
   echo "Upgrading installed clan-vm-manager"
   nix profile upgrade clan-vm-manager
 else
-  nix profile install .#clan-vm-manager
+  nix profile install .#clan-vm-manager --priority 4
 fi
 
 
