@@ -58,11 +58,11 @@ let
         {
           # { ${name} :: meta // { name, tags } }
           machines = lib.mapAttrs (
-            name: config:
+            name: machineConfig:
             (lib.attrByPath [
               "clan"
               "meta"
-            ] { } config)
+            ] { } machineConfig)
             // {
               # meta.name default is the attribute name of the machine
               name = lib.mkDefault (
@@ -70,11 +70,11 @@ let
                   "clan"
                   "meta"
                   "name"
-                ] name config
+                ] name machineConfig
               );
             }
             # tags
-            // (clanToInventory config {
+            // (clanToInventory machineConfig {
               clanPath = [
                 "clan"
                 "tags"
@@ -82,15 +82,15 @@ let
               inventoryPath = [ "tags" ];
             })
             # system
-            // (clanToInventory config {
+            // (clanToInventory machineConfig {
               clanPath = [
                 "nixpkgs"
-                "hostSystem"
+                "hostPlatform"
               ];
               inventoryPath = [ "system" ];
             })
             # deploy.targetHost
-            // (clanToInventory config {
+            // (clanToInventory machineConfig {
               clanPath = [
                 "clan"
                 "core"
