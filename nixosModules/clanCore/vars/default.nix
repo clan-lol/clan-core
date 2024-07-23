@@ -17,7 +17,7 @@ in
   imports = [
     ./public/in_repo.nix
     # ./public/vm.nix
-    # ./secret/password-store.nix
+    ./secret/password-store.nix
     ./secret/sops.nix
     # ./secret/vm.nix
   ];
