@@ -82,7 +82,7 @@ def collect_keys_for_path(path: Path) -> set[str]:
 
 def encrypt_secret(
     flake_dir: Path,
-    secret: Path,
+    secret_path: Path,
     value: IO[str] | str | bytes | None,
     add_users: list[str] = [],
     add_machines: list[str] = [],
@@ -95,7 +95,7 @@ def encrypt_secret(
     for user in add_users:
         files_to_commit.extend(
             allow_member(
-                users_folder(flake_dir, secret.name),
+                users_folder(flake_dir, secret_path.name),
                 sops_users_folder(flake_dir),
                 user,
                 False,
@@ -105,7 +105,7 @@ def encrypt_secret(
     for machine in add_machines:
         files_to_commit.extend(
             allow_member(
-                machines_folder(flake_dir, secret.name),
+                machines_folder(flake_dir, secret_path.name),
                 sops_machines_folder(flake_dir),
                 machine,
                 False,
@@ -115,33 +115,33 @@ def encrypt_secret(
     for group in add_groups:
         files_to_commit.extend(
             allow_member(
-                groups_folder(flake_dir, secret.name),
+                groups_folder(flake_dir, secret_path.name),
                 sops_groups_folder(flake_dir),
                 group,
                 False,
             )
         )
 
-    keys = collect_keys_for_path(secret)
+    keys = collect_keys_for_path(secret_path)
 
     if key.pubkey not in keys:
         keys.add(key.pubkey)
         files_to_commit.extend(
             allow_member(
-                users_folder(flake_dir, secret.name),
+                users_folder(flake_dir, secret_path.name),
                 sops_users_folder(flake_dir),
                 key.username,
                 False,
             )
         )
 
-    secret_path = secret / "secret"
+    secret_path = secret_path / "secret"
     encrypt_file(secret_path, value, list(sorted(keys)))
     files_to_commit.append(secret_path)
     commit_files(
         files_to_commit,
         flake_dir,
-        f"Update secret {secret.name}",
+        f"Update secret {secret_path.name}",
     )
 
 
