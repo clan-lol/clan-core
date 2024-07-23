@@ -1,3 +1,17 @@
+"""
+All read/write operations MUST use the inventory.
+
+Machine data, clan data or service data can be accessed in a performant way.
+
+This file exports stable classnames for static & dynamic type safety.
+
+Utilize:
+
+- load_inventory_eval: To load the actual inventory with nix declarations merged.
+Operate on the returned inventory to make changes
+- save_inventory: To persist changes.
+"""
+
 import dataclasses
 import json
 from dataclasses import fields, is_dataclass
@@ -8,6 +22,8 @@ from typing import Any, get_args, get_origin
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_file
 
+from ..cmd import run_no_stdout
+from ..nix import nix_eval
 from .classes import (
     Inventory,
     Machine,
@@ -165,7 +181,35 @@ default_inventory = Inventory(
 )
 
 
-def load_inventory(
+def load_inventory_eval(flake_dir: str | Path) -> Inventory:
+    """
+    Loads the actual inventory.
+    After all merge operations with eventual nix code in buildClan.
+
+    Evaluates clanInternals.inventory with nix. Which is performant.
+
+    - Contains all clan metadata
+    - Contains all machines
+    - and more
+    """
+    cmd = nix_eval(
+        [
+            f"{flake_dir}#clanInternals.inventory",
+            "--json",
+        ]
+    )
+    proc = run_no_stdout(cmd)
+
+    try:
+        res = proc.stdout.strip()
+        data = json.loads(res)
+        inventory = from_dict(Inventory, data)
+        return inventory
+    except json.JSONDecodeError as e:
+        raise ClanError(f"Error decoding inventory from flake: {e}")
+
+
+def load_inventory_json(
     flake_dir: str | Path, default: Inventory = default_inventory
 ) -> Inventory:
     """

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from clan_cli.api import API
 from clan_cli.arg_actions import AppendOptionAction
-from clan_cli.inventory import Meta, load_inventory, save_inventory
+from clan_cli.inventory import Meta, load_inventory_json, save_inventory
 
 from ..cmd import CmdOut, run
 from ..errors import ClanError
@@ -89,7 +89,7 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
         )
 
     # Write inventory.json file
-    inventory = load_inventory(directory)
+    inventory = load_inventory_json(directory)
     if options.meta is not None:
         inventory.meta = options.meta
     # Persist creates a commit message for each change
