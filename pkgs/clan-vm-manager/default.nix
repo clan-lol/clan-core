@@ -18,7 +18,6 @@
   runCommand,
   setuptools,
   webkitgtk_6_0,
-  webview-ui,
   wrapGAppsHook,
 }:
 let
@@ -141,12 +140,6 @@ python3.pkgs.buildPythonApplication rec {
   passthru.externalTestDeps = externalTestDeps;
   passthru.runtimeDependencies = runtimeDependencies;
   passthru.testDependencies = testDependencies;
-
-  # TODO: place webui in lib/python3.11/site-packages/clan_vm_manager
-  postInstall = ''
-    mkdir -p $out/clan_vm_manager/.webui
-    cp -r ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/* $out/clan_vm_manager/.webui
-  '';
 
   # Don't leak python packages into a devshell.
   # It can be very confusing if you `nix run` than load the cli from the devshell instead.
