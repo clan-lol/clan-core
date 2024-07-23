@@ -158,9 +158,15 @@ class VMObject(GObject.Object):
                 flake=uri.flake,
             )
         assert self.machine is not None
-        state_dir = vm_state_dir(
-            flake_url=str(self.machine.flake.url), vm_name=self.machine.name
-        )
+
+        if self.machine.flake.is_local():
+            state_dir = vm_state_dir(
+                flake_url=str(self.machine.flake.path), vm_name=self.machine.name
+            )
+        else:
+            state_dir = vm_state_dir(
+                flake_url=self.machine.flake.url, vm_name=self.machine.name
+            )
         self.qmp_wrap = QMPWrapper(state_dir)
         assert self.machine is not None
         yield self.machine

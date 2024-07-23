@@ -39,8 +39,6 @@
     # General default settings
     fonts.enableDefaultPackages = lib.mkDefault true;
     hardware.opengl.enable = lib.mkDefault true;
-    # Assume it is run inside a clan context
-    clan.virtualisation.waypipe = lib.mkDefault true;
 
     # User account
     services.getty.autologinUser = lib.mkDefault config.clan.services.waypipe.user;
