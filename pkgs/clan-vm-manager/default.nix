@@ -25,7 +25,7 @@ let
   desktop-file = makeDesktopItem {
     name = "org.clan.vm-manager";
     exec = "clan-vm-manager %u";
-    icon = ./clan_vm_manager/assets/clan_white.png;
+    icon = "clan-white";
     desktopName = "Clan Manager";
     startupWMClass = "clan";
     mimeTypes = [ "x-scheme-handler/clan" ];
@@ -140,6 +140,11 @@ python3.pkgs.buildPythonApplication rec {
   passthru.externalTestDeps = externalTestDeps;
   passthru.runtimeDependencies = runtimeDependencies;
   passthru.testDependencies = testDependencies;
+
+  postInstall = ''
+    mkdir -p $out/share/icons/hicolor
+    cp -r ./clan_vm_manager/assets/white-favicons/* $out/share/icons/hicolor
+  '';
 
   # Don't leak python packages into a devshell.
   # It can be very confusing if you `nix run` than load the cli from the devshell instead.
