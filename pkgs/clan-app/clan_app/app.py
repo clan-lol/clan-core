@@ -34,7 +34,7 @@ class MainApplication(Adw.Application):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(
-            application_id="org.clan.clan-app",
+            application_id="org.clan.app",
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
         )
 
