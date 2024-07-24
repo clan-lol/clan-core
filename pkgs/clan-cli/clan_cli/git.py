@@ -62,7 +62,7 @@ def _commit_file_to_git(
         for file_path in file_paths:
             cmd = run_cmd(
                 ["git"],
-                ["git", "-C", str(repo_dir), "add", str(file_path)],
+                ["git", "-C", str(repo_dir), "add", "--", str(file_path)],
             )
             # add the file to the git index
 
@@ -75,7 +75,7 @@ def _commit_file_to_git(
         # check if there is a diff
         cmd = run_cmd(
             ["git"],
-            ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code"]
+            ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code", "--"]
             + [str(file_path) for file_path in file_paths],
         )
         result = run(cmd, check=False, cwd=repo_dir)
