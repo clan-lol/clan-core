@@ -49,27 +49,27 @@ class Group:
 
 def list_groups(flake_dir: Path) -> list[Group]:
     groups: list[Group] = []
-    folder = sops_groups_folder(flake_dir)
-    if not folder.exists():
+    groups_dir = sops_groups_folder(flake_dir)
+    if not groups_dir.exists():
         return groups
 
-    for name in os.listdir(folder):
-        group_folder = folder / name
+    for group in os.listdir(groups_dir):
+        group_folder = groups_dir / group
         if not group_folder.is_dir():
             continue
-        machines_path = machines_folder(flake_dir, name)
+        machines_path = machines_folder(flake_dir, group)
         machines = []
         if machines_path.is_dir():
             for f in machines_path.iterdir():
                 if validate_hostname(f.name):
                     machines.append(f.name)
-        users_path = users_folder(flake_dir, name)
+        users_path = users_folder(flake_dir, group)
         users = []
         if users_path.is_dir():
             for f in users_path.iterdir():
                 if VALID_USER_NAME.match(f.name):
                     users.append(f.name)
-        groups.append(Group(flake_dir, name, machines, users))
+        groups.append(Group(flake_dir, group, machines, users))
     return groups
 
 
@@ -204,7 +204,9 @@ def add_group_argument(parser: argparse.ArgumentParser) -> None:
 
 def add_secret(flake_dir: Path, group: str, name: str) -> None:
     secrets.allow_member(
-        secrets.groups_folder(flake_dir, name), sops_groups_folder(flake_dir), group
+        secrets.groups_folder(sops_secrets_folder(flake_dir) / name),
+        sops_groups_folder(flake_dir),
+        group,
     )
 
 
@@ -214,7 +216,7 @@ def add_secret_command(args: argparse.Namespace) -> None:
 
 def remove_secret(flake_dir: Path, group: str, name: str) -> None:
     updated_paths = secrets.disallow_member(
-        secrets.groups_folder(flake_dir, name), group
+        secrets.groups_folder(sops_secrets_folder(flake_dir) / name), group
     )
     commit_files(
         updated_paths,
