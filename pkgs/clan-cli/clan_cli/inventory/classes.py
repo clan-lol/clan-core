@@ -39,6 +39,7 @@ class BorgbackupConfigDestination:
 @dataclass
 class BorgbackupConfig:
     destinations: dict[str, BorgbackupConfigDestination] = field(default_factory = dict)
+    exclude: list[str] = field(default_factory = list)
 
 
 @dataclass
