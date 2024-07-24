@@ -25,7 +25,7 @@
       config.clan.core.facts.services.user-password.secret.user-password-hash.path;
 
     sops.secrets = lib.mkIf (config.clan.core.facts.secretStore == "sops") {
-      "${config.clan.core.machineName}-user-password-hash".neededForUsers =  true;
+      "${config.clan.core.machineName}-user-password-hash".neededForUsers = true;
     };
 
     clan.core.facts.services.user-password = {
