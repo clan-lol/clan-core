@@ -5,10 +5,7 @@
     { self, clan-core, ... }:
     let
       # Usage see: https://docs.clan.lol
-      clan = clan-core.lib.buildClan {
-        meta.name = "miniclan";
-        directory = self;
-      };
+      clan = clan-core.lib.buildClan { directory = self; };
     in
     {
       # all machines managed by Clan

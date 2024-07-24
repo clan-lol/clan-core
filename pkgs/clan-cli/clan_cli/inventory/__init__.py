@@ -19,7 +19,8 @@ from pathlib import Path
 from types import UnionType
 from typing import Any, get_args, get_origin
 
-from clan_cli.errors import ClanError
+from clan_cli.api import API
+from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.git import commit_file
 
 from ..cmd import run_no_stdout
@@ -216,7 +217,7 @@ def load_inventory_json(
     Load the inventory file from the flake directory
     If not file is found, returns the default inventory
     """
-    inventory = default_inventory
+    inventory = default
 
     inventory_file = get_path(flake_dir)
     if inventory_file.exists():
@@ -227,6 +228,10 @@ def load_inventory_json(
             except json.JSONDecodeError as e:
                 # Error decoding the inventory file
                 raise ClanError(f"Error decoding inventory file: {e}")
+
+    if not inventory_file.exists():
+        # Copy over the meta from the flake if the inventory is not initialized
+        inventory.meta = load_inventory_eval(flake_dir).meta
 
     return inventory
 
@@ -242,3 +247,22 @@ def save_inventory(inventory: Inventory, flake_dir: str | Path, message: str) ->
         json.dump(dataclass_to_dict(inventory), f, indent=2)
 
     commit_file(inventory_file, Path(flake_dir), commit_message=message)
+
+
+@API.register
+def init_inventory(directory: str, init: Inventory | None = None) -> None:
+    inventory = None
+    # Try reading the current flake
+    if init is None:
+        try:
+            inventory = load_inventory_eval(directory)
+        except ClanCmdError:
+            pass
+
+    if init is not None:
+        inventory = init
+
+    # Write inventory.json file
+    if inventory is not None:
+        # Persist creates a commit message for each change
+        save_inventory(inventory, directory, "Init inventory")
