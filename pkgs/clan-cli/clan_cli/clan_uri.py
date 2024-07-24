@@ -9,32 +9,49 @@ from .errors import ClanError
 
 @dataclass
 class FlakeId:
-    # FIXME: this is such a footgun if you accidnetally pass a string
-    _value: str | Path
+    loc: str | Path
 
     def __post_init__(self) -> None:
         assert isinstance(
-            self._value, str | Path
-        ), f"Flake {self._value} has an invalid type: {type(self._value)}"
+            self.loc, str | Path
+        ), f"Flake {self.loc} has an invalid format: {type(self.loc)}"
 
     def __str__(self) -> str:
-        return str(self._value)
+        return str(self.loc)
 
     @property
     def path(self) -> Path:
-        assert isinstance(self._value, Path), f"Flake {self._value} is not a local path"
-        return self._value
+        assert self.is_local(), f"Flake {self.loc} is not a local path"
+        return Path(self.loc)
 
     @property
     def url(self) -> str:
-        assert isinstance(self._value, str), f"Flake {self._value} is not a remote url"
-        return self._value
+        assert self.is_remote(), f"Flake {self.loc} is not a remote url"
+        return str(self.loc)
 
     def is_local(self) -> bool:
-        return isinstance(self._value, Path)
+        """
+        https://nix.dev/manual/nix/2.22/language/builtins.html?highlight=urlS#source-types
+
+        Examples:
+
+        - file:///home/eelco/nix/README.md          file        LOCAL
+        - git+file://git:github.com:NixOS/nixpkgs   git+file    LOCAL
+        - https://example.com/index.html            https       REMOTE
+        - github:nixos/nixpkgs                      github      REMOTE
+        - ftp://serv.file                           ftp         REMOTE
+        - ./.                                       ''          LOCAL
+
+        """
+        x = urllib.parse.urlparse(str(self.loc))
+        if x.scheme == "" or "file" in x.scheme:
+            # See above *file* or empty are the only local schemas
+            return True
+
+        return False
 
     def is_remote(self) -> bool:
-        return isinstance(self._value, str)
+        return not self.is_local()
 
 
 # Define the ClanURI class

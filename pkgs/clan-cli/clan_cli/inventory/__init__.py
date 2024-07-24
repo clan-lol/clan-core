@@ -1,3 +1,17 @@
+"""
+All read/write operations MUST use the inventory.
+
+Machine data, clan data or service data can be accessed in a performant way.
+
+This file exports stable classnames for static & dynamic type safety.
+
+Utilize:
+
+- load_inventory_eval: To load the actual inventory with nix declarations merged.
+Operate on the returned inventory to make changes
+- save_inventory: To persist changes.
+"""
+
 import dataclasses
 import json
 from dataclasses import fields, is_dataclass
@@ -5,9 +19,12 @@ from pathlib import Path
 from types import UnionType
 from typing import Any, get_args, get_origin
 
-from clan_cli.errors import ClanError
+from clan_cli.api import API
+from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.git import commit_file
 
+from ..cmd import run_no_stdout
+from ..nix import nix_eval
 from .classes import (
     Inventory,
     Machine,
@@ -165,14 +182,42 @@ default_inventory = Inventory(
 )
 
 
-def load_inventory(
+def load_inventory_eval(flake_dir: str | Path) -> Inventory:
+    """
+    Loads the actual inventory.
+    After all merge operations with eventual nix code in buildClan.
+
+    Evaluates clanInternals.inventory with nix. Which is performant.
+
+    - Contains all clan metadata
+    - Contains all machines
+    - and more
+    """
+    cmd = nix_eval(
+        [
+            f"{flake_dir}#clanInternals.inventory",
+            "--json",
+        ]
+    )
+    proc = run_no_stdout(cmd)
+
+    try:
+        res = proc.stdout.strip()
+        data = json.loads(res)
+        inventory = from_dict(Inventory, data)
+        return inventory
+    except json.JSONDecodeError as e:
+        raise ClanError(f"Error decoding inventory from flake: {e}")
+
+
+def load_inventory_json(
     flake_dir: str | Path, default: Inventory = default_inventory
 ) -> Inventory:
     """
     Load the inventory file from the flake directory
     If not file is found, returns the default inventory
     """
-    inventory = default_inventory
+    inventory = default
 
     inventory_file = get_path(flake_dir)
     if inventory_file.exists():
@@ -183,6 +228,10 @@ def load_inventory(
             except json.JSONDecodeError as e:
                 # Error decoding the inventory file
                 raise ClanError(f"Error decoding inventory file: {e}")
+
+    if not inventory_file.exists():
+        # Copy over the meta from the flake if the inventory is not initialized
+        inventory.meta = load_inventory_eval(flake_dir).meta
 
     return inventory
 
@@ -198,3 +247,22 @@ def save_inventory(inventory: Inventory, flake_dir: str | Path, message: str) ->
         json.dump(dataclass_to_dict(inventory), f, indent=2)
 
     commit_file(inventory_file, Path(flake_dir), commit_message=message)
+
+
+@API.register
+def init_inventory(directory: str, init: Inventory | None = None) -> None:
+    inventory = None
+    # Try reading the current flake
+    if init is None:
+        try:
+            inventory = load_inventory_eval(directory)
+        except ClanCmdError:
+            pass
+
+    if init is not None:
+        inventory = init
+
+    # Write inventory.json file
+    if inventory is not None:
+        # Persist creates a commit message for each change
+        save_inventory(inventory, directory, "Init inventory")

@@ -4,7 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 html {
     overflow-x: hidden;
     overflow-y: scroll;
