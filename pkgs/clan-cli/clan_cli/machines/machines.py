@@ -246,7 +246,6 @@ class Machine:
         @attr: the attribute to get
         """
 
-        log.warning(f"Extra config: {extra_config}")
         if attr in self._build_cache and not refresh and extra_config is None:
             return self._build_cache[attr]
 
