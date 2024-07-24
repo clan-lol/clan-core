@@ -4,7 +4,7 @@
   setuptools,
   copyDesktopItems,
   pygobject3,
-  wrapGAppsHook,
+  wrapGAppsHook4,
   gtk4,
   adwaita-icon-theme,
   pygobject-stubs,
@@ -84,7 +84,7 @@ python3.pkgs.buildPythonApplication rec {
   nativeBuildInputs = [
     setuptools
     copyDesktopItems
-    wrapGAppsHook
+    wrapGAppsHook4
 
     gobject-introspection
   ];
