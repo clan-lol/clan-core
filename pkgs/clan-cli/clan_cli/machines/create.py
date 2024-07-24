@@ -25,6 +25,7 @@ def create_machine(flake: FlakeId, machine: Machine) -> None:
         )
 
     inventory = load_inventory_json(flake.path)
+
     full_inventory = load_inventory_eval(flake.path)
 
     if machine.name in full_inventory.machines.keys():
