@@ -19,3 +19,5 @@ Run a local server:
 ```shell-session
 mkdocs serve
 ```
+
+Open http://localhost:8000/ in your browser.
