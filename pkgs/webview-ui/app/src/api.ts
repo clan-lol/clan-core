@@ -143,8 +143,9 @@ const deserialize =
       fn(r);
     } catch (e) {
       console.log("Error parsing JSON: ", e);
-      console.log({ download: () => download("error.json", str) });
+      window.localStorage.setItem("error", str);
       console.error(str);
+      console.error("See localStorage 'error'");
       alert(`Error parsing JSON: ${e}`);
     }
   };
