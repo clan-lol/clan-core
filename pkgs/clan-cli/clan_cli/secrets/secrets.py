@@ -169,16 +169,16 @@ def add_secret_argument(parser: argparse.ArgumentParser, autocomplete: bool) -> 
         add_dynamic_completer(secrets_parser, complete_secrets)
 
 
-def machines_folder(flake_dir: Path, group: str) -> Path:
-    return sops_secrets_folder(flake_dir) / group / "machines"
+def machines_folder(flake_dir: Path, secret: str) -> Path:
+    return sops_secrets_folder(flake_dir) / secret / "machines"
 
 
-def users_folder(flake_dir: Path, group: str) -> Path:
-    return sops_secrets_folder(flake_dir) / group / "users"
+def users_folder(flake_dir: Path, secret: str) -> Path:
+    return sops_secrets_folder(flake_dir) / secret / "users"
 
 
-def groups_folder(flake_dir: Path, group: str) -> Path:
-    return sops_secrets_folder(flake_dir) / group / "groups"
+def groups_folder(flake_dir: Path, secret: str) -> Path:
+    return sops_secrets_folder(flake_dir) / secret / "groups"
 
 
 def list_directory(directory: Path) -> str:
