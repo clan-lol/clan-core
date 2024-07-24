@@ -1,31 +1,17 @@
 import argparse
-import json
 import logging
 from pathlib import Path
 
 from clan_cli.api import API
-from clan_cli.inventory import Machine, from_dict
-
-from ..cmd import run_no_stdout
-from ..nix import nix_eval
+from clan_cli.inventory import Machine, load_inventory_eval
 
 log = logging.getLogger(__name__)
 
 
 @API.register
 def list_machines(flake_url: str | Path, debug: bool = False) -> dict[str, Machine]:
-    cmd = nix_eval(
-        [
-            f"{flake_url}#clanInternals.inventory.machines",
-            "--json",
-        ]
-    )
-
-    proc = run_no_stdout(cmd)
-
-    res = proc.stdout.strip()
-    data = {name: from_dict(Machine, v) for name, v in json.loads(res).items()}
-    return data
+    inventory = load_inventory_eval(flake_url)
+    return inventory.machines
 
 
 def list_command(args: argparse.Namespace) -> None:

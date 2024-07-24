@@ -93,6 +93,7 @@ def _commit_file_to_git(
                 "commit",
                 "-m",
                 commit_message,
+                "--no-verify",  # dont run pre-commit hooks
             ]
             + [str(file_path) for file_path in file_paths],
         )

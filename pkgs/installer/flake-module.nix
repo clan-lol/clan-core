@@ -32,7 +32,7 @@ let
     }
     // flashDiskoConfig;
 
-  # Important: The partition names need to be different to the clan install 
+  # Important: The partition names need to be different to the clan install
   flashDiskoConfig = {
     boot.loader.grub.efiSupport = lib.mkDefault true;
     boot.loader.grub.efiInstallAsRemovable = lib.mkDefault true;
