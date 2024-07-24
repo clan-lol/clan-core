@@ -109,7 +109,7 @@ in
   options.clan.borgbackup.exclude = lib.mkOption {
     type = lib.types.listOf lib.types.str;
     example = [ "*.pyc" ];
-    default = [];
+    default = [ ];
     description = ''
       Directories/Files to exclude from the backup.
       Use * as a wildcard.
