@@ -12,15 +12,22 @@ Create your own clan with these initial steps and manage a fleet of machines wit
     curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
     ```
 
-=== "**NixOS**"
-
-    If you run NixOS the `nix` binary is already installed.
-
-    You will also need to enable the `flakes` and `nix-commands` experimental features.
+    If you already have installed Nix, make sure you have the `nix-command` and `flakes` configuration enabled in your ~/.config/nix/nix.conf.
+    The determinate installer already comes with this configuration by default.
 
     ```bash
     # /etc/nix/nix.conf or ~/.config/nix/nix.conf
     experimental-features = nix-command flakes
+    ```
+
+=== "**NixOS**"
+
+    If you run NixOS the `nix` binary is already installed.
+
+    You will also need to enable the `flakes` and `nix-commands` experimental features in your configuration.nix:
+
+    ```nix
+    { nix.settings.experimental-features = [ "nix-command" "flakes" ]; }
     ```
 
 === "**Other**"
