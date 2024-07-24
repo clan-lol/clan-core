@@ -7,7 +7,7 @@ import {
   createSignal,
   type Component,
 } from "solid-js";
-import { activeURI, route, setActiveURI } from "@/src/App";
+import { activeURI, route, setActiveURI, setRoute } from "@/src/App";
 import { OperationResponse, callApi, pyApi } from "@/src/api";
 import toast from "solid-toast";
 import { MachineListItem } from "@/src/components/MachineListItem";
@@ -84,6 +84,11 @@ export const MachineListView: Component = () => {
       <div class="tooltip tooltip-bottom" data-tip="Refresh">
         <button class="btn btn-ghost" onClick={() => listMachines()}>
           <span class="material-icons ">refresh</span>
+        </button>
+      </div>
+      <div class="tooltip tooltip-bottom" data-tip="Create machine">
+        <button class="btn btn-ghost" onClick={() => setRoute("machines/add")}>
+          <span class="material-icons ">add</span>
         </button>
       </div>
       {/* <Show when={services()}>

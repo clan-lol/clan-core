@@ -4,11 +4,10 @@ import logging
 from typing import Any
 
 import gi
-from clan_cli.api import MethodRegistry
+from clan_cli.api import MethodRegistry, dataclass_to_dict, from_dict
 
 from clan_app.api import GObjApi, GResult, ImplFunc
 from clan_app.api.file import open_file
-from clan_app.components.serializer import dataclass_to_dict, from_dict
 
 gi.require_version("WebKit", "6.0")
 from gi.repository import GLib, GObject, WebKit

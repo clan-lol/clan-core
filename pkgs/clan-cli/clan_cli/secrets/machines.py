@@ -6,7 +6,12 @@ from ..errors import ClanError
 from ..git import commit_files
 from ..machines.types import machine_name_type, validate_hostname
 from . import secrets
-from .folders import list_objects, remove_object, sops_machines_folder
+from .folders import (
+    list_objects,
+    remove_object,
+    sops_machines_folder,
+    sops_secrets_folder,
+)
 from .secrets import update_secrets
 from .sops import read_key, write_key
 from .types import public_or_private_age_key_type, secret_name_type
@@ -56,7 +61,7 @@ def list_machines(flake_dir: Path) -> list[str]:
 
 def add_secret(flake_dir: Path, machine: str, secret: str) -> None:
     paths = secrets.allow_member(
-        secrets.machines_folder(flake_dir, secret),
+        secrets.machines_folder(sops_secrets_folder(flake_dir) / secret),
         sops_machines_folder(flake_dir),
         machine,
     )
@@ -69,7 +74,7 @@ def add_secret(flake_dir: Path, machine: str, secret: str) -> None:
 
 def remove_secret(flake_dir: Path, machine: str, secret: str) -> None:
     updated_paths = secrets.disallow_member(
-        secrets.machines_folder(flake_dir, secret), machine
+        secrets.machines_folder(sops_secrets_folder(flake_dir) / secret), machine
     )
     commit_files(
         updated_paths,

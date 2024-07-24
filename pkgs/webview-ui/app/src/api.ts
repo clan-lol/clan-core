@@ -67,6 +67,17 @@ function createFunctions<K extends OperationNames>(
   dispatch: (args: OperationArgs<K>) => void;
   receive: (fn: (response: OperationResponse<K>) => void, id: string) => void;
 } {
+  window.clan[operationName] = (s: string) => {
+    const f = (response: OperationResponse<K>) => {
+      // Get the correct receiver function for the op_key
+      const receiver = registry[operationName][response.op_key];
+      if (receiver) {
+        receiver(response);
+      }
+    };
+    deserialize(f)(s);
+  };
+
   return {
     dispatch: (args: OperationArgs<K>) => {
       // Send the data to the gtk app
@@ -78,15 +89,6 @@ function createFunctions<K extends OperationNames>(
     receive: (fn: (response: OperationResponse<K>) => void, id: string) => {
       // @ts-expect-error: This should work although typescript doesn't let us write
       registry[operationName][id] = fn;
-
-      window.clan[operationName] = (s: string) => {
-        const f = (response: OperationResponse<K>) => {
-          if (response.op_key === id) {
-            registry[operationName][id](response);
-          }
-        };
-        deserialize(f)(s);
-      };
     },
   };
 }
@@ -141,8 +143,9 @@ const deserialize =
       fn(r);
     } catch (e) {
       console.log("Error parsing JSON: ", e);
-      console.log({ download: () => download("error.json", str) });
+      window.localStorage.setItem("error", str);
       console.error(str);
+      console.error("See localStorage 'error'");
       alert(`Error parsing JSON: ${e}`);
     }
   };

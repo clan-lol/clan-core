@@ -56,6 +56,7 @@ def generate_flake(
     },
     # define the machines directly including their config
     machine_configs: dict[str, dict] = {},
+    inventory: dict[str, dict] = {},
 ) -> FlakeForTest:
     """
     Creates a clan flake with the given name.
@@ -79,6 +80,12 @@ def generate_flake(
     flake = temporary_home / "flake"
     shutil.copytree(flake_template, flake)
     sp.run(["chmod", "+w", "-R", str(flake)], check=True)
+
+    # initialize inventory
+    if inventory:
+        # check if inventory valid
+        inventory_path = flake / "inventory.json"
+        inventory_path.write_text(json.dumps(inventory, indent=2))
 
     # substitute `substitutions` in all files of the template
     for file in flake.rglob("*"):

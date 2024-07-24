@@ -6,7 +6,7 @@ from pathlib import Path
 
 from clan_cli.cmd import run_no_stdout
 from clan_cli.errors import ClanCmdError, ClanError
-from clan_cli.inventory import Inventory, load_inventory
+from clan_cli.inventory import Inventory, load_inventory_json
 from clan_cli.nix import nix_eval
 
 from . import API
@@ -152,4 +152,4 @@ def get_module_info(
 
 @API.register
 def get_inventory(base_path: str) -> Inventory:
-    return load_inventory(base_path)
+    return load_inventory_json(base_path)

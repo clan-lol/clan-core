@@ -17,7 +17,12 @@ let
     imports = [
       (modulesPath + "/virtualisation/qemu-vm.nix")
       ./serial.nix
+      ./waypipe.nix
     ];
+
+    clan.services.waypipe = {
+      inherit (config.clan.core.vm.inspect.waypipe) enable command;
+    };
 
     # required for issuing shell commands via qga
     services.qemuGuest.enable = true;
@@ -149,12 +154,19 @@ in
         '';
       };
 
-      waypipe = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = ''
-          Whether to use waypipe for native wayland passthrough, or not.
-        '';
+      waypipe = {
+        enable = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = ''
+            Whether to use waypipe for native wayland passthrough, or not.
+          '';
+        };
+        command = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = "Commands that waypipe should run";
+        };
       };
     };
     # All important VM config variables needed by the vm runner
@@ -193,13 +205,22 @@ in
           whether to enable graphics for the vm
         '';
       };
-      waypipe = lib.mkOption {
-        type = lib.types.bool;
-        internal = true;
-        readOnly = true;
-        description = ''
-          whether to enable native wayland window passthrough with waypipe for the vm
-        '';
+
+      waypipe = {
+        enable = lib.mkOption {
+          type = lib.types.bool;
+          internal = true;
+          readOnly = true;
+          description = ''
+            Whether to use waypipe for native wayland passthrough, or not.
+          '';
+        };
+        command = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          internal = true;
+          readOnly = true;
+          description = "Commands that waypipe should run";
+        };
       };
       machine_icon = lib.mkOption {
         type = lib.types.nullOr lib.types.path;
@@ -245,7 +266,12 @@ in
           initrd = "${vmConfig.config.system.build.initialRamdisk}/${vmConfig.config.system.boot.loader.initrdFile}";
           toplevel = vmConfig.config.system.build.toplevel;
           regInfo = (pkgs.closureInfo { rootPaths = vmConfig.config.virtualisation.additionalPaths; });
-          inherit (config.clan.virtualisation) memorySize cores graphics;
+          inherit (config.clan.virtualisation)
+            memorySize
+            cores
+            graphics
+            waypipe
+            ;
         }
       );
     };

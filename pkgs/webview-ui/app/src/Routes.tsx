@@ -8,6 +8,7 @@ import { Flash } from "./routes/flash/view";
 import { Settings } from "./routes/settings";
 import { Welcome } from "./routes/welcome";
 import { Deploy } from "./routes/deploy";
+import { CreateMachine } from "./routes/machines/create";
 
 export type Route = keyof typeof routes;
 
@@ -21,6 +22,11 @@ export const routes = {
     child: MachineListView,
     label: "Machines",
     icon: "devices_other",
+  },
+  "machines/add": {
+    child: CreateMachine,
+    label: "create Machine",
+    icon: "add",
   },
   hosts: {
     child: HostList,

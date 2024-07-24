@@ -1,5 +1,7 @@
 {
   lib,
+  glib,
+  gsettings-desktop-schemas,
   stdenv,
   clan-app,
   mkShell,
@@ -33,7 +35,9 @@ mkShell {
 
   buildInputs =
     [
+      glib
       ruff
+      gtk4
       gtk4.dev # has the demo called 'gtk4-widget-factory'
       libadwaita.devdoc # has the demo called 'adwaita-1-demo'
     ]
@@ -59,6 +63,9 @@ mkShell {
 
     # Add clan-cli to the python path so that we can import it without building it in nix first
     export PYTHONPATH="$GIT_ROOT/pkgs/clan-cli":"$PYTHONPATH"
+
+    export XDG_DATA_DIRS=${gtk4}/share/gsettings-schemas/gtk4-4.14.4:$XDG_DATA_DIRS
+    export XDG_DATA_DIRS=${gsettings-desktop-schemas}/share/gsettings-schemas/gsettings-desktop-schemas-46.0:$XDG_DATA_DIRS
 
     # Add the webview-ui to the .webui directory
     ln -nsf ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/ ./clan_app/.webui

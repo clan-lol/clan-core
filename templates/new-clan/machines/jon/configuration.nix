@@ -24,9 +24,11 @@
 
   # IMPORTANT! Add your SSH key here
   # e.g. > cat ~/.ssh/id_ed25519.pub
-  users.users.root.openssh.authorizedKeys.keys = [''
-    __YOUR_SSH_KEY__
-  ''];
+  users.users.root.openssh.authorizedKeys.keys = [
+    ''
+      __YOUR_SSH_KEY__
+    ''
+  ];
 
   # Zerotier needs one controller to accept new nodes. Once accepted
   # the controller can be offline and routing still works.

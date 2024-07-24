@@ -20,12 +20,12 @@ def test_create_flake(
     cli.run(["flakes", "create", str(flake_dir), f"--url={url}"])
 
     assert (flake_dir / ".clan-flake").exists()
-
     # Replace the inputs.clan.url in the template flake.nix
     substitute(
         flake_dir / "flake.nix",
         clan_core,
     )
+    # Dont evaluate the inventory before the substitute call
 
     monkeypatch.chdir(flake_dir)
     cli.run(["machines", "create", "machine1"])

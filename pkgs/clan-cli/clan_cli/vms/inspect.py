@@ -9,6 +9,12 @@ from ..machines.machines import Machine
 
 
 @dataclass
+class WaypipeConfig:
+    enable: bool
+    command: list[str]
+
+
+@dataclass
 class VmConfig:
     machine_name: str
     machine_icon: Path
@@ -24,6 +30,8 @@ class VmConfig:
     def __post_init__(self) -> None:
         if isinstance(self.flake_url, str):
             self.flake_url = FlakeId(self.flake_url)
+        if isinstance(self.waypipe, dict):
+            self.waypipe = WaypipeConfig(**self.waypipe)
 
 
 def inspect_vm(machine: Machine) -> VmConfig:
