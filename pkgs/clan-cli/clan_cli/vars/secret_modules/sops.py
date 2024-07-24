@@ -36,13 +36,20 @@ class SecretStore(SecretStoreBase):
         )
         add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)
 
+    def secret_path(self, generator_name: str, secret_name: str) -> Path:
+        return (
+            self.machine.flake_dir
+            / "sops"
+            / "vars"
+            / self.machine.name
+            / generator_name
+            / secret_name
+        )
+
     def set(
         self, generator_name: str, name: str, value: bytes, groups: list[str]
     ) -> Path | None:
-        path = (
-            sops_secrets_folder(self.machine.flake_dir)
-            / f"vars-{self.machine.name}-{generator_name}-{name}"
-        )
+        path = self.secret_path(generator_name, name)
         encrypt_secret(
             self.machine.flake_dir,
             path,
@@ -54,19 +61,21 @@ class SecretStore(SecretStoreBase):
 
     def get(self, generator_name: str, name: str) -> bytes:
         return decrypt_secret(
-            self.machine.flake_dir, f"vars-{self.machine.name}-{generator_name}-{name}"
+            self.machine.flake_dir, self.secret_path(generator_name, name)
         ).encode("utf-8")
 
     def exists(self, generator_name: str, name: str) -> bool:
         return has_secret(
-            self.machine.flake_dir,
-            f"vars-{self.machine.name}-{generator_name}-{name}",
+            self.secret_path(generator_name, name),
         )
 
     def upload(self, output_dir: Path) -> None:
         key_name = f"{self.machine.name}-age.key"
-        if not has_secret(self.machine.flake_dir, key_name):
+        if not has_secret(sops_secrets_folder(self.machine.flake_dir) / key_name):
             # skip uploading the secret, not managed by us
             return
-        key = decrypt_secret(self.machine.flake_dir, key_name)
+        key = decrypt_secret(
+            self.machine.flake_dir,
+            sops_secrets_folder(self.machine.flake_dir) / key_name,
+        )
         (output_dir / "key.txt").write_text(key)

@@ -18,7 +18,6 @@
   runCommand,
   setuptools,
   webkitgtk_6_0,
-  webview-ui,
   wrapGAppsHook,
 }:
 let
@@ -26,7 +25,7 @@ let
   desktop-file = makeDesktopItem {
     name = "org.clan.vm-manager";
     exec = "clan-vm-manager %u";
-    icon = ./clan_vm_manager/assets/clan_white.png;
+    icon = "clan-white";
     desktopName = "Clan Manager";
     startupWMClass = "clan";
     mimeTypes = [ "x-scheme-handler/clan" ];
@@ -142,10 +141,9 @@ python3.pkgs.buildPythonApplication rec {
   passthru.runtimeDependencies = runtimeDependencies;
   passthru.testDependencies = testDependencies;
 
-  # TODO: place webui in lib/python3.11/site-packages/clan_vm_manager
   postInstall = ''
-    mkdir -p $out/clan_vm_manager/.webui
-    cp -r ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/* $out/clan_vm_manager/.webui
+    mkdir -p $out/share/icons/hicolor
+    cp -r ./clan_vm_manager/assets/white-favicons/* $out/share/icons/hicolor
   '';
 
   # Don't leak python packages into a devshell.

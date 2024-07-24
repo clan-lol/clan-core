@@ -42,7 +42,15 @@ export const ClanForm = () => {
     await toast.promise(
       (async () => {
         await callApi("create_clan", {
-          options: { directory: target_dir, meta, template_url },
+          options: {
+            directory: target_dir,
+            template_url,
+            initial: {
+              meta,
+              services: {},
+              machines: {},
+            },
+          },
         });
         setActiveURI(target_dir);
         setRoute("machines");

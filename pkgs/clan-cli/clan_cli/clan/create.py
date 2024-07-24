@@ -1,12 +1,11 @@
 # !/usr/bin/env python3
 import argparse
 import os
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from pathlib import Path
 
 from clan_cli.api import API
-from clan_cli.arg_actions import AppendOptionAction
-from clan_cli.inventory import Meta, load_inventory, save_inventory
+from clan_cli.inventory import Inventory, init_inventory
 
 from ..cmd import CmdOut, run
 from ..dirs import clan_templates
@@ -27,13 +26,10 @@ class CreateClanResponse:
 @dataclass
 class CreateOptions:
     directory: Path | str
-    # Metadata for the clan
-    # Metadata can be shown with `clan show`
-    meta: Meta | None = None
     # URL to the template to use. Defaults to the "minimal" template
     template: str = "minimal"
-    setup_json_inventory: bool = True
     setup_git: bool = True
+    initial: Inventory | None = None
 
 
 def git_command(directory: Path, *args: str) -> list[str]:
@@ -67,9 +63,13 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
         ]
     )
     flake_init = run(command, cwd=directory)
+
     flake_update = run(
         nix_shell(["nixpkgs#nix"], ["nix", "flake", "update"]), cwd=directory
     )
+
+    if options.initial:
+        init_inventory(options.directory, init=options.initial)
 
     response = CreateClanResponse(
         flake_init=flake_init,
@@ -95,14 +95,6 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
             git_command(directory, "config", "user.email", "clan@example.com")
         )
 
-    # Write inventory.json file
-    if options.setup_json_inventory:
-        inventory = load_inventory(directory)
-        if options.meta is not None:
-            inventory.meta = options.meta
-        # Persist creates a commit message for each change
-        save_inventory(inventory, directory, "Init inventory")
-
     return response
 
 
@@ -115,14 +107,6 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
         default="default",
     )
 
-    parser.add_argument(
-        "--meta",
-        help=f"""Metadata to set for the clan. Available options are: {", ".join([f.name for f in fields(Meta)]) }""",
-        nargs=2,
-        metavar=("name", "value"),
-        action=AppendOptionAction,
-        default=[],
-    )
     parser.add_argument(
         "--no-git",
         help="Do not setup git",
@@ -139,7 +123,6 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
             CreateOptions(
                 directory=args.path,
                 template=args.template,
-                setup_json_inventory=False,
                 setup_git=not args.no_git,
             )
         )

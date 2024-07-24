@@ -14,7 +14,7 @@ from clan_cli.inventory import (
     ServiceBorgbackupRoleClient,
     ServiceBorgbackupRoleServer,
     ServiceMeta,
-    load_inventory,
+    load_inventory_json,
     save_inventory,
 )
 from clan_cli.machines.create import create_machine
@@ -67,7 +67,7 @@ def test_add_module_to_inventory(
         ),
     )
 
-    inventory = load_inventory(base_path)
+    inventory = load_inventory_json(base_path)
 
     inventory.services.borgbackup = {
         "borg1": ServiceBorgbackup(

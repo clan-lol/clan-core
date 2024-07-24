@@ -82,7 +82,7 @@ def collect_keys_for_path(path: Path) -> set[str]:
 
 def encrypt_secret(
     flake_dir: Path,
-    secret: Path,
+    secret_path: Path,
     value: IO[str] | str | bytes | None,
     add_users: list[str] = [],
     add_machines: list[str] = [],
@@ -95,7 +95,7 @@ def encrypt_secret(
     for user in add_users:
         files_to_commit.extend(
             allow_member(
-                users_folder(flake_dir, secret.name),
+                users_folder(secret_path),
                 sops_users_folder(flake_dir),
                 user,
                 False,
@@ -105,7 +105,7 @@ def encrypt_secret(
     for machine in add_machines:
         files_to_commit.extend(
             allow_member(
-                machines_folder(flake_dir, secret.name),
+                machines_folder(secret_path),
                 sops_machines_folder(flake_dir),
                 machine,
                 False,
@@ -115,33 +115,33 @@ def encrypt_secret(
     for group in add_groups:
         files_to_commit.extend(
             allow_member(
-                groups_folder(flake_dir, secret.name),
+                groups_folder(secret_path),
                 sops_groups_folder(flake_dir),
                 group,
                 False,
             )
         )
 
-    keys = collect_keys_for_path(secret)
+    keys = collect_keys_for_path(secret_path)
 
     if key.pubkey not in keys:
         keys.add(key.pubkey)
         files_to_commit.extend(
             allow_member(
-                users_folder(flake_dir, secret.name),
+                users_folder(secret_path),
                 sops_users_folder(flake_dir),
                 key.username,
                 False,
             )
         )
 
-    secret_path = secret / "secret"
+    secret_path = secret_path / "secret"
     encrypt_file(secret_path, value, list(sorted(keys)))
     files_to_commit.append(secret_path)
     commit_files(
         files_to_commit,
         flake_dir,
-        f"Update secret {secret.name}",
+        f"Update secret {secret_path.name}",
     )
 
 
@@ -169,16 +169,16 @@ def add_secret_argument(parser: argparse.ArgumentParser, autocomplete: bool) -> 
         add_dynamic_completer(secrets_parser, complete_secrets)
 
 
-def machines_folder(flake_dir: Path, group: str) -> Path:
-    return sops_secrets_folder(flake_dir) / group / "machines"
+def machines_folder(secret_path: Path) -> Path:
+    return secret_path / "machines"
 
 
-def users_folder(flake_dir: Path, group: str) -> Path:
-    return sops_secrets_folder(flake_dir) / group / "users"
+def users_folder(secret_path: Path) -> Path:
+    return secret_path / "users"
 
 
-def groups_folder(flake_dir: Path, group: str) -> Path:
-    return sops_secrets_folder(flake_dir) / group / "groups"
+def groups_folder(secret_path: Path) -> Path:
+    return secret_path / "groups"
 
 
 def list_directory(directory: Path) -> str:
@@ -245,8 +245,8 @@ def disallow_member(group_folder: Path, name: str) -> list[Path]:
     )
 
 
-def has_secret(flake_dir: Path, secret: str) -> bool:
-    return (sops_secrets_folder(flake_dir) / secret / "secret").exists()
+def has_secret(secret_path: Path) -> bool:
+    return (secret_path / "secret").exists()
 
 
 def list_secrets(flake_dir: Path, pattern: str | None = None) -> list[str]:
@@ -255,7 +255,7 @@ def list_secrets(flake_dir: Path, pattern: str | None = None) -> list[str]:
     def validate(name: str) -> bool:
         return (
             VALID_SECRET_NAME.match(name) is not None
-            and has_secret(flake_dir, name)
+            and has_secret(sops_secrets_folder(flake_dir) / name)
             and (pattern is None or pattern in name)
         )
 
@@ -278,16 +278,21 @@ def list_command(args: argparse.Namespace) -> None:
         print("\n".join(lst))
 
 
-def decrypt_secret(flake_dir: Path, secret: str) -> str:
+def decrypt_secret(flake_dir: Path, secret_path: Path) -> str:
     ensure_sops_key(flake_dir)
-    secret_path = sops_secrets_folder(flake_dir) / secret / "secret"
-    if not secret_path.exists():
-        raise ClanError(f"Secret '{secret}' does not exist")
-    return decrypt_file(secret_path)
+    path = secret_path / "secret"
+    if not path.exists():
+        raise ClanError(f"Secret '{secret_path!s}' does not exist")
+    return decrypt_file(path)
 
 
 def get_command(args: argparse.Namespace) -> None:
-    print(decrypt_secret(args.flake.path, args.secret), end="")
+    print(
+        decrypt_secret(
+            args.flake.path, sops_secrets_folder(args.flake.path) / args.secret
+        ),
+        end="",
+    )
 
 
 def set_command(args: argparse.Namespace) -> None:
