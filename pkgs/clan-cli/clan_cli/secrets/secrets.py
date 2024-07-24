@@ -245,8 +245,8 @@ def disallow_member(group_folder: Path, name: str) -> list[Path]:
     )
 
 
-def has_secret(flake_dir: Path, secret: str) -> bool:
-    return (sops_secrets_folder(flake_dir) / secret / "secret").exists()
+def has_secret(secret_path: Path) -> bool:
+    return (secret_path / "secret").exists()
 
 
 def list_secrets(flake_dir: Path, pattern: str | None = None) -> list[str]:
@@ -255,7 +255,7 @@ def list_secrets(flake_dir: Path, pattern: str | None = None) -> list[str]:
     def validate(name: str) -> bool:
         return (
             VALID_SECRET_NAME.match(name) is not None
-            and has_secret(flake_dir, name)
+            and has_secret(sops_secrets_folder(flake_dir) / name)
             and (pattern is None or pattern in name)
         )
 
@@ -278,16 +278,21 @@ def list_command(args: argparse.Namespace) -> None:
         print("\n".join(lst))
 
 
-def decrypt_secret(flake_dir: Path, secret: str) -> str:
+def decrypt_secret(flake_dir: Path, secret_path: Path) -> str:
     ensure_sops_key(flake_dir)
-    secret_path = sops_secrets_folder(flake_dir) / secret / "secret"
-    if not secret_path.exists():
-        raise ClanError(f"Secret '{secret}' does not exist")
-    return decrypt_file(secret_path)
+    path = secret_path / "secret"
+    if not path.exists():
+        raise ClanError(f"Secret '{secret_path!s}' does not exist")
+    return decrypt_file(path)
 
 
 def get_command(args: argparse.Namespace) -> None:
-    print(decrypt_secret(args.flake.path, args.secret), end="")
+    print(
+        decrypt_secret(
+            args.flake.path, sops_secrets_folder(args.flake.path) / args.secret
+        ),
+        end="",
+    )
 
 
 def set_command(args: argparse.Namespace) -> None:
