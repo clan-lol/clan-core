@@ -173,8 +173,10 @@ def test_generate_secret_var_sops_with_default_group(
     assert (
         flake.path
         / "sops"
-        / "secrets"
-        / "vars-my_machine-my_generator-my_secret"
+        / "vars"
+        / "my_machine"
+        / "my_generator"
+        / "my_secret"
         / "groups"
         / "my_group"
     ).exists()
