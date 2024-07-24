@@ -48,19 +48,22 @@ class SecretStore(SecretStoreBase):
 
     def get(self, service: str, name: str) -> bytes:
         return decrypt_secret(
-            self.machine.flake_dir, f"{self.machine.name}-{name}"
+            self.machine.flake_dir,
+            sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}",
         ).encode("utf-8")
 
     def exists(self, service: str, name: str) -> bool:
         return has_secret(
-            self.machine.flake_dir,
-            f"{self.machine.name}-{name}",
+            sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}",
         )
 
     def upload(self, output_dir: Path) -> None:
         key_name = f"{self.machine.name}-age.key"
-        if not has_secret(self.machine.flake_dir, key_name):
+        if not has_secret(sops_secrets_folder(self.machine.flake_dir) / key_name):
             # skip uploading the secret, not managed by us
             return
-        key = decrypt_secret(self.machine.flake_dir, key_name)
+        key = decrypt_secret(
+            self.machine.flake_dir,
+            sops_secrets_folder(self.machine.flake_dir) / key_name,
+        )
         (output_dir / "key.txt").write_text(key)
