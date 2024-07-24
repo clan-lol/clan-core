@@ -9,7 +9,7 @@ from ..completions import (
 from ..errors import ClanError
 from ..git import commit_files
 from . import secrets
-from .folders import list_objects, remove_object, sops_users_folder
+from .folders import list_objects, remove_object, sops_secrets_folder, sops_users_folder
 from .secrets import update_secrets
 from .sops import read_key, write_key
 from .types import (
@@ -63,7 +63,9 @@ def list_users(flake_dir: Path) -> list[str]:
 
 def add_secret(flake_dir: Path, user: str, secret: str) -> None:
     updated_paths = secrets.allow_member(
-        secrets.users_folder(flake_dir, secret), sops_users_folder(flake_dir), user
+        secrets.users_folder(sops_secrets_folder(flake_dir) / secret),
+        sops_users_folder(flake_dir),
+        user,
     )
     commit_files(
         updated_paths,
@@ -74,7 +76,7 @@ def add_secret(flake_dir: Path, user: str, secret: str) -> None:
 
 def remove_secret(flake_dir: Path, user: str, secret: str) -> None:
     updated_paths = secrets.disallow_member(
-        secrets.users_folder(flake_dir, secret), user
+        secrets.users_folder(sops_secrets_folder(flake_dir) / secret), user
     )
     commit_files(
         updated_paths,
