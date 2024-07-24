@@ -95,7 +95,7 @@ def encrypt_secret(
     for user in add_users:
         files_to_commit.extend(
             allow_member(
-                users_folder(flake_dir, secret_path.name),
+                users_folder(secret_path),
                 sops_users_folder(flake_dir),
                 user,
                 False,
@@ -105,7 +105,7 @@ def encrypt_secret(
     for machine in add_machines:
         files_to_commit.extend(
             allow_member(
-                machines_folder(flake_dir, secret_path.name),
+                machines_folder(secret_path),
                 sops_machines_folder(flake_dir),
                 machine,
                 False,
@@ -115,7 +115,7 @@ def encrypt_secret(
     for group in add_groups:
         files_to_commit.extend(
             allow_member(
-                groups_folder(flake_dir, secret_path.name),
+                groups_folder(secret_path),
                 sops_groups_folder(flake_dir),
                 group,
                 False,
@@ -128,7 +128,7 @@ def encrypt_secret(
         keys.add(key.pubkey)
         files_to_commit.extend(
             allow_member(
-                users_folder(flake_dir, secret_path.name),
+                users_folder(secret_path),
                 sops_users_folder(flake_dir),
                 key.username,
                 False,
@@ -169,16 +169,16 @@ def add_secret_argument(parser: argparse.ArgumentParser, autocomplete: bool) -> 
         add_dynamic_completer(secrets_parser, complete_secrets)
 
 
-def machines_folder(flake_dir: Path, secret: str) -> Path:
-    return sops_secrets_folder(flake_dir) / secret / "machines"
+def machines_folder(secret_path: Path) -> Path:
+    return secret_path / "machines"
 
 
-def users_folder(flake_dir: Path, secret: str) -> Path:
-    return sops_secrets_folder(flake_dir) / secret / "users"
+def users_folder(secret_path: Path) -> Path:
+    return secret_path / "users"
 
 
-def groups_folder(flake_dir: Path, secret: str) -> Path:
-    return sops_secrets_folder(flake_dir) / secret / "groups"
+def groups_folder(secret_path: Path) -> Path:
+    return secret_path / "groups"
 
 
 def list_directory(directory: Path) -> str:
