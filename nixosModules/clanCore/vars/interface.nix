@@ -72,7 +72,7 @@ in
                         name of the generator
                       '';
                       readOnly = true;
-                      default = generator.name;
+                      default = generator.config._module.args.name;
                     };
                     secret = {
                       description = ''
@@ -87,7 +87,6 @@ in
                         This will be set automatically
                       '';
                       type = str;
-                      readOnly = true;
                     };
                     value = {
                       description = ''
@@ -109,32 +108,35 @@ in
                 For example, a prompt named 'prompt1' will be available via $prompts/prompt1
               '';
               default = { };
-              type = attrsOf (submodule {
-                options = options {
-                  description = {
-                    description = ''
-                      The description of the prompted value
-                    '';
-                    type = str;
-                    example = "SSH private key";
+              type = attrsOf (
+                submodule (prompt: {
+                  options = options {
+                    description = {
+                      description = ''
+                        The description of the prompted value
+                      '';
+                      type = str;
+                      example = "SSH private key";
+                      default = prompt.config._module.args.name;
+                    };
+                    type = {
+                      description = ''
+                        The input type of the prompt.
+                        The following types are available:
+                          - hidden: A hidden text (e.g. password)
+                          - line: A single line of text
+                          - multiline: A multiline text
+                      '';
+                      type = enum [
+                        "hidden"
+                        "line"
+                        "multiline"
+                      ];
+                      default = "line";
+                    };
                   };
-                  type = {
-                    description = ''
-                      The input type of the prompt.
-                      The following types are available:
-                        - hidden: A hidden text (e.g. password)
-                        - line: A single line of text
-                        - multiline: A multiline text
-                    '';
-                    type = enum [
-                      "hidden"
-                      "line"
-                      "multiline"
-                    ];
-                    default = "line";
-                  };
-                };
-              });
+                })
+              );
             };
             runtimeInputs = {
               description = ''

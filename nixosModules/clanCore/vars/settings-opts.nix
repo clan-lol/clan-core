@@ -30,6 +30,7 @@
     '';
   };
 
+  # TODO: see if this is the right approach. Maybe revert to secretPathFunction
   fileModule = lib.mkOption {
     type = lib.types.deferredModule;
     internal = true;
