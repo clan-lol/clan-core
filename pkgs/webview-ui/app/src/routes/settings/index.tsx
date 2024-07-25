@@ -12,8 +12,18 @@ import {
   setRoute,
   clanList,
 } from "@/src/App";
-import { For, Show } from "solid-js";
+import { createEffect, createSignal, For, Show } from "solid-js";
 import { createQuery } from "@tanstack/solid-query";
+import { useFloating } from "@/src/floating";
+import {
+  arrow,
+  autoUpdate,
+  flip,
+  hide,
+  offset,
+  shift,
+  size,
+} from "@floating-ui/dom";
 
 export const registerClan = async () => {
   try {
@@ -54,6 +64,30 @@ const ClanDetails = (props: ClanDetailsProps) => {
     },
   }));
 
+  const [reference, setReference] = createSignal<HTMLElement>();
+  const [floating, setFloating] = createSignal<HTMLElement>();
+  const [arrowEl, setArrowEl] = createSignal<HTMLElement>();
+
+  // `position` is a reactive object.
+  const position = useFloating(reference, floating, {
+    placement: "top",
+
+    // pass options. Ensure the cleanup function is returned.
+    whileElementsMounted: (reference, floating, update) =>
+      autoUpdate(reference, floating, update, {
+        animationFrame: true,
+      }),
+    middleware: [
+      offset(5),
+      shift(),
+      flip(),
+
+      hide({
+        strategy: "referenceHidden",
+      }),
+    ],
+  });
+
   return (
     <div class="stat">
       <div class="stat-figure text-primary">
@@ -72,23 +106,43 @@ const ClanDetails = (props: ClanDetailsProps) => {
             {activeURI() === clan_dir ? "active" : "select"}
           </button>
           <button
+            popovertarget={`clan-delete-popover-${clan_dir}`}
+            popovertargetaction="toggle"
+            ref={setReference}
             class="btn btn-ghost btn-outline join-item btn-sm"
-            onClick={() => {
-              setClanList((s) =>
-                s.filter((v, idx) => {
-                  if (v == clan_dir) {
-                    setActiveURI(
-                      clanList()[idx - 1] || clanList()[idx + 1] || null
-                    );
-                    return false;
-                  }
-                  return true;
-                })
-              );
-            }}
           >
             Remove
           </button>
+          <div
+            popover="auto"
+            id={`clan-delete-popover-${clan_dir}`}
+            ref={setFloating}
+            style={{
+              position: position.strategy,
+              top: `${position.y ?? 0}px`,
+              left: `${position.x ?? 0}px`,
+            }}
+            class="bg-transparent"
+          >
+            <button
+              class="btn btn-warning btn-sm"
+              onClick={() => {
+                setClanList((s) =>
+                  s.filter((v, idx) => {
+                    if (v == clan_dir) {
+                      setActiveURI(
+                        clanList()[idx - 1] || clanList()[idx + 1] || null
+                      );
+                      return false;
+                    }
+                    return true;
+                  })
+                );
+              }}
+            >
+              Remove from App
+            </button>
+          </div>
         </div>
       </div>
       <div class="stat-title">Clan URI</div>
