@@ -17,6 +17,8 @@
   setuptools,
   stdenv,
 
+  pydantic,
+
   # custom args
   clan-core-path,
   nixpkgs,
@@ -28,6 +30,7 @@
 let
   pythonDependencies = [
     argcomplete # Enables shell completions
+    pydantic
   ];
 
   # load nixpkgs runtime dependencies from a json file
