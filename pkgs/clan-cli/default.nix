@@ -17,6 +17,8 @@
   setuptools,
   stdenv,
 
+  pydantic,
+
   # custom args
   clan-core-path,
   nixpkgs,
@@ -28,6 +30,7 @@
 let
   pythonDependencies = [
     argcomplete # Enables shell completions
+    pydantic # Dataclass deserialisation / validation / schemas
   ];
 
   # load nixpkgs runtime dependencies from a json file
@@ -180,6 +183,7 @@ python3.pkgs.buildPythonApplication {
   '';
 
   # Clean up after the package to avoid leaking python packages into a devshell
+  # TODO: factor seperate cli / API packages
   postFixup = ''
     rm $out/nix-support/propagated-build-inputs
   '';

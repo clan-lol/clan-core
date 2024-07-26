@@ -153,7 +153,7 @@ class ServiceSingleDisk:
 class Service:
     borgbackup: dict[str, ServiceBorgbackup] = field(default_factory = dict)
     packages: dict[str, ServicePackage] = field(default_factory = dict)
-    single_disk: dict[str, ServiceSingleDisk] = field(default_factory = dict, metadata = {"original_name": "single-disk"})
+    single_disk: dict[str, ServiceSingleDisk] = field(default_factory = dict, metadata = {"alias": "single-disk"})
 
 
 @dataclass

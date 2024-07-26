@@ -62,7 +62,12 @@
           name = "clan-cli-docs";
           src = ./.;
 
-          buildInputs = [ pkgs.python3 ];
+          buildInputs = [
+
+            # TODO: see postFixup clan-cli/default.nix:L188
+            pkgs.python3
+            self'.packages.clan-cli.propagatedBuildInputs
+          ];
 
           installPhase = ''
             ${self'.packages.classgen}/bin/classgen ${self'.packages.inventory-schema}/schema.json ./clan_cli/inventory/classes.py
@@ -77,7 +82,12 @@
           name = "clan-ts-api";
           src = ./.;
 
-          buildInputs = [ pkgs.python3 ];
+          buildInputs = [
+            pkgs.python3
+
+            # TODO: see postFixup clan-cli/default.nix:L188
+            self'.packages.clan-cli.propagatedBuildInputs
+          ];
 
           installPhase = ''
             ${self'.packages.classgen}/bin/classgen ${self'.packages.inventory-schema}/schema.json ./clan_cli/inventory/classes.py

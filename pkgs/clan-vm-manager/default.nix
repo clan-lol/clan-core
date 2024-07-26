@@ -93,7 +93,14 @@ python3.pkgs.buildPythonApplication rec {
   # that all necessary dependencies are consistently available both
   # at build time and runtime,
   buildInputs = allPythonDeps ++ runtimeDependencies;
-  propagatedBuildInputs = allPythonDeps ++ runtimeDependencies;
+  propagatedBuildInputs =
+    allPythonDeps
+    ++ runtimeDependencies
+    ++ [
+
+      # TODO: see postFixup clan-cli/default.nix:L188
+      clan-cli.propagatedBuildInputs
+    ];
 
   # also re-expose dependencies so we test them in CI
   passthru = {

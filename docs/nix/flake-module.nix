@@ -54,9 +54,11 @@
       module-docs =
         pkgs.runCommand "rendered"
           {
-            nativeBuildInputs = [
+            buildInputs = [
               pkgs.python3
               self'.packages.clan-cli
+              # TODO: see postFixup clan-cli/default.nix:L188
+              self'.packages.clan-cli.propagatedBuildInputs
             ];
           }
           ''
