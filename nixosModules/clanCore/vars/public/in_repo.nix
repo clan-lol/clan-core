@@ -5,8 +5,9 @@
       {
         publicModule = "clan_cli.vars.public_modules.in_repo";
         fileModule = file: {
-          path =
-            config.clan.core.clanDir + "/machines/${config.clan.core.machineName}/vars/${file.config.name}";
+          path = lib.mkIf (file.config.secret == false) (
+            config.clan.core.clanDir + "/machines/${config.clan.core.machineName}/vars/${file.config.name}"
+          );
         };
       };
 }
