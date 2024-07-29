@@ -140,6 +140,21 @@ def test_alias_field() -> None:
     assert dataclass_to_dict(person, use_alias=False) == {"name": "John"}
 
 
+def test_alias_field_from_orig_name() -> None:
+    """
+    Field declares an alias. But the data is provided with the field name.
+    """
+
+    @dataclass
+    class Person:
+        name: str = field(metadata={"alias": "--user-name--"})
+
+    data = {"user": "John"}
+
+    with pytest.raises(ClanError):
+        from_dict(Person, data)
+
+
 def test_path_field() -> None:
     @dataclass
     class Person:

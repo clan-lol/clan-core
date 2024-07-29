@@ -29,7 +29,7 @@ let
     ]);
 in
 mkShell {
-  inherit (clan-app) nativeBuildInputs;
+  inherit (clan-app) nativeBuildInputs propagatedBuildInputs;
 
   inputsFrom = [ self'.devShells.default ];
 
