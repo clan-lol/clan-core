@@ -4,10 +4,7 @@ from pathlib import Path
 import pytest
 
 # Functions to test
-from clan_cli.api import (
-    dataclass_to_dict,
-    from_dict,
-)
+from clan_cli.api import dataclass_to_dict, from_dict
 from clan_cli.errors import ClanError
 from clan_cli.inventory import (
     Inventory,
@@ -87,6 +84,7 @@ def test_simple_field_missing() -> None:
 
 
 def test_deserialize_extensive_inventory() -> None:
+    # TODO: Make this an abstract test, so it doesn't break the test if the inventory changes
     data = {
         "meta": {"name": "superclan", "description": "nice clan"},
         "services": {
@@ -130,7 +128,16 @@ def test_alias_field() -> None:
     data = {"--user-name--": "John"}
     expected = Person(name="John")
 
-    assert from_dict(Person, data) == expected
+    person = from_dict(Person, data)
+
+    # Deserialize
+    assert person == expected
+
+    # Serialize with alias
+    assert dataclass_to_dict(person) == data
+
+    # Serialize without alias
+    assert dataclass_to_dict(person, use_alias=False) == {"name": "John"}
 
 
 def test_path_field() -> None:
