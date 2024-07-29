@@ -16,7 +16,7 @@ def update_history() -> list[HistoryEntry]:
 
     for entry in logs:
         try:
-            meta = nix_metadata(entry.flake.flake_url)
+            meta = nix_metadata(str(entry.flake.flake_url))
         except ClanCmdError as e:
             print(f"Failed to update {entry.flake.flake_url}: {e}")
             continue
@@ -31,7 +31,7 @@ def update_history() -> list[HistoryEntry]:
                 machine_name=entry.flake.flake_attr,
             )
             flake = inspect_flake(uri.get_url(), uri.machine_name)
-            flake.flake_url = str(flake.flake_url)
+            flake.flake_url = flake.flake_url
             entry = HistoryEntry(
                 flake=flake, last_used=datetime.datetime.now().isoformat()
             )
