@@ -20,7 +20,7 @@ in
     # Before we generate a secret we cannot know the path yet, so we need to set it to an empty string
     fileModule = file: {
       path = lib.mkIf file.config.secret (
-        config.sops.secrets.${"vars-${config.clan.core.machineName}-${file.config.generatorName}-${file.config.name}"}.path
+        config.sops.secrets.${"${config.clan.core.machineName}/${file.config.generatorName}/${file.config.name}"}.path
           or "/no-such-path"
       );
     };
@@ -31,10 +31,9 @@ in
   config.sops = lib.mkIf (config.clan.core.vars.settings.secretStore == "sops") {
     secrets = lib.listToAttrs (
       flip map vars (secret: {
-        name = secret.name;
+        name = secret.id;
         value = {
-          sopsFile =
-            config.clan.core.clanDir + "/sops/vars/${secret.machine}/${secret.generator}/${secret.name}/secret";
+          sopsFile = config.clan.core.clanDir + "/sops/vars/${secret.id}/secret";
           format = "binary";
         };
       })
