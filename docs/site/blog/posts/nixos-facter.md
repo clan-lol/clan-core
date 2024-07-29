@@ -25,7 +25,7 @@ To account for this, you could always run `nixos-generate-config` again. But tha
 
 What if, instead of generating some Nix code, we first describe the current hardware in an intermediate format? This hardware report would be _'pure'_, devoid of any reference to NixOS, and intended as a stable, longer-term representation of the system.
 
-From here, we can create a series of NixOS modules designed to examine the report's contents and make the same kinds of decisions that `nixos-generate-config` does. The critical difference is that as NixOS evolves, so can these modules, and with a full hardware report available we can make more interesting config choices about things such as GPUs and other devices. 
+From here, we can create a series of NixOS modules designed to examine the report's contents and make the same kinds of decisions that `nixos-generate-config` does. The critical difference is that as NixOS evolves, so can these modules, and with a full hardware report available we can make more interesting config choices about things such as GPUs and other devices.
 
 In a perfect world, we should not need to regenerate the underlying report as long as there are no hardware changes. We can take this one step further.
 
@@ -71,6 +71,9 @@ A user can generate a JSON-based hardware report using a (eventually static) Go 
 }
 ```
 
+We are currently assuming that a the system uses [disko], so we have not implemented fileSystems configuration.
+If you don't use disko, you have to currently specify that part of the configuration yourself or take it from nixos-generate-config.
+
 That's it.
 
 ## Early Days
@@ -83,8 +86,9 @@ Over the coming weeks, we will also build up documentation and examples to make 
 
 > Side note: if you are wondering why the repo is in the [Numtide] org, we started partnering with Clan! Both companies are looking to make self-hosting easier and we're excited to be working together on this. Expect more tools and features to come!
 
-[NixOS]: https://nixos.org "Declarative builds and deployments"
-[nixos-generate-config]: https://github.com/NixOS/nixpkgs/blob/dac9cdf8c930c0af98a63cbfe8005546ba0125fb/nixos/modules/installer/tools/nixos-generate-config.pl
-[NixOS Hardware]: https://github.com/NixOS/nixos-hardware
 [NixOS Facter]: https://github.com/numtide/nixos-facter
+[NixOS Hardware]: https://github.com/NixOS/nixos-hardware
+[NixOS]: https://nixos.org "Declarative builds and deployments"
 [Numtide]: https://numtide.com
+[disko]: https://github.com/nix-community/disko
+[nixos-generate-config]: https://github.com/NixOS/nixpkgs/blob/dac9cdf8c930c0af98a63cbfe8005546ba0125fb/nixos/modules/installer/tools/nixos-generate-config.pl
