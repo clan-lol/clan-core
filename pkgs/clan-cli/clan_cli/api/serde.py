@@ -49,32 +49,35 @@ def sanitize_string(s: str) -> str:
     return json.dumps(s)[1:-1]
 
 
-def dataclass_to_dict(obj: Any) -> Any:
-    """
-    Utility function to convert dataclasses to dictionaries
-    It converts all nested dataclasses, lists, tuples, and dictionaries to dictionaries
+def dataclass_to_dict(obj: Any, *, use_alias: bool = True) -> Any:
+    def _to_dict(obj: Any) -> Any:
+        """
+        Utility function to convert dataclasses to dictionaries
+        It converts all nested dataclasses, lists, tuples, and dictionaries to dictionaries
 
-    It does NOT convert member functions.
-    """
-    if is_dataclass(obj):
-        return {
-            # Use either the original name or name
-            sanitize_string(
-                field.metadata.get("original_name", field.name)
-            ): dataclass_to_dict(getattr(obj, field.name))
-            for field in fields(obj)
-            if not field.name.startswith("_")  # type: ignore
-        }
-    elif isinstance(obj, list | tuple):
-        return [dataclass_to_dict(item) for item in obj]
-    elif isinstance(obj, dict):
-        return {sanitize_string(k): dataclass_to_dict(v) for k, v in obj.items()}
-    elif isinstance(obj, Path):
-        return sanitize_string(str(obj))
-    elif isinstance(obj, str):
-        return sanitize_string(obj)
-    else:
-        return obj
+        It does NOT convert member functions.
+        """
+        if is_dataclass(obj):
+            return {
+                # Use either the original name or name
+                sanitize_string(
+                    field.metadata.get("alias", field.name) if use_alias else field.name
+                ): _to_dict(getattr(obj, field.name))
+                for field in fields(obj)
+                if not field.name.startswith("_")  # type: ignore
+            }
+        elif isinstance(obj, list | tuple):
+            return [_to_dict(item) for item in obj]
+        elif isinstance(obj, dict):
+            return {sanitize_string(k): _to_dict(v) for k, v in obj.items()}
+        elif isinstance(obj, Path):
+            return sanitize_string(str(obj))
+        elif isinstance(obj, str):
+            return sanitize_string(obj)
+        else:
+            return obj
+
+    return _to_dict(obj)
 
 
 T = TypeVar("T", bound=dataclass)  # type: ignore
