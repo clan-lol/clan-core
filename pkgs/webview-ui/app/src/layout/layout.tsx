@@ -1,7 +1,7 @@
 import { Component, JSXElement, Show } from "solid-js";
 import { Header } from "./header";
 import { Sidebar } from "../Sidebar";
-import { clanList, route, setRoute } from "../App";
+import { activeURI, clanList, route, setRoute } from "../App";
 
 interface LayoutProps {
   children: JSXElement;
@@ -18,7 +18,7 @@ export const Layout: Component<LayoutProps> = (props) => {
         />
         <div class="drawer-content">
           <Show when={route() !== "welcome"}>
-            <Header />
+            <Header clan_dir={activeURI} />
           </Show>
           {props.children}
         </div>

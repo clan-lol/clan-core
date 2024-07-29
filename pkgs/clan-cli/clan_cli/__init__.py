@@ -7,10 +7,10 @@ from types import ModuleType
 # These imports are unused, but necessary for @API.register to run once.
 from clan_cli.api import directory, mdns_discovery, modules
 from clan_cli.arg_actions import AppendOptionAction
-from clan_cli.clan import show
+from clan_cli.clan import show, update
 
 # API endpoints that are not used in the cli.
-__all__ = ["directory", "mdns_discovery", "modules"]
+__all__ = ["directory", "mdns_discovery", "modules", "update"]
 
 from . import (
     backups,
