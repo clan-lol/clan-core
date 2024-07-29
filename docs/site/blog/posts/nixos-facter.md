@@ -37,39 +37,44 @@ Still in its early stages, [NixOS Facter] is intended to do what I've described 
 
 A user can generate a JSON-based hardware report using a (eventually static) Go program: `nixos-facter -o facter.json`. From there, they can include this report in their NixOS config and make use of our [NixOS modules](https://github.com/numtide/nixos-facter-modules) as follows:
 
-```nix
-# flake.nix
-{
-    inputs = {
-        nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-        nixos-facter-modules.url = "github:numtide/nixos-facter-modules";
-    };
+=== "**flake.nix**"
 
-    outputs = inputs @ {
-        nixpkgs,
-        ...
-    }: {
-        nixosConfigurations.basic = nixpkgs.lib.nixosSystem {
-            modules = [
-                inputs.nixos-facter-modules.nixosModules.facter
-                { config.facter.reportPath = ./facter.json; }
-                # ...
-            ];
+    ```nix
+    {
+        inputs = {
+            nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+            nixos-facter-modules.url = "github:numtide/nixos-facter-modules";
         };
-    };
-}
 
-# configuration.nix
-{
-    imports = [
-      "${(builtins.fetchTarball {
-        url = "https://github.com/numtide/nixos-facter-modules/";
-      })}/modules/nixos/facter.nix"
-    ];
+        outputs = inputs @ {
+            nixpkgs,
+            ...
+        }: {
+            nixosConfigurations.basic = nixpkgs.lib.nixosSystem {
+                modules = [
+                    inputs.nixos-facter-modules.nixosModules.facter
+                    { config.facter.reportPath = ./facter.json; }
+                    # ...
+                ];
+            };
+        };
+    }
+    ```
 
-    config.facter.reportPath = ./facter.json;
-}
-```
+=== "**without flakes**"
+
+    ```nix
+    # configuration.nix
+    {
+        imports = [
+          "${(builtins.fetchTarball {
+            url = "https://github.com/numtide/nixos-facter-modules/";
+          })}/modules/nixos/facter.nix"
+        ];
+
+        config.facter.reportPath = ./facter.json;
+    }
+    ```
 
 That's it.
 
