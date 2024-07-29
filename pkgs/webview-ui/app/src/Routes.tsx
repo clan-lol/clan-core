@@ -9,6 +9,7 @@ import { Settings } from "./routes/settings";
 import { Welcome } from "./routes/welcome";
 import { Deploy } from "./routes/deploy";
 import { CreateMachine } from "./routes/machines/create";
+import { DiskView } from "./routes/disk/view";
 
 export type Route = keyof typeof routes;
 
@@ -62,6 +63,11 @@ export const routes = {
     child: Deploy,
     label: "deploy",
     icon: "content_copy",
+  },
+  diskConfig: {
+    child: DiskView,
+    label: "diskConfig",
+    icon: "disk",
   },
 };
 

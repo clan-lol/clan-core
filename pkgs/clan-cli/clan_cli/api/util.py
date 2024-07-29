@@ -74,7 +74,9 @@ def type_to_dict(t: Any, scope: str = "", type_map: dict[TypeVar, type] = {}) ->
     if dataclasses.is_dataclass(t):
         fields = dataclasses.fields(t)
         properties = {
-            f.name: type_to_dict(f.type, f"{scope} {t.__name__}.{f.name}", type_map)
+            f.metadata.get("alias", f.name): type_to_dict(
+                f.type, f"{scope} {t.__name__}.{f.name}", type_map
+            )
             for f in fields
             if not f.name.startswith("_")
         }

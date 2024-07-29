@@ -90,7 +90,9 @@ def from_dict(t: type[T], data: Any) -> T:
     """
     adapter = TypeAdapter(t)
     try:
-        return adapter.validate_python(data)
+        return adapter.validate_python(
+            data,
+        )
     except ValidationError as e:
         fst_error: ErrorDetails = e.errors()[0]
         if not fst_error:
