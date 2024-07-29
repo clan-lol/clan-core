@@ -71,10 +71,11 @@ A user can generate a JSON-based hardware report using a (eventually static) Go 
 }
 ```
 
-We are currently assuming that a the system uses [disko], so we have not implemented fileSystems configuration.
-If you don't use disko, you have to currently specify that part of the configuration yourself or take it from nixos-generate-config.
-
 That's it.
+
+> We assume that users will rely on [disko], so we have not implemented file system configuration yet (it's on the roadmap). 
+> In the meantime, if you don't use disko you have to specify that part of the configuration yourself or take it from `nixos-generate-config`.
+
 
 ## Early Days
 
