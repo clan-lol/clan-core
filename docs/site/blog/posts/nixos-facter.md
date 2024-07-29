@@ -1,5 +1,5 @@
 ---
-title: "Introducing Nixos Facter"
+title: "Introducing NixOS Facter"
 description: "Declarative Hardware Configuration in NixOS"
 authors:
   - BrianMcGee
@@ -33,7 +33,7 @@ Provided that certain sensitive information, such as serial numbers and MAC addr
 
 ## Introducing NixOS Facter
 
-Still in its early stages, [Nixos Facter] is intended to do what I've described above.
+Still in its early stages, [NixOS Facter] is intended to do what I've described above.
 
 A user can generate a JSON-based hardware report using a (eventually static) Go program: `nixos-facter -o facter.json`. From there, they can include this report in their NixOS config and make use of our [NixOS modules](https://github.com/numtide/nixos-facter-modules) as follows:
 
@@ -78,7 +78,7 @@ That's it.
 
 ## Early Days
 
-Please be aware that [NixOS Facter] is _super alpha_ and is still subject to significant changes as we flesh things out. Our initial goal is to reach feature parity with [nixos-generate-config].
+Please be aware that [NixOS Facter] is still in early development and is still subject to significant changes especially the output json format as we flesh things out. Our initial goal is to reach feature parity with [nixos-generate-config].
 
 From there, we want to continue building our NixOS modules, opening things up to the community, and beginning to capture shared hardware configurations for providers such as Hetzner, etc.
 
