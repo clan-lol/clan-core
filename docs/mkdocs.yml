@@ -73,6 +73,7 @@ nav:
           - reference/clanModules/syncthing-static-peers.md
           - reference/clanModules/syncthing.md
           - reference/clanModules/thelounge.md
+          - reference/clanModules/mumble.md
           - reference/clanModules/trusted-nix-caches.md
           - reference/clanModules/user-password.md
           - reference/clanModules/xfce.md
