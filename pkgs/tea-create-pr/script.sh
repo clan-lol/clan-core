@@ -10,7 +10,6 @@ currentBranch="$(git rev-parse --abbrev-ref HEAD)"
 user_unparsed="$(tea whoami)"
 user="$(echo "$user_unparsed" | tr -d '\n' | cut -f4 -d' ')"
 tempRemoteBranch="$user-$currentBranch"
-root_dir=$(git rev-parse --show-toplevel)
 
 
 # Function to check if a remote exists
@@ -30,7 +29,7 @@ if ! check_remote "$remoteUpstream"; then
   exit 1
 fi
 
-treefmt --no-cache --fail-on-change -C "$root_dir"
+nix fmt -- --fail-on-change --no-cache
 
 upstream_url=$(git remote get-url "$remoteUpstream")
 set -x
@@ -42,7 +41,7 @@ repo=$(echo "$upstream_url" | sed -E 's#.*:([^/]+/[^.]+)\.git#\1#')
 git log --reverse --pretty="format:%s%n%n%b%n%n" "$remoteUpstream/$targetBranch..HEAD" > "$TMPDIR"/commit-msg
 
 
-$EDITOR "$TMPDIR"/commit-msg
+"$EDITOR" "$TMPDIR"/commit-msg
 
 COMMIT_MSG=$(cat "$TMPDIR"/commit-msg)
 
