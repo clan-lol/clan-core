@@ -45,11 +45,11 @@ def test_nested() -> None:
     class Person:
         name: str
         # deeply nested dataclasses
+        home: Path | str | None
         age: Age
         age_list: list[Age]
         age_dict: dict[str, Age]
         # Optional field
-        home: Path | None
 
     person_dict = {
         "name": "John",
@@ -76,6 +76,29 @@ def test_simple_field_missing() -> None:
     @dataclass
     class Person:
         name: str
+
+    person_dict = {}
+
+    with pytest.raises(ClanError):
+        from_dict(Person, person_dict)
+
+
+def test_nullable() -> None:
+    @dataclass
+    class Person:
+        name: None
+
+    person_dict = {
+        "name": None,
+    }
+
+    from_dict(Person, person_dict)
+
+
+def test_nullable_non_exist() -> None:
+    @dataclass
+    class Person:
+        name: None
 
     person_dict = {}
 
