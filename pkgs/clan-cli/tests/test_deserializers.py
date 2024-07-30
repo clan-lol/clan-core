@@ -83,6 +83,29 @@ def test_simple_field_missing() -> None:
         from_dict(Person, person_dict)
 
 
+def test_nullable() -> None:
+    @dataclass
+    class Person:
+        name: None
+
+    person_dict = {
+        "name": None,
+    }
+
+    from_dict(Person, person_dict)
+
+
+def test_nullable_non_exist() -> None:
+    @dataclass
+    class Person:
+        name: None
+
+    person_dict = {}
+
+    with pytest.raises(ClanError):
+        from_dict(Person, person_dict)
+
+
 def test_deserialize_extensive_inventory() -> None:
     # TODO: Make this an abstract test, so it doesn't break the test if the inventory changes
     data = {
