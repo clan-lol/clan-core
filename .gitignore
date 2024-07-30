@@ -1,4 +1,5 @@
 .direnv
+**/.nixos-test-history
 ***/.hypothesis
 out.log
 .coverage.*
