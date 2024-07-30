@@ -62,7 +62,7 @@ def list_history() -> list[HistoryEntry]:
 
 def new_history_entry(url: str, machine: str) -> HistoryEntry:
     flake = inspect_flake(url, machine)
-    flake.flake_url = str(flake.flake_url)
+    flake.flake_url = flake.flake_url
     return HistoryEntry(
         flake=flake,
         last_used=datetime.datetime.now().isoformat(),

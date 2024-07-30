@@ -18,7 +18,7 @@ in
     ./public/in_repo.nix
     # ./public/vm.nix
     ./secret/password-store.nix
-    ./secret/sops.nix
+    ./secret/sops
     # ./secret/vm.nix
   ];
   options.clan.core.vars = lib.mkOption {

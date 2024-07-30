@@ -14,7 +14,7 @@ from ..vms.inspect import VmConfig, inspect_vm
 
 @dataclass
 class FlakeConfig:
-    flake_url: str | Path
+    flake_url: FlakeId
     flake_attr: str
 
     clan_name: str
@@ -89,7 +89,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     meta = nix_metadata(flake_url)
     return FlakeConfig(
         vm=vm,
-        flake_url=flake_url,
+        flake_url=FlakeId(flake_url),
         clan_name=clan_name,
         flake_attr=machine_name,
         nar_hash=meta["locked"]["narHash"],

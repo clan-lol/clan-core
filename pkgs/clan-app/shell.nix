@@ -12,7 +12,6 @@
   python3,
   gtk4,
   libadwaita,
-  webview-ui,
   self',
 }:
 
@@ -29,7 +28,7 @@ let
     ]);
 in
 mkShell {
-  inherit (clan-app) nativeBuildInputs;
+  inherit (clan-app) nativeBuildInputs propagatedBuildInputs;
 
   inputsFrom = [ self'.devShells.default ];
 
@@ -66,9 +65,6 @@ mkShell {
 
     export XDG_DATA_DIRS=${gtk4}/share/gsettings-schemas/gtk4-4.14.4:$XDG_DATA_DIRS
     export XDG_DATA_DIRS=${gsettings-desktop-schemas}/share/gsettings-schemas/gsettings-desktop-schemas-46.0:$XDG_DATA_DIRS
-
-    # Add the webview-ui to the .webui directory
-    ln -nsf ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/ ./clan_app/.webui
 
   '';
 }

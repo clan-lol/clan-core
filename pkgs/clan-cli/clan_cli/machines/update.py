@@ -13,6 +13,7 @@ from ..facts.upload import upload_secrets
 from ..machines.machines import Machine
 from ..nix import nix_command, nix_metadata
 from ..ssh import HostKeyCheck
+from ..vars.generate import generate_vars
 from .inventory import get_all_machines, get_selected_machines
 from .machine_group import MachineGroup
 
@@ -93,6 +94,7 @@ def deploy_machine(machines: MachineGroup) -> None:
         env["NIX_SSHOPTS"] = ssh_arg
 
         generate_facts([machine], None, False)
+        generate_vars([machine], None, False)
         upload_secrets(machine)
 
         path = upload_sources(".", target)

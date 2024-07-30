@@ -245,7 +245,7 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
 
         field_meta = None
         if field_name != prop:
-            field_meta = f"""{{"original_name": "{prop}"}}"""
+            field_meta = f"""{{"alias": "{prop}"}}"""
 
         finalize_field = partial(get_field_def, field_name, field_meta)
 

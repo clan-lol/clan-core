@@ -1,4 +1,4 @@
-import { createSignal, type Component } from "solid-js";
+import { createEffect, createSignal, type Component } from "solid-js";
 import { Layout } from "./layout/layout";
 import { Route, Router } from "./Routes";
 import { Toaster } from "solid-toast";
@@ -7,17 +7,26 @@ import { makePersisted } from "@solid-primitives/storage";
 
 // Some global state
 const [route, setRoute] = createSignal<Route>("machines");
+createEffect(() => {
+  console.log(route());
+});
+
 export { route, setRoute };
 
-const [activeURI, setActiveURI] = createSignal<string | null>(null);
+const [activeURI, setActiveURI] = makePersisted(
+  createSignal<string | null>(null),
+  {
+    name: "activeURI",
+    storage: localStorage,
+  }
+);
+
 export { activeURI, setActiveURI };
 
 const [clanList, setClanList] = makePersisted(createSignal<string[]>([]), {
   name: "clanList",
   storage: localStorage,
 });
-
-clanList() && setActiveURI(clanList()[0]);
 
 export { clanList, setClanList };
 

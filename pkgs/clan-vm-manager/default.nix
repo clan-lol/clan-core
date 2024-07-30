@@ -39,7 +39,7 @@ let
     libadwaita
     webkitgtk_6_0
     adwaita-icon-theme
-  ];
+  ] ++ clan-cli.propagatedBuildInputs;
 
   # Deps including python packages from the local project
   allPythonDeps = [ (python3.pkgs.toPythonModule clan-cli) ] ++ externalPythonDeps;
@@ -84,7 +84,6 @@ python3.pkgs.buildPythonApplication rec {
     setuptools
     copyDesktopItems
     wrapGAppsHook
-
     gobject-introspection
   ];
 
@@ -93,7 +92,7 @@ python3.pkgs.buildPythonApplication rec {
   # that all necessary dependencies are consistently available both
   # at build time and runtime,
   buildInputs = allPythonDeps ++ runtimeDependencies;
-  propagatedBuildInputs = allPythonDeps ++ runtimeDependencies;
+  propagatedBuildInputs = allPythonDeps ++ runtimeDependencies ++ [ ];
 
   # also re-expose dependencies so we test them in CI
   passthru = {
