@@ -11,6 +11,7 @@
     matrix-synapse = ./matrix-synapse;
     moonlight = ./moonlight;
     packages = ./packages;
+    mumble = ./mumble;
     postgresql = ./postgresql;
     root-password = ./root-password;
     sshd = ./sshd;
