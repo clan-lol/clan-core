@@ -45,11 +45,11 @@ def test_nested() -> None:
     class Person:
         name: str
         # deeply nested dataclasses
+        home: Path | str | None
         age: Age
         age_list: list[Age]
         age_dict: dict[str, Age]
         # Optional field
-        home: Path | None
 
     person_dict = {
         "name": "John",
