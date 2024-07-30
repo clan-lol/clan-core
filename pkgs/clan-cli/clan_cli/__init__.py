@@ -18,7 +18,6 @@ from . import (
     config,
     facts,
     flash,
-    flatpak,
     history,
     machines,
     secrets,
@@ -408,8 +407,6 @@ def main() -> None:
     if getattr(args, "debug", False):
         setup_logging(logging.DEBUG, root_log_name=__name__.split(".")[0])
         log.debug("Debug log activated")
-        if flatpak.is_flatpak():
-            log.debug("Running inside a flatpak sandbox")
     else:
         setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
 
