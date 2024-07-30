@@ -163,7 +163,10 @@ def remove_command(args: argparse.Namespace) -> None:
 
 def add_secret_argument(parser: argparse.ArgumentParser, autocomplete: bool) -> None:
     secrets_parser = parser.add_argument(
-        "secret", help="the name of the secret", type=secret_name_type
+        "secret",
+        metavar="secret-name",
+        help="the name of the secret",
+        type=secret_name_type,
     )
     if autocomplete:
         add_dynamic_completer(secrets_parser, complete_secrets)
