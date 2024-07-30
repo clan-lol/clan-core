@@ -10,11 +10,7 @@
           (self.inputs.nixpkgs + "/nixos/tests/common/x11.nix")
           {
             clan.core.clanDir = ./.;
-            environment.systemPackages = [
-              pkgs.litecli
-              pkgs.xdotool
-              pkgs.killall
-            ];
+            environment.systemPackages = [ pkgs.killall ];
             services.murmur.sslKey = "/etc/mumble-key";
             services.murmur.sslCert = "/etc/mumble-cert";
             clan.core.facts.services.mumble.secret."mumble-key".path = "/etc/mumble-key";
