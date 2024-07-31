@@ -4,12 +4,10 @@ import json
 import logging
 import os
 import re
-import sys
 from pathlib import Path
 from typing import Any, get_origin
 
 from clan_cli.cmd import run
-from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.dirs import machine_settings_file
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_file
@@ -305,65 +303,3 @@ def set_option(
             repo_dir=flake_dir,
             commit_message=f"Set option {option_description}",
         )
-
-
-# takes a (sub)parser and configures it
-def register_parser(
-    parser: argparse.ArgumentParser | None,
-) -> None:
-    if parser is None:
-        parser = argparse.ArgumentParser(
-            description="Set or show NixOS options",
-        )
-
-    # inject callback function to process the input later
-    parser.set_defaults(func=get_option)
-    set_machine_action = parser.add_argument(
-        "--machine",
-        "-m",
-        help="Machine to configure",
-        type=str,
-        default="default",
-    )
-    add_dynamic_completer(set_machine_action, complete_machines)
-
-    parser.add_argument(
-        "--show-trace",
-        help="Show nix trace on evaluation error",
-        action="store_true",
-    )
-
-    parser.add_argument(
-        "--options-file",
-        help="JSON file with options",
-        type=Path,
-    )
-
-    parser.add_argument(
-        "--settings-file",
-        help="JSON file with settings",
-        type=Path,
-    )
-    parser.add_argument(
-        "--quiet",
-        help="Do not print the value",
-        action="store_true",
-    )
-
-    parser.add_argument(
-        "option",
-        help="Option to read or set (e.g. foo.bar)",
-        type=str,
-    )
-
-
-def main(argv: list[str] | None = None) -> None:
-    if argv is None:
-        argv = sys.argv
-    parser = argparse.ArgumentParser()
-    register_parser(parser)
-    parser.parse_args(argv[1:])
-
-
-if __name__ == "__main__":
-    main()

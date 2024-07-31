@@ -15,7 +15,6 @@ __all__ = ["directory", "mdns_discovery", "modules", "update"]
 from . import (
     backups,
     clan,
-    config,
     facts,
     flash,
     history,
@@ -176,18 +175,6 @@ For more detailed information, visit: {help_hyperlink("getting-started", "https:
     )
 
     clan.register_parser(parser_flake)
-
-    parser_config = subparsers.add_parser(
-        "config",
-        help="read a nixos configuration option",
-        description="read a nixos configuration option",
-        epilog=(
-            """
-        """
-        ),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    config.register_parser(parser_config)
 
     parser_ssh = subparsers.add_parser(
         "ssh",

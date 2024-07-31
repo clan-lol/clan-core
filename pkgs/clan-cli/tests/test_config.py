@@ -1,36 +1,12 @@
 from pathlib import Path
 
 import pytest
-from fixtures_flakes import FlakeForTest
-from helpers import cli
 
 from clan_cli import config
 from clan_cli.config import parsing
 from clan_cli.errors import ClanError
 
 example_options = f"{Path(config.__file__).parent}/jsonschema/options.json"
-
-
-def test_configure_machine(
-    test_flake: FlakeForTest,
-    capsys: pytest.CaptureFixture,
-) -> None:
-    # clear the output buffer
-    capsys.readouterr()
-    # read a option value
-    cli.run(
-        [
-            "config",
-            "--flake",
-            str(test_flake.path),
-            "-m",
-            "machine1",
-            "clan.jitsi.enable",
-        ]
-    )
-
-    # read the output
-    assert capsys.readouterr().out == "false\n"
 
 
 def test_walk_jsonschema_all_types() -> None:
