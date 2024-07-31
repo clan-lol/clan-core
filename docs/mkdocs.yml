@@ -82,7 +82,6 @@ nav:
       - CLI:
           - reference/cli/index.md
           - reference/cli/backups.md
-          - reference/cli/config.md
           - reference/cli/facts.md
           - reference/cli/flakes.md
           - reference/cli/flash.md

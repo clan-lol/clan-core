@@ -11,6 +11,8 @@ from clan_cli.errors import ClanError, ClanHttpError
 from clan_cli.nix import nix_eval
 
 
+# TODO: When moving the api to `clan-app`, the whole config module should be
+# ported to the `clan-app`, because it is not used by the cli at all.
 @API.register
 def machine_schema(
     flake_dir: Path,
