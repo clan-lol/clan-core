@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal
 
 import pytest
 
@@ -200,3 +201,19 @@ def test_private_public_fields() -> None:
     assert from_dict(Person, data) == expected
 
     assert dataclass_to_dict(expected) == data
+
+
+def test_literal_field() -> None:
+    @dataclass
+    class Person:
+        name: Literal["open_file", "select_folder", "save"]
+
+    data = {"name": "open_file"}
+    expected = Person(name="open_file")
+    assert from_dict(Person, data) == expected
+
+    assert dataclass_to_dict(expected) == data
+
+    with pytest.raises(ClanError):
+        # Not a valid value
+        from_dict(Person, {"name": "open"})

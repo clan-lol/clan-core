@@ -35,7 +35,9 @@ from dataclasses import dataclass, fields, is_dataclass
 from pathlib import Path
 from types import UnionType
 from typing import (
+    Annotated,
     Any,
+    Literal,
     TypeVar,
     Union,
     get_args,
@@ -130,7 +132,7 @@ def construct_field(t: type, field_value: JsonValue, loc: list[str] = []) -> Any
 
     # If the field expects a path
     # Field_value must be a string
-    elif issubclass(t, Path) or is_type_in_union(t, Path):
+    elif is_type_in_union(t, Path):
         if not isinstance(field_value, str):
             raise ClanError(
                 f"Expected string, cannot construct pathlib.Path() from: {field_value} ",
@@ -150,6 +152,8 @@ def construct_field(t: type, field_value: JsonValue, loc: list[str] = []) -> Any
         return int(field_value)  # type: ignore
     elif t is float and not isinstance(field_value, str):
         return float(field_value)  # type: ignore
+    elif t is bool and isinstance(field_value, bool):
+        return field_value  # type: ignore
 
     # Union types construct the first non-None type
     elif is_union_type(t):
@@ -171,6 +175,19 @@ def construct_field(t: type, field_value: JsonValue, loc: list[str] = []) -> Any
             key: construct_field(get_args(t)[1], value)
             for key, value in field_value.items()
         }
+    elif get_origin(t) is Literal:
+        valid_values = get_args(t)
+        if field_value not in valid_values:
+            raise ClanError(
+                f"Expected one of {valid_values}, got {field_value}", location=f"{loc}"
+            )
+        return field_value
+
+    elif get_origin(t) is Annotated:
+        (base_type,) = get_args(t)
+        return construct_field(base_type, field_value)
+
+    # elif get_origin(t) is Union:
 
     # Unhandled
     else:
