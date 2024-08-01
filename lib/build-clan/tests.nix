@@ -49,7 +49,6 @@ in
             inventory.meta.name = "test";
           }
 
-          # Build-clan implementation
           ./module.nix
           # Explicit output, usually defined by flake-parts
           { options.nixosConfigurations = lib.mkOption { type = lib.types.raw; }; }

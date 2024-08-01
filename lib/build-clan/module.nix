@@ -3,11 +3,15 @@
   clan-core,
   nixpkgs,
   lib,
-  specialArgs ? { },
   ...
 }:
 let
-  inherit (config) directory machines pkgsForSystem;
+  inherit (config)
+    directory
+    machines
+    pkgsForSystem
+    specialArgs
+    ;
 
   # Final inventory
   inherit (config.clanInternals) inventory;
@@ -165,10 +169,7 @@ in
 {
   imports = [
     # Merge the inventory file
-    { clanInternals.inventory = inventoryLoaded; }
-    { clanInternals.inventory = config.inventory; }
-    # Derived meta from the merged inventory
-    { clanInternals.meta = config.clanInternals.inventory.meta; }
+    { inventory = inventoryLoaded; }
   ];
 
   inherit nixosConfigurations;
@@ -176,6 +177,8 @@ in
   clanInternals = {
     inherit (clan-core) clanModules;
     inherit inventoryFile;
+    inventory = config.inventory;
+    meta = config.inventory.meta;
 
     source = "${clan-core}";
 
