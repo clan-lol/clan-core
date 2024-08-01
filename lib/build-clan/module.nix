@@ -70,7 +70,7 @@ let
         ++ [
           {
             # Autoinclude configuration.nix and hardware-configuration.nix
-            imports = builtins.filter (p: builtins.pathExists p) [
+            imports = builtins.filter builtins.pathExists [
               "${directory}/machines/${name}/configuration.nix"
               "${directory}/machines/${name}/hardware-configuration.nix"
             ];
@@ -81,7 +81,7 @@ let
           (machines.${name} or { })
           # Inherit the inventory assertions ?
           # { inherit (mergedInventory) assertions; }
-          { imports = serviceConfigs.${name} or { }; }
+          { imports = (serviceConfigs.${name} or [ ]); }
           (
             {
               # Settings
@@ -104,6 +104,7 @@ let
             // lib.optionalAttrs (pkgs != null) { nixpkgs.pkgs = lib.mkForce pkgs; }
           )
         ];
+
       specialArgs = {
         inherit clan-core;
       } // specialArgs;
