@@ -87,8 +87,9 @@ let
               # Settings
               clan.core.clanDir = directory;
               # Inherited from clan wide settings
-              # clan.core.clanName = meta.name or clanName;
-              # clan.core.clanIcon = meta.icon or clanIcon;
+              # TODO: remove these
+              clan.core.clanName = config.inventory.meta.name;
+              clan.core.clanIcon = config.inventory.meta.icon;
 
               # Machine specific settings
               clan.core.machineName = name;
