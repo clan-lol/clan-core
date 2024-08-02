@@ -1,16 +1,14 @@
-import { route } from "@/src/App";
-import { callApi, OperationArgs, OperationResponse, pyApi } from "@/src/api";
+import { callApi, OperationResponse } from "@/src/api";
 import {
   createForm,
   required,
+  FieldValues,
   setValue,
-  SubmitHandler,
 } from "@modular-forms/solid";
 import { createQuery } from "@tanstack/solid-query";
 import { createEffect, createSignal, For } from "solid-js";
-import { effect } from "solid-js/web";
 
-type FlashFormValues = {
+interface FlashFormValues extends FieldValues {
   machine: {
     devicePath: string;
     flake: string;
@@ -19,7 +17,7 @@ type FlashFormValues = {
   language: string;
   keymap: string;
   sshKeys: string[];
-};
+}
 
 type BlockDevices = Extract<
   OperationResponse<"show_block_devices">,
@@ -59,10 +57,7 @@ export const Flash = () => {
     }
   });
 
-  const {
-    data: devices,
-    isFetching,
-  } = createQuery(() => ({
+  const { data: devices, isFetching } = createQuery(() => ({
     queryKey: ["block_devices"],
     queryFn: async () => {
       const result = await callApi("show_block_devices", {});
@@ -72,10 +67,7 @@ export const Flash = () => {
     staleTime: 1000 * 60 * 2, // 1 minutes
   }));
 
-  const {
-    data: keymaps,
-    isFetching: isFetchingKeymaps,
-  } = createQuery(() => ({
+  const { data: keymaps, isFetching: isFetchingKeymaps } = createQuery(() => ({
     queryKey: ["list_keymaps"],
     queryFn: async () => {
       const result = await callApi("list_possible_keymaps", {});
@@ -85,18 +77,17 @@ export const Flash = () => {
     staleTime: 1000 * 60 * 15, // 15 minutes
   }));
 
-  const {
-    data: languages,
-    isFetching: isFetchingLanguages,
-  } = createQuery(() => ({
-    queryKey: ["list_languages"],
-    queryFn: async () => {
-      const result = await callApi("list_possible_languages", {});
-      if (result.status === "error") throw new Error("Failed to fetch data");
-      return result.data;
-    },
-    staleTime: 1000 * 60 * 15, // 15 minutes
-  }));
+  const { data: languages, isFetching: isFetchingLanguages } = createQuery(
+    () => ({
+      queryKey: ["list_languages"],
+      queryFn: async () => {
+        const result = await callApi("list_possible_languages", {});
+        if (result.status === "error") throw new Error("Failed to fetch data");
+        return result.data;
+      },
+      staleTime: 1000 * 60 * 15, // 15 minutes
+    }),
+  );
 
   const handleSubmit = async (values: FlashFormValues) => {
     setIsFlashing(true);
@@ -109,7 +100,7 @@ export const Flash = () => {
           },
         },
         mode: "format",
-        disks: { "main": values.disk },
+        disks: { main: values.disk },
         system_config: {
           language: values.language,
           keymap: values.keymap,
@@ -191,7 +182,9 @@ export const Flash = () => {
                   class="select select-bordered w-full"
                   {...props}
                 >
-                  <option value="" disabled>Select a disk</option>
+                  <option value="" disabled>
+                    Select a disk
+                  </option>
                   <For each={devices?.blockdevices}>
                     {(device) => (
                       <option value={device.path}>
@@ -227,11 +220,7 @@ export const Flash = () => {
                 >
                   <option>en_US.UTF-8</option>
                   <For each={languages}>
-                    {(language) => (
-                      <option value={language}>
-                        {language}
-                      </option>
-                    )}
+                    {(language) => <option value={language}>{language}</option>}
                   </For>
                 </select>
                 <div class="label">
@@ -261,17 +250,12 @@ export const Flash = () => {
                 >
                   <option>en</option>
                   <For each={keymaps}>
-                    {(keymap) => (
-                      <option value={keymap}>
-                        {keymap}
-                      </option>
-                    )}
+                    {(keymap) => <option value={keymap}>{keymap}</option>}
                   </For>
                 </select>
                 <div class="label">
                   {isFetchingKeymaps && (
-                    <span class="label-text
-                    -alt">
+                    <span class="label-text-alt">
                       <span class="loading loading-bars"></span>
                     </span>
                   )}
@@ -312,9 +296,11 @@ export const Flash = () => {
           )}
         </Field>
         <button class="btn btn-error" type="submit" disabled={isFlashing()}>
-          {isFlashing()
-            ? <span class="loading loading-spinner"></span>
-            : <span class="material-icons">bolt</span>}
+          {isFlashing() ? (
+            <span class="loading loading-spinner"></span>
+          ) : (
+            <span class="material-icons">bolt</span>
+          )}
           {isFlashing() ? "Flashing..." : "Flash Installer"}
         </button>
       </Form>

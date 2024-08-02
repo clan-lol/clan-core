@@ -134,19 +134,21 @@ export const callApi = <K extends OperationNames>(
   });
 };
 
-const deserialize = <T>(fn: (response: T) => void) => (str: string) => {
-  try {
-    const r = JSON.parse(str) as T;
-    console.log("Received: ", r);
-    fn(r);
-  } catch (e) {
-    console.log("Error parsing JSON: ", e);
-    window.localStorage.setItem("error", str);
-    console.error(str);
-    console.error("See localStorage 'error'");
-    alert(`Error parsing JSON: ${e}`);
-  }
-};
+const deserialize =
+  <T>(fn: (response: T) => void) =>
+  (str: string) => {
+    try {
+      const r = JSON.parse(str) as T;
+      console.log("Received: ", r);
+      fn(r);
+    } catch (e) {
+      console.log("Error parsing JSON: ", e);
+      window.localStorage.setItem("error", str);
+      console.error(str);
+      console.error("See localStorage 'error'");
+      alert(`Error parsing JSON: ${e}`);
+    }
+  };
 
 // Create the API object
 

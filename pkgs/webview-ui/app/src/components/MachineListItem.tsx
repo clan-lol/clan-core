@@ -94,18 +94,21 @@ export const MachineListItem = (props: MachineListItemProps) => {
             <div class="flex flex-row flex-wrap gap-4 py-2">
               <div class="badge badge-primary flex flex-row gap-1 py-4 align-middle">
                 <span>System:</span>
-                {hwInfo()[name]?.system
-                  ? <span class="text-primary">{hwInfo()[name]?.system}</span>
-                  : <span class="text-warning">Not set</span>}
+                {hwInfo()[name]?.system ? (
+                  <span class="text-primary">{hwInfo()[name]?.system}</span>
+                ) : (
+                  <span class="text-warning">Not set</span>
+                )}
               </div>
 
               <div class="badge badge-ghost flex flex-row gap-1 py-4 align-middle">
                 <span>Target Host:</span>
-                {deploymentInfo()[name]
-                  ? <span class="text-primary">{deploymentInfo()[name]}</span>
-                  : <span class="text-warning">Not set</span>}
-                {
-                  /* <Show
+                {deploymentInfo()[name] ? (
+                  <span class="text-primary">{deploymentInfo()[name]}</span>
+                ) : (
+                  <span class="text-warning">Not set</span>
+                )}
+                {/* <Show
                   when={deploymentInfo()[name]}
                   fallback={
                     <Switch fallback={<div class="skeleton h-8 w-full"></div>}>
@@ -116,8 +119,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
                   }
                 >
                   {(i) => + i()}
-                </Show> */
-                }
+                </Show> */}
               </div>
             </div>
             {/* Show only the first error at the bottom */}

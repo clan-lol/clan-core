@@ -91,8 +91,7 @@ export const MachineListView: Component = () => {
           <span class="material-icons ">add</span>
         </button>
       </div>
-      {
-        /* <Show when={services()}>
+      {/* <Show when={services()}>
         {(services) => (
           <For each={Object.values(services())}>
             {(service) => (
@@ -138,8 +137,7 @@ export const MachineListView: Component = () => {
             )}
           </For>
         )}
-      </Show> */
-      }
+      </Show> */}
       <Switch>
         <Match when={loading()}>
           {/* Loading skeleton */}
