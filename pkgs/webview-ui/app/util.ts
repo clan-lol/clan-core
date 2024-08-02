@@ -20,8 +20,7 @@ export function isValidHostname(value: string | null | undefined) {
   const isValid = labels.every(function (label) {
     const validLabelChars = /^([a-zA-Z0-9-]+)$/g;
 
-    const validLabel =
-      validLabelChars.test(label) &&
+    const validLabel = validLabelChars.test(label) &&
       label.length < 64 &&
       !label.startsWith("-") &&
       !label.endsWith("-");

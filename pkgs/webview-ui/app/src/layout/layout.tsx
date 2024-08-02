@@ -32,7 +32,8 @@ export const Layout: Component<LayoutProps> = (props) => {
             for="toplevel-drawer"
             aria-label="close sidebar"
             class="drawer-overlay"
-          ></label>
+          >
+          </label>
           <Sidebar route={route} setRoute={setRoute} />
         </div>
       </div>

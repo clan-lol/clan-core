@@ -1,4 +1,5 @@
 import logging
+import os
 
 import gi
 from clan_cli.api import API
@@ -47,3 +48,4 @@ class MainWindow(Adw.ApplicationWindow):
 
     def on_destroy(self, source: "Adw.ApplicationWindow") -> None:
         log.debug("Destroying Adw.ApplicationWindow")
+        os._exit(0)

@@ -1,5 +1,7 @@
 {
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "tailwindCSS.experimental.classRegex": [["cx\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"]],
-    "editor.wordWrap": "on"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "tailwindCSS.experimental.classRegex": [
+    ["cx\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"]
+  ],
+  "editor.wordWrap": "on"
 }

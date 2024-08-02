@@ -1,16 +1,16 @@
 import { callApi } from "@/src/api";
 import {
-  SubmitHandler,
   createForm,
   required,
   setValue,
+  SubmitHandler,
 } from "@modular-forms/solid";
 import {
   activeURI,
-  setClanList,
-  setActiveURI,
-  setRoute,
   clanList,
+  setActiveURI,
+  setClanList,
+  setRoute,
 } from "@/src/App";
 import {
   createEffect,
@@ -140,7 +140,7 @@ const ClanDetails = (props: ClanDetailsProps) => {
                   s.filter((v, idx) => {
                     if (v == clan_dir) {
                       setActiveURI(
-                        clanList()[idx - 1] || clanList()[idx + 1] || null
+                        clanList()[idx - 1] || clanList()[idx + 1] || null,
                       );
                       return false;
                     }

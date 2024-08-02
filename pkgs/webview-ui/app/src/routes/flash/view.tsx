@@ -1,24 +1,24 @@
 import { route } from "@/src/App";
-import { OperationArgs, OperationResponse, callApi, pyApi } from "@/src/api";
-import { SubmitHandler, createForm, required } from "@modular-forms/solid";
+import { callApi, OperationArgs, OperationResponse, pyApi } from "@/src/api";
+import {
+  createForm,
+  required,
+  setValue,
+  SubmitHandler,
+} from "@modular-forms/solid";
 import { createQuery } from "@tanstack/solid-query";
-import { For, createSignal } from "solid-js";
+import { createEffect, createSignal, For } from "solid-js";
 import { effect } from "solid-js/web";
 
-// type FlashMachineArgs = {
-//   machine: Omit<OperationArgs<"flash_machine">["machine"], "cached_deployment">;
-// } & Omit<Omit<OperationArgs<"flash_machine">, "machine">, "system_config">;
-
-// type FlashMachineArgs = OperationArgs<"flash_machine">;
-
-// type k = keyof FlashMachineArgs;
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type FlashFormValues = {
   machine: {
-    name: string;
+    devicePath: string;
     flake: string;
   };
   disk: string;
+  language: string;
+  keymap: string;
+  sshKeys: string[];
 };
 
 type BlockDevices = Extract<
@@ -28,10 +28,39 @@ type BlockDevices = Extract<
 
 export const Flash = () => {
   const [formStore, { Form, Field }] = createForm<FlashFormValues>({});
+  const [sshKeys, setSshKeys] = createSignal<string[]>([]);
+  const [isFlashing, setIsFlashing] = createSignal(false);
+
+  const selectSshPubkey = async () => {
+    try {
+      const loc = await callApi("open_file", {
+        file_request: {
+          title: "Select SSH Key",
+          mode: "open_multiple_files",
+          filters: { patterns: ["*.pub"] },
+          initial_folder: "~/.ssh",
+        },
+      });
+      console.log({ loc }, loc.status);
+      if (loc.status === "success" && loc.data) {
+        setSshKeys(loc.data);
+        return loc.data;
+      }
+    } catch (e) {
+      //
+    }
+  };
+
+  // Create an effect that updates the form when externalUsername changes
+  createEffect(() => {
+    const newSshKeys = sshKeys();
+    if (newSshKeys) {
+      setValue(formStore, "sshKeys", newSshKeys);
+    }
+  });
 
   const {
     data: devices,
-    refetch: loadDevices,
     isFetching,
   } = createQuery(() => ({
     queryKey: ["block_devices"],
@@ -40,20 +69,61 @@ export const Flash = () => {
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
-    staleTime: 1000 * 60 * 1, // 1 minutes
+    staleTime: 1000 * 60 * 2, // 1 minutes
+  }));
+
+  const {
+    data: keymaps,
+    isFetching: isFetchingKeymaps,
+  } = createQuery(() => ({
+    queryKey: ["list_keymaps"],
+    queryFn: async () => {
+      const result = await callApi("list_possible_keymaps", {});
+      if (result.status === "error") throw new Error("Failed to fetch data");
+      return result.data;
+    },
+    staleTime: 1000 * 60 * 15, // 15 minutes
+  }));
+
+  const {
+    data: languages,
+    isFetching: isFetchingLanguages,
+  } = createQuery(() => ({
+    queryKey: ["list_languages"],
+    queryFn: async () => {
+      const result = await callApi("list_possible_languages", {});
+      if (result.status === "error") throw new Error("Failed to fetch data");
+      return result.data;
+    },
+    staleTime: 1000 * 60 * 15, // 15 minutes
   }));
 
   const handleSubmit = async (values: FlashFormValues) => {
-    // TODO: Rework Flash machine API
-    // Its unusable in its current state
-    // await callApi("flash_machine", {
-    //   machine: {
-    //     name: "",
-    //   },
-    //   disks:  {values.disk },
-    //   dry_run: true,
-    // });
-    console.log("submit", values);
+    setIsFlashing(true);
+    try {
+      await callApi("flash_machine", {
+        machine: {
+          name: values.machine.devicePath,
+          flake: {
+            loc: values.machine.flake,
+          },
+        },
+        mode: "format",
+        disks: { "main": values.disk },
+        system_config: {
+          language: values.language,
+          keymap: values.keymap,
+          ssh_keys_path: values.sshKeys,
+        },
+        dry_run: false,
+        write_efi_boot_entries: false,
+        debug: false,
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsFlashing(false);
+    }
   };
 
   return (
@@ -70,7 +140,8 @@ export const Flash = () => {
                 <input
                   type="text"
                   class="grow"
-                  placeholder="machine.flake"
+                  //placeholder="machine.flake"
+                  value="git+https://git.clan.lol/clan/clan-core"
                   required
                   {...props}
                 />
@@ -86,7 +157,7 @@ export const Flash = () => {
           )}
         </Field>
         <Field
-          name="machine.name"
+          name="machine.devicePath"
           validate={[required("This field is required")]}
         >
           {(field, props) => (
@@ -96,7 +167,7 @@ export const Flash = () => {
                 <input
                   type="text"
                   class="grow"
-                  placeholder="machine.name"
+                  value="flash-installer"
                   required
                   {...props}
                 />
@@ -120,13 +191,11 @@ export const Flash = () => {
                   class="select select-bordered w-full"
                   {...props}
                 >
-                  {/* <span class="material-icons">devices</span> */}
-                  <option disabled>Select a disk</option>
-
+                  <option value="" disabled>Select a disk</option>
                   <For each={devices?.blockdevices}>
                     {(device) => (
-                      <option value={device.name}>
-                        {device.name} / {device.size} bytes
+                      <option value={device.path}>
+                        {device.path} -- {device.size} bytes
                       </option>
                     )}
                   </For>
@@ -147,8 +216,106 @@ export const Flash = () => {
             </>
           )}
         </Field>
-        <button class="btn btn-error" type="submit">
-          <span class="material-icons">bolt</span>Flash Installer
+        <Field name="language" validate={[required("This field is required")]}>
+          {(field, props) => (
+            <>
+              <label class="form-control input-bordered flex w-full items-center gap-2">
+                <select
+                  required
+                  class="select select-bordered w-full"
+                  {...props}
+                >
+                  <option>en_US.UTF-8</option>
+                  <For each={languages}>
+                    {(language) => (
+                      <option value={language}>
+                        {language}
+                      </option>
+                    )}
+                  </For>
+                </select>
+                <div class="label">
+                  {isFetchingLanguages && (
+                    <span class="label-text-alt">
+                      <span class="loading loading-bars">en_US.UTF-8</span>
+                    </span>
+                  )}
+                  {field.error && (
+                    <span class="label-text-alt font-bold text-error">
+                      {field.error}
+                    </span>
+                  )}
+                </div>
+              </label>
+            </>
+          )}
+        </Field>
+        <Field name="keymap" validate={[required("This field is required")]}>
+          {(field, props) => (
+            <>
+              <label class="form-control input-bordered flex w-full items-center gap-2">
+                <select
+                  required
+                  class="select select-bordered w-full"
+                  {...props}
+                >
+                  <option>en</option>
+                  <For each={keymaps}>
+                    {(keymap) => (
+                      <option value={keymap}>
+                        {keymap}
+                      </option>
+                    )}
+                  </For>
+                </select>
+                <div class="label">
+                  {isFetchingKeymaps && (
+                    <span class="label-text
+                    -alt">
+                      <span class="loading loading-bars"></span>
+                    </span>
+                  )}
+                  {field.error && (
+                    <span class="label-text-alt font-bold text-error">
+                      {field.error}
+                    </span>
+                  )}
+                </div>
+              </label>
+            </>
+          )}
+        </Field>
+        <Field name="sshKeys" validate={[]} type="string[]">
+          {(field, props) => (
+            <>
+              <label class="input input-bordered flex items-center gap-2">
+                <span class="material-icons">key</span>
+                <input
+                  type="text"
+                  class="grow"
+                  placeholder="Select SSH Key"
+                  value={field.value ? field.value.join(", ") : ""}
+                  readOnly
+                  onClick={() => selectSshPubkey()}
+                  required
+                  {...props}
+                />
+              </label>
+              <div class="label">
+                {field.error && (
+                  <span class="label-text-alt font-bold text-error">
+                    {field.error}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </Field>
+        <button class="btn btn-error" type="submit" disabled={isFlashing()}>
+          {isFlashing()
+            ? <span class="loading loading-spinner"></span>
+            : <span class="material-icons">bolt</span>}
+          {isFlashing() ? "Flashing..." : "Flash Installer"}
         </button>
       </Form>
     </div>

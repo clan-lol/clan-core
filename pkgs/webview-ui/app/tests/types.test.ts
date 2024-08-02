@@ -1,4 +1,4 @@
-import { describe, it, expectTypeOf } from "vitest";
+import { describe, expectTypeOf, it } from "vitest";
 
 import { OperationNames, pyApi } from "@/src/api";
 
@@ -44,13 +44,13 @@ describe.concurrent("API types work properly", () => {
       .parameter(0)
       .toMatchTypeOf<
         | {
-            status: "success";
-            data: {
-              machine_name: string;
-              machine_icon?: string | null;
-              machine_description?: string | null;
-            };
-          }
+          status: "success";
+          data: {
+            machine_name: string;
+            machine_icon?: string | null;
+            machine_description?: string | null;
+          };
+        }
         | { status: "error"; errors: any }
       >();
   });

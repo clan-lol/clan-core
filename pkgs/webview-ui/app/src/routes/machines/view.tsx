@@ -1,14 +1,14 @@
 import {
+  type Component,
+  createEffect,
+  createSignal,
   For,
   Match,
   Show,
   Switch,
-  createEffect,
-  createSignal,
-  type Component,
 } from "solid-js";
 import { activeURI, route, setActiveURI, setRoute } from "@/src/App";
-import { OperationResponse, callApi, pyApi } from "@/src/api";
+import { callApi, OperationResponse, pyApi } from "@/src/api";
 import toast from "solid-toast";
 import { MachineListItem } from "@/src/components/MachineListItem";
 
@@ -91,7 +91,8 @@ export const MachineListView: Component = () => {
           <span class="material-icons ">add</span>
         </button>
       </div>
-      {/* <Show when={services()}>
+      {
+        /* <Show when={services()}>
         {(services) => (
           <For each={Object.values(services())}>
             {(service) => (
@@ -137,7 +138,8 @@ export const MachineListView: Component = () => {
             )}
           </For>
         )}
-      </Show> */}
+      </Show> */
+      }
       <Switch>
         <Match when={loading()}>
           {/* Loading skeleton */}

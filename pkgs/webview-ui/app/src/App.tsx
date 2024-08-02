@@ -1,4 +1,4 @@
-import { createEffect, createSignal, type Component } from "solid-js";
+import { type Component, createEffect, createSignal } from "solid-js";
 import { Layout } from "./layout/layout";
 import { Route, Router } from "./Routes";
 import { Toaster } from "solid-toast";
@@ -18,7 +18,7 @@ const [activeURI, setActiveURI] = makePersisted(
   {
     name: "activeURI",
     storage: localStorage,
-  }
+  },
 );
 
 export { activeURI, setActiveURI };

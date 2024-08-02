@@ -237,7 +237,7 @@ def from_dict(t: type[T], data: dict[str, Any], path: list[str] = []) -> T:
         if field_name not in field_values:
             formatted_path = " ".join(path)
             raise ClanError(
-                f"Required field missing: '{field_name}' in {t} {formatted_path}, got Value: {data}"
+                f"Default value missing for: '{field_name}' in {t} {formatted_path}, got Value: {data}"
             )
 
     return t(**field_values)  # type: ignore

@@ -1,10 +1,10 @@
-import { OperationResponse, callApi, pyApi } from "@/src/api";
-import { Accessor, Show, Switch, Match } from "solid-js";
+import { callApi, OperationResponse, pyApi } from "@/src/api";
+import { Accessor, Match, Show, Switch } from "solid-js";
 import {
-  SubmitHandler,
   createForm,
   required,
   reset,
+  SubmitHandler,
 } from "@modular-forms/solid";
 import toast from "solid-toast";
 import { createQuery } from "@tanstack/solid-query";
@@ -65,7 +65,7 @@ export const FinalEditClanForm = (props: FinalEditClanFormProps) => {
         loading: "Updating clan...",
         success: "Clan Successfully updated",
         error: "Failed to update clan",
-      }
+      },
     );
     props.done();
   };
