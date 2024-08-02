@@ -1,9 +1,9 @@
 import {
-  For,
-  Show,
+  type Component,
   createEffect,
   createSignal,
-  type Component,
+  For,
+  Show,
 } from "solid-js";
 import { route } from "@/src/App";
 import { OperationResponse, pyApi } from "@/src/api";

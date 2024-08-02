@@ -1,18 +1,13 @@
+import dataclasses
 import logging
+import multiprocessing as mp
 import os
 import signal
 import sys
 import traceback
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
-
-import gi
-
-gi.require_version("GdkPixbuf", "2.0")
-
-import dataclasses
-import multiprocessing as mp
-from collections.abc import Callable
 
 log = logging.getLogger(__name__)
 

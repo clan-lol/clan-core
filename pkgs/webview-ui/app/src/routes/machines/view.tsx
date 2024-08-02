@@ -1,14 +1,14 @@
 import {
+  type Component,
+  createEffect,
+  createSignal,
   For,
   Match,
   Show,
   Switch,
-  createEffect,
-  createSignal,
-  type Component,
 } from "solid-js";
 import { activeURI, route, setActiveURI, setRoute } from "@/src/App";
-import { OperationResponse, callApi, pyApi } from "@/src/api";
+import { callApi, OperationResponse, pyApi } from "@/src/api";
 import toast from "solid-toast";
 import { MachineListItem } from "@/src/components/MachineListItem";
 

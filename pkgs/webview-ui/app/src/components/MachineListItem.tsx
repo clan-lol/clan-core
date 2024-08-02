@@ -1,5 +1,5 @@
-import { Match, Show, Switch, createSignal } from "solid-js";
-import { ErrorData, SuccessData, pyApi } from "../api";
+import { createSignal, Match, Show, Switch } from "solid-js";
+import { ErrorData, pyApi, SuccessData } from "../api";
 
 type MachineDetails = SuccessData<"list_machines">["data"][string];
 

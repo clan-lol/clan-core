@@ -1,4 +1,4 @@
-import { describe, it, expectTypeOf } from "vitest";
+import { describe, expectTypeOf, it } from "vitest";
 
 import { OperationNames, pyApi } from "@/src/api";
 

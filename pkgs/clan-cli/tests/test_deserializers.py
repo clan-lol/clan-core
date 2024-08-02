@@ -19,6 +19,7 @@ from clan_cli.inventory import (
     ServiceBorgbackupRoleServer,
     ServiceMeta,
 )
+from clan_cli.machines import machines
 
 
 def test_simple() -> None:
@@ -71,6 +72,55 @@ def test_nested() -> None:
     )
 
     assert from_dict(Person, person_dict) == expected_person
+
+
+def test_nested_nullable() -> None:
+    @dataclass
+    class SystemConfig:
+        language: str | None = field(default=None)
+        keymap: str | None = field(default=None)
+        ssh_keys_path: list[str] | None = field(default=None)
+
+    @dataclass
+    class FlashOptions:
+        machine: machines.Machine
+        mode: str
+        disks: dict[str, str]
+        system_config: SystemConfig
+        dry_run: bool
+        write_efi_boot_entries: bool
+        debug: bool
+
+    data = {
+        "machine": {
+            "name": "flash-installer",
+            "flake": {"loc": "git+https://git.clan.lol/clan/clan-core"},
+        },
+        "mode": "format",
+        "disks": {"main": "/dev/sda"},
+        "system_config": {"language": "en_US.utf-8", "keymap": "en"},
+        "dry_run": False,
+        "write_efi_boot_entries": False,
+        "debug": False,
+        "op_key": "jWnTSHwYhSgr7Qz3u4ppD",
+    }
+
+    expected = FlashOptions(
+        machine=machines.Machine(
+            name="flash-installer",
+            flake=machines.FlakeId("git+https://git.clan.lol/clan/clan-core"),
+        ),
+        mode="format",
+        disks={"main": "/dev/sda"},
+        system_config=SystemConfig(
+            language="en_US.utf-8", keymap="en", ssh_keys_path=None
+        ),
+        dry_run=False,
+        write_efi_boot_entries=False,
+        debug=False,
+    )
+
+    assert from_dict(FlashOptions, data) == expected
 
 
 def test_simple_field_missing() -> None:
