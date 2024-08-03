@@ -17,18 +17,20 @@ class FactStore(FactStoreBase):
         self.dir = vm_state_dir(str(machine.flake), machine.name) / "facts"
         log.debug(f"FactStore initialized with dir {self.dir}")
 
-    def exists(self, service: str, name: str) -> bool:
+    def exists(self, service: str, name: str, shared: bool = False) -> bool:
         fact_path = self.dir / service / name
         return fact_path.exists()
 
-    def set(self, service: str, name: str, value: bytes) -> Path | None:
+    def set(
+        self, service: str, name: str, value: bytes, shared: bool = False
+    ) -> Path | None:
         fact_path = self.dir / service / name
         fact_path.parent.mkdir(parents=True, exist_ok=True)
         fact_path.write_bytes(value)
         return None
 
     # get a single fact
-    def get(self, service: str, name: str) -> bytes:
+    def get(self, service: str, name: str, shared: bool = False) -> bytes:
         fact_path = self.dir / service / name
         if fact_path.exists():
             return fact_path.read_bytes()

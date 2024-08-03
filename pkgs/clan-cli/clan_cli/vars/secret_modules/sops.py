@@ -36,20 +36,30 @@ class SecretStore(SecretStoreBase):
         )
         add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)
 
-    def secret_path(self, generator_name: str, secret_name: str) -> Path:
-        return (
-            self.machine.flake_dir
-            / "sops"
-            / "vars"
-            / self.machine.name
-            / generator_name
-            / secret_name
-        )
+    def secret_path(
+        self, generator_name: str, secret_name: str, shared: bool = False
+    ) -> Path:
+        if shared:
+            base_path = self.machine.flake_dir / "sops" / "vars" / "shared"
+        else:
+            base_path = (
+                self.machine.flake_dir
+                / "sops"
+                / "vars"
+                / "per-machine"
+                / self.machine.name
+            )
+        return base_path / generator_name / secret_name
 
     def set(
-        self, generator_name: str, name: str, value: bytes, groups: list[str]
+        self,
+        generator_name: str,
+        name: str,
+        value: bytes,
+        groups: list[str],
+        shared: bool = False,
     ) -> Path | None:
-        path = self.secret_path(generator_name, name)
+        path = self.secret_path(generator_name, name, shared)
         encrypt_secret(
             self.machine.flake_dir,
             path,
@@ -59,14 +69,14 @@ class SecretStore(SecretStoreBase):
         )
         return path
 
-    def get(self, generator_name: str, name: str) -> bytes:
+    def get(self, generator_name: str, name: str, shared: bool = False) -> bytes:
         return decrypt_secret(
-            self.machine.flake_dir, self.secret_path(generator_name, name)
+            self.machine.flake_dir, self.secret_path(generator_name, name, shared)
         ).encode("utf-8")
 
-    def exists(self, generator_name: str, name: str) -> bool:
+    def exists(self, generator_name: str, name: str, shared: bool = False) -> bool:
         return has_secret(
-            self.secret_path(generator_name, name),
+            self.secret_path(generator_name, name, shared),
         )
 
     def upload(self, output_dir: Path) -> None:

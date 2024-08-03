@@ -11,16 +11,21 @@ class SecretStoreBase(ABC):
 
     @abstractmethod
     def set(
-        self, service: str, name: str, value: bytes, groups: list[str]
+        self,
+        service: str,
+        name: str,
+        value: bytes,
+        groups: list[str],
+        shared: bool = False,
     ) -> Path | None:
         pass
 
     @abstractmethod
-    def get(self, service: str, name: str) -> bytes:
+    def get(self, service: str, name: str, shared: bool = False) -> bytes:
         pass
 
     @abstractmethod
-    def exists(self, service: str, name: str) -> bool:
+    def exists(self, service: str, name: str, shared: bool = False) -> bool:
         pass
 
     def update_check(self) -> bool:

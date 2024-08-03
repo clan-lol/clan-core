@@ -15,18 +15,23 @@ class SecretStore(SecretStoreBase):
         self.dir.mkdir(parents=True, exist_ok=True)
 
     def set(
-        self, service: str, name: str, value: bytes, groups: list[str]
+        self,
+        service: str,
+        name: str,
+        value: bytes,
+        groups: list[str],
+        shared: bool = False,
     ) -> Path | None:
         secret_file = self.dir / service / name
         secret_file.parent.mkdir(parents=True, exist_ok=True)
         secret_file.write_bytes(value)
         return None  # we manage the files outside of the git repo
 
-    def get(self, service: str, name: str) -> bytes:
+    def get(self, service: str, name: str, shared: bool = False) -> bytes:
         secret_file = self.dir / service / name
         return secret_file.read_bytes()
 
-    def exists(self, service: str, name: str) -> bool:
+    def exists(self, service: str, name: str, shared: bool = False) -> bool:
         return (self.dir / service / name).exists()
 
     def upload(self, output_dir: Path) -> None:
