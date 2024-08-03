@@ -1,10 +1,11 @@
 { self, ... }:
 {
   imports = [
-    ./impure/flake-module.nix
     ./backups/flake-module.nix
-    ./installation/flake-module.nix
+    ./devshell/flake-module.nix
     ./flash/flake-module.nix
+    ./impure/flake-module.nix
+    ./installation/flake-module.nix
   ];
   perSystem =
     {

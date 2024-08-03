@@ -44,7 +44,6 @@
           "*.yml"
         ];
       };
-
       treefmt.programs.mypy.directories =
         {
           "pkgs/clan-cli" = {
@@ -53,8 +52,8 @@
           };
           "pkgs/clan-app" = {
             extraPythonPackages =
-              # clan-app currently only exists on linux
               (self'.packages.clan-app.externalTestDeps or [ ]) ++ self'.packages.clan-cli.testDependencies;
+            extraPythonPaths = [ "$PROJECT_ROOT/pkgs/clan-cli" ];
             modules = [ "clan_app" ];
           };
         }
@@ -63,8 +62,8 @@
             {
               "pkgs/clan-vm-manager" = {
                 extraPythonPackages =
-                  #   # clan-app currently only exists on linux
-                  self'.packages.clan-vm-manager.testDependencies;
+                  self'.packages.clan-vm-manager.externalTestDeps ++ self'.packages.clan-cli.testDependencies;
+                extraPythonPaths = [ "$PROJECT_ROOT/pkgs/clan-cli" ];
                 modules = [ "clan_vm_manager" ];
               };
             }

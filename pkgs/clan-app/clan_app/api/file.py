@@ -16,6 +16,10 @@ from clan_app.api import ImplFunc
 log = logging.getLogger(__name__)
 
 
+def remove_none(_list: list) -> list:
+    return [i for i in _list if i is not None]
+
+
 # This implements the abstract function open_file with one argument, file_request,
 # which is a FileRequest object and returns a string or None.
 class open_file(
@@ -29,7 +33,7 @@ class open_file(
             try:
                 gfile = file_dialog.open_finish(task)
                 if gfile:
-                    selected_path = [gfile.get_path()]
+                    selected_path = remove_none([gfile.get_path()])
                     self.returns(
                         SuccessDataClass(
                             op_key=op_key, data=selected_path, status="success"
@@ -44,7 +48,7 @@ class open_file(
             try:
                 gfiles: Any = file_dialog.open_multiple_finish(task)
                 if gfiles:
-                    selected_paths = [gfile.get_path() for gfile in gfiles]
+                    selected_paths = remove_none([gfile.get_path() for gfile in gfiles])
                     self.returns(
                         SuccessDataClass(
                             op_key=op_key, data=selected_paths, status="success"
@@ -57,7 +61,7 @@ class open_file(
             try:
                 gfile = file_dialog.select_folder_finish(task)
                 if gfile:
-                    selected_path = [gfile.get_path()]
+                    selected_path = remove_none([gfile.get_path()])
                     self.returns(
                         SuccessDataClass(
                             op_key=op_key, data=selected_path, status="success"
@@ -70,7 +74,7 @@ class open_file(
             try:
                 gfile = file_dialog.save_finish(task)
                 if gfile:
-                    selected_path = [gfile.get_path()]
+                    selected_path = remove_none([gfile.get_path()])
                     self.returns(
                         SuccessDataClass(
                             op_key=op_key, data=selected_path, status="success"
