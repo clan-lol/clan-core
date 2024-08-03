@@ -23,7 +23,7 @@ import { MachineListItem } from "@/src/components/MachineListItem";
 // >["data"]["services"];
 
 type MachinesModel = Extract<
-  OperationResponse<"list_machines">,
+  OperationResponse<"list_inventory_machines">,
   { status: "success" }
 >["data"];
 
@@ -63,7 +63,7 @@ export const MachineListView: Component = () => {
       return;
     }
     setLoading(true);
-    const response = await callApi("list_machines", {
+    const response = await callApi("list_inventory_machines", {
       flake_url: uri,
     });
     setLoading(false);

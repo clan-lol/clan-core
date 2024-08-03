@@ -113,7 +113,7 @@ class ClanList(Gtk.Box):
 
         # menu_model = Gio.Menu()
         # TODO: Make this lazy, blocks UI startup for too long
-        # for vm in machines.list.list_machines(flake_url=vm.data.flake.flake_url):
+        # for vm in machines.list.list_nixos_machines(flake_url=vm.data.flake.flake_url):
         #     if vm not in vm_store:
         #         menu_model.append(vm, f"app.add::{vm}")
 

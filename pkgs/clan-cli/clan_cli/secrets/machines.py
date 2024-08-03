@@ -47,10 +47,16 @@ def get_machine(flake_dir: Path, name: str) -> str:
 
 
 def has_machine(flake_dir: Path, name: str) -> bool:
+    """
+    Checks if a machine exists in the sops machines folder
+    """
     return (sops_machines_folder(flake_dir) / name / "key.json").exists()
 
 
-def list_machines(flake_dir: Path) -> list[str]:
+def list_sops_machines(flake_dir: Path) -> list[str]:
+    """
+    Lists all machines in the sops machines folder
+    """
     path = sops_machines_folder(flake_dir)
 
     def validate(name: str) -> bool:
@@ -86,7 +92,7 @@ def remove_secret(flake_dir: Path, machine: str, secret: str) -> None:
 def list_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         raise ClanError("Could not find clan flake toplevel directory")
-    lst = list_machines(args.flake.path)
+    lst = list_sops_machines(args.flake.path)
     if len(lst) > 0:
         print("\n".join(lst))
 

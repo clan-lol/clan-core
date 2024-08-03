@@ -6,5 +6,4 @@ in
   options.clan.meta.name = lib.mkOption { type = lib.types.str; };
   options.clan.meta.description = lib.mkOption { type = optStr; };
   options.clan.meta.icon = lib.mkOption { type = optStr; };
-  options.clan.tags = lib.mkOption { type = lib.types.listOf lib.types.str; };
 }
