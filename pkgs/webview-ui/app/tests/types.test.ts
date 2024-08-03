@@ -29,7 +29,7 @@ describe.concurrent("API types work properly", () => {
   });
 
   it("Machine list receives a records of names and machine info.", async () => {
-    expectTypeOf(pyApi.list_machines.receive)
+    expectTypeOf(pyApi.list_inventory_machines.receive)
       .parameter(0)
       .parameter(0)
       .toMatchTypeOf<
