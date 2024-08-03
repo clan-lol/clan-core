@@ -57,6 +57,7 @@ def decrypt_dependencies(
     generator_name: str,
     secret_vars_store: SecretStoreBase,
     public_vars_store: FactStoreBase,
+    shared: bool,
 ) -> dict[str, dict[str, bytes]]:
     generator = machine.vars_generators[generator_name]
     dependencies = set(generator["dependencies"])
@@ -67,11 +68,11 @@ def decrypt_dependencies(
         for file_name, file in dep_files.items():
             if file["secret"]:
                 decrypted_dependencies[dep_generator][file_name] = (
-                    secret_vars_store.get(dep_generator, file_name)
+                    secret_vars_store.get(dep_generator, file_name, shared=shared)
                 )
             else:
                 decrypted_dependencies[dep_generator][file_name] = (
-                    public_vars_store.get(dep_generator, file_name)
+                    public_vars_store.get(dep_generator, file_name, shared=shared)
                 )
     return decrypted_dependencies
 
@@ -109,10 +110,11 @@ def execute_generator(
         msg += "fact/secret generation is only supported for local flakes"
 
     generator = machine.vars_generators[generator_name]["finalScript"]
+    is_shared = machine.vars_generators[generator_name]["share"]
 
     # build temporary file tree of dependencies
     decrypted_dependencies = decrypt_dependencies(
-        machine, generator_name, secret_vars_store, public_vars_store
+        machine, generator_name, secret_vars_store, public_vars_store, shared=is_shared
     )
     env = os.environ.copy()
     with TemporaryDirectory() as tmp:
@@ -159,11 +161,18 @@ def execute_generator(
                 raise ClanError(msg)
             if file["secret"]:
                 file_path = secret_vars_store.set(
-                    generator_name, file_name, secret_file.read_bytes(), groups
+                    generator_name,
+                    file_name,
+                    secret_file.read_bytes(),
+                    groups,
+                    shared=is_shared,
                 )
             else:
                 file_path = public_vars_store.set(
-                    generator_name, file_name, secret_file.read_bytes()
+                    generator_name,
+                    file_name,
+                    secret_file.read_bytes(),
+                    shared=is_shared,
                 )
             if file_path:
                 files_to_commit.append(file_path)
@@ -260,18 +269,18 @@ def generate_vars(
 ) -> bool:
     was_regenerated = False
     for machine in machines:
-        errors = 0
+        errors = []
         try:
             was_regenerated |= _generate_vars_for_machine(
                 machine, generator_name, regenerate
             )
         except Exception as exc:
             log.error(f"Failed to generate facts for {machine.name}: {exc}")
-            errors += 1
-        if errors > 0:
+            errors += [exc]
+        if len(errors) > 0:
             raise ClanError(
-                f"Failed to generate facts for {errors} hosts. Check the logs above"
-            )
+                f"Failed to generate facts for {len(errors)} hosts. Check the logs above"
+            ) from errors[0]
 
     if not was_regenerated:
         print("All secrets and facts are already up to date")

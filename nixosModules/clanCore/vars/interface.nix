@@ -168,6 +168,15 @@ in
               internal = true;
               visible = false;
             };
+            share = {
+              description = ''
+                Whether the generated vars should be shared between machines.
+                Shared vars are only generated once, when the first machine using it is deployed.
+                Subsequent machines will re-use the already generated values.
+              '';
+              type = bool;
+              default = false;
+            };
           };
         })
       );
