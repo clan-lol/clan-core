@@ -81,7 +81,7 @@ let
           (machines.${name} or { })
           # Inherit the inventory assertions ?
           # { inherit (mergedInventory) assertions; }
-          { imports = (serviceConfigs.${name} or [ ]); }
+          { imports = serviceConfigs.${name} or [ ]; }
           (
             {
               # Settings
@@ -111,7 +111,38 @@ let
       } // specialArgs;
     };
 
-  allMachines = (inventory.machines or { } // config.machines or { });
+  # TODO: Will be deprecated
+  # We must migrate the tests, that create a settings.json to add a machine.
+  ##################################################
+  testMachines =
+    lib.mapAttrs
+      (name: _: {
+        inherit name;
+        system = (machineSettings name).nixpkgs.hostSystem or null;
+      })
+      (
+        lib.filterAttrs (
+          machineName: _:
+          if builtins.pathExists "${directory}/machines/${machineName}/settings.json" then
+            lib.warn ''
+              The use of ./machines/<machine>/settings.json is deprecated.
+              If your settings.json is empty, you can safely remove it.
+              !!! Consider using the inventory system. !!!
+
+              File: ${directory + /machines/${machineName}/settings.json}
+
+              If there are still features missing in the inventory system, please open an issue on the clan-core repository.
+            '' true
+          else
+            false
+        ) machinesDirs
+      );
+  machinesDirs = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (
+    builtins.readDir (directory + /machines)
+  );
+  ##################################################
+
+  allMachines = inventory.machines or { } // config.machines or { } // testMachines;
 
   supportedSystems = [
     "x86_64-linux"
@@ -166,7 +197,6 @@ let
       (builtins.fromJSON (builtins.readFile inventoryFile))
     else
       { };
-
 in
 {
   imports = [
