@@ -1,4 +1,3 @@
-import os
 import subprocess
 from io import StringIO
 from pathlib import Path
@@ -91,7 +90,6 @@ def test_generate_secret_var_sops(
     temporary_home: Path,
     sops_setup: SopsSetup,
 ) -> None:
-    user = os.environ.get("USER", "user")
     config = nested_dict()
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_secret"]["secret"] = True
@@ -102,17 +100,7 @@ def test_generate_secret_var_sops(
         machine_configs=dict(my_machine=config),
     )
     monkeypatch.chdir(flake.path)
-    cli.run(
-        [
-            "secrets",
-            "users",
-            "add",
-            "--flake",
-            str(flake.path),
-            user,
-            sops_setup.keys[0].pubkey,
-        ]
-    )
+    sops_setup.init()
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     in_repo_store = in_repo.FactStore(
         Machine(name="my_machine", flake=FlakeId(flake.path))
@@ -129,7 +117,6 @@ def test_generate_secret_var_sops_with_default_group(
     temporary_home: Path,
     sops_setup: SopsSetup,
 ) -> None:
-    user = os.environ.get("USER", "user")
     config = nested_dict()
     config["clan"]["core"]["sops"]["defaultGroups"] = ["my_group"]
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
@@ -141,18 +128,8 @@ def test_generate_secret_var_sops_with_default_group(
         machine_configs=dict(my_machine=config),
     )
     monkeypatch.chdir(flake.path)
-    cli.run(
-        [
-            "secrets",
-            "users",
-            "add",
-            "--flake",
-            str(flake.path),
-            user,
-            sops_setup.keys[0].pubkey,
-        ]
-    )
-    cli.run(["secrets", "groups", "add-user", "my_group", user])
+    sops_setup.init()
+    cli.run(["secrets", "groups", "add-user", "my_group", sops_setup.user])
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     in_repo_store = in_repo.FactStore(
         Machine(name="my_machine", flake=FlakeId(flake.path))
@@ -219,7 +196,6 @@ def test_generate_secret_for_multiple_machines(
     temporary_home: Path,
     sops_setup: SopsSetup,
 ) -> None:
-    user = os.environ.get("USER", "user")
     machine1_config = nested_dict()
     machine1_generator = machine1_config["clan"]["core"]["vars"]["generators"][
         "my_generator"
@@ -244,17 +220,7 @@ def test_generate_secret_for_multiple_machines(
         machine_configs=dict(machine1=machine1_config, machine2=machine2_config),
     )
     monkeypatch.chdir(flake.path)
-    cli.run(
-        [
-            "secrets",
-            "users",
-            "add",
-            "--flake",
-            str(flake.path),
-            user,
-            sops_setup.keys[0].pubkey,
-        ]
-    )
+    sops_setup.init()
     cli.run(["vars", "generate", "--flake", str(flake.path)])
     # check if public vars have been created correctly
     in_repo_store1 = in_repo.FactStore(
@@ -348,7 +314,6 @@ def test_share_flag(
     temporary_home: Path,
     sops_setup: SopsSetup,
 ) -> None:
-    user = os.environ.get("USER", "user")
     config = nested_dict()
     shared_generator = config["clan"]["core"]["vars"]["generators"]["shared_generator"]
     shared_generator["files"]["my_secret"]["secret"] = True
@@ -372,17 +337,7 @@ def test_share_flag(
         machine_configs=dict(my_machine=config),
     )
     monkeypatch.chdir(flake.path)
-    cli.run(
-        [
-            "secrets",
-            "users",
-            "add",
-            "--flake",
-            str(flake.path),
-            user,
-            sops_setup.keys[0].pubkey,
-        ]
-    )
+    sops_setup.init()
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     sops_store = sops.SecretStore(Machine(name="my_machine", flake=FlakeId(flake.path)))
     in_repo_store = in_repo.FactStore(

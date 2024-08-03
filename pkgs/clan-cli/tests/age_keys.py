@@ -1,4 +1,8 @@
+import os
+from pathlib import Path
+
 import pytest
+from helpers import cli
 
 
 class KeyPair:
@@ -10,6 +14,22 @@ class KeyPair:
 class SopsSetup:
     def __init__(self, keys: list[KeyPair]) -> None:
         self.keys = keys
+
+    def init(self, flake_path: Path | None = None) -> None:
+        if flake_path is None:
+            flake_path = Path.cwd()
+        self.user = os.environ.get("USER", "user")
+        cli.run(
+            [
+                "secrets",
+                "users",
+                "add",
+                "--flake",
+                str(flake_path),
+                self.user,
+                self.keys[0].pubkey,
+            ]
+        )
 
 
 KEYS = [
