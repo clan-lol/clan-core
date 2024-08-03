@@ -1,7 +1,7 @@
 import { createSignal, Match, Show, Switch } from "solid-js";
 import { ErrorData, pyApi, SuccessData } from "../api";
 
-type MachineDetails = SuccessData<"list_machines">["data"][string];
+type MachineDetails = SuccessData<"list_inventory_machines">["data"][string];
 
 interface MachineListItemProps {
   name: string;

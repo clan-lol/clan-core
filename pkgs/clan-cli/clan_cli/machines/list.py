@@ -13,7 +13,9 @@ log = logging.getLogger(__name__)
 
 
 @API.register
-def list_machines(flake_url: str | Path, debug: bool = False) -> dict[str, Machine]:
+def list_inventory_machines(
+    flake_url: str | Path, debug: bool = False
+) -> dict[str, Machine]:
     inventory = load_inventory_eval(flake_url)
     return inventory.machines
 
