@@ -25,7 +25,8 @@ let
       specialArgs
       clan-core
       ;
-  } { self = directory; };
+    self = directory;
+  };
   meta = attrs.meta or { };
   rest = builtins.removeAttrs attrs [
     "meta"
