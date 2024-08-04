@@ -10,9 +10,10 @@ let
 
   inherit (import ./funcs.nix { inherit lib; }) listVars;
 
-  varsDir = config.clan.core.clanDir + "/sops/vars";
+  varsDirMachines = config.clan.core.clanDir + "/sops/vars/per-machine";
+  varsDirShared = config.clan.core.clanDir + "/sops/vars/shared";
 
-  vars = listVars varsDir;
+  vars = (listVars varsDirMachines) ++ (listVars varsDirShared);
 
 in
 {
@@ -33,7 +34,7 @@ in
       flip map vars (secret: {
         name = secret.id;
         value = {
-          sopsFile = config.clan.core.clanDir + "/sops/vars/${secret.id}/secret";
+          sopsFile = secret.sopsFile;
           format = "binary";
         };
       })

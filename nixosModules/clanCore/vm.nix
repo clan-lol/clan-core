@@ -39,9 +39,6 @@ let
 
     boot.initrd.systemd.enable = true;
 
-    # currently needed for system.etc.overlay.enable
-    boot.kernelPackages = pkgs.linuxPackages_latest;
-
     boot.initrd.systemd.storePaths = [
       pkgs.util-linux
       pkgs.e2fsprogs
