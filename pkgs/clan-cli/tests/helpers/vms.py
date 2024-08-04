@@ -1,4 +1,6 @@
+import contextlib
 import os
+import socket
 import sys
 import threading
 import traceback
@@ -12,11 +14,21 @@ from clan_cli.qemu.qmp import QEMUMonitorProtocol
 from . import cli
 
 
-def run_vm_in_thread(machine_name: str) -> None:
+def find_free_port() -> int:
+    """Find an unused localhost port from 1024-65535 and return it."""
+    with contextlib.closing(socket.socket(type=socket.SOCK_STREAM)) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+def run_vm_in_thread(machine_name: str, ssh_port: int | None = None) -> int:
     # runs machine and prints exceptions
+    if ssh_port is None:
+        ssh_port = find_free_port()
+
     def run() -> None:
         try:
-            cli.run(["vms", "run", machine_name])
+            cli.run(["vms", "run", machine_name, "--publish", f"{ssh_port}:22"])
         except Exception:
             # print exception details
             print(traceback.format_exc(), file=sys.stderr)
@@ -26,7 +38,7 @@ def run_vm_in_thread(machine_name: str) -> None:
     t = threading.Thread(target=run, name="run")
     t.daemon = True
     t.start()
-    return
+    return ssh_port
 
 
 # wait for qmp socket to exist
