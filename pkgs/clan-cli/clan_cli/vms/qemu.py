@@ -94,6 +94,7 @@ def qemu_command(
     virtiofsd_socket: Path,
     qmp_socket_file: Path,
     qga_socket_file: Path,
+    portmap: list[tuple[int, int]] = [],
 ) -> QemuCommand:
     kernel_cmdline = [
         (Path(nixos_config["toplevel"]) / "kernel-params").read_text(),
@@ -103,6 +104,7 @@ def qemu_command(
     ]
     if not vm.waypipe:
         kernel_cmdline.append("console=tty0")
+    hostfwd = ",".join(f"hostfwd=tcp::{h}-:{g}" for h, g in portmap)
     # fmt: off
     command = [
         "qemu-kvm",
@@ -116,7 +118,7 @@ def qemu_command(
         # speed-up boot by not waiting for the boot menu
         "-boot", "menu=off,strict=on",
         "-device", "virtio-rng-pci",
-        "-netdev", "user,id=user.0",
+        "-netdev", f"user,id=user.0,{hostfwd}",
         "-device", "virtio-net-pci,netdev=user.0,romfile=",
         "-chardev", f"socket,id=char1,path={virtiofsd_socket}",
         "-device", "vhost-user-fs-pci,chardev=char1,tag=nix-store",

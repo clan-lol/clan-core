@@ -108,6 +108,7 @@ def run_vm(
     cachedir: Path | None = None,
     socketdir: Path | None = None,
     nix_options: list[str] = [],
+    portmap: list[tuple[int, int]] = [],
 ) -> None:
     with ExitStack() as stack:
         machine = Machine(name=vm.machine_name, flake=vm.flake_url)
@@ -168,6 +169,7 @@ def run_vm(
             virtiofsd_socket=virtiofsd_socket,
             qmp_socket_file=qmp_socket_file,
             qga_socket_file=qga_socket_file,
+            portmap=portmap,
         )
 
         packages = ["nixpkgs#qemu"]
@@ -199,7 +201,9 @@ def run_command(
 
     vm: VmConfig = inspect_vm(machine=machine_obj)
 
-    run_vm(vm, nix_options=args.option)
+    portmap = [(h, g) for h, g in (p.split(":") for p in args.publish)]
+
+    run_vm(vm, nix_options=args.option, portmap=portmap)
 
 
 def register_run_parser(parser: argparse.ArgumentParser) -> None:
@@ -207,4 +211,13 @@ def register_run_parser(parser: argparse.ArgumentParser) -> None:
         "machine", type=str, help="machine in the flake to run"
     )
     add_dynamic_completer(machine_action, complete_machines)
+    # option: --publish 2222:22
+    parser.add_argument(
+        "--publish",
+        "-p",
+        action="append",
+        type=str,
+        default=[],
+        help="Forward ports from host to guest",
+    )
     parser.set_defaults(func=lambda args: run_command(args))
