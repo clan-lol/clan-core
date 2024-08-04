@@ -3,16 +3,17 @@
   nixpkgs,
   clan-core,
   specialArgs ? { },
+  self,
 }:
 # Returns a function that takes self, which should point to the directory of the flake
-{ self }:
 module:
 (lib.evalModules {
   specialArgs = {
     inherit self clan-core nixpkgs;
-  } // specialArgs;
+  };
   modules = [
     ./interface.nix
     module
+    { inherit specialArgs; }
   ];
 }).config

@@ -6,10 +6,10 @@
   ...
 }:
 let
-  eval = import ./eval.nix { inherit lib nixpkgs clan-core; };
-
-  self = ./.;
-  evalClan = eval { inherit self; };
+  evalClan = import ./eval.nix {
+    inherit lib nixpkgs clan-core;
+    self = ./.;
+  };
 
 in
 #######
@@ -130,5 +130,23 @@ in
         "machine1"
         "machine2"
       ];
+    };
+
+  test_buildClan_specialArgs =
+    let
+      result = buildClan {
+        directory = ./.;
+        meta.name = "test";
+        specialArgs.foo = "dream2nix";
+        machines.machine2 =
+          { foo, ... }:
+          {
+            networking.hostName = foo;
+          };
+      };
+    in
+    {
+      expr = result.nixosConfigurations.machine2.config.networking.hostName;
+      expected = "dream2nix";
     };
 }
