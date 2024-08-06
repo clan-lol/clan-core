@@ -69,6 +69,11 @@ export const routes = {
     label: "diskConfig",
     icon: "disk",
   },
+  "machines/edit": {
+    child: CreateMachine,
+    label: "Edit Machine",
+    icon: "edit",
+  },
 };
 
 interface RouterProps {

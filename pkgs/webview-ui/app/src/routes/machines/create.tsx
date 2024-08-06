@@ -1,7 +1,7 @@
 import { callApi, OperationArgs, pyApi, OperationResponse } from "@/src/api";
 import { activeURI, setRoute } from "@/src/App";
 import { createForm, required, reset } from "@modular-forms/solid";
-import { createQuery } from "@tanstack/solid-query";
+import { createQuery, useQueryClient } from "@tanstack/solid-query";
 import { Match, Switch } from "solid-js";
 import toast from "solid-toast";
 
@@ -23,9 +23,7 @@ export function CreateMachine() {
     },
   });
 
-  const { refetch: refetchMachines } = createQuery(() => ({
-    queryKey: [activeURI(), "list_inventory_machines"],
-  }));
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (values: CreateMachineForm) => {
     const active_dir = activeURI();
@@ -46,7 +44,10 @@ export function CreateMachine() {
     if (response.status === "success") {
       toast.success(`Successfully created ${values.machine.name}`);
       reset(formStore);
-      refetchMachines();
+
+      queryClient.invalidateQueries({
+        queryKey: [activeURI(), "list_machines"],
+      });
       setRoute("machines");
     } else {
       toast.error(
