@@ -31,6 +31,8 @@ def create_machine(flake: FlakeId, machine: Machine) -> None:
     if machine.name in full_inventory.machines.keys():
         raise ClanError(f"Machine with the name {machine.name} already exists")
 
+    print(f"Define machine {machine.name}", machine)
+
     inventory.machines.update({machine.name: machine})
     save_inventory(inventory, flake.path, f"Create machine {machine.name}")
 

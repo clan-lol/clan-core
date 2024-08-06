@@ -120,13 +120,10 @@ export const callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
 ) => {
-  return new Promise<OperationResponse<K>>((resolve, reject) => {
+  return new Promise<OperationResponse<K>>((resolve) => {
     const id = nanoid();
     pyApi[method].receive((response) => {
       console.log("Received response: ", { response });
-      if (response.status === "error") {
-        reject(response);
-      }
       resolve(response);
     }, id);
 
