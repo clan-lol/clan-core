@@ -5,25 +5,24 @@
   ...
 }:
 let
-  clanDir = lib.trace config.clan.core.clanDir config.clan.core.clanDir;
+  clanDir = config.clan.core.clanDir;
   machineDir = clanDir + "/machines/";
   machinesFileSet = builtins.readDir machineDir;
   machines = lib.mapAttrsToList (name: _: name) machinesFileSet;
-  machineJson = builtins.toJSON (lib.trace machines machines);
+  machineJson = builtins.toJSON machines;
   certificateMachinePath = machines: machineDir + "/${machines}" + "/facts/mumble-cert";
   certificatesUnchecked = builtins.map (
     machine:
     let
       fullPath = certificateMachinePath machine;
     in
-    if builtins.pathExists (lib.trace fullPath fullPath) then machine else null
+    if builtins.pathExists fullPath then machine else null
   ) machines;
   certificate = lib.filter (machine: machine != null) certificatesUnchecked;
   machineCert = builtins.map (
-    machine:
-    lib.trace machine (lib.nameValuePair machine (builtins.readFile (certificateMachinePath machine)))
+    machine: (lib.nameValuePair machine (builtins.readFile (certificateMachinePath machine)))
   ) certificate;
-  machineCertJson = builtins.toJSON (lib.trace machineCert machineCert);
+  machineCertJson = builtins.toJSON machineCert;
 
 in
 {
