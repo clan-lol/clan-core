@@ -11,6 +11,7 @@ import { activeURI, route, setActiveURI, setRoute } from "@/src/App";
 import { callApi, OperationResponse, pyApi } from "@/src/api";
 import toast from "solid-toast";
 import { MachineListItem } from "@/src/components/MachineListItem";
+import { createQuery } from "@tanstack/solid-query";
 
 // type FilesModel = Extract<
 //   OperationResponse<"get_directory">,
@@ -39,20 +40,28 @@ type MachinesModel = Extract<
 // });
 
 export const MachineListView: Component = () => {
-  // const [files, setFiles] = createSignal<FilesModel>([]);
-
-  // pyApi.get_directory.receive((r) => {
-  //   const { status } = r;
-  //   if (status === "error") return console.error(r.errors);
-  //   setFiles(r.data.files);
-  // });
-
-  // const [services, setServices] = createSignal<ServiceModel>();
-  // pyApi.show_mdns.receive((r) => {
-  //   const { status } = r;
-  //   if (status === "error") return console.error(r.errors);
-  //   setServices(r.data.services);
-  // });
+  const {
+    data: nixosMachines,
+    isFetching,
+    isLoading,
+  } = createQuery<string[]>(() => ({
+    queryKey: [activeURI(), "list_nixos_machines"],
+    queryFn: async () => {
+      const uri = activeURI();
+      if (uri) {
+        const response = await callApi("list_nixos_machines", {
+          flake_url: uri,
+        });
+        if (response.status === "error") {
+          toast.error("Failed to fetch data");
+        } else {
+          return response.data;
+        }
+      }
+      return [];
+    },
+    staleTime: 1000 * 60 * 5,
+  }));
 
   const [machines, setMachines] = createSignal<MachinesModel>({});
   const [loading, setLoading] = createSignal<boolean>(false);
@@ -77,6 +86,14 @@ export const MachineListView: Component = () => {
   });
 
   const unpackedMachines = () => Object.entries(machines());
+  const nixOnlyMachines = () =>
+    nixosMachines?.filter(
+      (name) => !unpackedMachines().some(([key, machine]) => key === name),
+    );
+
+  createEffect(() => {
+    console.log(nixOnlyMachines(), unpackedMachines());
+  });
 
   return (
     <div class="max-w-screen-lg">
@@ -155,13 +172,22 @@ export const MachineListView: Component = () => {
             </div>
           </div>
         </Match>
-        <Match when={!loading() && unpackedMachines().length === 0}>
+        <Match
+          when={
+            !loading() &&
+            unpackedMachines().length === 0 &&
+            nixOnlyMachines()?.length === 0
+          }
+        >
           No machines found
         </Match>
         <Match when={!loading()}>
           <ul>
             <For each={unpackedMachines()}>
               {([name, info]) => <MachineListItem name={name} info={info} />}
+            </For>
+            <For each={nixOnlyMachines()}>
+              {(name) => <MachineListItem name={name} />}
             </For>
           </ul>
         </Match>
