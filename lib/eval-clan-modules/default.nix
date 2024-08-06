@@ -12,7 +12,7 @@ let
     imports = (import (pkgs.path + "/nixos/modules/module-list.nix")) ++ [
       {
         nixpkgs.hostPlatform = "x86_64-linux";
-        clan.core.clanName = "dummy";
+        clan.core.name = "dummy";
       }
     ];
   };
