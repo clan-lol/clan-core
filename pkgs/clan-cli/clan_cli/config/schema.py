@@ -88,9 +88,9 @@ def machine_schema(
                                 [
                                     clan-core.nixosModules.clanCore
                                     # potentially the config might affect submodule options,
-                                    #   therefore we need to import it
+                                    # therefore we need to import it
                                     config
-                                    {{ clan.core.clanName = "fakeClan"; }}
+                                    {{ clan.core.name = "fakeClan"; }}
                                 ]
                                 # add all clan modules specified via clanImports
                                 ++ (map (name: clan-core.clanModules.${{name}}) config.clanImports or []);

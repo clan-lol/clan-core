@@ -13,7 +13,6 @@ let
     specialArgs
     ;
 
-  # Final inventory
   inherit (config.clanInternals) inventory;
 
   inherit (clan-core.lib.inventory) buildInventory;
@@ -88,8 +87,8 @@ let
               clan.core.clanDir = directory;
               # Inherited from clan wide settings
               # TODO: remove these
-              clan.core.clanName = config.inventory.meta.name;
-              clan.core.clanIcon = config.inventory.meta.icon;
+              clan.core.name = config.inventory.meta.name;
+              clan.core.icon = config.inventory.meta.icon;
 
               # Machine specific settings
               clan.core.machineName = name;
