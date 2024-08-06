@@ -3,20 +3,19 @@ clan-core:
   config,
   lib,
   flake-parts-lib,
+  self,
   inputs,
   ...
 }:
 let
-  inherit (lib) mkOption types;
+  inherit (lib) types;
 in
 {
 
   options.clan = lib.mkOption {
     type = types.submoduleWith {
-      # _module.args = {
-      # };
       specialArgs = {
-        inherit clan-core;
+        inherit clan-core self;
         inherit (inputs) nixpkgs;
       };
       modules = [
