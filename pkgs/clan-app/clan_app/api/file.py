@@ -54,6 +54,10 @@ class open_file(
                             op_key=op_key, data=selected_paths, status="success"
                         )
                     )
+                else:
+                    self.returns(
+                        SuccessDataClass(op_key=op_key, data=None, status="success")
+                    )
             except Exception as e:
                 print(f"Error getting selected files: {e}")
 
@@ -67,6 +71,10 @@ class open_file(
                             op_key=op_key, data=selected_path, status="success"
                         )
                     )
+                else:
+                    self.returns(
+                        SuccessDataClass(op_key=op_key, data=None, status="success")
+                    )
             except Exception as e:
                 print(f"Error getting selected directory: {e}")
 
@@ -79,6 +87,10 @@ class open_file(
                         SuccessDataClass(
                             op_key=op_key, data=selected_path, status="success"
                         )
+                    )
+                else:
+                    self.returns(
+                        SuccessDataClass(op_key=op_key, data=None, status="success")
                     )
             except Exception as e:
                 print(f"Error getting selected file: {e}")
