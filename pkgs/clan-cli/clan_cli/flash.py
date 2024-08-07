@@ -25,10 +25,17 @@ log = logging.getLogger(__name__)
 
 
 @dataclass
+class WifiConfig:
+    ssid: str
+    password: str
+
+
+@dataclass
 class SystemConfig:
     language: str | None = field(default=None)
     keymap: str | None = field(default=None)
     ssh_keys_path: list[str] | None = field(default=None)
+    wifi_settings: list[WifiConfig] | None = field(default=None)
 
 
 @API.register
@@ -90,6 +97,12 @@ def flash_machine(
     extra_args: list[str] = [],
 ) -> None:
     system_config_nix: dict[str, Any] = {}
+
+    if system_config.wifi_settings:
+        wifi_settings = {}
+        for wifi in system_config.wifi_settings:
+            wifi_settings[wifi.ssid] = {"password": wifi.password}
+        system_config_nix["clan"] = {"iwd": {"networks": wifi_settings}}
 
     if system_config.language:
         if system_config.language not in list_possible_languages():
@@ -214,6 +227,7 @@ def flash_command(args: argparse.Namespace) -> None:
             language=args.language,
             keymap=args.keymap,
             ssh_keys_path=args.ssh_pubkey,
+            wifi_settings=None,
         ),
         write_efi_boot_entries=args.write_efi_boot_entries,
         nix_options=args.option,
@@ -228,6 +242,12 @@ def flash_command(args: argparse.Namespace) -> None:
         for keymap in list_possible_keymaps():
             print(keymap)
         return
+
+    if args.wifi:
+        opts.system_config.wifi_settings = [
+            WifiConfig(ssid=ssid, password=password)
+            for ssid, password in args.wifi.items()
+        ]
 
     machine = Machine(opts.machine, flake=opts.flake)
     if opts.confirm and not opts.dry_run:
@@ -276,6 +296,15 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         Mount will mount the disk before installing.
         Mount is useful for updating an existing system without losing data.
         """
+    )
+    parser.add_argument(
+        "--wifi",
+        type=str,
+        nargs=2,
+        metavar=("ssid", "password"),
+        action=AppendDiskAction,
+        help="wifi network to connect to",
+        default={},
     )
     parser.add_argument(
         "--mode",

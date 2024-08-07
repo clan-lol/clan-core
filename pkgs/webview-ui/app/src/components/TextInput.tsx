@@ -4,10 +4,11 @@ import { type JSX } from "solid-js";
 interface TextInputProps<T extends FieldValues, R extends ResponseData> {
   formStore: FormStore<T, R>;
   value: string;
-  inputProps: JSX.HTMLAttributes<HTMLInputElement>;
+  inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
   label: JSX.Element;
   error?: string;
   required?: boolean;
+  type?: string;
   inlineLabel?: JSX.Element;
 }
 
@@ -36,7 +37,7 @@ export function TextInput<T extends FieldValues, R extends ResponseData>(
         <input
           {...props.inputProps}
           value={props.value}
-          type="text"
+          type={props.type ? props.type : "text"}
           class="grow"
           classList={{
             "input-disabled": props.formStore.submitting,

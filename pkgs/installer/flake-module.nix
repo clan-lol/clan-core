@@ -6,7 +6,7 @@ let
     { config, ... }:
     {
       imports = [
-        self.clanModules.iwd
+        ./iwd.nix
         self.nixosModules.installer
       ];
 
