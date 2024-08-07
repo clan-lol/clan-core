@@ -201,8 +201,6 @@ in
   imports = [
     # Merge the inventory file
     { inventory = inventoryLoaded; }
-    # Merge the meta attributes from the buildClan function
-    { inventory.meta = if config.meta != null then config.meta else { }; }
   ];
 
   inherit nixosConfigurations;
