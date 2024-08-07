@@ -60,6 +60,10 @@ class ImplFunc(GObject.Object, Generic[P, B]):
             return result
 
 
+# TODO: Reimplement this such that it uses a multiprocessing.Array of type ctypes.c_char
+# all fn arguments are serialized to json and passed to the new process over the Array
+# the new process deserializes the json and calls the function
+# the result is serialized to json and passed back to the main process over another Array
 class MethodExecutor(threading.Thread):
     def __init__(
         self, function: Callable[..., Any], *args: Any, **kwargs: dict[str, Any]
