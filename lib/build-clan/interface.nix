@@ -1,4 +1,4 @@
-{ lib, self, ... }:
+{ lib, ... }:
 let
   types = lib.types;
 in
@@ -7,7 +7,6 @@ in
     # Required options
     directory = lib.mkOption {
       type = types.path;
-      default = self;
       description = "The directory containing the clan subdirectory";
     };
 
@@ -27,18 +26,22 @@ in
     };
 
     # Meta
-    meta = lib.mkOption {
-      type = types.nullOr (
-        types.submodule {
-          options = {
-            name = lib.mkOption {
-              type = types.nullOr types.str;
-              description = "Needs to be (globally) unique, as this determines the folder name where the flake gets downloaded to.";
-            };
-          };
-        }
-      );
-      default = null;
+    meta = {
+      name = lib.mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "Needs to be (globally) unique, as this determines the folder name where the flake gets downloaded to.";
+      };
+      icon = lib.mkOption {
+        type = types.nullOr types.path;
+        default = null;
+        description = "A path to an icon to be used for the clan in the GUI";
+      };
+      description = lib.mkOption {
+        type = types.nullOr types.str;
+        default = null;
+        description = "A short description of the clan";
+      };
     };
 
     pkgsForSystem = lib.mkOption {

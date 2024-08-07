@@ -15,13 +15,10 @@ in
 {
   test_only_required =
     let
-      config = evalClan {
-        meta.name = "test";
-        imports = [ ./module.nix ];
-      };
+      config = evalClan { directory = ./.; };
     in
     {
-      expr = config.inventory ? meta;
+      expr = config.pkgsForSystem null == null;
       expected = true;
     };
 
@@ -96,9 +93,10 @@ in
     in
     {
       expr = result.clanInternals.meta;
-      expectedError = {
-        type = "ThrownError";
-        msg = "";
+      expected = {
+        description = "description";
+        icon = "icon";
+        name = "superclan";
       };
     };
 

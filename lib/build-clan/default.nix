@@ -11,7 +11,6 @@
   directory, # The directory containing the machines subdirectory # allows to include machine-specific modules i.e. machines.${name} = { ... }
   # A map from arch to pkgs, if specified this nixpkgs will be only imported once for each system.
   # This improves performance, but all nipxkgs.* options will be ignored.
-  # deadnix: skip
   inventory ? { },
   ## Sepcial inputs (not passed to the module system as config)
   specialArgs ? { }, # Extra arguments to pass to nixosSystem i.e. useful to make self available # A set containing clan meta: name :: string, icon :: string, description :: string
@@ -28,9 +27,14 @@ let
       ;
     self = directory;
   };
-  rest = builtins.removeAttrs attrs [ "specialArgs" ];
+  meta = attrs.meta or { };
+  rest = builtins.removeAttrs attrs [
+    "meta"
+    "specialArgs"
+  ];
 in
 eval {
+  inventory.meta = lib.mapAttrs (_: lib.mkDefault) meta;
   imports = [
     rest
     # implementation
