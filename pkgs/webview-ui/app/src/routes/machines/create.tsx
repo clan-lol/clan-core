@@ -1,7 +1,8 @@
 import { callApi, OperationArgs, pyApi, OperationResponse } from "@/src/api";
 import { activeURI, setRoute } from "@/src/App";
+import { TextInput } from "@/src/components/TextInput";
 import { createForm, required, reset } from "@modular-forms/solid";
-import { createQuery } from "@tanstack/solid-query";
+import { createQuery, useQueryClient } from "@tanstack/solid-query";
 import { Match, Switch } from "solid-js";
 import toast from "solid-toast";
 
@@ -23,9 +24,7 @@ export function CreateMachine() {
     },
   });
 
-  const { refetch: refetchMachines } = createQuery(() => ({
-    queryKey: [activeURI(), "list_inventory_machines"],
-  }));
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (values: CreateMachineForm) => {
     const active_dir = activeURI();
@@ -46,7 +45,10 @@ export function CreateMachine() {
     if (response.status === "success") {
       toast.success(`Successfully created ${values.machine.name}`);
       reset(formStore);
-      refetchMachines();
+
+      queryClient.invalidateQueries({
+        queryKey: [activeURI(), "list_machines"],
+      });
       setRoute("machines");
     } else {
       toast.error(
@@ -56,93 +58,44 @@ export function CreateMachine() {
   };
   return (
     <div class="px-1">
-      Create new Machine
-      <button
-        onClick={() => {
-          reset(formStore);
-        }}
-      >
-        reset
-      </button>
+      <span class="px-2">Create new Machine</span>
       <Form onSubmit={handleSubmit}>
         <Field
           name="machine.name"
           validate={[required("This field is required")]}
         >
           {(field, props) => (
-            <>
-              <label
-                class="input input-bordered flex items-center gap-2"
-                classList={{
-                  "input-disabled": formStore.submitting,
-                }}
-              >
-                <input
-                  {...props}
-                  value={field.value}
-                  type="text"
-                  class="grow"
-                  placeholder="name"
-                  required
-                  disabled={formStore.submitting}
-                />
-              </label>
-              <div class="label">
-                {field.error && (
-                  <span class="label-text-alt font-bold text-error">
-                    {field.error}
-                  </span>
-                )}
-              </div>
-            </>
+            <TextInput
+              inputProps={props}
+              formStore={formStore}
+              value={`${field.value}`}
+              label={"name"}
+              error={field.error}
+              required
+            />
           )}
         </Field>
         <Field name="machine.description">
           {(field, props) => (
-            <>
-              <label
-                class="input input-bordered flex items-center gap-2"
-                classList={{
-                  "input-disabled": formStore.submitting,
-                }}
-              >
-                <input
-                  value={String(field.value)}
-                  type="text"
-                  class="grow"
-                  placeholder="description"
-                  required
-                  {...props}
-                />
-              </label>
-              <div class="label">
-                {field.error && (
-                  <span class="label-text-alt font-bold text-error">
-                    {field.error}
-                  </span>
-                )}
-              </div>
-            </>
+            <TextInput
+              inputProps={props}
+              formStore={formStore}
+              value={`${field.value}`}
+              label={"description"}
+              error={field.error}
+            />
           )}
         </Field>
         <Field name="machine.deploy.targetHost">
           {(field, props) => (
             <>
-              <label
-                class="input input-bordered flex items-center gap-2"
-                classList={{
-                  "input-disabled": formStore.submitting,
-                }}
-              >
-                <input
-                  value={String(field.value)}
-                  type="text"
-                  class="grow"
-                  placeholder="root@flash-installer.local"
-                  required
-                  {...props}
-                />
-              </label>
+              <TextInput
+                inputProps={props}
+                formStore={formStore}
+                value={`${field.value}`}
+                label={"Deployment target"}
+                error={field.error}
+              />
               <div class="label">
                 <span class="label-text-alt text-neutral">
                   Must be set before deployment for the following tasks:
@@ -158,11 +111,6 @@ export function CreateMachine() {
                     </li>
                   </ul>
                 </span>
-                {field.error && (
-                  <span class="label-text-alt font-bold text-error">
-                    {field.error}
-                  </span>
-                )}
               </div>
             </>
           )}

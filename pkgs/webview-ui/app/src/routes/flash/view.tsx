@@ -1,12 +1,11 @@
 import { callApi, OperationResponse } from "@/src/api";
-import {
-  createForm,
-  required,
-  FieldValues,
-  setValue,
-} from "@modular-forms/solid";
+import { FileInput } from "@/src/components/FileInput";
+import { SelectInput } from "@/src/components/SelectInput";
+import { TextInput } from "@/src/components/TextInput";
+import { createForm, required, FieldValues } from "@modular-forms/solid";
 import { createQuery } from "@tanstack/solid-query";
-import { createEffect, createSignal, For } from "solid-js";
+import { For } from "solid-js";
+import toast from "solid-toast";
 
 interface FlashFormValues extends FieldValues {
   machine: {
@@ -16,58 +15,32 @@ interface FlashFormValues extends FieldValues {
   disk: string;
   language: string;
   keymap: string;
-  sshKeys: string[];
+  sshKeys: File[];
 }
 
-type BlockDevices = Extract<
-  OperationResponse<"show_block_devices">,
-  { status: "success" }
->["data"]["blockdevices"];
-
 export const Flash = () => {
-  const [formStore, { Form, Field }] = createForm<FlashFormValues>({});
-  const [sshKeys, setSshKeys] = createSignal<string[]>([]);
-  const [isFlashing, setIsFlashing] = createSignal(false);
-
-  const selectSshPubkey = async () => {
-    try {
-      const loc = await callApi("open_file", {
-        file_request: {
-          title: "Select SSH Key",
-          mode: "open_multiple_files",
-          filters: { patterns: ["*.pub"] },
-          initial_folder: "~/.ssh",
-        },
-      });
-      console.log({ loc }, loc.status);
-      if (loc.status === "success" && loc.data) {
-        setSshKeys(loc.data);
-        return loc.data;
-      }
-    } catch (e) {
-      //
-    }
-  };
-
-  // Create an effect that updates the form when externalUsername changes
-  createEffect(() => {
-    const newSshKeys = sshKeys();
-    if (newSshKeys) {
-      setValue(formStore, "sshKeys", newSshKeys);
-    }
+  const [formStore, { Form, Field }] = createForm<FlashFormValues>({
+    initialValues: {
+      machine: {
+        flake: "git+https://git.clan.lol/clan/clan-core",
+        devicePath: "flash-installer",
+      },
+      language: "en_US.UTF-8",
+      keymap: "en",
+    },
   });
 
-  const { data: devices, isFetching } = createQuery(() => ({
+  const deviceQuery = createQuery(() => ({
     queryKey: ["block_devices"],
     queryFn: async () => {
       const result = await callApi("show_block_devices", {});
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
-    staleTime: 1000 * 60 * 2, // 1 minutes
+    staleTime: 1000 * 60 * 1, // 1 minutes
   }));
 
-  const { data: keymaps, isFetching: isFetchingKeymaps } = createQuery(() => ({
+  const keymapQuery = createQuery(() => ({
     queryKey: ["list_keymaps"],
     queryFn: async () => {
       const result = await callApi("list_possible_keymaps", {});
@@ -77,20 +50,46 @@ export const Flash = () => {
     staleTime: 1000 * 60 * 15, // 15 minutes
   }));
 
-  const { data: languages, isFetching: isFetchingLanguages } = createQuery(
-    () => ({
-      queryKey: ["list_languages"],
-      queryFn: async () => {
-        const result = await callApi("list_possible_languages", {});
-        if (result.status === "error") throw new Error("Failed to fetch data");
-        return result.data;
+  const langQuery = createQuery(() => ({
+    queryKey: ["list_languages"],
+    queryFn: async () => {
+      const result = await callApi("list_possible_languages", {});
+      if (result.status === "error") throw new Error("Failed to fetch data");
+      return result.data;
+    },
+    staleTime: 1000 * 60 * 15, // 15 minutes
+  }));
+
+  /**
+   * Opens the custom file dialog
+   * Returns a native FileList to allow interaction with the native input type="file"
+   */
+  const selectSshKeys = async (): Promise<FileList> => {
+    const dataTransfer = new DataTransfer();
+
+    const response = await callApi("open_file", {
+      file_request: {
+        title: "Select SSH Key",
+        mode: "open_multiple_files",
+        filters: { patterns: ["*.pub"] },
+        initial_folder: "~/.ssh",
       },
-      staleTime: 1000 * 60 * 15, // 15 minutes
-    }),
-  );
+    });
+    if (response.status === "success" && response.data) {
+      // Add synthetic files to the DataTransfer object
+      // FileList cannot be instantiated directly.
+      response.data.forEach((filename) => {
+        dataTransfer.items.add(new File([], filename));
+      });
+    }
+    return dataTransfer.files;
+  };
 
   const handleSubmit = async (values: FlashFormValues) => {
-    setIsFlashing(true);
+    console.log(
+      "Submit SSH Keys:",
+      values.sshKeys.map((file) => file.name),
+    );
     try {
       await callApi("flash_machine", {
         machine: {
@@ -104,16 +103,15 @@ export const Flash = () => {
         system_config: {
           language: values.language,
           keymap: values.keymap,
-          ssh_keys_path: values.sshKeys,
+          ssh_keys_path: values.sshKeys.map((file) => file.name),
         },
         dry_run: false,
         write_efi_boot_entries: false,
         debug: false,
       });
     } catch (error) {
+      toast.error(`Error could not flash disk: ${error}`);
       console.error("Error submitting form:", error);
-    } finally {
-      setIsFlashing(false);
     }
   };
 
@@ -126,24 +124,15 @@ export const Flash = () => {
         >
           {(field, props) => (
             <>
-              <label class="input input-bordered flex items-center gap-2">
-                <span class="material-icons">file_download</span>
-                <input
-                  type="text"
-                  class="grow"
-                  //placeholder="machine.flake"
-                  value="git+https://git.clan.lol/clan/clan-core"
-                  required
-                  {...props}
-                />
-              </label>
-              <div class="label">
-                {field.error && (
-                  <span class="label-text-alt font-bold text-error">
-                    {field.error}
-                  </span>
-                )}
-              </div>
+              <TextInput
+                formStore={formStore}
+                inputProps={props}
+                label="Installer (flake URL)"
+                value={String(field.value)}
+                inlineLabel={<span class="material-icons">file_download</span>}
+                error={field.error}
+                required
+              />
             </>
           )}
         </Field>
@@ -153,155 +142,125 @@ export const Flash = () => {
         >
           {(field, props) => (
             <>
-              <label class="input input-bordered flex items-center gap-2">
-                <span class="material-icons">devices</span>
-                <input
-                  type="text"
-                  class="grow"
-                  value="flash-installer"
-                  required
-                  {...props}
-                />
-              </label>
-              <div class="label">
-                {field.error && (
-                  <span class="label-text-alt font-bold text-error">
-                    {field.error}
-                  </span>
-                )}
-              </div>
+              <TextInput
+                formStore={formStore}
+                inputProps={props}
+                label="Installer Image (attribute name)"
+                value={String(field.value)}
+                inlineLabel={<span class="material-icons">devices</span>}
+                error={field.error}
+                required
+              />
             </>
           )}
         </Field>
         <Field name="disk" validate={[required("This field is required")]}>
           {(field, props) => (
-            <>
-              <label class="form-control input-bordered flex w-full items-center gap-2">
-                <select
-                  required
-                  class="select select-bordered w-full"
-                  {...props}
-                >
+            <SelectInput
+              formStore={formStore}
+              selectProps={props}
+              label="Flash Disk"
+              value={String(field.value)}
+              error={field.error}
+              required
+              options={
+                <>
                   <option value="" disabled>
                     Select a disk
                   </option>
-                  <For each={devices?.blockdevices}>
+                  <For each={deviceQuery.data?.blockdevices}>
                     {(device) => (
                       <option value={device.path}>
                         {device.path} -- {device.size} bytes
                       </option>
                     )}
                   </For>
-                </select>
-                <div class="label">
-                  {isFetching && (
-                    <span class="label-text-alt">
-                      <span class="loading loading-bars"></span>
-                    </span>
-                  )}
-                  {field.error && (
-                    <span class="label-text-alt font-bold text-error">
-                      {field.error}
-                    </span>
-                  )}
-                </div>
-              </label>
-            </>
+                </>
+              }
+            />
           )}
         </Field>
         <Field name="language" validate={[required("This field is required")]}>
           {(field, props) => (
             <>
-              <label class="form-control input-bordered flex w-full items-center gap-2">
-                <select
-                  required
-                  class="select select-bordered w-full"
-                  {...props}
-                >
-                  <option>en_US.UTF-8</option>
-                  <For each={languages}>
+              <SelectInput
+                formStore={formStore}
+                selectProps={props}
+                label="Language"
+                value={String(field.value)}
+                error={field.error}
+                required
+                options={
+                  <For each={langQuery.data}>
                     {(language) => <option value={language}>{language}</option>}
                   </For>
-                </select>
-                <div class="label">
-                  {isFetchingLanguages && (
-                    <span class="label-text-alt">
-                      <span class="loading loading-bars">en_US.UTF-8</span>
-                    </span>
-                  )}
-                  {field.error && (
-                    <span class="label-text-alt font-bold text-error">
-                      {field.error}
-                    </span>
-                  )}
-                </div>
-              </label>
+                }
+              />
             </>
           )}
         </Field>
         <Field name="keymap" validate={[required("This field is required")]}>
           {(field, props) => (
             <>
-              <label class="form-control input-bordered flex w-full items-center gap-2">
-                <select
-                  required
-                  class="select select-bordered w-full"
-                  {...props}
-                >
-                  <option>en</option>
-                  <For each={keymaps}>
+              <SelectInput
+                formStore={formStore}
+                selectProps={props}
+                label="Keymap"
+                value={String(field.value)}
+                error={field.error}
+                required
+                options={
+                  <For each={keymapQuery.data}>
                     {(keymap) => <option value={keymap}>{keymap}</option>}
                   </For>
-                </select>
-                <div class="label">
-                  {isFetchingKeymaps && (
-                    <span class="label-text-alt">
-                      <span class="loading loading-bars"></span>
-                    </span>
-                  )}
-                  {field.error && (
-                    <span class="label-text-alt font-bold text-error">
-                      {field.error}
-                    </span>
-                  )}
-                </div>
-              </label>
+                }
+              />
             </>
           )}
         </Field>
-        <Field name="sshKeys" validate={[]} type="string[]">
+
+        <Field name="sshKeys" type="File[]">
           {(field, props) => (
             <>
-              <label class="input input-bordered flex items-center gap-2">
-                <span class="material-icons">key</span>
-                <input
-                  type="text"
-                  class="grow"
-                  placeholder="Select SSH Key"
-                  value={field.value ? field.value.join(", ") : ""}
-                  readOnly
-                  onClick={() => selectSshPubkey()}
-                  required
-                  {...props}
-                />
-              </label>
-              <div class="label">
-                {field.error && (
-                  <span class="label-text-alt font-bold text-error">
-                    {field.error}
-                  </span>
-                )}
-              </div>
+              <FileInput
+                {...props}
+                onClick={async (event) => {
+                  event.preventDefault(); // Prevent the native file dialog from opening
+                  const input = event.target;
+                  const files = await selectSshKeys();
+
+                  // Set the files
+                  Object.defineProperty(input, "files", {
+                    value: files,
+                    writable: true,
+                  });
+                  // Define the files property on the input element
+                  const changeEvent = new Event("input", {
+                    bubbles: true,
+                    cancelable: true,
+                  });
+                  input.dispatchEvent(changeEvent);
+                }}
+                value={field.value}
+                error={field.error}
+                label="Authorized SSH Keys"
+                multiple
+                required
+              />
             </>
           )}
         </Field>
-        <button class="btn btn-error" type="submit" disabled={isFlashing()}>
-          {isFlashing() ? (
+        <button
+          class="btn btn-error"
+          type="submit"
+          disabled={formStore.submitting}
+        >
+          {formStore.submitting ? (
             <span class="loading loading-spinner"></span>
           ) : (
             <span class="material-icons">bolt</span>
           )}
-          {isFlashing() ? "Flashing..." : "Flash Installer"}
+          {formStore.submitting ? "Flashing..." : "Flash Installer"}
         </button>
       </Form>
     </div>

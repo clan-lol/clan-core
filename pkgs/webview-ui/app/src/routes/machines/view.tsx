@@ -3,43 +3,28 @@ import { activeURI, setRoute } from "@/src/App";
 import { callApi, OperationResponse } from "@/src/api";
 import toast from "solid-toast";
 import { MachineListItem } from "@/src/components/MachineListItem";
-import { createQuery } from "@tanstack/solid-query";
+import {
+  createQueries,
+  createQuery,
+  useQueryClient,
+} from "@tanstack/solid-query";
 
 type MachinesModel = Extract<
   OperationResponse<"list_inventory_machines">,
   { status: "success" }
 >["data"];
 
+type ExtendedMachine = MachinesModel & {
+  nixOnly: boolean;
+};
+
 export const MachineListView: Component = () => {
-  const {
-    data: nixosMachines,
-    isFetching: isLoadingNixos,
-    refetch: refetchNixos,
-  } = createQuery<string[]>(() => ({
-    queryKey: [activeURI(), "list_nixos_machines"],
-    queryFn: async () => {
-      const uri = activeURI();
-      if (uri) {
-        const response = await callApi("list_nixos_machines", {
-          flake_url: uri,
-        });
-        if (response.status === "error") {
-          toast.error("Failed to fetch data");
-        } else {
-          return response.data;
-        }
-      }
-      return [];
-    },
-    staleTime: 1000 * 60 * 5,
-  }));
-  const {
-    data: inventoryMachines,
-    isFetching: isLoadingInventory,
-    refetch: refetchInventory,
-  } = createQuery<MachinesModel>(() => ({
-    queryKey: [activeURI(), "list_inventory_machines"],
-    initialData: {},
+  const queryClient = useQueryClient();
+
+  const inventoryQuery = createQuery<MachinesModel>(() => ({
+    queryKey: [activeURI(), "list_machines", "inventory"],
+    placeholderData: {},
+    enabled: !!activeURI(),
     queryFn: async () => {
       const uri = activeURI();
       if (uri) {
@@ -54,26 +39,43 @@ export const MachineListView: Component = () => {
       }
       return {};
     },
-    staleTime: 1000 * 60 * 5,
+  }));
+
+  const nixosQuery = createQuery<string[]>(() => ({
+    queryKey: [activeURI(), "list_machines", "nixos"],
+    enabled: !!activeURI(),
+    placeholderData: [],
+    queryFn: async () => {
+      const uri = activeURI();
+      if (uri) {
+        const response = await callApi("list_nixos_machines", {
+          flake_url: uri,
+        });
+        if (response.status === "error") {
+          toast.error("Failed to fetch data");
+        } else {
+          return response.data;
+        }
+      }
+      return [];
+    },
   }));
 
   const refresh = async () => {
-    refetchInventory();
-    refetchNixos();
+    queryClient.invalidateQueries({
+      // Invalidates the cache for of all types of machine list at once
+      queryKey: [activeURI(), "list_machines"],
+    });
   };
 
-  const unpackedMachines = () => Object.entries(inventoryMachines);
+  const inventoryMachines = () => Object.entries(inventoryQuery.data || {});
   const nixOnlyMachines = () =>
-    nixosMachines?.filter(
-      (name) => !unpackedMachines().some(([key, machine]) => key === name),
+    nixosQuery.data?.filter(
+      (name) => !inventoryMachines().some(([key, machine]) => key === name),
     );
 
-  createEffect(() => {
-    console.log(nixOnlyMachines(), unpackedMachines());
-  });
-
   return (
-    <div class="max-w-screen-lg">
+    <div>
       <div class="tooltip tooltip-bottom" data-tip="Open Clan"></div>
       <div class="tooltip tooltip-bottom" data-tip="Refresh">
         <button class="btn btn-ghost" onClick={() => refresh()}>
@@ -86,7 +88,7 @@ export const MachineListView: Component = () => {
         </button>
       </div>
       <Switch>
-        <Match when={isLoadingInventory}>
+        <Match when={inventoryQuery.isLoading}>
           {/* Loading skeleton */}
           <div>
             <div class="card card-side m-2 bg-base-100 shadow-lg">
@@ -104,20 +106,20 @@ export const MachineListView: Component = () => {
         </Match>
         <Match
           when={
-            !isLoadingInventory &&
-            unpackedMachines().length === 0 &&
+            !inventoryQuery.isLoading &&
+            inventoryMachines().length === 0 &&
             nixOnlyMachines()?.length === 0
           }
         >
           No machines found
         </Match>
-        <Match when={!isLoadingInventory}>
+        <Match when={!inventoryQuery.isLoading}>
           <ul>
-            <For each={unpackedMachines()}>
+            <For each={inventoryMachines()}>
               {([name, info]) => <MachineListItem name={name} info={info} />}
             </For>
             <For each={nixOnlyMachines()}>
-              {(name) => <MachineListItem name={name} />}
+              {(name) => <MachineListItem name={name} nixOnly={true} />}
             </For>
           </ul>
         </Match>

@@ -123,7 +123,7 @@ export const callApi = <K extends OperationNames>(
   return new Promise<OperationResponse<K>>((resolve) => {
     const id = nanoid();
     pyApi[method].receive((response) => {
-      console.log("Received response: ", { response });
+      console.log(method, "Received response: ", { response });
       resolve(response);
     }, id);
 
@@ -136,7 +136,6 @@ const deserialize =
   (str: string) => {
     try {
       const r = JSON.parse(str) as T;
-      console.log("Received: ", r);
       fn(r);
     } catch (e) {
       console.log("Error parsing JSON: ", e);

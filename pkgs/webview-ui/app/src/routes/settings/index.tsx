@@ -1,26 +1,12 @@
 import { callApi } from "@/src/api";
 import {
-  createForm,
-  required,
-  setValue,
-  SubmitHandler,
-} from "@modular-forms/solid";
-import {
   activeURI,
   clanList,
   setActiveURI,
   setClanList,
   setRoute,
 } from "@/src/App";
-import {
-  createEffect,
-  createSignal,
-  For,
-  Match,
-  Setter,
-  Show,
-  Switch,
-} from "solid-js";
+import { createSignal, For, Match, Setter, Show, Switch } from "solid-js";
 import { createQuery } from "@tanstack/solid-query";
 import { useFloating } from "@/src/floating";
 import { autoUpdate, flip, hide, offset, shift } from "@floating-ui/dom";
@@ -156,6 +142,9 @@ const ClanDetails = (props: ClanDetailsProps) => {
       </div>
       <div class="stat-title">{clan_dir}</div>
 
+      <Show when={details.isLoading}>
+        <div class="skeleton h-12 w-80" />
+      </Show>
       <Show when={details.isSuccess}>
         <div class="stat-value">{details.data?.name}</div>
       </Show>

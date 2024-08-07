@@ -40,7 +40,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     system = config["system"]
 
     # Check if the machine exists
-    machines: list[str] = list_nixos_machines(flake_url, False)
+    machines: list[str] = list_nixos_machines(flake_url)
     if machine_name not in machines:
         raise ClanError(
             f"Machine {machine_name} not found in {flake_url}. Available machines: {', '.join(machines)}"

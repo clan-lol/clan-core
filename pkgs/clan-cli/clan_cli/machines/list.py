@@ -13,15 +13,13 @@ log = logging.getLogger(__name__)
 
 
 @API.register
-def list_inventory_machines(
-    flake_url: str | Path, debug: bool = False
-) -> dict[str, Machine]:
+def list_inventory_machines(flake_url: str | Path) -> dict[str, Machine]:
     inventory = load_inventory_eval(flake_url)
     return inventory.machines
 
 
 @API.register
-def list_nixos_machines(flake_url: str | Path, debug: bool = False) -> list[str]:
+def list_nixos_machines(flake_url: str | Path) -> list[str]:
     cmd = nix_eval(
         [
             f"{flake_url}#nixosConfigurations",
@@ -42,7 +40,7 @@ def list_nixos_machines(flake_url: str | Path, debug: bool = False) -> list[str]
 
 def list_command(args: argparse.Namespace) -> None:
     flake_path = args.flake.path
-    for name in list_nixos_machines(flake_path, args.debug):
+    for name in list_nixos_machines(flake_path):
         print(name)
 
 

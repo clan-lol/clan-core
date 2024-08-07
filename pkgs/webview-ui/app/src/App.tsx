@@ -7,9 +7,6 @@ import { makePersisted } from "@solid-primitives/storage";
 
 // Some global state
 const [route, setRoute] = createSignal<Route>("machines");
-createEffect(() => {
-  console.log(route());
-});
 
 export { route, setRoute };
 
