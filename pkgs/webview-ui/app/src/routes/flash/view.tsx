@@ -2,10 +2,21 @@ import { callApi, OperationResponse } from "@/src/api";
 import { FileInput } from "@/src/components/FileInput";
 import { SelectInput } from "@/src/components/SelectInput";
 import { TextInput } from "@/src/components/TextInput";
-import { createForm, required, FieldValues } from "@modular-forms/solid";
+import {
+  createForm,
+  required,
+  FieldValues,
+  setValue,
+  getValue,
+} from "@modular-forms/solid";
 import { createQuery } from "@tanstack/solid-query";
-import { For } from "solid-js";
+import { createEffect, createSignal, For } from "solid-js";
 import toast from "solid-toast";
+
+interface Wifi extends FieldValues {
+  ssid: string;
+  password: string;
+}
 
 interface FlashFormValues extends FieldValues {
   machine: {
@@ -15,6 +26,7 @@ interface FlashFormValues extends FieldValues {
   disk: string;
   language: string;
   keymap: string;
+  wifi: Wifi[];
   sshKeys: File[];
 }
 
@@ -29,6 +41,44 @@ export const Flash = () => {
       keymap: "en",
     },
   });
+
+  /* ==== WIFI NETWORK ==== */
+  const [wifiNetworks, setWifiNetworks] = createSignal<Wifi[]>([]);
+  const [passwordVisibility, setPasswordVisibility] = createSignal<boolean[]>(
+    [],
+  );
+
+  createEffect(() => {
+    const formWifi = getValue(formStore, "wifi");
+    if (formWifi !== undefined) {
+      setWifiNetworks(formWifi as Wifi[]);
+      setPasswordVisibility(new Array(formWifi.length).fill(false));
+    }
+  });
+
+  const addWifiNetwork = () => {
+    const updatedNetworks = [...wifiNetworks(), { ssid: "", password: "" }];
+    setWifiNetworks(updatedNetworks);
+    setPasswordVisibility([...passwordVisibility(), false]);
+    setValue(formStore, "wifi", updatedNetworks);
+  };
+
+  const removeWifiNetwork = (index: number) => {
+    const updatedNetworks = wifiNetworks().filter((_, i) => i !== index);
+    setWifiNetworks(updatedNetworks);
+    const updatedVisibility = passwordVisibility().filter(
+      (_, i) => i !== index,
+    );
+    setPasswordVisibility(updatedVisibility);
+    setValue(formStore, "wifi", updatedNetworks);
+  };
+
+  const togglePasswordVisibility = (index: number) => {
+    const updatedVisibility = [...passwordVisibility()];
+    updatedVisibility[index] = !updatedVisibility[index];
+    setPasswordVisibility(updatedVisibility);
+  };
+  /* ==== END OF WIFI NETWORK ==== */
 
   const deviceQuery = createQuery(() => ({
     queryKey: ["block_devices"],
@@ -86,6 +136,7 @@ export const Flash = () => {
   };
 
   const handleSubmit = async (values: FlashFormValues) => {
+    console.log("Submit WiFi Networks:", values.wifi);
     console.log(
       "Submit SSH Keys:",
       values.sshKeys.map((file) => file.name),
@@ -104,6 +155,10 @@ export const Flash = () => {
           language: values.language,
           keymap: values.keymap,
           ssh_keys_path: values.sshKeys.map((file) => file.name),
+          wifi_settings: values.wifi.map((network) => ({
+            ssid: network.ssid,
+            password: network.password,
+          })),
         },
         dry_run: false,
         write_efi_boot_entries: false,
@@ -250,6 +305,78 @@ export const Flash = () => {
             </>
           )}
         </Field>
+
+        {/* WiFi Networks */}
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold mb-2">WiFi Networks</h3>
+          <For each={wifiNetworks()}>
+            {(network, index) => (
+              <div class="flex gap-2 mb-2">
+                <Field
+                  name={`wifi.${index()}.ssid`}
+                  validate={[required("SSID is required")]}
+                >
+                  {(field, props) => (
+                    <TextInput
+                      formStore={formStore}
+                      inputProps={props}
+                      label="SSID"
+                      value={field.value ?? ""}
+                      error={field.error}
+                      required
+                    />
+                  )}
+                </Field>
+                <Field
+                  name={`wifi.${index()}.password`}
+                  validate={[required("Password is required")]}
+                >
+                  {(field, props) => (
+                    <div class="relative w-full">
+                      <TextInput
+                        formStore={formStore}
+                        inputProps={props}
+                        type={
+                          passwordVisibility()[index()] ? "text" : "password"
+                        }
+                        label="Password"
+                        value={field.value ?? ""}
+                        error={field.error}
+                        required
+                      />
+                      <button
+                        type="button"
+                        class="absolute inset-y-14 right-0 pr-3 flex items-center text-sm leading-5"
+                        onClick={() => togglePasswordVisibility(index())}
+                      >
+                        <span class="material-icons">
+                          {passwordVisibility()[index()]
+                            ? "visibility_off"
+                            : "visibility"}
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                </Field>
+                <button
+                  type="button"
+                  class="btn btn-error"
+                  onClick={() => removeWifiNetwork(index())}
+                >
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            )}
+          </For>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onClick={addWifiNetwork}
+          >
+            <span class="material-icons">add</span> Add WiFi Network
+          </button>
+        </div>
+
         <button
           class="btn btn-error"
           type="submit"
