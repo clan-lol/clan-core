@@ -43,6 +43,9 @@
           "*.yaml"
           "*.yml"
         ];
+        # plugins = [
+        #   "${self'.packages.prettier-plugin-tailwindcss}/lib/node_modules/prettier-plugin-tailwindcss/dist/index.mjs"
+        # ];
       };
       treefmt.programs.mypy.directories =
         {
