@@ -2,20 +2,24 @@
 
 let
   cfg = config.clan.iwd;
-  secret_path = ssid: config.clan.core.facts.services."iwd.${ssid}".secret."wifi-password".path or "";
+  secret_path = ssid: config.clan.core.facts.services."iwd.${ssid}".secret."iwd.${ssid}".path;
   secret_generator = name: value: {
     name = "iwd.${value.ssid}";
-    value = {
-      secret."iwd.${value.ssid}" = { };
-      generator.prompt = "Wifi password for '${value.ssid}'";
-      generator.script = ''
-        config="
-        [Security]
-          Passphrase=$prompt_value
-        "
-        echo "$config" > $secrets/wifi-password
-      '';
-    };
+    value =
+      let
+        secret_name = "iwd.${value.ssid}";
+      in
+      {
+        secret.${secret_name} = { };
+        generator.prompt = "Wifi password for '${value.ssid}'";
+        generator.script = ''
+          config="
+          [Security]
+            Passphrase=$prompt_value
+          "
+          echo "$config" > $secrets/${secret_name}
+        '';
+      };
   };
 in
 {
@@ -56,6 +60,8 @@ in
       ) cfg.networks;
 
       clan.core.facts.services = lib.mapAttrs' secret_generator cfg.networks;
+
+      # TODO: restart the iwd.service if something changes
     })
     {
       # disable wpa supplicant
