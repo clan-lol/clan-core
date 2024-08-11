@@ -2,6 +2,7 @@
 {
   flake.clanModules = {
     iwd = ./iwd;
+    dyndns = ./dyndns;
     borgbackup = ./borgbackup;
     borgbackup-static = ./borgbackup-static;
     deltachat = ./deltachat;

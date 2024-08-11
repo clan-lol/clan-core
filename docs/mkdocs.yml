@@ -60,6 +60,7 @@ nav:
           - reference/clanModules/borgbackup.md
           - reference/clanModules/deltachat.md
           - reference/clanModules/iwd.md
+          - reference/clanModules/dyndns.md
           - reference/clanModules/ergochat.md
           - reference/clanModules/localbackup.md
           - reference/clanModules/localsend.md
