@@ -109,6 +109,7 @@ def deploy_machine(machines: MachineGroup) -> None:
         cmd = [
             "nixos-rebuild",
             "switch",
+            "--show-trace",
             "--fast",
             "--option",
             "keep-going",
