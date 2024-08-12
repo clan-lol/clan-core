@@ -35,6 +35,7 @@ def nix_build(flags: list[str], gcroot: Path | None = None) -> list[str]:
                     str(gcroot),
                     "--print-out-paths",
                     "--no-write-lock-file",
+                    "--show-trace",
                 ]
             )
             + flags
@@ -47,6 +48,7 @@ def nix_build(flags: list[str], gcroot: Path | None = None) -> list[str]:
                     "--no-link",
                     "--print-out-paths",
                     "--no-write-lock-file",
+                    "--show-trace",
                 ]
             )
             + flags
