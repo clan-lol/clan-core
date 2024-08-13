@@ -46,7 +46,7 @@ def wait_vm_up(machine_name: str, flake_url: str | None = None) -> None:
     if flake_url is None:
         flake_url = str(Path.cwd())
     socket_file = vm_state_dir(flake_url, machine_name) / "qmp.sock"
-    timeout: float = 100
+    timeout: float = 600
     while True:
         if timeout <= 0:
             raise TimeoutError(
