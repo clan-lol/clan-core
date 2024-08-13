@@ -3,7 +3,7 @@ import { registerClan } from "../settings";
 
 export const Welcome = () => {
   return (
-    <div class="hero min-h-screen">
+    <div class="hero min-h-[calc(100vh-10rem)]">
       <div class="hero-content mb-32 text-center">
         <div class="max-w-md">
           <h1 class="text-5xl font-bold">Welcome to Clan</h1>
