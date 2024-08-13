@@ -104,3 +104,23 @@ def test_dataclass_to_dict_defaults() -> None:
         "foo": {"home": {"a": "b"}, "work": ["a", "b"]},
     }
     assert dataclass_to_dict(real_person) == expected
+
+
+def test_filters_null_fields() -> None:
+    @dataclass
+    class Foo:
+        home: str | None = None
+        work: str | None = None
+
+    # None fields are filtered out
+    instance = Foo()
+
+    assert instance.home is None
+    assert dataclass_to_dict(instance) == {}
+
+    # fields that are set are not filtered
+    instance = Foo(home="home")
+
+    assert instance.home == "home"
+    assert instance.work is None
+    assert dataclass_to_dict(instance) == {"home": "home"}
