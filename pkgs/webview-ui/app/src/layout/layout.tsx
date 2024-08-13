@@ -10,7 +10,7 @@ interface LayoutProps {
 export const Layout: Component<LayoutProps> = (props) => {
   return (
     <>
-      <div class="drawer bg-base-100 lg:drawer-open">
+      <div class="drawer lg:drawer-open ">
         <input
           id="toplevel-drawer"
           type="checkbox"
@@ -23,7 +23,7 @@ export const Layout: Component<LayoutProps> = (props) => {
           {props.children}
         </div>
         <div
-          class="drawer-side z-40"
+          class="drawer-side z-40 h-full"
           classList={{
             "!hidden": route() === "welcome" || clanList().length === 0,
           }}

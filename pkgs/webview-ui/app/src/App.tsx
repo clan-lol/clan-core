@@ -33,12 +33,14 @@ const App: Component = () => {
       setRoute("welcome");
     }
   });
-  return [
-    <Toaster position="top-right" />,
-    <Layout>
-      <Router route={route} />
-    </Layout>,
-  ];
+  return (
+    <div class="h-screen bg-gradient-to-b from-white to-base-100 p-4">
+      <Toaster position="top-right" />
+      <Layout>
+        <Router route={route} />
+      </Layout>
+    </div>
+  );
 };
 
 export default App;

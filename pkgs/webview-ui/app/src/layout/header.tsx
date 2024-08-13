@@ -22,7 +22,7 @@ export const Header = (props: HeaderProps) => {
   }));
 
   return (
-    <div class="navbar bg-base-100">
+    <div class="navbar">
       <div class="flex-none">
         <span class="tooltip tooltip-bottom" data-tip="Menu">
           <label
