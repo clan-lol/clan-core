@@ -68,7 +68,8 @@ def dataclass_to_dict(obj: Any, *, use_alias: bool = True) -> Any:
                     field.metadata.get("alias", field.name) if use_alias else field.name
                 ): _to_dict(getattr(obj, field.name))
                 for field in fields(obj)
-                if not field.name.startswith("_")  # type: ignore
+                if not field.name.startswith("_")
+                and getattr(obj, field.name) is not None  # type: ignore
             }
         elif isinstance(obj, list | tuple):
             return [_to_dict(item) for item in obj]
