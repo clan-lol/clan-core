@@ -92,6 +92,7 @@ def generate_machine_hardware_info(
     machine_name: str,
     hostname: str,
     password: str | None = None,
+    keyfile: str | None = None,
     force: bool | None = False,
 ) -> HardwareInfo:
     """
@@ -108,6 +109,7 @@ def generate_machine_hardware_info(
         [
             *(["sshpass", "-p", f"{password}"] if password else []),
             "ssh",
+            *(["-i", f"{keyfile}"] if keyfile else []),
             # Disable strict host key checking
             "-o StrictHostKeyChecking=no",
             # Disable known hosts file
