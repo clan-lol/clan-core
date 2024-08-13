@@ -308,10 +308,10 @@ export const Flash = () => {
 
         {/* WiFi Networks */}
         <div class="mb-4">
-          <h3 class="text-lg font-semibold mb-2">WiFi Networks</h3>
+          <h3 class="mb-2 text-lg font-semibold">WiFi Networks</h3>
           <For each={wifiNetworks()}>
             {(network, index) => (
-              <div class="flex gap-2 mb-2">
+              <div class="mb-2 flex gap-2">
                 <Field
                   name={`wifi.${index()}.ssid`}
                   validate={[required("SSID is required")]}
@@ -346,7 +346,7 @@ export const Flash = () => {
                       />
                       <button
                         type="button"
-                        class="absolute inset-y-14 right-0 pr-3 flex items-center text-sm leading-5"
+                        class="absolute inset-y-14 right-0 flex items-center pr-3 text-sm leading-5"
                         onClick={() => togglePasswordVisibility(index())}
                       >
                         <span class="material-icons">
