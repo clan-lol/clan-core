@@ -1,10 +1,7 @@
 # Generate partial NixOS configurations for every machine in the inventory
 # This function is responsible for generating the module configuration for every machine in the inventory.
 { lib, clan-core }:
-{ inventory, directory }:
 let
-  machines = machinesFromInventory inventory;
-
   resolveTags =
     # Inventory, { machines :: [string], tags :: [string] }
     {
@@ -45,8 +42,41 @@ let
 
     machinesFromInventory :: Inventory -> { ${machine_name} :: NixOSConfiguration }
   */
-  machinesFromInventory =
+
+  # { client_1_machine = { tags = [ "backup" ]; }; client_2_machine = { tags = [ "backup" ]; }; not_used_machine = { }; }
+  getAllMachines =
     inventory:
+    lib.foldlAttrs (
+      res: serviceName: serviceConfigs:
+      (lib.foldlAttrs (
+        res: instanceName: serviceConfig:
+        lib.foldlAttrs (
+          res: roleName: members:
+          let
+            resolved = resolveTags {
+              inherit
+                serviceName
+                instanceName
+                roleName
+                inventory
+                members
+                ;
+            };
+          in
+          res
+          // builtins.listToAttrs (
+            builtins.map (m: {
+              name = m;
+              value = { };
+            }) resolved.machines
+          )
+        ) res serviceConfig.roles
+      ) res serviceConfigs)
+    ) { } (inventory.services or { })
+    // inventory.machines or { };
+
+  buildInventory =
+    { inventory, directory }:
     # For every machine in the inventory, build a NixOS configuration
     # For each machine generate config, forEach service, if the machine is used.
     builtins.mapAttrs (
@@ -152,6 +182,8 @@ let
           config.clan.core.networking.targetHost = machineConfig.deploy.targetHost;
         })
       ]
-    ) inventory.machines or { };
+    ) (getAllMachines inventory);
 in
-machines
+{
+  inherit buildInventory getAllMachines;
+}

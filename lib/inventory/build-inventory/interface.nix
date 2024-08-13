@@ -51,6 +51,7 @@ let
   };
 in
 {
+  imports = [ ./assertions.nix ];
   options = {
     assertions = lib.mkOption {
       type = types.listOf types.unspecified;
@@ -126,39 +127,4 @@ in
       );
     };
   };
-
-  # Smoke validation of the inventory
-  config.assertions =
-    let
-      # Inventory assertions
-      # - All referenced machines must exist in the top-level machines
-      serviceAssertions = lib.foldlAttrs (
-        ass1: serviceName: c:
-        ass1
-        ++ lib.foldlAttrs (
-          ass2: instanceName: instanceConfig:
-          let
-            serviceMachineNames = lib.attrNames instanceConfig.machines;
-            topLevelMachines = lib.attrNames config.machines;
-            # All machines must be defined in the top-level machines
-            assertions = builtins.map (m: {
-              assertion = builtins.elem m topLevelMachines;
-              message = "${serviceName}.${instanceName}.machines.${m}. Should be one of [ ${builtins.concatStringsSep " | " topLevelMachines} ]";
-            }) serviceMachineNames;
-          in
-          ass2 ++ assertions
-        ) [ ] c
-      ) [ ] config.services;
-
-      # Machine assertions
-      # - A machine must define their host system
-      machineAssertions = map (
-        { name, ... }:
-        {
-          assertion = true;
-          message = "Machine ${name} should define its host system in the inventory. ()";
-        }
-      ) (lib.attrsToList (lib.filterAttrs (_n: v: v.system or null == null) config.machines));
-    in
-    machineAssertions ++ serviceAssertions;
 }
