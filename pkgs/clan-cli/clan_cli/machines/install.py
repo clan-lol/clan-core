@@ -3,9 +3,11 @@ import importlib
 import json
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+from clan_cli.api import API
 
 from ..clan_uri import FlakeId
 from ..cmd import Log, run
@@ -91,15 +93,30 @@ def install_nixos(
 
 @dataclass
 class InstallOptions:
+    # flake to install
     flake: FlakeId
     machine: str
     target_host: str
-    kexec: str | None
-    confirm: bool
-    debug: bool
-    no_reboot: bool
-    json_ssh_deploy: dict[str, str] | None
-    nix_options: list[str]
+    kexec: str | None = None
+    debug: bool = False
+    no_reboot: bool = False
+    json_ssh_deploy: dict[str, str] | None = None
+    nix_options: list[str] = field(default_factory=list)
+
+
+@API.register
+def install_machine(opts: InstallOptions, password: str | None) -> None:
+    machine = Machine(opts.machine, flake=opts.flake)
+    machine.target_host_address = opts.target_host
+
+    install_nixos(
+        machine,
+        kexec=opts.kexec,
+        debug=opts.debug,
+        password=password,
+        no_reboot=opts.no_reboot,
+        extra_args=opts.nix_options,
+    )
 
 
 def install_command(args: argparse.Namespace) -> None:
@@ -123,32 +140,23 @@ def install_command(args: argparse.Namespace) -> None:
         target_host = args.target_host
         password = None
 
-    opts = InstallOptions(
-        flake=args.flake,
-        machine=args.machine,
-        target_host=target_host,
-        kexec=args.kexec,
-        confirm=not args.yes,
-        debug=args.debug,
-        no_reboot=args.no_reboot,
-        json_ssh_deploy=json_ssh_deploy,
-        nix_options=args.option,
-    )
-    machine = Machine(opts.machine, flake=opts.flake)
-    machine.target_host_address = opts.target_host
-
-    if opts.confirm:
-        ask = input(f"Install {machine.name} to {opts.target_host}? [y/N] ")
+    if not args.yes:
+        ask = input(f"Install {args.machine} to {target_host}? [y/N] ")
         if ask != "y":
             return
 
-    install_nixos(
-        machine,
-        kexec=opts.kexec,
-        debug=opts.debug,
-        password=password,
-        no_reboot=opts.no_reboot,
-        extra_args=opts.nix_options,
+    return install_machine(
+        InstallOptions(
+            flake=args.flake,
+            machine=args.machine,
+            target_host=target_host,
+            kexec=args.kexec,
+            debug=args.debug,
+            no_reboot=args.no_reboot,
+            json_ssh_deploy=json_ssh_deploy,
+            nix_options=args.option,
+        ),
+        password,
     )
 
 
