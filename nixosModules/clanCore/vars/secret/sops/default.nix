@@ -13,7 +13,14 @@ let
   varsDirMachines = config.clan.core.clanDir + "/sops/vars/per-machine";
   varsDirShared = config.clan.core.clanDir + "/sops/vars/shared";
 
-  vars = (listVars varsDirMachines) ++ (listVars varsDirShared);
+  varsUnfiltered = (listVars varsDirMachines) ++ (listVars varsDirShared);
+  filterVars =
+    vars:
+    builtins.elem vars.machine [
+      config.clan.core.machineName
+      "shared"
+    ];
+  vars = lib.filter filterVars varsUnfiltered;
 
 in
 {
