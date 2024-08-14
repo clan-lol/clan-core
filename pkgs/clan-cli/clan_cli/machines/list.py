@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 
 from clan_cli.api import API
@@ -16,6 +17,33 @@ log = logging.getLogger(__name__)
 def list_inventory_machines(flake_url: str | Path) -> dict[str, Machine]:
     inventory = load_inventory_eval(flake_url)
     return inventory.machines
+
+
+@dataclass
+class MachineDetails:
+    machine: Machine
+    has_hw_specs: bool = False
+    # TODO:
+    # has_disk_specs: bool = False
+
+
+@API.register
+def get_inventory_machine_details(
+    flake_url: str | Path, machine_name: str
+) -> MachineDetails:
+    inventory = load_inventory_eval(flake_url)
+    machine = inventory.machines.get(machine_name)
+    if machine is None:
+        raise ClanError(f"Machine {machine_name} not found in inventory")
+
+    hw_config_path = (
+        Path(flake_url) / "machines" / Path(machine_name) / "hardware-configuration.nix"
+    )
+
+    return MachineDetails(
+        machine=machine,
+        has_hw_specs=hw_config_path.exists(),
+    )
 
 
 @API.register

@@ -6,7 +6,6 @@ from .delete import register_delete_parser
 from .hardware import register_hw_generate
 from .install import register_install_parser
 from .list import register_list_parser
-from .show import register_show_parser
 from .update import register_update_parser
 
 
@@ -85,17 +84,6 @@ For more detailed information, visit: https://docs.clan.lol/getting-started/conf
         ),
     )
     register_hw_generate(generate_hw_parser)
-
-    show_parser = subparser.add_parser(
-        "show",
-        help="Show a machine",
-        epilog=(
-            """
-This subcommand shows the details of a machine managed by this clan like icon, description, etc
-"""
-        ),
-    )
-    register_show_parser(show_parser)
 
     install_parser = subparser.add_parser(
         "install",

@@ -3,10 +3,15 @@ import { Header } from "./header";
 import { Sidebar } from "../Sidebar";
 import { activeURI, clanList } from "../App";
 import { RouteSectionProps } from "@solidjs/router";
+import { Toaster } from "solid-toast";
 
 export const Layout: Component<RouteSectionProps> = (props) => {
+  createEffect(() => {
+    console.log("Layout props", props.location);
+  });
   return (
     <div class="h-screen bg-gradient-to-b from-white to-base-100 p-4">
+      <Toaster position="top-right" />
       <div class="drawer lg:drawer-open ">
         <input
           id="toplevel-drawer"
