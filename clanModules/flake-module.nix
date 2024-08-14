@@ -1,24 +1,25 @@
 { ... }:
 {
   flake.clanModules = {
-    iwd = ./iwd;
-    dyndns = ./dyndns;
     borgbackup = ./borgbackup;
     borgbackup-static = ./borgbackup-static;
     deltachat = ./deltachat;
+    dyndns = ./dyndns;
     ergochat = ./ergochat;
+    garage = ./garage;
+    iwd = ./iwd;
     localbackup = ./localbackup;
     localsend = ./localsend;
-    single-disk = ./single-disk;
     matrix-synapse = ./matrix-synapse;
     moonlight = ./moonlight;
-    packages = ./packages;
     mumble = ./mumble;
+    packages = ./packages;
     postgresql = ./postgresql;
     root-password = ./root-password;
+    single-disk = ./single-disk;
     sshd = ./sshd;
-    sunshine = ./sunshine;
     static-hosts = ./static-hosts;
+    sunshine = ./sunshine;
     syncthing = ./syncthing;
     syncthing-static-peers = ./syncthing-static-peers;
     thelounge = ./thelounge;

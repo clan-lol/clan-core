@@ -55,17 +55,19 @@ nav:
   - Reference:
       - reference/index.md
       - Clan Modules:
-          - reference/clanModules/index.md
           - reference/clanModules/borgbackup-static.md
           - reference/clanModules/borgbackup.md
           - reference/clanModules/deltachat.md
-          - reference/clanModules/iwd.md
           - reference/clanModules/dyndns.md
           - reference/clanModules/ergochat.md
+          - reference/clanModules/garage.md
+          - reference/clanModules/index.md
+          - reference/clanModules/iwd.md
           - reference/clanModules/localbackup.md
           - reference/clanModules/localsend.md
           - reference/clanModules/matrix-synapse.md
           - reference/clanModules/moonlight.md
+          - reference/clanModules/mumble.md
           - reference/clanModules/packages.md
           - reference/clanModules/postgresql.md
           - reference/clanModules/root-password.md
@@ -76,7 +78,6 @@ nav:
           - reference/clanModules/syncthing-static-peers.md
           - reference/clanModules/syncthing.md
           - reference/clanModules/thelounge.md
-          - reference/clanModules/mumble.md
           - reference/clanModules/trusted-nix-caches.md
           - reference/clanModules/user-password.md
           - reference/clanModules/xfce.md
