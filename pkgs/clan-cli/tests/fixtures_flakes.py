@@ -1,4 +1,3 @@
-import fileinput
 import json
 import logging
 import os
@@ -25,20 +24,23 @@ def substitute(
     flake: Path = Path(__file__).parent,
 ) -> None:
     sops_key = str(flake.joinpath("sops.key"))
-    for line in fileinput.input(file, inplace=True):
-        line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
-        if clan_core_flake:
-            line = line.replace("__CLAN_CORE__", str(clan_core_flake))
-            line = line.replace(
-                "git+https://git.clan.lol/clan/clan-core", str(clan_core_flake)
-            )
-            line = line.replace(
-                "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
-                str(clan_core_flake),
-            )
-        line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
-        line = line.replace("__CLAN_SOPS_KEY_DIR__", str(flake))
-        print(line, end="")
+    buf = ""
+    with file.open() as f:
+        for line in f:
+            line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
+            if clan_core_flake:
+                line = line.replace("__CLAN_CORE__", str(clan_core_flake))
+                line = line.replace(
+                    "git+https://git.clan.lol/clan/clan-core", str(clan_core_flake)
+                )
+                line = line.replace(
+                    "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
+                    str(clan_core_flake),
+                )
+            line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
+            line = line.replace("__CLAN_SOPS_KEY_DIR__", str(flake))
+            buf += line
+    file.write_text(buf)
 
 
 class FlakeForTest(NamedTuple):
@@ -91,10 +93,13 @@ def generate_flake(
     for file in flake.rglob("*"):
         if file.is_file():
             print(f"Final Content of {file}:")
-            for line in fileinput.input(file, inplace=True):
-                for key, value in substitutions.items():
-                    line = line.replace(key, value)
-                print(line, end="")
+            buf = ""
+            with file.open() as f:
+                for line in f:
+                    for key, value in substitutions.items():
+                        line = line.replace(key, value)
+                    buf += line
+            file.write_text(buf)
 
     # generate machines from machineConfigs
     for machine_name, machine_config in machine_configs.items():
