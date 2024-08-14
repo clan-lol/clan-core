@@ -114,7 +114,7 @@ def generate_machine_hardware_info(
             "-o StrictHostKeyChecking=no",
             # Disable known hosts file
             "-o UserKnownHostsFile=/dev/null",
-            f"root@{hostname}",
+            f"{hostname}",
             "nixos-generate-config",
             # Filesystems are managed by disko
             "--no-filesystems",

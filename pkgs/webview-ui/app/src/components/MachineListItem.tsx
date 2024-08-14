@@ -3,6 +3,7 @@ import { callApi, SuccessData } from "../api";
 import { Menu } from "./Menu";
 import { activeURI } from "../App";
 import toast from "solid-toast";
+import { useNavigate } from "@solidjs/router";
 
 type MachineDetails = SuccessData<"list_inventory_machines">["data"][string];
 
@@ -16,7 +17,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
   const { name, info, nixOnly } = props;
 
   const [deploying, setDeploying] = createSignal<boolean>(false);
-
+  const navigate = useNavigate();
   return (
     <li>
       <div class="card card-side m-2 bg-base-200">
@@ -63,11 +64,11 @@ export const MachineListItem = (props: MachineListItemProps) => {
               <ul class="menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
                 <li>
                   <a
-                  // onClick={() => {
-                  //   setRoute("machines/edit");
-                  // }}
+                    onClick={() => {
+                      navigate("/machines/" + name);
+                    }}
                   >
-                    Edit
+                    Details
                   </a>
                 </li>
                 <li
