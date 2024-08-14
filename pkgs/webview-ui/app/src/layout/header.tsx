@@ -1,5 +1,5 @@
 import { createQuery } from "@tanstack/solid-query";
-import { activeURI, setRoute } from "../App";
+import { activeURI } from "../App";
 import { callApi } from "../api";
 import { Accessor, Show } from "solid-js";
 
@@ -63,7 +63,7 @@ export const Header = (props: HeaderProps) => {
       </div>
       <div class="flex-none">
         <span class="tooltip tooltip-bottom" data-tip="Settings">
-          <button class="link" onClick={() => setRoute("settings")}>
+          <button class="link">
             <span class="material-icons">settings</span>
           </button>
         </span>

@@ -1,11 +1,4 @@
-import {
-  type Component,
-  createEffect,
-  createSignal,
-  For,
-  Show,
-} from "solid-js";
-import { route } from "@/src/App";
+import { type Component, createSignal, For, Show } from "solid-js";
 import { OperationResponse, pyApi } from "@/src/api";
 
 type ServiceModel = Extract<
@@ -15,16 +8,6 @@ type ServiceModel = Extract<
 
 export const HostList: Component = () => {
   const [services, setServices] = createSignal<ServiceModel>();
-
-  // pyApi.show_mdns.receive((r) => {
-  //   const { status } = r;
-  //   if (status === "error") return console.error(r.errors);
-  //   setServices(r.data.services);
-  // });
-
-  // createEffect(() => {
-  //   if (route() === "hosts") pyApi.show_mdns.dispatch({});
-  // });
 
   return (
     <div>

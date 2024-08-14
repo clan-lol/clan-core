@@ -1,15 +1,12 @@
-import { Component, JSXElement, Show } from "solid-js";
+import { Component, createEffect, Show } from "solid-js";
 import { Header } from "./header";
 import { Sidebar } from "../Sidebar";
-import { activeURI, clanList, route, setRoute } from "../App";
+import { activeURI, clanList } from "../App";
+import { RouteSectionProps } from "@solidjs/router";
 
-interface LayoutProps {
-  children: JSXElement;
-}
-
-export const Layout: Component<LayoutProps> = (props) => {
+export const Layout: Component<RouteSectionProps> = (props) => {
   return (
-    <>
+    <div class="h-screen bg-gradient-to-b from-white to-base-100 p-4">
       <div class="drawer lg:drawer-open ">
         <input
           id="toplevel-drawer"
@@ -17,7 +14,7 @@ export const Layout: Component<LayoutProps> = (props) => {
           class="drawer-toggle hidden"
         />
         <div class="drawer-content">
-          <Show when={route() !== "welcome"}>
+          <Show when={props.location.pathname !== "welcome"}>
             <Header clan_dir={activeURI} />
           </Show>
           {props.children}
@@ -25,7 +22,8 @@ export const Layout: Component<LayoutProps> = (props) => {
         <div
           class="drawer-side z-40 h-full"
           classList={{
-            "!hidden": route() === "welcome" || clanList().length === 0,
+            "!hidden":
+              props.location.pathname === "welcome" || clanList().length === 0,
           }}
         >
           <label
@@ -33,9 +31,9 @@ export const Layout: Component<LayoutProps> = (props) => {
             aria-label="close sidebar"
             class="drawer-overlay"
           ></label>
-          <Sidebar route={route} setRoute={setRoute} />
+          <Sidebar {...props} />
         </div>
       </div>
-    </>
+    </div>
   );
 };

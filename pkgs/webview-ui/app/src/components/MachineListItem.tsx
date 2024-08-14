@@ -1,7 +1,7 @@
-import { Accessor, createSignal, Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { callApi, SuccessData } from "../api";
 import { Menu } from "./Menu";
-import { activeURI, setRoute } from "../App";
+import { activeURI } from "../App";
 import toast from "solid-toast";
 
 type MachineDetails = SuccessData<"list_inventory_machines">["data"][string];
@@ -63,9 +63,9 @@ export const MachineListItem = (props: MachineListItemProps) => {
               <ul class="menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
                 <li>
                   <a
-                    onClick={() => {
-                      setRoute("machines/edit");
-                    }}
+                  // onClick={() => {
+                  //   setRoute("machines/edit");
+                  // }}
                   >
                     Edit
                   </a>

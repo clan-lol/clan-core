@@ -1,4 +1,4 @@
-import { callApi, OperationResponse, pyApi } from "@/src/api";
+import { callApi, OperationResponse } from "@/src/api";
 import { Show } from "solid-js";
 import {
   createForm,
@@ -7,7 +7,7 @@ import {
   SubmitHandler,
 } from "@modular-forms/solid";
 import toast from "solid-toast";
-import { setActiveURI, setRoute } from "@/src/App";
+import { setActiveURI } from "@/src/App";
 
 type CreateForm = Meta & {
   template_url: string;
@@ -53,7 +53,7 @@ export const ClanForm = () => {
           },
         });
         setActiveURI(target_dir[0]);
-        setRoute("machines");
+        // setRoute("machines");
       })(),
       {
         loading: "Creating clan...",

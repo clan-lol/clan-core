@@ -1,4 +1,4 @@
-import { setActiveURI, setRoute } from "@/src/App";
+import { setActiveURI } from "@/src/App";
 import { registerClan } from "../settings";
 
 export const Welcome = () => {
@@ -11,7 +11,7 @@ export const Welcome = () => {
           <div class="flex flex-col items-start gap-2">
             <button
               class="btn btn-primary w-full"
-              onClick={() => setRoute("createClan")}
+              // onClick={() => setRoute("createClan")}
             >
               Build your own
             </button>
@@ -27,7 +27,7 @@ export const Welcome = () => {
             <button
               class="link w-full text-right text-secondary"
               onClick={async () => {
-                setRoute("machines");
+                // setRoute("machines");
               }}
             >
               Skip (Debug)
