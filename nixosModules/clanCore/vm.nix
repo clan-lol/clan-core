@@ -20,6 +20,8 @@ let
       ./waypipe.nix
     ];
 
+    clan.core.state.HOME.folders = [ "/home" ];
+
     clan.services.waypipe = {
       inherit (config.clan.core.vm.inspect.waypipe) enable command;
     };
