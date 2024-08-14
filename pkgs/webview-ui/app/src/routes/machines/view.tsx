@@ -1,5 +1,5 @@
-import { type Component, createEffect, For, Match, Switch } from "solid-js";
-import { activeURI, setRoute } from "@/src/App";
+import { type Component, For, Match, Switch } from "solid-js";
+import { activeURI } from "@/src/App";
 import { callApi, OperationResponse } from "@/src/api";
 import toast from "solid-toast";
 import { MachineListItem } from "@/src/components/MachineListItem";
@@ -83,7 +83,10 @@ export const MachineListView: Component = () => {
         </button>
       </div>
       <div class="tooltip tooltip-bottom" data-tip="Create machine">
-        <button class="btn btn-ghost" onClick={() => setRoute("machines/add")}>
+        <button
+          class="btn btn-ghost"
+          // onClick={() => setRoute("machines/add")}
+        >
           <span class="material-icons ">add</span>
         </button>
       </div>

@@ -1,11 +1,5 @@
 import { callApi } from "@/src/api";
-import {
-  activeURI,
-  clanList,
-  setActiveURI,
-  setClanList,
-  setRoute,
-} from "@/src/App";
+import { activeURI, clanList, setActiveURI, setClanList } from "@/src/App";
 import { createSignal, For, Match, Setter, Show, Switch } from "solid-js";
 import { createQuery } from "@tanstack/solid-query";
 import { useFloating } from "@/src/floating";
@@ -17,7 +11,6 @@ export const registerClan = async () => {
     const loc = await callApi("open_file", {
       file_request: { mode: "select_folder" },
     });
-    console.log({ loc }, loc.status);
     if (loc.status === "success" && loc.data) {
       const data = loc.data[0];
       setClanList((s) => {
@@ -25,10 +18,10 @@ export const registerClan = async () => {
         return Array.from(res);
       });
       setActiveURI(data);
-      setRoute((r) => {
-        if (r === "welcome") return "machines";
-        return r;
-      });
+      // setRoute((r) => {
+      //   if (r === "welcome") return "machines";
+      //   return r;
+      // });
       return data;
     }
   } catch (e) {

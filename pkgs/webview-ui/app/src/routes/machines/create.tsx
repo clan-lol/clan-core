@@ -1,5 +1,5 @@
-import { callApi, OperationArgs, pyApi, OperationResponse } from "@/src/api";
-import { activeURI, setRoute } from "@/src/App";
+import { callApi, OperationArgs } from "@/src/api";
+import { activeURI } from "@/src/App";
 import { TextInput } from "@/src/components/TextInput";
 import { createForm, required, reset } from "@modular-forms/solid";
 import { createQuery, useQueryClient } from "@tanstack/solid-query";
@@ -49,7 +49,7 @@ export function CreateMachine() {
       queryClient.invalidateQueries({
         queryKey: [activeURI(), "list_machines"],
       });
-      setRoute("machines");
+      // setRoute("machines");
     } else {
       toast.error(
         `Error: ${response.errors[0].message}. Machine ${values.machine.name} could not be created`,

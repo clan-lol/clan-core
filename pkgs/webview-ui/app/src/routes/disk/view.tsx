@@ -2,7 +2,6 @@ import { callApi } from "@/src/api";
 import { activeURI } from "@/src/App";
 import { createQuery } from "@tanstack/solid-query";
 import { createEffect } from "solid-js";
-import toast from "solid-toast";
 
 export function DiskView() {
   const query = createQuery(() => ({
