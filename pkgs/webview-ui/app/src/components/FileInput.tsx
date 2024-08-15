@@ -15,6 +15,7 @@ interface FileInputProps {
   class?: string;
   label?: string;
   error?: string;
+  helperText?: string;
 }
 
 /**
@@ -53,7 +54,9 @@ export function FileInput(props: FileInputProps) {
           {props.label}
         </span>
       </div>
-
+      <Show when={props.helperText}>
+        <span class="label-text-alt m-1">{props.helperText}</span>
+      </Show>
       <div
         class={cx(
           "relative flex min-h-[96px] w-full items-center justify-center rounded-2xl border-[3px] border-dashed p-8 text-center focus-within:ring-4 md:min-h-[112px] md:text-lg lg:min-h-[128px] lg:p-10 lg:text-xl",

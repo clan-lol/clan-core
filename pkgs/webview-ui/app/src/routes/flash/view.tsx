@@ -1,4 +1,4 @@
-import { callApi, OperationResponse } from "@/src/api";
+import { callApi } from "@/src/api";
 import { FileInput } from "@/src/components/FileInput";
 import { SelectInput } from "@/src/components/SelectInput";
 import { TextInput } from "@/src/components/TextInput";
@@ -10,7 +10,7 @@ import {
   getValue,
 } from "@modular-forms/solid";
 import { createQuery } from "@tanstack/solid-query";
-import { createEffect, createSignal, For } from "solid-js";
+import { createEffect, createSignal, For, Show } from "solid-js";
 import toast from "solid-toast";
 
 interface Wifi extends FieldValues {
@@ -97,7 +97,7 @@ export const Flash = () => {
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
-    staleTime: 1000 * 60 * 15, // 15 minutes
+    staleTime: Infinity,
   }));
 
   const langQuery = createQuery(() => ({
@@ -107,7 +107,7 @@ export const Flash = () => {
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
-    staleTime: 1000 * 60 * 15, // 15 minutes
+    staleTime: Infinity,
   }));
 
   /**
@@ -136,11 +136,7 @@ export const Flash = () => {
   };
 
   const handleSubmit = async (values: FlashFormValues) => {
-    console.log("Submit WiFi Networks:", values.wifi);
-    console.log(
-      "Submit SSH Keys:",
-      values.sshKeys.map((file) => file.name),
-    );
+    console.log("Submit:", values);
     try {
       await callApi("flash_machine", {
         machine: {
@@ -171,47 +167,57 @@ export const Flash = () => {
   };
 
   return (
-    <div class="px-2">
+    <div class="m-4 bg-slate-50 p-4 pt-8 shadow-sm shadow-slate-400 rounded-lg">
       <Form onSubmit={handleSubmit}>
-        <Field
-          name="machine.flake"
-          validate={[required("This field is required")]}
-        >
-          {(field, props) => (
-            <>
-              <TextInput
-                formStore={formStore}
-                inputProps={props}
-                label="Installer (flake URL)"
-                value={String(field.value)}
-                inlineLabel={<span class="material-icons">file_download</span>}
-                error={field.error}
-                required
-              />
-            </>
-          )}
-        </Field>
-        <Field
-          name="machine.devicePath"
-          validate={[required("This field is required")]}
-        >
-          {(field, props) => (
-            <>
-              <TextInput
-                formStore={formStore}
-                inputProps={props}
-                label="Installer Image (attribute name)"
-                value={String(field.value)}
-                inlineLabel={<span class="material-icons">devices</span>}
-                error={field.error}
-                required
-              />
-            </>
-          )}
-        </Field>
+        <div class="my-4">
+          <Field name="sshKeys" type="File[]">
+            {(field, props) => (
+              <>
+                <FileInput
+                  {...props}
+                  onClick={async (event) => {
+                    event.preventDefault(); // Prevent the native file dialog from opening
+                    const input = event.target;
+                    const files = await selectSshKeys();
+
+                    // Set the files
+                    Object.defineProperty(input, "files", {
+                      value: files,
+                      writable: true,
+                    });
+                    // Define the files property on the input element
+                    const changeEvent = new Event("input", {
+                      bubbles: true,
+                      cancelable: true,
+                    });
+                    input.dispatchEvent(changeEvent);
+                  }}
+                  value={field.value}
+                  error={field.error}
+                  helperText="Provide your SSH public key. For secure and passwordless SSH connections."
+                  label="Authorized SSH Keys"
+                  multiple
+                  required
+                />
+              </>
+            )}
+          </Field>
+        </div>
+
         <Field name="disk" validate={[required("This field is required")]}>
           {(field, props) => (
             <SelectInput
+              topRightLabel={
+                <button
+                  class="btn btn-ghost btn-sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    deviceQuery.refetch();
+                  }}
+                >
+                  <span class="material-icons text-sm">refresh</span>
+                </button>
+              }
               formStore={formStore}
               selectProps={props}
               label="Flash Disk"
@@ -221,8 +227,9 @@ export const Flash = () => {
               options={
                 <>
                   <option value="" disabled>
-                    Select a disk
+                    Select a disk where the installer will be flashed to
                   </option>
+
                   <For each={deviceQuery.data?.blockdevices}>
                     {(device) => (
                       <option value={device.path}>
@@ -235,83 +242,14 @@ export const Flash = () => {
             />
           )}
         </Field>
-        <Field name="language" validate={[required("This field is required")]}>
-          {(field, props) => (
-            <>
-              <SelectInput
-                formStore={formStore}
-                selectProps={props}
-                label="Language"
-                value={String(field.value)}
-                error={field.error}
-                required
-                options={
-                  <For each={langQuery.data}>
-                    {(language) => <option value={language}>{language}</option>}
-                  </For>
-                }
-              />
-            </>
-          )}
-        </Field>
-        <Field name="keymap" validate={[required("This field is required")]}>
-          {(field, props) => (
-            <>
-              <SelectInput
-                formStore={formStore}
-                selectProps={props}
-                label="Keymap"
-                value={String(field.value)}
-                error={field.error}
-                required
-                options={
-                  <For each={keymapQuery.data}>
-                    {(keymap) => <option value={keymap}>{keymap}</option>}
-                  </For>
-                }
-              />
-            </>
-          )}
-        </Field>
-
-        <Field name="sshKeys" type="File[]">
-          {(field, props) => (
-            <>
-              <FileInput
-                {...props}
-                onClick={async (event) => {
-                  event.preventDefault(); // Prevent the native file dialog from opening
-                  const input = event.target;
-                  const files = await selectSshKeys();
-
-                  // Set the files
-                  Object.defineProperty(input, "files", {
-                    value: files,
-                    writable: true,
-                  });
-                  // Define the files property on the input element
-                  const changeEvent = new Event("input", {
-                    bubbles: true,
-                    cancelable: true,
-                  });
-                  input.dispatchEvent(changeEvent);
-                }}
-                value={field.value}
-                error={field.error}
-                label="Authorized SSH Keys"
-                multiple
-                required
-              />
-            </>
-          )}
-        </Field>
 
         {/* WiFi Networks */}
-        <div class="mb-4">
+        <div class="my-4 py-2">
           <h3 class="mb-2 text-lg font-semibold">WiFi Networks</h3>
+          <span class="mb-2 text-sm">Add preconfigured networks</span>
           <For each={wifiNetworks()}>
             {(network, index) => (
-              <div class="mb-2 flex gap-2">
+              <div class="mb-2 grid grid-cols-7 gap-2">
                 <Field
                   name={`wifi.${index()}.ssid`}
                   validate={[required("SSID is required")]}
@@ -323,6 +261,7 @@ export const Flash = () => {
                       label="SSID"
                       value={field.value ?? ""}
                       error={field.error}
+                      class="col-span-3"
                       required
                     />
                   )}
@@ -332,7 +271,7 @@ export const Flash = () => {
                   validate={[required("Password is required")]}
                 >
                   {(field, props) => (
-                    <div class="relative w-full">
+                    <div class="relative col-span-3 w-full">
                       <TextInput
                         formStore={formStore}
                         inputProps={props}
@@ -342,53 +281,171 @@ export const Flash = () => {
                         label="Password"
                         value={field.value ?? ""}
                         error={field.error}
+                        adornment={{
+                          position: "end",
+                          content: (
+                            <button
+                              type="button"
+                              class="flex justify-center opacity-70"
+                              onClick={() => togglePasswordVisibility(index())}
+                            >
+                              <span class="material-icons">
+                                {passwordVisibility()[index()]
+                                  ? "visibility_off"
+                                  : "visibility"}
+                              </span>
+                            </button>
+                          ),
+                        }}
                         required
                       />
-                      <button
-                        type="button"
-                        class="absolute inset-y-14 right-0 flex items-center pr-3 text-sm leading-5"
-                        onClick={() => togglePasswordVisibility(index())}
-                      >
-                        <span class="material-icons">
-                          {passwordVisibility()[index()]
-                            ? "visibility_off"
-                            : "visibility"}
-                        </span>
-                      </button>
                     </div>
                   )}
                 </Field>
-                <button
-                  type="button"
-                  class="btn btn-error"
-                  onClick={() => removeWifiNetwork(index())}
-                >
-                  <span class="material-icons">delete</span>
-                </button>
+                <div class="col-span-1 self-end">
+                  <button
+                    type="button"
+                    class="btn btn-ghost "
+                    onClick={() => removeWifiNetwork(index())}
+                  >
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
               </div>
             )}
           </For>
-          <button
-            type="button"
-            class="btn btn-primary"
-            onClick={addWifiNetwork}
-          >
-            <span class="material-icons">add</span> Add WiFi Network
-          </button>
+          <div class="">
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm"
+              onClick={addWifiNetwork}
+            >
+              <span class="material-icons">add</span>Add WiFi Network
+            </button>
+          </div>
         </div>
 
-        <button
-          class="btn btn-error"
-          type="submit"
-          disabled={formStore.submitting}
-        >
-          {formStore.submitting ? (
-            <span class="loading loading-spinner"></span>
-          ) : (
-            <span class="material-icons">bolt</span>
-          )}
-          {formStore.submitting ? "Flashing..." : "Flash Installer"}
-        </button>
+        <div class="collapse collapse-arrow" tabindex="0">
+          <input type="checkbox" />
+          <div class="collapse-title link font-medium ">Advanced Settings</div>
+          <div class="collapse-content">
+            <Field
+              name="machine.flake"
+              validate={[required("This field is required")]}
+            >
+              {(field, props) => (
+                <>
+                  <TextInput
+                    formStore={formStore}
+                    inputProps={props}
+                    label="Source (flake URL)"
+                    value={String(field.value)}
+                    inlineLabel={
+                      <span class="material-icons">file_download</span>
+                    }
+                    error={field.error}
+                    required
+                  />
+                </>
+              )}
+            </Field>
+            <Field
+              name="machine.devicePath"
+              validate={[required("This field is required")]}
+            >
+              {(field, props) => (
+                <>
+                  <TextInput
+                    formStore={formStore}
+                    inputProps={props}
+                    label="Image Name (attribute name)"
+                    value={String(field.value)}
+                    inlineLabel={<span class="material-icons">devices</span>}
+                    error={field.error}
+                    required
+                  />
+                </>
+              )}
+            </Field>
+            <div class="my-2 py-2">
+              <span class="text-sm text-neutral-600">Source URL: </span>
+              <span class="text-sm text-neutral-600">
+                {getValue(formStore, "machine.flake") +
+                  "#" +
+                  getValue(formStore, "machine.devicePath")}
+              </span>
+            </div>
+            <Field
+              name="language"
+              validate={[required("This field is required")]}
+            >
+              {(field, props) => (
+                <>
+                  <SelectInput
+                    formStore={formStore}
+                    selectProps={props}
+                    label="Language"
+                    value={String(field.value)}
+                    error={field.error}
+                    required
+                    options={
+                      <>
+                        <option value={"en_US.UTF-8"}>{"en_US.UTF-8"}</option>
+                        <For each={langQuery.data}>
+                          {(language) => (
+                            <option value={language}>{language}</option>
+                          )}
+                        </For>
+                      </>
+                    }
+                  />
+                </>
+              )}
+            </Field>
+
+            <Field
+              name="keymap"
+              validate={[required("This field is required")]}
+            >
+              {(field, props) => (
+                <>
+                  <SelectInput
+                    formStore={formStore}
+                    selectProps={props}
+                    label="Keymap"
+                    value={String(field.value)}
+                    error={field.error}
+                    required
+                    options={
+                      <>
+                        <option value={"en"}>{"en"}</option>
+                        <For each={keymapQuery.data}>
+                          {(keymap) => <option value={keymap}>{keymap}</option>}
+                        </For>
+                      </>
+                    }
+                  />
+                </>
+              )}
+            </Field>
+          </div>
+        </div>
+
+        <hr></hr>
+        <div class="mt-2 flex justify-end pt-2">
+          <button
+            class="btn btn-error self-end"
+            type="submit"
+            disabled={formStore.submitting}
+          >
+            {formStore.submitting ? (
+              <span class="loading loading-spinner"></span>
+            ) : (
+              <span class="material-icons">bolt</span>
+            )}
+            {formStore.submitting ? "Flashing..." : "Flash Installer"}
+          </button>
+        </div>
       </Form>
     </div>
   );

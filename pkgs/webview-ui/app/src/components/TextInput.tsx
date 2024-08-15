@@ -1,5 +1,6 @@
 import { FieldValues, FormStore, ResponseData } from "@modular-forms/solid";
-import { type JSX } from "solid-js";
+import { Show, type JSX } from "solid-js";
+import cx from "classnames";
 
 interface TextInputProps<T extends FieldValues, R extends ResponseData> {
   formStore: FormStore<T, R>;
@@ -10,6 +11,11 @@ interface TextInputProps<T extends FieldValues, R extends ResponseData> {
   required?: boolean;
   type?: string;
   inlineLabel?: JSX.Element;
+  class?: string;
+  adornment?: {
+    position: "start" | "end";
+    content: JSX.Element;
+  };
 }
 
 export function TextInput<T extends FieldValues, R extends ResponseData>(
@@ -17,7 +23,7 @@ export function TextInput<T extends FieldValues, R extends ResponseData>(
 ) {
   return (
     <label
-      class="form-control w-full"
+      class={cx("form-control w-full", props.class)}
       aria-disabled={props.formStore.submitting}
     >
       <div class="label">
@@ -33,6 +39,9 @@ export function TextInput<T extends FieldValues, R extends ResponseData>(
       </div>
 
       <div class="input input-bordered flex items-center gap-2">
+        <Show when={props.adornment && props.adornment.position === "start"}>
+          {props.adornment?.content}
+        </Show>
         {props.inlineLabel}
         <input
           {...props.inputProps}
@@ -46,6 +55,9 @@ export function TextInput<T extends FieldValues, R extends ResponseData>(
           required
           disabled={props.formStore.submitting}
         />
+        <Show when={props.adornment && props.adornment.position === "end"}>
+          {props.adornment?.content}
+        </Show>
       </div>
       {props.error && (
         <span class="label-text-alt font-bold text-error">{props.error}</span>
