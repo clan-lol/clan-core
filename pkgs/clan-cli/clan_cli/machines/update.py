@@ -97,8 +97,10 @@ def deploy_machine(machines: MachineGroup) -> None:
         generate_vars([machine], None, False)
         upload_secrets(machine)
 
-        path = upload_sources(".", target)
-
+        path = upload_sources(
+            str(machine.flake.path) if machine.flake.is_local() else machine.flake.url,
+            target,
+        )
         if host.host_key_check != HostKeyCheck.STRICT:
             ssh_arg += " -o StrictHostKeyChecking=no"
         if host.host_key_check == HostKeyCheck.NONE:
