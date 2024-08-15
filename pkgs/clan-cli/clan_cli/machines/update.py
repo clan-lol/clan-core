@@ -5,17 +5,22 @@ import os
 import shlex
 import sys
 
+from clan_cli.clan_uri import FlakeId
+
 from ..cmd import run
 from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
 from ..facts.generate import generate_facts
 from ..facts.upload import upload_secrets
 from ..machines.machines import Machine
+from clan_cli.inventory import from_dict
+from ..inventory import Machine as InventoryMachine
 from ..nix import nix_command, nix_metadata
 from ..ssh import HostKeyCheck
 from ..vars.generate import generate_vars
 from .inventory import get_all_machines, get_selected_machines
 from .machine_group import MachineGroup
+from clan_cli.api import API
 
 log = logging.getLogger(__name__)
 
@@ -79,6 +84,25 @@ def upload_sources(
         raise ClanError(
             f"failed to parse output of {shlex.join(cmd)}: {e}\nGot: {proc.stdout}"
         )
+
+
+@API.register
+def update_machines(base_path: str, machines: list[InventoryMachine]) -> None:
+    group_machines: list[Machine] = []
+
+    # Convert InventoryMachine to Machine
+    for machine in machines:
+        m = Machine(
+            name=machine.name,
+            flake=FlakeId(base_path),
+        )
+        if not machine.deploy.targetHost:
+            raise ClanError(f"'TargetHost' is not set for machine '{machine.name}'")
+        # Copy targetHost to machine
+        m.target_host_address = machine.deploy.targetHost
+        group_machines.append(m)
+
+    deploy_machine(MachineGroup(group_machines))
 
 
 def deploy_machine(machines: MachineGroup) -> None:
