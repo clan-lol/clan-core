@@ -40,6 +40,9 @@ def substitute(
             line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
             line = line.replace("__CLAN_SOPS_KEY_DIR__", str(flake))
             buf += line
+    print(f"file: {file}")
+    print(f"clan_core: {clan_core_flake}")
+    print(f"flake: {flake}")
     file.write_text(buf)
 
 
