@@ -56,7 +56,7 @@
           "pkgs/clan-app" = {
             extraPythonPackages =
               (self'.packages.clan-app.externalTestDeps or [ ]) ++ self'.packages.clan-cli.testDependencies;
-            extraPythonPaths = [ "$PROJECT_ROOT/pkgs/clan-cli" ];
+            extraPythonPaths = [ "../clan-cli" ];
             modules = [ "clan_app" ];
           };
         }
@@ -66,7 +66,7 @@
               "pkgs/clan-vm-manager" = {
                 extraPythonPackages =
                   self'.packages.clan-vm-manager.externalTestDeps ++ self'.packages.clan-cli.testDependencies;
-                extraPythonPaths = [ "$PROJECT_ROOT/pkgs/clan-cli" ];
+                extraPythonPaths = [ "../clan-cli" ];
                 modules = [ "clan_vm_manager" ];
               };
             }

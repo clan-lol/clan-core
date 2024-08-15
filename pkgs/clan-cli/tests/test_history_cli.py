@@ -35,14 +35,12 @@ def test_history_list(
     capsys: CaptureFixture,
     test_flake_with_core: FlakeForTest,
 ) -> None:
-    cmd = [
-        "history",
-        "list",
-    ]
-
-    cli.run(cmd)
+    capsys.readouterr()
+    cli.run(["history", "list"])
     assert str(test_flake_with_core.path) not in capsys.readouterr().out
 
     cli.run(["history", "add", f"clan://{test_flake_with_core.path}#vm1"])
-    cli.run(cmd)
+
+    capsys.readouterr()
+    cli.run(["history", "list"])
     assert str(test_flake_with_core.path) in capsys.readouterr().out
