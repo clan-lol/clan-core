@@ -105,14 +105,8 @@ def generate_service_facts(
     )
     files_to_commit = []
     # store secrets
-    for secret in machine.facts_data[service]["secret"]:
-        if isinstance(secret, str):
-            # TODO: This is the old NixOS module, can be dropped everyone has updated.
-            secret_name = secret
-            groups = []
-        else:
-            secret_name = secret["name"]
-            groups = secret.get("groups", [])
+    for secret_name, secret in machine.facts_data[service]["secret"].items():
+        groups = secret.get("groups", [])
 
         secret_file = secrets_dir / secret_name
         if not secret_file.is_file():
