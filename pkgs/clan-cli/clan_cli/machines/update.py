@@ -5,6 +5,7 @@ import os
 import shlex
 import sys
 
+from clan_cli.api import API
 from clan_cli.clan_uri import FlakeId
 
 from ..cmd import run
@@ -12,15 +13,13 @@ from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
 from ..facts.generate import generate_facts
 from ..facts.upload import upload_secrets
-from ..machines.machines import Machine
-from clan_cli.inventory import from_dict
 from ..inventory import Machine as InventoryMachine
+from ..machines.machines import Machine
 from ..nix import nix_command, nix_metadata
 from ..ssh import HostKeyCheck
 from ..vars.generate import generate_vars
 from .inventory import get_all_machines, get_selected_machines
 from .machine_group import MachineGroup
-from clan_cli.api import API
 
 log = logging.getLogger(__name__)
 

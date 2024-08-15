@@ -249,6 +249,6 @@ def from_dict(t: type[G], data: dict[str, Any] | Any, path: list[str] = []) -> G
     if is_dataclass(t):
         if not isinstance(data, dict):
             raise ClanError(f"{data} is not a dict. Expected {t}")
-        return construct_dataclass(t, data, path)
+        return construct_dataclass(t, data, path)  # type: ignore
     else:
         return construct_value(t, data, path)
