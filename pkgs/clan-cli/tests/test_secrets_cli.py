@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 def _test_identities(
     what: str,
     test_flake: FlakeForTest,
-    capsys: pytest.CaptureFixture,
+    capture_output: CaptureOutput,
     age_keys: list["KeyPair"],
 ) -> None:
     sops_folder = test_flake.path / "sops"
@@ -65,24 +65,22 @@ def _test_identities(
         ]
     )
 
-    capsys.readouterr()  # empty the buffer
-    cli.run(
-        [
-            "secrets",
-            what,
-            "get",
-            "--flake",
-            str(test_flake.path),
-            "foo",
-        ]
-    )
-    out = capsys.readouterr()  # empty the buffer
-    assert age_keys[1].pubkey in out.out
+    with capture_output as output:
+        cli.run(
+            [
+                "secrets",
+                what,
+                "get",
+                "--flake",
+                str(test_flake.path),
+                "foo",
+            ]
+        )
+    assert age_keys[1].pubkey in output.out
 
-    capsys.readouterr()  # empty the buffer
-    cli.run(["secrets", what, "list", "--flake", str(test_flake.path)])
-    out = capsys.readouterr()  # empty the buffer
-    assert "foo" in out.out
+    with capture_output as output:
+        cli.run(["secrets", what, "list", "--flake", str(test_flake.path)])
+    assert "foo" in output.out
 
     cli.run(["secrets", what, "remove", "--flake", str(test_flake.path), "foo"])
     assert not (sops_folder / what / "foo" / "key.json").exists()
@@ -90,30 +88,29 @@ def _test_identities(
     with pytest.raises(ClanError):  # already removed
         cli.run(["secrets", what, "remove", "--flake", str(test_flake.path), "foo"])
 
-    capsys.readouterr()
-    cli.run(["secrets", what, "list", "--flake", str(test_flake.path)])
-    out = capsys.readouterr()
-    assert "foo" not in out.out
+    with capture_output as output:
+        cli.run(["secrets", what, "list", "--flake", str(test_flake.path)])
+    assert "foo" not in output.out
 
 
 def test_users(
-    test_flake: FlakeForTest, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
+    test_flake: FlakeForTest, capture_output: CaptureOutput, age_keys: list["KeyPair"]
 ) -> None:
-    _test_identities("users", test_flake, capsys, age_keys)
+    _test_identities("users", test_flake, capture_output, age_keys)
 
 
 def test_machines(
-    test_flake: FlakeForTest, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
+    test_flake: FlakeForTest, capture_output: CaptureOutput, age_keys: list["KeyPair"]
 ) -> None:
-    _test_identities("machines", test_flake, capsys, age_keys)
+    _test_identities("machines", test_flake, capture_output, age_keys)
 
 
 def test_groups(
-    test_flake: FlakeForTest, capsys: pytest.CaptureFixture, age_keys: list["KeyPair"]
+    test_flake: FlakeForTest, capture_output: CaptureOutput, age_keys: list["KeyPair"]
 ) -> None:
-    capsys.readouterr()  # empty the buffer
-    cli.run(["secrets", "groups", "list", "--flake", str(test_flake.path)])
-    assert capsys.readouterr().out == ""
+    with capture_output as output:
+        cli.run(["secrets", "groups", "list", "--flake", str(test_flake.path)])
+    assert output.out == ""
 
     with pytest.raises(ClanError):  # machine does not exist yet
         cli.run(
@@ -198,9 +195,9 @@ def test_groups(
         ]
     )
 
-    capsys.readouterr()  # empty the buffer
-    cli.run(["secrets", "groups", "list", "--flake", str(test_flake.path)])
-    out = capsys.readouterr().out
+    with capture_output as output:
+        cli.run(["secrets", "groups", "list", "--flake", str(test_flake.path)])
+    out = output.out
     assert "user1" in out
     assert "machine1" in out
 
