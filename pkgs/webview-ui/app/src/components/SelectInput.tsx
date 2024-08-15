@@ -1,4 +1,5 @@
 import { FieldValues, FormStore, ResponseData } from "@modular-forms/solid";
+import { Show } from "solid-js";
 import { type JSX } from "solid-js";
 
 interface SelectInputProps<T extends FieldValues, R extends ResponseData> {
@@ -9,6 +10,7 @@ interface SelectInputProps<T extends FieldValues, R extends ResponseData> {
   label: JSX.Element;
   error?: string;
   required?: boolean;
+  topRightLabel?: JSX.Element;
 }
 
 export function SelectInput<T extends FieldValues, R extends ResponseData>(
@@ -29,8 +31,10 @@ export function SelectInput<T extends FieldValues, R extends ResponseData>(
         >
           {props.label}
         </span>
+        <Show when={props.topRightLabel}>
+          <span class="label-text-alt">{props.topRightLabel}</span>
+        </Show>
       </div>
-
       <select
         {...props.selectProps}
         required={props.required}
