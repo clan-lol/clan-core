@@ -45,9 +45,8 @@ let
     ];
     boot.initrd.systemd.emergencyAccess = true;
 
-    # sysusers is faster than nixos's perl scripts
-    # and doesn't require state.
-    systemd.sysusers.enable = true;
+    # sysusers would be faster because it doesn't need perl, but it cannot create normal users
+    systemd.sysusers.enable = false;
     users.mutableUsers = false;
     users.allowNoPasswordLogin = true;
 
