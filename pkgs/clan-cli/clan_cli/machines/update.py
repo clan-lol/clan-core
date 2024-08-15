@@ -5,11 +5,15 @@ import os
 import shlex
 import sys
 
+from clan_cli.api import API
+from clan_cli.clan_uri import FlakeId
+
 from ..cmd import run
 from ..completions import add_dynamic_completer, complete_machines
 from ..errors import ClanError
 from ..facts.generate import generate_facts
 from ..facts.upload import upload_secrets
+from ..inventory import Machine as InventoryMachine
 from ..machines.machines import Machine
 from ..nix import nix_command, nix_metadata
 from ..ssh import HostKeyCheck
@@ -81,6 +85,25 @@ def upload_sources(
         )
 
 
+@API.register
+def update_machines(base_path: str, machines: list[InventoryMachine]) -> None:
+    group_machines: list[Machine] = []
+
+    # Convert InventoryMachine to Machine
+    for machine in machines:
+        m = Machine(
+            name=machine.name,
+            flake=FlakeId(base_path),
+        )
+        if not machine.deploy.targetHost:
+            raise ClanError(f"'TargetHost' is not set for machine '{machine.name}'")
+        # Copy targetHost to machine
+        m.target_host_address = machine.deploy.targetHost
+        group_machines.append(m)
+
+    deploy_machine(MachineGroup(group_machines))
+
+
 def deploy_machine(machines: MachineGroup) -> None:
     """
     Deploy to all hosts in parallel
@@ -97,8 +120,10 @@ def deploy_machine(machines: MachineGroup) -> None:
         generate_vars([machine], None, False)
         upload_secrets(machine)
 
-        path = upload_sources(".", target)
-
+        path = upload_sources(
+            str(machine.flake.path) if machine.flake.is_local() else machine.flake.url,
+            target,
+        )
         if host.host_key_check != HostKeyCheck.STRICT:
             ssh_arg += " -o StrictHostKeyChecking=no"
         if host.host_key_check == HostKeyCheck.NONE:

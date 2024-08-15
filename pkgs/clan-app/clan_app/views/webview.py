@@ -1,4 +1,3 @@
-import dataclasses
 import json
 import logging
 from typing import Any
@@ -116,10 +115,10 @@ class WebExecutor(GObject.Object):
             # Introspect the function and create the expected dataclass from dict dynamically
             # Depending on the introspected argument_type
             arg_class = self.jschema_api.get_method_argtype(method_name, k)
-            if dataclasses.is_dataclass(arg_class):
-                reconciled_arguments[k] = from_dict(arg_class, v)
-            else:
-                reconciled_arguments[k] = v
+
+            # TODO: rename from_dict into something like construct_checked_value
+            # from_dict really takes Anything and returns an instance of the type/class
+            reconciled_arguments[k] = from_dict(arg_class, v)
 
         GLib.idle_add(fn_instance._async_run, reconciled_arguments)
 

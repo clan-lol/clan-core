@@ -157,6 +157,21 @@ def test_nullable_non_exist() -> None:
         from_dict(Person, person_dict)
 
 
+def test_list() -> None:
+    data = [
+        {"name": "John"},
+        {"name": "Sarah"},
+    ]
+
+    @dataclass
+    class Name:
+        name: str
+
+    result = from_dict(list[Name], data)
+
+    assert result == [Name("John"), Name("Sarah")]
+
+
 def test_deserialize_extensive_inventory() -> None:
     # TODO: Make this an abstract test, so it doesn't break the test if the inventory changes
     data = {
