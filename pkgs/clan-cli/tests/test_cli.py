@@ -1,9 +1,9 @@
 import pytest
 from helpers import cli
+from stdout import CaptureOutput
 
 
-def test_help(capsys: pytest.CaptureFixture) -> None:
-    with pytest.raises(SystemExit):
+def test_help(capture_output: CaptureOutput) -> None:
+    with capture_output as output, pytest.raises(SystemExit):
         cli.run(["--help"])
-    captured = capsys.readouterr()
-    assert captured.out.startswith("usage:")
+    assert output.out.startswith("usage:")
