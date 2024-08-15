@@ -5,14 +5,15 @@ from pathlib import Path
 import pytest
 from fixtures_flakes import substitute
 from helpers import cli
+from stdout import CaptureOutput
 
 
 @pytest.mark.impure
 def test_create_flake(
     monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture,
     temporary_home: Path,
     clan_core: Path,
+    capture_output: CaptureOutput,
 ) -> None:
     flake_dir = temporary_home / "test-flake"
 
@@ -29,7 +30,6 @@ def test_create_flake(
 
     monkeypatch.chdir(flake_dir)
     cli.run(["machines", "create", "machine1"])
-    capsys.readouterr()  # flush cache
 
     # create a hardware-configuration.nix that doesn't throw an eval error
 
@@ -39,8 +39,9 @@ def test_create_flake(
         ) as hw_config_nix:
             hw_config_nix.write("{}")
 
-    cli.run(["machines", "list"])
-    assert "machine1" in capsys.readouterr().out
+    with capture_output as output:
+        cli.run(["machines", "list"])
+    assert "machine1" in output.out
     flake_show = subprocess.run(
         ["nix", "flake", "show", "--json"],
         check=True,
@@ -57,9 +58,9 @@ def test_create_flake(
 @pytest.mark.impure
 def test_ui_template(
     monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture,
     temporary_home: Path,
     clan_core: Path,
+    capture_output: CaptureOutput,
 ) -> None:
     flake_dir = temporary_home / "test-flake"
     url = f"{clan_core}#minimal"
@@ -73,10 +74,10 @@ def test_ui_template(
 
     monkeypatch.chdir(flake_dir)
     cli.run(["machines", "create", "machine1"])
-    capsys.readouterr()  # flush cache
 
-    cli.run(["machines", "list"])
-    assert "machine1" in capsys.readouterr().out
+    with capture_output as output:
+        cli.run(["machines", "list"])
+    assert "machine1" in output.out
     flake_show = subprocess.run(
         ["nix", "flake", "show", "--json"],
         check=True,

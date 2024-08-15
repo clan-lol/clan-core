@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+from stdout import CaptureOutput
 
 from tests.fixtures_flakes import FlakeForTest, generate_flake
 from tests.helpers import cli
@@ -18,11 +19,11 @@ no_kvm = not os.path.exists("/dev/kvm")
 
 @pytest.mark.impure
 def test_inspect(
-    test_flake_with_core: FlakeForTest, capsys: pytest.CaptureFixture
+    test_flake_with_core: FlakeForTest, capture_output: CaptureOutput
 ) -> None:
-    cli.run(["vms", "inspect", "--flake", str(test_flake_with_core.path), "vm1"])
-    out = capsys.readouterr()  # empty the buffer
-    assert "Cores" in out.out
+    with capture_output as output:
+        cli.run(["vms", "inspect", "--flake", str(test_flake_with_core.path), "vm1"])
+    assert "Cores" in output.out
 
 
 @pytest.mark.skipif(no_kvm, reason="Requires KVM")

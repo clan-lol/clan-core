@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import pytest
 from fixtures_flakes import FlakeForTest
 from helpers import cli
-from pytest import CaptureFixture
+from stdout import CaptureOutput
 
 from clan_cli.dirs import user_history_file
 from clan_cli.history.add import HistoryEntry
@@ -32,15 +32,15 @@ def test_history_add(
 
 @pytest.mark.impure
 def test_history_list(
-    capsys: CaptureFixture,
+    capture_output: CaptureOutput,
     test_flake_with_core: FlakeForTest,
 ) -> None:
-    capsys.readouterr()
-    cli.run(["history", "list"])
-    assert str(test_flake_with_core.path) not in capsys.readouterr().out
+    with capture_output as output:
+        cli.run(["history", "list"])
+    assert str(test_flake_with_core.path) not in output.out
 
     cli.run(["history", "add", f"clan://{test_flake_with_core.path}#vm1"])
 
-    capsys.readouterr()
-    cli.run(["history", "list"])
-    assert str(test_flake_with_core.path) in capsys.readouterr().out
+    with capture_output as output:
+        cli.run(["history", "list"])
+    assert str(test_flake_with_core.path) in output.out
