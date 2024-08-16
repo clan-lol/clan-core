@@ -1,17 +1,16 @@
-{ lib, pkgs, ... }:
-
 {
-  # use latest kernel we can support to get more hardware support
-  boot.kernelPackages =
-    lib.mkForce
-      (pkgs.zfs.override { removeLinuxDRM = pkgs.hostPlatform.isAarch64; }).latestCompatibleLinuxPackages;
-  boot.zfs.removeLinuxDRM = lib.mkDefault pkgs.hostPlatform.isAarch64;
+  lib,
+  pkgs,
+  config,
+  ...
+}:
+{
+  # If we also need zfs, we can use the unstable version as we otherwise don't have a new enough kernel version
+  boot.zfs.package = pkgs.zfsUnstable;
+  boot.kernelPackages = lib.mkIf config.boot.zfs.enabled (
+    lib.mkForce config.boot.zfs.package.latestCompatibleLinuxPackages
+  );
 
   # Enable bcachefs support
   boot.supportedFilesystems.bcachefs = lib.mkDefault true;
-
-  environment.systemPackages = with pkgs; [
-    bcachefs-tools
-    keyutils
-  ];
 }
