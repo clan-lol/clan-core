@@ -45,7 +45,7 @@ export const Flash = () => {
   /* ==== WIFI NETWORK ==== */
   const [wifiNetworks, setWifiNetworks] = createSignal<Wifi[]>([]);
   const [passwordVisibility, setPasswordVisibility] = createSignal<boolean[]>(
-    [],
+    []
   );
 
   createEffect(() => {
@@ -67,7 +67,7 @@ export const Flash = () => {
     const updatedNetworks = wifiNetworks().filter((_, i) => i !== index);
     setWifiNetworks(updatedNetworks);
     const updatedVisibility = passwordVisibility().filter(
-      (_, i) => i !== index,
+      (_, i) => i !== index
     );
     setPasswordVisibility(updatedVisibility);
     setValue(formStore, "wifi", updatedNetworks);
@@ -83,7 +83,9 @@ export const Flash = () => {
   const deviceQuery = createQuery(() => ({
     queryKey: ["block_devices"],
     queryFn: async () => {
-      const result = await callApi("show_block_devices", { options: {} });
+      const result = await callApi("show_block_devices", {
+        options: {},
+      });
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },

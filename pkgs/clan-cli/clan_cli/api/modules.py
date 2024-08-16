@@ -162,6 +162,11 @@ def get_inventory(base_path: str) -> Inventory:
 def set_service_instance(
     base_path: str, module_name: str, instance_name: str, config: dict[str, Any]
 ) -> None:
+    """
+    A function that allows to set any service instance in the inventory.
+    Takes any untyped dict. The dict is then checked and converted into the correct type using the type hints of the service.
+    If any conversion error occurs, the function will raise an error.
+    """
     service_keys = get_type_hints(Service).keys()
 
     if module_name not in service_keys:
