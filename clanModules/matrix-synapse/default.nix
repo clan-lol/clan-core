@@ -6,25 +6,31 @@
 }:
 let
   cfg = config.clan.matrix-synapse;
-  nginx-vhost = "matrix.${config.clan.matrix-synapse.domain}";
   element-web =
     pkgs.runCommand "element-web-with-config" { nativeBuildInputs = [ pkgs.buildPackages.jq ]; }
       ''
         cp -r ${pkgs.element-web} $out
         chmod -R u+w $out
-        jq '."default_server_config"."m.homeserver" = { "base_url": "https://${nginx-vhost}:443", "server_name": "${config.clan.matrix-synapse.domain}" }' \
+        jq '."default_server_config"."m.homeserver" = { "base_url": "https://${cfg.domain.server}:443", "server_name": "${cfg.domain.server}" }' \
           > $out/config.json < ${pkgs.element-web}/config.json
-        ln -s $out/config.json $out/config.${nginx-vhost}.json
+        ln -s $out/config.json $out/config.${cfg.domain.server}.json
       '';
 in
 # FIXME: This was taken from upstream. Drop this when our patch is upstream
 {
   options.services.matrix-synapse.package = lib.mkOption { readOnly = false; };
   options.clan.matrix-synapse = {
-    domain = lib.mkOption {
-      type = lib.types.str;
-      description = "The domain name of the matrix server";
-      example = "example.com";
+    domain = {
+      server = lib.mkOption {
+        type = lib.types.str;
+        description = "The domain name of the matrix server";
+        example = "matrix.example.com";
+      };
+      client = lib.mkOption {
+        type = lib.types.str;
+        description = "The domain name of the matrix client";
+        example = "element.example.com";
+      };
     };
     users = lib.mkOption {
       default = { };
@@ -61,14 +67,14 @@ in
       "matrix-synapse"
       "enable"
     ] "Importing the module will already enable the service.")
-
-    ../postgresql
+    ../nginx
   ];
   config = {
     services.matrix-synapse = {
       enable = true;
       settings = {
-        server_name = cfg.domain;
+        server_name = cfg.domain.server;
+        enable_registration = false;
         database = {
           args.user = "matrix-synapse";
           args.database = "matrix-synapse";
@@ -169,18 +175,13 @@ in
         ];
       };
 
-    networking.firewall.allowedTCPPorts = [
-      80
-      443
-    ];
-
     services.nginx = {
       enable = true;
       virtualHosts = {
-        ${cfg.domain} = {
+        "${cfg.domain.server}" = {
           locations."= /.well-known/matrix/server".extraConfig = ''
             add_header Content-Type application/json;
-            return 200 '${builtins.toJSON { "m.server" = "matrix.${cfg.domain}:443"; }}';
+            return 200 '${builtins.toJSON { "m.server" = "${cfg.domain.server}:443"; }}';
           '';
           locations."= /.well-known/matrix/client".extraConfig = ''
             add_header Content-Type application/json;
@@ -188,7 +189,7 @@ in
             return 200 '${
               builtins.toJSON {
                 "m.homeserver" = {
-                  "base_url" = "https://${nginx-vhost}";
+                  "base_url" = "https://${cfg.domain.server}";
                 };
                 "m.identity_server" = {
                   "base_url" = "https://vector.im";
@@ -196,12 +197,14 @@ in
               }
             }';
           '';
-        };
-        ${nginx-vhost} = {
           forceSSL = true;
           enableACME = true;
           locations."/_matrix".proxyPass = "http://localhost:8008";
           locations."/_synapse".proxyPass = "http://localhost:8008";
+        };
+        "${cfg.domain.client}" = {
+          forceSSL = true;
+          enableACME = true;
           locations."/".root = element-web;
         };
       };
