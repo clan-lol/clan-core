@@ -1,4 +1,7 @@
 { config, lib, ... }:
+let
+  nginx_acme_email = "nginx-acme";
+in
 {
 
   imports = [
@@ -10,6 +13,23 @@
 
   ];
   config = {
+
+    clan.core.facts.services."${nginx_acme_email}" = {
+      public."${nginx_acme_email}" = { };
+      generator.prompt = "Please enter your email address for Let's Encrypt certificate generation";
+
+      generator.script = ''
+        echo -n $prompt_value | tr -d "\n" > "$facts"/${nginx_acme_email}
+      '';
+    };
+    security.acme.acceptTerms = true;
+    security.acme.defaults.email = lib.mkDefault (
+      let
+        path = config.clan.core.facts.services."${nginx_acme_email}".public."${nginx_acme_email}".path;
+      in
+      if builtins.pathExists path then builtins.readFile path else null
+    );
+
     networking.firewall.allowedTCPPorts = [
       443
       80
