@@ -61,6 +61,7 @@ nav:
           - reference/clanModules/dyndns.md
           - reference/clanModules/ergochat.md
           - reference/clanModules/garage.md
+          - reference/clanModules/golem-provider.md
           - reference/clanModules/index.md
           - reference/clanModules/iwd.md
           - reference/clanModules/localbackup.md
