@@ -83,7 +83,9 @@ export const Flash = () => {
   const deviceQuery = createQuery(() => ({
     queryKey: ["block_devices"],
     queryFn: async () => {
-      const result = await callApi("show_block_devices", {});
+      const result = await callApi("show_block_devices", {
+        options: {},
+      });
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
@@ -167,7 +169,7 @@ export const Flash = () => {
   };
 
   return (
-    <div class="m-4 bg-slate-50 p-4 pt-8 shadow-sm shadow-slate-400 rounded-lg">
+    <div class="m-4 rounded-lg bg-slate-50 p-4 pt-8 shadow-sm shadow-slate-400">
       <Form onSubmit={handleSubmit}>
         <div class="my-4">
           <Field name="sshKeys" type="File[]">

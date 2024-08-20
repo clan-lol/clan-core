@@ -90,6 +90,7 @@ def get_directory(current_path: str) -> Directory:
 @dataclass
 class BlkInfo:
     name: str
+    id_link: str
     path: str
     rm: str
     size: str
@@ -111,19 +112,47 @@ def blk_from_dict(data: dict) -> BlkInfo:
         size=data["size"],
         ro=data["ro"],
         mountpoints=data["mountpoints"],
-        type_=data["type"],  # renamed here
+        type_=data["type"],  # renamed
+        id_link=data["id-link"],  # renamed
     )
 
 
+@dataclass
+class BlockDeviceOptions:
+    hostname: str | None = None
+    keyfile: str | None = None
+
+
 @API.register
-def show_block_devices() -> Blockdevices:
+def show_block_devices(options: BlockDeviceOptions) -> Blockdevices:
     """
     Abstract api method to show block devices.
     It must return a list of block devices.
     """
+    keyfile = options.keyfile
+    remote = (
+        [
+            "ssh",
+            *(["-i", f"{keyfile}"] if keyfile else []),
+            # Disable strict host key checking
+            "-o StrictHostKeyChecking=no",
+            # Disable known hosts file
+            "-o UserKnownHostsFile=/dev/null",
+            f"{options.hostname}",
+        ]
+        if options.hostname
+        else []
+    )
+
     cmd = nix_shell(
-        ["nixpkgs#util-linux"],
-        ["lsblk", "--json", "--output", "PATH,NAME,RM,SIZE,RO,MOUNTPOINTS,TYPE"],
+        ["nixpkgs#util-linux", *(["nixpkgs#openssh"] if options.hostname else [])],
+        [
+            *remote,
+            "lsblk",
+            "--json",
+            "--output",
+            "PATH,NAME,RM,SIZE,RO,MOUNTPOINTS,TYPE,ID-LINK",
+        ],
     )
     proc = run_no_stdout(cmd)
     res = proc.stdout.strip()

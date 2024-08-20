@@ -1,14 +1,26 @@
 import { callApi } from "@/src/api";
 import { activeURI } from "@/src/App";
+import { SelectInput } from "@/src/components/SelectInput";
+import { createForm } from "@modular-forms/solid";
 import { useParams } from "@solidjs/router";
 import { createQuery } from "@tanstack/solid-query";
-import { createSignal, Show } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import toast from "solid-toast";
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+type InstallForm = {
+  disk: string;
+};
 
 export const MachineDetails = () => {
   const params = useParams();
   const query = createQuery(() => ({
-    queryKey: [activeURI(), "machine", params.id],
+    queryKey: [
+      activeURI(),
+      "machine",
+      params.id,
+      "get_inventory_machine_details",
+    ],
     queryFn: async () => {
       const curr = activeURI();
       if (curr) {
@@ -24,12 +36,78 @@ export const MachineDetails = () => {
 
   const [sshKey, setSshKey] = createSignal<string>();
 
+  const [formStore, { Form, Field }] = createForm<InstallForm>({});
+  const handleSubmit = async (values: InstallForm) => {
+    const curr_uri = activeURI();
+    if (!curr_uri) {
+      return;
+    }
+
+    console.log("Setting disk", values.disk);
+    const r = await callApi("set_single_disk_uuid", {
+      base_path: curr_uri,
+      machine_name: params.id,
+      disk_uuid: values.disk,
+    });
+
+    return null;
+  };
+
+  const targetHost = () => query?.data?.machine.deploy.targetHost;
+  const remoteDiskQuery = createQuery(() => ({
+    queryKey: [activeURI(), "machine", targetHost(), "show_block_devices"],
+    queryFn: async () => {
+      const curr = activeURI();
+      if (curr) {
+        const result = await callApi("show_block_devices", {
+          options: {
+            hostname: targetHost(),
+            keyfile: sshKey(),
+          },
+        });
+        if (result.status === "error") throw new Error("Failed to fetch data");
+        return result.data;
+      }
+    },
+  }));
+
+  const onlineStatusQuery = createQuery(() => ({
+    queryKey: [activeURI(), "machine", targetHost(), "check_machine_online"],
+    queryFn: async () => {
+      const curr = activeURI();
+      if (curr) {
+        const result = await callApi("check_machine_online", {
+          flake_url: curr,
+          machine_name: params.id,
+          opts: {
+            keyfile: sshKey(),
+          },
+        });
+        if (result.status === "error") throw new Error("Failed to fetch data");
+        return result.data;
+      }
+    },
+    refetchInterval: 5000,
+  }));
+
   return (
     <div>
       {query.isLoading && <span class="loading loading-bars" />}
       <Show when={!query.isLoading && query.data}>
         {(data) => (
           <div class="grid grid-cols-2 gap-2 text-lg">
+            <Show when={onlineStatusQuery.isFetching} fallback={<span></span>}>
+              <span class="loading loading-bars loading-sm justify-self-end"></span>
+            </Show>
+            <span
+              class="badge badge-outline text-lg"
+              classList={{
+                "badge-primary": onlineStatusQuery.data === "Online",
+              }}
+            >
+              {onlineStatusQuery.data}
+            </span>
+
             <label class="justify-self-end font-light">Name</label>
             <span>{data().machine.name}</span>
             <span class="justify-self-end font-light">description</span>
@@ -65,6 +143,7 @@ export const MachineDetails = () => {
 
             <span class="justify-self-end font-light">has hw spec</span>
             <span>{data().has_hw_specs ? "Yes" : "Not yet"}</span>
+
             <div class="col-span-2 justify-self-center">
               <button
                 class="btn btn-primary join-item btn-sm"
@@ -102,6 +181,55 @@ export const MachineDetails = () => {
                 Generate HW Spec
               </button>
             </div>
+            <button
+              class="btn self-end"
+              onClick={() => remoteDiskQuery.refetch()}
+            >
+              Refresh remote disks
+            </button>
+            <Form onSubmit={handleSubmit} class="w-full">
+              <Field name="disk">
+                {(field, props) => (
+                  <SelectInput
+                    formStore={formStore}
+                    selectProps={props}
+                    label="Remote Disk to use"
+                    value={String(field.value)}
+                    error={field.error}
+                    required
+                    options={
+                      <Show when={remoteDiskQuery.data}>
+                        {(disks) => (
+                          <>
+                            <option disabled>
+                              Select the boot disk of the remote machine
+                            </option>
+                            <For each={disks().blockdevices}>
+                              {(dev) => (
+                                <option value={dev.name}>
+                                  {dev.name}
+                                  {" -- "}
+                                  {dev.size}
+                                  {"bytes @"}
+                                  {
+                                    query.data?.machine.deploy.targetHost?.split(
+                                      "@",
+                                    )?.[1]
+                                  }
+                                </option>
+                              )}
+                            </For>
+                          </>
+                        )}
+                      </Show>
+                    }
+                  />
+                )}
+              </Field>
+              <button class="btn btn-primary" type="submit">
+                Set disk
+              </button>
+            </Form>
           </div>
         )}
       </Show>
