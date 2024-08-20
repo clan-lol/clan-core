@@ -32,6 +32,10 @@ from .classes import (
     ServiceBorgbackupRoleClient,
     ServiceBorgbackupRoleServer,
     ServiceMeta,
+    ServiceSingleDisk,
+    ServiceSingleDiskRole,
+    ServiceSingleDiskRoleDefault,
+    SingleDiskConfig,
 )
 
 # Re export classes here
@@ -49,6 +53,11 @@ __all__ = [
     "ServiceBorgbackupRole",
     "ServiceBorgbackupRoleClient",
     "ServiceBorgbackupRoleServer",
+    # Single Disk service
+    "ServiceSingleDisk",
+    "ServiceSingleDiskRole",
+    "ServiceSingleDiskRoleDefault",
+    "SingleDiskConfig",
 ]
 
 
@@ -82,6 +91,7 @@ def load_inventory_eval(flake_dir: str | Path) -> Inventory:
             "--json",
         ]
     )
+
     proc = run_no_stdout(cmd)
 
     try:

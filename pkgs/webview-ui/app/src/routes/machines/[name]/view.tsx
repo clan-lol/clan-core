@@ -38,6 +38,18 @@ export const MachineDetails = () => {
 
   const [formStore, { Form, Field }] = createForm<InstallForm>({});
   const handleSubmit = async (values: InstallForm) => {
+    const curr_uri = activeURI();
+    if (!curr_uri) {
+      return;
+    }
+
+    console.log("Setting disk", values.disk);
+    const r = await callApi("set_single_disk_uuid", {
+      base_path: curr_uri,
+      machine_name: params.id,
+      disk_uuid: values.disk,
+    });
+
     return null;
   };
 
@@ -151,7 +163,7 @@ export const MachineDetails = () => {
                       machine_name: params.id,
                       clan_dir: curr_uri,
                       hostname: query.data.machine.deploy.targetHost,
-                    }
+                    },
                   );
                   toast.dismiss(lt);
 
@@ -160,7 +172,7 @@ export const MachineDetails = () => {
                   }
                   if (response.status === "error") {
                     toast.error(
-                      "Failed to generate. " + response.errors[0].message
+                      "Failed to generate. " + response.errors[0].message,
                     );
                   }
                   query.refetch();
@@ -201,7 +213,7 @@ export const MachineDetails = () => {
                                   {"bytes @"}
                                   {
                                     query.data?.machine.deploy.targetHost?.split(
-                                      "@"
+                                      "@",
                                     )?.[1]
                                   }
                                 </option>
@@ -214,6 +226,9 @@ export const MachineDetails = () => {
                   />
                 )}
               </Field>
+              <button class="btn btn-primary" type="submit">
+                Set disk
+              </button>
             </Form>
           </div>
         )}
