@@ -98,7 +98,7 @@ def test_nested_nullable() -> None:
         },
         "mode": "format",
         "disks": {"main": "/dev/sda"},
-        "system_config": {"language": "en_US.utf-8", "keymap": "en"},
+        "system_config": {"language": "en_US.UTF-8", "keymap": "en"},
         "dry_run": False,
         "write_efi_boot_entries": False,
         "debug": False,
@@ -113,7 +113,7 @@ def test_nested_nullable() -> None:
         mode="format",
         disks={"main": "/dev/sda"},
         system_config=SystemConfig(
-            language="en_US.utf-8", keymap="en", ssh_keys_path=None
+            language="en_US.UTF-8", keymap="en", ssh_keys_path=None
         ),
         dry_run=False,
         write_efi_boot_entries=False,
