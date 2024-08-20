@@ -45,7 +45,7 @@ export const Flash = () => {
   /* ==== WIFI NETWORK ==== */
   const [wifiNetworks, setWifiNetworks] = createSignal<Wifi[]>([]);
   const [passwordVisibility, setPasswordVisibility] = createSignal<boolean[]>(
-    []
+    [],
   );
 
   createEffect(() => {
@@ -67,7 +67,7 @@ export const Flash = () => {
     const updatedNetworks = wifiNetworks().filter((_, i) => i !== index);
     setWifiNetworks(updatedNetworks);
     const updatedVisibility = passwordVisibility().filter(
-      (_, i) => i !== index
+      (_, i) => i !== index,
     );
     setPasswordVisibility(updatedVisibility);
     setValue(formStore, "wifi", updatedNetworks);
@@ -169,7 +169,7 @@ export const Flash = () => {
   };
 
   return (
-    <div class="m-4 bg-slate-50 p-4 pt-8 shadow-sm shadow-slate-400 rounded-lg">
+    <div class="m-4 rounded-lg bg-slate-50 p-4 pt-8 shadow-sm shadow-slate-400">
       <Form onSubmit={handleSubmit}>
         <div class="my-4">
           <Field name="sshKeys" type="File[]">

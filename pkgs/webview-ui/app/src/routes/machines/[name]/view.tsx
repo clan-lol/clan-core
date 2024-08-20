@@ -7,6 +7,7 @@ import { createQuery } from "@tanstack/solid-query";
 import { createSignal, For, Show } from "solid-js";
 import toast from "solid-toast";
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type InstallForm = {
   disk: string;
 };
@@ -150,7 +151,7 @@ export const MachineDetails = () => {
                       machine_name: params.id,
                       clan_dir: curr_uri,
                       hostname: query.data.machine.deploy.targetHost,
-                    },
+                    }
                   );
                   toast.dismiss(lt);
 
@@ -159,7 +160,7 @@ export const MachineDetails = () => {
                   }
                   if (response.status === "error") {
                     toast.error(
-                      "Failed to generate. " + response.errors[0].message,
+                      "Failed to generate. " + response.errors[0].message
                     );
                   }
                   query.refetch();
@@ -200,7 +201,7 @@ export const MachineDetails = () => {
                                   {"bytes @"}
                                   {
                                     query.data?.machine.deploy.targetHost?.split(
-                                      "@",
+                                      "@"
                                     )?.[1]
                                   }
                                 </option>
