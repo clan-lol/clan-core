@@ -28,7 +28,7 @@ in
 {
   options.clan.services.mumble = {
     user = lib.mkOption {
-      type = lib.types.string;
+      type = lib.types.str;
       default = "alice";
       description = "The user mumble should be set up for.";
     };
