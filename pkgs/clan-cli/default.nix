@@ -61,6 +61,7 @@ let
     cp -r ${./.} $out
     chmod -R +w $out
     ln -sf ${nixpkgs'} $out/clan_cli/nixpkgs
+    cp -r ${../../templates} $out/clan_cli/templates
 
     ${classgen}/bin/classgen ${inventory-schema}/schema.json $out/clan_cli/inventory/classes.py
   '';

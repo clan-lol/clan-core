@@ -138,5 +138,7 @@ class SecretStore(SecretStoreBase):
         #         else:
         #             # TODO: drop old format soon
         #             secret_name = secret
-        #         (output_dir / secret_name).write_bytes(self.get(service, secret_name))
+        #         with (output_dir / secret_name).open("wb") as f:
+        #            f.chmod(0o600)
+        #            f.write(self.get(service, secret_name))
         # (output_dir / ".pass_info").write_bytes(self.generate_hash())

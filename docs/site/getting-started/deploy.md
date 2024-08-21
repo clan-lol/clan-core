@@ -112,7 +112,7 @@ This process involves preparing a suitable hardware and disk partitioning config
     1. **SSH with Password Authentication**
         Run the following command to install using SSH:
         ```bash
-        clan machines install [MACHINE] flash-installer.local
+        clan machines install [MACHINE] <IP>
         ```
 
     2. **Scanning a QR Code for Installation Details**
@@ -150,22 +150,16 @@ Clan CLI enables you to remotely update your machines over SSH. This requires se
 
 ### Setting the Target Host
 
-Replace `root@jon` with the actual hostname or IP address of your target machine:
+Replace `root@jon` with the actual hostname or IP address of your target machine in the `configuration.nix` of the machine:
 ```{.nix hl_lines="9" .no-copy}
-buildClan {
+{
     # ...
-    machines = {
-        # "jon" will be the hostname of the machine
-        "jon" = {
-            # Set this for clan commands use ssh i.e. `clan machines update`
-            # If you change the hostname, you need to update this line to root@<new-hostname>
-            # This only works however if you have avahi running on your admin machine else use IP
-            clan.core.networking.targetHost = pkgs.lib.mkDefault "root@jon";
-        };
-    };
+    # Set this for clan commands use ssh i.e. `clan machines update`
+    # If you change the hostname, you need to update this line to root@<new-hostname>
+    # This only works however if you have avahi running on your admin machine else use IP
+    clan.core.networking.targetHost = "root@jon";
 };
 ```
-
 
 !!! warning
     The use of `root@` in the target address implies SSH access as the `root` user.

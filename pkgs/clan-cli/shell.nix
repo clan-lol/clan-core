@@ -15,7 +15,6 @@ let
       rope
       setuptools
       wheel
-      ipdb
       pip
     ]);
 in
@@ -26,8 +25,6 @@ mkShell {
   ] ++ devshellTestDeps;
 
   inputsFrom = [ self'.devShells.default ];
-
-  PYTHONBREAKPOINT = "ipdb.set_trace";
 
   CLAN_STATIC_PROGRAMS = lib.concatStringsSep ":" (
     lib.attrNames clan-cli-full.passthru.runtimeDependenciesAsSet

@@ -32,9 +32,9 @@ In the `flake.nix` file:
 
 - [x] set a unique `name`.
 
-=== "**buildClan**"
+=== "**normal flake template**"
 
-    ```nix title="clan-core.lib.buildClan"
+    ```nix title="flake.nix" hl_lines="3"
     buildClan {
         # Set a unique name
         meta.name = "Lobsters";
@@ -50,11 +50,11 @@ In the `flake.nix` file:
     }
     ```
 
-=== "**flakeParts**"
+=== "**template using flake-parts**"
 
     !!! info "See [Clan with flake-parts](./flake-parts.md) for help migrating to flake-parts."
 
-    ```nix title="clan-core.flakeModules.default"
+    ```nix title="flake.nix" hl_lines="3"
     clan = {
         # Set a unique name
         meta.name = "Lobsters";
@@ -77,11 +77,11 @@ Adding or configuring a new machine requires two simple steps:
 1. Find the remote disk id by executing:
 
     ```bash title="setup computer"
-    ssh root@flash-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+    ssh root@<IP> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
     ```
 
     !!! Note
-        Replace `flash-installer.local` with the IP address of the machine if you don't have the avahi service running which resolves mDNS local domains.
+        Replace `<IP>` with the IP address of the machine if you don't have the avahi service running which resolves mDNS local domains.
 
     Which should show something like:
 
@@ -97,75 +97,43 @@ Adding or configuring a new machine requires two simple steps:
     └─nvme0n1p3 nvme-eui.e8238fa6bf530001001b448b4aec2929-part3 swap    16.8G
     ```
 
-1. Edit the following fields inside the `flake.nix`
+1. Edit the following fields inside the `./machines/jon/configuration.nix` and/or `./machines/sara/configuration.nix`
 
-    === "**buildClan**"
+   ```nix title="./machines/<machine>/configuration.nix" hl_lines="13 18 23 27"
+   {
+      imports = [
+        ./hardware-configuration.nix
+        # contains your disk format and partitioning configuration.
+        ../../modules/disko.nix
+        # this file is shared among all machines
+        ../../modules/shared.nix
+        # enables GNOME desktop (optional)
+        ../../modules/gnome.nix
+      ];
 
-        ```nix title="clan-core.lib.buildClan" hl_lines="18 23"
-        buildClan {
-          # ...
-          machines = {
-            "jon" = {
-              imports = [
-                # ...
-                ./modules/disko.nix
-                ./machines/jon/configuration.nix
-              ];
-              # ...
+      # Put your username here for login
+      users.users.user.username = "__YOUR_USERNAME__";
 
-              # Change this to the correct ip-address or hostname
-              # The hostname is the machine name by default
-              clan.core.networking.targetHost = pkgs.lib.mkDefault "root@jon"
+      # Set this for clan commands use ssh i.e. `clan machines update`
+      # If you change the hostname, you need to update this line to root@<new-hostname>
+      # This only works however if you have avahi running on your admin machine else use IP
+      clan.core.networking.targetHost = "root@__IP__";
 
-              # Change this to the ID-LINK of the desired disk shown by 'lsblk'
-              disko.devices.disk.main = {
-                device = "/dev/disk/by-id/__CHANGE_ME__";
-              }
+      # You can get your disk id by running the following command on the installer:
+      # Replace <IP> with the IP of the installer printed on the screen or by running the `ip addr` command.
+      # ssh root@<IP> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+      disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
 
-              # e.g. > cat ~/.ssh/id_ed25519.pub
-              users.users.root.openssh.authorizedKeys.keys = [
-                  "<YOUR SSH_KEY>"
-              ];
-              # ...
-            };
-          };
-        }
-        ```
+      # IMPORTANT! Add your SSH key here
+      # e.g. > cat ~/.ssh/id_ed25519.pub
+      users.users.root.openssh.authorizedKeys.keys = "__YOUR_SSH_KEY__";
 
-    === "**flakeParts**"
+      # ...
+   }
+   ```
 
-        ```nix title="clan-core.flakeModules.default" hl_lines="18 23"
-        clan = {
-          # ...
-          machines = {
-            "jon" = {
-              imports = [
-                # ...
-                ./modules/disko.nix
-                ./machines/jon/configuration.nix
-              ];
-              # ...
-
-              # Change this to the correct ip-address or hostname
-              # The hostname is the machine name by default
-              clan.core.networking.targetHost = pkgs.lib.mkDefault "root@jon"
-
-              # Change this to the ID-LINK of the desired disk shown by 'lsblk'
-              disko.devices.disk.main = {
-                device = "/dev/disk/by-id/__CHANGE_ME__";
-              }
-
-              # e.g. > cat ~/.ssh/id_ed25519.pub
-              users.users.root.openssh.authorizedKeys.keys = [
-                  "__YOUR_SSH_KEY__"
-              ];
-              # ...
-            };
-          };
-        };
-        ```
-
-
+!!! Info "Replace `__YOUR_USERNAME__` with the ip of your machine, if you use avahi you can also use your hostname"
+!!! Info "Replace `__IP__` with the ip of your machine, if you use avahi you can also use your hostname"
 !!! Info "Replace `__CHANGE_ME__` with the appropriate identifier, such as `nvme-eui.e8238fa6bf530001001b448b4aec2929`"
 !!! Info "Replace `__YOUR_SSH_KEY__` with your personal key, like `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILoMI0NC5eT9pHlQExrvR5ASV3iW9+BXwhfchq0smXUJ jon@jon-desktop`"
 
@@ -176,25 +144,60 @@ These steps will allow you to update your machine later.
 Generate the `hardware-configuration.nix` file for your machine by executing the following command:
 
 ```bash
-clan machines hw-generate [MACHINE_NAME] [HOSTNAME]
+clan machines hw-generate [MACHINE_NAME]
 ```
 
-replace `[MACHINE_NAME]` with the name of the machine i.e. `jon` and `[HOSTNAME]` with the `ip_adress` or `hostname` of the machine within the network. i.e. `flash-installer.local`
+replace `[MACHINE_NAME]` with the name of the machine i.e. `jon` and `[HOSTNAME]` with the `ip_adress` or `hostname` of the machine within the network. i.e. `<IP>`
 
 !!! Example
     ```bash
-    clan machines hw-generate jon flash-installer.local
+    clan machines hw-generate jon
     ```
 
-    This command connects to `flash-installer.local` as `root`, runs `nixos-generate-config` to detect hardware configurations (excluding filesystems), and writes them to `machines/jon/hardware-configuration.nix`.
+    This command connects to the ip configured in the previous step, runs `nixos-generate-config` to detect hardware configurations (excluding filesystems), and writes them to `machines/jon/hardware-configuration.nix`.
 
 ### Step 3: Custom Disk Formatting
 
-In `./modules/disko.nix`, a simple `ext4` disk partitioning scheme is defined for the Disko module. For more complex disk partitioning setups, refer to the [Disko examples](https://github.com/nix-community/disko/tree/master/example).
+In `./modules/disko.nix`, a simple `ext4` disk partitioning scheme is defined for the Disko module. For more complex disk partitioning setups,
+refer to the [Disko templates](https://github.com/nix-community/disko-templates) or  [Disko examples](https://github.com/nix-community/disko/tree/master/example).
 
 ### Step 4: Custom Configuration
 
 Modify `./machines/jon/configuration.nix` to personalize the system settings according to your requirements.
+If you wish to name your machine to something else, do the following steps:
+
+```
+mv ./machines/jon/configuration.nix ./machines/newname/configuration.nix
+```
+
+Than rename `jon` to your preferred name in `machines` in `flake.nix` as well as the import line:
+
+```diff
+- imports = [ ./machines/jon/configuration.nix ];
++ imports = [ ./machines/__NEW_NAME__/configuration.nix ];
+```
+
+!!! Info "Replace `__NEW_NAME__` with the name of the machine"
+
+Note that our clan lives inside a git repository.
+Only files that have been added with `git add` are recognized by `nix`.
+So for every file that you add or rename you also need to run:
+
+```
+git add ./path/to/my/file
+```
+
+For renaming jon to your own machine name, you can use the following command:
+
+```
+git mv ./machines/jon ./machines/newname
+```
+
+If you only want to setup a single machine at this point, you can delete `sara` from flake.nix as well as from the machines directory:
+
+```
+git rm ./machines/sara
+```
 
 ### Step 5: Check Configuration
 
@@ -206,9 +209,9 @@ nix flake check
 
 This command helps ensure that your system configuration is correct and free from errors.
 
-!!! Note
+!!! Tip
 
-    Integrate this step into your [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration) workflow to ensure that only valid Nix configurations are merged into your codebase. This practice helps maintain system stability and reduces integration issues.
+    You can integrate this step into your [Continuous Integration](https://en.wikipedia.org/wiki/Continuous_integration) workflow to ensure that only valid Nix configurations are merged into your codebase.
 
 
 ---

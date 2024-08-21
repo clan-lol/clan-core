@@ -10,7 +10,7 @@ import toast from "solid-toast";
 import { setActiveURI } from "@/src/App";
 
 type CreateForm = Meta & {
-  template_url: string;
+  template: string;
 };
 
 export const ClanForm = () => {
@@ -18,12 +18,12 @@ export const ClanForm = () => {
     initialValues: {
       name: "",
       description: "",
-      template_url: "git+https://git.clan.lol/clan/clan-core#templates.minimal",
+      template: "minimal",
     },
   });
 
   const handleSubmit: SubmitHandler<CreateForm> = async (values, event) => {
-    const { template_url, ...meta } = values;
+    const { template, ...meta } = values;
 
     const response = await callApi("open_file", {
       file_request: { mode: "save" },
@@ -44,7 +44,7 @@ export const ClanForm = () => {
         await callApi("create_clan", {
           options: {
             directory: target_dir[0],
-            template_url,
+            template,
             initial: {
               meta,
               services: {},
@@ -146,7 +146,7 @@ export const ClanForm = () => {
               </label>
             )}
           </Field>
-          <Field name="template_url" validate={[required("This is required")]}>
+          <Field name="template" validate={[required("This is required")]}>
             {(field, props) => (
               <div class="collapse collapse-arrow" tabindex="0">
                 <input type="checkbox" />

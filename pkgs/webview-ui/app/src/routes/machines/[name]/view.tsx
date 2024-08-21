@@ -161,7 +161,7 @@ export const MachineDetails = () => {
                     "generate_machine_hardware_info",
                     {
                       machine_name: params.id,
-                      clan_dir: curr_uri,
+                      clan_dir: { loc: curr_uri },
                       hostname: query.data.machine.deploy.targetHost,
                     },
                   );

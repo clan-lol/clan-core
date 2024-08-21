@@ -1,38 +1,36 @@
-{ config, ... }:
-let
-  username = config.networking.hostName;
-in
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [
+    ./hardware-configuration.nix
+    # contains your disk format and partitioning configuration.
+    ../../modules/disko.nix
+    # this file is shared among all machines
+    ../../modules/shared.nix
+    # enables GNOME desktop (optional)
+    ../../modules/gnome.nix
+  ];
 
-  # Locale service discovery and mDNS
-  services.avahi.enable = true;
+  # This is your user login name.
+  users.users.user.name = "<your-username>";
 
-  services.xserver.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-  services.xserver.displayManager.gdm.enable = true;
-  # Disable the default gnome apps to speed up deployment
-  services.gnome.core-utilities.enable = false;
+  # Set this for clan commands use ssh i.e. `clan machines update`
+  # If you change the hostname, you need to update this line to root@<new-hostname>
+  # This only works however if you have avahi running on your admin machine else use IP
+  clan.core.networking.targetHost = "root@<IP>";
 
-  # Enable automatic login for the user.
-  services.displayManager.autoLogin = {
-    enable = true;
-    user = username;
-  };
+  # You can get your disk id by running the following command on the installer:
+  # Replace <IP> with the IP of the installer printed on the screen or by running the `ip addr` command.
+  # ssh root@<IP> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+  disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
 
-  users.users.${username} = {
-    initialPassword = username;
-    isNormalUser = true;
-    extraGroups = [
-      "wheel"
-      "networkmanager"
-      "video"
-      "audio"
-      "input"
-      "dialout"
-      "disk"
-    ];
-    uid = 1000;
-    openssh.authorizedKeys.keys = config.users.users.root.openssh.authorizedKeys.keys;
-  };
+  # IMPORTANT! Add your SSH key here
+  # e.g. > cat ~/.ssh/id_ed25519.pub
+  users.users.root.openssh.authorizedKeys.keys = [
+    ''
+      __YOUR_SSH_KEY__
+    ''
+  ];
+
+  # Zerotier needs one controller to accept new nodes. Once accepted
+  # the controller can be offline and routing still works.
+  clan.core.networking.zerotier.controller.enable = true;
 }

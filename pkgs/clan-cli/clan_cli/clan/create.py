@@ -8,28 +8,27 @@ from clan_cli.api import API
 from clan_cli.inventory import Inventory, init_inventory
 
 from ..cmd import CmdOut, run
+from ..dirs import clan_templates
 from ..errors import ClanError
 from ..nix import nix_command, nix_shell
-
-default_template_url: str = "git+https://git.clan.lol/clan/clan-core"
-minimal_template_url: str = "git+https://git.clan.lol/clan/clan-core#templates.minimal"
 
 
 @dataclass
 class CreateClanResponse:
     flake_init: CmdOut
-    git_init: CmdOut | None
-    git_add: CmdOut
-    git_config_username: CmdOut | None
-    git_config_email: CmdOut | None
     flake_update: CmdOut
+    git_init: CmdOut | None = None
+    git_add: CmdOut | None = None
+    git_config_username: CmdOut | None = None
+    git_config_email: CmdOut | None = None
 
 
 @dataclass
 class CreateOptions:
     directory: Path | str
     # URL to the template to use. Defaults to the "minimal" template
-    template_url: str = minimal_template_url
+    template: str = "minimal"
+    setup_git: bool = True
     initial: Inventory | None = None
 
 
@@ -40,7 +39,7 @@ def git_command(directory: Path, *args: str) -> list[str]:
 @API.register
 def create_clan(options: CreateOptions) -> CreateClanResponse:
     directory = Path(options.directory).resolve()
-    template_url = options.template_url
+    template_url = f"{clan_templates()}#{options.template}"
     if not directory.exists():
         directory.mkdir()
     else:
@@ -65,26 +64,6 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
     )
     flake_init = run(command, cwd=directory)
 
-    git_init = None
-    if not directory.joinpath(".git").exists():
-        git_init = run(git_command(directory, "init"))
-    git_add = run(git_command(directory, "add", "."))
-
-    # check if username is set
-    has_username = run(git_command(directory, "config", "user.name"), check=False)
-    git_config_username = None
-    if has_username.returncode != 0:
-        git_config_username = run(
-            git_command(directory, "config", "user.name", "clan-tool")
-        )
-
-    has_username = run(git_command(directory, "config", "user.email"), check=False)
-    git_config_email = None
-    if has_username.returncode != 0:
-        git_config_email = run(
-            git_command(directory, "config", "user.email", "clan@example.com")
-        )
-
     flake_update = run(
         nix_shell(["nixpkgs#nix"], ["nix", "flake", "update"]), cwd=directory
     )
@@ -94,21 +73,45 @@ def create_clan(options: CreateOptions) -> CreateClanResponse:
 
     response = CreateClanResponse(
         flake_init=flake_init,
-        git_init=git_init,
-        git_add=git_add,
-        git_config_username=git_config_username,
-        git_config_email=git_config_email,
         flake_update=flake_update,
     )
+    if not options.setup_git:
+        return response
+
+    response.git_init = run(git_command(directory, "init"))
+    response.git_add = run(git_command(directory, "add", "."))
+
+    # check if username is set
+    has_username = run(git_command(directory, "config", "user.name"), check=False)
+    response.git_config_username = None
+    if has_username.returncode != 0:
+        response.git_config_username = run(
+            git_command(directory, "config", "user.name", "clan-tool")
+        )
+
+    has_username = run(git_command(directory, "config", "user.email"), check=False)
+    if has_username.returncode != 0:
+        response.git_config_email = run(
+            git_command(directory, "config", "user.email", "clan@example.com")
+        )
+
     return response
 
 
 def register_create_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "--url",
+        "--template",
         type=str,
-        help="url to the clan template",
-        default=default_template_url,
+        choices=["default", "minimal"],
+        help="Clan template name",
+        default="default",
+    )
+
+    parser.add_argument(
+        "--no-git",
+        help="Do not setup git",
+        action="store_true",
+        default=False,
     )
 
     parser.add_argument(
@@ -119,7 +122,8 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
         create_clan(
             CreateOptions(
                 directory=args.path,
-                template_url=args.url,
+                template=args.template,
+                setup_git=not args.no_git,
             )
         )
 

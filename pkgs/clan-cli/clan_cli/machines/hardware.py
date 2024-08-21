@@ -5,10 +5,12 @@ import logging
 from pathlib import Path
 
 from clan_cli.api import API
+from clan_cli.clan_uri import FlakeId
 from clan_cli.errors import ClanError
 
 from ..cmd import run, run_no_stdout
 from ..completions import add_dynamic_completer, complete_machines
+from ..machines.machines import Machine
 from ..nix import nix_config, nix_eval, nix_shell
 from .types import machine_name_type
 
@@ -88,9 +90,9 @@ def show_machine_hardware_platform(
 
 @API.register
 def generate_machine_hardware_info(
-    clan_dir: str | Path,
+    clan_dir: FlakeId,
     machine_name: str,
-    hostname: str,
+    hostname: str | None = None,
     password: str | None = None,
     keyfile: str | None = None,
     force: bool | None = False,
@@ -99,6 +101,13 @@ def generate_machine_hardware_info(
     Generate hardware information for a machine
     and place the resulting *.nix file in the machine's directory.
     """
+
+    machine = Machine(machine_name, flake=clan_dir)
+    if hostname is not None:
+        machine.target_host_address = hostname
+
+    host = machine.target_host
+    target_host = f"{host.user or 'root'}@{host.host}"
     cmd = nix_shell(
         [
             "nixpkgs#openssh",
@@ -110,9 +119,12 @@ def generate_machine_hardware_info(
             *(["sshpass", "-p", f"{password}"] if password else []),
             "ssh",
             *(["-i", f"{keyfile}"] if keyfile else []),
-            # Disable strict host key checking
-            "-o StrictHostKeyChecking=no",
             # Disable known hosts file
+            "-o",
+            "UserKnownHostsFile=/dev/null",
+            "-p",
+            str(machine.target_host.port),
+            target_host,
             "-o UserKnownHostsFile=/dev/null",
             f"{hostname}",
             "nixos-generate-config",
@@ -149,9 +161,8 @@ def generate_machine_hardware_info(
 
 
 def hw_generate_command(args: argparse.Namespace) -> None:
-    flake_path = args.flake.path
     hw_info = generate_machine_hardware_info(
-        flake_path, args.machine, args.hostname, args.password, args.force
+        args.flake, args.machine, args.hostname, args.password, args.force
     )
     print("----")
     print("Successfully generated hardware information.")
@@ -168,9 +179,10 @@ def register_hw_generate(parser: argparse.ArgumentParser) -> None:
         type=machine_name_type,
     )
     machine_parser = parser.add_argument(
-        "hostname",
-        help="hostname of the machine",
+        "target_host",
         type=str,
+        nargs="?",
+        help="ssh address to install to in the form of user@host:2222",
     )
     machine_parser = parser.add_argument(
         "--password",
