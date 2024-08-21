@@ -153,7 +153,8 @@ def flash_machine(
                 raise ClanError(
                     "sudo is required to run disko-install as a non-root user"
                 )
-            disko_install.append("sudo")
+            wrapper = 'set -x; disko_install=$(command -v disko-install); exec sudo "$disko_install" "$@"'
+            disko_install.extend(["bash", "-c", wrapper])
 
         disko_install.append("disko-install")
         if write_efi_boot_entries:
