@@ -35,8 +35,8 @@ def test_vm_deployment(
     cli.run(["vars", "generate", "my_machine"])
     run_vm_in_thread("my_machine")
     qga = qga_connect("my_machine")
-    qga.run("ls /run/secrets/my_machine/my_generator/my_secret", check=True)
-    _, out, _ = qga.run("cat /run/secrets/my_machine/my_generator/my_secret")
+    qga.run("ls /run/secrets/my_generator/my_secret", check=True)
+    _, out, _ = qga.run("cat /run/secrets/my_generator/my_secret")
     assert out == "hello\n"
     qga.exec_cmd("poweroff")
     wait_vm_down("my_machine")

@@ -10,17 +10,11 @@ let
 
   inherit (import ./funcs.nix { inherit lib; }) listVars;
 
-  varsDirMachines = config.clan.core.clanDir + "/sops/vars/per-machine";
+  varsDirMachines =
+    config.clan.core.clanDir + "/sops/vars/per-machine/${config.clan.core.machineName}";
   varsDirShared = config.clan.core.clanDir + "/sops/vars/shared";
 
-  varsUnfiltered = (listVars varsDirMachines) ++ (listVars varsDirShared);
-  filterVars =
-    vars:
-    builtins.elem vars.machine [
-      config.clan.core.machineName
-      "shared"
-    ];
-  vars = lib.filter filterVars varsUnfiltered;
+  vars = lib.traceValSeq (listVars varsDirMachines) ++ (listVars varsDirShared);
 
 in
 {
