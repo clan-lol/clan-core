@@ -19,7 +19,6 @@ let
     ++ (with python3.pkgs; [
       rope
       mypy
-      ipdb
       setuptools
       wheel
       pip
@@ -40,8 +39,6 @@ mkShell {
       xdg-utils # install desktop files
       desktop-file-utils # verify desktop files
     ]);
-
-  PYTHONBREAKPOINT = "ipdb.set_trace";
 
   shellHook = ''
     export GIT_ROOT=$(git rev-parse --show-toplevel)
