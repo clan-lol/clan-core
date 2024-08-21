@@ -16,7 +16,7 @@ interface SelectInputProps<T extends FieldValues, R extends ResponseData> {
 }
 
 export function SelectInput<T extends FieldValues, R extends ResponseData>(
-  props: SelectInputProps<T, R>
+  props: SelectInputProps<T, R>,
 ) {
   return (
     <label
