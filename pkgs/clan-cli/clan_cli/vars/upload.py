@@ -13,14 +13,14 @@ log = logging.getLogger(__name__)
 
 
 def upload_secrets(machine: Machine) -> None:
-    secret_facts_module = importlib.import_module(machine.secret_facts_module)
-    secret_facts_store = secret_facts_module.SecretStore(machine=machine)
+    secret_store_module = importlib.import_module(machine.secret_facts_module)
+    secret_store = secret_store_module.SecretStore(machine=machine)
 
-    if secret_facts_store.update_check():
+    if secret_store.update_check():
         log.info("Secrets already up to date")
         return
     with TemporaryDirectory() as tempdir:
-        secret_facts_store.upload(Path(tempdir))
+        secret_store.upload(Path(tempdir))
         host = machine.target_host
 
         ssh_cmd = host.ssh_cmd()
@@ -31,9 +31,11 @@ def upload_secrets(machine: Machine) -> None:
                     "rsync",
                     "-e",
                     " ".join(["ssh"] + ssh_cmd[2:]),
-                    "-az",
+                    "--recursive",
+                    "--links",
+                    "--times",
+                    "--compress",
                     "--delete",
-                    "--chown=root:root",
                     "--chmod=D700,F600",
                     f"{tempdir!s}/",
                     f"{host.user}@{host.host}:{machine.secrets_upload_directory}/",

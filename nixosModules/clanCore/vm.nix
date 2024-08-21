@@ -20,6 +20,8 @@ let
       ./waypipe.nix
     ];
 
+    clan.core.state.HOME.folders = [ "/home" ];
+
     clan.services.waypipe = {
       inherit (config.clan.core.vm.inspect.waypipe) enable command;
     };
@@ -39,18 +41,14 @@ let
 
     boot.initrd.systemd.enable = true;
 
-    # currently needed for system.etc.overlay.enable
-    boot.kernelPackages = pkgs.linuxPackages_latest;
-
     boot.initrd.systemd.storePaths = [
       pkgs.util-linux
       pkgs.e2fsprogs
     ];
     boot.initrd.systemd.emergencyAccess = true;
 
-    # sysusers is faster than nixos's perl scripts
-    # and doesn't require state.
-    systemd.sysusers.enable = true;
+    # sysusers would be faster because it doesn't need perl, but it cannot create normal users
+    systemd.sysusers.enable = false;
     users.mutableUsers = false;
     users.allowNoPasswordLogin = true;
 
@@ -252,8 +250,8 @@ in
   config = {
     # for clan vm inspect
     clan.core.vm.inspect = {
-      clan_name = config.clan.core.clanName;
-      machine_icon = config.clan.core.machineIcon or config.clan.core.clanIcon;
+      clan_name = config.clan.core.name;
+      machine_icon = config.clan.core.machineIcon or config.clan.core.icon;
       machine_name = config.clan.core.machineName;
       machine_description = config.clan.core.machineDescription;
       memory_size = config.clan.virtualisation.memorySize;

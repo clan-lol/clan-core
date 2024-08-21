@@ -1,145 +1,97 @@
-import {
-  For,
-  Match,
-  Show,
-  Switch,
-  createEffect,
-  createSignal,
-  type Component,
-} from "solid-js";
-import { activeURI, route, setActiveURI, setRoute } from "@/src/App";
-import { OperationResponse, callApi, pyApi } from "@/src/api";
+import { type Component, For, Match, Switch } from "solid-js";
+import { activeURI } from "@/src/App";
+import { callApi, OperationResponse } from "@/src/api";
 import toast from "solid-toast";
 import { MachineListItem } from "@/src/components/MachineListItem";
-
-// type FilesModel = Extract<
-//   OperationResponse<"get_directory">,
-//   { status: "success" }
-// >["data"]["files"];
-
-// type ServiceModel = Extract<
-//   OperationResponse<"show_mdns">,
-//   { status: "success" }
-// >["data"]["services"];
+import {
+  createQueries,
+  createQuery,
+  useQueryClient,
+} from "@tanstack/solid-query";
 
 type MachinesModel = Extract<
-  OperationResponse<"list_machines">,
+  OperationResponse<"list_inventory_machines">,
   { status: "success" }
 >["data"];
 
-// pyApi.open_file.receive((r) => {
-//   if (r.op_key === "open_clan") {
-//     console.log(r);
-//     if (r.status === "error") return console.error(r.errors);
-
-//     if (r.data) {
-//       setCurrClanURI(r.data);
-//     }
-//   }
-// });
+type ExtendedMachine = MachinesModel & {
+  nixOnly: boolean;
+};
 
 export const MachineListView: Component = () => {
-  // const [files, setFiles] = createSignal<FilesModel>([]);
+  const queryClient = useQueryClient();
 
-  // pyApi.get_directory.receive((r) => {
-  //   const { status } = r;
-  //   if (status === "error") return console.error(r.errors);
-  //   setFiles(r.data.files);
-  // });
+  const inventoryQuery = createQuery<MachinesModel>(() => ({
+    queryKey: [activeURI(), "list_machines", "inventory"],
+    placeholderData: {},
+    enabled: !!activeURI(),
+    queryFn: async () => {
+      const uri = activeURI();
+      if (uri) {
+        const response = await callApi("list_inventory_machines", {
+          flake_url: uri,
+        });
+        if (response.status === "error") {
+          toast.error("Failed to fetch data");
+        } else {
+          return response.data;
+        }
+      }
+      return {};
+    },
+  }));
 
-  // const [services, setServices] = createSignal<ServiceModel>();
-  // pyApi.show_mdns.receive((r) => {
-  //   const { status } = r;
-  //   if (status === "error") return console.error(r.errors);
-  //   setServices(r.data.services);
-  // });
+  const nixosQuery = createQuery<string[]>(() => ({
+    queryKey: [activeURI(), "list_machines", "nixos"],
+    enabled: !!activeURI(),
+    placeholderData: [],
+    queryFn: async () => {
+      const uri = activeURI();
+      if (uri) {
+        const response = await callApi("list_nixos_machines", {
+          flake_url: uri,
+        });
+        if (response.status === "error") {
+          toast.error("Failed to fetch data");
+        } else {
+          return response.data;
+        }
+      }
+      return [];
+    },
+  }));
 
-  const [machines, setMachines] = createSignal<MachinesModel>({});
-  const [loading, setLoading] = createSignal<boolean>(false);
-
-  const listMachines = async () => {
-    const uri = activeURI();
-    if (!uri) {
-      return;
-    }
-    setLoading(true);
-    const response = await callApi("list_machines", {
-      flake_url: uri,
+  const refresh = async () => {
+    queryClient.invalidateQueries({
+      // Invalidates the cache for of all types of machine list at once
+      queryKey: [activeURI(), "list_machines"],
     });
-    setLoading(false);
-    if (response.status === "success") {
-      setMachines(response.data);
-    }
   };
 
-  createEffect(() => {
-    if (route() === "machines") listMachines();
-  });
-
-  const unpackedMachines = () => Object.entries(machines());
+  const inventoryMachines = () => Object.entries(inventoryQuery.data || {});
+  const nixOnlyMachines = () =>
+    nixosQuery.data?.filter(
+      (name) => !inventoryMachines().some(([key, machine]) => key === name),
+    );
 
   return (
-    <div class="max-w-screen-lg">
+    <div>
       <div class="tooltip tooltip-bottom" data-tip="Open Clan"></div>
       <div class="tooltip tooltip-bottom" data-tip="Refresh">
-        <button class="btn btn-ghost" onClick={() => listMachines()}>
+        <button class="btn btn-ghost" onClick={() => refresh()}>
           <span class="material-icons ">refresh</span>
         </button>
       </div>
       <div class="tooltip tooltip-bottom" data-tip="Create machine">
-        <button class="btn btn-ghost" onClick={() => setRoute("machines/add")}>
+        <button
+          class="btn btn-ghost"
+          // onClick={() => setRoute("machines/add")}
+        >
           <span class="material-icons ">add</span>
         </button>
       </div>
-      {/* <Show when={services()}>
-        {(services) => (
-          <For each={Object.values(services())}>
-            {(service) => (
-              <div class="rounded-lg bg-white p-5 shadow-lg">
-                <h2 class="mb-2 text-xl font-semibold">{service.name}</h2>
-                <p>
-                  <span class="font-bold">Interface:</span>
-                  {service.interface}
-                </p>
-                <p>
-                  <span class="font-bold">Protocol:</span>
-                  {service.protocol}
-                </p>
-                <p>
-                  <span class="font-bold">Name</span>
-                  {service.name}
-                </p>
-                <p>
-                  <span class="font-bold">Type:</span>
-                  {service.type_}
-                </p>
-                <p>
-                  <span class="font-bold">Domain:</span>
-                  {service.domain}
-                </p>
-                <p>
-                  <span class="font-bold">Host:</span>
-                  {service.host}
-                </p>
-                <p>
-                  <span class="font-bold">IP:</span>
-                  {service.ip}
-                </p>
-                <p>
-                  <span class="font-bold">Port:</span>
-                  {service.port}
-                </p>
-                <p>
-                  <span class="font-bold">TXT:</span>
-                  {service.txt}
-                </p>
-              </div>
-            )}
-          </For>
-        )}
-      </Show> */}
       <Switch>
-        <Match when={loading()}>
+        <Match when={inventoryQuery.isLoading}>
           {/* Loading skeleton */}
           <div>
             <div class="card card-side m-2 bg-base-100 shadow-lg">
@@ -155,13 +107,22 @@ export const MachineListView: Component = () => {
             </div>
           </div>
         </Match>
-        <Match when={!loading() && unpackedMachines().length === 0}>
+        <Match
+          when={
+            !inventoryQuery.isLoading &&
+            inventoryMachines().length === 0 &&
+            nixOnlyMachines()?.length === 0
+          }
+        >
           No machines found
         </Match>
-        <Match when={!loading()}>
+        <Match when={!inventoryQuery.isLoading}>
           <ul>
-            <For each={unpackedMachines()}>
+            <For each={inventoryMachines()}>
               {([name, info]) => <MachineListItem name={name} info={info} />}
+            </For>
+            <For each={nixOnlyMachines()}>
+              {(name) => <MachineListItem name={name} nixOnly={true} />}
             </For>
           </ul>
         </Match>

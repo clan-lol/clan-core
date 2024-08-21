@@ -23,8 +23,8 @@ in
     };
     name = lib.mkOption {
       type = lib.types.str;
-      default = config.clan.core.clanName;
-      defaultText = "config.clan.core.clanName";
+      default = config.clan.core.name;
+      defaultText = "config.clan.core.name";
       description = ''
         zerotier network name
       '';
@@ -89,11 +89,7 @@ in
     ({
       # Override license so that we can build zerotierone without
       # having to re-import nixpkgs.
-      services.zerotierone.package = lib.mkDefault (
-        pkgs.zerotierone.overrideAttrs (_old: {
-          meta = { };
-        })
-      );
+      services.zerotierone.package = lib.mkDefault (pkgs.callPackage ../../../pkgs/zerotierone { });
     })
     (lib.mkIf ((facts.zerotier-ip.value or null) != null) {
       environment.etc."zerotier/ip".text = facts.zerotier-ip.value;

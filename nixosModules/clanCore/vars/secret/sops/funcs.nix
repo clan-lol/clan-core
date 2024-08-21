@@ -23,6 +23,7 @@ rec {
           generator = generator_name;
           name = secret_name;
           id = "${machine_name}/${generator_name}/${secret_name}";
+          sopsFile = "${varsDir}/${machine_name}/${generator_name}/${secret_name}/secret";
         })
       )
     );

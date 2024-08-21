@@ -12,24 +12,26 @@ from . import API
 
 @dataclass
 class FileFilter:
-    title: str | None
-    mime_types: list[str] | None
-    patterns: list[str] | None
-    suffixes: list[str] | None
+    title: str | None = field(default=None)
+    mime_types: list[str] | None = field(default=None)
+    patterns: list[str] | None = field(default=None)
+    suffixes: list[str] | None = field(default=None)
 
 
 @dataclass
 class FileRequest:
     # Mode of the os dialog window
-    mode: Literal["open_file", "select_folder", "save"]
+    mode: Literal["open_file", "select_folder", "save", "open_multiple_files"]
     # Title of the os dialog window
-    title: str | None = None
+    title: str | None = field(default=None)
     # Pre-applied filters for the file dialog
-    filters: FileFilter | None = None
+    filters: FileFilter | None = field(default=None)
+    initial_file: str | None = field(default=None)
+    initial_folder: str | None = field(default=None)
 
 
 @API.register_abstract
-def open_file(file_request: FileRequest) -> str | None:
+def open_file(file_request: FileRequest) -> list[str] | None:
     """
     Abstract api method to open a file dialog window.
     It must return the name of the selected file or None if no file was selected.
@@ -88,6 +90,8 @@ def get_directory(current_path: str) -> Directory:
 @dataclass
 class BlkInfo:
     name: str
+    id_link: str
+    path: str
     rm: str
     size: str
     ro: bool
@@ -103,21 +107,53 @@ class Blockdevices:
 def blk_from_dict(data: dict) -> BlkInfo:
     return BlkInfo(
         name=data["name"],
+        path=data["path"],
         rm=data["rm"],
         size=data["size"],
         ro=data["ro"],
         mountpoints=data["mountpoints"],
-        type_=data["type"],  # renamed here
+        type_=data["type"],  # renamed
+        id_link=data["id-link"],  # renamed
     )
 
 
+@dataclass
+class BlockDeviceOptions:
+    hostname: str | None = None
+    keyfile: str | None = None
+
+
 @API.register
-def show_block_devices() -> Blockdevices:
+def show_block_devices(options: BlockDeviceOptions) -> Blockdevices:
     """
     Abstract api method to show block devices.
     It must return a list of block devices.
     """
-    cmd = nix_shell(["nixpkgs#util-linux"], ["lsblk", "--json"])
+    keyfile = options.keyfile
+    remote = (
+        [
+            "ssh",
+            *(["-i", f"{keyfile}"] if keyfile else []),
+            # Disable strict host key checking
+            "-o StrictHostKeyChecking=no",
+            # Disable known hosts file
+            "-o UserKnownHostsFile=/dev/null",
+            f"{options.hostname}",
+        ]
+        if options.hostname
+        else []
+    )
+
+    cmd = nix_shell(
+        ["nixpkgs#util-linux", *(["nixpkgs#openssh"] if options.hostname else [])],
+        [
+            *remote,
+            "lsblk",
+            "--json",
+            "--output",
+            "PATH,NAME,RM,SIZE,RO,MOUNTPOINTS,TYPE,ID-LINK",
+        ],
+    )
     proc = run_no_stdout(cmd)
     res = proc.stdout.strip()
 

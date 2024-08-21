@@ -58,11 +58,11 @@ const registry: ObserverRegistry = operationNames.reduce(
     ...acc,
     [opName]: {},
   }),
-  {} as ObserverRegistry
+  {} as ObserverRegistry,
 );
 
 function createFunctions<K extends OperationNames>(
-  operationName: K
+  operationName: K,
 ): {
   dispatch: (args: OperationArgs<K>) => void;
   receive: (fn: (response: OperationResponse<K>) => void, id: string) => void;
@@ -104,7 +104,7 @@ function download(filename: string, text: string) {
   const element = document.createElement("a");
   element.setAttribute(
     "href",
-    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+    "data:text/plain;charset=utf-8," + encodeURIComponent(text),
   );
   element.setAttribute("download", filename);
 
@@ -118,15 +118,12 @@ function download(filename: string, text: string) {
 
 export const callApi = <K extends OperationNames>(
   method: K,
-  args: OperationArgs<K>
+  args: OperationArgs<K>,
 ) => {
-  return new Promise<OperationResponse<K>>((resolve, reject) => {
+  return new Promise<OperationResponse<K>>((resolve) => {
     const id = nanoid();
     pyApi[method].receive((response) => {
-      console.log("Received response: ", { response });
-      if (response.status === "error") {
-        reject(response);
-      }
+      console.log(method, "Received response: ", { response });
       resolve(response);
     }, id);
 
@@ -139,7 +136,6 @@ const deserialize =
   (str: string) => {
     try {
       const r = JSON.parse(str) as T;
-      console.log("Received: ", r);
       fn(r);
     } catch (e) {
       console.log("Error parsing JSON: ", e);

@@ -11,7 +11,42 @@
       treefmt.programs.nixfmt.enable = true;
       treefmt.programs.nixfmt.package = pkgs.nixfmt-rfc-style;
       treefmt.programs.deadnix.enable = true;
-
+      treefmt.settings.global.excludes = [
+        "*.png"
+        "*.jpeg"
+        "*.gitignore"
+        ".vscode/*"
+        "*.toml"
+        "*.clan-flake"
+        "*.code-workspace"
+        "*.pub"
+        "*.typed"
+        "*.age"
+        "*.list"
+        "*.desktop"
+      ];
+      treefmt.programs.prettier = {
+        enable = true;
+        includes = [
+          "*.cjs"
+          "*.css"
+          "*.html"
+          "*.js"
+          "*.json5"
+          "*.jsx"
+          "*.mdx"
+          "*.mjs"
+          "*.scss"
+          "*.ts"
+          "*.tsx"
+          "*.vue"
+          "*.yaml"
+          "*.yml"
+        ];
+        # plugins = [
+        #   "${self'.packages.prettier-plugin-tailwindcss}/lib/node_modules/prettier-plugin-tailwindcss/dist/index.mjs"
+        # ];
+      };
       treefmt.programs.mypy.directories =
         {
           "pkgs/clan-cli" = {
@@ -20,8 +55,8 @@
           };
           "pkgs/clan-app" = {
             extraPythonPackages =
-              # clan-app currently only exists on linux
               (self'.packages.clan-app.externalTestDeps or [ ]) ++ self'.packages.clan-cli.testDependencies;
+            extraPythonPaths = [ "../clan-cli" ];
             modules = [ "clan_app" ];
           };
         }
@@ -30,8 +65,8 @@
             {
               "pkgs/clan-vm-manager" = {
                 extraPythonPackages =
-                  #   # clan-app currently only exists on linux
-                  self'.packages.clan-vm-manager.testDependencies;
+                  self'.packages.clan-vm-manager.externalTestDeps ++ self'.packages.clan-cli.testDependencies;
+                extraPythonPaths = [ "../clan-cli" ];
                 modules = [ "clan_vm_manager" ];
               };
             }
@@ -41,53 +76,5 @@
       treefmt.programs.ruff.check = true;
       treefmt.programs.ruff.format = true;
 
-      # FIXME: currently broken in CI
-      #treefmt.settings.formatter.vale =
-      #  let
-      #    vocab = "cLAN";
-      #    style = "Docs";
-      #    config = pkgs.writeText "vale.ini" ''
-      #      StylesPath = ${styles}
-      #      Vocab = ${vocab}
-
-      #      [*.md]
-      #      BasedOnStyles = Vale, ${style}
-      #      Vale.Terms = No
-      #    '';
-      #    styles = pkgs.symlinkJoin {
-      #      name = "vale-style";
-      #      paths = [
-      #        accept
-      #        headings
-      #      ];
-      #    };
-      #    accept = pkgs.writeTextDir "config/vocabularies/${vocab}/accept.txt" ''
-      #      Nix
-      #      NixOS
-      #      Nixpkgs
-      #      clan.lol
-      #      Clan
-      #      monorepo
-      #    '';
-      #    headings = pkgs.writeTextDir "${style}/headings.yml" ''
-      #      extends: capitalization
-      #      message: "'%s' should be in sentence case"
-      #      level: error
-      #      scope: heading
-      #      # $title, $sentence, $lower, $upper, or a pattern.
-      #      match: $sentence
-      #    '';
-      #  in
-      #  {
-      #    command = "${pkgs.vale}/bin/vale";
-      #    options = [ "--config=${config}" ];
-      #    includes = [ "*.md" ];
-      #    # TODO: too much at once, fix piecemeal
-      #    excludes = [
-      #      "docs/*"
-      #      "clanModules/*"
-      #      "pkgs/*"
-      #    ];
-      #  };
     };
 }

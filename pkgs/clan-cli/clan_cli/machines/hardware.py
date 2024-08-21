@@ -94,6 +94,7 @@ def generate_machine_hardware_info(
     machine_name: str,
     hostname: str | None = None,
     password: str | None = None,
+    keyfile: str | None = None,
     force: bool | None = False,
 ) -> HardwareInfo:
     """
@@ -117,15 +118,15 @@ def generate_machine_hardware_info(
         [
             *(["sshpass", "-p", f"{password}"] if password else []),
             "ssh",
-            # Disable strict host key checking
-            "-o",
-            "StrictHostKeyChecking=no",
+            *(["-i", f"{keyfile}"] if keyfile else []),
             # Disable known hosts file
             "-o",
             "UserKnownHostsFile=/dev/null",
             "-p",
             str(machine.target_host.port),
             target_host,
+            "-o UserKnownHostsFile=/dev/null",
+            f"{hostname}",
             "nixos-generate-config",
             # Filesystems are managed by disko
             "--no-filesystems",

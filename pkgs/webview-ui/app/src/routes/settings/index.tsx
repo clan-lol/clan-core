@@ -1,26 +1,6 @@
 import { callApi } from "@/src/api";
-import {
-  SubmitHandler,
-  createForm,
-  required,
-  setValue,
-} from "@modular-forms/solid";
-import {
-  activeURI,
-  setClanList,
-  setActiveURI,
-  setRoute,
-  clanList,
-} from "@/src/App";
-import {
-  createEffect,
-  createSignal,
-  For,
-  Match,
-  Setter,
-  Show,
-  Switch,
-} from "solid-js";
+import { activeURI, clanList, setActiveURI, setClanList } from "@/src/App";
+import { createSignal, For, Match, Setter, Show, Switch } from "solid-js";
 import { createQuery } from "@tanstack/solid-query";
 import { useFloating } from "@/src/floating";
 import { autoUpdate, flip, hide, offset, shift } from "@floating-ui/dom";
@@ -31,19 +11,18 @@ export const registerClan = async () => {
     const loc = await callApi("open_file", {
       file_request: { mode: "select_folder" },
     });
-    console.log({ loc }, loc.status);
     if (loc.status === "success" && loc.data) {
-      // @ts-expect-error: data is a string
+      const data = loc.data[0];
       setClanList((s) => {
-        const res = new Set([...s, loc.data]);
+        const res = new Set([...s, data]);
         return Array.from(res);
       });
-      setActiveURI(loc.data);
-      setRoute((r) => {
-        if (r === "welcome") return "machines";
-        return r;
-      });
-      return loc.data;
+      setActiveURI(data);
+      // setRoute((r) => {
+      //   if (r === "welcome") return "machines";
+      //   return r;
+      // });
+      return data;
     }
   } catch (e) {
     //
@@ -140,12 +119,12 @@ const ClanDetails = (props: ClanDetailsProps) => {
                   s.filter((v, idx) => {
                     if (v == clan_dir) {
                       setActiveURI(
-                        clanList()[idx - 1] || clanList()[idx + 1] || null
+                        clanList()[idx - 1] || clanList()[idx + 1] || null,
                       );
                       return false;
                     }
                     return true;
-                  })
+                  }),
                 );
               }}
             >
@@ -156,6 +135,9 @@ const ClanDetails = (props: ClanDetailsProps) => {
       </div>
       <div class="stat-title">{clan_dir}</div>
 
+      <Show when={details.isLoading}>
+        <div class="skeleton h-12 w-80" />
+      </Show>
       <Show when={details.isSuccess}>
         <div class="stat-value">{details.data?.name}</div>
       </Show>

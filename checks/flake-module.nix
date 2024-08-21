@@ -1,10 +1,11 @@
 { self, ... }:
 {
   imports = [
-    ./impure/flake-module.nix
     ./backups/flake-module.nix
-    ./installation/flake-module.nix
+    ./devshell/flake-module.nix
     ./flash/flake-module.nix
+    ./impure/flake-module.nix
+    ./installation/flake-module.nix
   ];
   perSystem =
     {
@@ -40,10 +41,11 @@
             secrets = import ./secrets nixosTestArgs;
             container = import ./container nixosTestArgs;
             deltachat = import ./deltachat nixosTestArgs;
-            matrix-synapse = import ./matrix-synapse nixosTestArgs;
-            zt-tcp-relay = import ./zt-tcp-relay nixosTestArgs;
             borgbackup = import ./borgbackup nixosTestArgs;
+            matrix-synapse = import ./matrix-synapse nixosTestArgs;
+            mumble = import ./mumble nixosTestArgs;
             syncthing = import ./syncthing nixosTestArgs;
+            zt-tcp-relay = import ./zt-tcp-relay nixosTestArgs;
             postgresql = import ./postgresql nixosTestArgs;
             wayland-proxy-virtwl = import ./wayland-proxy-virtwl nixosTestArgs;
           };

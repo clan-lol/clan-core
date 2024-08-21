@@ -14,12 +14,18 @@
     nixos-images.inputs.nixos-stable.follows = "";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+    systems.url = "github:nix-systems/default";
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    inputs@{ flake-parts, self, ... }:
+    inputs@{
+      flake-parts,
+      self,
+      systems,
+      ...
+    }:
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }:
       {
@@ -27,11 +33,7 @@
           meta.name = "clan-core";
           directory = self;
         };
-        systems = [
-          "x86_64-linux"
-          "aarch64-linux"
-          "aarch64-darwin"
-        ];
+        systems = import systems;
         imports = [
           ./checks/flake-module.nix
           ./clanModules/flake-module.nix

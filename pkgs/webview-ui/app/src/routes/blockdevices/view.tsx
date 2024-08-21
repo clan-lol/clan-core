@@ -11,7 +11,7 @@ export const BlockDevicesView: Component = () => {
   } = createQuery(() => ({
     queryKey: ["block_devices"],
     queryFn: async () => {
-      const result = await callApi("show_block_devices", {});
+      const result = await callApi("show_block_devices", { options: {} });
       if (result.status === "error") throw new Error("Failed to fetch data");
 
       return result.data;

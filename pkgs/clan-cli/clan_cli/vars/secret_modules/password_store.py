@@ -12,8 +12,25 @@ class SecretStore(SecretStoreBase):
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
 
+    @property
+    def _password_store_dir(self) -> str:
+        return os.environ.get(
+            "PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store"
+        )
+
+    def _var_path(self, generator_name: str, name: str, shared: bool) -> Path:
+        if shared:
+            return Path(f"shared/{generator_name}/{name}")
+        else:
+            return Path(f"machines/{self.machine.name}/{generator_name}/{name}")
+
     def set(
-        self, generator_name: str, name: str, value: bytes, groups: list[str]
+        self,
+        generator_name: str,
+        name: str,
+        value: bytes,
+        groups: list[str],
+        shared: bool = False,
     ) -> Path | None:
         subprocess.run(
             nix_shell(
@@ -22,7 +39,7 @@ class SecretStore(SecretStoreBase):
                     "pass",
                     "insert",
                     "-m",
-                    f"machines/{self.machine.name}/{generator_name}/{name}",
+                    str(self._var_path(generator_name, name, shared)),
                 ],
             ),
             input=value,
@@ -30,34 +47,28 @@ class SecretStore(SecretStoreBase):
         )
         return None  # we manage the files outside of the git repo
 
-    def get(self, generator_name: str, name: str) -> bytes:
+    def get(self, generator_name: str, name: str, shared: bool = False) -> bytes:
         return subprocess.run(
             nix_shell(
                 ["nixpkgs#pass"],
                 [
                     "pass",
                     "show",
-                    f"machines/{self.machine.name}/{generator_name}/{name}",
+                    str(self._var_path(generator_name, name, shared)),
                 ],
             ),
             check=True,
             stdout=subprocess.PIPE,
         ).stdout
 
-    def exists(self, generator_name: str, name: str) -> bool:
-        password_store = os.environ.get(
-            "PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store"
-        )
-        secret_path = (
-            Path(password_store)
-            / f"machines/{self.machine.name}/{generator_name}/{name}.gpg"
-        )
-        return secret_path.exists()
+    def exists(self, generator_name: str, name: str, shared: bool = False) -> bool:
+        return (
+            Path(self._password_store_dir)
+            / f"{self._var_path(generator_name, name, shared)}.gpg"
+        ).exists()
 
     def generate_hash(self) -> bytes:
-        password_store = os.environ.get(
-            "PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store"
-        )
+        password_store = self._password_store_dir
         hashes = []
         hashes.append(
             subprocess.run(
@@ -117,15 +128,17 @@ class SecretStore(SecretStoreBase):
 
         return local_hash.decode() == remote_hash
 
+    # TODO: fixme
     def upload(self, output_dir: Path) -> None:
-        for service in self.machine.facts_data:
-            for secret in self.machine.facts_data[service]["secret"]:
-                if isinstance(secret, dict):
-                    secret_name = secret["name"]
-                else:
-                    # TODO: drop old format soon
-                    secret_name = secret
-                with (output_dir / secret_name).open("wb") as f:
-                    f.chmod(0o600)
-                    f.write(self.get(service, secret_name))
-        (output_dir / ".pass_info").write_bytes(self.generate_hash())
+        pass
+        # for service in self.machine.facts_data:
+        #     for secret in self.machine.facts_data[service]["secret"]:
+        #         if isinstance(secret, dict):
+        #             secret_name = secret["name"]
+        #         else:
+        #             # TODO: drop old format soon
+        #             secret_name = secret
+        #         with (output_dir / secret_name).open("wb") as f:
+        #            f.chmod(0o600)
+        #            f.write(self.get(service, secret_name))
+        # (output_dir / ".pass_info").write_bytes(self.generate_hash())

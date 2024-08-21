@@ -45,6 +45,7 @@ nav:
       - Configure: getting-started/configure.md
       - Secrets & Facts: getting-started/secrets.md
       - Deploy Machine: getting-started/deploy.md
+      - Disk Encryption: getting-started/disk-encryption.md
       - Mesh VPN: getting-started/mesh-vpn.md
       - Backup & Restore: getting-started/backups.md
       - Flake-parts: getting-started/flake-parts.md
@@ -54,15 +55,20 @@ nav:
   - Reference:
       - reference/index.md
       - Clan Modules:
-          - reference/clanModules/index.md
           - reference/clanModules/borgbackup-static.md
           - reference/clanModules/borgbackup.md
           - reference/clanModules/deltachat.md
+          - reference/clanModules/dyndns.md
           - reference/clanModules/ergochat.md
+          - reference/clanModules/garage.md
+          - reference/clanModules/golem-provider.md
+          - reference/clanModules/index.md
+          - reference/clanModules/iwd.md
           - reference/clanModules/localbackup.md
           - reference/clanModules/localsend.md
           - reference/clanModules/matrix-synapse.md
           - reference/clanModules/moonlight.md
+          - reference/clanModules/mumble.md
           - reference/clanModules/packages.md
           - reference/clanModules/postgresql.md
           - reference/clanModules/root-password.md
@@ -81,7 +87,6 @@ nav:
       - CLI:
           - reference/cli/index.md
           - reference/cli/backups.md
-          - reference/cli/config.md
           - reference/cli/facts.md
           - reference/cli/flakes.md
           - reference/cli/flash.md

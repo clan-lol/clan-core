@@ -5,20 +5,18 @@ from pathlib import Path
 from types import ModuleType
 
 # These imports are unused, but necessary for @API.register to run once.
-from clan_cli.api import directory, mdns_discovery, modules
+from clan_cli.api import directory, disk, mdns_discovery, modules
 from clan_cli.arg_actions import AppendOptionAction
 from clan_cli.clan import show, update
 
 # API endpoints that are not used in the cli.
-__all__ = ["directory", "mdns_discovery", "modules", "update"]
+__all__ = ["directory", "mdns_discovery", "modules", "update", "disk"]
 
 from . import (
     backups,
     clan,
-    config,
     facts,
     flash,
-    flatpak,
     history,
     machines,
     secrets,
@@ -177,18 +175,6 @@ For more detailed information, visit: {help_hyperlink("getting-started", "https:
     )
 
     clan.register_parser(parser_flake)
-
-    parser_config = subparsers.add_parser(
-        "config",
-        help="read a nixos configuration option",
-        description="read a nixos configuration option",
-        epilog=(
-            """
-        """
-        ),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    config.register_parser(parser_config)
 
     parser_ssh = subparsers.add_parser(
         "ssh",
@@ -408,8 +394,6 @@ def main() -> None:
     if getattr(args, "debug", False):
         setup_logging(logging.DEBUG, root_log_name=__name__.split(".")[0])
         log.debug("Debug log activated")
-        if flatpak.is_flatpak():
-            log.debug("Running inside a flatpak sandbox")
     else:
         setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
 

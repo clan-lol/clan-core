@@ -1,13 +1,13 @@
 @font-face {
-    font-family: "Roboto";
-    src: url(./Roboto-Regular.ttf) format('truetype');
+  font-family: "Roboto";
+  src: url(./Roboto-Regular.ttf) format("truetype");
 }
 @font-face {
-    font-family: "Fira Code";
-    src: url(./FiraCode-VF.ttf) format('truetype');
+  font-family: "Fira Code";
+  src: url(./FiraCode-VF.ttf) format("truetype");
 }
 
 :root {
-    --md-text-font: "Roboto"; 
-    --md-code-font: "Fira Code";
+  --md-text-font: "Roboto";
+  --md-code-font: "Fira Code";
 }

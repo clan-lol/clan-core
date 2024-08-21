@@ -78,7 +78,7 @@
         Each service can have a generator script which generates the secrets and facts.
         The generator script is expected to generate all secrets and facts defined for this service.
 
-        A `service` does not need to ba analogous to a systemd service, it can be any group of facts and secrets that need to be generated together.
+        A `service` does not need to be analogous to a systemd service, it can be any group of facts and secrets that need to be generated together.
       '';
       default = { };
       type = lib.types.attrsOf (

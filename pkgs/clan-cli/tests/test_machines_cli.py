@@ -1,40 +1,32 @@
 import pytest
 from fixtures_flakes import FlakeForTest
 from helpers import cli
+from stdout import CaptureOutput
 
 
 @pytest.mark.impure
 def test_machine_subcommands(
-    test_flake_with_core: FlakeForTest, capsys: pytest.CaptureFixture
+    test_flake_with_core: FlakeForTest,
+    capture_output: CaptureOutput,
 ) -> None:
     cli.run(
         ["machines", "create", "--flake", str(test_flake_with_core.path), "machine1"]
     )
 
-    capsys.readouterr()
-    cli.run(["machines", "list", "--flake", str(test_flake_with_core.path)])
+    with capture_output as output:
+        cli.run(["machines", "list", "--flake", str(test_flake_with_core.path)])
 
-    out = capsys.readouterr()
-
-    assert "machine1" in out.out
-    assert "vm1" in out.out
-    assert "vm2" in out.out
-
-    capsys.readouterr()
-    cli.run(["machines", "show", "--flake", str(test_flake_with_core.path), "machine1"])
-    out = capsys.readouterr()
-    assert "machine1" in out.out
-    assert "Description" in out.out
-    print(out)
+    print(output.out)
+    assert "machine1" in output.out
+    assert "vm1" in output.out
+    assert "vm2" in output.out
 
     cli.run(
         ["machines", "delete", "--flake", str(test_flake_with_core.path), "machine1"]
     )
 
-    capsys.readouterr()
-    cli.run(["machines", "list", "--flake", str(test_flake_with_core.path)])
-    out = capsys.readouterr()
-
-    assert "machine1" not in out.out
-    assert "vm1" in out.out
-    assert "vm2" in out.out
+    with capture_output as output:
+        cli.run(["machines", "list", "--flake", str(test_flake_with_core.path)])
+    assert "machine1" not in output.out
+    assert "vm1" in output.out
+    assert "vm2" in output.out

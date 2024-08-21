@@ -1,7 +1,7 @@
 import { createQuery } from "@tanstack/solid-query";
-import { activeURI, setRoute } from "../App";
+import { activeURI } from "../App";
 import { callApi } from "../api";
-import { Accessor, createEffect, Show } from "solid-js";
+import { Accessor, Show } from "solid-js";
 
 interface HeaderProps {
   clan_dir: Accessor<string | null>;
@@ -22,7 +22,7 @@ export const Header = (props: HeaderProps) => {
   }));
 
   return (
-    <div class="navbar bg-base-100">
+    <div class="navbar">
       <div class="flex-none">
         <span class="tooltip tooltip-bottom" data-tip="Menu">
           <label
@@ -34,7 +34,14 @@ export const Header = (props: HeaderProps) => {
         </span>
       </div>
       <div class="flex-1">
-        <Show when={!query.isFetching && query.data}>
+        <Show when={query.isLoading && !query.data}>
+          <div class="skeleton mx-4 size-11 rounded-full"></div>
+          <span class="flex flex-col gap-2">
+            <div class="skeleton h-3 w-32"></div>
+            <div class="skeleton h-3 w-40"></div>
+          </span>
+        </Show>
+        <Show when={query.data}>
           {(meta) => (
             <div class="tooltip tooltip-right" data-tip={activeURI()}>
               <div class="avatar placeholder online mx-4">
@@ -46,7 +53,7 @@ export const Header = (props: HeaderProps) => {
           )}
         </Show>
         <span class="flex flex-col">
-          <Show when={!query.isFetching && query.data}>
+          <Show when={query.data}>
             {(meta) => [
               <span class="text-primary">{meta().name}</span>,
               <span class="text-neutral">{meta()?.description}</span>,
@@ -56,7 +63,7 @@ export const Header = (props: HeaderProps) => {
       </div>
       <div class="flex-none">
         <span class="tooltip tooltip-bottom" data-tip="Settings">
-          <button class="link" onClick={() => setRoute("settings")}>
+          <button class="link">
             <span class="material-icons">settings</span>
           </button>
         </span>

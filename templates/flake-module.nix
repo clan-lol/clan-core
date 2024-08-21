@@ -8,6 +8,8 @@
           mkdir $out
           cp -r ${path}/* $out
           mkdir -p $out/machines/foo
+
+          # TODO: Instead create a machine by calling the API, this wont break in future tests and is much closer to what the user performs
           echo '{ "nixpkgs": { "hostPlatform": "x86_64-linux" } }' > $out/machines/foo/settings.json
         '';
         evaled = (import "${initialized}/flake.nix").outputs {

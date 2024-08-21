@@ -4,6 +4,8 @@ import gi
 gi.require_version("Gtk", "4.0")
 
 import logging
+from pathlib import Path
+from typing import Any
 
 from clan_cli.api import ErrorDataClass, SuccessDataClass
 from clan_cli.api.directory import FileRequest
@@ -14,10 +16,14 @@ from clan_app.api import ImplFunc
 log = logging.getLogger(__name__)
 
 
+def remove_none(_list: list) -> list:
+    return [i for i in _list if i is not None]
+
+
 # This implements the abstract function open_file with one argument, file_request,
 # which is a FileRequest object and returns a string or None.
 class open_file(
-    ImplFunc[[FileRequest, str], SuccessDataClass[str | None] | ErrorDataClass]
+    ImplFunc[[FileRequest, str], SuccessDataClass[list[str] | None] | ErrorDataClass]
 ):
     def __init__(self) -> None:
         super().__init__()
@@ -27,7 +33,7 @@ class open_file(
             try:
                 gfile = file_dialog.open_finish(task)
                 if gfile:
-                    selected_path = gfile.get_path()
+                    selected_path = remove_none([gfile.get_path()])
                     self.returns(
                         SuccessDataClass(
                             op_key=op_key, data=selected_path, status="success"
@@ -36,15 +42,38 @@ class open_file(
             except Exception as e:
                 print(f"Error getting selected file or directory: {e}")
 
+        def on_file_select_multiple(
+            file_dialog: Gtk.FileDialog, task: Gio.Task
+        ) -> None:
+            try:
+                gfiles: Any = file_dialog.open_multiple_finish(task)
+                if gfiles:
+                    selected_paths = remove_none([gfile.get_path() for gfile in gfiles])
+                    self.returns(
+                        SuccessDataClass(
+                            op_key=op_key, data=selected_paths, status="success"
+                        )
+                    )
+                else:
+                    self.returns(
+                        SuccessDataClass(op_key=op_key, data=None, status="success")
+                    )
+            except Exception as e:
+                print(f"Error getting selected files: {e}")
+
         def on_folder_select(file_dialog: Gtk.FileDialog, task: Gio.Task) -> None:
             try:
                 gfile = file_dialog.select_folder_finish(task)
                 if gfile:
-                    selected_path = gfile.get_path()
+                    selected_path = remove_none([gfile.get_path()])
                     self.returns(
                         SuccessDataClass(
                             op_key=op_key, data=selected_path, status="success"
                         )
+                    )
+                else:
+                    self.returns(
+                        SuccessDataClass(op_key=op_key, data=None, status="success")
                     )
             except Exception as e:
                 print(f"Error getting selected directory: {e}")
@@ -53,11 +82,15 @@ class open_file(
             try:
                 gfile = file_dialog.save_finish(task)
                 if gfile:
-                    selected_path = gfile.get_path()
+                    selected_path = remove_none([gfile.get_path()])
                     self.returns(
                         SuccessDataClass(
                             op_key=op_key, data=selected_path, status="success"
                         )
+                    )
+                else:
+                    self.returns(
+                        SuccessDataClass(op_key=op_key, data=None, status="success")
                     )
             except Exception as e:
                 print(f"Error getting selected file: {e}")
@@ -90,9 +123,21 @@ class open_file(
             filters.append(file_filters)
             dialog.set_filters(filters)
 
+        if file_request.initial_file:
+            p = Path(file_request.initial_file).expanduser()
+            f = Gio.File.new_for_path(str(p))
+            dialog.set_initial_file(f)
+
+        if file_request.initial_folder:
+            p = Path(file_request.initial_folder).expanduser()
+            f = Gio.File.new_for_path(str(p))
+            dialog.set_initial_folder(f)
+
         # if select_folder
         if file_request.mode == "select_folder":
             dialog.select_folder(callback=on_folder_select)
+        if file_request.mode == "open_multiple_files":
+            dialog.open_multiple(callback=on_file_select_multiple)
         elif file_request.mode == "open_file":
             dialog.open(callback=on_file_select)
         elif file_request.mode == "save":

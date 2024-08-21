@@ -1,22 +1,22 @@
 {
-    "python.testing.pytestArgs": [
-        // Coverage is not supported by vscode:
-        // https://github.com/Microsoft/vscode-python/issues/693
-        // Note that this will make pytest fail if pytest-cov is not installed,
-        // if that's the case, then this option needs to be be removed (overrides
-        // can be set at a workspace level, it's up to you to decide what's the
-        // best approach). You might also prefer to only set this option
-        // per-workspace (wherever coverage is used).
-        "--no-cov",
-        "tests"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "search.exclude": {
-        "**/.direnv": true
-    },
-    "python.linting.mypyPath": "mypy",
-    "python.linting.mypyEnabled": true,
-    "python.linting.enabled": true,
-    "python.defaultInterpreterPath": "python"
+  "python.testing.pytestArgs": [
+    // Coverage is not supported by vscode:
+    // https://github.com/Microsoft/vscode-python/issues/693
+    // Note that this will make pytest fail if pytest-cov is not installed,
+    // if that's the case, then this option needs to be be removed (overrides
+    // can be set at a workspace level, it's up to you to decide what's the
+    // best approach). You might also prefer to only set this option
+    // per-workspace (wherever coverage is used).
+    "--no-cov",
+    "tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "search.exclude": {
+    "**/.direnv": true
+  },
+  "python.linting.mypyPath": "mypy",
+  "python.linting.mypyEnabled": true,
+  "python.linting.enabled": true,
+  "python.defaultInterpreterPath": "python"
 }

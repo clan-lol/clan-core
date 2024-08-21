@@ -1,13 +1,13 @@
-import { OperationResponse, callApi, pyApi } from "@/src/api";
+import { callApi, OperationResponse } from "@/src/api";
 import { Show } from "solid-js";
 import {
-  SubmitHandler,
   createForm,
   required,
   reset,
+  SubmitHandler,
 } from "@modular-forms/solid";
 import toast from "solid-toast";
-import { setActiveURI, setRoute } from "@/src/App";
+import { setActiveURI } from "@/src/App";
 
 type CreateForm = Meta & {
   template_url: string;
@@ -43,7 +43,7 @@ export const ClanForm = () => {
       (async () => {
         await callApi("create_clan", {
           options: {
-            directory: target_dir,
+            directory: target_dir[0],
             template_url,
             initial: {
               meta,
@@ -52,14 +52,14 @@ export const ClanForm = () => {
             },
           },
         });
-        setActiveURI(target_dir);
-        setRoute("machines");
+        setActiveURI(target_dir[0]);
+        // setRoute("machines");
       })(),
       {
         loading: "Creating clan...",
         success: "Clan Successfully Created",
         error: "Failed to create clan",
-      }
+      },
     );
     reset(formStore);
   };

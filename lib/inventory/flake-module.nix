@@ -17,10 +17,12 @@ in
       ...
     }:
     let
-      buildInventory = import ./build-inventory {
-        clan-core = self;
-        inherit lib;
-      };
+      inventory = (
+        import ./build-inventory {
+          clan-core = self;
+          inherit lib;
+        }
+      );
 
       getSchema = import ./interface-to-schema.nix { inherit lib self; };
 
@@ -98,7 +100,7 @@ in
 
       # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests
       legacyPackages.evalTests-inventory = import ./tests {
-        inherit buildInventory;
+        inherit inventory;
         clan-core = self;
       };
 

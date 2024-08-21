@@ -4,19 +4,20 @@ import sys
 import pytest
 import pytest_subprocess.fake_process
 from pytest_subprocess import utils
+from stdout import CaptureOutput
 
 import clan_cli
 from clan_cli.ssh import cli
 
 
 def test_no_args(
-    capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch
+    monkeypatch: pytest.MonkeyPatch,
+    capture_output: CaptureOutput,
 ) -> None:
     monkeypatch.setattr(sys, "argv", ["", "ssh"])
-    with pytest.raises(SystemExit):
+    with capture_output as output, pytest.raises(SystemExit):
         clan_cli.main()
-    captured = capsys.readouterr()
-    assert captured.err.startswith("usage:")
+    assert output.err.startswith("usage:")
 
 
 # using fp fixture from pytest-subprocess

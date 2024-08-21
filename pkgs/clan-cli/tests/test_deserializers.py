@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal
 
 import pytest
 
@@ -18,6 +19,7 @@ from clan_cli.inventory import (
     ServiceBorgbackupRoleServer,
     ServiceMeta,
 )
+from clan_cli.machines import machines
 
 
 def test_simple() -> None:
@@ -45,11 +47,11 @@ def test_nested() -> None:
     class Person:
         name: str
         # deeply nested dataclasses
+        home: Path | str | None
         age: Age
         age_list: list[Age]
         age_dict: dict[str, Age]
         # Optional field
-        home: Path | None
 
     person_dict = {
         "name": "John",
@@ -72,6 +74,55 @@ def test_nested() -> None:
     assert from_dict(Person, person_dict) == expected_person
 
 
+def test_nested_nullable() -> None:
+    @dataclass
+    class SystemConfig:
+        language: str | None = field(default=None)
+        keymap: str | None = field(default=None)
+        ssh_keys_path: list[str] | None = field(default=None)
+
+    @dataclass
+    class FlashOptions:
+        machine: machines.Machine
+        mode: str
+        disks: dict[str, str]
+        system_config: SystemConfig
+        dry_run: bool
+        write_efi_boot_entries: bool
+        debug: bool
+
+    data = {
+        "machine": {
+            "name": "flash-installer",
+            "flake": {"loc": "git+https://git.clan.lol/clan/clan-core"},
+        },
+        "mode": "format",
+        "disks": {"main": "/dev/sda"},
+        "system_config": {"language": "en_US.UTF-8", "keymap": "en"},
+        "dry_run": False,
+        "write_efi_boot_entries": False,
+        "debug": False,
+        "op_key": "jWnTSHwYhSgr7Qz3u4ppD",
+    }
+
+    expected = FlashOptions(
+        machine=machines.Machine(
+            name="flash-installer",
+            flake=machines.FlakeId("git+https://git.clan.lol/clan/clan-core"),
+        ),
+        mode="format",
+        disks={"main": "/dev/sda"},
+        system_config=SystemConfig(
+            language="en_US.UTF-8", keymap="en", ssh_keys_path=None
+        ),
+        dry_run=False,
+        write_efi_boot_entries=False,
+        debug=False,
+    )
+
+    assert from_dict(FlashOptions, data) == expected
+
+
 def test_simple_field_missing() -> None:
     @dataclass
     class Person:
@@ -81,6 +132,44 @@ def test_simple_field_missing() -> None:
 
     with pytest.raises(ClanError):
         from_dict(Person, person_dict)
+
+
+def test_nullable() -> None:
+    @dataclass
+    class Person:
+        name: None
+
+    person_dict = {
+        "name": None,
+    }
+
+    from_dict(Person, person_dict)
+
+
+def test_nullable_non_exist() -> None:
+    @dataclass
+    class Person:
+        name: None
+
+    person_dict = {}
+
+    with pytest.raises(ClanError):
+        from_dict(Person, person_dict)
+
+
+def test_list() -> None:
+    data = [
+        {"name": "John"},
+        {"name": "Sarah"},
+    ]
+
+    @dataclass
+    class Name:
+        name: str
+
+    result = from_dict(list[Name], data)
+
+    assert result == [Name("John"), Name("Sarah")]
 
 
 def test_deserialize_extensive_inventory() -> None:
@@ -177,3 +266,19 @@ def test_private_public_fields() -> None:
     assert from_dict(Person, data) == expected
 
     assert dataclass_to_dict(expected) == data
+
+
+def test_literal_field() -> None:
+    @dataclass
+    class Person:
+        name: Literal["open_file", "select_folder", "save"]
+
+    data = {"name": "open_file"}
+    expected = Person(name="open_file")
+    assert from_dict(Person, data) == expected
+
+    assert dataclass_to_dict(expected) == data
+
+    with pytest.raises(ClanError):
+        # Not a valid value
+        from_dict(Person, {"name": "open"})

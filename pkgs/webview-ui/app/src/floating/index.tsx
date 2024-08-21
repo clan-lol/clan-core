@@ -13,9 +13,9 @@ export interface UseFloatingOptions<
   whileElementsMounted?: (
     reference: R,
     floating: F,
-    update: () => void
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  ) => void | (() => void);
+    update: () => void,
+  ) => // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+  void | (() => void);
 }
 
 interface UseFloatingState extends Omit<ComputePositionReturn, "x" | "y"> {
@@ -30,7 +30,7 @@ export interface UseFloatingResult extends UseFloatingState {
 export function useFloating<R extends ReferenceElement, F extends HTMLElement>(
   reference: () => R | undefined | null,
   floating: () => F | undefined | null,
-  options?: UseFloatingOptions<R, F>
+  options?: UseFloatingOptions<R, F>,
 ): UseFloatingResult {
   const placement = () => options?.placement ?? "bottom";
   const strategy = () => options?.strategy ?? "absolute";
@@ -77,7 +77,7 @@ export function useFloating<R extends ReferenceElement, F extends HTMLElement>(
         },
         (err) => {
           setError(err);
-        }
+        },
       );
     }
   }
@@ -95,7 +95,7 @@ export function useFloating<R extends ReferenceElement, F extends HTMLElement>(
         const cleanup = options.whileElementsMounted(
           currentReference,
           currentFloating,
-          update
+          update,
         );
 
         if (cleanup) {

@@ -38,6 +38,7 @@
         ];
         shellHook = ''
           echo -e "${ansiEscapes.green}switch to another dev-shell using: select-shell${ansiEscapes.reset}"
+          export PROJECT_ROOT=$(git rev-parse --show-toplevel)
         '';
       };
     };

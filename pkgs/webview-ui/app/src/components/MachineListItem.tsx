@@ -1,140 +1,185 @@
-import { Match, Show, Switch, createSignal } from "solid-js";
-import { ErrorData, SuccessData, pyApi } from "../api";
+import { createSignal, Show } from "solid-js";
+import { callApi, SuccessData } from "../api";
+import { Menu } from "./Menu";
+import { activeURI } from "../App";
+import toast from "solid-toast";
+import { useNavigate } from "@solidjs/router";
 
-type MachineDetails = SuccessData<"list_machines">["data"][string];
+type MachineDetails = SuccessData<"list_inventory_machines">["data"][string];
 
 interface MachineListItemProps {
   name: string;
-  info: MachineDetails;
+  info?: MachineDetails;
+  nixOnly?: boolean;
 }
 
-type HWInfo = Record<string, SuccessData<"show_machine_hardware_info">["data"]>;
-type DeploymentInfo = Record<
-  string,
-  SuccessData<"show_machine_deployment_target">["data"]
->;
-
-type MachineErrors = Record<string, ErrorData<"show_machine">["errors"]>;
-
-const [hwInfo, setHwInfo] = createSignal<HWInfo>({});
-
-const [deploymentInfo, setDeploymentInfo] = createSignal<DeploymentInfo>({});
-
-const [errors, setErrors] = createSignal<MachineErrors>({});
-
-// pyApi.show_machine_hardware_info.receive((r) => {
-//   const { op_key } = r;
-//   if (r.status === "error") {
-//     console.error(r.errors);
-//     if (op_key) {
-//       setHwInfo((d) => ({ ...d, [op_key]: { system: null } }));
-//     }
-//     return;
-//   }
-//   if (op_key) {
-//     setHwInfo((d) => ({ ...d, [op_key]: r.data }));
-//   }
-// });
-
-// pyApi.show_machine_deployment_target.receive((r) => {
-//   const { op_key } = r;
-//   if (r.status === "error") {
-//     console.error(r.errors);
-//     if (op_key) {
-//       setDeploymentInfo((d) => ({ ...d, [op_key]: null }));
-//     }
-//     return;
-//   }
-//   if (op_key) {
-//     setDeploymentInfo((d) => ({ ...d, [op_key]: r.data }));
-//   }
-// });
-
 export const MachineListItem = (props: MachineListItemProps) => {
-  const { name, info } = props;
+  const { name, info, nixOnly } = props;
 
-  // const clan_dir = currClanURI();
-  // if (clan_dir) {
-  //   pyApi.show_machine_hardware_info.dispatch({
-  //     op_key: name,
-  //     clan_dir,
-  //     machine_name: name,
-  //   });
+  // Bootstrapping
+  const [installing, setInstalling] = createSignal<boolean>(false);
 
-  //   pyApi.show_machine_deployment_target.dispatch({
-  //     op_key: name,
-  //     clan_dir,
-  //     machine_name: name,
-  //   });
-  // }
+  // Later only updates
+  const [updating, setUpdating] = createSignal<boolean>(false);
 
+  const navigate = useNavigate();
+
+  const handleInstall = async () => {
+    if (!info?.deploy.targetHost || installing()) {
+      return;
+    }
+
+    const active_clan = activeURI();
+    if (!active_clan) {
+      toast.error("No active clan selected");
+      return;
+    }
+    if (!info?.deploy.targetHost) {
+      toast.error(
+        "Machine does not have a target host. Specify where the machine should be deployed.",
+      );
+      return;
+    }
+    setInstalling(true);
+    await toast.promise(
+      callApi("install_machine", {
+        opts: {
+          machine: name,
+          flake: {
+            loc: active_clan,
+          },
+          no_reboot: true,
+          target_host: info?.deploy.targetHost,
+          debug: true,
+          nix_options: [],
+        },
+        password: null,
+      }),
+      {
+        loading: "Installing...",
+        success: "Installed",
+        error: "Failed to install",
+      },
+    );
+    setInstalling(false);
+  };
+
+  const handleUpdate = async () => {
+    if (!info?.deploy.targetHost || installing()) {
+      return;
+    }
+
+    const active_clan = activeURI();
+    if (!active_clan) {
+      toast.error("No active clan selected");
+      return;
+    }
+    if (!info?.deploy.targetHost) {
+      toast.error(
+        "Machine does not have a target host. Specify where the machine should be deployed.",
+      );
+      return;
+    }
+    setUpdating(true);
+    await toast.promise(
+      callApi("update_machines", {
+        base_path: active_clan,
+        machines: [
+          {
+            name: name,
+            deploy: {
+              targetHost: info?.deploy.targetHost,
+            },
+          },
+        ],
+      }),
+      {
+        loading: "Updating...",
+        success: "Updated",
+        error: "Failed to update",
+      },
+    );
+    setUpdating(false);
+  };
   return (
     <li>
-      <div class="card card-side m-2 bg-base-100 shadow-lg">
+      <div class="card card-side m-2 bg-base-200">
         <figure class="pl-2">
-          <span class="material-icons content-center text-5xl">
+          <span
+            class="material-icons content-center text-5xl"
+            classList={{
+              "text-neutral-500": nixOnly,
+            }}
+          >
             devices_other
           </span>
         </figure>
-        <div class="card-body flex-row justify-between">
+        <div class="card-body flex-row justify-between ">
           <div class="flex flex-col">
-            <h2 class="card-title">{name}</h2>
+            <h2
+              class="card-title"
+              classList={{
+                "text-neutral-500": nixOnly,
+              }}
+            >
+              {name}
+            </h2>
             <div class="text-slate-600">
-              <Show
-                when={info}
-                fallback={
-                  <Switch fallback={<div class="skeleton h-8 w-full"></div>}>
-                    <Match when={!info.description}>No description</Match>
-                  </Switch>
-                }
-              >
-                {(d) => d()?.description}
+              <Show when={info}>{(d) => d()?.description}</Show>
+            </div>
+            <div class="text-slate-600">
+              <Show when={info}>
+                {(d) => (
+                  <>
+                    <span class="material-icons text-sm">cast_connected</span>
+                    {d()?.deploy.targetHost}
+                  </>
+                )}
               </Show>
             </div>
-            <div class="flex flex-row flex-wrap gap-4 py-2">
-              <div class="badge badge-primary flex flex-row gap-1 py-4 align-middle">
-                <span>System:</span>
-                {hwInfo()[name]?.system ? (
-                  <span class="text-primary">{hwInfo()[name]?.system}</span>
-                ) : (
-                  <span class="text-warning">Not set</span>
-                )}
-              </div>
-
-              <div class="badge badge-ghost flex flex-row gap-1 py-4 align-middle">
-                <span>Target Host:</span>
-                {deploymentInfo()[name] ? (
-                  <span class="text-primary">{deploymentInfo()[name]}</span>
-                ) : (
-                  <span class="text-warning">Not set</span>
-                )}
-                {/* <Show
-                  when={deploymentInfo()[name]}
-                  fallback={
-                    <Switch fallback={<div class="skeleton h-8 w-full"></div>}>
-                      <Match when={deploymentInfo()[name] !== undefined}>
-                        No deployment target detected
-                      </Match>
-                    </Switch>
-                  }
-                >
-                  {(i) => + i()}
-                </Show> */}
-              </div>
-            </div>
-            {/* Show only the first error at the bottom */}
-            <Show when={errors()[name]?.[0]}>
-              {(error) => (
-                <div class="badge badge-error py-4">
-                  Error: {error().message}: {error().description}
-                </div>
-              )}
-            </Show>
+            <div class="flex flex-row flex-wrap gap-4 py-2"></div>
           </div>
           <div>
-            <button class="btn btn-ghost">
-              <span class="material-icons">more_vert</span>
-            </button>
+            <Menu
+              popoverid={`menu-${props.name}`}
+              label={<span class="material-icons">more_vert</span>}
+            >
+              <ul class="menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
+                <li>
+                  <a
+                    onClick={() => {
+                      navigate("/machines/" + name);
+                    }}
+                  >
+                    Details
+                  </a>
+                </li>
+                <li
+                  classList={{
+                    disabled: !info?.deploy.targetHost || installing(),
+                  }}
+                  onClick={handleInstall}
+                >
+                  <a>
+                    <Show when={info?.deploy.targetHost} fallback={"Deploy"}>
+                      {(d) => `Install to ${d()}`}
+                    </Show>
+                  </a>
+                </li>
+                <li
+                  classList={{
+                    disabled: !info?.deploy.targetHost || updating(),
+                  }}
+                  onClick={handleUpdate}
+                >
+                  <a>
+                    <Show when={info?.deploy.targetHost} fallback={"Deploy"}>
+                      {(d) => `Update (${d()})`}
+                    </Show>
+                  </a>
+                </li>
+              </ul>
+            </Menu>
           </div>
         </div>
       </div>

@@ -18,7 +18,7 @@ def verify_machine_config(
 ) -> str | None:
     """
     Verify that the machine evaluates successfully
-    Returns a tuple of (success, error_message)
+    Returns None, in case of success, or a String containing the error_message
     """
     if config is None:
         config = config_for_machine(flake_dir, machine_name)

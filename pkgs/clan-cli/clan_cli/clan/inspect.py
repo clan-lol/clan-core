@@ -6,7 +6,7 @@ from ..clan_uri import FlakeId
 from ..cmd import run
 from ..dirs import machine_gcroot
 from ..errors import ClanError
-from ..machines.list import list_machines
+from ..machines.list import list_nixos_machines
 from ..machines.machines import Machine
 from ..nix import nix_add_to_gcroots, nix_build, nix_config, nix_eval, nix_metadata
 from ..vms.inspect import VmConfig, inspect_vm
@@ -40,7 +40,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     system = config["system"]
 
     # Check if the machine exists
-    machines = list_machines(flake_url, False)
+    machines: list[str] = list_nixos_machines(flake_url)
     if machine_name not in machines:
         raise ClanError(
             f"Machine {machine_name} not found in {flake_url}. Available machines: {', '.join(machines)}"
@@ -57,7 +57,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     # Get the Clan name
     cmd = nix_eval(
         [
-            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.clanName'
+            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.name'
         ]
     )
     res = run_cmd(cmd)
@@ -66,7 +66,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     # Get the clan icon path
     cmd = nix_eval(
         [
-            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.clanIcon'
+            f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.icon'
         ]
     )
     res = run_cmd(cmd)
@@ -79,9 +79,9 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
 
         cmd = nix_build(
             [
-                f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.clanIcon'
+                f'{flake_url}#clanInternals.machines."{system}"."{machine_name}".config.clan.core.icon'
             ],
-            machine_gcroot(flake_url=str(flake_url)) / "clanIcon",
+            machine_gcroot(flake_url=str(flake_url)) / "icon",
         )
         run_cmd(cmd)
 

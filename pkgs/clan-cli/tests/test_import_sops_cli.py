@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 import pytest
 from fixtures_flakes import FlakeForTest
 from helpers import cli
+from stdout import CaptureOutput
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
 def test_import_sops(
     test_root: Path,
     test_flake: FlakeForTest,
-    capsys: pytest.CaptureFixture,
+    capture_output: CaptureOutput,
     monkeypatch: pytest.MonkeyPatch,
     age_keys: list["KeyPair"],
 ) -> None:
@@ -88,11 +89,11 @@ def test_import_sops(
     ]
 
     cli.run(cmd)
-    capsys.readouterr()
-    cli.run(["secrets", "users", "list", "--flake", str(test_flake.path)])
-    users = sorted(capsys.readouterr().out.rstrip().split())
+    with capture_output as output:
+        cli.run(["secrets", "users", "list", "--flake", str(test_flake.path)])
+    users = sorted(output.out.rstrip().split())
     assert users == ["user1", "user2"]
 
-    capsys.readouterr()
-    cli.run(["secrets", "get", "--flake", str(test_flake.path), "secret-key"])
-    assert capsys.readouterr().out == "secret-value"
+    with capture_output as output:
+        cli.run(["secrets", "get", "--flake", str(test_flake.path), "secret-key"])
+    assert output.out == "secret-value"

@@ -1,4 +1,5 @@
 import logging
+import os
 
 import gi
 from clan_cli.api import API
@@ -18,7 +19,7 @@ log = logging.getLogger(__name__)
 class MainWindow(Adw.ApplicationWindow):
     def __init__(self, config: ClanConfig) -> None:
         super().__init__()
-        self.set_title("Clan Manager")
+        self.set_title("Clan App")
         self.set_default_size(980, 850)
 
         # Overlay for GTK side exclusive toasts
@@ -47,3 +48,4 @@ class MainWindow(Adw.ApplicationWindow):
 
     def on_destroy(self, source: "Adw.ApplicationWindow") -> None:
         log.debug("Destroying Adw.ApplicationWindow")
+        os._exit(0)

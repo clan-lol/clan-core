@@ -10,16 +10,18 @@ class FactStoreBase(ABC):
         pass
 
     @abstractmethod
-    def exists(self, service: str, name: str) -> bool:
+    def exists(self, service: str, name: str, shared: bool = False) -> bool:
         pass
 
     @abstractmethod
-    def set(self, service: str, name: str, value: bytes) -> Path | None:
+    def set(
+        self, service: str, name: str, value: bytes, shared: bool = False
+    ) -> Path | None:
         pass
 
     # get a single fact
     @abstractmethod
-    def get(self, service: str, name: str) -> bytes:
+    def get(self, service: str, name: str, shared: bool = False) -> bytes:
         pass
 
     # get all facts

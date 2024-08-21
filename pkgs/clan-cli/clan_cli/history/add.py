@@ -7,7 +7,7 @@ import logging
 from typing import Any
 
 from clan_cli.clan.inspect import FlakeConfig, inspect_flake
-from clan_cli.machines.list import list_machines
+from clan_cli.machines.list import list_nixos_machines
 
 from ..clan_uri import ClanURI
 from ..dirs import user_history_file
@@ -72,7 +72,7 @@ def new_history_entry(url: str, machine: str) -> HistoryEntry:
 def add_all_to_history(uri: ClanURI) -> list[HistoryEntry]:
     history = list_history()
     new_entries: list[HistoryEntry] = []
-    for machine in list_machines(uri.get_url()):
+    for machine in list_nixos_machines(uri.get_url()):
         new_entry = _add_maschine_to_history_list(uri.get_url(), machine, history)
         new_entries.append(new_entry)
     write_history_file(history)

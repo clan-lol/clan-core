@@ -1,32 +1,15 @@
 { self, lib, ... }:
 
 let
-  wifiModule =
-    { ... }:
-    {
-      # use iwd instead of wpa_supplicant
-      networking.wireless.enable = false;
-
-      # Use iwd instead of wpa_supplicant. It has a user friendly CLI
-      networking.wireless.iwd = {
-        enable = true;
-        settings = {
-          Network = {
-            EnableIPv6 = true;
-            RoutePriorityOffset = 300;
-          };
-          Settings.AutoConnect = true;
-        };
-      };
-    };
 
   flashInstallerModule =
     { config, ... }:
     {
       imports = [
-        wifiModule
+        ./iwd.nix
         self.nixosModules.installer
       ];
+
       system.stateVersion = config.system.nixos.version;
       nixpkgs.pkgs = self.inputs.nixpkgs.legacyPackages.x86_64-linux;
     }

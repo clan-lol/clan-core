@@ -6,7 +6,7 @@ import os
 import shutil
 import textwrap
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -19,9 +19,69 @@ from .completions import add_dynamic_completer, complete_machines
 from .errors import ClanError
 from .facts.secret_modules import SecretStoreBase
 from .machines.machines import Machine
-from .nix import nix_shell
+from .nix import nix_build, nix_shell
 
 log = logging.getLogger(__name__)
+
+
+@dataclass
+class WifiConfig:
+    ssid: str
+    password: str
+
+
+@dataclass
+class SystemConfig:
+    language: str | None = field(default=None)
+    keymap: str | None = field(default=None)
+    ssh_keys_path: list[str] | None = field(default=None)
+    wifi_settings: list[WifiConfig] | None = field(default=None)
+
+
+@API.register
+def list_possible_keymaps() -> list[str]:
+    cmd = nix_build(["nixpkgs#kbd"])
+    result = run(cmd, log=Log.STDERR, error_msg="Failed to find kbdinfo")
+    keymaps_dir = Path(result.stdout.strip()) / "share" / "keymaps"
+
+    if not keymaps_dir.exists():
+        raise FileNotFoundError(f"Keymaps directory '{keymaps_dir}' does not exist.")
+
+    keymap_files = []
+
+    for root, _, files in os.walk(keymaps_dir):
+        for file in files:
+            if file.endswith(".map.gz"):
+                # Remove '.map.gz' ending
+                name_without_ext = file[:-7]
+                keymap_files.append(name_without_ext)
+
+    return keymap_files
+
+
+@API.register
+def list_possible_languages() -> list[str]:
+    cmd = nix_build(["nixpkgs#glibcLocales"])
+    result = run(cmd, log=Log.STDERR, error_msg="Failed to find glibc locales")
+    locale_file = Path(result.stdout.strip()) / "share" / "i18n" / "SUPPORTED"
+
+    if not locale_file.exists():
+        raise FileNotFoundError(f"Locale file '{locale_file}' does not exist.")
+
+    with locale_file.open() as f:
+        lines = f.readlines()
+
+    languages = []
+    for line in lines:
+        if line.startswith("#"):
+            continue
+        if "SUPPORTED-LOCALES" in line:
+            continue
+        # Split by '/' and take the first part
+        language = line.split("/")[0].strip()
+        languages.append(language)
+
+    return languages
 
 
 @API.register
@@ -30,12 +90,47 @@ def flash_machine(
     *,
     mode: str,
     disks: dict[str, str],
-    system_config: dict[str, Any],
+    system_config: SystemConfig,
     dry_run: bool,
     write_efi_boot_entries: bool,
     debug: bool,
     extra_args: list[str] = [],
 ) -> None:
+    system_config_nix: dict[str, Any] = {}
+
+    if system_config.wifi_settings:
+        wifi_settings = {}
+        for wifi in system_config.wifi_settings:
+            wifi_settings[wifi.ssid] = {"password": wifi.password}
+        system_config_nix["clan"] = {"iwd": {"networks": wifi_settings}}
+
+    if system_config.language:
+        if system_config.language not in list_possible_languages():
+            raise ClanError(
+                f"Language '{system_config.language}' is not a valid language. "
+                f"Run 'clan flash --list-languages' to see a list of possible languages."
+            )
+        system_config_nix["i18n"] = {"defaultLocale": system_config.language}
+
+    if system_config.keymap:
+        if system_config.keymap not in list_possible_keymaps():
+            raise ClanError(
+                f"Keymap '{system_config.keymap}' is not a valid keymap. "
+                f"Run 'clan flash --list-keymaps' to see a list of possible keymaps."
+            )
+        system_config_nix["console"] = {"keyMap": system_config.keymap}
+
+    if system_config.ssh_keys_path:
+        root_keys = []
+        for key_path in map(lambda x: Path(x), system_config.ssh_keys_path):
+            try:
+                root_keys.append(key_path.read_text())
+            except OSError as e:
+                raise ClanError(f"Cannot read SSH public key file: {key_path}: {e}")
+        system_config_nix["users"] = {
+            "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}}
+        }
+
     secret_facts_module = importlib.import_module(machine.secret_facts_module)
     secret_facts_store: SecretStoreBase = secret_facts_module.SecretStore(
         machine=machine
@@ -58,7 +153,8 @@ def flash_machine(
                 raise ClanError(
                     "sudo is required to run disko-install as a non-root user"
                 )
-            disko_install.append("sudo")
+            wrapper = 'set -x; disko_install=$(command -v disko-install); exec sudo "$disko_install" "$@"'
+            disko_install.extend(["bash", "-c", wrapper])
 
         disko_install.append("disko-install")
         if write_efi_boot_entries:
@@ -76,7 +172,7 @@ def flash_machine(
         disko_install.extend(
             [
                 "--system-config",
-                json.dumps(system_config),
+                json.dumps(system_config_nix),
             ]
         )
         disko_install.extend(["--option", "dry-run", "true"])
@@ -94,15 +190,13 @@ class FlashOptions:
     flake: FlakeId
     machine: str
     disks: dict[str, str]
-    ssh_keys_path: list[Path]
     dry_run: bool
     confirm: bool
     debug: bool
     mode: str
-    language: str
-    keymap: str
     write_efi_boot_entries: bool
     nix_options: list[str]
+    system_config: SystemConfig
 
 
 class AppendDiskAction(argparse.Action):
@@ -126,16 +220,35 @@ def flash_command(args: argparse.Namespace) -> None:
         flake=args.flake,
         machine=args.machine,
         disks=args.disk,
-        ssh_keys_path=args.ssh_pubkey,
         dry_run=args.dry_run,
         confirm=not args.yes,
         debug=args.debug,
         mode=args.mode,
-        language=args.language,
-        keymap=args.keymap,
+        system_config=SystemConfig(
+            language=args.language,
+            keymap=args.keymap,
+            ssh_keys_path=args.ssh_pubkey,
+            wifi_settings=None,
+        ),
         write_efi_boot_entries=args.write_efi_boot_entries,
         nix_options=args.option,
     )
+
+    if args.list_languages:
+        for language in list_possible_languages():
+            print(language)
+        return
+
+    if args.list_keymaps:
+        for keymap in list_possible_keymaps():
+            print(keymap)
+        return
+
+    if args.wifi:
+        opts.system_config.wifi_settings = [
+            WifiConfig(ssid=ssid, password=password)
+            for ssid, password in args.wifi.items()
+        ]
 
     machine = Machine(opts.machine, flake=opts.flake)
     if opts.confirm and not opts.dry_run:
@@ -148,28 +261,11 @@ def flash_command(args: argparse.Namespace) -> None:
         if ask != "y":
             return
 
-    extra_config: dict[str, Any] = {}
-    if opts.ssh_keys_path:
-        root_keys = []
-        for key_path in opts.ssh_keys_path:
-            try:
-                root_keys.append(key_path.read_text())
-            except OSError as e:
-                raise ClanError(f"Cannot read SSH public key file: {key_path}: {e}")
-        extra_config["users"] = {
-            "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}}
-        }
-    if opts.keymap:
-        extra_config["console"] = {"keyMap": opts.keymap}
-
-    if opts.language:
-        extra_config["i18n"] = {"defaultLocale": opts.language}
-
     flash_machine(
         machine,
         mode=opts.mode,
         disks=opts.disks,
-        system_config=extra_config,
+        system_config=opts.system_config,
         dry_run=opts.dry_run,
         debug=opts.debug,
         write_efi_boot_entries=opts.write_efi_boot_entries,
@@ -203,6 +299,15 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         """
     )
     parser.add_argument(
+        "--wifi",
+        type=str,
+        nargs=2,
+        metavar=("ssid", "password"),
+        action=AppendDiskAction,
+        help="wifi network to connect to",
+        default={},
+    )
+    parser.add_argument(
         "--mode",
         type=str,
         help=mode_help,
@@ -220,6 +325,18 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         "--language",
         type=str,
         help="system language",
+    )
+    parser.add_argument(
+        "--list-languages",
+        help="List possible languages",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--list-keymaps",
+        help="List possible keymaps",
+        default=False,
+        action="store_true",
     )
     parser.add_argument(
         "--keymap",

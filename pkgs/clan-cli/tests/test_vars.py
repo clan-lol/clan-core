@@ -1,30 +1,20 @@
-import os
 import subprocess
-from collections import defaultdict
-from collections.abc import Callable
 from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any
 
 import pytest
-from age_keys import SopsSetup
-from fixtures_flakes import generate_flake
-from helpers import cli
-from root import CLAN_CORE
 
 from clan_cli.clan_uri import FlakeId
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
+from clan_cli.vars.public_modules import in_repo
 from clan_cli.vars.secret_modules import password_store, sops
-
-
-def def_value() -> defaultdict:
-    return defaultdict(def_value)
-
-
-# allows defining nested dictionary in a single line
-nested_dict: Callable[[], dict[str, Any]] = lambda: defaultdict(def_value)
+from tests.age_keys import SopsSetup
+from tests.fixtures_flakes import generate_flake
+from tests.helpers import cli
+from tests.helpers.nixos_config import nested_dict
+from tests.root import CLAN_CORE
 
 
 def test_get_subgraph() -> None:
@@ -89,11 +79,9 @@ def test_generate_public_var(
     )
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    var_file_path = (
-        flake.path / "machines" / "my_machine" / "vars" / "my_generator" / "my_value"
-    )
-    assert var_file_path.is_file()
-    assert var_file_path.read_text() == "hello\n"
+    store = in_repo.FactStore(Machine(name="my_machine", flake=FlakeId(flake.path)))
+    assert store.exists("my_generator", "my_value")
+    assert store.get("my_generator", "my_value").decode() == "hello\n"
 
 
 @pytest.mark.impure
@@ -102,7 +90,6 @@ def test_generate_secret_var_sops(
     temporary_home: Path,
     sops_setup: SopsSetup,
 ) -> None:
-    user = os.environ.get("USER", "user")
     config = nested_dict()
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_secret"]["secret"] = True
@@ -113,22 +100,12 @@ def test_generate_secret_var_sops(
         machine_configs=dict(my_machine=config),
     )
     monkeypatch.chdir(flake.path)
-    cli.run(
-        [
-            "secrets",
-            "users",
-            "add",
-            "--flake",
-            str(flake.path),
-            user,
-            sops_setup.keys[0].pubkey,
-        ]
-    )
+    sops_setup.init()
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    var_file_path = (
-        flake.path / "machines" / "my_machine" / "vars" / "my_generator" / "my_secret"
+    in_repo_store = in_repo.FactStore(
+        Machine(name="my_machine", flake=FlakeId(flake.path))
     )
-    assert not var_file_path.is_file()
+    assert not in_repo_store.exists("my_generator", "my_secret")
     sops_store = sops.SecretStore(Machine(name="my_machine", flake=FlakeId(flake.path)))
     assert sops_store.exists("my_generator", "my_secret")
     assert sops_store.get("my_generator", "my_secret").decode() == "hello\n"
@@ -140,7 +117,6 @@ def test_generate_secret_var_sops_with_default_group(
     temporary_home: Path,
     sops_setup: SopsSetup,
 ) -> None:
-    user = os.environ.get("USER", "user")
     config = nested_dict()
     config["clan"]["core"]["sops"]["defaultGroups"] = ["my_group"]
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
@@ -152,34 +128,15 @@ def test_generate_secret_var_sops_with_default_group(
         machine_configs=dict(my_machine=config),
     )
     monkeypatch.chdir(flake.path)
-    cli.run(
-        [
-            "secrets",
-            "users",
-            "add",
-            "--flake",
-            str(flake.path),
-            user,
-            sops_setup.keys[0].pubkey,
-        ]
-    )
-    cli.run(["secrets", "groups", "add-user", "my_group", user])
+    sops_setup.init()
+    cli.run(["secrets", "groups", "add-user", "my_group", sops_setup.user])
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    assert not (
-        flake.path / "machines" / "my_machine" / "vars" / "my_generator" / "my_secret"
-    ).is_file()
+    in_repo_store = in_repo.FactStore(
+        Machine(name="my_machine", flake=FlakeId(flake.path))
+    )
+    assert not in_repo_store.exists("my_generator", "my_secret")
     sops_store = sops.SecretStore(Machine(name="my_machine", flake=FlakeId(flake.path)))
     assert sops_store.exists("my_generator", "my_secret")
-    assert (
-        flake.path
-        / "sops"
-        / "vars"
-        / "my_machine"
-        / "my_generator"
-        / "my_secret"
-        / "groups"
-        / "my_group"
-    ).exists()
     assert sops_store.get("my_generator", "my_secret").decode() == "hello\n"
 
 
@@ -226,10 +183,6 @@ def test_generate_secret_var_password_store(
         nix_shell(["nixpkgs#pass"], ["pass", "init", "test@local"]), check=True
     )
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    var_file_path = (
-        flake.path / "machines" / "my_machine" / "vars" / "my_generator" / "my_secret"
-    )
-    assert not var_file_path.is_file()
     store = password_store.SecretStore(
         Machine(name="my_machine", flake=FlakeId(flake.path))
     )
@@ -243,7 +196,6 @@ def test_generate_secret_for_multiple_machines(
     temporary_home: Path,
     sops_setup: SopsSetup,
 ) -> None:
-    user = os.environ.get("USER", "user")
     machine1_config = nested_dict()
     machine1_generator = machine1_config["clan"]["core"]["vars"]["generators"][
         "my_generator"
@@ -268,29 +220,19 @@ def test_generate_secret_for_multiple_machines(
         machine_configs=dict(machine1=machine1_config, machine2=machine2_config),
     )
     monkeypatch.chdir(flake.path)
-    cli.run(
-        [
-            "secrets",
-            "users",
-            "add",
-            "--flake",
-            str(flake.path),
-            user,
-            sops_setup.keys[0].pubkey,
-        ]
-    )
+    sops_setup.init()
     cli.run(["vars", "generate", "--flake", str(flake.path)])
     # check if public vars have been created correctly
-    machine1_var_file_path = (
-        flake.path / "machines" / "machine1" / "vars" / "my_generator" / "my_value"
+    in_repo_store1 = in_repo.FactStore(
+        Machine(name="machine1", flake=FlakeId(flake.path))
     )
-    machine2_var_file_path = (
-        flake.path / "machines" / "machine2" / "vars" / "my_generator" / "my_value"
+    in_repo_store2 = in_repo.FactStore(
+        Machine(name="machine2", flake=FlakeId(flake.path))
     )
-    assert machine1_var_file_path.is_file()
-    assert machine1_var_file_path.read_text() == "machine1\n"
-    assert machine2_var_file_path.is_file()
-    assert machine2_var_file_path.read_text() == "machine2\n"
+    assert in_repo_store1.exists("my_generator", "my_value")
+    assert in_repo_store2.exists("my_generator", "my_value")
+    assert in_repo_store1.get("my_generator", "my_value").decode() == "machine1\n"
+    assert in_repo_store2.get("my_generator", "my_value").decode() == "machine2\n"
     # check if secret vars have been created correctly
     sops_store1 = sops.SecretStore(Machine(name="machine1", flake=FlakeId(flake.path)))
     sops_store2 = sops.SecretStore(Machine(name="machine2", flake=FlakeId(flake.path)))
@@ -320,16 +262,13 @@ def test_dependant_generators(
     )
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    parent_file_path = (
-        flake.path / "machines" / "my_machine" / "vars" / "child_generator" / "my_value"
+    in_repo_store = in_repo.FactStore(
+        Machine(name="my_machine", flake=FlakeId(flake.path))
     )
-    assert parent_file_path.is_file()
-    assert parent_file_path.read_text() == "hello\n"
-    child_file_path = (
-        flake.path / "machines" / "my_machine" / "vars" / "child_generator" / "my_value"
-    )
-    assert child_file_path.is_file()
-    assert child_file_path.read_text() == "hello\n"
+    assert in_repo_store.exists("parent_generator", "my_value")
+    assert in_repo_store.get("parent_generator", "my_value").decode() == "hello\n"
+    assert in_repo_store.exists("child_generator", "my_value")
+    assert in_repo_store.get("child_generator", "my_value").decode() == "hello\n"
 
 
 @pytest.mark.impure
@@ -362,8 +301,55 @@ def test_prompt(
     monkeypatch.chdir(flake.path)
     monkeypatch.setattr("sys.stdin", StringIO(input_value))
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    var_file_path = (
-        flake.path / "machines" / "my_machine" / "vars" / "my_generator" / "my_value"
+    in_repo_store = in_repo.FactStore(
+        Machine(name="my_machine", flake=FlakeId(flake.path))
     )
-    assert var_file_path.is_file()
-    assert var_file_path.read_text() == input_value
+    assert in_repo_store.exists("my_generator", "my_value")
+    assert in_repo_store.get("my_generator", "my_value").decode() == input_value
+
+
+@pytest.mark.impure
+def test_share_flag(
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    sops_setup: SopsSetup,
+) -> None:
+    config = nested_dict()
+    shared_generator = config["clan"]["core"]["vars"]["generators"]["shared_generator"]
+    shared_generator["files"]["my_secret"]["secret"] = True
+    shared_generator["files"]["my_value"]["secret"] = False
+    shared_generator["script"] = (
+        "echo hello > $out/my_secret && echo hello > $out/my_value"
+    )
+    shared_generator["share"] = True
+    unshared_generator = config["clan"]["core"]["vars"]["generators"][
+        "unshared_generator"
+    ]
+    unshared_generator["files"]["my_secret"]["secret"] = True
+    unshared_generator["files"]["my_value"]["secret"] = False
+    unshared_generator["script"] = (
+        "echo hello > $out/my_secret && echo hello > $out/my_value"
+    )
+    unshared_generator["share"] = False
+    flake = generate_flake(
+        temporary_home,
+        flake_template=CLAN_CORE / "templates" / "minimal",
+        machine_configs=dict(my_machine=config),
+    )
+    monkeypatch.chdir(flake.path)
+    sops_setup.init()
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+    sops_store = sops.SecretStore(Machine(name="my_machine", flake=FlakeId(flake.path)))
+    in_repo_store = in_repo.FactStore(
+        Machine(name="my_machine", flake=FlakeId(flake.path))
+    )
+    # check secrets stored correctly
+    assert sops_store.exists("shared_generator", "my_secret", shared=True)
+    assert not sops_store.exists("shared_generator", "my_secret", shared=False)
+    assert sops_store.exists("unshared_generator", "my_secret", shared=False)
+    assert not sops_store.exists("unshared_generator", "my_secret", shared=True)
+    # check values stored correctly
+    assert in_repo_store.exists("shared_generator", "my_value", shared=True)
+    assert not in_repo_store.exists("shared_generator", "my_value", shared=False)
+    assert in_repo_store.exists("unshared_generator", "my_value", shared=False)
+    assert not in_repo_store.exists("unshared_generator", "my_value", shared=True)

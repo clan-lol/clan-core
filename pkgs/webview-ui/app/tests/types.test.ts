@@ -1,4 +1,4 @@
-import { describe, it, expectTypeOf } from "vitest";
+import { describe, expectTypeOf, it } from "vitest";
 
 import { OperationNames, pyApi } from "@/src/api";
 
@@ -29,28 +29,11 @@ describe.concurrent("API types work properly", () => {
   });
 
   it("Machine list receives a records of names and machine info.", async () => {
-    expectTypeOf(pyApi.list_machines.receive)
+    expectTypeOf(pyApi.list_inventory_machines.receive)
       .parameter(0)
       .parameter(0)
       .toMatchTypeOf<
         | { status: "success"; data: Record<string, object> }
-        | { status: "error"; errors: any }
-      >();
-  });
-
-  it("Machine show receives an object with at least: machine_name, machine_description and machine_icon", async () => {
-    expectTypeOf(pyApi.show_machine.receive)
-      .parameter(0)
-      .parameter(0)
-      .toMatchTypeOf<
-        | {
-            status: "success";
-            data: {
-              machine_name: string;
-              machine_icon?: string | null;
-              machine_description?: string | null;
-            };
-          }
         | { status: "error"; errors: any }
       >();
   });

@@ -219,6 +219,7 @@ This is useful for machines that are not always online or are not part of the re
 
 ## What's next ?
 
+- [**Disk Encryption**](./disk-encryption.md): Configure disk encryption with remote decryption
 - [**Mesh VPN**](./mesh-vpn.md): Configuring a secure mesh network.
 
 ---

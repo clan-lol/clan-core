@@ -106,8 +106,6 @@
     );
   };
 
-  # defaults
-  config.clan.core.state.HOME.folders = [ "/home" ];
   config.environment.systemPackages = lib.optional (config.clan.core.state != { }) (
     pkgs.runCommand "state-commands" { } ''
       ${builtins.concatStringsSep "\n" (

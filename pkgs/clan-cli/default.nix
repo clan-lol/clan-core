@@ -17,8 +17,6 @@
   setuptools,
   stdenv,
 
-  pydantic,
-
   # custom args
   clan-core-path,
   nixpkgs,
@@ -30,7 +28,6 @@
 let
   pythonDependencies = [
     argcomplete # Enables shell completions
-    pydantic # Dataclass deserialisation / validation / schemas
   ];
 
   # load nixpkgs runtime dependencies from a json file
@@ -63,9 +60,7 @@ let
   source = runCommand "clan-cli-source" { } ''
     cp -r ${./.} $out
     chmod -R +w $out
-    rm $out/clan_cli/config/jsonschema
     ln -sf ${nixpkgs'} $out/clan_cli/nixpkgs
-    cp -r ${../../lib/jsonschema} $out/clan_cli/config/jsonschema
     cp -r ${../../templates} $out/clan_cli/templates
 
     ${classgen}/bin/classgen ${inventory-schema}/schema.json $out/clan_cli/inventory/classes.py

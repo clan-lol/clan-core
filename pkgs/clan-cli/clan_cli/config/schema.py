@@ -11,6 +11,8 @@ from clan_cli.errors import ClanError, ClanHttpError
 from clan_cli.nix import nix_eval
 
 
+# TODO: When moving the api to `clan-app`, the whole config module should be
+# ported to the `clan-app`, because it is not used by the cli at all.
 @API.register
 def machine_schema(
     flake_dir: Path,
@@ -86,9 +88,9 @@ def machine_schema(
                                 [
                                     clan-core.nixosModules.clanCore
                                     # potentially the config might affect submodule options,
-                                    #   therefore we need to import it
+                                    # therefore we need to import it
                                     config
-                                    {{ clan.core.clanName = "fakeClan"; }}
+                                    {{ clan.core.name = "fakeClan"; }}
                                 ]
                                 # add all clan modules specified via clanImports
                                 ++ (map (name: clan-core.clanModules.${{name}}) config.clanImports or []);
