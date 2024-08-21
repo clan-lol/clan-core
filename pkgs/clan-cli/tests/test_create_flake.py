@@ -17,8 +17,7 @@ def test_create_flake(
 ) -> None:
     flake_dir = temporary_home / "test-flake"
 
-    url = f"{clan_core}#default"
-    cli.run(["flakes", "create", str(flake_dir), f"--url={url}"])
+    cli.run(["flakes", "create", str(flake_dir), "--template=default"])
 
     assert (flake_dir / ".clan-flake").exists()
     # Replace the inputs.clan.url in the template flake.nix
@@ -63,8 +62,7 @@ def test_ui_template(
     capture_output: CaptureOutput,
 ) -> None:
     flake_dir = temporary_home / "test-flake"
-    url = f"{clan_core}#minimal"
-    cli.run(["flakes", "create", str(flake_dir), f"--url={url}"])
+    cli.run(["flakes", "create", str(flake_dir), "--template=minimal"])
 
     # Replace the inputs.clan.url in the template flake.nix
     substitute(
