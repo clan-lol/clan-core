@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 class MainWindow(Adw.ApplicationWindow):
     def __init__(self, config: ClanConfig) -> None:
         super().__init__()
-        self.set_title("Clan Manager")
+        self.set_title("Clan App")
         self.set_default_size(980, 850)
 
         # Overlay for GTK side exclusive toasts
