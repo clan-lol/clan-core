@@ -143,7 +143,6 @@ in
       "dyndns"
       "enable"
     ] "Just define clan.dyndns.settings to enable it")
-    ../nginx
   ];
 
   config = lib.mkMerge [
@@ -158,6 +157,11 @@ in
         home = "/var/lib/${name}";
         createHome = true;
       };
+
+      networking.firewall.allowedTCPPorts = lib.mkIf cfg.server.enable [
+        80
+        443
+      ];
 
       services.nginx = lib.mkIf cfg.server.enable {
         enable = true;
@@ -245,6 +249,7 @@ in
             PrivateDevices = "yes";
             ProtectKernelModules = "yes";
             ProtectKernelTunables = "yes";
+
             WorkingDirectory = "/var/lib/${name}";
             ReadWritePaths = [
               "/proc/self"
