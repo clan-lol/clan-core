@@ -32,6 +32,8 @@ class VmConfig:
             self.flake_url = FlakeId(self.flake_url)
         if isinstance(self.waypipe, dict):
             self.waypipe = WaypipeConfig(**self.waypipe)
+        if isinstance(self.flake_url, dict):
+            self.flake_url = FlakeId(**self.flake_url)
 
 
 def inspect_vm(machine: Machine) -> VmConfig:
@@ -48,7 +50,7 @@ class InspectOptions:
 def inspect_command(args: argparse.Namespace) -> None:
     inspect_options = InspectOptions(
         machine=args.machine,
-        flake=args.flake or FlakeId(Path.cwd()),
+        flake=args.flake or FlakeId(str(Path.cwd())),
     )
 
     machine = Machine(inspect_options.machine, inspect_options.flake)

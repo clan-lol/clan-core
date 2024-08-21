@@ -49,7 +49,7 @@ def test_upload_secret(
     cli.run(["facts", "generate", "vm1"])
 
     store = SecretStore(
-        Machine(name="vm1", flake=FlakeId(test_flake_with_core_and_pass.path))
+        Machine(name="vm1", flake=FlakeId(str(test_flake_with_core_and_pass.path)))
     )
 
     network_id = machine_get_fact(

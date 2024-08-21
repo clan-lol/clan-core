@@ -9,15 +9,18 @@ from .errors import ClanError
 
 @dataclass
 class FlakeId:
-    loc: str | Path
+    loc: str
 
     def __post_init__(self) -> None:
         assert isinstance(
-            self.loc, str | Path
+            self.loc, str
         ), f"Flake {self.loc} has an invalid format: {type(self.loc)}"
 
     def __str__(self) -> str:
         return str(self.loc)
+
+    def __hash__(self) -> int:
+        return hash(str(self.loc))
 
     @property
     def path(self) -> Path:
@@ -87,20 +90,11 @@ class ClanURI:
             self.machine_name = components.fragment
 
     def _parse_url(self, comps: urllib.parse.ParseResult) -> FlakeId:
-        comb = (
-            comps.scheme,
-            comps.netloc,
-            comps.path,
-            comps.params,
-            comps.query,
-            comps.fragment,
-        )
-        match comb:
-            case ("file", "", path, "", "", _) | ("", "", path, "", "", _):  # type: ignore
-                flake_id = FlakeId(Path(path).expanduser().resolve())
-            case _:
-                flake_id = FlakeId(comps.geturl())
-
+        if comps.scheme == "" or "file" in comps.scheme:
+            res_p = Path(comps.path).expanduser().resolve()
+            flake_id = FlakeId(str(res_p))
+        else:
+            flake_id = FlakeId(comps.geturl())
         return flake_id
 
     def get_url(self) -> str:

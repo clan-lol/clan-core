@@ -2,30 +2,7 @@
   "clientRemote": "",
   "gitRemote": "",
   "gitSha": "",
-  "treeEntries": [
-    {
-      "label": "source of problem",
-      "entryType": 0,
-      "author": "lhebendanz",
-      "locations": [
-        {
-          "path": "../clan-cli/clan_cli/history/add.py",
-          "startLine": 45,
-          "endLine": 59,
-          "label": "",
-          "description": ""
-        }
-      ],
-      "details": {
-        "severity": "",
-        "difficulty": "",
-        "type": "",
-        "description": "",
-        "exploit": "",
-        "recommendation": "Short term, \nLong term, \n"
-      }
-    }
-  ],
+  "treeEntries": [],
   "auditedFiles": [],
   "resolvedEntries": []
 }
