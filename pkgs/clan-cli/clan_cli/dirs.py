@@ -44,7 +44,7 @@ def find_toplevel(top_level_files: list[str]) -> Path | None:
 
 
 def clan_templates() -> Path:
-    template_path = module_root().parent.parent / "templates"
+    template_path = module_root().parent.parent.parent / "templates"
     if template_path.exists():
         return template_path
     else:
