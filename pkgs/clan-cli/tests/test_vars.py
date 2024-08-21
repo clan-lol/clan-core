@@ -79,7 +79,9 @@ def test_generate_public_var(
     )
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    store = in_repo.FactStore(Machine(name="my_machine", flake=FlakeId(flake.path)))
+    store = in_repo.FactStore(
+        Machine(name="my_machine", flake=FlakeId(str(flake.path)))
+    )
     assert store.exists("my_generator", "my_value")
     assert store.get("my_generator", "my_value").decode() == "hello\n"
 
@@ -103,10 +105,12 @@ def test_generate_secret_var_sops(
     sops_setup.init()
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     in_repo_store = in_repo.FactStore(
-        Machine(name="my_machine", flake=FlakeId(flake.path))
+        Machine(name="my_machine", flake=FlakeId(str(flake.path)))
     )
     assert not in_repo_store.exists("my_generator", "my_secret")
-    sops_store = sops.SecretStore(Machine(name="my_machine", flake=FlakeId(flake.path)))
+    sops_store = sops.SecretStore(
+        Machine(name="my_machine", flake=FlakeId(str(flake.path)))
+    )
     assert sops_store.exists("my_generator", "my_secret")
     assert sops_store.get("my_generator", "my_secret").decode() == "hello\n"
 
@@ -132,10 +136,12 @@ def test_generate_secret_var_sops_with_default_group(
     cli.run(["secrets", "groups", "add-user", "my_group", sops_setup.user])
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     in_repo_store = in_repo.FactStore(
-        Machine(name="my_machine", flake=FlakeId(flake.path))
+        Machine(name="my_machine", flake=FlakeId(str(flake.path)))
     )
     assert not in_repo_store.exists("my_generator", "my_secret")
-    sops_store = sops.SecretStore(Machine(name="my_machine", flake=FlakeId(flake.path)))
+    sops_store = sops.SecretStore(
+        Machine(name="my_machine", flake=FlakeId(str(flake.path)))
+    )
     assert sops_store.exists("my_generator", "my_secret")
     assert sops_store.get("my_generator", "my_secret").decode() == "hello\n"
 
@@ -184,7 +190,7 @@ def test_generate_secret_var_password_store(
     )
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     store = password_store.SecretStore(
-        Machine(name="my_machine", flake=FlakeId(flake.path))
+        Machine(name="my_machine", flake=FlakeId(str(flake.path)))
     )
     assert store.exists("my_generator", "my_secret")
     assert store.get("my_generator", "my_secret").decode() == "hello\n"
@@ -224,18 +230,22 @@ def test_generate_secret_for_multiple_machines(
     cli.run(["vars", "generate", "--flake", str(flake.path)])
     # check if public vars have been created correctly
     in_repo_store1 = in_repo.FactStore(
-        Machine(name="machine1", flake=FlakeId(flake.path))
+        Machine(name="machine1", flake=FlakeId(str(flake.path)))
     )
     in_repo_store2 = in_repo.FactStore(
-        Machine(name="machine2", flake=FlakeId(flake.path))
+        Machine(name="machine2", flake=FlakeId(str(flake.path)))
     )
     assert in_repo_store1.exists("my_generator", "my_value")
     assert in_repo_store2.exists("my_generator", "my_value")
     assert in_repo_store1.get("my_generator", "my_value").decode() == "machine1\n"
     assert in_repo_store2.get("my_generator", "my_value").decode() == "machine2\n"
     # check if secret vars have been created correctly
-    sops_store1 = sops.SecretStore(Machine(name="machine1", flake=FlakeId(flake.path)))
-    sops_store2 = sops.SecretStore(Machine(name="machine2", flake=FlakeId(flake.path)))
+    sops_store1 = sops.SecretStore(
+        Machine(name="machine1", flake=FlakeId(str(flake.path)))
+    )
+    sops_store2 = sops.SecretStore(
+        Machine(name="machine2", flake=FlakeId(str(flake.path)))
+    )
     assert sops_store1.exists("my_generator", "my_secret")
     assert sops_store2.exists("my_generator", "my_secret")
     assert sops_store1.get("my_generator", "my_secret").decode() == "machine1\n"
@@ -263,7 +273,7 @@ def test_dependant_generators(
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     in_repo_store = in_repo.FactStore(
-        Machine(name="my_machine", flake=FlakeId(flake.path))
+        Machine(name="my_machine", flake=FlakeId(str(flake.path)))
     )
     assert in_repo_store.exists("parent_generator", "my_value")
     assert in_repo_store.get("parent_generator", "my_value").decode() == "hello\n"
@@ -302,7 +312,7 @@ def test_prompt(
     monkeypatch.setattr("sys.stdin", StringIO(input_value))
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     in_repo_store = in_repo.FactStore(
-        Machine(name="my_machine", flake=FlakeId(flake.path))
+        Machine(name="my_machine", flake=FlakeId(str(flake.path)))
     )
     assert in_repo_store.exists("my_generator", "my_value")
     assert in_repo_store.get("my_generator", "my_value").decode() == input_value
@@ -339,9 +349,11 @@ def test_share_flag(
     monkeypatch.chdir(flake.path)
     sops_setup.init()
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    sops_store = sops.SecretStore(Machine(name="my_machine", flake=FlakeId(flake.path)))
+    sops_store = sops.SecretStore(
+        Machine(name="my_machine", flake=FlakeId(str(flake.path)))
+    )
     in_repo_store = in_repo.FactStore(
-        Machine(name="my_machine", flake=FlakeId(flake.path))
+        Machine(name="my_machine", flake=FlakeId(str(flake.path)))
     )
     # check secrets stored correctly
     assert sops_store.exists("shared_generator", "my_secret", shared=True)

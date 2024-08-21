@@ -75,6 +75,7 @@ python3.pkgs.buildPythonApplication rec {
 
   makeWrapperArgs = [
     "--set FONTCONFIG_FILE ${fontconfig.out}/etc/fonts/fonts.conf"
+    "--set WEBUI_PATH $out/${python3.sitePackages}/clan_app/.webui"
     # This prevents problems with mixed glibc versions that might occur when the
     # cli is called through a browser built against another glibc
     "--unset LD_LIBRARY_PATH"
