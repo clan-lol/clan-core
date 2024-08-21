@@ -64,6 +64,53 @@ const InstallMachine = (props: InstallMachineProps) => {
 
   const handleInstall = async (values: InstallForm) => {
     console.log("Installing", values);
+    const curr_uri = activeURI();
+    if (!curr_uri) {
+      return;
+    }
+    if (!props.name || !props.targetHost) {
+      return;
+    }
+
+    const r = await callApi("install_machine", {
+      opts: {
+        flake: {
+          loc: curr_uri,
+        },
+        machine: props.name,
+        target_host: props.targetHost,
+      },
+      password: "",
+    });
+
+    if (r.status === "error") {
+      toast.error("Failed to install machine");
+    }
+    if (r.status === "success") {
+      toast.success("Machine installed successfully");
+    }
+  };
+
+  const handleDiskConfirm = async () => {
+    const curr_uri = activeURI();
+    const disk = getValue(formStore, "disk");
+    const disk_id = props.disks.find((d) => d.name === disk)?.id_link;
+    if (!curr_uri || !disk_id || !props.name) {
+      return;
+    }
+
+    const r = await callApi("set_single_disk_uuid", {
+      base_path: curr_uri,
+      machine_name: props.name,
+      disk_uuid: disk_id,
+    });
+    if (r.status === "error") {
+      toast.error("Failed to set disk");
+    }
+    if (r.status === "success") {
+      toast.success("Disk set successfully");
+      setConfirmDisk(true);
+    }
   };
   return (
     <>
@@ -111,7 +158,7 @@ const InstallMachine = (props: InstallMachineProps) => {
             fallback={
               <button
                 class="btn btn-primary btn-wide"
-                onClick={() => setConfirmDisk(true)}
+                onClick={() => handleDiskConfirm()}
                 disabled={!hasDisk()}
               >
                 <span class="material-icons">check</span>
