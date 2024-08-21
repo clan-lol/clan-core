@@ -16,6 +16,7 @@ interface TextInputProps<T extends FieldValues, R extends ResponseData> {
     position: "start" | "end";
     content: JSX.Element;
   };
+  placeholder?: string;
 }
 
 export function TextInput<T extends FieldValues, R extends ResponseData>(
@@ -51,7 +52,7 @@ export function TextInput<T extends FieldValues, R extends ResponseData>(
           classList={{
             "input-disabled": props.formStore.submitting,
           }}
-          placeholder="name"
+          placeholder={`${props.placeholder || props.label}`}
           required
           disabled={props.formStore.submitting}
         />

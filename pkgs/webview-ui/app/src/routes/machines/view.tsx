@@ -8,6 +8,7 @@ import {
   createQuery,
   useQueryClient,
 } from "@tanstack/solid-query";
+import { useNavigate } from "@solidjs/router";
 
 type MachinesModel = Extract<
   OperationResponse<"list_inventory_machines">,
@@ -73,6 +74,7 @@ export const MachineListView: Component = () => {
     nixosQuery.data?.filter(
       (name) => !inventoryMachines().some(([key, machine]) => key === name),
     );
+  const navigate = useNavigate();
 
   return (
     <div>
@@ -83,10 +85,7 @@ export const MachineListView: Component = () => {
         </button>
       </div>
       <div class="tooltip tooltip-bottom" data-tip="Create machine">
-        <button
-          class="btn btn-ghost"
-          // onClick={() => setRoute("machines/add")}
-        >
+        <button class="btn btn-ghost" onClick={() => navigate("create")}>
           <span class="material-icons ">add</span>
         </button>
       </div>
