@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+import os
 from typing import Any, ClassVar
 
 import gi
@@ -56,9 +57,7 @@ class MainApplication(Adw.Application):
             None,
         )
 
-        site_index: Path = (
-            Path(__file__).parent.parent / Path("clan_app/.webui/index.html")
-        ).resolve()
+        site_index: Path = Path(os.getenv("WEBUI_PATH", ".")).resolve() / "index.html"
         self.content_uri = f"file://{site_index}"
         self.window: MainWindow | None = None
         self.connect("activate", self.on_activate)
