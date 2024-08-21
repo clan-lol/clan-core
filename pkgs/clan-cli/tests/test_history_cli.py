@@ -27,7 +27,7 @@ def test_history_add(
     history_file = user_history_file()
     assert history_file.exists()
     history = [HistoryEntry(**entry) for entry in json.loads(open(history_file).read())]
-    assert str(history[0].flake.flake_url["loc"]) == str(test_flake_with_core.path)
+    assert str(history[0].flake.flake_url) == str(test_flake_with_core.path)
 
 
 @pytest.mark.impure

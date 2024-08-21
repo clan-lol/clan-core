@@ -103,7 +103,7 @@ class ClanList(Gtk.Box):
 
         grp = Adw.PreferencesGroup()
         grp.set_title(vm.data.flake.clan_name)
-        grp.set_description(vm.data.flake.flake_url)
+        grp.set_description(str(vm.data.flake.flake_url))
 
         add_action = Gio.SimpleAction.new("add", GLib.VariantType.new("s"))
         add_action.connect("activate", self.on_add)

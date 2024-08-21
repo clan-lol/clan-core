@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 import gi
-from clan_cli.clan_uri import ClanURI
+from clan_cli.clan_uri import ClanURI, FlakeId
 from clan_cli.history.add import HistoryEntry
 from clan_cli.machines.machines import Machine
 
@@ -34,7 +34,7 @@ class Emitter(GObject.GObject):
 
 class ClanStore:
     _instance: "None | ClanStore" = None
-    _clan_store: GKVStore[str, VMStore]
+    _clan_store: GKVStore[FlakeId, VMStore]
 
     _emitter: Emitter
 
@@ -65,6 +65,7 @@ class ClanStore:
 
     def set_logging_vm(self, ident: str) -> VMObject | None:
         vm = self.get_vm(ClanURI(f"clan://{ident}"))
+
         if vm is not None:
             self._logging_vm = vm
 
@@ -92,7 +93,7 @@ class ClanStore:
         self.clan_store.register_on_change(on_clanstore_change)
 
     @property
-    def clan_store(self) -> GKVStore[str, VMStore]:
+    def clan_store(self) -> GKVStore[FlakeId, VMStore]:
         return self._clan_store
 
     def create_vm_task(self, vm: HistoryEntry) -> bool:
@@ -109,8 +110,12 @@ class ClanStore:
         def log_details(gfile: Gio.File) -> None:
             self.log_details(vm, gfile)
 
+        assert isinstance(entry.flake.flake_url, FlakeId)
+
         vm = VMObject(icon=icon, data=entry, build_log_cb=log_details)
+        assert isinstance(vm.data.flake.flake_url, FlakeId)
         self.push(vm)
+        assert isinstance(vm.data.flake.flake_url, FlakeId)
 
     def log_details(self, vm: VMObject, gfile: Gio.File) -> None:
         views = ViewStack.use().view
@@ -136,7 +141,7 @@ class ClanStore:
         # we cannot check this type, python is not smart enough
 
     def push(self, vm: VMObject) -> None:
-        url = str(vm.data.flake.flake_url)
+        url = vm.data.flake.flake_url
 
         # Only write to the store if the Clan is not already in it
         # Every write to the KVStore rerenders bound widgets to the clan_store
@@ -160,11 +165,12 @@ class ClanStore:
                 vm_store.append(vm)
 
     def remove(self, vm: VMObject) -> None:
-        del self.clan_store[str(vm.data.flake.flake_url)][vm.data.flake.flake_attr]
+        del self.clan_store[vm.data.flake.flake_url][vm.data.flake.flake_attr]
 
     def get_vm(self, uri: ClanURI) -> None | VMObject:
         machine = Machine(uri.machine_name, uri.flake)
-        vm_store = self.clan_store.get(str(machine.flake))
+        vm_store = self.clan_store.get(machine.flake)
+
         if vm_store is None:
             return None
         vm = vm_store.get(str(machine.name), None)

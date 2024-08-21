@@ -48,7 +48,9 @@ def test_generate_secret(
     )
     cmd = ["facts", "generate", "--flake", str(test_flake_with_core.path), "vm1"]
     cli.run(cmd)
-    store1 = SecretStore(Machine(name="vm1", flake=FlakeId(test_flake_with_core.path)))
+    store1 = SecretStore(
+        Machine(name="vm1", flake=FlakeId(str(test_flake_with_core.path)))
+    )
 
     assert store1.exists("", "age.key")
     assert store1.exists("", "zerotier-identity-secret")
@@ -76,7 +78,9 @@ def test_generate_secret(
         secrets_folder / "vm1-zerotier-identity-secret" / "machines" / "vm1"
     ).exists()
 
-    store2 = SecretStore(Machine(name="vm2", flake=FlakeId(test_flake_with_core.path)))
+    store2 = SecretStore(
+        Machine(name="vm2", flake=FlakeId(str(test_flake_with_core.path)))
+    )
 
     assert store2.exists("", "password")
     assert store2.exists("", "password-hash")

@@ -44,14 +44,14 @@ except ImportError:
 def flake_path(arg: str) -> FlakeId:
     flake_dir = Path(arg).resolve()
     if flake_dir.exists() and flake_dir.is_dir():
-        return FlakeId(flake_dir)
+        return FlakeId(str(flake_dir))
     return FlakeId(arg)
 
 
 def default_flake() -> FlakeId | None:
     val = get_clan_flake_toplevel_or_env()
     if val:
-        return FlakeId(val)
+        return FlakeId(str(val))
     return None
 
 

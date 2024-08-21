@@ -61,7 +61,7 @@ def test_add_module_to_inventory(
         ]
     )
     create_machine(
-        FlakeId(base_path),
+        FlakeId(str(base_path)),
         Machine(
             name="machine1", tags=[], system="x86_64-linux", deploy=MachineDeploy()
         ),

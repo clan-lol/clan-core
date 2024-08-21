@@ -28,6 +28,8 @@ class FlakeConfig:
     def __post_init__(self) -> None:
         if isinstance(self.vm, dict):
             self.vm = VmConfig(**self.vm)
+        if isinstance(self.flake_url, dict):
+            self.flake_url = FlakeId(**self.flake_url)
 
 
 def run_cmd(cmd: list[str]) -> str:
@@ -46,7 +48,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
             f"Machine {machine_name} not found in {flake_url}. Available machines: {', '.join(machines)}"
         )
 
-    machine = Machine(machine_name, FlakeId(flake_url))
+    machine = Machine(machine_name, FlakeId(str(flake_url)))
     vm = inspect_vm(machine)
 
     # Make symlink to gcroots from vm.machine_icon
@@ -89,7 +91,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     meta = nix_metadata(flake_url)
     return FlakeConfig(
         vm=vm,
-        flake_url=FlakeId(flake_url),
+        flake_url=FlakeId(str(flake_url)),
         clan_name=clan_name,
         flake_attr=machine_name,
         nar_hash=meta["locked"]["narHash"],
@@ -109,7 +111,7 @@ class InspectOptions:
 def inspect_command(args: argparse.Namespace) -> None:
     inspect_options = InspectOptions(
         machine=args.machine,
-        flake=args.flake or FlakeId(Path.cwd()),
+        flake=args.flake or FlakeId(str(Path.cwd())),
     )
     res = inspect_flake(
         flake_url=str(inspect_options.flake), machine_name=inspect_options.machine
