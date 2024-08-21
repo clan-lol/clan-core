@@ -5,6 +5,7 @@ import { createQuery } from "@tanstack/solid-query";
 import { useFloating } from "@/src/floating";
 import { autoUpdate, flip, hide, offset, shift } from "@floating-ui/dom";
 import { EditClanForm } from "../clan/editClan";
+import { useNavigate } from "@solidjs/router";
 
 export const registerClan = async () => {
   try {
@@ -68,6 +69,18 @@ const ClanDetails = (props: ClanDetailsProps) => {
     ],
   });
 
+  const handleRemove = () => {
+    setClanList((s) =>
+      s.filter((v, idx) => {
+        if (v == clan_dir) {
+          setActiveURI(clanList()[idx - 1] || clanList()[idx + 1] || null);
+          return false;
+        }
+        return true;
+      }),
+    );
+  };
+
   return (
     <div class="stat">
       <div class="stat-figure text-primary">
@@ -103,6 +116,7 @@ const ClanDetails = (props: ClanDetailsProps) => {
           </button>
           <div
             popover="auto"
+            role="tooltip"
             id={`clan-delete-popover-${clan_dir}`}
             ref={setFloating}
             style={{
@@ -110,30 +124,22 @@ const ClanDetails = (props: ClanDetailsProps) => {
               top: `${position.y ?? 0}px`,
               left: `${position.x ?? 0}px`,
             }}
-            class="bg-transparent"
+            class="m-0 bg-transparent"
           >
-            <button
-              class="btn btn-warning btn-sm"
-              onClick={() => {
-                setClanList((s) =>
-                  s.filter((v, idx) => {
-                    if (v == clan_dir) {
-                      setActiveURI(
-                        clanList()[idx - 1] || clanList()[idx + 1] || null,
-                      );
-                      return false;
-                    }
-                    return true;
-                  }),
-                );
-              }}
-            >
+            <button class="btn bg-[#ffdd2c]" onClick={handleRemove}>
               Remove from App
             </button>
           </div>
         </div>
       </div>
-      <div class="stat-title">{clan_dir}</div>
+      <div
+        class="stat-title"
+        classList={{
+          "badge badge-primary": activeURI() === clan_dir,
+        }}
+      >
+        {clan_dir}
+      </div>
 
       <Show when={details.isLoading}>
         <div class="skeleton h-12 w-80" />
@@ -151,6 +157,7 @@ const ClanDetails = (props: ClanDetailsProps) => {
 export const Settings = () => {
   const [editURI, setEditURI] = createSignal<string | null>(null);
 
+  const navigate = useNavigate();
   return (
     <div class="card card-normal">
       <Switch>
@@ -167,15 +174,31 @@ export const Settings = () => {
         <Match when={!editURI()}>
           <div class="card-body">
             <div class="label">
-              <div class="label-text">Registered Clans</div>
-              <button
-                class="btn btn-square btn-primary"
-                onClick={() => {
-                  registerClan();
-                }}
-              >
-                <span class="material-icons">add</span>
-              </button>
+              <div class="label-text text-2xl text-neutral">
+                Registered Clans
+              </div>
+              <div class="flex gap-2">
+                <span class="tooltip tooltip-top" data-tip="Register clan">
+                  <button
+                    class="btn btn-square btn-ghost"
+                    onClick={() => {
+                      registerClan();
+                    }}
+                  >
+                    <span class="material-icons">post_add</span>
+                  </button>
+                </span>
+                <span class="tooltip tooltip-top" data-tip="Create new clan">
+                  <button
+                    class="btn btn-square btn-ghost"
+                    onClick={() => {
+                      navigate("create");
+                    }}
+                  >
+                    <span class="material-icons">add</span>
+                  </button>
+                </span>
+              </div>
             </div>
             <div class="stats stats-vertical shadow">
               <For each={clanList()}>

@@ -98,22 +98,6 @@ export function CreateMachine() {
                 label={"Deployment target"}
                 error={field.error}
               />
-              <div class="label">
-                <span class="label-text-alt text-neutral">
-                  Must be set before deployment for the following tasks:
-                  <ul>
-                    <li>
-                      <span>Detect hardware config</span>
-                    </li>
-                    <li>
-                      <span>Detect disk layout</span>
-                    </li>
-                    <li>
-                      <span>Remote installation</span>
-                    </li>
-                  </ul>
-                </span>
-              </div>
             </>
           )}
         </Field>

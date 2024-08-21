@@ -2,12 +2,14 @@ import { createQuery } from "@tanstack/solid-query";
 import { activeURI } from "../App";
 import { callApi } from "../api";
 import { Accessor, Show } from "solid-js";
+import { useNavigate } from "@solidjs/router";
 
 interface HeaderProps {
   clan_dir: Accessor<string | null>;
 }
 export const Header = (props: HeaderProps) => {
   const { clan_dir } = props;
+  const navigate = useNavigate();
 
   const query = createQuery(() => ({
     queryKey: [clan_dir(), "meta"],
@@ -63,7 +65,7 @@ export const Header = (props: HeaderProps) => {
       </div>
       <div class="flex-none">
         <span class="tooltip tooltip-bottom" data-tip="Settings">
-          <button class="link">
+          <button class="link" onClick={() => navigate("/clan")}>
             <span class="material-icons">settings</span>
           </button>
         </span>

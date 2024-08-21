@@ -1,7 +1,9 @@
-import { setActiveURI } from "@/src/App";
+import { setActiveURI, setClanList } from "@/src/App";
 import { registerClan } from "../settings";
+import { useNavigate } from "@solidjs/router";
 
 export const Welcome = () => {
+  const navigate = useNavigate();
   return (
     <div class="hero min-h-[calc(100vh-10rem)]">
       <div class="hero-content mb-32 text-center">
@@ -19,7 +21,10 @@ export const Welcome = () => {
               class="link w-full text-right text-primary"
               onClick={async () => {
                 const uri = await registerClan();
-                if (uri) setActiveURI(uri);
+                if (uri) {
+                  setActiveURI(uri);
+                  navigate("/machines");
+                }
               }}
             >
               Or select folder
@@ -27,7 +32,7 @@ export const Welcome = () => {
             <button
               class="link w-full text-right text-secondary"
               onClick={async () => {
-                // setRoute("machines");
+                setClanList((c) => [...c, "debug"]);
               }}
             >
               Skip (Debug)
