@@ -1,6 +1,7 @@
 import { FieldValues, FormStore, ResponseData } from "@modular-forms/solid";
 import { Show } from "solid-js";
 import { type JSX } from "solid-js";
+import cx from "classnames";
 
 interface SelectInputProps<T extends FieldValues, R extends ResponseData> {
   formStore: FormStore<T, R>;
@@ -11,14 +12,15 @@ interface SelectInputProps<T extends FieldValues, R extends ResponseData> {
   error?: string;
   required?: boolean;
   topRightLabel?: JSX.Element;
+  class?: string;
 }
 
 export function SelectInput<T extends FieldValues, R extends ResponseData>(
-  props: SelectInputProps<T, R>,
+  props: SelectInputProps<T, R>
 ) {
   return (
     <label
-      class="form-control w-full"
+      class={cx("form-control w-full", props.class)}
       aria-disabled={props.formStore.submitting}
     >
       <div class="label">
