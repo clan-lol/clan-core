@@ -16,6 +16,7 @@ interface FileInputProps {
   label?: string;
   error?: string;
   helperText?: string;
+  placeholder?: JSX.Element;
 }
 
 /**
@@ -30,6 +31,7 @@ export function FileInput(props: FileInputProps) {
     "value",
     "label",
     "error",
+    "placeholder",
   ]);
 
   // Create file list
@@ -68,7 +70,11 @@ export function FileInput(props: FileInputProps) {
       >
         <Show
           when={getFiles().length}
-          fallback={<>Click to select file{props.multiple && "s"}</>}
+          fallback={
+            props.placeholder || (
+              <>Click to select file{props.multiple && "s"}</>
+            )
+          }
         >
           Selected file{props.multiple && "s"}:{" "}
           {getFiles()
