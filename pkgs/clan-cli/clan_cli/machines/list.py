@@ -8,10 +8,19 @@ from typing import Literal
 from clan_cli.api import API
 from clan_cli.cmd import run_no_stdout
 from clan_cli.errors import ClanCmdError, ClanError
-from clan_cli.inventory import Machine, load_inventory_eval
+from clan_cli.inventory import Machine, load_inventory_eval, save_inventory
 from clan_cli.nix import nix_eval, nix_shell
 
 log = logging.getLogger(__name__)
+
+
+@API.register
+def set_machine(flake_url: str | Path, machine_name: str, machine: Machine) -> None:
+    inventory = load_inventory_eval(flake_url)
+
+    inventory.machines[machine_name] = machine
+
+    save_inventory(inventory, flake_url, "machines: edit '{machine_name}'")
 
 
 @API.register
@@ -86,7 +95,7 @@ def check_machine_online(
     if not hostname:
         raise ClanError(f"Machine {machine_name} does not specify a targetHost")
 
-    timeout = opts.timeout if opts and opts.timeout else 2
+    timeout = opts.timeout if opts and opts.timeout else 20
 
     cmd = nix_shell(
         ["nixpkgs#util-linux", *(["nixpkgs#openssh"] if hostname else [])],
