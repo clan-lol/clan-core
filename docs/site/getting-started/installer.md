@@ -49,7 +49,7 @@ sudo umount /dev/sdb1
     clan flash --flake git+https://git.clan.lol/clan/clan-core \
       --ssh-pubkey $HOME/.ssh/id_ed25519.pub \
       --keymap us \
-      --language en_US.utf-8 \
+      --language en_US.UTF-8 \
       --disk main /dev/sd<X> \
       flash-installer
     ```
