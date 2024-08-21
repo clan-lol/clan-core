@@ -21,24 +21,23 @@ in
   };
 
   test_listSecrets = {
-    expr = listVars "per_machine" ./populated/vars/my_machine;
+    expr = listVars ./populated/vars;
     expected = [
       {
+        machine = "my_machine";
         generator = "my_generator";
         name = "my_secret";
-        id = "per_machine/my_generator/my_secret";
-        sopsFile = "${./populated/vars/my_machine}/my_generator/my_secret/secret";
       }
     ];
   };
 
   test_listSecrets_no_vars = {
-    expr = listVars "per_machine" noVars;
+    expr = listVars noVars;
     expected = [ ];
   };
 
   test_listSecrets_empty_vars = {
-    expr = listVars "per_machine" emtpyVars;
+    expr = listVars emtpyVars;
     expected = [ ];
   };
 }
