@@ -127,6 +127,11 @@ def construct_value(t: type, field_value: JsonValue, loc: list[str] = []) -> Any
     """
     if t is None and field_value:
         raise ClanError(f"Expected None but got: {field_value}", location=f"{loc}")
+
+    if is_type_in_union(t, type(None)) and field_value is None:
+        # Sometimes the field value is None, which is valid if the type hint allows None
+        return None
+
     # If the field is another dataclass
     # Field_value must be a dictionary
     if is_dataclass(t) and isinstance(field_value, dict):
@@ -160,9 +165,9 @@ def construct_value(t: type, field_value: JsonValue, loc: list[str] = []) -> Any
     # Union types construct the first non-None type
     elif is_union_type(t):
         # Unwrap the union type
-        t = unwrap_none_type(t)
+        inner = unwrap_none_type(t)
         # Construct the field value
-        return construct_value(t, field_value)
+        return construct_value(inner, field_value)
 
     # Nested types
     # list
