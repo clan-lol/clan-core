@@ -212,7 +212,7 @@ const MachineForm = (props: MachineDetailsProps) => {
     });
     if (machine_response.status === "error") {
       toast.error(
-        `Failed to set machine: ${machine_response.errors[0].message}`
+        `Failed to set machine: ${machine_response.errors[0].message}`,
       );
     }
     if (machine_response.status === "success") {
