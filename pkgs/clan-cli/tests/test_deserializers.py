@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import pytest
 
@@ -128,7 +128,7 @@ def test_simple_field_missing() -> None:
     class Person:
         name: str
 
-    person_dict = {}
+    person_dict: Any = {}
 
     with pytest.raises(ClanError):
         from_dict(Person, person_dict)
@@ -151,7 +151,7 @@ def test_nullable_non_exist() -> None:
     class Person:
         name: None
 
-    person_dict = {}
+    person_dict: Any = {}
 
     with pytest.raises(ClanError):
         from_dict(Person, person_dict)

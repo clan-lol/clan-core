@@ -1,13 +1,12 @@
 from pathlib import Path
 
 import pytest
-
-from tests.age_keys import SopsSetup
-from tests.fixtures_flakes import generate_flake
-from tests.helpers import cli
-from tests.helpers.nixos_config import nested_dict
-from tests.helpers.vms import qga_connect, run_vm_in_thread, wait_vm_down
-from tests.root import CLAN_CORE
+from age_keys import SopsSetup
+from fixtures_flakes import generate_flake
+from helpers import cli
+from helpers.nixos_config import nested_dict
+from helpers.vms import qga_connect, run_vm_in_thread, wait_vm_down
+from root import CLAN_CORE
 
 
 @pytest.mark.impure
