@@ -1,5 +1,5 @@
 /* @refresh reload */
-import { render } from "solid-js/web";
+import { Portal, render } from "solid-js/web";
 import { RouteDefinition, Router } from "@solidjs/router";
 
 import "./index.css";
@@ -14,6 +14,7 @@ import { Flash } from "./routes/flash/view";
 import { CreateMachine } from "./routes/machines/create";
 import { HostList } from "./routes/hosts/view";
 import { Welcome } from "./routes/welcome";
+import { Toaster } from "solid-toast";
 
 const client = new QueryClient();
 
@@ -113,9 +114,14 @@ export const routes: AppRoute[] = [
 
 render(
   () => (
-    <QueryClientProvider client={client}>
-      <Router root={Layout}>{routes}</Router>
-    </QueryClientProvider>
+    <>
+      <Portal mount={document.body}>
+        <Toaster position="top-right" containerClassName="z-[9999]" />
+      </Portal>
+      <QueryClientProvider client={client}>
+        <Router root={Layout}>{routes}</Router>
+      </QueryClientProvider>
+    </>
   ),
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   root!,
