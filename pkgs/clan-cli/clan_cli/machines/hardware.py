@@ -7,6 +7,7 @@ from pathlib import Path
 from clan_cli.api import API
 from clan_cli.clan_uri import FlakeId
 from clan_cli.errors import ClanError
+from clan_cli.git import commit_file
 
 from ..cmd import run, run_no_stdout
 from ..completions import add_dynamic_completer, complete_machines
@@ -161,6 +162,11 @@ def generate_machine_hardware_info(
         print(f"Successfully generated: {hw_file}")
 
     system = show_machine_hardware_platform(clan_dir, machine_name)
+
+    commit_file(
+        hw_file, clan_dir.path, f"Generate hardware configuration for {machine_name}"
+    )
+
     return HardwareInfo(system)
 
 
