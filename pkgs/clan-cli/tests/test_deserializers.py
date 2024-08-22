@@ -244,6 +244,27 @@ def test_alias_field_from_orig_name() -> None:
         from_dict(Person, data)
 
 
+def test_none_or_string() -> None:
+    """
+    Field declares an alias. But the data is provided with the field name.
+    """
+
+    data = None
+
+    @dataclass
+    class Person:
+        name: Path
+
+    checked = from_dict(str | None, data)
+    assert checked is None
+
+    checked2 = from_dict(dict[str, str] | None, data)
+    assert checked2 is None
+
+    checked3 = from_dict(Person | None, data)
+    assert checked3 is None
+
+
 def test_path_field() -> None:
     @dataclass
     class Person:
