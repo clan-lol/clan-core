@@ -6,7 +6,7 @@ import { TextInput } from "@/src/components/TextInput";
 import { createForm, getValue, reset } from "@modular-forms/solid";
 import { useParams } from "@solidjs/router";
 import { createQuery } from "@tanstack/solid-query";
-import { createSignal, For, Show, createEffect } from "solid-js";
+import { createSignal, For, Show, Switch, Match } from "solid-js";
 import toast from "solid-toast";
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -62,6 +62,27 @@ const InstallMachine = (props: InstallMachineProps) => {
 
   const [confirmDisk, setConfirmDisk] = createSignal(!hasDisk());
 
+  const hwInfoQuery = createQuery(() => ({
+    queryKey: [
+      activeURI(),
+      "machine",
+      props.name,
+      "show_machine_hardware_info",
+    ],
+    queryFn: async () => {
+      const curr = activeURI();
+      if (curr && props.name) {
+        const result = await callApi("show_machine_hardware_info", {
+          clan_dir: curr,
+          machine_name: props.name,
+        });
+        if (result.status === "error") throw new Error("Failed to fetch data");
+        return result.data || null;
+      }
+      return null;
+    },
+  }));
+
   const handleInstall = async (values: InstallForm) => {
     console.log("Installing", values);
     const curr_uri = activeURI();
@@ -72,6 +93,9 @@ const InstallMachine = (props: InstallMachineProps) => {
       return;
     }
 
+    const loading_toast = toast.loading(
+      "Installing machine. Grab coffee (15min)...",
+    );
     const r = await callApi("install_machine", {
       opts: {
         flake: {
@@ -82,6 +106,7 @@ const InstallMachine = (props: InstallMachineProps) => {
       },
       password: "",
     });
+    toast.dismiss(loading_toast);
 
     if (r.status === "error") {
       toast.error("Failed to install machine");
@@ -91,7 +116,8 @@ const InstallMachine = (props: InstallMachineProps) => {
     }
   };
 
-  const handleDiskConfirm = async () => {
+  const handleDiskConfirm = async (e: Event) => {
+    e.preventDefault();
     const curr_uri = activeURI();
     const disk = getValue(formStore, "disk");
     const disk_id = props.disks.find((d) => d.name === disk)?.id_link;
@@ -112,14 +138,86 @@ const InstallMachine = (props: InstallMachineProps) => {
       setConfirmDisk(true);
     }
   };
+
+  const generateReport = async (e: Event) => {
+    e.preventDefault();
+    const curr_uri = activeURI();
+    if (!curr_uri || !props.name) {
+      return;
+    }
+
+    const loading_toast = toast.loading("Generating hardware report...");
+    const r = await callApi("generate_machine_hardware_info", {
+      clan_dir: { loc: curr_uri },
+      machine_name: props.name,
+      keyfile: props.sshKey?.name,
+      hostname: props.targetHost,
+    });
+    toast.dismiss(loading_toast);
+    hwInfoQuery.refetch();
+
+    if (r.status === "error") {
+      toast.error(`Failed to generate report. ${r.errors[0].message}`);
+    }
+    if (r.status === "success") {
+      toast.success("Report generated successfully");
+    }
+  };
   return (
     <>
       <Form onSubmit={handleInstall}>
-        <h3 class="text-lg font-bold">{props.name}</h3>
-        <p class="py-4">Install to {props.targetHost}</p>
+        <h3 class="text-lg font-bold">
+          <span class="font-normal">Install: </span>
+          {props.name}
+        </h3>
         <p class="py-4">
-          Using {props.sshKey?.name || "default ssh key"} for authentication
+          Install the system for the first time. This will erase the disk and
+          bootstrap a new device.
         </p>
+
+        <div class="flex flex-col">
+          <div class="text-lg font-semibold">Hardware detection</div>
+
+          <div class="flex justify-between py-4">
+            <Switch>
+              <Match when={hwInfoQuery.isLoading}>
+                <span class="loading loading-lg"></span>
+              </Match>
+              <Match when={hwInfoQuery.isFetched}>
+                <Show
+                  when={hwInfoQuery.data}
+                  fallback={
+                    <>
+                      <span class="flex align-middle">
+                        <span class="material-icons text-inherit">close</span>
+                        Not Detected
+                      </span>
+                      <div class="text-neutral">
+                        This might still work, but it is recommended to generate
+                        a hardware report.
+                      </div>
+                    </>
+                  }
+                >
+                  <span class="flex align-middle">
+                    <span class="material-icons text-inherit">check</span>
+                    Detected
+                  </span>
+                </Show>
+              </Match>
+            </Switch>
+            <div class="">
+              <button
+                class="btn btn-ghost btn-sm btn-wide"
+                onclick={generateReport}
+              >
+                <span class="material-icons">manage_search</span>
+                Generate report
+              </button>
+            </div>
+          </div>
+        </div>
+
         <Field name="disk">
           {(field, fieldProps) => (
             <SelectInput
@@ -152,13 +250,26 @@ const InstallMachine = (props: InstallMachineProps) => {
             />
           )}
         </Field>
+        <div role="alert" class="alert my-4">
+          <span class="material-icons">info</span>
+          <div>
+            <div class="font-semibold">Summary:</div>
+            <div class="mb-2">
+              Install to <b>{props.targetHost}</b> using{" "}
+              <b>{props.sshKey?.name || "default ssh key"}</b> for
+              authentication.
+            </div>
+            This may take ~15 minutes depending on the initial closure and the
+            environmental setup.
+          </div>
+        </div>
         <div class="modal-action">
           <Show
             when={confirmDisk()}
             fallback={
               <button
                 class="btn btn-primary btn-wide"
-                onClick={() => handleDiskConfirm()}
+                onClick={handleDiskConfirm}
                 disabled={!hasDisk()}
               >
                 <span class="material-icons">check</span>
@@ -211,7 +322,7 @@ const MachineForm = (props: MachineDetailsProps) => {
         return result.data;
       }
     },
-    refetchInterval: 5000,
+    // refetchInterval: 10_000, // 10 seconds
   }));
 
   const online = () => onlineStatusQuery.data === "Online";
@@ -267,6 +378,45 @@ const MachineForm = (props: MachineDetailsProps) => {
     }
 
     return null;
+  };
+
+  const handleUpdate = async () => {
+    const curr_uri = activeURI();
+    if (!curr_uri) {
+      return;
+    }
+    const machine = machineName();
+    if (!machine) {
+      toast.error("Machine is required");
+      return;
+    }
+
+    const target = targetHost();
+    if (!target) {
+      toast.error("Target host is required");
+      return;
+    }
+
+    const loading_toast = toast.loading("Updating machine...");
+    const r = await callApi("update_machines", {
+      base_path: curr_uri,
+      machines: [
+        {
+          name: machine,
+          deploy: {
+            targetHost: target,
+          },
+        },
+      ],
+    });
+    toast.dismiss(loading_toast);
+
+    if (r.status === "error") {
+      toast.error("Failed to update machine");
+    }
+    if (r.status === "success") {
+      toast.success("Machine updated successfully");
+    }
   };
   return (
     <div class="m-2 w-full max-w-xl">
@@ -398,7 +548,7 @@ const MachineForm = (props: MachineDetailsProps) => {
           </button>
         </div>
 
-        <dialog id="install_modal" class="modal">
+        <dialog id="install_modal" class="modal backdrop:bg-transparent">
           <div class="modal-box w-11/12 max-w-5xl">
             <InstallMachine
               name={machineName()}
@@ -410,11 +560,15 @@ const MachineForm = (props: MachineDetailsProps) => {
         </dialog>
 
         <span class="max-w-md text-neutral">
-          Installs the system for the first time. Used to bootstrap the remote
-          device.
+          Update the system if changes should be synced after the installation
+          process.
         </span>
         <div class="tooltip w-fit" data-tip="Machine must be online">
-          <button class="btn btn-primary btn-sm btn-wide" disabled={!online()}>
+          <button
+            class="btn btn-primary btn-sm btn-wide"
+            disabled={!online()}
+            onClick={() => handleUpdate()}
+          >
             <span class="material-icons">update</span>
             Update
           </button>

@@ -122,11 +122,15 @@ def generate_machine_hardware_info(
             # Disable known hosts file
             "-o",
             "UserKnownHostsFile=/dev/null",
-            "-p",
-            str(machine.target_host.port),
+            # Disable strict host key checking. The GUI user cannot type "yes" into the ssh terminal.
+            "-o",
+            "StrictHostKeyChecking=no",
+            *(
+                ["-p", str(machine.target_host.port)]
+                if machine.target_host.port
+                else []
+            ),
             target_host,
-            "-o UserKnownHostsFile=/dev/null",
-            f"{hostname}",
             "nixos-generate-config",
             # Filesystems are managed by disko
             "--no-filesystems",

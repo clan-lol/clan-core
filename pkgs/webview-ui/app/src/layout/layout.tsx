@@ -3,7 +3,6 @@ import { Header } from "./header";
 import { Sidebar } from "../Sidebar";
 import { activeURI, clanList } from "../App";
 import { redirect, RouteSectionProps, useNavigate } from "@solidjs/router";
-import { Toaster } from "solid-toast";
 
 export const Layout: Component<RouteSectionProps> = (props) => {
   const navigate = useNavigate();
@@ -19,7 +18,6 @@ export const Layout: Component<RouteSectionProps> = (props) => {
   });
   return (
     <div class="h-screen bg-gradient-to-b from-white to-base-100 p-4">
-      <Toaster position="top-right" />
       <div class="drawer lg:drawer-open ">
         <input
           id="toplevel-drawer"
