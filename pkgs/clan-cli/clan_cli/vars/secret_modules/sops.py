@@ -1,3 +1,5 @@
+import shutil
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -161,6 +163,19 @@ class SecretStore(StoreBase):
         return decrypt_secret(
             self.machine.flake_dir, self.secret_path(generator, name)
         ).encode("utf-8")
+
+    def delete(self, generator: "Generator", name: str) -> Iterable[Path]:
+        secret_dir = self.directory(generator, name)
+        shutil.rmtree(secret_dir)
+        return [secret_dir]
+
+    def delete_store(self) -> Iterable[Path]:
+        flake_root = Path(self.machine.flake_dir)
+        store_folder = flake_root / "vars/per-machine" / self.machine.name
+        if not store_folder.exists():
+            return []
+        shutil.rmtree(store_folder)
+        return [store_folder]
 
     def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
         if "users" in phases or "services" in phases:

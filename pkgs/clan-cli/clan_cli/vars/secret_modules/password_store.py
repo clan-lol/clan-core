@@ -2,11 +2,12 @@ import io
 import logging
 import os
 import tarfile
+from collections.abc import Iterable
 from itertools import chain
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from clan_cli.cmd import Log, RunOpts, run
+from clan_cli.cmd import CmdOut, Log, RunOpts, run
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
 from clan_cli.ssh.upload import upload
@@ -35,15 +36,21 @@ class SecretStore(StoreBase):
         return backend
 
     @property
-    def _password_store_dir(self) -> str:
+    def _password_store_dir(self) -> Path:
         if self._store_backend == "passage":
-            return os.environ.get("PASSAGE_DIR", f"{os.environ['HOME']}/.passage/store")
-        return os.environ.get(
-            "PASSWORD_STORE_DIR", f"{os.environ['HOME']}/.password-store"
-        )
+            lookup = os.environ.get("PASSAGE_DIR")
+            default = Path.home() / ".passage/store"
+        else:
+            lookup = os.environ.get("PASSWORD_STORE_DIR")
+            default = Path.home() / ".password-store"
+        return Path(lookup) if lookup else default
 
     def entry_dir(self, generator: Generator, name: str) -> Path:
         return Path(self.entry_prefix) / self.rel_dir(generator, name)
+
+    def _run_pass(self, *args: str, options: RunOpts | None = None) -> CmdOut:
+        cmd = nix_shell(packages=["nixpkgs#pass"], cmd=[self._store_backend, *args])
+        return run(cmd, options)
 
     def _set(
         self,
@@ -51,36 +58,29 @@ class SecretStore(StoreBase):
         var: Var,
         value: bytes,
     ) -> Path | None:
-        run(
-            nix_shell(
-                [f"nixpkgs#{self._store_backend}"],
-                [
-                    f"{self._store_backend}",
-                    "insert",
-                    "-m",
-                    str(self.entry_dir(generator, var.name)),
-                ],
-            ),
-            RunOpts(input=value, check=True),
-        )
+        pass_call = ["insert", "-m", str(self.entry_dir(generator, var.name))]
+        self._run_pass(*pass_call, options=RunOpts(input=value, check=True))
         return None  # we manage the files outside of the git repo
 
     def get(self, generator: Generator, name: str) -> bytes:
-        return run(
-            nix_shell(
-                [f"nixpkgs#{self._store_backend}"],
-                [
-                    f"{self._store_backend}",
-                    "show",
-                    str(self.entry_dir(generator, name)),
-                ],
-            ),
-        ).stdout.encode()
+        pass_name = str(self.entry_dir(generator, name))
+        return self._run_pass("show", pass_name).stdout.encode()
 
     def exists(self, generator: Generator, name: str) -> bool:
         extension = "age" if self._store_backend == "passage" else "gpg"
         filename = f"{self.entry_dir(generator, name)}.{extension}"
-        return (Path(self._password_store_dir) / filename).exists()
+        return (self._password_store_dir / filename).exists()
+
+    def delete(self, generator: Generator, name: str) -> Iterable[Path]:
+        pass_name = str(self.entry_dir(generator, name))
+        self._run_pass("rm", "--force", pass_name, options=RunOpts(check=True))
+        return []
+
+    def delete_store(self) -> Iterable[Path]:
+        machine_pass_dir = Path(self.entry_prefix) / "per-machine" / self.machine.name
+        pass_call = ["rm", "--force", "--recursive", str(machine_pass_dir)]
+        self._run_pass(*pass_call, options=RunOpts(check=True))
+        return []
 
     def generate_hash(self) -> bytes:
         hashes = []
@@ -91,7 +91,7 @@ class SecretStore(StoreBase):
                     [
                         "git",
                         "-C",
-                        self._password_store_dir,
+                        str(self._password_store_dir),
                         "log",
                         "-1",
                         "--format=%H",
@@ -103,9 +103,9 @@ class SecretStore(StoreBase):
             .stdout.strip()
             .encode()
         )
-        shared_dir = Path(self._password_store_dir) / self.entry_prefix / "shared"
+        shared_dir = self._password_store_dir / self.entry_prefix / "shared"
         machine_dir = (
-            Path(self._password_store_dir)
+            self._password_store_dir
             / self.entry_prefix
             / "per-machine"
             / self.machine.name
@@ -119,7 +119,7 @@ class SecretStore(StoreBase):
                             [
                                 "git",
                                 "-C",
-                                self._password_store_dir,
+                                str(self._password_store_dir),
                                 "log",
                                 "-1",
                                 "--format=%H",

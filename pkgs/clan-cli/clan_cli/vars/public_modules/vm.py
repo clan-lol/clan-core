@@ -1,4 +1,6 @@
 import logging
+import shutil
+from collections.abc import Iterable
 from pathlib import Path
 
 from clan_cli.dirs import vm_state_dir
@@ -47,6 +49,21 @@ class FactStore(StoreBase):
             return fact_path.read_bytes()
         msg = f"Fact {name} for service {generator.name} not found"
         raise ClanError(msg)
+
+    def delete(self, generator: Generator, name: str) -> Iterable[Path]:
+        fact_dir = self.dir / generator.name
+        fact_file = fact_dir / name
+        fact_file.unlink()
+        empty = None
+        if next(fact_dir.iterdir(), empty) is empty:
+            fact_dir.rmdir()
+        return [fact_file]
+
+    def delete_store(self) -> Iterable[Path]:
+        if not self.dir.exists():
+            return []
+        shutil.rmtree(self.dir)
+        return [self.dir]
 
     def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
         msg = "populate_dir is not implemented for public vars stores"
