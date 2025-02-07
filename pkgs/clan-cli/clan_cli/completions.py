@@ -208,16 +208,11 @@ def complete_secrets(
     Provides completion functionality for clan secrets
     """
     from .clan_uri import Flake
-    from .secrets.secrets import ListSecretsOptions, list_secrets
+    from .secrets.secrets import list_secrets
 
     flake = clan_dir_result if (clan_dir_result := clan_dir(None)) is not None else "."
 
-    options = ListSecretsOptions(
-        flake=Flake(flake),
-        pattern=None,
-    )
-
-    secrets = list_secrets(options.flake.path, options.pattern)
+    secrets = list_secrets(Flake(flake).path)
 
     secrets_dict = dict.fromkeys(secrets, "secret")
     return secrets_dict

@@ -6,7 +6,6 @@ import os
 import shutil
 import sys
 from collections.abc import Callable
-from dataclasses import dataclass
 from pathlib import Path
 from typing import IO
 
@@ -18,7 +17,6 @@ from clan_cli.completions import (
     complete_users,
 )
 from clan_cli.errors import ClanError
-from clan_cli.flake import Flake
 from clan_cli.git import commit_files
 
 from . import sops
@@ -325,31 +323,26 @@ def has_secret(secret_path: Path) -> bool:
     return (secret_path / "secret").exists()
 
 
-def list_secrets(flake_dir: Path, pattern: str | None = None) -> list[str]:
+def list_secrets(
+    flake_dir: Path, filter_fn: Callable[[str], bool] | None = None
+) -> list[str]:
     path = sops_secrets_folder(flake_dir)
 
     def validate(name: str) -> bool:
         return (
             VALID_SECRET_NAME.match(name) is not None
             and has_secret(sops_secrets_folder(flake_dir) / name)
-            and (pattern is None or pattern in name)
+            and (filter_fn is None or filter_fn(name) is True)
         )
 
     return list_objects(path, validate)
 
 
-@dataclass
-class ListSecretsOptions:
-    flake: Flake
-    pattern: str | None
-
-
 def list_command(args: argparse.Namespace) -> None:
-    options = ListSecretsOptions(
-        flake=args.flake,
-        pattern=args.pattern,
-    )
-    lst = list_secrets(options.flake.path, options.pattern)
+    def filter_fn(name: str) -> bool:
+        return args.pattern in name
+
+    lst = list_secrets(args.flake.path, filter_fn if args.pattern else None)
     if len(lst) > 0:
         print("\n".join(lst))
 
