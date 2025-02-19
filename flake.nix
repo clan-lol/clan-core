@@ -53,6 +53,7 @@
             ./devShell.nix
             ./docs/nix/flake-module.nix
             ./flakeModules/flake-module.nix
+            ./flakeModules/demo_iso.nix
             ./lib/filter-clan-core/flake-module.nix
             ./lib/flake-module.nix
             ./nixosModules/clanCore/vars/flake-module.nix
