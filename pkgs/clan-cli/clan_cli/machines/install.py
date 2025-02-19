@@ -38,6 +38,7 @@ class InstallOptions:
     update_hardware_config: HardwareConfig = HardwareConfig.NONE
     password: str | None = None
     identity_file: Path | None = None
+    use_tor: bool = False
 
 
 @API.register
@@ -135,22 +136,35 @@ def install_machine(opts: InstallOptions) -> None:
         if opts.debug:
             cmd.append("--debug")
         cmd.append(target_host)
-
-        run(
-            nix_shell(
-                ["nixpkgs#nixos-anywhere"],
-                cmd,
-            ),
-            RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
-        )
+        if opts.use_tor:
+            # nix copy does not support tor socks proxy
+            # cmd.append("--ssh-option")
+            # cmd.append("ProxyCommand=nc -x 127.0.0.1:9050 -X 5 %h %p")
+            run(
+                nix_shell(
+                    ["nixpkgs#nixos-anywhere", "nixpkgs#tor"],
+                    ["torify", *cmd],
+                ),
+                RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+            )
+        else:
+            run(
+                nix_shell(
+                    ["nixpkgs#nixos-anywhere"],
+                    cmd,
+                ),
+                RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
+            )
 
 
 def install_command(args: argparse.Namespace) -> None:
     host_key_check = HostKeyCheck.from_str(args.host_key_check)
     try:
         machine = Machine(name=args.machine, flake=args.flake, nix_options=args.option)
+        use_tor = False
 
         if args.flake is None:
+            #
             msg = "Could not find clan flake toplevel directory"
             raise ClanError(msg)
 
@@ -161,9 +175,10 @@ def install_command(args: argparse.Namespace) -> None:
         elif deploy_info:
             host = find_reachable_host(deploy_info, host_key_check)
             if host is None:
-                msg = f"Couldn't reach any host address: {deploy_info.addrs}"
-                raise ClanError(msg)
-            target_host = host.target
+                use_tor = True
+                target_host = f"root@{deploy_info.tor}"
+            else:
+                target_host = host.target
             password = deploy_info.pwd
         else:
             target_host = machine.target_host.target
@@ -197,6 +212,7 @@ def install_command(args: argparse.Namespace) -> None:
                 update_hardware_config=HardwareConfig(args.update_hardware_config),
                 password=password,
                 identity_file=args.identity_file,
+                use_tor=use_tor,
             ),
         )
     except KeyboardInterrupt:
