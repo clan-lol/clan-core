@@ -5,6 +5,7 @@
       "sops"
       "password-store"
       "vm"
+      "fs"
       "custom"
     ];
     default = "sops";

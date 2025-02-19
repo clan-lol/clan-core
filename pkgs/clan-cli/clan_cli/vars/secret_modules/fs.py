@@ -1,4 +1,5 @@
 import shutil
+import tempfile
 from pathlib import Path
 
 from clan_cli.machines.machines import Machine
@@ -13,7 +14,7 @@ class SecretStore(StoreBase):
 
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
-        self.dir = Path("/run/secrets")
+        self.dir = Path(tempfile.gettempdir()) / "clan_secrets"
         self.dir.mkdir(parents=True, exist_ok=True)
 
     @property
@@ -42,6 +43,7 @@ class SecretStore(StoreBase):
         if output_dir.exists():
             shutil.rmtree(output_dir)
         shutil.copytree(self.dir, output_dir)
+        shutil.rmtree(self.dir)
 
     def upload(self, phases: list[str]) -> None:
         msg = "Cannot upload secrets with FS backend"

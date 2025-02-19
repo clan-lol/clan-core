@@ -16,6 +16,7 @@ in
 {
   imports = [
     ./public/in_repo.nix
+    ./secret/fs.nix
     ./secret/password-store.nix
     ./secret/sops
     ./secret/vm.nix
