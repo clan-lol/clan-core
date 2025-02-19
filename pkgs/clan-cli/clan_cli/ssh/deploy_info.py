@@ -54,11 +54,13 @@ def find_reachable_host(
     host = None
     for addr in deploy_info.addrs:
         host_addr = f"[{addr}]" if is_ipv6(addr) else addr
-        host = parse_deployment_address(
+        host_ = parse_deployment_address(
             machine_name="uknown", host=host_addr, host_key_check=host_key_check
         )
-        if is_ssh_reachable(host):
+        if is_ssh_reachable(host_):
+            host = host_
             break
+
     return host
 
 
