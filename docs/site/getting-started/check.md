@@ -2,7 +2,8 @@
 
 Typically, this step is handled automatically when a machine is deployed. However, to enable the use of `nix flake check` with your configuration, it must be completed manually beforehand.
 
-Currently, generating all the necessary facts requires two separate commands. This is due to the coexistence of two parallel secret management solutions: the older, stable version (`clan secrets` and `clan facts`) and the newer, experimental version (`clan vars`).
+Currently, generating all the necessary facts requires two separate commands. This is due to the coexistence of two parallel secret management solutions:
+the newer, recommended version (`clan vars`) and the older version (`clan facts`) that we are slowly phasing out.
 
 To generate both facts and vars, execute the following commands:
 
