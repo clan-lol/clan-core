@@ -117,6 +117,16 @@ def test_parse_deployment_address(
     assert result.ssh_options == expected_options
 
 
+def test_parse_ssh_options() -> None:
+    addr = "root@example.com:2222?IdentityFile=/path/to/private/key&StrictHostKeyChecking=yes"
+    host = parse_deployment_address("foo", addr, HostKeyCheck.STRICT)
+    assert host.host == "example.com"
+    assert host.port == 2222
+    assert host.user == "root"
+    assert host.ssh_options["IdentityFile"] == "/path/to/private/key"
+    assert host.ssh_options["StrictHostKeyChecking"] == "yes"
+
+
 def test_run(hosts: list[Host], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
