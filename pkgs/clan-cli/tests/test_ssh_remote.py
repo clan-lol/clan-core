@@ -1,3 +1,7 @@
+import contextlib
+from collections.abc import Generator
+from typing import Any, NamedTuple
+
 import pytest
 from clan_cli.async_run import AsyncRuntime
 from clan_cli.cmd import ClanCmdTimeoutError, Log, RunOpts
@@ -7,17 +11,110 @@ from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.ssh.parse import parse_deployment_address
 
 
-def test_parse_ipv6() -> None:
-    host = parse_deployment_address("foo", "[fe80::1%eth0]:2222", HostKeyCheck.STRICT)
-    assert host.host == "fe80::1%eth0"
-    assert host.port == 2222
-    host = parse_deployment_address("foo", "[fe80::1%eth0]", HostKeyCheck.STRICT)
-    assert host.host == "fe80::1%eth0"
-    assert host.port is None
+class ParseTestCase(NamedTuple):
+    test_addr: str = ""
+    expected_host: str = ""
+    expected_port: int | None = None
+    expected_user: str = ""
+    expected_options: dict[str, str] = {}  # noqa: RUF012
+    expected_exception: type[Exception] | None = None
 
-    with pytest.raises(ClanError):
-        # We instruct the user to use brackets for IPv6 addresses
-        host = parse_deployment_address("foo", "fe80::1%eth0", HostKeyCheck.STRICT)
+
+parse_deployment_address_test_cases = (
+    (
+        "host_only",
+        ParseTestCase(test_addr="example.com", expected_host="example.com"),
+    ),
+    (
+        "host_user_port",
+        ParseTestCase(
+            test_addr="user@example.com:22",
+            expected_host="example.com",
+            expected_user="user",
+            expected_port=22,
+        ),
+    ),
+    (
+        "cannot_parse_user_host_port",
+        ParseTestCase(test_addr="foo@bar@wat", expected_exception=ClanError),
+    ),
+    (
+        "missing_hostname",
+        ParseTestCase(test_addr="foo@:2222", expected_exception=ClanError),
+    ),
+    (
+        "invalid_ipv6",
+        ParseTestCase(test_addr="user@fe80::1%eth0", expected_exception=ClanError),
+    ),
+    (
+        "valid_ipv6_without_port",
+        ParseTestCase(test_addr="[fe80::1%eth0]", expected_host="fe80::1%eth0"),
+    ),
+    (
+        "valid_ipv6_with_port",
+        ParseTestCase(
+            test_addr="[fe80::1%eth0]:222",
+            expected_host="fe80::1%eth0",
+            expected_port=222,
+        ),
+    ),
+    (
+        "empty_options",
+        ParseTestCase(test_addr="example.com?", expected_host="example.com"),
+    ),
+    (
+        "option_with_missing_value",
+        ParseTestCase(test_addr="example.com?foo", expected_exception=ClanError),
+    ),
+    (
+        "options_with_@",
+        ParseTestCase(
+            test_addr="user@example.com?ProxyJump=root@foo&IdentityFile=/key",
+            expected_host="example.com",
+            expected_user="user",
+            expected_options={
+                "IdentityFile": "/key",
+                "ProxyJump": "root@foo",
+            },
+        ),
+    ),
+)
+
+
+@pytest.mark.parametrize(
+    argnames=ParseTestCase._fields,
+    argvalues=(case for _, case in parse_deployment_address_test_cases),
+    ids=(name for name, _ in parse_deployment_address_test_cases),
+)
+def test_parse_deployment_address(
+    test_addr: str,
+    expected_host: str,
+    expected_port: int | None,
+    expected_user: str,
+    expected_options: dict[str, str],
+    expected_exception: type[Exception] | None,
+) -> None:
+    if expected_exception:
+        maybe_check_exception = pytest.raises(expected_exception)
+    else:
+
+        @contextlib.contextmanager
+        def noop() -> Generator[None, Any, None]:
+            yield
+
+        maybe_check_exception = noop()  # type: ignore
+
+    with maybe_check_exception:
+        machine_name = "foo"
+        result = parse_deployment_address(machine_name, test_addr, HostKeyCheck.STRICT)
+
+    if expected_exception:
+        return
+
+    assert result.host == expected_host
+    assert result.port == expected_port
+    assert result.user == expected_user
+    assert result.ssh_options == expected_options
 
 
 def test_run(hosts: list[Host], runtime: AsyncRuntime) -> None:
