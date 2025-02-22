@@ -65,9 +65,12 @@ def clan_templates(template_type: TemplateType) -> Path:
 def user_config_dir() -> Path:
     if sys.platform == "win32":
         return Path(os.getenv("APPDATA", Path("~\\AppData\\Roaming\\").expanduser()))
+    xdg_config = os.getenv("XDG_CONFIG_HOME")
+    if xdg_config:
+        return Path(xdg_config)
     if sys.platform == "darwin":
         return Path("~/Library/Application Support/").expanduser()
-    return Path(os.getenv("XDG_CONFIG_HOME", Path("~/.config").expanduser()))
+    return Path("~/.config").expanduser()
 
 
 def user_data_dir() -> Path:
@@ -75,9 +78,12 @@ def user_data_dir() -> Path:
         return Path(
             Path(os.getenv("LOCALAPPDATA", Path("~\\AppData\\Local\\").expanduser()))
         )
+    xdg_data = os.getenv("XDG_DATA_HOME")
+    if xdg_data:
+        return Path(xdg_data)
     if sys.platform == "darwin":
         return Path("~/Library/Application Support/").expanduser()
-    return Path(os.getenv("XDG_DATA_HOME", Path("~/.local/share").expanduser()))
+    return Path("~/.local/share").expanduser()
 
 
 def user_cache_dir() -> Path:
@@ -85,9 +91,12 @@ def user_cache_dir() -> Path:
         return Path(
             Path(os.getenv("LOCALAPPDATA", Path("~\\AppData\\Local\\").expanduser()))
         )
+    xdg_cache = os.getenv("XDG_CACHE_HOME")
+    if xdg_cache:
+        return Path(xdg_cache)
     if sys.platform == "darwin":
         return Path("~/Library/Caches/").expanduser()
-    return Path(os.getenv("XDG_CACHE_HOME", Path("~/.cache").expanduser()))
+    return Path("~/.cache").expanduser()
 
 
 def user_gcroot_dir() -> Path:
