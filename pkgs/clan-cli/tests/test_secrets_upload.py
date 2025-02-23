@@ -2,21 +2,28 @@ from typing import TYPE_CHECKING
 
 import pytest
 from clan_cli.ssh.host import Host
-from fixtures_flakes import FlakeForTest
+from fixtures_flakes import ClanFlake
 from helpers import cli
 
 if TYPE_CHECKING:
     from age_keys import KeyPair
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_secrets_upload(
     monkeypatch: pytest.MonkeyPatch,
-    test_flake_with_core: FlakeForTest,
+    flake: ClanFlake,
     hosts: list[Host],
     age_keys: list["KeyPair"],
 ) -> None:
-    monkeypatch.chdir(test_flake_with_core.path)
+    config = flake.machines["vm1"]
+    config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    host = hosts[0]
+    addr = f"{host.user}@{host.host}:{host.port}?StrictHostKeyChecking=no&UserKnownHostsFile=/dev/null&IdentityFile={host.key}"
+    config["clan"]["networking"]["targetHost"] = addr
+    config["clan"]["core"]["facts"]["secretUploadDirectory"] = str(flake.path / "facts")
+    flake.refresh()
+    monkeypatch.chdir(str(flake.path))
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
 
     cli.run(
@@ -25,7 +32,7 @@ def test_secrets_upload(
             "users",
             "add",
             "--flake",
-            str(test_flake_with_core.path),
+            str(flake.path),
             "user1",
             age_keys[0].pubkey,
         ]
@@ -37,27 +44,20 @@ def test_secrets_upload(
             "machines",
             "add",
             "--flake",
-            str(test_flake_with_core.path),
+            str(flake.path),
             "vm1",
             age_keys[1].pubkey,
         ]
     )
     monkeypatch.setenv("SOPS_NIX_SECRET", age_keys[0].privkey)
-    cli.run(
-        ["secrets", "set", "--flake", str(test_flake_with_core.path), "vm1-age.key"]
-    )
+    cli.run(["secrets", "set", "--flake", str(flake.path), "vm1-age.key"])
 
-    flake = test_flake_with_core.path.joinpath("flake.nix")
-    host = hosts[0]
-    addr = f"{host.user}@{host.host}:{host.port}?StrictHostKeyChecking=no&UserKnownHostsFile=/dev/null&IdentityFile={host.key}"
-    new_text = flake.read_text().replace("__CLAN_TARGET_ADDRESS__", addr)
+    flake_path = flake.path.joinpath("flake.nix")
 
-    flake.write_text(new_text)
-
-    cli.run(["facts", "upload", "--flake", str(test_flake_with_core.path), "vm1"])
+    cli.run(["facts", "upload", "--flake", str(flake_path), "vm1"])
 
     # the flake defines this path as the location where the sops key should be installed
-    sops_key = test_flake_with_core.path / "facts" / "key.txt"
+    sops_key = flake.path / "facts" / "key.txt"
 
     assert sops_key.exists()
     assert sops_key.read_text() == age_keys[0].privkey

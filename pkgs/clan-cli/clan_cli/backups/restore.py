@@ -1,5 +1,4 @@
 import argparse
-import json
 
 from clan_cli.cmd import Log, RunOpts
 from clan_cli.completions import (
@@ -12,14 +11,17 @@ from clan_cli.machines.machines import Machine
 
 
 def restore_service(machine: Machine, name: str, provider: str, service: str) -> None:
-    backup_metadata = json.loads(machine.eval_nix("config.clan.core.backups"))
-    backup_folders = json.loads(machine.eval_nix("config.clan.core.state"))
+    backup_metadata = machine.eval_nix("config.clan.core.backups")
+    backup_folders = machine.eval_nix("config.clan.core.state")
 
     if service not in backup_folders:
         msg = f"Service {service} not found in configuration. Available services are: {', '.join(backup_folders.keys())}"
         raise ClanError(msg)
 
-    folders = backup_folders[service]["folders"]
+    folders = backup_folders[service]["folders"].values()
+    assert all(isinstance(f, str) for f in folders), (
+        f"folders must be a list of strings instead of {folders}"
+    )
     env = {}
     env["NAME"] = name
     # FIXME: If we have too many folder this might overflow the stack.
@@ -63,7 +65,7 @@ def restore_backup(
 ) -> None:
     errors = []
     if service is None:
-        backup_folders = json.loads(machine.eval_nix("config.clan.core.state"))
+        backup_folders = machine.eval_nix("config.clan.core.state")
         for _service in backup_folders:
             try:
                 restore_service(machine, name, provider, _service)

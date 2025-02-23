@@ -1,5 +1,4 @@
 import io
-import json
 import logging
 import os
 import tarfile
@@ -32,9 +31,7 @@ class SecretStore(StoreBase):
 
     @property
     def _store_backend(self) -> str:
-        backend = json.loads(
-            self.machine.eval_nix("config.clan.core.vars.settings.passBackend")
-        )
+        backend = self.machine.eval_nix("config.clan.core.vars.settings.passBackend")
         return backend
 
     @property

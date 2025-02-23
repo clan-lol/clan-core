@@ -1,6 +1,5 @@
 import argparse
 import dataclasses
-import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -55,7 +54,7 @@ class VmConfig:
 
 
 def inspect_vm(machine: Machine) -> VmConfig:
-    data = json.loads(machine.eval_nix("config.clan.core.vm.inspect"))
+    data = machine.eval_nix("config.clan.core.vm.inspect")
     # HACK!
     data["flake_url"] = dataclasses.asdict(machine.flake)
     return VmConfig.from_json(data)

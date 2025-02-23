@@ -154,6 +154,7 @@
           "inventory.json"
           "lib/build-clan"
           "lib/default.nix"
+          "lib/select.nix"
           "lib/flake-module.nix"
           "lib/frontmatter"
           "lib/inventory"

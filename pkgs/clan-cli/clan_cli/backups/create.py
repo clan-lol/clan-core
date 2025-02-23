@@ -1,5 +1,4 @@
 import argparse
-import json
 import logging
 
 from clan_cli.completions import (
@@ -15,7 +14,7 @@ log = logging.getLogger(__name__)
 
 def create_backup(machine: Machine, provider: str | None = None) -> None:
     machine.info(f"creating backup for {machine.name}")
-    backup_scripts = json.loads(machine.eval_nix("config.clan.core.backups"))
+    backup_scripts = machine.eval_nix("config.clan.core.backups")
     if provider is None:
         if not backup_scripts["providers"]:
             msg = "No providers specified"

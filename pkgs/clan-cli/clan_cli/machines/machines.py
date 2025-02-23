@@ -4,7 +4,6 @@ import logging
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from time import time
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -13,7 +12,7 @@ from clan_cli.errors import ClanError
 from clan_cli.facts import public_modules as facts_public_modules
 from clan_cli.facts import secret_modules as facts_secret_modules
 from clan_cli.flake import Flake
-from clan_cli.nix import nix_build, nix_config, nix_eval, nix_metadata, nix_test_store
+from clan_cli.nix import nix_build, nix_config, nix_eval, nix_test_store
 from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.ssh.parse import parse_deployment_address
@@ -35,16 +34,11 @@ class Machine:
     override_build_host: None | str = None
     host_key_check: HostKeyCheck = HostKeyCheck.STRICT
 
-    _eval_cache: dict[str, str] = field(default_factory=dict)
-    _build_cache: dict[str, Path] = field(default_factory=dict)
-
     def get_id(self) -> str:
         return f"{self.flake}#{self.name}"
 
     def flush_caches(self) -> None:
-        self.cached_deployment = None
-        self._build_cache.clear()
-        self._eval_cache.clear()
+        self.flake.prefetch()
 
     def __str__(self) -> str:
         return f"Machine(name={self.name}, flake={self.flake})"
@@ -66,16 +60,9 @@ class Machine:
 
     @property
     def system(self) -> str:
-        # We filter out function attributes because they are not serializable.
-        attr = f'(builtins.getFlake "{self.flake}").nixosConfigurations.{self.name}.pkgs.hostPlatform.system'
-        output = self._eval_cache.get(attr)
-        if output is None:
-            output = run_no_stdout(
-                nix_eval(["--impure", "--expr", attr]),
-                opts=RunOpts(prefix=self.name),
-            ).stdout.strip()
-            self._eval_cache[attr] = output
-        return json.loads(output)
+        return self.flake.select(
+            f"nixosConfigurations.{self.name}.pkgs.hostPlatform.system"
+        )
 
     @property
     def can_build_locally(self) -> bool:
@@ -83,13 +70,19 @@ class Machine:
         if self.system == config["system"] or self.system in config["extra-platforms"]:
             return True
 
+        nix_code = f"""
+            let
+              flake = builtins.getFlake("path:{self.flake.store_path}?narHash={self.flake.hash}");
+            in
+              flake.inputs.nixpkgs.legacyPackages.{self.system}.runCommandNoCC "clan-can-build-{int(time())}" {{ }} "touch $out").drvPath
+        """
+
         unsubstitutable_drv = json.loads(
             run_no_stdout(
                 nix_eval(
                     [
-                        "--impure",
                         "--expr",
-                        f'((builtins.getFlake "{self.flake}").inputs.nixpkgs.legacyPackages.{self.system}.runCommandNoCC "clan-can-build-{int(time())}" {{ }} "touch $out").drvPath',
+                        nix_code,
                     ]
                 ),
                 opts=RunOpts(prefix=self.name),
@@ -234,81 +227,21 @@ class Machine:
         self,
         method: Literal["eval", "build"],
         attr: str,
-        extra_config: None | dict = None,
         nix_options: list[str] | None = None,
-    ) -> str | Path:
+    ) -> Any:
         """
         Build the machine and return the path to the result
         accepts a secret store and a facts store # TODO
         """
         if nix_options is None:
             nix_options = []
+
         config = nix_config()
         system = config["system"]
 
-        file_info = {}
-        with NamedTemporaryFile(mode="w") as config_json:
-            if extra_config is not None:
-                json.dump(extra_config, config_json, indent=2)
-            else:
-                json.dump({}, config_json)
-            config_json.flush()
-
-            file_info = json.loads(
-                run_no_stdout(
-                    nix_eval(
-                        [
-                            "--impure",
-                            "--expr",
-                            f'let x = (builtins.fetchTree {{ type = "file"; url = "file://{config_json.name}"; }}); in {{ narHash = x.narHash; path = x.outPath; }}',
-                        ]
-                    ),
-                    opts=RunOpts(prefix=self.name),
-                ).stdout.strip()
-            )
-
-        args = []
-
-        # get git commit from flake
-        if extra_config is not None:
-            metadata = nix_metadata(self.flake_dir)
-            url = metadata["url"]
-            if (
-                "dirtyRevision" in metadata
-                or "dirtyRev" in metadata["locks"]["nodes"]["clan-core"]["locked"]
-            ):
-                args += ["--impure"]
-
-            args += [
-                "--expr",
-                f"""
-                    ((builtins.getFlake "{url}").clanInternals.machinesFunc."{system}"."{self.name}" {{
-                      extraConfig = builtins.fromJSON (builtins.readFile (builtins.fetchTree {{
-                        type = "file";
-                        url = if (builtins.compareVersions builtins.nixVersion "2.19") == -1 then "{file_info["path"]}" else "file:{file_info["path"]}";
-                        narHash = "{file_info["narHash"]}";
-                      }}));
-                    }}).{attr}
-                """,
-            ]
-        else:
-            if (self.flake_dir / ".git").exists():
-                flake = f"git+file://{self.flake_dir}"
-            else:
-                flake = f"path:{self.flake_dir}"
-
-            args += [f'{flake}#clanInternals.machines."{system}".{self.name}.{attr}']
-        args += nix_options + self.nix_options
-
-        if method == "eval":
-            output = run_no_stdout(
-                nix_eval(args), opts=RunOpts(prefix=self.name)
-            ).stdout.strip()
-            return output
-        return Path(
-            run_no_stdout(
-                nix_build(args), opts=RunOpts(prefix=self.name)
-            ).stdout.strip()
+        return self.flake.select(
+            f'clanInternals.machines."{system}".{self.name}.{attr}',
+            nix_options=nix_options,
         )
 
     def eval_nix(
@@ -317,27 +250,23 @@ class Machine:
         refresh: bool = False,
         extra_config: None | dict = None,
         nix_options: list[str] | None = None,
-    ) -> str:
+    ) -> Any:
         """
         eval a nix attribute of the machine
         @attr: the attribute to get
         """
+
+        if extra_config:
+            log.warning("extra_config in eval_nix is no longer supported")
+
         if nix_options is None:
             nix_options = []
-        if attr in self._eval_cache and not refresh and extra_config is None:
-            return self._eval_cache[attr]
 
-        output = self.nix("eval", attr, extra_config, nix_options)
-        if isinstance(output, str):
-            self._eval_cache[attr] = output
-            return output
-        msg = "eval_nix returned not a string"
-        raise ClanError(msg)
+        return self.nix("eval", attr, nix_options)
 
     def build_nix(
         self,
         attr: str,
-        refresh: bool = False,
         extra_config: None | dict = None,
         nix_options: list[str] | None = None,
     ) -> Path:
@@ -346,17 +275,18 @@ class Machine:
         @attr: the attribute to get
         """
 
+        if extra_config:
+            log.warning("extra_config in build_nix is no longer supported")
+
         if nix_options is None:
             nix_options = []
-        if attr in self._build_cache and not refresh and extra_config is None:
-            return self._build_cache[attr]
 
-        output = self.nix("build", attr, extra_config, nix_options)
-        assert isinstance(output, Path), "Nix build did not result in a single path"
+        output = self.nix("build", attr, nix_options)
+        output = Path(output)
         if tmp_store := nix_test_store():
             output = tmp_store.joinpath(*output.parts[1:])
+        assert output.exists(), f"The output {output} doesn't exist"
         if isinstance(output, Path):
-            self._build_cache[attr] = output
             return output
         msg = "build_nix returned not a Path"
         raise ClanError(msg)

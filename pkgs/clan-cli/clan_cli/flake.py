@@ -63,11 +63,11 @@ class FlakeCacheEntry:
 
     def __init__(
         self,
-        value: str | float | dict[str, Any] | list[Any],
+        value: str | float | dict[str, Any] | list[Any] | None,
         selectors: list[Selector],
         is_out_path: bool = False,
     ) -> None:
-        self.value: str | float | int | dict[str | int, FlakeCacheEntry]
+        self.value: str | float | int | None | dict[str | int, FlakeCacheEntry]
         self.selector: set[int] | set[str] | AllSelector
         selector: Selector = AllSelector()
 
@@ -144,7 +144,7 @@ class FlakeCacheEntry:
                 value, selectors[1:], is_out_path=True
             )
 
-        elif isinstance(value, (str | float | int)):
+        elif isinstance(value, (str | float | int | None)):
             self.value = value
 
     def insert(
@@ -249,7 +249,7 @@ class FlakeCacheEntry:
         else:
             selector = selectors[0]
 
-        if isinstance(self.value, str | float | int):
+        if isinstance(self.value, str | float | int | None):
             return selectors == []
         if isinstance(selector, AllSelector):
             if isinstance(self.selector, AllSelector):
@@ -282,7 +282,7 @@ class FlakeCacheEntry:
         if selectors == [] and isinstance(self.value, dict) and "outPath" in self.value:
             return self.value["outPath"].value
 
-        if isinstance(self.value, str | float | int):
+        if isinstance(self.value, str | float | int | None):
             return self.value
         if isinstance(self.value, dict):
             if isinstance(selector, AllSelector):
@@ -389,6 +389,9 @@ class Flake:
         return self._path
 
     def prefetch(self) -> None:
+        """
+        Run prefetch to flush the cache as well as initializing it.
+        """
         flake_prefetch = run(
             nix_command(
                 [
@@ -424,20 +427,36 @@ class Flake:
             self._is_local = False
             self._path = Path(self.store_path)
 
-    def get_from_nix(self, selectors: list[str]) -> None:
+    def get_from_nix(
+        self,
+        selectors: list[str],
+        nix_options: list[str] | None = None,
+    ) -> None:
         if self._cache is None:
             self.prefetch()
         assert self._cache is not None
+
+        if nix_options is None:
+            nix_options = []
 
         config = nix_config()
         nix_code = f"""
             let
               flake = builtins.getFlake("path:{self.store_path}?narHash={self.hash}");
             in
-              flake.inputs.nixpkgs.legacyPackages.{config["system"]}.writeText "clan-flake-select" (builtins.toJSON [ ({" ".join([f'flake.clanInternals.lib.select "{attr}" flake' for attr in selectors])}) ])
+              flake.inputs.nixpkgs.legacyPackages.{config["system"]}.writeText "clan-flake-select" (
+                builtins.toJSON [ ({" ".join([f"flake.clanInternals.lib.select ''{attr}'' flake" for attr in selectors])}) ]
+              )
         """
-        build_output = Path(run(nix_build(["--expr", nix_code])).stdout.strip())
         if tmp_store := nix_test_store():
+            nix_options += ["--store", str(tmp_store)]
+            nix_options.append("--impure")
+
+        build_output = Path(
+            run(nix_build(["--expr", nix_code, *nix_options])).stdout.strip()
+        )
+
+        if tmp_store:
             build_output = tmp_store.joinpath(*build_output.parts[1:])
         outputs = json.loads(build_output.read_text())
         if len(outputs) != len(selectors):
@@ -448,7 +467,11 @@ class Flake:
             self._cache.insert(outputs[i], selector)
         self._cache.save_to_file(self.flake_cache_path)
 
-    def select(self, selector: str) -> Any:
+    def select(
+        self,
+        selector: str,
+        nix_options: list[str] | None = None,
+    ) -> Any:
         if self._cache is None:
             self.prefetch()
         assert self._cache is not None
@@ -456,5 +479,5 @@ class Flake:
         self._cache.load_from_file(self.flake_cache_path)
         if not self._cache.is_cached(selector):
             log.info(f"Cache miss for {selector}")
-            self.get_from_nix([selector])
+            self.get_from_nix([selector], nix_options)
         return self._cache.select(selector)
