@@ -138,7 +138,6 @@ def set_machine_disk_schema(
     # Use get disk schemas to get the placeholders and their options
     placeholders: dict[str, str],
     force: bool = False,
-    allow_uknown_placeholders: bool = False,
 ) -> None:
     """
     Set the disk placeholders of the template
@@ -172,6 +171,7 @@ def set_machine_disk_schema(
     # For every placeholder check that the value is valid
     for placeholder_name, placeholder_value in placeholders.items():
         ph = disk_schema.placeholders.get(placeholder_name)
+
         # Unknown placeholder
         if not ph:
             msg = (
@@ -183,11 +183,7 @@ def set_machine_disk_schema(
             )
 
         # Invalid value. Check if the value is one of the provided options
-        if (
-            ph.options
-            and placeholder_value not in ph.options
-            and not allow_uknown_placeholders
-        ):
+        if ph.options and placeholder_value not in ph.options:
             msg = (
                 f"Invalid value {placeholder_value} for placeholder {placeholder_name}"
             )
