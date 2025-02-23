@@ -35,6 +35,7 @@ log = logging.getLogger(__name__)
 # Define generics for return type and call signature
 R = TypeVar("R")  # Return type of the callable
 P = ParamSpec("P")  # Parameters of the callable
+Q = TypeVar("Q")  # Data type for the async_opts.data field
 
 
 @dataclass
@@ -201,6 +202,15 @@ class AsyncFuture(Generic[R]):
 
 
 @dataclass
+class AsyncFutureRef(AsyncFuture[R], Generic[R, Q]):
+    ref: Q | None
+
+
+class AsyncOptsRef(AsyncOpts, Generic[Q]):
+    ref: Q | None = None
+
+
+@dataclass
 class AsyncRuntime:
     tasks: dict[str, AsyncThread[Any, Any]] = field(default_factory=dict)
     condition: threading.Condition = field(default_factory=threading.Condition)
@@ -231,6 +241,21 @@ class AsyncRuntime:
         self.tasks[opts.tid] = thread
         thread.start()
         return AsyncFuture(opts.tid, self)
+
+    def async_run_ref(
+        self,
+        ref: Q,
+        opts: AsyncOpts | None,
+        function: Callable[P, R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> AsyncFutureRef[R, Q]:
+        """
+        The same as async_run, but with an additional reference to an object.
+        This is useful to keep track of the origin of the task.
+        """
+        future = self.async_run(opts, function, *args, **kwargs)
+        return AsyncFutureRef(future._tid, self, ref)  # noqa: SLF001
 
     def join_all(self) -> None:
         """
