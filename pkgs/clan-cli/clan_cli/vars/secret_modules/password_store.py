@@ -78,13 +78,9 @@ class SecretStore(StoreBase):
         ).stdout.encode()
 
     def exists(self, generator: Generator, name: str) -> bool:
-        if self._store_backend == "passage":
-            return (
-                Path(self._password_store_dir) / f"{self.entry_dir(generator, name)}.age"
-            ).exists()
-        return (
-            Path(self._password_store_dir) / f"{self.entry_dir(generator, name)}.gpg"
-        ).exists()
+        extension = "age" if self._store_backend == "passage" else "gpg"
+        filename = f"{self.entry_dir(generator, name)}.{extension}"
+        return (Path(self._password_store_dir) / filename).exists()
 
     def generate_hash(self) -> bytes:
         hashes = []
