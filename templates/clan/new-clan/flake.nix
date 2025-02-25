@@ -28,7 +28,6 @@
       };
     in
     {
-      # All machines managed by Clan.
       inherit (clan) nixosConfigurations clanInternals;
       # Add the Clan cli tool to the dev shell.
       # Use "nix develop" to enter the dev shell.
