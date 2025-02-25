@@ -13,7 +13,7 @@
         # Ensure this is unique among all clans you want to use.
         meta.name = "__CHANGE_ME__";
 
-        # All machines in the ./machines will be imported.
+        # All machines in ./machines will be imported.
 
         # Prerequisite: boot into the installer.
         # See: https://docs.clan.lol/getting-started/installer
