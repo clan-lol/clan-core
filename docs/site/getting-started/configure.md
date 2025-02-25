@@ -138,10 +138,10 @@ refer to the [Disko templates](https://github.com/nix-community/disko-templates)
 
 ### (Optional): Renaming Machine
 
-If you wish to name your machine to something else, do the following steps:
+For renaming jon to your own machine name, you can use the following command:
 
 ```
-mv ./machines/jon/configuration.nix ./machines/newname/configuration.nix
+git mv ./machines/jon ./machines/newname
 ```
 
 Note that our clan lives inside a git repository.
@@ -152,11 +152,6 @@ So for every file that you add or rename you also need to run:
 git add ./path/to/my/file
 ```
 
-For renaming jon to your own machine name, you can use the following command:
-
-```
-git mv ./machines/jon ./machines/newname
-```
 
 ### (Optional): Removing a Machine
 
