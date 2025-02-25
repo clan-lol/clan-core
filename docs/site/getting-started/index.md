@@ -92,6 +92,21 @@ This should yield the following:
 5 directories, 9 files
 ```
 
+??? info "Recommended way of sourcing the `clan` cli tool"
+    The default template also adds the `clan` cli tool to the development shell.
+    Meaning you can get the exact version you need directly from the folder
+    you are in right now.
+
+    In the `my-clan` directory run the following command:
+    ```
+    nix develop
+    ```
+    That way you will have the tool available in the shell environment.
+    We also recommend setting up [direnv](https://direnv.net/) for your shell, for a more convenient
+    experience.
+    
+    
+
 ```bash
 clan machines list
 ```
