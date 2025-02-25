@@ -1,7 +1,8 @@
 
 Clan enables encryption of secrets (such as passwords & keys) ensuring security and ease-of-use among users.
 
-Clan utilizes the [sops](https://github.com/getsops/sops) format and integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.
+By default Clan utilizes the [sops](https://github.com/getsops/sops) format and integrates with [sops-nix](https://github.com/Mic92/sops-nix) on NixOS machines.
+Clan can also be configured to be used with other secret store [backends](https://docs.clan.lol/reference/clan-core/vars/#clan.core.vars.settings.secretStore).
 
 This guide will walk you through:
 
