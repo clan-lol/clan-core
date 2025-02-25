@@ -1,5 +1,5 @@
 ---
-description = "Configures [Zerotier VPN](https://zerotier.com) secure and efficient networking within a Clan.."
+description = "Configures [Zerotier VPN](https://zerotier.com) secure and efficient networking within a Clan."
 features = [ "inventory" ]
 categories = [ "Network", "System" ]
 
