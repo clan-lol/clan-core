@@ -4,15 +4,13 @@ import logging
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from time import time
 from typing import TYPE_CHECKING, Any, Literal
 
-from clan_cli.cmd import RunOpts, run_no_stdout
 from clan_cli.errors import ClanError
 from clan_cli.facts import public_modules as facts_public_modules
 from clan_cli.facts import secret_modules as facts_secret_modules
 from clan_cli.flake import Flake
-from clan_cli.nix import nix_build, nix_config, nix_eval, nix_test_store
+from clan_cli.nix import nix_config, nix_test_store
 from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.ssh.parse import parse_deployment_address
@@ -63,41 +61,6 @@ class Machine:
         return self.flake.select(
             f"nixosConfigurations.{self.name}.pkgs.hostPlatform.system"
         )
-
-    @property
-    def can_build_locally(self) -> bool:
-        config = nix_config()
-        if self.system == config["system"] or self.system in config["extra-platforms"]:
-            return True
-
-        nix_code = f"""
-            let
-              flake = builtins.getFlake("path:{self.flake.store_path}?narHash={self.flake.hash}");
-            in
-              (flake.inputs.nixpkgs.legacyPackages.{self.system}.runCommandNoCC "clan-can-build-{int(time())}" {{ }} "touch $out").drvPath
-        """
-
-        unsubstitutable_drv = json.loads(
-            run_no_stdout(
-                nix_eval(
-                    [
-                        "--expr",
-                        nix_code,
-                    ]
-                ),
-                opts=RunOpts(prefix=self.name),
-            ).stdout.strip()
-        )
-
-        try:
-            run_no_stdout(
-                nix_build([f"{unsubstitutable_drv}^*"]), opts=RunOpts(prefix=self.name)
-            )
-        except Exception as e:
-            self.debug("failed to build test derivation", exc_info=e)
-            return False
-        else:
-            return True
 
     @property
     def deployment(self) -> dict:

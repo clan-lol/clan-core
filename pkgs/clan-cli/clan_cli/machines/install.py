@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -25,6 +26,12 @@ from clan_cli.vars.generate import generate_vars
 log = logging.getLogger(__name__)
 
 
+class BuildOn(Enum):
+    AUTO = "auto"
+    LOCAL = "local"
+    REMOTE = "remote"
+
+
 @dataclass
 class InstallOptions:
     machine: Machine
@@ -33,7 +40,7 @@ class InstallOptions:
     debug: bool = False
     no_reboot: bool = False
     phases: str | None = None
-    build_on_remote: bool = False
+    build_on: BuildOn | None = None
     nix_options: list[str] = field(default_factory=list)
     update_hardware_config: HardwareConfig = HardwareConfig.NONE
     password: str | None = None
@@ -122,10 +129,8 @@ def install_machine(opts: InstallOptions) -> None:
         if opts.identity_file:
             cmd += ["-i", str(opts.identity_file)]
 
-        if opts.build_on_remote:
-            cmd.extend(["--build-on", "remote"])
-        else:
-            cmd.extend(["--build-on", "auto"])
+        if opts.build_on:
+            cmd += ["--build-on", opts.build_on.value]
 
         if h.port:
             cmd += ["--ssh-port", str(h.port)]
@@ -210,7 +215,7 @@ def install_command(args: argparse.Namespace) -> None:
                 debug=args.debug,
                 no_reboot=args.no_reboot,
                 nix_options=args.option,
-                build_on_remote=args.build_on_remote,
+                build_on=BuildOn(args.build_on) if args.build_on is not None else None,
                 update_hardware_config=HardwareConfig(args.update_hardware_config),
                 password=password,
                 identity_file=args.identity_file,
@@ -241,10 +246,10 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         help="Host key (.ssh/known_hosts) check mode.",
     )
     parser.add_argument(
-        "--build-on-remote",
-        action="store_true",
-        help="build the NixOS configuration on the remote machine",
-        default=False,
+        "--build-on",
+        choices=[x.value for x in BuildOn],
+        default=None,
+        help="where to build the NixOS configuration",
     )
     parser.add_argument(
         "--yes",
