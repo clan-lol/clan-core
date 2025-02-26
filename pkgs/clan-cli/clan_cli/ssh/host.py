@@ -166,6 +166,8 @@ class Host:
         self,
     ) -> list[str]:
         ssh_opts = ["-A"] if self.forward_agent else []
+        if self.port:
+            ssh_opts.extend(["-p", str(self.port)])
 
         for k, v in self.ssh_options.items():
             ssh_opts.extend(["-o", f"{k}={shlex.quote(v)}"])
