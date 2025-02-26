@@ -74,7 +74,7 @@ class Machine:
             let
               flake = builtins.getFlake("path:{self.flake.store_path}?narHash={self.flake.hash}");
             in
-              flake.inputs.nixpkgs.legacyPackages.{self.system}.runCommandNoCC "clan-can-build-{int(time())}" {{ }} "touch $out").drvPath
+              (flake.inputs.nixpkgs.legacyPackages.{self.system}.runCommandNoCC "clan-can-build-{int(time())}" {{ }} "touch $out").drvPath
         """
 
         unsubstitutable_drv = json.loads(
