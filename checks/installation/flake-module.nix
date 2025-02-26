@@ -175,12 +175,19 @@
             client.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../lib/ssh/privkey} /root/.ssh/id_ed25519")
             client.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v root@installer hostname")
             client.succeed("cp -r ${../..} test-flake && chmod -R +w test-flake")
+
+            # test that we can generate hardware configurations
+            client.fail("test -f test-flake/machines/test-install-machine/facter.json")
             client.fail("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
             client.succeed("clan machines update-hardware-config --flake test-flake test-install-machine root@installer >&2")
             client.succeed("test -f test-flake/machines/test-install-machine/facter.json")
             client.succeed("clan machines update-hardware-config --backend nixos-generate-config --flake test-flake test-install-machine root@installer>&2")
             client.succeed("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
-            client.succeed("clan machines install --debug --flake ${../..} --yes test-install-machine --target-host root@installer >&2")
+
+            # but we don't use them because they're not cached
+            client.succeed("rm test-flake/machines/test-install-machine/hardware-configuration.nix test-flake/machines/test-install-machine/facter.json")
+
+            client.succeed("clan machines install --debug --flake test-flake --yes test-install-machine --target-host root@installer >&2")
             try:
               installer.shutdown()
             except BrokenPipeError:
