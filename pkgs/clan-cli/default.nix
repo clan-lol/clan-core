@@ -178,6 +178,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             # required to prevent concurrent 'nix flake lock' operations
             export LOCK_NIX=$TMPDIR/nix_lock
             mkdir -p "$CLAN_TEST_STORE/nix/store"
+            mkdir -p "$CLAN_TEST_STORE/nix/var/nix/gcroots"
             xargs cp --recursive --target "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
             nix-store --load-db --store "$CLAN_TEST_STORE" < "$closureInfo/registration"
             python -m pytest -m "not impure and with_core" ./tests
