@@ -16,6 +16,9 @@ in
       documentation.enable = lib.mkDefault false;
       boot.isContainer = true;
 
+      # needed since nixpkgs 7fb2f407c01b017737eafc26b065d7f56434a992 removed the getty unit by default
+      console.enable = true;
+
       # undo qemu stuff
       system.build.initialRamdisk = "";
       virtualisation.sharedDirectories = lib.mkForce { };

@@ -30,7 +30,7 @@ in
       expr = shallowForceAllAttributes config;
       expectedError = {
         type = "ThrownError";
-        msg = "A definition for option `directory' is not of type `path*";
+        msg = "A definition for option `directory' is not of type `absolute path*";
       };
     };
 

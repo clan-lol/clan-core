@@ -92,6 +92,7 @@
         self.nixosConfigurations.test-install-machine.config.system.build.toplevel
         self.nixosConfigurations.test-install-machine.config.system.build.diskoScript
         self.nixosConfigurations.test-install-machine.config.system.clan.deployment.file
+        pkgs.bash.drvPath
         pkgs.stdenv.drvPath
         pkgs.nixos-anywhere
         pkgs.bubblewrap

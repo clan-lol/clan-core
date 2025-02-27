@@ -1,7 +1,7 @@
 (import ../lib/container-test.nix) (
   { ... }:
   {
-    name = "secrets";
+    name = "container";
 
     nodes.machine =
       { ... }:
