@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -62,11 +63,15 @@ def nix_config() -> dict[str, Any]:
 
 def nix_test_store() -> Path | None:
     store = os.environ.get("CLAN_TEST_STORE", None)
+    lock_nix = os.environ.get("LOCK_NIX", "")
+
+    if not lock_nix:
+        lock_nix = tempfile.NamedTemporaryFile().name  # NOQA: SIM115
     if not os.environ.get("IN_NIX_SANDBOX"):
         return None
     if store:
         Path.mkdir(Path(store), exist_ok=True)
-        with locked_open(filename=Path(store) / "lockfile", mode="a"):
+        with locked_open(Path(lock_nix), "w"):
             return Path(store)
     return None
 
