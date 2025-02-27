@@ -249,6 +249,8 @@ class FlakeCacheEntry:
         else:
             selector = selectors[0]
 
+        if isinstance(self.value, str) and self.value.startswith("/nix/store/"):
+            return Path(self.value).exists()
         if isinstance(self.value, str | float | int | None):
             return selectors == []
         if isinstance(selector, AllSelector):
@@ -481,37 +483,4 @@ class Flake:
             log.info(f"Cache miss for {selector}")
             self.get_from_nix([selector], nix_options)
         value = self._cache.select(selector)
-
-        num_loops = 0
-
-        # Check if all nix store paths exist
-        # FIXME: If the value is a highly nested structure, this will be slow
-        def recursive_path_exists_check(val: Any) -> Any:
-            nonlocal num_loops
-            if isinstance(val, str):
-                if val.startswith("/nix/store/"):
-                    path = Path(val)
-                    if not path.exists():
-                        msg = f"{path} does not exist"
-                        raise ClanError(msg)
-
-            elif isinstance(val, dict):
-                return {k: recursive_path_exists_check(v) for k, v in val.items()}
-            elif isinstance(val, list):
-                return [recursive_path_exists_check(v) for v in val]
-            if num_loops > 75:
-                msg = "Maximum recursion depth (75) exceeded while checking paths"
-                log.warning(msg)
-                raise ClanError(msg)
-            num_loops += 1
-            return val
-
-        # If there are any paths that don't exist, refresh from nix
-        try:
-            recursive_path_exists_check(value)
-        except ClanError as e:
-            log.info(f"Path {e} for {selector} does not exist, refreshing from nix")
-            self.get_from_nix([selector], nix_options)
-            value = self._cache.select(selector)
-
         return value
