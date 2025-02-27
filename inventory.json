@@ -56,7 +56,7 @@
         "machines": {
           "test-inventory-machine": {
             "config": {
-              "packages": ["zed-editor"]
+              "packages": ["hello"]
             },
             "extraModules": []
           }
