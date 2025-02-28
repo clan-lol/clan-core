@@ -12,8 +12,8 @@ from typing import TYPE_CHECKING
 import pytest
 
 if TYPE_CHECKING:
-    from command import Command
-    from ports import PortFunction
+    from .command import Command
+    from .ports import PortFunction
 
 
 class SshdError(Exception):

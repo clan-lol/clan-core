@@ -2,12 +2,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from fixtures_flakes import FlakeForTest
-from helpers import cli
-from stdout import CaptureOutput
+from clan_cli.tests.fixtures_flakes import FlakeForTest
+from clan_cli.tests.helpers import cli
+from clan_cli.tests.stdout import CaptureOutput
 
 if TYPE_CHECKING:
-    from age_keys import KeyPair
+    from .age_keys import KeyPair
 
 
 def test_import_sops(

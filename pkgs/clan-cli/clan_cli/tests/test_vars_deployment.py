@@ -3,15 +3,15 @@ import subprocess
 from contextlib import ExitStack
 
 import pytest
-from age_keys import SopsSetup
 from clan_cli import cmd
 from clan_cli.flake import Flake
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_eval, run
+from clan_cli.tests.age_keys import SopsSetup
+from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_cli.tests.helpers import cli
+from clan_cli.tests.nix_config import ConfigItem
 from clan_cli.vms.run import inspect_vm, spawn_vm
-from fixtures_flakes import ClanFlake
-from helpers import cli
-from nix_config import ConfigItem
 
 
 @pytest.mark.impure

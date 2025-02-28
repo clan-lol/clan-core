@@ -2,7 +2,7 @@ import logging
 
 import pytest
 from clan_cli.flake import Flake, FlakeCache, FlakeCacheEntry
-from fixtures_flakes import ClanFlake
+from clan_cli.tests.fixtures_flakes import ClanFlake
 
 log = logging.getLogger(__name__)
 

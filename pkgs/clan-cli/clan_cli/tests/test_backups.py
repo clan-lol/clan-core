@@ -1,6 +1,6 @@
 import pytest
-from fixtures_flakes import FlakeForTest
-from helpers import cli
+from clan_cli.tests.fixtures_flakes import FlakeForTest
+from clan_cli.tests.helpers import cli
 
 
 @pytest.mark.impure

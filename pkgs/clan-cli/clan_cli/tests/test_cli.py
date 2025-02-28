@@ -1,6 +1,6 @@
 import pytest
-from helpers import cli
-from stdout import CaptureOutput
+from clan_cli.tests.helpers import cli
+from clan_cli.tests.stdout import CaptureOutput
 
 
 def test_help(capture_output: CaptureOutput) -> None:

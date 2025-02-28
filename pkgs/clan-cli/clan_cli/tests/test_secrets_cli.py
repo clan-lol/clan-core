@@ -9,13 +9,15 @@ from typing import TYPE_CHECKING
 import pytest
 from age_keys import assert_secrets_file_recipients
 from clan_cli.errors import ClanError
-from fixtures_flakes import FlakeForTest
+
 from gpg_keys import GpgKey
-from helpers import cli
-from stdout import CaptureOutput
+from clan_cli.secrets.folders import sops_secrets_folder
+from clan_cli.tests.fixtures_flakes import FlakeForTest
+from clan_cli.tests.helpers import cli
+from clan_cli.tests.stdout import CaptureOutput
 
 if TYPE_CHECKING:
-    from age_keys import KeyPair
+    from .age_keys import KeyPair
 
 log = logging.getLogger(__name__)
 

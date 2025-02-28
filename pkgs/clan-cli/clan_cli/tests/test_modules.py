@@ -13,14 +13,14 @@ from clan_cli.inventory import (
 )
 from clan_cli.machines.create import CreateOptions, create_machine
 from clan_cli.nix import nix_eval, run_no_stdout
-from fixtures_flakes import FlakeForTest
+from clan_cli.tests.fixtures_flakes import FlakeForTest
 
 if TYPE_CHECKING:
-    from age_keys import KeyPair
+    from .age_keys import KeyPair
 
 # from clan_cli.vars.var import machine_get_fact
 from clan_cli.machines.machines import Machine as MachineMachine
-from helpers import cli
+from clan_cli.tests.helpers import cli
 
 
 @pytest.mark.with_core

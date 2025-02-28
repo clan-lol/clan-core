@@ -8,7 +8,7 @@ PROJECT_ROOT = TEST_ROOT.parent
 if CLAN_CORE_ := os.environ.get("CLAN_CORE_PATH"):
     CLAN_CORE = Path(CLAN_CORE_)
 else:
-    CLAN_CORE = PROJECT_ROOT.parent.parent
+    CLAN_CORE = PROJECT_ROOT.parent.parent.parent
 
 
 @pytest.fixture(scope="session")

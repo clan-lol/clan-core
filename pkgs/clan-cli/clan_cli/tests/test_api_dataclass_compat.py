@@ -78,11 +78,13 @@ def load_dataclass_from_file(
     try:
         sys.path.insert(0, root_dir)
         spec = importlib.util.spec_from_file_location(module_name, file_path)
+        print(spec)
         if not spec:
             msg = f"Could not load spec from file: {file_path}"
             raise ClanError(msg)
 
         module = importlib.util.module_from_spec(spec)
+        print(module)
         if not module:
             msg = f"Could not create module: {file_path}"
             raise ClanError(msg)
