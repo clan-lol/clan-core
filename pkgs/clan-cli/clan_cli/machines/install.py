@@ -49,8 +49,7 @@ def install_machine(opts: InstallOptions) -> None:
     machine.info(f"installing {machine.name}")
 
     h = machine.target_host
-    target_host = f"{h.user or 'root'}@{h.host}"
-    machine.info(f"target host: {target_host}")
+    machine.info(f"target host: {h.target}")
 
     generate_facts([machine])
     generate_vars([machine])
@@ -123,26 +122,29 @@ def install_machine(opts: InstallOptions) -> None:
         if opts.identity_file:
             cmd += ["-i", str(opts.identity_file)]
 
-        if not machine.can_build_locally or opts.build_on_remote:
-            machine.info(
-                f"Target machine has architecture {machine.system} which cannot be built locally or with the configured remote builders. Building on target machine"
-            )
-            cmd.append("--build-on-remote")
+        if opts.build_on_remote:
+            cmd.extend(["--build-on", "remote"])
+        else:
+            cmd.extend(["--build-on", "auto"])
 
-        if machine.target_host.port:
-            cmd += ["--ssh-port", str(machine.target_host.port)]
+        if h.port:
+            cmd += ["--ssh-port", str(h.port)]
         if opts.kexec:
             cmd += ["--kexec", opts.kexec]
+
         if opts.debug:
             cmd.append("--debug")
-        cmd.append(target_host)
+        cmd.append(h.target)
         if opts.use_tor:
             # nix copy does not support tor socks proxy
             # cmd.append("--ssh-option")
             # cmd.append("ProxyCommand=nc -x 127.0.0.1:9050 -X 5 %h %p")
             run(
                 nix_shell(
-                    ["nixpkgs#nixos-anywhere", "nixpkgs#tor"],
+                    [
+                        "nixpkgs#nixos-anywhere",
+                        "nixpkgs#tor",
+                    ],
                     ["torify", *cmd],
                 ),
                 RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
