@@ -12,6 +12,9 @@
     files.password-hash = {
       neededFor = "users";
     };
+    files.password = {
+      deploy = false;
+    };
     migrateFact = "root-password";
     runtimeInputs = [
       pkgs.coreutils
