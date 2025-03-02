@@ -255,7 +255,7 @@ class AsyncRuntime:
         This is useful to keep track of the origin of the task.
         """
         future = self.async_run(opts, function, *args, **kwargs)
-        return AsyncFutureRef(future._tid, self, ref)  # noqa: SLF001
+        return AsyncFutureRef(_tid=future._tid, _runtime=self, ref=ref)  # noqa: SLF001
 
     def join_all(self) -> None:
         """
