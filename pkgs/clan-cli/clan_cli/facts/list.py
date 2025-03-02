@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 # TODO get also secret facts
 def get_all_facts(machine: Machine) -> dict:
     public_facts_store = get_public_facts_store(machine)
-    generate_facts([machine], public_facts_store)
+    generate_facts([machine])
 
     return public_facts_store.get_all()
 
