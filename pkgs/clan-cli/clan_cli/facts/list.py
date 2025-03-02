@@ -5,6 +5,7 @@ import logging
 from typing import Any
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
+from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.machines import Machine
 
 log = logging.getLogger(__name__)
@@ -13,15 +14,8 @@ log = logging.getLogger(__name__)
 # TODO get also secret facts
 def get_all_facts(machine: Machine) -> dict:
     public_facts_store = get_public_facts_store(machine)
+    generate_facts([machine], public_facts_store)
 
-    # for service in machine.secrets_data:
-    #     facts[service] = {}
-    #     for fact in machine.secrets_data[service]["facts"]:
-    #         fact_content = fact_store.get(service, fact)
-    #         if fact_content:
-    #             facts[service][fact] = fact_content.decode()
-    #         else:
-    #             log.error(f"Fact {fact} for service {service} is missing")
     return public_facts_store.get_all()
 
 
