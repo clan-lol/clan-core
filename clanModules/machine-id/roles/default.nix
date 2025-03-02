@@ -10,18 +10,18 @@ let
 in
 {
   config = lib.mkMerge [
-    (lib.mkIf ((var.machineId.value or null) != null) {
+    (lib.mkIf ((var.value or null) != null) {
       assertions = [
         {
-          assertion = lib.stringLength var.machineId.value == 32;
+          assertion = lib.stringLength var.value == 32;
           message = "machineId must be exactly 32 characters long.";
         }
       ];
       boot.kernelParams = [
-        ''systemd.machine_id=${var.machineId.value}''
+        ''systemd.machine_id=${var.value}''
       ];
       environment.etc."machine-id" = {
-        text = var.machineId.value;
+        text = var.value;
       };
     })
     {
