@@ -18,8 +18,3 @@ $ tree -L 1
 ├── templates       # Template files for creating a new Clan
 └── vars
 ```
-
-## Getting Started with Infrastructure
-
-To dive into infrastructure, check out our clan infra repo: [clan-infra](https://git.clan.lol/clan/clan-infra). Please provide us with your public SOPS key so we can add you as an admin.
-
