@@ -97,7 +97,7 @@ Let's get your development environment up and running:
 
 ## Related Projects
 
-- **Data Mesher**: [dm](https://git.clan.lol/clan/dm)
+- **Data Mesher**: [data-mesher](https://git.clan.lol/clan/data-mesher)
 - **Nixos Facter**: [nixos-facter](https://github.com/nix-community/nixos-facter)
 - **Nixos Anywhere**: [nixos-anywhere](https://github.com/nix-community/nixos-anywhere)
 - **Disko**: [disko](https://github.com/nix-community/disko)
