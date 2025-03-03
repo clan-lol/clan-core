@@ -21,14 +21,14 @@ Let's get your development environment up and running:
         curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
         ```
 
-2. **Install direnv**:
+1. **Install direnv**:
 
       - To automatically setup a devshell on entering the directory
         ```bash
         nix profile install nixpkgs#nix-direnv-flakes nixpkgs#direnv
         ```
 
-3. **Add direnv to your shell**:
+1. **Add direnv to your shell**:
 
       - Direnv needs to [hook into your shell](https://direnv.net/docs/hook.html) to work.
         You can do this by executing following command. The example below will setup direnv for `zsh` and `bash`
@@ -37,10 +37,10 @@ Let's get your development environment up and running:
       echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc && eval "$SHELL"
       ```
 
-3. **Allow the devshell**
+1. **Allow the devshell**
       - Go to `clan-core/pkgs/clan-cli` and do a `direnv allow` to setup the necessary development environment to execute the `clan` command
 
-4. **Create a Gitea Account**:
+1. **Create a Gitea Account**:
       - Register an account on https://git.clan.lol
       - Fork the [clan-core](https://git.clan.lol/clan/clan-core) repository
       - Clone the repository and navigate to it
@@ -48,7 +48,7 @@ Let's get your development environment up and running:
          ```bash
          git remote add upstream gitea@git.clan.lol:clan/clan-core.git
          ```
-5. **Create an access token**:
+1. **Create an access token**:
       - Log in to Gitea.
       - Go to your account settings.
       - Navigate to the Applications section.
@@ -57,7 +57,7 @@ Let's get your development environment up and running:
       - Generate the token and copy it for later use.
       - Your access token is now ready to use with all permissions.
 
-5. **Register Your Gitea Account Locally**:
+1. **Register Your Gitea Account Locally**:
 
       - Execute the following command to add your Gitea account locally:
         ```bash
@@ -71,7 +71,7 @@ Let's get your development environment up and running:
         - Set Optional settings: No
 
 
-6. **Allow .envrc**:
+1. **Allow .envrc**:
 
       - When you enter the directory, you'll receive an error message like this:
         ```bash
@@ -79,7 +79,7 @@ Let's get your development environment up and running:
         ```
       - Execute `direnv allow` to automatically execute the shell script `.envrc` when entering the directory.
 
-7. **(Optional) Install Git Hooks**:
+1. **(Optional) Install Git Hooks**:
       - To syntax check your code you can run:
          ```bash
          nix fmt
@@ -89,7 +89,7 @@ Let's get your development environment up and running:
          ./scripts/pre-commit
          ```
 
-8. **Open a Pull Request**:
+1. **Open a Pull Request**:
       - To automatically open up a pull request you can use our tool called:
       ```
       merge-after-ci --reviewers Mic92 Lassulus Qubasa
