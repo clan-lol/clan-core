@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ lib, config, pkgs, ... }:
 
 let
   cfg = config.clan.iwd;
@@ -12,12 +12,13 @@ let
       {
         secret.${secret_name} = { };
         generator.prompt = "Wifi password for '${value.ssid}'";
+        # ref. man iwd.network
         generator.script = ''
           config="
           [Settings]
             AutoConnect=${if value.AutoConnect then "true" else "false"}
           [Security]
-            Passphrase=\"$prompt_value\"
+            Passphrase=$(echo -e "$prompt_value" | ${lib.getExe pkgs.gnused} "s=\\\=\\\\\\\=g;s=\t=\\\t=g;s=\r=\\\r=g;s=^ =\\\s=")
           "
           echo "$config" > "$secrets/${secret_name}"
         '';
