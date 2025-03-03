@@ -48,29 +48,6 @@ Let's get your development environment up and running:
          ```bash
          git remote add upstream gitea@git.clan.lol:clan/clan-core.git
          ```
-1. **Create an access token**:
-      - Log in to Gitea.
-      - Go to your account settings.
-      - Navigate to the Applications section.
-      - Click Generate New Token.
-      - Name your token and select all available scopes.
-      - Generate the token and copy it for later use.
-      - Your access token is now ready to use with all permissions.
-
-1. **Register Your Gitea Account Locally**:
-
-      - Execute the following command to add your Gitea account locally:
-        ```bash
-        tea login add
-        ```
-      - Fill out the prompt as follows:
-        - URL of Gitea instance: `https://git.clan.lol`
-        - Name of new Login [git.clan.lol]:
-        - Do you have an access token? Yes
-        - Token: <yourtoken>
-        - Set Optional settings: No
-
-
 1. **Allow .envrc**:
 
       - When you enter the directory, you'll receive an error message like this:
@@ -88,12 +65,6 @@ Let's get your development environment up and running:
          ```bash
          ./scripts/pre-commit
          ```
-
-1. **Open a Pull Request**:
-      - To automatically open up a pull request you can use our tool called:
-      ```
-      merge-after-ci --reviewers Mic92 Lassulus Qubasa
-      ```
 
 ## Related Projects
 
