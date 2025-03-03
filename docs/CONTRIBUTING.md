@@ -128,7 +128,11 @@ run(
     ),
     RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
 )
+
 ```
+
+The <path_to_local_src> doesn't need to be a local path, it can be any valid [flakeref](https://nix.dev/manual/nix/2.26/command-ref/new-cli/nix3-flake.html#flake-references).
+And thus can point test already opened PRs for example.
 
 # Standards
 
