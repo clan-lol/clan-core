@@ -6,4 +6,4 @@ categories = [ "Network" ]
 
 !!! Warning
     If you've been using network manager + wpa_supplicant and now are switching to IWD read this migration guide:
-    https://iwd.wiki.kernel.org/networkmanager#converting_network_profiles
+    https://archive.kernel.org/oldwiki/iwd.wiki.kernel.org/networkmanager.html#converting_network_profiles
