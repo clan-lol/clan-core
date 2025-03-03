@@ -5,6 +5,12 @@
     fileSystems."/".device = "/dev/null";
     boot.loader.grub.device = "/dev/null";
   };
+  clan.inventory.services = {
+    borgbackup.test-backup = {
+      roles.client.machines = [ "test-backup" ];
+      roles.server.machines = [ "test-backup" ];
+    };
+  };
   flake.nixosModules = {
     test-backup =
       {
@@ -22,9 +28,18 @@
       in
       {
         imports = [
-          self.clanModules.borgbackup
+          # Do not import inventory modules. They should be configured via 'clan.inventory'
+          #
+          # TODO: Configure localbackup via inventory
           self.clanModules.localbackup
         ];
+        # Borgbackup overrides
+        services.borgbackup.repos.test-backups = {
+          path = "/var/lib/borgbackup/test-backups";
+          authorizedKeys = [ (builtins.readFile ../lib/ssh/pubkey) ];
+        };
+        clan.borgbackup.destinations.test-backup.repo = lib.mkForce "borg@machine:.";
+
         clan.core.networking.targetHost = "machine";
         networking.hostName = "machine";
         nixpkgs.hostPlatform = "x86_64-linux";
@@ -108,7 +123,6 @@
           '';
           folders = [ "/var/test-service" ];
         };
-        clan.borgbackup.destinations.test-backup.repo = "borg@machine:.";
 
         fileSystems."/mnt/external-disk" = {
           device = "/dev/vdb"; # created in tests with virtualisation.emptyDisks
@@ -128,11 +142,6 @@
           postUnmountHook = ''
             touch /run/unmount-external-disk
           '';
-        };
-
-        services.borgbackup.repos.test-backups = {
-          path = "/var/lib/borgbackup/test-backups";
-          authorizedKeys = [ (builtins.readFile ../lib/ssh/pubkey) ];
         };
       };
   };
@@ -171,10 +180,15 @@
         test-backups = (import ../lib/container-test.nix) {
           name = "test-backups";
           nodes.machine = {
-            imports = [
-              self.nixosModules.clanCore
-              self.nixosModules.test-backup
-            ];
+            imports =
+              [
+                self.nixosModules.clanCore
+                # Some custom overrides for the backup tests
+                self.nixosModules.test-backup
+              ]
+              ++
+              # import the inventory generated nixosModules
+              self.clanInternals.serviceConfigs.machines.test-backup.machineImports;
             clan.core.settings.directory = ./.;
             environment.systemPackages = [
               (pkgs.writeShellScriptBin "foo" ''
