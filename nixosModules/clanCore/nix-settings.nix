@@ -1,7 +1,7 @@
 { lib, config, ... }:
 # Taken from:
 # https://github.com/nix-community/srvos/blob/main/nixos/common/nix.nix
-lib.mkIf config.clan.core.setDefaults {
+lib.mkIf config.clan.core.enableRecommendedDefaults {
   # Fallback quickly if substituters are not available.
   nix.settings.connect-timeout = 5;
 

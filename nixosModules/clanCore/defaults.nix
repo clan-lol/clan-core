@@ -5,12 +5,21 @@
   ...
 }:
 {
-  options.clan.core.setDefaults = (lib.mkEnableOption "Clan defaults") // {
+  options.clan.core.enableRecommendedDefaults = lib.mkOption {
+    type = lib.types.bool;
+    description = ''
+      Whether to enable recommended default settings for NixOS by Clan.
+
+      These settings are entirely optional and are not necessary for using Clan.
+
+      This enables the new systemd in stage-1, disables some options that increase the closure size
+      and adds some extra packages for debugging like `tcpdump` and `dnsutils`.
+    '';
     default = true;
     example = false;
   };
 
-  config = lib.mkIf config.clan.core.setDefaults {
+  config = lib.mkIf config.clan.core.enableRecommendedDefaults {
     # Use systemd during boot as well except:
     # - systems with raids as this currently require manual configuration: https://github.com/NixOS/nixpkgs/issues/210210
     # - for containers we currently rely on the `stage-2` init script that sets up our /etc

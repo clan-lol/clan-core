@@ -8,5 +8,5 @@
     (modulesPath + "/profiles/minimal.nix")
   ];
 
-  clan.core.setDefaults = false;
+  clan.core.enableRecommendedDefaults = false;
 }
