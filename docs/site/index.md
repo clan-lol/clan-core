@@ -61,7 +61,7 @@ hide:
 
     ---
 
-    Use clan with [https://flake-parts.dev]()
+    Use clan with [https://flake.parts/]()
 
 -   [Contribute](./manual/contribute.md)
 
