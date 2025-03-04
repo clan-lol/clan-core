@@ -9,6 +9,7 @@ in
   # only import available files, as this allows to filter the files for tests.
   flake.clanModules = filterAttrs (_name: pathExists) {
     admin = ./admin;
+    auto-upgrade = ./auto-upgrade;
     borgbackup = ./borgbackup;
     borgbackup-static = ./borgbackup-static;
     deltachat = ./deltachat;
