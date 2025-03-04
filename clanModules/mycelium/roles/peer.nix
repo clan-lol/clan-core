@@ -6,8 +6,17 @@
 }:
 {
   options = {
-    clan.mycelium.openFirewall = lib.mkEnableOption "Open the firewall for mycelium";
-    clan.mycelium.addHostedPublicNodes = lib.mkEnableOption "Add hosted Public nodes";
+    clan.mycelium.openFirewall = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Open the firewall for mycelium";
+    };
+
+    clan.mycelium.addHostedPublicNodes = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Add hosted Public nodes";
+    };
   };
 
   config.services.mycelium = {
