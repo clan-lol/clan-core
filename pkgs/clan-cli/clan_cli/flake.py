@@ -10,7 +10,13 @@ from typing import Any, cast
 from clan_cli.cmd import run
 from clan_cli.dirs import user_cache_dir
 from clan_cli.errors import ClanError
-from clan_cli.nix import nix_build, nix_command, nix_config, nix_test_store
+from clan_cli.nix import (
+    nix_build,
+    nix_command,
+    nix_config,
+    nix_metadata,
+    nix_test_store,
+)
 
 log = logging.getLogger(__name__)
 
@@ -416,6 +422,9 @@ class Flake:
         self.flake_cache_path = Path(user_cache_dir()) / "clan" / "flakes" / hashed_hash
         if self.flake_cache_path.exists():
             self._cache.load_from_file(self.flake_cache_path)
+
+        if "original" not in flake_metadata:
+            flake_metadata = nix_metadata(self.identifier)
 
         if flake_metadata["original"].get("url", "").startswith("file:"):
             self._is_local = True
