@@ -270,5 +270,4 @@ in
       }
     ) (inventory.machines or { });
   };
-
 }

@@ -42,7 +42,7 @@ let
 
   # map from machine name to service configuration
   # { ${machineName} :: Config }
-  serviceConfigs = (
+  inventoryClass = (
     buildInventory {
       inherit inventory directory;
     }
@@ -76,7 +76,7 @@ let
           (machines.${name} or { })
           # Inherit the inventory assertions ?
           # { inherit (mergedInventory) assertions; }
-          { imports = serviceConfigs.machines.${name}.machineImports or [ ]; }
+          { imports = inventoryClass.machines.${name}.machineImports or [ ]; }
           (
             {
               # Settings
@@ -204,7 +204,7 @@ in
 
   clanInternals = {
     moduleSchemas = clan-core.lib.modules.getModulesSchema config.inventory.modules;
-    inherit serviceConfigs;
+    inherit inventoryClass;
     inherit (clan-core) clanModules;
     inherit inventoryFile;
     inventoryValuesPrios =

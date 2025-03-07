@@ -188,7 +188,7 @@
               ]
               ++
               # import the inventory generated nixosModules
-              self.clanInternals.serviceConfigs.machines.test-backup.machineImports;
+              self.clanInternals.inventoryClass.machines.test-backup.machineImports;
             clan.core.settings.directory = ./.;
             environment.systemPackages = [
               (pkgs.writeShellScriptBin "foo" ''
