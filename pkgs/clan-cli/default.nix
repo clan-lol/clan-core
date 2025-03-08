@@ -156,7 +156,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             # limit build cores to 16
             jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-            python -m pytest -m "not impure and not with_core" -n $jobs ./tests
+            python -m pytest -m "not impure and not with_core" -n $jobs ./clan_cli/tests
             touch $out
           '';
     }
@@ -209,7 +209,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             # limit build cores to 16
             jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-            python -m pytest -m "not impure and with_core" ./tests -n $jobs
+            python -m pytest -m "not impure and with_core" ./clan_cli/tests -n $jobs
             touch $out
           '';
     };
