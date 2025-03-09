@@ -19,6 +19,10 @@
 
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    test-fixtures.url = "git+https://git.clan.lol/clan/test-fixtures?ref=main&shallow=1";
+    test-fixtures.inputs.flake-parts.follows = "flake-parts";
+    test-fixtures.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =

@@ -1,6 +1,7 @@
 {
   self,
   lib,
+  inputs,
   ...
 }:
 {
@@ -18,7 +19,7 @@
     imports = [ self.nixosModules.test-install-machine-without-system ];
   };
   clan.machines.test-install-machine-with-system = {
-    facter.reportPath = ./facter.json;
+    facter.reportPath = "${inputs.test-fixtures}/nixos-vm-facter-json/facter.json";
 
     fileSystems."/".device = lib.mkDefault "/dev/vda";
     boot.loader.grub.device = lib.mkDefault "/dev/vda";
