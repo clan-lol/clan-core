@@ -201,8 +201,9 @@ def execute_generator(
                 prompt_file = tmpdir_prompts / prompt.name
                 value = get_prompt_value(prompt.name)
                 prompt_file.write_text(value)
+        from clan_cli import bwrap
 
-        if sys.platform == "linux":
+        if sys.platform == "linux" and bwrap.bubblewrap_works():
             cmd = bubblewrap_cmd(str(generator.final_script), tmpdir)
         else:
             cmd = ["bash", "-c", str(generator.final_script)]
