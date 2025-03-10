@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+from age_keys import assert_secrets_file_recipients
 from clan_cli.errors import ClanError
-from clan_cli.secrets.folders import sops_secrets_folder
 from fixtures_flakes import FlakeForTest
 from helpers import cli
 from stdout import CaptureOutput
@@ -91,7 +91,7 @@ def _test_identities(
                 test_secret_name,
             ]
         )
-    assert_sops_file_recipients(
+    assert_secrets_file_recipients(
         test_flake.path,
         test_secret_name,
         expected_age_recipients_keypairs=[age_keys[0], admin_age_key],
@@ -111,7 +111,7 @@ def _test_identities(
                 age_keys[1].privkey,
             ]
         )
-    assert_sops_file_recipients(
+    assert_secrets_file_recipients(
         test_flake.path,
         test_secret_name,
         expected_age_recipients_keypairs=[age_keys[1], admin_age_key],
@@ -302,7 +302,7 @@ def test_groups(
             ]
         )
 
-    assert_sops_file_recipients(
+    assert_secrets_file_recipients(
         test_flake.path,
         secret_name,
         expected_age_recipients_keypairs=[
@@ -327,7 +327,7 @@ def test_groups(
             "user1",
         ]
     )
-    assert_sops_file_recipients(
+    assert_secrets_file_recipients(
         test_flake.path,
         secret_name,
         expected_age_recipients_keypairs=[machine1_age_key, admin_age_key],
@@ -349,7 +349,7 @@ def test_groups(
             "user1",
         ]
     )
-    assert_sops_file_recipients(
+    assert_secrets_file_recipients(
         test_flake.path,
         secret_name,
         expected_age_recipients_keypairs=[
@@ -370,7 +370,7 @@ def test_groups(
             "user1",
         ]
     )
-    assert_sops_file_recipients(
+    assert_secrets_file_recipients(
         test_flake.path,
         secret_name,
         expected_age_recipients_keypairs=[machine1_age_key, admin_age_key],
@@ -391,7 +391,7 @@ def test_groups(
             "machine1",
         ]
     )
-    assert_sops_file_recipients(
+    assert_secrets_file_recipients(
         test_flake.path,
         secret_name,
         expected_age_recipients_keypairs=[admin_age_key],
@@ -411,29 +411,6 @@ def test_groups(
         "was not cleaned up after group1 was removed"
     )
     assert not group_symlink.exists(follow_symlinks=False), err_msg
-
-
-def assert_sops_file_recipients(
-    flake_path: Path,
-    secret_name: str,
-    expected_age_recipients_keypairs: list["KeyPair"],
-    err_msg: str | None = None,
-) -> None:
-    """Checks that the recipients of a SOPS file matches expectations.
-
-    :param err_msg: in case of failure, if you gave an error message then it
-       will be displayed, otherwise pytest will display the two different sets
-       of recipients.
-    """
-    sops_file = sops_secrets_folder(flake_path) / secret_name / "secret"
-    with sops_file.open("rb") as fp:
-        sops_data = json.load(fp)
-    age_recipients = {each["recipient"] for each in sops_data["sops"]["age"]}
-    expected_age_recipients = {pair.pubkey for pair in expected_age_recipients_keypairs}
-    if not err_msg:
-        assert age_recipients == expected_age_recipients
-        return
-    assert age_recipients == expected_age_recipients, err_msg
 
 
 @contextmanager
