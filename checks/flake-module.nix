@@ -12,6 +12,7 @@ in
     ./flash/flake-module.nix
     ./impure/flake-module.nix
     ./installation/flake-module.nix
+    ./installation-without-system/flake-module.nix
     ./morph/flake-module.nix
     ./nixos-documentation/flake-module.nix
   ];
@@ -49,7 +50,7 @@ in
           flakeOutputs =
             lib.mapAttrs' (
               name: config: lib.nameValuePair "nixos-${name}" config.config.system.build.toplevel
-            ) self.nixosConfigurations
+            ) (lib.filterAttrs (n: _v: n != "test-install-machine-without-system") self.nixosConfigurations)
             // lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages
             // lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells
             // lib.mapAttrs' (name: config: lib.nameValuePair "home-manager-${name}" config.activation-script) (
