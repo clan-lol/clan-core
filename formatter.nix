@@ -23,6 +23,7 @@
         "*.clan-flake"
         "*.code-workspace"
         "*.pub"
+        "*.priv"
         "*.typed"
         "*.age"
         "*.list"
@@ -37,6 +38,7 @@
         # prettier messes up our mkdocs flavoured markdown
         "*.md"
 
+        "checks/data-mesher/vars/*"
         "checks/lib/ssh/privkey"
         "checks/lib/ssh/pubkey"
         "checks/matrix-synapse/synapse-registration_shared_secret"

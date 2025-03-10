@@ -13,6 +13,7 @@ in
     borgbackup = ./borgbackup;
     borgbackup-static = ./borgbackup-static;
     deltachat = ./deltachat;
+    data-mesher = ./data-mesher;
     disk-id = ./disk-id;
     dyndns = ./dyndns;
     ergochat = ./ergochat;

@@ -41,6 +41,7 @@ in
             borgbackup = import ./borgbackup nixosTestArgs;
             matrix-synapse = import ./matrix-synapse nixosTestArgs;
             mumble = import ./mumble nixosTestArgs;
+            data-mesher = import ./data-mesher nixosTestArgs;
             syncthing = import ./syncthing nixosTestArgs;
             zt-tcp-relay = import ./zt-tcp-relay nixosTestArgs;
             postgresql = import ./postgresql nixosTestArgs;
