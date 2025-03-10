@@ -2,7 +2,7 @@
 
 pkgs.clangStdenv.mkDerivation {
   pname = "webview";
-  version = "nigthly";
+  version = "nightly";
 
   src = pkgs.fetchFromGitHub {
     owner = "webview";
