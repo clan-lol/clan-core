@@ -64,12 +64,9 @@ class Machine:
 
     @property
     def deployment(self) -> dict:
-        if self.cached_deployment is not None:
-            return self.cached_deployment
         deployment = json.loads(
             self.build_nix("config.system.clan.deployment.file").read_text()
         )
-        self.cached_deployment = deployment
         return deployment
 
     @property
