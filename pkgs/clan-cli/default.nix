@@ -142,7 +142,10 @@ pythonRuntime.pkgs.buildPythonApplication {
             export LOCK_NIX=$TMPDIR/nix_lock
             mkdir -p "$CLAN_TEST_STORE/nix/store"
 
-            python -m pytest -m "not impure and not with_core" ./tests
+            # limit build cores to 16
+            jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
+
+            python -m pytest -m "not impure and not with_core" -n $jobs ./tests
             touch $out
           '';
       clan-pytest-with-core =
@@ -181,7 +184,11 @@ pythonRuntime.pkgs.buildPythonApplication {
             mkdir -p "$CLAN_TEST_STORE/nix/var/nix/gcroots"
             xargs cp --recursive --target "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
             nix-store --load-db --store "$CLAN_TEST_STORE" < "$closureInfo/registration"
-            python -m pytest -m "not impure and with_core" ./tests
+
+            # limit build cores to 16
+            jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
+
+            python -m pytest -m "not impure and with_core" ./tests -n $jobs
             touch $out
           '';
     };
