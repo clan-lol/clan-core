@@ -28,7 +28,16 @@ log = logging.getLogger(__name__)
 
 @API.register
 def delete_machine(flake: Flake, name: str) -> None:
-    inventory.delete(str(flake.path), {f"machines.{name}"})
+    try:
+        inventory.delete(str(flake.path), {f"machines.{name}"})
+    except KeyError as exc:
+        # louis@(2025-03-09): test infrastructure does not seem to set the
+        # inventory properly, but more importantly only one machine in my
+        # personal clan ended up in the inventory for some reason, so I think
+        # it makes sense to eat the exception here.
+        log.warning(
+            f"{name} was missing or already deleted from the machines inventory: {exc}"
+        )
 
     changed_paths: list[Path] = []
 
