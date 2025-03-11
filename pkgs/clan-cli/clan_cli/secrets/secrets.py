@@ -41,6 +41,7 @@ log = logging.getLogger(__name__)
 
 
 def list_generators_secrets(generators_path: Path) -> list[Path]:
+    paths = []
     for generator_path in generators_path.iterdir():
         if not generator_path.is_dir():
             continue
@@ -48,13 +49,11 @@ def list_generators_secrets(generators_path: Path) -> list[Path]:
         def validate(generator_path: Path, name: str) -> bool:
             return has_secret(generator_path / name)
 
-        paths = []
         for obj in list_objects(
             generator_path, functools.partial(validate, generator_path)
         ):
             paths.append(generator_path / obj)
-        return paths
-    return []
+    return paths
 
 
 def list_vars_secrets(flake_dir: Path) -> list[Path]:

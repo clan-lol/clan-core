@@ -234,10 +234,16 @@ def test_generate_secret_var_sops_with_default_group(
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     config["clan"]["core"]["sops"]["defaultGroups"] = ["my_group"]
-    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
-    my_generator["files"]["my_secret"]["secret"] = True
-    my_generator["files"]["my_public"]["secret"] = False
-    my_generator["script"] = (
+    first_generator = config["clan"]["core"]["vars"]["generators"]["first_generator"]
+    first_generator["files"]["my_secret"]["secret"] = True
+    first_generator["files"]["my_public"]["secret"] = False
+    first_generator["script"] = (
+        "echo hello > $out/my_secret && echo hello > $out/my_public"
+    )
+    second_generator = config["clan"]["core"]["vars"]["generators"]["second_generator"]
+    second_generator["files"]["my_secret"]["secret"] = True
+    second_generator["files"]["my_public"]["secret"] = False
+    second_generator["script"] = (
         "echo hello > $out/my_secret && echo hello > $out/my_public"
     )
     flake.refresh()
@@ -248,12 +254,18 @@ def test_generate_secret_var_sops_with_default_group(
     in_repo_store = in_repo.FactStore(
         Machine(name="my_machine", flake=Flake(str(flake.path)))
     )
-    assert not in_repo_store.exists(Generator("my_generator"), "my_secret")
+    assert not in_repo_store.exists(Generator("first_generator"), "my_secret")
     sops_store = sops.SecretStore(
         Machine(name="my_machine", flake=Flake(str(flake.path)))
     )
-    assert sops_store.exists(Generator("my_generator"), "my_secret")
-    assert sops_store.get(Generator("my_generator"), "my_secret").decode() == "hello\n"
+    assert sops_store.exists(Generator("first_generator"), "my_secret")
+    assert (
+        sops_store.get(Generator("first_generator"), "my_secret").decode() == "hello\n"
+    )
+    assert sops_store.exists(Generator("second_generator"), "my_secret")
+    assert (
+        sops_store.get(Generator("second_generator"), "my_secret").decode() == "hello\n"
+    )
 
     # add another user to the group and check if secret gets re-encrypted
     pubkey_user2 = age_keys[1]
@@ -272,7 +284,10 @@ def test_generate_secret_var_sops_with_default_group(
     # check if new user can access the secret
     monkeypatch.setenv("USER", "user2")
     assert sops_store.user_has_access(
-        "user2", Generator("my_generator", share=False), "my_secret"
+        "user2", Generator("first_generator", share=False), "my_secret"
+    )
+    assert sops_store.user_has_access(
+        "user2", Generator("second_generator", share=False), "my_secret"
     )
 
     # Rotate key of a user
@@ -291,7 +306,10 @@ def test_generate_secret_var_sops_with_default_group(
     )
     monkeypatch.setenv("USER", "user2")
     assert sops_store.user_has_access(
-        "user2", Generator("my_generator", share=False), "my_secret"
+        "user2", Generator("first_generator", share=False), "my_secret"
+    )
+    assert sops_store.user_has_access(
+        "user2", Generator("second_generator", share=False), "my_secret"
     )
 
 
