@@ -72,7 +72,6 @@ fi
 
 git push --force -u "$remoteFork" HEAD:refs/heads/"$tempRemoteBranch"
 
-
 tea pr create \
   --repo "$repo" \
   --head "$user:$tempRemoteBranch" \
