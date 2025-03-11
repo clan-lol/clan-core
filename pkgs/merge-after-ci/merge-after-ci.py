@@ -17,8 +17,6 @@ cmd = [
     "origin",
     "upstream",
     "main",
-    "--assignees",
-    ",".join(["clan-bot", *args.reviewers]),
     *(["--labels", "needs-review"] if not args.no_review else []),
     *args.args,
 ]
