@@ -489,7 +489,7 @@ class Flake:
 
         self._cache.load_from_file(self.flake_cache_path)
         if not self._cache.is_cached(selector):
-            log.info(f"Cache miss for {selector}")
+            log.debug(f"Cache miss for {selector}")
             self.get_from_nix([selector], nix_options)
         value = self._cache.select(selector)
         return value
