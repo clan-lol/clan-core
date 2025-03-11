@@ -75,7 +75,6 @@
         "nixpkgs": "nixpkgs",
         "sops-nix": "sops-nix",
         "systems": "systems",
-        "test-fixtures": "test-fixtures",
         "treefmt-nix": "treefmt-nix"
       }
     },
@@ -113,31 +112,6 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
-      }
-    },
-    "test-fixtures": {
-      "inputs": {
-        "flake-parts": [
-          "flake-parts"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1741504481,
-        "narHash": "sha256-Ndx7LCbLF2sgRvbiefKEe1rgL+cYlBANVRokg27DflI=",
-        "ref": "main",
-        "rev": "3508b7ed11dad068ffc8c9f0047a5c7d54644e2c",
-        "shallow": true,
-        "type": "git",
-        "url": "https://git.clan.lol/clan/test-fixtures"
-      },
-      "original": {
-        "ref": "main",
-        "shallow": true,
-        "type": "git",
-        "url": "https://git.clan.lol/clan/test-fixtures"
       }
     },
     "treefmt-nix": {

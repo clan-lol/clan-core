@@ -1,7 +1,6 @@
 {
   self,
   lib,
-  inputs,
   ...
 }:
 {
@@ -19,7 +18,11 @@
     imports = [ self.nixosModules.test-install-machine-without-system ];
   };
   clan.machines.test-install-machine-with-system = {
-    facter.reportPath = "${inputs.test-fixtures}/nixos-vm-facter-json/facter.json";
+    # https://git.clan.lol/clan/test-fixtures
+    facter.reportPath = builtins.fetchurl {
+      url = "https://git.clan.lol/clan/test-fixtures/raw/commit/3508b7ed11dad068ffc8c9f0047a5c7d54644e2c/nixos-vm-facter-json/facter.json";
+      sha256 = "sha256:16myh0ll2gdwsiwkjw5ba4dl23ppwbsanxx214863j7nvzx42pws";
+    };
 
     fileSystems."/".device = lib.mkDefault "/dev/vda";
     boot.loader.grub.device = lib.mkDefault "/dev/vda";
