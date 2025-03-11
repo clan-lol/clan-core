@@ -62,8 +62,9 @@ nav:
       - Authoring:
           - Modules: clanmodules/index.md
           - Disk Templates: manual/disk-templates.md
-      - Contribute: manual/contribute.md
-      - Debugging: manual/debugging.md
+      - Contributing:
+          - Contribute: contributing/contribute.md
+          - Debugging: contributing/debugging.md
       - Repo Layout: manual/repo-layout.md
       - Migrate existing Flakes: manual/migration-guide.md
   # - Concepts:
