@@ -155,7 +155,8 @@ pythonRuntime.pkgs.buildPythonApplication {
             buildInputs = [
               pkgs.bash
               pkgs.coreutils
-              pkgs.nix
+              # Use newer nix versions to get more insights on profile creation race condition
+              nixVersions.nix_2_26
             ];
             closureInfo = pkgs.closureInfo {
               rootPaths = [
