@@ -45,7 +45,7 @@
               {
                 environment.etc."install-closure".source = "${closureInfo}/store-paths";
                 system.extraDependencies = dependencies;
-                virtualisation.memorySize = 1024;
+                virtualisation.memorySize = 2048;
                 environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
               };
           };
