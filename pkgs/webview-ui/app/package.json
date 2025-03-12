@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@floating-ui/dom": "^1.6.8",
-    "@modular-forms/solid": "^0.21.0",
+    "@modular-forms/solid": "^0.25.0",
     "@solid-primitives/storage": "^3.7.1",
     "@solidjs/router": "^0.14.2",
     "@tanstack/eslint-plugin-query": "^5.51.12",
