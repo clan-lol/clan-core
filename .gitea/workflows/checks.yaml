@@ -8,5 +8,5 @@ jobs:
   checks-impure:
     runs-on: nix
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: nix run .#impure-checks

@@ -7,7 +7,7 @@ jobs:
   deploy-docs:
     runs-on: nix
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: nix run .#deploy-docs
     env:
       SSH_HOMEPAGE_KEY: ${{ secrets.SSH_HOMEPAGE_KEY }}
