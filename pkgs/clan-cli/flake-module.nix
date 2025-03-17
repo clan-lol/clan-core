@@ -19,6 +19,7 @@
           "lib"
           "nixosModules"
           "flake.lock"
+          "templates"
         ];
       };
       flakeLock = lib.importJSON (clanCore + "/flake.lock");
@@ -48,7 +49,9 @@
         };
       clanCoreLock = flakeLockVendoredDeps flakeLock;
       clanCoreLockFile = builtins.toFile "clan-core-flake.lock" (builtins.toJSON clanCoreLock);
+
       clanCoreNode = {
+
         inputs = lib.mapAttrs (name: _input: name) flakeInputs;
         locked = {
           lastModified = 1;
@@ -66,16 +69,33 @@
         nodes = clanCoreLock.nodes // {
           clan-core = clanCoreNode;
           nixpkgs-lib = clanCoreLock.nodes.nixpkgs; # required by flake-parts
+          flake-parts = clanCoreLock.nodes.flake-parts;
           root = clanCoreLock.nodes.root // {
             inputs = clanCoreLock.nodes.root.inputs // {
               clan-core = "clan-core";
               nixpkgs = "nixpkgs";
-              nixpkgs-lib = "nixpkgs-lib";
+              clan = "clan-core";
+              flake-parts = "flake-parts";
             };
           };
         };
       };
       templateLockFile = builtins.toFile "template-flake.lock" (builtins.toJSON templateLock);
+
+      # We need to add the paths of the templates to the nix store such that they are available
+      # only adding clanCoreWithVendoredDeps to the nix store is not enough
+      templateDerivation = pkgs.closureInfo {
+        rootPaths =
+          builtins.attrValues (self.lib.select "clan.templates.clan.*.path" self)
+          ++ builtins.attrValues (self.lib.select "clan.templates.machine.*.path" self);
+
+        # FIXME: As the templates get modified in clanCoreWithVendoredDeps below, we need to add the modified version to the nix store too
+        # However it is not possible (or I don't know how) to add a nix path from a built derivation to the nix store
+        # rootPaths = [
+        #   clanCoreWithVendoredDeps.clan.templates.clan.minimal.path
+        # ];
+      };
+
       clanCoreWithVendoredDeps =
         pkgs.runCommand "clan-core-with-vendored-deps"
           {
@@ -96,15 +116,19 @@
             cp ${clanCoreLockFile} $out/flake.lock
             nix flake lock $out --extra-experimental-features 'nix-command flakes'
             clanCoreHash=$(nix hash path ${clanCore} --extra-experimental-features 'nix-command')
-            for templateDir in $(find $out/templates -mindepth 1 -maxdepth 1 -type d); do
-              if ! [ -e "$templateDir/flake.nix" ]; then
-                continue
-              fi
-              cp ${templateLockFile} $templateDir/flake.lock
-              cat $templateDir/flake.lock | jq ".nodes.\"clan-core\".locked.narHash = \"$clanCoreHash\"" > $templateDir/flake.lock.final
-              mv $templateDir/flake.lock.final $templateDir/flake.lock
-              nix flake lock $templateDir --extra-experimental-features 'nix-command flakes'
-            done
+
+            ## ==> We need this to make nix flake update work on the templates
+            ## however then we have to re-add the clan templates to the nix store
+            ## which is not possible (or I don't know how)
+            # for templateDir in $(find $out/templates/clan -mindepth 1 -maxdepth 1 -type d); do
+            #   if ! [ -e "$templateDir/flake.nix" ]; then
+            #     continue
+            #   fi
+            #   cp ${templateLockFile} $templateDir/flake.lock
+            #   cat $templateDir/flake.lock | jq ".nodes.\"clan-core\".locked.narHash = \"$clanCoreHash\"" > $templateDir/flake.lock.final
+            #   mv $templateDir/flake.lock.final $templateDir/flake.lock
+            #   nix flake lock $templateDir --extra-experimental-features 'nix-command flakes'
+            # done
           '';
     in
     {
@@ -117,6 +141,7 @@
           inherit (inputs) nixpkgs;
           inherit (self'.packages) classgen;
           inherit (self'.legacyPackages.schemas) inventory-schema-abstract;
+          templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
           clan-core-path = clanCoreWithVendoredDeps;
           includedRuntimeDeps = [
@@ -129,6 +154,7 @@
           inherit (self'.packages) classgen;
           inherit (self'.legacyPackages.schemas) inventory-schema-abstract;
           clan-core-path = clanCoreWithVendoredDeps;
+          templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
           includedRuntimeDeps = lib.importJSON ./clan_cli/nix/allowed-programs.json;
         };

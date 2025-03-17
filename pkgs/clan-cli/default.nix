@@ -15,6 +15,7 @@
   inventory-schema-abstract,
   classgen,
   pythonRuntime,
+  templateDerivation,
 }:
 let
   pyDeps = ps: [
@@ -128,7 +129,16 @@ pythonRuntime.pkgs.buildPythonApplication {
     (lib.mapAttrs' (n: lib.nameValuePair "clan-dep-${n}") testRuntimeDependenciesMap)
     // {
       clan-pytest-without-core =
-        runCommand "clan-pytest-without-core" { nativeBuildInputs = testDependencies; }
+        runCommand "clan-pytest-without-core"
+          {
+            nativeBuildInputs = testDependencies;
+            closureInfo = pkgs.closureInfo {
+              rootPaths = [
+                templateDerivation
+              ];
+            };
+
+          }
           ''
             set -u -o pipefail
             cp -r ${source} ./src
@@ -160,6 +170,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             ];
             closureInfo = pkgs.closureInfo {
               rootPaths = [
+                templateDerivation
                 pkgs.bash
                 pkgs.coreutils
                 pkgs.jq.dev
@@ -175,6 +186,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             cd ./src
 
             export CLAN_CORE=${clan-core-path}
+            export CLAN_CORE_PATH=${clan-core-path}
             export NIX_STATE_DIR=$TMPDIR/nix
             export IN_NIX_SANDBOX=1
             export PYTHONWARNINGS=error

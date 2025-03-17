@@ -9,7 +9,7 @@ from clan_cli.cmd import CmdOut, RunOpts, run
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.inventory import Inventory, init_inventory
-from clan_cli.nix import nix_metadata, nix_shell
+from clan_cli.nix import nix_command, nix_metadata, nix_shell
 from clan_cli.templates import (
     InputPrio,
     TemplateName,
@@ -65,21 +65,15 @@ def create_clan(opts: CreateOptions) -> CreateClanResponse:
         clan_dir=opts.src_flake,
     )
     log.info(f"Found template '{template.name}' in '{template.input_variant}'")
-    src = Path(template.src["path"])
 
     if dest.exists():
-        dest /= src.name
+        dest /= template.name
 
     if dest.exists():
         msg = f"Destination directory {dest} already exists"
         raise ClanError(msg)
 
-    if not src.exists():
-        msg = f"Template {template} does not exist"
-        raise ClanError(msg)
-    if not src.is_dir():
-        msg = f"Template {template} is not a directory"
-        raise ClanError(msg)
+    src = Path(template.src["path"])
 
     copy_from_nixstore(src, dest)
 
@@ -108,9 +102,7 @@ def create_clan(opts: CreateOptions) -> CreateClanResponse:
             )
 
     if opts.update_clan:
-        flake_update = run(
-            nix_shell(["nixpkgs#nix"], ["nix", "flake", "update"]), RunOpts(cwd=dest)
-        )
+        flake_update = run(nix_command(["flake", "update"]), RunOpts(cwd=dest))
         response.flake_update = flake_update
 
     if opts.initial:
@@ -159,6 +151,13 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
         default=Path(),
     )
 
+    parser.add_argument(
+        "--no-update",
+        help="Do not update the clan flake",
+        action="store_true",
+        default=False,
+    )
+
     def create_flake_command(args: argparse.Namespace) -> None:
         if len(args.input) == 0:
             args.input = ["clan", "clan-core"]
@@ -175,6 +174,7 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
                 template_name=args.template,
                 setup_git=not args.no_git,
                 src_flake=args.flake,
+                update_clan=not args.no_update,
             )
         )
 

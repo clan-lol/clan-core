@@ -1,15 +1,18 @@
 import json
-import subprocess
+import logging
 from pathlib import Path
 
 import pytest
 from clan_cli.cmd import run
-from fixtures_flakes import substitute
+from clan_cli.nix import nix_flake_show
+from fixtures_flakes import FlakeForTest, substitute
 from helpers import cli
 from stdout import CaptureOutput
 
+log = logging.getLogger(__name__)
 
-@pytest.mark.impure
+
+@pytest.mark.with_core
 def test_create_flake(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
@@ -18,7 +21,7 @@ def test_create_flake(
 ) -> None:
     flake_dir = temporary_home / "test-flake"
 
-    cli.run(["flakes", "create", str(flake_dir), "--template=default"])
+    cli.run(["flakes", "create", str(flake_dir), "--template=default", "--no-update"])
 
     assert (flake_dir / ".clan-flake").exists()
     # Replace the inputs.clan.url in the template flake.nix
@@ -29,6 +32,7 @@ def test_create_flake(
     # Dont evaluate the inventory before the substitute call
 
     monkeypatch.chdir(flake_dir)
+
     cli.run(["machines", "create", "machine1"])
 
     # create a hardware-configuration.nix that doesn't throw an eval error
@@ -41,11 +45,8 @@ def test_create_flake(
     with capture_output as output:
         cli.run(["machines", "list"])
     assert "machine1" in output.out
-    flake_show = subprocess.run(
-        ["nix", "flake", "show", "--json"],
-        check=True,
-        capture_output=True,
-        text=True,
+    flake_show = run(
+        nix_flake_show(str(flake_dir)),
     )
     flake_outputs = json.loads(flake_show.stdout)
     try:
@@ -54,7 +55,7 @@ def test_create_flake(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_create_flake_existing_git(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
@@ -65,7 +66,7 @@ def test_create_flake_existing_git(
 
     run(["git", "init", str(temporary_home)])
 
-    cli.run(["flakes", "create", str(flake_dir), "--template=default"])
+    cli.run(["flakes", "create", str(flake_dir), "--template=default", "--no-update"])
 
     assert (flake_dir / ".clan-flake").exists()
     # Replace the inputs.clan.url in the template flake.nix
@@ -88,11 +89,8 @@ def test_create_flake_existing_git(
     with capture_output as output:
         cli.run(["machines", "list"])
     assert "machine1" in output.out
-    flake_show = subprocess.run(
-        ["nix", "flake", "show", "--json"],
-        check=True,
-        capture_output=True,
-        text=True,
+    flake_show = run(
+        nix_flake_show(str(flake_dir)),
     )
     flake_outputs = json.loads(flake_show.stdout)
     try:
@@ -101,15 +99,17 @@ def test_create_flake_existing_git(
         pytest.fail("nixosConfigurations.machine1 not found in flake outputs")
 
 
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_ui_template(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
+    test_flake_with_core: FlakeForTest,
     clan_core: Path,
     capture_output: CaptureOutput,
 ) -> None:
     flake_dir = temporary_home / "test-flake"
-    cli.run(["flakes", "create", str(flake_dir), "--template=minimal"])
+
+    cli.run(["flakes", "create", str(flake_dir), "--template=minimal", "--no-update"])
 
     # Replace the inputs.clan.url in the template flake.nix
     substitute(
@@ -118,16 +118,14 @@ def test_ui_template(
     )
 
     monkeypatch.chdir(flake_dir)
+
     cli.run(["machines", "create", "machine1"])
 
     with capture_output as output:
         cli.run(["machines", "list"])
     assert "machine1" in output.out
-    flake_show = subprocess.run(
-        ["nix", "flake", "show", "--json"],
-        check=True,
-        capture_output=True,
-        text=True,
+    flake_show = run(
+        nix_flake_show(str(flake_dir)),
     )
     flake_outputs = json.loads(flake_show.stdout)
     try:
