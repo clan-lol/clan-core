@@ -85,16 +85,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1736953253,
-        "narHash": "sha256-shJxzy7qypjq9hpETQ3gJsBZXO5E3KR0INca/xwiVp4=",
-        "owner": "pinpox",
+        "lastModified": 1742239755,
+        "narHash": "sha256-ptn8dR4Uat3UUadGYNnB7CIH9SQm8mK69D2A/twBUXQ=",
+        "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "a7c6e64401b6dde13c0de90230cb64087c9d9693",
+        "rev": "787afce414bcce803b605c510b60bf43c11f4b55",
         "type": "github"
       },
       "original": {
-        "owner": "pinpox",
-        "ref": "lazy-assertions",
+        "owner": "Mic92",
         "repo": "sops-nix",
         "type": "github"
       }
