@@ -98,7 +98,6 @@ export async function set_single_service<T extends keyof Services>(
     inventory.services = inventory.services || {};
     inventory.services[service_name] = inventory.services[service_name] || {};
 
-    // @ts-expect-error: This cannot be undefined, because of the line above
     inventory.services[service_name][instance_key] = service_config;
     console.log("saving inventory", inventory);
     return callApi("set_inventory", {
