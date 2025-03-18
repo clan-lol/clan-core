@@ -1,7 +1,6 @@
 import argparse
 import json
 import logging
-import os
 import sys
 from pathlib import Path
 
@@ -56,7 +55,7 @@ def remove_user(flake_dir: Path, name: str) -> None:
     # Remove the user from any group where it belonged:
     groups_dir = sops_groups_folder(flake_dir)
     if groups_dir.exists():
-        for group in os.listdir(groups_dir):
+        for group in groups_dir.iterdir():
             group_folder = groups_dir / group
             if not group_folder.is_dir():
                 continue
@@ -65,7 +64,7 @@ def remove_user(flake_dir: Path, name: str) -> None:
                 continue
             log.info(f"Removing user {name} from group {group}")
             updated_paths.extend(
-                groups.remove_member(flake_dir, group, groups.users_folder, name)
+                groups.remove_member(flake_dir, group.name, groups.users_folder, name)
             )
     # Remove the user's key:
     updated_paths.extend(remove_object(sops_users_folder(flake_dir), name))

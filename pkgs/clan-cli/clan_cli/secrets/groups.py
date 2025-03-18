@@ -53,23 +53,23 @@ def list_groups(flake_dir: Path) -> list[Group]:
     if not groups_dir.exists():
         return groups
 
-    for group in os.listdir(groups_dir):
+    for group in groups_dir.iterdir():
         group_folder = groups_dir / group
         if not group_folder.is_dir():
             continue
-        machines_path = machines_folder(flake_dir, group)
+        machines_path = machines_folder(flake_dir, group.name)
         machines = []
         if machines_path.is_dir():
             for f in machines_path.iterdir():
                 if validate_hostname(f.name):
                     machines.append(f.name)
-        users_path = users_folder(flake_dir, group)
+        users_path = users_folder(flake_dir, group.name)
         users = []
         if users_path.is_dir():
             for f in users_path.iterdir():
                 if VALID_USER_NAME.match(f.name):
                     users.append(f.name)
-        groups.append(Group(flake_dir, group, machines, users))
+        groups.append(Group(flake_dir, group.name, machines, users))
     return groups
 
 
@@ -146,10 +146,10 @@ def remove_member(
     target.unlink()
     updated_files = [target]
 
-    if len(os.listdir(group_folder)) == 0:
+    if next(group_folder.iterdir(), None) is None:
         group_folder.rmdir()
 
-    if len(os.listdir(group_folder.parent)) == 0:
+    if next(group_folder.parent.iterdir(), None) is None:
         group_folder.parent.rmdir()
 
     updated_files.extend(update_group_keys(flake_dir, group_name))

@@ -1,4 +1,3 @@
-import os
 import shutil
 from collections.abc import Callable
 from pathlib import Path
@@ -27,9 +26,9 @@ def list_objects(path: Path, is_valid: Callable[[str], bool]) -> list[str]:
     objs: list[str] = []
     if not path.exists():
         return objs
-    for f in os.listdir(path):
-        if is_valid(f):
-            objs.append(f)
+    for f in path.iterdir():
+        if is_valid(f.name):
+            objs.append(f.name)
     return objs
 
 
@@ -41,6 +40,6 @@ def remove_object(path: Path, name: str) -> list[Path]:
     except FileNotFoundError as e:
         msg = f"{name} not found in {path}"
         raise ClanError(msg) from e
-    if not os.listdir(path):
+    if not next(path.iterdir(), None):
         path.rmdir()
     return paths_to_commit

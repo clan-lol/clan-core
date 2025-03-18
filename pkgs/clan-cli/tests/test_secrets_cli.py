@@ -401,8 +401,8 @@ def test_groups(
         ),
     )
 
-    groups = os.listdir(test_flake.path / "sops" / "groups")
-    assert len(groups) == 0
+    first_group = next((test_flake.path / "sops" / "groups").iterdir(), None)
+    assert first_group is None
 
     # Check if the symlink to the group was removed from our foo test secret:
     group_symlink = test_flake.path / "sops/secrets/foo/groups/group1"
