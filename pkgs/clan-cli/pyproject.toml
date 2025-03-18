@@ -29,7 +29,7 @@ clan_cli = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "clan_cli"]
-faulthandler_timeout = 60
+faulthandler_timeout = 240
 log_level = "DEBUG"
 log_format = "%(message)s"
 addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --durations 5 --color=yes --new-first -W error -n auto" # Add --pdb for debugging
