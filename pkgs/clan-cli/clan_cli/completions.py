@@ -70,7 +70,7 @@ def complete_machines(
     if thread.is_alive():
         return iter([])
 
-    machines_dict = {name: "machine" for name in machines}
+    machines_dict = dict.fromkeys(machines, "machine")
     return machines_dict
 
 
@@ -113,7 +113,7 @@ def complete_services_for_machine(
     if thread.is_alive():
         return iter([])
 
-    services_dict = {name: "service" for name in services}
+    services_dict = dict.fromkeys(services, "service")
     return services_dict
 
 
@@ -155,7 +155,7 @@ def complete_backup_providers_for_machine(
     if thread.is_alive():
         return iter([])
 
-    providers_dict = {name: "provider" for name in providers}
+    providers_dict = dict.fromkeys(providers, "provider")
     return providers_dict
 
 
@@ -197,7 +197,7 @@ def complete_state_services_for_machine(
     if thread.is_alive():
         return iter([])
 
-    providers_dict = {name: "service" for name in providers}
+    providers_dict = dict.fromkeys(providers, "service")
     return providers_dict
 
 
@@ -219,7 +219,7 @@ def complete_secrets(
 
     secrets = list_secrets(options.flake.path, options.pattern)
 
-    secrets_dict = {name: "secret" for name in secrets}
+    secrets_dict = dict.fromkeys(secrets, "secret")
     return secrets_dict
 
 
@@ -237,7 +237,7 @@ def complete_users(
 
     users = list_users(Path(flake))
 
-    users_dict = {name: "user" for name in users}
+    users_dict = dict.fromkeys(users, "user")
     return users_dict
 
 
@@ -256,7 +256,7 @@ def complete_groups(
     groups_list = list_groups(Path(flake))
     groups = [group.name for group in groups_list]
 
-    groups_dict = {name: "group" for name in groups}
+    groups_dict = dict.fromkeys(groups, "group")
     return groups_dict
 
 
@@ -296,7 +296,7 @@ def complete_target_host(
     if thread.is_alive():
         return iter([])
 
-    providers_dict = {name: "target_host" for name in target_hosts}
+    providers_dict = dict.fromkeys(target_hosts, "target_host")
     return providers_dict
 
 
@@ -401,7 +401,7 @@ def complete_tags(
     if any(thread.is_alive() for thread in threads):
         return iter([])
 
-    providers_dict = {name: "tag" for name in tags}
+    providers_dict = dict.fromkeys(tags, "tag")
     return providers_dict
 
 

@@ -312,10 +312,10 @@ def disallow_member(group_folder: Path, name: str) -> list[Path]:
         raise ClanError(msg)
     target.unlink()
 
-    if len(os.listdir(group_folder)) == 0:
+    if next(group_folder.iterdir(), None) is None:
         group_folder.rmdir()
 
-    if len(os.listdir(group_folder.parent)) == 0:
+    if next(group_folder.parent.iterdir(), None) is None:
         group_folder.parent.rmdir()
 
     return update_keys(target.parent.parent, collect_keys_for_path(group_folder.parent))
