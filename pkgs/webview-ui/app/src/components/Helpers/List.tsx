@@ -2,7 +2,7 @@ import { type JSX } from "solid-js";
 
 type sizes = "small" | "medium" | "large";
 
-const gapSizes: { [size in sizes]: string } = {
+const gapSizes: Record<sizes, string> = {
   small: "gap-2",
   medium: "gap-4",
   large: "gap-6",
