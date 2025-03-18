@@ -21,7 +21,7 @@
     "autoprefixer": "^10.4.19",
     "classnames": "^2.5.1",
     "daisyui": "^4.11.1",
-    "eslint": "^8.57.0",
+    "eslint": "^9.0.0",
     "eslint-plugin-tailwindcss": "^3.17.0",
     "jsdom": "^26.0.0",
     "postcss": "^8.4.38",
