@@ -33,7 +33,7 @@
     "typescript-eslint": "^7.10.0",
     "vite": "^6.0.0",
     "vite-plugin-solid": "^2.8.2",
-    "vitest": "^1.6.0"
+    "vitest": "^3.0.0"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.6.8",
