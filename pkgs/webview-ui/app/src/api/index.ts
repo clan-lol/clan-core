@@ -34,9 +34,7 @@ export type ErrorQuery<T extends OperationNames> = Extract<
 >;
 export type ErrorData<T extends OperationNames> = ErrorQuery<T>["errors"];
 
-export type ClanOperations = {
-  [K in OperationNames]: (str: string) => void;
-};
+export type ClanOperations = Record<OperationNames, (str: string) => void>;
 
 export interface GtkResponse<T> {
   result: T;

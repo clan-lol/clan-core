@@ -86,7 +86,6 @@ export function useFloating<R extends ReferenceElement, F extends HTMLElement>(
     const currentReference = reference();
     const currentFloating = floating();
 
-    options?.middleware;
     placement();
     strategy();
 
