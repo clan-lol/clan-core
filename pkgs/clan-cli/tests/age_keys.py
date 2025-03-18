@@ -26,14 +26,7 @@ class SopsSetup:
         self.keys = keys
         self.user = os.environ.get("USER", "admin")
 
-    # louis@(2025-03-10): It is odd to have to call an init function on a
-    # fixture: the fixture should already be initialized when it is received in
-    # the test function. Maybe we can arrange for the `flake` fixtures, to take
-    # the `sops_setup` fixture as input and call its `init` function on the
-    # correct path.
-    def init(self, flake_path: Path | None = None) -> None:
-        if flake_path is None:
-            flake_path = Path.cwd()
+    def init(self, flake_path: Path) -> None:
         cli.run(
             [
                 "vars",

@@ -2,7 +2,6 @@ import json
 import logging
 import shutil
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import pytest
 from age_keys import SopsSetup
@@ -20,9 +19,6 @@ from clan_cli.vars.secret_modules import password_store, sops
 from clan_cli.vars.set import set_var
 from fixtures_flakes import ClanFlake
 from helpers import cli
-
-if TYPE_CHECKING:
-    from age_keys import KeyPair
 
 
 def test_dependencies_as_files(temp_dir: Path) -> None:
@@ -100,9 +96,10 @@ def test_required_generators() -> None:
 @pytest.mark.with_core
 def test_generate_public_and_secret_vars(
     monkeypatch: pytest.MonkeyPatch,
-    flake: ClanFlake,
-    sops_setup: SopsSetup,
+    flake_with_sops: ClanFlake,
 ) -> None:
+    flake = flake_with_sops
+
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
@@ -136,7 +133,6 @@ def test_generate_public_and_secret_vars(
 
     flake.refresh()
     monkeypatch.chdir(flake.path)
-    sops_setup.init()
 
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
     assert not check_vars(machine)
@@ -227,10 +223,11 @@ def test_generate_public_and_secret_vars(
 @pytest.mark.with_core
 def test_generate_secret_var_sops_with_default_group(
     monkeypatch: pytest.MonkeyPatch,
-    flake: ClanFlake,
+    flake_with_sops: ClanFlake,
     sops_setup: SopsSetup,
-    age_keys: list["KeyPair"],
 ) -> None:
+    flake = flake_with_sops
+
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     config["clan"]["core"]["sops"]["defaultGroups"] = ["my_group"]
@@ -248,7 +245,6 @@ def test_generate_secret_var_sops_with_default_group(
     )
     flake.refresh()
     monkeypatch.chdir(flake.path)
-    sops_setup.init()
     cli.run(["secrets", "groups", "add-user", "my_group", sops_setup.user])
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     in_repo_store = in_repo.FactStore(
@@ -268,7 +264,7 @@ def test_generate_secret_var_sops_with_default_group(
     )
 
     # add another user to the group and check if secret gets re-encrypted
-    pubkey_user2 = age_keys[1]
+    pubkey_user2 = sops_setup.keys[1]
     cli.run(
         [
             "secrets",
@@ -291,7 +287,7 @@ def test_generate_secret_var_sops_with_default_group(
     )
 
     # Rotate key of a user
-    pubkey_user3 = age_keys[2]
+    pubkey_user3 = sops_setup.keys[2]
     cli.run(
         [
             "secrets",
@@ -316,9 +312,10 @@ def test_generate_secret_var_sops_with_default_group(
 @pytest.mark.with_core
 def test_generated_shared_secret_sops(
     monkeypatch: pytest.MonkeyPatch,
-    flake: ClanFlake,
-    sops_setup: SopsSetup,
+    flake_with_sops: ClanFlake,
 ) -> None:
+    flake = flake_with_sops
+
     m1_config = flake.machines["machine1"]
     m1_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     shared_generator = m1_config["clan"]["core"]["vars"]["generators"][
@@ -334,7 +331,6 @@ def test_generated_shared_secret_sops(
     )
     flake.refresh()
     monkeypatch.chdir(flake.path)
-    sops_setup.init()
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
     machine2 = Machine(name="machine2", flake=Flake(str(flake.path)))
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
@@ -434,9 +430,10 @@ def test_generate_secret_var_password_store(
 @pytest.mark.with_core
 def test_generate_secret_for_multiple_machines(
     monkeypatch: pytest.MonkeyPatch,
-    flake: ClanFlake,
-    sops_setup: SopsSetup,
+    flake_with_sops: ClanFlake,
 ) -> None:
+    flake = flake_with_sops
+
     from clan_cli.nix import nix_config
 
     local_system = nix_config()["system"]
@@ -467,7 +464,6 @@ def test_generate_secret_for_multiple_machines(
     )
     flake.refresh()
     monkeypatch.chdir(flake.path)
-    sops_setup.init()
     cli.run(["vars", "generate", "--flake", str(flake.path)])
     # check if public vars have been created correctly
     in_repo_store1 = in_repo.FactStore(
@@ -506,9 +502,10 @@ def test_generate_secret_for_multiple_machines(
 @pytest.mark.with_core
 def test_prompt(
     monkeypatch: pytest.MonkeyPatch,
-    flake: ClanFlake,
-    sops_setup: SopsSetup,
+    flake_with_sops: ClanFlake,
 ) -> None:
+    flake = flake_with_sops
+
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
@@ -530,7 +527,6 @@ def test_prompt(
     )
     flake.refresh()
     monkeypatch.chdir(flake.path)
-    sops_setup.init()
     monkeypatch.setattr(
         "clan_cli.vars.prompt.MOCK_PROMPT_RESPONSE",
         iter(["line input", "my\nmultiline\ninput\n", "prompt_persist"]),
@@ -565,8 +561,7 @@ def test_prompt(
 @pytest.mark.with_core
 def test_multi_machine_shared_vars(
     monkeypatch: pytest.MonkeyPatch,
-    flake: ClanFlake,
-    sops_setup: SopsSetup,
+    flake_with_sops: ClanFlake,
 ) -> None:
     """
     Ensure that shared vars are regenerated only when they should, and also can be
@@ -576,6 +571,8 @@ def test_multi_machine_shared_vars(
         - make sure shared wars are not regenerated when a second machines is added
         - make sure vars can still be accessed by all machines, after they are regenerated
     """
+    flake = flake_with_sops
+
     machine1_config = flake.machines["machine1"]
     machine1_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     shared_generator = machine1_config["clan"]["core"]["vars"]["generators"][
@@ -591,7 +588,6 @@ def test_multi_machine_shared_vars(
     flake.machines["machine2"] = machine1_config
     flake.refresh()
     monkeypatch.chdir(flake.path)
-    sops_setup.init()
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
     machine2 = Machine(name="machine2", flake=Flake(str(flake.path)))
     sops_store_1 = sops.SecretStore(machine1)
@@ -680,10 +676,11 @@ def test_api_set_prompts(
 @pytest.mark.with_core
 def test_stdout_of_generate(
     monkeypatch: pytest.MonkeyPatch,
-    flake: ClanFlake,
-    sops_setup: SopsSetup,
+    flake_with_sops: ClanFlake,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
+    flake = flake_with_sops
+
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
@@ -696,7 +693,6 @@ def test_stdout_of_generate(
     my_secret_generator["script"] = "echo -n hello > $out/my_secret"
     flake.refresh()
     monkeypatch.chdir(flake.path)
-    sops_setup.init()
     from clan_cli.vars.generate import generate_vars_for_machine
 
     # with capture_output as output:
@@ -763,10 +759,11 @@ def test_stdout_of_generate(
 @pytest.mark.with_core
 def test_migration(
     monkeypatch: pytest.MonkeyPatch,
-    flake: ClanFlake,
-    sops_setup: SopsSetup,
+    flake_with_sops: ClanFlake,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
+    flake = flake_with_sops
+
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_service = config["clan"]["core"]["facts"]["services"]["my_service"]
@@ -792,7 +789,6 @@ def test_migration(
 
     flake.refresh()
     monkeypatch.chdir(flake.path)
-    sops_setup.init()
     cli.run(["facts", "generate", "--flake", str(flake.path), "my_machine"])
     with caplog.at_level(logging.INFO):
         cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
@@ -819,9 +815,10 @@ def test_migration(
 @pytest.mark.with_core
 def test_fails_when_files_are_left_from_other_backend(
     monkeypatch: pytest.MonkeyPatch,
-    flake: ClanFlake,
-    sops_setup: SopsSetup,
+    flake_with_sops: ClanFlake,
 ) -> None:
+    flake = flake_with_sops
+
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_secret_generator = config["clan"]["core"]["vars"]["generators"][
@@ -836,7 +833,6 @@ def test_fails_when_files_are_left_from_other_backend(
     my_value_generator["script"] = "echo hello > $out/my_value"
     flake.refresh()
     monkeypatch.chdir(flake.path)
-    sops_setup.init()
     for generator in ["my_secret_generator", "my_value_generator"]:
         generate_vars_for_machine(
             Machine(name="my_machine", flake=Flake(str(flake.path))),

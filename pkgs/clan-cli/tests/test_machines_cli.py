@@ -51,21 +51,14 @@ def test_machine_subcommands(
     assert "vm2" in output.out
 
 
-# louis(2025-03-09):
-#
-# The `with_core` mark is cargo-culted from
-# `test_generate_public_and_secret_vars` which
-# I used as a starting point:
 @pytest.mark.with_core
 def test_machine_delete(
     monkeypatch: pytest.MonkeyPatch,
-    flake: fixtures_flakes.ClanFlake,
+    flake_with_sops: fixtures_flakes.ClanFlake,
     sops_setup: SopsSetup,
 ) -> None:
-    # create the admin user and set its key:
-    sops_setup.init(flake.path)
+    flake = flake_with_sops
 
-    # admin_key, machine_key, machine2_key = age_keys
     admin_key, machine_key, machine2_key = sops_setup.keys
 
     # create a couple machines with their keys

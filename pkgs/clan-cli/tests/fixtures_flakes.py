@@ -9,6 +9,7 @@ from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any, NamedTuple
 
+import age_keys
 import pytest
 from clan_cli.dirs import TemplateType, clan_templates, nixpkgs_source
 from clan_cli.locked_open import locked_open
@@ -227,6 +228,15 @@ def flake(
     monkeypatch: pytest.MonkeyPatch,
 ) -> ClanFlake:
     return minimal_flake_template.copy(temporary_home, monkeypatch)
+
+
+@pytest.fixture
+def flake_with_sops(
+    flake: ClanFlake,
+    sops_setup: age_keys.SopsSetup,
+) -> ClanFlake:
+    sops_setup.init(flake.path)
+    return flake
 
 
 def create_flake(
