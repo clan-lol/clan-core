@@ -117,6 +117,11 @@
         pkgs.bubblewrap
       ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
+      # with nix 2.24 we get:
+      # vm-test-run-test-installation> client # error: sized: unexpected end-of-file
+      # vm-test-run-test-installation> client # error: unexpected end-of-file
+      # This seems to be fixed with nix 2.26
+      nixPackage = pkgs.nixVersions.nix_2_26;
     in
     {
       # On aarch64-linux, hangs on reboot with after installation:
@@ -135,6 +140,7 @@
             services.openssh.enable = true;
             virtualisation.diskImage = "./target.qcow2";
             virtualisation.useBootLoader = true;
+            nix.package = nixPackage;
 
             # virtualisation.fileSystems."/" = {
             #   device = "/dev/disk/by-label/this-is-not-real-and-will-never-be-used";
@@ -156,6 +162,7 @@
               virtualisation.rootDevice = "/dev/vdb";
               # both installer and target need to use the same diskImage
               virtualisation.diskImage = "./target.qcow2";
+              nix.package = nixPackage;
               nix.settings = {
                 substituters = lib.mkForce [ ];
                 hashed-mirrors = null;
@@ -174,6 +181,7 @@
             ] ++ self.packages.${pkgs.system}.clan-cli.runtimeDependencies;
             environment.etc."install-closure".source = "${closureInfo}/store-paths";
             virtualisation.memorySize = 2048;
+            nix.package = nixPackage;
             nix.settings = {
               substituters = lib.mkForce [ ];
               hashed-mirrors = null;
