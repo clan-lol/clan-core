@@ -366,13 +366,17 @@ def test_generate_secret_var_password_store(
 ) -> None:
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
-    config["clan"]["core"]["vars"]["settings"]["secretStore"] = "password-store"
-    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    clan_vars = config["clan"]["core"]["vars"]
+    clan_vars["settings"]["secretStore"] = "password-store"
+    # Create a second secret so that when we delete the first one,
+    # we still have the second one to test `delete_store`:
+    my_generator = clan_vars["generators"]["my_generator"]
     my_generator["files"]["my_secret"]["secret"] = True
     my_generator["script"] = "echo hello > $out/my_secret"
-    my_shared_generator = config["clan"]["core"]["vars"]["generators"][
-        "my_shared_generator"
-    ]
+    my_generator2 = clan_vars["generators"]["my_generator2"]
+    my_generator2["files"]["my_secret2"]["secret"] = True
+    my_generator2["script"] = "echo world > $out/my_secret2"
+    my_shared_generator = clan_vars["generators"]["my_shared_generator"]
     my_shared_generator["share"] = True
     my_shared_generator["files"]["my_shared_secret"]["secret"] = True
     my_shared_generator["script"] = "echo hello > $out/my_shared_secret"
@@ -384,7 +388,7 @@ def test_generate_secret_var_password_store(
 
     password_store_dir = flake.path / "pass"
     shutil.copytree(test_root / "data" / "password-store", password_store_dir)
-    monkeypatch.setenv("PASSWORD_STORE_DIR", str(flake.path / "pass"))
+    monkeypatch.setenv("PASSWORD_STORE_DIR", str(password_store_dir))
 
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
     assert not check_vars(machine)
@@ -408,6 +412,23 @@ def test_generate_secret_var_password_store(
     assert store.get(generator, "my_secret").decode() == "hello\n"
     vars_text = stringify_all_vars(machine)
     assert "my_generator/my_secret" in vars_text
+
+    my_generator = Generator("my_generator", share=False, files=[])
+    var_name = "my_secret"
+    store.delete(my_generator, var_name)
+    assert not store.exists(my_generator, var_name)
+
+    store.delete_store()
+    store.delete_store()  # check idempotency
+    my_generator2 = Generator("my_generator2", share=False, files=[])
+    var_name = "my_secret2"
+    assert not store.exists(my_generator2, var_name)
+
+    # The shared secret should still be there,
+    # not sure if we can delete those automatically:
+    my_shared_generator = Generator("my_shared_generator", share=True, files=[])
+    var_name = "my_shared_secret"
+    assert store.exists(my_shared_generator, var_name)
 
 
 @pytest.mark.with_core

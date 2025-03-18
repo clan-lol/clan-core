@@ -77,8 +77,12 @@ class SecretStore(StoreBase):
         return []
 
     def delete_store(self) -> Iterable[Path]:
-        machine_pass_dir = Path(self.entry_prefix) / "per-machine" / self.machine.name
-        pass_call = ["rm", "--force", "--recursive", str(machine_pass_dir)]
+        machine_dir = Path(self.entry_prefix) / "per-machine" / self.machine.name
+        if not (self._password_store_dir / machine_dir).exists():
+            # The directory may not exist if the machine
+            # has no vars, or they have been deleted already.
+            return []
+        pass_call = ["rm", "--force", "--recursive", str(machine_dir)]
         self._run_pass(*pass_call, options=RunOpts(check=True))
         return []
 
