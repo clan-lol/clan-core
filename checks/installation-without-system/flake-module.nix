@@ -141,11 +141,6 @@
             virtualisation.diskImage = "./target.qcow2";
             virtualisation.useBootLoader = true;
             nix.package = nixPackage;
-
-            # virtualisation.fileSystems."/" = {
-            #   device = "/dev/disk/by-label/this-is-not-real-and-will-never-be-used";
-            #   fsType = "ext4";
-            # };
           };
           nodes.installer =
             { modulesPath, ... }:
@@ -204,6 +199,9 @@
             client.succeed("cp -r ${../..} test-flake && chmod -R +w test-flake")
             client.fail("test -f test-flake/machines/test-install-machine-without-system/hardware-configuration.nix")
             client.fail("test -f test-flake/machines/test-install-machine-without-system/facter.json")
+            client.succeed("clan machines update-hardware-config --flake test-flake test-install-machine-without-system root@installer >&2")
+            client.succeed("test -f test-flake/machines/test-install-machine-without-system/facter.json")
+            client.succeed("rm test-flake/machines/test-install-machine-without-system/facter.json")
             client.succeed("clan machines install --debug --flake test-flake --yes test-install-machine-without-system --target-host root@installer --update-hardware-config nixos-facter >&2")
             try:
               installer.shutdown()
