@@ -185,7 +185,6 @@ pythonRuntime.pkgs.buildPythonApplication {
             chmod +w -R ./src
             cd ./src
 
-            export CLAN_CORE=${clan-core-path}
             export CLAN_CORE_PATH=${clan-core-path}
             export NIX_STATE_DIR=$TMPDIR/nix
             export IN_NIX_SANDBOX=1
