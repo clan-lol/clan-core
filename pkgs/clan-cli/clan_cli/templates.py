@@ -1,15 +1,12 @@
-import json
 import logging
-import shutil
-import stat
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, NewType, TypedDict
+from typing import Any, Literal, NewType, TypedDict, cast
 
 from clan_cli.cmd import run
-from clan_cli.errors import ClanError
+from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.flake import Flake
-from clan_cli.nix import nix_eval
 
 log = logging.getLogger(__name__)
 
@@ -35,18 +32,31 @@ ModuleName = NewType("ModuleName", str)
 
 class ClanModule(TypedDict):
     description: str
+
+
+class InternalClanModule(ClanModule):
     path: str
 
 
 class Template(TypedDict):
     description: str
+
+
+class TemplatePath(Template):
     path: str
 
 
+@dataclass
+class FoundTemplate:
+    input_variant: InputVariant
+    name: TemplateName
+    src: TemplatePath
+
+
 class TemplateTypeDict(TypedDict):
-    disko: dict[TemplateName, Template]  # Templates under "disko" type
-    clan: dict[TemplateName, Template]  # Templates under "clan" type
-    machine: dict[TemplateName, Template]  # Templates under "machine" type
+    disko: dict[TemplateName, TemplatePath]
+    clan: dict[TemplateName, TemplatePath]
+    machine: dict[TemplateName, TemplatePath]
 
 
 class ClanAttrset(TypedDict):
@@ -59,48 +69,86 @@ class ClanExports(TypedDict):
     self: ClanAttrset
 
 
+def apply_fallback_structure(attrset: dict[str, Any]) -> ClanAttrset:
+    """Ensure the attrset has all required fields with defaults when missing."""
+    # Deep copy not needed since we're constructing the dict from scratch
+    result: dict[str, Any] = {}
+
+    # Ensure templates field exists
+    if "templates" not in attrset:
+        result["templates"] = {"disko": {}, "clan": {}, "machine": {}}
+    else:
+        templates = attrset["templates"]
+        result["templates"] = {
+            "disko": templates.get("disko", {}),
+            "clan": templates.get("clan", {}),
+            "machine": templates.get("machine", {}),
+        }
+
+    # Ensure modules field exists
+    result["modules"] = attrset.get("modules", {})
+
+    return cast(ClanAttrset, result)
+
+
 def get_clan_nix_attrset(clan_dir: Flake | None = None) -> ClanExports:
+    """
+    Get the clan nix attrset from a flake, with fallback structure applied.
+    Path inside the attrsets have NOT YET been realized in the nix store.
+    """
     # Check if the clan directory is provided, otherwise use the environment variable
     if not clan_dir:
-        # TODO: Quickfix, templates dir seems to be missing in CLAN_CORE_PATH??
-        clan_core_path = "git+https://git.clan.lol/clan/clan-core"
-        # clan_core_path = os.environ.get("CLAN_CORE_PATH")
-        # if not clan_core_path:
-        #     msg = "Environment var CLAN_CORE_PATH is not set, this shouldn't happen"
-        #     raise ClanError(msg)
-
+        clan_core_path = os.environ.get("CLAN_CORE_PATH")
+        if not clan_core_path:
+            msg = "Environment var CLAN_CORE_PATH is not set, this shouldn't happen"
+            raise ClanError(msg)
         clan_dir = Flake(clan_core_path)
 
     log.debug(f"Evaluating flake {clan_dir} for Clan attrsets")
 
-    # Nix evaluation script to compute find inputs that have a "clan" attribute
-    eval_script = f"""
-        let
-            self = builtins.getFlake "{clan_dir}";
-            lib = self.inputs.nixpkgs.lib;
-            inputsWithClan = lib.mapAttrs (
-                _name: value: value.clan
-            ) (lib.filterAttrs(_name: value: value ? "clan") self.inputs);
-        in
-            {{ inputs = inputsWithClan; self = self.clan or {{}}; }}
-    """
+    raw_clan_exports: dict[str, Any] = {"self": {"clan": {}}, "inputs": {"clan": {}}}
 
-    cmd = nix_eval(
-        [
-            "--json",
-            "--impure",
-            "--expr",
-            eval_script,
-        ]
-    )
-    res = run(cmd).stdout
+    try:
+        raw_clan_exports["self"] = clan_dir.select("clan")
+    except ClanCmdError:
+        log.info("Current flake does not export the 'clan' attribute")
 
-    return json.loads(res)
+    # FIXME: flake.select destroys lazy evaluation
+    # this is why if one input has a template with a non existant path
+    # the whole evaluation will fail
+    try:
+        raw_clan_exports["inputs"] = clan_dir.select("inputs.*.{clan}")
+    except ClanCmdError as e:
+        msg = "Failed to evaluate flake inputs"
+        raise ClanError(msg) from e
+
+    inputs_with_fallback = {}
+    for input_name, attrset in raw_clan_exports["inputs"].items():
+        # FIXME: flake.select("inputs.*.{clan}") returns the wrong attrset
+        # depth when used with conditional fields
+        # this is why we have to do a attrset.get here
+        inputs_with_fallback[input_name] = apply_fallback_structure(
+            attrset.get("clan", {})
+        )
+
+    # Apply fallback structure to self
+    self_with_fallback = apply_fallback_structure(raw_clan_exports["self"])
+
+    # Construct the final result
+    clan_exports: ClanExports = {
+        "inputs": inputs_with_fallback,
+        "self": self_with_fallback,
+    }
+
+    return clan_exports
 
 
-# Dataclass to manage input prioritization for templates
 @dataclass
 class InputPrio:
+    """
+    Strategy for prioritizing inputs when searching for a template
+    """
+
     input_names: tuple[str, ...]  # Tuple of input names (ordered priority list)
     prioritize_self: bool = True  # Whether to prioritize "self" first
 
@@ -120,51 +168,9 @@ class InputPrio:
         return InputPrio(prioritize_self=True, input_names=input_names)
 
 
-@dataclass
-class FoundTemplate:
-    input_variant: InputVariant
-    name: TemplateName
-    src: Template
-
-
 def copy_from_nixstore(src: Path, dest: Path) -> None:
-    if src.is_symlink():
-        target = src.readlink()
-        src.symlink_to(target)
-        return
-
-    if src.is_file():
-        shutil.copy(src, dest)
-        dest.chmod(stat.S_IWRITE | stat.S_IREAD | stat.S_IRGRP)
-        return
-
-    # Walk through the source directory
-    for root, dirs, files in src.walk(on_error=log.error):
-        relative_path = Path(root).relative_to(src)
-        dest_dir = dest / relative_path
-
-        dest_dir.mkdir(exist_ok=True)
-        log.debug(f"Creating directory '{dest_dir}'")
-        # Set permissions for directories
-        dest_dir.chmod(
-            stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC | stat.S_IRGRP | stat.S_IXGRP
-        )
-
-        for d in dirs:
-            (dest_dir / d).mkdir()
-
-        for file_name in files:
-            src_file = Path(root) / file_name
-            dest_file = dest_dir / file_name
-
-            if src_file.is_symlink():
-                target = src_file.readlink()
-                dest_file.symlink_to(target)
-                log.debug(f"Created symlink '{dest_file}' -> '{target}'")
-            else:
-                # Copy the file
-                shutil.copy(src_file, dest_file)
-                dest_file.chmod(stat.S_IWRITE | stat.S_IREAD | stat.S_IRGRP)
+    run(["cp", "-r", "--reflink=auto", str(src), str(dest)])
+    run(["chmod", "-R", "u+w", str(dest)])
 
 
 @dataclass
@@ -176,33 +182,39 @@ class TemplateList:
 def list_templates(
     template_type: TemplateType, clan_dir: Flake | None = None
 ) -> TemplateList:
+    """
+    List all templates of a specific type from a flake, without a path attribute.
+    As these paths are not yet downloaded into the nix store, and thus cannot be used directly.
+    """
     clan_exports = get_clan_nix_attrset(clan_dir)
     result = TemplateList()
-    fallback: ClanAttrset = {
-        "templates": {"disko": {}, "clan": {}, "machine": {}},
-        "modules": {},
-    }
 
-    clan_templates = (
-        clan_exports["self"]
-        .get("templates", fallback["templates"])
-        .get(template_type, {})
-    )
-    result.self = clan_templates
-    for input_name, _attrset in clan_exports["inputs"].items():
-        clan_templates = (
-            clan_exports["inputs"]
-            .get(input_name, fallback)["templates"]
-            .get(template_type, {})
-        )
-        result.inputs[input_name] = {}
-        for template_name, template in clan_templates.items():
+    for template_name, template in clan_exports["self"]["templates"][
+        template_type
+    ].items():
+        result.self[template_name] = template
+
+    for input_name, attrset in clan_exports["inputs"].items():
+        for template_name, template in attrset["templates"][template_type].items():
+            if input_name not in result.inputs:
+                result.inputs[input_name] = {}
             result.inputs[input_name][template_name] = template
 
     return result
 
 
-# Function to retrieve a specific template from Clan exports
+def realize_nix_path(clan_dir: Flake, nix_path: str) -> None:
+    """
+    Downloads / realizes a nix path into the nix store
+    """
+
+    if Path(nix_path).exists():
+        return
+
+    flake = Flake(identifier=nix_path, inputs_from=clan_dir.identifier)
+    flake.prefetch()
+
+
 def get_template(
     template_name: TemplateName,
     template_type: TemplateType,
@@ -210,6 +222,19 @@ def get_template(
     input_prio: InputPrio | None = None,
     clan_dir: Flake | None = None,
 ) -> FoundTemplate:
+    """
+    Find a specific template by name and type within a flake and then ensures it is realized in the nix store.
+    """
+
+    if not clan_dir:
+        clan_core_path = os.environ.get("CLAN_CORE_PATH")
+        if not clan_core_path:
+            msg = "Environment var CLAN_CORE_PATH is not set, this shouldn't happen"
+            raise ClanError(msg)
+        clan_dir = Flake(clan_core_path)
+
+    log.info(f"Get template in {clan_dir}")
+
     log.info(f"Searching for template '{template_name}' of type '{template_type}'")
 
     # Set default priority strategy if none is provided
@@ -218,45 +243,49 @@ def get_template(
 
     # Helper function to search for a specific template within a dictionary of templates
     def find_template(
-        template_name: TemplateName, templates: dict[TemplateName, Template]
-    ) -> Template | None:
+        template_name: TemplateName, templates: dict[TemplateName, TemplatePath]
+    ) -> TemplatePath | None:
         if template_name in templates:
             return templates[template_name]
         return None
 
     # Initialize variables for the search results
-    template: Template | None = None
+    template: TemplatePath | None = None
     input_name: InputName | None = None
-    template_list = list_templates(template_type, clan_dir)
+    clan_exports = get_clan_nix_attrset(clan_dir)
 
     # Step 1: Check "self" first, if prioritize_self is enabled
     if input_prio.prioritize_self:
         log.info(f"Checking 'self' for template '{template_name}'")
-        template = find_template(template_name, template_list.self)
+        template = find_template(
+            template_name, clan_exports["self"]["templates"][template_type]
+        )
 
     # Step 2: Otherwise, check the external inputs if no match is found
     if not template and input_prio.input_names:
         log.info(f"Checking external inputs for template '{template_name}'")
         for input_name_str in input_prio.input_names:
             input_name = InputName(input_name_str)
-            log.debug(f"Checking input '{input_name}' for template '{template_name}'")
+            log.debug(f"Searching in '{input_name}' for template '{template_name}'")
+
+            if input_name not in clan_exports["inputs"]:
+                log.debug(f"Skipping input '{input_name}', not found in '{clan_dir}'")
+                continue
 
             template = find_template(
-                template_name, template_list.inputs.get(input_name, {})
+                template_name,
+                clan_exports["inputs"][input_name]["templates"][template_type],
             )
             if template:
                 log.debug(f"Found template '{template_name}' in input '{input_name}'")
-                break  # Stop searching once the template is found
+                break
 
     # Step 3: Raise an error if the template wasn't found
     if not template:
-        source = (
-            f"inputs.{input_name}.clan.templates.{template_type}"
-            if input_name  # Most recent "input_name"
-            else f"flake.clan.templates.{template_type}"
-        )
-        msg = f"Template '{template_name}' not in '{source}' in '{clan_dir}'"
+        msg = f"Template '{template_name}' could not be found in '{clan_dir}'"
         raise ClanError(msg)
+
+    realize_nix_path(clan_dir, template["path"])
 
     return FoundTemplate(
         input_variant=InputVariant(input_name), src=template, name=template_name

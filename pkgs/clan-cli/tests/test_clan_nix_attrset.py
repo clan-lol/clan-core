@@ -7,13 +7,16 @@ from typing import Any
 import pytest
 from clan_cli.cmd import run
 from clan_cli.flake import Flake
+from clan_cli.git import commit_file
 from clan_cli.locked_open import locked_open
 from clan_cli.nix import nix_command
 from clan_cli.templates import (
+    ClanExports,
     InputName,
     TemplateName,
     copy_from_nixstore,
     get_clan_nix_attrset,
+    get_template,
     list_templates,
 )
 from fixtures_flakes import FlakeForTest
@@ -25,18 +28,34 @@ def write_clan_attr(clan_attrset: dict[str, Any], flake: FlakeForTest) -> None:
     with locked_open(file, "w") as cfile:
         json.dump(clan_attrset, cfile, indent=2)
 
+    commit_file(file, flake.path, "Add clan attributes")
+
 
 # Common function to test clan nix attrset
 def nix_attr_tester(
-    test_flake: FlakeForTest,
+    test_flake_with_core: FlakeForTest,
     injected: dict[str, Any],
-    expected: dict[str, Any],
+    expected_self: dict[str, Any],
     test_number: int,
-) -> None:
-    write_clan_attr(injected, test_flake)
-    nix_attrset = get_clan_nix_attrset(Flake(str(test_flake.path)))
+) -> ClanExports:
+    write_clan_attr(injected, test_flake_with_core)
+    clan_dir = Flake(str(test_flake_with_core.path))
+    nix_attrset = get_clan_nix_attrset(clan_dir)
 
-    assert json.dumps(nix_attrset, indent=2) == json.dumps(expected, indent=2)
+    def recursive_sort(item: Any) -> Any:
+        if isinstance(item, dict):
+            return {k: recursive_sort(item[k]) for k in sorted(item)}
+        if isinstance(item, list):
+            return sorted(recursive_sort(elem) for elem in item)
+        return item
+
+    returned_sorted = recursive_sort(nix_attrset["self"])
+    expected_sorted = recursive_sort(expected_self["self"])
+
+    assert json.dumps(returned_sorted, indent=2) == json.dumps(
+        expected_sorted, indent=2
+    )
+    return nix_attrset
 
 
 @pytest.mark.impure
@@ -68,6 +87,7 @@ def test_clan_core_templates(
 ) -> None:
     clan_dir = Flake(str(test_flake_with_core.path))
     nix_attrset = get_clan_nix_attrset(clan_dir)
+
     clan_core_templates = nix_attrset["inputs"][InputName("clan-core")]["templates"][
         "clan"
     ]
@@ -75,15 +95,21 @@ def test_clan_core_templates(
 
     expected_templates = ["default", "flake-parts", "minimal", "minimal-flake-parts"]
     assert clan_core_template_keys == expected_templates
+
     vlist_temps = list_templates("clan", clan_dir)
     list_template_keys = list(vlist_temps.inputs[InputName("clan-core")].keys())
     assert list_template_keys == expected_templates
 
+    default_template = get_template(
+        TemplateName("default"),
+        "clan",
+        input_prio=None,
+        clan_dir=clan_dir,
+    )
+
     new_clan = temporary_home / "new_clan"
     copy_from_nixstore(
-        Path(
-            vlist_temps.inputs[InputName("clan-core")][TemplateName("default")]["path"]
-        ),
+        Path(default_template.src["path"]),
         new_clan,
     )
     assert (new_clan / "flake.nix").exists()
@@ -99,20 +125,27 @@ def test_clan_core_templates(
 
 
 # Test Case 1: Minimal input with empty templates
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_clan_get_nix_attrset_case_1(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, test_flake: FlakeForTest
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    test_flake_with_core: FlakeForTest,
 ) -> None:
     test_number = 1
-    injected = {"templates": {"clan": {}}}
-    expected = {"inputs": {}, "self": {"templates": {"clan": {}}}}
-    nix_attr_tester(test_flake, injected, expected, test_number)
+    injected = {"templates": {"disko": {}, "machine": {}}}
+    expected = {
+        "inputs": {},
+        "self": {"templates": {"disko": {}, "machine": {}, "clan": {}}, "modules": {}},
+    }
+    nix_attr_tester(test_flake_with_core, injected, expected, test_number)
 
 
 # Test Case 2: Input with one template under 'clan'
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_clan_get_nix_attrset_case_2(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, test_flake: FlakeForTest
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    test_flake_with_core: FlakeForTest,
 ) -> None:
     test_number = 2
     injected = {
@@ -134,17 +167,27 @@ def test_clan_get_nix_attrset_case_2(
                         "description": "An example clan template.",
                         "path": "/example/path",
                     }
-                }
-            }
+                },
+                "disko": {},
+                "machine": {},
+            },
+            "modules": {},
         },
     }
-    nix_attr_tester(test_flake, injected, expected, test_number)
+
+    nix_attrset = nix_attr_tester(test_flake_with_core, injected, expected, test_number)
+
+    assert "default" in list(
+        nix_attrset["inputs"][InputName("clan-core")]["templates"]["clan"].keys()
+    )
 
 
 # Test Case 3: Input with templates under multiple types
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_clan_get_nix_attrset_case_3(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, test_flake: FlakeForTest
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    test_flake_with_core: FlakeForTest,
 ) -> None:
     test_number = 3
     injected = {
@@ -191,16 +234,19 @@ def test_clan_get_nix_attrset_case_3(
                         "path": "/machine/path",
                     }
                 },
-            }
+            },
+            "modules": {},
         },
     }
-    nix_attr_tester(test_flake, injected, expected, test_number)
+    nix_attr_tester(test_flake_with_core, injected, expected, test_number)
 
 
 # Test Case 4: Input with modules only
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_clan_get_nix_attrset_case_4(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, test_flake: FlakeForTest
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    test_flake_with_core: FlakeForTest,
 ) -> None:
     test_number = 4
     injected = {
@@ -216,15 +262,18 @@ def test_clan_get_nix_attrset_case_4(
                 "module1": {"description": "First module", "path": "/module1/path"},
                 "module2": {"description": "Second module", "path": "/module2/path"},
             },
+            "templates": {"disko": {}, "machine": {}, "clan": {}},
         },
     }
-    nix_attr_tester(test_flake, injected, expected, test_number)
+    nix_attr_tester(test_flake_with_core, injected, expected, test_number)
 
 
 # Test Case 5: Input with both templates and modules
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_clan_get_nix_attrset_case_5(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, test_flake: FlakeForTest
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    test_flake_with_core: FlakeForTest,
 ) -> None:
     test_number = 5
     injected = {
@@ -252,19 +301,26 @@ def test_clan_get_nix_attrset_case_5(
                         "description": "A clan template.",
                         "path": "/clan/path",
                     }
-                }
+                },
+                "disko": {},
+                "machine": {},
             },
         },
     }
-    nix_attr_tester(test_flake, injected, expected, test_number)
+    nix_attr_tester(test_flake_with_core, injected, expected, test_number)
 
 
 # Test Case 6: Input with missing 'templates' and 'modules' (empty clan attrset)
-@pytest.mark.impure
+@pytest.mark.with_core
 def test_clan_get_nix_attrset_case_6(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path, test_flake: FlakeForTest
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
+    test_flake_with_core: FlakeForTest,
 ) -> None:
     test_number = 6
     injected = {}
-    expected = {"inputs": {}, "self": {}}
-    nix_attr_tester(test_flake, injected, expected, test_number)
+    expected = {
+        "inputs": {},
+        "self": {"templates": {"disko": {}, "machine": {}, "clan": {}}, "modules": {}},
+    }
+    nix_attr_tester(test_flake_with_core, injected, expected, test_number)

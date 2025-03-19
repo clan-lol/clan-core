@@ -7,7 +7,7 @@ from hashlib import sha1
 from pathlib import Path
 from typing import Any, cast
 
-from clan_cli.cmd import run
+from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.dirs import user_cache_dir
 from clan_cli.errors import ClanError
 from clan_cli.nix import (
@@ -261,9 +261,10 @@ class FlakeCacheEntry:
             return selectors == []
         if isinstance(selector, AllSelector):
             if isinstance(self.selector, AllSelector):
-                return all(
+                result = all(
                     self.value[sel].is_cached(selectors[1:]) for sel in self.value
                 )
+                return result
             # TODO: check if we already have all the keys anyway?
             return False
         if (
@@ -273,11 +274,19 @@ class FlakeCacheEntry:
         ):
             if not selector.issubset(self.selector):
                 return False
-            return all(self.value[sel].is_cached(selectors[1:]) for sel in selector)
+
+            result = all(
+                self.value[sel].is_cached(selectors[1:]) if sel in self.value else True
+                for sel in selector
+            )
+
+            return result
         if isinstance(selector, str | int) and isinstance(self.value, dict):
             if selector in self.value:
-                return self.value[selector].is_cached(selectors[1:])
+                result = self.value[selector].is_cached(selectors[1:])
+                return result
             return False
+
         return False
 
     def select(self, selectors: list[Selector]) -> Any:
@@ -318,6 +327,7 @@ class FlakeCacheEntry:
         return f"FlakeCache {self.value}"
 
 
+@dataclass
 class FlakeCache:
     """
     an in-memory cache for flake outputs, uses a recursive FLakeCacheEntry structure
@@ -350,6 +360,7 @@ class FlakeCache:
     def load_from_file(self, path: Path) -> None:
         if path.exists():
             with path.open("rb") as f:
+                log.debug(f"Loading cache from {path}")
                 self.cache = pickle.load(f)
 
 
@@ -361,11 +372,14 @@ class Flake:
     """
 
     identifier: str
-
-    def __post_init__(self) -> None:
-        self._cache: FlakeCache | None = None
-        self._path: Path | None = None
-        self._is_local: bool | None = None
+    inputs_from: str | None = None
+    hash: str | None = None
+    flake_cache_path: Path | None = None
+    store_path: str | None = None
+    cache: FlakeCache | None = None
+    _cache: FlakeCache | None = None
+    _path: Path | None = None
+    _is_local: bool | None = None
 
     @classmethod
     def from_json(cls: type["Flake"], data: dict[str, Any]) -> "Flake":
@@ -400,24 +414,26 @@ class Flake:
         """
         Run prefetch to flush the cache as well as initializing it.
         """
-        flake_prefetch = run(
-            nix_command(
-                [
-                    "flake",
-                    "prefetch",
-                    "--json",
-                    "--option",
-                    "flake-registry",
-                    "",
-                    self.identifier,
-                ]
-            )
-        )
+        cmd = [
+            "flake",
+            "prefetch",
+            "--json",
+            "--option",
+            "flake-registry",
+            "",
+            self.identifier,
+        ]
+
+        if self.inputs_from:
+            cmd += ["--inputs-from", self.inputs_from]
+
+        flake_prefetch = run(nix_command(cmd))
         flake_metadata = json.loads(flake_prefetch.stdout)
         self.store_path = flake_metadata["storePath"]
         self.hash = flake_metadata["hash"]
 
         self._cache = FlakeCache()
+        assert self.hash is not None
         hashed_hash = sha1(self.hash.encode()).hexdigest()
         self.flake_cache_path = Path(user_cache_dir()) / "clan" / "flakes" / hashed_hash
         if self.flake_cache_path.exists():
@@ -436,6 +452,7 @@ class Flake:
             self._path = Path(flake_metadata["original"]["path"])
         else:
             self._is_local = False
+            assert self.store_path is not None
             self._path = Path(self.store_path)
 
     def get_from_nix(
@@ -464,7 +481,9 @@ class Flake:
             nix_options.append("--impure")
 
         build_output = Path(
-            run(nix_build(["--expr", nix_code, *nix_options])).stdout.strip()
+            run(
+                nix_build(["--expr", nix_code, *nix_options]), RunOpts(log=Log.NONE)
+            ).stdout.strip()
         )
 
         if tmp_store:
@@ -473,6 +492,7 @@ class Flake:
         if len(outputs) != len(selectors):
             msg = f"flake_prepare_cache: Expected {len(outputs)} outputs, got {len(outputs)}"
             raise ClanError(msg)
+        assert self.flake_cache_path is not None
         self._cache.load_from_file(self.flake_cache_path)
         for i, selector in enumerate(selectors):
             self._cache.insert(outputs[i], selector)
@@ -486,8 +506,8 @@ class Flake:
         if self._cache is None:
             self.prefetch()
         assert self._cache is not None
+        assert self.flake_cache_path is not None
 
-        self._cache.load_from_file(self.flake_cache_path)
         if not self._cache.is_cached(selector):
             log.debug(f"Cache miss for {selector}")
             self.get_from_nix([selector], nix_options)

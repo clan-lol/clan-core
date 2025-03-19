@@ -1,6 +1,10 @@
+import logging
+
 import pytest
 from clan_cli.flake import Flake, FlakeCache, FlakeCacheEntry
 from fixtures_flakes import ClanFlake
+
+log = logging.getLogger(__name__)
 
 
 def test_select() -> None:
@@ -58,3 +62,27 @@ def test_cache_persistance(flake: ClanFlake) -> None:
     assert flake2._cache.is_cached(  # noqa: SLF001
         "nixosConfigurations.*.config.networking.{hostName,hostId}"
     )
+
+
+@pytest.mark.with_core
+def test_conditional_all_selector(flake: ClanFlake) -> None:
+    m1 = flake.machines["machine1"]
+    m1["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+    flake.refresh()
+
+    flake1 = Flake(str(flake.path))
+    flake2 = Flake(str(flake.path))
+    flake1.prefetch()
+    flake2.prefetch()
+    assert isinstance(flake1._cache, FlakeCache)  # noqa: SLF001
+    assert isinstance(flake2._cache, FlakeCache)  # noqa: SLF001
+    log.info("First select")
+    res1 = flake1.select("inputs.*.{clan,missing}")
+
+    log.info("Second (cached) select")
+    res2 = flake1.select("inputs.*.{clan,missing}")
+
+    assert res1 == res2
+    assert res1["clan-core"].get("clan") is not None
+
+    flake2.prefetch()

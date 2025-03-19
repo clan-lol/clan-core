@@ -5,7 +5,7 @@ from clan_cli.flake import Flake
 
 
 def select_command(args: argparse.Namespace) -> None:
-    flake = Flake(args.flake.path)
+    flake: Flake = args.flake
     print(json.dumps(flake.select(args.selector), indent=4))
 
 

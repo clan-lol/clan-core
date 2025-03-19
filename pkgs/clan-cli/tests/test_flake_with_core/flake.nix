@@ -7,8 +7,18 @@
   inputs.nixpkgs.url = "__NIXPKGS__";
 
   outputs =
-    { self, clan-core, ... }:
+    {
+      self,
+      clan-core,
+      nixpkgs,
+      ...
+    }:
     let
+      clan_attrs_json =
+        if nixpkgs.lib.pathExists ./clan_attrs.json then
+          builtins.fromJSON (builtins.readFile ./clan_attrs.json)
+        else
+          { };
       clan = clan-core.lib.buildClan {
         inherit self;
         meta.name = "test_flake_with_core";
@@ -48,6 +58,7 @@
       };
     in
     {
+      clan = clan_attrs_json;
       inherit (clan) nixosConfigurations clanInternals;
     };
 }
