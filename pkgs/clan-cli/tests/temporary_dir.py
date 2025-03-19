@@ -11,12 +11,13 @@ log = logging.getLogger(__name__)
 
 @pytest.fixture
 def temporary_home(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
-    with tempfile.TemporaryDirectory(prefix="pytest-home-") as dirpath:
+    with tempfile.TemporaryDirectory(prefix="pytest-home-") as _dirpath:
+        dirpath = Path(_dirpath).resolve()
         xdg_runtime_dir = os.getenv("XDG_RUNTIME_DIR")
         monkeypatch.setenv("HOME", str(dirpath))
-        monkeypatch.setenv("XDG_CONFIG_HOME", str(Path(dirpath) / ".config"))
+        monkeypatch.setenv("XDG_CONFIG_HOME", str(dirpath / ".config"))
 
-        runtime_dir = Path(dirpath) / "xdg-runtime-dir"
+        runtime_dir = dirpath / "xdg-runtime-dir"
         runtime_dir.mkdir()
         runtime_dir.chmod(0o700)
 
@@ -34,10 +35,10 @@ def temporary_home(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
 
         monkeypatch.setenv("XDG_RUNTIME_DIR", str(runtime_dir))
         monkeypatch.chdir(str(dirpath))
-        yield Path(dirpath)
+        yield dirpath
 
 
 @pytest.fixture
 def temp_dir() -> Iterator[Path]:
-    with tempfile.TemporaryDirectory(prefix="pytest-") as dirpath:
-        yield Path(dirpath)
+    with tempfile.TemporaryDirectory(prefix="pytest-") as _dirpath:
+        yield Path(_dirpath).resolve()

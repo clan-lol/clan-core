@@ -19,8 +19,8 @@ def upload_secrets(machine: Machine) -> None:
         machine.info("Secrets already uploaded")
         return
 
-    with TemporaryDirectory(prefix="facts-upload-") as tempdir:
-        local_secret_dir = Path(tempdir)
+    with TemporaryDirectory(prefix="facts-upload-") as _tempdir:
+        local_secret_dir = Path(_tempdir).resolve()
         secret_facts_store.upload(local_secret_dir)
         remote_secret_dir = Path(machine.secrets_upload_directory)
 

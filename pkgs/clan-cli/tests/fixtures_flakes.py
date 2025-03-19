@@ -209,12 +209,13 @@ class ClanFlake:
 @pytest.fixture(scope="session")
 def minimal_flake_template() -> Iterator[ClanFlake]:
     with (
-        tempfile.TemporaryDirectory(prefix="flake-") as home,
+        tempfile.TemporaryDirectory(prefix="flake-") as _home,
         pytest.MonkeyPatch.context() as mp,
     ):
-        mp.setenv("HOME", home)
+        home = Path(_home).resolve()
+        mp.setenv("HOME", str(home))
         flake = ClanFlake(
-            temporary_home=Path(home),
+            temporary_home=home,
             flake_template=clan_templates(TemplateType.CLAN) / "minimal",
         )
         flake.init_from_template()
@@ -248,7 +249,6 @@ def create_flake(
     machines: list[str] | None = None,
     # alternatively specify the machines directly including their config
     machine_configs: dict[str, dict] | None = None,
-    remote: bool = False,
 ) -> Iterator[FlakeForTest]:
     """
     Creates a flake with the given name and machines.
@@ -313,11 +313,7 @@ def create_flake(
 
     init_git(monkeypatch, flake)
 
-    if remote:
-        with tempfile.TemporaryDirectory(prefix="flake-"):
-            yield FlakeForTest(flake)
-    else:
-        yield FlakeForTest(flake)
+    yield FlakeForTest(flake)
 
 
 @pytest.fixture

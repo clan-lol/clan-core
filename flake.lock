@@ -58,9 +58,9 @@
     "nixpkgs": {
       "locked": {
         "lastModified": 315532800,
-        "narHash": "sha256-bV4oQApFGvOYLu8OBEeAkIIGe+/20WC9ObDuAqfGzkI=",
+        "narHash": "sha256-+BzPdWVevbkSpM12Hxc0pvl5bK4QVqBj/Aksrkgduq4=",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.05pre769684.9bc8a9093126/nixexprs.tar.xz"
+        "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.05pre769919.354953266373/nixexprs.tar.xz"
       },
       "original": {
         "type": "tarball",

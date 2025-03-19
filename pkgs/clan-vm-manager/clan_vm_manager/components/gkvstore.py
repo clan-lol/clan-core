@@ -18,7 +18,11 @@ V = TypeVar(
 )  # Value type, bound to GObject.GObject or its subclasses
 
 
-class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):
+# GObject and Gio.ListModel are not compatible with mypy, so we need to ignore the errors
+# clan_vm_manager/components/gkvstore.py:21: error: Definition of "newv" in base class "Object" is incompatible with definition in base class "GInterface"  [misc]
+# clan_vm_manager/components/gkvstore.py:21: error: Definition of "install_properties" in base class "Object" is incompatible with definition in base class "GInterface"  [misc]
+# clan_vm_manager/components/gkvstore.py:21: error: Definition of "getv" in base class "Object" is incompatible with definition in base class "GInterface"  [misc]
+class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):  # type: ignore[misc]
     """
     A simple key-value store that implements the Gio.ListModel interface, with generic types for keys and values.
     Only use self[key] and del self[key] for accessing the items for better performance.

@@ -76,16 +76,20 @@ exec {bash} -l "${{@}}"
         login_shell.chmod(0o755)
 
         lib_path = None
-        assert platform == "linux", (
-            f"we do not support the ld_preload trick on non-linux just now. Got {platform}"
-        )
+
+        extension = ".so"
+        if platform == "darwin":
+            extension = ".dylib"
+        link_lib_flag = "-shared"
+        if platform == "darwin":
+            link_lib_flag = "-dynamiclib"
 
         # This enforces a login shell by overriding the login shell of `getpwnam(3)`
-        lib_path = tmpdir / "libgetpwnam-preload.so"
+        lib_path = tmpdir / f"libgetpwnam-preload.${extension}"
         subprocess.run(
             [
                 os.environ.get("CC", "cc"),
-                "-shared",
+                link_lib_flag,
                 "-o",
                 lib_path,
                 str(test_root / "getpwnam-preload.c"),
@@ -109,8 +113,12 @@ def sshd(
     sshd = shutil.which("sshd")
     assert sshd is not None, "no sshd binary found"
     env = {}
+    preload_env_name = "LD_PRELOAD"
+    if platform == "darwin":
+        preload_env_name = "DYLD_INSERT_LIBRARIES"
+
     env = {
-        "LD_PRELOAD": str(sshd_config.preload_lib),
+        preload_env_name: str(sshd_config.preload_lib),
         "LOGIN_SHELL": str(sshd_config.login_shell),
     }
     proc = command.run(

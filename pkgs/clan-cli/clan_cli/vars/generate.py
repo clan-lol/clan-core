@@ -181,8 +181,8 @@ def execute_generator(
             raise ClanError(msg) from e
 
     env = os.environ.copy()
-    with TemporaryDirectory(prefix="vars-") as tmp:
-        tmpdir = Path(tmp)
+    with TemporaryDirectory(prefix="vars-") as _tmpdir:
+        tmpdir = Path(_tmpdir).resolve()
         tmpdir_in = tmpdir / "in"
         tmpdir_prompts = tmpdir / "prompts"
         tmpdir_out = tmpdir / "out"

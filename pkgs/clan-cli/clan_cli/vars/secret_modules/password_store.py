@@ -231,8 +231,8 @@ class SecretStore(StoreBase):
         if not self.needs_upload():
             log.info("Secrets already uploaded")
             return
-        with TemporaryDirectory(prefix="vars-upload-") as tempdir:
-            pass_dir = Path(tempdir)
+        with TemporaryDirectory(prefix="vars-upload-") as _tempdir:
+            pass_dir = Path(_tempdir).resolve()
             self.populate_dir(pass_dir, phases)
             upload_dir = Path(
                 self.machine.deployment["password-store"]["secretLocation"]

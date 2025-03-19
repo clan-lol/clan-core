@@ -56,8 +56,8 @@ def morph_machine(
     ).stdout.rstrip()
     archive_path = json.loads(archive_json)["path"]
 
-    with TemporaryDirectory(prefix="morph-") as temp_dir:
-        flakedir = Path(temp_dir) / "flake"
+    with TemporaryDirectory(prefix="morph-") as _temp_dir:
+        flakedir = Path(_temp_dir).resolve() / "flake"
 
         flakedir.mkdir(parents=True, exist_ok=True)
         run(["cp", "-r", archive_path + "/.", str(flakedir)])

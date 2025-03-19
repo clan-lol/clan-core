@@ -1,5 +1,4 @@
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import pytest
 from clan_cli.clan_uri import ClanURI
@@ -36,14 +35,13 @@ def test_firefox_strip_uri() -> None:
     assert uri.get_url() == "git+https://git.clan.lol/clan/democlan.git"
 
 
-def test_local_uri() -> None:
-    with TemporaryDirectory(prefix="clan_test") as tempdir:
-        flake_nix = Path(tempdir) / "flake.nix"
-        flake_nix.write_text("outputs = _: {}")
+def test_local_uri(temp_dir: Path) -> None:
+    flake_nix = temp_dir / "flake.nix"
+    flake_nix.write_text("outputs = _: {}")
 
-        # Create a ClanURI object from a local URI
-        uri = ClanURI.from_str(f"clan://file://{tempdir}")
-        assert uri.flake.path == Path(tempdir)
+    # Create a ClanURI object from a local URI
+    uri = ClanURI.from_str(f"clan://file://{temp_dir}")
+    assert uri.flake.path == temp_dir
 
 
 def test_is_remote() -> None:
@@ -79,25 +77,23 @@ def test_from_str_remote() -> None:
     assert uri.flake.identifier == "https://example.com"
 
 
-def test_from_str_local() -> None:
-    with TemporaryDirectory(prefix="clan_test") as tempdir:
-        flake_nix = Path(tempdir) / "flake.nix"
-        flake_nix.write_text("outputs = _: {}")
+def test_from_str_local(temp_dir: Path) -> None:
+    flake_nix = temp_dir / "flake.nix"
+    flake_nix.write_text("outputs = _: {}")
 
-        uri = ClanURI.from_str(url=tempdir, machine_name="myVM")
-        assert uri.get_url().endswith(tempdir)
-        assert uri.machine_name == "myVM"
-        assert uri.flake.is_local
-        assert str(uri.flake).endswith(tempdir)  # type: ignore
+    uri = ClanURI.from_str(url=str(temp_dir), machine_name="myVM")
+    assert uri.get_url().endswith(str(temp_dir))
+    assert uri.machine_name == "myVM"
+    assert uri.flake.is_local
+    assert str(uri.flake).endswith(str(temp_dir))
 
 
-def test_from_str_local_no_machine() -> None:
-    with TemporaryDirectory(prefix="clan_test") as tempdir:
-        flake_nix = Path(tempdir) / "flake.nix"
-        flake_nix.write_text("outputs = _: {}")
+def test_from_str_local_no_machine(temp_dir: Path) -> None:
+    flake_nix = temp_dir / "flake.nix"
+    flake_nix.write_text("outputs = _: {}")
 
-        uri = ClanURI.from_str(tempdir)
-        assert uri.get_url().endswith(tempdir)
-        assert uri.machine_name == "defaultVM"
-        assert uri.flake.is_local
-        assert str(uri.flake).endswith(tempdir)  # type: ignore
+    uri = ClanURI.from_str(str(temp_dir))
+    assert uri.get_url().endswith(str(temp_dir))
+    assert uri.machine_name == "defaultVM"
+    assert uri.flake.is_local
+    assert str(uri.flake).endswith(str(temp_dir))
