@@ -1,4 +1,5 @@
 import shutil
+from collections.abc import Iterable
 from pathlib import Path
 
 from clan_cli.dirs import vm_state_dir
@@ -38,6 +39,21 @@ class SecretStore(StoreBase):
     def get(self, generator: Generator, name: str) -> bytes:
         secret_file = self.dir / generator.name / name
         return secret_file.read_bytes()
+
+    def delete(self, generator: Generator, name: str) -> Iterable[Path]:
+        secret_dir = self.dir / generator.name
+        secret_file = secret_dir / name
+        secret_file.unlink()
+        empty = None
+        if next(secret_dir.iterdir(), empty) is empty:
+            secret_dir.rmdir()
+        return [secret_file]
+
+    def delete_store(self) -> Iterable[Path]:
+        if not self.dir.exists():
+            return []
+        shutil.rmtree(self.dir)
+        return [self.dir]
 
     def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
         if output_dir.exists():

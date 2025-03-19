@@ -431,7 +431,7 @@ def delete_by_path(d: dict[str, Any], path: str) -> Any:
     """
     if not path:
         msg = "Cannot delete. Path is empty."
-        raise ClanError(msg)
+        raise KeyError(msg)
 
     keys = path.split(".")
     current = d
@@ -439,17 +439,17 @@ def delete_by_path(d: dict[str, Any], path: str) -> Any:
     # Navigate to the parent dictionary of the final key
     for key in keys[:-1]:
         if key not in current or not isinstance(current[key], dict):
-            msg = f"Cannot delete. Key '{path}' not found or not a dictionary '{d}'."
-            raise ClanError(msg)
+            msg = f"Cannot delete. Key '{path}' not found or not a dictionary '{d}'"
+            raise KeyError(msg)
         current = current[key]
 
     # Attempt to pop the final key
     last_key = keys[-1]
     try:
         value = current.pop(last_key)
-    except KeyError:
-        msg = f"Cannot delete. Path '{path}' not found in data '{d}'. "
-        raise ClanError(msg) from KeyError
+    except KeyError as exc:
+        msg = f"Cannot delete. Path '{path}' not found in data '{d}'"
+        raise KeyError(msg) from exc
     else:
         return {last_key: value}
 

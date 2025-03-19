@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -121,6 +122,29 @@ class StoreBase(ABC):
                     f"Var {generator.name}/{var.name} remains unchanged: {old_val_str}"
                 )
         return new_file
+
+    @abstractmethod
+    def delete(self, generator: "Generator", name: str) -> Iterable[Path]:
+        """Remove a var from the store.
+
+        :return: An iterable of affected paths in the git repository. This
+          may be empty if the store is outside of the repository.
+        """
+
+    @abstractmethod
+    def delete_store(self) -> Iterable[Path]:
+        """Delete the store (all vars) for this machine.
+
+        .. note::
+
+           This does not make the distinction between public and private vars.
+           Since the public and private store of a machine can be co-located
+           under the same directory, this method's implementation has to be
+           idempotent.
+
+        :return: An iterable of affected paths in the git repository. This
+          may be empty if the store was outside of the repository.
+        """
 
     def get_validation(self, generator: "Generator") -> str | None:
         """

@@ -557,7 +557,7 @@ def test_delete_top_level() -> None:
 def test_delete_key_not_found() -> None:
     data = {"foo": {"bar": 1}}
     # Trying to delete a non-existing key "foo.baz"
-    with pytest.raises(ClanError) as excinfo:
+    with pytest.raises(KeyError) as excinfo:
         delete_by_path(data, "foo.baz")
     assert "Cannot delete. Path 'foo.baz'" in str(excinfo.value)
     # Data should remain unchanged
@@ -567,7 +567,7 @@ def test_delete_key_not_found() -> None:
 def test_delete_intermediate_not_dict() -> None:
     data = {"foo": "not a dict"}
     # Trying to go deeper into a non-dict value
-    with pytest.raises(ClanError) as excinfo:
+    with pytest.raises(KeyError) as excinfo:
         delete_by_path(data, "foo.bar")
     assert "not found or not a dictionary" in str(excinfo.value)
     # Data should remain unchanged
@@ -577,7 +577,7 @@ def test_delete_intermediate_not_dict() -> None:
 def test_delete_empty_path() -> None:
     data = {"foo": {"bar": 1}}
     # Attempting to delete with an empty path
-    with pytest.raises(ClanError) as excinfo:
+    with pytest.raises(KeyError) as excinfo:
         delete_by_path(data, "")
     # Depending on how you handle empty paths, you might raise an error or handle it differently.
     # If you do raise an error, check the message.
@@ -588,7 +588,7 @@ def test_delete_empty_path() -> None:
 def test_delete_non_existent_path_deep() -> None:
     data = {"foo": {"bar": {"baz": 123}}}
     # non-existent deep path
-    with pytest.raises(ClanError) as excinfo:
+    with pytest.raises(KeyError) as excinfo:
         delete_by_path(data, "foo.bar.qux")
     assert "not found" in str(excinfo.value)
     # Data remains unchanged
