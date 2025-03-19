@@ -16,6 +16,7 @@ from clan_cli.locked_open import locked_open
 from clan_cli.nix import nix_test_store
 from fixture_error import FixtureError
 from root import CLAN_CORE
+from temporary_dir import TEMPDIR
 
 log = logging.getLogger(__name__)
 
@@ -209,13 +210,13 @@ class ClanFlake:
 @pytest.fixture(scope="session")
 def minimal_flake_template() -> Iterator[ClanFlake]:
     with (
-        tempfile.TemporaryDirectory(prefix="flake-") as _home,
+        tempfile.TemporaryDirectory(prefix="minimal-flake-", dir=TEMPDIR) as _dirpath,
         pytest.MonkeyPatch.context() as mp,
     ):
-        home = Path(_home).resolve()
-        mp.setenv("HOME", str(home))
+        temporary_home = Path(_dirpath).resolve()
+        mp.setenv("HOME", str(temporary_home))
         flake = ClanFlake(
-            temporary_home=home,
+            temporary_home=temporary_home,
             flake_template=clan_templates(TemplateType.CLAN) / "minimal",
         )
         flake.init_from_template()
