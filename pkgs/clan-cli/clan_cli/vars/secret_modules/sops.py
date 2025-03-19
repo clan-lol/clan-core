@@ -224,8 +224,8 @@ class SecretStore(StoreBase):
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)
-        with TemporaryDirectory(prefix="sops-upload-") as tempdir:
-            sops_upload_dir = Path(tempdir)
+        with TemporaryDirectory(prefix="sops-upload-") as _tempdir:
+            sops_upload_dir = Path(_tempdir).resolve()
             self.populate_dir(sops_upload_dir, phases)
             upload(self.machine.target_host, sops_upload_dir, Path("/var/lib/sops-nix"))
 

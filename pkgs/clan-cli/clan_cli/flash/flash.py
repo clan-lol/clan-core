@@ -100,8 +100,8 @@ def flash_machine(
         secret_facts_store: SecretStoreBase = secret_facts_module.SecretStore(
             machine=machine
         )
-        with TemporaryDirectory(prefix="disko-install-") as tmpdir_:
-            tmpdir = Path(tmpdir_)
+        with TemporaryDirectory(prefix="disko-install-") as _tmpdir:
+            tmpdir = Path(_tmpdir)
             upload_dir = machine.secrets_upload_directory
 
             if upload_dir.startswith("/"):

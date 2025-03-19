@@ -202,8 +202,8 @@ def generate_facts(
     prompt: Callable[[str, str], str] = prompt_func,
 ) -> bool:
     was_regenerated = False
-    with TemporaryDirectory(prefix="facts-generate-") as tmp:
-        tmpdir = Path(tmp)
+    with TemporaryDirectory(prefix="facts-generate-") as _tmpdir:
+        tmpdir = Path(_tmpdir).resolve()
 
         for machine in machines:
             errors = 0

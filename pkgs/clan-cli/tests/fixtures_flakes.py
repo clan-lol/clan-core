@@ -209,12 +209,13 @@ class ClanFlake:
 @pytest.fixture(scope="session")
 def minimal_flake_template() -> Iterator[ClanFlake]:
     with (
-        tempfile.TemporaryDirectory(prefix="flake-") as home,
+        tempfile.TemporaryDirectory(prefix="flake-") as _home,
         pytest.MonkeyPatch.context() as mp,
     ):
-        mp.setenv("HOME", home)
+        home = Path(_home).resolve()
+        mp.setenv("HOME", str(home))
         flake = ClanFlake(
-            temporary_home=Path(home),
+            temporary_home=home,
             flake_template=clan_templates(TemplateType.CLAN) / "minimal",
         )
         flake.init_from_template()

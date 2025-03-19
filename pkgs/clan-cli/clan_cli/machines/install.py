@@ -61,8 +61,9 @@ def install_machine(opts: InstallOptions) -> None:
     generate_facts([machine])
     generate_vars([machine])
 
-    with TemporaryDirectory(prefix="nixos-install-") as base_directory:
-        activation_secrets = Path(base_directory) / "activation_secrets"
+    with TemporaryDirectory(prefix="nixos-install-") as _base_directory:
+        base_directory = Path(_base_directory).resolve()
+        activation_secrets = base_directory / "activation_secrets"
         upload_dir = activation_secrets / machine.secrets_upload_directory.lstrip("/")
         upload_dir.mkdir(parents=True)
         machine.secret_facts_store.upload(upload_dir)
@@ -70,7 +71,7 @@ def install_machine(opts: InstallOptions) -> None:
             upload_dir, phases=["activation", "users", "services"]
         )
 
-        partitioning_secrets = Path(base_directory) / "partitioning_secrets"
+        partitioning_secrets = base_directory / "partitioning_secrets"
         partitioning_secrets.mkdir(parents=True)
         machine.secret_vars_store.populate_dir(
             partitioning_secrets, phases=["partitioning"]
