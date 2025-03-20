@@ -6,7 +6,8 @@
         description = ''
           The target SSH node for deployment.
 
-          By default, the node's attribute name will be used.
+          By default, the node's fully quantified domain name or hostname will be used.
+
           If set to null, only local deployment will be supported.
 
           format: user@host:port?SSH_OPTION=SSH_VALUE[&SSH_OPTION_2=VALUE_2]
@@ -15,7 +16,8 @@
             - user@machine2.example.com
             - root@example.com:2222?IdentityFile=/path/to/private/key&StrictHostKeyChecking=yes
         '';
-        default = null;
+        default = "root@${config.networking.fqdnOrHostName}";
+        defaultText = "root@\${config.networking.fqdnOrHostName}";
         type = lib.types.nullOr lib.types.str;
       };
       buildHost = lib.mkOption {
