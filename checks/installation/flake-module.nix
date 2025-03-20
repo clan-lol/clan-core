@@ -99,11 +99,16 @@
       ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
 
-      # with nix 2.24 we get:
+      # with Nix 2.24 we get:
       # vm-test-run-test-installation> client # error: sized: unexpected end-of-file
       # vm-test-run-test-installation> client # error: unexpected end-of-file
-      # This seems to be fixed with nix 2.26
-      nixPackage = pkgs.nixVersions.nix_2_26;
+      # This seems to be fixed with Nix 2.26
+      # Remove this line once `pkgs.nix` is 2.26+
+      nixPackage =
+        assert
+          lib.versionOlder pkgs.nix.version "2.26"
+          && lib.versionAtLeast pkgs.nixVersions.latest.version "2.26";
+        pkgs.nixVersions.latest;
     in
     {
       # On aarch64-linux, hangs on reboot with after installation:
