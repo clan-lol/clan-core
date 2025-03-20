@@ -37,6 +37,7 @@ in
           type = "rsa";
         };
     };
+
     clan.core.vars.generators.openssh = {
       files."ssh.id_ed25519" = { };
       files."ssh.id_ed25519.pub".secret = false;
@@ -48,6 +49,14 @@ in
       script = ''
         ssh-keygen -t ed25519 -N "" -f $out/ssh.id_ed25519
       '';
+    };
+
+    programs.ssh.knownHosts.clan-sshd-self-ed25519 = {
+      hostNames = [
+        "localhost"
+        config.networking.hostName
+      ] ++ (lib.optional (config.networking.domain != null) cfg.fqdn);
+      publicKey = config.clan.core.vars.generators.openssh.files."ssh.id_ed25519.pub".value;
     };
 
     clan.core.vars.generators.openssh-rsa = lib.mkIf config.clan.sshd.hostKeys.rsa.enable {
