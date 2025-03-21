@@ -86,3 +86,41 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
     assert res1["clan-core"].get("clan") is not None
 
     flake2.prefetch()
+
+
+# This test fails because the CI sandbox does not have the required packages to run the generators
+# maybe @DavHau or @Qubasa can fix this at some point :)
+# @pytest.mark.with_core
+# def test_cache_invalidation(flake: ClanFlake, sops_setup: SopsSetup) -> None:
+#     m1 = flake.machines["machine1"]
+#     m1["nixpkgs"]["hostPlatform"] = "x86_64-linux"
+#     flake.refresh()
+#     clan_dir = Flake(str(flake.path))
+#     machine1 = Machine(
+#         name="machine1",
+#         flake=clan_dir,
+#     )
+#     sops_setup.init(flake.path)
+#     generate_vars([machine1])
+#
+#     flake.inventory["services"] = {
+#         "sshd": {
+#             "someid": {
+#                 "roles": {
+#                     "server": {
+#                         "machines": ["machine1"],
+#                     }
+#                 }
+#             }
+#         }
+#     }
+#     flake.refresh()
+#     machine1.flush_caches()  # because flake.refresh() does not invalidate the cache but it writes into the directory
+#
+#     generate_vars([machine1])
+#     vpn_ip = (
+#         get_var(str(clan_dir), machine1.name, "openssh/ssh.id_ed25519")
+#         .value.decode()
+#         .strip("\n")
+#     )
+#     assert vpn_ip is not None
