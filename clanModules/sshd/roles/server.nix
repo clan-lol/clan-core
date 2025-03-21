@@ -55,7 +55,7 @@ in
       hostNames = [
         "localhost"
         config.networking.hostName
-      ] ++ (lib.optional (config.networking.domain != null) cfg.fqdn);
+      ] ++ (lib.optional (config.networking.domain != null) config.networking.fqdn);
       publicKey = config.clan.core.vars.generators.openssh.files."ssh.id_ed25519.pub".value;
     };
 
