@@ -96,12 +96,6 @@ let
 
               networking.hostName = lib.mkDefault name;
 
-              # speeds up nix commands by using the nixpkgs from the host system (especially useful in VMs)
-              nix.registry.nixpkgs.to = lib.mkDefault {
-                type = "path";
-                path = lib.mkDefault nixpkgs;
-              };
-
               # For vars we need to override the system so we run vars
               # generators on the machine that runs `clan vars generate`. If a
               # users is using the `pkgsForSystem`, we don't set
