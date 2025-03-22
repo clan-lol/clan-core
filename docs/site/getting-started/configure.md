@@ -3,7 +3,6 @@ Managing machine configurations can be done in the following ways:
 
 - writing `nix` expressions in a `flake.nix` file,
 - placing `autoincluded` files into your machine directory,
-- configuring everything in a simple UI (upcoming).
 
 Clan currently offers the following methods to configure machines:
 
