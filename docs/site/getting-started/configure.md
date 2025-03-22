@@ -99,7 +99,7 @@ Adding or configuring a new machine requires two simple steps:
       ];
 
       # Put your username here for login
-      users.users.user.username = "__YOUR_USERNAME__";
+      users.users.user.name = "__YOUR_USERNAME__";
 
       # Set this for clan commands that use ssh
       # If you change the hostname, you need to update this line to root@<new-hostname>
