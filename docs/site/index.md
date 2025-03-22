@@ -73,7 +73,7 @@ hide:
 
 ## API Reference
 
-**Auto generated API Documentation**
+**Reference API Documentation**
 
 <div class="grid cards" markdown>
 
