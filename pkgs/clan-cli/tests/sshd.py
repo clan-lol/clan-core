@@ -10,11 +10,14 @@ from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
 import pytest
-from fixture_error import FixtureError
 
 if TYPE_CHECKING:
     from command import Command
     from ports import PortFunction
+
+
+class SshdError(Exception):
+    pass
 
 
 class Sshd:
@@ -135,6 +138,10 @@ def sshd(
         extra_env=env,
     )
     monkeypatch.delenv("SSH_AUTH_SOCK", raising=False)
+
+    timeout = 5
+    start_time = time.time()
+
     while True:
         print(sshd_config.path)
         if (
@@ -162,5 +169,8 @@ def sshd(
             rc = proc.poll()
             if rc is not None:
                 msg = f"sshd processes was terminated with {rc}"
-                raise FixtureError(msg)
+                raise SshdError(msg)
+            if time.time() - start_time > timeout:
+                msg = "Timeout while waiting for sshd to be ready"
+                raise SshdError(msg)
             time.sleep(0.1)

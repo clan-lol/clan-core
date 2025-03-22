@@ -180,7 +180,7 @@
               self.packages.${pkgs.system}.clan-cli
             ] ++ self.packages.${pkgs.system}.clan-cli.runtimeDependencies;
             environment.etc."install-closure".source = "${closureInfo}/store-paths";
-            virtualisation.memorySize = 2048;
+            virtualisation.memorySize = 3048;
             nix.package = nixPackage;
             nix.settings = {
               substituters = lib.mkForce [ ];
