@@ -154,7 +154,9 @@ class FlakeCacheEntry:
             self.value = value
 
     def insert(
-        self, value: str | float | dict[str, Any] | list[Any], selectors: list[Selector]
+        self,
+        value: str | float | dict[str, Any] | list[Any] | None,
+        selectors: list[Selector],
     ) -> None:
         selector: Selector
         if selectors == []:
