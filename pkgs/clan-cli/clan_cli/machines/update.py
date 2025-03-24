@@ -34,11 +34,14 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
     if not locked:
         return False
     # matches path and git+file://
-    return (
+    local = (
         locked["type"] == "path"
         # local vcs inputs i.e. git+file:///
         or re.match(r"^file://", locked.get("url", "")) is not None
     )
+    if local:
+        print(f"[WARN] flake input has local node: {json.dumps(node)}")
+    return local
 
 
 def upload_sources(machine: Machine, host: Host) -> str:
