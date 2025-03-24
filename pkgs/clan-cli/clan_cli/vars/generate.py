@@ -39,7 +39,6 @@ class Generator:
     name: str
     files: list[Var] = field(default_factory=list)
     share: bool = False
-    validation: str | None = None
     prompts: list[Prompt] = field(default_factory=list)
     dependencies: list[str] = field(default_factory=list)
 
@@ -62,7 +61,6 @@ class Generator:
             name=data["name"],
             share=data["share"],
             files=[Var.from_json(data["name"], f) for f in data["files"].values()],
-            validation=data["validationHash"],
             dependencies=data["dependencies"],
             migrate_fact=data["migrateFact"],
             prompts=[Prompt.from_json(p) for p in data["prompts"].values()],
@@ -75,6 +73,13 @@ class Generator:
             f'config.clan.core.vars.generators."{self.name}".finalScript'
         )
         return final_script
+
+    @property
+    def validation(self) -> str | None:
+        assert self._machine is not None
+        return self._machine.eval_nix(
+            f'config.clan.core.vars.generators."{self.name}".validationHash'
+        )
 
 
 def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
@@ -253,6 +258,8 @@ def execute_generator(
         machine.flake_dir,
         f"Update vars via generator {generator.name} for machine {machine.name}",
     )
+    if len(files_to_commit) > 0:
+        machine.flush_caches()
 
 
 def _ask_prompts(
@@ -456,8 +463,6 @@ def generate_vars_for_machine(
                 public_vars_store=machine.public_vars_store,
                 prompt_values=_ask_prompts(generator),
             )
-    # flush caches to make sure the new secrets are available in evaluation
-    machine.flush_caches()
     return True
 
 
