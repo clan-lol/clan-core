@@ -17,18 +17,25 @@
 
     imports = [ self.nixosModules.test-install-machine-without-system ];
   };
-  clan.machines.test-install-machine-with-system = {
-    # https://git.clan.lol/clan/test-fixtures
-    facter.reportPath = builtins.fetchurl {
-      url = "https://git.clan.lol/clan/test-fixtures/raw/commit/3508b7ed11dad068ffc8c9f0047a5c7d54644e2c/nixos-vm-facter-json/facter.json";
-      sha256 = "sha256:16myh0ll2gdwsiwkjw5ba4dl23ppwbsanxx214863j7nvzx42pws";
+  clan.machines.test-install-machine-with-system =
+    { pkgs, ... }:
+    {
+      # https://git.clan.lol/clan/test-fixtures
+      facter.reportPath = builtins.fetchurl {
+        url = "https://git.clan.lol/clan/test-fixtures/raw/commit/4a2bc56d886578124b05060d3fb7eddc38c019f8/nixos-vm-facter-json/${pkgs.hostPlatform.system}.json";
+        sha256 =
+          {
+            aarch64-linux = "sha256:1rlfymk03rmfkm2qgrc8l5kj5i20srx79n1y1h4nzlpwaz0j7hh2";
+            x86_64-linux = "sha256:16myh0ll2gdwsiwkjw5ba4dl23ppwbsanxx214863j7nvzx42pws";
+          }
+          .${pkgs.hostPlatform.system};
+      };
+
+      fileSystems."/".device = lib.mkDefault "/dev/vda";
+      boot.loader.grub.device = lib.mkDefault "/dev/vda";
+
+      imports = [ self.nixosModules.test-install-machine-without-system ];
     };
-
-    fileSystems."/".device = lib.mkDefault "/dev/vda";
-    boot.loader.grub.device = lib.mkDefault "/dev/vda";
-
-    imports = [ self.nixosModules.test-install-machine-without-system ];
-  };
   flake.nixosModules = {
     test-install-machine-without-system =
       { lib, modulesPath, ... }:
@@ -108,9 +115,9 @@
     let
       dependencies = [
         self
-        self.nixosConfigurations.test-install-machine-with-system.config.system.build.toplevel
-        self.nixosConfigurations.test-install-machine-with-system.config.system.build.diskoScript
-        self.nixosConfigurations.test-install-machine-with-system.config.system.clan.deployment.file
+        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.toplevel
+        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.diskoScript
+        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.clan.deployment.file
         pkgs.stdenv.drvPath
         pkgs.bash.drvPath
         pkgs.nixos-anywhere
@@ -130,14 +137,18 @@
     in
     {
       # On aarch64-linux, hangs on reboot with after installation:
-      # vm-test-run-test-installation> (finished: waiting for the VM to power off, in 1.97 seconds)
-      # vm-test-run-test-installation>
-      # vm-test-run-test-installation> new_machine: must succeed: cat /etc/install-successful
-      # vm-test-run-test-installation> new_machine: waiting for the VM to finish booting
-      # vm-test-run-test-installation> new_machine: starting vm
-      # vm-test-run-test-installation> new_machine: QEMU running (pid 80)
-      # vm-test-run-test-installation> new_machine: Guest root shell did not produce any data yet...
-      # vm-test-run-test-installation> new_machine:   To debug, enter the VM and run 'systemctl status backdoor.service'.
+      # vm-test-run-test-installation-without-system> installer # [  288.002871] reboot: Restarting system
+      # vm-test-run-test-installation-without-system> client # [test-install-machine] ### Done! ###
+      # vm-test-run-test-installation-without-system> client # [test-install-machine] + step 'Done!'
+      # vm-test-run-test-installation-without-system> client # [test-install-machine] + echo '### Done! ###'
+      # vm-test-run-test-installation-without-system> client # [test-install-machine] + rm -rf /tmp/tmp.qb16EAq7hJ
+      # vm-test-run-test-installation-without-system> (finished: must succeed: clan machines install --debug --flake test-flake --yes test-install-machine-without-system --target-host root@installer --update-hardware-config nixos-facter >&2, in 154.62 seconds)
+      # vm-test-run-test-installation-without-system> target: starting vm
+      # vm-test-run-test-installation-without-system> target: QEMU running (pid 144)
+      # vm-test-run-test-installation-without-system> target: waiting for unit multi-user.target
+      # vm-test-run-test-installation-without-system> target: waiting for the VM to finish booting
+      # vm-test-run-test-installation-without-system> target: Guest root shell did not produce any data yet...
+      # vm-test-run-test-installation-without-system> target:   To debug, enter the VM and run 'systemctl status backdoor.service'.
       checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
         test-installation-without-system = (import ../lib/test-base.nix) {
           name = "test-installation-without-system";
