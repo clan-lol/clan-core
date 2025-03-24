@@ -42,7 +42,8 @@
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
     in
     {
-      checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux) {
+      # Fails on `aarch64-linux` currently as some dependencies are not specified
+      checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
         flash = (import ../lib/test-base.nix) {
           name = "flash";
           nodes.target = {

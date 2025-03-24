@@ -120,7 +120,7 @@
       # vm-test-run-test-installation> new_machine: QEMU running (pid 80)
       # vm-test-run-test-installation> new_machine: Guest root shell did not produce any data yet...
       # vm-test-run-test-installation> new_machine:   To debug, enter the VM and run 'systemctl status backdoor.service'.
-      checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && pkgs.stdenv.hostPlatform.system != "aarch64-linux") {
+      checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
         test-installation = (import ../lib/test-base.nix) {
           name = "test-installation";
           nodes.target = {
