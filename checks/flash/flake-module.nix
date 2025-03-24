@@ -1,12 +1,26 @@
-{ self, lib, ... }:
 {
-  clan.machines.test-flash-machine = {
-    clan.core.networking.targetHost = "test-flash-machine";
-    fileSystems."/".device = lib.mkDefault "/dev/vda";
-    boot.loader.grub.device = lib.mkDefault "/dev/vda";
+  config,
+  self,
+  lib,
+  ...
+}:
+{
+  clan.machines = lib.listToAttrs (
+    lib.map (
+      system:
+      lib.nameValuePair "test-flash-machine-${system}" {
+        clan.core.networking.targetHost = "test-flash-machine";
+        fileSystems."/".device = lib.mkDefault "/dev/vda";
+        boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
-    imports = [ self.nixosModules.test-flash-machine ];
-  };
+        # We need to use `mkForce` because we inherit from `test-install-machine`
+        # which currently hardcodes `nixpkgs.hostPlatform`
+        nixpkgs.hostPlatform = lib.mkForce system;
+
+        imports = [ self.nixosModules.test-flash-machine ];
+      }
+    ) (lib.filter (lib.hasSuffix "linux") config.systems)
+  );
 
   flake.nixosModules = {
     test-flash-machine =
@@ -30,21 +44,20 @@
     let
       dependencies = [
         pkgs.disko
-        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-flash-machine.pkgs.perlPackages.ConfigIniFiles
-        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-flash-machine.pkgs.perlPackages.FileSlurp
+        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".pkgs.perlPackages.ConfigIniFiles
+        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".pkgs.perlPackages.FileSlurp
 
-        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-flash-machine.config.system.build.toplevel
-        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-flash-machine.config.system.build.diskoScript
-        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-flash-machine.config.system.build.diskoScript.drvPath
-        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-flash-machine.config.system.clan.deployment.file
+        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.toplevel
+        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript
+        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript.drvPath
+        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.clan.deployment.file
 
       ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
     in
     {
-      # Fails on `aarch64-linux` currently as some dependencies are not specified
-      checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
-        flash = (import ../lib/test-base.nix) {
+      checks = pkgs.lib.mkIf pkgs.stdenv.isLinux {
+        test-flash = (import ../lib/test-base.nix) {
           name = "flash";
           nodes.target = {
             virtualisation.emptyDiskImages = [ 4096 ];
@@ -66,7 +79,7 @@
           testScript = ''
             start_all()
 
-            machine.succeed("clan flash write --debug --flake ${../..} --yes --disk main /dev/vdb test-flash-machine")
+            machine.succeed("clan flash write --debug --flake ${../..} --yes --disk main /dev/vdb test-flash-machine-${pkgs.hostPlatform.system}")
           '';
         } { inherit pkgs self; };
       };
