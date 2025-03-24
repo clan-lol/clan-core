@@ -42,7 +42,6 @@
 
         clan.core.networking.targetHost = "machine";
         networking.hostName = "machine";
-        nixpkgs.hostPlatform = "x86_64-linux";
 
         programs.ssh.knownHosts = {
           machine.hostNames = [ "machine" ];
@@ -173,10 +172,7 @@
       };
     in
     {
-      # Needs investigation on aarch64-linux
-      # vm-test-run-test-backups> qemu-kvm: No machine specified, and there is no default
-      # vm-test-run-test-backups> Use -machine help to list supported machines
-      checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
+      checks = pkgs.lib.mkIf pkgs.stdenv.isLinux {
         test-backups = (import ../lib/container-test.nix) {
           name = "test-backups";
           nodes.machine = {

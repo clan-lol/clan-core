@@ -50,7 +50,7 @@ in
           flakeOutputs =
             lib.mapAttrs' (
               name: config: lib.nameValuePair "nixos-${name}" config.config.system.build.toplevel
-            ) (lib.filterAttrs (n: _v: n != "test-install-machine-without-system") self.nixosConfigurations)
+            ) (lib.filterAttrs (n: _: !lib.hasPrefix "test-" n) self.nixosConfigurations)
             // lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages
             // lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells
             // lib.mapAttrs' (name: config: lib.nameValuePair "home-manager-${name}" config.activation-script) (
