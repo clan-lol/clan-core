@@ -277,6 +277,22 @@ in
         )
       );
     };
+
+    machineClass = lib.mkOption {
+      default = { };
+      type = types.attrsOf (
+        types.enum [
+          "nixos"
+          "darwin"
+        ]
+      );
+      description = ''
+        The module system that should be used to construct the machine
+
+        Set this to `darwin` for macOS machines
+      '';
+    };
+
     instances = lib.mkOption {
       # Keep as internal until all de-/serialization issues are resolved
       visible = false;

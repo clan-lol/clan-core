@@ -1,6 +1,7 @@
 {
   lib,
   nixpkgs,
+  nix-darwin ? null,
   clan-core,
   self,
   specialArgs ? { },
@@ -9,7 +10,12 @@
 module:
 (lib.evalModules {
   specialArgs = {
-    inherit self clan-core nixpkgs;
+    inherit
+      self
+      clan-core
+      nixpkgs
+      nix-darwin
+      ;
   };
   modules = [
     ./interface.nix

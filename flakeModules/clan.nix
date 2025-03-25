@@ -34,7 +34,7 @@ in
     type = types.submoduleWith {
       specialArgs = {
         inherit clan-core self;
-        inherit (inputs) nixpkgs;
+        inherit (inputs) nixpkgs nix-darwin;
         # TODO: inject the inventory interface
         # inventoryInterface = {};
       };

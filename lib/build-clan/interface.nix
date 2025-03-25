@@ -123,6 +123,15 @@ in
     };
 
     # Outputs
+    darwinConfigurations = lib.mkOption {
+      # Hide from documentation.
+      # Exposed at the top-level of the flake, clan.darwinConfigurations should not used by the user.
+      # Instead, the user should use the `.#darwinConfigurations` attribute of the flake output.
+      visible = false;
+      type = types.lazyAttrsOf types.raw;
+      default = { };
+    };
+
     nixosConfigurations = lib.mkOption {
       # Hide from documentation.
       # Exposed at the top-level of the flake, clan.nixosConfigurations should not used by the user.

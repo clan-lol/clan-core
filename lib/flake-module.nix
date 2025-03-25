@@ -15,7 +15,7 @@ rec {
   ];
   flake.clanLib = import ./default.nix {
     inherit lib inputs self;
-    inherit (inputs) nixpkgs;
+    inherit (inputs) nixpkgs nix-darwin;
   };
   # TODO: remove this legacy alias
   flake.lib = flake.clanLib;
