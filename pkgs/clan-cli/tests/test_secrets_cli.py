@@ -1,9 +1,8 @@
-import functools
 import json
 import logging
 import os
 import re
-import subprocess
+import shutil
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -13,6 +12,7 @@ import pytest
 from age_keys import assert_secrets_file_recipients
 from clan_cli.errors import ClanError
 from fixtures_flakes import FlakeForTest
+from gpg_keys import GpgKey
 from helpers import cli
 from stdout import CaptureOutput
 
@@ -444,45 +444,16 @@ def use_gpg_key(key: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 
 @pytest.fixture
 def gpg_key(
-    tmp_path: Path,
+    temp_dir: Path,
     monkeypatch: pytest.MonkeyPatch,
+    test_root: Path,
 ) -> str:
-    gpg_home = tmp_path / "gnupghome"
-    gpg_home.mkdir(mode=0o700)
+    gpg_home = temp_dir / "gnupghome"
 
-    gpg_environ = os.environ.copy()
-    gpg_environ["GNUPGHOME"] = str(gpg_home)
-    run = functools.partial(
-        subprocess.run,
-        encoding="utf-8",
-        check=True,
-        env=gpg_environ,
-    )
-    key_parameters = "\n".join(
-        (
-            "%no-protection",
-            "%transient-key",
-            "Key-Type: rsa",
-            "Key-Usage: cert encrypt",
-            "Name-Real: Foo Bar",
-            "Name-Comment: Test user",
-            "Name-Email: test@clan.lol",
-            "%commit",
-        )
-    )
-    run(["gpg", "--batch", "--quiet", "--generate-key"], input=key_parameters)
-    details = run(["gpg", "--list-keys", "--with-colons"], capture_output=True)
-    fingerprint = None
-    for line in details.stdout.strip().split(os.linesep):
-        if not line.startswith("fpr"):
-            continue
-        fingerprint = line.split(":")[9]
-        break
-    assert fingerprint is not None, "Could not generate test GPG key"
-    log.info(f"Created GPG key under {gpg_home}")
-
+    shutil.copytree(test_root / "data" / "gnupg-home", gpg_home)
     monkeypatch.setenv("GNUPGHOME", str(gpg_home))
-    return fingerprint
+
+    return "9A9B2741C8062D3D3DF1302D8B049E262A5CA255"
 
 
 def test_secrets(
