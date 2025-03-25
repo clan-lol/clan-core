@@ -55,44 +55,26 @@ def upload(
                 with local_src.open("rb") as f:
                     tar.addfile(tarinfo, f)
 
+        priviledge_escalation = []
+        if host.user != "root":
+            priviledge_escalation = ["sudo", "--"]
+
         if local_src.is_dir():
             cmd = [
                 *host.ssh_cmd(),
-                "rm",
-                "-r",
-                str(remote_dest),
-                ";",
-                "mkdir",
-                "-m",
-                f"{dir_mode:o}",
-                "-p",
-                str(remote_dest),
-                "&&",
-                "tar",
-                "-C",
-                str(remote_dest),
-                "-xzf",
-                "-",
+                "--",
+                *priviledge_escalation,
+                "bash", "-c", "exec \"$@\"", "--",
+                f"rm -r {remote_dest!s} ; mkdir -m {dir_mode:o} -p {str(remote_dest)} && tar -C {str(remote_dest)} -xzf -",
             ]
         else:
             # For single file, extract to parent directory and ensure correct name
             cmd = [
                 *host.ssh_cmd(),
-                "rm",
-                "-f",
-                str(remote_dest),
-                ";",
-                "mkdir",
-                "-m",
-                f"{dir_mode:o}",
-                "-p",
-                str(remote_dest.parent),
-                "&&",
-                "tar",
-                "-C",
-                str(remote_dest.parent),
-                "-xzf",
-                "-",
+                "--",
+                *priviledge_escalation,
+                "bash", "-c", "exec \"$@\"", "--",
+                f"rm -f {str(remote_dest)} ; mkdir -m {dir_mode:o} -p {str(remote_dest.parent)} && tar -C {str(remote_dest.parent)} -xzf -",
             ]
 
         # TODO accept `input` to be  an IO object instead of bytes so that we don't have to read the tarfile into memory.
