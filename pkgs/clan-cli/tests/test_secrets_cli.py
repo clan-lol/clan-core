@@ -1,18 +1,16 @@
-import functools
 import json
 import logging
 import os
 import re
-import subprocess
 from collections.abc import Iterator
 from contextlib import contextmanager
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 from age_keys import assert_secrets_file_recipients
 from clan_cli.errors import ClanError
 from fixtures_flakes import FlakeForTest
+from gpg_keys import GpgKey
 from helpers import cli
 from stdout import CaptureOutput
 
@@ -426,12 +424,12 @@ def use_age_key(key: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 
 
 @contextmanager
-def use_gpg_key(key: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+def use_gpg_key(key: GpgKey, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     old_key_file = os.environ.get("SOPS_AGE_KEY_FILE")
     old_key = os.environ.get("SOPS_AGE_KEY")
     monkeypatch.delenv("SOPS_AGE_KEY_FILE", raising=False)
     monkeypatch.delenv("SOPS_AGE_KEY", raising=False)
-    monkeypatch.setenv("SOPS_PGP_FP", key)
+    monkeypatch.setenv("SOPS_PGP_FP", key.fingerprint)
     try:
         yield
     finally:
@@ -442,54 +440,11 @@ def use_gpg_key(key: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
             monkeypatch.setenv("SOPS_AGE_KEY", old_key)
 
 
-@pytest.fixture
-def gpg_key(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> str:
-    gpg_home = tmp_path / "gnupghome"
-    gpg_home.mkdir(mode=0o700)
-
-    gpg_environ = os.environ.copy()
-    gpg_environ["GNUPGHOME"] = str(gpg_home)
-    run = functools.partial(
-        subprocess.run,
-        encoding="utf-8",
-        check=True,
-        env=gpg_environ,
-    )
-    key_parameters = "\n".join(
-        (
-            "%no-protection",
-            "%transient-key",
-            "Key-Type: rsa",
-            "Key-Usage: cert encrypt",
-            "Name-Real: Foo Bar",
-            "Name-Comment: Test user",
-            "Name-Email: test@clan.lol",
-            "%commit",
-        )
-    )
-    run(["gpg", "--batch", "--quiet", "--generate-key"], input=key_parameters)
-    details = run(["gpg", "--list-keys", "--with-colons"], capture_output=True)
-    fingerprint = None
-    for line in details.stdout.strip().split(os.linesep):
-        if not line.startswith("fpr"):
-            continue
-        fingerprint = line.split(":")[9]
-        break
-    assert fingerprint is not None, "Could not generate test GPG key"
-    log.info(f"Created GPG key under {gpg_home}")
-
-    monkeypatch.setenv("GNUPGHOME", str(gpg_home))
-    return fingerprint
-
-
 def test_secrets(
     test_flake: FlakeForTest,
     capture_output: CaptureOutput,
     monkeypatch: pytest.MonkeyPatch,
-    gpg_key: str,
+    gpg_key: GpgKey,
     age_keys: list["KeyPair"],
 ) -> None:
     with capture_output as output:
@@ -716,7 +671,7 @@ def test_secrets(
             "--flake",
             str(test_flake.path),
             "--pgp-key",
-            gpg_key,
+            gpg_key.fingerprint,
             "user2",
         ]
     )
@@ -783,7 +738,7 @@ def test_secrets_key_generate_gpg(
     test_flake: FlakeForTest,
     capture_output: CaptureOutput,
     monkeypatch: pytest.MonkeyPatch,
-    gpg_key: str,
+    gpg_key: GpgKey,
 ) -> None:
     with use_gpg_key(gpg_key, monkeypatch):
         # Make sure clan secrets key generate recognizes
@@ -805,7 +760,7 @@ def test_secrets_key_generate_gpg(
             cli.run(["secrets", "key", "show", "--flake", str(test_flake.path)])
         key = json.loads(output.out)
         assert key["type"] == "pgp"
-        assert key["publickey"] == gpg_key
+        assert key["publickey"] == gpg_key.fingerprint
 
         # Add testuser with the key that was (not) generated for the clan:
         cli.run(
@@ -816,7 +771,7 @@ def test_secrets_key_generate_gpg(
                 "--flake",
                 str(test_flake.path),
                 "--pgp-key",
-                gpg_key,
+                gpg_key.fingerprint,
                 "testuser",
             ]
         )
@@ -833,7 +788,7 @@ def test_secrets_key_generate_gpg(
             )
         key = json.loads(output.out)
         assert key["type"] == "pgp"
-        assert key["publickey"] == gpg_key
+        assert key["publickey"] == gpg_key.fingerprint
 
         monkeypatch.setenv("SOPS_NIX_SECRET", "secret-value")
         cli.run(["secrets", "set", "--flake", str(test_flake.path), "secret-name"])

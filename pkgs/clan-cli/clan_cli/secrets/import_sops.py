@@ -30,7 +30,7 @@ def import_sops(args: argparse.Namespace) -> None:
         if args.input_type:
             cmd += ["--input-type", args.input_type]
         cmd += ["--output-type", "json", "--decrypt", args.sops_file]
-        cmd = nix_shell(["nixpkgs#sops"], cmd)
+        cmd = nix_shell(["nixpkgs#sops", "nixpkgs#gnupg"], cmd)
 
         res = run(cmd, RunOpts(error_msg=f"Could not import sops file {file}"))
         secrets = json.loads(res.stdout)

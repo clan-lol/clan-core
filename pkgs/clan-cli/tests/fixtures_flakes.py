@@ -294,18 +294,19 @@ def create_flake(
     if tmp_store := nix_test_store():
         nix_options += ["--store", str(tmp_store)]
 
-    sp.run(
-        [
-            "nix",
-            "flake",
-            "lock",
-            flake,
-            "--extra-experimental-features",
-            "nix-command flakes",
-            *nix_options,
-        ],
-        check=True,
-    )
+    with locked_open(Path(lock_nix), "w"):
+        sp.run(
+            [
+                "nix",
+                "flake",
+                "lock",
+                flake,
+                "--extra-experimental-features",
+                "nix-command flakes",
+                *nix_options,
+            ],
+            check=True,
+        )
 
     if "/tmp" not in str(os.environ.get("HOME")):
         log.warning(

@@ -233,7 +233,7 @@ def sops_run(
                 raise ClanError(msg)
         sops_cmd.append(str(secret_path))
 
-        cmd = nix_shell(["nixpkgs#sops"], sops_cmd)
+        cmd = nix_shell(["nixpkgs#sops", "nixpkgs#gnupg"], sops_cmd)
         opts = (
             dataclasses.replace(run_opts, env=environ)
             if run_opts
