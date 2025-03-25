@@ -51,7 +51,7 @@ let
   testDependencies = testRuntimeDependencies ++ [
     gnupg
     stdenv.cc # Compiler used for certain native extensions
-    (pythonRuntime.withPackages (ps: (pyTestDeps ps) ++ (pyDeps ps)))
+    (pythonRuntime.withPackages pyTestDeps)
   ];
 
   source = runCommand "clan-cli-source" { } ''
@@ -127,7 +127,7 @@ pythonRuntime.pkgs.buildPythonApplication {
   # Define and expose the tests and checks to run in CI
   passthru.tests =
     (lib.mapAttrs' (n: lib.nameValuePair "clan-dep-${n}") testRuntimeDependenciesMap)
-    // lib.optionalAttrs (!stdenv.isDarwin) {
+    // {
       # disabled on macOS until we fix all remaining issues
       clan-pytest-without-core =
         runCommand "clan-pytest-without-core"
@@ -159,6 +159,8 @@ pythonRuntime.pkgs.buildPythonApplication {
             python -m pytest -m "not impure and not with_core" -n $jobs ./tests
             touch $out
           '';
+    }
+    // lib.optionalAttrs (!stdenv.isDarwin) {
       clan-pytest-with-core =
         runCommand "clan-pytest-with-core"
           {
