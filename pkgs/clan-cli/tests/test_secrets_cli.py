@@ -2,10 +2,8 @@ import json
 import logging
 import os
 import re
-import shutil
 from collections.abc import Iterator
 from contextlib import contextmanager
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -426,12 +424,12 @@ def use_age_key(key: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 
 
 @contextmanager
-def use_gpg_key(key: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+def use_gpg_key(key: GpgKey, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     old_key_file = os.environ.get("SOPS_AGE_KEY_FILE")
     old_key = os.environ.get("SOPS_AGE_KEY")
     monkeypatch.delenv("SOPS_AGE_KEY_FILE", raising=False)
     monkeypatch.delenv("SOPS_AGE_KEY", raising=False)
-    monkeypatch.setenv("SOPS_PGP_FP", key)
+    monkeypatch.setenv("SOPS_PGP_FP", key.fingerprint)
     try:
         yield
     finally:
@@ -442,25 +440,11 @@ def use_gpg_key(key: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
             monkeypatch.setenv("SOPS_AGE_KEY", old_key)
 
 
-@pytest.fixture
-def gpg_key(
-    temp_dir: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    test_root: Path,
-) -> str:
-    gpg_home = temp_dir / "gnupghome"
-
-    shutil.copytree(test_root / "data" / "gnupg-home", gpg_home)
-    monkeypatch.setenv("GNUPGHOME", str(gpg_home))
-
-    return "9A9B2741C8062D3D3DF1302D8B049E262A5CA255"
-
-
 def test_secrets(
     test_flake: FlakeForTest,
     capture_output: CaptureOutput,
     monkeypatch: pytest.MonkeyPatch,
-    gpg_key: str,
+    gpg_key: GpgKey,
     age_keys: list["KeyPair"],
 ) -> None:
     with capture_output as output:
@@ -687,7 +671,7 @@ def test_secrets(
             "--flake",
             str(test_flake.path),
             "--pgp-key",
-            gpg_key,
+            gpg_key.fingerprint,
             "user2",
         ]
     )
@@ -754,7 +738,7 @@ def test_secrets_key_generate_gpg(
     test_flake: FlakeForTest,
     capture_output: CaptureOutput,
     monkeypatch: pytest.MonkeyPatch,
-    gpg_key: str,
+    gpg_key: GpgKey,
 ) -> None:
     with use_gpg_key(gpg_key, monkeypatch):
         # Make sure clan secrets key generate recognizes
@@ -776,7 +760,7 @@ def test_secrets_key_generate_gpg(
             cli.run(["secrets", "key", "show", "--flake", str(test_flake.path)])
         key = json.loads(output.out)
         assert key["type"] == "pgp"
-        assert key["publickey"] == gpg_key
+        assert key["publickey"] == gpg_key.fingerprint
 
         # Add testuser with the key that was (not) generated for the clan:
         cli.run(
@@ -787,7 +771,7 @@ def test_secrets_key_generate_gpg(
                 "--flake",
                 str(test_flake.path),
                 "--pgp-key",
-                gpg_key,
+                gpg_key.fingerprint,
                 "testuser",
             ]
         )
@@ -804,7 +788,7 @@ def test_secrets_key_generate_gpg(
             )
         key = json.loads(output.out)
         assert key["type"] == "pgp"
-        assert key["publickey"] == gpg_key
+        assert key["publickey"] == gpg_key.fingerprint
 
         monkeypatch.setenv("SOPS_NIX_SECRET", "secret-value")
         cli.run(["secrets", "set", "--flake", str(test_flake.path), "secret-name"])

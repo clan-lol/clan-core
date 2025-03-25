@@ -6,6 +6,7 @@ pytest_plugins = [
     "root",
     "age_keys",
     "gpg_keys",
+    "git_repo",
     "sshd",
     "command",
     "ports",
