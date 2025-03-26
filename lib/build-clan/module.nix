@@ -199,7 +199,10 @@ in
   clanInternals = {
     moduleSchemas = clan-core.lib.modules.getModulesSchema config.inventory.modules;
     inherit inventoryClass;
-    distributedServices = {};
+    distributedServices = import ../distributed-service/inventory-adapter.nix {
+      inherit lib inventory;
+      flake = config.self;
+    };
     inherit (clan-core) clanModules;
     inherit inventoryFile;
     inventoryValuesPrios =
