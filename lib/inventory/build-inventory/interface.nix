@@ -275,7 +275,71 @@ in
         )
       );
     };
-
+    instances = lib.mkOption {
+      # Keep as internal until all de-/serialization issues are resolved
+      visible = false;
+      internal = true;
+      description = "Multi host service module instances";
+      type = types.attrsOf (
+        types.submodule {
+          options = {
+            # ModuleSpec
+            module = lib.mkOption {
+              type = types.submodule {
+                options.input = lib.mkOption {
+                  type = types.nullOr types.str;
+                  default = null;
+                  defaultText = "Name of the input. Default to 'null' which means the module is local";
+                  description = ''
+                    Name of the input. Default to 'null' which means the module is local
+                  '';
+                };
+                options.name = lib.mkOption {
+                  type = types.str;
+                };
+              };
+            };
+            roles = lib.mkOption {
+              default = { };
+              type = types.attrsOf (
+                types.submodule {
+                  options = {
+                    # TODO: deduplicate
+                    machines = lib.mkOption {
+                      type = types.attrsOf (
+                        types.submodule {
+                          options.settings = lib.mkOption {
+                            default = { };
+                            type = types.deferredModule;
+                          };
+                        }
+                      );
+                      default = { };
+                    };
+                    tags = lib.mkOption {
+                      type = types.attrsOf (
+                        types.submodule {
+                          options.settings = lib.mkOption {
+                            default = { };
+                            type = types.deferredModule;
+                          };
+                        }
+                      );
+                      default = { };
+                    };
+                    settings = lib.mkOption {
+                      default = { };
+                      type = types.deferredModule;
+                    };
+                  };
+                }
+              );
+            };
+          };
+        }
+      );
+      default = { };
+    };
     services = lib.mkOption {
       description = ''
         Services of the inventory.
