@@ -45,7 +45,7 @@ def ask(
     text = f"Enter the value for {ident}:"
     if label:
         text = f"{label}"
-
+    log.info(f"Prompting value for {ident}")
     if MOCK_PROMPT_RESPONSE:
         return next(MOCK_PROMPT_RESPONSE)
     match input_type:
