@@ -153,6 +153,7 @@ let
       class = "clan.service";
       modules =
         [
+          ./service-module.nix
           # Import the resolved module
           (builtins.head instances).instance.resolvedModule
         ]
