@@ -34,6 +34,10 @@ def map_json_type(
         return {"int"}
     if json_type == "boolean":
         return {"bool"}
+    # In Python, "number" is analogous to the float type.
+    # https://json-schema.org/understanding-json-schema/reference/numeric#number
+    if json_type == "number":
+        return {"float"}
     if json_type == "array":
         assert nested_types, f"Array type not found for {parent}"
         return {f"""list[{" | ".join(nested_types)}]"""}
