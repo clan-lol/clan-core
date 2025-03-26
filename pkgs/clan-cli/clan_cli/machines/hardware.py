@@ -135,6 +135,11 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
         ]
 
     host = machine.target_host
+
+    # HACK: to make non-root user work
+    if host.user != "root":
+        config_command.insert(0, "sudo")
+
     cmd = nix_shell(
         [
             "nixpkgs#openssh",
