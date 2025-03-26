@@ -2,7 +2,6 @@
 let
   inventory = (
     import ../build-inventory {
-
       inherit lib clan-core;
     }
   );

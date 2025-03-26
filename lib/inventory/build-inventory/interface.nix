@@ -103,7 +103,7 @@ in
       default = options;
     };
     modules = lib.mkOption {
-      type = types.attrsOf types.path;
+      type = types.attrsOf (types.either types.path types.deferredModule);
       default = { };
       defaultText = "clanModules of clan-core";
       description = ''
