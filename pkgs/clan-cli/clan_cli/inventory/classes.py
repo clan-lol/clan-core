@@ -31,6 +31,6 @@ Service = dict[str, Any]
 class Inventory(TypedDict):
     machines: NotRequired[dict[str, Machine]]
     meta: NotRequired[Meta]
-    modules: NotRequired[dict[str, str]]
+    modules: NotRequired[dict[str, int | bool | None | str | dict[str, Any] | float | list[Any]]]
     services: NotRequired[dict[str, Service]]
     tags: NotRequired[dict[str, list[str]]]
