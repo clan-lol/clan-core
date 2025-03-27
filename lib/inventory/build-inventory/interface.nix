@@ -103,7 +103,9 @@ in
       default = options;
     };
     modules = lib.mkOption {
-      type = types.attrsOf (types.either types.path types.deferredModule);
+      # Don't define the type yet
+      # We manually transform the value with types.deferredModule.merge later to keep them serializable
+      type = types.attrsOf types.raw;
       default = { };
       defaultText = "clanModules of clan-core";
       description = ''
@@ -310,7 +312,9 @@ in
                         types.submodule {
                           options.settings = lib.mkOption {
                             default = { };
-                            type = types.deferredModule;
+                            # Dont transform the value with `types.deferredModule` here. We need to keep it json serializable
+                            # TODO: We need a custom serializer for deferredModule
+                            type = types.attrsOf types.raw;
                           };
                         }
                       );
@@ -321,7 +325,7 @@ in
                         types.submodule {
                           options.settings = lib.mkOption {
                             default = { };
-                            type = types.deferredModule;
+                            type = types.attrsOf types.raw;
                           };
                         }
                       );
@@ -329,7 +333,7 @@ in
                     };
                     settings = lib.mkOption {
                       default = { };
-                      type = types.deferredModule;
+                      type = types.attrsOf types.raw;
                     };
                   };
                 }

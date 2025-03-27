@@ -15,24 +15,6 @@ in
       ...
     }:
     {
-      devShells.inventory-schema = pkgs.mkShell {
-        inputsFrom = with config.checks; [
-          lib-inventory-eval
-          self'.devShells.default
-        ];
-      };
-
-      legacyPackages.schemas = (
-        import ./schemas {
-          inherit
-            pkgs
-            self
-            lib
-            self'
-            ;
-        }
-      );
-
       # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.<attrName>
       legacyPackages.evalTest-distributedServices = import ./tests {
         inherit lib self;
@@ -45,7 +27,7 @@ in
           nix-unit --eval-store "$HOME" \
             --extra-experimental-features flakes \
             ${inputOverrides} \
-            --flake ${self}#legacyPackages.${system}.distributedServices
+            --flake ${self}#legacyPackages.${system}.evalTest-distributedServices
 
           touch $out
         '';

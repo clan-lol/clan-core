@@ -32,6 +32,8 @@ def map_json_type(
         return {"str"}
     if json_type == "integer":
         return {"int"}
+    if json_type == "number":
+        return {"float"}
     if json_type == "boolean":
         return {"bool"}
     # In Python, "number" is analogous to the float type.
