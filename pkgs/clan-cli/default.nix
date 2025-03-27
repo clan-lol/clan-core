@@ -147,6 +147,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             cd ./src
 
             export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1 PYTHONWARNINGS=error
+            export IN_PYTEST=1
 
             # required to prevent concurrent 'nix flake lock' operations
             export CLAN_TEST_STORE=$TMPDIR/store
@@ -198,6 +199,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             export NIX_STATE_DIR=$TMPDIR/nix
             export IN_NIX_SANDBOX=1
             export PYTHONWARNINGS=error
+            export IN_PYTEST=1
             export CLAN_TEST_STORE=$TMPDIR/store
             # required to prevent concurrent 'nix flake lock' operations
             export LOCK_NIX=$TMPDIR/nix_lock

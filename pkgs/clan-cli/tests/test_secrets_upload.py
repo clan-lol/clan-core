@@ -26,6 +26,17 @@ def test_secrets_upload(
     monkeypatch.chdir(str(flake.path))
     monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
 
+    sops_dir = flake.path / "facts"
+
+    # the flake defines this path as the location where the sops key should be installed
+    sops_key = sops_dir / "key.txt"
+    sops_key2 = sops_dir / "key2.txt"
+
+    # Create old state, which should be cleaned up
+    sops_dir.mkdir()
+    sops_key.write_text("OLD STATE")
+    sops_key2.write_text("OLD STATE2")
+
     cli.run(
         [
             "secrets",
@@ -56,8 +67,6 @@ def test_secrets_upload(
 
     cli.run(["facts", "upload", "--flake", str(flake_path), "vm1"])
 
-    # the flake defines this path as the location where the sops key should be installed
-    sops_key = flake.path / "facts" / "key.txt"
-
     assert sops_key.exists()
     assert sops_key.read_text() == age_keys[0].privkey
+    assert not sops_key2.exists()
