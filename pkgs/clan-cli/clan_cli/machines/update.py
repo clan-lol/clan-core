@@ -185,6 +185,7 @@ def deploy_machines(machines: list[Machine]) -> None:
                 test_cmd,
                 RunOpts(msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
                 extra_env=env,
+                become_root=True,
             )
 
         # retry nixos-rebuild switch if the first attempt failed
@@ -193,6 +194,7 @@ def deploy_machines(machines: list[Machine]) -> None:
                 switch_cmd,
                 RunOpts(msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
                 extra_env=env,
+                become_root=True,
             )
 
     with AsyncRuntime() as runtime:

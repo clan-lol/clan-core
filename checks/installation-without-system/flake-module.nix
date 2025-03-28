@@ -165,7 +165,6 @@
                 (modulesPath + "/../tests/common/auto-format-root-device.nix")
               ];
               services.openssh.enable = true;
-              users.users.root.openssh.authorizedKeys.keyFiles = [ ../lib/ssh/pubkey ];
               system.nixos.variant_id = "installer";
               environment.systemPackages = [ pkgs.nixos-facter ];
               virtualisation.emptyDiskImages = [ 512 ];
@@ -184,6 +183,12 @@
                   "flakes"
                 ];
               };
+              users.users.nonrootuser = {
+                isNormalUser = true;
+                openssh.authorizedKeys.keyFiles = [ ../lib/ssh/pubkey ];
+                extraGroups = [ "wheel" ];
+              };
+              security.sudo.wheelNeedsPassword = false;
               system.extraDependencies = dependencies;
             };
           nodes.client = {
@@ -211,14 +216,14 @@
             installer.start()
 
             client.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../lib/ssh/privkey} /root/.ssh/id_ed25519")
-            client.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v root@installer hostname")
+            client.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@installer hostname")
             client.succeed("cp -r ${../..} test-flake && chmod -R +w test-flake")
             client.fail("test -f test-flake/machines/test-install-machine-without-system/hardware-configuration.nix")
             client.fail("test -f test-flake/machines/test-install-machine-without-system/facter.json")
-            client.succeed("clan machines update-hardware-config --flake test-flake test-install-machine-without-system root@installer >&2")
+            client.succeed("clan machines update-hardware-config --flake test-flake test-install-machine-without-system nonrootuser@installer >&2")
             client.succeed("test -f test-flake/machines/test-install-machine-without-system/facter.json")
             client.succeed("rm test-flake/machines/test-install-machine-without-system/facter.json")
-            client.succeed("clan machines install --debug --flake test-flake --yes test-install-machine-without-system --target-host root@installer --update-hardware-config nixos-facter >&2")
+            client.succeed("clan machines install --debug --flake test-flake --yes test-install-machine-without-system --target-host nonrootuser@installer --update-hardware-config nixos-facter >&2")
             try:
               installer.shutdown()
             except BrokenPipeError:
