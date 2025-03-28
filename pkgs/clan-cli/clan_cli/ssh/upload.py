@@ -63,7 +63,7 @@ def upload(
                     tar.addfile(tarinfo, f)
 
         sudo = ""
-        if host.user != "root" and os.environ.get("IN_PYTEST") is None:
+        if host.user != "root":
             sudo = "sudo -- "
 
         cmd = "rm -rf $0 && mkdir -m $1 -p $0 && tar -C $0 -xzf -"

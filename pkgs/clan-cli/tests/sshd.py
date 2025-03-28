@@ -57,7 +57,10 @@ def sshd_config(test_root: Path) -> Iterator[SshdConfig]:
         )
         config = tmpdir / "sshd_config"
         config.write_text(content)
-        login_shell = tmpdir / "shell"
+        bin_path = tmpdir / "bin"
+        login_shell = bin_path / "shell"
+        fake_sudo = bin_path / "sudo"
+        login_shell.parent.mkdir(parents=True)
 
         bash = shutil.which("bash")
         path = os.environ["PATH"]
@@ -65,18 +68,22 @@ def sshd_config(test_root: Path) -> Iterator[SshdConfig]:
 
         login_shell.write_text(
             f"""#!{bash}
+set -x
 if [[ -f /etc/profile ]]; then
   source /etc/profile
 fi
-if [[ -n "$REALPATH" ]]; then
-   export PATH="$REALPATH:${path}"
-else
-   export PATH="${path}"
-fi
+export PATH="{bin_path}:{path}"
 exec {bash} -l "${{@}}"
         """
         )
         login_shell.chmod(0o755)
+
+        fake_sudo.write_text(
+            f"""#!{bash}
+exec "${{@}}"
+        """
+        )
+        fake_sudo.chmod(0o755)
 
         lib_path = None
 
