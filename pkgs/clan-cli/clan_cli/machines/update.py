@@ -152,6 +152,7 @@ def deploy_machines(machines: list[Machine]) -> None:
             "--flake",
             f"{path}#{machine.name}",
         ]
+
         switch_cmd = ["nixos-rebuild", "switch", *nix_options]
         test_cmd = ["nixos-rebuild", "test", *nix_options]
 
@@ -159,6 +160,10 @@ def deploy_machines(machines: list[Machine]) -> None:
         if target_host:
             switch_cmd.extend(["--target-host", target_host.target])
             test_cmd.extend(["--target-host", target_host.target])
+
+        if target_host and target_host.user != "root":
+            switch_cmd.extend(["--use-remote-sudo"])
+            test_cmd.extend(["--use-remote-sudo"])
 
         env = host.nix_ssh_env(None)
         ret = host.run(
