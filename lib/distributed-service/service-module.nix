@@ -238,14 +238,20 @@ in
         };
       };
     };
-    # placeholder = "roleName";
 
     manifest = mkOption {
+      description = "Meta information about this module itself";
       type = submoduleWith {
         modules = [
           {
             options = {
               name = mkOption {
+                description = ''
+                  The name of the module
+
+                  Mainly used to create an error context while evaluating.
+                  This helps backtracking which module was included; And where an error came from originally.
+                '';
                 type = types.str;
               };
             };
@@ -503,7 +509,6 @@ in
           };
         }
       ) config.result.allMachines;
-
     };
   };
 }
