@@ -75,7 +75,7 @@ let
                 Choose one of the following inputs:
                 - ${
                   builtins.concatStringsSep "\n- " (
-                    lib.attrNames (lib.filterAttrs (name: input: input ? clan) flake.inputs)
+                    lib.attrNames (lib.filterAttrs (_name: input: input ? clan) flake.inputs)
                   )
                 }
 
@@ -129,7 +129,7 @@ let
               settings = {
                 imports = [
                   machineSettings
-                ] ++ lib.attrValues (lib.mapAttrs (tagName: v: v.settings) settingsViaTags);
+                ] ++ lib.attrValues (lib.mapAttrs (_tagName: v: v.settings) settingsViaTags);
               };
             }
           );
