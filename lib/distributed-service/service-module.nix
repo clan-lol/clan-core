@@ -503,7 +503,8 @@ in
           nixosModule = {
             imports = [
               # For error backtracing. This module was produced by the 'perMachine' function
-              (lib.setDefaultModuleLocation "via perMachine" machineResult.nixosModule)
+              # TODO: check if we need this or if it leads to better errors if we pass the underlying module locations
+              (lib.setDefaultModuleLocation "clan.service: ${config.manifest.name} - via perMachine" machineResult.nixosModule)
             ] ++ instanceResults;
           };
         }
