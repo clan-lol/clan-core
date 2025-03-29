@@ -77,6 +77,9 @@ let
           # Inherit the inventory assertions ?
           # { inherit (mergedInventory) assertions; }
           { imports = inventoryClass.machines.${name}.machineImports or [ ]; }
+
+          # Import the distribute services
+          { imports = config.clanInternals.distributedServices.allMachines.${name} or []; }
           (
             {
               # Settings
