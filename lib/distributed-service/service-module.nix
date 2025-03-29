@@ -204,9 +204,8 @@ in
                                 elemType = submoduleWith {
                                   modules = [
                                     (m: {
-                                      # TODO: Move the deferred module type into inventory interface ?
                                       options.settings = mkOption {
-                                        type = types.deferredModule;
+                                        type = types.raw;
                                         description = "Settings of '${name}-machine': ${m.name}.";
                                         default = { };
                                       };
@@ -221,7 +220,7 @@ in
                             # options._settingsViaTags = mkOption { };
                             # A deferred module that combines _settingsViaTags with _settings
                             options.settings = mkOption {
-                              type = types.deferredModule;
+                              type = types.raw;
                               description = "Settings of 'role': ${name}";
                               default = { };
                             };

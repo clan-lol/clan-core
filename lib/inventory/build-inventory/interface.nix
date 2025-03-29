@@ -314,7 +314,7 @@ in
                             default = { };
                             # Dont transform the value with `types.deferredModule` here. We need to keep it json serializable
                             # TODO: We need a custom serializer for deferredModule
-                            type = types.attrsOf types.raw;
+                            type = types.deferredModule;
                           };
                         }
                       );
@@ -325,7 +325,7 @@ in
                         types.submodule {
                           options.settings = lib.mkOption {
                             default = { };
-                            type = types.attrsOf types.raw;
+                            type = types.deferredModule;
                           };
                         }
                       );
@@ -333,7 +333,7 @@ in
                     };
                     settings = lib.mkOption {
                       default = { };
-                      type = types.attrsOf types.raw;
+                      type = types.deferredModule;
                     };
                   };
                 }
