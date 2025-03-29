@@ -9,9 +9,7 @@ in
     {
       pkgs,
       lib,
-      config,
       system,
-      self',
       ...
     }:
     {
