@@ -343,6 +343,7 @@ in
         }
       );
       default = { };
+      apply = lib.warn "Inventory.instances and related features are still under development. Please use with care.";
     };
     services = lib.mkOption {
       description = ''
