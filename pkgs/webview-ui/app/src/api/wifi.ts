@@ -11,6 +11,8 @@ export async function get_iwd_service(base_path: string, machine_name: string) {
   if (r.status == "error") {
     return null;
   }
+  // @FIXME: Clean this up once we implement the feature
+  // @ts-expect-error: This doesn't check currently
   const inventory: Inventory = r.data;
 
   const instance_key = instance_name(machine_name);
