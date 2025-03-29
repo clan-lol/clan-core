@@ -79,6 +79,7 @@ nav:
           # This is the module overview and should stay at the top
           - reference/clanModules/admin.md
           - reference/clanModules/borgbackup-static.md
+          - reference/clanModules/data-mesher.md
           - reference/clanModules/borgbackup.md
           - reference/clanModules/deltachat.md
           - reference/clanModules/disk-id.md

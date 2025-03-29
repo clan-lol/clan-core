@@ -12,6 +12,7 @@
       inputs.sops-nix.nixosModules.sops
       inputs.nixos-facter-modules.nixosModules.facter
       inputs.disko.nixosModules.default
+      inputs.data-mesher.nixosModules.data-mesher
       ./clanCore
       (
         { pkgs, lib, ... }:

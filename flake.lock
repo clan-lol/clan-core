@@ -1,5 +1,34 @@
 {
   "nodes": {
+    "data-mesher": {
+      "inputs": {
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "systems": [
+          "systems"
+        ],
+        "treefmt-nix": [
+          "treefmt-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1743174807,
+        "narHash": "sha256-seuF0N/I1Drz41RckL8e2DH3ympiQInAD9SsCnBEgEg=",
+        "ref": "refs/heads/main",
+        "rev": "562b8ad4f85bf3f2b9c2fde708a5894143a96311",
+        "revCount": 370,
+        "type": "git",
+        "url": "https://git.clan.lol/clan/data-mesher"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.clan.lol/clan/data-mesher"
+      }
+    },
     "disko": {
       "inputs": {
         "nixpkgs": [
@@ -70,6 +99,7 @@
     },
     "root": {
       "inputs": {
+        "data-mesher": "data-mesher",
         "disko": "disko",
         "flake-parts": "flake-parts",
         "nixos-facter-modules": "nixos-facter-modules",
