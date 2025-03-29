@@ -169,7 +169,7 @@
           ];
 
           installPhase = ''
-            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.inventory-schema-abstract}/schema.json ./clan_cli/inventory/classes.py --stop-at "Service"
+            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.inventory-schema-abstract}/schema.json ./clan_cli/inventory/classes.py
 
             python docs.py reference
             mkdir -p $out
@@ -188,7 +188,7 @@
           ];
 
           installPhase = ''
-            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.inventory-schema-abstract}/schema.json ./clan_cli/inventory/classes.py --stop-at "Service"
+            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.inventory-schema-abstract}/schema.json ./clan_cli/inventory/classes.py
             mkdir -p $out
             # Retrieve python API Typescript types
             python api.py > $out/API.json
@@ -214,7 +214,7 @@
             classFile = "classes.py";
           };
           installPhase = ''
-            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.inventory-schema-abstract}/schema.json b_classes.py --stop-at "Service"
+            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.inventory-schema-abstract}/schema.json b_classes.py
             file1=$classFile
             file2=b_classes.py
 

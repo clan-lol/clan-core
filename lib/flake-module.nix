@@ -16,6 +16,7 @@ in
     ./inventory/flake-module.nix
     ./build-clan/flake-module.nix
     ./values/flake-module.nix
+    ./distributed-service/flake-module.nix
   ];
   flake.lib = import ./default.nix {
     inherit lib inputs;

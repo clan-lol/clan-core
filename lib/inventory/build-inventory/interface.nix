@@ -103,7 +103,9 @@ in
       default = options;
     };
     modules = lib.mkOption {
-      type = types.attrsOf types.path;
+      # Don't define the type yet
+      # We manually transform the value with types.deferredModule.merge later to keep them serializable
+      type = types.attrsOf types.raw;
       default = { };
       defaultText = "clanModules of clan-core";
       description = ''
@@ -275,7 +277,73 @@ in
         )
       );
     };
-
+    instances = lib.mkOption {
+      # Keep as internal until all de-/serialization issues are resolved
+      visible = false;
+      internal = true;
+      description = "Multi host service module instances";
+      type = types.attrsOf (
+        types.submodule {
+          options = {
+            # ModuleSpec
+            module = lib.mkOption {
+              type = types.submodule {
+                options.input = lib.mkOption {
+                  type = types.nullOr types.str;
+                  default = null;
+                  defaultText = "Name of the input. Default to 'null' which means the module is local";
+                  description = ''
+                    Name of the input. Default to 'null' which means the module is local
+                  '';
+                };
+                options.name = lib.mkOption {
+                  type = types.str;
+                };
+              };
+            };
+            roles = lib.mkOption {
+              default = { };
+              type = types.attrsOf (
+                types.submodule {
+                  options = {
+                    # TODO: deduplicate
+                    machines = lib.mkOption {
+                      type = types.attrsOf (
+                        types.submodule {
+                          options.settings = lib.mkOption {
+                            default = { };
+                            # Dont transform the value with `types.deferredModule` here. We need to keep it json serializable
+                            # TODO: We need a custom serializer for deferredModule
+                            type = types.deferredModule;
+                          };
+                        }
+                      );
+                      default = { };
+                    };
+                    tags = lib.mkOption {
+                      type = types.attrsOf (
+                        types.submodule {
+                          options.settings = lib.mkOption {
+                            default = { };
+                            type = types.deferredModule;
+                          };
+                        }
+                      );
+                      default = { };
+                    };
+                    settings = lib.mkOption {
+                      default = { };
+                      type = types.deferredModule;
+                    };
+                  };
+                }
+              );
+            };
+          };
+        }
+      );
+      default = { };
+    };
     services = lib.mkOption {
       description = ''
         Services of the inventory.

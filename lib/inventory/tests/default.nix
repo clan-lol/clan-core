@@ -2,7 +2,6 @@
 let
   inventory = (
     import ../build-inventory {
-
       inherit lib clan-core;
     }
   );
@@ -17,11 +16,9 @@ in
             A = { };
           };
           services = {
-            clanModule = { };
             legacyModule = { };
           };
           modules = {
-            clanModule = ./clanModule;
             legacyModule = ./legacyModule;
           };
         };
@@ -30,17 +27,11 @@ in
     in
     {
       expr = {
-        clanModule = lib.filterAttrs (
-          name: _: name == "isClanModule"
-        ) compiled.machines.A.compiledServices.clanModule;
         legacyModule = lib.filterAttrs (
           name: _: name == "isClanModule"
         ) compiled.machines.A.compiledServices.legacyModule;
       };
       expected = {
-        clanModule = {
-          isClanModule = true;
-        };
         legacyModule = {
           isClanModule = false;
         };

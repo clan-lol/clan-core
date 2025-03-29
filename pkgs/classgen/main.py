@@ -32,6 +32,8 @@ def map_json_type(
         return {"str"}
     if json_type == "integer":
         return {"int"}
+    if json_type == "number":
+        return {"float"}
     if json_type == "boolean":
         return {"bool"}
     # In Python, "number" is analogous to the float type.
@@ -52,7 +54,11 @@ def map_json_type(
 
 known_classes = set()
 root_class = "Inventory"
-stop_at = None
+# TODO: make this configurable
+# For now this only includes static top-level attributes of the inventory.
+attrs = ["machines", "meta", "services"]
+
+static: dict[str, str] = {"Service": "dict[str, Any]"}
 
 
 def field_def_from_default_type(
@@ -191,18 +197,31 @@ def get_field_def(
 
 
 # Recursive function to generate dataclasses from JSON schema
-def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> str:
+def generate_dataclass(
+    schema: dict[str, Any],
+    attr_path: list[str],
+    class_name: str = root_class,
+) -> str:
     properties = schema.get("properties", {})
 
     required_fields = []
     fields_with_default = []
     nested_classes: list[str] = []
-    if stop_at and class_name == stop_at:
-        # Skip generating classes below the stop_at property
-        return f"{class_name} = dict[str, Any]"
+
+    # if We are at the top level, and the attribute name is in shallow
+    # return f"{class_name} = dict[str, Any]"
+    if class_name in static:
+        return f"{class_name} = {static[class_name]}"
 
     for prop, prop_info in properties.items():
+        # If we are at the top level, and the attribute name is not explicitly included we only do shallow
         field_name = prop.replace("-", "_")
+
+        if len(attr_path) == 0 and prop not in attrs:
+            field_def = f"{field_name}: NotRequired[dict[str, Any]]"
+            fields_with_default.append(field_def)
+            # breakpoint()
+            continue
 
         prop_type = prop_info.get("type", None)
         union_variants = prop_info.get("oneOf", [])
@@ -241,7 +260,9 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
 
                 if nested_class_name not in known_classes:
                     nested_classes.append(
-                        generate_dataclass(inner_type, nested_class_name)
+                        generate_dataclass(
+                            inner_type, [*attr_path, prop], nested_class_name
+                        )
                     )
                     known_classes.add(nested_class_name)
 
@@ -257,7 +278,9 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
                 field_types = {nested_class_name}
                 if nested_class_name not in known_classes:
                     nested_classes.append(
-                        generate_dataclass(prop_info, nested_class_name)
+                        generate_dataclass(
+                            prop_info, [*attr_path, prop], nested_class_name
+                        )
                     )
                     known_classes.add(nested_class_name)
         else:
@@ -322,6 +345,8 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
             )
             required_fields.append(field_def)
 
+    # breakpoint()
+
     fields_str = "\n    ".join(required_fields + fields_with_default)
     nested_classes_str = "\n\n".join(nested_classes)
 
@@ -336,14 +361,11 @@ def generate_dataclass(schema: dict[str, Any], class_name: str = root_class) -> 
 
 def run_gen(args: argparse.Namespace) -> None:
     print(f"Converting {args.input} to {args.output}")
-    if args.stop_at:
-        global stop_at
-        stop_at = args.stop_at
 
     dataclass_code = ""
     with args.input.open() as f:
         schema = json.load(f)
-        dataclass_code = generate_dataclass(schema)
+        dataclass_code = generate_dataclass(schema, [])
 
     with args.output.open("w") as f:
         f.write(
