@@ -1,9 +1,9 @@
-{ lib, self }:
+{ lib, clanLib }:
 let
   # Trim the .nix extension from a filename
   trimExtension = name: builtins.substring 0 (builtins.stringLength name - 4) name;
 
-  jsonWithoutHeader = self.lib.jsonschema {
+  jsonWithoutHeader = clanLib.jsonschema {
     includeDefaults = true;
     header = { };
   };
@@ -13,7 +13,7 @@ let
     lib.mapAttrs (
       _moduleName: rolesOptions:
       lib.mapAttrs (_roleName: options: jsonWithoutHeader.parseOptions options { }) rolesOptions
-    ) (self.lib.evalClanModulesWithRoles modules);
+    ) (clanLib.evalClan.evalClanModulesWithRoles modules);
 
   evalFrontmatter =
     {

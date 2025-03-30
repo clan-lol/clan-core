@@ -205,7 +205,7 @@ in
       inherit lib inventory;
       flake = config.self;
     };
-    inherit (clan-core) clanModules;
+    inherit (clan-core) clanModules clanLib;
     inherit inventoryFile;
     inventoryValuesPrios =
       # Temporary workaround
@@ -217,9 +217,6 @@ in
     templates = config.templates;
     inventory = config.inventory;
     meta = config.inventory.meta;
-    lib = {
-      inherit (clan-core.lib) select;
-    };
 
     source = "${clan-core}";
 

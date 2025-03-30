@@ -2,7 +2,8 @@
 let
   inventory = (
     import ../build-inventory {
-      inherit lib clan-core;
+      inherit lib;
+      clanLib = clan-core.clanLib;
     }
   );
   inherit (inventory) buildInventory;

@@ -3,7 +3,7 @@
   config,
   resolveTags,
   inventory,
-  clan-core,
+  clanLib,
   machineName,
   serviceConfigs,
   ...
@@ -14,7 +14,7 @@ in
 {
   # Roles resolution
   # : List String
-  supportedRoles = clan-core.lib.modules.getRoles inventory.modules serviceName;
+  supportedRoles = clanLib.modules.getRoles inventory.modules serviceName;
   matchedRoles = builtins.attrNames (
     lib.filterAttrs (_: ms: builtins.elem machineName ms) config.machinesRoles
   );
@@ -56,7 +56,7 @@ in
 
   assertions = lib.concatMapAttrs (
     instanceName: resolvedRoles:
-    clan-core.lib.modules.checkConstraints {
+    clanLib.modules.checkConstraints {
       moduleName = serviceName;
       allModules = inventory.modules;
       inherit resolvedRoles instanceName;

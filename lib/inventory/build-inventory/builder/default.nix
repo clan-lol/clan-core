@@ -1,7 +1,7 @@
 {
   lib,
   config,
-  clan-core,
+  clanLib,
   ...
 }:
 let
@@ -43,8 +43,7 @@ let
 
   checkService =
     modulepath: serviceName:
-    builtins.elem "inventory"
-      (clan-core.lib.modules.getFrontmatter modulepath serviceName).features or [ ];
+    builtins.elem "inventory" (clanLib.modules.getFrontmatter modulepath serviceName).features or [ ];
 
   compileMachine =
     { machineConfig }:
@@ -160,7 +159,7 @@ in
                 inherit
                   resolveTags
                   inventory
-                  clan-core
+                  clanLib
                   machineName
                   serviceConfigs
                   ;
