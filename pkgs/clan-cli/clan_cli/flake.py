@@ -154,7 +154,9 @@ class FlakeCacheEntry:
             self.value = value
 
     def insert(
-        self, value: str | float | dict[str, Any] | list[Any], selectors: list[Selector]
+        self,
+        value: str | float | dict[str, Any] | list[Any] | None,
+        selectors: list[Selector],
     ) -> None:
         selector: Selector
         if selectors == []:
@@ -244,6 +246,12 @@ class FlakeCacheEntry:
                 if self.value != value:
                     msg = "value mismatch in cache, something is fishy"
                     raise TypeError(msg)
+
+        elif value is None:
+            if self.value is not None:
+                msg = "value mismatch in cache, something is fishy"
+                raise TypeError(msg)
+
         else:
             msg = f"Cannot insert value of type {type(value)} into cache"
             raise TypeError(msg)

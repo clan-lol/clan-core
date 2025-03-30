@@ -17,6 +17,14 @@ def test_select() -> None:
     assert not test_cache.is_cached(["x", "z", 1])
 
 
+def test_insert() -> None:
+    test_cache = FlakeCacheEntry({}, [])
+    # Inserting the same thing twice should succeed
+    test_cache.insert(None, ["nix"])
+    test_cache.insert(None, ["nix"])
+    assert test_cache.select(["nix"]) is None
+
+
 def test_out_path() -> None:
     testdict = {"x": {"y": [123, 345, 456], "z": "/nix/store/bla"}}
     test_cache = FlakeCacheEntry(testdict, [])
