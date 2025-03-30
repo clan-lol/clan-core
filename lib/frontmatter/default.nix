@@ -13,7 +13,7 @@ let
     lib.mapAttrs (
       _moduleName: rolesOptions:
       lib.mapAttrs (_roleName: options: jsonWithoutHeader.parseOptions options { }) rolesOptions
-    ) (clanLib.evalClanModulesWithRoles modules);
+    ) (clanLib.evalClan.evalClanModulesWithRoles modules);
 
   evalFrontmatter =
     {
