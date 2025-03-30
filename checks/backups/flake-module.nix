@@ -160,14 +160,10 @@
           "flake.lock"
           "flakeModules"
           "inventory.json"
-          "lib/build-clan"
-          "lib/default.nix"
-          "lib/select.nix"
-          "lib/flake-module.nix"
-          "lib/frontmatter"
-          "lib/inventory"
-          "lib/constraints"
           "nixosModules"
+          # Just include everything in 'lib'
+          # If anything changes in /lib that may affect everything
+          "lib"
         ];
       };
     in
