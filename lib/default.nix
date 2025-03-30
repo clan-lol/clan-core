@@ -24,12 +24,9 @@ lib.fix (clanLib: {
     inherit lib nixpkgs;
     clan-core = self;
   };
-  inventory = import ./inventory {
-    inherit lib;
-    clan-core = self;
-  };
   # ------------------------------------
   # Lib functions that don't depend on 'self'
+  inventory = clanLib.callLib ./inventory { };
   modules = clanLib.callLib ./frontmatter { };
   facts = import ./facts.nix { inherit lib; };
   values = import ./values { inherit lib; };
