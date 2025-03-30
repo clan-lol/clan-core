@@ -86,7 +86,7 @@ class FlakeCacheEntry:
             self.selector = {int(selectors[0])}
             selector = int(selectors[0])
         elif isinstance(selectors[0], str):
-            self.selector = {(selectors[0])}
+            self.selector = {selectors[0]}
             selector = selectors[0]
         elif isinstance(selectors[0], AllSelector):
             self.selector = AllSelector()
@@ -481,7 +481,7 @@ class Flake:
               flake = builtins.getFlake("path:{self.store_path}?narHash={self.hash}");
             in
               flake.inputs.nixpkgs.legacyPackages.{config["system"]}.writeText "clan-flake-select" (
-                builtins.toJSON [ ({" ".join([f"flake.clanInternals.lib.select ''{attr}'' flake" for attr in selectors])}) ]
+                builtins.toJSON [ ({" ".join([f"flake.clanInternals.clanLib.select ''{attr}'' flake" for attr in selectors])}) ]
               )
         """
         if tmp_store := nix_test_store():
