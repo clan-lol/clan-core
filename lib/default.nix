@@ -13,6 +13,8 @@ lib.fix (clanLib: {
   # We should reduce the dependency on 'self' aka the 'flake' object
   # This makes it easier to test
   # most of the time passing the whole flake is unnecessary
+  callLib = file: args: import file { inherit lib clanLib; } // args;
+
   evalClan = import ./eval-clan-modules {
     inherit lib;
     clan-core = self;
