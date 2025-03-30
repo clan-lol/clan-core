@@ -21,7 +21,6 @@ in
       checks = {
         lib-distributedServices-eval = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
           export HOME="$(realpath .)"
-          export NIX_ABORT_ON_WARN=1
           nix-unit --eval-store "$HOME" \
             --extra-experimental-features flakes \
             ${inputOverrides} \

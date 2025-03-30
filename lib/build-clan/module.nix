@@ -79,7 +79,7 @@ let
           { imports = inventoryClass.machines.${name}.machineImports or [ ]; }
 
           # Import the distribute services
-          { imports = config.clanInternals.distributedServices.allMachines.${name} or []; }
+          { imports = config.clanInternals.distributedServices.allMachines.${name} or [ ]; }
           (
             {
               # Settings
