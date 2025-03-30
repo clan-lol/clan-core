@@ -77,6 +77,9 @@ let
           # Inherit the inventory assertions ?
           # { inherit (mergedInventory) assertions; }
           { imports = inventoryClass.machines.${name}.machineImports or [ ]; }
+
+          # Import the distribute services
+          { imports = config.clanInternals.distributedServices.allMachines.${name} or [ ]; }
           (
             {
               # Settings
@@ -165,18 +168,6 @@ let
 in
 {
   imports = [
-    # Temporarily disable auto-imports since the type of the modules is not a plain path anymore we cant "merge" multiple definitions
-    # That this feature worked previously seems like a coincidence.
-    # TODO(@Qubasa): make sure modules are not imported twice.
-    # Example error:
-    # The option `inventory.modules.admin' is defined multiple times while it's expected to be unique.
-    # - In `/nix/store/a0iqxl7r1spqsf2b886kn3i5sj8p37nc-source/lib/build-clan/auto-imports.nix': /nix/store/a0iqxl7r1spqsf2b886kn3i5sj8p37nc-source/clanModules/admin
-    # - In `/nix/store/a0iqxl7r1spqsf2b886kn3i5sj8p37nc-source/lib/build-clan/module.nix': /nix/store/a0iqxl7r1spqsf2b886kn3i5sj8p37nc-source/clanModules/admin
-    #
-    # After the inventory refactoring we might not need this anymore
-    # People can just import the module they want to use: `module = { input = "inputName"; name = "moduleName"; };`
-    # ./auto-imports.nix
-
     # Merge the inventory file
     {
       inventory = _: {

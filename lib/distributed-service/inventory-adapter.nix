@@ -183,8 +183,17 @@ let
       ];
     }
   ) { } importedModuleWithInstances;
+
+  # TODO: Return an attribute set of resources instead of a plain list of nixosModules
+  allMachines = lib.foldlAttrs (
+    acc: _name: eval:
+    acc
+    // lib.mapAttrs (
+      machineName: result: acc.${machineName} or [ ] ++ [ result.nixosModule ]
+    ) eval.config.result.final
+  ) { } evals;
 in
 {
   inherit importedModuleWithInstances grouped;
-  inherit evals;
+  inherit evals allMachines;
 }

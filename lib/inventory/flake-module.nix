@@ -50,11 +50,7 @@ in
               self.filter {
                 include = [
                   "flakeModules"
-                  "lib/default.nix"
-                  "lib/flake-module.nix"
-                  "lib/inventory"
-                  "lib/constraints"
-                  "lib/frontmatter"
+                  "lib"
                   "clanModules/flake-module.nix"
                   "clanModules/borgbackup"
                 ];

@@ -28,9 +28,7 @@ in
               self.filter {
                 include = [
                   "flakeModules"
-                  "lib/default.nix"
-                  "lib/flake-module.nix"
-                  "lib/values"
+                  "lib"
                 ];
               }
             }#legacyPackages.${system}.evalTests-values

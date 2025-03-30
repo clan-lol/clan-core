@@ -43,10 +43,7 @@ in
                 include = [
                   "flakeModules"
                   "inventory.json"
-                  "lib/build-clan"
-                  "lib/default.nix"
-                  "lib/flake-module.nix"
-                  "lib/inventory"
+                  "lib"
                   "machines"
                   "nixosModules"
                 ];
