@@ -28,11 +28,9 @@ lib.fix (clanLib: {
     inherit lib;
     clan-core = self;
   };
-  modules = import ./frontmatter {
-    inherit lib self;
-  };
   # ------------------------------------
   # Lib functions that don't depend on 'self'
+  modules = clanLib.callLib ./frontmatter { };
   facts = import ./facts.nix { inherit lib; };
   values = import ./values { inherit lib; };
   jsonschema = import ./jsonschema { inherit lib; };
