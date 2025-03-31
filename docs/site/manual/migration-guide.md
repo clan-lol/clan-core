@@ -77,13 +77,18 @@ For the provide flake example, your flake should now look like this:
 ```nix
 {
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  
+  inputs.clan-core = {
+    url = "git+https://git.clan.lol/clan/clan-core";    
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
 
-  outputs = { self, nixpkgs, ... }:
+  outputs = { self, nixpkgs, clan-core, ... }:
   let
     clan = clan-core.lib.buildClan {
         self = self; # this needs to point at the repository root
         specialArgs = {};
-        inventory.meta.name = "NEEDS_TO_BE_UNIQUE"; # TODO: Changeme
+        meta.name = throw "Change me to something unique";
 
         machines = {
             berlin = {
