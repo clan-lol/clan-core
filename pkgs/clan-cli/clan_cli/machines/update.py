@@ -161,7 +161,7 @@ def deploy_machines(machines: list[Machine]) -> None:
             switch_cmd.extend(["--target-host", target_host.target])
             test_cmd.extend(["--target-host", target_host.target])
 
-        if target_host and target_host.user != "root":
+        if (target_host and target_host.user != "root") or host.user != "root":
             switch_cmd.extend(["--use-remote-sudo"])
             test_cmd.extend(["--use-remote-sudo"])
 
