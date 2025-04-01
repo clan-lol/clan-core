@@ -208,7 +208,7 @@ in
     # TODO: unify this interface
     # We should have only clan.modules. (consistent with clan.templates)
     inherit (clan-core) clanModules clanLib;
-    modules = clan-core.modules;
+    modules = clan-core.clanModules;
 
     inherit inventoryFile;
     inventoryValuesPrios =

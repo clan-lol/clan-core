@@ -5,14 +5,7 @@
   lib,
   nixpkgs,
 }:
-let
-  clanResultAttributes = [
-    "clanInternals"
-    "nixosConfigurations"
-  ];
-in
 {
-  inherit clanResultAttributes;
   flakePartsModule = {
     imports = [
       ./interface.nix
@@ -25,6 +18,7 @@ in
 
     # Arguments of the first function
     - clan-core: Self, provided by our flake-parts module
+    - publicAttrs: { clan :: List Str, topLevel :: List Str } Publicly exported attribute names
 
     # Arguments of the second function (aka 'buildClan')
     - self: Reference to the users flake
@@ -34,13 +28,13 @@ in
 
     # Returns
 
-    A module evaluation containing '.config' and '.options'
-
-    NOTE:
-    The result might export all kinds of options at the '.config' top level.
+    Public attributes of buildClan. As specified in publicAttrs.
   */
   buildClanWith =
-    { clan-core }:
+    {
+      clan-core,
+      publicAttrs ? import ./public.nix,
+    }:
     {
       ## Inputs
       self ? lib.warn "Argument: 'self' must be set when using 'buildClan'." null, # Reference to the current flake
@@ -65,12 +59,20 @@ in
         inherit specialArgs;
       };
       rest = builtins.removeAttrs attrs [ "specialArgs" ];
+      result = eval {
+        imports = [
+          rest
+          # implementation
+          ./module.nix
+        ];
+      };
     in
-    eval {
-      imports = [
-        rest
-        # implementation
-        ./module.nix
-      ];
-    };
+    {
+      clan = lib.genAttrs publicAttrs.clan (
+        name:
+        result.clanInternals.${name}
+          or (throw "Output: clanInternals.${name} not found. Check: ${result.file}")
+      );
+    }
+    // lib.filterAttrs (name: _v: builtins.elem name publicAttrs.topLevel) result;
 }

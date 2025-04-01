@@ -11,9 +11,24 @@ let
   inherit (lib) types;
 
   buildClanModule = clan-core.clanLib.buildClanModule;
+
+  publicAttrs = import ../lib/build-clan/public.nix;
+  # Create output options only for listed attributes
+  outputModule = {
+    clan = lib.genAttrs publicAttrs.clan (
+      name:
+      config.clan.clanInternals.${name}
+        or (throw "Output: clanInternals.${name} not found. Check: ${config.file}")
+    );
+    topLevel = {
+      options = lib.genAttrs publicAttrs.topLevel (_: lib.mkOption { });
+      config = lib.genAttrs publicAttrs.topLevel (
+        name: config.clan.${name} or (throw "Output: clan.${name} not found. See: ${config.file}")
+      );
+    };
+  };
 in
 {
-
   options.clan = lib.mkOption {
     default = { };
     type = types.submoduleWith {
@@ -27,16 +42,16 @@ in
     };
   };
 
-  options.flake = flake-parts-lib.mkSubmoduleOptions {
-    clan = lib.mkOption { type = types.raw; };
-    clanInternals = lib.mkOption { type = types.raw; };
-  };
+  options.flake =
+    flake-parts-lib.mkSubmoduleOptions {
+      clan = lib.mkOption { type = types.raw; };
+    }
+    // outputModule.topLevel.options;
   config = {
-    flake.clan = {
-      inherit (config.clan.clanInternals) templates;
-    };
-    flake.clanInternals = config.clan.clanInternals;
-    flake.nixosConfigurations = config.clan.nixosConfigurations;
+    flake = {
+      clan = outputModule.clan;
+    } // outputModule.topLevel.config;
   };
+
   _file = __curPos.file;
 }
