@@ -20,7 +20,7 @@
   ...
 }@attrs:
 let
-  eval = import ./eval.nix {
+  eval = import ./function-adapter.nix {
     inherit
       lib
       nixpkgs
