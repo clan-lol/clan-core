@@ -20,10 +20,12 @@ lib.fix (clanLib: {
     clan-core = self;
     pkgs = nixpkgs.legacyPackages.x86_64-linux;
   };
-  buildClan = import ./build-clan {
+
+  buildClanModule = import ./build-clan {
     inherit lib nixpkgs;
     clan-core = self;
   };
+  buildClan = clanLib.buildClanModule.buildClan;
   # ------------------------------------
   # Lib functions that don't depend on 'self'
   inventory = clanLib.callLib ./inventory { };

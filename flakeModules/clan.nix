@@ -9,6 +9,8 @@ clan-core:
 }:
 let
   inherit (lib) types;
+
+  buildClanModule = clan-core.clanLib.buildClanModule;
 in
 {
 
@@ -20,8 +22,7 @@ in
         inherit (inputs) nixpkgs;
       };
       modules = [
-        ../lib/build-clan/interface.nix
-        ../lib/build-clan/module.nix
+        buildClanModule.flakePartsModule
       ];
     };
   };
