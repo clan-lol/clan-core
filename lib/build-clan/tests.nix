@@ -6,7 +6,7 @@
   ...
 }:
 let
-  evalClan = import ./eval.nix {
+  evalClan = import ./function-adapter.nix {
     inherit lib nixpkgs clan-core;
     self = ./.;
   };

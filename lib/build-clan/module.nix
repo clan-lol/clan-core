@@ -205,7 +205,11 @@ in
       inherit lib inventory;
       flake = config.self;
     };
+    # TODO: unify this interface
+    # We should have only clan.modules. (consistent with clan.templates)
     inherit (clan-core) clanModules clanLib;
+    modules = clan-core.modules;
+
     inherit inventoryFile;
     inventoryValuesPrios =
       # Temporary workaround
@@ -213,7 +217,6 @@ in
         # tags are freeformType which is not supported yet.
         [ "tags" ];
 
-    modules = config.modules;
     templates = config.templates;
     inventory = config.inventory;
     meta = config.inventory.meta;
