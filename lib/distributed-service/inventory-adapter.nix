@@ -197,5 +197,10 @@ let
   ) { } evals;
 in
 {
-  inherit importedModuleWithInstances grouped evals allMachines;
+  inherit
+    importedModuleWithInstances
+    grouped
+    evals
+    allMachines
+    ;
 }

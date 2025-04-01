@@ -1,6 +1,6 @@
 { lib, callInventoryAdapter }:
-
-let # Authored module
+let
+  # Authored module
   # A minimal module looks like this
   # It isn't exactly doing anything but it's a valid module that produces an output
   modules."A" = {
