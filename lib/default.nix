@@ -23,9 +23,8 @@ lib.fix (clanLib: {
 
   buildClanModule = import ./build-clan {
     inherit lib nixpkgs;
-    clan-core = self;
   };
-  buildClan = clanLib.buildClanModule.buildClan;
+  buildClan = clanLib.buildClanModule.buildClanWith { clan-core = self; };
   # ------------------------------------
   # Lib functions that don't depend on 'self'
   inventory = clanLib.callLib ./inventory { };

@@ -4,7 +4,6 @@
 {
   lib,
   nixpkgs,
-  clan-core,
 }:
 let
   clanResultAttributes = [
@@ -20,10 +19,28 @@ in
       ./module.nix
     ];
   };
+
   /**
-    Function that returns the same result as the correlated flake-parts module
+    A function that takes some arguments such as 'clan-core' and returns the 'buildClan' function.
+
+    # Arguments of the first function
+    - clan-core: Self, provided by our flake-parts module
+
+    # Arguments of the second function (aka 'buildClan')
+    - self: Reference to the users flake
+    - inventory: An "Inventory" attribute set, see the docs, for how to construct one
+    - specialArgs: Extra arguments to pass to nixosSystem i.e. useful to make self available
+    - ...: Any other argument of the 'clan' submodule. See the docs for all available options
+
+    # Returns
+
+    A module evaluation containing '.config' and '.options'
+
+    NOTE:
+    The result might export all kinds of options at the '.config' top level.
   */
-  buildClan =
+  buildClanWith =
+    { clan-core }:
     {
       ## Inputs
       self ? lib.warn "Argument: 'self' must be set when using 'buildClan'." null, # Reference to the current flake
@@ -33,7 +50,7 @@ in
       # deadnix: skip
       inventory ? { },
       ## Special inputs (not passed to the module system as config)
-      specialArgs ? { }, # Extra arguments to pass to nixosSystem i.e. useful to make self available # A set containing clan meta: name :: string, icon :: string, description :: string
+      specialArgs ? { }, # Extra arguments to pass to nixosSystem i.e. useful to make self available
       ##
       ...
     }@attrs:
