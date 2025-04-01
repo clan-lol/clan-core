@@ -54,7 +54,7 @@ let
         ) [ ] members.tags or [ ]);
     };
 
-  machineHasTag = machineName: tagName: lib.elem tagName inventory.machines.${machineName}.tags;
+  # machineHasTag = machineName: tagName: lib.elem tagName inventory.machines.${machineName}.tags;
 
   # map the instances into the module
   importedModuleWithInstances = lib.mapAttrs (
@@ -119,9 +119,12 @@ let
             machineName:
             let
               machineSettings = instance.roles.${roleName}.machines.${machineName}.settings or { };
-              settingsViaTags = lib.filterAttrs (
-                tagName: _: machineHasTag machineName tagName
-              ) instance.roles.${roleName}.tags;
+              # TODO: tag settings
+              # Wait for this feature until option introspection for 'settings' is done.
+              # This might get too complex to handle otherwise.
+              # settingsViaTags = lib.filterAttrs (
+              #   tagName: _: machineHasTag machineName tagName
+              # ) instance.roles.${roleName}.tags;
             in
             {
               # TODO: Do we want to wrap settings with
@@ -129,7 +132,7 @@ let
               settings = {
                 imports = [
                   machineSettings
-                ] ++ lib.attrValues (lib.mapAttrs (_tagName: v: v.settings) settingsViaTags);
+                ]; # ++ lib.attrValues (lib.mapAttrs (_tagName: v: v.settings) settingsViaTags);
               };
             }
           );
@@ -194,6 +197,10 @@ let
   ) { } evals;
 in
 {
-  inherit importedModuleWithInstances grouped;
-  inherit evals allMachines;
+  inherit
+    importedModuleWithInstances
+    grouped
+    evals
+    allMachines
+    ;
 }

@@ -14,7 +14,7 @@ in
     }:
     {
       # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.<attrName>
-      legacyPackages.evalTest-distributedServices = import ./tests {
+      legacyPackages.evalTests-distributedServices = import ./tests {
         inherit lib self;
       };
 
@@ -24,7 +24,7 @@ in
           nix-unit --eval-store "$HOME" \
             --extra-experimental-features flakes \
             ${inputOverrides} \
-            --flake ${self}#legacyPackages.${system}.evalTest-distributedServices
+            --flake ${self}#legacyPackages.${system}.evalTests-distributedServices
 
           touch $out
         '';
