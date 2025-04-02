@@ -352,7 +352,7 @@ Examples:
   List all the machines managed by clan.
 
   $ clan machines update [MACHINES]
-  Will update the specified machine [MACHINE], if [MACHINE] is omitted, the command
+  Will update the specified machines [MACHINES], if [MACHINES] is omitted, the command
   will attempt to update every configured machine.
 
   $ clan machines install [MACHINE] --target-host [TARGET_HOST]
