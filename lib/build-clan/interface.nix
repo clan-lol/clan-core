@@ -79,7 +79,7 @@ in
     };
 
     inventory = lib.mkOption {
-      type = types.submodule { imports = [ ../inventory/build-inventory/interface.nix ]; };
+      type = types.submodule { imports = [ self.clanLib.inventory.interface ]; };
       description = ''
         The `Inventory` submodule.
 

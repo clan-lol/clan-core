@@ -1,5 +1,6 @@
 {
   lib,
+  clanLib,
   ...
 }:
 let
@@ -12,7 +13,7 @@ let
     (evalModules {
       # Static modules
       modules = [
-        ../../inventory/build-inventory/interface.nix
+        clanLib.inventory.interface
         {
           modules.test = { };
         }
@@ -20,15 +21,13 @@ let
       ];
     }).config;
 
-  flakeFixture = {
-    inputs = { };
+  flakeInputsFixture = {
   };
 
   callInventoryAdapter =
     inventoryModule:
-    import ../inventory-adapter.nix {
-      inherit lib;
-      flake = flakeFixture;
+    clanLib.inventory.mapInstances {
+      flakeInputs = flakeInputsFixture;
       inventory = evalInventory inventoryModule;
     };
 in
@@ -56,7 +55,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = res.evals ? "self-simple-module";
+      expr = res.importedModulesEvaluated ? "self-simple-module";
       expected = true;
     };
 
@@ -148,7 +147,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.evals.self-A.config.instances;
+      expr = lib.attrNames res.importedModulesEvaluated.self-A.config.instances;
       expected = [
         "instance_bar"
         "instance_foo"
@@ -200,7 +199,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.evals.self-A.config.result.allMachines;
+      expr = lib.attrNames res.importedModulesEvaluated.self-A.config.result.allMachines;
       expected = [
         "jon"
         "sara"
@@ -250,7 +249,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.evals.self-A.config.result.allMachines;
+      expr = lib.attrNames res.importedModulesEvaluated.self-A.config.result.allMachines;
       expected = [
         "jon"
         "sara"

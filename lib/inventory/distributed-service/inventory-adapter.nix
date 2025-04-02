@@ -11,49 +11,16 @@
 #   Also combines the settings for 'machines' and 'tags'.
 {
   lib,
+  clanLib,
+  ...
+}:
+{
   # This is used to resolve the module imports from 'flake.inputs'
-  flake,
+  flakeInputs,
   # The clan inventory
   inventory,
 }:
 let
-  # Returns the list of machine names
-  # { ... } -> [ string ]
-  resolveTags =
-    {
-      # Available InventoryMachines :: { {name} :: { tags = [ string ]; }; }
-      machines,
-      # Requested members :: { machines, tags }
-      # Those will be resolved against the available machines
-      members,
-      # Not needed for resolution - only for error reporting
-      roleName,
-      instanceName,
-    }:
-    {
-      machines =
-        members.machines or [ ]
-        ++ (builtins.foldl' (
-          acc: tag:
-          let
-            # For error printing
-            availableTags = lib.foldlAttrs (
-              acc: _: v:
-              v.tags or [ ] ++ acc
-            ) [ ] (machines);
-
-            tagMembers = builtins.attrNames (lib.filterAttrs (_n: v: builtins.elem tag v.tags or [ ]) machines);
-          in
-          if tagMembers == [ ] then
-            lib.warn ''
-              Service instance '${instanceName}': - ${roleName} tags: no machine with tag '${tag}' found.
-              Available tags: ${builtins.toJSON (lib.unique availableTags)}
-            '' acc
-          else
-            acc ++ tagMembers
-        ) [ ] members.tags or [ ]);
-    };
-
   # machineHasTag = machineName: tagName: lib.elem tagName inventory.machines.${machineName}.tags;
 
   # map the instances into the module
@@ -69,13 +36,13 @@ let
         else
           let
             input =
-              flake.inputs.${instance.module.input} or (throw ''
+              flakeInputs.${instance.module.input} or (throw ''
                 Flake doesn't provide input with name '${instance.module.input}'
 
                 Choose one of the following inputs:
                 - ${
                   builtins.concatStringsSep "\n- " (
-                    lib.attrNames (lib.filterAttrs (_name: input: input ? clan) flake.inputs)
+                    lib.attrNames (lib.filterAttrs (_name: input: input ? clan) flakeInputs)
                   )
                 }
 
@@ -102,7 +69,7 @@ let
       instanceRoles = lib.mapAttrs (
         roleName: role:
         let
-          resolvedMachines = resolveTags {
+          resolvedMachines = clanLib.inventory.resolveTags {
             members = {
               # Explicit members
               machines = lib.attrNames role.machines;
@@ -150,7 +117,7 @@ let
   ) inventory.instances;
 
   # TODO: Eagerly check the _class of the resolved module
-  evals = lib.mapAttrs (
+  importedModulesEvaluated = lib.mapAttrs (
     _module_ident: instances:
     (lib.evalModules {
       class = "clan.service";
@@ -189,18 +156,18 @@ let
 
   # TODO: Return an attribute set of resources instead of a plain list of nixosModules
   allMachines = lib.foldlAttrs (
-    acc: _name: eval:
+    acc: _module_ident: eval:
     acc
     // lib.mapAttrs (
       machineName: result: acc.${machineName} or [ ] ++ [ result.nixosModule ]
     ) eval.config.result.final
-  ) { } evals;
+  ) { } importedModulesEvaluated;
 in
 {
   inherit
     importedModuleWithInstances
     grouped
-    evals
+
     allMachines
-    ;
+    importedModulesEvaluated;
 }

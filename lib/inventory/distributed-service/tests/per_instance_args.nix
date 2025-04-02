@@ -100,25 +100,25 @@ in
   test_per_instance_arguments = {
     expr = {
       instanceName =
-        res.evals.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule.instanceName;
+        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule.instanceName;
 
       # settings are specific.
       # Below we access:
       # instance = instance_foo
       # roles = peer
       # machines = jon
-      settings = filterInternals res.evals.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.settings;
-      machine = mapInternalsRecursive res.evals.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.machine;
+      settings = filterInternals res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.settings;
+      machine = mapInternalsRecursive res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.machine;
 
       # hasRoleSettings =
-      #   res.evals.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer ? settings;
+      #   res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer ? settings;
 
       # # settings are specific.
       # # Below we access:
       # # instance = instance_foo
       # # roles = peer
       # # machines = *
-      # specificRoleSettings = filterInternals res.evals.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer.settings;
+      # specificRoleSettings = filterInternals res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer.settings;
     };
     expected = {
       instanceName = "instance_foo";
@@ -150,7 +150,7 @@ in
   test_per_instance_settings_vendoring = {
     expr =
       mapInternalsRecursive
-        res.evals.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule.vendoredSettings;
+        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule.vendoredSettings;
     expected = {
       # Returns another override
       __functor = "__functor";

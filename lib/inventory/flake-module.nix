@@ -5,6 +5,9 @@ let
   );
 in
 {
+  imports = [
+    ./distributed-service/flake-module.nix
+  ];
   perSystem =
     {
       pkgs,
