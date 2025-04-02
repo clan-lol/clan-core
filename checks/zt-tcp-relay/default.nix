@@ -10,7 +10,6 @@
           self.nixosModules.clanCore
           self.clanModules.zt-tcp-relay
           {
-            clan.core.settings.machine.name = "machine";
             clan.core.settings.directory = ./.;
           }
         ];

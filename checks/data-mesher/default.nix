@@ -69,17 +69,14 @@
       imports = serviceConfigs.machines.admin.machineImports;
 
       config.clan.data-mesher.network.tld = "foo";
-      config.clan.core.settings.machine.name = "admin";
     };
 
     peerConfig = {
       imports = serviceConfigs.machines.peer.machineImports;
-      config.clan.core.settings.machine.name = "peer";
     };
 
     signerConfig = {
       imports = serviceConfigs.machines.signer.machineImports;
-      clan.core.settings.machine.name = "signer";
     };
 
   in

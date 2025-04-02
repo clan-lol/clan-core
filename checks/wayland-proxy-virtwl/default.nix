@@ -14,7 +14,6 @@ import ../lib/test-base.nix (
         imports = [
           self.nixosModules.clanCore
           {
-            clan.core.settings.machine.name = "machine";
             clan.core.settings.directory = ./.;
           }
         ];

@@ -11,7 +11,6 @@
       sops.age.keyFile = "/etc/privkey.age";
 
       clan.core.settings.directory = "${./.}";
-      clan.core.settings.machine.name = "machine";
 
       networking.hostName = "machine";
     };

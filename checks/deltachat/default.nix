@@ -10,7 +10,6 @@
           self.clanModules.deltachat
           self.nixosModules.clanCore
           {
-            clan.core.settings.machine.name = "machine";
             clan.core.settings.directory = ./.;
           }
         ];
