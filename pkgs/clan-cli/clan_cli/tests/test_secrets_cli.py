@@ -159,6 +159,86 @@ def test_users(
 ) -> None:
     _test_identities("users", test_flake, capture_output, age_keys, monkeypatch)
 
+    # some additional user-specific tests
+
+    admin_key = age_keys[2]
+    sops_folder = test_flake.path / "sops"
+
+    user_keys = {
+        "bob": [age_keys[0], age_keys[1]],
+        "alice": [age_keys[2]],
+        "charlie": [age_keys[3], age_keys[4]],
+    }
+
+    for user, keys in user_keys.items():
+        key_args = [f"--age-key={key.pubkey}" for key in keys]
+
+        # add the user keys
+        cli.run(
+            [
+                "secrets",
+                "users",
+                "add",
+                "--flake",
+                str(test_flake.path),
+                user,
+                *key_args,
+            ]
+        )
+        assert (sops_folder / "users" / user / "key.json").exists()
+
+        # check they are returned in get
+        with capture_output as output:
+            cli.run(["secrets", "users", "get", "--flake", str(test_flake.path), user])
+
+        for key in keys:
+            assert key.pubkey in output.out
+
+        # set a secret
+        secret_name = f"{user}_secret"
+        cli.run(
+            [
+                "secrets",
+                "set",
+                "--flake",
+                str(test_flake.path),
+                "--user",
+                user,
+                secret_name,
+            ]
+        )
+
+        # check the secret has each of our user's keys as a recipient
+        # in addition the admin key should be there
+        assert_secrets_file_recipients(
+            test_flake.path,
+            secret_name,
+            expected_age_recipients_keypairs=[admin_key, *keys],
+        )
+
+        if len(keys) == 1:
+            continue
+
+        # remove one of the keys
+        cli.run(
+            [
+                "secrets",
+                "users",
+                "remove-key",
+                "--flake",
+                str(test_flake.path),
+                user,
+                keys[0].pubkey,
+            ]
+        )
+
+        # check the secret has been updated
+        assert_secrets_file_recipients(
+            test_flake.path,
+            secret_name,
+            expected_age_recipients_keypairs=[admin_key, *keys[1:]],
+        )
+
 
 def test_machines(
     test_flake: FlakeForTest,
@@ -786,7 +866,10 @@ def test_secrets_key_generate_gpg(
                     "testuser",
                 ]
             )
-        key = json.loads(output.out)
+        keys = json.loads(output.out)
+        assert len(keys) == 1
+
+        key = keys[0]
         assert key["type"] == "pgp"
         assert key["publickey"] == gpg_key.fingerprint
 

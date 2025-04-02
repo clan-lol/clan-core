@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import sys
+from collections.abc import Iterable
 from pathlib import Path
 
 from clan_cli.completions import add_dynamic_completer, complete_secrets, complete_users
@@ -18,7 +19,7 @@ from .folders import (
     sops_users_folder,
 )
 from .secrets import update_secrets
-from .sops import read_key, write_key
+from .sops import append_keys, read_keys, remove_keys, write_keys
 from .types import (
     VALID_USER_NAME,
     public_or_private_age_key_type,
@@ -32,13 +33,12 @@ log = logging.getLogger(__name__)
 def add_user(
     flake_dir: Path,
     name: str,
-    key: str,
-    key_type: sops.KeyType,
+    keys: Iterable[sops.SopsKey],
     force: bool,
 ) -> None:
     path = sops_users_folder(flake_dir) / name
 
-    write_key(path, key, key_type, overwrite=force)
+    write_keys(path, keys, overwrite=force)
     updated_paths = [path]
 
     filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
@@ -74,9 +74,9 @@ def remove_user(flake_dir: Path, name: str) -> None:
     commit_files(updated_paths, flake_dir, f"Remove user {name}")
 
 
-def get_user(flake_dir: Path, name: str) -> sops.SopsKey:
-    key, key_type = read_key(sops_users_folder(flake_dir) / name)
-    return sops.SopsKey(key, name, key_type)
+def get_user(flake_dir: Path, name: str) -> set[sops.SopsKey]:
+    keys = read_keys(sops_users_folder(flake_dir) / name)
+    return {sops.SopsKey(key.pubkey, name, key.key_type) for key in keys}
 
 
 def list_users(flake_dir: Path) -> list[str]:
@@ -124,32 +124,82 @@ def list_command(args: argparse.Namespace) -> None:
         print("\n".join(lst))
 
 
+def add_user_key(
+    flake_dir: Path,
+    name: str,
+    keys: Iterable[sops.SopsKey],
+) -> None:
+    path = sops_users_folder(flake_dir) / name
+
+    append_keys(path, keys)
+    updated_paths = [path]
+
+    filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
+    updated_paths.extend(update_secrets(flake_dir, filter_user_secrets))
+    commit_files(
+        updated_paths,
+        flake_dir,
+        f"Add key(s) for user {name} to secrets",
+    )
+
+
+def remove_user_key(
+    flake_dir: Path,
+    name: str,
+    keys: Iterable[sops.SopsKey],
+) -> None:
+    path = sops_users_folder(flake_dir) / name
+
+    remove_keys(path, keys)
+    updated_paths = [path]
+
+    filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
+    updated_paths.extend(update_secrets(flake_dir, filter_user_secrets))
+    commit_files(
+        updated_paths,
+        flake_dir,
+        f"Remove key(s) for user {name} from secrets",
+    )
+
+
+def _key_args(args: argparse.Namespace) -> Iterable[sops.SopsKey]:
+    age_keys = args.age_key or []
+    pgp_keys = args.pgp_key or []
+
+    key_count = len(age_keys) + len(pgp_keys)
+    if args.agekey:
+        key_count += 1
+
+    if key_count == 0:
+        err_msg = (
+            "Please provide at least one key through `--pgp-key`, "
+            "`--age-key`, or as a positional (age key) argument."
+        )
+        raise ClanError(err_msg)
+
+    age_keys = [sops.SopsKey(key, "", sops.KeyType.AGE) for key in age_keys]
+    if args.agekey:
+        age_keys.append(sops.SopsKey(args.agekey, "", sops.KeyType.AGE))
+
+    pgp_keys = [sops.SopsKey(key, "", sops.KeyType.PGP) for key in pgp_keys]
+
+    return age_keys + pgp_keys
+
+
 def add_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         msg = "Could not find clan flake toplevel directory"
         raise ClanError(msg)
-    keys_args = (args.age_key, args.agekey, args.pgp_key)
-    keys_count = sum(1 if key else 0 for key in keys_args)
-    if keys_count != 1:
-        err_msg = (
-            f"Please provide one key (got {keys_count}) through `--pgp-key`, "
-            f"`--age-key`, or as a positional (age key) argument."
-        )
-        raise ClanError(err_msg)
-    if args.age_key or args.agekey:
-        key_type = sops.KeyType.AGE
-    else:
-        key_type = sops.KeyType.PGP
-    key = args.agekey or args.age_key or args.pgp_key
-    add_user(args.flake.path, args.user, key, key_type, args.force)
+
+    add_user(args.flake.path, args.user, _key_args(args), args.force)
 
 
 def get_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         msg = "Could not find clan flake toplevel directory"
         raise ClanError(msg)
-    key = get_user(args.flake.path, args.user)
-    json.dump(key.as_dict(), sys.stdout, indent=2, sort_keys=True)
+    keys = get_user(args.flake.path, args.user)
+    json.dump([key.as_dict() for key in keys], sys.stdout, indent=2, sort_keys=True)
 
 
 def remove_command(args: argparse.Namespace) -> None:
@@ -173,6 +223,22 @@ def remove_secret_command(args: argparse.Namespace) -> None:
     remove_secret(args.flake.path, args.user, args.secret)
 
 
+def add_key_command(args: argparse.Namespace) -> None:
+    if args.flake is None:
+        msg = "Could not find clan flake toplevel directory"
+        raise ClanError(msg)
+
+    add_user_key(args.flake.path, args.user, _key_args(args))
+
+
+def remove_key_command(args: argparse.Namespace) -> None:
+    if args.flake is None:
+        msg = "Could not find clan flake toplevel directory"
+        raise ClanError(msg)
+
+    remove_user_key(args.flake.path, args.user, _key_args(args))
+
+
 def register_users_parser(parser: argparse.ArgumentParser) -> None:
     subparser = parser.add_subparsers(
         title="command",
@@ -188,30 +254,7 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
         "-f", "--force", help="overwrite existing user", action="store_true"
     )
     add_parser.add_argument("user", help="the name of the user", type=user_name_type)
-    key_type = add_parser.add_mutually_exclusive_group(required=True)
-    key_type.add_argument(
-        "agekey",
-        help="public or private age key of the user. "
-        "Execute 'clan secrets key --help' on how to retrieve a key. "
-        "To fetch an age key from an SSH host key: ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age",
-        type=public_or_private_age_key_type,
-        nargs="?",
-    )
-    key_type.add_argument(
-        "--age-key",
-        help="public or private age key of the user. "
-        "Execute 'clan secrets key --help' on how to retrieve a key. "
-        "To fetch an age key from an SSH host key: ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age",
-        type=public_or_private_age_key_type,
-    )
-    key_type.add_argument(
-        "--pgp-key",
-        help=(
-            "public PGP encryption key of the user. "
-            # Use --fingerprint --fingerprint to get fingerprints for subkeys:
-            "Execute `gpg -k --fingerprint --fingerprint` and remove spaces to get it."
-        ),
-    )
+    _add_key_flags(add_parser)
     add_parser.set_defaults(func=add_command)
 
     get_parser = subparser.add_parser("get", help="get a user public key")
@@ -253,3 +296,52 @@ def register_users_parser(parser: argparse.ArgumentParser) -> None:
     )
     add_dynamic_completer(remove_secrets_action, complete_secrets)
     remove_secret_parser.set_defaults(func=remove_secret_command)
+
+    add_key_parser = subparser.add_parser(
+        "add-key", help="add one or more keys for a user"
+    )
+    add_key_user_action = add_key_parser.add_argument(
+        "user", help="the name of the user", type=user_name_type
+    )
+    add_dynamic_completer(add_key_user_action, complete_users)
+    _add_key_flags(add_key_parser)
+    add_key_parser.set_defaults(func=add_key_command)
+
+    remove_key_parser = subparser.add_parser(
+        "remove-key", help="remove one or more keys for a user"
+    )
+    remove_key_user_action = remove_key_parser.add_argument(
+        "user", help="the name of the user", type=user_name_type
+    )
+    add_dynamic_completer(remove_key_user_action, complete_users)
+    _add_key_flags(remove_key_parser)
+    remove_key_parser.set_defaults(func=remove_key_command)
+
+
+def _add_key_flags(parser: argparse.ArgumentParser) -> None:
+    key_type = parser.add_mutually_exclusive_group(required=True)
+    key_type.add_argument(
+        "agekey",
+        help="public or private age key for a user. "
+        "Execute 'clan secrets key --help' on how to retrieve a key. "
+        "To fetch an age key from an SSH host key: ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age",
+        type=public_or_private_age_key_type,
+        nargs="?",
+    )
+    key_type.add_argument(
+        "--age-key",
+        help="public or private age key for a user. "
+        "Execute 'clan secrets key --help' on how to retrieve a key. "
+        "To fetch an age key from an SSH host key: ssh-keyscan <domain_name> | nix shell nixpkgs#ssh-to-age -c ssh-to-age",
+        type=public_or_private_age_key_type,
+        action="append",
+    )
+    key_type.add_argument(
+        "--pgp-key",
+        help=(
+            "public PGP encryption key for a user. "
+            # Use --fingerprint --fingerprint to get fingerprints for subkeys:
+            "Execute `gpg -k --fingerprint --fingerprint` and remove spaces to get it."
+        ),
+        action="append",
+    )

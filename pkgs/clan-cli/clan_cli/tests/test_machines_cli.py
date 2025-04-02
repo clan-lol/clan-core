@@ -59,7 +59,7 @@ def test_machine_delete(
 ) -> None:
     flake = flake_with_sops
 
-    admin_key, machine_key, machine2_key = sops_setup.keys
+    admin_key, machine_key, machine2_key, *xs = sops_setup.keys
 
     # create a couple machines with their keys
     for name, key in (("my-machine", machine_key), ("my-machine2", machine2_key)):

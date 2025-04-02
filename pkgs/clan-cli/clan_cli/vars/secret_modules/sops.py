@@ -92,7 +92,7 @@ class SecretStore(StoreBase):
         secret_path = self.secret_path(generator, secret_name)
         recipient = sops.SopsKey.load_dir(key_dir)
         recipients = sops.get_recipients(secret_path)
-        return recipient in recipients
+        return len(recipient.intersection(recipients)) > 0
 
     def secret_path(self, generator: Generator, secret_name: str) -> Path:
         return self.directory(generator, secret_name)
@@ -258,10 +258,7 @@ class SecretStore(StoreBase):
                 )
             )
 
-        return {
-            sops.SopsKey(pubkey=key, username="", key_type=key_type)
-            for (key, key_type) in keys
-        }
+        return keys
 
     #        }
     def needs_fix(self, generator: Generator, name: str) -> tuple[bool, str | None]:
