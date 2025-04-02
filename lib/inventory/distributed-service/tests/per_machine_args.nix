@@ -84,7 +84,8 @@ in
       specificMachineSettings = filterInternals res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer.machines.jon.settings;
 
       hasRoleSettings =
-        res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer ? settings;
+        res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer
+        ? settings;
 
       # settings are specific.
       # Below we access:

@@ -169,5 +169,6 @@ in
     grouped
 
     allMachines
-    importedModulesEvaluated;
+    importedModulesEvaluated
+    ;
 }

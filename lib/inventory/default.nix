@@ -2,8 +2,8 @@
 {
   inherit (import ./build-inventory { inherit lib clanLib; }) buildInventory;
   interface = ./build-inventory/interface.nix;
-  mapInstances = clanLib.callLib ./distributed-service/inventory-adapter.nix {};
-    # Returns the list of machine names
+  mapInstances = clanLib.callLib ./distributed-service/inventory-adapter.nix { };
+  # Returns the list of machine names
   # { ... } -> [ string ]
   resolveTags =
     {

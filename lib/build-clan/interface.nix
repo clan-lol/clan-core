@@ -1,6 +1,8 @@
 {
   lib,
   self,
+  # TODO: Use dependency injection to allow for testing
+  # inventoryInterface,
   ...
 }:
 let
@@ -79,7 +81,7 @@ in
     };
 
     inventory = lib.mkOption {
-      type = types.submodule { imports = [ self.clanLib.inventory.interface ]; };
+      type = types.submodule { imports = [ ../inventory/build-inventory/interface.nix ]; };
       description = ''
         The `Inventory` submodule.
 
@@ -128,6 +130,7 @@ in
       visible = false;
       # ClanInternals
       type = types.submodule {
+        freeformType = types.attrsOf types.raw;
         options = {
           # Those options are interfaced by the CLI
           # We don't specify the type here, for better performance.
