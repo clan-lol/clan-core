@@ -29,6 +29,6 @@ lib.fix (clanLib: {
   modules = clanLib.callLib ./inventory/frontmatter { };
   values = import ./introspection { inherit lib; };
   jsonschema = import ./jsonschema { inherit lib; };
-  select = import ./select.nix;
+  select = import select/default.nix;
   facts = import ./facts.nix { inherit lib; };
 })
