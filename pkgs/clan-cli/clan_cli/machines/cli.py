@@ -27,7 +27,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         help="Update one or more machines",
         epilog=(
             """
-This subcommand provides an interface to update machines managed by clan.
+This subcommand provides an interface to update machines managed by Clan.
 
 Examples:
 
@@ -110,7 +110,7 @@ Installing a machine means overwriting the target's disk.
         """,
         epilog=(
             """
-This subcommand provides an interface to install machines managed by clan.
+This subcommand provides an interface to install machines managed by Clan.
 
 Examples:
 
