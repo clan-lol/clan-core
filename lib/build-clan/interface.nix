@@ -72,6 +72,14 @@ in
       '';
     };
 
+    modules = lib.mkOption {
+      type = types.attrsOf types.raw;
+      default = { };
+      description = ''
+        An attribute set of exported modules.
+      '';
+    };
+
     templates = lib.mkOption {
       type = types.submodule { imports = [ ./templates/interface.nix ]; };
       default = { };

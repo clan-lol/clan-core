@@ -8,6 +8,7 @@
   # flake.clan.{name} <- clanInternals.{name}
   clan = [
     "templates"
+    "modules"
   ];
   # flake.{name} <- clan.{name}
   topLevel = [
