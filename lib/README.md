@@ -44,15 +44,15 @@ Example filetree
 ```sh
 .
 ├── default.nix
-├── feature_foo
+├── build-clan
 │   ├── impl.nix
 │   └── test.nix
-└── feature_bar
+└── inventory
     ├── impl.nix
-    ├── complex-subfeature
+    ├── services-subfeature
     │   ├── impl.nix
     │   └── test.nix
-    ├── testless-subfeature # <- We immediately see that this feature is not tested on itself.
+    ├── instances-subfeature # <- We immediately see that this feature is not tested on itself.
     │   └── impl.nix
     └── test.nix
 ```

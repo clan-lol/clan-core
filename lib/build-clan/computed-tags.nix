@@ -23,7 +23,7 @@
           { name, ... }:
           {
             tags = builtins.attrNames (
-              lib.filterAttrs (_t: tagMemers: builtins.elem name tagMemers) config.inventory.tags
+              lib.filterAttrs (_t: tagMembers: builtins.elem name tagMembers) config.inventory.tags
             );
           }
         )
