@@ -1,4 +1,4 @@
-{ callInventoryAdapter }:
+{ callInventoryAdapter, ... }:
 let
   # Authored module
   # A minimal module looks like this
