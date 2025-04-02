@@ -29,6 +29,7 @@ in
               include = [
                 "flakeModules"
                 "nixosModules"
+                "lib"
               ];
             }
           }#legacyPackages.${system}.evalTests-module-clan-vars
