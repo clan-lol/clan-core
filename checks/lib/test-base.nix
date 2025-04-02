@@ -8,14 +8,21 @@ in
   hostPkgs = pkgs;
   # speed-up evaluation
   defaults = (
-    { config, ... }:
+    { config, options, ... }:
     {
       imports = [
         ./minify.nix
       ];
-      documentation.enable = lib.mkDefault false;
-      nix.settings.min-free = 0;
-      system.stateVersion = config.system.nixos.release;
+      config = lib.mkMerge [
+        (lib.optionalAttrs (options ? clan) {
+          clan.core.settings.machine.name = config.networking.hostName;
+        })
+        {
+          documentation.enable = lib.mkDefault false;
+          nix.settings.min-free = 0;
+          system.stateVersion = config.system.nixos.release;
+        }
+      ];
     }
   );
 

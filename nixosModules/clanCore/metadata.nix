@@ -117,7 +117,7 @@ in
               options = {
                 name = mkOption {
                   type = types.str;
-                  default = "nixos";
+                  readOnly = true;
                   description = ''
                     the name of the machine
                   '';

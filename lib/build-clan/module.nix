@@ -94,9 +94,6 @@ let
               # Inherited from clan wide settings
               # TODO: remove these
 
-              # Machine specific settings
-              # clan.core.settings.machine.name = name;
-
               networking.hostName = lib.mkDefault name;
 
               # For vars we need to override the system so we run vars
