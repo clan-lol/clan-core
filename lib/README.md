@@ -45,15 +45,15 @@ Example filetree
 .
 ├── default.nix
 ├── build-clan
-│   ├── impl.nix
+│   ├── default.nix
 │   └── test.nix
 └── inventory
-    ├── impl.nix
+    ├── default.nix
     ├── services-subfeature
-    │   ├── impl.nix
+    │   ├── default.nix
     │   └── test.nix
     ├── instances-subfeature # <- We immediately see that this feature is not tested on itself.
-    │   └── impl.nix
+    │   └── default.nix
     └── test.nix
 ```
 

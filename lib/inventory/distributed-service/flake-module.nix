@@ -15,7 +15,8 @@ in
     {
       # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.<attrName>
       legacyPackages.evalTests-distributedServices = import ./tests {
-        inherit lib self;
+        inherit lib;
+        clanLib = self.clanLib;
       };
 
       checks = {

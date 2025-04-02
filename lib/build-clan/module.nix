@@ -201,9 +201,9 @@ in
   clanInternals = {
     moduleSchemas = clan-core.lib.modules.getModulesSchema config.inventory.modules;
     inherit inventoryClass;
-    distributedServices = import ../distributed-service/inventory-adapter.nix {
-      inherit lib inventory;
-      flake = config.self;
+    distributedServices = clan-core.clanLib.inventory.mapInstances {
+      inherit inventory;
+      flakeInputs = config.self.inputs;
     };
     # TODO: unify this interface
     # We should have only clan.modules. (consistent with clan.templates)

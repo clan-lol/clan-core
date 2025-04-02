@@ -4,21 +4,13 @@
   self,
   ...
 }:
-let
-  inherit (lib)
-    filter
-    pathExists
-    ;
-in
 rec {
-  # We should remove this.
-  # It would enforce treating at least 'lib' as a module in a whole
-  imports = filter pathExists [
-    ./jsonschema/flake-module.nix
-    ./inventory/flake-module.nix
+  # TODO: automatically generate this from the directory conventions
+  imports = [
     ./build-clan/flake-module.nix
-    ./values/flake-module.nix
-    ./distributed-service/flake-module.nix
+    ./inventory/flake-module.nix
+    ./jsonschema/flake-module.nix
+    ./introspection/flake-module.nix
   ];
   flake.clanLib = import ./default.nix {
     inherit lib inputs self;

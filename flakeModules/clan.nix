@@ -35,6 +35,8 @@ in
       specialArgs = {
         inherit clan-core self;
         inherit (inputs) nixpkgs;
+        # TODO: inject the inventory interface
+        # inventoryInterface = {};
       };
       modules = [
         buildClanModule.flakePartsModule
