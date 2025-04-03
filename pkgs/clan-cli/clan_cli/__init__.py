@@ -344,15 +344,15 @@ For more detailed information, visit: {help_hyperlink("secrets", "https://docs.c
         description="Manage machines and their configuration",
         epilog=(
             f"""
-This subcommand provides an interface to machines managed by clan.
+This subcommand provides an interface to machines managed by Clan.
 
 Examples:
 
   $ clan machines list
-  List all the machines managed by clan.
+  List all the machines managed by Clan.
 
   $ clan machines update [MACHINES]
-  Will update the specified machine [MACHINE], if [MACHINE] is omitted, the command
+  Will update the specified machines [MACHINES], if [MACHINES] is omitted, the command
   will attempt to update every configured machine.
 
   $ clan machines install [MACHINE] --target-host [TARGET_HOST]
@@ -410,9 +410,9 @@ Examples:
         description="Query state information about machines",
         epilog=(
             f"""
-This subcommand provides an interface to the state managed by clan.
+This subcommand provides an interface to the state managed by Clan.
 
-State can be folders and databases that modules depend on managed by clan.
+State can be folders and databases that modules depend on managed by Clan.
 
 State directories can be added to on a per machine basis:
 ```
@@ -427,7 +427,7 @@ can be a good choice.
 Examples:
 
   $ clan state list [MACHINE]
-  List state of the machines managed by clan.
+  List state of the machines managed by Clan.
 
 For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/backups")}
         """

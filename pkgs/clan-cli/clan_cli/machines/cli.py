@@ -24,15 +24,15 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
 
     update_parser = subparser.add_parser(
         "update",
-        help="Update a machine",
+        help="Update one or more machines",
         epilog=(
             """
-This subcommand provides an interface to update machines managed by clan.
+This subcommand provides an interface to update machines managed by Clan.
 
 Examples:
 
   $ clan machines update [MACHINES]
-  Will update the specified machine [MACHINE], if [MACHINE] is omitted, the command
+  Will update the specified machines [MACHINES], if [MACHINES] is omitted, the command
   will attempt to update every configured machine.
   To exclude machines being updated `clan.deployment.requireExplicitUpdate = true;`
   can be set in the machine config.
@@ -110,7 +110,7 @@ Installing a machine means overwriting the target's disk.
         """,
         epilog=(
             """
-This subcommand provides an interface to install machines managed by clan.
+This subcommand provides an interface to install machines managed by Clan.
 
 Examples:
 

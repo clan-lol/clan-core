@@ -278,7 +278,7 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         nargs="*",
         default=[],
         metavar="MACHINE",
-        help="Machine to update. If no machine is specified, all machines will be updated.",
+        help="Machine to update. If no machines are specified, all machines that don't require explicit updates will be updated.",
     )
     add_dynamic_completer(machines_parser, complete_machines)
 
