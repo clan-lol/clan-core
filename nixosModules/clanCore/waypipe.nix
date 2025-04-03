@@ -25,6 +25,7 @@
     command = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ (lib.getExe pkgs.foot) ];
+      defaultText = "executable of pkgs.foot";
       description = "Commands that waypipe should run";
     };
   };

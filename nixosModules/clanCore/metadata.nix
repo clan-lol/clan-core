@@ -95,7 +95,7 @@ in
             description = ''
               the name of the clan
             '';
-            # Set by the flake, so it's read-only in the maschine
+            # Set by the flake, so it's read-only in the machine
             readOnly = true;
           };
           icon = lib.mkOption {
@@ -103,7 +103,7 @@ in
             description = ''
               the location of the clan icon
             '';
-            # Set by the flake, so it's read-only in the maschine
+            # Set by the flake, so it's read-only in the machine
             readOnly = true;
           };
           machine = mkOption {

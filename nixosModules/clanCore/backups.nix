@@ -11,6 +11,7 @@
               name = lib.mkOption {
                 type = lib.types.str;
                 default = name;
+                defaultText = "attribute name of the backup provider";
                 description = ''
                   Name of the backup provider
                 '';

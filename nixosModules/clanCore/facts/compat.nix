@@ -47,6 +47,7 @@
           name = lib.mkOption {
             type = lib.types.str;
             default = service.config._module.args.name;
+            defaultText = "attribute name of the service";
             description = ''
               Namespace of the service
             '';
@@ -97,6 +98,7 @@
                         name of the secret
                       '';
                       default = secret.config._module.args.name;
+                      defaultText = "attribute name of the secret";
                     };
                     path = lib.mkOption {
                       type = lib.types.path;
@@ -111,6 +113,7 @@
                     groups = lib.mkOption {
                       type = lib.types.listOf lib.types.str;
                       default = config.clan.core.sops.defaultGroups;
+                      defaultText = lib.literalExpression "config.clan.core.sops.defaultGroups";
                       description = ''
                         Groups to decrypt the secret for. By default we always use the user's key.
                       '';
@@ -133,6 +136,7 @@
                       name of the fact
                     '';
                     default = fact.config._module.args.name;
+                    defaultText = "attribute name of the fact";
                   };
                   path = lib.mkOption {
                     type = lib.types.path;
@@ -145,10 +149,10 @@
                     defaultText = lib.literalExpression "\${config.clan.core.settings.directory}/machines/\${config.clan.core.settings.machine.name}/facts/\${fact.config._module.args.name}";
                   };
                   value = lib.mkOption {
-                    defaultText = lib.literalExpression "\${config.clan.core.settings.directory}/\${fact.config.path}";
                     type = lib.types.nullOr lib.types.str;
                     default =
                       if builtins.pathExists fact.config.path then lib.strings.fileContents fact.config.path else null;
+                    defaultText = "null if fact.config.path does not exist, else the content of the file";
                   };
                 };
               })

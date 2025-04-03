@@ -28,6 +28,7 @@ in
     excludeHosts = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ config.clan.core.settings.machine.name ];
+      defaultText = lib.literalExpression "[ config.clan.core.settings.machine.name ]";
       description = "Hosts that should be excluded";
     };
     networkIps = lib.mkOption {

@@ -8,6 +8,12 @@
           [ ]
         else
           [ config.clan.core.settings.machine.name ];
+      defaultText = lib.literalExpression ''
+        if config.clan.static-hosts.topLevelDomain != "" then
+          [ ]
+        else
+          [ config.clan.core.settings.machine.name ];
+      '';
       description = "Hosts that should be excluded";
     };
     topLevelDomain = lib.mkOption {

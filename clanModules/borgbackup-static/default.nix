@@ -9,7 +9,7 @@ in
   options.clan.borgbackup-static = {
     excludeMachines = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      example = [ config.clan.core.settings.machine.name ];
+      example = lib.literalExpression "[ config.clan.core.settings.machine.name ]";
       default = [ ];
       description = ''
         Machines that should not be backuped.
@@ -20,7 +20,7 @@ in
     };
     includeMachines = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      example = [ config.clan.core.settings.machine.name ];
+      example = lib.literalExpression "[ config.clan.core.settings.machine.name ]";
       default = [ ];
       description = ''
         Machines that should be backuped.

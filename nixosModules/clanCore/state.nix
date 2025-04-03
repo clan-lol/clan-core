@@ -19,6 +19,7 @@
             name = lib.mkOption {
               type = lib.types.strMatching "^[a-zA-Z0-9_-]+$";
               default = name;
+              defaultText = "attribute name of the state";
               description = ''
                 Name of the state
               '';
@@ -43,6 +44,7 @@
             preBackupCommand = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = if config.preBackupScript == null then null else "pre-backup-${name}";
+              defaultText = lib.literalExpression ''null if preBackupScript set, or else "pre-backup-${name}"'';
               readOnly = true;
               description = ''
                 Use this command in backup providers. It contains the content of preBackupScript.
@@ -73,6 +75,7 @@
             preRestoreCommand = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = if config.preRestoreScript == null then null else "pre-restore-${name}";
+              defaultText = lib.literalExpression ''null if preRestoreScript set, or else "pre-restore-${name}"'';
               readOnly = true;
               description = ''
                 This command can be called to restore the state dir from a backup.
