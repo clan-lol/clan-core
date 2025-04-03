@@ -4,18 +4,18 @@
   pkgs,
 }:
 let
-  baseModule = {
-    imports = (import (pkgs.path + "/nixos/modules/module-list.nix")) ++ [
-      (
-        { config, ... }:
-        {
-          nixpkgs.pkgs = pkgs;
-          clan.core.name = "dummy";
-          system.stateVersion = config.system.nixos.release;
-        }
-      )
-    ];
-  };
+  baseModule =
+    { config, ... }:
+    {
+      imports = (import (pkgs.path + "/nixos/modules/module-list.nix"));
+      nixpkgs.pkgs = pkgs;
+      clan.core.name = "dummy";
+      system.stateVersion = config.system.nixos.release;
+      # Set this to work around a bug where `clan.core.settings.machine.name`
+      # is forced due to `networking.interfaces` being forced
+      # somewhere in the nixpkgs options
+      facter.detected.dhcp.enable = lib.mkForce false;
+    };
 
   # This function takes a list of module names and evaluates them
   # [ module ] -> { config, options, ... }
