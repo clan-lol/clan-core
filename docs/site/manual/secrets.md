@@ -87,6 +87,14 @@ Here's how to get started:
    clan secrets groups add-secret <group_name> <secret_name>
    ```
 
+**TIP** To encrypt all secrets of a machine for a specific group, use the following NixOS configuration:
+
+```
+{
+  clan.core.sops.defaultGroups = [ "groupname" ]
+}
+```
+
 ### Adding Machine Keys
 
 New machines in Clan come with age keys stored in `./sops/machines/<machine_name>`. To list these machines:
