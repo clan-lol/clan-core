@@ -29,9 +29,10 @@ in
         directory = ./.;
       };
       nodes = flip mapAttrs config.serviceConfigs.machines (
-        _machineName: attrs: {
+        machineName: attrs: {
           imports = attrs.machineImports ++ [ self.nixosModules.clanCore ];
           clan.core.settings.directory = builtins.toString ./.;
+          clan.core.settings.machine.name = machineName;
         }
       );
       hostPkgs = pkgs;
