@@ -317,20 +317,24 @@ in
                     */
                     v: instanceName: machineName:
                     (lib.evalModules {
-                      specialArgs = {
-                        inherit instanceName;
-                        machine = {
-                          name = machineName;
+                      specialArgs =
+                        let
                           roles = applySettings instanceName config.instances.${instanceName};
+                        in
+                        {
+                          inherit instanceName roles;
+                          machine = {
+                            name = machineName;
+                            roles = lib.attrNames (lib.filterAttrs (_n: v: v.machines ? ${machineName}) roles);
+                          };
+                          settings = (
+                            makeExtensibleConfig evalMachineSettings {
+                              inherit roleName instanceName machineName;
+                              settings =
+                                config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.settings or { };
+                            }
+                          );
                         };
-                        settings = (
-                          makeExtensibleConfig evalMachineSettings {
-                            inherit roleName instanceName machineName;
-                            settings =
-                              config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.settings or { };
-                          }
-                        );
-                      };
                       modules = [ v ];
                     }).config;
                 };

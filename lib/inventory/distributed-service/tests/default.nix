@@ -67,6 +67,7 @@ in
       # We might change the attribute name in the future
       expr = res.importedModulesEvaluated ? "self-simple-module";
       expected = true;
+      inherit res;
     };
 
   # A module can be imported multiple times
