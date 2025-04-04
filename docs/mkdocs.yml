@@ -56,7 +56,9 @@ nav:
       - Vars Backend: manual/vars-backend.md
       - Facts Backend: manual/secrets.md
       - Autoincludes: manual/adding-machines.md
-      - Inventory: manual/inventory.md
+      - Inventory:
+          - Inventory: manual/inventory.md
+          - Services: manual/distributed-services.md
       - Secure Boot: manual/secure-boot.md
       - Flake-parts: manual/flake-parts.md
       - Authoring:
