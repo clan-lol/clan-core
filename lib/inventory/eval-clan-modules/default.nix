@@ -1,10 +1,11 @@
 {
-  clan-core,
   lib,
-  pkgs,
+  clanLib,
 }:
 let
   baseModule =
+    { pkgs }:
+    # Module
     { config, ... }:
     {
       imports = (import (pkgs.path + "/nixos/modules/module-list.nix"));
@@ -20,11 +21,15 @@ let
   # This function takes a list of module names and evaluates them
   # [ module ] -> { config, options, ... }
   evalClanModulesLegacy =
-    modules:
+    {
+      modules,
+      pkgs,
+      clan-core,
+    }:
     let
       evaled = lib.evalModules {
         modules = [
-          baseModule
+          (baseModule { inherit pkgs; })
           {
             clan.core.settings.directory = clan-core;
           }
@@ -56,16 +61,20 @@ let
     }
   */
   evalClanModulesWithRoles =
-    allModules:
+    {
+      allModules,
+      clan-core,
+      pkgs,
+    }:
     let
       res = builtins.mapAttrs (
         moduleName: module:
         let
-          frontmatter = clan-core.lib.modules.getFrontmatter allModules.${moduleName} moduleName;
+          frontmatter = clanLib.modules.getFrontmatter allModules.${moduleName} moduleName;
           roles =
             if builtins.elem "inventory" frontmatter.features or [ ] then
               assert lib.isPath module;
-              clan-core.lib.modules.getRoles allModules moduleName
+              clanLib.modules.getRoles allModules moduleName
             else
               [ ];
         in
@@ -75,7 +84,7 @@ let
             value =
               (lib.evalModules {
                 modules = [
-                  baseModule
+                  (baseModule { inherit pkgs; })
                   clan-core.nixosModules.clanCore
                   {
                     clan.core.settings.directory = clan-core;
