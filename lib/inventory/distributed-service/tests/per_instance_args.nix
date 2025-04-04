@@ -10,6 +10,7 @@ let
     };
     # Define two roles with unmergeable interfaces
     # Both define some 'timeout' but with completely different types.
+    roles.controller = { };
     roles.peer.interface =
       { lib, ... }:
       {
@@ -23,6 +24,7 @@ let
         instanceName,
         settings,
         machine,
+        roles,
         ...
       }:
       let
@@ -35,7 +37,12 @@ let
       in
       {
         nixosModule = {
-          inherit instanceName settings machine;
+          inherit
+            instanceName
+            settings
+            machine
+            roles
+            ;
 
           # We are double vendoring the settings
           # To test that we can do it indefinitely
@@ -64,6 +71,7 @@ let
       roles.peer = {
         settings.timeout = "foo-peer";
       };
+      roles.controller.machines.jon = { };
     };
     instances."instance_bar" = {
       module = {
@@ -73,6 +81,8 @@ let
         settings.timeout = "bar-peer-jon";
       };
     };
+    # TODO: move this into a seperate test.
+    # Seperate out the check that this module is never imported
     # import the module "B" (undefined)
     # All machines have this instance
     instances."instance_zaza" = {
@@ -108,17 +118,9 @@ in
       # roles = peer
       # machines = jon
       settings = filterInternals res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.settings;
-      machine = mapInternalsRecursive res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.machine;
-
-      # hasRoleSettings =
-      #   res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer ? settings;
-
-      # # settings are specific.
-      # # Below we access:
-      # # instance = instance_foo
-      # # roles = peer
-      # # machines = *
-      # specificRoleSettings = filterInternals res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer.settings;
+      machine =
+        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.machine;
+      roles = mapInternalsRecursive res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.roles;
     };
     expected = {
       instanceName = "instance_foo";
@@ -127,20 +129,36 @@ in
       };
       machine = {
         name = "jon";
-        roles = {
-          peer = {
-            machines = {
-              jon = {
-                settings = {
-                  __functor = "__functor";
-                  timeout = "foo-peer-jon";
-                };
+        roles = [
+          "controller"
+          "peer"
+        ];
+      };
+      roles = {
+        controller = {
+          machines = {
+            jon = {
+              settings = {
+                __functor = "__functor";
               };
             };
-            settings = {
-              __functor = "__functor";
-              timeout = "foo-peer";
+          };
+          settings = {
+            __functor = "__functor";
+          };
+        };
+        peer = {
+          machines = {
+            jon = {
+              settings = {
+                __functor = "__functor";
+                timeout = "foo-peer-jon";
+              };
             };
+          };
+          settings = {
+            __functor = "__functor";
+            timeout = "foo-peer";
           };
         };
       };

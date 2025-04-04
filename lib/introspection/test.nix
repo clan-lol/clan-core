@@ -167,6 +167,7 @@ in
     };
 
   # TODO(@hsjobeki): Cover this edge case
+  # Blocked by: https://github.com/NixOS/nixpkgs/pull/390952 check back once that is merged
   # test_freeform =
   #   let
   #     evaluated = (

@@ -63,6 +63,7 @@ let
       resolvedModule =
         resolvedModuleSet.${instance.module.name}
           or (throw "flake doesn't provide clan-module with name ${instance.module.name}");
+      moduleClass = clanLib.inventory.getModuleClass resolvedModule;
 
       # Every instance includes machines via roles
       # :: { client :: ... }
@@ -86,13 +87,13 @@ let
             machineName:
             let
               machineSettings = instance.roles.${roleName}.machines.${machineName}.settings or { };
-              # TODO: tag settings
-              # Wait for this feature until option introspection for 'settings' is done.
-              # This might get too complex to handle otherwise.
-              # settingsViaTags = lib.filterAttrs (
-              #   tagName: _: machineHasTag machineName tagName
-              # ) instance.roles.${roleName}.tags;
             in
+            # TODO: tag settings
+            # Wait for this feature until option introspection for 'settings' is done.
+            # This might get too complex to handle otherwise.
+            # settingsViaTags = lib.filterAttrs (
+            #   tagName: _: machineHasTag machineName tagName
+            # ) instance.roles.${roleName}.tags;
             {
               # TODO: Do we want to wrap settings with
               # setDefaultModuleLocation "inventory.instances.${instanceName}.roles.${roleName}.tags.${tagName}";
@@ -112,20 +113,29 @@ let
     in
     {
       inherit (instance) module;
-      inherit resolvedModule instanceRoles;
+      inherit resolvedModule instanceRoles moduleClass;
     }
   ) inventory.instances;
 
   # TODO: Eagerly check the _class of the resolved module
   importedModulesEvaluated = lib.mapAttrs (
     _module_ident: instances:
+    let
+      matchedClass = "clan.service";
+      instance = (builtins.head instances).instance;
+      classCheckedModule =
+        if instance.moduleClass == matchedClass then
+          instance.resolvedModule
+        else
+          (throw ''Module '${instance.module.name}' is not a valid '${matchedClass}' module. Got module with class:${builtins.toJSON instance.moduleClass}'');
+    in
     (lib.evalModules {
-      class = "clan.service";
+      class = matchedClass;
       modules =
         [
           ./service-module.nix
           # Import the resolved module
-          (builtins.head instances).instance.resolvedModule
+          classCheckedModule
         ]
         # Include all the instances that correlate to the resolved module
         ++ (builtins.map (v: {

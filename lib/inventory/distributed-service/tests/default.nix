@@ -22,6 +22,15 @@ let
     }).config;
 
   flakeInputsFixture = {
+    # Example upstream module
+    upstream.clan.modules = {
+      uzzi = {
+        _class = "clan.service";
+        manifest = {
+          name = "uzzi-from-upstream";
+        };
+      };
+    };
   };
 
   callInventoryAdapter =
@@ -32,6 +41,7 @@ let
     };
 in
 {
+  resolve_module_spec = import ./import_module_spec.nix { inherit lib callInventoryAdapter; };
   test_simple =
     let
       res = callInventoryAdapter {
@@ -57,6 +67,7 @@ in
       # We might change the attribute name in the future
       expr = res.importedModulesEvaluated ? "self-simple-module";
       expected = true;
+      inherit res;
     };
 
   # A module can be imported multiple times

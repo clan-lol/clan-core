@@ -26,9 +26,11 @@ let
       };
 
     perMachine =
-      { instances, ... }:
+      { instances, machine, ... }:
       {
-        nixosModule = instances;
+        nixosModule = {
+          inherit instances machine;
+        };
       };
   };
   machines = {
@@ -71,9 +73,10 @@ in
 
   # settings should evaluate
   test_per_machine_receives_instance_settings = {
+    inherit res;
     expr = {
       hasMachineSettings =
-        res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer.machines.jon
+        res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instances.instance_foo.roles.peer.machines.jon
         ? settings;
 
       # settings are specific.
@@ -81,10 +84,10 @@ in
       # instance = instance_foo
       # roles = peer
       # machines = jon
-      specificMachineSettings = filterInternals res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer.machines.jon.settings;
+      specificMachineSettings = filterInternals res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instances.instance_foo.roles.peer.machines.jon.settings;
 
       hasRoleSettings =
-        res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer
+        res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instances.instance_foo.roles.peer
         ? settings;
 
       # settings are specific.
@@ -92,7 +95,7 @@ in
       # instance = instance_foo
       # roles = peer
       # machines = *
-      specificRoleSettings = filterInternals res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instance_foo.roles.peer.settings;
+      specificRoleSettings = filterInternals res.importedModulesEvaluated.self-A.config.result.allMachines.jon.nixosModule.instances.instance_foo.roles.peer.settings;
     };
     expected = {
       hasMachineSettings = true;

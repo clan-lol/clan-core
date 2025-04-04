@@ -33,6 +33,9 @@ let
             attrName: prioSet:
             let
               # Evaluate the submodule
+              # Remove once: https://github.com/NixOS/nixpkgs/pull/391544 lands
+              # This is currently a workaround to get the submodule options
+              # It also has a certain loss of information, on nested attrsOf, which is rare, but not ideal.
               options = filteredSubOptions;
               modules = (
                 [
