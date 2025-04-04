@@ -280,3 +280,35 @@ Next we need to define the settings and the behavior of these distinct roles.
     # ...
 }
 ```
+
+## Vendoring settings for a machine
+
+!!! Example "Experimental Status"
+    This feature is experimental and should be used with care.
+
+Sometimes the *default* value depends on something within a machines `config`.
+
+Since the `interface` is defined completely machine-agnostic this means default values from a machine cannot be set in the traditional way.
+
+The following example shows how to create a local instance of machine specific settings.
+
+```nix title="someservice.nix"
+{
+    # Maps over all instances and produces one result per instance.
+    perInstance = { instanceName, settings, machine, roles, ... }: {
+        nixosModule = { config, ... }:
+          let
+            # Calling settings via function application
+            # will extend the underlying module
+            localSettings = settings { ipRanges = lib.mkDefault config.network.ip.range; };
+          in
+            {
+                # ...
+            };
+    };
+}
+```
+
+!!! Danger
+    `localSettings` are a local attribute. Other machines cannot access it.
+    If settings vendoring is done. Accessing that settings attribute of another machine via the `settings` argument is considered **unsafe**.
