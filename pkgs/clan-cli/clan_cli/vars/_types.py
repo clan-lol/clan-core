@@ -172,7 +172,7 @@ class StoreBase(ABC):
             -> this provides backward and forward compatibility
         """
         stored_hash = self.get_validation(generator)
-        target_hash = generator.validation
+        target_hash = generator.validation()
         # if the hash is neither set in nix nor on disk, it is considered valid (provides backwards compat)
         if target_hash is None and stored_hash is None:
             return True
