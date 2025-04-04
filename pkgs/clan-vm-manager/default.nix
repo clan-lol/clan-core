@@ -14,11 +14,12 @@
   pytest-subprocess, # fake the real subprocess behavior to make your tests more independent.
   pytest-timeout, # Add timeouts to your tests
   pytest-xdist, # Run tests in parallel on multiple cores
-  python3,
+  buildPythonApplication,
   runCommand,
   setuptools,
   webkitgtk_6_0,
   wrapGAppsHook,
+  python,
   lib,
   stdenv,
 }:
@@ -48,7 +49,7 @@ let
     ];
 
   # Deps including python packages from the local project
-  allPythonDeps = [ (python3.pkgs.toPythonModule clan-cli) ] ++ externalPythonDeps;
+  allPythonDeps = [ (python.pkgs.toPythonModule clan-cli) ] ++ externalPythonDeps;
 
   # Runtime binary dependencies required by the application
   runtimeDependencies = [
@@ -71,9 +72,9 @@ let
   testDependencies = runtimeDependencies ++ allPythonDeps ++ externalTestDeps;
 
   # Setup Python environment with all dependencies for running tests
-  pythonWithTestDeps = python3.withPackages (_ps: testDependencies);
+  pythonWithTestDeps = python.withPackages (_ps: testDependencies);
 in
-python3.pkgs.buildPythonApplication rec {
+buildPythonApplication rec {
   name = "clan-vm-manager";
   src = source;
   format = "pyproject";
