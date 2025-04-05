@@ -66,7 +66,6 @@ class Generator:
             prompts=[Prompt.from_json(p) for p in data["prompts"].values()],
         )
 
-    @property
     def final_script(self) -> Path:
         assert self._machine is not None
         final_script = self._machine.build_nix(
@@ -74,7 +73,6 @@ class Generator:
         )
         return final_script
 
-    @property
     def validation(self) -> str | None:
         assert self._machine is not None
         return self._machine.eval_nix(
@@ -208,10 +206,12 @@ def execute_generator(
                 prompt_file.write_text(value)
         from clan_cli import bwrap
 
+        final_script = generator.final_script()
+
         if sys.platform == "linux" and bwrap.bubblewrap_works():
-            cmd = bubblewrap_cmd(str(generator.final_script), tmpdir)
+            cmd = bubblewrap_cmd(str(final_script), tmpdir)
         else:
-            cmd = ["bash", "-c", str(generator.final_script)]
+            cmd = ["bash", "-c", str(final_script)]
         run(cmd, RunOpts(env=env))
         files_to_commit = []
         # store secrets
@@ -222,7 +222,7 @@ def execute_generator(
             secret_file = tmpdir_out / file.name
             if not secret_file.is_file():
                 msg = f"did not generate a file for '{file.name}' when running the following command:\n"
-                msg += str(generator.final_script)
+                msg += str(final_script)
                 raise ClanError(msg)
             if file.secret:
                 file_path = secret_vars_store.set(
@@ -240,18 +240,15 @@ def execute_generator(
                 public_changed = True
             if file_path:
                 files_to_commit.append(file_path)
-            if generator.validation is not None:
+            validation = generator.validation()
+            if validation is not None:
                 if public_changed:
                     files_to_commit.append(
-                        public_vars_store.set_validation(
-                            generator, generator.validation
-                        )
+                        public_vars_store.set_validation(generator, validation)
                     )
                 if secret_changed:
                     files_to_commit.append(
-                        secret_vars_store.set_validation(
-                            generator, generator.validation
-                        )
+                        secret_vars_store.set_validation(generator, validation)
                     )
     commit_files(
         files_to_commit,
