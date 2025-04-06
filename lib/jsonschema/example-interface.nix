@@ -50,6 +50,16 @@
       ];
       description = "A list of enabled kernel modules";
     };
+    # enum
+    colour = lib.mkOption {
+      type = lib.types.enum [
+        "red"
+        "blue"
+        "green"
+      ];
+      default = "red";
+      description = "The colour of the user";
+    };
     destinations = lib.mkOption {
       type = lib.types.attrsOf (
         lib.types.submodule (

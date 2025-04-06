@@ -1,7 +1,14 @@
 {
+  "_module.args": {
+    "declarations": ["lib/modules.nix"],
+    "description": "Additional arguments passed to each module in addition to ones\nlike `lib`, `config`,\nand `pkgs`, `modulesPath`.\n\nThis option is also available to all submodules. Submodules do not\ninherit args from their parent module, nor do they provide args to\ntheir parent module or sibling submodules. The sole exception to\nthis is the argument `name` which is provided by\nparent modules to a submodule and contains the attribute name\nthe submodule is bound to, or a unique generated name if it is\nnot bound to an attribute.\n\nSome arguments are already passed by default, of which the\nfollowing *cannot* be changed with this option:\n- {var}`lib`: The nixpkgs library.\n- {var}`config`: The results of all options after merging the values from all modules together.\n- {var}`options`: The options declared in all modules.\n- {var}`specialArgs`: The `specialArgs` argument passed to `evalModules`.\n- All attributes of {var}`specialArgs`\n\n  Whereas option values can generally depend on other option values\n  thanks to laziness, this does not apply to `imports`, which\n  must be computed statically before anything else.\n\n  For this reason, callers of the module system can provide `specialArgs`\n  which are available during import resolution.\n\n  For NixOS, `specialArgs` includes\n  {var}`modulesPath`, which allows you to import\n  extra modules from the nixpkgs package tree without having to\n  somehow make the module aware of the location of the\n  `nixpkgs` or NixOS directories.\n  ```\n  { modulesPath, ... }: {\n    imports = [\n      (modulesPath + \"/profiles/minimal.nix\")\n    ];\n  }\n  ```\n\nFor NixOS, the default value for this option includes at least this argument:\n- {var}`pkgs`: The nixpkgs package set according to\n  the {option}`nixpkgs.pkgs` option.\n",
+    "loc": ["_module", "args"],
+    "readOnly": false,
+    "type": "lazy attribute set of raw value"
+  },
   "age": {
     "declarations": [
-      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
     ],
     "default": {
       "_type": "literalExpression",
@@ -12,9 +19,57 @@
     "readOnly": false,
     "type": "signed integer"
   },
+  "colour": {
+    "declarations": [
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "default": {
+      "_type": "literalExpression",
+      "text": "\"red\""
+    },
+    "description": "The colour of the user",
+    "loc": ["colour"],
+    "readOnly": false,
+    "type": "one of \"red\", \"blue\", \"green\""
+  },
+  "destinations": {
+    "declarations": [
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "default": {
+      "_type": "literalExpression",
+      "text": "{ }"
+    },
+    "description": null,
+    "loc": ["destinations"],
+    "readOnly": false,
+    "type": "attribute set of (submodule)"
+  },
+  "destinations.<name>.name": {
+    "declarations": [
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "default": {
+      "_type": "literalExpression",
+      "text": "\"‹name›\""
+    },
+    "description": "the name of the backup job",
+    "loc": ["destinations", "<name>", "name"],
+    "readOnly": false,
+    "type": "string matching the pattern ^[a-zA-Z0-9._-]+$"
+  },
+  "destinations.<name>.repo": {
+    "declarations": [
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
+    ],
+    "description": "the borgbackup repository to backup to",
+    "loc": ["destinations", "<name>", "repo"],
+    "readOnly": false,
+    "type": "string"
+  },
   "isAdmin": {
     "declarations": [
-      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
     ],
     "default": {
       "_type": "literalExpression",
@@ -27,7 +82,7 @@
   },
   "kernelModules": {
     "declarations": [
-      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
     ],
     "default": {
       "_type": "literalExpression",
@@ -40,7 +95,7 @@
   },
   "name": {
     "declarations": [
-      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
     ],
     "default": {
       "_type": "literalExpression",
@@ -53,7 +108,7 @@
   },
   "services": {
     "declarations": [
-      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
     ],
     "description": null,
     "loc": ["services"],
@@ -62,7 +117,7 @@
   },
   "services.opt": {
     "declarations": [
-      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
     ],
     "default": {
       "_type": "literalExpression",
@@ -75,7 +130,7 @@
   },
   "userIds": {
     "declarations": [
-      "/home/grmpf/synced/projects/clan/clan-core/lib/jsonschema/example-interface.nix"
+      "/Users/enzime/Work/clan/clan-core/lib/jsonschema/example-interface.nix"
     ],
     "default": {
       "_type": "literalExpression",
