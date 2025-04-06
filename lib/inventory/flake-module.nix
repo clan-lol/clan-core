@@ -48,6 +48,7 @@ in
           export NIX_ABORT_ON_WARN=1
           nix-unit --eval-store "$HOME" \
             --extra-experimental-features flakes \
+            --show-trace \
             ${inputOverrides} \
             --flake ${
               self.filter {

@@ -23,7 +23,8 @@
           export NIX_PATH=nixpkgs=${pkgs.path}
           ${pkgs.nix-unit}/bin/nix-unit \
             ${./.}/test.nix \
-            --eval-store $(realpath .)
+            --eval-store $(realpath .) \
+            --show-trace
           touch $out
         '';
       };
