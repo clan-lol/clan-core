@@ -468,6 +468,23 @@ class Flake:
         selectors: list[str],
         nix_options: list[str] | None = None,
     ) -> None:
+        """
+        Retrieves specific attributes from a Nix flake using the provided selectors.
+
+        This function interacts with the Nix build system to fetch and process
+        attributes from a flake. It uses the provided selectors to determine which
+        attributes to retrieve and optionally accepts additional Nix options for
+        customization. The results are cached for future use.
+        Used mostly as a lowlevel function for `precache` and `select` methods.
+
+        Args:
+            selectors (list[str]): A list of attribute selectors to fetch from the flake.
+            nix_options (list[str] | None): Optional additional options to pass to the Nix build command.
+
+        Raises:
+            ClanError: If the number of outputs does not match the number of selectors.
+            AssertionError: If the cache or flake cache path is not properly initialized.
+        """
         if self._cache is None:
             self.prefetch()
         assert self._cache is not None
@@ -481,7 +498,7 @@ class Flake:
               flake = builtins.getFlake("path:{self.store_path}?narHash={self.hash}");
             in
               flake.inputs.nixpkgs.legacyPackages.{config["system"]}.writeText "clan-flake-select" (
-                builtins.toJSON [ ({" ".join([f"flake.clanInternals.clanLib.select ''{attr}'' flake" for attr in selectors])}) ]
+                builtins.toJSON [ {" ".join([f"(flake.clanInternals.clanLib.select ''{attr}'' flake)" for attr in selectors])} ]
               )
         """
         if tmp_store := nix_test_store():
@@ -506,11 +523,46 @@ class Flake:
             self._cache.insert(outputs[i], selector)
         self._cache.save_to_file(self.flake_cache_path)
 
+    def precache(
+        self,
+        selectors: list[str],
+        nix_options: list[str] | None = None,
+    ) -> None:
+        """
+        Ensures that the specified selectors are cached locally.
+
+        This function checks if the given selectors are already cached. If not, it
+        fetches them using the Nix build system and stores them in the local cache.
+        It ensures that the cache is initialized before performing these operations.
+
+        Args:
+            selectors (list[str]): A list of attribute selectors to check and cache.
+            nix_options (list[str] | None): Optional additional options to pass to the Nix build command.
+        """
+        if self._cache is None:
+            self.prefetch()
+        assert self._cache is not None
+        assert self.flake_cache_path is not None
+        not_fetched_selectors = []
+        for selector in selectors:
+            if not self._cache.is_cached(selector):
+                not_fetched_selectors.append(selector)
+        if not_fetched_selectors:
+            self.get_from_nix(not_fetched_selectors, nix_options)
+
     def select(
         self,
         selector: str,
         nix_options: list[str] | None = None,
     ) -> Any:
+        """
+        Selects a value from the cache based on the provided selector string.
+        Fetches it via nix_build if it is not already cached.
+
+        Args:
+            selector (str): The attribute selector string to fetch the value for.
+            nix_options (list[str] | None): Optional additional options to pass to the Nix build command.
+        """
         if self._cache is None:
             self.prefetch()
         assert self._cache is not None

@@ -17,7 +17,7 @@ from clan_cli.completions import (
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_files
 from clan_cli.machines.inventory import get_all_machines, get_selected_machines
-from clan_cli.nix import nix_shell, nix_test_store
+from clan_cli.nix import nix_config, nix_shell, nix_test_store
 from clan_cli.vars._types import StoreBase
 
 from .check import check_vars
@@ -489,7 +489,6 @@ def generate_vars(
             was_regenerated |= generate_vars_for_machine(
                 machine, generator_name, regenerate, no_sandbox=no_sandbox
             )
-            machine.flush_caches()
         except Exception as exc:
             errors += [(machine, exc)]
         if len(errors) == 1:
@@ -515,6 +514,18 @@ def generate_command(args: argparse.Namespace) -> None:
         machines = get_all_machines(args.flake, args.option)
     else:
         machines = get_selected_machines(args.flake, args.option, args.machines)
+
+    # prefetch all vars
+    config = nix_config()
+    system = config["system"]
+    machine_names = [machine.name for machine in machines]
+    # test
+    args.flake.precache(
+        [
+            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
+            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
+        ]
+    )
     generate_vars(machines, args.generator, args.regenerate, no_sandbox=args.no_sandbox)
 
 
