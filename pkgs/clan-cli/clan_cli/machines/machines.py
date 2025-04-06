@@ -1,12 +1,13 @@
 import importlib
 import json
 import logging
+import re
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
-from clan_cli.errors import ClanError
+from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.facts import public_modules as facts_public_modules
 from clan_cli.facts import secret_modules as facts_secret_modules
 from clan_cli.flake import Flake
@@ -57,9 +58,21 @@ class Machine:
         log.error(msg, *args, **kwargs)
 
     @property
+    # `class` is a keyword, `_class` triggers `SLF001` so we use a sunder name
+    def _class_(self) -> str:
+        try:
+            return self.flake.select(
+                f"clanInternals.inventory.machineClass.{self.name}"
+            )
+        except ClanCmdError as e:
+            if re.search(f"error: attribute '{self.name}' missing", e.cmd.stderr):
+                return "nixos"
+            raise
+
+    @property
     def system(self) -> str:
         return self.flake.select(
-            f"nixosConfigurations.{self.name}.pkgs.hostPlatform.system"
+            f"{self._class_}Configurations.{self.name}.pkgs.hostPlatform.system"
         )
 
     @property
