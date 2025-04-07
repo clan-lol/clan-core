@@ -20,7 +20,7 @@ from clan_cli.facts.upload import upload_secrets
 from clan_cli.flake import Flake
 from clan_cli.inventory import Machine as InventoryMachine
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_command, nix_metadata
+from clan_cli.nix import nix_command, nix_config, nix_metadata
 from clan_cli.ssh.host import Host, HostKeyCheck
 from clan_cli.vars.generate import generate_vars
 from clan_cli.vars.upload import upload_secret_vars
@@ -264,6 +264,16 @@ def update_command(args: argparse.Namespace) -> None:
             if machine._class_ == "darwin":
                 machine.error("Updating macOS machines is not yet supported")
                 sys.exit(1)
+
+        config = nix_config()
+        system = config["system"]
+        machine_names = [machine.name for machine in machines]
+        args.flake.precache(
+            [
+                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
+                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
+            ]
+        )
 
         deploy_machines(machines)
     except KeyboardInterrupt:
