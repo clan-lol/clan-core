@@ -691,9 +691,9 @@ def test_stdout_of_generate(
     flake_with_sops: ClanFlake,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    flake = flake_with_sops
+    flake_ = flake_with_sops
 
-    config = flake.machines["my_machine"]
+    config = flake_.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
@@ -703,14 +703,15 @@ def test_stdout_of_generate(
     ]
     my_secret_generator["files"]["my_secret"]["secret"] = True
     my_secret_generator["script"] = 'echo -n hello > "$out"/my_secret'
-    flake.refresh()
-    monkeypatch.chdir(flake.path)
+    flake_.refresh()
+    monkeypatch.chdir(flake_.path)
+    flake = Flake(str(flake_.path))
     from clan_cli.vars.generate import generate_vars_for_machine
 
     # with capture_output as output:
     with caplog.at_level(logging.INFO):
         generate_vars_for_machine(
-            Machine(name="my_machine", flake=Flake(str(flake.path))),
+            Machine(name="my_machine", flake=flake),
             "my_generator",
             regenerate=False,
         )
@@ -720,10 +721,10 @@ def test_stdout_of_generate(
     assert "new: hello" in caplog.text
     caplog.clear()
 
-    set_var("my_machine", "my_generator/my_value", b"world", Flake(str(flake.path)))
+    set_var("my_machine", "my_generator/my_value", b"world", flake)
     with caplog.at_level(logging.INFO):
         generate_vars_for_machine(
-            Machine(name="my_machine", flake=Flake(str(flake.path))),
+            Machine(name="my_machine", flake=flake),
             "my_generator",
             regenerate=True,
         )
@@ -734,7 +735,7 @@ def test_stdout_of_generate(
     # check the output when nothing gets regenerated
     with caplog.at_level(logging.INFO):
         generate_vars_for_machine(
-            Machine(name="my_machine", flake=Flake(str(flake.path))),
+            Machine(name="my_machine", flake=flake),
             "my_generator",
             regenerate=True,
         )
@@ -743,7 +744,7 @@ def test_stdout_of_generate(
     caplog.clear()
     with caplog.at_level(logging.INFO):
         generate_vars_for_machine(
-            Machine(name="my_machine", flake=Flake(str(flake.path))),
+            Machine(name="my_machine", flake=flake),
             "my_secret_generator",
             regenerate=False,
         )
@@ -758,7 +759,7 @@ def test_stdout_of_generate(
     )
     with caplog.at_level(logging.INFO):
         generate_vars_for_machine(
-            Machine(name="my_machine", flake=Flake(str(flake.path))),
+            Machine(name="my_machine", flake=flake),
             "my_secret_generator",
             regenerate=True,
         )
