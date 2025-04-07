@@ -1,16 +1,17 @@
-(import ../lib/test-base.nix) (
+(import ../lib/test-inventory.nix) (
   { self, lib, ... }:
   let
 
-    inherit (self.lib.inventory) buildInventory;
-
     machines = [
-      "signer"
       "admin"
       "peer"
+      "signer"
     ];
+  in
+  {
+    name = "data-mesher";
 
-    serviceConfigs = buildInventory {
+    inventory = {
       inventory = {
         machines = lib.genAttrs machines (_: { });
         services = {
@@ -27,14 +28,9 @@
       directory = ./.;
     };
 
-    commonConfig =
+    defaults =
       { config, ... }:
       {
-
-        imports = [ self.nixosModules.clanCore ];
-
-        clan.core.settings.directory = builtins.toString ./.;
-
         environment.systemPackages = [
           config.services.data-mesher.package
         ];
@@ -65,45 +61,8 @@
         };
       };
 
-    adminConfig = {
-      imports = serviceConfigs.machines.admin.machineImports;
-
-      config.clan.data-mesher.network.tld = "foo";
-    };
-
-    peerConfig = {
-      imports = serviceConfigs.machines.peer.machineImports;
-    };
-
-    signerConfig = {
-      imports = serviceConfigs.machines.signer.machineImports;
-    };
-
-  in
-  {
-    name = "data-mesher";
-
     nodes = {
-      peer = {
-        imports = [
-          peerConfig
-          commonConfig
-        ];
-      };
-
-      admin = {
-        imports = [
-          adminConfig
-          commonConfig
-        ];
-      };
-
-      signer = {
-        imports = [
-          signerConfig
-          commonConfig
-        ];
-      };
+      admin.clan.data-mesher.network.tld = "foo";
     };
 
     # TODO Add better test script.
