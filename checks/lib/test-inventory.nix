@@ -3,35 +3,36 @@ test:
 let
   inherit (pkgs) lib;
   inherit (lib) mkOption flip mapAttrs;
-  inherit (lib.types) raw;
+  inherit (lib.types) path raw;
   inherit (self.lib.inventory) buildInventory;
   nixos-lib = import (pkgs.path + "/nixos/lib") { };
 in
 (nixos-lib.runTest (
   { config, ... }:
+  let
+    serviceConfigs = buildInventory {
+      inventory = config.inventory.inventory;
+      # TODO: make directory argument optional in buildInventory
+      directory = config.inventory.directory;
+    };
+  in
   {
     imports = [ test ];
     options = {
-      inventory = mkOption {
+      inventory.inventory = mkOption {
         description = "Inventory of machines and services";
         type = raw;
       };
-      serviceConfigs = mkOption {
-        description = "Result of the evaluated inventory";
-        type = raw;
-        readOnly = true;
+      inventory.directory = mkOption {
+        description = "Directory which contains the vars";
+        type = path;
       };
     };
     config = {
-      serviceConfigs = buildInventory {
-        inventory = config.inventory;
-        # TODO: make directory argument optional in buildInventory
-        directory = ./.;
-      };
-      nodes = flip mapAttrs config.serviceConfigs.machines (
+      nodes = flip mapAttrs serviceConfigs.machines (
         machineName: attrs: {
           imports = attrs.machineImports ++ [ self.nixosModules.clanCore ];
-          clan.core.settings.directory = builtins.toString ./.;
+          clan.core.settings.directory = toString config.inventory.directory;
           clan.core.settings.machine.name = machineName;
         }
       );

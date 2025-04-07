@@ -3,7 +3,8 @@
   {
     name = "dummy-inventory-test";
 
-    inventory = {
+    inventory.directory = ./.;
+    inventory.inventory = {
       machines.peer1 = { };
       machines.admin1 = { };
       services = {
@@ -19,8 +20,10 @@
 
     testScript = ''
       start_all()
-      admin1.wait_for_unit("dummy-service")
-      peer1.wait_for_unit("dummy-service")
+      admin1.wait_for_unit("multi-user.target")
+      peer1.wait_for_unit("multi-user.target")
+      print(admin1.succeed("systemctl status dummy-service"))
+      print(peer1.succeed("systemctl status dummy-service"))
     '';
   }
 )
