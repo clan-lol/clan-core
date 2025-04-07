@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from .cmd import Log, RunOpts, run
@@ -27,6 +28,8 @@ def commit_files(
     repo_dir: Path,
     commit_message: str | None = None,
 ) -> None:
+    if os.environ.get("CLAN_NO_COMMIT", None):
+        return
     if not file_paths:
         return
     # check that the file is in the git repository
