@@ -21,8 +21,23 @@ else:
 test_name = "dummy-inventory-test"
 
 
-def test_dir(test_name: str) -> Path:
+def _test_dir(test_name: str) -> Path:
     return Path(clan_core_dir / "checks" / test_name)
+
+
+def machine_names(test_name: str) -> list[str]:
+    """
+    Get the machine names from the test flake
+    """
+    cmd = nix_eval(
+        [
+            f"{clan_core_dir}#checks.{nix_config()['system']}.{test_name}.nodes",
+            "--apply",
+            "builtins.attrNames",
+        ]
+    )
+    out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
+    return json.loads(out.stdout.strip())
 
 
 class TestMachine(Machine):
@@ -38,7 +53,7 @@ class TestMachine(Machine):
             return self._deployment
         cmd = nix_build(
             [
-                f"{clan_core_dir}#checks.{nix_config()['system']}.{test_name}.nodes.{self.name}.config.system.clan.deployment.file"
+                f"{clan_core_dir}#checks.{nix_config()['system']}.{test_name}.nodes.{self.name}.system.clan.deployment.file"
             ]
         )
         out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
@@ -100,11 +115,13 @@ class TestMachine(Machine):
 
 if __name__ == "__main__":
     os.environ["CLAN_NO_COMMIT"] = "1"
-    flake = Flake(str(test_dir(test_name)))
-    flake._path = test_dir(test_name)  # noqa SLF001
+    test_dir = _test_dir(test_name)
+    subprocess.run(["rm", "-rf", f"{test_dir}/vars", f"{test_dir}/sops"])
+    flake = Flake(str(test_dir))
+    flake._path = test_dir  # noqa SLF001
     flake._is_local = True  # noqa SLF001
-    machine = TestMachine("admin1", flake)
+    machines = [TestMachine(name, flake) for name in machine_names(test_name)]
     user = "admin"
     if not Path(flake.path / "sops" / "users" / user / "key.json").exists():
         keygen(user, flake, False)
-    generate_vars([machine])
+    generate_vars(list(machines))
