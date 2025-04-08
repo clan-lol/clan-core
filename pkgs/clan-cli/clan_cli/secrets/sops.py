@@ -449,15 +449,20 @@ def decrypt_file(secret_path: Path) -> str:
 
 def get_recipients(secret_path: Path) -> set[SopsKey]:
     sops_attrs = json.loads((secret_path / "secret").read_text())["sops"]
-    return {
-        SopsKey(
-            pubkey=recipient[key_type.sops_recipient_attr],
-            username="",
-            key_type=key_type,
-        )
-        for key_type in KeyType
-        for recipient in sops_attrs[key_type.name.lower()] or []
-    }
+    keys = set()
+    for key_type in KeyType:
+        recipients = sops_attrs.get(key_type.name.lower())
+        if not recipients:
+            continue
+        for recipient in recipients:
+            keys.add(
+                SopsKey(
+                    pubkey=recipient[key_type.sops_recipient_attr],
+                    username="",
+                    key_type=key_type,
+                )
+            )
+    return keys
 
 
 def get_meta(secret_path: Path) -> dict:
