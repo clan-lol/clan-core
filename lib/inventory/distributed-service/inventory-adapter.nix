@@ -63,7 +63,6 @@ let
       resolvedModule =
         resolvedModuleSet.${instance.module.name}
           or (throw "flake doesn't provide clan-module with name ${instance.module.name}");
-      moduleClass = clanLib.inventory.getModuleClass resolvedModule;
 
       # Every instance includes machines via roles
       # :: { client :: ... }
@@ -113,7 +112,7 @@ let
     in
     {
       inherit (instance) module;
-      inherit resolvedModule instanceRoles moduleClass;
+      inherit resolvedModule instanceRoles;
     }
   ) inventory.instances;
 
