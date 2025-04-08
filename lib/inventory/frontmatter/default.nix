@@ -36,7 +36,7 @@ let
     lib.evalModules {
       specialArgs = {
         inherit moduleName resolvedRoles instanceName;
-        allRoles = getRoles allModules moduleName;
+        allRoles = getRoles "inventory.modules" allModules moduleName;
       };
       modules = [
         (getFrontmatter allModules.${moduleName} moduleName)
@@ -56,15 +56,30 @@ let
       ];
     }).options;
 
+  # This is a legacy function
+  # Old modules needed to define their roles by directory
+  # This means if this function gets anything other than a string/path it will throw
   getRoles =
-    allModules: serviceName:
-    lib.mapAttrsToList (name: _value: trimExtension name) (
+    scope: allModules: serviceName:
+    let
+      module =
+        allModules.${serviceName}
+          or (throw "(Legacy) ClanModule not found: '${serviceName}'. Make sure the module is added to ${scope}");
+      moduleType = (lib.typeOf module);
+      checked = if builtins.elem moduleType ["string" "path"] then true else throw "(Legacy) ClanModule must be a 'path' or 'string' pointing to a directory: Got 'typeOf inventory.modules.${serviceName}' => ${moduleType} ";
+      modulePath = lib.seq checked module + "/roles";
+      checkedPath = if builtins.pathExists modulePath then modulePath else throw ''
+        (Legacy) ClanModule must have a 'roles' directory'
+
+        Fixes:
+        - Provide a 'roles' subdirectory
+        - Use the newer 'clan.service' modules. (Recommended)
+      '';
+    in
+    lib.seq checkedPath lib.mapAttrsToList (name: _value: trimExtension name) (
       lib.filterAttrs (name: type: type == "regular" && lib.hasSuffix ".nix" name) (
         builtins.readDir (
-          if allModules ? ${serviceName} then
-            allModules.${serviceName} + "/roles"
-          else
-            throw "ClanModule not found: '${serviceName}'. Make sure the module is added in the 'clanModules' attribute of clan-core."
+          checkedPath
         )
       )
     );

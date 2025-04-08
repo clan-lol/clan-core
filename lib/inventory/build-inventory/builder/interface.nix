@@ -54,9 +54,6 @@ in
                             matchedRoles = mkOption {
                               type = types.listOf types.str;
                             };
-                            isClanModule = mkOption {
-                              type = types.bool;
-                            };
                             machinesRoles = mkOption {
                               type = types.attrsOf (types.listOf types.str);
                             };

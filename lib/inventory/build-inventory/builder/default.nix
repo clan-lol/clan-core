@@ -56,7 +56,7 @@ let
       assertions = { };
     };
 
-  legacyResolveImports =
+  resolveImports =
     {
       supportedRoles,
       resolvedRolesPerInstance,
@@ -168,36 +168,16 @@ in
                 ./roles.nix
               ];
 
-              isClanModule =
-                let
-                  firstRole = import (getRoleFile (builtins.head config.supportedRoles));
-                  loadModuleForClassCheck =
-                    m:
-                    if lib.isFunction m then
-                      let
-                        args = lib.functionArgs m;
-                      in
-                      m args
-                    else
-                      m;
-                  module = loadModuleForClassCheck (firstRole);
-                in
-                if (module) ? _class then module._class == "clan" else false;
-              # The actual result
-              machineImports =
-                if config.isClanModule then
-                  throw "Clan modules are not supported yet."
-                else
-                  legacyResolveImports {
-                    supportedRoles = config.supportedRoles;
-                    resolvedRolesPerInstance = config.resolvedRolesPerInstance;
-                    inherit
-                      serviceConfigs
-                      serviceName
-                      machineName
-                      getRoleFile
-                      ;
-                  };
+              machineImports = resolveImports {
+                supportedRoles = config.supportedRoles;
+                resolvedRolesPerInstance = config.resolvedRolesPerInstance;
+                inherit
+                  serviceConfigs
+                  serviceName
+                  machineName
+                  getRoleFile
+                  ;
+              };
 
               # Assertions
               assertions = {
