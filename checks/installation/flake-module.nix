@@ -218,20 +218,21 @@
             installer.start()
 
             client.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../lib/ssh/privkey} /root/.ssh/id_ed25519")
-            client.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@installer hostname")
+
+            client.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@192.168.1.2 hostname")
             client.succeed("cp -r ${../..} test-flake && chmod -R +w test-flake")
             client.fail("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
             client.fail("test -f test-flake/machines/test-install-machine/facter.json")
 
-            client.succeed("clan machines update-hardware-config --flake test-flake test-install-machine nonrootuser@installer >&2")
+            client.succeed("clan machines update-hardware-config --flake test-flake test-install-machine nonrootuser@192.168.1.2 >&2")
             client.succeed("test -f test-flake/machines/test-install-machine/facter.json")
             client.succeed("rm test-flake/machines/test-install-machine/facter.json")
 
-            client.succeed("clan machines update-hardware-config --backend nixos-generate-config --flake test-flake test-install-machine nonrootuser@installer>&2")
+            client.succeed("clan machines update-hardware-config --backend nixos-generate-config --flake test-flake test-install-machine nonrootuser@192.168.1.2>&2")
             client.succeed("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
             client.succeed("rm test-flake/machines/test-install-machine/hardware-configuration.nix")
 
-            client.succeed("clan machines install --debug --flake test-flake --yes test-install-machine --target-host nonrootuser@installer --update-hardware-config nixos-facter >&2")
+            client.succeed("clan machines install --debug --flake test-flake --yes test-install-machine --target-host nonrootuser@192.168.1.2 --update-hardware-config nixos-facter >&2")
 
             try:
               installer.shutdown()
