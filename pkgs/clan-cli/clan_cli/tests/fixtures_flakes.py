@@ -13,11 +13,10 @@ import pytest
 from clan_cli.dirs import TemplateType, clan_templates, nixpkgs_source
 from clan_cli.locked_open import locked_open
 from clan_cli.nix import nix_test_store
-
 from clan_cli.tests import age_keys
-from clan_cli.tests.temporary_dir import TEMPDIR
 from clan_cli.tests.fixture_error import FixtureError
 from clan_cli.tests.root import CLAN_CORE
+from clan_cli.tests.temporary_dir import TEMPDIR
 
 log = logging.getLogger(__name__)
 

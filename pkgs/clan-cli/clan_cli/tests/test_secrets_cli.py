@@ -7,12 +7,10 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 import pytest
-from age_keys import assert_secrets_file_recipients
 from clan_cli.errors import ClanError
-
-from gpg_keys import GpgKey
-from clan_cli.secrets.folders import sops_secrets_folder
+from clan_cli.tests.age_keys import assert_secrets_file_recipients
 from clan_cli.tests.fixtures_flakes import FlakeForTest
+from clan_cli.tests.gpg_keys import GpgKey
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 

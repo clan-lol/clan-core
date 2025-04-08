@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 from clan_cli.cmd import run
 from clan_cli.nix import nix_flake_show
-
 from clan_cli.tests.fixtures_flakes import FlakeForTest, substitute
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput

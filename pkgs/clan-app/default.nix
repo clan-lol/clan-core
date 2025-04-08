@@ -118,7 +118,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             echo "STARTING ..."
             export WEBVIEW_LIB_DIR="${webview-lib}/lib"
             export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1
-            python -m pytest -s -m "not impure" ./clan_cli/tests
+            python -m pytest -s -m "not impure" ./tests
             touch $out
           '';
     };

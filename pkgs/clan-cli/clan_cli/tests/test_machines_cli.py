@@ -1,9 +1,8 @@
 import pytest
-from age_keys import SopsSetup, assert_secrets_file_recipients
 from clan_cli.inventory import load_inventory_json
 from clan_cli.secrets.folders import sops_machines_folder
-
 from clan_cli.tests import fixtures_flakes
+from clan_cli.tests.age_keys import SopsSetup, assert_secrets_file_recipients
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 
@@ -90,9 +89,9 @@ def test_machine_delete(
         cli.run(set_shared_secret)
 
     my_machine_sops_folder = sops_machines_folder(flake.path) / "my-machine"
-    assert (
-        my_machine_sops_folder.is_dir()
-    ), "A sops folder for `my-machine` should have been created with its public key"
+    assert my_machine_sops_folder.is_dir(), (
+        "A sops folder for `my-machine` should have been created with its public key"
+    )
 
     # define some vars generator for `my-machine`:
     config = flake.machines["my-machine"]
@@ -110,16 +109,16 @@ def test_machine_delete(
 
     cli.run(["vars", "generate", "--flake", str(flake.path), "my-machine"])
     my_machine_vars_store = flake.path / "vars/per-machine" / "my-machine"
-    assert (
-        my_machine_vars_store.is_dir()
-    ), "A vars directory should have been created for `my-machine`"
+    assert my_machine_vars_store.is_dir(), (
+        "A vars directory should have been created for `my-machine`"
+    )
 
     cli.run(["machines", "delete", "--flake", str(flake.path), "my-machine"])
-    assert (
-        not my_machine_vars_store.exists()
-    ), "The vars directory for `my-machine` should have been deleted"
-    assert (
-        not my_machine_sops_folder.exists()
-    ), "The sops folder holding the public key for `my-machine` should have been deleted"
+    assert not my_machine_vars_store.exists(), (
+        "The vars directory for `my-machine` should have been deleted"
+    )
+    assert not my_machine_sops_folder.exists(), (
+        "The sops folder holding the public key for `my-machine` should have been deleted"
+    )
     expected_recipients = [admin_key, machine2_key]
     assert_secrets_file_recipients(flake.path, shared_secret_name, expected_recipients)

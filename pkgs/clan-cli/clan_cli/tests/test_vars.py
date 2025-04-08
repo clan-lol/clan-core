@@ -326,9 +326,9 @@ def test_generated_shared_secret_sops(
     shared_generator["script"] = "echo hello > $out/my_shared_secret"
     m2_config = flake.machines["machine2"]
     m2_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
-    m2_config["clan"]["core"]["vars"]["generators"][
-        "my_shared_generator"
-    ] = shared_generator.copy()
+    m2_config["clan"]["core"]["vars"]["generators"]["my_shared_generator"] = (
+        shared_generator.copy()
+    )
     flake.refresh()
     monkeypatch.chdir(flake.path)
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
@@ -769,9 +769,9 @@ def test_migration(
     my_service = config["clan"]["core"]["facts"]["services"]["my_service"]
     my_service["public"]["my_value"] = {}
     my_service["secret"]["my_secret"] = {}
-    my_service["generator"][
-        "script"
-    ] = "echo -n hello > $facts/my_value && echo -n hello > $secrets/my_secret"
+    my_service["generator"]["script"] = (
+        "echo -n hello > $facts/my_value && echo -n hello > $secrets/my_secret"
+    )
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["files"]["my_secret"]["secret"] = True
@@ -840,9 +840,9 @@ def test_fails_when_files_are_left_from_other_backend(
             regenerate=False,
         )
     # Will raise. It was secret before, but now it's not.
-    my_secret_generator["files"]["my_secret"][
-        "secret"
-    ] = False  # secret -> public (NOT OK)
+    my_secret_generator["files"]["my_secret"]["secret"] = (
+        False  # secret -> public (NOT OK)
+    )
     # WIll not raise. It was not secret before, and it's secret now.
     my_value_generator["files"]["my_value"]["secret"] = True  # public -> secret (OK)
     flake.refresh()
