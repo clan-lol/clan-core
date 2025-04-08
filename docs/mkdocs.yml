@@ -58,20 +58,19 @@ nav:
       - Autoincludes: manual/adding-machines.md
       - Inventory:
           - Inventory: manual/inventory.md
-          - Services: manual/distributed-services.md
+          - Instances: manual/distributed-services.md
       - Secure Boot: manual/secure-boot.md
       - Flake-parts: manual/flake-parts.md
       - Authoring:
-          - Modules: clanmodules/index.md
-          - Disk Templates: manual/disk-templates.md
+          - clan.service: authoring/clanServices/index.md
+          - Disk Templates: authoring/templates/disk/disko-templates.md
+          - clanModules: authoring/legacyModules/index.md
       - Contributing:
           - Contribute: contributing/contribute.md
           - Debugging: contributing/debugging.md
           - Testing: contributing/testing.md
       - Repo Layout: manual/repo-layout.md
       - Migrate existing Flakes: manual/migration-guide.md
-  # - Concepts:
-  #     - Overview: concepts/index.md
   - Reference:
       - Overview: reference/index.md
       - Clan Modules:
