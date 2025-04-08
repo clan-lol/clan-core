@@ -1,5 +1,6 @@
 { pkgs }:
 pkgs.mkShell {
+  name = "clan-icon-update";
   packages = with pkgs; [ deno ];
   env = {
     FIGMA_ICON_FILE_ID = "KJgLnsBI9nvUt44qKJXmVm";

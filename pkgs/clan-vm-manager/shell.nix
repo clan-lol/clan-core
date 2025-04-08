@@ -26,6 +26,7 @@ let
 in
 mkShell {
   inherit (clan-vm-manager) nativeBuildInputs;
+  name = "clan-vm-manager";
   buildInputs =
     [
       ruff

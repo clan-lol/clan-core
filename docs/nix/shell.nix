@@ -11,6 +11,7 @@
   ...
 }:
 pkgs.mkShell {
+  name = "clan-docs";
   inputsFrom = [
     docs
     self'.devShells.default
