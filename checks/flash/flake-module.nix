@@ -36,7 +36,6 @@
 
   perSystem =
     {
-      nodes,
       pkgs,
       lib,
       ...
@@ -79,6 +78,8 @@
           testScript = ''
             start_all()
 
+            # Some distros like to automount disks with spaces
+            machine.succeed('mkdir -p "/mnt/with spaces" && mkfs.ext4 /dev/vdb && mount /dev/vdb "/mnt/with spaces"')
             machine.succeed("clan flash write --debug --flake ${../..} --yes --disk main /dev/vdb test-flash-machine-${pkgs.hostPlatform.system}")
           '';
         } { inherit pkgs self; };
