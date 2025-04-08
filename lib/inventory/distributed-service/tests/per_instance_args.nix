@@ -23,16 +23,17 @@ let
       {
         instanceName,
         settings,
+        extendSettings,
         machine,
         roles,
         ...
       }:
       let
-        settings1 = settings {
+        finalSettings = extendSettings {
           # Sometimes we want to create a default settings set depending on the machine config.
           # Note: Other machines cannot depend on this settings. We must assign a new name to the settings.
           # And thus the new value is not accessible by other machines.
-          timeout = lib.mkOverride 10 "config.blah";
+          timeout = lib.mkOverride 10 "config.thing";
         };
       in
       {
@@ -46,12 +47,7 @@ let
 
           # We are double vendoring the settings
           # To test that we can do it indefinitely
-          vendoredSettings = settings1 {
-            # Sometimes we want to create a default settings set depending on the machine config.
-            # Note: Other machines cannot depend on this settings. We must assign a new name to the settings.
-            # And thus the new value is not accessible by other machines.
-            timeout = lib.mkOverride 5 "config.thing";
-          };
+          vendoredSettings = finalSettings;
         };
       };
   };
@@ -92,18 +88,6 @@ let
       roles.peer.tags.all = { };
     };
   };
-
-  filterInternals = lib.filterAttrs (n: _v: !lib.hasPrefix "_" n);
-
-  # Replace internal attributes ('_' prefix)
-  # So we catch their presence but don't check the value
-  mapInternalsRecursive = lib.mapAttrsRecursive (
-    path: v:
-    let
-      name = lib.last path;
-    in
-    if !lib.hasPrefix "_" name then v else name
-  );
 in
 {
   # settings should evaluate
@@ -117,10 +101,12 @@ in
       # instance = instance_foo
       # roles = peer
       # machines = jon
-      settings = filterInternals res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.settings;
+      settings =
+        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.settings;
       machine =
         res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.machine;
-      roles = mapInternalsRecursive res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.roles;
+      roles =
+        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.roles;
     };
     expected = {
       instanceName = "instance_foo";
@@ -139,25 +125,21 @@ in
           machines = {
             jon = {
               settings = {
-                __functor = "__functor";
               };
             };
           };
           settings = {
-            __functor = "__functor";
           };
         };
         peer = {
           machines = {
             jon = {
               settings = {
-                __functor = "__functor";
                 timeout = "foo-peer-jon";
               };
             };
           };
           settings = {
-            __functor = "__functor";
             timeout = "foo-peer";
           };
         };
@@ -167,11 +149,9 @@ in
 
   test_per_instance_settings_vendoring = {
     expr =
-      mapInternalsRecursive
-        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule.vendoredSettings;
+
+      res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule.vendoredSettings;
     expected = {
-      # Returns another override
-      __functor = "__functor";
       timeout = "config.thing";
     };
   };

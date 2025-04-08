@@ -132,6 +132,11 @@ let
     in
     makeModuleExtensible (f args);
 
+  # Extend evalModules result by a module, returns .config.
+  extendEval =
+    eval: m:
+    (eval.extendModules { modules = lib.toList m; } ).config;
+
   /**
     Apply the settings to the instance
 
@@ -147,19 +152,19 @@ let
         # TODO: evaluate the settings against the interface
         # settings = (evalMachineSettings { inherit roleName instanceName; inherit (v) settings; }).config;
         settings = (
-          makeExtensibleConfig evalMachineSettings {
+          evalMachineSettings {
             inherit roleName instanceName machineName;
             inherit (v) settings;
           }
-        );
+        ).config;
       }) role.machines;
       # TODO: evaluate the settings against the interface
       settings = (
-        makeExtensibleConfig evalMachineSettings {
+        evalMachineSettings {
           inherit roleName instanceName;
           inherit (role) settings;
         }
-      );
+      ).config;
     }) instance.roles;
 in
 {
@@ -328,7 +333,14 @@ in
                             roles = lib.attrNames (lib.filterAttrs (_n: v: v.machines ? ${machineName}) roles);
                           };
                           settings = (
-                            makeExtensibleConfig evalMachineSettings {
+                            evalMachineSettings {
+                              inherit roleName instanceName machineName;
+                              settings =
+                                config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.settings or { };
+                            }
+                          ).config;
+                          extendSettings = extendEval (
+                            evalMachineSettings {
                               inherit roleName instanceName machineName;
                               settings =
                                 config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.settings or { };
@@ -396,6 +408,7 @@ in
                 in
                 uniqueStrings (collectRoles machineScope.instances);
             };
+            # TODO: instances.<instanceName>.roles should contain all roles, even if nobody has the role
             inherit (machineScope) instances;
 
             # There are no machine settings.
