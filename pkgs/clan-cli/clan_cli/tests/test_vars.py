@@ -20,9 +20,6 @@ from clan_cli.vars.public_modules import in_repo
 from clan_cli.vars.secret_modules import password_store, sops
 from clan_cli.vars.set import set_var
 
-if TYPE_CHECKING:
-    from .age_keys import KeyPair
-
 
 def test_dependencies_as_files(temp_dir: Path) -> None:
     from clan_cli.vars.generate import dependencies_as_dir
