@@ -66,21 +66,32 @@ let
         allModules.${serviceName}
           or (throw "(Legacy) ClanModule not found: '${serviceName}'. Make sure the module is added to ${scope}");
       moduleType = (lib.typeOf module);
-      checked = if builtins.elem moduleType ["string" "path"] then true else throw "(Legacy) ClanModule must be a 'path' or 'string' pointing to a directory: Got 'typeOf inventory.modules.${serviceName}' => ${moduleType} ";
+      checked =
+        if
+          builtins.elem moduleType [
+            "string"
+            "path"
+          ]
+        then
+          true
+        else
+          throw "(Legacy) ClanModule must be a 'path' or 'string' pointing to a directory: Got 'typeOf inventory.modules.${serviceName}' => ${moduleType} ";
       modulePath = lib.seq checked module + "/roles";
-      checkedPath = if builtins.pathExists modulePath then modulePath else throw ''
-        (Legacy) ClanModule must have a 'roles' directory'
+      checkedPath =
+        if builtins.pathExists modulePath then
+          modulePath
+        else
+          throw ''
+            (Legacy) ClanModule must have a 'roles' directory'
 
-        Fixes:
-        - Provide a 'roles' subdirectory
-        - Use the newer 'clan.service' modules. (Recommended)
-      '';
+            Fixes:
+            - Provide a 'roles' subdirectory
+            - Use the newer 'clan.service' modules. (Recommended)
+          '';
     in
     lib.seq checkedPath lib.mapAttrsToList (name: _value: trimExtension name) (
       lib.filterAttrs (name: type: type == "regular" && lib.hasSuffix ".nix" name) (
-        builtins.readDir (
-          checkedPath
-        )
+        builtins.readDir (checkedPath)
       )
     );
 
