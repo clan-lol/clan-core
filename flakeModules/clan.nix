@@ -2,7 +2,6 @@ clan-core:
 {
   config,
   lib,
-  flake-parts-lib,
   self,
   inputs,
   ...
@@ -44,12 +43,10 @@ in
     };
   };
 
-  options.flake = flake-parts-lib.mkSubmoduleOptions (
-    {
-      clan = lib.mkOption { type = types.raw; };
-    }
-    // outputModule.topLevel.options
-  );
+  options.flake = {
+    clan = lib.mkOption { type = types.raw; };
+  } // outputModule.topLevel.options;
+
   config = {
     flake = {
       clan = outputModule.clan;
