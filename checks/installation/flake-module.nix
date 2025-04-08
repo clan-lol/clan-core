@@ -20,6 +20,7 @@
           (modulesPath + "/profiles/qemu-guest.nix")
           ../lib/minify.nix
         ];
+        networking.useNetworkd = true;
 
         environment.etc."install-successful".text = "ok";
 
@@ -140,6 +141,7 @@
               imports = [
                 (modulesPath + "/../tests/common/auto-format-root-device.nix")
               ];
+              networking.useNetworkd = true;
               services.openssh.enable = true;
               users.users.root.openssh.authorizedKeys.keyFiles = [ ../lib/ssh/pubkey ];
               system.nixos.variant_id = "installer";
@@ -163,6 +165,7 @@
               system.extraDependencies = dependencies;
             };
           nodes.client = {
+            networking.useNetworkd = true;
             environment.systemPackages = [
               self.packages.${pkgs.system}.clan-cli
             ] ++ self.packages.${pkgs.system}.clan-cli.runtimeDependencies;

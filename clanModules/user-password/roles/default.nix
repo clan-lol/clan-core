@@ -25,27 +25,25 @@ in
   config = {
     users.mutableUsers = false;
     users.users.${cfg.user} = {
-      hashedPasswordFile = config.clan.core.facts.services.user-password.secret.user-password-hash.path;
+      hashedPasswordFile = config.clan.core.vars.generators.user-password.files.user-password-hash.path;
       isNormalUser = lib.mkDefault true;
     };
 
-    sops.secrets = lib.mkIf (config.clan.core.facts.secretStore == "sops") {
-      "${config.clan.core.settings.machine.name}-user-password-hash".neededForUsers = true;
-    };
+    clan.core.vars.generators.user-password = {
+      files.user-password-hash.neededFor = "users";
 
-    clan.core.facts.services.user-password = {
-      secret.user-password = { };
-      secret.user-password-hash = { };
-      generator.prompt = (
-        lib.mkIf config.clan.user-password.prompt "Set the password for your user '${config.clan.user-password.user}'.
-      You can autogenerate a password, if you leave this prompt blank."
-      );
-      generator.path = with pkgs; [
-        coreutils
-        xkcdpass
-        mkpasswd
+      prompts.user-password.type = "hidden";
+      prompts.user-password.persist = true;
+      prompts.user-password.description = "You can autogenerate a password, if you leave this prompt blank.";
+      files.user-password.deploy = false;
+
+      migrateFact = "user-password";
+      runtimeInputs = [
+        pkgs.coreutils
+        pkgs.xkcdpass
+        pkgs.mkpasswd
       ];
-      generator.script = ''
+      script = ''
         if [[ -n ''${prompt_value-} ]]; then
           echo $prompt_value | tr -d "\n" > $secrets/user-password
         else

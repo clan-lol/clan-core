@@ -164,6 +164,7 @@
               imports = [
                 (modulesPath + "/../tests/common/auto-format-root-device.nix")
               ];
+              networking.useNetworkd = true;
               services.openssh.enable = true;
               system.nixos.variant_id = "installer";
               environment.systemPackages = [ pkgs.nixos-facter ];
@@ -192,6 +193,7 @@
               system.extraDependencies = dependencies;
             };
           nodes.client = {
+            networking.useNetworkd = true;
             environment.systemPackages = [
               self.packages.${pkgs.system}.clan-cli
             ] ++ self.packages.${pkgs.system}.clan-cli.runtimeDependencies;
