@@ -32,7 +32,7 @@ in
       nodes = flip mapAttrs serviceConfigs.machines (
         machineName: attrs: {
           imports = attrs.machineImports ++ [ self.nixosModules.clanCore ];
-          clan.core.settings.directory = toString config.inventory.directory;
+          clan.core.settings.directory = "${config.inventory.directory}";
           clan.core.settings.machine.name = machineName;
         }
       );

@@ -27,7 +27,7 @@ in
         else if v == null then
           throw "Please set either clan.self or clan.directory"
         else
-          builtins.toString v
+          "${v}"
       ) lib.types.path;
       default = builtins.toString self;
       defaultText = "Root directory of the flake";
