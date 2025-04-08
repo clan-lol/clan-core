@@ -9,11 +9,22 @@ let
   };
 
   getModulesSchema =
-    modules:
-    lib.mapAttrs (
-      _moduleName: rolesOptions:
-      lib.mapAttrs (_roleName: options: jsonWithoutHeader.parseOptions options { }) rolesOptions
-    ) (clanLib.evalClan.evalClanModulesWithRoles modules);
+    {
+      modules,
+      clan-core,
+      pkgs,
+    }:
+    lib.mapAttrs
+      (
+        _moduleName: rolesOptions:
+        lib.mapAttrs (_roleName: options: jsonWithoutHeader.parseOptions options { }) rolesOptions
+      )
+      (
+        clanLib.evalClan.evalClanModulesWithRoles {
+          allModules = modules;
+          inherit pkgs clan-core;
+        }
+      );
 
   evalFrontmatter =
     {
