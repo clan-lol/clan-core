@@ -4,11 +4,13 @@ import shutil
 from pathlib import Path
 
 import pytest
-from age_keys import SopsSetup
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_eval, run
+from clan_cli.tests.age_keys import SopsSetup
+from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generate import Generator, generate_vars_for_machine
 from clan_cli.vars.get import get_var
@@ -17,8 +19,6 @@ from clan_cli.vars.list import stringify_all_vars
 from clan_cli.vars.public_modules import in_repo
 from clan_cli.vars.secret_modules import password_store, sops
 from clan_cli.vars.set import set_var
-from fixtures_flakes import ClanFlake
-from helpers import cli
 
 
 def test_dependencies_as_files(temp_dir: Path) -> None:
@@ -948,13 +948,15 @@ def test_dynamic_invalidation(
 
     # this is an abuse
     custom_nix = flake.path / "machines" / machine.name / "hardware-configuration.nix"
-    custom_nix.write_text("""
+    custom_nix.write_text(
+        """
         { config, ... }: let
             p = config.clan.core.vars.generators.my_generator.files.my_value.path;
         in {
             clan.core.vars.generators.dependent_generator.validation = if builtins.pathExists p then builtins.readFile p else null;
         }
-    """)
+    """
+    )
 
     flake.refresh()
     machine.flush_caches()

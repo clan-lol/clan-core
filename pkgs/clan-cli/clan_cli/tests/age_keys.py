@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 from clan_cli.secrets.folders import sops_secrets_folder
-from helpers import cli
+from clan_cli.tests.helpers import cli
 
 
 class KeyPair:

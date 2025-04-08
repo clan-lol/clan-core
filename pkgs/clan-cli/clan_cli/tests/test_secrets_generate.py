@@ -7,12 +7,12 @@ from clan_cli.flake import Flake
 from clan_cli.machines.facts import machine_get_fact
 from clan_cli.machines.machines import Machine
 from clan_cli.secrets.folders import sops_secrets_folder
-from fixtures_flakes import FlakeForTest
-from helpers import cli
-from helpers.validator import is_valid_age_key
+from clan_cli.tests.fixtures_flakes import FlakeForTest
+from clan_cli.tests.helpers import cli
+from clan_cli.tests.helpers.validator import is_valid_age_key
 
 if TYPE_CHECKING:
-    from age_keys import KeyPair
+    from .age_keys import KeyPair
 
 
 @pytest.mark.impure

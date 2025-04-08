@@ -4,7 +4,7 @@ import pwd
 import pytest
 from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
-from sshd import Sshd
+from clan_cli.tests.sshd import Sshd
 
 
 @pytest.fixture

@@ -10,6 +10,15 @@ from clan_cli.api.util import JSchemaTypeError, type_to_dict
 from clan_cli.errors import ClanError
 
 
+def should_skip(file_path: Path, excludes: list[Path]) -> bool:
+    file_path = file_path.resolve()  # Ensure absolute path
+    for exclude in excludes:
+        exclude = exclude.resolve()
+        if exclude in file_path.parents or exclude == file_path:
+            return True  # Skip this file
+    return False
+
+
 def find_dataclasses_in_directory(
     directory: Path, exclude_paths: list[str] | None = None
 ) -> list[tuple[Path, str]]:
@@ -34,8 +43,7 @@ def find_dataclasses_in_directory(
                 continue
 
             file_path = Path(root) / file
-
-            if file_path in excludes:
+            if should_skip(file_path, excludes):
                 print(f"Skipping dataclass check for file: {file_path}")
                 continue
 
@@ -78,11 +86,13 @@ def load_dataclass_from_file(
     try:
         sys.path.insert(0, root_dir)
         spec = importlib.util.spec_from_file_location(module_name, file_path)
+        print(spec)
         if not spec:
             msg = f"Could not load spec from file: {file_path}"
             raise ClanError(msg)
 
         module = importlib.util.module_from_spec(spec)
+        print(module)
         if not module:
             msg = f"Could not create module: {file_path}"
             raise ClanError(msg)
@@ -121,6 +131,7 @@ def test_all_dataclasses() -> None:
         "api/__init__.py",
         "cmd.py",  # We don't want the UI to have access to the cmd module anyway
         "async_run.py",  # We don't want the UI to have access to the async_run module anyway
+        "tests",
     ]
 
     cli_path = Path("clan_cli").resolve()

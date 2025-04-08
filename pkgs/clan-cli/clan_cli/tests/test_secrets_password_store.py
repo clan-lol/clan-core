@@ -8,8 +8,8 @@ from clan_cli.machines.facts import machine_get_fact
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
 from clan_cli.ssh.host import Host
-from fixtures_flakes import ClanFlake
-from helpers import cli
+from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_cli.tests.helpers import cli
 
 
 @pytest.mark.impure

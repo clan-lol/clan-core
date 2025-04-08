@@ -1,20 +1,23 @@
 import pytest
+
 from clan_cli.custom_logger import setup_logging
 
+# collect_ignore = ["./nixpkgs"]
+
 pytest_plugins = [
-    "temporary_dir",
-    "root",
-    "age_keys",
-    "gpg_keys",
-    "git_repo",
-    "sshd",
-    "command",
-    "ports",
-    "hosts",
-    "runtime",
-    "fixtures_flakes",
-    "stdout",
-    "nix_config",
+    "clan_cli.tests.temporary_dir",
+    "clan_cli.tests.root",
+    "clan_cli.tests.age_keys",
+    "clan_cli.tests.gpg_keys",
+    "clan_cli.tests.git_repo",
+    "clan_cli.tests.sshd",
+    "clan_cli.tests.command",
+    "clan_cli.tests.ports",
+    "clan_cli.tests.hosts",
+    "clan_cli.tests.runtime",
+    "clan_cli.tests.fixtures_flakes",
+    "clan_cli.tests.stdout",
+    "clan_cli.tests.nix_config",
 ]
 
 

@@ -2,11 +2,11 @@ from typing import TYPE_CHECKING
 
 import pytest
 from clan_cli.ssh.host import Host
-from fixtures_flakes import ClanFlake
-from helpers import cli
+from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_cli.tests.helpers import cli
 
 if TYPE_CHECKING:
-    from age_keys import KeyPair
+    from .age_keys import KeyPair
 
 
 @pytest.mark.with_core

@@ -1,10 +1,10 @@
-import fixtures_flakes
 import pytest
-from age_keys import SopsSetup, assert_secrets_file_recipients
 from clan_cli.inventory import load_inventory_json
 from clan_cli.secrets.folders import sops_machines_folder
-from helpers import cli
-from stdout import CaptureOutput
+from clan_cli.tests import fixtures_flakes
+from clan_cli.tests.age_keys import SopsSetup, assert_secrets_file_recipients
+from clan_cli.tests.helpers import cli
+from clan_cli.tests.stdout import CaptureOutput
 
 
 @pytest.mark.impure
