@@ -46,6 +46,12 @@
       },
       "description": "Some attributes"
     },
+    "colour": {
+      "$exportedModuleInfo": { "path": ["colour"] },
+      "default": "red",
+      "description": "The colour of the user",
+      "enum": ["red", "blue", "green"]
+    },
     "services": {
       "$exportedModuleInfo": { "path": ["services"] },
       "type": "object",

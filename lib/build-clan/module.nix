@@ -3,6 +3,7 @@
   config,
   clan-core,
   nixpkgs,
+  nix-darwin,
   lib,
   ...
 }:
@@ -48,51 +49,99 @@ let
     }
   );
 
-  # TODO: remove default system once we have a hardware-config mechanism
-  nixosConfiguration =
-    {
-      system ? null,
-      name,
-      pkgs ? null,
-      extraConfig ? { },
-    }:
-    nixpkgs.lib.nixosSystem {
-      modules =
-        let
-          hwConfig = "${directory}/machines/${name}/hardware-configuration.nix";
-          diskoConfig = "${directory}/machines/${name}/disko.nix";
-        in
-        [
+  moduleSystemConstructor = {
+    # TODO: remove default system once we have a hardware-config mechanism
+    nixos =
+      {
+        system ? null,
+        name,
+        pkgs ? null,
+        extraConfig ? { },
+      }:
+      nixpkgs.lib.nixosSystem {
+        modules =
+          let
+            hwConfig = "${directory}/machines/${name}/hardware-configuration.nix";
+            diskoConfig = "${directory}/machines/${name}/disko.nix";
+          in
+          [
+            {
+              # Autoinclude configuration.nix and hardware-configuration.nix
+              imports = builtins.filter builtins.pathExists [
+                "${directory}/machines/${name}/configuration.nix"
+                hwConfig
+                diskoConfig
+              ];
+            }
+            clan-core.nixosModules.clanCore
+            extraConfig
+            (machines.${name} or { })
+            # Inherit the inventory assertions ?
+            # { inherit (mergedInventory) assertions; }
+            { imports = inventoryClass.machines.${name}.machineImports or [ ]; }
+
+            # Import the distribute services
+            { imports = config.clanInternals.distributedServices.allMachines.${name} or [ ]; }
+            (
+              {
+                # Settings
+                clan.core.settings = {
+                  inherit directory;
+                  inherit (config.inventory.meta) name icon;
+
+                  machine = {
+                    inherit name;
+                  };
+                };
+                # Inherited from clan wide settings
+                # TODO: remove these
+
+                networking.hostName = lib.mkDefault name;
+
+                # For vars we need to override the system so we run vars
+                # generators on the machine that runs `clan vars generate`. If a
+                # users is using the `pkgsForSystem`, we don't set
+                # nixpkgs.hostPlatform it would conflict with the `nixpkgs.pkgs`
+                # option.
+                nixpkgs.hostPlatform = lib.mkIf (system != null && (pkgsForSystem system) != null) (
+                  lib.mkForce system
+                );
+              }
+              // lib.optionalAttrs (pkgs != null) { nixpkgs.pkgs = lib.mkForce pkgs; }
+            )
+          ];
+
+        specialArgs = {
+          inherit clan-core;
+        } // specialArgs;
+      };
+
+    darwin =
+      {
+        system ? null,
+        name,
+        pkgs ? null,
+        extraConfig ? { },
+      }:
+      nix-darwin.lib.darwinSystem {
+        modules = [
           {
-            # Autoinclude configuration.nix and hardware-configuration.nix
             imports = builtins.filter builtins.pathExists [
               "${directory}/machines/${name}/configuration.nix"
-              hwConfig
-              diskoConfig
             ];
           }
-          clan-core.nixosModules.clanCore
+          (
+            if !lib.hasAttrByPath [ "darwinModules" "clanCore" ] clan-core then
+              { }
+            else
+              throw "this should import clan-core.darwinModules.clanCore"
+          )
           extraConfig
           (machines.${name} or { })
-          # Inherit the inventory assertions ?
-          # { inherit (mergedInventory) assertions; }
-          { imports = inventoryClass.machines.${name}.machineImports or [ ]; }
-
-          # Import the distribute services
-          { imports = config.clanInternals.distributedServices.allMachines.${name} or [ ]; }
+          # TODO: import inventory when it has support for defining `nix-darwin` modules
           (
             {
-              # Settings
-              clan.core.settings = {
-                inherit directory;
-                inherit (config.inventory.meta) name icon;
-
-                machine = {
-                  inherit name;
-                };
-              };
-              # Inherited from clan wide settings
-              # TODO: remove these
+              # TODO: set clan-core settings when clan-core has support for `nix-darwin`
 
               networking.hostName = lib.mkDefault name;
 
@@ -109,16 +158,24 @@ let
           )
         ];
 
-      specialArgs = {
-        inherit clan-core;
-      } // specialArgs;
-    };
+        specialArgs = {
+          inherit clan-core;
+        } // specialArgs;
+      };
+  };
 
   allMachines = inventory.machines or { } // machines;
 
-  nixosConfigurations = lib.mapAttrs (name: _: nixosConfiguration { inherit name; }) allMachines;
+  machineClass = lib.mapAttrs (name: _: inventory.machineClass.${name} or "nixos") allMachines;
 
-  # This instantiates nixos for each system that we support:
+  configurations = lib.mapAttrs (
+    name: _: moduleSystemConstructor.${machineClass.${name}} { inherit name; }
+  ) allMachines;
+
+  nixosConfigurations = lib.filterAttrs (name: _: machineClass.${name} == "nixos") configurations;
+  darwinConfigurations = lib.filterAttrs (name: _: machineClass.${name} == "darwin") configurations;
+
+  # This instantiates NixOS for each system that we support:
   # configPerSystem = <system>.<machine>.nixosConfiguration
   # We need this to build nixos secret generators for each system
   configsPerSystem = builtins.listToAttrs (
@@ -127,7 +184,7 @@ let
       lib.nameValuePair system (
         lib.mapAttrs (
           name: _:
-          nixosConfiguration {
+          moduleSystemConstructor.${machineClass.${name}} {
             inherit name system;
             pkgs = pkgsFor.${system};
           }
@@ -142,7 +199,7 @@ let
       lib.nameValuePair system (
         lib.mapAttrs (
           name: _: args:
-          nixosConfiguration (
+          moduleSystemConstructor.${machineClass.${name}} (
             args
             // {
               inherit name system;
@@ -194,6 +251,7 @@ in
   ];
 
   inherit nixosConfigurations;
+  inherit darwinConfigurations;
 
   clanInternals = {
     moduleSchemas = clan-core.lib.modules.getModulesSchema config.inventory.modules;
@@ -223,11 +281,17 @@ in
     # machine specifics
     machines = configsPerSystem;
     machinesFunc = configsFuncPerSystem;
-    all-machines-json = lib.mapAttrs (
-      system: configs:
-      nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (
-        lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs
-      )
-    ) configsPerSystem;
+    all-machines-json =
+      if !lib.hasAttrByPath [ "darwinModules" "clanCore" ] clan-core then
+        lib.mapAttrs (
+          system: configs:
+          nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (
+            lib.mapAttrs (_: m: m.config.system.clan.deployment.data) (
+              lib.filterAttrs (_n: v: v.class == "nixos") configs
+            )
+          )
+        ) configsPerSystem
+      else
+        throw "remove NixOS filter and support nix-darwin as well";
   };
 }

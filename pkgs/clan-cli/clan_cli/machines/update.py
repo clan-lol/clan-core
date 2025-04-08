@@ -238,6 +238,8 @@ def update_command(args: argparse.Namespace) -> None:
             if len(args.machines) == 0:
                 ignored_machines = []
                 for machine in get_all_machines(args.flake, args.option):
+                    if machine._class_ == "darwin":
+                        continue
                     if machine.deployment.get("requireExplicitUpdate", False):
                         continue
                     try:
@@ -264,6 +266,11 @@ def update_command(args: argparse.Namespace) -> None:
                 for machine in machines:
                     machine.override_build_host = args.build_host
                     machine.host_key_check = HostKeyCheck.from_str(args.host_key_check)
+
+        for machine in machines:
+            if machine._class_ == "darwin":
+                machine.error("Updating macOS machines is not yet supported")
+                sys.exit(1)
 
         deploy_machines(machines)
     except KeyboardInterrupt:

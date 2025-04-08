@@ -4,6 +4,7 @@
 {
   lib,
   nixpkgs,
+  nix-darwin ? null,
   ...
 }:
 {
@@ -54,6 +55,7 @@
         inherit
           lib
           nixpkgs
+          nix-darwin
           clan-core
           self
           ;

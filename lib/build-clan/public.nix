@@ -14,5 +14,6 @@
   topLevel = [
     "clanInternals"
     "nixosConfigurations"
+    "darwinConfigurations"
   ];
 }

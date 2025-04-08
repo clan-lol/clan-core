@@ -2,6 +2,7 @@
   lib,
   self,
   nixpkgs,
+  nix-darwin ? null,
   ...
 }:
 # Produces the
@@ -20,7 +21,7 @@ lib.fix (clanLib: {
     clan-core = self;
     pkgs = nixpkgs.legacyPackages.x86_64-linux;
   };
-  buildClanModule = clanLib.callLib ./build-clan { inherit nixpkgs; };
+  buildClanModule = clanLib.callLib ./build-clan { inherit nixpkgs nix-darwin; };
 
   buildClan = clanLib.buildClanModule.buildClanWith { clan-core = self; };
   # ------------------------------------

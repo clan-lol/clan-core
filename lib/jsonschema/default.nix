@@ -309,7 +309,13 @@ rec {
       option.type.name == "enum"
     # return jsonschema property definition for enum
     then
-      exposedModuleInfo // default // example // description // { enum = option.type.functor.payload; }
+      exposedModuleInfo
+      // default
+      // example
+      // description
+      // {
+        enum = option.type.functor.payload.values;
+      }
     # parse listOf submodule
     else if
       option.type.name == "listOf" && option.type.nestedTypes.elemType.name == "submodule"

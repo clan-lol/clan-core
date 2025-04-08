@@ -76,7 +76,7 @@ in
         };
         directory = ./.;
         imports = [
-          # What the user needs to specif
+          # What the user needs to specify
           {
             directory = ./.;
             inventory.meta.name = "test";
@@ -165,10 +165,9 @@ in
         };
         directory = ./.;
         meta.name = "test";
-        inventory.machines.machine1.meta.name = "machine1";
 
+        inventory.machines.machine1 = { };
         machines.machine2 = { };
-
       };
     in
     {
@@ -199,5 +198,56 @@ in
     {
       expr = result.nixosConfigurations.machine2.config.networking.hostName;
       expected = "dream2nix";
+    };
+
+  test_buildClan_darwin_machines =
+    let
+      result = buildClan {
+        self = {
+          inputs = { };
+        };
+        directory = ./.;
+        meta.name = "test";
+
+        machines.machine1 = { };
+        machines.machine2 = { };
+        machines.machine3 = { };
+
+        inventory.machineClass.machine2 = "darwin";
+        inventory.machineClass.machine3 = "nixos";
+      };
+    in
+    {
+      expr = {
+        nixos = builtins.attrNames result.nixosConfigurations;
+        darwin = builtins.attrNames result.darwinConfigurations;
+      };
+      expected = {
+        nixos = [
+          "machine1"
+          "machine3"
+        ];
+        darwin = [ "machine2" ];
+      };
+    };
+
+  test_buildClan_all_machines_laziness =
+    let
+      result = buildClan {
+        self = {
+          inputs = { };
+        };
+        directory = ./.;
+        meta.name = "test";
+
+        machines.machine1.non_existent_option = throw "eval error";
+        inventory.machines.machine1.other_non_existent_option = throw "different eval error";
+      };
+    in
+    {
+      expr = builtins.attrNames result.nixosConfigurations;
+      expected = [
+        "machine1"
+      ];
     };
 }

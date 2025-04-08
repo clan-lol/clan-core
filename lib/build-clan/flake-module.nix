@@ -37,6 +37,7 @@ in
 
           nix-unit --eval-store "$HOME" \
             --extra-experimental-features flakes \
+            --show-trace \
             ${inputOverrides} \
             --flake ${
               self.filter {
