@@ -4,13 +4,38 @@
   ...
 }:
 {
+  # The purpose of this test is to ensure `clan machines install` works
+  # for machines that don't have a hardware config yet.
+
+  # If this test starts failing it could be due to the `facter.json` being out of date
+  # you can get a new one by adding
+  # client.fail("cat test-flake/machines/test-install-machine/facter.json >&2")
+  # to the installation test.
   clan.machines.test-install-machine = {
-    clan.core.networking.targetHost = "test-install-machine";
     fileSystems."/".device = lib.mkDefault "/dev/vda";
     boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
     imports = [ self.nixosModules.test-install-machine ];
   };
+  clan.machines.test-install-machine-with-system =
+    { pkgs, ... }:
+    {
+      # https://git.clan.lol/clan/test-fixtures
+      facter.reportPath = builtins.fetchurl {
+        url = "https://git.clan.lol/clan/test-fixtures/raw/commit/4a2bc56d886578124b05060d3fb7eddc38c019f8/nixos-vm-facter-json/${pkgs.hostPlatform.system}.json";
+        sha256 =
+          {
+            aarch64-linux = "sha256:1rlfymk03rmfkm2qgrc8l5kj5i20srx79n1y1h4nzlpwaz0j7hh2";
+            x86_64-linux = "sha256:16myh0ll2gdwsiwkjw5ba4dl23ppwbsanxx214863j7nvzx42pws";
+          }
+          .${pkgs.hostPlatform.system};
+      };
+
+      fileSystems."/".device = lib.mkDefault "/dev/vda";
+      boot.loader.grub.device = lib.mkDefault "/dev/vda";
+
+      imports = [ self.nixosModules.test-install-machine ];
+    };
   flake.nixosModules = {
     test-install-machine =
       { lib, modulesPath, ... }:
@@ -20,11 +45,11 @@
           (modulesPath + "/profiles/qemu-guest.nix")
           ../lib/minify.nix
         ];
-        networking.useNetworkd = true;
+
+        networking.hostName = "test-install-machine";
 
         environment.etc."install-successful".text = "ok";
 
-        nixpkgs.hostPlatform = "x86_64-linux";
         boot.consoleLogLevel = lib.mkForce 100;
         boot.kernelParams = [ "boot.shell_on_fail" ];
 
@@ -90,16 +115,15 @@
     let
       dependencies = [
         self
-        self.nixosConfigurations.test-install-machine.config.system.build.toplevel
-        self.nixosConfigurations.test-install-machine.config.system.build.diskoScript
-        self.nixosConfigurations.test-install-machine.config.system.clan.deployment.file
-        pkgs.bash.drvPath
+        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.toplevel
+        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.diskoScript
+        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.clan.deployment.file
         pkgs.stdenv.drvPath
+        pkgs.bash.drvPath
         pkgs.nixos-anywhere
         pkgs.bubblewrap
       ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
-
       # with Nix 2.24 we get:
       # vm-test-run-test-installation> client # error: sized: unexpected end-of-file
       # vm-test-run-test-installation> client # error: unexpected end-of-file
@@ -113,14 +137,18 @@
     in
     {
       # On aarch64-linux, hangs on reboot with after installation:
-      # vm-test-run-test-installation> (finished: waiting for the VM to power off, in 1.97 seconds)
-      # vm-test-run-test-installation>
-      # vm-test-run-test-installation> new_machine: must succeed: cat /etc/install-successful
-      # vm-test-run-test-installation> new_machine: waiting for the VM to finish booting
-      # vm-test-run-test-installation> new_machine: starting vm
-      # vm-test-run-test-installation> new_machine: QEMU running (pid 80)
-      # vm-test-run-test-installation> new_machine: Guest root shell did not produce any data yet...
-      # vm-test-run-test-installation> new_machine:   To debug, enter the VM and run 'systemctl status backdoor.service'.
+      # vm-test-run-test-installation-> installer # [  288.002871] reboot: Restarting system
+      # vm-test-run-test-installation-> client # [test-install-machine] ### Done! ###
+      # vm-test-run-test-installation-> client # [test-install-machine] + step 'Done!'
+      # vm-test-run-test-installation-> client # [test-install-machine] + echo '### Done! ###'
+      # vm-test-run-test-installation-> client # [test-install-machine] + rm -rf /tmp/tmp.qb16EAq7hJ
+      # vm-test-run-test-installation-> (finished: must succeed: clan machines install --debug --flake test-flake --yes test-install-machine --target-host root@installer --update-hardware-config nixos-facter >&2, in 154.62 seconds)
+      # vm-test-run-test-installation-> target: starting vm
+      # vm-test-run-test-installation-> target: QEMU running (pid 144)
+      # vm-test-run-test-installation-> target: waiting for unit multi-user.target
+      # vm-test-run-test-installation-> target: waiting for the VM to finish booting
+      # vm-test-run-test-installation-> target: Guest root shell did not produce any data yet...
+      # vm-test-run-test-installation-> target:   To debug, enter the VM and run 'systemctl status backdoor.service'.
       checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
         test-installation = (import ../lib/test-base.nix) {
           name = "test-installation";
@@ -129,11 +157,6 @@
             virtualisation.diskImage = "./target.qcow2";
             virtualisation.useBootLoader = true;
             nix.package = nixPackage;
-
-            # virtualisation.fileSystems."/" = {
-            #   device = "/dev/disk/by-label/this-is-not-real-and-will-never-be-used";
-            #   fsType = "ext4";
-            # };
           };
           nodes.installer =
             { modulesPath, ... }:
@@ -143,7 +166,6 @@
               ];
               networking.useNetworkd = true;
               services.openssh.enable = true;
-              users.users.root.openssh.authorizedKeys.keyFiles = [ ../lib/ssh/pubkey ];
               system.nixos.variant_id = "installer";
               environment.systemPackages = [ pkgs.nixos-facter ];
               virtualisation.emptyDiskImages = [ 512 ];
@@ -162,6 +184,12 @@
                   "flakes"
                 ];
               };
+              users.users.nonrootuser = {
+                isNormalUser = true;
+                openssh.authorizedKeys.keyFiles = [ ../lib/ssh/pubkey ];
+                extraGroups = [ "wheel" ];
+              };
+              security.sudo.wheelNeedsPassword = false;
               system.extraDependencies = dependencies;
             };
           nodes.client = {
@@ -190,21 +218,21 @@
             installer.start()
 
             client.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../lib/ssh/privkey} /root/.ssh/id_ed25519")
-            client.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v root@installer hostname")
+            client.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@installer hostname")
             client.succeed("cp -r ${../..} test-flake && chmod -R +w test-flake")
-
-            # test that we can generate hardware configurations
-            client.fail("test -f test-flake/machines/test-install-machine/facter.json")
             client.fail("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
-            client.succeed("clan machines update-hardware-config --flake test-flake test-install-machine root@installer >&2")
+            client.fail("test -f test-flake/machines/test-install-machine/facter.json")
+
+            client.succeed("clan machines update-hardware-config --flake test-flake test-install-machine nonrootuser@installer >&2")
             client.succeed("test -f test-flake/machines/test-install-machine/facter.json")
-            client.succeed("clan machines update-hardware-config --backend nixos-generate-config --flake test-flake test-install-machine root@installer>&2")
+            client.succeed("rm test-flake/machines/test-install-machine/facter.json")
+
+            client.succeed("clan machines update-hardware-config --backend nixos-generate-config --flake test-flake test-install-machine nonrootuser@installer>&2")
             client.succeed("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
+            client.succeed("rm test-flake/machines/test-install-machine/hardware-configuration.nix")
 
-            # but we don't use them because they're not cached
-            client.succeed("rm test-flake/machines/test-install-machine/hardware-configuration.nix test-flake/machines/test-install-machine/facter.json")
+            client.succeed("clan machines install --debug --flake test-flake --yes test-install-machine --target-host nonrootuser@installer --update-hardware-config nixos-facter >&2")
 
-            client.succeed("clan machines install --debug --flake test-flake --yes test-install-machine --target-host root@installer >&2")
             try:
               installer.shutdown()
             except BrokenPipeError:
