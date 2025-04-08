@@ -120,17 +120,9 @@ let
     }
     ```
   */
-  makeExtensibleConfig =
-    f: args:
-    let
-      makeModuleExtensible =
-        eval:
-        eval.config
-        // {
-          __functor = _self: m: makeModuleExtensible (eval.extendModules { modules = lib.toList m; });
-        };
-    in
-    makeModuleExtensible (f args);
+
+  # Extend evalModules result by a module, returns .config.
+  extendEval = eval: m: (eval.extendModules { modules = lib.toList m; }).config;
 
   /**
     Apply the settings to the instance
@@ -146,20 +138,18 @@ let
       machines = lib.mapAttrs (machineName: v: {
         # TODO: evaluate the settings against the interface
         # settings = (evalMachineSettings { inherit roleName instanceName; inherit (v) settings; }).config;
-        settings = (
-          makeExtensibleConfig evalMachineSettings {
+        settings =
+          (evalMachineSettings {
             inherit roleName instanceName machineName;
             inherit (v) settings;
-          }
-        );
+          }).config;
       }) role.machines;
       # TODO: evaluate the settings against the interface
-      settings = (
-        makeExtensibleConfig evalMachineSettings {
+      settings =
+        (evalMachineSettings {
           inherit roleName instanceName;
           inherit (role) settings;
-        }
-      );
+        }).config;
     }) instance.roles;
 in
 {
@@ -327,13 +317,17 @@ in
                             name = machineName;
                             roles = lib.attrNames (lib.filterAttrs (_n: v: v.machines ? ${machineName}) roles);
                           };
-                          settings = (
-                            makeExtensibleConfig evalMachineSettings {
+                          settings =
+                            (evalMachineSettings {
                               inherit roleName instanceName machineName;
                               settings =
                                 config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.settings or { };
-                            }
-                          );
+                            }).config;
+                          extendSettings = extendEval (evalMachineSettings {
+                            inherit roleName instanceName machineName;
+                            settings =
+                              config.instances.${instanceName}.roles.${roleName}.machines.${machineName}.settings or { };
+                          });
                         };
                       modules = [ v ];
                     }).config;
@@ -396,6 +390,7 @@ in
                 in
                 uniqueStrings (collectRoles machineScope.instances);
             };
+            # TODO: instances.<instanceName>.roles should contain all roles, even if nobody has the role
             inherit (machineScope) instances;
 
             # There are no machine settings.
@@ -508,7 +503,8 @@ in
             imports = [
               # For error backtracing. This module was produced by the 'perMachine' function
               # TODO: check if we need this or if it leads to better errors if we pass the underlying module locations
-              (lib.setDefaultModuleLocation "clan.service: ${config.manifest.name} - via perMachine" machineResult.nixosModule)
+              # (lib.setDefaultModuleLocation "clan.service: ${config.manifest.name} - via perMachine" machineResult.nixosModule)
+              (machineResult.nixosModule)
             ] ++ instanceResults;
           };
         }
