@@ -44,11 +44,12 @@ in
     };
   };
 
-  options.flake =
-    flake-parts-lib.mkSubmoduleOptions {
+  options.flake = flake-parts-lib.mkSubmoduleOptions (
+    {
       clan = lib.mkOption { type = types.raw; };
     }
-    // outputModule.topLevel.options;
+    // outputModule.topLevel.options
+  );
   config = {
     flake = {
       clan = outputModule.clan;
