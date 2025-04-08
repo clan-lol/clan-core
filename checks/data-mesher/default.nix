@@ -35,9 +35,6 @@
           config.services.data-mesher.package
         ];
 
-        clan.core.vars.settings.publicStore = "in_repo";
-        clan.core.vars.settings.secretStore = "vm";
-
         clan.data-mesher.network.interface = "eth1";
         clan.data-mesher.bootstrapNodes = [
           "[2001:db8:1::1]:7946" # peer1
@@ -48,16 +45,6 @@
         services.data-mesher.settings = {
           cluster.join_interval = lib.mkForce "2s";
           cluster.push_pull_interval = lib.mkForce "5s";
-        };
-
-        systemd.tmpfiles.settings."vmsecrets" = {
-          "/etc/secrets" = {
-            C.argument = "${./vars/secret/${config.clan.core.settings.machine.name}}";
-            z = {
-              mode = "0700";
-              user = "data-mesher";
-            };
-          };
         };
       };
 
