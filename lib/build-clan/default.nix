@@ -3,8 +3,6 @@
 ## Add any logic to ./module.nix
 {
   lib,
-  nixpkgs,
-  nix-darwin ? null,
   ...
 }:
 {
@@ -35,7 +33,10 @@
   buildClanWith =
     {
       clan-core,
+      # TODO: Below should be module options such that the user can override them?
+      nixpkgs,
       publicAttrs ? import ./public.nix,
+      nix-darwin ? null,
     }:
     {
       ## Inputs

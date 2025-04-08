@@ -15,11 +15,14 @@ lib.fix (clanLib: {
   */
   callLib = file: args: import file ({ inherit lib clanLib; } // args);
 
-  buildClan = clanLib.buildClanModule.buildClanWith { clan-core = self; };
+  buildClan = clanLib.buildClanModule.buildClanWith {
+    clan-core = self;
+    inherit nixpkgs nix-darwin;
+  };
   # ------------------------------------
   # ClanLib functions
   evalClan = clanLib.callLib ./inventory/eval-clan-modules { };
-  buildClanModule = clanLib.callLib ./build-clan { inherit nixpkgs nix-darwin; };
+  buildClanModule = clanLib.callLib ./build-clan { };
   inventory = clanLib.callLib ./inventory { };
   modules = clanLib.callLib ./inventory/frontmatter { };
 
