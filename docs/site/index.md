@@ -27,9 +27,9 @@ hide:
 
     ---
 
-    Create clanModules that can be reused by the community.
+    Create ressources that can be reused by the community.
 
-    [:octicons-arrow-right-24: Authoring clanModules](./clanmodules/index.md)
+    [:octicons-arrow-right-24: Authoring guides](./authoring/legacyModules/index.md)
 
 </div>
 
