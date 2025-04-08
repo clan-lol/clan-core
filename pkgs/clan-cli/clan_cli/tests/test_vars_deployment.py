@@ -33,7 +33,7 @@ def test_vm_deployment(
     m1_generator = machine1_config["clan"]["core"]["vars"]["generators"]["m1_generator"]
     m1_generator["files"]["my_secret"]["secret"] = True
     m1_generator["script"] = """
-        echo hello > $out/my_secret
+        echo hello > "$out"/my_secret
     """
     m1_shared_generator = machine1_config["clan"]["core"]["vars"]["generators"][
         "my_shared_generator"
@@ -43,8 +43,8 @@ def test_vm_deployment(
     m1_shared_generator["files"]["no_deploy_secret"]["secret"] = True
     m1_shared_generator["files"]["no_deploy_secret"]["deploy"] = False
     m1_shared_generator["script"] = """
-        echo hello > $out/shared_secret
-        echo hello > $out/no_deploy_secret
+        echo hello > "$out"/shared_secret
+        echo hello > "$out"/no_deploy_secret
     """
     # machine 2
     machine2_config = flake.machines["m2_machine"]
