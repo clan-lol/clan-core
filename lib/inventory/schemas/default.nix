@@ -6,7 +6,11 @@
 }:
 let
 
-  modulesSchema = self.lib.modules.getModulesSchema self.clanModules;
+  modulesSchema = self.lib.modules.getModulesSchema {
+    modules = self.clanModules;
+    inherit pkgs;
+    clan-core = self;
+  };
 
   jsonLib = self.lib.jsonschema { inherit includeDefaults; };
   includeDefaults = true;

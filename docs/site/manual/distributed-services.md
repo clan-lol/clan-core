@@ -280,3 +280,40 @@ Next we need to define the settings and the behavior of these distinct roles.
     # ...
 }
 ```
+
+## Using values from a NixOS machine inside the module
+
+!!! Example "Experimental Status"
+    This feature is experimental and should be used with care.
+
+Sometimes a settings value depends on something within a machines `config`.
+
+Since the `interface` is defined completely machine-agnostic this means values from a machine cannot be set in the traditional way.
+
+The following example shows how to create a local instance of machine specific settings.
+
+```nix title="someservice.nix"
+{
+    # Maps over all instances and produces one result per instance.
+    perInstance = { instanceName, extendSettings, machine, roles, ... }: {
+        nixosModule = { config, ... }:
+          let
+            # Create new settings with
+            # 'ipRanges' defaulting to 'config.network.ip.range' from this machine
+            # This only works if there is no 'default' already.
+            localSettings = extendSettings {
+                ipRanges = lib.mkDefault config.network.ip.range;
+            };
+          in
+            {
+                # ...
+            };
+    };
+}
+```
+
+!!! Danger
+    `localSettings` are a local attribute. Other machines cannot access it.
+    If calling extendSettings is done that doesn't change the original `settings` this means if a different machine tries to access i.e `roles.client.settings` it would *NOT* contain your changes.
+
+    Exposing the changed settings to other machines would come with a huge performance penalty, thats why we don't want to offer it.

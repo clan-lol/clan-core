@@ -4,6 +4,8 @@
   clanModules,
   evalClanModules,
   lib,
+  pkgs,
+  clan-core,
 }:
 {
   # clanModules docs
@@ -11,7 +13,12 @@
     name: module:
     if builtins.pathExists (module + "/default.nix") then
       (nixosOptionsDoc {
-        options = ((evalClanModules [ module ]).options).clan.${name} or { };
+        options =
+          ((evalClanModules {
+            modules = [ module ];
+            inherit pkgs clan-core;
+          }).options
+          ).clan.${name} or { };
         warningsAreErrors = true;
       }).optionsJSON
     else
@@ -31,7 +38,12 @@
 
   clanCore =
     (nixosOptionsDoc {
-      options = ((evalClanModules [ ]).options).clan.core or { };
+      options =
+        ((evalClanModules {
+          modules = [ ];
+          inherit pkgs clan-core;
+        }).options
+        ).clan.core or { };
       warningsAreErrors = true;
     }).optionsJSON;
 }

@@ -13,8 +13,14 @@
       # { clanCore = «derivation JSON»; clanModules = { ${name} = «derivation JSON» }; }
       jsonDocs = pkgs.callPackage ./get-module-docs.nix {
         inherit (self) clanModules;
+        clan-core = self;
+        inherit pkgs;
         evalClanModules = self.lib.evalClan.evalClanModules;
-        modulesRolesOptions = self.lib.evalClan.evalClanModulesWithRoles self.clanModules;
+        modulesRolesOptions = self.lib.evalClan.evalClanModulesWithRoles {
+          allModules = self.clanModules;
+          inherit pkgs;
+          clan-core = self;
+        };
       };
 
       # Frontmatter for clanModules
