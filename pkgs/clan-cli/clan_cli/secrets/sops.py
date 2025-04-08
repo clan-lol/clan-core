@@ -50,17 +50,6 @@ class KeyType(enum.Enum):
         keyring: list[str] = []
 
         if self == self.AGE:
-            if keys := os.environ.get("SOPS_AGE_KEY"):
-                # SOPS_AGE_KEY is fed into age.ParseIdentities by Sops, and
-                # reads identities line by line. See age/keysource.go in
-                # Sops, and age/parse.go in Age.
-                for private_key in keys.strip().splitlines():
-                    public_key = get_public_age_key(private_key)
-                    log.info(
-                        f"Found age public key from a private key "
-                        f"in the environment (SOPS_AGE_KEY): {public_key}"
-                    )
-                    keyring.append(public_key)
 
             def maybe_read_from_path(key_path: Path) -> None:
                 try:
@@ -78,10 +67,23 @@ class KeyType(enum.Enum):
                 except Exception as ex:
                     log.warning(f"Could not read age keys from {key_path}", exc_info=ex)
 
+            if keys := os.environ.get("SOPS_AGE_KEY"):
+                # SOPS_AGE_KEY is fed into age.ParseIdentities by Sops, and
+                # reads identities line by line. See age/keysource.go in
+                # Sops, and age/parse.go in Age.
+                for private_key in keys.strip().splitlines():
+                    public_key = get_public_age_key(private_key)
+                    log.info(
+                        f"Found age public key from a private key "
+                        f"in the environment (SOPS_AGE_KEY): {public_key}"
+                    )
+                    keyring.append(public_key)
+
             # Sops will try every location, see age/keysource.go
-            if key_path := os.environ.get("SOPS_AGE_KEY_FILE"):
+            elif key_path := os.environ.get("SOPS_AGE_KEY_FILE"):
                 maybe_read_from_path(Path(key_path))
-            maybe_read_from_path(user_config_dir() / "sops/age/keys.txt")
+            else:
+                maybe_read_from_path(user_config_dir() / "sops/age/keys.txt")
 
             return keyring
 

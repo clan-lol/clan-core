@@ -754,7 +754,7 @@ def test_secrets_key_generate_gpg(
                 ]
             )
         assert "age private key" not in output.out
-        assert re.match(r"PGP key.+is already set", output.out) is not None
+        assert re.match(r"PGP key.+is already set", output.err) is not None
 
         with capture_output as output:
             cli.run(["secrets", "key", "show", "--flake", str(test_flake.path)])

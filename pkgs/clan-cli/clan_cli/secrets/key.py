@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 def generate_key() -> sops.SopsKey:
     key = maybe_get_admin_public_key()
     if key is not None:
-        print(f"{key.key_type.name} key {key.pubkey} is already set")
+        print(f"{key.key_type.name} key {key.pubkey} is already set", file=sys.stderr)
         return key
 
     path = default_admin_private_key_path()
@@ -34,8 +34,11 @@ def generate_key() -> sops.SopsKey:
 def generate_command(args: argparse.Namespace) -> None:
     key = generate_key()
     key_type = key.key_type.name.lower()
-    print(f"Add your {key_type} public key to the repository with:")
-    print(f"clan secrets users add <username> --{key_type}-key {key.pubkey}")
+    print(f"Add your {key_type} public key to the repository with:", file=sys.stderr)
+    print(
+        f"clan secrets users add <username> --{key_type}-key {key.pubkey}",
+        file=sys.stderr,
+    )
 
 
 def show_command(args: argparse.Namespace) -> None:
