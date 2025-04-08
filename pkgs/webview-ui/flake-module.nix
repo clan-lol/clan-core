@@ -48,6 +48,7 @@
         '';
       };
       devShells.webview-ui = pkgs.mkShell {
+        name = "clan-webview-ui";
         inputsFrom = [
           config.packages.webview-ui
           self'.devShells.default

@@ -9,6 +9,7 @@
 }:
 
 mkShell {
+  name = "clan-cli";
   buildInputs = [
     (clan-cli.pythonRuntime.withPackages (
       ps:

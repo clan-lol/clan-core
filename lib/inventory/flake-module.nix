@@ -19,6 +19,7 @@ in
     }:
     {
       devShells.inventory-schema = pkgs.mkShell {
+        name = "clan-inventory-schema";
         inputsFrom = with config.checks; [
           lib-inventory-eval
           self'.devShells.default

@@ -7,6 +7,7 @@
 }:
 
 mkShell {
+  name = "clan-app";
 
   inputsFrom = [ self'.devShells.default ];
 

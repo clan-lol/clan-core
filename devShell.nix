@@ -24,6 +24,7 @@
     in
     {
       devShells.default = pkgs.mkShell {
+        name = "clan";
         packages = [
           select-shell
           pkgs.nix-unit
