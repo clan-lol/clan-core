@@ -120,22 +120,13 @@ let
   # TODO: Eagerly check the _class of the resolved module
   importedModulesEvaluated = lib.mapAttrs (
     _module_ident: instances:
-    let
-      matchedClass = "clan.service";
-      instance = (builtins.head instances).instance;
-      classCheckedModule =
-        if instance.moduleClass == matchedClass then
-          instance.resolvedModule
-        else
-          (throw ''Module '${instance.module.name}' is not a valid '${matchedClass}' module. Got module with class:${builtins.toJSON instance.moduleClass}'');
-    in
     (lib.evalModules {
-      class = matchedClass;
+      class = "clan.service";
       modules =
         [
           ./service-module.nix
-          # Import the resolved module
-          classCheckedModule
+          # Import the resolved module.
+          (builtins.head instances).instance.resolvedModule
         ]
         # Include all the instances that correlate to the resolved module
         ++ (builtins.map (v: {

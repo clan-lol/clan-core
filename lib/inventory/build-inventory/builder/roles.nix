@@ -14,7 +14,7 @@ in
 {
   # Roles resolution
   # : List String
-  supportedRoles = clanLib.modules.getRoles inventory.modules serviceName;
+  supportedRoles = clanLib.modules.getRoles "inventory.modules" inventory.modules serviceName;
   matchedRoles = builtins.attrNames (
     lib.filterAttrs (_: ms: builtins.elem machineName ms) config.machinesRoles
   );

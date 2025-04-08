@@ -34,7 +34,6 @@ in
       };
       expected = {
         legacyModule = {
-          isClanModule = false;
         };
       };
     };

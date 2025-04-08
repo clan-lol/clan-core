@@ -74,7 +74,7 @@ let
           roles =
             if builtins.elem "inventory" frontmatter.features or [ ] then
               assert lib.isPath module;
-              clanLib.modules.getRoles allModules moduleName
+              clan-core.lib.modules.getRoles "Documentation: inventory.modules" allModules moduleName
             else
               [ ];
         in

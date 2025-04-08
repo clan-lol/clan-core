@@ -53,13 +53,4 @@ in
       };
     };
   };
-  # Currently this should fail
-  # TODO: Can we implement a default wrapper to make migration easy?
-  test_import_local_legacy_module = {
-    expr = (resolve { name = "B"; }).allMachines;
-    expectedError = {
-      type = "ThrownError";
-      msg = "Module 'B' is not a valid 'clan.service' module.*";
-    };
-  };
 }
