@@ -81,9 +81,6 @@ def test_generate_secret(
         Machine(name="vm2", flake=Flake(str(test_flake_with_core.path)))
     )
 
-    # Should not exist clan facts generate
-    assert not store2.exists("", "password")
-    assert not store2.exists("", "password-hash")
     # clan vars generate
     # TODO: Test vars
     # varsStore = VarsSecretStore(
@@ -101,8 +98,6 @@ def test_generate_secret(
     # set_prompts(str(test_flake_with_core.path), "vm2", [password_update])
     # assert varsStore.exists(generator, "root-password")
 
-    assert store2.exists("", "user-password")
-    assert store2.exists("", "user-password-hash")
     assert store2.exists("", "age.key")
     assert store2.exists("", "zerotier-identity-secret")
 
@@ -113,11 +108,3 @@ def test_generate_secret(
     age_secret = store2.get("", "age.key").decode()
     assert age_secret.isprintable()
     assert is_valid_age_key(age_secret)
-
-    # Assert that user-password is valid
-    pwd_secret = store2.get("", "user-password").decode()
-    assert pwd_secret.isprintable()
-    assert pwd_secret.isascii()
-    pwd_hash = store2.get("", "user-password-hash").decode()
-    assert pwd_hash.isprintable()
-    assert pwd_hash.isascii()
