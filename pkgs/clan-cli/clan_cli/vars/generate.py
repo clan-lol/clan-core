@@ -163,6 +163,7 @@ def execute_generator(
     secret_vars_store: StoreBase,
     public_vars_store: StoreBase,
     prompt_values: dict[str, str],
+    no_sandbox: bool = False,
 ) -> None:
     if not isinstance(machine.flake, Path):
         msg = f"flake is not a Path: {machine.flake}"
@@ -211,6 +212,12 @@ def execute_generator(
         if sys.platform == "linux" and bwrap.bubblewrap_works():
             cmd = bubblewrap_cmd(str(final_script), tmpdir)
         else:
+            if not no_sandbox:
+                msg = (
+                    f"Cannot safely execute generator {generator.name}: Sandboxing is not available on this system\n"
+                    f"Re-run with --no-sandbox to disable sandboxing"
+                )
+                raise ClanError(msg)
             cmd = ["bash", "-c", str(final_script)]
         run(cmd, RunOpts(env=env))
         files_to_commit = []
@@ -427,6 +434,7 @@ def generate_vars_for_machine(
     machine: "Machine",
     generator_name: str | None,
     regenerate: bool,
+    no_sandbox: bool = False,
 ) -> bool:
     _generator = None
     if generator_name:
@@ -459,6 +467,7 @@ def generate_vars_for_machine(
                 secret_vars_store=machine.secret_vars_store,
                 public_vars_store=machine.public_vars_store,
                 prompt_values=_ask_prompts(generator),
+                no_sandbox=no_sandbox,
             )
     return True
 
@@ -467,13 +476,14 @@ def generate_vars(
     machines: list["Machine"],
     generator_name: str | None = None,
     regenerate: bool = False,
+    no_sandbox: bool = False,
 ) -> bool:
     was_regenerated = False
     for machine in machines:
         errors = []
         try:
             was_regenerated |= generate_vars_for_machine(
-                machine, generator_name, regenerate
+                machine, generator_name, regenerate, no_sandbox=no_sandbox
             )
             machine.flush_caches()
         except Exception as exc:
@@ -501,7 +511,7 @@ def generate_command(args: argparse.Namespace) -> None:
         machines = get_all_machines(args.flake, args.option)
     else:
         machines = get_selected_machines(args.flake, args.option, args.machines)
-    generate_vars(machines, args.generator, args.regenerate)
+    generate_vars(machines, args.generator, args.regenerate, no_sandbox=args.no_sandbox)
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:
@@ -529,6 +539,13 @@ def register_generate_parser(parser: argparse.ArgumentParser) -> None:
         action=argparse.BooleanOptionalAction,
         help="whether to regenerate facts for the specified machine",
         default=None,
+    )
+
+    parser.add_argument(
+        "--no-sandbox",
+        action="store_true",
+        help="disable sandboxing when executing the generator. WARNING: potentially executing untrusted code from external clan modules",
+        default=False,
     )
 
     parser.set_defaults(func=generate_command)

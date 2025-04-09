@@ -217,6 +217,18 @@ def test_generate_public_and_secret_vars(
     cli.run(
         ["vars", "generate", "--flake", str(flake.path), "my_machine", "--regenerate"]
     )
+    # test regeneration without sandbox
+    cli.run(
+        [
+            "vars",
+            "generate",
+            "--flake",
+            str(flake.path),
+            "my_machine",
+            "--regenerate",
+            "--no-sandbox",
+        ]
+    )
 
 
 # TODO: it doesn't actually test if the group has access
