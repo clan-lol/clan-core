@@ -16,7 +16,6 @@ class Machine(TypedDict):
     deploy: NotRequired[MachineDeploy]
     description: NotRequired[str]
     icon: NotRequired[str]
-    machineClass: NotRequired[Literal["nixos", "darwin"]]
     name: NotRequired[str]
     tags: NotRequired[list[str]]
 
@@ -30,6 +29,7 @@ Service = dict[str, Any]
 
 
 class Inventory(TypedDict):
+    machineClass: NotRequired[dict[str, Any]]
     machines: NotRequired[dict[str, Machine]]
     meta: NotRequired[Meta]
     modules: NotRequired[dict[str, Any]]
