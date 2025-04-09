@@ -243,6 +243,19 @@ in
             options = {
               inherit (metaOptionsWith name) name description icon;
 
+              machineClass = lib.mkOption {
+                default = "nixos";
+                type = types.enum [
+                  "nixos"
+                  "darwin"
+                ];
+                description = ''
+                  The module system that should be used to construct the machine
+
+                  Set this to `darwin` for macOS machines
+                '';
+              };
+
               tags = lib.mkOption {
                 description = ''
                   List of tags for the machine.
@@ -276,21 +289,6 @@ in
           }
         )
       );
-    };
-
-    machineClass = lib.mkOption {
-      default = { };
-      type = types.attrsOf (
-        types.enum [
-          "nixos"
-          "darwin"
-        ]
-      );
-      description = ''
-        The module system that should be used to construct the machine
-
-        Set this to `darwin` for macOS machines
-      '';
     };
 
     instances = lib.mkOption {
@@ -366,6 +364,7 @@ in
         else
           lib.warn "Inventory.instances and related features are still under development. Please use with care." v;
     };
+
     services = lib.mkOption {
       description = ''
         Services of the inventory.
