@@ -46,6 +46,7 @@ let
   inventoryClass = (
     buildInventory {
       inherit inventory directory;
+      flakeInputs = config.self.inputs;
     }
   );
 
@@ -76,19 +77,16 @@ let
             clan-core.nixosModules.clanCore
             extraConfig
             (machines.${name} or { })
-            # Inherit the inventory assertions ?
-            # { inherit (mergedInventory) assertions; }
+
             { imports = inventoryClass.machines.${name}.machineImports or [ ]; }
 
-            # Import the distribute services
-            { imports = config.clanInternals.distributedServices.allMachines.${name} or [ ]; }
             (
               {
                 # Settings
                 clan.core.settings = {
-                  inherit directory;
                   inherit (config.inventory.meta) name icon;
 
+                  inherit directory;
                   machine = {
                     inherit name;
                   };
@@ -254,12 +252,14 @@ in
   inherit darwinConfigurations;
 
   clanInternals = {
-    moduleSchemas = clan-core.clanLib.modules.getModulesSchema config.inventory.modules;
-    inherit inventoryClass;
-    distributedServices = clan-core.clanLib.inventory.mapInstances {
-      inherit inventory;
-      flakeInputs = config.self.inputs;
+    moduleSchemas = clan-core.clanLib.modules.getModulesSchema {
+      modules = config.inventory.modules;
+      # TODO: make this function system agnostic
+      pkgs = nixpkgs.legacyPackages."x86_64-linux";
+      inherit clan-core;
     };
+    inherit inventoryClass;
+
     # TODO: unify this interface
     # We should have only clan.modules. (consistent with clan.templates)
     inherit (clan-core) clanModules clanLib;

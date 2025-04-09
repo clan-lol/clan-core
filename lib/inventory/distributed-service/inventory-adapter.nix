@@ -114,7 +114,7 @@ let
       inherit (instance) module;
       inherit resolvedModule instanceRoles;
     }
-  ) inventory.instances;
+  ) inventory.instances or { };
 
   # TODO: Eagerly check the _class of the resolved module
   importedModulesEvaluated = lib.mapAttrs (

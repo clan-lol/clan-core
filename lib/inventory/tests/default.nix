@@ -12,6 +12,7 @@ in
   test_inventory_a =
     let
       compiled = buildInventory {
+        flakeInputs = { };
         inventory = {
           machines = {
             A = { };
@@ -41,6 +42,7 @@ in
   test_inventory_empty =
     let
       compiled = buildInventory {
+        flakeInputs = { };
         inventory = { };
         directory = ./.;
       };
@@ -53,6 +55,7 @@ in
   test_inventory_role_resolve =
     let
       compiled = buildInventory {
+        flakeInputs = { };
         directory = ./.;
         inventory = {
           modules = clan-core.clanModules;
@@ -111,6 +114,7 @@ in
   test_inventory_tag_resolve =
     let
       configs = buildInventory {
+        flakeInputs = { };
         directory = ./.;
         inventory = {
           modules = clan-core.clanModules;
@@ -151,6 +155,7 @@ in
   test_inventory_multiple_roles =
     let
       configs = buildInventory {
+        flakeInputs = { };
         directory = ./.;
         inventory = {
           modules = clan-core.clanModules;
@@ -177,6 +182,7 @@ in
   test_inventory_module_doesnt_exist =
     let
       configs = buildInventory {
+        flakeInputs = { };
         directory = ./.;
         inventory = {
           modules = clan-core.clanModules;
@@ -203,6 +209,7 @@ in
   test_inventory_role_doesnt_exist =
     let
       configs = buildInventory {
+        flakeInputs = { };
         directory = ./.;
         inventory = {
           modules = clan-core.clanModules;
@@ -230,6 +237,7 @@ in
   test_inventory_tag_doesnt_exist =
     let
       configs = buildInventory {
+        flakeInputs = { };
         directory = ./.;
         inventory = {
           modules = clan-core.clanModules;
@@ -258,6 +266,7 @@ in
   test_inventory_disabled_service =
     let
       configs = buildInventory {
+        flakeInputs = { };
         directory = ./.;
         inventory = {
           modules = clan-core.clanModules;

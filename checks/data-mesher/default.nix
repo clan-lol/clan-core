@@ -1,5 +1,5 @@
 (import ../lib/test-inventory.nix) (
-  { self, lib, ... }:
+  { lib, ... }:
   let
 
     machines = [
@@ -20,9 +20,6 @@
             roles.admin.machines = [ "admin" ];
             roles.signer.machines = [ "signer" ];
           };
-        };
-        modules = {
-          data-mesher = self.clanModules.data-mesher;
         };
       };
       directory = ./.;

@@ -9,6 +9,9 @@ in
     directory = mkOption {
       type = types.path;
     };
+    distributedServices = mkOption {
+      type = types.raw;
+    };
     inventory = mkOption {
       type = types.raw;
     };

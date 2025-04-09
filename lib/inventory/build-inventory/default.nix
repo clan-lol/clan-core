@@ -8,7 +8,11 @@ let
     machinesFromInventory :: Inventory -> { ${machine_name} :: NixOSConfiguration }
   */
   buildInventory =
-    { inventory, directory }:
+    {
+      inventory,
+      directory,
+      flakeInputs,
+    }:
     (lib.evalModules {
       specialArgs = {
         inherit clanLib;
@@ -16,6 +20,19 @@ let
       modules = [
         ./builder
         { inherit directory inventory; }
+        (
+          # config.distributedServices.allMachines.${name} or [ ];
+          { config, ... }:
+          {
+            distributedServices = clanLib.inventory.mapInstances {
+              inherit (config) inventory;
+              inherit flakeInputs;
+            };
+            machines = lib.mapAttrs (_machineName: v: {
+              machineImports = v;
+            }) config.distributedServices.allMachines;
+          }
+        )
       ];
     }).config;
 in
