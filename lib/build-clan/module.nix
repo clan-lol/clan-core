@@ -162,16 +162,18 @@ let
       };
   };
 
-  allMachines = inventory.machines or { } // machines;
+  allMachines = inventoryClass.machines;
 
-  machineClass = lib.mapAttrs (name: _: inventory.machineClass.${name} or "nixos") allMachines;
-
-  configurations = lib.mapAttrs (
-    name: _: moduleSystemConstructor.${machineClass.${name}} { inherit name; }
+  machineClasses = lib.mapAttrs (
+    name: _: inventory.machines.${name}.machineClass or "nixos"
   ) allMachines;
 
-  nixosConfigurations = lib.filterAttrs (name: _: machineClass.${name} == "nixos") configurations;
-  darwinConfigurations = lib.filterAttrs (name: _: machineClass.${name} == "darwin") configurations;
+  configurations = lib.mapAttrs (
+    name: _: moduleSystemConstructor.${machineClasses.${name}} { inherit name; }
+  ) allMachines;
+
+  nixosConfigurations = lib.filterAttrs (name: _: machineClasses.${name} == "nixos") configurations;
+  darwinConfigurations = lib.filterAttrs (name: _: machineClasses.${name} == "darwin") configurations;
 
   # This instantiates NixOS for each system that we support:
   # configPerSystem = <system>.<machine>.nixosConfiguration
@@ -182,7 +184,7 @@ let
       lib.nameValuePair system (
         lib.mapAttrs (
           name: _:
-          moduleSystemConstructor.${machineClass.${name}} {
+          moduleSystemConstructor.${machineClasses.${name}} {
             inherit name system;
             pkgs = pkgsFor.${system};
           }
@@ -197,7 +199,7 @@ let
       lib.nameValuePair system (
         lib.mapAttrs (
           name: _: args:
-          moduleSystemConstructor.${machineClass.${name}} (
+          moduleSystemConstructor.${machineClasses.${name}} (
             args
             // {
               inherit name system;
