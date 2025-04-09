@@ -4,13 +4,13 @@ let
   inherit (pkgs) lib;
   inherit (lib) mkOption flip mapAttrs;
   inherit (lib.types) path raw;
-  inherit (self.clanLib.inventory) buildInventory;
+  inherit (self.clanLib) buildClan;
   nixos-lib = import (pkgs.path + "/nixos/lib") { };
 in
 (nixos-lib.runTest (
   { config, ... }:
   let
-    serviceConfigs = buildInventory {
+    result = buildClan {
       inventory = config.inventory.inventory;
       # TODO: make directory argument optional in buildInventory
       directory = config.inventory.directory;
@@ -29,7 +29,7 @@ in
       };
     };
     config = {
-      nodes = flip mapAttrs serviceConfigs.machines (
+      nodes = flip mapAttrs result.clanInternals.inventoryClass.machines (
         machineName: attrs: {
           imports = attrs.machineImports ++ [ self.nixosModules.clanCore ];
           clan.core.settings.directory = "${config.inventory.directory}";
