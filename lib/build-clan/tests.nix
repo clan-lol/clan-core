@@ -210,16 +210,14 @@ in
         meta.name = "test";
 
         machines.machine1 = { };
-        inventory.machines.machine2 = {
-          machineClass = "darwin";
-        };
-        inventory.machines.machine3 = {
-          machineClass = "nixos";
-        };
+        machines.machine2 = { };
+        machines.machine3 = { };
+
+        inventory.machineClass.machine2 = "darwin";
+        inventory.machineClass.machine3 = "nixos";
       };
     in
     {
-      inherit result;
       expr = {
         nixos = builtins.attrNames result.nixosConfigurations;
         darwin = builtins.attrNames result.darwinConfigurations;
@@ -243,6 +241,7 @@ in
         meta.name = "test";
 
         machines.machine1.non_existent_option = throw "eval error";
+        inventory.machines.machine1.other_non_existent_option = throw "different eval error";
       };
     in
     {
