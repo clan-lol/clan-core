@@ -126,8 +126,11 @@ pythonRuntime.pkgs.buildPythonApplication {
 
   # Define and expose the tests and checks to run in CI
   passthru.tests =
-    (lib.mapAttrs' (n: lib.nameValuePair "clan-dep-${n}") testRuntimeDependenciesMap)
-    // {
+    {
+      clan-deps = pkgs.runCommand "clan-deps" { } ''
+        # ${builtins.toString (builtins.attrValues testRuntimeDependenciesMap)}
+        touch $out
+      '';
       # disabled on macOS until we fix all remaining issues
       clan-pytest-without-core =
         runCommand "clan-pytest-without-core"

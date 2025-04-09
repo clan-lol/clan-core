@@ -140,11 +140,12 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
     if host.user != "root":
         config_command.insert(0, "sudo")
 
+    deps = ["nixpkgs#openssh"]
+    if opts.password:
+        deps += ["nixpkgs#sshpass"]
+
     cmd = nix_shell(
-        [
-            "nixpkgs#openssh",
-            "nixpkgs#sshpass",
-        ],
+        deps,
         [
             *(["sshpass", "-p", opts.password] if opts.password else []),
             "ssh",
