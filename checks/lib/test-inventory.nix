@@ -4,7 +4,7 @@ let
   inherit (pkgs) lib;
   inherit (lib) mkOption flip mapAttrs;
   inherit (lib.types) path raw;
-  inherit (self.lib.inventory) buildInventory;
+  inherit (self.clanLib.inventory) buildInventory;
   nixos-lib = import (pkgs.path + "/nixos/lib") { };
 in
 (nixos-lib.runTest (

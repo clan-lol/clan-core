@@ -6,7 +6,7 @@
     { self, clan-core, ... }:
     let
       # Usage see: https://docs.clan.lol
-      clan = clan-core.lib.buildClan {
+      clan = clan-core.clanLib.buildClan {
         inherit self;
         # Ensure this is unique among all clans you want to use.
         meta.name = "__CHANGE_ME__";
