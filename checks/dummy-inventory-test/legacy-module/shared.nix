@@ -27,8 +27,8 @@
     files.host-id.secret = false;
     files.generated-password.secret = true;
     script = ''
-      echo $RANDOM > $out/host-id
-      echo $RANDOM > $out/generated-password
+      echo $RANDOM > "$out"/host-id
+      echo $RANDOM > "$out"/generated-password
     '';
   };
 }
