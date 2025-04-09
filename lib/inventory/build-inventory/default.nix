@@ -28,7 +28,7 @@ let
               inherit (config) inventory;
               inherit flakeInputs;
             };
-            machines = lib.mapAttrs (machineName: v: {
+            machines = lib.mapAttrs (_machineName: v: {
               machineImports = v;
             }) config.distributedServices.allMachines;
           }
