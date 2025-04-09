@@ -70,18 +70,19 @@ let
     };
 in
 {
+
   # The purpose of this test is to ensure `clan machines install` works
   # for machines that don't have a hardware config yet.
 
   # If this test starts failing it could be due to the `facter.json` being out of date
   # you can get a new one by adding
-  # server.fail("cat test-flake/machines/test-install-machine/facter.json >&2")
+  # client.fail("cat test-flake/machines/test-install-machine/facter.json >&2")
   # to the installation test.
-  clan.machines.test-install-machine = {
+  clan.machines.test-install-machine-without-system = {
     fileSystems."/".device = lib.mkDefault "/dev/vda";
     boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
-    imports = [ self.nixosModules.test-install-machine ];
+    imports = [ self.nixosModules.test-install-machine-without-system ];
   };
   clan.machines.test-install-machine-with-system =
     { pkgs, ... }:
@@ -100,15 +101,14 @@ in
       fileSystems."/".device = lib.mkDefault "/dev/vda";
       boot.loader.grub.device = lib.mkDefault "/dev/vda";
 
-      imports = [
-        self.nixosModules.test-install-machine
-      ];
+      imports = [ self.nixosModules.test-install-machine-without-system ];
     };
   flake.nixosModules = {
-    test-install-machine =
+    test-install-machine-without-system =
       { lib, modulesPath, ... }:
       {
         imports = [
+          (modulesPath + "/testing/test-instrumentation.nix") # we need these 2 modules always to be able to run the tests
           (modulesPath + "/profiles/qemu-guest.nix")
           ../lib/minify.nix
         ];
@@ -173,6 +173,7 @@ in
         };
       };
   };
+
   perSystem =
     {
       pkgs,
@@ -210,12 +211,13 @@ in
             installer.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@localhost hostname")
             installer.succeed("cp -r ${../..} test-flake && chmod -R +w test-flake")
 
-            installer.succeed("clan machines install --no-reboot --debug --flake test-flake --yes test-install-machine --target-host nonrootuser@localhost --update-hardware-config nixos-facter >&2")
+            installer.succeed("clan machines install --no-reboot --debug --flake test-flake --yes test-install-machine-without-system --target-host nonrootuser@localhost --update-hardware-config nixos-facter >&2")
+            installer.shutdown()
 
             # We are missing the test instrumentation somehow. Test this later.
-            #target.state_dir = installer.state_dir
-            #target.start()
-            #target.wait_for_unit("multi-user.target")
+            target.state_dir = installer.state_dir
+            target.start()
+            target.wait_for_unit("multi-user.target")
           '';
         } { inherit pkgs self; };
 
@@ -231,13 +233,13 @@ in
             installer.fail("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
             installer.fail("test -f test-flake/machines/test-install-machine/facter.json")
 
-            installer.succeed("clan machines update-hardware-config --debug --flake test-flake test-install-machine nonrootuser@localhost >&2")
-            installer.succeed("test -f test-flake/machines/test-install-machine/facter.json")
-            installer.succeed("rm test-flake/machines/test-install-machine/facter.json")
+            installer.succeed("clan machines update-hardware-config --debug --flake test-flake test-install-machine-without-system nonrootuser@localhost >&2")
+            installer.succeed("test -f test-flake/machines/test-install-machine-without-system/facter.json")
+            installer.succeed("rm test-flake/machines/test-install-machine-without-system/facter.json")
 
-            installer.succeed("clan machines update-hardware-config --debug --backend nixos-generate-config --flake test-flake test-install-machine nonrootuser@localhost>&2")
-            installer.succeed("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
-            installer.succeed("rm test-flake/machines/test-install-machine/hardware-configuration.nix")
+            installer.succeed("clan machines update-hardware-config --debug --backend nixos-generate-config --flake test-flake test-install-machine-without-system nonrootuser@localhost >&2")
+            installer.succeed("test -f test-flake/machines/test-install-machine-without-system/hardware-configuration.nix")
+            installer.succeed("rm test-flake/machines/test-install-machine-without-system/hardware-configuration.nix")
           '';
         } { inherit pkgs self; };
       };

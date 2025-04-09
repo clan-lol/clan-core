@@ -26,7 +26,7 @@
     test-flash-machine =
       { lib, ... }:
       {
-        imports = [ self.nixosModules.test-install-machine ];
+        imports = [ self.nixosModules.test-install-machine-without-system ];
 
         clan.core.vars.generators.test = lib.mkForce { };
 
@@ -56,7 +56,7 @@
     in
     {
       checks = pkgs.lib.mkIf pkgs.stdenv.isLinux {
-        test-flash = (import ../lib/test-base.nix) {
+        flash = (import ../lib/test-base.nix) {
           name = "flash";
           nodes.target = {
             virtualisation.emptyDiskImages = [ 4096 ];
