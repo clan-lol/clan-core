@@ -30,7 +30,7 @@ from .folders import (
 from .sops import (
     decrypt_file,
     encrypt_file,
-    read_key,
+    read_keys,
     update_keys,
 )
 from .types import VALID_SECRET_NAME, secret_name_type
@@ -104,7 +104,7 @@ def cleanup_dangling_symlinks(folder: Path) -> list[Path]:
     return removed
 
 
-def collect_keys_for_type(folder: Path) -> set[tuple[str, sops.KeyType]]:
+def collect_keys_for_type(folder: Path) -> set[sops.SopsKey]:
     if not folder.exists():
         return set()
     keys = set()
@@ -122,11 +122,11 @@ def collect_keys_for_type(folder: Path) -> set[tuple[str, sops.KeyType]]:
                 f"Expected {p} to point to {folder} but points to {target.parent}"
             )
             continue
-        keys.add(read_key(target))
+        keys.update(read_keys(target))
     return keys
 
 
-def collect_keys_for_path(path: Path) -> set[tuple[str, sops.KeyType]]:
+def collect_keys_for_path(path: Path) -> set[sops.SopsKey]:
     keys = set()
     keys.update(collect_keys_for_type(path / "machines"))
     keys.update(collect_keys_for_type(path / "users"))
@@ -154,7 +154,16 @@ def encrypt_secret(
         add_machines = []
     if add_users is None:
         add_users = []
-    key = sops.ensure_admin_public_key(flake_dir)
+
+    keys = sops.ensure_admin_public_key(flake_dir)
+
+    if not keys:
+        # todo double check the correct command to run
+        msg = "No keys found. Please run 'clan secrets add-key' to add a key."
+        raise ClanError(msg)
+
+    username = next(iter(keys)).username
+
     recipient_keys = set()
 
     # encrypt_secret can be called before the secret has been created
@@ -194,13 +203,14 @@ def encrypt_secret(
 
     recipient_keys = collect_keys_for_path(secret_path)
 
-    if (key.pubkey, key.key_type) not in recipient_keys:
-        recipient_keys.add((key.pubkey, key.key_type))
+    if not keys.intersection(recipient_keys):
+        recipient_keys.update(keys)
+
         files_to_commit.extend(
             allow_member(
                 users_folder(secret_path),
                 sops_users_folder(flake_dir),
-                key.username,
+                username,
                 do_update_keys,
             )
         )

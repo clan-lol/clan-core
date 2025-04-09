@@ -1,5 +1,7 @@
+import dataclasses
 import json
 import os
+from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
@@ -7,18 +9,18 @@ from clan_cli.secrets.folders import sops_secrets_folder
 from clan_cli.tests.helpers import cli
 
 
+@dataclasses.dataclass(frozen=True)
 class KeyPair:
-    def __init__(self, pubkey: str, privkey: str) -> None:
-        self.pubkey = pubkey
-        self.privkey = privkey
+    pubkey: str
+    privkey: str
 
 
 class SopsSetup:
-    """Hold a list of three key pairs and create an "admin" user in the clan.
+    """Hold a list of key pairs and create an "admin" user in the clan.
 
     The first key in the list is used as the admin key and
     the private part of the key is exposed in the
-    `SOPS_AGE_KEY` environment variable, the two others can
+    `SOPS_AGE_KEY` environment variable, the others can
     be used to add machines or other users.
     """
 
@@ -52,6 +54,14 @@ KEYS = [
         "age1dhuh9xtefhgpr2sjjf7gmp9q2pr37z92rv4wsadxuqdx48989g7qj552qp",
         "AGE-SECRET-KEY-169N3FT32VNYQ9WYJMLUSVTMA0TTZGVJF7YZWS8AHTWJ5RR9VGR7QCD8SKF",
     ),
+    KeyPair(
+        "age1n58rxm8y6h9prmwn0qk7nggfsu9f9j4u35dxg7akpkjd5vgsavssfzmq9y",
+        "AGE-SECRET-KEY-1YU2JVE445KT6S8UN3403NHH6EZU404RMEH9RTME9SPWXWMLJS0LQM5NWM7",
+    ),
+    KeyPair(
+        "age1eyyhln9g3cdwtrwpckugvqgtf5p8ugt0426sw38ra3wkc0t4rfhslq7txv",
+        "AGE-SECRET-KEY-1567QKA63Y9P62SHF5TCHVCT5GZX2LZ8NS0E9RKA2QHDA662SF5LQ2VJJYX",
+    ),
 ]
 
 
@@ -73,7 +83,7 @@ def sops_setup(
 def assert_secrets_file_recipients(
     flake_path: Path,
     secret_name: str,
-    expected_age_recipients_keypairs: list["KeyPair"],
+    expected_age_recipients_keypairs: Iterable["KeyPair"],
     err_msg: str | None = None,
 ) -> None:
     """Checks that the recipients of a secrets file matches expectations.

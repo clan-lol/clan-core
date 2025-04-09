@@ -10,7 +10,7 @@ from collections.abc import Iterable, Sequence
 from contextlib import suppress
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import IO
+from typing import IO, Any
 
 from clan_cli.api import API
 from clan_cli.cmd import Log, RunOpts, run
@@ -99,7 +99,7 @@ class KeyType(enum.Enum):
         raise ClanError(msg)
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, order=True)
 class SopsKey:
     pubkey: str
     # Two SopsKey are considered equal even
@@ -115,11 +115,9 @@ class SopsKey:
         }
 
     @classmethod
-    def load_dir(cls, folder: Path) -> "SopsKey":
+    def load_dir(cls, folder: Path) -> set["SopsKey"]:
         """Load from the file named `keys.json` in the given directory."""
-        pubkey, key_type = read_key(folder)
-        username = ""
-        return cls(pubkey, username, key_type)
+        return read_keys(folder)
 
     @classmethod
     def collect_public_keys(cls) -> Sequence["SopsKey"]:
@@ -180,7 +178,7 @@ class Operation(enum.StrEnum):
 def sops_run(
     call: Operation,
     secret_path: Path,
-    public_keys: Iterable[tuple[str, KeyType]],
+    public_keys: Iterable[SopsKey],
     run_opts: RunOpts | None = None,
 ) -> tuple[int, str]:
     """Call the sops binary for the given operation."""
@@ -201,8 +199,8 @@ def sops_run(
 
             keys_by_type: dict[KeyType, list[str]] = {}
             keys_by_type = {key_type: [] for key_type in KeyType}
-            for key, key_type in public_keys:
-                keys_by_type[key_type].append(key)
+            for key in public_keys:
+                keys_by_type[key.key_type].append(key.pubkey)
             it = keys_by_type.items()
             key_groups = [{key_type.name.lower(): keys for key_type, keys in it}]
             rules = {"creation_rules": [{"key_groups": key_groups}]}
@@ -299,7 +297,7 @@ def get_user_name(flake_dir: Path, user: str) -> str:
         print(f"{flake_dir / user} already exists")
 
 
-def maybe_get_user_or_machine(flake_dir: Path, key: SopsKey) -> SopsKey | None:
+def maybe_get_user_or_machine(flake_dir: Path, key: SopsKey) -> set[SopsKey] | None:
     folders = [sops_users_folder(flake_dir), sops_machines_folder(flake_dir)]
 
     for folder in folders:
@@ -307,19 +305,35 @@ def maybe_get_user_or_machine(flake_dir: Path, key: SopsKey) -> SopsKey | None:
             for user in folder.iterdir():
                 if not (user / "key.json").exists():
                     continue
-                this_pub_key, this_key_type = read_key(user)
-                if key.pubkey == this_pub_key and key.key_type == this_key_type:
-                    return SopsKey(key.pubkey, user.name, key.key_type)
+
+                keys = read_keys(user)
+                if key in keys:
+                    return {SopsKey(key.pubkey, user.name, key.key_type)}
+
+    return None
+
+
+def get_user(flake_dir: Path, key: SopsKey) -> set[SopsKey] | None:
+    folder = sops_users_folder(flake_dir)
+
+    if folder.exists():
+        for user in folder.iterdir():
+            if not (user / "key.json").exists():
+                continue
+
+            keys = read_keys(user)
+            if key in keys:
+                return {SopsKey(key.pubkey, user.name, key.key_type)}
 
     return None
 
 
 @API.register
-def ensure_user_or_machine(flake_dir: Path, key: SopsKey) -> SopsKey:
-    maybe_key = maybe_get_user_or_machine(flake_dir, key)
-    if maybe_key:
-        return maybe_key
-    msg = f"Your sops key is not yet added to the repository. Please add it with 'clan secrets users add youruser {key.pubkey}' (replace youruser with your user name)"
+def ensure_user_or_machine(flake_dir: Path, key: SopsKey) -> set[SopsKey]:
+    maybe_keys = maybe_get_user_or_machine(flake_dir, key)
+    if maybe_keys:
+        return maybe_keys
+    msg = f"A sops key is not yet added to the repository. Please add it with 'clan secrets users add youruser {key.pubkey}' (replace youruser with your user name)"
     raise ClanError(msg)
 
 
@@ -351,7 +365,7 @@ def maybe_get_admin_public_key() -> None | SopsKey:
     return keyring[0]
 
 
-def ensure_admin_public_key(flake_dir: Path) -> SopsKey:
+def ensure_admin_public_key(flake_dir: Path) -> set[SopsKey]:
     key = maybe_get_admin_public_key()
     if key:
         return ensure_user_or_machine(flake_dir, key)
@@ -359,7 +373,7 @@ def ensure_admin_public_key(flake_dir: Path) -> SopsKey:
     raise ClanError(msg)
 
 
-def update_keys(secret_path: Path, keys: Iterable[tuple[str, KeyType]]) -> list[Path]:
+def update_keys(secret_path: Path, keys: Iterable[SopsKey]) -> list[Path]:
     secret_path = secret_path / "secret"
     error_msg = f"Could not update keys for {secret_path}"
 
@@ -376,7 +390,7 @@ def update_keys(secret_path: Path, keys: Iterable[tuple[str, KeyType]]) -> list[
 def encrypt_file(
     secret_path: Path,
     content: str | IO[bytes] | bytes | None,
-    pubkeys: list[tuple[str, KeyType]],
+    pubkeys: list[SopsKey],
 ) -> None:
     folder = secret_path.parent
     folder.mkdir(parents=True, exist_ok=True)
@@ -438,7 +452,7 @@ def encrypt_file(
 
 def decrypt_file(secret_path: Path) -> str:
     # decryption uses private keys from the environment or default paths:
-    no_public_keys_needed: list[tuple[str, KeyType]] = []
+    no_public_keys_needed: list[SopsKey] = []
 
     _, stdout = sops_run(
         Operation.DECRYPT,
@@ -475,34 +489,100 @@ def get_meta(secret_path: Path) -> dict:
         return json.load(f)
 
 
-def write_key(path: Path, publickey: str, key_type: KeyType, overwrite: bool) -> None:
+def write_key(path: Path, key: SopsKey, overwrite: bool) -> None:
+    return write_keys(path, [key], overwrite)
+
+
+def write_keys(path: Path, keys: Iterable[SopsKey], overwrite: bool) -> None:
     path.mkdir(parents=True, exist_ok=True)
     try:
         flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
         if not overwrite:
             flags |= os.O_EXCL
         fd = os.open(path / "key.json", flags)
-    except FileExistsError as e:
+    except FileExistsError:
         msg = f"{path.name} already exists in {path}. Use --force to overwrite."
-        raise ClanError(msg) from e
+        raise ClanError(msg) from None
     with os.fdopen(fd, "w") as f:
-        contents = {"publickey": publickey, "type": key_type.name.lower()}
+        contents = [
+            {"publickey": key.pubkey, "type": key.key_type.name.lower()}
+            for key in sorted(keys)
+        ]
         json.dump(contents, f, indent=2)
 
 
-def read_key(path: Path) -> tuple[str, KeyType]:
-    with Path(path / "key.json").open() as f:
-        try:
-            key = json.load(f)
-        except json.JSONDecodeError as e:
-            msg = f"Failed to decode {path.name}: {e}"
-            raise ClanError(msg) from e
+def append_keys(path: Path, keys: Iterable[SopsKey]) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+
+    # key file must already exist
+    try:
+        current_keys = set(read_keys(path))
+    except FileNotFoundError:
+        msg = f"{path} does not exist."
+        raise ClanError(msg) from None
+
+    # add the specified keys to the set
+    # de-duplication is natural
+    current_keys.update(keys)
+
+    # write the new key set
+    return write_keys(path, sorted(current_keys), overwrite=True)
+
+
+def remove_keys(path: Path, keys: Iterable[SopsKey]) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+
+    # key file must already exist
+    try:
+        current_keys = set(read_keys(path))
+    except FileNotFoundError:
+        msg = f"{path} does not exist."
+        raise ClanError(msg) from None
+
+    current_keys.difference_update(keys)
+
+    if not current_keys:
+        msg = f"No keys would remain in {path}. At least one key is required. Aborting."
+        raise ClanError(msg)
+
+    # write the new key set
+    return write_keys(path, sorted(current_keys), overwrite=True)
+
+
+def parse_key(key: Any) -> SopsKey:
+    if not isinstance(key, dict):
+        msg = f"Expected a dict but {type(key)!r} was provided"
+        raise ClanError(msg)
     key_type = KeyType.validate(key.get("type"))
     if key_type is None:
-        msg = f'Invalid key type in {path.name}: "{key_type}" (expected one of {", ".join(KeyType.__members__.keys())}).'
+        msg = f'Invalid key type in {key}: "{key_type}" (expected one of {", ".join(KeyType.__members__.keys())}).'
         raise ClanError(msg)
     publickey = key.get("publickey")
     if not publickey:
-        msg = f"{path.name} does not contain a public key"
+        msg = f"{key} does not contain a public key"
         raise ClanError(msg)
-    return publickey, key_type
+    return SopsKey(publickey, "", key_type)
+
+
+def read_key(path: Path) -> SopsKey:
+    keys = read_keys(path)
+    if len(keys) != 1:
+        msg = f"Expected exactly one key but {len(keys)} were found"
+        raise ClanError(msg)
+    return next(iter(keys))
+
+
+def read_keys(path: Path) -> set[SopsKey]:
+    with Path(path / "key.json").open() as f:
+        try:
+            keys = json.load(f)
+        except json.JSONDecodeError as e:
+            msg = f"Failed to decode {path.name}: {e}"
+            raise ClanError(msg) from e
+
+    if isinstance(keys, dict):
+        return {parse_key(keys)}
+    if isinstance(keys, list):
+        return set(map(parse_key, keys))
+    msg = f"Expected a dict or array but {type(keys)!r} was provided"
+    raise ClanError(msg)

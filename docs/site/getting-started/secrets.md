@@ -37,9 +37,9 @@ Also add your age public key to the repository with 'clan secrets users add YOUR
 !!! note
     It's safe to add any secrets created by the clan CLI and placed in your repository to version control systems like `git`.
 
-### Add Your Public Key
+### Add Your Public Key(s)
 
-```bash
+```console
 clan secrets users add $USER --age-key <your_public_key>
 ```
 
@@ -54,3 +54,46 @@ sops/
         └── key.json
 ```
 If you followed the quickstart tutorial all necessary secrets are initialized at this point.
+
+!!! note
+    You can add multiple age keys for a user by providing multiple `--age-key <your_public_key>` flags:
+
+    ```console
+    clan secrets users add $USER \
+        --age-key <your_public_key_1> \
+        --age-key <your_public_key_2> \
+        ...
+    ```
+
+### Manage Your Public Key(s)
+
+You can list keys for your user with `clan secrets users get $USER`:
+
+```console
+❯ bin/clan secrets users get alice
+
+[
+  {
+    "publickey": "age1hrrcspp645qtlj29krjpq66pqg990ejaq0djcms6y6evnmgglv5sq0gewu",
+    "type": "age",
+    "username": "alice"
+  },
+  {
+    "publickey": "age13kh4083t3g4x3ktr52nav6h7sy8ynrnky2x58pyp96c5s5nvqytqgmrt79",
+    "type": "age",
+    "username": "alice"
+  }
+]         
+```
+
+To add a new key to your user: 
+
+```console 
+clan secrets users add-key $USER --age-key <your_public_key>
+```
+
+To remove a key from your user: 
+
+```console 
+clan secrets users remove-key $USER --age-key <your_public_key>
+```
