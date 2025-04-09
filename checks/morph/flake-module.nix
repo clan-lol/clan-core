@@ -33,7 +33,6 @@
               let
                 dependencies = [
                   self
-                  pkgs.nixos-anywhere
                   pkgs.stdenv.drvPath
                   pkgs.stdenvNoCC
                   self.nixosConfigurations.test-morph-machine.config.system.build.toplevel
@@ -46,7 +45,7 @@
                 environment.etc."install-closure".source = "${closureInfo}/store-paths";
                 system.extraDependencies = dependencies;
                 virtualisation.memorySize = 2048;
-                environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
+                environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli-full ];
               };
           };
           testScript = ''
