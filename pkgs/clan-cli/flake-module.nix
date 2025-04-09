@@ -88,12 +88,6 @@
         rootPaths =
           builtins.attrValues (self.clanLib.select "clan.templates.clan.*.path" self)
           ++ builtins.attrValues (self.clanLib.select "clan.templates.machine.*.path" self);
-
-        # FIXME: As the templates get modified in clanCoreWithVendoredDeps below, we need to add the modified version to the nix store too
-        # However it is not possible (or I don't know how) to add a nix path from a built derivation to the nix store
-        # rootPaths = [
-        #   clanCoreWithVendoredDeps.clan.templates.clan.minimal.path
-        # ];
       };
 
       clanCoreWithVendoredDeps =

@@ -16,7 +16,6 @@
   classgen,
   pythonRuntime,
   templateDerivation,
-  shellcheck,
 }:
 let
   pyDeps = ps: [
@@ -52,7 +51,6 @@ let
   testDependencies = testRuntimeDependencies ++ [
     gnupg
     stdenv.cc # Compiler used for certain native extensions
-    shellcheck
     (pythonRuntime.withPackages pyTestDeps)
   ];
 
@@ -143,7 +141,6 @@ pythonRuntime.pkgs.buildPythonApplication {
                 templateDerivation
               ];
             };
-
           }
           ''
             set -u -o pipefail
@@ -190,6 +187,7 @@ pythonRuntime.pkgs.buildPythonApplication {
                 pkgs.jq.dev
                 pkgs.stdenv
                 pkgs.stdenvNoCC
+                pkgs.shellcheck-minimal
               ];
             };
           }

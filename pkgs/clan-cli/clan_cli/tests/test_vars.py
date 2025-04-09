@@ -782,17 +782,17 @@ def test_migration(
     my_service["public"]["my_value"] = {}
     my_service["secret"]["my_secret"] = {}
     my_service["generator"]["script"] = (
-        "echo -n hello > $facts/my_value && echo -n hello > $secrets/my_secret"
+        'echo -n hello > "$facts"/my_value && echo -n hello > "$secrets"/my_secret'
     )
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["files"]["my_secret"]["secret"] = True
     my_generator["migrateFact"] = "my_service"
-    my_generator["script"] = "echo -n other > $out/my_value"
+    my_generator["script"] = 'echo -n other > "$out"/my_value'
 
     other_service = config["clan"]["core"]["facts"]["services"]["other_service"]
     other_service["secret"]["other_value"] = {}
-    other_service["generator"]["script"] = "echo -n hello > $secrets/other_value"
+    other_service["generator"]["script"] = 'echo -n hello > "$secrets"/other_value'
     other_generator = config["clan"]["core"]["vars"]["generators"]["other_generator"]
     # the var to migrate to is mistakenly marked as not secret (migration should fail)
     other_generator["files"]["other_value"]["secret"] = False
@@ -804,6 +804,7 @@ def test_migration(
     cli.run(["facts", "generate", "--flake", str(flake.path), "my_machine"])
     with caplog.at_level(logging.INFO):
         cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
     assert "Migrated var my_generator/my_value" in caplog.text
     assert "Migrated secret var my_generator/my_secret" in caplog.text
     in_repo_store = in_repo.FactStore(

@@ -15,7 +15,7 @@
   "tor",
   "virtiofsd",
   "zbar",
-  "shellcheck",
+  "shellcheck-minimal",
   "util-linux",
   "avahi",
   "gnupg"
