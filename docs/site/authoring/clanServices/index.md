@@ -20,7 +20,7 @@ If you export the module from your flake, other people will be able to import it
 
 i.e. `@hsjobeki/customNetworking`
 
-```nix title=flake.nix
+```nix title="flake.nix"
 # ...
 
 outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({
@@ -214,7 +214,7 @@ Imagine your module looks like this
 
 To import the module use `importApply`
 
-```nix title=flake.nix
+```nix title="flake.nix"
 # ...
 outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}: {
     imports = [ inputs.clan-core.flakeModules.default ];
@@ -243,7 +243,7 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
 
 Then wrap the module and forward the variable `self` from the outer context into the module
 
-```nix title=flake.nix
+```nix title="flake.nix"
 # ...
 outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}: {
     imports = [ inputs.clan-core.flakeModules.default ];
