@@ -15,8 +15,8 @@
         inherit (self) clanModules;
         clan-core = self;
         inherit pkgs;
-        evalClanModules = self.lib.evalClan.evalClanModules;
-        modulesRolesOptions = self.lib.evalClan.evalClanModulesWithRoles {
+        evalClanModules = self.clanLib.evalClan.evalClanModules;
+        modulesRolesOptions = self.clanLib.evalClan.evalClanModulesWithRoles {
           allModules = self.clanModules;
           inherit pkgs;
           clan-core = self;
@@ -26,7 +26,7 @@
       # Frontmatter for clanModules
       clanModulesFrontmatter =
         let
-          docs = pkgs.nixosOptionsDoc { options = self.lib.modules.frontmatterOptions; };
+          docs = pkgs.nixosOptionsDoc { options = self.clanLib.modules.frontmatterOptions; };
         in
         docs.optionsJSON;
 

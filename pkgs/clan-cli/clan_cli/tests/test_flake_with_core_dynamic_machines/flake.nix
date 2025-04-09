@@ -8,7 +8,7 @@
   outputs =
     { self, clan-core }:
     let
-      clan = clan-core.lib.buildClan {
+      clan = clan-core.clanLib.buildClan {
         inherit self;
         meta.name = "test_flake_with_core_dynamic_machines";
         machines =

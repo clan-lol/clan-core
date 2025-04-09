@@ -19,7 +19,7 @@
           builtins.fromJSON (builtins.readFile ./clan_attrs.json)
         else
           { };
-      clan = clan-core.lib.buildClan {
+      clan = clan-core.clanLib.buildClan {
         inherit self;
         meta.name = "test_flake_with_core";
         machines = {

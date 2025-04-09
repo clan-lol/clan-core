@@ -17,7 +17,7 @@ let
 
   inherit (config.clanInternals) inventory;
 
-  inherit (clan-core.lib.inventory) buildInventory;
+  inherit (clan-core.clanLib.inventory) buildInventory;
 
   supportedSystems = [
     "x86_64-linux"
@@ -254,7 +254,7 @@ in
   inherit darwinConfigurations;
 
   clanInternals = {
-    moduleSchemas = clan-core.lib.modules.getModulesSchema config.inventory.modules;
+    moduleSchemas = clan-core.clanLib.modules.getModulesSchema config.inventory.modules;
     inherit inventoryClass;
     distributedServices = clan-core.clanLib.inventory.mapInstances {
       inherit inventory;
@@ -268,7 +268,7 @@ in
     inherit inventoryFile;
     inventoryValuesPrios =
       # Temporary workaround
-      builtins.removeAttrs (clan-core.lib.values.getPrios { options = inventory.options; })
+      builtins.removeAttrs (clan-core.clanLib.values.getPrios { options = inventory.options; })
         # tags are freeformType which is not supported yet.
         [ "tags" ];
 

@@ -6,16 +6,16 @@
 }:
 let
 
-  modulesSchema = self.lib.modules.getModulesSchema {
+  modulesSchema = self.clanLib.modules.getModulesSchema {
     modules = self.clanModules;
     inherit pkgs;
     clan-core = self;
   };
 
-  jsonLib = self.lib.jsonschema { inherit includeDefaults; };
+  jsonLib = self.clanLib.jsonschema { inherit includeDefaults; };
   includeDefaults = true;
 
-  frontMatterSchema = jsonLib.parseOptions self.lib.modules.frontmatterOptions { };
+  frontMatterSchema = jsonLib.parseOptions self.clanLib.modules.frontmatterOptions { };
 
   inventorySchema = jsonLib.parseModule (import ../build-inventory/interface.nix);
 

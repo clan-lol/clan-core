@@ -29,7 +29,7 @@ in
         inherit lib;
         inherit (inputs) nixpkgs;
         clan-core = self;
-        buildClan = self.lib.buildClan;
+        buildClan = self.clanLib.buildClan;
       };
       checks = {
         lib-build-clan-eval = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
