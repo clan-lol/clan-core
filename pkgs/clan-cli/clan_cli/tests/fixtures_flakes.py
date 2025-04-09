@@ -39,6 +39,7 @@ def substitute(
     file: Path,
     clan_core_flake: Path | None = None,
     flake: Path = Path(__file__).parent,
+    inventory_expr: str = r"{}",
 ) -> None:
     sops_key = str(flake.joinpath("sops.key"))
     buf = ""
@@ -54,6 +55,7 @@ def substitute(
                     "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
                     f"path:{clan_core_flake}",
                 )
+                line = line.replace("__INVENTORY_EXPR__", str(inventory_expr))
             line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
             line = line.replace("__CLAN_SOPS_KEY_DIR__", str(flake / "facts"))
             buf += line
@@ -252,6 +254,7 @@ def create_flake(
     machines: list[str] | None = None,
     # alternatively specify the machines directly including their config
     machine_configs: dict[str, dict] | None = None,
+    inventory_expr: str = r"{}",
 ) -> Iterator[FlakeForTest]:
     """
     Creates a flake with the given name and machines.
@@ -279,7 +282,11 @@ def create_flake(
     for machine_name in machines:
         machine_path = Path(__file__).parent / "machines" / machine_name
         shutil.copytree(machine_path, flake / "machines" / machine_name)
-        substitute(flake / "machines" / machine_name / "default.nix", flake)
+        substitute(
+            flake / "machines" / machine_name / "default.nix",
+            flake,
+            inventory_expr=inventory_expr,
+        )
 
     # generate machines from machineConfigs
     for machine_name, machine_config in machine_configs.items():
@@ -291,7 +298,7 @@ def create_flake(
     # provided by get_test_flake_toplevel
     flake_nix = flake / "flake.nix"
     # this is where we would install the sops key to, when updating
-    substitute(flake_nix, clan_core_flake, flake)
+    substitute(flake_nix, clan_core_flake, flake, inventory_expr=inventory_expr)
     nix_options = []
     if tmp_store := nix_test_store():
         nix_options += ["--store", str(tmp_store)]
@@ -345,8 +352,12 @@ def test_flake(
 
 @pytest.fixture
 def test_flake_with_core(
-    monkeypatch: pytest.MonkeyPatch, temporary_home: Path
+    request: pytest.FixtureRequest,
+    monkeypatch: pytest.MonkeyPatch,
+    temporary_home: Path,
 ) -> Iterator[FlakeForTest]:
+    test_params = getattr(request, "param", {})  # Default if not parametrized
+    inventory_expr = test_params.get("inventory_expr", r"{}")  # Default empty inventory
     if not (CLAN_CORE / "flake.nix").exists():
         msg = "clan-core flake not found. This test requires the clan-core flake to be present"
         raise FixtureError(msg)
@@ -355,4 +366,5 @@ def test_flake_with_core(
         flake_template="test_flake_with_core",
         clan_core_flake=CLAN_CORE,
         monkeypatch=monkeypatch,
+        inventory_expr=inventory_expr,
     )

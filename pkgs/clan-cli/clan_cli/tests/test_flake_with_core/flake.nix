@@ -22,6 +22,9 @@
       clan = clan-core.clanLib.buildClan {
         inherit self;
         meta.name = "test_flake_with_core";
+        # Don't quote this will be replaced by the inventory expression
+        # Not a string!
+        inventory = __INVENTORY_EXPR__;
         machines = {
           vm1 =
             { config, ... }:
