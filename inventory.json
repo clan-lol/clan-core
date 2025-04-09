@@ -5,6 +5,9 @@
       "description": "A nice thing",
       "icon": "./path/to/icon.png",
       "tags": ["1", "2", "3"]
+    },
+    "test-darwin-machine": {
+      "machineClass": "darwin"
     }
   },
   "services": {
