@@ -62,7 +62,7 @@ class Machine:
     def _class_(self) -> str:
         try:
             return self.flake.select(
-                f"clanInternals.inventory.machineClass.{self.name}"
+                f"clanInternals.inventory.machines.{self.name}.machineClass"
             )
         except ClanCmdError as e:
             if re.search(f"error: attribute '{self.name}' missing", e.cmd.stderr):
