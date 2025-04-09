@@ -30,7 +30,7 @@
         # this disables dynamic dependency loading in clan-cli
         export CLAN_NO_DYNAMIC_DEPS=1
 
-        nix develop "$ROOT#clan-cli" -c bash -c "TMPDIR=/tmp python -m pytest -m impure ./clan_cli/tests $@"
+        nix develop "$ROOT#clan-cli" -c bash -c "TMPDIR=/tmp python -m pytest -m impure ./clan_cli $@"
       '';
     };
 }

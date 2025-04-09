@@ -1,4 +1,5 @@
 import pytest
+
 from clan_cli.flake import Flake
 from clan_cli.machines.machines import Machine
 
@@ -24,7 +25,7 @@ from clan_cli.tests.fixtures_flakes import FlakeForTest
     indirect=True,
 )
 @pytest.mark.with_core
-def test_inventory_deserialize_variants(
+def test_inventory_machine_detect_class(
     test_flake_with_core: FlakeForTest,
 ) -> None:
     """

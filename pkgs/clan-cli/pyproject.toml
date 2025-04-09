@@ -41,6 +41,7 @@ norecursedirs = ["clan_cli/tests/helpers", "clan_cli/nixpkgs"]
 #  and can be cached more effectively.
 markers = ["impure", "with_core"]
 filterwarnings = "default::ResourceWarning"
+python_files = ["test_*.py", "*_test.py"]
 
 [tool.mypy]
 python_version = "3.12"
