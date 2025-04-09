@@ -36,7 +36,7 @@
             pkgs.openssh
           ];
           script = ''
-            ssh-keygen -t ed25519 -N "" -f $out/id_ed25519
+            ssh-keygen -t ed25519 -N "" -f "$out"/id_ed25519
           '';
         };
 

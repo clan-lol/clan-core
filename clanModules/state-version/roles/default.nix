@@ -12,7 +12,7 @@ in
     };
     runtimeInputs = [ ];
     script = ''
-      echo -n ${lib.versions.majorMinor config.system.stateVersion} > $out/version
+      echo -n ${lib.versions.majorMinor config.system.stateVersion} > "$out"/version
     '';
   };
 }

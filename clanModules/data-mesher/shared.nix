@@ -117,8 +117,8 @@ in
 
       script = ''
         data-mesher generate keypair \
-            --public-key-path $out/public_key \
-            --private-key-path $out/private_key
+            --public-key-path "$out"/public_key \
+            --private-key-path "$out"/private_key
       '';
     };
 
@@ -146,8 +146,8 @@ in
 
       script = ''
         data-mesher generate keypair \
-            --public-key-path $out/public_key \
-            --private-key-path $out/private_key
+            --public-key-path "$out"/public_key \
+            --private-key-path "$out"/private_key
       '';
     };
   };

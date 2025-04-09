@@ -22,8 +22,8 @@
       pkgs.openssl
     ];
     script = ''
-      openssl rand -base64 -out $out/admin_token 32
-      openssl rand -base64 -out $out/metrics_token 32
+      openssl rand -base64 -out "$out"/admin_token 32
+      openssl rand -base64 -out "$out"/metrics_token 32
     '';
   };
 
@@ -35,7 +35,7 @@
       pkgs.openssl
     ];
     script = ''
-      openssl rand -hex -out $out/rpc_secret 32
+      openssl rand -hex -out "$out"/rpc_secret 32
     '';
   };
 
