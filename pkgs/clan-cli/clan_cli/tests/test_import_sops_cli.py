@@ -91,6 +91,7 @@ def test_import_sops(
     cli.run(cmd)
     with capture_output as output:
         cli.run(["secrets", "users", "list", "--flake", str(test_flake.path)])
+
     users = sorted(output.out.rstrip().split())
     assert users == ["user1", "user2"]
 

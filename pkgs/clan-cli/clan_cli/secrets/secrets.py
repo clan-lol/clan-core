@@ -155,16 +155,14 @@ def encrypt_secret(
     if add_users is None:
         add_users = []
 
-    keys = sops.ensure_admin_public_key(flake_dir)
+    admin_keys = sops.ensure_admin_public_keys(flake_dir)
 
-    if not keys:
+    if not admin_keys:
         # todo double check the correct command to run
         msg = "No keys found. Please run 'clan secrets add-key' to add a key."
         raise ClanError(msg)
 
-    username = next(iter(keys)).username
-
-    recipient_keys = set()
+    username = next(iter(admin_keys)).username
 
     # encrypt_secret can be called before the secret has been created
     # so don't try to call sops.update_keys on a non-existent file:
@@ -203,8 +201,8 @@ def encrypt_secret(
 
     recipient_keys = collect_keys_for_path(secret_path)
 
-    if not keys.intersection(recipient_keys):
-        recipient_keys.update(keys)
+    if not admin_keys.intersection(recipient_keys):
+        recipient_keys.update(admin_keys)
 
         files_to_commit.extend(
             allow_member(

@@ -40,79 +40,89 @@ def test_add_module_to_inventory(
     age_keys: list["KeyPair"],
 ) -> None:
     base_path = test_flake_with_core.path
-    monkeypatch.chdir(test_flake_with_core.path)
-    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
 
-    cli.run(
-        [
-            "secrets",
-            "users",
-            "add",
-            "--flake",
-            str(test_flake_with_core.path),
-            "user1",
-            age_keys[0].pubkey,
-        ]
-    )
-    opts = CreateOptions(
-        clan_dir=Flake(str(base_path)),
-        machine=Machine(name="machine1", tags=[], deploy=MachineDeploy()),
-    )
+    with monkeypatch.context():
+        monkeypatch.chdir(test_flake_with_core.path)
+        monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
 
-    create_machine(opts)
-    (test_flake_with_core.path / "machines" / "machine1" / "facter.json").write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "system": "x86_64-linux",
-            }
+        cli.run(
+            [
+                "secrets",
+                "users",
+                "add",
+                "--flake",
+                str(test_flake_with_core.path),
+                "user1",
+                age_keys[0].pubkey,
+            ]
         )
-    )
-    subprocess.run(["git", "add", "."], cwd=test_flake_with_core.path, check=True)
+        opts = CreateOptions(
+            clan_dir=Flake(str(base_path)),
+            machine=Machine(name="machine1", tags=[], deploy=MachineDeploy()),
+        )
 
-    inventory: Inventory = {}
+        create_machine(opts)
+        (
+            test_flake_with_core.path / "machines" / "machine1" / "facter.json"
+        ).write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "system": "x86_64-linux",
+                }
+            )
+        )
+        subprocess.run(["git", "add", "."], cwd=test_flake_with_core.path, check=True)
 
-    inventory["services"] = {
-        "borgbackup": {
-            "borg1": {
-                "meta": {"name": "borg1"},
-                "roles": {
-                    "client": {"machines": ["machine1"]},
-                    "server": {"machines": ["machine1"]},
-                },
+        inventory: Inventory = {}
+
+        inventory["services"] = {
+            "borgbackup": {
+                "borg1": {
+                    "meta": {"name": "borg1"},
+                    "roles": {
+                        "client": {"machines": ["machine1"]},
+                        "server": {"machines": ["machine1"]},
+                    },
+                }
             }
         }
-    }
 
-    set_inventory(inventory, base_path, "Add borgbackup service")
+        set_inventory(inventory, base_path, "Add borgbackup service")
 
-    # cmd = ["facts", "generate", "--flake", str(test_flake_with_core.path), "machine1"]
-    cmd = ["vars", "generate", "--flake", str(test_flake_with_core.path), "machine1"]
-
-    cli.run(cmd)
-
-    machine = MachineMachine(
-        name="machine1", flake=Flake(str(test_flake_with_core.path))
-    )
-
-    generator = None
-
-    for gen in machine.vars_generators:
-        if gen.name == "borgbackup":
-            generator = gen
-            break
-
-    assert generator
-
-    ssh_key = machine.public_vars_store.get(generator, "borgbackup.ssh.pub")
-
-    cmd = nix_eval(
-        [
-            f"{base_path}#nixosConfigurations.machine1.config.services.borgbackup.repos",
-            "--json",
+        # cmd = ["facts", "generate", "--flake", str(test_flake_with_core.path), "machine1"]
+        cmd = [
+            "vars",
+            "generate",
+            "--flake",
+            str(test_flake_with_core.path),
+            "machine1",
         ]
-    )
-    proc = run_no_stdout(cmd)
-    res = json.loads(proc.stdout.strip())
 
-    assert res["machine1"]["authorizedKeys"] == [ssh_key.decode()]
+        cli.run(cmd)
+
+        machine = MachineMachine(
+            name="machine1", flake=Flake(str(test_flake_with_core.path))
+        )
+
+        generator = None
+
+        for gen in machine.vars_generators:
+            if gen.name == "borgbackup":
+                generator = gen
+                break
+
+        assert generator
+
+        ssh_key = machine.public_vars_store.get(generator, "borgbackup.ssh.pub")
+
+        cmd = nix_eval(
+            [
+                f"{base_path}#nixosConfigurations.machine1.config.services.borgbackup.repos",
+                "--json",
+            ]
+        )
+        proc = run_no_stdout(cmd)
+        res = json.loads(proc.stdout.strip())
+
+        assert res["machine1"]["authorizedKeys"] == [ssh_key.decode()]
