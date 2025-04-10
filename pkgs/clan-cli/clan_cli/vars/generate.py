@@ -215,7 +215,7 @@ def execute_generator(
             if not no_sandbox:
                 msg = (
                     f"Cannot safely execute generator {generator.name}: Sandboxing is not available on this system\n"
-                    f"Re-run with --no-sandbox to disable sandboxing"
+                    f"Re-run 'vars generate' with '--no-sandbox' to disable sandboxing"
                 )
                 raise ClanError(msg)
             cmd = ["bash", "-c", str(final_script)]
