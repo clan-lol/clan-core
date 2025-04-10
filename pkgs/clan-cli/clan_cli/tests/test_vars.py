@@ -838,12 +838,12 @@ def test_fails_when_files_are_left_from_other_backend(
         "my_secret_generator"
     ]
     my_secret_generator["files"]["my_secret"]["secret"] = True
-    my_secret_generator["script"] = "echo hello > $out/my_secret"
+    my_secret_generator["script"] = 'echo hello > "$out"/my_secret'
     my_value_generator = config["clan"]["core"]["vars"]["generators"][
         "my_value_generator"
     ]
     my_value_generator["files"]["my_value"]["secret"] = False
-    my_value_generator["script"] = "echo hello > $out/my_value"
+    my_value_generator["script"] = 'echo hello > "$out"/my_value'
     flake.refresh()
     monkeypatch.chdir(flake.path)
     for generator in ["my_secret_generator", "my_value_generator"]:
@@ -903,7 +903,7 @@ def test_invalidation(
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
-    my_generator["script"] = "echo -n $RANDOM > $out/my_value"
+    my_generator["script"] = 'echo -n "$RANDOM" > "$out"/my_value'
     flake.refresh()
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
@@ -948,14 +948,14 @@ def test_dynamic_invalidation(
 
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
-    my_generator["script"] = "echo -n $RANDOM > $out/my_value"
+    my_generator["script"] = 'echo -n "$RANDOM" > "$out"/my_value'
 
     dependent_generator = config["clan"]["core"]["vars"]["generators"][
         "dependent_generator"
     ]
     dependent_generator["files"]["my_value"]["secret"] = False
     dependent_generator["dependencies"] = ["my_generator"]
-    dependent_generator["script"] = "echo -n $RANDOM > $out/my_value"
+    dependent_generator["script"] = 'echo -n "$RANDOM" > "$out"/my_value'
 
     flake.refresh()
 
