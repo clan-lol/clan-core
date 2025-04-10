@@ -100,9 +100,9 @@ def test_machine_delete(
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["files"]["my_secret"]["secret"] = True
     my_generator["script"] = (
-        "echo -n public > $out/my_value;"
-        "echo -n secret > $out/my_secret;"
-        "echo -n non-default > $out/value_with_default"
+        'echo -n public > "$out"/my_value;'
+        'echo -n secret > "$out"/my_secret;'
+        'echo -n non-default > "$out"/value_with_default'
     )
     flake.refresh()  # saves "my_generator"
     monkeypatch.chdir(flake.path)

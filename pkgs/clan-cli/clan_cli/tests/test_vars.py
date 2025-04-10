@@ -106,7 +106,7 @@ def test_generate_public_and_secret_vars(
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["files"]["my_secret"]["secret"] = True
     my_generator["script"] = (
-        "echo -n public > $out/my_value; echo -n secret > $out/my_secret; echo -n non-default > $out/value_with_default"
+        'echo -n public > "$out"/my_value; echo -n secret > "$out"/my_secret; echo -n non-default > "$out"/value_with_default'
     )
 
     my_generator["files"]["value_with_default"]["secret"] = False
@@ -119,7 +119,7 @@ def test_generate_public_and_secret_vars(
     ]
     my_shared_generator["share"] = True
     my_shared_generator["files"]["my_shared_value"]["secret"] = False
-    my_shared_generator["script"] = "echo -n shared > $out/my_shared_value"
+    my_shared_generator["script"] = 'echo -n shared > "$out"/my_shared_value'
 
     dependent_generator = config["clan"]["core"]["vars"]["generators"][
         "dependent_generator"
@@ -128,7 +128,7 @@ def test_generate_public_and_secret_vars(
     dependent_generator["files"]["my_secret"]["secret"] = True
     dependent_generator["dependencies"] = ["my_shared_generator"]
     dependent_generator["script"] = (
-        "cat $in/my_shared_generator/my_shared_value > $out/my_secret"
+        'cat "$in"/my_shared_generator/my_shared_value > "$out"/my_secret'
     )
 
     flake.refresh()
@@ -247,13 +247,13 @@ def test_generate_secret_var_sops_with_default_group(
     first_generator["files"]["my_secret"]["secret"] = True
     first_generator["files"]["my_public"]["secret"] = False
     first_generator["script"] = (
-        "echo hello > $out/my_secret && echo hello > $out/my_public"
+        'echo hello > "$out"/my_secret && echo hello > "$out"/my_public'
     )
     second_generator = config["clan"]["core"]["vars"]["generators"]["second_generator"]
     second_generator["files"]["my_secret"]["secret"] = True
     second_generator["files"]["my_public"]["secret"] = False
     second_generator["script"] = (
-        "echo hello > $out/my_secret && echo hello > $out/my_public"
+        'echo hello > "$out"/my_secret && echo hello > "$out"/my_public'
     )
     flake.refresh()
     monkeypatch.chdir(flake.path)
@@ -335,7 +335,7 @@ def test_generated_shared_secret_sops(
     ]
     shared_generator["share"] = True
     shared_generator["files"]["my_shared_secret"]["secret"] = True
-    shared_generator["script"] = "echo hello > $out/my_shared_secret"
+    shared_generator["script"] = 'echo hello > "$out"/my_shared_secret'
     m2_config = flake.machines["machine2"]
     m2_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     m2_config["clan"]["core"]["vars"]["generators"]["my_shared_generator"] = (
@@ -380,14 +380,14 @@ def test_generate_secret_var_password_store(
     # we still have the second one to test `delete_store`:
     my_generator = clan_vars["generators"]["my_generator"]
     my_generator["files"]["my_secret"]["secret"] = True
-    my_generator["script"] = "echo hello > $out/my_secret"
+    my_generator["script"] = 'echo hello > "$out"/my_secret'
     my_generator2 = clan_vars["generators"]["my_generator2"]
     my_generator2["files"]["my_secret2"]["secret"] = True
-    my_generator2["script"] = "echo world > $out/my_secret2"
+    my_generator2["script"] = 'echo world > "$out"/my_secret2'
     my_shared_generator = clan_vars["generators"]["my_shared_generator"]
     my_shared_generator["share"] = True
     my_shared_generator["files"]["my_shared_secret"]["secret"] = True
-    my_shared_generator["script"] = "echo hello > $out/my_shared_secret"
+    my_shared_generator["script"] = 'echo hello > "$out"/my_shared_secret'
     flake.refresh()
     monkeypatch.chdir(flake.path)
     gnupghome = flake.path / "gpg"
@@ -458,7 +458,7 @@ def test_generate_secret_for_multiple_machines(
     machine1_generator["files"]["my_secret"]["secret"] = True
     machine1_generator["files"]["my_value"]["secret"] = False
     machine1_generator["script"] = (
-        "echo machine1 > $out/my_secret && echo machine1 > $out/my_value"
+        'echo machine1 > "$out"/my_secret && echo machine1 > "$out"/my_value'
     )
     machine2_config = flake.machines["machine2"]
     # Test that we can generate secrets for other platforms
@@ -472,7 +472,7 @@ def test_generate_secret_for_multiple_machines(
     machine2_generator["files"]["my_secret"]["secret"] = True
     machine2_generator["files"]["my_value"]["secret"] = False
     machine2_generator["script"] = (
-        "echo machine2 > $out/my_secret && echo machine2 > $out/my_value"
+        'echo machine2 > "$out"/my_secret && echo machine2 > "$out"/my_value'
     )
     flake.refresh()
     monkeypatch.chdir(flake.path)
@@ -535,7 +535,7 @@ def test_prompt(
     my_generator["prompts"]["prompt_persist"]["persist"] = True
 
     my_generator["script"] = (
-        "cat $prompts/prompt1 > $out/line_value; cat $prompts/prompt2 > $out/multiline_value"
+        'cat "$prompts"/prompt1 > "$out"/line_value; cat "$prompts"/prompt2 > "$out"/multiline_value'
     )
     flake.refresh()
     monkeypatch.chdir(flake.path)
@@ -594,7 +594,7 @@ def test_multi_machine_shared_vars(
     shared_generator["files"]["my_secret"]["secret"] = True
     shared_generator["files"]["my_value"]["secret"] = False
     shared_generator["script"] = (
-        "echo $RANDOM > $out/my_value && echo $RANDOM > $out/my_secret"
+        'echo "$RANDOM" > "$out"/my_value && echo "$RANDOM" > "$out"/my_secret'
     )
     # machine 2 is equivalent to machine 1
     flake.machines["machine2"] = machine1_config
@@ -697,12 +697,12 @@ def test_stdout_of_generate(
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
-    my_generator["script"] = "echo -n hello > $out/my_value"
+    my_generator["script"] = 'echo -n hello > "$out"/my_value'
     my_secret_generator = config["clan"]["core"]["vars"]["generators"][
         "my_secret_generator"
     ]
     my_secret_generator["files"]["my_secret"]["secret"] = True
-    my_secret_generator["script"] = "echo -n hello > $out/my_secret"
+    my_secret_generator["script"] = 'echo -n hello > "$out"/my_secret'
     flake.refresh()
     monkeypatch.chdir(flake.path)
     from clan_cli.vars.generate import generate_vars_for_machine
@@ -782,28 +782,29 @@ def test_migration(
     my_service["public"]["my_value"] = {}
     my_service["secret"]["my_secret"] = {}
     my_service["generator"]["script"] = (
-        "echo -n hello > $facts/my_value && echo -n hello > $secrets/my_secret"
+        'echo -n hello > "$facts"/my_value && echo -n hello > "$secrets"/my_secret'
     )
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["files"]["my_secret"]["secret"] = True
     my_generator["migrateFact"] = "my_service"
-    my_generator["script"] = "echo -n other > $out/my_value"
+    my_generator["script"] = 'echo -n other > "$out"/my_value'
 
     other_service = config["clan"]["core"]["facts"]["services"]["other_service"]
     other_service["secret"]["other_value"] = {}
-    other_service["generator"]["script"] = "echo -n hello > $secrets/other_value"
+    other_service["generator"]["script"] = 'echo -n hello > "$secrets"/other_value'
     other_generator = config["clan"]["core"]["vars"]["generators"]["other_generator"]
     # the var to migrate to is mistakenly marked as not secret (migration should fail)
     other_generator["files"]["other_value"]["secret"] = False
     other_generator["migrateFact"] = "my_service"
-    other_generator["script"] = "echo -n value-from-vars > $out/other_value"
+    other_generator["script"] = 'echo -n value-from-vars > "$out"/other_value'
 
     flake.refresh()
     monkeypatch.chdir(flake.path)
     cli.run(["facts", "generate", "--flake", str(flake.path), "my_machine"])
     with caplog.at_level(logging.INFO):
         cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
     assert "Migrated var my_generator/my_value" in caplog.text
     assert "Migrated secret var my_generator/my_secret" in caplog.text
     in_repo_store = in_repo.FactStore(
@@ -837,12 +838,12 @@ def test_fails_when_files_are_left_from_other_backend(
         "my_secret_generator"
     ]
     my_secret_generator["files"]["my_secret"]["secret"] = True
-    my_secret_generator["script"] = "echo hello > $out/my_secret"
+    my_secret_generator["script"] = 'echo hello > "$out"/my_secret'
     my_value_generator = config["clan"]["core"]["vars"]["generators"][
         "my_value_generator"
     ]
     my_value_generator["files"]["my_value"]["secret"] = False
-    my_value_generator["script"] = "echo hello > $out/my_value"
+    my_value_generator["script"] = 'echo hello > "$out"/my_value'
     flake.refresh()
     monkeypatch.chdir(flake.path)
     for generator in ["my_secret_generator", "my_value_generator"]:
@@ -902,7 +903,7 @@ def test_invalidation(
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
-    my_generator["script"] = "echo -n $RANDOM > $out/my_value"
+    my_generator["script"] = 'echo -n "$RANDOM" > "$out"/my_value'
     flake.refresh()
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
@@ -947,14 +948,14 @@ def test_dynamic_invalidation(
 
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
-    my_generator["script"] = "echo -n $RANDOM > $out/my_value"
+    my_generator["script"] = 'echo -n "$RANDOM" > "$out"/my_value'
 
     dependent_generator = config["clan"]["core"]["vars"]["generators"][
         "dependent_generator"
     ]
     dependent_generator["files"]["my_value"]["secret"] = False
     dependent_generator["dependencies"] = ["my_generator"]
-    dependent_generator["script"] = "echo -n $RANDOM > $out/my_value"
+    dependent_generator["script"] = 'echo -n "$RANDOM" > "$out"/my_value'
 
     flake.refresh()
 

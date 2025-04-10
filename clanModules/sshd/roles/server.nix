@@ -47,7 +47,7 @@ in
         pkgs.openssh
       ];
       script = ''
-        ssh-keygen -t ed25519 -N "" -f $out/ssh.id_ed25519
+        ssh-keygen -t ed25519 -N "" -f "$out"/ssh.id_ed25519
       '';
     };
 
@@ -67,7 +67,7 @@ in
         pkgs.openssh
       ];
       script = ''
-        ssh-keygen -t rsa -b 4096 -N "" -f $out/ssh.id_rsa
+        ssh-keygen -t rsa -b 4096 -N "" -f "$out"/ssh.id_rsa
       '';
     };
 
@@ -92,7 +92,7 @@ in
           -h \
           -n ${lib.concatMapStringsSep "," (d: "${config.clan.core.settings.machine.name}.${d}") domains} \
           $in/openssh/ssh.id_ed25519.pub
-        mv $in/openssh/ssh.id_ed25519-cert.pub $out/ssh.id_ed25519-cert.pub
+        mv $in/openssh/ssh.id_ed25519-cert.pub "$out"/ssh.id_ed25519-cert.pub
       '';
     };
   };

@@ -127,7 +127,7 @@ in
         clan.core.vars.generators.test = {
           files.test.neededFor = "partitioning";
           script = ''
-            echo "notok" > $out/test
+            echo "notok" > "$out"/test
           '';
         };
         disko.devices = {

@@ -190,8 +190,8 @@ in
         pkgs.xkcdpass
       ];
       script = ''
-        ssh-keygen -t ed25519 -N "" -f $out/borgbackup.ssh
-        xkcdpass -n 4 -d - > $out/borgbackup.repokey
+        ssh-keygen -t ed25519 -N "" -f "$out"/borgbackup.ssh
+        xkcdpass -n 4 -d - > "$out"/borgbackup.repokey
       '';
     };
 

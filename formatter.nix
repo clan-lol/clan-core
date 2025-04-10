@@ -37,6 +37,8 @@
         "vars/*"
         # prettier messes up our mkdocs flavoured markdown
         "*.md"
+        "**/node_modules/*"
+        "**/.mypy_cache/*"
 
         "checks/data-mesher/vars/*"
         "checks/lib/ssh/privkey"

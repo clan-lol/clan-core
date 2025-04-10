@@ -141,7 +141,6 @@ pythonRuntime.pkgs.buildPythonApplication {
                 templateDerivation
               ];
             };
-
           }
           ''
             set -u -o pipefail
@@ -188,6 +187,7 @@ pythonRuntime.pkgs.buildPythonApplication {
                 pkgs.jq.dev
                 pkgs.stdenv
                 pkgs.stdenvNoCC
+                pkgs.shellcheck-minimal
               ];
             };
           }
