@@ -12,8 +12,6 @@
   clan-core-path,
   nixpkgs,
   includedRuntimeDeps,
-  inventory-schema-abstract,
-  classgen,
   pythonRuntime,
   templateDerivation,
 }:
@@ -59,8 +57,6 @@ let
     chmod -R +w $out
     ln -sf ${nixpkgs'} $out/clan_cli/nixpkgs
     cp -r ${../../templates} $out/clan_cli/templates
-
-    ${classgen}/bin/classgen ${inventory-schema-abstract}/schema.json $out/clan_cli/inventory/classes.py
   '';
 
   # Create a custom nixpkgs for use within the project

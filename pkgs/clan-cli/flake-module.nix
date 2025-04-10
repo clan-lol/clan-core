@@ -133,8 +133,6 @@
       packages = {
         clan-cli = pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs;
-          inherit (self'.packages) classgen;
-          inherit (self'.legacyPackages.schemas) inventory-schema-abstract;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
           clan-core-path = clanCoreWithVendoredDeps;
@@ -145,8 +143,6 @@
         };
         clan-cli-full = pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs;
-          inherit (self'.packages) classgen;
-          inherit (self'.legacyPackages.schemas) inventory-schema-abstract;
           clan-core-path = clanCoreWithVendoredDeps;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
@@ -163,8 +159,6 @@
           ];
 
           installPhase = ''
-            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.inventory-schema-abstract}/schema.json ./clan_cli/inventory/classes.py
-
             python docs.py reference
             mkdir -p $out
             cp -r out/* $out
@@ -182,7 +176,6 @@
           ];
 
           installPhase = ''
-            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.inventory-schema-abstract}/schema.json ./clan_cli/inventory/classes.py
             mkdir -p $out
             # Retrieve python API Typescript types
             python api.py > $out/API.json
