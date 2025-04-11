@@ -135,7 +135,7 @@ def test_clan_get_nix_attrset_case_1(
     injected = {"templates": {"disko": {}, "machine": {}}}
     expected = {
         "inputs": {},
-        "self": {"templates": {"disko": {}, "machine": {}, "clan": {}}, "modules": {}},
+        "self": {"templates": {"disko": {}, "machine": {}, "clan": {}}},
     }
     nix_attr_tester(test_flake_with_core, injected, expected, test_number)
 
@@ -171,7 +171,6 @@ def test_clan_get_nix_attrset_case_2(
                 "disko": {},
                 "machine": {},
             },
-            "modules": {},
         },
     }
 
@@ -235,76 +234,6 @@ def test_clan_get_nix_attrset_case_3(
                     }
                 },
             },
-            "modules": {},
-        },
-    }
-    nix_attr_tester(test_flake_with_core, injected, expected, test_number)
-
-
-# Test Case 4: Input with modules only
-@pytest.mark.with_core
-def test_clan_get_nix_attrset_case_4(
-    monkeypatch: pytest.MonkeyPatch,
-    temporary_home: Path,
-    test_flake_with_core: FlakeForTest,
-) -> None:
-    test_number = 4
-    injected = {
-        "modules": {
-            "module1": {"description": "First module", "path": "/module1/path"},
-            "module2": {"description": "Second module", "path": "/module2/path"},
-        }
-    }
-    expected = {
-        "inputs": {},
-        "self": {
-            "modules": {
-                "module1": {"description": "First module", "path": "/module1/path"},
-                "module2": {"description": "Second module", "path": "/module2/path"},
-            },
-            "templates": {"disko": {}, "machine": {}, "clan": {}},
-        },
-    }
-    nix_attr_tester(test_flake_with_core, injected, expected, test_number)
-
-
-# Test Case 5: Input with both templates and modules
-@pytest.mark.with_core
-def test_clan_get_nix_attrset_case_5(
-    monkeypatch: pytest.MonkeyPatch,
-    temporary_home: Path,
-    test_flake_with_core: FlakeForTest,
-) -> None:
-    test_number = 5
-    injected = {
-        "templates": {
-            "clan": {
-                "clan_template": {
-                    "description": "A clan template.",
-                    "path": "/clan/path",
-                }
-            }
-        },
-        "modules": {
-            "module1": {"description": "First module", "path": "/module1/path"}
-        },
-    }
-    expected = {
-        "inputs": {},
-        "self": {
-            "modules": {
-                "module1": {"description": "First module", "path": "/module1/path"}
-            },
-            "templates": {
-                "clan": {
-                    "clan_template": {
-                        "description": "A clan template.",
-                        "path": "/clan/path",
-                    }
-                },
-                "disko": {},
-                "machine": {},
-            },
         },
     }
     nix_attr_tester(test_flake_with_core, injected, expected, test_number)
@@ -321,6 +250,6 @@ def test_clan_get_nix_attrset_case_6(
     injected = {}
     expected = {
         "inputs": {},
-        "self": {"templates": {"disko": {}, "machine": {}, "clan": {}}, "modules": {}},
+        "self": {"templates": {"disko": {}, "machine": {}, "clan": {}}},
     }
     nix_attr_tester(test_flake_with_core, injected, expected, test_number)
