@@ -66,7 +66,14 @@ def upload(
         if host.user != "root":
             sudo = "sudo -- "
 
-        cmd = 'rm -rf "$0" && mkdir -m "$1" -p "$0" && tar -C "$0" -xzf -'
+        cmd = None
+        if local_src.is_dir():
+            cmd = 'rm -rf "$0" && mkdir -m "$1" -p "$0" && tar -C "$0" -xzf -'
+        elif local_src.is_file():
+            cmd = 'rm -f "$0" && tar -C "$(dirname "$0")" -xzf -'
+        else:
+            msg = f"Unsupported source type: {local_src}"
+            raise ClanError(msg)
 
         # TODO accept `input` to be  an IO object instead of bytes so that we don't have to read the tarfile into memory.
         with tar_path.open("rb") as f:
