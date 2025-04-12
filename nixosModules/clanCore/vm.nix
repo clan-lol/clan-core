@@ -122,6 +122,8 @@ let
   vmConfig = extendModules { modules = [ vmModule ]; };
 in
 {
+  _class = "nixos";
+
   options = {
     clan.virtualisation = {
       cores = lib.mkOption {

@@ -6,6 +6,7 @@ let
   hwConfig = "${directory}/machines/${machineName}/hardware-configuration.nix";
 in
 {
+  _class = "nixos";
   facter.reportPath = lib.mkIf (builtins.pathExists facterJson) facterJson;
   warnings =
     lib.optionals

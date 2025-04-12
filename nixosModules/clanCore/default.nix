@@ -1,23 +1,26 @@
+{ _class, lib, ... }:
 {
-  imports = [
-    ./backups.nix
-    ./defaults.nix
-    ./facts
-    ./inventory
-    ./meta/interface.nix
-    ./metadata.nix
-    ./networking.nix
-    ./nixos-facter.nix
-    ./nix-settings.nix
-    ./options.nix
-    ./outputs.nix
-    ./schema.nix
-    ./sops.nix
-    ./vars
-    ./vm.nix
-    ./wayland-proxy-virtwl.nix
-    ./zerotier
-    ./zfs.nix
-  ];
-
+  imports =
+    [
+      ./backups.nix
+      ./defaults.nix
+      ./facts
+      ./inventory
+      ./meta/interface.nix
+      ./metadata.nix
+      ./networking.nix
+      ./nix-settings.nix
+      ./options.nix
+      ./outputs.nix
+      ./schema.nix
+      ./sops.nix
+      ./vars
+    ]
+    ++ lib.optionals (_class == "nixos") [
+      ./nixos-facter.nix
+      ./vm.nix
+      ./wayland-proxy-virtwl.nix
+      ./zerotier
+      ./zfs.nix
+    ];
 }

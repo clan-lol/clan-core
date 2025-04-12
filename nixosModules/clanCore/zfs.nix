@@ -1,5 +1,7 @@
 { lib, config, ... }:
 {
+  _class = "nixos";
+
   # Use the same default hostID as the NixOS install ISO and nixos-anywhere.
   # This allows us to import zfs pool without using a force import.
   # ZFS has this as a safety mechanism for networked block storage (ISCSI), but
