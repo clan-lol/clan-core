@@ -7,10 +7,8 @@
     # - clan.service modules
     name = "dummy-inventory-test";
 
-    clanSettings = {
-      self = ./.;
-    };
     clan = {
+      directory = ./.;
       inventory = {
         machines.peer1 = { };
         machines.admin1 = { };

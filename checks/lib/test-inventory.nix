@@ -23,13 +23,6 @@ in
         type = types.submodule {
           options = {
             clan-core = mkOption { default = self; };
-            self = mkOption {
-              default = throw ''
-                Clan testing: 'clanSettings.self' is required to be set explizitly during testing.
-
-                It is recommended to set 'clanSettings.self' during testing to the directory where the test lives in i.e. './.'
-              '';
-            };
             nixpkgs = mkOption { default = self.inputs.nixpkgs; };
             nix-darwin = mkOption { default = self.inputs.nix-darwin; };
           };
@@ -42,7 +35,6 @@ in
           specialArgs = {
             inherit (config.clanSettings)
               clan-core
-              self
               nixpkgs
               nix-darwin
               ;
@@ -94,5 +86,4 @@ in
       node.specialArgs.self = self;
     };
   }
-))
-# .config.result
+)).config.result

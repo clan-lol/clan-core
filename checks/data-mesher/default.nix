@@ -11,10 +11,8 @@
   {
     name = "data-mesher";
 
-    clanSettings = {
-      self = ./.;
-    };
     clan = {
+      directory = ./.;
       inventory = {
         machines = lib.genAttrs machines (_: { });
         services = {
