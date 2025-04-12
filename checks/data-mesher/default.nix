@@ -11,7 +11,8 @@
   {
     name = "data-mesher";
 
-    inventory = {
+    clan = {
+      directory = ./.;
       inventory = {
         machines = lib.genAttrs machines (_: { });
         services = {
@@ -22,7 +23,6 @@
           };
         };
       };
-      directory = ./.;
     };
 
     defaults =

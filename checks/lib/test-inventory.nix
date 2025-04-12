@@ -2,37 +2,54 @@ test:
 { pkgs, self, ... }:
 let
   inherit (pkgs) lib;
-  inherit (lib) mkOption flip mapAttrs;
-  inherit (lib.types) path raw;
-  inherit (self.clanLib) buildClan;
+  inherit (lib)
+    mkOption
+    flip
+    mapAttrs
+    types
+    ;
   nixos-lib = import (pkgs.path + "/nixos/lib") { };
 in
 (nixos-lib.runTest (
   { config, ... }:
   let
-    result = buildClan {
-      inventory = config.inventory.inventory;
-      # TODO: make directory argument optional in buildInventory
-      directory = config.inventory.directory;
-    };
+    clanFlakeResult = config.clan;
   in
   {
     imports = [ test ];
     options = {
-      inventory.inventory = mkOption {
-        description = "Inventory of machines and services";
-        type = raw;
+      clanSettings = mkOption {
+        default = { };
+        type = types.submodule {
+          options = {
+            clan-core = mkOption { default = self; };
+            nixpkgs = mkOption { default = self.inputs.nixpkgs; };
+            nix-darwin = mkOption { default = self.inputs.nix-darwin; };
+          };
+        };
       };
-      inventory.directory = mkOption {
-        description = "Directory which contains the vars";
-        type = path;
+
+      clan = mkOption {
+        default = { };
+        type = types.submoduleWith {
+          specialArgs = {
+            inherit (config.clanSettings)
+              clan-core
+              nixpkgs
+              nix-darwin
+              ;
+          };
+          modules = [
+            self.clanLib.buildClanModule.flakePartsModule
+          ];
+        };
       };
     };
     config = {
-      nodes = flip mapAttrs result.clanInternals.inventoryClass.machines (
+      nodes = flip mapAttrs clanFlakeResult.clanInternals.inventoryClass.machines (
         machineName: attrs: {
           imports = attrs.machineImports ++ [ self.nixosModules.clanCore ];
-          clan.core.settings.directory = "${config.inventory.directory}";
+          clan.core.settings.directory = "${config.clan.directory}";
           clan.core.settings.machine.name = machineName;
         }
       );
