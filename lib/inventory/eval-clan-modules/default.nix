@@ -28,6 +28,7 @@ let
     }:
     let
       evaled = lib.evalModules {
+        class = "nixos";
         modules = [
           (baseModule { inherit pkgs; })
           {
@@ -83,6 +84,7 @@ let
             name = role;
             value =
               (lib.evalModules {
+                class = "nixos";
                 modules = [
                   (baseModule { inherit pkgs; })
                   clan-core.nixosModules.clanCore
