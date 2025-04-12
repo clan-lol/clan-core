@@ -138,7 +138,6 @@ def deploy_machines(machines: list[Machine]) -> None:
 
         nix_options = [
             "--show-trace",
-            "--fast",
             "--option",
             "keep-going",
             "true",
@@ -146,27 +145,30 @@ def deploy_machines(machines: list[Machine]) -> None:
             "accept-flake-config",
             "true",
             "-L",
-            "--build-host",
-            "",
             *machine.nix_options,
             "--flake",
             f"{path}#{machine.name}",
         ]
 
-        switch_cmd = ["nixos-rebuild", "switch", *nix_options]
-        test_cmd = ["nixos-rebuild", "test", *nix_options]
+        become_root = machine.deploy_as_root
 
-        become_root = True
+        if machine._class_ == "nixos":
+            nix_options += [
+                "--fast",
+                "--build-host",
+                "",
+            ]
 
-        target_host: Host | None = host.meta.get("target_host")
-        if target_host:
-            become_root = False
-            switch_cmd.extend(["--target-host", target_host.target])
-            test_cmd.extend(["--target-host", target_host.target])
+            target_host: Host | None = host.meta.get("target_host")
+            if target_host:
+                become_root = False
+                nix_options += ["--target-host", target_host.target]
 
-            if target_host.user != "root":
-                switch_cmd.extend(["--use-remote-sudo"])
-                test_cmd.extend(["--use-remote-sudo"])
+                if target_host.user != "root":
+                    nix_options += ["--use-remote-sudo"]
+
+        switch_cmd = [f"{machine._class_}-rebuild", "switch", *nix_options]
+        test_cmd = [f"{machine._class_}-rebuild", "test", *nix_options]
 
         env = host.nix_ssh_env(None)
         ret = host.run(
@@ -201,6 +203,11 @@ def deploy_machines(machines: list[Machine]) -> None:
 
     with AsyncRuntime() as runtime:
         for machine in machines:
+            if machine._class_ == "darwin":
+                if not machine.deploy_as_root and machine.target_host.user == "root":
+                    msg = f"'TargetHost' should be set to a non-root user for deploying to nix-darwin on machine '{machine.name}'"
+                    raise ClanError(msg)
+
             machine.info(f"Updating {machine.name}")
             runtime.async_run(
                 AsyncOpts(
