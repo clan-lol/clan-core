@@ -18,16 +18,6 @@ let
         pkgs.bubblewrap
       ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
-      # with Nix 2.24 we get:
-      # vm-test-run-test-installation> installer # error: sized: unexpected end-of-file
-      # vm-test-run-test-installation> installer # error: unexpected end-of-file
-      # This seems to be fixed with Nix 2.26
-      # Remove this line once `pkgs.nix` is 2.26+
-      nixPackage =
-        assert
-          lib.versionOlder pkgs.nix.version "2.26"
-          && lib.versionAtLeast pkgs.nixVersions.latest.version "2.26";
-        pkgs.nixVersions.latest;
     in
     {
       imports = [
@@ -49,7 +39,6 @@ let
       # both installer and target need to use the same diskImage
       virtualisation.diskImage = "./target.qcow2";
       virtualisation.memorySize = 3048;
-      nix.package = nixPackage;
       nix.settings = {
         substituters = lib.mkForce [ ];
         hashed-mirrors = null;

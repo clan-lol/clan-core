@@ -166,14 +166,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             buildInputs = [
               pkgs.bash
               pkgs.coreutils
-              # looks like Nix 2.26 fixes the profile creation race condition we were running into on Nix 2.24
-              # Switch this back to `pkgs.nix` when `pkgs.nix` is Nix 2.26+
-              (
-                assert
-                  lib.versionOlder pkgs.nix.version "2.26"
-                  && lib.versionAtLeast pkgs.nixVersions.latest.version "2.26";
-                pkgs.nixVersions.latest
-              )
+              pkgs.nix
             ];
             closureInfo = pkgs.closureInfo {
               rootPaths = [
