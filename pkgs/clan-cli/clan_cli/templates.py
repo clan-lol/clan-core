@@ -169,7 +169,7 @@ class InputPrio:
 
 
 def copy_from_nixstore(src: Path, dest: Path) -> None:
-    run(["cp", "-r", "--reflink=auto", str(src), str(dest)])
+    run(["cp", "-r", str(src), str(dest)])
     run(["chmod", "-R", "u+w", str(dest)])
 
 
