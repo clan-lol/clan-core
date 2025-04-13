@@ -180,27 +180,20 @@ def deploy_machines(machines: list[Machine]) -> None:
         if is_async_cancelled():
             return
 
-        # if the machine is mobile, we retry to deploy with the mobile workaround method
-        is_mobile = machine.deployment.get("nixosMobileWorkaround", False)
-        if is_mobile and ret.returncode != 0:
-            machine.info(
-                "Mobile machine detected, applying workaround deployment method"
-            )
-            ret = host.run(
-                test_cmd,
-                RunOpts(msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
-                extra_env=env,
-                become_root=True,
-            )
-
         # retry nixos-rebuild switch if the first attempt failed
-        elif ret.returncode != 0:
-            ret = host.run(
-                switch_cmd,
-                RunOpts(msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
-                extra_env=env,
-                become_root=True,
-            )
+        if ret.returncode != 0:
+            is_mobile = machine.deployment.get("nixosMobileWorkaround", False)
+            # if the machine is mobile, we retry to deploy with the mobile workaround method
+            if is_mobile:
+                machine.info(
+                    "Mobile machine detected, applying workaround deployment method"
+                )
+                ret = host.run(
+                    test_cmd if is_mobile else switch_cmd,
+                    RunOpts(msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
+                    extra_env=env,
+                    become_root=True,
+                )
 
     with AsyncRuntime() as runtime:
         for machine in machines:
