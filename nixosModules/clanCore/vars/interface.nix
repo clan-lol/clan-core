@@ -1,4 +1,5 @@
 {
+  _class,
   lib,
   config,
   pkgs,
@@ -271,7 +272,8 @@ in
                     };
                     group = lib.mkOption {
                       description = "The group name or id that will own the file.";
-                      default = "root";
+                      default = if _class == "darwin" then "wheel" else "root";
+                      defaultText = lib.literalExpression ''if _class == "darwin" then "wheel" else "root"'';
                     };
                     mode = lib.mkOption {
                       type = lib.types.strMatching "^[0-7]{3}$";

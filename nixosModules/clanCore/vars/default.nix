@@ -10,6 +10,7 @@ let
   submodule =
     module:
     submoduleWith {
+      class = _class;
       specialArgs.pkgs = pkgs;
       modules = [ module ];
     };
