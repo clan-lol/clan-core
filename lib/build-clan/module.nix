@@ -1,4 +1,3 @@
-# NixOS module
 {
   config,
   clan-core,
@@ -10,7 +9,6 @@
 let
   inherit (config)
     directory
-    machines
     pkgsForSystem
     specialArgs
     ;
@@ -62,51 +60,22 @@ let
       nixpkgs.lib.nixosSystem {
         modules =
           let
-            hwConfig = "${directory}/machines/${name}/hardware-configuration.nix";
-            diskoConfig = "${directory}/machines/${name}/disko.nix";
+            module = lib.modules.importApply ./inner-module.nix {
+              inherit
+                system
+                name
+                pkgs
+                extraConfig
+                config
+                clan-core
+                ;
+            };
           in
           [
+            module
             {
-              # Autoinclude configuration.nix and hardware-configuration.nix
-              imports = builtins.filter builtins.pathExists [
-                "${directory}/machines/${name}/configuration.nix"
-                hwConfig
-                diskoConfig
-              ];
+              config.clan.core.module = module;
             }
-            clan-core.nixosModules.clanCore
-            extraConfig
-            (machines.${name} or { })
-
-            { imports = inventoryClass.machines.${name}.machineImports or [ ]; }
-
-            (
-              {
-                # Settings
-                clan.core.settings = {
-                  inherit (config.inventory.meta) name icon;
-
-                  inherit directory;
-                  machine = {
-                    inherit name;
-                  };
-                };
-                # Inherited from clan wide settings
-                # TODO: remove these
-
-                networking.hostName = lib.mkDefault name;
-
-                # For vars we need to override the system so we run vars
-                # generators on the machine that runs `clan vars generate`. If a
-                # users is using the `pkgsForSystem`, we don't set
-                # nixpkgs.hostPlatform it would conflict with the `nixpkgs.pkgs`
-                # option.
-                nixpkgs.hostPlatform = lib.mkIf (system != null && (pkgsForSystem system) != null) (
-                  lib.mkForce system
-                );
-              }
-              // lib.optionalAttrs (pkgs != null) { nixpkgs.pkgs = lib.mkForce pkgs; }
-            )
           ];
 
         specialArgs = {
@@ -123,37 +92,16 @@ let
       }:
       nix-darwin.lib.darwinSystem {
         modules = [
-          {
-            imports = builtins.filter builtins.pathExists [
-              "${directory}/machines/${name}/configuration.nix"
-            ];
-          }
-          (
-            if !lib.hasAttrByPath [ "darwinModules" "clanCore" ] clan-core then
-              { }
-            else
-              throw "this should import clan-core.darwinModules.clanCore"
-          )
-          extraConfig
-          (machines.${name} or { })
-          # TODO: import inventory when it has support for defining `nix-darwin` modules
-          (
-            {
-              # TODO: set clan-core settings when clan-core has support for `nix-darwin`
-
-              networking.hostName = lib.mkDefault name;
-
-              # For vars we need to override the system so we run vars
-              # generators on the machine that runs `clan vars generate`. If a
-              # users is using the `pkgsForSystem`, we don't set
-              # nixpkgs.hostPlatform it would conflict with the `nixpkgs.pkgs`
-              # option.
-              nixpkgs.hostPlatform = lib.mkIf (system != null && (pkgsForSystem system) != null) (
-                lib.mkForce system
-              );
-            }
-            // lib.optionalAttrs (pkgs != null) { nixpkgs.pkgs = lib.mkForce pkgs; }
-          )
+          (lib.modules.importApply ./inner-module.nix {
+            inherit
+              system
+              name
+              pkgs
+              extraConfig
+              config
+              clan-core
+              ;
+          })
         ];
 
         specialArgs = {
