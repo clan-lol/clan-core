@@ -170,6 +170,7 @@ def deploy_machines(machines: list[Machine]) -> None:
             switch_cmd,
             RunOpts(check=False, msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
             extra_env=env,
+            become_root=True,
         )
 
         # Last output line (config store path) is printed to stdout instead of stderr
