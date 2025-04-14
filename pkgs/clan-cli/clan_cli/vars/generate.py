@@ -209,15 +209,19 @@ def execute_generator(
 
         final_script = generator.final_script()
 
-        if sys.platform == "linux" and bwrap.bubblewrap_works():
-            cmd = bubblewrap_cmd(str(final_script), tmpdir)
+        if sys.platform == "linux":
+            if bwrap.bubblewrap_works():
+                cmd = bubblewrap_cmd(str(final_script), tmpdir)
+            else:
+                if not no_sandbox:
+                    msg = (
+                        f"Cannot safely execute generator {generator.name}: Sandboxing is not available on this system\n"
+                        f"Re-run 'vars generate' with '--no-sandbox' to disable sandboxing"
+                    )
+                    raise ClanError(msg)
+                cmd = ["bash", "-c", str(final_script)]
         else:
-            if not no_sandbox:
-                msg = (
-                    f"Cannot safely execute generator {generator.name}: Sandboxing is not available on this system\n"
-                    f"Re-run 'vars generate' with '--no-sandbox' to disable sandboxing"
-                )
-                raise ClanError(msg)
+            # TODO: implement sandboxing for macOS using sandbox-exec
             cmd = ["bash", "-c", str(final_script)]
         run(cmd, RunOpts(env=env))
         files_to_commit = []
