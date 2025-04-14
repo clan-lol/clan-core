@@ -169,8 +169,8 @@
     in
     {
       checks = pkgs.lib.mkIf pkgs.stdenv.isLinux {
-        test-backups = (import ../lib/container-test.nix) {
-          name = "test-backups";
+        backups = (import ../lib/container-test.nix) {
+          name = "backups";
           nodes.machine = {
             imports =
               [
