@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import tempfile
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -51,6 +52,7 @@ def nix_add_to_gcroots(nix_path: Path, dest: Path) -> None:
         run(cmd)
 
 
+@cache
 def nix_config() -> dict[str, Any]:
     cmd = nix_command(["config", "show", "--json"])
     proc = run_no_stdout(cmd)
