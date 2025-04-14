@@ -179,6 +179,7 @@ in
     # Merge the meta attributes from the buildClan function
     {
       inventory.modules = clan-core.clanModules;
+      inventory._legacyModules = clan-core.clanModules;
     }
     # config.inventory.meta <- config.meta
     { inventory.meta = config.meta; }
