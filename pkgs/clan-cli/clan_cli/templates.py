@@ -27,15 +27,6 @@ class InputVariant:
 
 TemplateName = NewType("TemplateName", str)
 TemplateType = Literal["clan", "disko", "machine"]
-ModuleName = NewType("ModuleName", str)
-
-
-class ClanModule(TypedDict):
-    description: str
-
-
-class InternalClanModule(ClanModule):
-    path: str
 
 
 class Template(TypedDict):
@@ -61,7 +52,6 @@ class TemplateTypeDict(TypedDict):
 
 class ClanAttrset(TypedDict):
     templates: TemplateTypeDict
-    modules: dict[ModuleName, ClanModule]
 
 
 class ClanExports(TypedDict):
@@ -85,9 +75,6 @@ def apply_fallback_structure(attrset: dict[str, Any]) -> ClanAttrset:
             "machine": templates.get("machine", {}),
         }
 
-    # Ensure modules field exists
-    result["modules"] = attrset.get("modules", {})
-
     return cast(ClanAttrset, result)
 
 
@@ -109,15 +96,32 @@ def get_clan_nix_attrset(clan_dir: Flake | None = None) -> ClanExports:
     raw_clan_exports: dict[str, Any] = {"self": {"clan": {}}, "inputs": {"clan": {}}}
 
     try:
-        raw_clan_exports["self"] = clan_dir.select("clan")
-    except ClanCmdError:
+        raw_clan_exports["self"] = clan_dir.select("clan.{templates}")
+    except ClanCmdError as ex:
+        log.debug(ex)
         log.info("Current flake does not export the 'clan' attribute")
 
     # FIXME: flake.select destroys lazy evaluation
     # this is why if one input has a template with a non existant path
     # the whole evaluation will fail
     try:
-        raw_clan_exports["inputs"] = clan_dir.select("inputs.*.{clan}")
+        # FIXME: We expect here that if the input exports the clan attribute it also has clan.templates
+        # this is not always the case if we just want to export clan.modules for example
+        # However, there is no way to fix this, as clan.select does not support two optional selectors
+        # and we cannot eval the clan attribute as clan.modules can be non JSON serializable because
+        # of import statements.
+        # This needs to be fixed in clan.select
+        # For now always define clan.templates or no clan attribute at all
+        temp = clan_dir.select("inputs.*.{clan}.templates")
+
+        # FIXME: We need this because clan.select removes the templates attribute
+        # but not the clan and other attributes leading up to templates
+        for input_name, attrset in temp.items():
+            if "clan" in attrset:
+                raw_clan_exports["inputs"][input_name] = {
+                    "clan": {"templates": {**attrset["clan"]}}
+                }
+
     except ClanCmdError as e:
         msg = "Failed to evaluate flake inputs"
         raise ClanError(msg) from e
