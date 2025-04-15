@@ -59,17 +59,25 @@ let
       nixpkgs.lib.nixosSystem {
         modules =
           let
-            innerModule = lib.modules.importApply ./inner-module.nix {
+            innerModule = lib.modules.importApply ./machineModules/forSystem.nix {
               inherit
-                system
-                name
                 pkgs
+                pkgsForSystem
+                system
                 ;
-              clanConfiguration = config;
             };
+            staticModules = (
+              lib.modules.importApply ./machineModules/forName.nix {
+                inherit
+                  name
+                  directory
+                  ;
+              }
+            );
           in
           [
             (config.outputs.moduleForMachine.${name} or { })
+            staticModules
             innerModule
             {
               config.clan.core.module = innerModule;
@@ -90,13 +98,24 @@ let
       nix-darwin.lib.darwinSystem {
         modules = [
           (config.outputs.moduleForMachine.${name} or { })
-          (lib.modules.importApply ./inner-module.nix {
+          # We split the modules to reduce the number of dependencies
+          # This module only depends on the machine name
+          # and the directory
+          (lib.modules.importApply ./machineModules/forName.nix {
             inherit
-              system
               name
-              pkgs
+              directory
               ;
-            clanConfiguration = config;
+          })
+          # This module depends on the system and pkgs
+          # It contains optional logic to override 'nixpkgs.pkgs' and 'nixpkgs.hostPlatform'
+          # and other 'system' related logic
+          (lib.modules.importApply ./machineModules/forSystem.nix {
+            inherit
+              pkgs
+              pkgsForSystem
+              system
+              ;
           })
         ];
 
@@ -170,7 +189,26 @@ in
         # See: 'staticModules' in the moduleForMachine option
         # This is only necessary because clan.machines doesn't include all machines
         # There can other sources: i.e. inventory
-        (lib.mapAttrs (_: _: { }) config.inventory.machines)
+        (lib.mapAttrs (
+          name: v:
+          (
+            { _class, ... }:
+            {
+              imports = (v.machineImports or [ ]);
+              config = lib.optionalAttrs (_class == "nixos") {
+                clan.core.settings = {
+                  inherit (config.inventory.meta) name icon;
+
+                  inherit directory;
+                  machine = {
+                    inherit name;
+                  };
+                };
+              };
+
+            }
+          )
+        ) inventoryClass.machines)
 
         # The user can define some machine config here
         # i.e. 'clan.machines.jon = ...'
