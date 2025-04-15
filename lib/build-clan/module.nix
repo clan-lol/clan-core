@@ -65,18 +65,10 @@ let
                 system
                 ;
             };
-            staticModules = (
-              lib.modules.importApply ./machineModules/forName.nix {
-                inherit
-                  name
-                  directory
-                  ;
-              }
-            );
           in
           [
             (config.outputs.moduleForMachine.${name} or { })
-            staticModules
+
             innerModule
             {
               config.clan.core.module = innerModule;
@@ -97,15 +89,6 @@ let
       nix-darwin.lib.darwinSystem {
         modules = [
           (config.outputs.moduleForMachine.${name} or { })
-          # We split the modules to reduce the number of dependencies
-          # This module only depends on the machine name
-          # and the directory
-          (lib.modules.importApply ./machineModules/forName.nix {
-            inherit
-              name
-              directory
-              ;
-          })
           # This module depends on the system and pkgs
           # It contains optional logic to override 'nixpkgs.pkgs' and 'nixpkgs.hostPlatform'
           # and other 'system' related logic
@@ -168,20 +151,7 @@ in
   imports = [
     {
       options.outputs.moduleForMachine = lib.mkOption {
-        type = lib.types.attrsOf (
-          lib.types.deferredModuleWith {
-            staticModules = [
-              (
-                { _class, ... }:
-                {
-                  imports = lib.optionals (_class == "nixos") [
-                    clan-core.nixosModules.clanCore
-                  ];
-                }
-              )
-            ];
-          }
-        );
+        type = lib.types.attrsOf lib.types.deferredModule;
       };
       config.outputs.moduleForMachine = lib.mkMerge [
         # Create one empty module for each machine such that there is a default for each machine
@@ -193,18 +163,20 @@ in
           (
             { _class, ... }:
             {
-              imports = (v.machineImports or [ ]);
-              config = lib.optionalAttrs (_class == "nixos") {
-                clan.core.settings = {
-                  inherit (config.inventory.meta) name icon;
-
-                  inherit directory;
-                  machine = {
-                    inherit name;
-                  };
-                };
-              };
-
+              imports = (v.machineImports or [ ]) ++ [
+                (lib.modules.importApply ./machineModules/forName.nix {
+                  inherit (config.inventory) meta;
+                  inherit
+                    name
+                    directory
+                    ;
+                })
+                # Import the correct 'core' module
+                # We assume either:
+                # - nixosModules (_class = nixos)
+                # - darwinModules (_class = darwin)
+                (lib.optionalAttrs (clan-core."${_class}Modules" ? clanCore) clan-core."${_class}Modules".clanCore)
+              ];
             }
           )
         ) inventoryClass.machines)

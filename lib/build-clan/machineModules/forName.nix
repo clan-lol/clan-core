@@ -1,6 +1,7 @@
 {
   name,
   directory,
+  meta,
 }:
 {
   _class,
@@ -20,6 +21,15 @@
         ]
       );
     }
+    (lib.optionalAttrs (_class == "nixos") {
+      clan.core.settings = {
+        inherit (meta) name icon;
+        inherit directory;
+        machine = {
+          inherit name;
+        };
+      };
+    })
     # TODO: move into nixos modules
     ({
       networking.hostName = lib.mkDefault name;
