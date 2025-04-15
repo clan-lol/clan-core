@@ -13,7 +13,7 @@ in
       { config, options, ... }:
       {
         imports = [
-          ./minify.nix
+          self.clanLib.test.minifyModule
         ];
         config = lib.mkMerge [
           (lib.optionalAttrs (options ? clan) {
