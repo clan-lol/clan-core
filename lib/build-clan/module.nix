@@ -11,9 +11,8 @@ let
     directory
     pkgsForSystem
     specialArgs
+    inventory
     ;
-
-  inherit (config.clanInternals) inventory;
 
   inherit (clan-core.clanLib.inventory) buildInventory;
 
