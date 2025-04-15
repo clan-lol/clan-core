@@ -11,9 +11,8 @@ let
     directory
     pkgsForSystem
     specialArgs
+    inventory
     ;
-
-  inherit (config.clanInternals) inventory;
 
   inherit (clan-core.clanLib.inventory) buildInventory;
 
@@ -50,74 +49,24 @@ let
 
   moduleSystemConstructor = {
     # TODO: remove default system once we have a hardware-config mechanism
-    nixos =
-      {
-        system ? null,
-        name,
-        pkgs ? null,
-        extraConfig ? { },
-      }:
-      nixpkgs.lib.nixosSystem {
-        modules =
-          let
-            module = lib.modules.importApply ./inner-module.nix {
-              inherit
-                system
-                name
-                pkgs
-                extraConfig
-                config
-                clan-core
-                ;
-            };
-          in
-          [
-            module
-            {
-              config.clan.core.module = module;
-            }
-          ];
-
-        specialArgs = {
-          inherit clan-core;
-        } // specialArgs;
-      };
-
-    darwin =
-      {
-        system ? null,
-        name,
-        pkgs ? null,
-        extraConfig ? { },
-      }:
-      nix-darwin.lib.darwinSystem {
-        modules = [
-          (lib.modules.importApply ./inner-module.nix {
-            inherit
-              system
-              name
-              pkgs
-              extraConfig
-              config
-              clan-core
-              ;
-          })
-        ];
-
-        specialArgs = {
-          inherit clan-core;
-        } // specialArgs;
-      };
+    nixos = nixpkgs.lib.nixosSystem;
+    darwin = nix-darwin.lib.darwinSystem;
   };
 
-  allMachines = inventoryClass.machines;
+  allMachines = inventoryClass.machines; # <- inventory.machines <- clan.machines
 
   machineClasses = lib.mapAttrs (
     name: _: inventory.machines.${name}.machineClass or "nixos"
   ) allMachines;
 
   configurations = lib.mapAttrs (
-    name: _: moduleSystemConstructor.${machineClasses.${name}} { inherit name; }
+    name: _:
+    moduleSystemConstructor.${machineClasses.${name}} {
+      modules = [ (config.outputs.moduleForMachine.${name} or { }) ];
+      specialArgs = {
+        inherit clan-core;
+      } // specialArgs;
+    }
   ) allMachines;
 
   nixosConfigurations = lib.filterAttrs (name: _: machineClasses.${name} == "nixos") configurations;
@@ -133,8 +82,15 @@ let
         lib.mapAttrs (
           name: _:
           moduleSystemConstructor.${machineClasses.${name}} {
-            inherit name system;
-            pkgs = pkgsFor.${system};
+            modules = [
+              (config.outputs.moduleForMachine.${name} or { })
+              (lib.modules.importApply ./machineModules/overridePkgs.nix {
+                pkgs = pkgsFor.${system};
+              })
+            ];
+            specialArgs = {
+              inherit clan-core;
+            } // specialArgs;
           }
         ) allMachines
       )
@@ -152,6 +108,43 @@ let
 in
 {
   imports = [
+    {
+      options.outputs.moduleForMachine = lib.mkOption {
+        type = lib.types.attrsOf lib.types.deferredModule;
+      };
+      config.outputs.moduleForMachine = lib.mkMerge [
+        # Create one empty module for each machine such that there is a default for each machine
+        # See: 'staticModules' in the moduleForMachine option
+        # This is only necessary because clan.machines doesn't include all machines
+        # There can other sources: i.e. inventory
+        (lib.mapAttrs (
+          name: v:
+          (
+            { _class, ... }:
+            {
+              imports = (v.machineImports or [ ]) ++ [
+                (lib.modules.importApply ./machineModules/forName.nix {
+                  inherit (config.inventory) meta;
+                  inherit
+                    name
+                    directory
+                    ;
+                })
+                # Import the correct 'core' module
+                # We assume either:
+                # - nixosModules (_class = nixos)
+                # - darwinModules (_class = darwin)
+                (lib.optionalAttrs (clan-core."${_class}Modules" ? clanCore) clan-core."${_class}Modules".clanCore)
+              ];
+            }
+          )
+        ) inventoryClass.machines)
+
+        # The user can define some machine config here
+        # i.e. 'clan.machines.jon = ...'
+        config.machines
+      ];
+    }
     # Merge the inventory file
     {
       inventory = _: {
