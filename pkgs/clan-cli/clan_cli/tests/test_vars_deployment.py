@@ -1,5 +1,6 @@
 import json
 import subprocess
+import sys
 from contextlib import ExitStack
 
 import pytest
@@ -15,6 +16,7 @@ from clan_cli.vms.run import inspect_vm, spawn_vm
 
 
 @pytest.mark.impure
+@pytest.mark.skipif(sys.platform == "darwin", reason="preload doesn't work on darwin")
 def test_vm_deployment(
     flake: ClanFlake,
     nix_config: dict[str, ConfigItem],
