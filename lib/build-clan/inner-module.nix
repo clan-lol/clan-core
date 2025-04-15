@@ -2,9 +2,7 @@
   system,
   name,
   pkgs,
-  extraConfig,
-  config,
-  clan-core,
+  clanConfiguration,
 }:
 {
   _class,
@@ -12,8 +10,8 @@
   ...
 }:
 let
-  inherit (config) directory machines pkgsForSystem;
-  inherit (config.clanInternals) inventoryClass;
+  inherit (clanConfiguration) directory machines pkgsForSystem;
+  inherit (clanConfiguration.clanInternals) inventoryClass;
 in
 {
   imports = [
@@ -29,13 +27,11 @@ in
       );
     }
     (lib.optionalAttrs (_class == "nixos") {
-      imports = [
-        clan-core.nixosModules.clanCore
-      ] ++ (inventoryClass.machines.${name}.machineImports or [ ]);
+      imports = (inventoryClass.machines.${name}.machineImports or [ ]);
 
       config = {
         clan.core.settings = {
-          inherit (config.inventory.meta) name icon;
+          inherit (clanConfiguration.inventory.meta) name icon;
 
           inherit directory;
           machine = {
@@ -46,8 +42,6 @@ in
         # TODO: remove these
       };
     })
-    extraConfig
-    (machines.${name} or { })
     (
       {
         networking.hostName = lib.mkDefault name;

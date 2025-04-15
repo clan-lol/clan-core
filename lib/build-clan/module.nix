@@ -55,26 +55,24 @@ let
         system ? null,
         name,
         pkgs ? null,
-        extraConfig ? { },
       }:
       nixpkgs.lib.nixosSystem {
         modules =
           let
-            module = lib.modules.importApply ./inner-module.nix {
+            innerModule = lib.modules.importApply ./inner-module.nix {
               inherit
                 system
                 name
                 pkgs
-                extraConfig
-                config
-                clan-core
                 ;
+              clanConfiguration = config;
             };
           in
           [
-            module
+            (config.outputs.moduleForMachine.${name} or { })
+            innerModule
             {
-              config.clan.core.module = module;
+              config.clan.core.module = innerModule;
             }
           ];
 
@@ -88,19 +86,17 @@ let
         system ? null,
         name,
         pkgs ? null,
-        extraConfig ? { },
       }:
       nix-darwin.lib.darwinSystem {
         modules = [
+          (config.outputs.moduleForMachine.${name} or { })
           (lib.modules.importApply ./inner-module.nix {
             inherit
               system
               name
               pkgs
-              extraConfig
-              config
-              clan-core
               ;
+            clanConfiguration = config;
           })
         ];
 
@@ -110,7 +106,7 @@ let
       };
   };
 
-  allMachines = inventoryClass.machines;
+  allMachines = inventoryClass.machines; # <- inventory.machines <- clan.machines
 
   machineClasses = lib.mapAttrs (
     name: _: inventory.machines.${name}.machineClass or "nixos"
@@ -152,6 +148,35 @@ let
 in
 {
   imports = [
+    {
+      options.outputs.moduleForMachine = lib.mkOption {
+        type = lib.types.attrsOf (
+          lib.types.deferredModuleWith {
+            staticModules = [
+              (
+                { _class, ... }:
+                {
+                  imports = lib.optionals (_class == "nixos") [
+                    clan-core.nixosModules.clanCore
+                  ];
+                }
+              )
+            ];
+          }
+        );
+      };
+      config.outputs.moduleForMachine = lib.mkMerge [
+        # Create one empty module for each machine such that there is a default for each machine
+        # See: 'staticModules' in the moduleForMachine option
+        # This is only necessary because clan.machines doesn't include all machines
+        # There can other sources: i.e. inventory
+        (lib.mapAttrs (_: _: { }) config.inventory.machines)
+
+        # The user can define some machine config here
+        # i.e. 'clan.machines.jon = ...'
+        config.machines
+      ];
+    }
     # Merge the inventory file
     {
       inventory = _: {
