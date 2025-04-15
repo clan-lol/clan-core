@@ -49,62 +49,8 @@ let
 
   moduleSystemConstructor = {
     # TODO: remove default system once we have a hardware-config mechanism
-    nixos =
-      {
-        system ? null,
-        name,
-        pkgs ? null,
-      }:
-      nixpkgs.lib.nixosSystem {
-        modules =
-          let
-            innerModule = lib.modules.importApply ./machineModules/forSystem.nix {
-              inherit
-                pkgs
-                pkgsForSystem
-                system
-                ;
-            };
-          in
-          [
-            (config.outputs.moduleForMachine.${name} or { })
-
-            innerModule
-            {
-              config.clan.core.module = innerModule;
-            }
-          ];
-
-        specialArgs = {
-          inherit clan-core;
-        } // specialArgs;
-      };
-
-    darwin =
-      {
-        system ? null,
-        name,
-        pkgs ? null,
-      }:
-      nix-darwin.lib.darwinSystem {
-        modules = [
-          (config.outputs.moduleForMachine.${name} or { })
-          # This module depends on the system and pkgs
-          # It contains optional logic to override 'nixpkgs.pkgs' and 'nixpkgs.hostPlatform'
-          # and other 'system' related logic
-          (lib.modules.importApply ./machineModules/forSystem.nix {
-            inherit
-              pkgs
-              pkgsForSystem
-              system
-              ;
-          })
-        ];
-
-        specialArgs = {
-          inherit clan-core;
-        } // specialArgs;
-      };
+    nixos = nixpkgs.lib.nixosSystem;
+    darwin = nix-darwin.lib.darwinSystem;
   };
 
   allMachines = inventoryClass.machines; # <- inventory.machines <- clan.machines
@@ -114,7 +60,13 @@ let
   ) allMachines;
 
   configurations = lib.mapAttrs (
-    name: _: moduleSystemConstructor.${machineClasses.${name}} { inherit name; }
+    name: _:
+    moduleSystemConstructor.${machineClasses.${name}} {
+      modules = [ (config.outputs.moduleForMachine.${name} or { }) ];
+      specialArgs = {
+        inherit clan-core;
+      } // specialArgs;
+    }
   ) allMachines;
 
   nixosConfigurations = lib.filterAttrs (name: _: machineClasses.${name} == "nixos") configurations;
@@ -130,8 +82,15 @@ let
         lib.mapAttrs (
           name: _:
           moduleSystemConstructor.${machineClasses.${name}} {
-            inherit name system;
-            pkgs = pkgsFor.${system};
+            modules = [
+              (config.outputs.moduleForMachine.${name} or { })
+              (lib.modules.importApply ./machineModules/overridePkgs.nix {
+                pkgs = pkgsFor.${system};
+              })
+            ];
+            specialArgs = {
+              inherit clan-core;
+            } // specialArgs;
           }
         ) allMachines
       )
