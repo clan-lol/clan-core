@@ -169,7 +169,6 @@ in
           clanLib = lib.mkOption { type = lib.types.raw; };
           all-machines-json = lib.mkOption { type = lib.types.raw; };
           machines = lib.mkOption { type = lib.types.raw; };
-          machinesFunc = lib.mkOption { type = lib.types.raw; };
         };
       };
     };

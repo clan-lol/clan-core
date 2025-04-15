@@ -141,24 +141,6 @@ let
     ) supportedSystems
   );
 
-  configsFuncPerSystem = builtins.listToAttrs (
-    builtins.map (
-      system:
-      lib.nameValuePair system (
-        lib.mapAttrs (
-          name: _: args:
-          moduleSystemConstructor.${machineClasses.${name}} (
-            args
-            // {
-              inherit name system;
-              pkgs = pkgsFor.${system};
-            }
-          )
-        ) allMachines
-      )
-    ) supportedSystems
-  );
-
   inventoryFile = "${directory}/inventory.json";
 
   inventoryLoaded =
@@ -230,7 +212,6 @@ in
 
     # machine specifics
     machines = configsPerSystem;
-    machinesFunc = configsFuncPerSystem;
     all-machines-json =
       if !lib.hasAttrByPath [ "darwinModules" "clanCore" ] clan-core then
         lib.mapAttrs (
