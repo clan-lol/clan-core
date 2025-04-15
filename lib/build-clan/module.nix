@@ -62,6 +62,8 @@ let
   configurations = lib.mapAttrs (
     name: _:
     moduleSystemConstructor.${machineClasses.${name}} {
+      # ATTENTION!: Dont add any modules here.
+      # Add them to 'outputs.moduleForMachine.${name}' instead.
       modules = [ (config.outputs.moduleForMachine.${name} or { }) ];
       specialArgs = {
         inherit clan-core;
@@ -113,10 +115,10 @@ in
         type = lib.types.attrsOf lib.types.deferredModule;
       };
       config.outputs.moduleForMachine = lib.mkMerge [
-        # Create one empty module for each machine such that there is a default for each machine
-        # See: 'staticModules' in the moduleForMachine option
-        # This is only necessary because clan.machines doesn't include all machines
-        # There can other sources: i.e. inventory
+        # Create some modules for each machine
+        # These can depend on the 'name' and
+        # everything that can be derived from the machine 'name'
+        # i.e. by looking up the corresponding information in the 'inventory' or 'clan' submodule
         (lib.mapAttrs (
           name: v:
           (
@@ -173,10 +175,24 @@ in
     ./computed-tags.nix
   ];
 
+  # Ready to use configurations
+  # These are only shallow wrapping the 'nixosModules' or 'darwinModules' with
+  # lib.nixosSystem
   inherit nixosConfigurations;
   inherit darwinConfigurations;
 
   clanInternals = {
+    # Expose reusable modules these can be imported or wrapped or instantiated
+    # - by the user
+    # - by some test frameworks
+    # IMPORTANT!: It is utterly important that we don't add any logic outside of these modules, as it would get tested.
+    nixosModules = lib.filterAttrs (
+      name: _: inventory.machines.${name}.machineClass or "nixos" == "nixos"
+    ) (config.outputs.moduleForMachine);
+    darwinModules = lib.filterAttrs (
+      name: _: inventory.machines.${name}.machineClass or "nixos" == "darwin"
+    ) (config.outputs.moduleForMachine);
+
     moduleSchemas = clan-core.clanLib.modules.getModulesSchema {
       modules = config.inventory.modules;
       # TODO: make this function system agnostic
