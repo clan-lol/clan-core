@@ -27,9 +27,10 @@ in
         let
           nixosTestArgs = {
             # reference to nixpkgs for the current system
-            inherit pkgs;
+            inherit pkgs lib;
             # this gives us a reference to our flake but also all flake inputs
             inherit self;
+            inherit (self) clanLib;
           };
           nixosTests = lib.optionalAttrs (pkgs.stdenv.isLinux) {
             # import our test

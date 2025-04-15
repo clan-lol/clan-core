@@ -99,7 +99,7 @@ in
         imports = [
           (modulesPath + "/testing/test-instrumentation.nix") # we need these 2 modules always to be able to run the tests
           (modulesPath + "/profiles/qemu-guest.nix")
-          ../lib/minify.nix
+          self.clanLib.test.minifyModule
         ];
 
         networking.hostName = "test-install-machine";
