@@ -188,12 +188,12 @@ def deploy_machines(machines: list[Machine]) -> None:
                 machine.info(
                     "Mobile machine detected, applying workaround deployment method"
                 )
-                ret = host.run(
-                    test_cmd if is_mobile else switch_cmd,
-                    RunOpts(msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
-                    extra_env=env,
-                    become_root=True,
-                )
+            ret = host.run(
+                test_cmd if is_mobile else switch_cmd,
+                RunOpts(msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
+                extra_env=env,
+                become_root=True,
+            )
 
     with AsyncRuntime() as runtime:
         for machine in machines:
