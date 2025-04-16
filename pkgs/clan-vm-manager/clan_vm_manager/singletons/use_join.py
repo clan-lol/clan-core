@@ -5,10 +5,10 @@ from typing import Any, ClassVar, cast
 
 import gi
 from clan_cli.clan_uri import ClanURI
-from clan_cli.history.add import HistoryEntry, add_history
 from clan_cli.machines.machines import Machine
 
 from clan_vm_manager.components.gkvstore import GKVStore
+from clan_vm_manager.history import HistoryEntry, add_history
 from clan_vm_manager.singletons.use_vms import ClanStore
 
 gi.require_version("Gtk", "4.0")

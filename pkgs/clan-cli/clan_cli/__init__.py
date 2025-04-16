@@ -16,7 +16,6 @@ __all__ = ["admin", "directory", "disk", "iwd", "mdns_discovery", "modules", "up
 from . import (
     backups,
     clan,
-    history,
     secrets,
     select,
     state,
@@ -371,12 +370,6 @@ For more detailed information, visit: {help_hyperlink("deploy", "https://docs.cl
         "vms", help="Manage virtual machines", description="Manage virtual machines"
     )
     vms.register_parser(parser_vms)
-
-    parser_history = subparsers.add_parser(
-        "history",
-        description="manage history",
-    )
-    history.register_parser(parser_history)
 
     parser_select = subparsers.add_parser(
         "select",

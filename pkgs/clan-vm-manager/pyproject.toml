@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 name = "clan-vm-manager"
 description = "clan vm manager"
 dynamic = ["version"]
-scripts = { clan-vm-manager = "clan_vm_manager:main" }
+scripts = { clan-vm-manager = "clan_vm_manager:main", clan-vm-manager-history = "clan_vm_manager.history:main" }
 
 [project.urls]
 Homepage = "https://clan.lol/"
