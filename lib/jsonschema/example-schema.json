@@ -3,7 +3,7 @@
   "$exportedModuleInfo": { "path": [] },
   "type": "object",
   "additionalProperties": false,
-  "required": [ "services" ],
+  "required": ["services", "userModules"],
   "properties": {
     "name": {
       "$exportedModuleInfo": { "path": ["name"] },
@@ -46,6 +46,32 @@
         "type": "integer"
       },
       "description": "Some attributes"
+    },
+    "userModules": {
+      "$exportedModuleInfo": { "path": ["userModules"] },
+      "type": "object",
+      "additionalProperties": {
+        "$exportedModuleInfo": { "path": ["userModules", "<name>"] },
+        "additionalProperties": false,
+        "type": "object",
+        "properties": {
+          "foo": {
+            "$exportedModuleInfo": {
+              "path": ["userModules", "<name>", "foo"]
+            },
+            "type": [
+              "boolean",
+              "integer",
+              "number",
+              "string",
+              "array",
+              "object",
+              "null"
+            ]
+          }
+        },
+        "required": ["foo"]
+      }
     },
     "colour": {
       "$exportedModuleInfo": { "path": ["colour"] },
