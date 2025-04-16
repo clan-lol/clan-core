@@ -12,7 +12,7 @@ from typing import Any
 from clan_cli.cmd import CmdOut, RunOpts, run
 from clan_cli.colors import AnsiColor
 from clan_cli.errors import ClanError
-from clan_cli.nix import nix_shell
+from clan_cli.nix import run_cmd
 from clan_cli.ssh.host_key import HostKeyCheck
 
 cmdlog = logging.getLogger(__name__)
@@ -186,7 +186,7 @@ class Host:
         packages = []
         password_args = []
         if password:
-            packages.append("nixpkgs#sshpass")
+            packages.append("sshpass")
             password_args = [
                 "sshpass",
                 "-p",
@@ -205,7 +205,7 @@ class Host:
             ssh_opts.extend(["-i", self.key])
 
         if tor_socks:
-            packages.append("nixpkgs#netcat")
+            packages.append("netcat")
             ssh_opts.append("-o")
             ssh_opts.append("ProxyCommand=nc -x 127.0.0.1:9050 -X 5 %h %p")
 
@@ -216,7 +216,7 @@ class Host:
             *ssh_opts,
         ]
 
-        return nix_shell(packages, cmd)
+        return run_cmd(packages, cmd)
 
     def connect_ssh_shell(
         self, *, password: str | None = None, tor_socks: bool = False

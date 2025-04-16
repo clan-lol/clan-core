@@ -105,6 +105,7 @@ def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
     return data
 
 
+# Deprecated: use run_cmd() instead
 def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
     # we cannot use nix-shell inside the nix sandbox
     # in our tests we just make sure we have all the packages

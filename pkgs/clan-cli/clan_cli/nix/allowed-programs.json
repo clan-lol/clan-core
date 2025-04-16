@@ -12,6 +12,7 @@
   "pass",
   "sops",
   "sshpass",
+  "netcat",
   "tor",
   "virtiofsd",
   "zbar",
