@@ -92,6 +92,20 @@
         }
       }
     },
+    "programs": {
+      "$exportedModuleInfo": { "path": ["programs"] },
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "opt": {
+          "$exportedModuleInfo": { "path": ["programs", "opt"] },
+          "type": "string",
+          "default": "bar",
+          "description": "Another submodule option"
+        }
+      },
+      "default": {}
+    },
     "destinations": {
       "$exportedModuleInfo": { "path": ["destinations"] },
       "additionalProperties": {

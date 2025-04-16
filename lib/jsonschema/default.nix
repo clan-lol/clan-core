@@ -425,7 +425,19 @@ rec {
     # return jsonschema property definition for submodule
     # then (lib.attrNames (option.type.getSubOptions option.loc).opt)
     then
-      exposedModuleInfo // example // description // parseSubOptions { inherit option; }
+      (lib.recursiveUpdate exposedModuleInfo (
+        if (default ? default) then
+          default
+        else
+          {
+            "$exportedModuleInfo" = {
+              required = true;
+            };
+          }
+      ))
+      // example
+      // description
+      // parseSubOptions { inherit option; }
     # throw error if option type is not supported
     else
       notSupported option;

@@ -20,7 +20,7 @@
       default = false;
       description = "Is the user an admin?";
     };
-    # a submodule option
+    # a submodule option without default
     services = lib.mkOption {
       type = lib.types.submodule {
         options.opt = lib.mkOption {
@@ -29,6 +29,17 @@
           description = "A submodule option";
         };
       };
+    };
+    # a submodule option with default
+    programs = lib.mkOption {
+      type = lib.types.submodule {
+        options.opt = lib.mkOption {
+          type = lib.types.str;
+          default = "bar";
+          description = "Another submodule option";
+        };
+      };
+      default = { };
     };
     # attrs of int
     userIds = lib.mkOption {
