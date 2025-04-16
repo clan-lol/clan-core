@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass
 
 from clan_cli.cmd import run_no_stdout
-from clan_cli.nix import nix_shell
+from clan_cli.nix import nix_shell_legacy
 
 from . import API
 
@@ -89,7 +89,7 @@ def parse_avahi_output(output: str) -> DNSInfo:
 
 @API.register
 def show_mdns() -> DNSInfo:
-    cmd = nix_shell(
+    cmd = nix_shell_legacy(
         ["nixpkgs#avahi"],
         [
             "avahi-browse",

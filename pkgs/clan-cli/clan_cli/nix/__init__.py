@@ -105,8 +105,8 @@ def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
     return data
 
 
-# Deprecated: use run_cmd() instead
-def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
+# Deprecated: use nix_shell() instead
+def nix_shell_legacy(packages: list[str], cmd: list[str]) -> list[str]:
     # we cannot use nix-shell inside the nix sandbox
     # in our tests we just make sure we have all the packages
     if (
@@ -124,46 +124,48 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
 
 
 # lazy loads list of allowed and static programs
-class Programs:
-    allowed_programs: set[str] | None = None
-    static_programs: set[str] | None = None
+class Packages:
+    allowed_packages: set[str] | None = None
+    static_packages: set[str] | None = None
 
     @classmethod
-    def ensure_allowed(cls: type["Programs"], program: str) -> None:
-        if cls.allowed_programs is None:
-            with (Path(__file__).parent / "allowed-programs.json").open() as f:
-                cls.allowed_programs = allowed_programs = set(json.load(f))
+    def ensure_allowed(cls: type["Packages"], package: str) -> None:
+        if cls.allowed_packages is None:
+            with (Path(__file__).parent / "allowed-packages.json").open() as f:
+                cls.allowed_packages = allowed_packages = set(json.load(f))
         else:
-            allowed_programs = cls.allowed_programs
+            allowed_packages = cls.allowed_packages
 
-        if program not in allowed_programs:
-            msg = f"Program not allowed: '{program}', allowed programs are:\n{'\n'.join(allowed_programs)}"
+        if package not in allowed_packages:
+            msg = f"Package not allowed: '{package}', allowed packages are:\n{'\n'.join(allowed_packages)}"
             raise ClanError(msg)
 
     @classmethod
-    def is_static(cls: type["Programs"], program: str) -> bool:
+    def is_provided(cls: type["Packages"], program: str) -> bool:
         """
-        Determines if a program is statically shipped with this clan distribution
+        Determines if a program is shipped with the clan package.
         """
-        if cls.static_programs is None:
-            cls.static_programs = set(
-                os.environ.get("CLAN_STATIC_PROGRAMS", "").split(":")
+        if cls.static_packages is None:
+            cls.static_packages = set(
+                os.environ.get("CLAN_PROVIDED_PACKAGES", "").split(":")
             )
-        return program in cls.static_programs
+        return program in cls.static_packages
 
 
-# Alternative implementation of nix_shell() to replace nix_shell() at some point
+# Alternative implementation of nix_shell() to replace nix_shell_legacy() at some point
 #   Features:
-#     - allow list for programs (need to be specified in allowed-programs.json)
+#     - allow list for programs (need to be specified in allowed-packages.json)
 #     - be abe to compute a closure of all deps for testing
 #     - build clan distributions that ship some or all packages (eg. clan-cli-full)
-def run_cmd(programs: list[str], cmd: list[str]) -> list[str]:
-    for program in programs:
-        Programs.ensure_allowed(program)
+def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
+    for program in packages:
+        Packages.ensure_allowed(program)
     if os.environ.get("IN_NIX_SANDBOX"):
         return cmd
     missing_packages = [
-        f"nixpkgs#{program}" for program in programs if not Programs.is_static(program)
+        f"nixpkgs#{package}"
+        for package in packages
+        if not Packages.is_provided(package)
     ]
     if not missing_packages:
         return cmd

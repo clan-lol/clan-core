@@ -19,7 +19,7 @@ from clan_cli.dirs import module_root, user_cache_dir, vm_state_dir
 from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell
+from clan_cli.nix import nix_shell_legacy
 from clan_cli.qemu.qga import QgaSession
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
 
@@ -96,7 +96,7 @@ def prepare_disk(
     file_name: str = "disk.img",
 ) -> Path:
     disk_img = directory / file_name
-    cmd = nix_shell(
+    cmd = nix_shell_legacy(
         ["nixpkgs#qemu"],
         [
             "qemu-img",
@@ -127,7 +127,7 @@ def start_vm(
 ) -> Iterator[subprocess.Popen]:
     env = os.environ.copy()
     env.update(extra_env)
-    cmd = nix_shell(packages, args)
+    cmd = nix_shell_legacy(packages, args)
     machine.debug(f"Starting VM with command: {cmd}")
 
     with subprocess.Popen(

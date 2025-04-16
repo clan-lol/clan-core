@@ -37,7 +37,7 @@ let
   # load nixpkgs runtime dependencies from a json file
   # This file represents an allow list at the same time that is checked by the run_cmd
   #   implementation in nix.py
-  allDependencies = lib.importJSON ./clan_cli/nix/allowed-programs.json;
+  allDependencies = lib.importJSON ./clan_cli/nix/allowed-packages.json;
   generateRuntimeDependenciesMap =
     deps:
     lib.filterAttrs (_: pkg: !pkg.meta.unsupported or false) (lib.genAttrs deps (name: pkgs.${name}));
@@ -109,7 +109,7 @@ pythonRuntime.pkgs.buildPythonApplication {
     clan-core-path
 
     "--set"
-    "CLAN_STATIC_PROGRAMS"
+    "CLAN_PROVIDED_PACKAGES"
     (lib.concatStringsSep ":" (lib.attrNames bundledRuntimeDependenciesMap))
   ];
 

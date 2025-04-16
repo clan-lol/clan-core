@@ -1,5 +1,5 @@
 from clan_cli.cmd import run
-from clan_cli.nix import nix_shell
+from clan_cli.nix import nix_shell_legacy
 
 _works: bool | None = None
 
@@ -13,7 +13,7 @@ def bubblewrap_works() -> bool:
 
 def _bubblewrap_works() -> bool:
     # fmt: off
-    cmd = nix_shell(
+    cmd = nix_shell_legacy(
         [
             "nixpkgs#bash",
             "nixpkgs#bubblewrap",
