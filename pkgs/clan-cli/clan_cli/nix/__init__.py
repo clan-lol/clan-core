@@ -125,15 +125,20 @@ def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
 
 # lazy loads list of allowed and static programs
 class Programs:
-    allowed_programs: list[str] | None = None
-    static_programs: list[str] | None = None
+    allowed_programs: set[str] | None = None
+    static_programs: set[str] | None = None
 
     @classmethod
-    def is_allowed(cls: type["Programs"], program: str) -> bool:
+    def ensure_allowed(cls: type["Programs"], program: str) -> None:
         if cls.allowed_programs is None:
             with (Path(__file__).parent / "allowed-programs.json").open() as f:
-                cls.allowed_programs = json.load(f)
-        return program in cls.allowed_programs
+                cls.allowed_programs = allowed_programs = set(json.load(f))
+        else:
+            allowed_programs = cls.allowed_programs
+
+        if program not in allowed_programs:
+            msg = f"Program not allowed: '{program}', allowed programs are:\n{'\n'.join(allowed_programs)}"
+            raise ClanError(msg)
 
     @classmethod
     def is_static(cls: type["Programs"], program: str) -> bool:
@@ -141,7 +146,9 @@ class Programs:
         Determines if a program is statically shipped with this clan distribution
         """
         if cls.static_programs is None:
-            cls.static_programs = os.environ.get("CLAN_STATIC_PROGRAMS", "").split(":")
+            cls.static_programs = set(
+                os.environ.get("CLAN_STATIC_PROGRAMS", "").split(":")
+            )
         return program in cls.static_programs
 
 
@@ -152,9 +159,7 @@ class Programs:
 #     - build clan distributions that ship some or all packages (eg. clan-cli-full)
 def run_cmd(programs: list[str], cmd: list[str]) -> list[str]:
     for program in programs:
-        if not Programs.is_allowed(program):
-            msg = f"Program not allowed: {program}"
-            raise ClanError(msg)
+        Programs.ensure_allowed(program)
     if os.environ.get("IN_NIX_SANDBOX"):
         return cmd
     missing_packages = [
