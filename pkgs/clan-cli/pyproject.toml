@@ -19,7 +19,7 @@ exclude = ["clan_cli.nixpkgs*", "result"]
 
 [tool.setuptools.package-data]
 clan_cli = [
-  "**/allowed-programs.json",
+  "**/allowed-packages.json",
   "py.typed",
   "templates/**/*",
   "vms/mimetypes/**/*",

@@ -25,7 +25,7 @@ mkShell {
 
   inputsFrom = [ self'.devShells.default ];
 
-  CLAN_STATIC_PROGRAMS = lib.concatStringsSep ":" (
+  CLAN_PROVIDED_PACKAGES = lib.concatStringsSep ":" (
     lib.attrNames clan-cli-full.passthru.runtimeDependenciesMap
   );
 
