@@ -13,7 +13,7 @@ from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_config, nix_eval, nix_shell
+from clan_cli.nix import nix_config, nix_eval, run_cmd
 
 from .types import machine_name_type
 
@@ -140,11 +140,11 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
     if host.user != "root":
         config_command.insert(0, "sudo")
 
-    deps = ["nixpkgs#openssh"]
+    deps = ["openssh"]
     if opts.password:
-        deps += ["nixpkgs#sshpass"]
+        deps += ["sshpass"]
 
-    cmd = nix_shell(
+    cmd = run_cmd(
         deps,
         [
             *(["sshpass", "-p", opts.password] if opts.password else []),
