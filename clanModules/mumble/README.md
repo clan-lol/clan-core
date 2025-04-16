@@ -1,7 +1,12 @@
 ---
 description = "Open Source, Low Latency, High Quality Voice Chat."
 categories = ["Audio", "Social"]
+features = [ "inventory" ]
+
+[constraints]
+roles.server.min = 1
 ---
+
 The mumble clan module gives you:
 
 - True low latency voice communication.
