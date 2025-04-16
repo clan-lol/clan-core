@@ -6,7 +6,7 @@ from clan_cli.facts.secret_modules.password_store import SecretStore
 from clan_cli.flake import Flake
 from clan_cli.machines.facts import machine_get_fact
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell_legacy
+from clan_cli.nix import nix_shell
 from clan_cli.ssh.host import Host
 from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_cli.tests.helpers import cli
@@ -58,14 +58,10 @@ def test_upload_secret(
     """
     )
     subprocess.run(
-        nix_shell_legacy(
-            ["nixpkgs#gnupg"], ["gpg", "--batch", "--gen-key", str(gpg_key_spec)]
-        ),
+        nix_shell(["gnupg"], ["gpg", "--batch", "--gen-key", str(gpg_key_spec)]),
         check=True,
     )
-    subprocess.run(
-        nix_shell_legacy(["nixpkgs#pass"], ["pass", "init", "test@local"]), check=True
-    )
+    subprocess.run(nix_shell(["pass"], ["pass", "init", "test@local"]), check=True)
     cli.run(["facts", "generate", "vm1", "--flake", str(flake.path)])
 
     store = SecretStore(Machine(name="vm1", flake=Flake(str(flake.path))))

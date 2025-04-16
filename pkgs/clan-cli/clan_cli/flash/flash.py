@@ -13,7 +13,7 @@ from clan_cli.errors import ClanError
 from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.secret_modules import SecretStoreBase
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell_legacy
+from clan_cli.nix import nix_shell
 from clan_cli.vars.generate import generate_vars
 
 from .automount import pause_automounting
@@ -147,8 +147,8 @@ def flash_machine(
             disko_install.extend(["--option", "dry-run", "true"])
             disko_install.extend(extra_args)
 
-            cmd = nix_shell_legacy(
-                ["nixpkgs#disko"],
+            cmd = nix_shell(
+                ["disko"],
                 disko_install,
             )
             run(
