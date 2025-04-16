@@ -9,7 +9,7 @@ from clan_cli.cmd import CmdOut, RunOpts, run
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.inventory import Inventory, init_inventory
-from clan_cli.nix import nix_command, nix_metadata, nix_shell_legacy
+from clan_cli.nix import nix_command, nix_metadata, nix_shell
 from clan_cli.templates import (
     InputPrio,
     TemplateName,
@@ -41,7 +41,7 @@ class CreateOptions:
 
 
 def git_command(directory: Path, *args: str) -> list[str]:
-    return nix_shell_legacy(["nixpkgs#git"], ["git", "-C", str(directory), *args])
+    return nix_shell(["git"], ["git", "-C", str(directory), *args])
 
 
 @API.register

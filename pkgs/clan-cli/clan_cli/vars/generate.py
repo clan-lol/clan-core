@@ -17,7 +17,7 @@ from clan_cli.completions import (
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_files
 from clan_cli.machines.inventory import get_all_machines, get_selected_machines
-from clan_cli.nix import nix_config, nix_shell_legacy, nix_test_store
+from clan_cli.nix import nix_config, nix_shell, nix_test_store
 from clan_cli.vars._types import StoreBase
 
 from .check import check_vars
@@ -84,10 +84,10 @@ def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
     test_store = nix_test_store()
 
     # fmt: off
-    return nix_shell_legacy(
+    return nix_shell(
         [
-            "nixpkgs#bash",
-            "nixpkgs#bubblewrap",
+            "bash",
+            "bubblewrap",
         ],
         [
             "bwrap",
