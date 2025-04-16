@@ -5,7 +5,7 @@
   ...
 }:
 let
-  ms-accept = pkgs.callPackage ../pkgs/moonlight-sunshine-accept { };
+  ms-accept = pkgs.callPackage ../../pkgs/moonlight-sunshine-accept { };
   sunshineConfiguration = pkgs.writeText "sunshine.conf" ''
     address_family = both
     channels = 5
@@ -42,19 +42,6 @@ in
     }
   ];
   networking.firewall.allowedUDPPortRanges = [
-    {
-      from = 47998;
-      to = 48010;
-    }
-  ];
-  networking.firewall.interfaces."zt+".allowedTCPPorts = [
-    47984
-    47989
-    47990
-    48010
-    listenPort
-  ];
-  networking.firewall.interfaces."zt+".allowedUDPPortRanges = [
     {
       from = 47998;
       to = 48010;
@@ -97,10 +84,10 @@ in
   systemd.tmpfiles.rules = [
     "d '/var/lib/sunshine' 0770 'user' 'users' - -"
     "C '/var/lib/sunshine/sunshine.cert' 0644 'user' 'users' - ${
-      config.clan.core.facts.services.sunshine.secret."sunshine.cert".path or ""
+      config.clan.core.vars.generators.sunshine.files."sunshine.cert".path or ""
     }"
     "C '/var/lib/sunshine/sunshine.key' 0644 'user' 'users' - ${
-      config.clan.core.facts.services.sunshine.secret."sunshine.key".path or ""
+      config.clan.core.vars.generators.sunshine.files."sunshine.key".path or ""
     }"
   ];
 
@@ -117,8 +104,8 @@ in
       RestartSec = "5s";
       ReadWritePaths = [ "/var/lib/sunshine" ];
       ReadOnlyPaths = [
-        (config.clan.core.facts.services.sunshine.secret."sunshine.key".path or "")
-        (config.clan.core.facts.services.sunshine.secret."sunshine.cert".path or "")
+        (config.clan.core.vars.services.sunshine.files."sunshine.key".path or "")
+        (config.clan.core.vars.services.sunshine.files."sunshine.cert".path or "")
       ];
     };
     wantedBy = [ "graphical-session.target" ];
@@ -136,9 +123,9 @@ in
     startLimitBurst = 5;
     startLimitIntervalSec = 500;
     script = ''
-      ${ms-accept}/bin/moonlight-sunshine-accept sunshine init-state --uuid ${
-        config.clan.core.facts.services.sunshine.public.sunshine-uuid.value or null
-      } --state-file /var/lib/sunshine/state.json
+      ${ms-accept}/bin/moonlight-sunshine-accept sunshine init-state \
+        --uuid ${config.clan.core.vars.generators.sunshine.files.sunshine-uuid.value} \
+        --state-file /var/lib/sunshine/state.json
     '';
     serviceConfig = {
       Restart = "on-failure";
@@ -172,11 +159,11 @@ in
     startLimitBurst = 5;
     startLimitIntervalSec = 500;
     script = ''
-      ${ms-accept}/bin/moonlight-sunshine-accept sunshine listen --port ${builtins.toString listenPort} --uuid ${
-        config.clan.core.facts.services.sunshine.public.sunshine-uuid.value or null
-      }  --state /var/lib/sunshine/state.json --cert '${
-        config.clan.core.facts.services.sunshine.public."sunshine.cert".value or null
-      }'
+      ${ms-accept}/bin/moonlight-sunshine-accept sunshine listen --port ${builtins.toString listenPort} \
+        --uuid ${config.clan.core.vars.generators.sunshine.files.sunshine-uuid.value} \
+        --state /var/lib/sunshine/state.json --cert '${
+          config.clan.core.vars.generators.sunshine.files."sunshine.cert".value
+        }'
     '';
     serviceConfig = {
       # );
@@ -187,21 +174,26 @@ in
     wantedBy = [ "graphical-session.target" ];
   };
 
-  clan.core.facts.services.ergochat = {
-    secret."sunshine.key" = { };
-    secret."sunshine.cert" = { };
-    public."sunshine-uuid" = { };
-    public."sunshine.cert" = { };
-    generator.path = [
+  clan.core.vars.generators.sunshine = {
+    # generator was named incorrectly in the past
+    migrateFact = "ergochat";
+
+    files."sunshine.key" = { };
+    files."sunshine.cert" = { };
+    files."sunshine-uuid".secret = false;
+    files."sunshine.cert".secret = false;
+
+    runtimeInputs = [
       pkgs.coreutils
       ms-accept
     ];
-    generator.script = ''
+
+    script = ''
       moonlight-sunshine-accept sunshine init
-      mv credentials/cakey.pem "$secrets"/sunshine.key
-      cp credentials/cacert.pem "$secrets"/sunshine.cert
-      mv credentials/cacert.pem "$facts"/sunshine.cert
-      mv uuid "$facts"/sunshine-uuid
+      mv credentials/cakey.pem "$out"/sunshine.key
+      cp credentials/cacert.pem "$out"/sunshine.cert
+      mv credentials/cacert.pem "$out"/sunshine.cert
+      mv uuid "$out"/sunshine-uuid
     '';
   };
 }

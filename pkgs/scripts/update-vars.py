@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
 
+from clan_cli.dirs import find_git_repo_root
 from clan_cli.flake import Flake
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_build, nix_config, nix_eval
@@ -129,7 +130,7 @@ def parse_args() -> argparse.Namespace:
             i.e. 'nix eval <repo_root>#checks ...'
         """,
         required=False,
-        default=os.environ.get("PRJ_ROOT"),
+        default=os.environ.get("PRJ_ROOT", find_git_repo_root()),
     )
     parser.add_argument(
         "test_dir",
@@ -178,6 +179,5 @@ if __name__ == "__main__":
         f.write(f"# public key: {sops_pub_key}\n")
         f.write(sops_priv_key)
         f.seek(0)
-        print(Path(f.name).read_text())
         os.environ["SOPS_AGE_KEY_FILE"] = f.name
         generate_vars(list(machines))
