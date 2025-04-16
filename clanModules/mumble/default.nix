@@ -6,11 +6,11 @@
 }:
 let
   dir = config.clan.core.settings.directory;
-  machineDir = dir + "/machines/";
+  machineDir = dir + "/vars/per-machine";
   machinesFileSet = builtins.readDir machineDir;
   machines = lib.mapAttrsToList (name: _: name) machinesFileSet;
   machineJson = builtins.toJSON machines;
-  certificateMachinePath = machines: machineDir + "/${machines}" + "/facts/mumble-cert";
+  certificateMachinePath = machines: machineDir + "/${machines}" + "/mumble/mumble-cert/value";
   certificatesUnchecked = builtins.map (
     machine:
     let
@@ -57,14 +57,14 @@ in
 
     systemd.tmpfiles.settings."murmur" = {
       "/var/lib/murmur/sslKey" = {
-        C.argument = config.clan.core.facts.services.mumble.secret.mumble-key.path;
+        C.argument = config.clan.core.vars.generators.mumble.files.mumble-key.path;
         Z = {
           mode = "0400";
           user = "murmur";
         };
       };
       "/var/lib/murmur/sslCert" = {
-        C.argument = config.clan.core.facts.services.mumble.public.mumble-cert.path;
+        C.argument = config.clan.core.vars.generators.mumble.files.mumble-cert.path;
         Z = {
           mode = "0400";
           user = "murmur";
@@ -96,7 +96,6 @@ in
           XDG_DATA_HOME=${mumbleCfgDir}
           XDG_DATA_DIR=${mumbleCfgDir}
           ${populate-channels} --ensure-config '${mumbleCfgPath}' --db-location ${mumbleDatabasePath}
-          echo ${machineCertJson}
           ${populate-channels} --machines '${machineJson}' --username ${config.clan.core.settings.machine.name} --db-location ${mumbleDatabasePath}
           ${populate-channels} --servers '${machineCertJson}' --username ${config.clan.core.settings.machine.name} --db-location ${mumbleDatabasePath} --cert True
           ${pkgs.mumble}/bin/mumble --config ${mumbleCfgPath} "$@"
@@ -105,16 +104,17 @@ in
       in
       [ mumble ];
 
-    clan.core.facts.services.mumble = {
-      secret.mumble-key = { };
-      public.mumble-cert = { };
-      generator.path = [
+    clan.core.vars.generators.mumble = {
+      migrateFact = "mumble";
+      files.mumble-key = { };
+      files.mumble-cert.secret = false;
+      runtimeInputs = [
         pkgs.coreutils
         pkgs.openssl
       ];
-      generator.script = ''
-        openssl genrsa -out $secrets/mumble-key 2048
-        openssl req -new -x509 -key $secrets/mumble-key -out $facts/mumble-cert
+      script = ''
+        openssl genrsa -out "$out/mumble-key" 2048
+        openssl req -new -x509 -key "$out/mumble-key" -out "$out/mumble-cert"
       '';
     };
   };
