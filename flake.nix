@@ -63,6 +63,7 @@
           filter pathExists [
             ./checks/flake-module.nix
             ./clanModules/flake-module.nix
+            ./clanServices/flake-module.nix
             ./devShell.nix
             ./docs/nix/flake-module.nix
             ./flakeModules/flake-module.nix
