@@ -125,7 +125,6 @@ nav:
           - reference/cli/facts.md
           - reference/cli/flakes.md
           - reference/cli/flash.md
-          - reference/cli/history.md
           - reference/cli/machines.md
           - reference/cli/select.md
           - reference/cli/secrets.md

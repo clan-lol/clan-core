@@ -2,9 +2,9 @@ import logging
 import threading
 
 import gi
-from clan_cli.history.list import list_history
 
 from clan_vm_manager.components.interfaces import ClanConfig
+from clan_vm_manager.history import list_history
 from clan_vm_manager.singletons.toast import ToastOverlay
 from clan_vm_manager.singletons.use_views import ViewStack
 from clan_vm_manager.singletons.use_vms import ClanStore

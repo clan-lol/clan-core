@@ -6,12 +6,12 @@ from typing import Any, ClassVar
 import gi
 from clan_cli.clan_uri import ClanURI
 from clan_cli.flake import Flake
-from clan_cli.history.add import HistoryEntry
 from clan_cli.machines.machines import Machine
 
 from clan_vm_manager import assets
 from clan_vm_manager.components.gkvstore import GKVStore
 from clan_vm_manager.components.vmobj import VMObject
+from clan_vm_manager.history import HistoryEntry
 from clan_vm_manager.singletons.use_views import ViewStack
 from clan_vm_manager.views.logs import Logs
 

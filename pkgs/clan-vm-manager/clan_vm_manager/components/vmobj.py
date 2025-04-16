@@ -15,12 +15,12 @@ import gi
 from clan_cli import vms
 from clan_cli.clan_uri import ClanURI
 from clan_cli.dirs import vm_state_dir
-from clan_cli.history.add import HistoryEntry
 from clan_cli.machines.machines import Machine
 from clan_cli.vms.inspect import inspect_vm
 from clan_cli.vms.qemu import QMPWrapper
 
 from clan_vm_manager.components.executor import MPProcess, spawn
+from clan_vm_manager.history import HistoryEntry
 from clan_vm_manager.singletons.toast import (
     InfoToast,
     SuccessToast,

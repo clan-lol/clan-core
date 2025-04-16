@@ -16,6 +16,7 @@ pytest_plugins = [
     "root",
     "command",
     "wayland",
+    "stdout",
 ]
 
 

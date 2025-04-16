@@ -1,4 +1,3 @@
-# !/usr/bin/env python3
 import argparse
 import dataclasses
 import datetime
@@ -113,12 +112,46 @@ def add_history_command(args: argparse.Namespace) -> None:
         add_history(args.uri)
 
 
-# takes a (sub)parser and configures it
-def register_add_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+def list_history_command(args: argparse.Namespace) -> None:
+    res: dict[str, list[HistoryEntry]] = {}
+    for history_entry in list_history():
+        url = str(history_entry.flake.flake_url)
+        if res.get(url) is None:
+            res[url] = []
+        res[url].append(history_entry)
+
+    for flake_url, entries in res.items():
+        print(flake_url)
+        for entry in entries:
+            d = datetime.datetime.fromisoformat(entry.last_used)
+            last_used = d.strftime("%d/%m/%Y %H:%M:%S")
+            print(f"  {entry.flake.flake_attr} ({last_used})")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="clan history",
+        description="Manage clan history",
+    )
+    subparser = parser.add_subparsers(
+        title="command",
+        description="the command to run",
+        help="the command to run",
+        required=True,
+    )
+    add_parser = subparser.add_parser("add", help="Add a clan flake")
+    add_parser.add_argument(
         "uri", type=ClanURI.from_str, help="Path to the flake", default="."
     )
-    parser.add_argument(
+    add_parser.add_argument(
         "--all", help="Add all machines", default=False, action="store_true"
     )
-    parser.set_defaults(func=add_history_command)
+    add_parser.set_defaults(func=add_history_command)
+    list_parser = subparser.add_parser("list", help="List recently used flakes")
+    list_parser.set_defaults(func=list_history_command)
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    args.func(args)
