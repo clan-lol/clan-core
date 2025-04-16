@@ -179,6 +179,5 @@ if __name__ == "__main__":
         f.write(f"# public key: {sops_pub_key}\n")
         f.write(sops_priv_key)
         f.seek(0)
-        print(Path(f.name).read_text())
         os.environ["SOPS_AGE_KEY_FILE"] = f.name
         generate_vars(list(machines))
