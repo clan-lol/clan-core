@@ -25,7 +25,7 @@ lib.fix (clanLib: {
   buildClanModule = clanLib.callLib ./build-clan { };
   inventory = clanLib.callLib ./inventory { };
   modules = clanLib.callLib ./inventory/frontmatter { };
-  test = clanLib.callLib ./tests { };
+  test = clanLib.callLib ./test { };
 
   # Plain imports.
   values = import ./introspection { inherit lib; };
