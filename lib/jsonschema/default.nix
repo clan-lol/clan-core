@@ -123,7 +123,7 @@ rec {
       # parse options to jsonschema properties
       properties = lib.mapAttrs (_name: option: (parseOption' (path ++ [ _name ]) option)) options';
       # TODO: figure out how to handle if prop.anyOf is used
-      isRequired = prop: !(prop ? default || prop.type or null == "object");
+      isRequired = prop: !(prop ? default || prop."$exportedModuleInfo".required or false);
       requiredProps = lib.filterAttrs (_: prop: isRequired prop) properties;
       required = lib.optionalAttrs (requiredProps != { }) { required = lib.attrNames requiredProps; };
       header' = if addHeader then header else { };
@@ -150,9 +150,9 @@ rec {
           { };
 
       # Metadata about the module that is made available to the schema via '$propagatedModuleInfo'
-      exportedModuleInfo = lib.optionalAttrs true (makeModuleInfo {
+      exportedModuleInfo = makeModuleInfo {
         inherit path;
-      });
+      };
     in
     # return jsonschema
     header'
@@ -377,7 +377,13 @@ rec {
     # return jsonschema property definition for attrs
     then
       default
-      // exposedModuleInfo
+      // (lib.recursiveUpdate exposedModuleInfo (
+        lib.optionalAttrs (!default ? default) {
+          "$exportedModuleInfo" = {
+            required = true;
+          };
+        }
+      ))
       // example
       // description
       // {

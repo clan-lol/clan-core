@@ -3,6 +3,7 @@
   "$exportedModuleInfo": { "path": [] },
   "type": "object",
   "additionalProperties": false,
+  "required": [ "services" ],
   "properties": {
     "name": {
       "$exportedModuleInfo": { "path": ["name"] },

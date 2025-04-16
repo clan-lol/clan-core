@@ -13,7 +13,17 @@
   testParseNestedOptions =
     let
       evaled = lib.evalModules {
-        modules = [ { options.foo.bar = lib.mkOption { type = lib.types.bool; }; } ];
+        modules = [
+          {
+            options.foo.bar = lib.mkOption {
+              type = lib.types.bool;
+            };
+            options.foo.baz = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+            };
+          }
+        ];
       };
     in
     {
@@ -40,12 +50,23 @@
                 };
                 type = "boolean";
               };
+              baz = {
+                "$exportedModuleInfo" = {
+                  path = [
+                    "foo"
+                    "baz"
+                  ];
+                };
+                type = "boolean";
+                default = false;
+              };
             };
             required = [ "bar" ];
             type = "object";
           };
         };
         type = "object";
+        required = [ "foo" ];
       };
     };
 
