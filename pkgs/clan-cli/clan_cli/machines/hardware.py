@@ -13,7 +13,7 @@ from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_config, nix_eval, run_cmd
+from clan_cli.nix import nix_config, nix_eval, nix_shell
 
 from .types import machine_name_type
 
@@ -144,7 +144,7 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
     if opts.password:
         deps += ["sshpass"]
 
-    cmd = run_cmd(
+    cmd = nix_shell(
         deps,
         [
             *(["sshpass", "-p", opts.password] if opts.password else []),

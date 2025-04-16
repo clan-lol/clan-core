@@ -4,7 +4,7 @@ from pathlib import Path
 from .cmd import Log, RunOpts, run
 from .errors import ClanError
 from .locked_open import locked_open
-from .nix import run_cmd
+from .nix import nix_shell
 
 
 def commit_file(
@@ -72,7 +72,7 @@ def _commit_file_to_git(
 
     with locked_open(real_git_dir / "clan.lock", "w+"):
         for file_path in file_paths:
-            cmd = run_cmd(
+            cmd = nix_shell(
                 ["git"],
                 ["git", "-C", str(repo_dir), "add", "--", str(file_path)],
             )
@@ -87,7 +87,7 @@ def _commit_file_to_git(
             )
 
         # check if there is a diff
-        cmd = run_cmd(
+        cmd = nix_shell(
             ["git"],
             ["git", "-C", str(repo_dir), "diff", "--cached", "--exit-code", "--"]
             + [str(file_path) for file_path in file_paths],
@@ -98,7 +98,7 @@ def _commit_file_to_git(
             return
 
         # commit only that file
-        cmd = run_cmd(
+        cmd = nix_shell(
             ["git"],
             [
                 "git",

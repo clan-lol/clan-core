@@ -12,7 +12,7 @@ from typing import Any
 from clan_cli.cmd import CmdOut, RunOpts, run
 from clan_cli.colors import AnsiColor
 from clan_cli.errors import ClanError
-from clan_cli.nix import run_cmd
+from clan_cli.nix import nix_shell
 from clan_cli.ssh.host_key import HostKeyCheck
 
 cmdlog = logging.getLogger(__name__)
@@ -216,7 +216,7 @@ class Host:
             *ssh_opts,
         ]
 
-        return run_cmd(packages, cmd)
+        return nix_shell(packages, cmd)
 
     def connect_ssh_shell(
         self, *, password: str | None = None, tor_socks: bool = False

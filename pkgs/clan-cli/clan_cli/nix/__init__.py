@@ -105,8 +105,8 @@ def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
     return data
 
 
-# Deprecated: use run_cmd() instead
-def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
+# Deprecated: use nix_shell() instead
+def nix_shell_legacy(packages: list[str], cmd: list[str]) -> list[str]:
     # we cannot use nix-shell inside the nix sandbox
     # in our tests we just make sure we have all the packages
     if (
@@ -157,13 +157,13 @@ class Programs:
 #     - allow list for programs (need to be specified in allowed-programs.json)
 #     - be abe to compute a closure of all deps for testing
 #     - build clan distributions that ship some or all packages (eg. clan-cli-full)
-def run_cmd(programs: list[str], cmd: list[str]) -> list[str]:
-    for program in programs:
+def nix_shell(packages: list[str], cmd: list[str]) -> list[str]:
+    for program in packages:
         Programs.ensure_allowed(program)
     if os.environ.get("IN_NIX_SANDBOX"):
         return cmd
     missing_packages = [
-        f"nixpkgs#{program}" for program in programs if not Programs.is_static(program)
+        f"nixpkgs#{package}" for package in packages if not Programs.is_static(package)
     ]
     if not missing_packages:
         return cmd
