@@ -16,5 +16,10 @@
       "name": "John Doe",
       "repo": "test-backup"
     }
+  },
+  "userModules": {
+    "some-user": {
+      "foo": {}
+    }
   }
 }
