@@ -115,7 +115,27 @@ in
       ];
       script = ''
         openssl genrsa -out "$out/mumble-key" 2048
-        openssl req -new -x509 -key "$out/mumble-key" -out "$out/mumble-cert"
+
+        cat > mumble-cert.conf <<EOF
+        [ req ]
+        default_bits = 2048
+        distinguished_name = req_distinguished_name
+        req_extensions = req_ext
+        prompt = no
+        [ req_distinguished_name ]
+        C = "US"
+        ST = "California"
+        L = "San Francisco"
+        O = "Clan"
+        OU = "Clan"
+        CN = "${config.clan.core.settings.machine.name}"
+        [ req_ext ]
+        subjectAltName = @alt_names
+        [ alt_names ]
+        DNS.1 = "${config.clan.core.settings.machine.name}"
+        EOF
+
+        openssl req -new -x509 -config mumble-cert.conf -key "$out/mumble-key" -out "$out/mumble-cert" < /dev/null
       '';
     };
   };
