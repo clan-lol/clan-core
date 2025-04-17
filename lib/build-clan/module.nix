@@ -124,7 +124,7 @@ in
           (
             { _class, ... }:
             {
-              imports = (v.machineImports or [ ]) ++ [
+              imports = [
                 (lib.modules.importApply ./machineModules/forName.nix {
                   inherit (config.inventory) meta;
                   inherit
@@ -136,8 +136,8 @@ in
                 # We assume either:
                 # - nixosModules (_class = nixos)
                 # - darwinModules (_class = darwin)
-                (lib.optionalAttrs (clan-core."${_class}Modules" ? clanCore) clan-core."${_class}Modules".clanCore)
-              ];
+                (lib.optionalAttrs (clan-core ? "${_class}Modules") clan-core."${_class}Modules".clanCore)
+              ] ++ lib.optionals (_class == "nixos") (v.machineImports or [ ]);
             }
           )
         ) inventoryClass.machines)
