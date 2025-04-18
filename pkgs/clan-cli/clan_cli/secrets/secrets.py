@@ -201,7 +201,7 @@ def encrypt_secret(
 
     recipient_keys = collect_keys_for_path(secret_path)
 
-    if not admin_keys.intersection(recipient_keys):
+    if admin_keys not in recipient_keys:
         recipient_keys.update(admin_keys)
 
         files_to_commit.extend(

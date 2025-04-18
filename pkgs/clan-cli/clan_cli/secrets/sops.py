@@ -360,7 +360,7 @@ def maybe_get_user(flake_dir: Path, key: SopsKey) -> set[SopsKey] | None:
 
             keys = read_keys(user)
             if key in keys:
-                return {SopsKey(key.pubkey, user.name, key.key_type)}
+                return {SopsKey(key.pubkey, user.name, key.key_type) for key in keys}
 
     return None
 

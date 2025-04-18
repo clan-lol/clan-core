@@ -62,6 +62,10 @@ KEYS = [
         "age1eyyhln9g3cdwtrwpckugvqgtf5p8ugt0426sw38ra3wkc0t4rfhslq7txv",
         "AGE-SECRET-KEY-1567QKA63Y9P62SHF5TCHVCT5GZX2LZ8NS0E9RKA2QHDA662SF5LQ2VJJYX",
     ),
+    KeyPair(
+        "age1e9ufa6wrsr5danka50qp0np0832uz7jca7s00wyeg2nt3aqnvaks7p4jfr",
+        "AGE-SECRET-KEY-1Z89SHU9KAF709TTAZDARUWKC7H9TPZW4L8A2PVYSYAF7QVLCNQZQZ07U5J",
+    ),
 ]
 
 

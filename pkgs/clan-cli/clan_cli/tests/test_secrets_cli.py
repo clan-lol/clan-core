@@ -1,7 +1,9 @@
 import json
 import logging
 import os
+import random
 import re
+import string
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
@@ -162,71 +164,95 @@ def test_users(
     with monkeypatch.context():
         _test_identities("users", test_flake, capture_output, age_keys, monkeypatch)
 
-        # some additional user-specific tests
 
-        admin_key = age_keys[2]
-        sops_folder = test_flake.path / "sops"
+def test_multiple_user_keys(
+    test_flake: FlakeForTest,
+    capture_output: CaptureOutput,
+    age_keys: list["KeyPair"],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sops_folder = test_flake.path / "sops"
 
-        user_keys = {
-            "bob": [age_keys[0], age_keys[1]],
-            "alice": [age_keys[2]],
-            "charlie": [age_keys[3], age_keys[4]],
-        }
+    users_keys = {
+        "bob": {age_keys[0], age_keys[1]},
+        "alice": {age_keys[2]},
+        "charlie": {age_keys[3], age_keys[4], age_keys[5]},
+    }
 
-        monkeypatch.setenv("SOPS_NIX_SECRET", "deadfeed")
+    for user, user_keys in users_keys.items():
+        # add the user
+        cli.run(
+            [
+                "secrets",
+                "users",
+                "add",
+                "--flake",
+                str(test_flake.path),
+                user,
+                *[f"--age-key={key.pubkey}" for key in user_keys],
+            ]
+        )
+        assert (sops_folder / "users" / user / "key.json").exists()
 
-        for user, keys in user_keys.items():
-            key_args = [f"--age-key={key.pubkey}" for key in keys]
+        # check they are returned in get
+        with capture_output as output:
+            cli.run(["secrets", "users", "get", "--flake", str(test_flake.path), user])
 
-            # add the user keys
-            cli.run(
-                [
-                    "secrets",
-                    "users",
-                    "add",
-                    "--flake",
-                    str(test_flake.path),
-                    user,
-                    *key_args,
-                ]
-            )
-            assert (sops_folder / "users" / user / "key.json").exists()
+        for user_key in user_keys:
+            assert user_key.pubkey in output.out
 
-            # check they are returned in get
-            with capture_output as output:
+        # let's do some setting and getting of secrets
+
+        def random_str() -> str:
+            return "".join(random.choices(string.ascii_letters, k=10))
+
+        for user_key in user_keys:
+            # set a secret using each of the user's private keys
+            with monkeypatch.context():
+                secret_name = f"{user}_secret_{random_str()}"
+                secret_value = random_str()
+
+                monkeypatch.setenv("SOPS_AGE_KEY", user_key.privkey)
+                monkeypatch.setenv("SOPS_NIX_SECRET", secret_value)
+
                 cli.run(
-                    ["secrets", "users", "get", "--flake", str(test_flake.path), user]
+                    [
+                        "secrets",
+                        "set",
+                        "--flake",
+                        str(test_flake.path),
+                        secret_name,
+                    ]
                 )
 
-            for key in keys:
-                assert key.pubkey in output.out
-
-            # set a secret
-            secret_name = f"{user}_secret"
-            cli.run(
-                [
-                    "secrets",
-                    "set",
-                    "--flake",
-                    str(test_flake.path),
-                    "--user",
-                    user,
+                # check the secret has each of our user's keys as a recipient
+                assert_secrets_file_recipients(
+                    test_flake.path,
                     secret_name,
-                ]
-            )
+                    expected_age_recipients_keypairs=[*user_keys],
+                )
 
-            # check the secret has each of our user's keys as a recipient
-            # in addition the admin key should be there
-            assert_secrets_file_recipients(
-                test_flake.path,
-                secret_name,
-                expected_age_recipients_keypairs=[admin_key, *keys],
-            )
+                # check we can get the secret
+                with capture_output as output:
+                    cli.run(
+                        ["secrets", "get", "--flake", str(test_flake.path), secret_name]
+                    )
 
-            if len(keys) == 1:
-                continue
+                assert secret_value in output.out
 
-            # remove one of the keys
+        if len(user_keys) == 1:
+            continue
+
+        # remove one of the user keys,
+        user_keys_iter = iter(user_keys)
+
+        key_to_remove = next(user_keys_iter)
+        key_to_encrypt_with = next(user_keys_iter)
+
+        with monkeypatch.context():
+            monkeypatch.setenv("SOPS_AGE_KEY", key_to_encrypt_with.privkey)
+            monkeypatch.setenv("SOPS_NIX_SECRET", "deafbeef")
+
             cli.run(
                 [
                     "secrets",
@@ -235,7 +261,7 @@ def test_users(
                     "--flake",
                     str(test_flake.path),
                     user,
-                    keys[0].pubkey,
+                    key_to_remove.pubkey,
                 ]
             )
 
@@ -243,7 +269,27 @@ def test_users(
             assert_secrets_file_recipients(
                 test_flake.path,
                 secret_name,
-                expected_age_recipients_keypairs=[admin_key, *keys[1:]],
+                expected_age_recipients_keypairs=list({*user_keys} - {key_to_remove}),
+            )
+
+            # add the key back
+            cli.run(
+                [
+                    "secrets",
+                    "users",
+                    "add-key",
+                    "--flake",
+                    str(test_flake.path),
+                    user,
+                    key_to_remove.pubkey,
+                ]
+            )
+
+            # check the secret has been updated
+            assert_secrets_file_recipients(
+                test_flake.path,
+                secret_name,
+                expected_age_recipients_keypairs=user_keys,
             )
 
 
