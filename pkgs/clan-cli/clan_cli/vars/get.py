@@ -28,10 +28,8 @@ def get_var(base_dir: str, machine_name: str, var_id: str) -> Var:
         msg = f"No var found for search string: {var_id}"
         raise ClanError(msg)
     if len(results) > 1:
-        error = (
-            f"Found multiple vars for {var_id}:\n  - "
-            + "\n  - ".join([str(var) for var in results])
-            + "\nBe more specific."
+        error = f"Found multiple vars for {var_id}:\n  - " + "\n  - ".join(
+            [str(var) for var in results]
         )
         raise ClanError(error)
     # we have exactly one result at this point
