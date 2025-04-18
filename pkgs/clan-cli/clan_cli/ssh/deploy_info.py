@@ -14,7 +14,7 @@ from clan_cli.completions import (
 )
 from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell
+from clan_cli.nix import nix_shell_legacy
 from clan_cli.ssh.host import Host, is_ssh_reachable
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.ssh.parse import parse_deployment_address
@@ -65,8 +65,8 @@ def find_reachable_host(
 
 
 def qrcode_scan(picture_file: Path) -> str:
-    cmd = nix_shell(
-        ["zbar"],
+    cmd = nix_shell_legacy(
+        ["nixpkgs#zbar"],
         [
             "zbarimg",
             "--quiet",

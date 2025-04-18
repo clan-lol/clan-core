@@ -20,7 +20,7 @@ from clan_cli.inventory import (
     patch_inventory_with,
 )
 from clan_cli.machines.hardware import HardwareConfig
-from clan_cli.nix import nix_eval, nix_shell
+from clan_cli.nix import nix_eval, nix_shell_legacy
 from clan_cli.tags import list_nixos_machines_by_tags
 
 log = logging.getLogger(__name__)
@@ -126,8 +126,8 @@ def check_machine_online(
 
     timeout = opts.timeout if opts and opts.timeout else 20
 
-    cmd = nix_shell(
-        ["util-linux", *(["openssh"] if hostname else [])],
+    cmd = nix_shell_legacy(
+        ["nixpkgs#util-linux", *(["nixpkgs#openssh"] if hostname else [])],
         [
             "ssh",
             *(["-i", f"{opts.keyfile}"] if opts and opts.keyfile else []),

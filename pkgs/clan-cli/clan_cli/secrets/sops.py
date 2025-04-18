@@ -16,7 +16,7 @@ from clan_cli.api import API
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.dirs import user_config_dir
 from clan_cli.errors import ClanError
-from clan_cli.nix import nix_shell
+from clan_cli.nix import nix_shell_legacy
 
 from .folders import sops_machines_folder, sops_users_folder
 
@@ -233,7 +233,7 @@ def sops_run(
                 raise ClanError(msg)
         sops_cmd.append(str(secret_path))
 
-        cmd = nix_shell(["sops", "gnupg"], sops_cmd)
+        cmd = nix_shell_legacy(["nixpkgs#sops", "nixpkgs#gnupg"], sops_cmd)
         opts = (
             dataclasses.replace(run_opts, env=environ)
             if run_opts
@@ -249,7 +249,7 @@ def sops_run(
 
 
 def get_public_age_key(privkey: str) -> str:
-    cmd = nix_shell(["age"], ["age-keygen", "-y"])
+    cmd = nix_shell_legacy(["nixpkgs#age"], ["age-keygen", "-y"])
 
     error_msg = "Failed to get public key for age private key. Is the key malformed?"
     res = run(cmd, RunOpts(input=privkey.encode(), error_msg=error_msg))
@@ -257,7 +257,7 @@ def get_public_age_key(privkey: str) -> str:
 
 
 def generate_private_key(out_file: Path | None = None) -> tuple[str, str]:
-    cmd = nix_shell(["age"], ["age-keygen"])
+    cmd = nix_shell_legacy(["nixpkgs#age"], ["age-keygen"])
     try:
         proc = run(cmd)
         res = proc.stdout.strip()
