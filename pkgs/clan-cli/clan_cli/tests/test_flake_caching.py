@@ -96,6 +96,25 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
     flake2.prefetch()
 
 
+# Test that the caching works
+@pytest.mark.with_core
+def test_caching_works(flake: ClanFlake) -> None:
+    from unittest.mock import patch
+
+    from clan_cli.flake import Flake
+
+    my_flake = Flake(str(flake.path))
+
+    with patch.object(
+        my_flake, "get_from_nix", wraps=my_flake.get_from_nix
+    ) as tracked_build:
+        assert tracked_build.call_count == 0
+        my_flake.select("clanInternals.inventory.meta")
+        assert tracked_build.call_count == 1
+        my_flake.select("clanInternals.inventory.meta")
+        assert tracked_build.call_count == 1
+
+
 # This test fails because the CI sandbox does not have the required packages to run the generators
 # maybe @DavHau or @Qubasa can fix this at some point :)
 # @pytest.mark.with_core
