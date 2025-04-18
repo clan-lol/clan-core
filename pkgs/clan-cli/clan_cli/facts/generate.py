@@ -18,7 +18,7 @@ from clan_cli.errors import ClanError
 from clan_cli.git import commit_files
 from clan_cli.machines.inventory import get_all_machines, get_selected_machines
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell
+from clan_cli.nix import nix_shell_legacy
 
 from .check import check_secrets
 from .public_modules import FactStoreBase
@@ -39,10 +39,10 @@ def read_multiline_input(prompt: str = "Finish with Ctrl-D") -> str:
 
 def bubblewrap_cmd(generator: str, facts_dir: Path, secrets_dir: Path) -> list[str]:
     # fmt: off
-    return nix_shell(
+    return nix_shell_legacy(
         [
-            "bash",
-            "bubblewrap",
+            "nixpkgs#bash",
+            "nixpkgs#bubblewrap",
         ],
         [
             "bwrap",

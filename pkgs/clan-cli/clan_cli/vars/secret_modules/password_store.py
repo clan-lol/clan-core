@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 
 from clan_cli.cmd import CmdOut, Log, RunOpts, run
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell
+from clan_cli.nix import nix_shell_legacy
 from clan_cli.ssh.upload import upload
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
@@ -49,7 +49,9 @@ class SecretStore(StoreBase):
         return Path(self.entry_prefix) / self.rel_dir(generator, name)
 
     def _run_pass(self, *args: str, options: RunOpts | None = None) -> CmdOut:
-        cmd = nix_shell(packages=["pass"], cmd=[self._store_backend, *args])
+        cmd = nix_shell_legacy(
+            packages=["nixpkgs#pass"], cmd=[self._store_backend, *args]
+        )
         return run(cmd, options)
 
     def _set(
@@ -90,8 +92,8 @@ class SecretStore(StoreBase):
         hashes = []
         hashes.append(
             run(
-                nix_shell(
-                    ["git"],
+                nix_shell_legacy(
+                    ["nixpkgs#git"],
                     [
                         "git",
                         "-C",
@@ -118,8 +120,8 @@ class SecretStore(StoreBase):
             if symlink.is_symlink():
                 hashes.append(
                     run(
-                        nix_shell(
-                            ["git"],
+                        nix_shell_legacy(
+                            ["nixpkgs#git"],
                             [
                                 "git",
                                 "-C",

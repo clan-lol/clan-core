@@ -105,6 +105,24 @@ def nix_metadata(flake_url: str | Path) -> dict[str, Any]:
     return data
 
 
+# Deprecated: use nix_shell() instead
+def nix_shell_legacy(packages: list[str], cmd: list[str]) -> list[str]:
+    # we cannot use nix-shell inside the nix sandbox
+    # in our tests we just make sure we have all the packages
+    if (
+        os.environ.get("IN_NIX_SANDBOX")
+        or os.environ.get("CLAN_NO_DYNAMIC_DEPS")
+        or len(packages) == 0
+    ):
+        return cmd
+    return [
+        *nix_command(["shell", "--inputs-from", f"{nixpkgs_flake()!s}"]),
+        *packages,
+        "-c",
+        *cmd,
+    ]
+
+
 # lazy loads list of allowed and static programs
 class Packages:
     allowed_packages: set[str] | None = None
@@ -134,6 +152,7 @@ class Packages:
         return program in cls.static_packages
 
 
+# Alternative implementation of nix_shell() to replace nix_shell_legacy() at some point
 #   Features:
 #     - allow list for programs (need to be specified in allowed-packages.json)
 #     - be abe to compute a closure of all deps for testing

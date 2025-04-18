@@ -11,7 +11,7 @@ from clan_cli.completions import (
     complete_users,
 )
 from clan_cli.errors import ClanError
-from clan_cli.nix import nix_shell
+from clan_cli.nix import nix_shell_legacy
 
 from .secrets import encrypt_secret, sops_secrets_folder
 
@@ -30,7 +30,7 @@ def import_sops(args: argparse.Namespace) -> None:
         if args.input_type:
             cmd += ["--input-type", args.input_type]
         cmd += ["--output-type", "json", "--decrypt", args.sops_file]
-        cmd = nix_shell(["sops", "gnupg"], cmd)
+        cmd = nix_shell_legacy(["nixpkgs#sops", "nixpkgs#gnupg"], cmd)
 
         res = run(cmd, RunOpts(error_msg=f"Could not import sops file {file}"))
         secrets = json.loads(res.stdout)

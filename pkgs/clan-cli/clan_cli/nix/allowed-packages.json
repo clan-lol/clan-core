@@ -3,14 +3,12 @@
   "avahi",
   "bash",
   "bubblewrap",
-  "disko",
   "e2fsprogs",
   "git",
   "gnupg",
   "mypy",
   "netcat",
   "nix",
-  "nixos-anywhere",
   "openssh",
   "pass",
   "qemu",
@@ -20,8 +18,6 @@
   "sshpass",
   "tor",
   "util-linux",
-  "virt-viewer",
   "virtiofsd",
-  "waypipe",
   "zbar"
 ]

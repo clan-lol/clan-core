@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 from clan_cli.cmd import RunOpts
 from clan_cli.errors import ClanError
-from clan_cli.nix import nix_shell, run_no_stdout
+from clan_cli.nix import nix_shell_legacy, run_no_stdout
 
 from . import API
 
@@ -126,8 +126,8 @@ def show_block_devices() -> Blockdevices:
     It must return a list of block devices.
     """
 
-    cmd = nix_shell(
-        ["util-linux"],
+    cmd = nix_shell_legacy(
+        ["nixpkgs#util-linux"],
         [
             "lsblk",
             "--json",

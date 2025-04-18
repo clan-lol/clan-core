@@ -18,7 +18,7 @@ from clan_cli.errors import ClanError
 from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.hardware import HardwareConfig
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell
+from clan_cli.nix import nix_shell_legacy
 from clan_cli.ssh.deploy_info import DeployInfo, find_reachable_host, ssh_command_parse
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.vars.generate import generate_vars
@@ -145,19 +145,24 @@ def install_machine(opts: InstallOptions) -> None:
             # nix copy does not support tor socks proxy
             # cmd.append("--ssh-option")
             # cmd.append("ProxyCommand=nc -x 127.0.0.1:9050 -X 5 %h %p")
-            cmd = nix_shell(
-                [
-                    "nixos-anywhere",
-                    "tor",
-                ],
-                ["torify", *cmd],
+            run(
+                nix_shell_legacy(
+                    [
+                        "nixpkgs#nixos-anywhere",
+                        "nixpkgs#tor",
+                    ],
+                    ["torify", *cmd],
+                ),
+                RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
             )
         else:
-            cmd = nix_shell(
-                ["nixos-anywhere"],
-                cmd,
+            run(
+                nix_shell_legacy(
+                    ["nixpkgs#nixos-anywhere"],
+                    cmd,
+                ),
+                RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),
             )
-        run(cmd, RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True))
 
 
 def install_command(args: argparse.Namespace) -> None:
