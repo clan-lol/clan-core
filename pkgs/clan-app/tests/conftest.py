@@ -32,7 +32,7 @@ def git_repo(tmp_path: Path) -> Path:
     cmd = nix_shell(["git"], ["git", "init"])
     subprocess.run(cmd, cwd=tmp_path, check=True)
     # set user.name and user.email
-    cmd = nix_shell(["it"], ["git", "config", "user.name", "test"])
+    cmd = nix_shell(["git"], ["git", "config", "user.name", "test"])
     subprocess.run(cmd, cwd=tmp_path, check=True)
     cmd = nix_shell(["git"], ["git", "config", "user.email", "test@test.test"])
     subprocess.run(cmd, cwd=tmp_path, check=True)
