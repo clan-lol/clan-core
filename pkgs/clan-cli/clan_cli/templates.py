@@ -95,10 +95,10 @@ def get_clan_nix_attrset(clan_dir: Flake | None = None) -> ClanExports:
 
     raw_clan_exports: dict[str, Any] = {"self": {"clan": {}}, "inputs": {"clan": {}}}
 
-    try:
-        raw_clan_exports["self"] = clan_dir.select("clan.{templates}")
-    except ClanCmdError as ex:
-        log.debug(ex)
+    maybe_templates = clan_dir.select("?clan.?templates")
+    if "clan" in maybe_templates:
+        raw_clan_exports["self"] = maybe_templates["clan"]
+    else:
         log.info("Current flake does not export the 'clan' attribute")
 
     # FIXME: flake.select destroys lazy evaluation
@@ -112,7 +112,7 @@ def get_clan_nix_attrset(clan_dir: Flake | None = None) -> ClanExports:
         # of import statements.
         # This needs to be fixed in clan.select
         # For now always define clan.templates or no clan attribute at all
-        temp = clan_dir.select("inputs.*.{clan}.templates")
+        temp = clan_dir.select("inputs.*.?clan.templates")
 
         # FIXME: We need this because clan.select removes the templates attribute
         # but not the clan and other attributes leading up to templates
