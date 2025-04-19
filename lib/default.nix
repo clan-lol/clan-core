@@ -30,6 +30,6 @@ lib.fix (clanLib: {
   # Plain imports.
   values = import ./introspection { inherit lib; };
   jsonschema = import ./jsonschema { inherit lib; };
-  select = import select/default.nix;
+  select = self.inputs.nix-select.lib;
   facts = import ./facts.nix { inherit lib; };
 })

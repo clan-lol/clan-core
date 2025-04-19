@@ -1,35 +1,282 @@
 import logging
 
 import pytest
-from clan_cli.flake import Flake, FlakeCache, FlakeCacheEntry
+from clan_cli.flake import (
+    Flake,
+    FlakeCache,
+    FlakeCacheEntry,
+    parse_selector,
+    selectors_as_dict,
+)
 from clan_cli.tests.fixtures_flakes import ClanFlake
 
 log = logging.getLogger(__name__)
 
 
+def test_parse_selector() -> None:
+    selectors = parse_selector("x")
+    assert selectors_as_dict(selectors) == [
+        {"type": "str", "value": "x"},
+    ]
+    selectors = parse_selector("?x")
+    assert selectors_as_dict(selectors) == [
+        {"type": "maybe", "value": "x"},
+    ]
+    selectors = parse_selector('"x"')
+    assert selectors_as_dict(selectors) == [
+        {"type": "str", "value": "x"},
+    ]
+    selectors = parse_selector("*")
+    assert selectors_as_dict(selectors) == [
+        {"type": "all"},
+    ]
+    selectors = parse_selector("{x}")
+    assert selectors_as_dict(selectors) == [
+        {
+            "type": "set",
+            "value": [
+                {"type": "str", "value": "x"},
+            ],
+        },
+    ]
+    selectors = parse_selector("{x}.y")
+    assert selectors_as_dict(selectors) == [
+        {
+            "type": "set",
+            "value": [
+                {"type": "str", "value": "x"},
+            ],
+        },
+        {"type": "str", "value": "y"},
+    ]
+    selectors = parse_selector("x.y.z")
+    assert selectors_as_dict(selectors) == [
+        {"type": "str", "value": "x"},
+        {"type": "str", "value": "y"},
+        {"type": "str", "value": "z"},
+    ]
+    selectors = parse_selector("x.*")
+    assert selectors_as_dict(selectors) == [
+        {"type": "str", "value": "x"},
+        {"type": "all"},
+    ]
+    selectors = parse_selector("*.x")
+    assert selectors_as_dict(selectors) == [
+        {"type": "all"},
+        {"type": "str", "value": "x"},
+    ]
+    selectors = parse_selector("x.*.z")
+    assert selectors_as_dict(selectors) == [
+        {"type": "str", "value": "x"},
+        {"type": "all"},
+        {"type": "str", "value": "z"},
+    ]
+    selectors = parse_selector("x.{y,z}")
+    assert selectors_as_dict(selectors) == [
+        {"type": "str", "value": "x"},
+        {
+            "type": "set",
+            "value": [
+                {"type": "str", "value": "y"},
+                {"type": "str", "value": "z"},
+            ],
+        },
+    ]
+    selectors = parse_selector("x.?zzz.{y,?z,x,*}")
+    assert selectors_as_dict(selectors) == [
+        {"type": "str", "value": "x"},
+        {"type": "maybe", "value": "zzz"},
+        {
+            "type": "set",
+            "value": [
+                {"type": "str", "value": "y"},
+                {"type": "maybe", "value": "z"},
+                {"type": "str", "value": "x"},
+                {"type": "str", "value": "*"},
+            ],
+        },
+    ]
+
+    selectors = parse_selector('x."?zzz".?zzz\\.asd..{y,\\?z,"x,",*}')
+    assert selectors_as_dict(selectors) == [
+        {"type": "str", "value": "x"},
+        {"type": "str", "value": "?zzz"},
+        {"type": "maybe", "value": "zzz.asd"},
+        {"type": "str", "value": ""},
+        {
+            "type": "set",
+            "value": [
+                {"type": "str", "value": "y"},
+                {"type": "str", "value": "?z"},
+                {"type": "str", "value": "x,"},
+                {"type": "str", "value": "*"},
+            ],
+        },
+    ]
+
+
+def test_insert_and_iscached() -> None:
+    test_cache = FlakeCacheEntry()
+    selectors = parse_selector("x.y.z")
+    test_cache.insert("x", selectors)
+    assert test_cache["x"]["y"]["z"].value == "x"
+    assert test_cache.is_cached(selectors)
+    assert not test_cache.is_cached(parse_selector("x.y"))
+    assert test_cache.is_cached(parse_selector("x.y.z.1"))
+    assert not test_cache.is_cached(parse_selector("x.*.z"))
+    assert test_cache.is_cached(parse_selector("x.{y}.z"))
+    assert test_cache.is_cached(parse_selector("x.?y.z"))
+    assert not test_cache.is_cached(parse_selector("x.?z.z"))
+
+    test_cache = FlakeCacheEntry()
+    selectors = parse_selector("x.*.z")
+    test_cache.insert({"y": "x"}, selectors)
+    assert test_cache["x"]["y"]["z"].value == "x"
+    assert test_cache.is_cached(selectors)
+    assert not test_cache.is_cached(parse_selector("x.y"))
+    assert not test_cache.is_cached(parse_selector("x.y.x"))
+    assert test_cache.is_cached(parse_selector("x.y.z.1"))
+    assert test_cache.is_cached(parse_selector("x.{y}.z"))
+    assert test_cache.is_cached(parse_selector("x.{y,z}.z"))
+    assert test_cache.is_cached(parse_selector("x.{y,?z}.z"))
+    assert test_cache.is_cached(parse_selector("x.?y.z"))
+    assert test_cache.is_cached(parse_selector("x.?z.z"))
+
+    test_cache = FlakeCacheEntry()
+    selectors = parse_selector("x.{y}.z")
+    test_cache.insert({"y": "x"}, selectors)
+    assert test_cache["x"]["y"]["z"].value == "x"
+    assert test_cache.is_cached(selectors)
+    assert not test_cache.is_cached(parse_selector("x.y"))
+    assert test_cache.is_cached(parse_selector("x.y.z.1"))
+    assert not test_cache.is_cached(parse_selector("x.*.z"))
+    assert test_cache.is_cached(parse_selector("x.{y}.z"))
+    assert test_cache.is_cached(parse_selector("x.?y.z"))
+    assert not test_cache.is_cached(parse_selector("x.?z.z"))
+
+    test_cache = FlakeCacheEntry()
+    selectors = parse_selector("x.?y.z")
+    test_cache.insert({"y": "x"}, selectors)
+    assert test_cache["x"]["y"]["z"].value == "x"
+    assert test_cache.is_cached(selectors)
+    assert not test_cache.is_cached(parse_selector("x.y"))
+    assert test_cache.is_cached(parse_selector("x.y.z.1"))
+    assert not test_cache.is_cached(parse_selector("x.*.z"))
+    assert test_cache.is_cached(parse_selector("x.{y}.z"))
+    assert test_cache.is_cached(parse_selector("x.?y.z"))
+    assert not test_cache.is_cached(parse_selector("x.?z.z"))
+
+    test_cache = FlakeCacheEntry()
+    selectors = parse_selector("x.?y.z")
+    test_cache.insert({}, selectors)
+    assert test_cache["x"]["y"].exists is False
+    assert test_cache.is_cached(selectors)
+    assert test_cache.is_cached(parse_selector("x.y"))
+    assert test_cache.is_cached(parse_selector("x.y.z.1"))
+    assert test_cache.is_cached(parse_selector("x.?y.z.1"))
+    assert not test_cache.is_cached(parse_selector("x.*.z"))
+    assert test_cache.is_cached(parse_selector("x.{y}.z"))
+    assert test_cache.is_cached(parse_selector("x.?y.abc"))
+    assert not test_cache.is_cached(parse_selector("x.?z.z"))
+
+    test_cache = FlakeCacheEntry()
+    selectors = parse_selector("x.{y,z}.z")
+    test_cache.insert({"y": 1, "z": 2}, selectors)
+    assert test_cache["x"]["y"]["z"].value == 1
+    assert test_cache["x"]["z"]["z"].value == 2
+    assert test_cache.is_cached(selectors)
+    assert not test_cache.is_cached(parse_selector("x.y"))
+    assert test_cache.is_cached(parse_selector("x.y.z.1"))
+    assert not test_cache.is_cached(parse_selector("x.*.z"))
+    assert test_cache.is_cached(parse_selector("x.{y}.z"))
+    assert not test_cache.is_cached(parse_selector("x.?y.abc"))
+    assert test_cache.is_cached(parse_selector("x.?z.z"))
+
+    test_cache = FlakeCacheEntry()
+    selectors = parse_selector("x.y")
+    test_cache.insert(1, selectors)
+    selectors = parse_selector("x.z")
+    test_cache.insert(2, selectors)
+    assert test_cache["x"]["y"].value == 1
+    assert test_cache["x"]["z"].value == 2
+    assert test_cache.is_cached(parse_selector("x.y"))
+    assert test_cache.is_cached(parse_selector("x.y.z.1"))
+    assert not test_cache.is_cached(parse_selector("x.*.z"))
+    assert test_cache.is_cached(parse_selector("x.{y}.z"))
+    assert test_cache.is_cached(parse_selector("x.?y.abc"))
+    assert test_cache.is_cached(parse_selector("x.?z.z"))
+    assert not test_cache.is_cached(parse_selector("x.?x.z"))
+
+    test_cache = FlakeCacheEntry()
+    selectors = parse_selector("x.y.z")
+    test_cache.insert({"a": {"b": {"c": 1}}}, selectors)
+    assert test_cache.is_cached(selectors)
+    assert test_cache.is_cached(parse_selector("x.y.z.a.b.c"))
+    assert test_cache.is_cached(parse_selector("x.y.z.a.b"))
+    assert test_cache.is_cached(parse_selector("x.y.z.a"))
+    assert test_cache.is_cached(parse_selector("x.y.z"))
+    assert not test_cache.is_cached(parse_selector("x.y"))
+    assert not test_cache.is_cached(parse_selector("x"))
+    assert test_cache.is_cached(parse_selector("x.y.z.xxx"))
+
+    test_cache = FlakeCacheEntry()
+    selectors = parse_selector("x.y")
+    test_cache.insert(1, selectors)
+    with pytest.raises(TypeError):
+        test_cache.insert(2, selectors)
+    assert test_cache["x"]["y"].value == 1
+
+
 def test_select() -> None:
+    test_cache = FlakeCacheEntry()
+
+    test_cache.insert("bla", parse_selector("a.b.c"))
+    assert test_cache.select(parse_selector("a.b.c")) == "bla"
+    assert test_cache.select(parse_selector("a.b")) == {"c": "bla"}
+    assert test_cache.select(parse_selector("a")) == {"b": {"c": "bla"}}
+    assert test_cache.select(parse_selector("a.b.?c")) == {"c": "bla"}
+    assert test_cache.select(parse_selector("a.?b.?c")) == {"b": {"c": "bla"}}
+    assert test_cache.select(parse_selector("a.?c")) == {}
+    assert test_cache.select(parse_selector("a.?x.c")) == {}
+    assert test_cache.select(parse_selector("a.*")) == {"b": {"c": "bla"}}
+    assert test_cache.select(parse_selector("a.*.*")) == {"b": {"c": "bla"}}
+    assert test_cache.select(parse_selector("a.*.c")) == {"b": "bla"}
+    assert test_cache.select(parse_selector("a.b.*")) == {"c": "bla"}
+    assert test_cache.select(parse_selector("a.{b}.c")) == {"b": "bla"}
+    assert test_cache.select(parse_selector("a.{b}.{c}")) == {"b": {"c": "bla"}}
+    assert test_cache.select(parse_selector("a.b.{c}")) == {"c": "bla"}
+    assert test_cache.select(parse_selector("a.{?b}.c")) == {"b": "bla"}
+    assert test_cache.select(parse_selector("a.{?b,?x}.c")) == {"b": "bla"}
+    with pytest.raises(KeyError):
+        test_cache.select(parse_selector("a.b.x"))
+    with pytest.raises(KeyError):
+        test_cache.select(parse_selector("a.b.c.x"))
+    with pytest.raises(KeyError):
+        test_cache.select(parse_selector("a.{b,x}.c"))
+
     testdict = {"x": {"y": [123, 345, 456], "z": "bla"}}
-    test_cache = FlakeCacheEntry(testdict, [])
-    assert test_cache["x"]["z"].value == "bla"
-    assert test_cache.is_cached(["x", "z"])
-    assert not test_cache.is_cached(["x", "y", "z"])
-    assert test_cache.select(["x", "y", 0]) == 123
-    assert not test_cache.is_cached(["x", "z", 1])
-
-
-def test_insert() -> None:
-    test_cache = FlakeCacheEntry({}, [])
-    # Inserting the same thing twice should succeed
-    test_cache.insert(None, ["nix"])
-    test_cache.insert(None, ["nix"])
-    assert test_cache.select(["nix"]) is None
+    test_cache.insert(testdict, parse_selector("testdict"))
+    assert test_cache["testdict"]["x"]["z"].value == "bla"
+    selectors = parse_selector("testdict.x.z")
+    assert test_cache.select(selectors) == "bla"
+    selectors = parse_selector("testdict.x.z.z")
+    with pytest.raises(KeyError):
+        test_cache.select(selectors)
+    selectors = parse_selector("testdict.x.y.0")
+    assert test_cache.select(selectors) == 123
+    selectors = parse_selector("testdict.x.z.1")
+    with pytest.raises(KeyError):
+        test_cache.select(selectors)
 
 
 def test_out_path() -> None:
     testdict = {"x": {"y": [123, 345, 456], "z": "/nix/store/bla"}}
-    test_cache = FlakeCacheEntry(testdict, [])
-    assert test_cache.select(["x", "z"]) == "/nix/store/bla"
-    assert test_cache.select(["x", "z", "outPath"]) == "/nix/store/bla"
+    test_cache = FlakeCacheEntry()
+    test_cache.insert(testdict, [])
+    selectors = parse_selector("x.z")
+    assert test_cache.select(selectors) == "/nix/store/bla"
+    selectors = parse_selector("x.z.outPath")
+    assert test_cache.select(selectors) == "/nix/store/bla"
 
 
 @pytest.mark.with_core
@@ -85,10 +332,10 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
     assert isinstance(flake1._cache, FlakeCache)  # noqa: SLF001
     assert isinstance(flake2._cache, FlakeCache)  # noqa: SLF001
     log.info("First select")
-    res1 = flake1.select("inputs.*.{clan,missing}")
+    res1 = flake1.select("inputs.*.{?clan,?missing}")
 
     log.info("Second (cached) select")
-    res2 = flake1.select("inputs.*.{clan,missing}")
+    res2 = flake1.select("inputs.*.{?clan,?missing}")
 
     assert res1 == res2
     assert res1["clan-core"].get("clan") is not None

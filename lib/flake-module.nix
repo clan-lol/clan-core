@@ -11,7 +11,6 @@ rec {
     ./introspection/flake-module.nix
     ./inventory/flake-module.nix
     ./jsonschema/flake-module.nix
-    ./select/flake-module.nix
   ];
   flake.clanLib = import ./default.nix {
     inherit lib inputs self;
