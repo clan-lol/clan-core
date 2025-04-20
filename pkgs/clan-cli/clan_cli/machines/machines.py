@@ -37,7 +37,7 @@ class Machine:
         return f"{self.flake}#{self.name}"
 
     def flush_caches(self) -> None:
-        self.flake.prefetch()
+        self.flake.invalidate_cache()
 
     def __str__(self) -> str:
         return f"Machine(name={self.name}, flake={self.flake})"

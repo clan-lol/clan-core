@@ -447,14 +447,14 @@ class Flake:
     @property
     def is_local(self) -> bool:
         if self._is_local is None:
-            self.prefetch()
+            self.invalidate_cache()
         assert isinstance(self._is_local, bool)
         return self._is_local
 
     @property
     def path(self) -> Path:
         if self._path is None:
-            self.prefetch()
+            self.invalidate_cache()
         assert isinstance(self._path, Path)
         return self._path
 
@@ -467,9 +467,11 @@ class Flake:
         except Exception as e:
             log.warning(f"Failed load eval cache: {e}. Continue without cache")
 
-    def prefetch(self) -> None:
+    def invalidate_cache(self) -> None:
         """
-        Run prefetch to flush the cache as well as initializing it.
+        Invalidate the cache and reload it.
+
+        This method is used to refresh the cache by reloading it from the flake.
         """
         cmd = [
             "flake",
@@ -536,7 +538,7 @@ class Flake:
             AssertionError: If the cache or flake cache path is not properly initialized.
         """
         if self._cache is None:
-            self.prefetch()
+            self.invalidate_cache()
         assert self._cache is not None
 
         if nix_options is None:
@@ -590,7 +592,7 @@ class Flake:
             nix_options (list[str] | None): Optional additional options to pass to the Nix build command.
         """
         if self._cache is None:
-            self.prefetch()
+            self.invalidate_cache()
         assert self._cache is not None
         assert self.flake_cache_path is not None
         not_fetched_selectors = []
@@ -614,7 +616,7 @@ class Flake:
             nix_options (list[str] | None): Optional additional options to pass to the Nix build command.
         """
         if self._cache is None:
-            self.prefetch()
+            self.invalidate_cache()
         assert self._cache is not None
         assert self.flake_cache_path is not None
 
