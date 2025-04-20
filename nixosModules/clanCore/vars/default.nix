@@ -35,35 +35,7 @@ in
   };
 
   config.system.clan.deployment.data = {
-    vars = {
-      generators = lib.flip lib.mapAttrs config.clan.core.vars.generators (
-        _name: generator: {
-          inherit (generator)
-            name
-            dependencies
-            validationHash
-            migrateFact
-            share
-            prompts
-            ;
-
-          files = lib.flip lib.mapAttrs generator.files (
-            _name: file: {
-              inherit (file)
-                name
-                owner
-                group
-                mode
-                deploy
-                secret
-                neededFor
-                ;
-            }
-          );
-        }
-      );
-      inherit (config.clan.core.vars.settings) secretModule publicModule;
-    };
+    vars = config.clan.core.vars._serialized;
     inherit (config.clan.core.networking) targetHost buildHost;
     inherit (config.clan.core.deployment) requireExplicitUpdate;
   };

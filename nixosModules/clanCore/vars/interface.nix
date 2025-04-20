@@ -33,6 +33,50 @@ let
 in
 {
   options = {
+    _serialized = lib.mkOption {
+      readOnly = true;
+      internal = true;
+      description = ''
+        JSON serialization of the generators.
+        This is read from the python client to generate the specified ressources.
+      '';
+      default = {
+        # TODO: We don't support per-machine choice of backends
+        # Configuring different backend doesn't work, this information should be made read only and configured
+        # Via clan.settings instead.
+        inherit (config.settings) secretModule publicModule;
+        # Serialize generators, so that we can use them in the python client
+        # This need to be done because we have some non-serializable values in the generators
+        # Like the finalScript (derivation) or pkgs.
+        generators = lib.flip lib.mapAttrs config.generators (
+          _name: generator: {
+            inherit (generator)
+              name
+              dependencies
+              validationHash
+              migrateFact
+              share
+              prompts
+              ;
+
+            files = lib.flip lib.mapAttrs generator.files (
+              _name: file: {
+                inherit (file)
+                  name
+                  owner
+                  group
+                  mode
+                  deploy
+                  secret
+                  neededFor
+                  ;
+              }
+            );
+          }
+        );
+      };
+    };
+
     settings = import ./settings-opts.nix { inherit lib; };
     generators = lib.mkOption {
       description = ''
