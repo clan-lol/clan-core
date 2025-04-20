@@ -57,8 +57,8 @@ def test_cache_persistance(flake: ClanFlake) -> None:
 
     flake1 = Flake(str(flake.path))
     flake2 = Flake(str(flake.path))
-    flake1.prefetch()
-    flake2.prefetch()
+    flake1.invalidate_cache()
+    flake2.invalidate_cache()
     assert isinstance(flake1._cache, FlakeCache)  # noqa: SLF001
     assert isinstance(flake2._cache, FlakeCache)  # noqa: SLF001
     assert not flake1._cache.is_cached(  # noqa: SLF001
@@ -66,7 +66,7 @@ def test_cache_persistance(flake: ClanFlake) -> None:
     )
     flake1.select("nixosConfigurations.*.config.networking.hostName")
     flake1.select("nixosConfigurations.*.config.networking.{hostName,hostId}")
-    flake2.prefetch()
+    flake2.invalidate_cache()
     assert flake2._cache.is_cached(  # noqa: SLF001
         "nixosConfigurations.*.config.networking.{hostName,hostId}"
     )
@@ -80,8 +80,8 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
 
     flake1 = Flake(str(flake.path))
     flake2 = Flake(str(flake.path))
-    flake1.prefetch()
-    flake2.prefetch()
+    flake1.invalidate_cache()
+    flake2.invalidate_cache()
     assert isinstance(flake1._cache, FlakeCache)  # noqa: SLF001
     assert isinstance(flake2._cache, FlakeCache)  # noqa: SLF001
     log.info("First select")
@@ -93,7 +93,7 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
     assert res1 == res2
     assert res1["clan-core"].get("clan") is not None
 
-    flake2.prefetch()
+    flake2.invalidate_cache()
 
 
 # Test that the caching works

@@ -216,7 +216,7 @@ def realize_nix_path(clan_dir: Flake, nix_path: str) -> None:
         return
 
     flake = Flake(identifier=nix_path, inputs_from=clan_dir.identifier)
-    flake.prefetch()
+    flake.invalidate_cache()
 
 
 def get_template(
