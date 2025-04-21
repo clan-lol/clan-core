@@ -1,5 +1,5 @@
 {
   imports = [
-    ./zerotier-redux/flake-module.nix
+    ./hello-world/flake-module.nix
   ];
 }

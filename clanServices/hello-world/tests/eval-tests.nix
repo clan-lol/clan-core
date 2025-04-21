@@ -18,12 +18,12 @@ let
     };
 
     # Register the module for the test
-    inventory.modules.zerotier-redux = module;
+    inventory.modules.hello-world = module;
 
     # Use the module in the test
     inventory.instances = {
-      "zero" = {
-        module.name = "zerotier-redux";
+      "hello" = {
+        module.name = "hello-world";
 
         roles.peer.machines.jon = { };
       };
