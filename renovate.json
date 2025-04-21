@@ -4,5 +4,12 @@
   "lockFileMaintenance": { "enabled": true },
   "nix": {
     "enabled": true
-  }
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["npm"],
+      "matchPaths": ["pkgs/webview-ui/**"],
+      "enabled": false
+    }
+  ]
 }
