@@ -52,7 +52,7 @@ class TestMachine(Machine):
             return self._deployment
         cmd = nix_build(
             [
-                f"{self.flake.path}#checks.{nix_config()['system']}.{self.check_attr}.nodes.{self.name}.system.clan.deployment.file"
+                f"{self.flake.path.resolve()}#checks.{nix_config()['system']}.{self.check_attr}.nodes.{self.name}.system.clan.deployment.file"
             ]
         )
         out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
@@ -77,7 +77,7 @@ class TestMachine(Machine):
         # return self.nix("eval", attr, nix_options)
         cmd = nix_eval(
             [
-                f"{self.flake.path}#checks.{nix_config()['system']}.{self.check_attr}.nodes.{self.name}.{attr}"
+                f"{self.flake.path.resolve()}#checks.{nix_config()['system']}.{self.check_attr}.nodes.{self.name}.{attr}"
             ]
         )
         out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
@@ -99,7 +99,7 @@ class TestMachine(Machine):
 
         cmd = nix_build(
             [
-                f"{self.flake.path}#checks.{nix_config()['system']}.{self.check_attr}.nodes.{self.name}.{attr}"
+                f"{self.flake.path.resolve()}#checks.{nix_config()['system']}.{self.check_attr}.nodes.{self.name}.{attr}"
             ]
         )
         out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
@@ -164,7 +164,7 @@ def main() -> None:
         )
     ]
     user = "admin"
-    admin_key_path = Path(flake.path / "sops" / "users" / user / "key.json")
+    admin_key_path = Path(flake.path.resolve() / "sops" / "users" / user / "key.json")
     admin_key_path.parent.mkdir(parents=True, exist_ok=True)
     admin_key_path.write_text(
         json.dumps(
