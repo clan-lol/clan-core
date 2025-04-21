@@ -5,7 +5,7 @@ from typing import override
 
 from clan_cli.cmd import Log, RunOpts
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell_legacy
+from clan_cli.nix import nix_shell
 
 from . import SecretStoreBase
 
@@ -18,8 +18,8 @@ class SecretStore(SecretStoreBase):
         self, service: str, name: str, value: bytes, groups: list[str]
     ) -> Path | None:
         subprocess.run(
-            nix_shell_legacy(
-                ["nixpkgs#pass"],
+            nix_shell(
+                ["pass"],
                 ["pass", "insert", "-m", f"machines/{self.machine.name}/{name}"],
             ),
             input=value,
@@ -29,8 +29,8 @@ class SecretStore(SecretStoreBase):
 
     def get(self, service: str, name: str) -> bytes:
         return subprocess.run(
-            nix_shell_legacy(
-                ["nixpkgs#pass"],
+            nix_shell(
+                ["pass"],
                 ["pass", "show", f"machines/{self.machine.name}/{name}"],
             ),
             check=True,
@@ -51,8 +51,8 @@ class SecretStore(SecretStoreBase):
         hashes = []
         hashes.append(
             subprocess.run(
-                nix_shell_legacy(
-                    ["nixpkgs#git"],
+                nix_shell(
+                    ["git"],
                     [
                         "git",
                         "-C",
@@ -71,8 +71,8 @@ class SecretStore(SecretStoreBase):
             if symlink.is_symlink():
                 hashes.append(
                     subprocess.run(
-                        nix_shell_legacy(
-                            ["nixpkgs#git"],
+                        nix_shell(
+                            ["git"],
                             [
                                 "git",
                                 "-C",

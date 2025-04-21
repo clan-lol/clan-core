@@ -82,7 +82,7 @@ For instance, if you need to update `nixos-anywhere` in clan-cli, find its usage
 ```python
 run(
     nix_shell(
-        ["nixpkgs#nixos-anywhere"],
+        ["nixos-anywhere"],
         cmd,
     ),
     RunOpts(log=Log.BOTH, prefix=machine.name, needs_user_terminal=True),

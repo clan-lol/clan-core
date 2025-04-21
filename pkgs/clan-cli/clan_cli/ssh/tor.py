@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from clan_cli.async_run import AsyncRuntime
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.errors import TorConnectionError, TorSocksError
-from clan_cli.nix import nix_shell_legacy
+from clan_cli.nix import nix_shell
 
 log = logging.getLogger(__name__)
 
@@ -116,8 +116,8 @@ def spawn_tor(runtime: AsyncRuntime) -> None:
     def start_tor() -> None:
         """Starts Tor process using nix-shell."""
         cmd_args = ["tor", "--HardwareAccel", "1"]
-        packages = ["nixpkgs#tor"]
-        cmd = nix_shell_legacy(packages, cmd_args)
+        packages = ["tor"]
+        cmd = nix_shell(packages, cmd_args)
         runtime.async_run(None, run, cmd, RunOpts(log=Log.BOTH))
         log.debug("Attempting to start Tor")
 
