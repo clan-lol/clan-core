@@ -8,11 +8,11 @@ in
   clan.core.vars.generators.state-version = {
     files.version = {
       secret = false;
-      value = lib.mkDefault lib.version;
+      value = lib.mkDefault config.system.nixos.release;
     };
     runtimeInputs = [ ];
     script = ''
-      echo -n ${lib.versions.majorMinor config.system.stateVersion} > "$out"/version
+      echo -n ${config.system.stateVersion} > "$out"/version
     '';
   };
 }
