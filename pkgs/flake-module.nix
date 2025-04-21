@@ -9,7 +9,7 @@
     ./webview-ui/flake-module.nix
     ./distro-packages/flake-module.nix
     ./icon-update/flake-module.nix
-    ./vars-generate/flake-module.nix
+    ./generate-test-vars/flake-module.nix
   ];
 
   flake.packages.x86_64-linux =

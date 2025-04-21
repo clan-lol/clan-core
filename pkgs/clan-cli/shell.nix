@@ -2,7 +2,6 @@
   lib,
   nix-unit,
   clan-cli,
-  clan-cli-full,
   mkShell,
   ruff,
   self',
@@ -26,7 +25,7 @@ mkShell {
   inputsFrom = [ self'.devShells.default ];
 
   CLAN_PROVIDED_PACKAGES = lib.concatStringsSep ":" (
-    lib.attrNames clan-cli-full.passthru.runtimeDependenciesMap
+    lib.attrNames clan-cli.passthru.runtimeDependenciesMap
   );
 
   shellHook = ''
