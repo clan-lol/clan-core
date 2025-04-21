@@ -4,10 +4,10 @@
   clan-cli,
 }:
 buildPythonApplication {
-  name = "vars-generate";
+  name = "generate-test-vars";
   src = ./.;
   format = "pyproject";
-  buildInputs = [ (python.pkgs.toPythonModule clan-cli) ];
+  dependencies = [ (python.pkgs.toPythonModule clan-cli) ];
   nativeBuildInputs = [
     (python.withPackages (ps: [ ps.setuptools ]))
   ];
