@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -127,7 +128,10 @@ def main() -> None:
     os.environ["CLAN_NO_COMMIT"] = "1"
     opts = parse_args()
     test_dir = opts.repo_root / opts.test_dir
-    subprocess.run(["rm", "-rf", f"{test_dir}/vars", f"{test_dir}/sops"])
+
+    shutil.rmtree(test_dir / "vars", ignore_errors=True)
+    shutil.rmtree(test_dir / "sops", ignore_errors=True)
+
     flake = Flake(str(opts.repo_root))
     machines = [
         TestMachine(name, flake, test_dir, opts.check_attr)
