@@ -6,6 +6,9 @@ let
     ;
 in
 {
+  flakeModules = clanLib.callLib ./flakeModules.nix { };
+
+  #
   minifyModule = ./minify.nix;
   sopsModule = ./sops.nix;
   # A function that returns an extension to runTest
