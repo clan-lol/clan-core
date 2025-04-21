@@ -8,12 +8,18 @@ let
     evalModules
     ;
 
+  # TODO: Use makeTestClan
   evalInventory =
     m:
     (evalModules {
       # Static modules
       modules = [
         clanLib.inventory.interface
+        {
+          tags.all = [ ];
+          tags.nixos = [ ];
+          tags.darwin = [ ];
+        }
         {
           modules.test = { };
         }

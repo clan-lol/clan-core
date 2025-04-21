@@ -223,6 +223,32 @@ in
                       ```
                 '';
               };
+              nixos = lib.mkOption {
+                type = with lib.types; listOf str;
+                defaultText = "[ <All NixOS Machines> ]";
+                description = ''
+                  !!! example "Predefined Tag"
+
+                      Will be added to all machines that set `machineClass = "darwin"`
+
+                      ```nix
+                      inventory.machines.machineA.tags = [ "nixos" ];
+                      ```
+                '';
+              };
+              darwin = lib.mkOption {
+                type = with lib.types; listOf str;
+                defaultText = "[ <All Darwin Machines> ]";
+                description = ''
+                  !!! example "Predefined Tag"
+
+                      Will be added to all machines that set `machineClass = "darwin"`
+
+                      ```nix
+                      inventory.machines.machineA.tags = [ "darwin" ];
+                      ```
+                '';
+              };
             };
           }
         ];
@@ -236,58 +262,71 @@ in
         Each machine declared here can be referencd via its `attributeName` by the `inventory.service`s `roles`.
       '';
       default = { };
-      type = types.attrsOf (
-        types.submodule (
-          { name, ... }:
-          {
-            options = {
-              inherit (metaOptionsWith name) name description icon;
+      type = types.lazyAttrsOf (
+        types.submoduleWith ({
+          modules = [
+            (
+              { name, ... }:
+              {
+                tags = builtins.attrNames (
+                  # config.tags
+                  lib.filterAttrs (_t: tagMembers: builtins.elem name tagMembers) config.tags
+                );
+              }
+            )
+            (
+              { name, ... }:
+              {
+                options = {
+                  inherit (metaOptionsWith name) name description icon;
 
-              machineClass = lib.mkOption {
-                default = "nixos";
-                type = types.enum [
-                  "nixos"
-                  "darwin"
-                ];
-                description = ''
-                  The module system that should be used to construct the machine
+                  machineClass = lib.mkOption {
+                    default = "nixos";
+                    type = types.enum [
+                      "nixos"
+                      "darwin"
+                    ];
+                    description = ''
+                      The module system that should be used to construct the machine
 
-                  Set this to `darwin` for macOS machines
-                '';
-              };
+                      Set this to `darwin` for macOS machines
+                    '';
+                  };
 
-              tags = lib.mkOption {
-                description = ''
-                  List of tags for the machine.
+                  tags = lib.mkOption {
+                    description = ''
+                      List of tags for the machine.
 
-                  The machine can be referenced by its tags in `inventory.services`
+                      The machine can be referenced by its tags in `inventory.services`
 
-                  ???+ Example
-                      ```nix
-                      inventory.machines.machineA.tags = [ "tag1" "tag2" ];
-                      ```
+                      ???+ Example
+                          ```nix
+                          inventory.machines.machineA.tags = [ "tag1" "tag2" ];
+                          ```
 
-                      ```nix
-                      services.borgbackup."instance_1".roles.client.tags = [ "tag1" ];
-                      ```
+                          ```nix
+                          services.borgbackup."instance_1".roles.client.tags = [ "tag1" ];
+                          ```
 
-                  !!! Note
-                      Tags can be used to determine the membership of the machine in the services.
-                      Without changing the service configuration, the machine can be added to a service by adding the correct tags to the machine.
+                      !!! Note
+                          Tags can be used to determine the membership of the machine in the services.
+                          Without changing the service configuration, the machine can be added to a service by adding the correct tags to the machine.
 
-                '';
-                default = [ ];
-                apply = lib.unique;
-                type = types.listOf types.str;
-              };
-              deploy.targetHost = lib.mkOption {
-                description = "Configuration for the deployment of the machine";
-                default = null;
-                type = types.nullOr types.str;
-              };
-            };
-          }
-        )
+                    '';
+                    default = [ ];
+                    apply = lib.unique;
+                    type = types.listOf types.str;
+                  };
+                  deploy.targetHost = lib.mkOption {
+                    description = "Configuration for the deployment of the machine";
+                    default = null;
+                    type = types.nullOr types.str;
+                  };
+                };
+              }
+            )
+          ];
+        })
       );
     };
 
