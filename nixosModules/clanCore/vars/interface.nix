@@ -228,7 +228,7 @@ in
                       description = ''
                         Whether the file should be deployed to the target machine.
 
-                        Enable this if the generated file is only used as an input to other generators.
+                        Disable this if the generated file is only used as an input to other generators.
                       '';
                       type = bool;
                       default = true;

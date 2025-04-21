@@ -30,7 +30,9 @@ in
           readFile file.config.path
         else
           # if the file is not found, we want to downgrade the priority, to allow overriding via mkDefault
-          mkOptionDefault (throw "File not found: ${file.config.path}")
+          mkOptionDefault (
+            throw "Please run `clan vars generate ${config.clan.core.settings.machine.name}` as file was not found: ${file.config.path}"
+          )
       );
     };
   };
