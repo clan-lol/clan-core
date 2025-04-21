@@ -198,7 +198,6 @@ class Machine:
 
     def nix(
         self,
-        method: Literal["eval", "build"],
         attr: str,
         nix_options: list[str] | None = None,
     ) -> Any:
@@ -235,7 +234,7 @@ class Machine:
         if nix_options is None:
             nix_options = []
 
-        return self.nix("eval", attr, nix_options)
+        return self.nix(attr, nix_options)
 
     def build_nix(
         self,
@@ -254,7 +253,7 @@ class Machine:
         if nix_options is None:
             nix_options = []
 
-        output = self.nix("build", attr, nix_options)
+        output = self.nix(attr, nix_options)
         output = Path(output)
         if tmp_store := nix_test_store():
             output = tmp_store.joinpath(*output.parts[1:])
