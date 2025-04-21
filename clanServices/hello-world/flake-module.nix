@@ -14,7 +14,7 @@ in
     hello-world = module;
   };
   perSystem =
-    { ... }:
+    { pkgs, ... }:
     let
       # Module that contains the tests
       # This module adds:
@@ -33,5 +33,18 @@ in
     in
     {
       imports = [ unit-test-module ];
+
+      /**
+        1. Prepare the test vars
+        nix run .#generate-test-vars -- clanServices/hello-world/tests/vm hello-service
+
+        2. To run the test
+        nix build .#checks.x86_64-linux.hello-service
+      */
+      checks.hello-service = import ./tests/vm/default.nix {
+        inherit module;
+        inherit self inputs pkgs;
+        clanLib = self.clanLib;
+      };
     };
 }
