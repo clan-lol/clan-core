@@ -148,7 +148,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-if __name__ == "__main__":
+def main() -> None:
     os.environ["CLAN_NO_COMMIT"] = "1"
     args = parse_args()
     test_dir = args.repo_root / args.test_dir
@@ -181,3 +181,7 @@ if __name__ == "__main__":
         f.seek(0)
         os.environ["SOPS_AGE_KEY_FILE"] = f.name
         generate_vars(list(machines))
+
+
+if __name__ == "__main__":
+    main()
