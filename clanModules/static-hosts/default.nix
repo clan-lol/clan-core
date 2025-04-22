@@ -26,8 +26,8 @@
   config.networking.hosts =
     let
       dir = config.clan.core.settings.directory;
-      machineDir = dir + "/machines/";
-      zerotierIpMachinePath = machines: machineDir + machines + "/facts/zerotier-ip";
+      machineDir = "${dir}/vars/per-machine";
+      zerotierIpMachinePath = machine: "${machineDir}/${machine}/zerotier/zerotier-ip/value";
       machinesFileSet = builtins.readDir machineDir;
       machines = lib.mapAttrsToList (name: _: name) machinesFileSet;
       networkIpsUnchecked = builtins.map (

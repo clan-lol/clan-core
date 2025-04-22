@@ -23,11 +23,11 @@ in
         networkIps = builtins.foldl' (
           ips: name:
           if
-            builtins.pathExists "${config.clan.core.settings.directory}/machines/${name}/facts/zerotier-ip"
+            builtins.pathExists "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value"
           then
             ips
             ++ [
-              (builtins.readFile "${config.clan.core.settings.directory}/machines/${name}/facts/zerotier-ip")
+              (builtins.readFile "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value")
             ]
           else
             ips

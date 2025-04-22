@@ -10,17 +10,24 @@ let
   zeroTierInstance = config.clan.inventory.services.zerotier.${instanceName};
   roles = zeroTierInstance.roles;
   controllerMachine = builtins.head roles.controller.machines;
-  networkIdPath = "${config.clan.core.settings.directory}/machines/${controllerMachine}/facts/zerotier-network-id";
-  networkId = if builtins.pathExists networkIdPath then builtins.readFile networkIdPath else null;
+  networkIdPath = "${config.clan.core.settings.directory}/vars/per-machine/${controllerMachine}/zerotier/zerotier-network-id/value";
+  networkId =
+    if builtins.pathExists networkIdPath then
+      builtins.readFile networkIdPath
+    else
+      builtins.throw ''
+        No zerotier network id found for ${controllerMachine}.
+        Please run `clan vars generate ${controllerMachine}` first.
+      '';
   moons = roles.moon.machines;
   moonIps = builtins.foldl' (
     ips: name:
     if
-      builtins.pathExists "${config.clan.core.settings.directory}/machines/${name}/facts/zerotier-ip"
+      builtins.pathExists "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value"
     then
       ips
       ++ [
-        (builtins.readFile "${config.clan.core.settings.directory}/machines/${name}/facts/zerotier-ip")
+        (builtins.readFile "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value")
       ]
     else
       ips
@@ -62,7 +69,7 @@ in
     clan.core.networking.zerotier.networkId = networkId;
     clan.core.networking.zerotier.name = instanceName;
 
-    # TODO: in future we want to have the node id of our moons in our facts
+    # TODO: in future we want to have the node id of our moons in our vars
     systemd.services.zerotierone.serviceConfig.ExecStartPost = lib.mkIf (moonIps != [ ]) (
       lib.mkAfter [
         "+${pkgs.writeScript "orbit-moons-by-ip" ''

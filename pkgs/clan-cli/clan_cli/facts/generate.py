@@ -1,5 +1,4 @@
 import argparse
-import importlib
 import logging
 import os
 import sys
@@ -161,11 +160,6 @@ def _generate_facts_for_machine(
 ) -> bool:
     local_temp = tmpdir / machine.name
     local_temp.mkdir()
-    secret_facts_module = importlib.import_module(machine.secret_facts_module)
-    secret_facts_store = secret_facts_module.SecretStore(machine=machine)
-
-    public_facts_module = importlib.import_module(machine.public_facts_module)
-    public_facts_store = public_facts_module.FactStore(machine=machine)
 
     machine_updated = False
 
@@ -184,8 +178,8 @@ def _generate_facts_for_machine(
             machine=machine,
             service=service,
             regenerate=regenerate,
-            secret_facts_store=secret_facts_store,
-            public_facts_store=public_facts_store,
+            secret_facts_store=machine.secret_facts_store,
+            public_facts_store=machine.public_facts_store,
             tmpdir=local_temp,
             prompt=prompt,
         )

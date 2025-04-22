@@ -29,8 +29,7 @@
           select-shell
           pkgs.nix-unit
           pkgs.tea
-          # Better error messages than nix 2.18
-          pkgs.nixVersions.latest
+          pkgs.nix
           self'.packages.tea-create-pr
           self'.packages.merge-after-ci
           self'.packages.pending-reviews

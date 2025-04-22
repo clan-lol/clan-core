@@ -6,15 +6,16 @@
 }:
 let
   dir = config.clan.core.settings.directory;
-  machineDir = dir + "/machines/";
+  machineDir = "${dir}/vars/per-machine";
+  # TODO: This should use the inventory
+  # However we are probably going to replace this with the network module.
   machinesFileSet = builtins.readDir machineDir;
   machines = lib.mapAttrsToList (name: _: name) machinesFileSet;
 
-  zerotierNetworkIdPath = machines: machineDir + machines + "/facts/zerotier-network-id";
   networkIdsUnchecked = builtins.map (
     machine:
     let
-      fullPath = zerotierNetworkIdPath machine;
+      fullPath = "${machineDir}/vars/per-machine/${machine}/zerotier/zerotier-network-id/value";
     in
     if builtins.pathExists fullPath then builtins.readFile fullPath else null
   ) machines;
@@ -45,13 +46,9 @@ in
 
   config.systemd.services.zerotier-static-peers-autoaccept =
     let
-      zerotierIpMachinePath = machines: machineDir + machines + "/facts/zerotier-ip";
+      zerotierIpFor = machine: "${machineDir}/vars/per-machine/${machine}/zerotier/zerotier-ip/value";
       networkIpsUnchecked = builtins.map (
-        machine:
-        let
-          fullPath = zerotierIpMachinePath machine;
-        in
-        if builtins.pathExists fullPath then machine else null
+        machine: if builtins.pathExists (zerotierIpFor machine) then machine else null
       ) machines;
       networkIps = lib.filter (machine: machine != null) networkIpsUnchecked;
       machinesWithIp = lib.filterAttrs (name: _: (lib.elem name networkIps)) machinesFileSet;
@@ -60,11 +57,7 @@ in
       ) machinesWithIp;
       hosts = lib.mapAttrsToList (host: _: host) (
         lib.mapAttrs' (
-          machine: _:
-          let
-            fullPath = zerotierIpMachinePath machine;
-          in
-          lib.nameValuePair (builtins.readFile fullPath) [ machine ]
+          machine: _: lib.nameValuePair (builtins.readFile (zerotierIpFor machine)) [ machine ]
         ) filteredMachines
       );
       allHostIPs = config.clan.zerotier-static-peers.networkIps ++ hosts;

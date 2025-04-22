@@ -1,4 +1,3 @@
-import importlib
 import json
 import logging
 import os
@@ -11,10 +10,10 @@ from clan_cli.api import API
 from clan_cli.cmd import Log, RunOpts, cmd_with_root, run
 from clan_cli.errors import ClanError
 from clan_cli.facts.generate import generate_facts
-from clan_cli.facts.secret_modules import SecretStoreBase
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
 from clan_cli.vars.generate import generate_vars
+from clan_cli.vars.upload import upload_secret_vars
 
 from .automount import pause_automounting
 from .list import list_possible_keymaps, list_possible_languages
@@ -96,10 +95,6 @@ def flash_machine(
                     msg = f"Partitioning time secrets are not supported with `clan flash write`: clan.core.vars.generators.{generator.name}.files.{file.name}"
                     raise ClanError(msg)
 
-        secret_facts_module = importlib.import_module(machine.secret_facts_module)
-        secret_facts_store: SecretStoreBase = secret_facts_module.SecretStore(
-            machine=machine
-        )
         with TemporaryDirectory(prefix="disko-install-") as _tmpdir:
             tmpdir = Path(_tmpdir)
             upload_dir = machine.secrets_upload_directory
@@ -110,7 +105,8 @@ def flash_machine(
                 local_dir = tmpdir / upload_dir
 
             local_dir.mkdir(parents=True)
-            secret_facts_store.upload(local_dir)
+            machine.secret_facts_store.upload(local_dir)
+            upload_secret_vars(machine, local_dir)
             disko_install = []
 
             if os.geteuid() != 0:
