@@ -21,6 +21,8 @@ from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
 from clan_cli.qemu.qga import QgaSession
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
+from clan_cli.vars.generate import generate_vars
+from clan_cli.vars.upload import upload_secret_vars
 
 from .inspect import VmConfig, inspect_vm
 from .qemu import qemu_command
@@ -79,8 +81,10 @@ def get_secrets(
     secrets_dir.mkdir(parents=True, exist_ok=True)
 
     generate_facts([machine])
+    generate_vars([machine])
 
     machine.secret_facts_store.upload(secrets_dir)
+    upload_secret_vars(machine, secrets_dir)
     return secrets_dir
 
 
