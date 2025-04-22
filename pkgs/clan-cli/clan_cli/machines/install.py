@@ -166,8 +166,11 @@ def install_command(args: argparse.Namespace) -> None:
         machine = Machine(name=args.machine, flake=args.flake, nix_options=args.option)
         use_tor = False
 
+        if machine._class_ == "darwin":
+            msg = "Installing macOS machines is not yet supported"
+            raise ClanError(msg)
+
         if args.flake is None:
-            #
             msg = "Could not find clan flake toplevel directory"
             raise ClanError(msg)
 
