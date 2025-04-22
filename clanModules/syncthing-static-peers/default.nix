@@ -6,10 +6,9 @@
 }:
 let
   dir = config.clan.core.settings.directory;
-  machineDir = dir + "/machines/";
-  machineVarDir = dir + "/vars/per-machine/";
-  syncthingPublicKeyPath = machines: machineVarDir + machines + "/syncthing/id/value";
-  machinesFileSet = builtins.readDir machineDir;
+  machineVarDir = "${dir}/vars/per-machine/";
+  syncthingPublicKeyPath = machine: "${machineVarDir}/${machine}/syncthing/id/value";
+  machinesFileSet = builtins.readDir machineVarDir;
   machines = lib.mapAttrsToList (name: _: name) machinesFileSet;
   syncthingPublicKeysUnchecked = builtins.map (
     machine:
@@ -19,7 +18,7 @@ let
     if builtins.pathExists fullPath then machine else null
   ) machines;
   syncthingPublicKeyMachines = lib.filter (machine: machine != null) syncthingPublicKeysUnchecked;
-  zerotierIpMachinePath = machines: machineDir + machines + "/facts/zerotier-ip";
+  zerotierIpMachinePath = machine: "${machineVarDir}/${machine}/zerotier/zerotier-ip/value";
   networkIpsUnchecked = builtins.map (
     machine:
     let

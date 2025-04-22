@@ -13,10 +13,10 @@ let
   defaultBootstrapNodes = builtins.foldl' (
     urls: name:
     if
-      builtins.pathExists "${config.clan.core.settings.directory}/machines/${name}/facts/zerotier-ip"
+      builtins.pathExists "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value"
     then
       let
-        ip = builtins.readFile "${config.clan.core.settings.directory}/machines/${name}/facts/zerotier-ip";
+        ip = builtins.readFile "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value";
       in
       urls ++ "${ip}:${cfg.network.port}"
     else

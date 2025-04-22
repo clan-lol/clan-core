@@ -86,7 +86,7 @@ This guide shows you how to configure `zerotier` either through `NixOS Options` 
        configuration, substituting `<CONTROLLER>` with the controller machine name:
        ```nix
        { config, ... }: {
-         clan.core.networking.zerotier.networkId = builtins.readFile (config.clan.core.settings.directory + "/machines/<CONTROLLER>/facts/zerotier-network-id");
+         clan.core.networking.zerotier.networkId = builtins.readFile ../../vars/per-machine/<CONTROLLER>/zerotier/zerotier-network-id/value;
        }
        ```
     1. **Update the New Machine**: Execute:

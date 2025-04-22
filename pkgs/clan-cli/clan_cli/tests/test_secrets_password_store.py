@@ -2,10 +2,6 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from clan_cli.facts.secret_modules.password_store import SecretStore
-from clan_cli.flake import Flake
-from clan_cli.machines.facts import machine_get_fact
-from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
 from clan_cli.ssh.host import Host
 from clan_cli.tests.fixtures_flakes import ClanFlake
@@ -32,6 +28,8 @@ def test_upload_secret(
     config["clan"]["core"]["networking"]["targetHost"] = addr
     config["clan"]["user-password"]["user"] = "alice"
     config["clan"]["user-password"]["prompt"] = False
+    vars_config = config["clan"]["core"]["vars"]
+    vars_config["settings"]["secretStore"] = "password-store"
     facts = config["clan"]["core"]["facts"]
     facts["secretStore"] = "password-store"
     facts["secretUploadDirectory"]["_type"] = "override"
@@ -62,23 +60,32 @@ def test_upload_secret(
         check=True,
     )
     subprocess.run(nix_shell(["pass"], ["pass", "init", "test@local"]), check=True)
-    cli.run(["facts", "generate", "vm1", "--flake", str(flake.path)])
+    cli.run(["vars", "generate", "vm1", "--flake", str(flake.path), "--generator", "zerotier"])
 
-    store = SecretStore(Machine(name="vm1", flake=Flake(str(flake.path))))
-
-    network_id = machine_get_fact(flake.path, "vm1", "zerotier-network-id")
+    network_id = (
+        flake.path
+        / "vars"
+        / "per-machine"
+        / "vm1"
+        / "zerotier"
+        / "zerotier-network-id"
+        / "value"
+    ).read_text()
     assert len(network_id) == 16
     identity_secret = (
-        temporary_home / "pass" / "machines" / "vm1" / "zerotier-identity-secret.gpg"
+        temporary_home
+        / "pass"
+        / "clan-vars"
+        / "per-machine"
+        / "vm1"
+        / "zerotier"
+        / "zerotier-identity-secret.gpg"
     )
     secret1_mtime = identity_secret.lstat().st_mtime_ns
 
     # test idempotency
-    cli.run(["facts", "generate", "vm1"])
+    cli.run(["vars", "generate", "vm1", "--generator", "zerotier"])
     assert identity_secret.lstat().st_mtime_ns == secret1_mtime
-    cli.run(["facts", "upload", "vm1"])
+    cli.run(["vars", "upload", "vm1"])
     zerotier_identity_secret = flake.path / "secrets" / "zerotier-identity-secret"
     assert zerotier_identity_secret.exists()
-    assert store.exists("", "zerotier-identity-secret")
-
-    assert store.exists("", "zerotier-identity-secret")
