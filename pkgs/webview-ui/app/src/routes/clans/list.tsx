@@ -60,20 +60,20 @@ const ClanItem = (props: ClanItemProps) => {
   };
 
   return (
-    <div class="stat">
-      <div class="stat-figure text-primary-800">
-        <div class="join">
+    <div class="">
+      <div class=" text-primary-800">
+        <div class="">
           <Button
             size="s"
             variant="light"
-            class="join-item"
+            class=""
             onClick={() => navigate(`/clans/${window.btoa(clan_dir)}`)}
             endIcon={<Icon icon="Settings" />}
           ></Button>
           <Button
             size="s"
             variant="light"
-            class="join-item "
+            class=" "
             onClick={() => {
               setActiveURI(clan_dir);
             }}
@@ -86,7 +86,7 @@ const ClanItem = (props: ClanItemProps) => {
             popovertarget={`clan-delete-popover-${clan_dir}`}
             popovertargetaction="toggle"
             ref={setReference}
-            class="btn btn-ghost btn-outline join-item"
+            class=" "
             endIcon={<Icon icon="Trash" />}
           ></Button>
           <div
@@ -113,24 +113,24 @@ const ClanItem = (props: ClanItemProps) => {
         </div>
       </div>
       <div
-        class="stat-title"
+        class=""
         classList={{
-          "badge badge-primary": activeURI() === clan_dir,
+          "": activeURI() === clan_dir,
         }}
       >
         {clan_dir}
       </div>
 
       <Show when={details.isLoading}>
-        <div class="skeleton h-12 w-80" />
+        <div class=" h-12 w-80" />
       </Show>
       <Show when={details.isSuccess}>
         <A href={`/clans/${window.btoa(clan_dir)}`}>
-          <div class="stat-value underline">{details.data?.name}</div>
+          <div class=" underline">{details.data?.name}</div>
         </A>
       </Show>
       <Show when={details.isSuccess && details.data?.description}>
-        <div class="stat-desc text-lg">{details.data?.description}</div>
+        <div class=" text-lg">{details.data?.description}</div>
       </Show>
     </div>
   );
@@ -139,19 +139,19 @@ const ClanItem = (props: ClanItemProps) => {
 export const ClanList = () => {
   const navigate = useNavigate();
   return (
-    <div class="card card-normal">
-      <div class="card-body">
-        <div class="label">
-          <div class="label-text text-2xl text-neutral">Registered Clans</div>
+    <div class="">
+      <div class="">
+        <div class="">
+          <div class=" text-2xl">Registered Clans</div>
           <div class="flex gap-2">
-            <span class="tooltip tooltip-top" data-tip="Register clan">
+            <span class="" data-tip="Register clan">
               <Button
                 variant="light"
                 onClick={registerClan}
                 startIcon={<Icon icon="List" />}
               ></Button>
             </span>
-            <span class="tooltip tooltip-top" data-tip="Create new clan">
+            <span class="" data-tip="Create new clan">
               <Button
                 onClick={() => {
                   navigate("create");
@@ -161,7 +161,7 @@ export const ClanList = () => {
             </span>
           </div>
         </div>
-        <div class="stats stats-vertical shadow">
+        <div class=" shadow">
           <For each={clanList()}>
             {(value) => <ClanItem clan_dir={value} />}
           </For>

@@ -108,15 +108,15 @@ export const MachineListItem = (props: MachineListItemProps) => {
     setUpdating(false);
   };
   return (
-    <div class="card card-side m-2">
+    <div class=" m-2">
       <figure class="h-fit rounded-xl border bg-def-2 border-def-5">
         <RndThumbnail name={name} width={220} height={120} />
       </figure>
-      <div class="card-body flex-row justify-between ">
+      <div class=" flex-row justify-between ">
         <div class="flex flex-col">
           <A href={`/machines/${name}`}>
             <h2
-              class="card-title underline"
+              class=" underline"
               classList={{
                 "text-neutral-500": nixOnly,
               }}
@@ -168,7 +168,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
         </div>
         <div>
           <Menu popoverid={`menu-${props.name}`} label={<Icon icon={"More"} />}>
-            <ul class="menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
+            <ul class="z-[1] w-52 p-2 shadow">
               <li>
                 <a
                   onClick={() => {

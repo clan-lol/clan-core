@@ -401,12 +401,12 @@ export const Flash = () => {
             </For>
           </div>
 
-          <div class="collapse collapse-arrow" tabindex="0">
+          <div class=" " tabindex="0">
             <input type="checkbox" />
-            <div class="collapse-title px-0">
+            <div class=" px-0">
               <InputLabel class="mb-4">Advanced</InputLabel>
             </div>
-            <div class="collapse-content">
+            <div class="">
               <Field
                 name="machine.flake"
                 validate={[required("This field is required")]}

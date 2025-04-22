@@ -192,7 +192,7 @@ export function SelectInput(props: SelectInputpProps) {
                             {item}
                             <Show when={props.multiple}>
                               <button
-                                class="btn-ghost btn-xs"
+                                class=""
                                 type="button"
                                 onClick={(_e) => {
                                   // @ts-expect-error: fieldName is not known ahead of time
@@ -247,7 +247,7 @@ export function SelectInput(props: SelectInputpProps) {
           }}
           class="z-[1000] shadow"
         >
-          <ul class="menu flex max-h-96 flex-col gap-1 overflow-x-hidden overflow-y-scroll">
+          <ul class="flex max-h-96 flex-col gap-1 overflow-x-hidden overflow-y-scroll">
             <Show when={!props.loading} fallback={"Loading ...."}>
               <For each={props.options}>
                 {(opt) => (

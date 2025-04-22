@@ -6,8 +6,8 @@ import { useNavigate } from "@solidjs/router";
 export const Welcome = () => {
   const navigate = useNavigate();
   return (
-    <div class="hero min-h-[calc(100vh-10rem)]">
-      <div class="hero-content mb-32 text-center">
+    <div class="min-h-[calc(100vh-10rem)]">
+      <div class="mb-32 text-center">
         <div class="max-w-md">
           <h1 class="text-5xl font-bold">Welcome to Clan</h1>
           <p class="py-6">Own the services you use.</p>
@@ -17,7 +17,7 @@ export const Welcome = () => {
             </Button>
             <Button
               variant="light"
-              class="!link w-full text-right !text-primary-800"
+              class="w-full text-right !text-primary-800"
               onClick={async () => {
                 const uri = await registerClan();
                 if (uri) {

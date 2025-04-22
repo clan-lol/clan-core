@@ -20,7 +20,6 @@
     "@typescript-eslint/parser": "^7.10.0",
     "autoprefixer": "^10.4.19",
     "classnames": "^2.5.1",
-    "daisyui": "^4.11.1",
     "eslint": "^8.57.0",
     "eslint-plugin-tailwindcss": "^3.17.0",
     "jsdom": "^24.1.0",

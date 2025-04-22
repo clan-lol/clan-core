@@ -78,16 +78,16 @@ const EditClanForm = (props: EditClanFormProps) => {
           </>
         )}
       </Field>
-      <div class="card-body">
+      <div class="">
         <span class="text-xl text-primary-800">General</span>
         <Field
           name="name"
           validate={[required("Please enter a unique name for the clan.")]}
         >
           {(field, props) => (
-            <label class="form-control w-full">
-              <div class="label">
-                <span class="label-text block after:ml-0.5 after:text-primary-800 after:content-['*']">
+            <label class="w-full">
+              <div class="">
+                <span class=" block after:ml-0.5 after:text-primary-800 after:content-['*']">
                   Name
                 </span>
               </div>
@@ -97,23 +97,21 @@ const EditClanForm = (props: EditClanFormProps) => {
                 disabled={formStore.submitting}
                 required
                 placeholder="Clan Name"
-                class="input input-bordered"
-                classList={{ "input-error": !!field.error }}
+                class=""
+                classList={{ "": !!field.error }}
                 value={field.value}
               />
-              <div class="label">
-                {field.error && (
-                  <span class="label-text-alt">{field.error}</span>
-                )}
+              <div class="">
+                {field.error && <span class="">{field.error}</span>}
               </div>
             </label>
           )}
         </Field>
         <Field name="description">
           {(field, props) => (
-            <label class="form-control w-full">
-              <div class="label">
-                <span class="label-text">Description</span>
+            <label class="w-full">
+              <div class="">
+                <span class="">Description</span>
               </div>
 
               <input
@@ -122,20 +120,18 @@ const EditClanForm = (props: EditClanFormProps) => {
                 required
                 type="text"
                 placeholder="Some words about your clan"
-                class="input input-bordered"
-                classList={{ "input-error": !!field.error }}
+                class=""
+                classList={{ "": !!field.error }}
                 value={field.value || ""}
               />
-              <div class="label">
-                {field.error && (
-                  <span class="label-text-alt">{field.error}</span>
-                )}
+              <div class="">
+                {field.error && <span class="">{field.error}</span>}
               </div>
             </label>
           )}
         </Field>
         {
-          <div class="card-actions justify-end">
+          <div class="justify-end">
             <Button
               type="submit"
               disabled={formStore.submitting || !formStore.dirty}
@@ -203,7 +199,7 @@ const AdminModuleForm = (props: AdminModuleFormProps) => {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <div class="card-body">
+      <div class="">
         <span class="text-xl text-primary-800">Administration</span>
         <div class="grid grid-cols-12 gap-2">
           <span class="col-span-12 text-lg text-neutral-800">
@@ -241,15 +237,12 @@ const AdminModuleForm = (props: AdminModuleFormProps) => {
                         class="col-span-6"
                         required
                       />
-                      <span
-                        class="tooltip col-span-12 mt-auto"
-                        data-tip="Select file"
-                      >
+                      <span class=" col-span-12 mt-auto" data-tip="Select file">
                         <label
-                          class={"form-control w-full"}
+                          class={"w-full"}
                           aria-disabled={formStore.submitting}
                         >
-                          <div class="btn btn-secondary relative flex items-center justify-center">
+                          <div class="relative flex items-center justify-center">
                             <input
                               value=""
                               // Disable drag n drop
@@ -312,7 +305,7 @@ const AdminModuleForm = (props: AdminModuleFormProps) => {
           </div>
         </div>
         {
-          <div class="card-actions justify-end">
+          <div class=" justify-end">
             <Button
               type="submit"
               disabled={formStore.submitting || !formStore.dirty}

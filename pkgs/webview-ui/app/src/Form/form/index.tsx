@@ -305,7 +305,7 @@ export function StringField<T extends FieldValues, R extends ResponseData>(
                 // placeholder="foobar"
                 // inlineLabel={
                 //   <div class="label">
-                //     <span class="label-text"></span>
+                //     <span class=""></span>
                 //   </div>
                 // }
                 // required
@@ -629,7 +629,7 @@ export function ArrayFields<T extends FieldValues, R extends ResponseData>(
                             </ListValueDisplay>
                           )}
                         </For>
-                        <span class="label-text-alt font-bold text-error-700">
+                        <span class=" font-bold text-error-700">
                           {fieldArray.error}
                         </span>
 
@@ -814,7 +814,7 @@ export function ObjectFields<T extends FieldValues, R extends ResponseData>(
                       <For
                         fallback={
                           <>
-                            <label class="label-text">
+                            <label class="">
                               No{" "}
                               <ObjectFieldPropertyLabel
                                 schema={itemSchema()}

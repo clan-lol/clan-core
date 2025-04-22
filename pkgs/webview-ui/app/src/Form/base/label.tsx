@@ -5,7 +5,7 @@ interface LabelProps {
 }
 export const Label = (props: LabelProps) => (
   <span
-    class="label-text block"
+    class=" block"
     classList={{
       "after:ml-0.5 after:text-primary after:content-['*']": props.required,
     }}

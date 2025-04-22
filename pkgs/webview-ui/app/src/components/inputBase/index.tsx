@@ -142,7 +142,7 @@ export const InputLabel = (props: InputLabelProps) => {
           )}
           {props.help && (
             <span
-              class="tooltip tooltip-bottom inline px-2"
+              class=" inline px-2"
               data-tip={props.help}
               style={{
                 "--tooltip-color": "#EFFFFF",

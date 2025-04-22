@@ -71,7 +71,7 @@ export const CreateClan = () => {
   };
 
   return (
-    <div class="card card-normal">
+    <div class="">
       <Form onSubmit={handleSubmit} shouldActive>
         <Field name="icon">
           {(field, props) => (
@@ -97,15 +97,15 @@ export const CreateClan = () => {
             </>
           )}
         </Field>
-        <div class="card-body">
+        <div class="">
           <Field
             name="name"
             validate={[required("Please enter a unique name for the clan.")]}
           >
             {(field, props) => (
-              <label class="form-control w-full">
-                <div class="label">
-                  <span class="label-text block after:ml-0.5 after:text-primary-800 after:content-['*']">
+              <label class=" w-full">
+                <div class="">
+                  <span class=" block after:ml-0.5 after:text-primary-800 after:content-['*']">
                     Name
                   </span>
                 </div>
@@ -115,23 +115,20 @@ export const CreateClan = () => {
                   disabled={formStore.submitting}
                   required
                   placeholder="Give your Clan a legendary name"
-                  class="input input-bordered"
-                  classList={{ "input-error": !!field.error }}
+                  classList={{ "": !!field.error }}
                   value={field.value}
                 />
-                <div class="label">
-                  {field.error && (
-                    <span class="label-text-alt">{field.error}</span>
-                  )}
+                <div class="">
+                  {field.error && <span class="">{field.error}</span>}
                 </div>
               </label>
             )}
           </Field>
           <Field name="description">
             {(field, props) => (
-              <label class="form-control w-full">
-                <div class="label">
-                  <span class="label-text">Description</span>
+              <label class=" w-full">
+                <div class="">
+                  <span class="">Description</span>
                 </div>
 
                 <input
@@ -140,24 +137,21 @@ export const CreateClan = () => {
                   required
                   type="text"
                   placeholder="Tell us what makes your Clan legendary"
-                  class="input input-bordered"
-                  classList={{ "input-error": !!field.error }}
+                  classList={{ "": !!field.error }}
                   value={field.value || ""}
                 />
-                <div class="label">
-                  {field.error && (
-                    <span class="label-text-alt">{field.error}</span>
-                  )}
+                <div class="">
+                  {field.error && <span class="">{field.error}</span>}
                 </div>
               </label>
             )}
           </Field>
           <Field name="template" validate={[required("This is required")]}>
             {(field, props) => (
-              <div class="collapse collapse-arrow" tabindex="0">
+              <div class=" " tabindex="0">
                 <input type="checkbox" />
-                <div class="collapse-title link font-medium ">Advanced</div>
-                <div class="collapse-content">
+                <div class="  font-medium ">Advanced</div>
+                <div>
                   <TextInput
                     // adornment={{
                     //   content: (
@@ -176,7 +170,7 @@ export const CreateClan = () => {
             )}
           </Field>
           {
-            <div class="card-actions justify-end">
+            <div class=" justify-end">
               <Button
                 type="submit"
                 disabled={formStore.submitting}

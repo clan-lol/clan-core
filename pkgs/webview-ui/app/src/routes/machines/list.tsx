@@ -76,7 +76,7 @@ export const MachineListView: Component = () => {
         title="Your Machines"
         toolbar={
           <>
-            <span class="tooltip tooltip-bottom" data-tip="Reload">
+            <span class="" data-tip="Reload">
               <Button
                 variant="light"
                 size="s"
@@ -86,7 +86,7 @@ export const MachineListView: Component = () => {
             </span>
 
             <div class="border border-def-3">
-              <span class="tooltip tooltip-bottom" data-tip="List View">
+              <span class="" data-tip="List View">
                 <Button
                   onclick={() => setView("list")}
                   variant={view() == "list" ? "dark" : "light"}
@@ -94,7 +94,7 @@ export const MachineListView: Component = () => {
                   startIcon={<Icon icon="List" />}
                 ></Button>
               </span>
-              <span class="tooltip tooltip-bottom" data-tip="Grid View">
+              <span class="" data-tip="Grid View">
                 <Button
                   onclick={() => setView("grid")}
                   variant={view() == "grid" ? "dark" : "light"}
@@ -103,7 +103,7 @@ export const MachineListView: Component = () => {
                 ></Button>
               </span>
             </div>
-            <span class="tooltip tooltip-bottom" data-tip="New Machine">
+            <span class="" data-tip="New Machine">
               <Button
                 onClick={() => navigate("create")}
                 size="s"
@@ -146,15 +146,15 @@ export const MachineListView: Component = () => {
           <Match when={inventoryQuery.isLoading}>
             {/* Loading skeleton */}
             <div>
-              <div class="card card-side m-2 bg-base-100 shadow-lg">
+              <div class="  m-2 shadow-lg">
                 <figure class="pl-2">
-                  <div class="skeleton size-12"></div>
+                  <div class=" size-12"></div>
                 </figure>
-                <div class="card-body">
-                  <h2 class="card-title">
-                    <div class="skeleton h-12 w-80"></div>
+                <div class="">
+                  <h2 class="">
+                    <div class=" h-12 w-80"></div>
                   </h2>
-                  <div class="skeleton h-8 w-72"></div>
+                  <div class=" h-8 w-72"></div>
                 </div>
               </div>
             </div>
@@ -163,7 +163,7 @@ export const MachineListView: Component = () => {
             when={!inventoryQuery.isLoading && inventoryMachines().length === 0}
           >
             <div class="mt-8 flex w-full flex-col items-center justify-center gap-2">
-              <span class="text-lg text-neutral">
+              <span class="text-lg">
                 No machines defined yet. Click below to define one.
               </span>
               <Button

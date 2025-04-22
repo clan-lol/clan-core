@@ -20,12 +20,12 @@ export function SelectInput<T extends FieldValues, R extends ResponseData>(
 ) {
   return (
     <label
-      class={cx("form-control w-full", props.class)}
+      class={cx(" w-full", props.class)}
       aria-disabled={props.formStore.submitting}
     >
-      <div class="label">
+      <div class="">
         <span
-          class="label-text block"
+          class=" block"
           classList={{
             "after:ml-0.5 after:text-primary after:content-['*']":
               props.required,
@@ -34,22 +34,20 @@ export function SelectInput<T extends FieldValues, R extends ResponseData>(
           {props.label}
         </span>
         <Show when={props.topRightLabel}>
-          <span class="label-text-alt">{props.topRightLabel}</span>
+          <span class="">{props.topRightLabel}</span>
         </Show>
       </div>
       <select
         {...props.selectProps}
         required={props.required}
-        class="select select-bordered w-full"
+        class="w-full"
         value={props.value}
       >
         {props.options}
       </select>
 
       {props.error && (
-        <span class="label-text-alt font-bold text-error-700">
-          {props.error}
-        </span>
+        <span class=" font-bold text-error-700">{props.error}</span>
       )}
     </label>
   );
