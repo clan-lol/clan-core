@@ -5,6 +5,7 @@
   ...
 }:
 {
+  _class = "nixos";
   options = {
     # maybe upstream this?
     services.wayland-proxy-virtwl = {

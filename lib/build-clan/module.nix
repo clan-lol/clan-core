@@ -221,17 +221,11 @@ in
 
     # machine specifics
     machines = configsPerSystem;
-    all-machines-json =
-      if !lib.hasAttrByPath [ "darwinModules" "clanCore" ] clan-core then
-        lib.mapAttrs (
-          system: configs:
-          nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (
-            lib.mapAttrs (_: m: m.config.system.clan.deployment.data) (
-              lib.filterAttrs (_n: v: v.class == "nixos") configs
-            )
-          )
-        ) configsPerSystem
-      else
-        throw "remove NixOS filter and support nix-darwin as well";
+    all-machines-json = lib.mapAttrs (
+      system: configs:
+      nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (
+        lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs
+      )
+    ) configsPerSystem;
   };
 }

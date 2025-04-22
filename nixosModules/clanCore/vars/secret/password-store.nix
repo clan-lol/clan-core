@@ -52,6 +52,8 @@ let
 
 in
 {
+  _class = "nixos";
+
   options.clan.vars.password-store = {
     secretLocation = lib.mkOption {
       type = lib.types.path;

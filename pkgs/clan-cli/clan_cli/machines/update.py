@@ -138,7 +138,6 @@ def deploy_machines(machines: list[Machine]) -> None:
 
         nix_options = [
             "--show-trace",
-            "--fast",
             "--option",
             "keep-going",
             "true",
@@ -146,30 +145,37 @@ def deploy_machines(machines: list[Machine]) -> None:
             "accept-flake-config",
             "true",
             "-L",
-            "--build-host",
-            "",
             *machine.nix_options,
             "--flake",
             f"{path}#{machine.name}",
         ]
 
-        switch_cmd = ["nixos-rebuild", "switch", *nix_options]
-        test_cmd = ["nixos-rebuild", "test", *nix_options]
+        become_root = machine.deploy_as_root
 
-        target_host: Host | None = host.meta.get("target_host")
-        if target_host:
-            switch_cmd.extend(["--target-host", target_host.target])
-            test_cmd.extend(["--target-host", target_host.target])
+        if machine._class_ == "nixos":
+            nix_options += [
+                "--fast",
+                "--build-host",
+                "",
+            ]
 
-        if (target_host and target_host.user != "root") or host.user != "root":
-            switch_cmd.extend(["--use-remote-sudo"])
-            test_cmd.extend(["--use-remote-sudo"])
+            target_host: Host | None = host.meta.get("target_host")
+            if target_host:
+                become_root = False
+                nix_options += ["--target-host", target_host.target]
+
+                if target_host.user != "root":
+                    nix_options += ["--use-remote-sudo"]
+
+        switch_cmd = [f"{machine._class_}-rebuild", "switch", *nix_options]
+        test_cmd = [f"{machine._class_}-rebuild", "test", *nix_options]
 
         env = host.nix_ssh_env(None)
         ret = host.run(
             switch_cmd,
             RunOpts(check=False, msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
             extra_env=env,
+            become_root=become_root,
         )
 
         # Last output line (config store path) is printed to stdout instead of stderr
@@ -192,11 +198,16 @@ def deploy_machines(machines: list[Machine]) -> None:
                 test_cmd if is_mobile else switch_cmd,
                 RunOpts(msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
                 extra_env=env,
-                become_root=True,
+                become_root=become_root,
             )
 
     with AsyncRuntime() as runtime:
         for machine in machines:
+            if machine._class_ == "darwin":
+                if not machine.deploy_as_root and machine.target_host.user == "root":
+                    msg = f"'TargetHost' should be set to a non-root user for deploying to nix-darwin on machine '{machine.name}'"
+                    raise ClanError(msg)
+
             machine.info(f"Updating {machine.name}")
             runtime.async_run(
                 AsyncOpts(
@@ -231,8 +242,6 @@ def update_command(args: argparse.Namespace) -> None:
             if len(args.machines) == 0:
                 ignored_machines = []
                 for machine in get_all_machines(args.flake, args.option):
-                    if machine._class_ == "darwin":
-                        continue
                     if machine.deployment.get("requireExplicitUpdate", False):
                         continue
                     try:
@@ -259,11 +268,6 @@ def update_command(args: argparse.Namespace) -> None:
                 for machine in machines:
                     machine.override_build_host = args.build_host
                     machine.host_key_check = HostKeyCheck.from_str(args.host_key_check)
-
-        for machine in machines:
-            if machine._class_ == "darwin":
-                machine.error("Updating macOS machines is not yet supported")
-                sys.exit(1)
 
         config = nix_config()
         system = config["system"]

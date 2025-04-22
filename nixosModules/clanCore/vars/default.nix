@@ -1,4 +1,5 @@
 {
+  _class,
   lib,
   config,
   pkgs,
@@ -9,18 +10,22 @@ let
   submodule =
     module:
     submoduleWith {
+      class = _class;
       specialArgs.pkgs = pkgs;
       modules = [ module ];
     };
 in
 {
-  imports = [
-    ./public/in_repo.nix
-    ./secret/fs.nix
-    ./secret/password-store.nix
-    ./secret/sops
-    ./secret/vm.nix
-  ];
+  imports =
+    [
+      ./public/in_repo.nix
+      ./secret/fs.nix
+      ./secret/sops
+      ./secret/vm.nix
+    ]
+    ++ lib.optionals (_class == "nixos") [
+      ./secret/password-store.nix
+    ];
   options.clan.core.vars = lib.mkOption {
     description = ''
       Generated Variables

@@ -1,6 +1,7 @@
 { pkgs, lib }:
 let
   eval = lib.evalModules {
+    class = "nixos";
     modules = [
       ./interface.nix
     ];

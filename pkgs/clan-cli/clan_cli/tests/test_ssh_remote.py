@@ -114,7 +114,9 @@ def test_parse_deployment_address(
 
     assert result.host == expected_host
     assert result.port == expected_port
-    assert result.user == expected_user
+    assert result.user == expected_user or (
+        expected_user == "" and result.user == "root"
+    )
     assert result.ssh_options == expected_options
 
 

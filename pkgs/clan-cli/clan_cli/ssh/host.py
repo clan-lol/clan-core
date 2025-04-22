@@ -38,13 +38,15 @@ class Host:
     def __post_init__(self) -> None:
         if not self.command_prefix:
             self.command_prefix = self.host
+        if not self.user:
+            self.user = "root"
 
     def __str__(self) -> str:
         return self.target
 
     @property
     def target(self) -> str:
-        return f"{self.user or 'root'}@{self.host}"
+        return f"{self.user}@{self.host}"
 
     @classmethod
     def from_host(cls, host: "Host") -> "Host":
