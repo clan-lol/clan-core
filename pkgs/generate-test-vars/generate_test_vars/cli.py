@@ -22,7 +22,7 @@ sops_priv_key = (
 sops_pub_key = "age1qm0p4vf9jvcnn43s6l4prk8zn6cx0ep9gzvevxecv729xz540v8qa742eg"
 
 
-def machine_names(repo_root: Path, check_attr: str) -> list[str]:
+def get_machine_names(repo_root: Path, check_attr: str) -> list[str]:
     """
     Get the machine names from the test flake
     """
@@ -133,12 +133,22 @@ def main() -> None:
     shutil.rmtree(test_dir / "sops", ignore_errors=True)
 
     flake = Flake(str(opts.repo_root))
+    machine_names = get_machine_names(
+        opts.repo_root,
+        opts.check_attr,
+    )
+
+    config = nix_config()
+    system = config["system"]
+    flake.precache(
+        [
+            f"checks.{system}.{opts.check_attr}.nodes.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
+            f"checks.{system}.{opts.check_attr}.nodes.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
+        ]
+    )
+
     machines = [
-        TestMachine(name, flake, test_dir, opts.check_attr)
-        for name in machine_names(
-            opts.repo_root,
-            opts.check_attr,
-        )
+        TestMachine(name, flake, test_dir, opts.check_attr) for name in machine_names
     ]
     user = "admin"
     admin_key_path = Path(test_dir.resolve() / "sops" / "users" / user / "key.json")
