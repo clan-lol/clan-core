@@ -18,7 +18,6 @@ from clan_cli.tests.fixtures_flakes import FlakeForTest
 if TYPE_CHECKING:
     from .age_keys import KeyPair
 
-# from clan_cli.vars.var import machine_get_fact
 from clan_cli.machines.machines import Machine as MachineMachine
 from clan_cli.tests.helpers import cli
 
