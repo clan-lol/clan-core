@@ -21,7 +21,7 @@ const Categories = (props: CategoryProps) => {
   return (
     <span class="ml-6 inline-flex h-full align-middle">
       {props.categories.map((category) => (
-        <span class="badge badge-secondary">{category}</span>
+        <span class="">{category}</span>
       ))}
     </span>
   );
@@ -39,7 +39,7 @@ const Roles = (props: RolesProps) => {
         </Typography>
       </span>
       {props.roles.map((role) => (
-        <span class="badge badge-ghost">{role}</span>
+        <span class="">{role}</span>
       ))}
     </div>
   );
@@ -54,11 +54,11 @@ const ModuleItem = (props: {
   const navigate = useNavigate();
 
   return (
-    <div class={cx("stat rounded-lg shadow-md", props.class)}>
-      <div class="stat-figure text-primary-800">
-        <div class="join">
+    <div class={cx("rounded-lg shadow-md", props.class)}>
+      <div class="text-primary-800">
+        <div class="">
           <Menu popoverid={`menu-${props.name}`} label={<Icon icon={"More"} />}>
-            <ul class="menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
+            <ul class="z-[1] w-52 p-2 shadow">
               <li>
                 <a
                   onClick={() => {
@@ -74,7 +74,7 @@ const ModuleItem = (props: {
       </div>
 
       <A href={`/modules/details/${name}`}>
-        <div class="stat-value underline">
+        <div class="underline">
           {name}
           <Categories categories={info.categories} />
         </div>
@@ -113,7 +113,7 @@ export const ModuleList = () => {
         title="Modules"
         toolbar={
           <>
-            <span class="tooltip tooltip-bottom" data-tip="Reload">
+            <span class="" data-tip="Reload">
               <Button
                 variant="light"
                 size="s"
@@ -123,7 +123,7 @@ export const ModuleList = () => {
             </span>
 
             <div class="border border-def-3">
-              <span class="tooltip tooltip-bottom" data-tip="List View">
+              <span class="" data-tip="List View">
                 <Button
                   onclick={() => setView("list")}
                   variant={view() == "list" ? "dark" : "light"}
@@ -131,7 +131,7 @@ export const ModuleList = () => {
                   startIcon={<Icon icon="List" />}
                 ></Button>
               </span>
-              <span class="tooltip tooltip-bottom" data-tip="Grid View">
+              <span class="" data-tip="Grid View">
                 <Button
                   onclick={() => setView("grid")}
                   variant={view() == "grid" ? "dark" : "light"}
@@ -140,7 +140,7 @@ export const ModuleList = () => {
                 ></Button>
               </span>
             </div>
-            <span class="tooltip tooltip-bottom" data-tip="New Machine">
+            <span class="" data-tip="New Machine">
               <Button
                 size="s"
                 variant="light"

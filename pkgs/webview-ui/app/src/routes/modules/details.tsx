@@ -86,17 +86,15 @@ const Details = (props: DetailsProps) => {
   return (
     <div class="flex w-full flex-col gap-2">
       <article class="prose">{props.data.description}</article>
-      <span class="label-text">Categories</span>
+      <span class="">Categories</span>
       <div>
         <For each={props.data.categories}>
-          {(c) => <div class="badge badge-primary m-1">{c}</div>}
+          {(c) => <div class=" m-1">{c}</div>}
         </For>
       </div>
-      <span class="label-text">Roles</span>
+      <span class="">Roles</span>
       <div>
-        <For each={props.data.roles}>
-          {(r) => <div class="badge badge-secondary m-1">{r}</div>}
-        </For>
+        <For each={props.data.roles}>{(r) => <div class=" m-1">{r}</div>}</For>
       </div>
       <div class="p-2">
         <SolidMarkdown>{props.data.readme}</SolidMarkdown>

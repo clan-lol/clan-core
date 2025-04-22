@@ -60,7 +60,7 @@ export const Menu = (props: MenuProps) => {
         popovertarget={props.popoverid}
         popovertargetaction="toggle"
         ref={setReference}
-        class={cx("join-item", props.buttonClass)}
+        class={cx("", props.buttonClass)}
         {...props.buttonProps}
       >
         {props.label}

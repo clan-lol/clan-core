@@ -555,12 +555,10 @@ const MachineForm = (props: MachineDetailsProps) => {
             )}
           </Field>
 
-          <div class="collapse collapse-arrow col-span-full" tabindex="0">
+          <div class="  col-span-full" tabindex="0">
             <input type="checkbox" />
-            <div class="collapse-title link px-0 text-xl ">
-              Connection Settings
-            </div>
-            <div class="collapse-content">
+            <div class="  px-0 text-xl ">Connection Settings</div>
+            <div class="">
               <Field name="machine.deploy.targetHost">
                 {(field, props) => (
                   <TextInput
@@ -577,7 +575,7 @@ const MachineForm = (props: MachineDetailsProps) => {
           </div>
 
           {
-            <div class="card-actions col-span-full justify-end">
+            <div class=" col-span-full justify-end">
               <Button
                 type="submit"
                 disabled={formStore.submitting || !formStore.dirty}
@@ -589,16 +587,16 @@ const MachineForm = (props: MachineDetailsProps) => {
         </Form>
       </div>
 
-      <div class="card-body">
-        <div class="divider"></div>
+      <div class="">
+        <div class=""></div>
 
         <span class="text-xl text-primary-800">Actions</span>
         <div class="my-4 flex flex-col gap-6">
-          <span class="max-w-md text-neutral">
+          <span class="max-w-md">
             Installs the system for the first time. Used to bootstrap the remote
             device.
           </span>
-          <div class="tooltip w-fit" data-tip="Machine must be online">
+          <div class=" w-fit" data-tip="Machine must be online">
             <Button
               class="w-full"
               // disabled={!online()}
@@ -624,11 +622,11 @@ const MachineForm = (props: MachineDetailsProps) => {
             />
           </Modal>
 
-          <span class="max-w-md text-neutral">
+          <span class="max-w-md">
             Update the system if changes should be synced after the installation
             process.
           </span>
-          <div class="tooltip w-fit" data-tip="Machine must be online">
+          <div class=" w-fit" data-tip="Machine must be online">
             <Button
               class="w-full"
               // disabled={!online()}
@@ -669,10 +667,7 @@ export const MachineDetails = () => {
   return (
     <>
       <Header title={`${params.id} machine`} showBack />
-      <Show
-        when={genericQuery.data}
-        fallback={<span class="loading loading-lg"></span>}
-      >
+      <Show when={genericQuery.data} fallback={<span class=""></span>}>
         {(data) => (
           <>
             <MachineForm initialData={data()} />

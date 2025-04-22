@@ -130,12 +130,10 @@ export function CreateMachine() {
                 </div>
               )}
             </Field>
-            <div class="collapse collapse-arrow" tabindex="0">
+            <div class=" " tabindex="0">
               <input type="checkbox" />
-              <div class="collapse-title link font-medium ">
-                Deployment Settings
-              </div>
-              <div class="collapse-content">
+              <div class="  font-medium ">Deployment Settings</div>
+              <div class="">
                 <Field name="opts.machine.deploy.targetHost">
                   {(field, props) => (
                     <>

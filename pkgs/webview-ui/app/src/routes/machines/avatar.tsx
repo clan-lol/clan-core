@@ -7,7 +7,7 @@ interface AvatarProps {
 export const MachineAvatar = (props: AvatarProps) => {
   return (
     <figure>
-      <div class="avatar placeholder">
+      <div class="">
         <div
           class={cx(
             "rounded-lg border p-2 bg-def-1 border-def-3 size-36",

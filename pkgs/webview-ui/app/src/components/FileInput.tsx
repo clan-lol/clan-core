@@ -44,10 +44,10 @@ export function FileInput(props: FileInputProps) {
   );
 
   return (
-    <div class={cx("form-control w-full", props.class)}>
-      <div class="label">
+    <div class={cx(" w-full", props.class)}>
+      <div class="">
         <span
-          class="label-text block"
+          class=" block"
           classList={{
             "after:ml-0.5 after:text-primary after:content-['*']":
               props.required,
@@ -57,7 +57,7 @@ export function FileInput(props: FileInputProps) {
         </span>
       </div>
       <Show when={props.helperText}>
-        <span class="label-text-alt m-1">{props.helperText}</span>
+        <span class=" m-1">{props.helperText}</span>
       </Show>
       <div
         class={cx(
@@ -92,9 +92,7 @@ export function FileInput(props: FileInputProps) {
           aria-errormessage={`${props.name}-error`}
         />
         {props.error && (
-          <span class="label-text-alt font-bold text-error-700">
-            {props.error}
-          </span>
+          <span class=" font-bold text-error-700">{props.error}</span>
         )}
       </div>
     </div>

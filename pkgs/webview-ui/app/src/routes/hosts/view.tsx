@@ -13,7 +13,7 @@ export const HostList: Component = () => {
 
   return (
     <div>
-      <div class="tooltip tooltip-bottom" data-tip="Refresh install targets">
+      <div class="" data-tip="Refresh install targets">
         <Button
           variant="light"
           onClick={() => callApi("show_mdns", {})}
@@ -26,27 +26,25 @@ export const HostList: Component = () => {
             <For each={Object.values(services())}>
               {(service) => (
                 <div class="w-[30rem] rounded-lg bg-white p-5 shadow-lg">
-                  <div class="stats flex flex-col shadow">
-                    <div class="stat">
-                      <div class="stat-title">Host</div>
-                      <div class="stat-value">{service.host}</div>
-                      <div class="stat-desc"></div>
+                  <div class=" flex flex-col shadow">
+                    <div class="">
+                      <div class="">Host</div>
+                      <div class="">{service.host}</div>
+                      <div class=""></div>
                     </div>
 
-                    <div class="stat">
-                      <div class="stat-title">IP</div>
-                      <div class="stat-value">{service.ip}</div>
-                      <div class="stat-desc"></div>
+                    <div class="">
+                      <div class="">IP</div>
+                      <div class="">{service.ip}</div>
+                      <div class=""></div>
                     </div>
                   </div>
 
-                  <div class="join join-vertical w-full px-0">
-                    <div class="collapse join-item collapse-arrow">
+                  <div class=" w-full px-0">
+                    <div class="  ">
                       <input type="radio" name="my-accordion-4" />
-                      <div class="collapse-title text-xl font-medium">
-                        Details
-                      </div>
-                      <div class="collapse-content">
+                      <div class=" text-xl font-medium">Details</div>
+                      <div class="">
                         <p>
                           <span class="font-bold">Interface</span>
                           {service.interface}
