@@ -942,7 +942,8 @@ def test_dynamic_invalidation(
 ) -> None:
     gen_prefix = "config.clan.core.vars.generators"
 
-    machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
+    clan_flake = Flake(str(flake.path))
+    machine = Machine(name="my_machine", flake=clan_flake)
 
     config = flake.machines[machine.name]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
@@ -962,6 +963,10 @@ def test_dynamic_invalidation(
 
     # this is an abuse
     custom_nix = flake.path / "machines" / machine.name / "hardware-configuration.nix"
+    # Set the validation such that we have a ValidationHash
+    # The validationHash changes every time, if the my_generator.files.my_value.value changes
+    # So every time we re-generate, the dependent_generator should also re-generate.
+    # This however is the case anyways. So i dont understand why we have validationHash here.
     custom_nix.write_text(
         """
         { config, ... }: let
@@ -973,27 +978,34 @@ def test_dynamic_invalidation(
     )
 
     flake.refresh()
-    machine.flush_caches()
+    clan_flake.invalidate_cache()
     monkeypatch.chdir(flake.path)
 
     # before generating, dependent generator validation should be empty; see bogus hardware-configuration.nix above
     # we have to avoid `*.files.value` in this initial select because the generators haven't been run yet
+    # Generators 0: The initial generators before any 'vars generate'
     generators_0 = machine.eval_nix(f"{gen_prefix}.*.{{validationHash}}")
     assert generators_0["dependent_generator"]["validationHash"] is None
 
     # generate both my_generator and (the dependent) dependent_generator
     cli.run(["vars", "generate", "--flake", str(flake.path), machine.name])
-    machine.flush_caches()
+    clan_flake.invalidate_cache()
 
     # after generating once, dependent generator validation should be set
+    # Generators_1: The generators after the first 'vars generate'
     generators_1 = machine.eval_nix(gen_prefix)
     assert generators_1["dependent_generator"]["validationHash"] is not None
 
-    # after generating once, neither generator should want to run again because `clan vars generate` should have re-evaluated the dependent generator's validationHash after executing the parent generator but before executing the dependent generator
+    # @tangential: after generating once, neither generator should want to run again because `clan vars generate` should have re-evaluated the dependent generator's validationHash after executing the parent generator but before executing the dependent generator
     # this ensures that validation can depend on parent generators while still only requiring a single pass
+    #
+    # @hsjobeki: The above sentence is incorrect we don't re-evaluate in between generator runs.
+    # Otherwise we would need to evaluate all machines N-times. Resulting in M*N evaluations each beeing very expensive.
+    # Machine evaluation is highly expensive .
+    # The generator will thus run again, and produce a different result in the second run.
     cli.run(["vars", "generate", "--flake", str(flake.path), machine.name])
-    machine.flush_caches()
-
+    clan_flake.invalidate_cache()
+    # Generators_2: The generators after the second 'vars generate'
     generators_2 = machine.eval_nix(gen_prefix)
     assert (
         generators_1["dependent_generator"]["validationHash"]
@@ -1003,7 +1015,10 @@ def test_dynamic_invalidation(
         generators_1["my_generator"]["files"]["my_value"]["value"]
         == generators_2["my_generator"]["files"]["my_value"]["value"]
     )
+    # The generator value will change on the second run. Because the validationHash changes after the generation.
+    # Previously: it changed during generation because we would re-evaluate the flake N-times after each generator was settled.
+    # Due to performance reasons, we cannot do this anymore
     assert (
         generators_1["dependent_generator"]["files"]["my_value"]["value"]
-        == generators_2["dependent_generator"]["files"]["my_value"]["value"]
+        != generators_2["dependent_generator"]["files"]["my_value"]["value"]
     )
