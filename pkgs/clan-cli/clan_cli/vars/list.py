@@ -1,5 +1,4 @@
 import argparse
-import importlib
 import logging
 
 from clan_cli.api import API
@@ -7,7 +6,6 @@ from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.machines.machines import Machine
-from clan_cli.vars._types import StoreBase
 
 from ._types import GeneratorUpdate
 from .generate import Generator, Prompt, Var, execute_generator
@@ -15,21 +13,11 @@ from .generate import Generator, Prompt, Var, execute_generator
 log = logging.getLogger(__name__)
 
 
-def public_store(machine: Machine) -> StoreBase:
-    public_vars_module = importlib.import_module(machine.public_vars_module)
-    return public_vars_module.FactStore(machine=machine)
-
-
-def secret_store(machine: Machine) -> StoreBase:
-    secret_vars_module = importlib.import_module(machine.secret_vars_module)
-    return secret_vars_module.SecretStore(machine=machine)
-
-
 @API.register
 def get_vars(base_dir: str, machine_name: str) -> list[Var]:
     machine = Machine(name=machine_name, flake=Flake(base_dir))
-    pub_store = public_store(machine)
-    sec_store = secret_store(machine)
+    pub_store = machine.public_vars_store
+    sec_store = machine.secret_vars_store
     all_vars = []
     for generator in machine.vars_generators:
         for var in generator.files:
@@ -50,10 +38,10 @@ def _get_previous_value(
     if not prompt.persist:
         return None
 
-    pub_store = public_store(machine)
+    pub_store = machine.public_vars_store
     if pub_store.exists(generator, prompt.name):
         return pub_store.get(generator, prompt.name).decode()
-    sec_store = secret_store(machine)
+    sec_store = machine.secret_vars_store
     if sec_store.exists(generator, prompt.name):
         return sec_store.get(generator, prompt.name).decode()
     return None
@@ -87,8 +75,8 @@ def set_prompts(
         execute_generator(
             machine,
             generator,
-            secret_vars_store=secret_store(machine),
-            public_vars_store=public_store(machine),
+            secret_vars_store=machine.secret_vars_store,
+            public_vars_store=machine.public_vars_store,
             prompt_values=update.prompt_values,
         )
 

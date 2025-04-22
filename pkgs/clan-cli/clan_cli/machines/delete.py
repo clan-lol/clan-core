@@ -14,12 +14,6 @@ from clan_cli.secrets.machines import remove_machine as secrets_machine_remove
 from clan_cli.secrets.secrets import (
     list_secrets,
 )
-from clan_cli.vars.list import (
-    public_store as vars_public_store,
-)
-from clan_cli.vars.list import (
-    secret_store as vars_secret_store,
-)
 
 from .machines import Machine
 
@@ -55,8 +49,8 @@ def delete_machine(flake: Flake, name: str) -> None:
         shutil.rmtree(secret_path)
 
     machine = Machine(name, flake)
-    changed_paths.extend(vars_public_store(machine).delete_store())
-    changed_paths.extend(vars_secret_store(machine).delete_store())
+    changed_paths.extend(machine.public_vars_store.delete_store())
+    changed_paths.extend(machine.secret_vars_store.delete_store())
     # Remove the machine's key, and update secrets & vars that referenced it:
     if secrets_has_machine(flake.path, name):
         secrets_machine_remove(flake.path, name)

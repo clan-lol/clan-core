@@ -1,5 +1,4 @@
 import argparse
-import importlib
 import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -12,16 +11,13 @@ log = logging.getLogger(__name__)
 
 
 def upload_secrets(machine: Machine) -> None:
-    secret_facts_module = importlib.import_module(machine.secret_facts_module)
-    secret_facts_store = secret_facts_module.SecretStore(machine=machine)
-
-    if not secret_facts_store.needs_upload():
+    if not machine.secret_facts_store.needs_upload():
         machine.info("Secrets already uploaded")
         return
 
     with TemporaryDirectory(prefix="facts-upload-") as _tempdir:
         local_secret_dir = Path(_tempdir).resolve()
-        secret_facts_store.upload(local_secret_dir)
+        machine.secret_facts_store.upload(local_secret_dir)
         remote_secret_dir = Path(machine.secrets_upload_directory)
 
         upload(machine.target_host, local_secret_dir, remote_secret_dir)

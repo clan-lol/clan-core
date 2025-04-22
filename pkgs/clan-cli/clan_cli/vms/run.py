@@ -1,5 +1,4 @@
 import argparse
-import importlib
 import json
 import logging
 import os
@@ -55,9 +54,7 @@ def build_vm(
         nix_options = []
     secrets_dir = get_secrets(machine, tmpdir)
 
-    public_facts_module = importlib.import_module(machine.public_facts_module)
-    public_facts_store = public_facts_module.FactStore(machine=machine)
-    public_facts = public_facts_store.get_all()
+    public_facts = machine.public_facts_store.get_all()
 
     nixos_config_file = machine.build_nix(
         "config.system.clan.vm.create",
@@ -81,12 +78,9 @@ def get_secrets(
     secrets_dir = tmpdir / "secrets"
     secrets_dir.mkdir(parents=True, exist_ok=True)
 
-    secret_facts_module = importlib.import_module(machine.secret_facts_module)
-    secret_facts_store = secret_facts_module.SecretStore(machine=machine)
-
     generate_facts([machine])
 
-    secret_facts_store.upload(secrets_dir)
+    machine.secret_facts_store.upload(secrets_dir)
     return secrets_dir
 
 

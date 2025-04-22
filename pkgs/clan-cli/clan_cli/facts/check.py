@@ -1,5 +1,4 @@
 import argparse
-import importlib
 import logging
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
@@ -9,11 +8,6 @@ log = logging.getLogger(__name__)
 
 
 def check_secrets(machine: Machine, service: None | str = None) -> bool:
-    secret_facts_module = importlib.import_module(machine.secret_facts_module)
-    secret_facts_store = secret_facts_module.SecretStore(machine=machine)
-    public_facts_module = importlib.import_module(machine.public_facts_module)
-    public_facts_store = public_facts_module.FactStore(machine=machine)
-
     missing_secret_facts = []
     missing_public_facts = []
     services = [service] if service else list(machine.facts_data.keys())
@@ -23,14 +17,14 @@ def check_secrets(machine: Machine, service: None | str = None) -> bool:
                 secret_name = secret_fact
             else:
                 secret_name = secret_fact["name"]
-            if not secret_facts_store.exists(service, secret_name):
+            if not machine.secret_facts_store.exists(service, secret_name):
                 machine.info(
                     f"Secret fact '{secret_fact}' for service '{service}' is missing."
                 )
                 missing_secret_facts.append((service, secret_name))
 
         for public_fact in machine.facts_data[service]["public"]:
-            if not public_facts_store.exists(service, public_fact):
+            if not machine.public_facts_store.exists(service, public_fact):
                 machine.info(
                     f"Public fact '{public_fact}' for service '{service}' is missing."
                 )

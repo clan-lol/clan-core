@@ -1,5 +1,4 @@
 import argparse
-import importlib
 import logging
 from pathlib import Path
 
@@ -10,12 +9,12 @@ log = logging.getLogger(__name__)
 
 
 def upload_secret_vars(machine: Machine, directory: Path | None = None) -> None:
-    secret_store_module = importlib.import_module(machine.secret_vars_module)
-    secret_store = secret_store_module.SecretStore(machine=machine)
     if directory:
-        secret_store.populate_dir(directory, phases=["activation", "users", "services"])
+        machine.secret_vars_store.populate_dir(
+            directory, phases=["activation", "users", "services"]
+        )
     else:
-        secret_store.upload(phases=["activation", "users", "services"])
+        machine.secret_vars_store.upload(phases=["activation", "users", "services"])
 
 
 def upload_command(args: argparse.Namespace) -> None:

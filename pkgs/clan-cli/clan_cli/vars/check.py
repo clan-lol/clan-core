@@ -1,11 +1,9 @@
 import argparse
-import importlib
 import logging
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
-from clan_cli.vars._types import StoreBase
 
 log = logging.getLogger(__name__)
 
@@ -30,11 +28,6 @@ class VarStatus:
 
 
 def vars_status(machine: Machine, generator_name: None | str = None) -> VarStatus:
-    secret_vars_module = importlib.import_module(machine.secret_vars_module)
-    secret_vars_store: StoreBase = secret_vars_module.SecretStore(machine=machine)
-    public_vars_module = importlib.import_module(machine.public_vars_module)
-    public_vars_store: StoreBase = public_vars_module.FactStore(machine=machine)
-
     missing_secret_vars = []
     missing_public_vars = []
     # signals if a var needs to be updated (eg. needs re-encryption due to new users added)
@@ -55,17 +48,19 @@ def vars_status(machine: Machine, generator_name: None | str = None) -> VarStatu
     for generator in generators:
         generator.machine(machine)
         for file in generator.files:
-            file.store(secret_vars_store if file.secret else public_vars_store)
+            file.store(
+                machine.secret_vars_store if file.secret else machine.public_vars_store
+            )
             file.generator(generator)
 
             if file.secret:
-                if not secret_vars_store.exists(generator, file.name):
+                if not machine.secret_vars_store.exists(generator, file.name):
                     machine.info(
                         f"Secret var '{file.name}' for service '{generator.name}' in machine {machine.name} is missing."
                     )
                     missing_secret_vars.append(file)
                 else:
-                    msg = secret_vars_store.health_check(
+                    msg = machine.secret_vars_store.health_check(
                         generator=generator,
                         file_name=file.name,
                     )
@@ -75,15 +70,15 @@ def vars_status(machine: Machine, generator_name: None | str = None) -> VarStatu
                         )
                         unfixed_secret_vars.append(file)
 
-            elif not public_vars_store.exists(generator, file.name):
+            elif not machine.public_vars_store.exists(generator, file.name):
                 machine.info(
                     f"Public var '{file.name}' for service '{generator.name}' in machine {machine.name} is missing."
                 )
                 missing_public_vars.append(file)
         # check if invalidation hash is up to date
         if not (
-            secret_vars_store.hash_is_valid(generator)
-            and public_vars_store.hash_is_valid(generator)
+            machine.secret_vars_store.hash_is_valid(generator)
+            and machine.public_vars_store.hash_is_valid(generator)
         ):
             invalid_generators.append(generator.name)
             machine.info(

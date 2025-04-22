@@ -5,7 +5,7 @@ import re
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 from clan_cli.cmd import Log, RunOpts, run_no_stdout
 from clan_cli.errors import ClanCmdError, ClanError
@@ -94,50 +94,24 @@ class Machine:
             )
         return val
 
-    @property
-    def secret_facts_module(
-        self,
-    ) -> Literal[
-        "clan_cli.facts.secret_modules.sops",
-        "clan_cli.facts.secret_modules.vm",
-        "clan_cli.facts.secret_modules.password_store",
-    ]:
-        return self.deployment["facts"]["secretModule"]
-
-    @property
-    def public_facts_module(
-        self,
-    ) -> Literal[
-        "clan_cli.facts.public_modules.in_repo", "clan_cli.facts.public_modules.vm"
-    ]:
-        return self.deployment["facts"]["publicModule"]
-
     @cached_property
     def secret_facts_store(self) -> facts_secret_modules.SecretStoreBase:
-        module = importlib.import_module(self.secret_facts_module)
+        module = importlib.import_module(self.deployment["facts"]["secretModule"])
         return module.SecretStore(machine=self)
 
     @cached_property
     def public_facts_store(self) -> facts_public_modules.FactStoreBase:
-        module = importlib.import_module(self.public_facts_module)
+        module = importlib.import_module(self.deployment["facts"]["publicModule"])
         return module.FactStore(machine=self)
-
-    @property
-    def secret_vars_module(self) -> str:
-        return self.deployment["vars"]["secretModule"]
-
-    @property
-    def public_vars_module(self) -> str:
-        return self.deployment["vars"]["publicModule"]
 
     @cached_property
     def secret_vars_store(self) -> StoreBase:
-        module = importlib.import_module(self.secret_vars_module)
+        module = importlib.import_module(self.deployment["vars"]["secretModule"])
         return module.SecretStore(machine=self)
 
     @cached_property
     def public_vars_store(self) -> StoreBase:
-        module = importlib.import_module(self.public_vars_module)
+        module = importlib.import_module(self.deployment["vars"]["publicModule"])
         return module.FactStore(machine=self)
 
     @property
