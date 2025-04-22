@@ -1,5 +1,10 @@
 ---
 description = "A secure, file synchronization app for devices over networks, offering a private alternative to cloud services."
+features = [ "inventory" ]
+
+[constraints]
+roles.introducer.min = 1
+roles.introducer.max = 1
 ---
 ## Usage
 
