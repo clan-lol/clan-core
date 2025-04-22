@@ -63,10 +63,8 @@ let
   nixpkgs' =
     runCommand "nixpkgs"
       {
-        nativeBuildInputs = [
-          # old nix version doesn't support --flake flag
-          (if lib.versionAtLeast nix.version "2.24" then nix else nixVersions.latest)
-        ];
+        # Not all versions have `nix flake update --flake` option
+        nativeBuildInputs = [ nixVersions.stable ];
       }
       ''
         mkdir $out
