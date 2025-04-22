@@ -1,5 +1,6 @@
 {
   _class,
+  options,
   config,
   lib,
   ...
@@ -24,7 +25,15 @@
             - root@example.com:2222?IdentityFile=/path/to/private/key&StrictHostKeyChecking=yes
         '';
         default =
-          if config.networking.domain != null then "root@${config.networking.fqdnOrHostName}" else null;
+          if
+            (
+              config.networking.domain != null
+              || options.networking.fqdn.highestPrio < (lib.mkOptionDefault { }).priority
+            )
+          then
+            "root@${config.networking.fqdn}"
+          else
+            null;
         defaultText = lib.literalExpression ''if config.networking.domain is not null then "root@''${config.networking.fqdnOrHostName}" else null'';
         type = lib.types.nullOr lib.types.str;
       };
