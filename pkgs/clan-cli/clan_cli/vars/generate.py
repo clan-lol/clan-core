@@ -266,8 +266,6 @@ def execute_generator(
         machine.flake_dir,
         f"Update vars via generator {generator.name} for machine {machine.name}",
     )
-    if len(files_to_commit) > 0:
-        machine.flush_caches()
 
 
 def _ask_prompts(
@@ -526,7 +524,11 @@ def generate_command(args: argparse.Namespace) -> None:
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
         ]
     )
-    generate_vars(machines, args.generator, args.regenerate, no_sandbox=args.no_sandbox)
+    has_changed = generate_vars(
+        machines, args.generator, args.regenerate, no_sandbox=args.no_sandbox
+    )
+    if has_changed:
+        args.flake.invalidate_cache()
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:
