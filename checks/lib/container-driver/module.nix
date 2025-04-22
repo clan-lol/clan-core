@@ -102,6 +102,12 @@ in
           ${config.driver}/bin/nixos-test-driver -o $out
         '';
 
+        nativeBuildInputs = [
+          hostPkgs.util-linux
+          hostPkgs.coreutils
+          hostPkgs.iproute2
+        ];
+
         passthru = config.passthru;
 
         meta = config.meta;

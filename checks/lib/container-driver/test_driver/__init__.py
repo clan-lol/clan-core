@@ -7,6 +7,8 @@ import time
 import types
 from collections.abc import Callable
 from contextlib import _GeneratorContextManager
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -110,7 +112,11 @@ class Machine:
         self.rootdir: Path = rootdir
         self.logger = logger
 
-    def start(self) -> None:
+    @cached_property
+    def container_pid(self) -> int:
+        return self.get_systemd_process()
+
+    def start(self) -> list[str]:
         prepare_machine_root(self.name, self.rootdir)
         cmd = [
             "systemd-nspawn",
@@ -121,18 +127,18 @@ class Machine:
             self.rootdir,
             "--register=no",
             "--resolv-conf=off",
-            "--bind=/nix",
-            "--bind",
-            self.out_dir,
+            f"--bind=/.containers/{self.name}/nix:/nix",
             "--bind=/proc:/run/host/proc",
             "--bind=/sys:/run/host/sys",
             "--private-network",
+            "--network-bridge=br0",
             self.toplevel.joinpath("init"),
         ]
         env = os.environ.copy()
         env["SYSTEMD_NSPAWN_UNIFIED_HIERARCHY"] = "1"
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True, env=env)
         self.container_pid = self.get_systemd_process()
+        return cmd
 
     def get_systemd_process(self) -> int:
         assert self.process is not None, "Machine not started"
@@ -342,46 +348,70 @@ class Machine:
         self.shutdown()
 
 
-NIX_DIR = Path("/nix")
-NIX_STORE = Path("/nix/store/")
-NEW_NIX_DIR = Path("/.nix-rw")
-NEW_NIX_STORE_DIR = NEW_NIX_DIR / "store"
+@dataclass
+class ContainerInfo:
+    toplevel: Path
+    closure_info: Path
+
+    @cached_property
+    def name(self) -> str:
+        name_match = re.match(r".*-nixos-system-(.+)-(.+)", self.toplevel.name)
+        if not name_match:
+            msg = f"Unable to extract hostname from {self.toplevel.name}"
+            raise Error(msg)
+        return name_match.group(1)
+
+    @property
+    def root_dir(self) -> Path:
+        return Path(f"/.containers/{self.name}")
+
+    @property
+    def nix_store_dir(self) -> Path:
+        return self.root_dir / "nix" / "store"
+
+    @property
+    def etc_dir(self) -> Path:
+        return self.root_dir / "etc"
 
 
-def setup_filesystems() -> None:
+def setup_filesystems(container: ContainerInfo) -> None:
     # We don't care about cleaning up the mount points, since we're running in a nix sandbox.
     Path("/run").mkdir(parents=True, exist_ok=True)
     subprocess.run(["mount", "-t", "tmpfs", "none", "/run"], check=True)
     subprocess.run(["mount", "-t", "cgroup2", "none", "/sys/fs/cgroup"], check=True)
-    Path("/etc").chmod(0o755)
+    container.etc_dir.mkdir(parents=True)
     Path("/etc/os-release").touch()
     Path("/etc/machine-id").write_text("a5ea3f98dedc0278b6f3cc8c37eeaeac")
-    NEW_NIX_STORE_DIR.mkdir(parents=True)
+    container.nix_store_dir.mkdir(parents=True)
     # Read /proc/mounts and replicate every bind mount
     with Path("/proc/self/mounts").open() as f:
         for line in f:
             columns = line.split(" ")
             source = Path(columns[1])
-            if source.parent != NIX_STORE:
+            if source.parent != Path("/nix/store/"):
                 continue
-            target = NEW_NIX_STORE_DIR / source.name
+            target = container.nix_store_dir / source.name
             if source.is_dir():
                 target.mkdir()
             else:
                 target.touch()
             try:
+                if "acl" in target.name:
+                    print(f"mount({source}, {target})")
                 mount(source, target, "none", MS_BIND)
             except OSError as e:
                 msg = f"mount({source}, {target}) failed"
                 raise Error(msg) from e
-    out = Path(os.environ["out"])
-    (NEW_NIX_STORE_DIR / out.name).mkdir()
-    mount(NEW_NIX_DIR, NIX_DIR, "none", MS_BIND | MS_REC)
 
 
-def load_nix_db(closure_info: Path) -> None:
-    with (closure_info / "registration").open() as f:
-        subprocess.run(["nix-store", "--load-db"], stdin=f, check=True, text=True)
+def load_nix_db(container: ContainerInfo) -> None:
+    with (container.closure_info / "registration").open() as f:
+        subprocess.run(
+            ["nix-store", "--load-db", "--store", str(container.root_dir)],
+            stdin=f,
+            check=True,
+            text=True,
+        )
 
 
 class Driver:
@@ -389,7 +419,7 @@ class Driver:
 
     def __init__(
         self,
-        containers: list[tuple[Path, Path]],
+        containers: list[ContainerInfo],
         logger: AbstractLogger,
         testscript: str,
         out_dir: str,
@@ -398,32 +428,32 @@ class Driver:
         self.testscript = testscript
         self.out_dir = out_dir
         self.logger = logger
-        setup_filesystems()
-        # TODO: this won't work for multiple containers
-        assert len(containers) == 1, "Only one container is supported at the moment"
-        load_nix_db(containers[0][1])
 
         self.tempdir = TemporaryDirectory()
         tempdir_path = Path(self.tempdir.name)
 
         self.machines = []
         for container in containers:
-            name_match = re.match(r".*-nixos-system-(.+)-(.+)", container[0].name)
-            if not name_match:
-                msg = f"Unable to extract hostname from {container[0].name}"
-                raise Error(msg)
-            name = name_match.group(1)
+            setup_filesystems(container)
+            load_nix_db(container)
             self.machines.append(
                 Machine(
-                    name=name,
-                    toplevel=container[0],
-                    rootdir=tempdir_path / name,
+                    name=container.name,
+                    toplevel=container.toplevel,
+                    rootdir=tempdir_path / container.name,
                     out_dir=self.out_dir,
                     logger=self.logger,
                 )
             )
 
     def start_all(self) -> None:
+        # child
+        # create bridge
+        subprocess.run(
+            ["ip", "link", "add", "br0", "type", "bridge"], check=True, text=True
+        )
+        subprocess.run(["ip", "link", "set", "br0", "up"], check=True, text=True)
+
         for machine in self.machines:
             machine.start()
 
@@ -509,7 +539,10 @@ def main() -> None:
     args = arg_parser.parse_args()
     logger = CompositeLogger([TerminalLogger()])
     with Driver(
-        containers=args.containers,
+        containers=[
+            ContainerInfo(toplevel, closure_info)
+            for toplevel, closure_info in args.containers
+        ],
         testscript=args.test_script.read_text(),
         out_dir=args.output_directory.resolve(),
         logger=logger,
