@@ -156,21 +156,24 @@ def deploy_machines(machines: list[Machine]) -> None:
         switch_cmd = ["nixos-rebuild", "switch", *nix_options]
         test_cmd = ["nixos-rebuild", "test", *nix_options]
 
+        become_root = True
+
         target_host: Host | None = host.meta.get("target_host")
         if target_host:
+            become_root = False
             switch_cmd.extend(["--target-host", target_host.target])
             test_cmd.extend(["--target-host", target_host.target])
 
-        if (target_host and target_host.user != "root") or host.user != "root":
-            switch_cmd.extend(["--use-remote-sudo"])
-            test_cmd.extend(["--use-remote-sudo"])
+            if target_host.user != "root":
+                switch_cmd.extend(["--use-remote-sudo"])
+                test_cmd.extend(["--use-remote-sudo"])
 
         env = host.nix_ssh_env(None)
         ret = host.run(
             switch_cmd,
             RunOpts(check=False, msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
             extra_env=env,
-            become_root=True,
+            become_root=become_root,
         )
 
         # Last output line (config store path) is printed to stdout instead of stderr
@@ -193,7 +196,7 @@ def deploy_machines(machines: list[Machine]) -> None:
                 test_cmd if is_mobile else switch_cmd,
                 RunOpts(msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
                 extra_env=env,
-                become_root=True,
+                become_root=become_root,
             )
 
     with AsyncRuntime() as runtime:
