@@ -4,6 +4,7 @@ let
     mkOption
     types
     ;
+
 in
 {
   flakeModules = clanLib.callLib ./flakeModules.nix { };
@@ -17,6 +18,7 @@ in
       nixosTest,
       pkgs,
       self,
+      useContainers ? true,
       ...
     }:
     let
@@ -28,7 +30,9 @@ in
         clanFlakeResult = config.clan;
       in
       {
-        imports = [ nixosTest ];
+        imports = [
+          nixosTest
+        ] ++ lib.optionals (useContainers) [ ./container-test-driver/driver-module.nix ];
         options = {
           clanSettings = mkOption {
             default = { };

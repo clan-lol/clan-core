@@ -37,6 +37,9 @@ let
   pythonizedNames = map pythonizeName nodeHostNames;
 in
 {
+  defaults.imports = [
+    ./nixos-module.nix
+  ];
   driver = lib.mkForce (
     hostPkgs.runCommand "nixos-test-driver-${config.name}"
       {
