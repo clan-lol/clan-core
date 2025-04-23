@@ -1,4 +1,4 @@
-import ../lib/test-base.nix (
+(
   {
     config,
     pkgs,

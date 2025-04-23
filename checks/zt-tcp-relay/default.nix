@@ -1,4 +1,4 @@
-(import ../lib/container-test.nix) (
+(
   { pkgs, ... }:
   {
     name = "zt-tcp-relay";

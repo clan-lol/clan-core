@@ -36,7 +36,7 @@
         # Borgbackup overrides
         services.borgbackup.repos.test-backups = {
           path = "/var/lib/borgbackup/test-backups";
-          authorizedKeys = [ (builtins.readFile ../lib/ssh/pubkey) ];
+          authorizedKeys = [ (builtins.readFile ../assets/ssh/pubkey) ];
         };
         clan.borgbackup.destinations.test-backup.repo = lib.mkForce "borg@machine:.";
 
@@ -45,7 +45,7 @@
 
         programs.ssh.knownHosts = {
           machine.hostNames = [ "machine" ];
-          machine.publicKey = builtins.readFile ../lib/ssh/pubkey;
+          machine.publicKey = builtins.readFile ../assets/ssh/pubkey;
         };
 
         services.openssh = {
@@ -60,7 +60,7 @@
           ];
         };
 
-        users.users.root.openssh.authorizedKeys.keyFiles = [ ../lib/ssh/pubkey ];
+        users.users.root.openssh.authorizedKeys.keyFiles = [ ../assets/ssh/pubkey ];
 
         # This is needed to unlock the user for sshd
         # Because we use sshd without setuid binaries
@@ -68,21 +68,21 @@
 
         systemd.tmpfiles.settings."vmsecrets" = {
           "/root/.ssh/id_ed25519" = {
-            C.argument = "${../lib/ssh/privkey}";
+            C.argument = "${../assets/ssh/privkey}";
             z = {
               mode = "0400";
               user = "root";
             };
           };
           "/etc/secrets/ssh.id_ed25519" = {
-            C.argument = "${../lib/ssh/privkey}";
+            C.argument = "${../assets/ssh/privkey}";
             z = {
               mode = "0400";
               user = "root";
             };
           };
           "/etc/secrets/borgbackup/borgbackup.ssh" = {
-            C.argument = "${../lib/ssh/privkey}";
+            C.argument = "${../assets/ssh/privkey}";
             z = {
               mode = "0400";
               user = "root";
@@ -169,7 +169,7 @@
     in
     {
       checks = pkgs.lib.mkIf pkgs.stdenv.isLinux {
-        backups = (import ../lib/container-test.nix) {
+        backups = self.clanLib.test.containerTest {
           name = "backups";
           nodes.machine = {
             imports =

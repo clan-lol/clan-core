@@ -1,4 +1,4 @@
-(import ../lib/container-test.nix) (
+(
   { ... }:
   {
     name = "container";
