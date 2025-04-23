@@ -4,9 +4,9 @@ from collections.abc import Callable
 from typing import Any, ClassVar, cast
 
 import gi
-from clan_cli.clan_uri import ClanURI
 from clan_cli.machines.machines import Machine
 
+from clan_vm_manager.clan_uri import ClanURI
 from clan_vm_manager.components.gkvstore import GKVStore
 from clan_vm_manager.history import HistoryEntry, add_history
 from clan_vm_manager.singletons.use_vms import ClanStore
