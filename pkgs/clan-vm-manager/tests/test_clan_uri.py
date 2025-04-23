@@ -1,9 +1,9 @@
 from pathlib import Path
 
 import pytest
-from clan_cli.clan_uri import ClanURI
 from clan_cli.flake import Flake
 from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_vm_manager.clan_uri import ClanURI
 
 
 def test_get_url() -> None:

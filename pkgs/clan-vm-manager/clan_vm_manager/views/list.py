@@ -5,9 +5,9 @@ from functools import partial
 from typing import Any, TypeVar
 
 import gi
-from clan_cli.clan_uri import ClanURI
 from clan_cli.errors import ClanError
 
+from clan_vm_manager.clan_uri import ClanURI
 from clan_vm_manager.components.gkvstore import GKVStore
 from clan_vm_manager.components.interfaces import ClanConfig
 from clan_vm_manager.components.list_splash import EmptySplash
