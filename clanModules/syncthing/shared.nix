@@ -13,8 +13,8 @@
       '';
       type = lib.types.nullOr lib.types.str;
       example = "BABNJY4-G2ICDLF-QQEG7DD-N3OBNGF-BCCOFK6-MV3K7QJ-2WUZHXS-7DTW4AS";
-      default = config.clan.core.vars.services.syncthing.files."syncthing.pub".value;
-      defaultText = "config.clan.core.vars.services.syncthing.files.\"syncthing.pub\".value";
+      default = config.clan.core.vars.generators.syncthing.files."syncthing.pub".value;
+      defaultText = "config.clan.core.vars.generators.syncthing.files.\"syncthing.pub\".value";
     };
     introducer = lib.mkOption {
       description = ''
@@ -79,7 +79,6 @@
 
       services.syncthing = {
         enable = true;
-        configDir = "/var/lib/syncthing";
 
         overrideFolders = lib.mkDefault (
           if (config.clan.syncthing.introducer == null) then true else false
@@ -88,17 +87,13 @@
           if (config.clan.syncthing.introducer == null) then true else false
         );
 
-        dataDir = lib.mkDefault "/home/user/";
-
-        group = "syncthing";
-
-        key = lib.mkDefault config.clan.secrets.syncthing.secrets."syncthing.key".path or null;
-        cert = lib.mkDefault config.clan.secrets.syncthing.secrets."syncthing.cert".path or null;
+        key = lib.mkDefault config.clan.core.vars.generators.syncthing.files."syncthing.key".path or null;
+        cert = lib.mkDefault config.clan.core.vars.generators.syncthing.files."syncthing.cert".path or null;
 
         settings = {
           options = {
             urAccepted = -1;
-            allowedNetworks = [ config.clan.core.networking.zerotier.subnet ];
+            allowedNetworks = [ ];
           };
           devices =
             { }
@@ -176,12 +171,11 @@
             set -efu pipefail
 
             APIKEY=$(cat ${apiKey})
-            ${lib.getExe pkgs.gnused} -i "s/<apikey>.*<\/apikey>/<apikey>$APIKEY<\/apikey>/" /var/lib/syncthing/config.xml
+            ${lib.getExe pkgs.gnused} -i "s/<apikey>.*<\/apikey>/<apikey>$APIKEY<\/apikey>/" ${config.services.syncthing.configDir}/config.xml
             # sudo systemctl restart syncthing.service
             systemctl restart syncthing.service
           '';
           serviceConfig = {
-            WorkingDirectory = "/var/lib/syncthing";
             BindReadOnlyPaths = [ apiKey ];
             Type = "oneshot";
           };
@@ -189,9 +183,12 @@
 
       clan.core.vars.generators.syncthing = {
         migrateFact = "syncthing";
-        files."syncthing.key" = { };
-        files."syncthing.cert" = { };
-        files."syncthing.api" = { };
+        files."syncthing.key".group = config.services.syncthing.group;
+        files."syncthing.key".owner = config.services.syncthing.user;
+        files."syncthing.cert".group = config.services.syncthing.group;
+        files."syncthing.cert".owner = config.services.syncthing.user;
+        files."syncthing.api".group = config.services.syncthing.group;
+        files."syncthing.api".owner = config.services.syncthing.user;
         files."syncthing.pub".secret = false;
         runtimeInputs = [
           pkgs.coreutils
