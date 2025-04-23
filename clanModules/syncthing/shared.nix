@@ -13,8 +13,8 @@
       '';
       type = lib.types.nullOr lib.types.str;
       example = "BABNJY4-G2ICDLF-QQEG7DD-N3OBNGF-BCCOFK6-MV3K7QJ-2WUZHXS-7DTW4AS";
-      default = config.clan.core.vars.generators.syncthing.files."syncthing.pub".value;
-      defaultText = "config.clan.core.vars.generators.syncthing.files.\"syncthing.pub\".value";
+      default = config.clan.core.vars.generators.syncthing.files."id".value;
+      defaultText = "config.clan.core.vars.generators.syncthing.files.\"id\".value";
     };
     introducer = lib.mkOption {
       description = ''
@@ -87,8 +87,8 @@
           if (config.clan.syncthing.introducer == null) then true else false
         );
 
-        key = lib.mkDefault config.clan.core.vars.generators.syncthing.files."syncthing.key".path or null;
-        cert = lib.mkDefault config.clan.core.vars.generators.syncthing.files."syncthing.cert".path or null;
+        key = lib.mkDefault config.clan.core.vars.generators.syncthing.files."key".path or null;
+        cert = lib.mkDefault config.clan.core.vars.generators.syncthing.files."cert".path or null;
 
         settings = {
           options = {
@@ -118,7 +118,7 @@
           getPendingDevices = "/rest/cluster/pending/devices";
           postNewDevice = "/rest/config/devices";
           SharedFolderById = "/rest/config/folders/";
-          apiKey = config.clan.core.vars.generators.syncthing.files."syncthing.api".path;
+          apiKey = config.clan.core.vars.generators.syncthing.files."apikey".path;
         in
         lib.mkIf config.clan.syncthing.autoAcceptDevices {
           description = "Syncthing auto accept devices";
@@ -160,7 +160,7 @@
 
       systemd.services.syncthing-init-api-key =
         let
-          apiKey = config.clan.core.vars.generators.syncthing.files."syncthing.api".path;
+          apiKey = config.clan.core.vars.generators.syncthing.files."apikey".path;
         in
         lib.mkIf config.clan.syncthing.autoAcceptDevices {
           description = "Set the api key";
@@ -184,28 +184,29 @@
       clan.core.vars.generators.syncthing = {
         migrateFact = "syncthing";
 
-        files."syncthing.key".group = config.services.syncthing.group;
-        files."syncthing.key".owner = config.services.syncthing.user;
+        files."key".group = config.services.syncthing.group;
+        files."key".owner = config.services.syncthing.user;
 
-        files."syncthing.cert".group = config.services.syncthing.group;
-        files."syncthing.cert".owner = config.services.syncthing.user;
+        files."cert".group = config.services.syncthing.group;
+        files."cert".owner = config.services.syncthing.user;
 
-        files."syncthing.api".group = config.services.syncthing.group;
-        files."syncthing.api".owner = config.services.syncthing.user;
+        files."apikey".group = config.services.syncthing.group;
+        files."apikey".owner = config.services.syncthing.user;
 
-        files."syncthing.pub".secret = false;
+        files."id".secret = false;
 
         runtimeInputs = [
           pkgs.coreutils
           pkgs.gnugrep
           pkgs.syncthing
         ];
+
         script = ''
           syncthing generate --config "$out"
-          mv "$out"/key.pem "$out"/syncthing.key
-          mv "$out"/cert.pem "$out"/syncthing.cert
-          cat "$out"/config.xml | grep -oP '(?<=<device id=")[^"]+' | uniq > "$out"/syncthing.pub
-          cat "$out"/config.xml | grep -oP '<apikey>\K[^<]+' | uniq > "$out"/syncthing.api
+          mv "$out"/key.pem "$out"/key
+          mv "$out"/cert.pem "$out"/cert
+          cat "$out"/config.xml | grep -oP '(?<=<device id=")[^"]+' | uniq > "$out"/id
+          cat "$out"/config.xml | grep -oP '<apikey>\K[^<]+' | uniq > "$out"/apikey
         '';
       };
     }
