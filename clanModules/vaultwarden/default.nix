@@ -92,36 +92,39 @@ in
       };
     };
 
-    clan.core.facts.services = {
+    clan.core.vars.generators = {
       vaultwarden-admin = {
-        secret."vaultwarden-admin" = { };
-        secret."vaultwarden-admin-hash" = { };
-        generator.path = with pkgs; [
+        migrateFact = "vaultwarden-admin";
+        files."vaultwarden-admin" = { };
+        files."vaultwarden-admin-hash" = { };
+        runtimeInputs = with pkgs; [
           coreutils
           pwgen
           libargon2
           openssl
         ];
-        generator.script = ''
+        script = ''
           ADMIN_PWD=$(pwgen 16 -n1 | tr -d "\n")
           ADMIN_HASH=$(echo -n "$ADMIN_PWD" | argon2 "$(openssl rand -base64 32)" -e -id -k 65540 -t 3 -p 4)
 
           config="
           ADMIN_TOKEN=\"$ADMIN_HASH\"
           "
-          echo -n "$ADMIN_PWD" > "$secrets"/vaultwarden-admin
-          echo -n "$config" > "$secrets"/vaultwarden-admin-hash
+          echo -n "$ADMIN_PWD" > "$out"/vaultwarden-admin
+          echo -n "$config" > "$out"/vaultwarden-admin-hash
         '';
       };
       vaultwarden-smtp = {
-        secret."vaultwarden-smtp" = { };
-        generator.prompt = "${cfg.smtp.from} SMTP password";
-        generator.path = with pkgs; [ coreutils ];
-        generator.script = ''
+        migrateFact = "vaultwarden-smtp";
+        prompts."vaultwarden-smtp".description = "${cfg.smtp.from} SMTP password";
+        prompts."vaultwarden-smtp".persist = true;
+        runtimeInputs = with pkgs; [ coreutils ];
+        script = ''
+          prompt_value="$(cat "$prompts"/vaultwarden-smtp)"
           config="
             SMTP_PASSWORD=\"$prompt_value\"
           "
-          echo -n "$config" > "$secrets"/vaultwarden-smtp
+          echo -n "$config" > "$out"/vaultwarden-smtp
         '';
       };
     };
@@ -129,7 +132,7 @@ in
     systemd.services."vaultwarden" = {
       serviceConfig = {
         EnvironmentFile = [
-          config.clan.core.facts.services."vaultwarden-smtp".secret."vaultwarden-smtp".path
+          config.clan.core.vars.generators."vaultwarden-smtp".files."vaultwarden-smtp".path
         ];
       };
     };
@@ -138,7 +141,7 @@ in
       enable = true;
       dbBackend = "postgresql";
       environmentFile =
-        config.clan.core.facts.services."vaultwarden-admin".secret."vaultwarden-admin-hash".path; # TODO: Make this upstream an array
+        config.clan.core.vars.generators."vaultwarden-admin".files."vaultwarden-admin-hash".path; # TODO: Make this upstream an array
       config = {
         SMTP_SECURITY = "force_tls";
         SMTP_HOST = cfg.smtp.host;
