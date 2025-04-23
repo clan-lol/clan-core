@@ -66,13 +66,14 @@ clanLib.test.makeTestClan {
         introducer.wait_for_unit("syncthing")
         peer1.wait_for_unit("syncthing")
         peer2.wait_for_unit("syncthing")
-        peer1.wait_for_file("/home/user/Shared")
-        peer2.wait_for_file("/home/user/Shared")
+        peer1.execute("ls -la /var/lib/syncthing")
+        peer2.execute("ls -la /var/lib/syncthing")
+        peer1.wait_for_file("/var/lib/syncthing/Shared")
+        peer2.wait_for_file("/var/lib/syncthing/Shared")
         introducer.shutdown()
-        peer1.execute("echo hello > /home/user/Shared/hello")
-        peer2.wait_for_file("/home/user/Shared/hello")
-        out = peer2.succeed("cat /home/user/Shared/hello")
-        print(out)
+        peer1.execute("echo hello > /var/lib/syncthing/Shared/hello")
+        peer2.wait_for_file("/var/lib/syncthing/Shared/hello")
+        out = peer2.succeed("cat /var/lib/syncthing/Shared/hello")
         assert "hello" in out
       '';
     }
