@@ -1,6 +1,13 @@
 ---
 description = "A secure, file synchronization app for devices over networks, offering a private alternative to cloud services."
+features = [ "inventory" ]
+
+[constraints]
+roles.introducer.min = 1
+roles.introducer.max = 1
 ---
+**Warning**: This module was written with our VM integration in mind likely won't work outside of this context. They will be generalized in future.
+
 ## Usage
 
 We recommend configuring this module as an sync-service through the provided options. Although it provides a Web GUI through which more usage scenarios are supported.
