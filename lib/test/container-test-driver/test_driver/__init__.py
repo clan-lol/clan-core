@@ -116,7 +116,7 @@ class Machine:
     def container_pid(self) -> int:
         return self.get_systemd_process()
 
-    def start(self) -> list[str]:
+    def start(self) -> None:
         prepare_machine_root(self.name, self.rootdir)
         cmd = [
             "systemd-nspawn",
@@ -137,8 +137,6 @@ class Machine:
         env = os.environ.copy()
         env["SYSTEMD_NSPAWN_UNIFIED_HIERARCHY"] = "1"
         self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE, text=True, env=env)
-        self.container_pid = self.get_systemd_process()
-        return cmd
 
     def get_systemd_process(self) -> int:
         assert self.process is not None, "Machine not started"
@@ -455,6 +453,7 @@ class Driver:
         subprocess.run(["ip", "link", "set", "br0", "up"], check=True, text=True)
 
         for machine in self.machines:
+            print(f"Starting {machine.name}")
             machine.start()
 
     def test_symbols(self) -> dict[str, Any]:

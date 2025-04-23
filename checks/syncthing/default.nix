@@ -6,6 +6,8 @@
 }:
 clanLib.test.makeTestClan {
   inherit pkgs self;
+  # TODO: container driver does not support wait_for_file() yet
+  useContainers = false;
   nixosTest = (
     { lib, ... }:
     {
