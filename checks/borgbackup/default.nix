@@ -1,4 +1,4 @@
-(import ../lib/test-base.nix) (
+(
   { ... }:
   {
     name = "borgbackup";
@@ -12,7 +12,7 @@
           {
             services.openssh.enable = true;
             services.borgbackup.repos.testrepo = {
-              authorizedKeys = [ (builtins.readFile ../lib/ssh/pubkey) ];
+              authorizedKeys = [ (builtins.readFile ../assets/ssh/pubkey) ];
             };
           }
           {
@@ -21,7 +21,7 @@
             environment.etc.state.text = "hello world";
             systemd.tmpfiles.settings."vmsecrets" = {
               "/etc/secrets/borgbackup/borgbackup.ssh" = {
-                C.argument = "${../lib/ssh/privkey}";
+                C.argument = "${../assets/ssh/privkey}";
                 z = {
                   mode = "0400";
                   user = "root";

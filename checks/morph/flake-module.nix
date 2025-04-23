@@ -24,7 +24,7 @@
     }:
     {
       checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
-        morph = (import ../lib/test-base.nix) {
+        morph = self.clanLib.test.baseTest {
           name = "morph";
 
           nodes = {

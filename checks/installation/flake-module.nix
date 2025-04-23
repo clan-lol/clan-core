@@ -51,7 +51,7 @@ let
       };
       users.users.nonrootuser = {
         isNormalUser = true;
-        openssh.authorizedKeys.keyFiles = [ ../lib/ssh/pubkey ];
+        openssh.authorizedKeys.keyFiles = [ ../assets/ssh/pubkey ];
         extraGroups = [ "wheel" ];
       };
       security.sudo.wheelNeedsPassword = false;
@@ -183,7 +183,7 @@ in
       # vm-test-run-test-installation-> target: Guest root shell did not produce any data yet...
       # vm-test-run-test-installation-> target:   To debug, enter the VM and run 'systemctl status backdoor.service'.
       checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
-        installation = (import ../lib/test-base.nix) {
+        installation = self.clanLib.test.baseTest {
           name = "installation";
           nodes.target = {
             services.openssh.enable = true;
@@ -195,7 +195,7 @@ in
           testScript = ''
             installer.start()
 
-            installer.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../lib/ssh/privkey} /root/.ssh/id_ed25519")
+            installer.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../assets/ssh/privkey} /root/.ssh/id_ed25519")
 
             installer.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@localhost hostname")
             installer.succeed("cp -r ${../..} test-flake && chmod -R +w test-flake")
@@ -210,13 +210,13 @@ in
           '';
         } { inherit pkgs self; };
 
-        update-hardware-configuration = (import ../lib/test-base.nix) {
+        update-hardware-configuration = self.clanLib.test.baseTest {
           name = "update-hardware-configuration";
           nodes.installer = installer;
 
           testScript = ''
             installer.start()
-            installer.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../lib/ssh/privkey} /root/.ssh/id_ed25519")
+            installer.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../assets/ssh/privkey} /root/.ssh/id_ed25519")
             installer.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@localhost hostname")
             installer.succeed("cp -r ${../..} test-flake && chmod -R +w test-flake")
             installer.fail("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
