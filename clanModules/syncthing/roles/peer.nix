@@ -12,8 +12,7 @@ in
     ../shared.nix
   ];
   clan.syncthing.introducer = lib.strings.removeSuffix "\n" (
-    if builtins.pathExists introducerId
-    then
+    if builtins.pathExists introducerId then
       builtins.readFile introducerId
     else
       throw "${introducerId} does not exists. Please run `clan vars generate ${introducer}` to generate the introducer device id"
