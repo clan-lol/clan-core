@@ -183,13 +183,18 @@
 
       clan.core.vars.generators.syncthing = {
         migrateFact = "syncthing";
+
         files."syncthing.key".group = config.services.syncthing.group;
         files."syncthing.key".owner = config.services.syncthing.user;
+
         files."syncthing.cert".group = config.services.syncthing.group;
         files."syncthing.cert".owner = config.services.syncthing.user;
+
         files."syncthing.api".group = config.services.syncthing.group;
         files."syncthing.api".owner = config.services.syncthing.user;
+
         files."syncthing.pub".secret = false;
+
         runtimeInputs = [
           pkgs.coreutils
           pkgs.gnugrep
