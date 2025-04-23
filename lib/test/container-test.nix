@@ -25,6 +25,6 @@ in
 
   imports = [
     test
-    ../../lib/test/container-test-driver/driver-module.nix
+    ./container-test-driver/driver-module.nix
   ];
 }).config.result
