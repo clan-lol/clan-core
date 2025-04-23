@@ -5,7 +5,7 @@ let
   instance = config.clan.inventory.services.syncthing.${instanceName};
   introducer = builtins.head instance.roles.introducer.machines;
 
-  introducerId = "${config.clan.core.settings.directory}/vars/per-machine/${introducer}/syncthing/syncthing.pub/value";
+  introducerId = "${config.clan.core.settings.directory}/vars/per-machine/${introducer}/syncthing/id/value";
 in
 {
   imports = [
