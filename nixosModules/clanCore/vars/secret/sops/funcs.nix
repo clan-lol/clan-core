@@ -28,7 +28,7 @@ in
             generator = gen_name;
             neededForUsers = file.neededFor == "users";
             inherit (generator) share;
-            inherit (file) owner group;
+            inherit (file) owner group mode;
           }) (relevantFiles generator)
         ) vars.generators
       );

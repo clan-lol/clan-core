@@ -43,7 +43,12 @@ in
       map (secret: {
         name = "vars/${secret.generator}/${secret.name}";
         value = {
-          inherit (secret) owner group neededForUsers;
+          inherit (secret)
+            owner
+            group
+            mode
+            neededForUsers
+            ;
           sopsFile = secretPath secret;
           format = "binary";
         };

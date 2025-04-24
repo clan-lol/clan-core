@@ -89,4 +89,23 @@ in
       expr = lib.hasPrefix builtins.storeDir config.generators.my_secret.script;
       expected = true;
     };
+
+  # test for mode attribute
+  test_mode_attribute =
+    let
+      config = eval {
+        generators.my_secret = {
+          files.password = {
+            mode = "0400";
+          };
+          script = ''
+            echo "Mode set to ${config.generators.my_secret.files.password.mode}"
+          '';
+        };
+      };
+    in
+    {
+      expr = config.generators.my_secret.files.password.mode;
+      expected = "0400";
+    };
 }
