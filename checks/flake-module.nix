@@ -79,6 +79,8 @@ in
             # import our test
             secrets = import ./secrets nixosTestArgs;
             container = import ./container nixosTestArgs;
+            # Clan app tests
+            app-ocr = self.clanLib.test.baseTest ./app-ocr nixosTestArgs;
           };
       };
     };
