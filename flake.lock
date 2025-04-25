@@ -89,6 +89,21 @@
         "type": "github"
       }
     },
+    "nix-select": {
+      "locked": {
+        "lastModified": 1745005516,
+        "narHash": "sha256-IVaoOGDIvAa/8I0sdiiZuKptDldrkDWUNf/+ezIRhyc=",
+        "ref": "refs/heads/main",
+        "rev": "69d8bf596194c5c35a4e90dd02c52aa530caddf8",
+        "revCount": 40,
+        "type": "git",
+        "url": "https://git.clan.lol/clan/nix-select"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.clan.lol/clan/nix-select"
+      }
+    },
     "nixos-facter-modules": {
       "locked": {
         "lastModified": 1743671943,
@@ -123,6 +138,7 @@
         "disko": "disko",
         "flake-parts": "flake-parts",
         "nix-darwin": "nix-darwin",
+        "nix-select": "nix-select",
         "nixos-facter-modules": "nixos-facter-modules",
         "nixpkgs": "nixpkgs",
         "sops-nix": "sops-nix",

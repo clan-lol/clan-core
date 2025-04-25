@@ -23,6 +23,8 @@
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
 
+    nix-select.url = "git+https://git.clan.lol/clan/nix-select";
+
     data-mesher = {
       url = "git+https://git.clan.lol/clan/data-mesher";
       inputs = {
