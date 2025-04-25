@@ -55,6 +55,9 @@ let
   source = runCommand "clan-cli-source" { } ''
     cp -r ${./.} $out
     chmod -R +w $out
+    # In cases where the devshell created this file, this will already exist
+    rm -f $out/clan_cli/nixpkgs
+
     ln -sf ${nixpkgs'} $out/clan_cli/nixpkgs
     cp -r ${../../templates} $out/clan_cli/templates
   '';
