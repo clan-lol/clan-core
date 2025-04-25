@@ -129,10 +129,11 @@
       devShells.clan-cli = pkgs.callPackage ./shell.nix {
         inherit (self'.packages) clan-cli;
         inherit self';
+        inherit (inputs) nix-select;
       };
       packages = {
         clan-cli = pkgs.callPackage ./default.nix {
-          inherit (inputs) nixpkgs;
+          inherit (inputs) nixpkgs nix-select;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
           clan-core-path = clanCoreWithVendoredDeps;
@@ -142,7 +143,7 @@
           ];
         };
         clan-cli-full = pkgs.callPackage ./default.nix {
-          inherit (inputs) nixpkgs;
+          inherit (inputs) nixpkgs nix-select;
           clan-core-path = clanCoreWithVendoredDeps;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;

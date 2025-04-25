@@ -140,3 +140,7 @@ def nixpkgs_flake() -> Path:
 
 def nixpkgs_source() -> Path:
     return (module_root() / "nixpkgs" / "path").resolve()
+
+
+def select_source() -> Path:
+    return (module_root() / "select").resolve()
