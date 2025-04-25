@@ -1,15 +1,13 @@
-Sure, here's an improved version of your README:
-
 # Clan App
 
-A powerful application that allows users to create and manage their own clans.
+A powerful application that allows users to create and manage their own Clans.
 
 ## Getting Started
 
-Follow the instructions below to set up your development environment and start the application.
+Follow the instructions below to set up your development environment and start the application:
 
 
-1. **Navigate to the Webview UI Directory:**
+1. **Navigate to the Webview UI Directory**
 
    Go to the `clan-core/pkgs/webview-ui/app` directory and start the web server by executing:
 
@@ -18,7 +16,7 @@ Follow the instructions below to set up your development environment and start t
    vite
    ```
 
-2. **Start the Clan App:**
+2. **Start the Clan App**
 
    In the `clan-app` directory, execute the following command:
 
