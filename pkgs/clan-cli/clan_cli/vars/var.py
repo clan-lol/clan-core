@@ -77,6 +77,6 @@ class Var:
             deploy=data["deploy"],
             owner=data.get("owner", "root"),
             group=data.get("group", "root"),
-            mode=int(data.get("mode", "400"), 8),
+            mode=int(data.get("mode", "0400"), 8),
             needed_for=data.get("neededFor", "services"),
         )

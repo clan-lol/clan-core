@@ -276,9 +276,9 @@ in
                       defaultText = lib.literalExpression ''if _class == "darwin" then "wheel" else "root"'';
                     };
                     mode = lib.mkOption {
-                      type = lib.types.strMatching "^[0-7]{3}$";
-                      description = "The unix file mode of the file. Must be a 3-digit octal number.";
-                      default = "400";
+                      type = lib.types.strMatching "^[0-7]{4}$";
+                      description = "The unix file mode of the file. Must be a 4-digit octal number.";
+                      default = "0400";
                     };
                     value =
                       lib.mkOption {
