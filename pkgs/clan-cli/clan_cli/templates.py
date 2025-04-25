@@ -1,10 +1,10 @@
 import logging
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal, NewType, TypedDict, cast
 
 from clan_cli.cmd import run
+from clan_cli.dirs import clan_templates
 from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.flake import Flake
 
@@ -83,13 +83,8 @@ def get_clan_nix_attrset(clan_dir: Flake | None = None) -> ClanExports:
     Get the clan nix attrset from a flake, with fallback structure applied.
     Path inside the attrsets have NOT YET been realized in the nix store.
     """
-    # Check if the clan directory is provided, otherwise use the environment variable
     if not clan_dir:
-        clan_core_path = os.environ.get("CLAN_CORE_PATH")
-        if not clan_core_path:
-            msg = "Environment var CLAN_CORE_PATH is not set, this shouldn't happen"
-            raise ClanError(msg)
-        clan_dir = Flake(clan_core_path)
+        clan_dir = Flake(str(clan_templates()))
 
     log.debug(f"Evaluating flake {clan_dir} for Clan attrsets")
 
@@ -231,11 +226,7 @@ def get_template(
     """
 
     if not clan_dir:
-        clan_core_path = os.environ.get("CLAN_CORE_PATH")
-        if not clan_core_path:
-            msg = "Environment var CLAN_CORE_PATH is not set, this shouldn't happen"
-            raise ClanError(msg)
-        clan_dir = Flake(clan_core_path)
+        clan_dir = Flake(str(clan_templates()))
 
     log.info(f"Get template in {clan_dir}")
 

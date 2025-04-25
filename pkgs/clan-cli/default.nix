@@ -115,11 +115,6 @@ pythonRuntime.pkgs.buildPythonApplication {
     ":"
     (lib.makeBinPath (lib.attrValues bundledRuntimeDependenciesMap))
 
-    # We need this for templates to work
-    "--set"
-    "CLAN_CORE_PATH"
-    clan-core-path
-
     "--set"
     "CLAN_PROVIDED_PACKAGES"
     (lib.concatStringsSep ":" (lib.attrNames bundledRuntimeDependenciesMap))
