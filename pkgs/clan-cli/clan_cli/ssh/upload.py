@@ -18,10 +18,37 @@ def upload(
     dir_mode: int = 0o700,
     file_mode: int = 0o400,
 ) -> None:
-    # Check if the remote destination is at least 3 directories deep
-    if len(remote_dest.parts) < 3:
-        msg = f"The remote destination must be at least 3 directories deep. Got: {remote_dest}. Reason: The directory will be deleted with 'rm -rf'."
-        raise ClanError(msg)
+    # Check the depth of the remote destination path to prevent accidental deletion
+    # of important directories like /home/user when uploading a directory,
+    # as the process involves `rm -rf` on the destination.
+    if local_src.is_dir():
+        # Calculate the depth (number of components after the root '/')
+        # / -> depth 0
+        # /a -> depth 1
+        # /a/b -> depth 2
+        # /a/b/c -> depth 3
+        depth = len(remote_dest.parts) - 1
+
+        # General rule: destination must be at least 3 levels deep for safety.
+        is_too_shallow = depth < 3
+
+        # Exceptions: Allow depth 2 if the path starts with /tmp/, /root/, or /etc/.
+        # This allows destinations like /tmp/mydir or /etc/conf.d, but not /tmp or /etc directly.
+        is_allowed_exception = depth >= 2 and (
+            str(remote_dest).startswith("/tmp/")
+            or str(remote_dest).startswith("/root/")
+            or str(remote_dest).startswith("/etc/")
+        )
+
+        # Raise error if the path is too shallow and not an allowed exception.
+        if is_too_shallow and not is_allowed_exception:
+            msg = (
+                f"When uploading a directory, the remote destination '{remote_dest}' is considered unsafe "
+                f"(depth {depth}). It must be at least 3 levels deep (e.g., /path/to/dir), "
+                f"or at least 2 levels deep starting with /tmp/, /root/, or /etc/ (e.g., /tmp/mydir). "
+                f"Reason: The existing destination '{remote_dest}' will be recursively deleted ('rm -rf') before upload."
+            )
+            raise ClanError(msg)
 
     # Create the tarball from the temporary directory
     with TemporaryDirectory(prefix="facts-upload-") as tardir:
