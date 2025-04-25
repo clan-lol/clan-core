@@ -86,8 +86,8 @@
       # only adding clanCoreWithVendoredDeps to the nix store is not enough
       templateDerivation = pkgs.closureInfo {
         rootPaths =
-          builtins.attrValues (self.clanLib.select.select "clan.templates.clan.*.path" self)
-          ++ builtins.attrValues (self.clanLib.select.select "clan.templates.machine.*.path" self);
+          builtins.attrValues (self.clanLib.select "clan.templates.clan.*.path" self)
+          ++ builtins.attrValues (self.clanLib.select "clan.templates.machine.*.path" self);
       };
 
       clanCoreWithVendoredDeps =

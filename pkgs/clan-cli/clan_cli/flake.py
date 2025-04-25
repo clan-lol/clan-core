@@ -705,7 +705,7 @@ class Flake:
               flake = builtins.getFlake("path:{self.store_path}?narHash={self.hash}");
             in
               flake.inputs.nixpkgs.legacyPackages.{config["system"]}.writeText "clan-flake-select" (
-                builtins.toJSON [ {" ".join([f"(flake.clanInternals.clanLib.select.applySelectors (builtins.fromJSON ''{attr}'') flake)" for attr in str_selectors])} ]
+                builtins.toJSON [ {" ".join([f"(flake.clanInternals.clanLib.applySelectors (builtins.fromJSON ''{attr}'') flake)" for attr in str_selectors])} ]
               )
         """
         if tmp_store := nix_test_store():
