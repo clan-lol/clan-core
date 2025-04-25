@@ -32,6 +32,7 @@ class Machine:
     cached_deployment: None | dict[str, Any] = None
     override_target_host: None | str = None
     override_build_host: None | str = None
+    private_key: Path | None = None
     host_key_check: HostKeyCheck = HostKeyCheck.STRICT
 
     def get_id(self) -> str:
@@ -150,6 +151,7 @@ class Machine:
             self.name,
             self.target_host_address,
             self.host_key_check,
+            private_key=self.private_key,
             meta={"machine": self},
         )
 
@@ -168,6 +170,7 @@ class Machine:
             build_host,
             self.host_key_check,
             forward_agent=True,
+            private_key=self.private_key,
             meta={"machine": self, "target_host": self.target_host},
         )
 

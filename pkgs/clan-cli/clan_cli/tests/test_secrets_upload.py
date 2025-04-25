@@ -40,7 +40,7 @@ def test_secrets_upload(
     config = flake.machines["vm1"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     host = hosts[0]
-    addr = f"{host.user}@{host.host}:{host.port}?StrictHostKeyChecking=no&UserKnownHostsFile=/dev/null&IdentityFile={host.key}"
+    addr = f"{host.user}@{host.host}:{host.port}?StrictHostKeyChecking=no&UserKnownHostsFile=/dev/null&IdentityFile={host.private_key}"
     config["clan"]["networking"]["targetHost"] = addr
     config["clan"]["core"]["facts"]["secretUploadDirectory"] = str(flake.path / "facts")
     flake.refresh()

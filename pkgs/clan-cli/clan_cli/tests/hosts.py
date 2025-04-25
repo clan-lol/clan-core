@@ -1,5 +1,6 @@
 import os
 import pwd
+from pathlib import Path
 
 import pytest
 from clan_cli.ssh.host import Host
@@ -15,7 +16,7 @@ def hosts(sshd: Sshd) -> list[Host]:
             "127.0.0.1",
             port=sshd.port,
             user=login,
-            key=sshd.key,
+            private_key=Path(sshd.key),
             host_key_check=HostKeyCheck.NONE,
         )
     ]
