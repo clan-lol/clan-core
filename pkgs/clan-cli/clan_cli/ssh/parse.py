@@ -1,5 +1,6 @@
 import re
 import urllib.parse
+from pathlib import Path
 from typing import Any
 
 from clan_cli.errors import ClanError
@@ -13,6 +14,7 @@ def parse_deployment_address(
     host_key_check: HostKeyCheck,
     forward_agent: bool = True,
     meta: dict[str, Any] | None = None,
+    private_key: Path | None = None,
 ) -> Host:
     parts = host.split("?", maxsplit=1)
     endpoint, maybe_options = parts if len(parts) == 2 else (parts[0], "")
@@ -58,6 +60,7 @@ def parse_deployment_address(
         hostname,
         user=user,
         port=port,
+        private_key=private_key,
         host_key_check=host_key_check,
         command_prefix=machine_name,
         forward_agent=forward_agent,

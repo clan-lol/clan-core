@@ -6,6 +6,7 @@ import shlex
 import socket
 import subprocess
 from dataclasses import dataclass, field
+from pathlib import Path
 from shlex import quote
 from typing import Any
 
@@ -27,7 +28,7 @@ class Host:
     host: str
     user: str | None = None
     port: int | None = None
-    key: str | None = None
+    private_key: Path | None = None
     forward_agent: bool = False
     command_prefix: str | None = None
     host_key_check: HostKeyCheck = HostKeyCheck.ASK
@@ -54,7 +55,7 @@ class Host:
             host=host.host,
             user=host.user,
             port=host.port,
-            key=host.key,
+            private_key=host.private_key,
             forward_agent=host.forward_agent,
             command_prefix=host.command_prefix,
             host_key_check=host.host_key_check,
@@ -176,6 +177,9 @@ class Host:
 
         ssh_opts.extend(self.host_key_check.to_ssh_opt())
 
+        if self.private_key:
+            ssh_opts.extend(["-i", str(self.private_key)])
+
         return ssh_opts
 
     def ssh_cmd(
@@ -200,11 +204,6 @@ class Host:
             ssh_opts.extend(["-v"])
         if tty:
             ssh_opts.extend(["-t"])
-
-        if self.port:
-            ssh_opts.extend(["-p", str(self.port)])
-        if self.key:
-            ssh_opts.extend(["-i", self.key])
 
         if tor_socks:
             packages.append("netcat")
