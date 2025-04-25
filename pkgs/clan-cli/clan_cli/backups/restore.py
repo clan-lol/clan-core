@@ -18,10 +18,7 @@ def restore_service(machine: Machine, name: str, provider: str, service: str) ->
         msg = f"Service {service} not found in configuration. Available services are: {', '.join(backup_folders.keys())}"
         raise ClanError(msg)
 
-    folders = backup_folders[service]["folders"].values()
-    assert all(isinstance(f, str) for f in folders), (
-        f"folders must be a list of strings instead of {folders}"
-    )
+    folders = backup_folders[service]["folders"]
     env = {}
     env["NAME"] = name
     # FIXME: If we have too many folder this might overflow the stack.
