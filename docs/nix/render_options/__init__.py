@@ -29,8 +29,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from clan_cli.api.modules import Frontmatter, extract_frontmatter, get_roles
 from clan_cli.errors import ClanError
+from clan_lib.api.modules import Frontmatter, extract_frontmatter, get_roles
 
 # Get environment variables
 CLAN_CORE_PATH = Path(os.environ["CLAN_CORE_PATH"])

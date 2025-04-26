@@ -19,7 +19,7 @@ from typing import (
     is_typeddict,
 )
 
-from clan_cli.api.serde import dataclass_to_dict
+from clan_lib.api.serde import dataclass_to_dict
 
 
 class JSchemaTypeError(Exception):

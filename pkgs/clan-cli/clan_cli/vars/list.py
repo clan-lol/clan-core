@@ -1,11 +1,11 @@
 import argparse
 import logging
 
-from clan_cli.api import API
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.machines.machines import Machine
+from clan_lib.api import API
 
 from ._types import GeneratorUpdate
 from .generate import Generator, Prompt, Var, execute_generator

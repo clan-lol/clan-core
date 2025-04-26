@@ -4,7 +4,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from clan_cli.api import API
+from clan_lib.api import API
+
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.dirs import get_clan_flake_toplevel_or_env
 from clan_cli.errors import ClanError

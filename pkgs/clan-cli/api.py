@@ -1,6 +1,6 @@
 import json
 
-from clan_cli.api import API
+from clan_lib.api import API
 
 
 def main() -> None:

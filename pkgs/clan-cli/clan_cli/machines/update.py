@@ -6,7 +6,8 @@ import re
 import shlex
 import sys
 
-from clan_cli.api import API
+from clan_lib.api import API
+
 from clan_cli.async_run import AsyncContext, AsyncOpts, AsyncRuntime, is_async_cancelled
 from clan_cli.cmd import MsgColor, RunOpts, run
 from clan_cli.colors import AnsiColor

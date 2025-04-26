@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 # Functions to test
-from clan_cli.api import (
+from clan_lib.api import (
     dataclass_to_dict,
     sanitize_string,
 )

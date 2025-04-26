@@ -6,7 +6,7 @@ from collections.abc import Callable
 from enum import IntEnum
 from typing import Any
 
-from clan_cli.api import (
+from clan_lib.api import (
     ApiError,
     ErrorDataClass,
     MethodRegistry,

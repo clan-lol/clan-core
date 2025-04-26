@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from clan_cli.api import API
+from clan_lib.api import API
+
 from clan_cli.inventory import Inventory, Meta, load_inventory_json, set_inventory
 
 
