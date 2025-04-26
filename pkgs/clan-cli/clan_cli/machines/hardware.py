@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 
-from clan_cli.api import API
+from clan_lib.api import API
+
 from clan_cli.cmd import RunOpts, run, run_no_stdout
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.dirs import specific_machine_dir

@@ -6,10 +6,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-from clan_cli.api import API
-from clan_cli.api.disk import MachineDiskMatter
-from clan_cli.api.modules import parse_frontmatter
-from clan_cli.api.serde import dataclass_to_dict
+from clan_lib.api import API
+from clan_lib.api.disk import MachineDiskMatter
+from clan_lib.api.modules import parse_frontmatter
+from clan_lib.api.serde import dataclass_to_dict
+
 from clan_cli.cmd import RunOpts, run_no_stdout
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.dirs import specific_machine_dir

@@ -6,7 +6,8 @@ from pathlib import Path
 from types import ModuleType
 
 # These imports are unused, but necessary for @API.register to run once.
-from .api import admin, directory, disk, iwd, mdns_discovery, modules
+from clan_lib.api import admin, directory, disk, iwd, mdns_discovery, modules
+
 from .arg_actions import AppendOptionAction
 from .clan import show, update
 
@@ -65,7 +66,10 @@ def add_common_flags(parser: argparse.ArgumentParser) -> None:
         The error that would be thrown by argparse:
         - argparse.ArgumentError
         """
-        return any(arg in action.option_strings for action in parser._actions)  # noqa: SLF001 -> private_member accessed
+        return any(
+            arg in action.option_strings
+            for action in parser._actions  # noqa: SLF001
+        )
 
     if not argument_exists(parser, "--debug"):
         parser.add_argument(

@@ -19,7 +19,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from clan_cli.api import API, dataclass_to_dict, from_dict
+from clan_lib.api import API, dataclass_to_dict, from_dict
+
 from clan_cli.cmd import run_no_stdout
 from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.git import commit_file

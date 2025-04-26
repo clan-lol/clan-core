@@ -15,6 +15,7 @@ Documentation = "https://docs.clan.lol/"
 Repository = "https://git.clan.lol/clan/clan-core"
 
 [tool.setuptools.packages.find]
+include = ["clan_lib*", "clan_cli*"]
 exclude = ["clan_cli.nixpkgs*", "result"]
 
 [tool.setuptools.package-data]

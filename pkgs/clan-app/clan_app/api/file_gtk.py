@@ -8,8 +8,8 @@ import time
 from pathlib import Path
 from typing import Any
 
-from clan_cli.api import ApiError, ErrorDataClass, SuccessDataClass
-from clan_cli.api.directory import FileRequest
+from clan_lib.api import ApiError, ErrorDataClass, SuccessDataClass
+from clan_lib.api.directory import FileRequest
 from gi.repository import Gio, GLib, Gtk
 
 log = logging.getLogger(__name__)

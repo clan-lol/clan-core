@@ -7,7 +7,8 @@ from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from clan_cli.api import API
+from clan_lib.api import API
+
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.completions import (
     add_dynamic_completer,

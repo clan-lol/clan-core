@@ -6,7 +6,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
-from clan_cli.api import API
+from clan_lib.api import API
+
 from clan_cli.cmd import Log, RunOpts, cmd_with_root, run
 from clan_cli.errors import ClanError
 from clan_cli.facts.generate import generate_facts

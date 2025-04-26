@@ -3,7 +3,6 @@ import subprocess
 from typing import TYPE_CHECKING
 
 import pytest
-from clan_cli.api.modules import list_modules
 from clan_cli.flake import Flake
 from clan_cli.inventory import (
     Inventory,
@@ -14,6 +13,7 @@ from clan_cli.inventory import (
 from clan_cli.machines.create import CreateOptions, create_machine
 from clan_cli.nix import nix_eval, run_no_stdout
 from clan_cli.tests.fixtures_flakes import FlakeForTest
+from clan_lib.api.modules import list_modules
 
 if TYPE_CHECKING:
     from .age_keys import KeyPair
