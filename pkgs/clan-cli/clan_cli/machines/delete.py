@@ -3,8 +3,9 @@ import logging
 import shutil
 from pathlib import Path
 
-from clan_cli import Flake, inventory
 from clan_lib.api import API
+
+from clan_cli import Flake, inventory
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.dirs import specific_machine_dir
 from clan_cli.secrets.folders import sops_secrets_folder
