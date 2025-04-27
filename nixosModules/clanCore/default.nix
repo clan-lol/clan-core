@@ -12,7 +12,6 @@
       ./nix-settings.nix
       ./options.nix
       ./outputs.nix
-      ./schema.nix
       ./sops.nix
       ./vars
     ]
