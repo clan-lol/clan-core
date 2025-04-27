@@ -193,12 +193,6 @@ in
       name: _: inventory.machines.${name}.machineClass or "nixos" == "darwin"
     ) (config.outputs.moduleForMachine);
 
-    moduleSchemas = clan-core.clanLib.modules.getModulesSchema {
-      modules = config.inventory.modules;
-      # TODO: make this function system agnostic
-      pkgs = nixpkgs.legacyPackages."x86_64-linux";
-      inherit clan-core;
-    };
     inherit inventoryClass;
 
     # TODO: unify this interface
@@ -209,7 +203,7 @@ in
     inherit inventoryFile;
     inventoryValuesPrios =
       # Temporary workaround
-      builtins.removeAttrs (clan-core.clanLib.values.getPrios { options = inventory.options; })
+      builtins.removeAttrs (clan-core.clanLib.introspection.getPrios { options = inventory.options; })
         # tags are freeformType which is not supported yet.
         [ "tags" ];
 

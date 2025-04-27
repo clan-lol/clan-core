@@ -28,8 +28,11 @@ lib.fix (clanLib: {
   test = clanLib.callLib ./test { };
 
   # Plain imports.
-  values = import ./introspection { inherit lib; };
+  introspection = import ./introspection { inherit lib; };
   jsonschema = import ./jsonschema { inherit lib; };
-  inherit (self.inputs.nix-select.lib) parseSelector applySelectors select;
   facts = import ./facts.nix { inherit lib; };
+
+  # Passthrough from self.inputs
+  # TODO: Can we make these agnostic from the name of the input?
+  inherit (self.inputs.nix-select.lib) parseSelector applySelectors select;
 })
