@@ -126,6 +126,9 @@ let
           ./service-module.nix
           # Import the resolved module.
           (builtins.head instances).instance.resolvedModule
+
+          # feature modules
+          (lib.modules.importApply ./api-feature.nix { inherit clanLib; })
         ]
         # Include all the instances that correlate to the resolved module
         ++ (builtins.map (v: {

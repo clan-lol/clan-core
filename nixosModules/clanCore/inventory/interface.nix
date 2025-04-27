@@ -1,18 +1,5 @@
 { lib, ... }:
 let
-  # {
-  #   roles = {
-  #     client = {
-  #       machines = [
-  #         "camina_machine"
-  #         "vi_machine"
-  #       ];
-  #     };
-  #     server = {
-  #       machines = [ "vyr_machine" ];
-  #     };
-  #   };
-  # }
   instanceOptions = lib.types.submodule {
     options.roles = lib.mkOption {
       description = ''
