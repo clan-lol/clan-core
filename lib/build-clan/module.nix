@@ -209,7 +209,7 @@ in
     inherit inventoryFile;
     inventoryValuesPrios =
       # Temporary workaround
-      builtins.removeAttrs (clan-core.clanLib.values.getPrios { options = inventory.options; })
+      builtins.removeAttrs (clan-core.clanLib.introspection.getPrios { options = inventory.options; })
         # tags are freeformType which is not supported yet.
         [ "tags" ];
 
