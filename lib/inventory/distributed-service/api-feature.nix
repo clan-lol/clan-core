@@ -32,4 +32,21 @@ in
       }
     );
   };
+
+  config.result.assertions = lib.optionalAttrs (config.manifest.features.API) (
+    lib.mapAttrs' (roleName: _role: {
+      name = "${roleName}";
+      value = {
+        message = ''
+          `roles.${roleName}.interface` is not JSON serializable.
+
+          but 'manifest.features.API' is enabled, which requires all 'roles-interfaces' of this module to be a subset of JSON.
+
+          clan.service module '${config.manifest.name}
+        '';
+        assertion = (builtins.tryEval (lib.deepSeq config.result.api.schema.${roleName} true)).success;
+      };
+    }) config.roles
+  );
+
 }

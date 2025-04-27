@@ -450,6 +450,11 @@ in
       }) config.roles;
     };
 
+    result.assertions = mkOption {
+      default = { };
+      type = types.attrsOf types.raw;
+    };
+
     result.allMachines = mkOption {
       readOnly = true;
       default =
@@ -523,6 +528,16 @@ in
           inherit instanceResults;
           nixosModule = {
             imports = [
+              # include service assertions:
+              (
+                let
+                  failedAssertions = (lib.filterAttrs (_: v: !v.assertion) config.result.assertions);
+                in
+                {
+                  assertions = lib.attrValues failedAssertions;
+                }
+              )
+
               # For error backtracing. This module was produced by the 'perMachine' function
               # TODO: check if we need this or if it leads to better errors if we pass the underlying module locations
               # (lib.setDefaultModuleLocation "clan.service: ${config.manifest.name} - via perMachine" machineResult.nixosModule)
