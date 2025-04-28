@@ -240,6 +240,7 @@ def add_group_argument(parser: argparse.ArgumentParser) -> None:
 
 def add_secret(flake_dir: Path, group: str, name: str) -> None:
     secrets.allow_member(
+        flake_dir,
         secrets.groups_folder(sops_secrets_folder(flake_dir) / name),
         sops_groups_folder(flake_dir),
         group,
@@ -267,7 +268,7 @@ def add_secret_command(args: argparse.Namespace) -> None:
 
 def remove_secret(flake_dir: Path, group: str, name: str) -> None:
     updated_paths = secrets.disallow_member(
-        secrets.groups_folder(sops_secrets_folder(flake_dir) / name), group
+        flake_dir, secrets.groups_folder(sops_secrets_folder(flake_dir) / name), group
     )
     commit_files(
         updated_paths,

@@ -108,6 +108,14 @@ in
       default = { };
     };
 
+    secrets = lib.mkOption {
+      type = types.submodule { imports = [ ./secrets/interface.nix ]; };
+      description = ''
+        Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
+      '';
+      default = { };
+    };
+
     pkgsForSystem = lib.mkOption {
       type = types.functionTo (types.nullOr types.attrs);
       default = _system: null;
@@ -165,6 +173,7 @@ in
           clanModules = lib.mkOption { type = lib.types.raw; };
           source = lib.mkOption { type = lib.types.raw; };
           meta = lib.mkOption { type = lib.types.raw; };
+          secrets = lib.mkOption { type = lib.types.raw; };
           clanLib = lib.mkOption { type = lib.types.raw; };
           all-machines-json = lib.mkOption { type = lib.types.raw; };
           machines = lib.mkOption { type = lib.types.raw; };

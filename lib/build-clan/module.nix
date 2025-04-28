@@ -219,6 +219,7 @@ in
     templates = config.templates;
     inventory = config.inventory;
     meta = config.inventory.meta;
+    secrets = config.secrets;
 
     source = "${clan-core}";
 

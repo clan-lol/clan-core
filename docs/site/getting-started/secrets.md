@@ -71,6 +71,42 @@ AGE-PLUGIN-FIDO2-HMAC-1QQPQZRFR7ZZ2WCV...
     In the example above, you can specify `# recipient: age1zdy...`, `# public: age1zdy....` or even
     just `# age1zdy....`
 
+You will need to add an entry into your `flake.nix` to ensure that the necessary `age` plugins
+are loaded when using Clan:
+
+```nix title="flake.nix"
+{
+  inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+  inputs.nixpkgs.follows = "clan-core/nixpkgs";
+
+  outputs =
+    { self, clan-core, ... }:
+    let
+      clan = clan-core.clanLib.buildClan {
+        inherit self;
+
+        meta.name = "myclan";
+
+        # Add Yubikey and FIDO2 HMAC plugins
+        # Note: the plugins listed here must be available in nixpkgs.
+        secrets.age.plugins = [
+          "age-plugin-yubikey"
+          "age-plugin-fido2-hmac"
+        ];
+
+        machines = {
+          # elided for brevity
+        };
+      };
+    in
+    {
+      inherit (clan) nixosConfigurations clanInternals;
+
+      # elided for brevity
+    };
+}
+```
+
 ### Add Your Public Key(s)
 
 ```console

@@ -86,6 +86,7 @@ def update_secrets(
         changed_files.extend(cleanup_dangling_symlinks(path / "machines"))
         changed_files.extend(
             update_keys(
+                flake_dir,
                 path,
                 collect_keys_for_path(path),
             )
@@ -172,6 +173,7 @@ def encrypt_secret(
     for user in add_users:
         files_to_commit.extend(
             allow_member(
+                flake_dir,
                 users_folder(secret_path),
                 sops_users_folder(flake_dir),
                 user,
@@ -182,6 +184,7 @@ def encrypt_secret(
     for machine in add_machines:
         files_to_commit.extend(
             allow_member(
+                flake_dir,
                 machines_folder(secret_path),
                 sops_machines_folder(flake_dir),
                 machine,
@@ -192,6 +195,7 @@ def encrypt_secret(
     for group in add_groups:
         files_to_commit.extend(
             allow_member(
+                flake_dir,
                 groups_folder(secret_path),
                 sops_groups_folder(flake_dir),
                 group,
@@ -206,6 +210,7 @@ def encrypt_secret(
 
         files_to_commit.extend(
             allow_member(
+                flake_dir,
                 users_folder(secret_path),
                 sops_users_folder(flake_dir),
                 username,
@@ -214,7 +219,7 @@ def encrypt_secret(
         )
 
     secret_path = secret_path / "secret"
-    encrypt_file(secret_path, value, sorted(recipient_keys))
+    encrypt_file(flake_dir, secret_path, value, sorted(recipient_keys))
     files_to_commit.append(secret_path)
     if git_commit:
         commit_files(
@@ -274,7 +279,11 @@ def list_directory(directory: Path) -> str:
 
 
 def allow_member(
-    group_folder: Path, source_folder: Path, name: str, do_update_keys: bool = True
+    flake_dir: str | Path,
+    group_folder: Path,
+    source_folder: Path,
+    name: str,
+    do_update_keys: bool = True,
 ) -> list[Path]:
     source = source_folder / name
     if not source.exists():
@@ -297,6 +306,7 @@ def allow_member(
     if do_update_keys:
         changed.extend(
             update_keys(
+                flake_dir,
                 group_folder.parent,
                 collect_keys_for_path(group_folder.parent),
             )
@@ -304,7 +314,7 @@ def allow_member(
     return changed
 
 
-def disallow_member(group_folder: Path, name: str) -> list[Path]:
+def disallow_member(flake_dir: str | Path, group_folder: Path, name: str) -> list[Path]:
     target = group_folder / name
     if not target.exists():
         msg = f"{name} does not exist in group in {group_folder}: "
@@ -324,7 +334,9 @@ def disallow_member(group_folder: Path, name: str) -> list[Path]:
     if next(group_folder.parent.iterdir(), None) is None:
         group_folder.parent.rmdir()
 
-    return update_keys(target.parent.parent, collect_keys_for_path(group_folder.parent))
+    return update_keys(
+        flake_dir, target.parent.parent, collect_keys_for_path(group_folder.parent)
+    )
 
 
 def has_secret(secret_path: Path) -> bool:
@@ -364,7 +376,7 @@ def decrypt_secret(flake_dir: Path, secret_path: Path) -> str:
     if not path.exists():
         msg = f"Secret '{secret_path!s}' does not exist"
         raise ClanError(msg)
-    return decrypt_file(path)
+    return decrypt_file(flake_dir, path)
 
 
 def get_command(args: argparse.Namespace) -> None:

@@ -10,9 +10,10 @@ if TYPE_CHECKING:
     from .age_keys import KeyPair
 
 
+@pytest.mark.with_core
 def test_import_sops(
     test_root: Path,
-    test_flake: FlakeForTest,
+    test_flake_with_core: FlakeForTest,
     capture_output: CaptureOutput,
     monkeypatch: pytest.MonkeyPatch,
     age_keys: list["KeyPair"],
@@ -24,7 +25,7 @@ def test_import_sops(
             "machines",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "machine1",
             age_keys[0].pubkey,
         ]
@@ -35,7 +36,7 @@ def test_import_sops(
             "users",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "user1",
             age_keys[1].pubkey,
         ]
@@ -46,7 +47,7 @@ def test_import_sops(
             "users",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "user2",
             age_keys[2].pubkey,
         ]
@@ -57,7 +58,7 @@ def test_import_sops(
             "groups",
             "add-user",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "group1",
             "user1",
         ]
@@ -68,7 +69,7 @@ def test_import_sops(
             "groups",
             "add-user",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "group1",
             "user2",
         ]
@@ -80,7 +81,7 @@ def test_import_sops(
         "secrets",
         "import-sops",
         "--flake",
-        str(test_flake.path),
+        str(test_flake_with_core.path),
         "--group",
         "group1",
         "--machine",
@@ -90,11 +91,13 @@ def test_import_sops(
 
     cli.run(cmd)
     with capture_output as output:
-        cli.run(["secrets", "users", "list", "--flake", str(test_flake.path)])
+        cli.run(["secrets", "users", "list", "--flake", str(test_flake_with_core.path)])
 
     users = sorted(output.out.rstrip().split())
     assert users == ["user1", "user2"]
 
     with capture_output as output:
-        cli.run(["secrets", "get", "--flake", str(test_flake.path), "secret-key"])
+        cli.run(
+            ["secrets", "get", "--flake", str(test_flake_with_core.path), "secret-key"]
+        )
     assert output.out == "secret-value"
