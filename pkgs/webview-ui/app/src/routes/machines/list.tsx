@@ -118,8 +118,15 @@ export const MachineListView: Component = () => {
       />
       <div>
         <div class="my-1 flex w-full gap-2 p-2">
-          <div class="size-6 p-1">
-            <Icon icon="Filter" />
+          <div class="flex w-full justify-end px-4 py-1">
+            <div class="flex">
+              <Button
+                // onClick={() => navigate("create")}
+                size="s"
+                variant="light"
+                startIcon={<Icon icon="Filter" />}
+              ></Button>
+            </div>
           </div>
           <For each={filter().tags.sort()}>
             {(tag) => (
