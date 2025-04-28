@@ -122,7 +122,16 @@ in
         (lib.mapAttrs (
           name: v:
           (
-            { _class, ... }:
+            { ... }@args:
+            let
+              _class =
+                args._class or (throw ''
+                  Your version of nixpkgs is incompatible with the latest clan.
+                  Please update nixpkgs input to the latest nixos-unstable or nixpkgs-unstable.
+                  Run:
+                    nix flake update nixpkgs
+                '');
+            in
             {
               imports = [
                 (lib.modules.importApply ./machineModules/forName.nix {
