@@ -47,18 +47,27 @@ def find_toplevel(top_level_files: list[str]) -> Path | None:
 class TemplateType(Enum):
     CLAN = "clan"
     DISK = "disk"
+    MACHINE = "machine"
 
 
-def clan_templates(template_type: TemplateType) -> Path:
-    template_path = (
-        module_root().parent.parent.parent / "templates" / template_type.value
-    )
+def clan_templates(template_type: TemplateType | None = None) -> Path:
+    template_path = module_root().parent.parent.parent / "templates"
+
+    if template_type is not None:
+        template_path /= template_type.value
+
     if template_path.exists():
         return template_path
-    template_path = module_root() / "templates" / template_type.value
+
+    template_path = module_root() / "templates"
+
+    if template_type is not None:
+        template_path /= template_type.value
+
     if not template_path.exists():
         msg = f"BUG! clan core not found at {template_path}. This is an issue with packaging the cli"
         raise ClanError(msg)
+
     return template_path
 
 

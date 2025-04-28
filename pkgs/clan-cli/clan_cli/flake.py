@@ -8,7 +8,7 @@ from tempfile import NamedTemporaryFile
 from typing import Any
 
 from clan_cli.cmd import Log, RunOpts, run
-from clan_cli.dirs import select_source, user_cache_dir
+from clan_cli.dirs import nixpkgs_source, select_source, user_cache_dir
 from clan_cli.errors import ClanError
 from clan_cli.nix import (
     nix_build,
@@ -701,6 +701,18 @@ class Flake:
 
         config = nix_config()
 
+        # these hashes should be filled in by `nix build`
+        # if we run this Python code directly then we use a fallback
+        # method to getting the NAR hash
+        fallback_nixpkgs_hash = "@fallback_nixpkgs_hash@"
+        if not fallback_nixpkgs_hash.startswith("sha256-"):
+            fallback_nixpkgs = Flake(str(nixpkgs_source()))
+            fallback_nixpkgs.invalidate_cache()
+            assert fallback_nixpkgs.hash is not None, (
+                "this should be impossible as invalidate_cache() should always set `hash`"
+            )
+            fallback_nixpkgs_hash = fallback_nixpkgs.hash
+
         select_hash = "@select_hash@"
         if not select_hash.startswith("sha256-"):
             select_flake = Flake(str(select_source()))
@@ -714,8 +726,9 @@ class Flake:
             let
               flake = builtins.getFlake "path:{self.store_path}?narHash={self.hash}";
               selectLib = (builtins.getFlake "{select_source()}?narHash={select_hash}").lib;
+              nixpkgs = flake.inputs.nixpkgs or (builtins.getFlake "{nixpkgs_source()}?narHash={fallback_nixpkgs_hash}");
             in
-              flake.inputs.nixpkgs.legacyPackages.{config["system"]}.writeText "clan-flake-select" (
+              nixpkgs.legacyPackages.{config["system"]}.writeText "clan-flake-select" (
                 builtins.toJSON [ {" ".join([f"(selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake)" for attr in str_selectors])} ]
               )
         """
