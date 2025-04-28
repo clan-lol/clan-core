@@ -14,6 +14,7 @@ in
     ./installation/flake-module.nix
     ./morph/flake-module.nix
     ./nixos-documentation/flake-module.nix
+    ./sanity-checks/dont-depend-on-repo-root.nix
   ];
   perSystem =
     {
@@ -54,11 +55,17 @@ in
             syncthing = import ./syncthing nixosTestArgs;
           };
 
+          packagesToBuild = lib.removeAttrs self'.packages [
+            # exclude the check that checks that nothing depends on the repo root
+            # We might want to include this later once everything is fixed
+            "dont-depend-on-repo-root"
+          ];
+
           flakeOutputs =
             lib.mapAttrs' (
               name: config: lib.nameValuePair "nixos-${name}" config.config.system.build.toplevel
             ) (lib.filterAttrs (n: _: !lib.hasPrefix "test-" n) self.nixosConfigurations)
-            // lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages
+            // lib.mapAttrs' (n: lib.nameValuePair "package-${n}") packagesToBuild
             // lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells
             // lib.mapAttrs' (name: config: lib.nameValuePair "home-manager-${name}" config.activation-script) (
               self'.legacyPackages.homeConfigurations or { }
