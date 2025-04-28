@@ -10,11 +10,11 @@ export const MachineAvatar = (props: AvatarProps) => {
       <div class="">
         <div
           class={cx(
-            "rounded-lg border p-2 bg-def-1 border-def-3 size-36",
+            "rounded-lg border p-2 bg-def-1 border-def-3 h-fit",
             props.class,
           )}
         >
-          <RndThumbnail name={props.name || ""} />
+          <RndThumbnail name={props.name || ""} height={120} width={220} />
         </div>
       </div>
     </figure>

@@ -73,16 +73,17 @@ export function CreateMachine() {
       <Header title="Create Machine" />
       <div class="flex w-full p-4">
         <div class="mt-4 w-full self-stretch px-2">
-          <Form onSubmit={handleSubmit} class="">
+          <Form onSubmit={handleSubmit} class="gap-2 flex flex-col">
             <Field
               name="opts.machine.name"
               validate={[required("This field is required")]}
             >
               {(field, props) => (
                 <>
-                  <div class="flex justify-center">
+                  <div class="flex justify-center mb-4 pb-4 border-b">
                     <MachineAvatar name={field.value} />
                   </div>
+
                   <TextInput
                     inputProps={props}
                     value={`${field.value}`}
@@ -103,31 +104,6 @@ export function CreateMachine() {
                   error={field.error}
                   placeholder="My awesome machine"
                 />
-              )}
-            </Field>
-            <Field name="opts.machine.tags" type="string[]">
-              {(field, props) => (
-                <div class="p-2">
-                  <DynForm
-                    initialValues={{ tags: ["all"] }}
-                    components={{
-                      before: <div>Tags</div>,
-                    }}
-                    schema={{
-                      type: "object",
-                      properties: {
-                        tags: {
-                          type: "array",
-                          items: {
-                            title: "Tag",
-                            type: "string",
-                          },
-                          uniqueItems: true,
-                        },
-                      },
-                    }}
-                  />
-                </div>
               )}
             </Field>
             <div class=" " tabindex="0">
