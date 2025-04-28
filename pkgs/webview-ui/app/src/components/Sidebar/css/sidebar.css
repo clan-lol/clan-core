@@ -23,4 +23,8 @@
   /* background-color: rgba(var(--clr-bg-inv-3) / 0.9); */
   @apply bg-primary-800/90;
   border-radius: theme(borderRadius.md);
+
+  ::marker {
+    content: "";
+  }
 }
