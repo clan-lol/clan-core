@@ -2,15 +2,16 @@
   # callPackage args
   gnupg,
   installShellFiles,
+  jq,
   lib,
   nix,
   pkgs,
   runCommand,
   stdenv,
-  nixVersions,
   # custom args
   clan-core-path,
   nixpkgs,
+  nix-select,
   includedRuntimeDeps,
   pythonRuntime,
   templateDerivation,
@@ -52,22 +53,31 @@ let
     (pythonRuntime.withPackages pyTestDeps)
   ];
 
-  source = runCommand "clan-cli-source" { } ''
-    cp -r ${./.} $out
-    chmod -R +w $out
-    # In cases where the devshell created this file, this will already exist
-    rm -f $out/clan_cli/nixpkgs
+  source =
+    runCommand "clan-cli-source"
+      {
+        nativeBuildInputs = [ jq ];
+      }
+      ''
+        cp -r ${./.} $out
+        chmod -R +w $out
 
-    ln -sf ${nixpkgs'} $out/clan_cli/nixpkgs
-    cp -r ${../../templates} $out/clan_cli/templates
-  '';
+        # In cases where the devshell created this file, this will already exist
+        rm -f $out/clan_cli/nixpkgs
+
+        substituteInPlace $out/clan_cli/flake.py \
+          --replace-fail '@select_hash@' "$(jq -r '.nodes."nix-select".locked.narHash' ${../../flake.lock})"
+        ln -sf ${nixpkgs'} $out/clan_cli/nixpkgs
+        ln -sf ${nix-select} $out/clan_cli/select
+        cp -r ${../../templates} $out/clan_cli/templates
+      '';
 
   # Create a custom nixpkgs for use within the project
   nixpkgs' =
     runCommand "nixpkgs"
       {
         # Not all versions have `nix flake update --flake` option
-        nativeBuildInputs = [ nixVersions.stable ];
+        nativeBuildInputs = [ nix ];
       }
       ''
         mkdir $out
@@ -121,14 +131,12 @@ pythonRuntime.pkgs.buildPythonApplication {
 
   propagatedBuildInputs = [ pythonRuntimeWithDeps ] ++ bundledRuntimeDependencies;
 
-  # Define and expose the tests and checks to run in CI
   passthru.tests =
     {
       clan-deps = pkgs.runCommand "clan-deps" { } ''
         # ${builtins.toString (builtins.attrValues testRuntimeDependenciesMap)}
         touch $out
       '';
-      # disabled on macOS until we fix all remaining issues
       clan-pytest-without-core =
         runCommand "clan-pytest-without-core"
           {
@@ -140,7 +148,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             };
           }
           ''
-            set -u -o pipefail
+            set -euo pipefail
             cp -r ${source} ./src
             chmod +w -R ./src
             cd ./src
@@ -160,6 +168,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           '';
     }
     // lib.optionalAttrs (!stdenv.isDarwin) {
+      # disabled on macOS until we fix all remaining issues
       clan-pytest-with-core =
         runCommand "clan-pytest-with-core"
           {
@@ -182,7 +191,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             };
           }
           ''
-            set -u -o pipefail
+            set -euo pipefail
             cp -r ${source} ./src
             chmod +w -R ./src
             cd ./src
@@ -215,8 +224,14 @@ pythonRuntime.pkgs.buildPythonApplication {
   passthru.testRuntimeDependencies = testRuntimeDependencies;
   passthru.testRuntimeDependenciesMap = testRuntimeDependenciesMap;
 
+  # Nixpkgs doesn't get copied from `src` as it's not in `package-data` in `pyproject.toml`
+  # as it significantly slows down the build so we copy it again here
+  # We don't copy `select` using `package-data` as Python globs don't include hidden directories
+  # leading to a different NAR hash and copying it here would also lead to `patchShebangs`
+  # changing the contents
   postInstall = ''
     cp -r ${nixpkgs'} $out/${pythonRuntime.sitePackages}/clan_cli/nixpkgs
+    ln -sf ${nix-select} $out/${pythonRuntime.sitePackages}/clan_cli/select
     installShellCompletion --bash --name clan \
       <(${pythonRuntimeWithDeps.pkgs.argcomplete}/bin/register-python-argcomplete --shell bash clan)
     installShellCompletion --fish --name clan.fish \

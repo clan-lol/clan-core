@@ -8,7 +8,7 @@ from tempfile import NamedTemporaryFile
 from typing import Any
 
 from clan_cli.cmd import Log, RunOpts, run
-from clan_cli.dirs import user_cache_dir
+from clan_cli.dirs import select_source, user_cache_dir
 from clan_cli.errors import ClanError
 from clan_cli.nix import (
     nix_build,
@@ -700,12 +700,23 @@ class Flake:
             str_selectors.append(selectors_as_json(parse_selector(selector)))
 
         config = nix_config()
+
+        select_hash = "@select_hash@"
+        if not select_hash.startswith("sha256-"):
+            select_flake = Flake(str(select_source()))
+            select_flake.invalidate_cache()
+            assert select_flake.hash is not None, (
+                "this should be impossible as invalidate_cache() should always set `hash`"
+            )
+            select_hash = select_flake.hash
+
         nix_code = f"""
             let
-              flake = builtins.getFlake("path:{self.store_path}?narHash={self.hash}");
+              flake = builtins.getFlake "path:{self.store_path}?narHash={self.hash}";
+              selectLib = (builtins.getFlake "{select_source()}?narHash={select_hash}").lib;
             in
               flake.inputs.nixpkgs.legacyPackages.{config["system"]}.writeText "clan-flake-select" (
-                builtins.toJSON [ {" ".join([f"(flake.clanInternals.clanLib.applySelectors (builtins.fromJSON ''{attr}'') flake)" for attr in str_selectors])} ]
+                builtins.toJSON [ {" ".join([f"(selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake)" for attr in str_selectors])} ]
               )
         """
         if tmp_store := nix_test_store():

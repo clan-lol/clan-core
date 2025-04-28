@@ -32,7 +32,7 @@ lib.fix (clanLib: {
   jsonschema = import ./jsonschema { inherit lib; };
   facts = import ./facts.nix { inherit lib; };
 
-  # Passthrough from self.inputs
-  # TODO: Can we make these agnostic from the name of the input?
-  inherit (self.inputs.nix-select.lib) parseSelector applySelectors select;
+  # deprecated
+  # remove when https://git.clan.lol/clan/clan-core/pulls/3212 is implemented
+  inherit (self.inputs.nix-select.lib) select;
 })
