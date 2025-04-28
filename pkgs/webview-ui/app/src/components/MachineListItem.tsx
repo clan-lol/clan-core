@@ -7,6 +7,8 @@ import { A, useNavigate } from "@solidjs/router";
 import { RndThumbnail } from "./noiseThumbnail";
 import Icon from "./icon";
 import { Filter } from "../routes/machines";
+import { Typography } from "./Typography";
+import { Button } from "./button";
 
 type MachineDetails = SuccessQuery<"list_inventory_machines">["data"][string];
 
@@ -108,26 +110,77 @@ export const MachineListItem = (props: MachineListItemProps) => {
     setUpdating(false);
   };
   return (
-    <div class=" m-2">
+    <div class="border rounded-lg border-def-2 p-3 m-2 w-64">
       <figure class="h-fit rounded-xl border bg-def-2 border-def-5">
         <RndThumbnail name={name} width={220} height={120} />
       </figure>
-      <div class=" flex-row justify-between ">
+      <div class="flex-row justify-between gap-4 pt-2 px-2">
         <div class="flex flex-col">
           <A href={`/machines/${name}`}>
-            <h2
-              class=" underline"
-              classList={{
-                "text-neutral-500": nixOnly,
-              }}
-            >
+            <Typography hierarchy="title" size="m" weight="bold">
               {name}
-            </h2>
+            </Typography>
           </A>
-          <div class="text-slate-600">
-            <Show when={info}>{(d) => d()?.description}</Show>
+          <div class="text-slate-600 flex justify-between">
+            <div class="flex flex-nowrap">
+              <span class="h-4">
+                <Icon icon="Flash" class="h-4" font-size="inherit" />
+              </span>
+              <Typography hierarchy="body" size="s" weight="medium">
+                <Show when={info}>
+                  {(d) => d()?.description || "no description"}
+                </Show>
+              </Typography>
+            </div>
+
+            <div class="self-end">
+              <Menu
+                popoverid={`menu-${props.name}`}
+                label={<Icon icon={"More"} />}
+              >
+                <ul class="z-[1] w-64 p-2 shadow bg-white ">
+                  <li>
+                    <Button
+                      variant="ghost"
+                      class="w-full"
+                      onClick={() => {
+                        navigate("/machines/" + name);
+                      }}
+                    >
+                      Details
+                    </Button>
+                  </li>
+                  <li
+                    classList={{
+                      disabled: !info?.deploy?.targetHost || installing(),
+                    }}
+                  >
+                    <Button
+                      variant="ghost"
+                      class="w-full"
+                      onClick={handleInstall}
+                    >
+                      Install
+                    </Button>
+                  </li>
+                  <li
+                    classList={{
+                      disabled: !info?.deploy?.targetHost || updating(),
+                    }}
+                  >
+                    <Button
+                      variant="ghost"
+                      class="w-full"
+                      onClick={handleUpdate}
+                    >
+                      Update
+                    </Button>
+                  </li>
+                </ul>
+              </Menu>
+            </div>
           </div>
-          <div class="text-slate-600">
+          {/* <div class="text-slate-600">
             <Show when={info}>
               {(d) => (
                 <>
@@ -163,47 +216,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
                 </>
               )}
             </Show>
-          </div>
-          <div class="flex flex-row flex-wrap gap-4 py-2"></div>
-        </div>
-        <div>
-          <Menu popoverid={`menu-${props.name}`} label={<Icon icon={"More"} />}>
-            <ul class="z-[1] w-52 p-2 shadow">
-              <li>
-                <a
-                  onClick={() => {
-                    navigate("/machines/" + name);
-                  }}
-                >
-                  Details
-                </a>
-              </li>
-              <li
-                classList={{
-                  disabled: !info?.deploy?.targetHost || installing(),
-                }}
-                onClick={handleInstall}
-              >
-                <a>
-                  <Show when={info?.deploy?.targetHost} fallback={"Deploy"}>
-                    {(d) => `Install to ${d()}`}
-                  </Show>
-                </a>
-              </li>
-              <li
-                classList={{
-                  disabled: !info?.deploy?.targetHost || updating(),
-                }}
-                onClick={handleUpdate}
-              >
-                <a>
-                  <Show when={info?.deploy?.targetHost} fallback={"Deploy"}>
-                    {(d) => `Update (${d()})`}
-                  </Show>
-                </a>
-              </li>
-            </ul>
-          </Menu>
+          </div> */}
         </div>
       </div>
     </div>
