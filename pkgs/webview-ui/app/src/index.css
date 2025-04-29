@@ -30,7 +30,7 @@
 
 :root {
   --clr-bg-def-1: theme(colors.white);
-  --clr-bg-def-2: theme(colors.secondary.50);
+  --clr-bg-def-2: theme(colors.primary.50);
   --clr-bg-def-3: theme(colors.secondary.100);
   --clr-bg-def-4: theme(colors.secondary.200);
   --clr-bg-def-5: theme(colors.secondary.300);

@@ -81,7 +81,7 @@ export const Sidebar = (props: RouteSectionProps) => {
                   title={route.label}
                   icon={route.icon || "Paperclip"}
                 >
-                  <ul>
+                  <ul class="flex flex-col gap-y-0.5">
                     <For each={children().filter((r) => !r.hidden)}>
                       {(child) => (
                         <SidebarListItem

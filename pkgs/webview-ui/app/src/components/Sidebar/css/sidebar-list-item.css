@@ -1,4 +1,4 @@
-.sidebar__list__item {
+.sidebar__list__link {
   position: relative;
   cursor: theme(cursor.pointer);
 
@@ -19,12 +19,12 @@
   &:hover:after {
     background: var(--clr-bg-inv-acc-2);
     transform: scale(theme(scale.100));
-    transition: transform 0.24s ease-in-out;
+    transition: transform 0.32s ease-in-out;
   }
 
   &:active {
     transform: scale(0.99);
-    transition: transform 0.08s ease-in-out;
+    transition: transform 0.12s ease-in-out;
   }
 
   &:active:after {
@@ -37,7 +37,13 @@
   position: relative;
   z-index: 20;
   display: block;
-  padding: theme(padding.3);
+  padding: theme(padding.2) theme(padding.3);
+}
+
+.sidebar__list__link.active {
+  &:after {
+    background: var(--clr-bg-inv-acc-3);
+  }
 }
 
 .sidebar__list__content {
