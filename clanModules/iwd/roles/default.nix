@@ -7,7 +7,7 @@
 
 let
   cfg = config.clan.iwd;
-  secret_path = ssid: config.clan.core.facts.services."iwd.${ssid}".secret."iwd.${ssid}".path;
+  secret_path = ssid: config.clan.core.vars.generators."iwd.${ssid}".files."iwd.${ssid}".path;
   secret_generator = name: value: {
     name = "iwd.${value.ssid}";
     value =
@@ -15,17 +15,20 @@ let
         secret_name = "iwd.${value.ssid}";
       in
       {
-        secret.${secret_name} = { };
-        generator.prompt = "Wifi password for '${value.ssid}'";
+        prompts.${secret_name} = {
+          description = "Wifi password for '${value.ssid}'";
+          persist = true;
+        };
+        migrateFact = secret_name;
         # ref. man iwd.network
-        generator.script = ''
+        script = ''
           config="
           [Settings]
             AutoConnect=${if value.AutoConnect then "true" else "false"}
           [Security]
-            Passphrase=$(echo -e "$prompt_value" | ${lib.getExe pkgs.gnused} "s=\\\=\\\\\\\=g;s=\t=\\\t=g;s=\r=\\\r=g;s=^ =\\\s=")
+            Passphrase=$(echo -e "$prompt_value/${secret_name}" | ${lib.getExe pkgs.gnused} "s=\\\=\\\\\\\=g;s=\t=\\\t=g;s=\r=\\\r=g;s=^ =\\\s=")
           "
-          echo "$config" > "$secrets/${secret_name}"
+          echo "$config" > "$out/${secret_name}"
         '';
       };
   };
@@ -72,7 +75,7 @@ in
         _: value: "C /var/lib/iwd/${value.ssid}.psk 0600 root root - ${secret_path value.ssid}"
       ) cfg.networks;
 
-      clan.core.facts.services = lib.mapAttrs' secret_generator cfg.networks;
+      clan.core.vars.generators = lib.mapAttrs' secret_generator cfg.networks;
 
       # TODO: restart the iwd.service if something changes
     })
