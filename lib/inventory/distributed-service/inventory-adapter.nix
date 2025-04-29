@@ -16,18 +16,17 @@
 }:
 let
   evalClanService =
-    { modules, id }:
+    { modules, key }:
     (lib.evalModules {
       class = "clan.service";
       modules = [
         ./service-module.nix
-
         # feature modules
         (lib.modules.importApply ./api-feature.nix {
           inherit clanLib;
-          attrName = id;
+          attrName = key;
         })
-      ];
+      ] ++ modules;
     });
 in
 {
@@ -139,7 +138,7 @@ in
       importedModulesEvaluated = lib.mapAttrs (
         module_ident: instances:
         evalClanService {
-          id = module_ident;
+          key = module_ident;
           modules =
             [
               # Import the resolved module.
