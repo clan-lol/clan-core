@@ -118,7 +118,7 @@ let
 
   # TODO: Eagerly check the _class of the resolved module
   importedModulesEvaluated = lib.mapAttrs (
-    _module_ident: instances:
+    module_ident: instances:
     (lib.evalModules {
       class = "clan.service";
       modules =
@@ -128,7 +128,10 @@ let
           (builtins.head instances).instance.resolvedModule
 
           # feature modules
-          (lib.modules.importApply ./api-feature.nix { inherit clanLib; })
+          (lib.modules.importApply ./api-feature.nix {
+            inherit clanLib;
+            attrName = module_ident;
+          })
         ]
         # Include all the instances that correlate to the resolved module
         ++ (builtins.map (v: {
