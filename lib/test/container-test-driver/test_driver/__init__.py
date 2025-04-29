@@ -333,6 +333,15 @@ class Machine:
             raise RuntimeError(msg)
         return res.stdout
 
+    def fail(self, command: str, timeout: int | None = None) -> str:
+        res = self.execute(command, timeout=timeout)
+        if res.returncode == 0:
+            msg = f"command `{command}` unexpectedly succeeded\n"
+            msg += f"Exit code: {res.returncode}\n"
+            msg += f"Stdout: {res.stdout}"
+            raise RuntimeError(msg)
+        return res.stdout
+
     def shutdown(self) -> None:
         """
         Shut down the machine, waiting for the VM to exit.
