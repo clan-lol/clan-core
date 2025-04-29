@@ -201,14 +201,12 @@ in
     modules = config.modules;
 
     inherit inventoryFile;
-    inventoryValuesPrios =
-      # Temporary workaround
-      builtins.removeAttrs (clan-core.clanLib.introspection.getPrios { options = inventory.options; })
-        # tags are freeformType which is not supported yet.
-        [ "tags" ];
 
     templates = config.templates;
     inventory = config.inventory;
+    # TODO: Remove this in about a month
+    # It is only here for backwards compatibility for people with older CLI versions
+    inventoryValuesPrios = inventoryClass.introspection;
     meta = config.inventory.meta;
 
     source = "${clan-core}";
