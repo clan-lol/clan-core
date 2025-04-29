@@ -9,6 +9,8 @@
 
 .sidebar {
   @apply bg-inv-2 h-full border border-solid border-inv-2 min-w-72 rounded-xl;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar__body {
@@ -19,9 +21,9 @@
 }
 
 .sidebar__section {
-  padding: theme(padding.2);
-  /* background-color: rgba(var(--clr-bg-inv-3) / 0.9); */
   @apply bg-primary-800/90;
+
+  padding: theme(padding.2);
   border-radius: theme(borderRadius.md);
 
   ::marker {

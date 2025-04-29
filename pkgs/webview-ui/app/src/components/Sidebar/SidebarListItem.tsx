@@ -17,7 +17,7 @@ export const SidebarListItem = (props: SidebarListItem) => {
           class="sidebar__list__content"
           tag="span"
           hierarchy="body"
-          size="s"
+          size="xs"
           weight="normal"
           color="primary"
           inverted={true}

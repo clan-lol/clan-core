@@ -72,6 +72,11 @@ html {
   @apply font-sans;
   overflow-x: hidden;
   overflow-y: hidden;
+
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Standard */
 }
 
 .accordeon {
@@ -81,7 +86,7 @@ html {
 }
 
 .accordeon__header {
-  padding: theme(padding.2) theme(padding[1.5]);
+  padding: theme(padding.2) theme(padding[1.5]) theme(padding.1);
   cursor: pointer;
 }
 
@@ -90,5 +95,4 @@ html {
 }
 
 .accordeon__body {
-  padding: theme(padding.2) 0 theme(padding.1);
 }

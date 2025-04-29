@@ -21,17 +21,17 @@ export const SidebarSection = (props: {
     <details class="sidebar__section accordeon" open>
       <summary class="accordeon__header">
         <Typography
-          class="inline-flex w-full gap-2 uppercase"
+          class="inline-flex w-full gap-2 uppercase !tracking-wider"
           tag="p"
           hierarchy="body"
-          size="xs"
+          size="xxs"
           weight="normal"
           color="tertiary"
           inverted={true}
         >
-          <Icon icon={props.icon} />
+          <Icon class="opacity-90" icon={props.icon} size={13} />
           {title}
-          <Icon icon="CaretDown" class="ml-auto" />
+          <Icon icon="CaretDown" class="ml-auto" size={10} />
         </Typography>
       </summary>
       <div class="accordeon__body">{children}</div>
@@ -60,7 +60,7 @@ export const Sidebar = (props: RouteSectionProps) => {
   }));
 
   return (
-    <div class="sidebar opacity-95">
+    <div class="sidebar">
       <Show
         when={query.data}
         fallback={<SidebarHeader clanName={"Untitled"} />}
