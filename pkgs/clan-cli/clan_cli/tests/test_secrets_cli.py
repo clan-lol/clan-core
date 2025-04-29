@@ -1,7 +1,9 @@
 import json
 import logging
 import os
+import random
 import re
+import string
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
@@ -20,14 +22,15 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
+@pytest.mark.with_core
 def _test_identities(
     what: str,
-    test_flake: FlakeForTest,
+    test_flake_with_core: FlakeForTest,
     capture_output: CaptureOutput,
     age_keys: list["KeyPair"],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    sops_folder = test_flake.path / "sops"
+    sops_folder = test_flake_with_core.path / "sops"
 
     what_singular = what[:-1]
     test_secret_name = f"{what_singular}_secret"
@@ -43,7 +46,7 @@ def _test_identities(
             what,
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "foo",
             age_keys[0].pubkey,
         ]
@@ -56,7 +59,7 @@ def _test_identities(
             "users",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "admin",
             admin_age_key.pubkey,
         ]
@@ -69,28 +72,30 @@ def _test_identities(
                 what,
                 "add",
                 "--flake",
-                str(test_flake.path),
+                str(test_flake_with_core.path),
                 "foo",
                 age_keys[0].pubkey,
             ]
         )
 
-    with monkeypatch.context():
-        monkeypatch.setenv("SOPS_NIX_SECRET", "deadfeed")
-        monkeypatch.setenv("SOPS_AGE_KEY", admin_age_key.privkey)
+    with monkeypatch.context() as m:
+        m.setenv("SOPS_NIX_SECRET", "deadfeed")
+        m.setenv("SOPS_AGE_KEY", admin_age_key.privkey)
+
         cli.run(
             [
                 "secrets",
                 "set",
                 "--flake",
-                str(test_flake.path),
+                str(test_flake_with_core.path),
                 f"--{what_singular}",
                 "foo",
                 test_secret_name,
             ]
         )
+
     assert_secrets_file_recipients(
-        test_flake.path,
+        test_flake_with_core.path,
         test_secret_name,
         expected_age_recipients_keypairs=[age_keys[0], admin_age_key],
     )
@@ -103,14 +108,14 @@ def _test_identities(
                 what,
                 "add",
                 "--flake",
-                str(test_flake.path),
+                str(test_flake_with_core.path),
                 "-f",
                 "foo",
                 age_keys[1].privkey,
             ]
         )
     assert_secrets_file_recipients(
-        test_flake.path,
+        test_flake_with_core.path,
         test_secret_name,
         expected_age_recipients_keypairs=[age_keys[1], admin_age_key],
     )
@@ -122,24 +127,35 @@ def _test_identities(
                 what,
                 "get",
                 "--flake",
-                str(test_flake.path),
+                str(test_flake_with_core.path),
                 "foo",
             ]
         )
     assert age_keys[1].pubkey in output.out
 
     with capture_output as output:
-        cli.run(["secrets", what, "list", "--flake", str(test_flake.path)])
+        cli.run(["secrets", what, "list", "--flake", str(test_flake_with_core.path)])
     assert "foo" in output.out
 
-    cli.run(["secrets", what, "remove", "--flake", str(test_flake.path), "foo"])
+    cli.run(
+        ["secrets", what, "remove", "--flake", str(test_flake_with_core.path), "foo"]
+    )
     assert not (sops_folder / what / "foo" / "key.json").exists()
 
     with pytest.raises(ClanError):  # already removed
-        cli.run(["secrets", what, "remove", "--flake", str(test_flake.path), "foo"])
+        cli.run(
+            [
+                "secrets",
+                what,
+                "remove",
+                "--flake",
+                str(test_flake_with_core.path),
+                "foo",
+            ]
+        )
 
     with capture_output as output:
-        cli.run(["secrets", what, "list", "--flake", str(test_flake.path)])
+        cli.run(["secrets", what, "list", "--flake", str(test_flake_with_core.path)])
     assert "foo" not in output.out
 
     user_or_machine_symlink = sops_folder / "secrets" / test_secret_name / what / "foo"
@@ -151,112 +167,186 @@ def _test_identities(
     assert not user_or_machine_symlink.exists(follow_symlinks=False), err_msg
 
 
+@pytest.mark.with_core
 def test_users(
-    test_flake: FlakeForTest,
+    test_flake_with_core: FlakeForTest,
     capture_output: CaptureOutput,
     age_keys: list["KeyPair"],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _test_identities("users", test_flake, capture_output, age_keys, monkeypatch)
+    with monkeypatch.context():
+        _test_identities(
+            "users", test_flake_with_core, capture_output, age_keys, monkeypatch
+        )
 
-    # some additional user-specific tests
 
-    admin_key = age_keys[2]
-    sops_folder = test_flake.path / "sops"
+@pytest.mark.with_core
+def test_multiple_user_keys(
+    test_flake_with_core: FlakeForTest,
+    capture_output: CaptureOutput,
+    age_keys: list["KeyPair"],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sops_folder = test_flake_with_core.path / "sops"
 
-    user_keys = {
-        "bob": [age_keys[0], age_keys[1]],
-        "alice": [age_keys[2]],
-        "charlie": [age_keys[3], age_keys[4]],
+    users_keys = {
+        "bob": {age_keys[0], age_keys[1]},
+        "alice": {age_keys[2]},
+        "charlie": {age_keys[3], age_keys[4], age_keys[5]},
     }
 
-    for user, keys in user_keys.items():
-        key_args = [f"--age-key={key.pubkey}" for key in keys]
-
-        # add the user keys
+    for user, user_keys in users_keys.items():
+        # add the user
         cli.run(
             [
                 "secrets",
                 "users",
                 "add",
                 "--flake",
-                str(test_flake.path),
+                str(test_flake_with_core.path),
                 user,
-                *key_args,
+                *[f"--age-key={key.pubkey}" for key in user_keys],
             ]
         )
         assert (sops_folder / "users" / user / "key.json").exists()
 
         # check they are returned in get
         with capture_output as output:
-            cli.run(["secrets", "users", "get", "--flake", str(test_flake.path), user])
+            cli.run(
+                [
+                    "secrets",
+                    "users",
+                    "get",
+                    "--flake",
+                    str(test_flake_with_core.path),
+                    user,
+                ]
+            )
 
-        for key in keys:
-            assert key.pubkey in output.out
+        for user_key in user_keys:
+            assert user_key.pubkey in output.out
 
-        # set a secret
-        secret_name = f"{user}_secret"
-        cli.run(
-            [
-                "secrets",
-                "set",
-                "--flake",
-                str(test_flake.path),
-                "--user",
-                user,
-                secret_name,
-            ]
-        )
+        # let's do some setting and getting of secrets
 
-        # check the secret has each of our user's keys as a recipient
-        # in addition the admin key should be there
-        assert_secrets_file_recipients(
-            test_flake.path,
-            secret_name,
-            expected_age_recipients_keypairs=[admin_key, *keys],
-        )
+        def random_str() -> str:
+            return "".join(random.choices(string.ascii_letters, k=10))
 
-        if len(keys) == 1:
+        for user_key in user_keys:
+            # set a secret using each of the user's private keys
+            with monkeypatch.context():
+                secret_name = f"{user}_secret_{random_str()}"
+                secret_value = random_str()
+
+                monkeypatch.setenv("SOPS_AGE_KEY", user_key.privkey)
+                monkeypatch.setenv("SOPS_NIX_SECRET", secret_value)
+
+                cli.run(
+                    [
+                        "secrets",
+                        "set",
+                        "--flake",
+                        str(test_flake_with_core.path),
+                        secret_name,
+                    ]
+                )
+
+                # check the secret has each of our user's keys as a recipient
+                assert_secrets_file_recipients(
+                    test_flake_with_core.path,
+                    secret_name,
+                    expected_age_recipients_keypairs=[*user_keys],
+                )
+
+                # check we can get the secret
+                with capture_output as output:
+                    cli.run(
+                        [
+                            "secrets",
+                            "get",
+                            "--flake",
+                            str(test_flake_with_core.path),
+                            secret_name,
+                        ]
+                    )
+
+                assert secret_value in output.out
+
+        if len(user_keys) == 1:
             continue
 
-        # remove one of the keys
-        cli.run(
-            [
-                "secrets",
-                "users",
-                "remove-key",
-                "--flake",
-                str(test_flake.path),
-                user,
-                keys[0].pubkey,
-            ]
-        )
+        # remove one of the user keys,
+        user_keys_iter = iter(user_keys)
 
-        # check the secret has been updated
-        assert_secrets_file_recipients(
-            test_flake.path,
-            secret_name,
-            expected_age_recipients_keypairs=[admin_key, *keys[1:]],
-        )
+        key_to_remove = next(user_keys_iter)
+        key_to_encrypt_with = next(user_keys_iter)
+
+        with monkeypatch.context():
+            monkeypatch.setenv("SOPS_AGE_KEY", key_to_encrypt_with.privkey)
+            monkeypatch.setenv("SOPS_NIX_SECRET", "deafbeef")
+
+            cli.run(
+                [
+                    "secrets",
+                    "users",
+                    "remove-key",
+                    "--flake",
+                    str(test_flake_with_core.path),
+                    user,
+                    key_to_remove.pubkey,
+                ]
+            )
+
+            # check the secret has been updated
+            assert_secrets_file_recipients(
+                test_flake_with_core.path,
+                secret_name,
+                expected_age_recipients_keypairs=list({*user_keys} - {key_to_remove}),
+            )
+
+            # add the key back
+            cli.run(
+                [
+                    "secrets",
+                    "users",
+                    "add-key",
+                    "--flake",
+                    str(test_flake_with_core.path),
+                    user,
+                    key_to_remove.pubkey,
+                ]
+            )
+
+            # check the secret has been updated
+            assert_secrets_file_recipients(
+                test_flake_with_core.path,
+                secret_name,
+                expected_age_recipients_keypairs=user_keys,
+            )
 
 
+@pytest.mark.with_core
 def test_machines(
-    test_flake: FlakeForTest,
+    test_flake_with_core: FlakeForTest,
     capture_output: CaptureOutput,
     age_keys: list["KeyPair"],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _test_identities("machines", test_flake, capture_output, age_keys, monkeypatch)
+    _test_identities(
+        "machines", test_flake_with_core, capture_output, age_keys, monkeypatch
+    )
 
 
+@pytest.mark.with_core
 def test_groups(
-    test_flake: FlakeForTest,
+    test_flake_with_core: FlakeForTest,
     capture_output: CaptureOutput,
     age_keys: list["KeyPair"],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     with capture_output as output:
-        cli.run(["secrets", "groups", "list", "--flake", str(test_flake.path)])
+        cli.run(
+            ["secrets", "groups", "list", "--flake", str(test_flake_with_core.path)]
+        )
     assert output.out == ""
 
     machine1_age_key = age_keys[0]
@@ -270,7 +360,7 @@ def test_groups(
                 "groups",
                 "add-machine",
                 "--flake",
-                str(test_flake.path),
+                str(test_flake_with_core.path),
                 "group1",
                 "machine1",
             ]
@@ -282,7 +372,7 @@ def test_groups(
                 "groups",
                 "add-user",
                 "--flake",
-                str(test_flake.path),
+                str(test_flake_with_core.path),
                 "groupb1",
                 "user1",
             ]
@@ -293,7 +383,7 @@ def test_groups(
             "machines",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "machine1",
             machine1_age_key.pubkey,
         ]
@@ -304,7 +394,7 @@ def test_groups(
             "groups",
             "add-machine",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "group1",
             "machine1",
         ]
@@ -317,7 +407,7 @@ def test_groups(
             "groups",
             "add-machine",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "group1",
             "machine1",
         ]
@@ -329,7 +419,7 @@ def test_groups(
             "users",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "user1",
             user1_age_key.pubkey,
         ]
@@ -340,7 +430,7 @@ def test_groups(
             "users",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "admin",
             admin_age_key.pubkey,
         ]
@@ -351,14 +441,16 @@ def test_groups(
             "groups",
             "add-user",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "group1",
             "user1",
         ]
     )
 
     with capture_output as output:
-        cli.run(["secrets", "groups", "list", "--flake", str(test_flake.path)])
+        cli.run(
+            ["secrets", "groups", "list", "--flake", str(test_flake_with_core.path)]
+        )
     out = output.out
     assert "user1" in out
     assert "machine1" in out
@@ -368,12 +460,13 @@ def test_groups(
     with monkeypatch.context():
         monkeypatch.setenv("SOPS_NIX_SECRET", "deafbeef")
         monkeypatch.setenv("SOPS_AGE_KEY", admin_age_key.privkey)
+
         cli.run(
             [
                 "secrets",
                 "set",
                 "--flake",
-                str(test_flake.path),
+                str(test_flake_with_core.path),
                 "--group",
                 "group1",
                 secret_name,
@@ -381,7 +474,7 @@ def test_groups(
         )
 
     assert_secrets_file_recipients(
-        test_flake.path,
+        test_flake_with_core.path,
         secret_name,
         expected_age_recipients_keypairs=[
             machine1_age_key,
@@ -400,13 +493,13 @@ def test_groups(
             "groups",
             "remove-user",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "group1",
             "user1",
         ]
     )
     assert_secrets_file_recipients(
-        test_flake.path,
+        test_flake_with_core.path,
         secret_name,
         expected_age_recipients_keypairs=[machine1_age_key, admin_age_key],
         err_msg=(
@@ -422,13 +515,13 @@ def test_groups(
             "groups",
             "add-user",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "group1",
             "user1",
         ]
     )
     assert_secrets_file_recipients(
-        test_flake.path,
+        test_flake_with_core.path,
         secret_name,
         expected_age_recipients_keypairs=[
             machine1_age_key,
@@ -444,12 +537,12 @@ def test_groups(
             "users",
             "remove",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "user1",
         ]
     )
     assert_secrets_file_recipients(
-        test_flake.path,
+        test_flake_with_core.path,
         secret_name,
         expected_age_recipients_keypairs=[machine1_age_key, admin_age_key],
         err_msg=(
@@ -464,13 +557,13 @@ def test_groups(
             "groups",
             "remove-machine",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "group1",
             "machine1",
         ]
     )
     assert_secrets_file_recipients(
-        test_flake.path,
+        test_flake_with_core.path,
         secret_name,
         expected_age_recipients_keypairs=[admin_age_key],
         err_msg=(
@@ -479,11 +572,11 @@ def test_groups(
         ),
     )
 
-    first_group = next((test_flake.path / "sops" / "groups").iterdir(), None)
+    first_group = next((test_flake_with_core.path / "sops" / "groups").iterdir(), None)
     assert first_group is None
 
     # Check if the symlink to the group was removed from our foo test secret:
-    group_symlink = test_flake.path / "sops/secrets/foo/groups/group1"
+    group_symlink = test_flake_with_core.path / "sops/secrets/foo/groups/group1"
     err_msg = (
         "Symlink to group1's key in foo secret "
         "was not cleaned up after group1 was removed"
@@ -520,61 +613,105 @@ def use_gpg_key(key: GpgKey, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
             monkeypatch.setenv("SOPS_AGE_KEY", old_key)
 
 
+@pytest.mark.with_core
 def test_secrets(
-    test_flake: FlakeForTest,
+    test_flake_with_core: FlakeForTest,
     capture_output: CaptureOutput,
     monkeypatch: pytest.MonkeyPatch,
     gpg_key: GpgKey,
     age_keys: list["KeyPair"],
 ) -> None:
     with capture_output as output:
-        cli.run(["secrets", "list", "--flake", str(test_flake.path)])
+        cli.run(["secrets", "list", "--flake", str(test_flake_with_core.path)])
     assert output.out == ""
 
     # Generate a new key for the clan
-    monkeypatch.setenv("SOPS_AGE_KEY_FILE", str(test_flake.path / ".." / "age.key"))
+    monkeypatch.setenv(
+        "SOPS_AGE_KEY_FILE", str(test_flake_with_core.path / ".." / "age.key")
+    )
     with capture_output as output:
-        cli.run(["secrets", "key", "generate", "--flake", str(test_flake.path)])
+        cli.run(
+            ["secrets", "key", "generate", "--flake", str(test_flake_with_core.path)]
+        )
     assert "age private key" in output.out
     # Read the key that was generated
     with capture_output as output:
-        cli.run(["secrets", "key", "show", "--flake", str(test_flake.path)])
-    key = json.loads(output.out)["publickey"]
-    assert key.startswith("age1")
+        cli.run(["secrets", "key", "show", "--flake", str(test_flake_with_core.path)])
+
+    key = json.loads(output.out)
+    assert key["publickey"].startswith("age1")
     # Add testuser with the key that was generated for the clan
     cli.run(
-        ["secrets", "users", "add", "--flake", str(test_flake.path), "testuser", key]
+        [
+            "secrets",
+            "users",
+            "add",
+            "--flake",
+            str(test_flake_with_core.path),
+            "testuser",
+            key["publickey"],
+        ]
     )
 
     with pytest.raises(ClanError):  # does not exist yet
-        cli.run(["secrets", "get", "--flake", str(test_flake.path), "nonexisting"])
+        cli.run(
+            ["secrets", "get", "--flake", str(test_flake_with_core.path), "nonexisting"]
+        )
     monkeypatch.setenv("SOPS_NIX_SECRET", "foo")
-    cli.run(["secrets", "set", "--flake", str(test_flake.path), "initialkey"])
+    cli.run(["secrets", "set", "--flake", str(test_flake_with_core.path), "initialkey"])
     with capture_output as output:
-        cli.run(["secrets", "get", "--flake", str(test_flake.path), "initialkey"])
+        cli.run(
+            ["secrets", "get", "--flake", str(test_flake_with_core.path), "initialkey"]
+        )
     assert output.out == "foo"
     with capture_output as output:
-        cli.run(["secrets", "users", "list", "--flake", str(test_flake.path)])
+        cli.run(["secrets", "users", "list", "--flake", str(test_flake_with_core.path)])
     users = output.out.rstrip().split("\n")
     assert len(users) == 1, f"users: {users}"
     owner = users[0]
 
     monkeypatch.setenv("EDITOR", "cat")
-    cli.run(["secrets", "set", "--edit", "--flake", str(test_flake.path), "initialkey"])
+    cli.run(
+        [
+            "secrets",
+            "set",
+            "--edit",
+            "--flake",
+            str(test_flake_with_core.path),
+            "initialkey",
+        ]
+    )
     monkeypatch.delenv("EDITOR")
 
-    cli.run(["secrets", "rename", "--flake", str(test_flake.path), "initialkey", "key"])
+    cli.run(
+        [
+            "secrets",
+            "rename",
+            "--flake",
+            str(test_flake_with_core.path),
+            "initialkey",
+            "key",
+        ]
+    )
 
     with capture_output as output:
-        cli.run(["secrets", "list", "--flake", str(test_flake.path)])
+        cli.run(["secrets", "list", "--flake", str(test_flake_with_core.path)])
     assert output.out == "key\n"
 
     with capture_output as output:
-        cli.run(["secrets", "list", "--flake", str(test_flake.path), "nonexisting"])
+        cli.run(
+            [
+                "secrets",
+                "list",
+                "--flake",
+                str(test_flake_with_core.path),
+                "nonexisting",
+            ]
+        )
     assert output.out == ""
 
     with capture_output as output:
-        cli.run(["secrets", "list", "--flake", str(test_flake.path), "key"])
+        cli.run(["secrets", "list", "--flake", str(test_flake_with_core.path), "key"])
     assert output.out == "key\n"
 
     # using the `age_keys` KeyPair, add a machine and rotate its key
@@ -585,7 +722,7 @@ def test_secrets(
             "machines",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "machine1",
             age_keys[1].pubkey,
         ]
@@ -596,18 +733,22 @@ def test_secrets(
             "machines",
             "add-secret",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "machine1",
             "key",
         ]
     )
     with capture_output as output:
-        cli.run(["secrets", "machines", "list", "--flake", str(test_flake.path)])
+        cli.run(
+            ["secrets", "machines", "list", "--flake", str(test_flake_with_core.path)]
+        )
     assert output.out == "machine1\n"
 
     with use_age_key(age_keys[1].privkey, monkeypatch):
         with capture_output as output:
-            cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
+            cli.run(
+                ["secrets", "get", "--flake", str(test_flake_with_core.path), "key"]
+            )
         assert output.out == "foo"
 
     # rotate machines key
@@ -617,7 +758,7 @@ def test_secrets(
             "machines",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "-f",
             "machine1",
             age_keys[0].privkey,
@@ -627,7 +768,9 @@ def test_secrets(
     # should also rotate the encrypted secret
     with use_age_key(age_keys[0].privkey, monkeypatch):
         with capture_output as output:
-            cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
+            cli.run(
+                ["secrets", "get", "--flake", str(test_flake_with_core.path), "key"]
+            )
         assert output.out == "foo"
 
     cli.run(
@@ -636,7 +779,7 @@ def test_secrets(
             "machines",
             "remove-secret",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "machine1",
             "key",
         ]
@@ -648,7 +791,7 @@ def test_secrets(
             "users",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "user1",
             age_keys[1].pubkey,
         ]
@@ -659,13 +802,13 @@ def test_secrets(
             "users",
             "add-secret",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "user1",
             "key",
         ]
     )
     with capture_output as output, use_age_key(age_keys[1].privkey, monkeypatch):
-        cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
+        cli.run(["secrets", "get", "--flake", str(test_flake_with_core.path), "key"])
     assert output.out == "foo"
     cli.run(
         [
@@ -673,7 +816,7 @@ def test_secrets(
             "users",
             "remove-secret",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "user1",
             "key",
         ]
@@ -686,7 +829,7 @@ def test_secrets(
                 "groups",
                 "add-secret",
                 "--flake",
-                str(test_flake.path),
+                str(test_flake_with_core.path),
                 "admin-group",
                 "key",
             ]
@@ -697,7 +840,7 @@ def test_secrets(
             "groups",
             "add-user",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "admin-group",
             "user1",
         ]
@@ -708,7 +851,7 @@ def test_secrets(
             "groups",
             "add-user",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "admin-group",
             owner,
         ]
@@ -719,7 +862,7 @@ def test_secrets(
             "groups",
             "add-secret",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "admin-group",
             "key",
         ]
@@ -730,7 +873,7 @@ def test_secrets(
             "secrets",
             "set",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "--group",
             "admin-group",
             "key2",
@@ -739,7 +882,9 @@ def test_secrets(
 
     with use_age_key(age_keys[1].privkey, monkeypatch):
         with capture_output as output:
-            cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
+            cli.run(
+                ["secrets", "get", "--flake", str(test_flake_with_core.path), "key"]
+            )
         assert output.out == "foo"
 
     # Add an user with a GPG key
@@ -749,7 +894,7 @@ def test_secrets(
             "users",
             "add",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "--pgp-key",
             gpg_key.fingerprint,
             "user2",
@@ -763,7 +908,7 @@ def test_secrets(
             "groups",
             "add-user",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "admin-group",
             "user2",
         ]
@@ -771,7 +916,9 @@ def test_secrets(
 
     with use_gpg_key(gpg_key, monkeypatch):  # user2
         with capture_output as output:
-            cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
+            cli.run(
+                ["secrets", "get", "--flake", str(test_flake_with_core.path), "key"]
+            )
         assert output.out == "foo"
 
     cli.run(
@@ -780,7 +927,7 @@ def test_secrets(
             "groups",
             "remove-user",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "admin-group",
             "user2",
         ]
@@ -791,7 +938,7 @@ def test_secrets(
         capture_output as output,
     ):
         # user2 is not in the group anymore
-        cli.run(["secrets", "get", "--flake", str(test_flake.path), "key"])
+        cli.run(["secrets", "get", "--flake", str(test_flake_with_core.path), "key"])
     print(output.out)
 
     cli.run(
@@ -800,22 +947,23 @@ def test_secrets(
             "groups",
             "remove-secret",
             "--flake",
-            str(test_flake.path),
+            str(test_flake_with_core.path),
             "admin-group",
             "key",
         ]
     )
 
-    cli.run(["secrets", "remove", "--flake", str(test_flake.path), "key"])
-    cli.run(["secrets", "remove", "--flake", str(test_flake.path), "key2"])
+    cli.run(["secrets", "remove", "--flake", str(test_flake_with_core.path), "key"])
+    cli.run(["secrets", "remove", "--flake", str(test_flake_with_core.path), "key2"])
 
     with capture_output as output:
-        cli.run(["secrets", "list", "--flake", str(test_flake.path)])
+        cli.run(["secrets", "list", "--flake", str(test_flake_with_core.path)])
     assert output.out == ""
 
 
+@pytest.mark.with_core
 def test_secrets_key_generate_gpg(
-    test_flake: FlakeForTest,
+    test_flake_with_core: FlakeForTest,
     capture_output: CaptureOutput,
     monkeypatch: pytest.MonkeyPatch,
     gpg_key: GpgKey,
@@ -830,14 +978,16 @@ def test_secrets_key_generate_gpg(
                     "key",
                     "generate",
                     "--flake",
-                    str(test_flake.path),
+                    str(test_flake_with_core.path),
                 ]
             )
         assert "age private key" not in output.out
         assert re.match(r"PGP key.+is already set", output.err) is not None
 
         with capture_output as output:
-            cli.run(["secrets", "key", "show", "--flake", str(test_flake.path)])
+            cli.run(
+                ["secrets", "key", "show", "--flake", str(test_flake_with_core.path)]
+            )
         key = json.loads(output.out)
         assert key["type"] == "pgp"
         assert key["publickey"] == gpg_key.fingerprint
@@ -849,12 +999,13 @@ def test_secrets_key_generate_gpg(
                 "users",
                 "add",
                 "--flake",
-                str(test_flake.path),
+                str(test_flake_with_core.path),
                 "--pgp-key",
                 gpg_key.fingerprint,
                 "testuser",
             ]
         )
+
         with capture_output as output:
             cli.run(
                 [
@@ -862,7 +1013,7 @@ def test_secrets_key_generate_gpg(
                     "users",
                     "get",
                     "--flake",
-                    str(test_flake.path),
+                    str(test_flake_with_core.path),
                     "testuser",
                 ]
             )
@@ -873,8 +1024,26 @@ def test_secrets_key_generate_gpg(
         assert key["type"] == "pgp"
         assert key["publickey"] == gpg_key.fingerprint
 
-        monkeypatch.setenv("SOPS_NIX_SECRET", "secret-value")
-        cli.run(["secrets", "set", "--flake", str(test_flake.path), "secret-name"])
-        with capture_output as output:
-            cli.run(["secrets", "get", "--flake", str(test_flake.path), "secret-name"])
-        assert output.out == "secret-value"
+        with monkeypatch.context() as m:
+            m.setenv("SOPS_NIX_SECRET", "secret-value")
+
+            cli.run(
+                [
+                    "secrets",
+                    "set",
+                    "--flake",
+                    str(test_flake_with_core.path),
+                    "secret-name",
+                ]
+            )
+            with capture_output as output:
+                cli.run(
+                    [
+                        "secrets",
+                        "get",
+                        "--flake",
+                        str(test_flake_with_core.path),
+                        "secret-name",
+                    ]
+                )
+            assert output.out == "secret-value"

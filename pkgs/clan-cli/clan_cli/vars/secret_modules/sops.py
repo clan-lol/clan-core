@@ -302,6 +302,7 @@ class SecretStore(StoreBase):
 
                 for group in self.machine.deployment["sops"]["defaultGroups"]:
                     allow_member(
+                        self.machine.flake_dir,
                         groups_folder(secret_path),
                         sops_groups_folder(self.machine.flake_dir),
                         group,
@@ -310,6 +311,7 @@ class SecretStore(StoreBase):
                     )
 
                 update_keys(
+                    self.machine.flake_dir,
                     secret_path,
                     collect_keys_for_path(secret_path),
                 )

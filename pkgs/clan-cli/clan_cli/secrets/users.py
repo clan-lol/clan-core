@@ -93,6 +93,7 @@ def list_users(flake_dir: Path) -> list[str]:
 
 def add_secret(flake_dir: Path, user: str, secret: str) -> None:
     updated_paths = secrets.allow_member(
+        flake_dir,
         secrets.users_folder(sops_secrets_folder(flake_dir) / secret),
         sops_users_folder(flake_dir),
         user,
@@ -106,7 +107,7 @@ def add_secret(flake_dir: Path, user: str, secret: str) -> None:
 
 def remove_secret(flake_dir: Path, user: str, secret: str) -> None:
     updated_paths = secrets.disallow_member(
-        secrets.users_folder(sops_secrets_folder(flake_dir) / secret), user
+        flake_dir, secrets.users_folder(sops_secrets_folder(flake_dir) / secret), user
     )
     commit_files(
         updated_paths,

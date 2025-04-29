@@ -44,50 +44,55 @@ def test_secrets_upload(
     config["clan"]["networking"]["targetHost"] = addr
     config["clan"]["core"]["facts"]["secretUploadDirectory"] = str(flake.path / "facts")
     flake.refresh()
-    monkeypatch.chdir(str(flake.path))
-    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
 
-    sops_dir = flake.path / "facts"
+    with monkeypatch.context():
+        monkeypatch.chdir(str(flake.path))
+        monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
 
-    # the flake defines this path as the location where the sops key should be installed
-    sops_key = sops_dir / "key.txt"
-    sops_key2 = sops_dir / "key2.txt"
+        sops_dir = flake.path / "facts"
 
-    # Create old state, which should be cleaned up
-    sops_dir.mkdir()
-    sops_key.write_text("OLD STATE")
-    sops_key2.write_text("OLD STATE2")
+        # the flake defines this path as the location where the sops key should be installed
+        sops_key = sops_dir / "key.txt"
+        sops_key2 = sops_dir / "key2.txt"
 
-    cli.run(
-        [
-            "secrets",
-            "users",
-            "add",
-            "--flake",
-            str(flake.path),
-            "user1",
-            age_keys[0].pubkey,
-        ]
-    )
+        # Create old state, which should be cleaned up
+        sops_dir.mkdir()
+        sops_key.write_text("OLD STATE")
+        sops_key2.write_text("OLD STATE2")
 
-    cli.run(
-        [
-            "secrets",
-            "machines",
-            "add",
-            "--flake",
-            str(flake.path),
-            "vm1",
-            age_keys[1].pubkey,
-        ]
-    )
-    monkeypatch.setenv("SOPS_NIX_SECRET", age_keys[0].privkey)
-    cli.run(["secrets", "set", "--flake", str(flake.path), "vm1-age.key"])
+        cli.run(
+            [
+                "secrets",
+                "users",
+                "add",
+                "--flake",
+                str(flake.path),
+                "user1",
+                age_keys[0].pubkey,
+            ]
+        )
 
-    flake_path = flake.path.joinpath("flake.nix")
+        cli.run(
+            [
+                "secrets",
+                "machines",
+                "add",
+                "--flake",
+                str(flake.path),
+                "vm1",
+                age_keys[1].pubkey,
+            ]
+        )
 
-    cli.run(["facts", "upload", "--flake", str(flake_path), "vm1"])
+        with monkeypatch.context() as m:
+            m.setenv("SOPS_NIX_SECRET", age_keys[0].privkey)
 
-    assert sops_key.exists()
-    assert sops_key.read_text() == age_keys[0].privkey
-    assert not sops_key2.exists()
+            cli.run(["secrets", "set", "--flake", str(flake.path), "vm1-age.key"])
+
+            flake_path = flake.path.joinpath("flake.nix")
+
+            cli.run(["facts", "upload", "--flake", str(flake_path), "vm1"])
+
+            assert sops_key.exists()
+            assert sops_key.read_text() == age_keys[0].privkey
+            assert not sops_key2.exists()

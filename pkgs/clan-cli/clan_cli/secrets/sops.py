@@ -4,6 +4,7 @@ import io
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 from collections.abc import Iterable, Sequence
@@ -17,9 +18,11 @@ from clan_lib.api import API
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.dirs import user_config_dir
 from clan_cli.errors import ClanError
-from clan_cli.nix import nix_shell
+from clan_cli.nix import nix_eval, nix_shell
 
-from .folders import sops_machines_folder, sops_users_folder
+from .folders import sops_users_folder
+
+AGE_RECIPIENT_REGEX = re.compile(r"^.*((age1|ssh-(rsa|ed25519) ).*?)(\s|$)")
 
 log = logging.getLogger(__name__)
 
@@ -55,14 +58,20 @@ class KeyType(enum.Enum):
             def maybe_read_from_path(key_path: Path) -> None:
                 try:
                     # as in parse.go in age:
-                    lines = Path(key_path).read_text().strip().splitlines()
-                    for private_key in filter(lambda ln: not ln.startswith("#"), lines):
-                        public_key = get_public_age_key(private_key)
-                        log.info(
-                            f"Found age public key from a private key "
-                            f"in {key_path}: {public_key}"
-                        )
-                        keyring.append(public_key)
+                    content = Path(key_path).read_text().strip()
+
+                    try:
+                        for public_key in get_public_age_keys(content):
+                            log.info(
+                                f"Found age public key from a private key "
+                                f"in {key_path}: {public_key}"
+                            )
+
+                            keyring.append(public_key)
+                    except ClanError as e:
+                        error_msg = f"Failed to read age keys from {key_path}"
+                        raise ClanError(error_msg) from e
+
                 except FileNotFoundError:
                     return
                 except Exception as ex:
@@ -72,13 +81,19 @@ class KeyType(enum.Enum):
                 # SOPS_AGE_KEY is fed into age.ParseIdentities by Sops, and
                 # reads identities line by line. See age/keysource.go in
                 # Sops, and age/parse.go in Age.
-                for private_key in keys.strip().splitlines():
-                    public_key = get_public_age_key(private_key)
-                    log.info(
-                        f"Found age public key from a private key "
-                        f"in the environment (SOPS_AGE_KEY): {public_key}"
-                    )
-                    keyring.append(public_key)
+                content = keys.strip()
+
+                try:
+                    for public_key in get_public_age_keys(content):
+                        log.info(
+                            f"Found age public key from a private key "
+                            f"in the environment (SOPS_AGE_KEY): {public_key}"
+                        )
+
+                        keyring.append(public_key)
+                except ClanError as e:
+                    error_msg = "Failed to read age keys from SOPS_AGE_KEY"
+                    raise ClanError(error_msg) from e
 
             # Sops will try every location, see age/keysource.go
             elif key_path := os.environ.get("SOPS_AGE_KEY_FILE"):
@@ -176,7 +191,41 @@ class Operation(enum.StrEnum):
     UPDATE_KEYS = "updatekeys"
 
 
+def load_age_plugins(flake_dir: str | Path) -> list[str]:
+    if not flake_dir:
+        msg = "Missing flake directory"
+        raise ClanError(msg)
+
+    cmd = nix_eval(
+        [
+            f"{flake_dir}#clanInternals.secrets.age.plugins",
+            "--json",
+        ]
+    )
+
+    try:
+        result = run(cmd)
+    except Exception as e:
+        msg = f"Failed to load age plugins {flake_dir}"
+        raise ClanError(msg) from e
+
+    json_str = result.stdout.strip()
+
+    try:
+        plugins = json.loads(json_str)
+    except json.JSONDecodeError as e:
+        msg = f"Failed to decode '{json_str}': {e}"
+        raise ClanError(msg) from e
+
+    if isinstance(plugins, list):
+        return plugins
+
+    msg = f"Expected a list of age plugins but {type(plugins)!r} was provided"
+    raise ClanError(msg)
+
+
 def sops_run(
+    flake_dir: str | Path,
     call: Operation,
     secret_path: Path,
     public_keys: Iterable[SopsKey],
@@ -234,7 +283,9 @@ def sops_run(
                 raise ClanError(msg)
         sops_cmd.append(str(secret_path))
 
-        cmd = nix_shell(["sops", "gnupg"], sops_cmd)
+        age_plugins = load_age_plugins(flake_dir)
+
+        cmd = nix_shell(["sops", "gnupg", *age_plugins], sops_cmd)
         opts = (
             dataclasses.replace(run_opts, env=environ)
             if run_opts
@@ -249,7 +300,44 @@ def sops_run(
         return p.returncode, p.stdout
 
 
-def get_public_age_key(privkey: str) -> str:
+def get_public_age_keys(contents: str) -> set[str]:
+    # we use a set as it's possible we may detect the same key twice, once in a `# comment` and once by recovering it
+    # from AGE-SECRET-KEY
+    keys: set[str] = set()
+    recipient: str | None = None
+
+    for line_number, line in enumerate(contents.splitlines()):
+        match = AGE_RECIPIENT_REGEX.match(line)
+
+        if match:
+            recipient = match[1]
+            keys.add(recipient)
+
+        if line.startswith("#"):
+            continue
+
+        if line.startswith("AGE-PLUGIN-"):
+            if not recipient:
+                msg = f"Did you forget to precede line {line_number} with it's corresponding `# recipient: age1xxxxxxxx` entry?"
+                raise ClanError(msg)
+
+            # reset recipient
+            recipient = None
+
+        if line.startswith("AGE-SECRET-KEY-"):
+            try:
+                keys.add(get_public_age_key_from_private_key(line))
+            except Exception as e:
+                msg = "Failed to get public key for age private key. Is the key malformed?"
+                raise ClanError(msg) from e
+
+            # reset recipient
+            recipient = None
+
+    return keys
+
+
+def get_public_age_key_from_private_key(privkey: str) -> str:
     cmd = nix_shell(["age"], ["age-keygen", "-y"])
 
     error_msg = "Failed to get public key for age private key. Is the key malformed?"
@@ -298,23 +386,7 @@ def get_user_name(flake_dir: Path, user: str) -> str:
         print(f"{flake_dir / user} already exists")
 
 
-def maybe_get_user_or_machine(flake_dir: Path, key: SopsKey) -> set[SopsKey] | None:
-    folders = [sops_users_folder(flake_dir), sops_machines_folder(flake_dir)]
-
-    for folder in folders:
-        if folder.exists():
-            for user in folder.iterdir():
-                if not (user / "key.json").exists():
-                    continue
-
-                keys = read_keys(user)
-                if key in keys:
-                    return {SopsKey(key.pubkey, user.name, key.key_type)}
-
-    return None
-
-
-def get_user(flake_dir: Path, key: SopsKey) -> set[SopsKey] | None:
+def maybe_get_user(flake_dir: Path, key: SopsKey) -> set[SopsKey] | None:
     folder = sops_users_folder(flake_dir)
 
     if folder.exists():
@@ -324,18 +396,9 @@ def get_user(flake_dir: Path, key: SopsKey) -> set[SopsKey] | None:
 
             keys = read_keys(user)
             if key in keys:
-                return {SopsKey(key.pubkey, user.name, key.key_type)}
+                return {SopsKey(key.pubkey, user.name, key.key_type) for key in keys}
 
     return None
-
-
-@API.register
-def ensure_user_or_machine(flake_dir: Path, key: SopsKey) -> set[SopsKey]:
-    maybe_keys = maybe_get_user_or_machine(flake_dir, key)
-    if maybe_keys:
-        return maybe_keys
-    msg = f"A sops key is not yet added to the repository. Please add it with 'clan secrets users add youruser {key.pubkey}' (replace youruser with your user name)"
-    raise ClanError(msg)
 
 
 def default_admin_private_key_path() -> Path:
@@ -346,8 +409,9 @@ def default_admin_private_key_path() -> Path:
 
 
 @API.register
-def maybe_get_admin_public_key() -> None | SopsKey:
+def maybe_get_admin_public_key() -> SopsKey | None:
     keyring = SopsKey.collect_public_keys()
+
     if len(keyring) == 0:
         return None
 
@@ -366,19 +430,31 @@ def maybe_get_admin_public_key() -> None | SopsKey:
     return keyring[0]
 
 
-def ensure_admin_public_key(flake_dir: Path) -> set[SopsKey]:
+def ensure_admin_public_keys(flake_dir: Path) -> set[SopsKey]:
     key = maybe_get_admin_public_key()
-    if key:
-        return ensure_user_or_machine(flake_dir, key)
-    msg = "No sops key found. Please generate one with 'clan secrets key generate'."
-    raise ClanError(msg)
+
+    if not key:
+        msg = "No SOPS key found. Please generate one with `clan secrets key generate`."
+        raise ClanError(msg)
+
+    user_keys = maybe_get_user(flake_dir, key)
+
+    if not user_keys:
+        # todo improve error message
+        msg = f"We could not figure out which Clan secrets user you are with the SOPS key we found: {key.pubkey}"
+        raise ClanError(msg)
+
+    return user_keys
 
 
-def update_keys(secret_path: Path, keys: Iterable[SopsKey]) -> list[Path]:
+def update_keys(
+    flake_dir: str | Path, secret_path: Path, keys: Iterable[SopsKey]
+) -> list[Path]:
     secret_path = secret_path / "secret"
     error_msg = f"Could not update keys for {secret_path}"
 
     rc, _ = sops_run(
+        flake_dir,
         Operation.UPDATE_KEYS,
         secret_path,
         keys,
@@ -389,6 +465,7 @@ def update_keys(secret_path: Path, keys: Iterable[SopsKey]) -> list[Path]:
 
 
 def encrypt_file(
+    flake_dir: str | Path,
     secret_path: Path,
     content: str | IO[bytes] | bytes | None,
     pubkeys: list[SopsKey],
@@ -399,6 +476,7 @@ def encrypt_file(
     if not content:
         # This will spawn an editor to edit the file.
         rc, _ = sops_run(
+            flake_dir,
             Operation.EDIT,
             secret_path,
             pubkeys,
@@ -437,6 +515,7 @@ def encrypt_file(
                 msg = f"Invalid content type: {type(content)}"
                 raise ClanError(msg)
         sops_run(
+            flake_dir,
             Operation.ENCRYPT,
             Path(source.name),
             pubkeys,
@@ -451,11 +530,12 @@ def encrypt_file(
             Path(source.name).unlink()
 
 
-def decrypt_file(secret_path: Path) -> str:
+def decrypt_file(flake_dir: str | Path, secret_path: Path) -> str:
     # decryption uses private keys from the environment or default paths:
     no_public_keys_needed: list[SopsKey] = []
 
     _, stdout = sops_run(
+        flake_dir,
         Operation.DECRYPT,
         secret_path,
         no_public_keys_needed,

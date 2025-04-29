@@ -32,27 +32,29 @@ def test_run(
     test_flake_with_core: FlakeForTest,
     age_keys: list["KeyPair"],
 ) -> None:
-    monkeypatch.chdir(test_flake_with_core.path)
-    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
-    cli.run(
-        [
-            "secrets",
-            "users",
-            "add",
-            "user1",
-            age_keys[0].pubkey,
-        ]
-    )
-    cli.run(
-        [
-            "secrets",
-            "groups",
-            "add-user",
-            "admins",
-            "user1",
-        ]
-    )
-    cli.run(["vms", "run", "--no-block", "vm1", "-c", "shutdown", "-h", "now"])
+    with monkeypatch.context():
+        monkeypatch.chdir(test_flake_with_core.path)
+        monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
+
+        cli.run(
+            [
+                "secrets",
+                "users",
+                "add",
+                "user1",
+                age_keys[0].pubkey,
+            ]
+        )
+        cli.run(
+            [
+                "secrets",
+                "groups",
+                "add-user",
+                "admins",
+                "user1",
+            ]
+        )
+        cli.run(["vms", "run", "--no-block", "vm1", "-c", "shutdown", "-h", "now"])
 
 
 @pytest.mark.skipif(no_kvm, reason="Requires KVM")

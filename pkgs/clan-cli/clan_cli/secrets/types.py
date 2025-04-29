@@ -5,7 +5,7 @@ from pathlib import Path
 
 from clan_cli.errors import ClanError
 
-from .sops import get_public_age_key
+from .sops import get_public_age_keys
 
 VALID_SECRET_NAME = re.compile(r"^[a-zA-Z0-9._-]+$")
 VALID_USER_NAME = re.compile(r"^[a-z_]([a-z0-9_-]{0,31})?$")
@@ -21,15 +21,20 @@ def secret_name_type(arg_value: str) -> str:
 def public_or_private_age_key_type(arg_value: str) -> str:
     if Path(arg_value).is_file():
         arg_value = Path(arg_value).read_text().strip()
-    for line in arg_value.splitlines():
-        if line.startswith("#"):
-            continue
-        if line.startswith("age1"):
-            return line.strip()
-        if line.startswith("AGE-SECRET-KEY-"):
-            return get_public_age_key(line)
-    msg = f"Please provide an age public key starting with age1 or an age private key AGE-SECRET-KEY-, got: '{arg_value}'"
-    raise ClanError(msg)
+
+    public_keys = get_public_age_keys(arg_value)
+
+    match len(public_keys):
+        case 0:
+            msg = f"Please provide an age public key starting with age1 or an age private key starting with AGE-SECRET-KEY- or AGE-PLUGIN-, got: '{arg_value}'"
+            raise ClanError(msg)
+
+        case 1:
+            return next(iter(public_keys))
+
+        case n:
+            msg = f"{n} age keys were provided, please provide only 1: '{arg_value}'"
+            raise ClanError(msg)
 
 
 def group_or_user_name_type(what: str) -> Callable[[str], str]:

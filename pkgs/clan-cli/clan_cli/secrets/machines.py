@@ -74,6 +74,7 @@ def list_sops_machines(flake_dir: Path) -> list[str]:
 
 def add_secret(flake_dir: Path, machine: str, secret_path: Path) -> None:
     paths = secrets.allow_member(
+        flake_dir,
         secrets.machines_folder(secret_path),
         sops_machines_folder(flake_dir),
         machine,
@@ -87,7 +88,9 @@ def add_secret(flake_dir: Path, machine: str, secret_path: Path) -> None:
 
 def remove_secret(flake_dir: Path, machine: str, secret: str) -> None:
     updated_paths = secrets.disallow_member(
-        secrets.machines_folder(sops_secrets_folder(flake_dir) / secret), machine
+        flake_dir,
+        secrets.machines_folder(sops_secrets_folder(flake_dir) / secret),
+        machine,
     )
     commit_files(
         updated_paths,
