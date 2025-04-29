@@ -13,6 +13,9 @@ in
   clan.inventory.modules = {
     hello-world = module;
   };
+  clan.modules = {
+    hello-world = module;
+  };
   perSystem =
     { pkgs, ... }:
     let

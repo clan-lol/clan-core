@@ -64,7 +64,33 @@ in
               self'.legacyPackages.homeConfigurations or { }
             );
         in
-        nixosTests // flakeOutputs;
+        nixosTests
+        // flakeOutputs
+        // {
+          # TODO: Automatically provide this check to downstream users to check their modules
+          clan-modules-json-compatible =
+            let
+              allSchemas = lib.mapAttrs (
+                _n: m:
+                let
+                  schema =
+                    (self.clanLib.inventory.evalClanService {
+                      modules = [ m ];
+                      key = "checks";
+                    }).config.result.api.schema;
+                in
+                schema
+              ) self.clan.modules;
+            in
+            pkgs.runCommand "combined-result"
+              {
+                schemaFile = builtins.toFile "schemas.json" (builtins.toJSON allSchemas);
+              }
+              ''
+                mkdir -p $out
+                cat $schemaFile > $out/allSchemas.json
+              '';
+        };
       legacyPackages = {
         nixosTests =
           let
