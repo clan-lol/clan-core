@@ -1,0 +1,54 @@
+.button {
+  @apply inline-flex items-center flex-shrink gap-2 justify-center p-4 text-secondary-950 font-semibold;
+  letter-spacing: 0.0275rem;
+}
+
+/* button sizes */
+
+.button--default {
+  padding: theme(padding.2) theme(padding.4);
+  border-radius: theme(borderRadius.DEFAULT);
+}
+
+.button--small {
+  padding: theme(padding[1.5]) theme(padding[3]);
+  border-radius: 3px;
+}
+
+.button--dark {
+  @apply border border-solid border-secondary-950 bg-primary-900 text-white shadow-inner-primary;
+}
+
+/* button light and states */
+
+.button--light {
+  @apply border border-solid border-secondary-400 bg-secondary-100;
+
+  box-shadow: inset 2px 2px theme(backgroundColor.white);
+}
+
+.button--light-hover:hover {
+  @apply hover:bg-secondary-200;
+}
+
+.button--light-focus:focus {
+  @apply focus:bg-secondary-200;
+
+  & .button__label {
+    color: theme(textColor.secondary.900) !important;
+  }
+}
+
+.button--light-active:active {
+  @apply active:bg-secondary-200 border-secondary-600 active:text-secondary-900;
+
+  box-shadow: inset 2px 2px theme(backgroundColor.secondary.300);
+
+  & .button__label {
+    color: theme(textColor.secondary.900) !important;
+  }
+}
+
+.button--light-disabled:disabled {
+  @apply disabled:bg-secondary-50 disabled:text-secondary-200 disabled:border-secondary-700;
+}

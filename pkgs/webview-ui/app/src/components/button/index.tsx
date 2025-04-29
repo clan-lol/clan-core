@@ -1,6 +1,8 @@
 import { splitProps, type JSX } from "solid-js";
 import cx from "classnames";
 import { Typography } from "../Typography";
+//import './css/index.css'
+import "./css/index.css";
 
 type Variants = "dark" | "light" | "ghost";
 type Size = "default" | "s";
@@ -12,47 +14,34 @@ const variantColors: (
     "border border-solid",
     "border-secondary-950 bg-primary-900 text-white",
     "shadow-inner-primary",
-    // Hover state
-    // Focus state
-    // Active state
-    !disabled && "hover:border-secondary-900 hover:bg-secondary-700",
-    !disabled && "focus:border-secondary-900",
+    !disabled && "hover:border-secondary-900 hover:bg-secondary-700", // Hover state
+    !disabled && "focus:border-secondary-900", // Focus state
     !disabled &&
-      "active:border-secondary-900 active:shadow-inner-primary-active",
+      "active:border-secondary-900 active:shadow-inner-primary-active", // Active state
     // Disabled
     "disabled:bg-secondary-200 disabled:text-secondary-700 disabled:border-secondary-300",
   ),
   light: cx(
-    "border border-solid",
-    "border-secondary-800 bg-secondary-100 text-secondary-800",
-    "shadow-inner-secondary",
-    // Hover state
-    // Focus state
-    // Active state
-    !disabled && "hover:bg-secondary-200 hover:text-secondary-900",
-    !disabled && "focus:bg-secondary-200 focus:text-secondary-900",
-    !disabled &&
-      "active:bg-secondary-200 active:text-secondary-950 active:shadow-inner-secondary-active",
-    // Disabled
-    "disabled:bg-secondary-50 disabled:text-secondary-200 disabled:border-secondary-700",
+    "button--light",
+
+    !disabled && "button--light-hover", // Hover state
+    !disabled && "button--light-focus", // Focus state
+    !disabled && "button--light-active", // Active state
+
+    "button--light-disabled", // Disabled state
   ),
   ghost: cx(
     // "shadow-inner-secondary",
-    // Hover state
-    // Focus state
-    // Active state
-    !disabled && "hover:bg-secondary-200 hover:text-secondary-900",
-    !disabled && "focus:bg-secondary-200 focus:text-secondary-900",
-    !disabled &&
-      "active:bg-secondary-200 active:text-secondary-950 active:shadow-inner-secondary-active",
-    // Disabled
-    "disabled:bg-secondary-50 disabled:text-secondary-200 disabled:border-secondary-700",
+    !disabled && "hover:bg-secondary-200 hover:text-secondary-900", // Hover state
+    !disabled && "focus:bg-secondary-200 focus:text-secondary-900", // Focus state
+    !disabled && "button--light-active", // Active state
+    "button--light-disabled", // Disabled state
   ),
 });
 
 const sizePaddings: Record<Size, string> = {
-  default: cx("rounded-[0.1875rem] px-4 py-2"),
-  s: cx("rounded-sm py-[0.375rem] px-3"),
+  default: cx("button--default"),
+  s: cx("button button--small"), //cx("rounded-sm py-[0.375rem] px-3"),
 };
 
 const sizeFont: Record<Size, string> = {
@@ -81,21 +70,25 @@ export const Button = (props: ButtonProps) => {
     <button
       class={cx(
         local.class,
-        // Layout
-        "inline-flex items-center flex-shrink gap-2 justify-center",
-        // Styles
-        "p-4",
-        sizePaddings[local.size || "default"],
-        // Colors
-        variantColors(props.disabled)[local.variant || "dark"],
-        //Font
-        "leading-none font-semibold",
-        sizeFont[local.size || "default"],
+        "button", // default button class
+        variantColors(props.disabled)[local.variant || "dark"], // button appereance
+        sizePaddings[local.size || "default"], // button size
       )}
       {...other}
     >
       {local.startIcon && <span class="h-4">{local.startIcon}</span>}
-      {local.children && <span>{local.children}</span>}
+      {local.children && (
+        <Typography
+          class="button__label"
+          hierarchy="label"
+          size={local.size || "default"}
+          color="primary"
+          weight="medium"
+          tag="span"
+        >
+          {local.children}
+        </Typography>
+      )}
       {local.endIcon && <span class="h-4">{local.endIcon}</span>}
     </button>
   );
