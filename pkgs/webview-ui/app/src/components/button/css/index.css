@@ -1,5 +1,6 @@
 @import "./button-light.css";
 @import "./button-dark.css";
+@import "./button-ghost.css";
 
 .button {
   @apply inline-flex items-center flex-shrink gap-1 justify-center p-4 font-semibold;
