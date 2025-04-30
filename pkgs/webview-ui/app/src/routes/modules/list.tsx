@@ -19,9 +19,9 @@ interface CategoryProps {
 }
 const Categories = (props: CategoryProps) => {
   return (
-    <span class="ml-6 inline-flex h-full align-middle">
+    <span class="inline-flex h-full align-middle">
       {props.categories.map((category) => (
-        <span class="">{category}</span>
+        <span class="text-sm font-normal">{category}</span>
       ))}
     </span>
   );
@@ -32,10 +32,10 @@ interface RolesProps {
 }
 const Roles = (props: RolesProps) => {
   return (
-    <div>
+    <div class="flex flex-wrap items-center gap-2">
       <span>
         <Typography hierarchy="body" size="xs">
-          Service Typography{" "}
+          Service
         </Typography>
       </span>
       {props.roles.map((role) => (
@@ -54,9 +54,14 @@ const ModuleItem = (props: {
   const navigate = useNavigate();
 
   return (
-    <div class={cx("rounded-lg shadow-md", props.class)}>
-      <div class="text-primary-800">
-        <div class="">
+    <div
+      class={cx(
+        "col-span-1 flex flex-col gap-3 border-b border-secondary-200 pb-4",
+        props.class,
+      )}
+    >
+      {/* <div class="stat-figure text-primary-800">
+        <div class="join">
           <Menu popoverid={`menu-${props.name}`} label={<Icon icon={"More"} />}>
             <ul class="z-[1] w-52 p-2 shadow">
               <li>
@@ -71,20 +76,26 @@ const ModuleItem = (props: {
             </ul>
           </Menu>
         </div>
-      </div>
+      </div> */}
 
-      <A href={`/modules/details/${name}`}>
-        <div class="underline">
-          {name}
-          <Categories categories={info.categories} />
+      <header class="flex flex-col gap-4">
+        <A href={`/modules/details/${name}`}>
+          <div class="stat-value">
+            <div class="flex flex-col">
+              <Categories categories={info.categories} />
+              <Typography hierarchy="title" size="m" weight="medium">
+                {name}
+              </Typography>
+            </div>
+          </div>
+        </A>
+
+        <div class="w-full">
+          <Typography hierarchy="body" size="xs">
+            {info.description}
+          </Typography>
         </div>
-      </A>
-
-      <div class="w-full">
-        <Typography hierarchy="body" size="default">
-          {info.description}
-        </Typography>
-      </div>
+      </header>
       <Roles roles={info.roles || []} />
     </div>
   );
@@ -151,10 +162,10 @@ export const ModuleList = () => {
         <Match when={modulesQuery.isFetching}>Loading....</Match>
         <Match when={modulesQuery.data}>
           <div
-            class="my-4 flex flex-wrap gap-6 px-3 py-2"
+            class="p-6 grid gap-6"
             classList={{
-              "flex-col": view() === "list",
-              "": view() === "grid",
+              "grid-cols-1": view() === "list",
+              "grid-cols-2": view() === "grid",
             }}
           >
             <For each={modulesQuery.data}>
