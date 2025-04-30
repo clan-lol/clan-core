@@ -96,7 +96,15 @@ html {
   cursor: pointer;
 }
 
-.accordeon__header::-webkit-details-marker {
+summary {
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::marker {
   display: none;
 }
 
