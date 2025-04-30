@@ -241,12 +241,35 @@ in
                       type = bool;
                       default = true;
                     };
+                    flakePath = lib.mkOption {
+                      description = ''
+                        The path to the file containing the content of the generated value.
+                        This will be set automatically
+                      '';
+                      type = nullOr str;
+                      default = null;
+                    };
                     path = lib.mkOption {
                       description = ''
                         The path to the file containing the content of the generated value.
                         This will be set automatically
                       '';
                       type = str;
+                      defaultText = ''
+                        (pkgs.runCommandNoCCLocal "${generator.config._module.args.name}_${file.config._module.args.name}"
+                          { }
+                          ''\''
+                            cp $${file.config.inRepoPath} $out
+                          ''\''
+                        ).outPath;
+                      '';
+                      default =
+                        (pkgs.runCommandNoCCLocal "${generator.config._module.args.name}_${file.config._module.args.name}"
+                          { }
+                          ''
+                            cp ${file.config.flakePath} $out
+                          ''
+                        ).outPath;
                     };
                     neededFor = lib.mkOption {
                       description = ''
