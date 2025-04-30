@@ -2,7 +2,7 @@
 @import "./button-dark.css";
 
 .button {
-  @apply inline-flex items-center flex-shrink gap-1 justify-center p-4  font-semibold;
+  @apply inline-flex items-center flex-shrink gap-1 justify-center p-4 font-semibold;
   letter-spacing: 0.0275rem;
 }
 

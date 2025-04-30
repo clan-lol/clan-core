@@ -1,27 +1,21 @@
 import { createSignal, JSX, Show } from "solid-js";
-
 import Icon from "../icon";
-import { Typography } from "../Typography";
 import { Button } from "../button";
+import cx from "classnames";
+import "./accordion.css";
 
-type AccordionProps = {
+interface AccordionProps {
   title: string;
   children: JSX.Element;
   class?: string;
   initiallyOpen?: boolean;
-};
+}
 
 export default function Accordion(props: AccordionProps) {
   const [isOpen, setIsOpen] = createSignal(props.initiallyOpen ?? false);
   return (
-    <div
-      class={`accordion flex flex-col gap-y-5 ${props.class ?? ""}`}
-      tabindex="0"
-    >
-      <div
-        onClick={() => setIsOpen(!isOpen())}
-        class="accordion__title h-5 flex gap-x-0.5 items-center justify-end font-medium cursor-pointer px-1"
-      >
+    <div class={cx(`accordion`, props.class)} tabindex="0">
+      <div onClick={() => setIsOpen(!isOpen())} class="accordion__title">
         <Show
           when={isOpen()}
           fallback={

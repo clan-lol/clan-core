@@ -78,7 +78,7 @@ export function CreateMachine() {
         <div class="mt-4 w-full self-stretch px-8">
           <Form
             onSubmit={handleSubmit}
-            class="mx-auto w-full max-w-2xl flex flex-col gap-y-6"
+            class="mx-auto flex w-full max-w-2xl flex-col gap-y-6"
           >
             <Field
               name="opts.machine.name"
@@ -86,7 +86,7 @@ export function CreateMachine() {
             >
               {(field, props) => (
                 <>
-                  <div class="flex justify-center mb-4 pb-4 border-b">
+                  <div class="mb-4 flex justify-center border-b pb-4">
                     <MachineAvatar name={field.value} />
                   </div>
                 </>
@@ -165,7 +165,7 @@ export function CreateMachine() {
               </Fieldset>
             </Accordion>
 
-            <footer class="gap-y-3 pt-5 border-t border-secondary-200 flex justify-end">
+            <footer class="flex justify-end gap-y-3 border-t border-secondary-200 pt-5">
               <Button
                 type="submit"
                 disabled={formStore.submitting}

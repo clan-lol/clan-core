@@ -1,6 +1,6 @@
 import { A } from "@solidjs/router";
-
 import { Typography } from "@/src/components/Typography";
+import "./css/sidebar.css";
 
 interface SidebarListItem {
   title: string;
@@ -11,7 +11,7 @@ export const SidebarListItem = (props: SidebarListItem) => {
   const { title, href } = props;
 
   return (
-    <li class="sidebar__list__item">
+    <li class="">
       <A class="sidebar__list__link" href={href}>
         <Typography
           class="sidebar__list__content"

@@ -17,8 +17,8 @@ export const Layout: Component<RouteSectionProps> = (props) => {
 
   return (
     <div class="h-screen w-full p-4 bg-def-2">
-      <div class="flex flex-row-reverse w-full h-full">
-        <div class="flex-1 my-2 ml-8 overflow-x-hidden overflow-y-scroll rounded-lg border bg-def-1 border-def-3">
+      <div class="flex size-full flex-row-reverse">
+        <div class="my-2 ml-8 flex-1 overflow-x-hidden overflow-y-scroll rounded-lg border bg-def-1 border-def-3">
           {props.children}
         </div>
         <Sidebar {...props} />

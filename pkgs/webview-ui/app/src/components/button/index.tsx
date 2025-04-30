@@ -24,15 +24,12 @@ const variantColors: (
     !disabled && "button--light-hover", // Hover state
     !disabled && "button--light-focus", // Focus state
     !disabled && "button--light-active", // Active state
-
-    "button--light-disabled", // Disabled state
   ),
   ghost: cx(
     // "shadow-inner-secondary",
     !disabled && "hover:bg-secondary-200 hover:text-secondary-900", // Hover state
     !disabled && "focus:bg-secondary-200 focus:text-secondary-900", // Focus state
     !disabled && "button--light-active", // Active state
-    "button--light-disabled", // Disabled state
   ),
 });
 

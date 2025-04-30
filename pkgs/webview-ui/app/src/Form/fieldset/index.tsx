@@ -2,11 +2,11 @@ import { JSX } from "solid-js";
 
 import { Typography } from "@/src/components/Typography";
 
-type FieldsetProps = {
+interface FieldsetProps {
   legend?: string;
   children: JSX.Element;
   class?: string;
-};
+}
 
 export default function Fieldset(props: FieldsetProps) {
   return (
@@ -24,7 +24,7 @@ export default function Fieldset(props: FieldsetProps) {
           </Typography>
         </div>
       )}
-      <div class="flex flex-col gap-y-3 p-5 border border-secondary-200 bg-secondary-50 rounded-md">
+      <div class="flex flex-col gap-y-3 rounded-md border border-secondary-200 bg-secondary-50 p-5">
         {props.children}
       </div>
     </fieldset>

@@ -80,7 +80,7 @@ const ModuleItem = (props: {
 
       <header class="flex flex-col gap-4">
         <A href={`/modules/details/${name}`}>
-          <div class="stat-value">
+          <div class="">
             <div class="flex flex-col">
               <Categories categories={info.categories} />
               <Typography hierarchy="title" size="m" weight="medium">
@@ -162,7 +162,7 @@ export const ModuleList = () => {
         <Match when={modulesQuery.isFetching}>Loading....</Match>
         <Match when={modulesQuery.data}>
           <div
-            class="p-6 grid gap-6"
+            class="grid gap-6 p-6"
             classList={{
               "grid-cols-1": view() === "list",
               "grid-cols-2": view() === "grid",

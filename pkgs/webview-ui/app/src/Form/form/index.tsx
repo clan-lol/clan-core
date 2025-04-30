@@ -368,7 +368,7 @@ export function ListValueDisplay<T extends FieldValues, R extends ResponseData>(
   const bottomMost = () => props.idx === 0;
 
   return (
-    <div class="w-full px-2 pb-4 border-b border-secondary-200">
+    <div class="w-full border-b border-secondary-200 px-2 pb-4">
       <div class="flex w-full items-center gap-2">
         {props.children}
         <div class="ml-4 min-w-fit">
@@ -629,7 +629,7 @@ export function ArrayFields<T extends FieldValues, R extends ResponseData>(
                           )}
                         </For>
                         <Show when={fieldArray.error}>
-                          <span class="label-text-alt font-bold text-error-700">
+                          <span class="font-bold text-error-700">
                             {fieldArray.error}
                           </span>
                         </Show>
@@ -652,7 +652,7 @@ export function ArrayFields<T extends FieldValues, R extends ResponseData>(
                           // Button for adding new items
                           components={{
                             before: (
-                              <div class="w-full flex justify-end pb-2">
+                              <div class="flex w-full justify-end pb-2">
                                 <Button
                                   variant="ghost"
                                   type="submit"
