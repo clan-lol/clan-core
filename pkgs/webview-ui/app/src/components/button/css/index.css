@@ -31,8 +31,8 @@
     padding-left: theme(padding.2);
   }
 
-  &:has(> .button__icon--end):has(> .button__label) {
-    padding-left: theme(padding.2);
+  &:has(> .button__label):has(> .button__icon--end) {
+    padding-right: theme(padding.2);
   }
 }
 

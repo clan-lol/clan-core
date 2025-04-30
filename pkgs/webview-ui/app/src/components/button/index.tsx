@@ -94,9 +94,7 @@ export const Button = (props: ButtonProps) => {
           {local.children}
         </Typography>
       )}
-      {local.endIcon && (
-        <span class="button__icon--start">{local.endIcon}</span>
-      )}
+      {local.endIcon && <span class="button__icon--end">{local.endIcon}</span>}
     </button>
   );
 };

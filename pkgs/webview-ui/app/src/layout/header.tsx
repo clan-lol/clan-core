@@ -9,7 +9,7 @@ interface HeaderProps {
 }
 export const Header = (props: HeaderProps) => {
   return (
-    <div class="flex border-b px-6 py-4 border-def-3">
+    <div class="sticky top-0 z-20 navbar border-b px-6 py-4 border-def-3 bg-white bg-opacity-80 backdrop-blur-md">
       <div class="flex-none">
         {props.showBack && <BackButton />}
         <span class=" lg:hidden" data-tip="Menu">
