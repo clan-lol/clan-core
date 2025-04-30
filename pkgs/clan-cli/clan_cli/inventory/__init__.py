@@ -375,7 +375,7 @@ def get_inventory_current_priority(flake_dir: str | Path) -> dict:
     """
     cmd = nix_eval(
         [
-            f"{flake_dir}#clanInternals.inventoryValuesPrios",
+            f"{flake_dir}#clanInternals.inventoryClass.introspection",
             "--json",
         ]
     )

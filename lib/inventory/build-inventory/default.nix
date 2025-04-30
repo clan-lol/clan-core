@@ -33,6 +33,7 @@ let
             }) config.distributedServices.allMachines;
           }
         )
+        (lib.modules.importApply ./inventory-introspection.nix { inherit clanLib; })
       ];
     }).config;
 in

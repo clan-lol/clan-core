@@ -160,7 +160,6 @@ in
           # Those options are interfaced by the CLI
           # We don't specify the type here, for better performance.
           inventory = lib.mkOption { type = lib.types.raw; };
-          inventoryValuesPrios = lib.mkOption { type = lib.types.raw; };
           # all exported clan templates from this clan
           templates = lib.mkOption { type = lib.types.raw; };
           # all exported clan modules from this clan
