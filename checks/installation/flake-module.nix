@@ -8,7 +8,6 @@ let
     { modulesPath, pkgs, ... }:
     let
       dependencies = [
-        self
         self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.toplevel
         self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.diskoScript
         self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.clan.deployment.file
