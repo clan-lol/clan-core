@@ -18,7 +18,8 @@ from clan_lib.api import API
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.dirs import user_config_dir
 from clan_cli.errors import ClanError
-from clan_cli.nix import nix_eval, nix_shell
+from clan_cli.flake import Flake
+from clan_cli.nix import nix_shell
 
 from .folders import sops_users_folder
 
@@ -196,26 +197,11 @@ def load_age_plugins(flake_dir: str | Path) -> list[str]:
         msg = "Missing flake directory"
         raise ClanError(msg)
 
-    cmd = nix_eval(
-        [
-            f"{flake_dir}#clanInternals.secrets.age.plugins",
-            "--json",
-        ]
-    )
-
-    try:
-        result = run(cmd)
-    except Exception as e:
-        msg = f"Failed to load age plugins {flake_dir}"
-        raise ClanError(msg) from e
-
-    json_str = result.stdout.strip()
-
-    try:
-        plugins = json.loads(json_str)
-    except json.JSONDecodeError as e:
-        msg = f"Failed to decode '{json_str}': {e}"
-        raise ClanError(msg) from e
+    flake = Flake(str(flake_dir))
+    result = flake.select("clanInternals.?secrets.?age.?plugins")
+    plugins = result["secrets"]["age"]["plugins"]
+    if plugins == {}:
+        plugins = []
 
     if isinstance(plugins, list):
         return plugins

@@ -459,10 +459,6 @@ const MachineForm = (props: MachineDetailsProps) => {
     }
 
     const target = targetHost();
-    if (!target) {
-      toast.error("Target host is required");
-      return;
-    }
 
     const loading_toast = toast.loading("Updating machine...");
     const r = await callApi("update_machines", {

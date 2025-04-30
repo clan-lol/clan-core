@@ -108,13 +108,9 @@ def update_machines(base_path: str, machines: list[InventoryMachine]) -> None:
             name,
             flake=flake,
         )
-        if not machine.get("deploy", {}).get("targetHost"):
-            msg = f"'TargetHost' is not set for machine '{name}'"
-            raise ClanError(msg)
-        # Copy targetHost to machine
-        m.override_target_host = machine.get("deploy", {}).get("targetHost")
-        # Would be nice to have?
-        # m.override_build_host = machine.deploy.buildHost
+        # prefer target host set via inventory, but fallback to the one set in the machine
+        if target_host := machine.get("deploy", {}).get("targetHost"):
+            m.override_target_host = target_host
         group_machines.append(m)
 
     deploy_machines(group_machines)
