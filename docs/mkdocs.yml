@@ -164,6 +164,7 @@ nav:
           - 01-clanModules: decisions/01-ClanModules.md
           - 02-clan-api: decisions/02-clan-api.md
           - 03-adr-numbering-process: decisions/03-adr-numbering-process.md
+          - 04-fetching-nix-from-python: decisions/04-fetching-nix-from-python.md
           - Template: decisions/_template.md
 
 docs_dir: site
