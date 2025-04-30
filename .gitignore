@@ -39,3 +39,6 @@ repo
 node_modules
 dist
 .webui
+
+# TODO: remove after bug in select is fixed
+select
