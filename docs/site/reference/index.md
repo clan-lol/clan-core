@@ -1,6 +1,6 @@
 # :material-api: Overview
 
-This section of the site provides an **automatically extracted** overview of the available options and commands within the Clan Framework.
+This section of the site provides an overview of available options and commands within the Clan Framework.
 
 ---
 
