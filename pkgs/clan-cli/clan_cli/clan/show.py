@@ -15,7 +15,10 @@ log = logging.getLogger(__name__)
 
 
 @API.register
-def show_clan_meta(uri: str | Path) -> Meta:
+def show_clan_meta(uri: str) -> Meta:
+    if uri.startswith("/") and not Path(uri).exists():
+        msg = f"Path {uri} does not exist"
+        raise ClanError(msg, description="clan directory does not exist")
     cmd = nix_eval(
         [
             f"{uri}#clanInternals.inventory.meta",
