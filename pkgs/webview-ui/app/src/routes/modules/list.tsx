@@ -113,38 +113,33 @@ export const ModuleList = () => {
         title="Modules"
         toolbar={
           <>
-            <span class="" data-tip="Reload">
-              <Button
-                variant="light"
-                size="s"
-                onClick={() => refresh()}
-                startIcon={<Icon icon="Update" />}
-              ></Button>
-            </span>
+            <Button
+              variant="light"
+              size="s"
+              onClick={() => refresh()}
+              startIcon={<Icon icon="Update" />}
+            />
 
-            <div class="border border-def-3">
-              <span class="" data-tip="List View">
-                <Button
-                  onclick={() => setView("list")}
-                  variant={view() == "list" ? "dark" : "light"}
-                  size="s"
-                  startIcon={<Icon icon="List" />}
-                ></Button>
-              </span>
-              <span class="" data-tip="Grid View">
-                <Button
-                  onclick={() => setView("grid")}
-                  variant={view() == "grid" ? "dark" : "light"}
-                  size="s"
-                  startIcon={<Icon icon="Grid" />}
-                ></Button>
-              </span>
+            <div class="button-group">
+              <Button
+                onclick={() => setView("list")}
+                variant={view() == "list" ? "dark" : "light"}
+                size="s"
+                startIcon={<Icon icon="List" />}
+              />
+
+              <Button
+                onclick={() => setView("grid")}
+                variant={view() == "grid" ? "dark" : "light"}
+                size="s"
+                startIcon={<Icon icon="Grid" />}
+              />
             </div>
             <span class="" data-tip="New Machine">
               <Button
                 size="s"
                 variant="light"
-                startIcon={<Icon icon="CaretUp" />}
+                startIcon={<Icon size={14} icon="CaretUp" />}
               >
                 Import Module
               </Button>

@@ -79,7 +79,7 @@ export const Button = (props: ButtonProps) => {
       {...other}
     >
       {local.startIcon && (
-        <span class="button__icon--start h-4">{local.startIcon}</span>
+        <span class="button__icon--start">{local.startIcon}</span>
       )}
       {local.children && (
         <Typography
@@ -94,7 +94,9 @@ export const Button = (props: ButtonProps) => {
           {local.children}
         </Typography>
       )}
-      {local.endIcon && <span class="h-4">{local.endIcon}</span>}
+      {local.endIcon && (
+        <span class="button__icon--start">{local.endIcon}</span>
+      )}
     </button>
   );
 };

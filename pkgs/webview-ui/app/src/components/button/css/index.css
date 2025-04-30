@@ -1,5 +1,8 @@
+@import "./button-light.css";
+@import "./button-dark.css";
+
 .button {
-  @apply inline-flex items-center flex-shrink gap-1 justify-center p-4 text-secondary-950 font-semibold;
+  @apply inline-flex items-center flex-shrink gap-1 justify-center p-4  font-semibold;
   letter-spacing: 0.0275rem;
 }
 
@@ -7,88 +10,45 @@
 
 .button--default {
   padding: theme(padding.2) theme(padding.4);
+  height: theme(height.9);
   border-radius: theme(borderRadius.DEFAULT);
 
   &:has(> .button__icon--start):has(> .button__label) {
     padding-left: theme(padding[2.5]);
   }
+
+  &:has(> .button__icon--end):has(> .button__label) {
+    padding-right: theme(padding[2.5]);
+  }
 }
 
 .button--small {
   padding: theme(padding[1.5]) theme(padding[3]);
+  height: theme(height.8);
   border-radius: 3px;
 
   &:has(> .button__icon--start):has(> .button__label) {
     padding-left: theme(padding.2);
   }
-}
 
-/* button DARK and states */
-
-.button--dark {
-  @apply border border-solid border-secondary-950 bg-primary-800 text-white;
-
-  box-shadow: inset 1px 1px theme(backgroundColor.secondary.700);
-
-  &:disabled {
-    @apply disabled:bg-secondary-200 disabled:text-secondary-700 disabled:border-secondary-300;
-  }
-
-  & .button__icon {
-    color: theme(textColor.secondary.200);
+  &:has(> .button__icon--end):has(> .button__label) {
+    padding-left: theme(padding.2);
   }
 }
 
-.button--dark-hover:hover {
-  @apply hover:bg-secondary-900;
+/* button group */
+
+.button-group .button:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
-.button--dark-focus:focus {
-  @apply focus:border-secondary-900;
+.button-group .button:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 
-.button--dark-active:active {
-  @apply focus:border-secondary-900;
-}
-
-.button--dark-active:active {
-  @apply active:border-secondary-900 active:shadow-inner-primary-active;
-}
-
-/* button LIGHT and states */
-
-.button--light {
-  @apply border border-solid border-secondary-400 bg-secondary-100 text-secondary-950;
-
-  box-shadow: inset 1px 1px theme(backgroundColor.white);
-
-  &:disabled {
-    @apply disabled:bg-secondary-50 disabled:text-secondary-200 disabled:border-secondary-700;
-  }
-
-  & .button__icon {
-    color: theme(textColor.secondary.900);
-  }
-}
-
-.button--light-hover:hover {
-  @apply hover:bg-secondary-200;
-}
-
-.button--light-focus:focus {
-  @apply focus:bg-secondary-200;
-
-  & .button__label {
-    color: theme(textColor.secondary.900) !important;
-  }
-}
-
-.button--light-active:active {
-  @apply active:bg-secondary-200 border-secondary-600 active:text-secondary-900 active:shadow-inner-primary-active;
-
-  box-shadow: inset 2px 2px theme(backgroundColor.secondary.300);
-
-  & .button__label {
-    color: theme(textColor.secondary.900) !important;
-  }
+.button-group .button:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
