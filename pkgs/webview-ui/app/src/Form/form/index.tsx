@@ -368,10 +368,10 @@ export function ListValueDisplay<T extends FieldValues, R extends ResponseData>(
   const bottomMost = () => props.idx === 0;
 
   return (
-    <div class="w-full border-l-4 border-gray-300">
-      <div class="flex w-full items-end gap-2 px-4">
+    <div class="w-full px-2 pb-4 border-b border-secondary-200">
+      <div class="flex w-full items-center gap-2">
         {props.children}
-        <div class="ml-4 min-w-fit pb-4">
+        <div class="ml-4 min-w-fit">
           <Button
             variant="ghost"
             size="s"
@@ -541,7 +541,6 @@ export function ArrayFields<T extends FieldValues, R extends ResponseData>(
                     )}
                   </Field>
                 </Match>
-
                 <Match
                   when={
                     itemsSchema().type === "string" ||
@@ -629,9 +628,11 @@ export function ArrayFields<T extends FieldValues, R extends ResponseData>(
                             </ListValueDisplay>
                           )}
                         </For>
-                        <span class=" font-bold text-error-700">
-                          {fieldArray.error}
-                        </span>
+                        <Show when={fieldArray.error}>
+                          <span class="label-text-alt font-bold text-error-700">
+                            {fieldArray.error}
+                          </span>
+                        </Show>
 
                         {/* Add new item */}
                         <DynForm
@@ -651,14 +652,16 @@ export function ArrayFields<T extends FieldValues, R extends ResponseData>(
                           // Button for adding new items
                           components={{
                             before: (
-                              <Button
-                                variant="ghost"
-                                type="submit"
-                                endIcon={<Icon icon={"Plus"} />}
-                                class="capitalize"
-                              >
-                                Add {itemsSchema().title}
-                              </Button>
+                              <div class="w-full flex justify-end pb-2">
+                                <Button
+                                  variant="ghost"
+                                  type="submit"
+                                  endIcon={<Icon size={14} icon={"Plus"} />}
+                                  class="capitalize"
+                                >
+                                  Add {itemsSchema().title}
+                                </Button>
+                              </div>
                             ),
                           }}
                           // Add the new item to the FieldArray
