@@ -11,11 +11,13 @@
   font-weight: 400;
   src: url(../.fonts/ArchivoSemiCondensed-Regular.woff2) format("woff2");
 }
+
 @font-face {
   font-family: "Archivo";
   font-weight: 500;
   src: url(../.fonts/ArchivoSemiCondensed-Medium.woff2) format("woff2");
 }
+
 @font-face {
   font-family: "Archivo";
   font-weight: 600;
@@ -73,10 +75,14 @@ html {
   overflow-x: hidden;
   overflow-y: hidden;
 
-  -webkit-user-select: none; /* Safari */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Standard */
+  -webkit-user-select: none;
+  /* Safari */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Standard */
 }
 
 .accordeon {
