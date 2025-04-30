@@ -7,8 +7,12 @@ features = [ "inventory" ]
 After the system was installed/deployed the following command can be used to display the root-password:
 
 ```bash
-clan secrets get {machine_name}-password
+clan vars get [machine_name] root-password/root-password
 ```
 
+See also: [Vars](../../manual/vars-backend.md)
 
-See also: [Facts / Secrets](../../getting-started/secrets.md)
+To regenerate the password run:
+```
+clan vars generate --regenerate [machine_name] --generator root-password
+```
