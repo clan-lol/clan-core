@@ -11,13 +11,10 @@ const variantColors: (
   disabled: boolean | undefined,
 ) => Record<Variants, string> = (disabled) => ({
   dark: cx(
-    "border border-solid",
-    "border-secondary-950 bg-primary-900 text-white",
-    "shadow-inner-primary",
-    !disabled && "hover:border-secondary-900 hover:bg-secondary-700", // Hover state
-    !disabled && "focus:border-secondary-900", // Focus state
-    !disabled &&
-      "active:border-secondary-900 active:shadow-inner-primary-active", // Active state
+    "button--dark",
+    !disabled && "button--dark-hover", // Hover state
+    !disabled && "button--dark-focus", // Focus state
+    !disabled && "button--dark-active", // Active state
     // Disabled
     "disabled:bg-secondary-200 disabled:text-secondary-700 disabled:border-secondary-300",
   ),
@@ -66,6 +63,11 @@ export const Button = (props: ButtonProps) => {
     "endIcon",
     "class",
   ]);
+
+  const buttonInvertion = (variant: Variants) => {
+    return !(!variant || variant === "ghost" || variant === "light");
+  };
+
   return (
     <button
       class={cx(
@@ -76,13 +78,16 @@ export const Button = (props: ButtonProps) => {
       )}
       {...other}
     >
-      {local.startIcon && <span class="h-4">{local.startIcon}</span>}
+      {local.startIcon && (
+        <span class="button__icon--start h-4">{local.startIcon}</span>
+      )}
       {local.children && (
         <Typography
           class="button__label"
           hierarchy="label"
           size={local.size || "default"}
-          color="primary"
+          color="inherit"
+          inverted={buttonInvertion(local.variant || "dark")}
           weight="medium"
           tag="span"
         >
