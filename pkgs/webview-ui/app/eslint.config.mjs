@@ -3,7 +3,7 @@ import tseslint from "typescript-eslint";
 import tailwind from "eslint-plugin-tailwindcss";
 import pluginQuery from "@tanstack/eslint-plugin-query";
 
-export default tseslint.config(
+const config = tseslint.config(
   eslint.configs.recommended,
   ...pluginQuery.configs["flat/recommended"],
   ...tseslint.configs.strict,
@@ -30,3 +30,5 @@ export default tseslint.config(
     },
   },
 );
+
+export default config;

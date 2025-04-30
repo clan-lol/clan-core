@@ -110,18 +110,18 @@ export const MachineListItem = (props: MachineListItemProps) => {
     setUpdating(false);
   };
   return (
-    <div class="border rounded-lg border-def-2 p-3 m-2 w-64">
+    <div class="m-2 w-64 rounded-lg border p-3 border-def-2">
       <figure class="h-fit rounded-xl border bg-def-2 border-def-5">
         <RndThumbnail name={name} width={220} height={120} />
       </figure>
-      <div class="flex-row justify-between gap-4 pt-2 px-2">
+      <div class="flex-row justify-between gap-4 px-2 pt-2">
         <div class="flex flex-col">
           <A href={`/machines/${name}`}>
             <Typography hierarchy="title" size="m" weight="bold">
               {name}
             </Typography>
           </A>
-          <div class="text-slate-600 flex justify-between">
+          <div class="flex justify-between text-slate-600">
             <div class="flex flex-nowrap">
               <span class="h-4">
                 <Icon icon="Flash" class="h-4" font-size="inherit" />
@@ -138,7 +138,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
                 popoverid={`menu-${props.name}`}
                 label={<Icon icon={"More"} />}
               >
-                <ul class="z-[1] w-64 p-2 shadow bg-white ">
+                <ul class="z-[1] w-64 bg-white p-2 shadow ">
                   <li>
                     <Button
                       variant="ghost"

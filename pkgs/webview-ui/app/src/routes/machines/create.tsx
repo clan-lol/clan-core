@@ -11,6 +11,9 @@ import { Match, Switch } from "solid-js";
 import toast from "solid-toast";
 import { MachineAvatar } from "./avatar";
 import { DynForm } from "@/src/Form/form";
+import { Typography } from "@/src/components/Typography";
+import Fieldset from "@/src/Form/fieldset";
+import Accordion from "@/src/components/accordion";
 
 type CreateMachineForm = OperationArgs<"create_machine">;
 
@@ -72,44 +75,80 @@ export function CreateMachine() {
     <>
       <Header title="Create Machine" />
       <div class="flex w-full p-4">
-        <div class="mt-4 w-full self-stretch px-2">
-          <Form onSubmit={handleSubmit} class="gap-2 flex flex-col">
+        <div class="mt-4 w-full self-stretch px-8">
+          <Form
+            onSubmit={handleSubmit}
+            class="mx-auto flex w-full max-w-2xl flex-col gap-y-6"
+          >
             <Field
               name="opts.machine.name"
               validate={[required("This field is required")]}
             >
               {(field, props) => (
                 <>
-                  <div class="flex justify-center mb-4 pb-4 border-b">
+                  <div class="mb-4 flex justify-center border-b pb-4">
                     <MachineAvatar name={field.value} />
                   </div>
-
-                  <TextInput
-                    inputProps={props}
-                    value={`${field.value}`}
-                    label={"name"}
-                    error={field.error}
-                    required
-                    placeholder="New_machine"
-                  />
                 </>
               )}
             </Field>
-            <Field name="opts.machine.description">
-              {(field, props) => (
-                <TextInput
-                  inputProps={props}
-                  value={`${field.value}`}
-                  label={"description"}
-                  error={field.error}
-                  placeholder="My awesome machine"
-                />
-              )}
-            </Field>
-            <div class=" " tabindex="0">
-              <input type="checkbox" />
-              <div class="  font-medium ">Deployment Settings</div>
-              <div class="">
+            <Fieldset legend="General">
+              <Field
+                name="opts.machine.name"
+                validate={[required("This field is required")]}
+              >
+                {(field, props) => (
+                  <>
+                    <TextInput
+                      inputProps={props}
+                      value={`${field.value}`}
+                      label={"name"}
+                      error={field.error}
+                      required
+                      placeholder="New_machine"
+                    />
+                  </>
+                )}
+              </Field>
+              <Field name="opts.machine.description">
+                {(field, props) => (
+                  <TextInput
+                    inputProps={props}
+                    value={`${field.value}`}
+                    label={"description"}
+                    error={field.error}
+                    placeholder="My awesome machine"
+                  />
+                )}
+              </Field>
+            </Fieldset>
+
+            <Fieldset legend="Tags">
+              <Field name="opts.machine.tags" type="string[]">
+                {(field, props) => (
+                  <div class="p-2">
+                    <DynForm
+                      initialValues={{ tags: ["all"] }}
+                      schema={{
+                        type: "object",
+                        properties: {
+                          tags: {
+                            type: "array",
+                            items: {
+                              title: "Tag",
+                              type: "string",
+                            },
+                            uniqueItems: true,
+                          },
+                        },
+                      }}
+                    />
+                  </div>
+                )}
+              </Field>
+            </Fieldset>
+            <Accordion title="Advanced">
+              <Fieldset>
                 <Field name="opts.machine.deploy.targetHost">
                   {(field, props) => (
                     <>
@@ -123,9 +162,10 @@ export function CreateMachine() {
                     </>
                   )}
                 </Field>
-              </div>
-            </div>
-            <div class="mt-12 flex justify-end">
+              </Fieldset>
+            </Accordion>
+
+            <footer class="flex justify-end gap-y-3 border-t border-secondary-200 pt-5">
               <Button
                 type="submit"
                 disabled={formStore.submitting}
@@ -141,7 +181,7 @@ export function CreateMachine() {
                   <Match when={!formStore.submitting}>Create</Match>
                 </Switch>
               </Button>
-            </div>
+            </footer>
           </Form>
         </div>
       </div>

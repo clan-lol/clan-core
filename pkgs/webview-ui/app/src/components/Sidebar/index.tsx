@@ -19,20 +19,22 @@ export const SidebarSection = (props: {
 
   return (
     <details class="sidebar__section accordeon" open>
-      <summary class="accordeon__header">
-        <Typography
-          class="inline-flex w-full gap-2 uppercase"
-          tag="p"
-          hierarchy="body"
-          size="xs"
-          weight="normal"
-          color="tertiary"
-          inverted={true}
-        >
-          <Icon icon={props.icon} />
-          {title}
-          <Icon icon="CaretDown" class="ml-auto" />
-        </Typography>
+      <summary style="display: contents;">
+        <div class="accordeon__header">
+          <Typography
+            class="inline-flex w-full gap-2 uppercase !tracking-wider"
+            tag="p"
+            hierarchy="body"
+            size="xxs"
+            weight="normal"
+            color="tertiary"
+            inverted={true}
+          >
+            <Icon class="opacity-90" icon={props.icon} size={13} />
+            {title}
+            <Icon icon="CaretDown" class="ml-auto" size={10} />
+          </Typography>
+        </div>
       </summary>
       <div class="accordeon__body">{children}</div>
     </details>
@@ -60,7 +62,7 @@ export const Sidebar = (props: RouteSectionProps) => {
   }));
 
   return (
-    <div class="sidebar opacity-95">
+    <div class="sidebar">
       <Show
         when={query.data}
         fallback={<SidebarHeader clanName={"Untitled"} />}
@@ -81,7 +83,7 @@ export const Sidebar = (props: RouteSectionProps) => {
                   title={route.label}
                   icon={route.icon || "Paperclip"}
                 >
-                  <ul>
+                  <ul class="flex flex-col gap-y-0.5">
                     <For each={children().filter((r) => !r.hidden)}>
                       {(child) => (
                         <SidebarListItem

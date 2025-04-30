@@ -1,0 +1,54 @@
+@import "./button-light.css";
+@import "./button-dark.css";
+
+.button {
+  @apply inline-flex items-center flex-shrink gap-1 justify-center p-4 font-semibold;
+  letter-spacing: 0.0275rem;
+}
+
+/* button SIZES */
+
+.button--default {
+  padding: theme(padding.2) theme(padding.4);
+  height: theme(height.9);
+  border-radius: theme(borderRadius.DEFAULT);
+
+  &:has(> .button__icon--start):has(> .button__label) {
+    padding-left: theme(padding[2.5]);
+  }
+
+  &:has(> .button__icon--end):has(> .button__label) {
+    padding-right: theme(padding[2.5]);
+  }
+}
+
+.button--small {
+  padding: theme(padding[1.5]) theme(padding[3]);
+  height: theme(height.8);
+  border-radius: 3px;
+
+  &:has(> .button__icon--start):has(> .button__label) {
+    padding-left: theme(padding.2);
+  }
+
+  &:has(> .button__label):has(> .button__icon--end) {
+    padding-right: theme(padding.2);
+  }
+}
+
+/* button group */
+
+.button-group .button:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.button-group .button:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.button-group .button:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}

@@ -17,19 +17,11 @@ export const Layout: Component<RouteSectionProps> = (props) => {
 
   return (
     <div class="h-screen w-full p-4 bg-def-2">
-      <div class="h-full flex">
-        <div
-          class="z-40 h-full overflow-hidden"
-          classList={{
-            hidden:
-              props.location.pathname === "welcome" || clanList().length === 0,
-          }}
-        >
-          <Sidebar {...props} />
-        </div>
-        <div class="w-full my-2 ml-8 overflow-x-hidden overflow-y-scroll rounded-lg border bg-def-1 border-def-3">
+      <div class="flex size-full flex-row-reverse">
+        <div class="my-2 ml-8 flex-1 overflow-x-hidden overflow-y-scroll rounded-lg border bg-def-1 border-def-3">
           {props.children}
         </div>
+        <Sidebar {...props} />
       </div>
     </div>
   );

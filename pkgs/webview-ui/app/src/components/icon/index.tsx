@@ -77,6 +77,7 @@ export type IconVariant = keyof typeof icons;
 
 interface IconProps extends JSX.SvgSVGAttributes<SVGElement> {
   icon: IconVariant;
+  size?: number;
 }
 
 const Icon: Component<IconProps> = (props) => {
@@ -85,8 +86,8 @@ const Icon: Component<IconProps> = (props) => {
   const IconComponent = icons[local.icon];
   return IconComponent ? (
     <IconComponent
-      width={16}
-      height={16}
+      width={iconProps.size || 16}
+      height={iconProps.size || 16}
       viewBox="0 0 48 48"
       // @ts-expect-error: dont know, fix this type nit later
       ref={iconProps.ref}

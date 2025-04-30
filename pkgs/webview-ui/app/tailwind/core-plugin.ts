@@ -284,7 +284,7 @@ export default plugin.withOptions(
           "inner-primary":
             "2px 2px 0px 0px var(--clr-bg-inv-acc-3, #415E63) inset",
           "inner-primary-active":
-            "0px 0px 0px 1px #FFF, 0px 0px 0px 2px var(--clr-bg-inv-acc-4, #203637), -2px -2px 0px 0px var(--clr-bg-inv-acc-1, #7B9B9F) inset",
+            "0px 0px 0px 1px #FFF, 0px 0px 0px 2px var(--clr-bg-inv-acc-4, #203637)",
           "inner-secondary":
             "-2px -2px 0px 0px #CEDFE2 inset, 2px 2px 0px 0px white inset",
           "inner-secondary-active":

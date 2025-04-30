@@ -16,6 +16,9 @@ nixos.qcow2
 /docs/out
 **/.local.env
 
+# MacOS stuff
+**/.DS_store
+
 # dream2nix
 .dream2nix
 

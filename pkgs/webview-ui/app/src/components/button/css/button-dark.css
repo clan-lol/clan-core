@@ -1,0 +1,31 @@
+/* button DARK and states */
+
+.button--dark {
+  @apply border border-solid border-secondary-950 bg-primary-800 text-white;
+
+  box-shadow: inset 1px 1px theme(backgroundColor.secondary.700);
+
+  &:disabled {
+    @apply disabled:bg-secondary-200 disabled:text-secondary-700 disabled:border-secondary-300;
+  }
+
+  & .button__icon {
+    color: theme(textColor.secondary.200);
+  }
+}
+
+.button--dark-hover:hover {
+  @apply hover:bg-secondary-900;
+}
+
+.button--dark-focus:focus {
+  @apply focus:border-secondary-900;
+}
+
+.button--dark-active:active {
+  @apply focus:border-secondary-900;
+}
+
+.button--dark-active:active {
+  @apply active:border-secondary-900 active:shadow-inner-primary-active;
+}
