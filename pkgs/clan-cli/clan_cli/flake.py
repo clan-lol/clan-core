@@ -344,9 +344,6 @@ class FlakeCacheEntry:
 
     def is_cached(self, selectors: list[Selector]) -> bool:
         selector: Selector
-        if selectors == []:
-            return self.fetched_all
-        selector = selectors[0]
 
         # for store paths we have to check if they still exist, otherwise they have to be rebuild and are thus not cached
         if isinstance(self.value, str) and self.value.startswith("/nix/store/"):
@@ -355,6 +352,10 @@ class FlakeCacheEntry:
         # if self.value is not dict but we request more selectors, we assume we are cached and an error will be thrown in the select function
         if isinstance(self.value, str | float | int | None):
             return True
+
+        if selectors == []:
+            return self.fetched_all
+        selector = selectors[0]
 
         # we just fetch all subkeys, so we need to check of we inserted all keys at this level before
         if selector.type == SelectorType.ALL:
