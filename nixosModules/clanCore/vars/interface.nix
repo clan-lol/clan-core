@@ -256,20 +256,15 @@ in
                       '';
                       type = str;
                       defaultText = ''
-                        (pkgs.runCommandNoCCLocal "${generator.config._module.args.name}_${file.config._module.args.name}"
-                          { }
-                          ''\''
-                            cp $${file.config.inRepoPath} $out
-                          ''\''
-                        ).outPath;
+                        builtins.path {
+                          name = "$${generator.config._module.args.name}_$${file.config._module.args.name}";
+                          path = file.config.inRepoPath;
+                        }
                       '';
-                      default =
-                        (pkgs.runCommandNoCCLocal "${generator.config._module.args.name}_${file.config._module.args.name}"
-                          { }
-                          ''
-                            cp ${file.config.flakePath} $out
-                          ''
-                        ).outPath;
+                      default = builtins.path {
+                        name = "${generator.config._module.args.name}_${file.config._module.args.name}";
+                        path = file.config.flakePath;
+                      };
                     };
                     neededFor = lib.mkOption {
                       description = ''
