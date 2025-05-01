@@ -459,7 +459,7 @@ class FlakeCacheEntry:
                 result = []
                 for index in keys_to_select:
                     result.append(self.value[index].select(selectors[1:]))
-                    return result
+                return result
 
             # otherwise return a dict
             return {k: self.value[k].select(selectors[1:]) for k in keys_to_select}
