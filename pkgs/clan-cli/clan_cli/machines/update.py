@@ -202,7 +202,7 @@ def deploy_machines(machines: list[Machine]) -> None:
         for machine in machines:
             if machine._class_ == "darwin":
                 if not machine.deploy_as_root and machine.target_host.user == "root":
-                    msg = f"'TargetHost' should be set to a non-root user for deploying to nix-darwin on machine '{machine.name}'"
+                    msg = f"'targetHost' should be set to a non-root user for deploying to nix-darwin on machine '{machine.name}'"
                     raise ClanError(msg)
 
             machine.info(f"Updating {machine.name}")
