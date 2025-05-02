@@ -69,7 +69,12 @@ def upload_sources(machine: Machine) -> str:
         )
         run(
             cmd,
-            RunOpts(env=env, error_msg="failed to upload sources", prefix=machine.name),
+            RunOpts(
+                env=env,
+                needs_user_terminal=True,
+                error_msg="failed to upload sources",
+                prefix=machine.name,
+            ),
         )
         return path
 
@@ -84,7 +89,12 @@ def upload_sources(machine: Machine) -> str:
             flake_url,
         ]
     )
-    proc = run(cmd, RunOpts(env=env, error_msg="failed to upload sources"))
+    proc = run(
+        cmd,
+        RunOpts(
+            env=env, needs_user_terminal=True, error_msg="failed to upload sources"
+        ),
+    )
 
     try:
         return json.loads(proc.stdout)["path"]
@@ -193,7 +203,10 @@ def deploy_machines(machines: list[Machine]) -> None:
                 )
             ret = host.run(
                 test_cmd if is_mobile else switch_cmd,
-                RunOpts(msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
+                RunOpts(
+                    msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
+                    needs_user_terminal=True,
+                ),
                 extra_env=env,
                 become_root=become_root,
             )
