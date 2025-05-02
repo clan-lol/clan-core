@@ -122,6 +122,9 @@ class Host:
         if extra_env is None:
             extra_env = {}
 
+        if opts is None:
+            opts = RunOpts()
+
         # If we are not root and we need to become root, prepend sudo
         sudo = ""
         if become_root and self.user != "root":
@@ -132,11 +135,10 @@ class Host:
         for k, v in extra_env.items():
             env_vars.append(f"{shlex.quote(k)}={shlex.quote(v)}")
 
-        if opts is None:
-            opts = RunOpts()
-        else:
-            opts.needs_user_terminal = True
+        if opts.prefix is None:
             opts.prefix = self.command_prefix
+        # always set needs_user_terminal to True because ssh asks for passwords
+        opts.needs_user_terminal = True
 
         if opts.cwd is not None:
             msg = "cwd is not supported for remote commands"
