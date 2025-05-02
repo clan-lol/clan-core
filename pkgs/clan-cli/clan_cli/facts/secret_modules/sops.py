@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import override
 
 from clan_cli.machines.machines import Machine
 from clan_cli.secrets.folders import sops_secrets_folder
@@ -58,13 +59,10 @@ class SecretStore(SecretStoreBase):
             sops_secrets_folder(self.machine.flake_dir) / f"{self.machine.name}-{name}",
         )
 
+    @override
+    def needs_upload(self) -> bool:
+        return False
+
+    # We rely now on the vars backend to upload the age key
     def upload(self, output_dir: Path) -> None:
-        key_name = f"{self.machine.name}-age.key"
-        if not has_secret(sops_secrets_folder(self.machine.flake_dir) / key_name):
-            # skip uploading the secret, not managed by us
-            return
-        key = decrypt_secret(
-            self.machine.flake_dir,
-            sops_secrets_folder(self.machine.flake_dir) / key_name,
-        )
-        (output_dir / "key.txt").write_text(key)
+        pass
