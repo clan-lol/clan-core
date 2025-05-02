@@ -9,7 +9,7 @@ import sys
 from clan_lib.api import API
 
 from clan_cli.async_run import AsyncContext, AsyncOpts, AsyncRuntime, is_async_cancelled
-from clan_cli.cmd import MsgColor, RunOpts, run
+from clan_cli.cmd import Log, MsgColor, RunOpts, run
 from clan_cli.colors import AnsiColor
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -158,6 +158,7 @@ def deploy_machines(machines: list[Machine]) -> None:
         ]
 
         become_root = machine.deploy_as_root
+        needs_tty_for_sudo = become_root or machine._class_ == "darwin"
 
         if machine._class_ == "nixos":
             nix_options += [
@@ -173,6 +174,7 @@ def deploy_machines(machines: list[Machine]) -> None:
 
                 if target_host.user != "root":
                     nix_options += ["--use-remote-sudo"]
+            needs_tty_for_sudo = become_root
 
         switch_cmd = [f"{machine._class_}-rebuild", "switch", *nix_options]
         test_cmd = [f"{machine._class_}-rebuild", "test", *nix_options]
@@ -180,7 +182,10 @@ def deploy_machines(machines: list[Machine]) -> None:
         env = host.nix_ssh_env(None)
         ret = host.run(
             switch_cmd,
-            RunOpts(check=False, msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
+            RunOpts(
+                check=False, msg_color=MsgColor(stderr=AnsiColor.DEFAULT), log=Log.BOTH
+            ),
+            tty=needs_tty_for_sudo,
             extra_env=env,
             become_root=become_root,
         )
