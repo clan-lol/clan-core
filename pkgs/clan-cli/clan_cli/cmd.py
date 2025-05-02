@@ -259,7 +259,7 @@ if os.environ.get("CLAN_CLI_PERF"):
 
 @dataclass
 class RunOpts:
-    input: bytes | None = None
+    input: IO[bytes] | bytes | None = None
     stdout: IO[bytes] | None = None
     stderr: IO[bytes] | None = None
     env: dict[str, str] | None = None
@@ -329,7 +329,7 @@ def run(
     if options.requires_root_perm:
         cmd = cmd_with_root(cmd, options.graphical_perm)
 
-    if options.input:
+    if options.input and isinstance(options.input, bytes):
         if any(not ch.isprintable() for ch in options.input.decode("ascii", "replace")):
             filtered_input = "<<binary_blob>>"
         else:
@@ -344,7 +344,7 @@ def run(
 
     start = timeit.default_timer()
     with ExitStack() as stack:
-        stdin = subprocess.PIPE if options.input is not None else None
+        stdin = subprocess.PIPE if isinstance(options.input, bytes) else options.input
         process = stack.enter_context(
             subprocess.Popen(
                 cmd,
@@ -364,13 +364,18 @@ def run(
         else:
             stack.enter_context(terminate_process_group(process))
 
+        if isinstance(options.input, bytes):
+            input_bytes = options.input
+        else:
+            input_bytes = None
+
         stdout_buf, stderr_buf = handle_io(
             process,
             options.log,
             prefix=options.prefix,
             msg_color=options.msg_color,
             timeout=options.timeout,
-            input_bytes=options.input,
+            input_bytes=input_bytes,
             stdout=options.stdout,
             stderr=options.stderr,
         )
