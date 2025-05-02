@@ -244,12 +244,12 @@ class TimeTable:
                     # Print in default color
                     print(f"Took {v} for command: '{k}'")
 
-    def add(self, cmd: str, time: float) -> None:
+    def add(self, cmd: str, duration: float) -> None:
         with self.lock:
             if cmd in self.table:
-                self.table[cmd] += time
+                self.table[cmd] += duration
             else:
-                self.table[cmd] = time
+                self.table[cmd] = duration
 
 
 TIME_TABLE = None
@@ -423,6 +423,3 @@ def run_no_stdout(
         cmd,
         opts,
     )
-
-
-# type: ignore
