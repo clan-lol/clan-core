@@ -3,7 +3,7 @@ let
   services = clanLib.callLib ./distributed-service/inventory-adapter.nix { };
 in
 {
-  inherit (services) evalClanService mapInstances;
+  inherit (services) evalClanService mapInstances resolveModule;
   inherit (import ./build-inventory { inherit lib clanLib; }) buildInventory;
   interface = ./build-inventory/interface.nix;
   # Returns the list of machine names
