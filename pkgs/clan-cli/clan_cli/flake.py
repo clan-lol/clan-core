@@ -14,6 +14,7 @@ from clan_cli.nix import (
     nix_build,
     nix_command,
     nix_config,
+    nix_eval,
     nix_metadata,
     nix_test_store,
 )
@@ -618,11 +619,9 @@ class Flake:
         except Exception as e:
             log.warning(f"Failed load eval cache: {e}. Continue without cache")
 
-    def invalidate_cache(self) -> None:
+    def prefetch(self) -> None:
         """
-        Invalidate the cache and reload it.
-
-        This method is used to refresh the cache by reloading it from the flake.
+        Loads the flake into the store and populates self.store_path and self.hash such that the flake can evaluate locally and offline
         """
         cmd = [
             "flake",
@@ -641,6 +640,15 @@ class Flake:
         flake_metadata = json.loads(flake_prefetch.stdout)
         self.store_path = flake_metadata["storePath"]
         self.hash = flake_metadata["hash"]
+        self.flake_metadata = flake_metadata
+
+    def invalidate_cache(self) -> None:
+        """
+        Invalidate the cache and reload it.
+
+        This method is used to refresh the cache by reloading it from the flake.
+        """
+        self.prefetch()
 
         self._cache = FlakeCache()
         assert self.hash is not None
@@ -650,17 +658,17 @@ class Flake:
         )
         self.load_cache()
 
-        if "original" not in flake_metadata:
-            flake_metadata = nix_metadata(self.identifier)
+        if "original" not in self.flake_metadata:
+            self.flake_metadata = nix_metadata(self.identifier)
 
-        if flake_metadata["original"].get("url", "").startswith("file:"):
+        if self.flake_metadata["original"].get("url", "").startswith("file:"):
             self._is_local = True
-            path = flake_metadata["original"]["url"].removeprefix("file://")
+            path = self.flake_metadata["original"]["url"].removeprefix("file://")
             path = path.removeprefix("file:")
             self._path = Path(path)
-        elif flake_metadata["original"].get("path"):
+        elif self.flake_metadata["original"].get("path"):
             self._is_local = True
-            self._path = Path(flake_metadata["original"]["path"])
+            self._path = Path(self.flake_metadata["original"]["path"])
         else:
             self._is_local = False
             assert self.store_path is not None
@@ -708,18 +716,18 @@ class Flake:
         if not fallback_nixpkgs_hash.startswith("sha256-"):
             fallback_nixpkgs = Flake(str(nixpkgs_source()))
             fallback_nixpkgs.invalidate_cache()
-            assert fallback_nixpkgs.hash is not None, (
-                "this should be impossible as invalidate_cache() should always set `hash`"
-            )
+            assert (
+                fallback_nixpkgs.hash is not None
+            ), "this should be impossible as invalidate_cache() should always set `hash`"
             fallback_nixpkgs_hash = fallback_nixpkgs.hash
 
         select_hash = "@select_hash@"
         if not select_hash.startswith("sha256-"):
             select_flake = Flake(str(select_source()))
             select_flake.invalidate_cache()
-            assert select_flake.hash is not None, (
-                "this should be impossible as invalidate_cache() should always set `hash`"
-            )
+            assert (
+                select_flake.hash is not None
+            ), "this should be impossible as invalidate_cache() should always set `hash`"
             select_hash = select_flake.hash
 
         nix_code = f"""
@@ -753,6 +761,56 @@ class Flake:
             self._cache.insert(outputs[i], selector)
         if self.flake_cache_path:
             self._cache.save_to_file(self.flake_cache_path)
+
+    def uncached_nix_eval_with_args(
+        self,
+        attr_path: str,
+        f_args: dict[str, str],
+        nix_options: list[str] | None = None,
+    ) -> str:
+        """
+        Calls a nix function with the provided arguments 'f_args'
+        The argument must be an attribute set.
+
+         Args:
+            attr_path (str): The attribute path to the nix function
+            f_args (dict[str, nix_expr]): A python dictionary mapping from the name of the argument to a raw nix expression.
+
+        Example
+
+        flake.uncached_nix_eval_with_args(
+            "clanInternals.evalServiceSchema",
+            { "moduleSpec": "{ name = \"hello-world\"; input = null; }" }
+        )
+        > '{ ...JSONSchema... }'
+
+        """
+        # Always prefetch, so we don't get any stale information
+        self.prefetch()
+
+        if nix_options is None:
+            nix_options = []
+
+        arg_expr = "{"
+        for arg_name, arg_value in f_args.items():
+            arg_expr += f"  {arg_name} = {arg_value}; "
+        arg_expr += "}"
+
+        nix_code = f"""
+            let
+              flake = builtins.getFlake "path:{self.store_path}?narHash={self.hash}";
+            in
+              flake.{attr_path} {arg_expr}
+        """
+        if tmp_store := nix_test_store():
+            nix_options += ["--store", str(tmp_store)]
+            nix_options.append("--impure")
+
+        output = run(
+            nix_eval(["--expr", nix_code, *nix_options]), RunOpts(log=Log.NONE)
+        ).stdout.strip()
+
+        return output
 
     def precache(
         self,
