@@ -33,7 +33,6 @@ class Prompt:
             description=data["description"],
             prompt_type=PromptType(data["type"]),
             persist=data.get("persist", data["persist"]),
-            previous_value=data.get("previousValue"),
         )
 
 

@@ -1,17 +1,19 @@
 import argparse
 import logging
 import os
+from pathlib import Path
 
 from clan_cli.errors import ClanError
-from clan_cli.flake import Flake
 from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import maybe_get_admin_public_key
 from clan_cli.secrets.users import add_user
+from clan_lib.api import API
 
 log = logging.getLogger(__name__)
 
 
-def keygen(user: str | None, flake: Flake, force: bool) -> None:
+@API.register
+def keygen(flake_dir: Path, user: str | None = None, force: bool = False) -> None:
     if user is None:
         user = os.getenv("USER", None)
         if not user:
@@ -22,7 +24,7 @@ def keygen(user: str | None, flake: Flake, force: bool) -> None:
         pub_key = generate_key()
     # TODO set flake_dir=flake.path / "vars"
     add_user(
-        flake_dir=flake.path,
+        flake_dir=flake_dir,
         name=user,
         keys=[pub_key],
         force=force,
@@ -33,8 +35,8 @@ def _command(
     args: argparse.Namespace,
 ) -> None:
     keygen(
+        flake_dir=args.flake.path,
         user=args.user,
-        flake=args.flake,
         force=args.force,
     )
 

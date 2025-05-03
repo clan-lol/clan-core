@@ -7,7 +7,7 @@ import {
   SubmitHandler,
 } from "@modular-forms/solid";
 import toast from "solid-toast";
-import { setActiveURI, setClanList } from "@/src/App";
+import { activeURI, setActiveURI, setClanList } from "@/src/App";
 import { TextInput } from "@/src/Form/fields/TextInput";
 import { useNavigate } from "@solidjs/router";
 import { Button } from "@/src/components/button";
@@ -61,6 +61,17 @@ export const CreateClan = () => {
       toast.error("Failed to create clan");
       return;
     }
+
+    // Will generate a key if it doesn't exist, and add a user to the clan
+    const k = await callApi("keygen", {
+      flake_dir: target_dir[0],
+    });
+
+    if (k.status === "error") {
+      toast.error("Failed to generate key");
+      return;
+    }
+
     if (r.status === "success") {
       toast.success("Clan Successfully Created");
       setActiveURI(target_dir[0]);
