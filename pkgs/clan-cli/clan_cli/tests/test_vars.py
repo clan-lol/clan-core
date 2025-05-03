@@ -12,7 +12,7 @@ from clan_cli.tests.age_keys import SopsSetup
 from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
-from clan_cli.vars.generate import Generator, generate_vars_for_machine
+from clan_cli.vars.generate import Generator, generate_vars_for_machine_interactive
 from clan_cli.vars.get import get_var
 from clan_cli.vars.graph import all_missing_closure, requested_closure
 from clan_cli.vars.list import stringify_all_vars
@@ -706,11 +706,11 @@ def test_stdout_of_generate(
     flake_.refresh()
     monkeypatch.chdir(flake_.path)
     flake = Flake(str(flake_.path))
-    from clan_cli.vars.generate import generate_vars_for_machine
+    from clan_cli.vars.generate import generate_vars_for_machine_interactive
 
     # with capture_output as output:
     with caplog.at_level(logging.INFO):
-        generate_vars_for_machine(
+        generate_vars_for_machine_interactive(
             Machine(name="my_machine", flake=flake),
             "my_generator",
             regenerate=False,
@@ -723,7 +723,7 @@ def test_stdout_of_generate(
 
     set_var("my_machine", "my_generator/my_value", b"world", flake)
     with caplog.at_level(logging.INFO):
-        generate_vars_for_machine(
+        generate_vars_for_machine_interactive(
             Machine(name="my_machine", flake=flake),
             "my_generator",
             regenerate=True,
@@ -734,7 +734,7 @@ def test_stdout_of_generate(
     caplog.clear()
     # check the output when nothing gets regenerated
     with caplog.at_level(logging.INFO):
-        generate_vars_for_machine(
+        generate_vars_for_machine_interactive(
             Machine(name="my_machine", flake=flake),
             "my_generator",
             regenerate=True,
@@ -743,7 +743,7 @@ def test_stdout_of_generate(
     assert "hello" in caplog.text
     caplog.clear()
     with caplog.at_level(logging.INFO):
-        generate_vars_for_machine(
+        generate_vars_for_machine_interactive(
             Machine(name="my_machine", flake=flake),
             "my_secret_generator",
             regenerate=False,
@@ -758,7 +758,7 @@ def test_stdout_of_generate(
         Flake(str(flake.path)),
     )
     with caplog.at_level(logging.INFO):
-        generate_vars_for_machine(
+        generate_vars_for_machine_interactive(
             Machine(name="my_machine", flake=flake),
             "my_secret_generator",
             regenerate=True,
@@ -848,7 +848,7 @@ def test_fails_when_files_are_left_from_other_backend(
     flake.refresh()
     monkeypatch.chdir(flake.path)
     for generator in ["my_secret_generator", "my_value_generator"]:
-        generate_vars_for_machine(
+        generate_vars_for_machine_interactive(
             Machine(name="my_machine", flake=Flake(str(flake.path))),
             generator,
             regenerate=False,
@@ -865,13 +865,13 @@ def test_fails_when_files_are_left_from_other_backend(
         # This should raise an error
         if generator == "my_secret_generator":
             with pytest.raises(ClanError):
-                generate_vars_for_machine(
+                generate_vars_for_machine_interactive(
                     Machine(name="my_machine", flake=Flake(str(flake.path))),
                     generator,
                     regenerate=False,
                 )
         else:
-            generate_vars_for_machine(
+            generate_vars_for_machine_interactive(
                 Machine(name="my_machine", flake=Flake(str(flake.path))),
                 generator,
                 regenerate=False,

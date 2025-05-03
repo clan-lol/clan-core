@@ -74,7 +74,7 @@ def _migrate_file(
     return paths
 
 
-def _migrate_files(
+def migrate_files(
     machine: "Machine",
     generator: "Generator",
 ) -> None:
@@ -98,7 +98,7 @@ def _migrate_files(
     )
 
 
-def _check_can_migrate(
+def check_can_migrate(
     machine: "Machine",
     generator: "Generator",
 ) -> bool:

@@ -15,11 +15,13 @@ from clan_cli.completions import (
     complete_services_for_machine,
 )
 from clan_cli.errors import ClanError
+from clan_cli.flake import Flake
 from clan_cli.git import commit_files
 from clan_cli.machines.inventory import get_all_machines, get_selected_machines
 from clan_cli.nix import nix_config, nix_shell, nix_test_store
 from clan_cli.vars._types import StoreBase
-from clan_cli.vars.migration import _check_can_migrate, _migrate_files
+from clan_cli.vars.migration import check_can_migrate, migrate_files
+from clan_lib.api import API
 
 from .check import check_vars
 from .graph import (
@@ -309,7 +311,64 @@ def get_closure(
     return minimal_closure([generator_name], generators)
 
 
+@API.register
+def get_generators_closure(
+    machine_name: str,
+    base_dir: Path,
+    regenerate: bool = False,
+) -> list[Generator]:
+    from clan_cli.machines.machines import Machine
+
+    return get_closure(
+        machine=Machine(name=machine_name, flake=Flake(str(base_dir))),
+        generator_name=None,
+        regenerate=regenerate,
+    )
+
+
+def _generate_vars_for_machine(
+    machine: "Machine",
+    generators: list[Generator],
+    all_prompt_values: dict[str, dict],
+    no_sandbox: bool = False,
+) -> bool:
+    for generator in generators:
+        if check_can_migrate(machine, generator):
+            migrate_files(machine, generator)
+        else:
+            execute_generator(
+                machine=machine,
+                generator=generator,
+                secret_vars_store=machine.secret_vars_store,
+                public_vars_store=machine.public_vars_store,
+                prompt_values=all_prompt_values[generator.name],
+                no_sandbox=no_sandbox,
+            )
+    return True
+
+
+@API.register
 def generate_vars_for_machine(
+    machine_name: str,
+    generators: list[Generator],
+    all_prompt_values: dict[str, dict[str, str]],
+    base_dir: Path,
+    no_sandbox: bool = False,
+) -> bool:
+    from clan_cli.machines.machines import Machine
+
+    return _generate_vars_for_machine(
+        machine=Machine(
+            name=machine_name,
+            flake=Flake(str(base_dir)),
+        ),
+        generators=generators,
+        all_prompt_values=all_prompt_values,
+        no_sandbox=no_sandbox,
+    )
+
+
+def generate_vars_for_machine_interactive(
     machine: "Machine",
     generator_name: str | None,
     regenerate: bool,
@@ -333,22 +392,18 @@ def generate_vars_for_machine(
             msg += f"Secret vars store: {sec_healtcheck_msg}"
         raise ClanError(msg)
 
-    closure = get_closure(machine, generator_name, regenerate)
-    if len(closure) == 0:
+    generators = get_closure(machine, generator_name, regenerate)
+    if len(generators) == 0:
         return False
-    for generator in closure:
-        if _check_can_migrate(machine, generator):
-            _migrate_files(machine, generator)
-        else:
-            execute_generator(
-                machine=machine,
-                generator=generator,
-                secret_vars_store=machine.secret_vars_store,
-                public_vars_store=machine.public_vars_store,
-                prompt_values=_ask_prompts(generator),
-                no_sandbox=no_sandbox,
-            )
-    return True
+    all_prompt_values = {}
+    for generator in generators:
+        all_prompt_values[generator.name] = _ask_prompts(generator)
+    return _generate_vars_for_machine(
+        machine,
+        generators,
+        all_prompt_values,
+        no_sandbox=no_sandbox,
+    )
 
 
 def generate_vars(
@@ -361,7 +416,7 @@ def generate_vars(
     for machine in machines:
         errors = []
         try:
-            was_regenerated |= generate_vars_for_machine(
+            was_regenerated |= generate_vars_for_machine_interactive(
                 machine, generator_name, regenerate, no_sandbox=no_sandbox
             )
         except Exception as exc:
