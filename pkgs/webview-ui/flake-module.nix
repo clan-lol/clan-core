@@ -53,11 +53,18 @@
           config.packages.webview-ui
           self'.devShells.default
         ];
+        packages = [
+          # required for reload-python-api.sh script
+          pkgs.python3
+          pkgs.json2ts
+        ];
         shellHook = ''
           export GIT_ROOT="$(git rev-parse --show-toplevel)"
           export PKG_ROOT="$GIT_ROOT/pkgs/webview-ui"
           export NODE_PATH="$PKG_ROOT/app/node_modules"
-          export PATH="$NODE_PATH/.bin:$PATH"
+
+          scriptsPath="$PKG_ROOT/bin"
+          export PATH="$NODE_PATH/.bin:$scriptsPath:$PATH"
 
           cp -r ${self'.packages.fonts} "$PKG_ROOT/app/.fonts"
           chmod -R +w "$PKG_ROOT/app/.fonts"
