@@ -44,6 +44,7 @@ let
     buildInventory {
       inherit inventory directory;
       flakeInputs = config.self.inputs;
+      prefix = config._prefix ++ [ "inventoryClass" ];
     }
   );
 

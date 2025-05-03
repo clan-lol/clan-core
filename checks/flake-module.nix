@@ -21,6 +21,7 @@ in
       pkgs,
       lib,
       self',
+      system,
       ...
     }:
     {
@@ -83,7 +84,7 @@ in
                   schema =
                     (self.clanLib.inventory.evalClanService {
                       modules = [ m ];
-                      key = "checks";
+                      prefix = [ "checks" system ];
                     }).config.result.api.schema;
                 in
                 schema

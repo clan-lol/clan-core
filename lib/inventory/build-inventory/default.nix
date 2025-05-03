@@ -12,8 +12,10 @@ let
       inventory,
       directory,
       flakeInputs,
+      prefix ? [ ],
     }:
     (lib.evalModules {
+      # TODO: remove clanLib from specialArgs
       specialArgs = {
         inherit clanLib;
       };
@@ -24,13 +26,16 @@ let
           # config.distributedServices.allMachines.${name} or [ ];
           { config, ... }:
           {
+
             distributedServices = clanLib.inventory.mapInstances {
               inherit (config) inventory;
               inherit flakeInputs;
+              prefix = prefix ++ [ "distributedServices" ];
             };
             machines = lib.mapAttrs (_machineName: v: {
               machineImports = v;
             }) config.distributedServices.allMachines;
+
           }
         )
       ];

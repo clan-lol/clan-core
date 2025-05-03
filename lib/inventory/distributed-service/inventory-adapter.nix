@@ -16,15 +16,14 @@
 }:
 let
   evalClanService =
-    { modules, key }:
+    { modules, prefix }:
     (lib.evalModules {
       class = "clan.service";
       modules = [
         ./service-module.nix
         # feature modules
         (lib.modules.importApply ./api-feature.nix {
-          inherit clanLib;
-          attrName = key;
+          inherit clanLib prefix;
         })
       ] ++ modules;
     });
@@ -37,6 +36,7 @@ in
       flakeInputs,
       # The clan inventory
       inventory,
+      prefix ? [ ],
     }:
     let
       # machineHasTag = machineName: tagName: lib.elem tagName inventory.machines.${machineName}.tags;
@@ -138,7 +138,7 @@ in
       importedModulesEvaluated = lib.mapAttrs (
         module_ident: instances:
         evalClanService {
-          key = module_ident;
+          prefix = prefix ++ [ module_ident ];
           modules =
             [
               # Import the resolved module.

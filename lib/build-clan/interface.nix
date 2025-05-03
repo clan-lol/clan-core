@@ -10,6 +10,11 @@ let
 in
 {
   options = {
+    _prefix = lib.mkOption {
+      type = types.listOf types.str;
+      internal = true;
+      default = [ ];
+    };
     self = lib.mkOption {
       type = types.raw;
       default = self;

@@ -4,7 +4,15 @@
   _class = "clan.service";
   manifest.name = "clan-core/hello-word";
 
-  roles.peer = { };
+  roles.peer = {
+    interface =
+      { lib, ... }:
+      {
+        options.foo = lib.mkOption {
+          type = lib.types.str;
+        };
+      };
+  };
 
   perMachine =
     { machine, ... }:
