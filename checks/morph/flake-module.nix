@@ -44,7 +44,11 @@
               {
                 environment.etc."install-closure".source = "${closureInfo}/store-paths";
                 system.extraDependencies = dependencies;
+
                 virtualisation.memorySize = 2048;
+                virtualisation.useNixStoreImage = true;
+                virtualisation.writableStore = true;
+
                 environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli-full ];
               };
           };
