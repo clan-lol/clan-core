@@ -7,14 +7,14 @@ from pathlib import Path
 
 from clan_lib.api import API
 
-from clan_cli.cmd import RunOpts, run, run_no_stdout
+from clan_cli.cmd import RunOpts, run_no_stdout
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.dirs import specific_machine_dir
 from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_config, nix_eval, nix_shell
+from clan_cli.nix import nix_config, nix_eval
 
 from .types import machine_name_type
 
@@ -119,6 +119,10 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
     """
 
     machine = Machine(opts.machine, flake=opts.flake)
+
+    if opts.keyfile is not None:
+        machine.private_key = Path(opts.keyfile)
+
     if opts.target_host is not None:
         machine.override_target_host = opts.target_host
 
@@ -136,41 +140,19 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
         ]
 
     host = machine.target_host
-
-    # HACK: to make non-root user work
-    if host.user != "root":
-        config_command.insert(0, "sudo")
-
-    deps = ["openssh"]
+    host.ssh_options["StrictHostKeyChecking"] = "accept-new"
+    host.ssh_options["UserKnownHostsFile"] = "/dev/null"
     if opts.password:
-        deps += ["sshpass"]
+        host.password = opts.password
 
-    cmd = nix_shell(
-        deps,
-        [
-            *(["sshpass", "-p", opts.password] if opts.password else []),
-            "ssh",
-            *(["-i", f"{opts.keyfile}"] if opts.keyfile else []),
-            # Disable known hosts file
-            "-o",
-            "UserKnownHostsFile=/dev/null",
-            # Disable strict host key checking. The GUI user cannot type "yes" into the ssh terminal.
-            "-o",
-            "StrictHostKeyChecking=accept-new",
-            *(
-                ["-p", str(machine.target_host.port)]
-                if machine.target_host.port
-                else []
-            ),
-            host.target,
-            *config_command,
-        ],
-    )
-    out = run(cmd, RunOpts(needs_user_terminal=True, prefix=machine.name, check=False))
+    out = host.run(config_command, become_root=True, opts=RunOpts(check=False))
     if out.returncode != 0:
         if "nixos-facter" in out.stderr and "not found" in out.stderr:
             machine.error(str(out.stderr))
-            msg = "Please use our custom nixos install images. nixos-factor only works on nixos / clan systems currently."
+            msg = (
+                "Please use our custom nixos install images from https://github.com/nix-community/nixos-images/releases/tag/nixos-unstable. "
+                "nixos-factor only works on nixos / clan systems currently."
+            )
             raise ClanError(msg)
 
         machine.error(str(out))
