@@ -8,5 +8,8 @@
     (modulesPath + "/profiles/minimal.nix")
   ];
 
+  virtualisation.useNixStoreImage = true;
+  virtualisation.writableStore = true;
+
   clan.core.enableRecommendedDefaults = false;
 }
