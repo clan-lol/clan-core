@@ -2,82 +2,11 @@ import tarfile
 from pathlib import Path
 from shlex import quote
 from tempfile import TemporaryDirectory
-from typing import IO
 
 from clan_cli.cmd import Log, RunOpts
+from clan_cli.cmd import run as run_local
 from clan_cli.errors import ClanError
 from clan_cli.ssh.host import Host
-
-
-def unpack_archive_as_root(
-    host: Host, f: IO[bytes], local_src: Path, remote_dest: Path, dir_mode: int = 0o700
-) -> None:
-    if local_src.is_dir():
-        cmd = 'rm -rf "$0" && mkdir -m "$1" -p "$0" && tar -C "$0" -xzf -'
-    elif local_src.is_file():
-        cmd = 'rm -f "$0" && tar -C "$(dirname "$0")" -xzf -'
-    else:
-        msg = f"Unsupported source file type: {local_src}"
-        raise ClanError(msg)
-
-    host.run(
-        [
-            "sudo",
-            "-p",
-            f"Enter sudo password for {quote(host.host)}: ",
-            "--",
-            "bash",
-            "-c",
-            cmd,
-            str(remote_dest),
-            f"{dir_mode:o}",
-        ],
-        RunOpts(
-            input=f,
-            log=Log.BOTH,
-        ),
-    )
-
-
-def unpack_archive_as_user(
-    host: Host, f: IO[bytes], local_src: Path, remote_dest: Path, dir_mode: int = 0o700
-) -> None:
-    archive = host.run(
-        ["bash", "-c", "f=$(mktemp); echo $f; cat > $f"],
-        RunOpts(
-            input=f,
-            log=Log.BOTH,
-        ),
-    ).stdout.strip()
-
-    if local_src.is_dir():
-        cmd = 'trap "rm -f $0" EXIT; rm -rf "$1" && mkdir -m "$2" -p "$1" && tar -C "$1" -xzf "$0"'
-    elif local_src.is_file():
-        cmd = 'trap "rm -f $0" EXIT; rm -f "$1" && tar -C "$(dirname "$1")" -xzf "$0"'
-    else:
-        msg = f"Unsupported source type: {local_src}"
-        raise ClanError(msg)
-
-    # We also need some sort of locks in case we have multiple prompts
-    host.run(
-        [
-            "sudo",
-            "-p",
-            f"Enter sudo password for {host.host}:\n",
-            "--",
-            "bash",
-            "-c",
-            cmd,
-            archive,
-            str(remote_dest),
-            f"{dir_mode:o}",
-        ],
-        tty=True,
-        opts=RunOpts(
-            log=Log.BOTH,
-            prefix="",
-        ),
-    )
 
 
 def upload(
@@ -160,22 +89,33 @@ def upload(
                 with local_src.open("rb") as f:
                     tar.addfile(tarinfo, f)
 
+        sudo = ""
+        if host.user != "root":
+            sudo = "sudo -- "
+
+        cmd = None
+        if local_src.is_dir():
+            cmd = 'rm -rf "$0" && mkdir -m "$1" -p "$0" && tar -C "$0" -xzf -'
+        elif local_src.is_file():
+            cmd = 'rm -f "$0" && tar -C "$(dirname "$0")" -xzf -'
+        else:
+            msg = f"Unsupported source type: {local_src}"
+            raise ClanError(msg)
+
         # TODO accept `input` to be  an IO object instead of bytes so that we don't have to read the tarfile into memory.
         with tar_path.open("rb") as f:
-            if host.user == "root":
-                unpack_archive_as_root(
-                    host,
-                    f,
-                    local_src,
-                    remote_dest,
-                    dir_mode=dir_mode,
-                )
-            else:
-                # For sudo we need to split the upload into two steps
-                unpack_archive_as_user(
-                    host,
-                    f,
-                    local_src,
-                    remote_dest,
-                    dir_mode=dir_mode,
-                )
+            run_local(
+                [
+                    *host.ssh_cmd(),
+                    "--",
+                    f"{sudo}bash -c {quote(cmd)}",
+                    str(remote_dest),
+                    f"{dir_mode:o}",
+                ],
+                RunOpts(
+                    input=f.read(),
+                    log=Log.BOTH,
+                    prefix=host.command_prefix,
+                    needs_user_terminal=True,
+                ),
+            )
