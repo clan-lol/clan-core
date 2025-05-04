@@ -1,9 +1,11 @@
 # Adapted from https://github.com/numtide/deploykit
 
+import errno
 import logging
 import os
 import shlex
 import socket
+import stat
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -38,27 +40,35 @@ class Host:
     ssh_options: dict[str, str] = field(default_factory=dict)
     tor_socks: bool = False
 
+    def setup_control_master(self) -> None:
+        home = Path.home()
+        if not home.exists():
+            return
+        control_path = home / ".ssh"
+        try:
+            if not stat.S_ISDIR(control_path.stat().st_mode):
+                return
+        except OSError as e:
+            if e.errno == errno.ENOENT:
+                try:
+                    control_path.mkdir(exist_ok=True)
+                except OSError:
+                    return
+            else:
+                return
+
+        self.ssh_options["ControlMaster"] = "auto"
+        # Can we make this a temporary directory?
+        self.ssh_options["ControlPath"] = str(control_path / "clan-%h-%p-%r")
+        # We use a short ttl because we want to mainly re-use the connection during the cli run
+        self.ssh_options["ControlPersist"] = "1m"
+
     def __post_init__(self) -> None:
         if not self.command_prefix:
             self.command_prefix = self.host
         if not self.user:
             self.user = "root"
-        home = Path.home()
-        if home.exists() and os.access(home, os.W_OK):
-            control_path = home / ".ssh"
-            if not control_path.exists():
-                try:
-                    control_path.mkdir(exist_ok=True)
-                except OSError:
-                    pass
-                else:
-                    self.ssh_options["ControlMaster"] = "auto"
-                    # Can we make this a temporary directory?
-                    self.ssh_options["ControlPath"] = str(
-                        control_path / "clan-%h-%p-%r"
-                    )
-                    # We use a short ttl because we want to mainly re-use the connection during the cli run
-                    self.ssh_options["ControlPersist"] = "1m"
+        self.setup_control_master()
 
     def __str__(self) -> str:
         return self.target
