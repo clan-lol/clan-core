@@ -39,9 +39,35 @@ in
     type = submodule { imports = [ ./interface.nix ]; };
   };
 
-  config.system.clan.deployment.data = {
-    vars = config.clan.core.vars._serialized;
-    inherit (config.clan.core.networking) targetHost buildHost;
-    inherit (config.clan.core.deployment) requireExplicitUpdate;
+  config = {
+    # check all that all non-secret files have no owner/group/mode set
+    warnings = lib.foldl' (
+      warnings: generator:
+      warnings
+      ++ lib.foldl' (
+        warnings: file:
+        warnings
+        ++
+          lib.optional
+            (
+              !file.secret
+              && (
+                file.owner != "root"
+                || file.group != (if _class == "darwin" then "wheel" else "root")
+                || file.mode != "0400"
+              )
+            )
+            ''
+              The config.clan.core.vars.generators.${generator.name}.files.${file.name} is not secret, but has non-default owner/group/mode set.
+              This doesn't work because the file will be added to the nix store
+            ''
+      ) [ ] (lib.attrValues generator.files)
+    ) [ ] (lib.attrValues config.clan.core.vars.generators);
+
+    system.clan.deployment.data = {
+      vars = config.clan.core.vars._serialized;
+      inherit (config.clan.core.networking) targetHost buildHost;
+      inherit (config.clan.core.deployment) requireExplicitUpdate;
+    };
   };
 }
