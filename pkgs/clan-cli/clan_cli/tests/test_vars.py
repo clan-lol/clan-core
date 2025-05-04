@@ -970,7 +970,7 @@ def test_dynamic_invalidation(
     custom_nix.write_text(
         """
         { config, ... }: let
-            p = config.clan.core.vars.generators.my_generator.files.my_value.path;
+            p = config.clan.core.vars.generators.my_generator.files.my_value.flakePath;
         in {
             clan.core.vars.generators.dependent_generator.validation = if builtins.pathExists p then builtins.readFile p else null;
         }

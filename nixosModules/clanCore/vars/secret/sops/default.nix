@@ -49,7 +49,10 @@ in
             mode
             neededForUsers
             ;
-          sopsFile = secretPath secret;
+          sopsFile = builtins.path {
+            name = "${secret.generator}_${secret.name}";
+            path = secretPath secret;
+          };
           format = "binary";
         };
       }) (builtins.filter (x: builtins.pathExists (secretPath x)) vars)

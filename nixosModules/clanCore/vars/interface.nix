@@ -241,12 +241,30 @@ in
                       type = bool;
                       default = true;
                     };
+                    flakePath = lib.mkOption {
+                      description = ''
+                        The path to the file containing the content of the generated value.
+                        This will be set automatically
+                      '';
+                      type = nullOr str;
+                      default = null;
+                    };
                     path = lib.mkOption {
                       description = ''
                         The path to the file containing the content of the generated value.
                         This will be set automatically
                       '';
                       type = str;
+                      defaultText = ''
+                        builtins.path {
+                          name = "$${generator.config._module.args.name}_$${file.config._module.args.name}";
+                          path = file.config.inRepoPath;
+                        }
+                      '';
+                      default = builtins.path {
+                        name = "${generator.config._module.args.name}_${file.config._module.args.name}";
+                        path = file.config.flakePath;
+                      };
                     };
                     neededFor = lib.mkOption {
                       description = ''
