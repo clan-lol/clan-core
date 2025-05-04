@@ -80,6 +80,16 @@ exec {bash} -l "${{@}}"
 
         fake_sudo.write_text(
             f"""#!{bash}
+# skip over every sudo option
+for arg in "${{@}}"; do
+    if [[ "$arg" == "-p" ]]; then
+        shift
+        shift
+        continue
+    fi
+    break
+done
+
 exec "${{@}}"
         """
         )
