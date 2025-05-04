@@ -2,7 +2,6 @@ import inspect
 import logging
 import os
 import sys
-import termios
 from pathlib import Path
 from typing import Any
 
@@ -75,16 +74,7 @@ class PrefixFormatter(logging.Formatter):
         if self.trace_prints:
             format_str += f"\nSource: {filepath}:%(lineno)d::%(funcName)s\n"
 
-        line = logging.Formatter(format_str).format(record)
-        try:
-            # Programs like sudo can set the terminal into raw mode.
-            # This means newlines are no longer translated to include a carriage return to the end.
-            # https://unix.stackexchange.com/questions/151916/why-is-this-binary-file-transferred-over-ssh-t-being-changed/151963#15196
-            if not termios.tcgetattr(sys.stdout.fileno())[3] & termios.ECHO:
-                line += "\r"
-        except Exception:  # not a tty or mocked sys.stdout
-            pass
-        return line
+        return logging.Formatter(format_str).format(record)
 
     def hostname_colorcode(self, hostname: str) -> tuple[int, int, int]:
         colorcodes = RgbColor.list_values()
