@@ -151,12 +151,15 @@ def dependencies_as_dir(
 ) -> None:
     for dep_generator, files in decrypted_dependencies.items():
         dep_generator_dir = tmpdir / dep_generator
-        dep_generator_dir.mkdir()
-        dep_generator_dir.chmod(0o700)
+        # Explicitly specify parents and exist_ok default values for clarity
+        dep_generator_dir.mkdir(mode=0o700, parents=False, exist_ok=False)
         for file_name, file in files.items():
             file_path = dep_generator_dir / file_name
-            file_path.touch()
-            file_path.chmod(0o600)
+            # Avoid the file creation and chmod race
+            # If the file already existed,
+            # we'd have to create a temp one and rename instead;
+            # however, this is a clean dir so there shouldn't be any collisions
+            file_path.touch(mode=0o600, exist_ok=False)
             file_path.write_bytes(file)
 
 

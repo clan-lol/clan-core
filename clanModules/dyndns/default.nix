@@ -210,14 +210,18 @@ in
                   data_dir = Path('data')
                   data_dir.mkdir(mode=0o770, exist_ok=True)
 
+                  # Create a temporary config file
+                  # with appropriate permissions
+                  tmp_config_path = data_dir / '.config.json'
+                  tmp_config_path.touch(mode=0o660, exist_ok=False)
+
                   # Write the config with secrets back
-                  config_path = data_dir / 'config.json'
-                  with open(config_path, 'w') as f:
+                  with open(tmp_config_path, 'w') as f:
                       f.write(json.dumps(config, indent=4))
 
-                  # Set file permissions to read and write
-                  # only by the user and group
-                  config_path.chmod(0o660)
+                  # Move config into place
+                  config_path = data_dir / 'config.json'
+                  tmp_config_path.rename(config_path)
 
                   # Set file permissions to read
                   # and write only by the user and group

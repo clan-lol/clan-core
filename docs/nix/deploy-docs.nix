@@ -26,8 +26,7 @@ writeShellScriptBin "deploy-docs" ''
   trap "rm -rf $tmpdir" EXIT
 
   if [ -n "''${SSH_HOMEPAGE_KEY-}" ]; then
-    echo "$SSH_HOMEPAGE_KEY" > "$tmpdir/ssh_key"
-    chmod 600 "$tmpdir/ssh_key"
+    ( umask 0177 && echo "$SSH_HOMEPAGE_KEY" > "$tmpdir/ssh_key" )
     sshExtraArgs="-i $tmpdir/ssh_key"
   else
     sshExtraArgs=
