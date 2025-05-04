@@ -117,7 +117,9 @@ def test_parse_deployment_address(
     assert result.user == expected_user or (
         expected_user == "" and result.user == "root"
     )
-    assert result.ssh_options == expected_options
+
+    for key, value in expected_options.items():
+        assert result.ssh_options[key] == value
 
 
 def test_parse_ssh_options() -> None:

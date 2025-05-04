@@ -41,6 +41,22 @@ class Host:
             self.command_prefix = self.host
         if not self.user:
             self.user = "root"
+        home = Path.home()
+        if home.exists() and os.access(home, os.W_OK):
+            control_path = home / ".ssh"
+            if not control_path.exists():
+                try:
+                    control_path.mkdir(exist_ok=True)
+                except OSError:
+                    pass
+                else:
+                    self.ssh_options["ControlMaster"] = "auto"
+                    # Can we make this a temporary directory?
+                    self.ssh_options["ControlPath"] = str(
+                        control_path / "clan-%h-%p-%r"
+                    )
+                    # We use a short ttl because we want to mainly re-use the connection during the cli run
+                    self.ssh_options["ControlPersist"] = "1m"
 
     def __str__(self) -> str:
         return self.target
