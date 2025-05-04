@@ -23,10 +23,10 @@
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
 
-    nix-select.url = "git+https://git.clan.lol/clan/nix-select";
+    nix-select.url = "https://git.clan.lol/clan/nix-select/archive/main.tar.gz";
 
     data-mesher = {
-      url = "git+https://git.clan.lol/clan/data-mesher";
+      url = "https://git.clan.lol/clan/data-mesher/archive/main.tar.gz";
       inputs = {
         flake-parts.follows = "flake-parts";
         nixpkgs.follows = "nixpkgs";
@@ -40,7 +40,6 @@
     inputs@{
       flake-parts,
       nixpkgs,
-      self,
       systems,
       ...
     }:
