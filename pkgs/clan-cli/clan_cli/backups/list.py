@@ -10,6 +10,7 @@ from clan_cli.completions import (
 )
 from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
+from clan_cli.ssh.host import Host
 
 
 @dataclass
@@ -18,11 +19,11 @@ class Backup:
     job_name: str | None = None
 
 
-def list_provider(machine: Machine, provider: str) -> list[Backup]:
+def list_provider(machine: Machine, host: Host, provider: str) -> list[Backup]:
     results = []
     backup_metadata = machine.eval_nix("config.clan.core.backups")
     list_command = backup_metadata["providers"][provider]["list"]
-    proc = machine.target_host.run(
+    proc = host.run(
         [list_command],
         RunOpts(log=Log.NONE, check=False),
     )
@@ -48,12 +49,13 @@ def list_provider(machine: Machine, provider: str) -> list[Backup]:
 def list_backups(machine: Machine, provider: str | None = None) -> list[Backup]:
     backup_metadata = machine.eval_nix("config.clan.core.backups")
     results = []
-    if provider is None:
-        for _provider in backup_metadata["providers"]:
-            results += list_provider(machine, _provider)
+    with machine.target_host() as host:
+        if provider is None:
+            for _provider in backup_metadata["providers"]:
+                results += list_provider(machine, host, _provider)
 
-    else:
-        results += list_provider(machine, provider)
+        else:
+            results += list_provider(machine, host, provider)
 
     return results
 

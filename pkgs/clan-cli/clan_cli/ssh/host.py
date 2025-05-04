@@ -1,15 +1,15 @@
 # Adapted from https://github.com/numtide/deploykit
 
-import errno
 import logging
 import os
 import shlex
 import socket
-import stat
 import subprocess
+import types
 from dataclasses import dataclass, field
 from pathlib import Path
 from shlex import quote
+from tempfile import TemporaryDirectory
 from typing import Any
 
 from clan_cli.cmd import CmdOut, RunOpts, run
@@ -40,35 +40,34 @@ class Host:
     ssh_options: dict[str, str] = field(default_factory=dict)
     tor_socks: bool = False
 
-    def setup_control_master(self) -> None:
-        home = Path.home()
-        if not home.exists():
-            return
-        control_path = home / ".ssh"
-        try:
-            if not stat.S_ISDIR(control_path.stat().st_mode):
-                return
-        except OSError as e:
-            if e.errno == errno.ENOENT:
-                try:
-                    control_path.mkdir(exist_ok=True)
-                except OSError:
-                    return
-            else:
-                return
+    _temp_dir: TemporaryDirectory | None = None
 
+    def setup_control_master(self, control_path: Path) -> None:
         self.ssh_options["ControlMaster"] = "auto"
-        # Can we make this a temporary directory?
         self.ssh_options["ControlPath"] = str(control_path / "clan-%h-%p-%r")
-        # We use a short ttl because we want to mainly re-use the connection during the cli run
-        self.ssh_options["ControlPersist"] = "1m"
+        self.ssh_options["ControlPersist"] = "30m"
+
+    def __enter__(self) -> None:
+        self._temp_dir = TemporaryDirectory(prefix="clan-ssh-")
+        self.setup_control_master(Path(self._temp_dir.name))
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: types.TracebackType | None,
+    ) -> None:
+        try:
+            if self._temp_dir:
+                self._temp_dir.cleanup()
+        except OSError:
+            pass
 
     def __post_init__(self) -> None:
         if not self.command_prefix:
             self.command_prefix = self.host
         if not self.user:
             self.user = "root"
-        self.setup_control_master()
 
     def __str__(self) -> str:
         return self.target

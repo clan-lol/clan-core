@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 from clan_cli.cmd import CmdOut, Log, RunOpts, run
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
+from clan_cli.ssh.host import Host
 from clan_cli.ssh.upload import upload
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
@@ -146,9 +147,9 @@ class SecretStore(StoreBase):
         manifest += hashes
         return b"\n".join(manifest)
 
-    def needs_upload(self) -> bool:
+    def needs_upload(self, host: Host) -> bool:
         local_hash = self.generate_hash()
-        remote_hash = self.machine.target_host.run(
+        remote_hash = host.run(
             # TODO get the path to the secrets from the machine
             [
                 "cat",
@@ -224,11 +225,11 @@ class SecretStore(StoreBase):
 
         (output_dir / f".{self._store_backend}_info").write_bytes(self.generate_hash())
 
-    def upload(self, phases: list[str]) -> None:
+    def upload(self, host: Host, phases: list[str]) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)
-        if not self.needs_upload():
+        if not self.needs_upload(host):
             log.info("Secrets already uploaded")
             return
         with TemporaryDirectory(prefix="vars-upload-") as _tempdir:
@@ -237,4 +238,4 @@ class SecretStore(StoreBase):
             upload_dir = Path(
                 self.machine.deployment["password-store"]["secretLocation"]
             )
-            upload(self.machine.target_host, pass_dir, upload_dir)
+            upload(host, pass_dir, upload_dir)

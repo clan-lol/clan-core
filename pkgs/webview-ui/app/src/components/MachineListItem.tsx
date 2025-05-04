@@ -55,9 +55,9 @@ export const MachineListItem = (props: MachineListItemProps) => {
             flake: {
               identifier: active_clan,
             },
+            override_target_host: info?.deploy.targetHost,
           },
           no_reboot: true,
-          target_host: info?.deploy.targetHost,
           debug: true,
           nix_options: [],
           password: null,

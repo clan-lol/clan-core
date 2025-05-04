@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from clan_cli.errors import ClanError
 from clan_cli.machines import machines
+from clan_cli.ssh.host import Host
 
 if TYPE_CHECKING:
     from .generate import Generator, Var
@@ -183,5 +184,5 @@ class StoreBase(ABC):
         pass
 
     @abstractmethod
-    def upload(self, phases: list[str]) -> None:
+    def upload(self, host: Host, phases: list[str]) -> None:
         pass

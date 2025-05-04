@@ -6,6 +6,7 @@ from typing import override
 from clan_cli.cmd import Log, RunOpts
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
+from clan_cli.ssh.host import Host
 
 from . import SecretStoreBase
 
@@ -93,9 +94,9 @@ class SecretStore(SecretStoreBase):
         return b"\n".join(hashes)
 
     @override
-    def needs_upload(self) -> bool:
+    def needs_upload(self, host: Host) -> bool:
         local_hash = self.generate_hash()
-        remote_hash = self.machine.target_host.run(
+        remote_hash = host.run(
             # TODO get the path to the secrets from the machine
             ["cat", f"{self.machine.secrets_upload_directory}/.pass_info"],
             RunOpts(log=Log.STDERR, check=False),

@@ -142,8 +142,8 @@ const InstallMachine = (props: InstallMachineProps) => {
           flake: {
             identifier: curr_uri,
           },
+          override_target_host: target,
         },
-        target_host: target,
         password: "",
       },
     });

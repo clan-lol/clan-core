@@ -8,9 +8,12 @@ from clan_cli.completions import (
 )
 from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
+from clan_cli.ssh.host import Host
 
 
-def restore_service(machine: Machine, name: str, provider: str, service: str) -> None:
+def restore_service(
+    machine: Machine, host: Host, name: str, provider: str, service: str
+) -> None:
     backup_metadata = machine.eval_nix("config.clan.core.backups")
     backup_folders = machine.eval_nix("config.clan.core.state")
 
@@ -25,7 +28,7 @@ def restore_service(machine: Machine, name: str, provider: str, service: str) ->
     env["FOLDERS"] = ":".join(set(folders))
 
     if pre_restore := backup_folders[service]["preRestoreCommand"]:
-        proc = machine.target_host.run(
+        proc = host.run(
             [pre_restore],
             RunOpts(log=Log.STDERR),
             extra_env=env,
@@ -34,7 +37,7 @@ def restore_service(machine: Machine, name: str, provider: str, service: str) ->
             msg = f"failed to run preRestoreCommand: {pre_restore}, error was: {proc.stdout}"
             raise ClanError(msg)
 
-    proc = machine.target_host.run(
+    proc = host.run(
         [backup_metadata["providers"][provider]["restore"]],
         RunOpts(log=Log.STDERR),
         extra_env=env,
@@ -44,7 +47,7 @@ def restore_service(machine: Machine, name: str, provider: str, service: str) ->
         raise ClanError(msg)
 
     if post_restore := backup_folders[service]["postRestoreCommand"]:
-        proc = machine.target_host.run(
+        proc = host.run(
             [post_restore],
             RunOpts(log=Log.STDERR),
             extra_env=env,
@@ -61,18 +64,19 @@ def restore_backup(
     service: str | None = None,
 ) -> None:
     errors = []
-    if service is None:
-        backup_folders = machine.eval_nix("config.clan.core.state")
-        for _service in backup_folders:
+    with machine.target_host() as host:
+        if service is None:
+            backup_folders = machine.eval_nix("config.clan.core.state")
+            for _service in backup_folders:
+                try:
+                    restore_service(machine, host, name, provider, _service)
+                except ClanError as e:
+                    errors.append(f"{_service}: {e}")
+        else:
             try:
-                restore_service(machine, name, provider, _service)
+                restore_service(machine, host, name, provider, service)
             except ClanError as e:
-                errors.append(f"{_service}: {e}")
-    else:
-        try:
-            restore_service(machine, name, provider, service)
-        except ClanError as e:
-            errors.append(f"{service}: {e}")
+                errors.append(f"{service}: {e}")
     if errors:
         raise ClanError(
             "Restore failed for the following services:\n" + "\n".join(errors)

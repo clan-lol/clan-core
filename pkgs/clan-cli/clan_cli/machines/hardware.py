@@ -139,25 +139,25 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
             "--show-hardware-config",
         ]
 
-    host = machine.target_host
-    host.ssh_options["StrictHostKeyChecking"] = "accept-new"
-    host.ssh_options["UserKnownHostsFile"] = "/dev/null"
-    if opts.password:
-        host.password = opts.password
+    with machine.target_host() as host:
+        host.ssh_options["StrictHostKeyChecking"] = "accept-new"
+        host.ssh_options["UserKnownHostsFile"] = "/dev/null"
+        if opts.password:
+            host.password = opts.password
 
-    out = host.run(config_command, become_root=True, opts=RunOpts(check=False))
-    if out.returncode != 0:
-        if "nixos-facter" in out.stderr and "not found" in out.stderr:
-            machine.error(str(out.stderr))
-            msg = (
-                "Please use our custom nixos install images from https://github.com/nix-community/nixos-images/releases/tag/nixos-unstable. "
-                "nixos-factor only works on nixos / clan systems currently."
-            )
+        out = host.run(config_command, become_root=True, opts=RunOpts(check=False))
+        if out.returncode != 0:
+            if "nixos-facter" in out.stderr and "not found" in out.stderr:
+                machine.error(str(out.stderr))
+                msg = (
+                    "Please use our custom nixos install images from https://github.com/nix-community/nixos-images/releases/tag/nixos-unstable. "
+                    "nixos-factor only works on nixos / clan systems currently."
+                )
+                raise ClanError(msg)
+
+            machine.error(str(out))
+            msg = f"Failed to inspect {opts.machine}. Address: {host.target}"
             raise ClanError(msg)
-
-        machine.error(str(out))
-        msg = f"Failed to inspect {opts.machine}. Address: {host.target}"
-        raise ClanError(msg)
 
     backup_file = None
     if hw_file.exists():
