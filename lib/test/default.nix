@@ -35,7 +35,7 @@ in
       {
         imports = [
           nixosTest
-        ] ++ lib.optionals (useContainers) [ ./container-test-driver/driver-module.nix ];
+        ] ++ lib.optionals useContainers [ ./container-test-driver/driver-module.nix ];
         options = {
           clanSettings = mkOption {
             default = { };
