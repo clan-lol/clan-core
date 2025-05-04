@@ -258,7 +258,7 @@ in
                       defaultText = ''
                         builtins.path {
                           name = "$${generator.config._module.args.name}_$${file.config._module.args.name}";
-                          path = file.config.inRepoPath;
+                          path = file.config.flakePath;
                         }
                       '';
                       default = builtins.path {
