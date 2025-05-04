@@ -29,12 +29,14 @@ class Host:
     user: str | None = None
     port: int | None = None
     private_key: Path | None = None
+    password: str | None = None
     forward_agent: bool = False
     command_prefix: str | None = None
     host_key_check: HostKeyCheck = HostKeyCheck.ASK
     meta: dict[str, Any] = field(default_factory=dict)
     verbose_ssh: bool = False
     ssh_options: dict[str, str] = field(default_factory=dict)
+    tor_socks: bool = False
 
     def __post_init__(self) -> None:
         if not self.command_prefix:
@@ -201,18 +203,16 @@ class Host:
     def ssh_cmd(
         self,
         verbose_ssh: bool = False,
-        tor_socks: bool = False,
         tty: bool = False,
-        password: str | None = None,
     ) -> list[str]:
         packages = []
         password_args = []
-        if password:
+        if self.password:
             packages.append("sshpass")
             password_args = [
                 "sshpass",
                 "-p",
-                password,
+                self.password,
             ]
 
         ssh_opts = self.ssh_cmd_opts
@@ -221,7 +221,7 @@ class Host:
         if tty:
             ssh_opts.extend(["-t"])
 
-        if tor_socks:
+        if self.tor_socks:
             packages.append("netcat")
             ssh_opts.append("-o")
             ssh_opts.append("ProxyCommand=nc -x 127.0.0.1:9050 -X 5 %h %p")
@@ -235,12 +235,8 @@ class Host:
 
         return nix_shell(packages, cmd)
 
-    def connect_ssh_shell(
-        self, *, password: str | None = None, tor_socks: bool = False
-    ) -> None:
-        cmd = self.ssh_cmd(tor_socks=tor_socks, password=password)
-
-        subprocess.run(cmd)
+    def interactive_ssh(self) -> None:
+        subprocess.run(self.ssh_cmd())
 
 
 def is_ssh_reachable(host: Host) -> bool:
