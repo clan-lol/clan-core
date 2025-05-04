@@ -235,7 +235,7 @@ class Host:
 
         return nix_shell(packages, cmd)
 
-    def connect_ssh_shell(self) -> None:
+    def interactive_ssh(self) -> None:
         subprocess.run(self.ssh_cmd())
 
 

@@ -87,7 +87,7 @@ def ssh_shell_from_deploy(
     deploy_info: DeployInfo, runtime: AsyncRuntime, host_key_check: HostKeyCheck
 ) -> None:
     if host := find_reachable_host(deploy_info, host_key_check):
-        host.connect_ssh_shell()
+        host.interactive_ssh()
     else:
         log.info("Could not reach host via clearnet 'addrs'")
         log.info(f"Trying to reach host via tor '{deploy_info.tor}'")
