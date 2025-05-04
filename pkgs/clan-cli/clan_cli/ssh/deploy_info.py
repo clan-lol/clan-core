@@ -87,7 +87,7 @@ def ssh_shell_from_deploy(
     deploy_info: DeployInfo, runtime: AsyncRuntime, host_key_check: HostKeyCheck
 ) -> None:
     if host := find_reachable_host(deploy_info, host_key_check):
-        host.connect_ssh_shell(password=deploy_info.pwd)
+        host.connect_ssh_shell()
     else:
         log.info("Could not reach host via clearnet 'addrs'")
         log.info(f"Trying to reach host via tor '{deploy_info.tor}'")
@@ -96,8 +96,7 @@ def ssh_shell_from_deploy(
             msg = "No tor address provided, please provide a tor address."
             raise ClanError(msg)
         if ssh_tor_reachable(TorTarget(onion=deploy_info.tor, port=22)):
-            host = Host(host=deploy_info.tor)
-            host.connect_ssh_shell(password=deploy_info.pwd, tor_socks=True)
+            host = Host(host=deploy_info.tor, password=deploy_info.pwd, tor_socks=True)
         else:
             msg = "Could not reach host via tor either."
             raise ClanError(msg)
