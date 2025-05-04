@@ -14,7 +14,7 @@ from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
 from clan_cli.vars.generate import generate_vars
-from clan_cli.vars.upload import upload_secret_vars
+from clan_cli.vars.upload import populate_secret_vars
 
 from .automount import pause_automounting
 from .list import list_possible_keymaps, list_possible_languages
@@ -107,7 +107,7 @@ def flash_machine(
 
             local_dir.mkdir(parents=True)
             machine.secret_facts_store.upload(local_dir)
-            upload_secret_vars(machine, local_dir)
+            populate_secret_vars(machine, local_dir)
             disko_install = []
 
             if os.geteuid() != 0:

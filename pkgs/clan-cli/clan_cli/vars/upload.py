@@ -4,17 +4,19 @@ from pathlib import Path
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.machines.machines import Machine
+from clan_cli.ssh.host import Host
 
 log = logging.getLogger(__name__)
 
 
-def upload_secret_vars(machine: Machine, directory: Path | None = None) -> None:
-    if directory:
-        machine.secret_vars_store.populate_dir(
-            directory, phases=["activation", "users", "services"]
-        )
-    else:
-        machine.secret_vars_store.upload(phases=["activation", "users", "services"])
+def upload_secret_vars(machine: Machine, host: Host) -> None:
+    machine.secret_vars_store.upload(host, phases=["activation", "users", "services"])
+
+
+def populate_secret_vars(machine: Machine, directory: Path) -> None:
+    machine.secret_vars_store.populate_dir(
+        directory, phases=["activation", "users", "services"]
+    )
 
 
 def upload_command(args: argparse.Namespace) -> None:
@@ -22,7 +24,11 @@ def upload_command(args: argparse.Namespace) -> None:
     directory = None
     if args.directory:
         directory = Path(args.directory)
-    upload_secret_vars(machine, directory)
+        populate_secret_vars(machine, directory)
+        return
+
+    with machine.target_host() as host:
+        upload_secret_vars(machine, host)
 
 
 def register_upload_parser(parser: argparse.ArgumentParser) -> None:

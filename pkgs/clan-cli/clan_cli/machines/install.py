@@ -36,7 +36,6 @@ class BuildOn(Enum):
 @dataclass
 class InstallOptions:
     machine: Machine
-    target_host: str
     kexec: str | None = None
     debug: bool = False
     no_reboot: bool = False
@@ -52,17 +51,16 @@ class InstallOptions:
 @API.register
 def install_machine(opts: InstallOptions) -> None:
     machine = opts.machine
-    machine.override_target_host = opts.target_host
 
-    machine.info(f"installing {machine.name}")
-
-    h = machine.target_host
-    machine.info(f"target host: {h.target}")
+    machine.debug(f"installing {machine.name}")
 
     generate_facts([machine])
     generate_vars([machine])
 
-    with TemporaryDirectory(prefix="nixos-install-") as _base_directory:
+    with (
+        TemporaryDirectory(prefix="nixos-install-") as _base_directory,
+        machine.target_host() as host,
+    ):
         base_directory = Path(_base_directory).resolve()
         activation_secrets = base_directory / "activation_secrets"
         upload_dir = activation_secrets / machine.secrets_upload_directory.lstrip("/")
@@ -134,14 +132,14 @@ def install_machine(opts: InstallOptions) -> None:
         if opts.build_on:
             cmd += ["--build-on", opts.build_on.value]
 
-        if h.port:
-            cmd += ["--ssh-port", str(h.port)]
+        if host.port:
+            cmd += ["--ssh-port", str(host.port)]
         if opts.kexec:
             cmd += ["--kexec", opts.kexec]
 
         if opts.debug:
             cmd.append("--debug")
-        cmd.append(h.target)
+        cmd.append(host.target)
         if opts.use_tor:
             # nix copy does not support tor socks proxy
             # cmd.append("--ssh-option")
@@ -178,17 +176,15 @@ def install_command(args: argparse.Namespace) -> None:
         deploy_info: DeployInfo | None = ssh_command_parse(args)
 
         if args.target_host:
-            target_host = args.target_host
+            machine.override_target_host = args.target_host
         elif deploy_info:
             host = find_reachable_host(deploy_info, host_key_check)
             if host is None:
                 use_tor = True
-                target_host = f"root@{deploy_info.tor}"
+                machine.override_target_host = f"root@{deploy_info.tor}"
             else:
-                target_host = host.target
+                machine.override_target_host = host.target
             password = deploy_info.pwd
-        else:
-            target_host = machine.target_host.target
 
         if args.password:
             password = args.password
@@ -197,19 +193,16 @@ def install_command(args: argparse.Namespace) -> None:
         else:
             password = None
 
-        if not target_host:
-            msg = "No target host provided, please provide a target host."
-            raise ClanError(msg)
-
         if not args.yes:
-            ask = input(f"Install {args.machine} to {target_host}? [y/N] ")
+            ask = input(
+                f"Install {args.machine} to {machine.target_host_address}? [y/N] "
+            )
             if ask != "y":
                 return None
 
         return install_machine(
             InstallOptions(
                 machine=machine,
-                target_host=target_host,
                 kexec=args.kexec,
                 phases=args.phases,
                 debug=args.debug,

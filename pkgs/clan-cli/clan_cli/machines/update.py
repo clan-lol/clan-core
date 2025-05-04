@@ -5,6 +5,7 @@ import os
 import re
 import shlex
 import sys
+from contextlib import ExitStack
 
 from clan_lib.api import API
 
@@ -43,8 +44,7 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
     )
 
 
-def upload_sources(machine: Machine) -> str:
-    host = machine.build_host
+def upload_sources(machine: Machine, host: Host) -> str:
     env = host.nix_ssh_env(os.environ.copy())
 
     flake_url = (
@@ -126,22 +126,25 @@ def update_machines(base_path: str, machines: list[InventoryMachine]) -> None:
     deploy_machines(group_machines)
 
 
-def deploy_machines(machines: list[Machine]) -> None:
-    """
-    Deploy to all hosts in parallel
-    """
+def deploy_machine(machine: Machine) -> None:
+    with ExitStack() as stack:
+        target_host = stack.enter_context(machine.target_host())
+        build_host = stack.enter_context(machine.build_host())
 
-    def deploy(machine: Machine) -> None:
-        host = machine.build_host
+        if machine._class_ == "darwin":
+            if not machine.deploy_as_root and target_host.user == "root":
+                msg = f"'targetHost' should be set to a non-root user for deploying to nix-darwin on machine '{machine.name}'"
+                raise ClanError(msg)
+
+        host = build_host or target_host
+
         generate_facts([machine], service=None, regenerate=False)
         generate_vars([machine], generator_name=None, regenerate=False)
 
-        upload_secrets(machine)
-        upload_secret_vars(machine)
+        upload_secrets(machine, target_host)
+        upload_secret_vars(machine, target_host)
 
-        path = upload_sources(
-            machine=machine,
-        )
+        path = upload_sources(machine, host)
 
         nix_options = [
             "--show-trace",
@@ -166,10 +169,9 @@ def deploy_machines(machines: list[Machine]) -> None:
                 "",
             ]
 
-            target_host: Host | None = host.meta.get("target_host")
-            if target_host:
+            if build_host:
                 become_root = False
-                nix_options += ["--target-host", target_host.target]
+                nix_options += ["--target-host", build_host.target]
 
                 if target_host.user != "root":
                     nix_options += ["--use-remote-sudo"]
@@ -211,19 +213,19 @@ def deploy_machines(machines: list[Machine]) -> None:
                 become_root=become_root,
             )
 
+
+def deploy_machines(machines: list[Machine]) -> None:
+    """
+    Deploy to all hosts in parallel
+    """
+
     with AsyncRuntime() as runtime:
         for machine in machines:
-            if machine._class_ == "darwin":
-                if not machine.deploy_as_root and machine.target_host.user == "root":
-                    msg = f"'targetHost' should be set to a non-root user for deploying to nix-darwin on machine '{machine.name}'"
-                    raise ClanError(msg)
-
-            machine.info(f"Updating {machine.name}")
             runtime.async_run(
                 AsyncOpts(
                     tid=machine.name, async_ctx=AsyncContext(prefix=machine.name)
                 ),
-                deploy,
+                deploy_machine,
                 machine,
             )
         runtime.join_all()

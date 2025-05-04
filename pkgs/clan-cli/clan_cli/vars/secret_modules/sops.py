@@ -23,6 +23,7 @@ from clan_cli.secrets.secrets import (
     groups_folder,
     has_secret,
 )
+from clan_cli.ssh.host import Host
 from clan_cli.ssh.upload import upload
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator
@@ -220,14 +221,15 @@ class SecretStore(StoreBase):
                         target_path.write_bytes(self.get(generator, file.name))
                         target_path.chmod(file.mode)
 
-    def upload(self, phases: list[str]) -> None:
+    @override
+    def upload(self, host: Host, phases: list[str]) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)
         with TemporaryDirectory(prefix="sops-upload-") as _tempdir:
             sops_upload_dir = Path(_tempdir).resolve()
             self.populate_dir(sops_upload_dir, phases)
-            upload(self.machine.target_host, sops_upload_dir, Path("/var/lib/sops-nix"))
+            upload(host, sops_upload_dir, Path("/var/lib/sops-nix"))
 
     def exists(self, generator: Generator, name: str) -> bool:
         secret_folder = self.secret_path(generator, name)
@@ -260,7 +262,6 @@ class SecretStore(StoreBase):
 
         return keys
 
-    #        }
     def needs_fix(self, generator: Generator, name: str) -> tuple[bool, str | None]:
         secret_path = self.secret_path(generator, name)
         current_recipients = sops.get_recipients(secret_path)

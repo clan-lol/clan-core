@@ -2,6 +2,8 @@ import importlib
 import json
 import logging
 import re
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
@@ -145,9 +147,9 @@ class Machine:
     def flake_dir(self) -> Path:
         return self.flake.path
 
-    @property
-    def target_host(self) -> Host:
-        return parse_deployment_address(
+    @contextmanager
+    def target_host(self) -> Iterator[Host]:
+        yield parse_deployment_address(
             self.name,
             self.target_host_address,
             self.host_key_check,
@@ -155,23 +157,25 @@ class Machine:
             meta={"machine": self},
         )
 
-    @property
-    def build_host(self) -> Host:
+    @contextmanager
+    def build_host(self) -> Iterator[Host | None]:
         """
         The host where the machine is built and deployed from.
         Can be the same as the target host.
         """
         build_host = self.override_build_host or self.deployment.get("buildHost")
         if build_host is None:
-            return self.target_host
+            with self.target_host() as target_host:
+                yield target_host
+            return
         # enable ssh agent forwarding to allow the build host to access the target host
-        return parse_deployment_address(
+        yield parse_deployment_address(
             self.name,
             build_host,
             self.host_key_check,
             forward_agent=True,
             private_key=self.private_key,
-            meta={"machine": self, "target_host": self.target_host},
+            meta={"machine": self},
         )
 
     @cached_property

@@ -1,5 +1,6 @@
 import shutil
 from pathlib import Path
+from typing import override
 
 from clan_cli.dirs import vm_state_dir
 from clan_cli.machines.machines import Machine
@@ -28,6 +29,7 @@ class SecretStore(SecretStoreBase):
     def exists(self, service: str, name: str) -> bool:
         return (self.dir / service / name).exists()
 
+    @override
     def upload(self, output_dir: Path) -> None:
         if output_dir.exists():
             shutil.rmtree(output_dir)
