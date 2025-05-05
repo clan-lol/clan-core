@@ -11,6 +11,9 @@ from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.ssh.parse import parse_deployment_address
 
+if sys.platform == "darwin":
+    pytest.skip("preload doesn't work on darwin", allow_module_level=True)
+
 
 class ParseTestCase(NamedTuple):
     test_addr: str = ""
@@ -132,10 +135,6 @@ def test_parse_ssh_options() -> None:
     assert host.ssh_options["StrictHostKeyChecking"] == "yes"
 
 
-is_darwin = sys.platform == "darwin"
-
-
-@pytest.mark.skipif(is_darwin, reason="preload doesn't work on darwin")
 def test_run(hosts: list[Host], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
@@ -144,7 +143,6 @@ def test_run(hosts: list[Host], runtime: AsyncRuntime) -> None:
     assert proc.wait().result.stdout == "hello\n"
 
 
-@pytest.mark.skipif(is_darwin, reason="preload doesn't work on darwin")
 def test_run_environment(hosts: list[Host], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
@@ -167,7 +165,6 @@ def test_run_environment(hosts: list[Host], runtime: AsyncRuntime) -> None:
     assert "env_var=true" in p2.wait().result.stdout
 
 
-@pytest.mark.skipif(is_darwin, reason="preload doesn't work on darwin")
 def test_run_no_shell(hosts: list[Host], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
@@ -176,7 +173,6 @@ def test_run_no_shell(hosts: list[Host], runtime: AsyncRuntime) -> None:
     assert proc.wait().result.stdout == "hello\n"
 
 
-@pytest.mark.skipif(is_darwin, reason="preload doesn't work on darwin")
 def test_run_function(hosts: list[Host], runtime: AsyncRuntime) -> None:
     def some_func(h: Host) -> bool:
         p = h.run(["echo", "hello"])
@@ -187,7 +183,6 @@ def test_run_function(hosts: list[Host], runtime: AsyncRuntime) -> None:
     assert proc.wait().result
 
 
-@pytest.mark.skipif(is_darwin, reason="preload doesn't work on darwin")
 def test_timeout(hosts: list[Host], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
@@ -197,7 +192,6 @@ def test_timeout(hosts: list[Host], runtime: AsyncRuntime) -> None:
     assert isinstance(error, ClanCmdTimeoutError)
 
 
-@pytest.mark.skipif(is_darwin, reason="preload doesn't work on darwin")
 def test_run_exception(hosts: list[Host], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
@@ -217,7 +211,6 @@ def test_run_exception(hosts: list[Host], runtime: AsyncRuntime) -> None:
         raise AssertionError(msg)
 
 
-@pytest.mark.skipif(is_darwin, reason="preload doesn't work on darwin")
 def test_run_function_exception(hosts: list[Host], runtime: AsyncRuntime) -> None:
     def some_func(h: Host) -> CmdOut:
         return h.run_local(["exit 1"], RunOpts(shell=True))
