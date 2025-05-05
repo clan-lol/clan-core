@@ -29,7 +29,7 @@ clan_cli = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "clan_cli"]
+testpaths = ["tests", "clan_cli", "clan_lib"]
 faulthandler_timeout = 240
 log_level = "DEBUG"
 log_format = "%(message)s"

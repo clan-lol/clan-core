@@ -48,7 +48,7 @@ let
       && !(stdenv.hostPlatform.system == "aarch64-linux" && attr == "age-plugin-se")
     ) (lib.genAttrs deps (name: pkgs.${name}));
   testRuntimeDependenciesMap = generateRuntimeDependenciesMap allDependencies;
-  testRuntimeDependencies = lib.attrValues testRuntimeDependenciesMap;
+  testRuntimeDependencies = (lib.attrValues testRuntimeDependenciesMap);
   bundledRuntimeDependenciesMap = generateRuntimeDependenciesMap includedRuntimeDeps;
   bundledRuntimeDependencies = lib.attrValues bundledRuntimeDependenciesMap;
 
@@ -213,6 +213,59 @@ pythonRuntime.pkgs.buildPythonApplication {
             jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
             python -m pytest -m "not impure and with_core" ./clan_cli -n $jobs
+            touch $out
+          '';
+    }
+    // {
+      # disabled on macOS until we fix all remaining issues
+      clan-lib-pytest =
+        runCommand "clan-lib-pytest"
+          {
+            nativeBuildInputs = testDependencies;
+            buildInputs = [
+              pkgs.bash
+              pkgs.coreutils
+              pkgs.nix
+
+            ];
+            closureInfo = pkgs.closureInfo {
+              rootPaths = [
+                templateDerivation
+                pkgs.bash
+                pkgs.coreutils
+                pkgs.jq.dev
+                pkgs.stdenv
+                pkgs.stdenvNoCC
+                pkgs.openssh
+                pkgs.shellcheck-minimal
+                pkgs.mkpasswd
+                pkgs.xkcdpass
+                nix-select
+              ];
+            };
+          }
+          ''
+            set -euo pipefail
+            cp -r ${source} ./src
+            chmod +w -R ./src
+            cd ./src
+
+            export CLAN_CORE_PATH=${clan-core-path}
+            export NIX_STATE_DIR=$TMPDIR/nix
+            export IN_NIX_SANDBOX=1
+            export PYTHONWARNINGS=error
+            export CLAN_TEST_STORE=$TMPDIR/store
+            # required to prevent concurrent 'nix flake lock' operations
+            export LOCK_NIX=$TMPDIR/nix_lock
+            mkdir -p "$CLAN_TEST_STORE/nix/store"
+            mkdir -p "$CLAN_TEST_STORE/nix/var/nix/gcroots"
+            xargs cp --recursive --target "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
+            nix-store --load-db --store "$CLAN_TEST_STORE" < "$closureInfo/registration"
+
+            # limit build cores to 4
+            jobs="$((NIX_BUILD_CORES>4 ? 4 : NIX_BUILD_CORES))"
+
+            python -m pytest -m "with_core" ./clan_lib -n $jobs
             touch $out
           '';
     };

@@ -1,9 +1,3 @@
-import pytest
-
-from clan_cli.custom_logger import setup_logging
-
-# collect_ignore = ["./nixpkgs"]
-
 pytest_plugins = [
     "clan_cli.tests.temporary_dir",
     "clan_cli.tests.root",
@@ -19,13 +13,3 @@ pytest_plugins = [
     "clan_cli.tests.stdout",
     "clan_cli.tests.nix_config",
 ]
-
-
-# Executed on pytest session start
-def pytest_sessionstart(session: pytest.Session) -> None:
-    # This function will be called once at the beginning of the test session
-    print("Starting pytest session")
-    # You can access the session config, items, testsfailed, etc.
-    print(f"Session config: {session.config}")
-
-    setup_logging(level="INFO")

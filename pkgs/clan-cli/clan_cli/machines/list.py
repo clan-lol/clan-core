@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import re
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -11,38 +12,38 @@ from clan_lib.api.disk import MachineDiskMatter
 from clan_lib.api.modules import parse_frontmatter
 from clan_lib.api.serde import dataclass_to_dict
 
-from clan_cli.cmd import RunOpts, run_no_stdout
+from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.dirs import specific_machine_dir
-from clan_cli.errors import ClanCmdError, ClanError
+from clan_cli.errors import ClanError
 from clan_cli.inventory import (
-    Machine,
     load_inventory_eval,
     patch_inventory_with,
 )
+from clan_cli.inventory.classes import Machine as InventoryMachine
 from clan_cli.machines.hardware import HardwareConfig
-from clan_cli.nix import nix_eval, nix_shell
+from clan_cli.nix import nix_eval
 from clan_cli.tags import list_nixos_machines_by_tags
 
 log = logging.getLogger(__name__)
 
 
 @API.register
-def set_machine(flake_url: Path, machine_name: str, machine: Machine) -> None:
+def set_machine(flake_url: Path, machine_name: str, machine: InventoryMachine) -> None:
     patch_inventory_with(
         flake_url, f"machines.{machine_name}", dataclass_to_dict(machine)
     )
 
 
 @API.register
-def list_inventory_machines(flake_url: str | Path) -> dict[str, Machine]:
+def list_inventory_machines(flake_url: str | Path) -> dict[str, InventoryMachine]:
     inventory = load_inventory_eval(flake_url)
     return inventory.get("machines", {})
 
 
 @dataclass
 class MachineDetails:
-    machine: Machine
+    machine: InventoryMachine
     hw_config: HardwareConfig | None = None
     disk_schema: MachineDiskMatter | None = None
 
@@ -92,7 +93,7 @@ def list_nixos_machines(flake_url: str | Path) -> list[str]:
         ]
     )
 
-    proc = run_no_stdout(cmd)
+    proc = run(cmd)
 
     try:
         res = proc.stdout.strip()
@@ -106,53 +107,36 @@ def list_nixos_machines(flake_url: str | Path) -> list[str]:
 
 @dataclass
 class ConnectionOptions:
-    keyfile: str | None = None
     timeout: int = 2
+    retries: int = 10
+
+
+from clan_cli.machines.machines import Machine
 
 
 @API.register
 def check_machine_online(
-    flake_url: str | Path, machine_name: str, opts: ConnectionOptions | None
+    machine: Machine, opts: ConnectionOptions | None = None
 ) -> Literal["Online", "Offline"]:
-    machine = load_inventory_eval(flake_url).get("machines", {}).get(machine_name)
-    if not machine:
-        msg = f"Machine {machine_name} not found in inventory"
-        raise ClanError(msg)
-
-    hostname = machine.get("deploy", {}).get("targetHost")
-
+    hostname = machine.target_host_address
     if not hostname:
-        msg = f"Machine {machine_name} does not specify a targetHost"
+        msg = f"Machine {machine.name} does not specify a targetHost"
         raise ClanError(msg)
 
-    timeout = opts.timeout if opts and opts.timeout else 20
+    timeout = opts.timeout if opts and opts.timeout else 2
 
-    cmd = nix_shell(
-        ["util-linux", *(["openssh"] if hostname else [])],
-        [
-            "ssh",
-            *(["-i", f"{opts.keyfile}"] if opts and opts.keyfile else []),
-            # Disable strict host key checking
-            "-o",
-            "StrictHostKeyChecking=accept-new",
-            # Disable known hosts file
-            "-o",
-            "UserKnownHostsFile=/dev/null",
-            "-o",
-            f"ConnectTimeout={timeout}",
-            f"{hostname}",
-            "true",
-            "&> /dev/null",
-        ],
-    )
-    try:
-        proc = run_no_stdout(cmd, RunOpts(needs_user_terminal=True))
-        if proc.returncode != 0:
-            return "Offline"
-    except ClanCmdError:
-        return "Offline"
-    else:
-        return "Online"
+    for _ in range(opts.retries if opts and opts.retries else 10):
+        with machine.target_host() as target:
+            res = target.run(
+                ["true"],
+                RunOpts(timeout=timeout, check=False, needs_user_terminal=True),
+            )
+
+            if res.returncode == 0:
+                return "Online"
+        time.sleep(timeout)
+
+    return "Offline"
 
 
 def list_command(args: argparse.Namespace) -> None:
