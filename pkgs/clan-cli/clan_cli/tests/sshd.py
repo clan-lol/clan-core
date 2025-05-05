@@ -80,6 +80,7 @@ exec {bash} -l "${{@}}"
 
         fake_sudo.write_text(
             f"""#!{bash}
+shift
 exec "${{@}}"
         """
         )

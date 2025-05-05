@@ -98,8 +98,12 @@ def upload(
             raise ClanError(msg)
 
         # TODO accept `input` to be  an IO object instead of bytes so that we don't have to read the tarfile into memory.
-        with tar_path.open("rb") as f, host.ssh_control_master() as ssh:
-            ssh.run(
+        with (
+            tar_path.open("rb") as f,
+            host.ssh_control_master() as ssh,
+            ssh.become_root() as sudo_ssh,
+        ):
+            sudo_ssh.run(
                 [
                     "bash",
                     "-c",
@@ -114,5 +118,4 @@ def upload(
                     prefix=host.command_prefix,
                     needs_user_terminal=True,
                 ),
-                become_root=True,
             )

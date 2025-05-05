@@ -5,6 +5,7 @@ import os
 import re
 import shlex
 import sys
+from contextlib import ExitStack
 
 from clan_lib.api import API
 from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime, is_async_cancelled
@@ -109,93 +110,97 @@ def upload_sources(machine: Machine, host: Remote) -> str:
 
 @API.register
 def deploy_machine(machine: Machine) -> None:
-    target_host = machine.target_host()
-    build_host = machine.build_host()
+    with ExitStack() as stack:
+        target_host = stack.enter_context(machine.target_host().ssh_control_master())
+        build_host = machine.build_host()
+        if build_host is not None:
+            build_host = stack.enter_context(build_host.ssh_control_master())
 
-    host = build_host or target_host
+        host = build_host or target_host
 
-    generate_facts([machine], service=None, regenerate=False)
-    generate_vars([machine], generator_name=None, regenerate=False)
+        sudo_host = stack.enter_context(target_host.become_root())
 
-    upload_secrets(machine)
-    upload_secret_vars(machine, target_host)
+        generate_facts([machine], service=None, regenerate=False)
+        generate_vars([machine], generator_name=None, regenerate=False)
 
-    path = upload_sources(machine, host)
+        upload_secrets(machine, sudo_host)
+        upload_secret_vars(machine, sudo_host)
 
-    nix_options = [
-        "--show-trace",
-        "--option",
-        "keep-going",
-        "true",
-        "--option",
-        "accept-flake-config",
-        "true",
-        "-L",
-        *machine.nix_options,
-        "--flake",
-        f"{path}#{machine.name}",
-    ]
+        path = upload_sources(machine, sudo_host)
 
-    become_root = True
-
-    if machine._class_ == "nixos":
-        nix_options += [
-            "--fast",
-            "--build-host",
-            "",
+        nix_options = [
+            "--show-trace",
+            "--option",
+            "keep-going",
+            "true",
+            "--option",
+            "accept-flake-config",
+            "true",
+            "-L",
+            *machine.nix_options,
+            "--flake",
+            f"{path}#{machine.name}",
         ]
 
-        if build_host:
-            become_root = False
-            nix_options += ["--target-host", target_host.target]
+        become_root = True
 
-            if target_host.user != "root":
-                nix_options += ["--use-remote-sudo"]
-        switch_cmd = ["nixos-rebuild", "switch", *nix_options]
-    elif machine._class_ == "darwin":
-        # use absolute path to darwin-rebuild
-        switch_cmd = [
-            "/run/current-system/sw/bin/darwin-rebuild",
-            "switch",
-            *nix_options,
-        ]
+        if machine._class_ == "nixos":
+            nix_options += [
+                "--fast",
+                "--build-host",
+                "",
+            ]
 
-    remote_env = host.nix_ssh_env(control_master=False)
-    ret = host.run(
-        switch_cmd,
-        RunOpts(
-            check=False,
-            log=Log.BOTH,
-            msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
-            needs_user_terminal=True,
-        ),
-        extra_env=remote_env,
-        become_root=become_root,
-        control_master=False,
-    )
+            if build_host:
+                become_root = False
+                nix_options += ["--target-host", target_host.target]
 
-    if is_async_cancelled():
-        return
+                if target_host.user != "root":
+                    nix_options += ["--use-remote-sudo"]
+            switch_cmd = ["nixos-rebuild", "switch", *nix_options]
+        elif machine._class_ == "darwin":
+            # use absolute path to darwin-rebuild
+            switch_cmd = [
+                "/run/current-system/sw/bin/darwin-rebuild",
+                "switch",
+                *nix_options,
+            ]
 
-    # retry nixos-rebuild switch if the first attempt failed
-    if ret.returncode != 0:
-        is_mobile = machine.deployment.get("nixosMobileWorkaround", False)
-        # if the machine is mobile, we retry to deploy with the mobile workaround method
-        if is_mobile:
-            machine.info(
-                "Mobile machine detected, applying workaround deployment method"
-            )
+        if become_root:
+            host = sudo_host
+
+        remote_env = host.nix_ssh_env(control_master=False)
         ret = host.run(
-            ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,
+            switch_cmd,
             RunOpts(
+                check=False,
                 log=Log.BOTH,
                 msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
                 needs_user_terminal=True,
             ),
             extra_env=remote_env,
-            become_root=become_root,
-            control_master=False,
         )
+
+        if is_async_cancelled():
+            return
+
+        # retry nixos-rebuild switch if the first attempt failed
+        if ret.returncode != 0:
+            is_mobile = machine.deployment.get("nixosMobileWorkaround", False)
+            # if the machine is mobile, we retry to deploy with the mobile workaround method
+            if is_mobile:
+                machine.info(
+                    "Mobile machine detected, applying workaround deployment method"
+                )
+            ret = host.run(
+                ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,
+                RunOpts(
+                    log=Log.BOTH,
+                    msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
+                    needs_user_terminal=True,
+                ),
+                extra_env=remote_env,
+            )
 
 
 def deploy_machines(machines: list[Machine]) -> None:

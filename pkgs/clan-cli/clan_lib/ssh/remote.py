@@ -19,6 +19,7 @@ from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError  # Assuming these are available
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.parse import parse_deployment_address
+from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
 
 cmdlog = logging.getLogger(__name__)
 
@@ -39,7 +40,9 @@ class Remote:
     verbose_ssh: bool = False
     ssh_options: dict[str, str] = field(default_factory=dict)
     tor_socks: bool = False
+
     _control_path_dir: Path | None = None
+    _askpass_path: str | None = None
 
     def __str__(self) -> str:
         return self.target
@@ -124,11 +127,61 @@ class Remote:
                 _askpass_path=self._askpass_path,
             )
 
+    @contextmanager
+    def become_root(self) -> Iterator["Remote"]:
+        """
+        Context manager to set up sudo askpass proxy.
+        This will set up a proxy for sudo password prompts.
+        """
+        if self.user == "root":
+            yield self
+            return
+
+        if (
+            os.environ.get("DISPLAY")
+            or os.environ.get("WAYLAND_DISPLAY")
+            or sys.platform == "darwin"
+        ):
+            command = ["zenity", "--password", "--title", "%title%"]
+            dependencies = ["zenity"]
+        else:
+            command = [
+                "dialog",
+                "--stdout",
+                "--insecure",
+                "--title",
+                "%title%",
+                "--passwordbox",
+                "",
+                "10",
+                "50",
+            ]
+            dependencies = ["dialog"]
+        proxy = SudoAskpassProxy(self, nix_shell(dependencies, command))
+        try:
+            askpass_path = proxy.run()
+            yield Remote(
+                address=self.address,
+                user=self.user,
+                command_prefix=self.command_prefix,
+                port=self.port,
+                private_key=self.private_key,
+                password=self.password,
+                forward_agent=self.forward_agent,
+                host_key_check=self.host_key_check,
+                verbose_ssh=self.verbose_ssh,
+                ssh_options=self.ssh_options,
+                tor_socks=self.tor_socks,
+                _control_path_dir=self._control_path_dir,
+                _askpass_path=askpass_path,
+            )
+        finally:
+            proxy.cleanup()
+
     def run(
         self,
         cmd: list[str],
         opts: RunOpts | None = None,
-        become_root: bool = False,
         extra_env: dict[str, str] | None = None,
         tty: bool = False,
         verbose_ssh: bool = False,
@@ -144,9 +197,14 @@ class Remote:
         if opts is None:
             opts = RunOpts()
 
-        sudo = ""
-        if become_root and self.user != "root":
-            sudo = "sudo -- "
+        sudo = []
+        if self._askpass_path is not None:
+            sudo = [
+                f"SUDO_ASKPASS={shlex.quote(self._askpass_path)}",
+                "sudo",
+                "-A",
+                "--",
+            ]
 
         env_vars = []
         for k, v in extra_env.items():
@@ -182,14 +240,20 @@ class Remote:
         else:
             bash_cmd += 'exec "$@"'
 
-        ssh_cmd_list = self.ssh_cmd(
-            verbose_ssh=verbose_ssh, tty=tty, control_master=control_master
-        )
-        ssh_cmd_list.extend(
-            ["--", f"{sudo}bash -c {quote(bash_cmd)} -- {' '.join(map(quote, cmd))}"]
-        )
+        ssh_cmd = [
+            *self.ssh_cmd(
+                verbose_ssh=verbose_ssh, tty=tty, control_master=control_master
+            ),
+            "--",
+            *sudo,
+            "bash",
+            "-c",
+            quote(bash_cmd),
+            "--",
+            " ".join(map(quote, cmd)),
+        ]
 
-        return run(ssh_cmd_list, opts)
+        return run(ssh_cmd, opts)
 
     def nix_ssh_env(
         self,
