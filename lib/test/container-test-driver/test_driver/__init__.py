@@ -187,6 +187,22 @@ class Machine:
             if line_pattern.match(line)
         )
 
+    def nsenter_command(self, command: str) -> list[str]:
+        return [
+            "nsenter",
+            "--target",
+            str(self.container_pid),
+            "--mount",
+            "--uts",
+            "--ipc",
+            "--net",
+            "--pid",
+            "--cgroup",
+            "/bin/sh",
+            "-c",
+            command,
+        ]
+
     def execute(
         self,
         command: str,
@@ -231,20 +247,7 @@ class Machine:
         command = f"set -eo pipefail; source /etc/profile; set -u; {command}"
 
         proc = subprocess.run(
-            [
-                "nsenter",
-                "--target",
-                str(self.container_pid),
-                "--mount",
-                "--uts",
-                "--ipc",
-                "--net",
-                "--pid",
-                "--cgroup",
-                "/bin/sh",
-                "-c",
-                command,
-            ],
+            self.nsenter_command(command),
             timeout=timeout,
             check=False,
             stdout=subprocess.PIPE,
@@ -464,6 +467,9 @@ class Driver:
         for machine in self.machines:
             print(f"Starting {machine.name}")
             machine.start()
+
+        for machine in self.machines:
+            print(machine.nsenter_command("bash"))
 
     def test_symbols(self) -> dict[str, Any]:
         general_symbols = {
