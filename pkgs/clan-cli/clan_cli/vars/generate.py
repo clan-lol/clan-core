@@ -353,19 +353,20 @@ def _generate_vars_for_machine(
 @API.register
 def generate_vars_for_machine(
     machine_name: str,
-    generators: list[Generator],
+    generators: list[str],
     all_prompt_values: dict[str, dict[str, str]],
     base_dir: Path,
     no_sandbox: bool = False,
 ) -> bool:
     from clan_cli.machines.machines import Machine
 
+    machine = Machine(name=machine_name, flake=Flake(str(base_dir)))
+    generators_set = set(generators)
+    generators_ = [g for g in machine.vars_generators if g.name in generators_set]
+
     return _generate_vars_for_machine(
-        machine=Machine(
-            name=machine_name,
-            flake=Flake(str(base_dir)),
-        ),
-        generators=generators,
+        machine=machine,
+        generators=generators_,
         all_prompt_values=all_prompt_values,
         no_sandbox=no_sandbox,
     )
