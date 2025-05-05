@@ -84,7 +84,10 @@ in
                   schema =
                     (self.clanLib.inventory.evalClanService {
                       modules = [ m ];
-                      prefix = [ "checks" system ];
+                      prefix = [
+                        "checks"
+                        system
+                      ];
                     }).config.result.api.schema;
                 in
                 schema

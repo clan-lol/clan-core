@@ -206,19 +206,7 @@ in
     inherit inventoryClass;
 
     # Endpoint that can be called to get a service schema
-    evalServiceSchema =
-      {moduleSpec}:
-      let
-        resolvedModule = clan-core.clanLib.inventory.resolveModule {
-          inherit moduleSpec;
-          flakeInputs = config.self.inputs;
-          localModuleSet = config.inventory.modules;
-        };
-      in
-      (clan-core.clanLib.inventory.evalClanService {
-        modules = [ resolvedModule ];
-        prefix = [ ];
-      }).config.result.api.schema;
+    evalServiceSchema = clan-core.clanLib.evalServiceSchema config.self;
 
     # TODO: unify this interface
     # We should have only clan.modules. (consistent with clan.templates)

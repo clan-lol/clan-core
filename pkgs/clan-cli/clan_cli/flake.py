@@ -716,18 +716,18 @@ class Flake:
         if not fallback_nixpkgs_hash.startswith("sha256-"):
             fallback_nixpkgs = Flake(str(nixpkgs_source()))
             fallback_nixpkgs.invalidate_cache()
-            assert (
-                fallback_nixpkgs.hash is not None
-            ), "this should be impossible as invalidate_cache() should always set `hash`"
+            assert fallback_nixpkgs.hash is not None, (
+                "this should be impossible as invalidate_cache() should always set `hash`"
+            )
             fallback_nixpkgs_hash = fallback_nixpkgs.hash
 
         select_hash = "@select_hash@"
         if not select_hash.startswith("sha256-"):
             select_flake = Flake(str(select_source()))
             select_flake.invalidate_cache()
-            assert (
-                select_flake.hash is not None
-            ), "this should be impossible as invalidate_cache() should always set `hash`"
+            assert select_flake.hash is not None, (
+                "this should be impossible as invalidate_cache() should always set `hash`"
+            )
             select_hash = select_flake.hash
 
         nix_code = f"""

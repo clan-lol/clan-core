@@ -15,10 +15,27 @@ lib.fix (clanLib: {
   */
   callLib = file: args: import file ({ inherit lib clanLib; } // args);
 
+  # ------------------------------------
   buildClan = clanLib.buildClanModule.buildClanWith {
     clan-core = self;
     inherit nixpkgs nix-darwin;
   };
+  evalServiceSchema =
+    self:
+    {
+      moduleSpec,
+      flakeInputs ? self.inputs,
+      localModuleSet ? self.clan.modules,
+    }:
+    let
+      resolvedModule = clanLib.inventory.resolveModule {
+        inherit moduleSpec flakeInputs localModuleSet;
+      };
+    in
+    (clanLib.inventory.evalClanService {
+      modules = [ resolvedModule ];
+      prefix = [ ];
+    }).config.result.api.schema;
   # ------------------------------------
   # ClanLib functions
   evalClan = clanLib.callLib ./inventory/eval-clan-modules { };

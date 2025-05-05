@@ -62,7 +62,8 @@ let
 
               '');
             clanAttrs =
-              input.clan or (throw "It seems the flake input ${moduleSpec.input} doesn't export any clan resources");
+              input.clan
+                or (throw "It seems the flake input ${moduleSpec.input} doesn't export any clan resources");
           in
           clanAttrs.modules;
 
