@@ -1,7 +1,7 @@
 # This module enables itself if
 # manifest.features.API = true
 # It converts the roles.interface to a json-schema
-{ clanLib, attrName }:
+{ clanLib, prefix }:
 let
   converter = clanLib.jsonschema {
     includeDefaults = true;
@@ -45,7 +45,7 @@ in
 
           To see the evaluation problem run
 
-          nix eval .#clanInternals.inventoryClass.distributedServices.importedModulesEvaluated.${attrName}.config.result.api.schema.${roleName}
+          nix eval .#${lib.concatStringsSep "." prefix}.config.result.api.schema.${roleName}
         '';
         assertion = (builtins.tryEval (lib.deepSeq config.result.api.schema.${roleName} true)).success;
       };

@@ -50,6 +50,7 @@ in
           hello-service = import ./tests/vm/default.nix {
             inherit module;
             inherit self inputs pkgs;
+            # clanLib is exposed from inputs.clan-core
             clanLib = self.clanLib;
           };
         };

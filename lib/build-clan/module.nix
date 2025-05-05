@@ -44,6 +44,7 @@ let
     buildInventory {
       inherit inventory directory;
       flakeInputs = config.self.inputs;
+      prefix = config._prefix ++ [ "inventoryClass" ];
     }
   );
 
@@ -203,6 +204,9 @@ in
     ) (config.outputs.moduleForMachine);
 
     inherit inventoryClass;
+
+    # Endpoint that can be called to get a service schema
+    evalServiceSchema = clan-core.clanLib.evalServiceSchema config.self;
 
     # TODO: unify this interface
     # We should have only clan.modules. (consistent with clan.templates)

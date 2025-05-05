@@ -22,6 +22,9 @@ in
       pkgs,
       self,
       useContainers ? true,
+      # Displayed for better error messages, otherwise the placeholder
+      system ? "<system>",
+      attrName ? "<check_name>",
       ...
     }:
     let
@@ -60,6 +63,15 @@ in
               };
               modules = [
                 clanLib.buildClanModule.flakePartsModule
+                {
+                  _prefix = [
+                    "checks"
+                    system
+                    attrName
+                    "config"
+                    "clan"
+                  ];
+                }
               ];
             };
           };
