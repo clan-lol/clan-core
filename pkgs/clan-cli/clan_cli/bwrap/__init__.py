@@ -1,4 +1,8 @@
-from clan_cli.cmd import run
+import os
+import shutil
+from pathlib import Path
+
+from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.nix import nix_shell
 
 _works: bool | None = None
@@ -12,6 +16,11 @@ def bubblewrap_works() -> bool:
 
 
 def _bubblewrap_works() -> bool:
+    real_bash_path = Path("bash")
+    if os.environ.get("IN_NIX_SANDBOX"):
+        bash_executable_path = Path(str(shutil.which("bash")))
+        real_bash_path = bash_executable_path.resolve()
+
     # fmt: off
     cmd = nix_shell(
         [
@@ -30,13 +39,10 @@ def _bubblewrap_works() -> bool:
             "--gid", "1000",
             "--",
             # do nothing, just test if bash executes
-            "bash", "-c", ":"
+            str(real_bash_path), "-c", ":"
         ],
     )
+
     # fmt: on
-    try:
-        run(cmd)
-    except Exception:
-        return False
-    else:
-        return True
+    res = run(cmd, RunOpts(log=Log.BOTH, check=False))
+    return res.returncode == 0

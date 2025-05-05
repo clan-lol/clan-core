@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import shutil
 import sys
 from dataclasses import dataclass, field
 from functools import cached_property
@@ -86,6 +87,11 @@ class Generator:
 def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
     test_store = nix_test_store()
 
+    real_bash_path = Path("bash")
+    if os.environ.get("IN_NIX_SANDBOX"):
+        bash_executable_path = Path(str(shutil.which("bash")))
+        real_bash_path = bash_executable_path.resolve()
+
     # fmt: off
     return nix_shell(
         [
@@ -109,8 +115,8 @@ def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
             "--uid", "1000",
             "--gid", "1000",
             "--",
-            "bash", "-c", generator
-        ],
+            str(real_bash_path), "-c", generator
+        ]
     )
     # fmt: on
 
