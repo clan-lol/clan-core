@@ -28,6 +28,14 @@ def test_root() -> Path:
 
 
 @pytest.fixture(scope="session")
+def test_lib_root() -> Path:
+    """
+    Root directory of the clan-lib tests
+    """
+    return PROJECT_ROOT.parent / "clan_lib" / "tests"
+
+
+@pytest.fixture(scope="session")
 def clan_core() -> Path:
     """
     Directory of the clan-core flake
