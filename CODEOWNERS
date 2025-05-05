@@ -1,0 +1,2 @@
+nixosModules/clanCore/vars/.* @lopter
+pkgs/clan-cli/clan_cli/(secrets|vars)/.* @lopter
