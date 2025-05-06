@@ -171,7 +171,7 @@ def deploy_machine(machine: Machine) -> None:
 
             if build_host:
                 become_root = False
-                nix_options += ["--target-host", build_host.target]
+                nix_options += ["--target-host", target_host.target]
 
                 if target_host.user != "root":
                     nix_options += ["--use-remote-sudo"]
