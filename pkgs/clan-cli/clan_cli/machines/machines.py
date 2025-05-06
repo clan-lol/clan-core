@@ -149,13 +149,14 @@ class Machine:
 
     @contextmanager
     def target_host(self) -> Iterator[Host]:
-        yield parse_deployment_address(
+        with parse_deployment_address(
             self.name,
             self.target_host_address,
             self.host_key_check,
             private_key=self.private_key,
             meta={"machine": self},
-        )
+        ) as target_host:
+            yield target_host
 
     @contextmanager
     def build_host(self) -> Iterator[Host | None]:
@@ -168,14 +169,15 @@ class Machine:
             yield None
             return
         # enable ssh agent forwarding to allow the build host to access the target host
-        yield parse_deployment_address(
+        with parse_deployment_address(
             self.name,
             build_host,
             self.host_key_check,
             forward_agent=True,
             private_key=self.private_key,
             meta={"machine": self},
-        )
+        ) as build_host:
+            yield build_host
 
     @cached_property
     def deploy_as_root(self) -> bool:
