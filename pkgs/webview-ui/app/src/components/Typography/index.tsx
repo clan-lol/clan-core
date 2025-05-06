@@ -84,7 +84,6 @@ interface _TypographyProps<H extends Hierarchy> {
   inverted?: boolean;
   tag?: Tag;
   class?: string;
-  classList?: Record<string, boolean>;
 }
 
 export const Typography = <H extends Hierarchy>(props: _TypographyProps<H>) => {
