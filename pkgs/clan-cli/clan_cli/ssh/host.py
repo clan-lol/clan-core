@@ -47,9 +47,10 @@ class Host:
         self.ssh_options["ControlPath"] = str(control_path / "clan-%h-%p-%r")
         self.ssh_options["ControlPersist"] = "30m"
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> "Host":
         self._temp_dir = TemporaryDirectory(prefix="clan-ssh-")
         self.setup_control_master(Path(self._temp_dir.name))
+        return self
 
     def __exit__(
         self,
