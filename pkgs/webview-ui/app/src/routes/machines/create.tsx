@@ -11,7 +11,6 @@ import { Match, Switch } from "solid-js";
 import toast from "solid-toast";
 import { MachineAvatar } from "./avatar";
 import { DynForm } from "@/src/Form/form";
-import { Typography } from "@/src/components/Typography";
 import Fieldset from "@/src/Form/fieldset";
 import Accordion from "@/src/components/accordion";
 

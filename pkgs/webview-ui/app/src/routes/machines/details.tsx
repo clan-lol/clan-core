@@ -1,9 +1,4 @@
 import { callApi, SuccessData } from "@/src/api";
-import { activeURI } from "@/src/App";
-import { Button } from "@/src/components/button";
-import Icon from "@/src/components/icon";
-import { TextInput } from "@/src/Form/fields/TextInput";
-
 import {
   createForm,
   FieldValues,
@@ -14,6 +9,12 @@ import {
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { createQuery, useQueryClient } from "@tanstack/solid-query";
 import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
+
+import { activeURI } from "@/src/App";
+import { Button } from "@/src/components/button";
+import Icon from "@/src/components/icon";
+import { TextInput } from "@/src/Form/fields/TextInput";
+import Accordion from "@/src/components/accordion";
 import toast from "solid-toast";
 import { MachineAvatar } from "./avatar";
 import { Header } from "@/src/layout/header";
@@ -550,7 +551,7 @@ const MachineForm = (props: MachineDetailsProps) => {
                 onClick={() => {
                   setInstallModalOpen(true);
                 }}
-                endIcon={<Icon icon="Flash" />}
+                endIcon={<Icon size={14} icon="Flash" />}
               >
                 Install
               </Button>
@@ -559,7 +560,7 @@ const MachineForm = (props: MachineDetailsProps) => {
                 class="w-full"
                 size="s"
                 onClick={() => handleUpdate()}
-                endIcon={<Icon icon="Update" />}
+                endIcon={<Icon size={12} icon="Update" />}
               >
                 Update
               </Button>
@@ -636,6 +637,7 @@ const MachineForm = (props: MachineDetailsProps) => {
                   />
                 )}
               </Field>
+              <hr />
               <Field name="disk_schema.schema_name">
                 {(field, props) => (
                   <>
@@ -646,26 +648,24 @@ const MachineForm = (props: MachineDetailsProps) => {
                   </>
                 )}
               </Field>
-
-              <div class="  col-span-full" tabindex="0">
-                <input type="checkbox" />
-                <div class="  px-0 text-xl ">Connection Settings</div>
-                <div class="">
-                  <Field name="machine.deploy.targetHost">
-                    {(field, props) => (
-                      <TextInput
-                        inputProps={props}
-                        label="Target Host"
-                        value={field.value ?? ""}
-                        error={field.error}
-                        class="col-span-2"
-                        required
-                      />
-                    )}
-                  </Field>
-                </div>
-              </div>
             </Fieldset>
+
+            <Accordion title="Connection Settings">
+              <Fieldset>
+                <Field name="machine.deploy.targetHost">
+                  {(field, props) => (
+                    <TextInput
+                      inputProps={props}
+                      label="Target Host"
+                      value={field.value ?? ""}
+                      error={field.error}
+                      class="col-span-2"
+                      required
+                    />
+                  )}
+                </Field>
+              </Fieldset>
+            </Accordion>
 
             {
               <footer class="flex justify-end gap-y-3 border-t border-secondary-200 pt-5">
