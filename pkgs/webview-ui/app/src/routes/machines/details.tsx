@@ -32,7 +32,7 @@ type MachineFormInterface = MachineData & {
   disk?: string;
 };
 
-type MachineData = SuccessData<"get_inventory_machine_details">;
+type MachineData = SuccessData<"get_machine_details">;
 
 const steps: Record<StepIdx, string> = {
   "1": "Hardware detection",
@@ -641,16 +641,11 @@ const MachineForm = (props: MachineDetailsProps) => {
 export const MachineDetails = () => {
   const params = useParams();
   const genericQuery = createQuery(() => ({
-    queryKey: [
-      activeURI(),
-      "machine",
-      params.id,
-      "get_inventory_machine_details",
-    ],
+    queryKey: [activeURI(), "machine", params.id, "get_machine_details"],
     queryFn: async () => {
       const curr = activeURI();
       if (curr) {
-        const result = await callApi("get_inventory_machine_details", {
+        const result = await callApi("get_machine_details", {
           flake_url: curr,
           machine_name: params.id,
         });

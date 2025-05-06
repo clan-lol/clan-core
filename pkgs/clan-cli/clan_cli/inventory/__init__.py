@@ -61,7 +61,6 @@ def get_inventory_path(flake_dir: str | Path) -> Path:
 default_inventory: Inventory = {"meta": {"name": "New Clan"}}
 
 
-@API.register
 def load_inventory_eval(flake_dir: str | Path) -> Inventory:
     """
     Loads the evaluated inventory.
@@ -522,6 +521,7 @@ def get_inventory_with_writeable_keys(
     return WriteInfo(writeables, data_eval, data_disk)
 
 
+# TODO: remove this function in favor of a proper read/write API
 @API.register
 def set_inventory(
     inventory: Inventory, flake_dir: str | Path, message: str, commit: bool = True
@@ -560,7 +560,7 @@ def set_inventory(
         commit_file(inventory_file, Path(flake_dir), commit_message=message)
 
 
-@API.register
+# TODO: wrap this in a proper persistence API
 def delete(directory: str | Path, delete_set: set[str]) -> None:
     """
     Delete keys from the inventory
