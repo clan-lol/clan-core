@@ -179,11 +179,11 @@ def deploy_machine(machine: Machine) -> None:
         switch_cmd = [f"{machine._class_}-rebuild", "switch", *nix_options]
         test_cmd = [f"{machine._class_}-rebuild", "test", *nix_options]
 
-        env = host.nix_ssh_env(None)
+        remote_env = host.nix_ssh_env(None, local_ssh=False)
         ret = host.run(
             switch_cmd,
             RunOpts(check=False, msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
-            extra_env=env,
+            extra_env=remote_env,
             become_root=become_root,
         )
 
@@ -209,7 +209,7 @@ def deploy_machine(machine: Machine) -> None:
                     msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
                     needs_user_terminal=True,
                 ),
-                extra_env=env,
+                extra_env=remote_env,
                 become_root=become_root,
             )
 

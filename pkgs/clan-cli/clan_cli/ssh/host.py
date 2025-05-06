@@ -42,14 +42,8 @@ class Host:
 
     _temp_dir: TemporaryDirectory | None = None
 
-    def setup_control_master(self, control_path: Path) -> None:
-        self.ssh_options["ControlMaster"] = "auto"
-        self.ssh_options["ControlPath"] = str(control_path / "clan-%h-%p-%r")
-        self.ssh_options["ControlPersist"] = "30m"
-
     def __enter__(self) -> "Host":
         self._temp_dir = TemporaryDirectory(prefix="clan-ssh-")
-        self.setup_control_master(Path(self._temp_dir.name))
         return self
 
     def __exit__(
@@ -188,15 +182,17 @@ class Host:
         # Run the ssh command
         return run(ssh_cmd, opts)
 
-    def nix_ssh_env(self, env: dict[str, str] | None) -> dict[str, str]:
+    def nix_ssh_env(
+        self, env: dict[str, str] | None, local_ssh: bool = True
+    ) -> dict[str, str]:
         if env is None:
             env = {}
-        env["NIX_SSHOPTS"] = " ".join(self.ssh_cmd_opts)
+        env["NIX_SSHOPTS"] = " ".join(self.ssh_cmd_opts(local_ssh=local_ssh))
         return env
 
-    @property
     def ssh_cmd_opts(
         self,
+        local_ssh: bool = True,
     ) -> list[str]:
         ssh_opts = ["-A"] if self.forward_agent else []
         if self.port:
@@ -209,6 +205,16 @@ class Host:
 
         if self.private_key:
             ssh_opts.extend(["-i", str(self.private_key)])
+
+        if local_ssh and self._temp_dir:
+            ssh_opts.extend(["-o", "ControlPersist=30m"])
+            ssh_opts.extend(
+                [
+                    "-o",
+                    f"ControlPath={Path(self._temp_dir.name) / 'clan-%h-%p-%r'}",
+                ]
+            )
+            ssh_opts.extend(["-o", "ControlMaster=auto"])
 
         return ssh_opts
 
@@ -227,7 +233,7 @@ class Host:
                 self.password,
             ]
 
-        ssh_opts = self.ssh_cmd_opts
+        ssh_opts = self.ssh_cmd_opts()
         if verbose_ssh or self.verbose_ssh:
             ssh_opts.extend(["-v"])
         if tty:
