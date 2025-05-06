@@ -162,7 +162,32 @@ def install_machine(opts: InstallOptions) -> None:
 def install_command(args: argparse.Namespace) -> None:
     host_key_check = HostKeyCheck.from_str(args.host_key_check)
     try:
-        machine = Machine(name=args.machine, flake=args.flake, nix_options=args.option)
+        # Only if the caller did not specify a target_host via args.target_host
+        # Find a suitable target_host that is reachable
+        target_host = args.target_host
+        deploy_info: DeployInfo | None = ssh_command_parse(args)
+
+        if deploy_info and not args.target_host:
+            host = find_reachable_host(deploy_info, host_key_check)
+            if host is None:
+                use_tor = True
+                target_host = f"root@{deploy_info.tor}"
+            else:
+                target_host = host.target
+
+        if args.password:
+            password = args.password
+        elif deploy_info and deploy_info.pwd:
+            password = deploy_info.pwd
+        else:
+            password = None
+
+        machine = Machine(
+            name=args.machine,
+            flake=args.flake,
+            nix_options=args.option,
+            override_target_host=target_host,
+        )
         use_tor = False
 
         if machine._class_ == "darwin":
@@ -172,26 +197,6 @@ def install_command(args: argparse.Namespace) -> None:
         if args.flake is None:
             msg = "Could not find clan flake toplevel directory"
             raise ClanError(msg)
-
-        deploy_info: DeployInfo | None = ssh_command_parse(args)
-
-        if args.target_host:
-            machine.override_target_host = args.target_host
-        elif deploy_info:
-            host = find_reachable_host(deploy_info, host_key_check)
-            if host is None:
-                use_tor = True
-                machine.override_target_host = f"root@{deploy_info.tor}"
-            else:
-                machine.override_target_host = host.target
-            password = deploy_info.pwd
-
-        if args.password:
-            password = args.password
-        elif deploy_info and deploy_info.pwd:
-            password = deploy_info.pwd
-        else:
-            password = None
 
         if not args.yes:
             ask = input(
