@@ -255,7 +255,9 @@ in
                     {
                       options.API = mkOption {
                         type = types.bool;
-                        default = false;
+                        # This is read only, because we don't support turning it off yet
+                        readOnly = true;
+                        default = true;
                         description = ''
                           Enables automatic API schema conversion for the interface of this module.
                         '';
