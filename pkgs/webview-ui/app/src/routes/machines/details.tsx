@@ -667,14 +667,16 @@ const MachineForm = (props: MachineDetailsProps) => {
               </div>
             </Fieldset>
 
-            <footer class="flex justify-end gap-y-3 border-t border-secondary-200 pt-5">
-              <Button
-                type="submit"
-                disabled={formStore.submitting || !formStore.dirty}
-              >
-                Update Edits
-              </Button>
-            </footer>
+            {
+              <footer class="flex justify-end gap-y-3 border-t border-secondary-200 pt-5">
+                <Button
+                  type="submit"
+                  disabled={formStore.submitting || !formStore.dirty}
+                >
+                  Update edits
+                </Button>
+              </footer>
+            }
           </Form>
         </div>
       </div>
