@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from clan_cli.vars.generate import Generator
 
 
-@dataclass
+@dataclass(frozen=True)
 class Machine:
     name: str
     flake: Flake

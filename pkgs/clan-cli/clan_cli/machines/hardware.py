@@ -96,13 +96,12 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
     and place the resulting *.nix file in the machine's directory.
     """
 
-    machine = Machine(opts.machine, flake=opts.flake)
-
-    if opts.keyfile is not None:
-        machine.private_key = Path(opts.keyfile)
-
-    if opts.target_host is not None:
-        machine.override_target_host = opts.target_host
+    machine = Machine(
+        opts.machine,
+        flake=opts.flake,
+        private_key=Path(opts.keyfile) if opts.keyfile else None,
+        override_target_host=opts.target_host,
+    )
 
     hw_file = opts.backend.config_path(opts.flake.path, opts.machine)
     hw_file.parent.mkdir(parents=True, exist_ok=True)
