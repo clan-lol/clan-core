@@ -35,6 +35,7 @@ class Disk:
     device: str
 
 
+# TODO: unify this with machine install
 @API.register
 def flash_machine(
     machine: Machine,

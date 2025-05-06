@@ -58,28 +58,6 @@ def show_machine_hardware_config(clan_dir: Path, machine_name: str) -> HardwareC
 
 
 @API.register
-def show_machine_deployment_target(clan_dir: Path, machine_name: str) -> str | None:
-    """
-    Show deployment target for a machine returns None if none exist.
-    """
-    config = nix_config()
-    system = config["system"]
-    cmd = nix_eval(
-        [
-            f"{clan_dir}#clanInternals.machines.{system}.{machine_name}",
-            "--apply",
-            "machine: { inherit (machine.config.clan.core.networking) targetHost; }",
-            "--json",
-        ]
-    )
-    proc = run_no_stdout(cmd, RunOpts(prefix=machine_name))
-    res = proc.stdout.strip()
-
-    target_host = json.loads(res)
-    return target_host.get("targetHost", None)
-
-
-@API.register
 def show_machine_hardware_platform(clan_dir: Path, machine_name: str) -> str | None:
     """
     Show hardware information for a machine returns None if none exist.

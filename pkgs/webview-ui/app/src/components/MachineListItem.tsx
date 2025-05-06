@@ -10,7 +10,7 @@ import { Filter } from "../routes/machines";
 import { Typography } from "./Typography";
 import { Button } from "./button";
 
-type MachineDetails = SuccessQuery<"list_inventory_machines">["data"][string];
+type MachineDetails = SuccessQuery<"list_machines">["data"][string];
 
 interface MachineListItemProps {
   name: string;

@@ -36,7 +36,7 @@ def set_machine(flake_url: Path, machine_name: str, machine: InventoryMachine) -
 
 
 @API.register
-def list_inventory_machines(flake_url: str | Path) -> dict[str, InventoryMachine]:
+def list_machines(flake_url: str | Path) -> dict[str, InventoryMachine]:
     inventory = load_inventory_eval(flake_url)
     return inventory.get("machines", {})
 
@@ -60,7 +60,7 @@ def extract_header(c: str) -> str:
 
 
 @API.register
-def get_inventory_machine_details(flake_url: Path, machine_name: str) -> MachineDetails:
+def get_machine_details(flake_url: Path, machine_name: str) -> MachineDetails:
     inventory = load_inventory_eval(flake_url)
     machine = inventory.get("machines", {}).get(machine_name)
     if machine is None:

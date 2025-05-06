@@ -18,7 +18,7 @@ import { Header } from "@/src/layout/header";
 import { makePersisted } from "@solid-primitives/storage";
 
 type MachinesModel = Extract<
-  OperationResponse<"list_inventory_machines">,
+  OperationResponse<"list_machines">,
   { status: "success" }
 >["data"];
 
@@ -32,13 +32,13 @@ export const MachineListView: Component = () => {
   const [filter, setFilter] = createSignal<Filter>({ tags: [] });
 
   const inventoryQuery = createQuery<MachinesModel>(() => ({
-    queryKey: [activeURI(), "list_inventory_machines"],
+    queryKey: [activeURI(), "list_machines"],
     placeholderData: {},
     enabled: !!activeURI(),
     queryFn: async () => {
       const uri = activeURI();
       if (uri) {
-        const response = await callApi("list_inventory_machines", {
+        const response = await callApi("list_machines", {
           flake_url: uri,
         });
         if (response.status === "error") {
