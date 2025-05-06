@@ -92,7 +92,7 @@ in
     lib.lazyDerivation {
       # lazyDerivation improves performance when only passthru items and/or meta are used.
       derivation = hostPkgs.stdenv.mkDerivation {
-        name = "vm-test-run-${config.name}";
+        name = "container-test-run-${config.name}";
 
         requiredSystemFeatures = [ "uid-range" ];
 
