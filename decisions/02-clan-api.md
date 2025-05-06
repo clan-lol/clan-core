@@ -19,7 +19,7 @@ We might not be sure whether all of those will exist but the architecture should
 ## Decision
 
 This leads to the conclusion that we should do `library` centric development.
-With the current `clan` python code beeing a library that can be imported to create various tools ontop of it.
+With the current `clan` python code being a library that can be imported to create various tools ontop of it.
 All **CLI** or **UI** related parts should be moved out of the main library.
 
 *Note: The next person who wants implement any new frontend should do this first. Currently it looks like the TUI is the next one.*
