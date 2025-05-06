@@ -13,6 +13,7 @@ let
       directory,
       flakeInputs,
       prefix ? [ ],
+      localModuleSet ? { },
     }:
     (lib.evalModules {
       # TODO: remove clanLib from specialArgs
@@ -21,6 +22,9 @@ let
       };
       modules = [
         ./builder
+        (lib.modules.importApply ./service-list-from-inputs.nix {
+          inherit flakeInputs clanLib localModuleSet;
+        })
         { inherit directory inventory; }
         (
           # config.distributedServices.allMachines.${name} or [ ];
