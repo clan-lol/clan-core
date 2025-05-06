@@ -469,7 +469,7 @@ class Driver:
             machine.start()
 
         for machine in self.machines:
-            print(machine.nsenter_command("bash"))
+            print(" ".join(machine.nsenter_command("bash")))
 
     def test_symbols(self) -> dict[str, Any]:
         general_symbols = {
