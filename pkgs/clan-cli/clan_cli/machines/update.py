@@ -21,13 +21,12 @@ from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.upload import upload_secrets
 from clan_cli.flake import Flake
 from clan_cli.inventory import Machine as InventoryMachine
+from clan_cli.machines.list import list_machines
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_command, nix_config, nix_metadata
 from clan_cli.ssh.host import Host, HostKeyCheck
 from clan_cli.vars.generate import generate_vars
 from clan_cli.vars.upload import upload_secret_vars
-
-from .inventory import get_all_machines, get_selected_machines
 
 log = logging.getLogger(__name__)
 
@@ -111,16 +110,17 @@ def update_machines(base_path: str, machines: list[InventoryMachine]) -> None:
     flake = Flake(base_path)
     for machine in machines:
         name = machine.get("name")
+        # prefer target host set via inventory, but fallback to the one set in the machine
+        target_host = machine.get("deploy", {}).get("targetHost")
+
         if not name:
             msg = "Machine name is not set"
             raise ClanError(msg)
         m = Machine(
             name,
             flake=flake,
+            override_target_host=target_host,
         )
-        # prefer target host set via inventory, but fallback to the one set in the machine
-        if target_host := machine.get("deploy", {}).get("targetHost"):
-            m.override_target_host = target_host
         group_machines.append(m)
 
     deploy_machines(group_machines)
@@ -237,61 +237,73 @@ def update_command(args: argparse.Namespace) -> None:
         if args.flake is None:
             msg = "Could not find clan flake toplevel directory"
             raise ClanError(msg)
-        machines = []
-        if len(args.machines) == 1 and args.target_host is not None:
-            machine = Machine(
-                name=args.machines[0], flake=args.flake, nix_options=args.option
-            )
-            machine.override_target_host = args.target_host
-            machine.override_build_host = args.build_host
-            machine.host_key_check = HostKeyCheck.from_str(args.host_key_check)
-            machines.append(machine)
 
-        elif args.target_host is not None:
-            print("target host can only be specified for a single machine")
-            exit(1)
-        else:
-            if len(args.machines) == 0:
-                ignored_machines = []
-                for machine in get_all_machines(args.flake, args.option):
-                    if machine.deployment.get("requireExplicitUpdate", False):
-                        continue
-                    try:
-                        machine.build_host  # noqa: B018
-                    except ClanError:  # check if we have a build host set
-                        ignored_machines.append(machine)
-                        continue
-                    machine.host_key_check = HostKeyCheck.from_str(args.host_key_check)
-                    machine.override_build_host = args.build_host
-                    machines.append(machine)
-
-                if not machines and ignored_machines != []:
-                    print(
-                        "WARNING: No machines to update."
-                        "The following defined machines were ignored because they"
-                        "do not have the `clan.core.networking.targetHost` nixos option set:",
-                        file=sys.stderr,
-                    )
-                    for machine in ignored_machines:
-                        print(machine, file=sys.stderr)
-
-            else:
-                machines = get_selected_machines(args.flake, args.option, args.machines)
-                for machine in machines:
-                    machine.override_build_host = args.build_host
-                    machine.host_key_check = HostKeyCheck.from_str(args.host_key_check)
-
-        config = nix_config()
-        system = config["system"]
-        machine_names = [machine.name for machine in machines]
-        args.flake.precache(
-            [
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-                f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
-            ]
+        machines: list[Machine] = []
+        # if no machines are passed, we will update all machines
+        selected_machines = (
+            args.machines if args.machines else list_machines(args.flake).keys()
         )
 
-        deploy_machines(machines)
+        if args.target_host is not None and len(args.machines) > 1:
+            msg = "Target Host can only be set for one machines"
+            raise ClanError(msg)
+
+        for machine_name in selected_machines:
+            machine = Machine(
+                name=machine_name,
+                flake=args.flake,
+                nix_options=args.option,
+                override_target_host=args.target_host,
+                override_build_host=args.build_host,
+                host_key_check=HostKeyCheck.from_str(args.host_key_check),
+            )
+            machines.append(machine)
+
+        def filter_machine(m: Machine) -> bool:
+            if m.deployment.get("requireExplicitUpdate", False):
+                return False
+
+            try:
+                # check if the machine has a target host set
+                m.target_host  # noqa: B018
+            except ClanError:
+                return False
+
+            return True
+
+        machines_to_update = machines
+        implicit_all: bool = len(args.machines) == 0
+        if implicit_all:
+            machines_to_update = list(filter(filter_machine, machines))
+
+        # machines that are in the list but not included in the update list
+        ignored_machines = {m.name for m in machines if m not in machines_to_update}
+
+        if not machines_to_update and ignored_machines:
+            print(
+                "WARNING: No machines to update.\n"
+                "The following defined machines were ignored because they\n"
+                "- Require explicit update (see 'requireExplicitUpdate')\n",
+                "- Might not have the `clan.core.networking.targetHost` nixos option set:\n",
+                file=sys.stderr,
+            )
+            for m in ignored_machines:
+                print(m, file=sys.stderr)
+
+        if machines_to_update:
+            # Prepopulate the cache
+            config = nix_config()
+            system = config["system"]
+            machine_names = [machine.name for machine in machines_to_update]
+            args.flake.precache(
+                [
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
+                ]
+            )
+            # Run the deplyoyment
+            deploy_machines(machines_to_update)
+
     except KeyboardInterrupt:
         log.warning("Interrupted by user")
         sys.exit(1)
