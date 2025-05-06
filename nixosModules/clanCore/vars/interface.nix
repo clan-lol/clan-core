@@ -39,7 +39,7 @@ in
       internal = true;
       description = ''
         JSON serialization of the generators.
-        This is read from the python client to generate the specified ressources.
+        This is read from the python client to generate the specified resources.
       '';
       default = {
         # TODO: We don't support per-machine choice of backends
