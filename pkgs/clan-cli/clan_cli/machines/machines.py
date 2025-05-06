@@ -165,8 +165,7 @@ class Machine:
         """
         build_host = self.override_build_host or self.deployment.get("buildHost")
         if build_host is None:
-            with self.target_host() as target_host:
-                yield target_host
+            yield None
             return
         # enable ssh agent forwarding to allow the build host to access the target host
         yield parse_deployment_address(
