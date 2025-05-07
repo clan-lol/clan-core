@@ -575,12 +575,12 @@ class Flake:
     identifier: str
     inputs_from: str | None = None
     hash: str | None = None
-    flake_cache_path: Path | None = None
     store_path: str | None = None
-    cache: FlakeCache | None = None
-    _cache: FlakeCache | None = None
-    _path: Path | None = None
-    _is_local: bool | None = None
+
+    _flake_cache_path: Path | None = field(init=False, default=None)
+    _cache: FlakeCache | None = field(init=False, default=None)
+    _path: Path | None = field(init=False, default=None)
+    _is_local: bool | None = field(init=False, default=None)
 
     @classmethod
     def from_json(cls: type["Flake"], data: dict[str, Any]) -> "Flake":
