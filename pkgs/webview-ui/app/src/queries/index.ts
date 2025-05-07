@@ -44,7 +44,7 @@ export const tagsQuery = (uri: string | null) =>
       if (!uri) return [];
 
       const response = await callApi("get_inventory", {
-        base_path: uri,
+        flake: { identifier: uri },
       });
       if (response.status === "error") {
         toast.error("Failed to fetch data");
@@ -65,7 +65,7 @@ export const machinesQuery = (uri: string | null) =>
       if (!uri) return [];
 
       const response = await callApi("get_inventory", {
-        base_path: uri,
+        flake: { identifier: uri },
       });
       if (response.status === "error") {
         toast.error("Failed to fetch data");

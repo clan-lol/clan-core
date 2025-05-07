@@ -209,7 +209,7 @@ def test_clan_create_api(
 
     # ===== CREATE BASE INVENTORY ======
     inventory = create_base_inventory(ssh_keys)
-    patch_inventory_with(dest_clan_dir, "services", inventory.services)
+    patch_inventory_with(Flake(str(dest_clan_dir)), "services", inventory.services)
 
     # Invalidate cache because of new inventory
     clan_dir_flake.invalidate_cache()
@@ -240,7 +240,7 @@ def test_clan_create_api(
     facter_json = test_lib_root / "assets" / "facter.json"
     assert facter_json.exists(), f"Source facter file not found: {facter_json}"
 
-    dest_dir = specific_machine_dir(clan_dir_flake.path, machine.name)
+    dest_dir = specific_machine_dir(Flake(str(clan_dir_flake.path)), machine.name)
     # specific_machine_dir should create the directory, but ensure it exists just in case
     dest_dir.mkdir(parents=True, exist_ok=True)
 
@@ -254,7 +254,8 @@ def test_clan_create_api(
 
     # ===== Create Disko Config ======
     facter_path = (
-        specific_machine_dir(clan_dir_flake.path, machine.name) / "facter.json"
+        specific_machine_dir(Flake(str(clan_dir_flake.path)), machine.name)
+        / "facter.json"
     )
     with facter_path.open("r") as f:
         facter_report = json.load(f)
@@ -264,9 +265,7 @@ def test_clan_create_api(
     assert disk_devs is not None
 
     placeholders = {"mainDisk": disk_devs[0]}
-    set_machine_disk_schema(
-        clan_dir_flake.path, machine.name, "single-disk", placeholders
-    )
+    set_machine_disk_schema(clan_dir_flake, machine.name, "single-disk", placeholders)
     clan_dir_flake.invalidate_cache()
 
     with pytest.raises(ClanError) as exc_info:

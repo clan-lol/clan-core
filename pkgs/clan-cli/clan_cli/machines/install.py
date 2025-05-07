@@ -113,7 +113,7 @@ def install_machine(opts: InstallOptions) -> None:
                     str(opts.update_hardware_config.value),
                     str(
                         opts.update_hardware_config.config_path(
-                            machine.flake.path, machine.name
+                            machine.flake, machine.name
                         )
                     ),
                 ]

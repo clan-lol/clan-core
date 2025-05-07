@@ -39,7 +39,9 @@ export const MachineListView: Component = () => {
       const uri = activeURI();
       if (uri) {
         const response = await callApi("list_machines", {
-          flake_url: uri,
+          flake: {
+            identifier: uri,
+          },
         });
         if (response.status === "error") {
           toast.error("Failed to fetch data");
