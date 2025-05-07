@@ -137,17 +137,35 @@ export const MachineListView: Component = () => {
         <Switch>
           <Match when={inventoryQuery.isLoading}>
             {/* Loading skeleton */}
-            <div>
-              <div class="  m-2 shadow-lg">
-                <figure class="pl-2">
-                  <div class=" size-12"></div>
-                </figure>
-                <div class="">
-                  <h2 class="">
-                    <div class=" h-12 w-80"></div>
-                  </h2>
-                  <div class=" h-8 w-72"></div>
+            <div class="grid grid-cols-4"></div>
+            <div class="machine-item-loader">
+              <div class="machine-item-loader__thumb-wrapper">
+                <div class="machine-item-loader__thumb">
+                  <div class="machine-item-loader__loader" />
                 </div>
+              </div>
+              <div class="machine-item-loader__headline">
+                <div class="machine-item-loader__loader" />
+              </div>
+            </div>
+            <div class="machine-item-loader">
+              <div class="machine-item-loader__thumb-wrapper">
+                <div class="machine-item-loader__thumb">
+                  <div class="machine-item-loader__loader" />
+                </div>
+              </div>
+              <div class="machine-item-loader__headline">
+                <div class="machine-item-loader__loader" />
+              </div>
+            </div>
+            <div class="machine-item-loader">
+              <div class="machine-item-loader__thumb-wrapper">
+                <div class="machine-item-loader__thumb">
+                  <div class="machine-item-loader__loader" />
+                </div>
+              </div>
+              <div class="machine-item-loader__headline">
+                <div class="machine-item-loader__loader" />
               </div>
             </div>
           </Match>
