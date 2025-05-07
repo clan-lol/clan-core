@@ -294,10 +294,28 @@ def _ask_prompts(
     return prompt_values
 
 
+def _get_previous_value(
+    machine: "Machine",
+    generator: Generator,
+    prompt: Prompt,
+) -> str | None:
+    if not prompt.persist:
+        return None
+
+    pub_store = machine.public_vars_store
+    if pub_store.exists(generator, prompt.name):
+        return pub_store.get(generator, prompt.name).decode()
+    sec_store = machine.secret_vars_store
+    if sec_store.exists(generator, prompt.name):
+        return sec_store.get(generator, prompt.name).decode()
+    return None
+
+
 def get_closure(
     machine: "Machine",
     generator_name: str | None,
     regenerate: bool,
+    include_previous_values: bool = False,
 ) -> list[Generator]:
     from .graph import all_missing_closure, full_closure
 
@@ -310,14 +328,24 @@ def get_closure(
     for generator in vars_generators:
         generator.machine(machine)
 
+    result_closure = []
     if generator_name is None:  # all generators selected
         if regenerate:
-            return full_closure(generators)
-        return all_missing_closure(generators)
+            result_closure = full_closure(generators)
+        else:
+            result_closure = all_missing_closure(generators)
     # specific generator selected
-    if regenerate:
-        return requested_closure([generator_name], generators)
-    return minimal_closure([generator_name], generators)
+    elif regenerate:
+        result_closure = requested_closure([generator_name], generators)
+    else:
+        result_closure = minimal_closure([generator_name], generators)
+
+    if include_previous_values:
+        for generator in result_closure:
+            for prompt in generator.prompts:
+                prompt.previous_value = _get_previous_value(machine, generator, prompt)
+
+    return result_closure
 
 
 @API.register
@@ -325,6 +353,7 @@ def get_generators_closure(
     machine_name: str,
     base_dir: Path,
     regenerate: bool = False,
+    include_previous_values: bool = False,
 ) -> list[Generator]:
     from clan_cli.machines.machines import Machine
 
@@ -332,13 +361,14 @@ def get_generators_closure(
         machine=Machine(name=machine_name, flake=Flake(str(base_dir))),
         generator_name=None,
         regenerate=regenerate,
+        include_previous_values=include_previous_values,
     )
 
 
 def _generate_vars_for_machine(
     machine: "Machine",
     generators: list[Generator],
-    all_prompt_values: dict[str, dict],
+    all_prompt_values: dict[str, dict[str, str]],
     no_sandbox: bool = False,
 ) -> bool:
     for generator in generators:
@@ -350,7 +380,7 @@ def _generate_vars_for_machine(
                 generator=generator,
                 secret_vars_store=machine.secret_vars_store,
                 public_vars_store=machine.public_vars_store,
-                prompt_values=all_prompt_values[generator.name],
+                prompt_values=all_prompt_values.get(generator.name, {}),
                 no_sandbox=no_sandbox,
             )
     return True

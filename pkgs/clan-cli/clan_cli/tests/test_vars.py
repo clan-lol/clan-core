@@ -12,7 +12,12 @@ from clan_cli.tests.age_keys import SopsSetup
 from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
-from clan_cli.vars.generate import Generator, generate_vars_for_machine_interactive
+from clan_cli.vars.generate import (
+    Generator,
+    generate_vars_for_machine,
+    generate_vars_for_machine_interactive,
+    get_generators_closure,
+)
 from clan_cli.vars.get import get_var
 from clan_cli.vars.graph import all_missing_closure, requested_closure
 from clan_cli.vars.list import stringify_all_vars
@@ -640,9 +645,6 @@ def test_api_set_prompts(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,
 ) -> None:
-    from clan_cli.vars._types import GeneratorUpdate
-    from clan_cli.vars.list import get_generators, set_prompts
-
     config = flake.machines["my_machine"]
     config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
@@ -652,33 +654,39 @@ def test_api_set_prompts(
     flake.refresh()
 
     monkeypatch.chdir(flake.path)
-    params = {"machine_name": "my_machine", "base_dir": str(flake.path)}
 
-    set_prompts(
-        **params,
-        updates=[
-            GeneratorUpdate(
-                generator="my_generator",
-                prompt_values={"prompt1": "input1"},
-            )
-        ],
+    generate_vars_for_machine(
+        machine_name="my_machine",
+        base_dir=flake.path,
+        generators=["my_generator"],
+        all_prompt_values={
+            "my_generator": {
+                "prompt1": "input1",
+            }
+        },
     )
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
     store = in_repo.FactStore(machine)
     assert store.exists(Generator("my_generator"), "prompt1")
     assert store.get(Generator("my_generator"), "prompt1").decode() == "input1"
-    set_prompts(
-        **params,
-        updates=[
-            GeneratorUpdate(
-                generator="my_generator",
-                prompt_values={"prompt1": "input2"},
-            )
-        ],
+    generate_vars_for_machine(
+        machine_name="my_machine",
+        base_dir=flake.path,
+        generators=["my_generator"],
+        all_prompt_values={
+            "my_generator": {
+                "prompt1": "input2",
+            }
+        },
     )
     assert store.get(Generator("my_generator"), "prompt1").decode() == "input2"
 
-    generators = get_generators(**params)
+    generators = get_generators_closure(
+        machine_name="my_machine",
+        base_dir=flake.path,
+        regenerate=True,
+        include_previous_values=True,
+    )
     assert len(generators) == 1
     assert generators[0].name == "my_generator"
     assert generators[0].prompts[0].name == "prompt1"

@@ -11,9 +11,9 @@ import {
   getValues,
   setValue,
 } from "@modular-forms/solid";
-import { useParams } from "@solidjs/router";
-import { createQuery } from "@tanstack/solid-query";
-import { createSignal, For, Match, Show, Switch } from "solid-js";
+import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
+import { createQuery, useQueryClient } from "@tanstack/solid-query";
+import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
 import toast from "solid-toast";
 import { MachineAvatar } from "./avatar";
 import { Header } from "@/src/layout/header";
@@ -316,21 +316,7 @@ const InstallMachine = (props: InstallMachineProps) => {
               />
             </Match>
             <Match when={step() === "3"}>
-              <VarsStep
-                // @ts-expect-error: This cannot be undefined in this context.
-                machine_id={props.name}
-                // @ts-expect-error: This cannot be undefined in this context.
-                dir={activeURI()}
-                footer={<Footer />}
-                handleNext={(data) => {
-                  // const prev = getValue(formStore, "2");
-                  // setValue(formStore, "2", { ...prev, ...data });
-                  handleNext();
-                }}
-                initial={{
-                  ...getValue(formStore, "3"),
-                }}
-              />
+              <div>TODO: vars</div>
             </Match>
             <Match when={step() === "4"}>
               <SummaryStep
@@ -416,6 +402,10 @@ const MachineForm = (props: MachineDetailsProps) => {
 
   const [installModalOpen, setInstallModalOpen] = createSignal(false);
 
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
+
   const handleSubmit = async (values: MachineFormInterface) => {
     console.log("submitting", values);
 
@@ -447,7 +437,40 @@ const MachineForm = (props: MachineDetailsProps) => {
     return null;
   };
 
+  const generatorsQuery = createQuery(() => ({
+    queryKey: [activeURI(), machineName(), "generators"],
+    queryFn: async () => {
+      const machine_name = machineName();
+      const base_dir = activeURI();
+      if (!machine_name || !base_dir) {
+        return [];
+      }
+      const result = await callApi("get_generators_closure", {
+        base_dir: base_dir,
+        machine_name: machine_name,
+      });
+      if (result.status === "error") throw new Error("Failed to fetch data");
+      return result.data;
+    },
+  }));
+
+  const handleUpdateButton = async () => {
+    const t = toast.loading("Checking for generators...");
+    await generatorsQuery.refetch();
+    toast.dismiss(t);
+    if (generatorsQuery.data?.length !== 0) {
+      navigate(`/machines/${machineName()}/vars`);
+    } else {
+      handleUpdate();
+    }
+  };
+
+  const [isUpdating, setIsUpdating] = createSignal(false);
+
   const handleUpdate = async () => {
+    if (isUpdating()) {
+      return;
+    }
     const curr_uri = activeURI();
     if (!curr_uri) {
       return;
@@ -461,6 +484,7 @@ const MachineForm = (props: MachineDetailsProps) => {
     const target = targetHost();
 
     const loading_toast = toast.loading("Updating machine...");
+    setIsUpdating(true);
     const r = await callApi("update_machines", {
       base_path: curr_uri,
       machines: [
@@ -472,6 +496,7 @@ const MachineForm = (props: MachineDetailsProps) => {
         },
       ],
     });
+    setIsUpdating(false);
     toast.dismiss(loading_toast);
 
     if (r.status === "error") {
@@ -481,6 +506,15 @@ const MachineForm = (props: MachineDetailsProps) => {
       toast.success("Machine updated successfully");
     }
   };
+
+  createEffect(() => {
+    const action = searchParams.action;
+    if (action === "update") {
+      setSearchParams({ action: undefined });
+      handleUpdate();
+    }
+  });
+
   return (
     <>
       <div class="flex flex-col gap-6 p-4">
@@ -626,7 +660,7 @@ const MachineForm = (props: MachineDetailsProps) => {
             <Button
               class="w-full"
               // disabled={!online()}
-              onClick={() => handleUpdate()}
+              onClick={() => handleUpdateButton()}
               endIcon={<Icon icon="Update" />}
             >
               Update
