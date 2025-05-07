@@ -15,6 +15,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
+from colorama import Fore, Style
+
 from .logger import AbstractLogger, CompositeLogger, TerminalLogger
 
 # Load the C library
@@ -486,6 +488,8 @@ class Driver:
             print(
                 " ".join(
                     [
+                        Style.BRIGHT,
+                        Fore.CYAN,
                         "sudo",
                         "nsenter",
                         "--user",
@@ -500,6 +504,7 @@ class Driver:
                         "/bin/sh",
                         "-c",
                         "bash",
+                        Style.RESET_ALL,
                     ]
                 )
             )
