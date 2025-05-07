@@ -23,7 +23,6 @@ from clan_lib.api import API, dataclass_to_dict, from_dict
 
 from clan_cli.cmd import run_no_stdout
 from clan_cli.errors import ClanCmdError, ClanError
-from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
 
@@ -50,11 +49,11 @@ __all__ = [
 ]
 
 
-def get_inventory_path(flake: Flake) -> Path:
+def get_inventory_path(flake_dir: str | Path) -> Path:
     """
     Get the path to the inventory file in the flake directory
     """
-    inventory_file = (flake.path / "inventory.json").resolve()
+    inventory_file = (Path(flake_dir) / "inventory.json").resolve()
     return inventory_file
 
 
@@ -62,7 +61,7 @@ def get_inventory_path(flake: Flake) -> Path:
 default_inventory: Inventory = {"meta": {"name": "New Clan"}}
 
 
-def load_inventory_eval(flake_dir: Flake) -> Inventory:
+def load_inventory_eval(flake_dir: str | Path) -> Inventory:
     """
     Loads the evaluated inventory.
     After all merge operations with eventual nix code in buildClan.
@@ -355,7 +354,7 @@ def determine_writeability(
     return results
 
 
-def get_inventory_current_priority(flake: Flake) -> dict:
+def get_inventory_current_priority(flake_dir: str | Path) -> dict:
     """
     Returns the current priority of the inventory values
 
@@ -375,7 +374,7 @@ def get_inventory_current_priority(flake: Flake) -> dict:
     """
     cmd = nix_eval(
         [
-            f"{flake}#clanInternals.inventoryClass.introspection",
+            f"{flake_dir}#clanInternals.inventoryClass.introspection",
             "--json",
         ]
     )
@@ -393,7 +392,7 @@ def get_inventory_current_priority(flake: Flake) -> dict:
 
 
 @API.register
-def load_inventory_json(flake: Flake) -> Inventory:
+def load_inventory_json(flake_dir: str | Path) -> Inventory:
     """
     Load the inventory FILE from the flake directory
     If no file is found, returns an empty dictionary
@@ -403,7 +402,7 @@ def load_inventory_json(flake: Flake) -> Inventory:
     Use load_inventory_eval instead
     """
 
-    inventory_file = get_inventory_path(flake)
+    inventory_file = get_inventory_path(flake_dir)
 
     if not inventory_file.exists():
         return {}
@@ -473,14 +472,14 @@ def patch(d: dict[str, Any], path: str, content: Any) -> None:
 
 
 @API.register
-def patch_inventory_with(flake: Flake, section: str, content: dict[str, Any]) -> None:
+def patch_inventory_with(base_dir: Path, section: str, content: dict[str, Any]) -> None:
     """
     Pass only the section to update and the content to update with.
     Make sure you pass only attributes that you would like to persist.
     ATTENTION: Don't pass nix eval values unintentionally.
     """
 
-    inventory_file = get_inventory_path(flake)
+    inventory_file = get_inventory_path(base_dir)
 
     curr_inventory = {}
     if inventory_file.exists():
@@ -492,9 +491,7 @@ def patch_inventory_with(flake: Flake, section: str, content: dict[str, Any]) ->
     with inventory_file.open("w") as f:
         json.dump(curr_inventory, f, indent=2)
 
-    commit_file(
-        inventory_file, flake.path, commit_message=f"inventory.{section}: Update"
-    )
+    commit_file(inventory_file, base_dir, commit_message=f"inventory.{section}: Update")
 
 
 @dataclass
@@ -506,16 +503,16 @@ class WriteInfo:
 
 @API.register
 def get_inventory_with_writeable_keys(
-    flake: Flake,
+    flake_dir: str | Path,
 ) -> WriteInfo:
     """
     Load the inventory and determine the writeable keys
     Performs 2 nix evaluations to get the current priority and the inventory
     """
-    current_priority = get_inventory_current_priority(flake)
+    current_priority = get_inventory_current_priority(flake_dir)
 
-    data_eval: Inventory = load_inventory_eval(flake)
-    data_disk: Inventory = load_inventory_json(flake)
+    data_eval: Inventory = load_inventory_eval(flake_dir)
+    data_disk: Inventory = load_inventory_json(flake_dir)
 
     writeables = determine_writeability(
         current_priority, dict(data_eval), dict(data_disk)
@@ -527,14 +524,14 @@ def get_inventory_with_writeable_keys(
 # TODO: remove this function in favor of a proper read/write API
 @API.register
 def set_inventory(
-    inventory: Inventory, flake: Flake, message: str, commit: bool = True
+    inventory: Inventory, flake_dir: str | Path, message: str, commit: bool = True
 ) -> None:
     """
     Write the inventory to the flake directory
     and commit it to git with the given message
     """
 
-    write_info = get_inventory_with_writeable_keys(flake)
+    write_info = get_inventory_with_writeable_keys(flake_dir)
 
     # Remove internals from the inventory
     inventory.pop("tags", None)  # type: ignore
@@ -555,43 +552,43 @@ def set_inventory(
     for delete_path in delete_set:
         delete_by_path(persisted, delete_path)
 
-    inventory_file = get_inventory_path(flake)
+    inventory_file = get_inventory_path(flake_dir)
     with inventory_file.open("w") as f:
         json.dump(persisted, f, indent=2)
 
     if commit:
-        commit_file(inventory_file, flake.path, commit_message=message)
+        commit_file(inventory_file, Path(flake_dir), commit_message=message)
 
 
 # TODO: wrap this in a proper persistence API
-def delete(flake: Flake, delete_set: set[str]) -> None:
+def delete(directory: str | Path, delete_set: set[str]) -> None:
     """
     Delete keys from the inventory
     """
-    write_info = get_inventory_with_writeable_keys(flake)
+    write_info = get_inventory_with_writeable_keys(directory)
 
     data_disk = dict(write_info.data_disk)
 
     for delete_path in delete_set:
         delete_by_path(data_disk, delete_path)
 
-    inventory_file = get_inventory_path(flake)
+    inventory_file = get_inventory_path(directory)
     with inventory_file.open("w") as f:
         json.dump(data_disk, f, indent=2)
 
     commit_file(
         inventory_file,
-        flake.path,
+        Path(directory),
         commit_message=f"Delete inventory keys {delete_set}",
     )
 
 
-def init_inventory(flake: Flake, init: Inventory | None = None) -> None:
+def init_inventory(directory: str, init: Inventory | None = None) -> None:
     inventory = None
     # Try reading the current flake
     if init is None:
         with contextlib.suppress(ClanCmdError):
-            inventory = load_inventory_eval(flake)
+            inventory = load_inventory_eval(directory)
 
     if init is not None:
         inventory = init
@@ -599,9 +596,9 @@ def init_inventory(flake: Flake, init: Inventory | None = None) -> None:
     # Write inventory.json file
     if inventory is not None:
         # Persist creates a commit message for each change
-        set_inventory(inventory, flake, "Init inventory")
+        set_inventory(inventory, directory, "Init inventory")
 
 
 @API.register
-def get_inventory(flake: Flake) -> Inventory:
-    return load_inventory_eval(flake)
+def get_inventory(base_path: str | Path) -> Inventory:
+    return load_inventory_eval(base_path)

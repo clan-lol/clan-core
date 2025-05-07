@@ -13,7 +13,7 @@ from typing import IO, ClassVar
 
 import gi
 from clan_cli import vms
-from clan_cli.clan_dirs import vm_state_dir
+from clan_cli.dirs import vm_state_dir
 from clan_cli.machines.machines import Machine
 from clan_cli.vms.inspect import inspect_vm
 from clan_cli.vms.qemu import QMPWrapper

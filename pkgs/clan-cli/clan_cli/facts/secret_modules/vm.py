@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 from typing import override
 
-from clan_cli.clan_dirs import vm_state_dir
+from clan_cli.dirs import vm_state_dir
 from clan_cli.machines.machines import Machine
 
 from . import SecretStoreBase

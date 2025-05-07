@@ -107,7 +107,7 @@ def create_clan(opts: CreateOptions) -> CreateClanResponse:
         response.flake_update = flake_update
 
     if opts.initial:
-        init_inventory(Flake(str(opts.dest)), init=opts.initial)
+        init_inventory(str(opts.dest), init=opts.initial)
 
     return response
 

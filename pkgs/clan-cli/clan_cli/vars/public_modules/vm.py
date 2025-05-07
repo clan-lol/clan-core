@@ -3,7 +3,7 @@ import shutil
 from collections.abc import Iterable
 from pathlib import Path
 
-from clan_cli.clan_dirs import vm_state_dir
+from clan_cli.dirs import vm_state_dir
 from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
 from clan_cli.ssh.host import Host

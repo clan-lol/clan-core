@@ -115,7 +115,7 @@ const InstallMachine = (props: InstallMachineProps) => {
     if (shouldRunDisk) {
       setProgressText("Setting up disk ... (1/5)");
       const disk_response = await callApi("set_machine_disk_schema", {
-        flake: { identifier: curr_uri },
+        base_path: curr_uri,
         machine_name: props.name,
         placeholders: diskValues.placeholders,
         schema_name: diskValues.schema,
@@ -415,9 +415,7 @@ const MachineForm = (props: MachineDetailsProps) => {
     }
 
     const machine_response = await callApi("set_machine", {
-      flake: {
-        identifier: curr_uri,
-      },
+      flake_url: curr_uri,
       machine_name: props.initialData.machine.name || "My machine",
       machine: {
         ...values.machine,
@@ -682,12 +680,8 @@ export const MachineDetails = () => {
       const curr = activeURI();
       if (curr) {
         const result = await callApi("get_machine_details", {
-          machine: {
-            flake: {
-              identifier: curr,
-            },
-            name: params.id,
-          },
+          flake_url: curr,
+          machine_name: params.id,
         });
         if (result.status === "error") throw new Error("Failed to fetch data");
         return result.data;
