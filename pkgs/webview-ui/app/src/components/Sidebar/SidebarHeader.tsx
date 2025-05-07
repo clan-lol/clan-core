@@ -55,7 +55,7 @@ export const SidebarHeader = (props: SidebarProps) => {
     <header class="sidebar__header">
       <div onClick={handleClick} class="sidebar__header__inner">
         {/* <ClanProfile clanName={props.clanName} showFlyout={showFlyout} /> */}
-        <div class="w-full text-white pl-1">
+        <div class="w-full pl-1 text-white">
           <ClanTitle clanName={props.clanName} />
         </div>
         <Show

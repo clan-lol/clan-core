@@ -244,7 +244,7 @@ const InstallMachine = (props: InstallMachineProps) => {
                 <div class="flex flex-col items-center gap-3 fg-def-1">
                   <Typography
                     classList={{
-                      [cx("bg-inv-4 fg-inv-1")]: idx == step(),
+                      [cx("bg-inv-4 fg-inv-1")]: idx === step(),
                       [cx("bg-def-4 fg-def-1")]: idx < step(),
                     }}
                     color="inherit"
@@ -522,8 +522,8 @@ const MachineForm = (props: MachineDetailsProps) => {
   return (
     <>
       <div class="flex flex-col gap-6">
-        <div class="sticky top-0 flex items-center justify-end gap-2 bg-secondary-50 border-b border-secondary-100 py-2 px-4">
-          <div class="flex gap-3 items-center">
+        <div class="sticky top-0 flex items-center justify-end gap-2 border-b border-secondary-100 bg-secondary-50 px-4 py-2">
+          <div class="flex items-center gap-3">
             <div class="w-fit" data-tip="Machine must be online">
               {/* <Button
                 class="w-full"
@@ -542,7 +542,7 @@ const MachineForm = (props: MachineDetailsProps) => {
               remote device.
             </Typography> */}
           </div>
-          <div class="flex gap-3 items-center">
+          <div class="flex items-center gap-3">
             <div class="button-group flex">
               <Button
                 variant="light"
@@ -606,7 +606,7 @@ const MachineForm = (props: MachineDetailsProps) => {
               </Field>
               <Field name="machine.tags" type="string[]">
                 {(field, props) => (
-                  <div class="flex gap-4 items-center">
+                  <div class="flex items-center gap-4">
                     <Typography hierarchy="label" size="default" weight="bold">
                       Tags{" "}
                     </Typography>

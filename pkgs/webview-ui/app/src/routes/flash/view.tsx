@@ -325,7 +325,7 @@ export const Flash = () => {
             <FieldLayout
               label={<InputLabel>Networks</InputLabel>}
               field={
-                <div class="w-full flex justify-end">
+                <div class="flex w-full justify-end">
                   <Button
                     type="button"
                     size="s"
