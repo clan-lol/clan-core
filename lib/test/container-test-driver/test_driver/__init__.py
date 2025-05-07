@@ -2,9 +2,11 @@ import argparse
 import ctypes
 import os
 import re
+import shutil
 import subprocess
 import time
 import types
+import uuid
 from collections.abc import Callable
 from contextlib import _GeneratorContextManager
 from dataclasses import dataclass
@@ -244,7 +246,7 @@ class Machine:
         """
 
         # Always run command with shell opts
-        command = f"set -eo pipefail; source /etc/profile; set -u; {command}"
+        command = f"set -eo pipefail; source /etc/profile; set -xu; {command}"
 
         proc = subprocess.run(
             self.nsenter_command(command),
@@ -468,8 +470,39 @@ class Driver:
             print(f"Starting {machine.name}")
             machine.start()
 
+        # Print copy-pastable nsenter command to debug container tests
         for machine in self.machines:
-            print(" ".join(machine.nsenter_command("bash")))
+            nspawn_uuid = uuid.uuid4()
+
+            # We lauch a sleep here, so we can pgrep the process cmdline for
+            # the uuid
+            sleep = shutil.which("sleep")
+            assert sleep is not None, "sleep command not found"
+            machine.execute(
+                f"systemd-run /bin/sh -c '{sleep} 999999999 && echo {nspawn_uuid}'",
+            )
+
+            print(f"nsenter for {machine.name}:")
+            print(
+                " ".join(
+                    [
+                        "sudo",
+                        "nsenter",
+                        "--user",
+                        "--target",
+                        f"$(\\pgrep -f '^/bin/sh.*{nspawn_uuid}')",
+                        "--mount",
+                        "--uts",
+                        "--ipc",
+                        "--net",
+                        "--pid",
+                        "--cgroup",
+                        "/bin/sh",
+                        "-c",
+                        "bash",
+                    ]
+                )
+            )
 
     def test_symbols(self) -> dict[str, Any]:
         general_symbols = {
