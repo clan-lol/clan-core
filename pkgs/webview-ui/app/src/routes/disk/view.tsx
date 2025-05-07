@@ -10,7 +10,9 @@ export function DiskView() {
       const currUri = activeURI();
       if (currUri) {
         // Example of calling an API
-        const result = await callApi("get_inventory", { base_path: currUri });
+        const result = await callApi("get_inventory", {
+          flake: { identifier: currUri },
+        });
         if (result.status === "error") throw new Error("Failed to fetch data");
         return result.data;
       }

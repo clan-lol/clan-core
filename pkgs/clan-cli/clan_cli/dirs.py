@@ -1,7 +1,6 @@
 import logging
 import os
 import sys
-import urllib
 from enum import Enum
 from pathlib import Path
 
@@ -22,14 +21,6 @@ def get_clan_flake_toplevel() -> Path | None:
 
 def find_git_repo_root() -> Path | None:
     return find_toplevel([".git"])
-
-
-def clan_key_safe(flake_url: str) -> str:
-    """
-    only embed the url in the path, not the clan name, as it would involve eval.
-    """
-    quoted_url = urllib.parse.quote_plus(flake_url)
-    return f"{quoted_url}"
 
 
 def find_toplevel(top_level_files: list[str]) -> Path | None:
@@ -114,29 +105,8 @@ def user_gcroot_dir() -> Path:
     return p
 
 
-def machine_gcroot(flake_url: str) -> Path:
-    # Always build icon so that we can symlink it to the gcroot
-    gcroot_dir = user_gcroot_dir()
-    clan_gcroot = gcroot_dir / clan_key_safe(flake_url)
-    clan_gcroot.mkdir(parents=True, exist_ok=True)
-    return clan_gcroot
-
-
 def user_history_file() -> Path:
     return user_config_dir() / "clan" / "history"
-
-
-def vm_state_dir(flake_url: str, vm_name: str) -> Path:
-    clan_key = clan_key_safe(str(flake_url))
-    return user_data_dir() / "clan" / "vmstate" / clan_key / vm_name
-
-
-def machines_dir(flake_dir: Path) -> Path:
-    return flake_dir / "machines"
-
-
-def specific_machine_dir(flake_dir: Path, machine: str) -> Path:
-    return machines_dir(flake_dir) / machine
 
 
 def module_root() -> Path:

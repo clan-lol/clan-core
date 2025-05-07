@@ -42,7 +42,7 @@ const EditClanForm = (props: EditClanFormProps) => {
       (async () => {
         await callApi("update_clan_meta", {
           options: {
-            directory: props.directory,
+            flake: { identifier: props.directory },
             meta: values,
           },
         });

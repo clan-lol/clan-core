@@ -12,16 +12,18 @@ from clan_lib.api.disk import MachineDiskMatter
 from clan_lib.api.modules import parse_frontmatter
 from clan_lib.api.serde import dataclass_to_dict
 
+from clan_cli.clan_dirs import specific_machine_dir
 from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import add_dynamic_completer, complete_tags
-from clan_cli.dirs import specific_machine_dir
 from clan_cli.errors import ClanError
+from clan_cli.flake import Flake
 from clan_cli.inventory import (
     load_inventory_eval,
     patch_inventory_with,
 )
 from clan_cli.inventory.classes import Machine as InventoryMachine
 from clan_cli.machines.hardware import HardwareConfig
+from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_eval
 from clan_cli.tags import list_nixos_machines_by_tags
 
@@ -29,15 +31,13 @@ log = logging.getLogger(__name__)
 
 
 @API.register
-def set_machine(flake_url: Path, machine_name: str, machine: InventoryMachine) -> None:
-    patch_inventory_with(
-        flake_url, f"machines.{machine_name}", dataclass_to_dict(machine)
-    )
+def set_machine(flake: Flake, machine_name: str, machine: InventoryMachine) -> None:
+    patch_inventory_with(flake, f"machines.{machine_name}", dataclass_to_dict(machine))
 
 
 @API.register
-def list_machines(flake_url: str | Path) -> dict[str, InventoryMachine]:
-    inventory = load_inventory_eval(flake_url)
+def list_machines(flake: Flake) -> dict[str, InventoryMachine]:
+    inventory = load_inventory_eval(flake)
     return inventory.get("machines", {})
 
 
@@ -60,16 +60,16 @@ def extract_header(c: str) -> str:
 
 
 @API.register
-def get_machine_details(flake_url: Path, machine_name: str) -> MachineDetails:
-    inventory = load_inventory_eval(flake_url)
-    machine = inventory.get("machines", {}).get(machine_name)
-    if machine is None:
-        msg = f"Machine {machine_name} not found in inventory"
+def get_machine_details(machine: Machine) -> MachineDetails:
+    inventory = load_inventory_eval(machine.flake)
+    machine_inv = inventory.get("machines", {}).get(machine.name)
+    if machine_inv is None:
+        msg = f"Machine {machine.name} not found in inventory"
         raise ClanError(msg)
 
-    hw_config = HardwareConfig.detect_type(flake_url, machine_name)
+    hw_config = HardwareConfig.detect_type(machine.flake, machine.name)
 
-    machine_dir = specific_machine_dir(flake_url, machine_name)
+    machine_dir = specific_machine_dir(machine.flake, machine.name)
     disk_schema: MachineDiskMatter | None = None
     disk_path = machine_dir / "disko.nix"
     if disk_path.exists():
@@ -80,7 +80,9 @@ def get_machine_details(flake_url: Path, machine_name: str) -> MachineDetails:
             if data:
                 disk_schema = data  # type: ignore
 
-    return MachineDetails(machine=machine, hw_config=hw_config, disk_schema=disk_schema)
+    return MachineDetails(
+        machine=machine_inv, hw_config=hw_config, disk_schema=disk_schema
+    )
 
 
 def list_nixos_machines(flake_url: str | Path) -> list[str]:
