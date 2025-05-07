@@ -21,6 +21,8 @@ import { ModuleDetails as AddModule } from "./routes/modules/add";
 import { ApiTester } from "./api_test";
 import { IconVariant } from "./components/icon";
 import { Components } from "./routes/components";
+import { activeURI } from "./App";
+import { VarsForMachine, VarsStep } from "./routes/machines/install/vars-step";
 
 export const client = new QueryClient();
 
@@ -31,7 +33,6 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
     "Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got misspelled?",
   );
 }
-
 if (import.meta.env.DEV) {
   console.log("Development mode");
   // Load the debugger in development mode
@@ -72,6 +73,12 @@ export const routes: AppRoute[] = [
         label: "Details",
         hidden: true,
         component: () => <MachineDetails />,
+      },
+      {
+        path: "/:id/vars",
+        label: "Vars",
+        hidden: true,
+        component: () => <VarsForMachine />,
       },
     ],
   },
