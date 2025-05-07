@@ -4,8 +4,12 @@ import sys
 import urllib
 from enum import Enum
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .errors import ClanError
+
+if TYPE_CHECKING:
+    from clan_cli.flake import Flake
 
 log = logging.getLogger(__name__)
 
@@ -131,12 +135,17 @@ def vm_state_dir(flake_url: str, vm_name: str) -> Path:
     return user_data_dir() / "clan" / "vmstate" / clan_key / vm_name
 
 
-def machines_dir(flake_dir: Path) -> Path:
-    return flake_dir / "machines"
+def machines_dir(flake: "Flake") -> Path:
+    if flake.is_local:
+        return flake.path / "machines"
+
+    store_path = flake.store_path
+    assert store_path is not None, "Invalid flake object. Doesn't have a store path"
+    return Path(store_path) / "machines"
 
 
-def specific_machine_dir(flake_dir: Path, machine: str) -> Path:
-    return machines_dir(flake_dir) / machine
+def specific_machine_dir(flake: "Flake", machine: str) -> Path:
+    return machines_dir(flake) / machine
 
 
 def module_root() -> Path:

@@ -86,7 +86,7 @@ def test_add_module_to_inventory(
             }
         }
 
-        set_inventory(inventory, base_path, "Add borgbackup service")
+        set_inventory(inventory, Flake(str(base_path)), "Add borgbackup service")
 
         # cmd = ["facts", "generate", "--flake", str(test_flake_with_core.path), "machine1"]
         cmd = [

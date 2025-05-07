@@ -52,7 +52,9 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
     queryKey: [props.dir, props.machine_id, "hw_report"],
     queryFn: async () => {
       const result = await callApi("show_machine_hardware_config", {
-        clan_dir: props.dir,
+        flake: {
+          identifier: props.dir,
+        },
         machine_name: props.machine_id,
       });
       if (result.status === "error") throw new Error("Failed to fetch data");
