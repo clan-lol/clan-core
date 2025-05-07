@@ -21,11 +21,11 @@ export const ModuleDetails = () => {
       <BackButton />
       <div class="p-2">
         <h3 class="text-2xl">{params.id}</h3>
-        <Switch>
+        {/* <Switch>
           <Match when={modulesQuery.data?.find((i) => i[0] === params.id)}>
             {(d) => <Details data={d()[1]} id={d()[0]} />}
           </Match>
-        </Switch>
+        </Switch> */}
       </div>
     </div>
   );
@@ -85,19 +85,24 @@ const Details = (props: DetailsProps) => {
   };
   return (
     <div class="flex w-full flex-col gap-2">
-      <article class="prose">{props.data.description}</article>
-      <span class="">Categories</span>
+      {/* TODO: bring this feature back */}
+      {/* <article class="prose">{props.data.description}</article> */}
+      {/* <span class="">Categories</span> */}
       <div>
-        <For each={props.data.categories}>
+        {/* TODO: bring this feature back */}
+        {/* <For each={props.data.categories}>
           {(c) => <div class=" m-1">{c}</div>}
-        </For>
+        </For> */}
       </div>
       <span class="">Roles</span>
       <div>
-        <For each={props.data.roles}>{(r) => <div class=" m-1">{r}</div>}</For>
+        <For each={Object.keys(props.data.roles)}>
+          {(r) => <div class=" m-1">{r}</div>}
+        </For>
       </div>
       <div class="p-2">
-        <SolidMarkdown>{props.data.readme}</SolidMarkdown>
+        {/* TODO: bring this feature back */}
+        {/* <SolidMarkdown>{props.data.readme}</SolidMarkdown> */}
       </div>
       <div class="my-2 flex w-full gap-2">
         <Button variant="light" onClick={add} startIcon={<Icon icon="Plus" />}>
