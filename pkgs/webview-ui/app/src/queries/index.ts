@@ -11,7 +11,10 @@ export const createModulesQuery = (
 ) =>
   createQuery(() => ({
     queryKey: [uri, "list_modules"],
-    placeholderData: [],
+    placeholderData: {
+      localModules: {},
+      modulesPerSource: {},
+    },
     enabled: !!uri,
     queryFn: async () => {
       console.log({ uri });
@@ -23,15 +26,13 @@ export const createModulesQuery = (
         if (response.status === "error") {
           toast.error("Failed to fetch data");
         } else {
-          if (!filter) {
-            return Object.entries(response.data);
-          }
-          return Object.entries(response.data).filter(([key, value]) =>
-            filter.features.every((f) => (value.features || []).includes(f)),
-          );
+          return response.data;
         }
       }
-      return [];
+      return {
+        localModules: {},
+        modulesPerSource: {},
+      };
     },
   }));
 

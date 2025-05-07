@@ -16,11 +16,11 @@ export const ModuleDetails = () => {
       <BackButton />
       <div class="p-2">
         <h3 class="text-2xl">{params.id}</h3>
-        <Switch>
+        {/* <Switch>
           <Match when={modulesQuery.data?.find((i) => i[0] === params.id)}>
             {(d) => <AddModule data={d()[1]} id={d()[0]} />}
           </Match>
-        </Switch>
+        </Switch> */}
       </div>
     </div>
   );
@@ -40,7 +40,7 @@ export const AddModule = (props: AddModuleProps) => {
       <Switch fallback="loading">
         <Match when={tags.data}>
           {(tags) => (
-            <For each={props.data.roles}>
+            <For each={Object.keys(props.data.roles)}>
               {(role) => (
                 <>
                   <div class="text-neutral-600">{role}s</div>

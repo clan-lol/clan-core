@@ -1,13 +1,11 @@
-import json
 import re
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypedDict
 
-from clan_cli.cmd import run_no_stdout
-from clan_cli.errors import ClanCmdError, ClanError
-from clan_cli.nix import nix_eval
+from clan_cli.errors import ClanError
+from clan_cli.flake import Flake
 
 from . import API
 
@@ -143,53 +141,50 @@ def get_roles(module_path: Path) -> None | list[str]:
     ]
 
 
+class ModuleManifest(TypedDict):
+    name: str
+    features: dict[str, bool]
+
+
 @dataclass
 class ModuleInfo:
-    description: str
-    readme: str
-    categories: list[str]
-    roles: list[str] | None
-    features: list[str] = field(default_factory=list)
-    constraints: dict[str, Any] = field(default_factory=dict)
+    manifest: ModuleManifest
+    roles: dict[str, None]
 
 
-def get_modules(base_path: str) -> dict[str, str]:
-    cmd = nix_eval(
-        [
-            f"{base_path}#clanInternals.inventory.modules",
-            "--json",
-        ]
-    )
-    try:
-        proc = run_no_stdout(cmd)
-        res = proc.stdout.strip()
-    except ClanCmdError as e:
-        msg = "clanInternals might not have inventory.modules attributes"
-        raise ClanError(
-            msg,
-            location=f"list_modules {base_path}",
-            description="Evaluation failed on clanInternals.inventory.modules attribute",
-        ) from e
-    modules: dict[str, str] = json.loads(res)
-    return modules
+class ModuleLists(TypedDict):
+    modulesPerSource: dict[str, dict[str, ModuleInfo]]
+    localModules: dict[str, ModuleInfo]
 
 
 @API.register
-def list_modules(base_path: str) -> dict[str, ModuleInfo]:
+def list_modules(base_path: str) -> ModuleLists:
     """
     Show information about a module
     """
-    modules = get_modules(base_path)
-    return {
-        module_name: get_module_info(module_name, Path(module_path))
-        for module_name, module_path in modules.items()
-    }
+    flake = Flake(base_path)
+    modules = flake.select(
+        "clanInternals.inventoryClass.{?modulesPerSource,?localModules}"
+    )
+    print("Modules found:", modules)
+
+    return modules
+
+
+@dataclass
+class LegacyModuleInfo:
+    description: str
+    categories: list[str]
+    roles: None | list[str]
+    readme: str
+    features: list[str]
+    constraints: dict[str, Any]
 
 
 def get_module_info(
     module_name: str,
     module_path: Path,
-) -> ModuleInfo:
+) -> LegacyModuleInfo:
     """
     Retrieves information about a module
     """
@@ -214,7 +209,7 @@ def get_module_info(
             readme, f"{module_path}/README.md"
         )
 
-    return ModuleInfo(
+    return LegacyModuleInfo(
         description=frontmatter.description,
         categories=frontmatter.categories,
         roles=get_roles(module_path),

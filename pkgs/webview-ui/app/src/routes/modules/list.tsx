@@ -12,7 +12,7 @@ import { useQueryClient } from "@tanstack/solid-query";
 import cx from "classnames";
 import Icon from "@/src/components/icon";
 
-export type ModuleInfo = SuccessData<"list_modules">[string];
+export type ModuleInfo = SuccessData<"list_modules">["localModules"][string];
 
 interface CategoryProps {
   categories: string[];
@@ -28,7 +28,7 @@ const Categories = (props: CategoryProps) => {
 };
 
 interface RolesProps {
-  roles: string[];
+  roles: Record<string, null>;
 }
 const Roles = (props: RolesProps) => {
   return (
@@ -38,7 +38,7 @@ const Roles = (props: RolesProps) => {
           Service
         </Typography>
       </span>
-      {props.roles.map((role) => (
+      {Object.keys(props.roles).map((role) => (
         <span class="">{role}</span>
       ))}
     </div>
@@ -82,7 +82,7 @@ const ModuleItem = (props: {
         <A href={`/modules/details/${name}`}>
           <div class="">
             <div class="flex flex-col">
-              <Categories categories={info.categories} />
+              {/* <Categories categories={info.categories} /> */}
               <Typography hierarchy="title" size="m" weight="medium">
                 {name}
               </Typography>
@@ -92,11 +92,12 @@ const ModuleItem = (props: {
 
         <div class="w-full">
           <Typography hierarchy="body" size="xs">
-            {info.description}
+            description
+            {/* TODO: {info.description} */}
           </Typography>
         </div>
       </header>
-      <Roles roles={info.roles || []} />
+      <Roles roles={info.roles || {}} />
     </div>
   );
 };
@@ -161,23 +162,46 @@ export const ModuleList = () => {
       <Switch fallback="Error">
         <Match when={modulesQuery.isFetching}>Loading....</Match>
         <Match when={modulesQuery.data}>
-          <div
-            class="grid gap-6 p-6"
-            classList={{
-              "grid-cols-1": view() === "list",
-              "grid-cols-2": view() === "grid",
-            }}
-          >
-            <For each={modulesQuery.data}>
-              {([k, v]) => (
-                <ModuleItem
-                  info={v}
-                  name={k}
-                  class={view() == "grid" ? cx("max-w-md") : ""}
-                />
-              )}
-            </For>
-          </div>
+          {(modules) => (
+            <div
+              class="grid gap-6 p-6"
+              classList={{
+                "grid-cols-1": view() === "list",
+                "grid-cols-2": view() === "grid",
+              }}
+            >
+              <For each={Object.entries(modules().modulesPerSource)}>
+                {([sourceName, v]) => (
+                  <>
+                    <div>
+                      <Typography size="default" hierarchy="label">
+                        {sourceName}
+                      </Typography>
+                    </div>
+                    <For each={Object.entries(v)}>
+                      {([moduleName, moduleInfo]) => (
+                        <ModuleItem
+                          info={moduleInfo}
+                          name={moduleName}
+                          class={view() == "grid" ? cx("max-w-md") : ""}
+                        />
+                      )}
+                    </For>
+                  </>
+                )}
+              </For>
+              <div>{"localModules"}</div>
+              <For each={Object.entries(modules().localModules)}>
+                {([moduleName, moduleInfo]) => (
+                  <ModuleItem
+                    info={moduleInfo}
+                    name={moduleName}
+                    class={view() == "grid" ? cx("max-w-md") : ""}
+                  />
+                )}
+              </For>
+            </div>
+          )}
         </Match>
       </Switch>
     </>
