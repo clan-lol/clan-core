@@ -6,8 +6,8 @@ from pathlib import Path
 from clan_lib.api import API
 
 from clan_cli import Flake, inventory
+from clan_cli.clan_dirs import specific_machine_dir
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_cli.dirs import specific_machine_dir
 from clan_cli.secrets.folders import sops_secrets_folder
 from clan_cli.secrets.machines import has_machine as secrets_has_machine
 from clan_cli.secrets.machines import remove_machine as secrets_machine_remove
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 @API.register
 def delete_machine(flake: Flake, name: str) -> None:
     try:
-        inventory.delete(str(flake.path), {f"machines.{name}"})
+        inventory.delete(flake, {f"machines.{name}"})
     except KeyError as exc:
         # louis@(2025-03-09): test infrastructure does not seem to set the
         # inventory properly, but more importantly only one machine in my
@@ -35,7 +35,7 @@ def delete_machine(flake: Flake, name: str) -> None:
 
     changed_paths: list[Path] = []
 
-    folder = specific_machine_dir(flake.path, name)
+    folder = specific_machine_dir(flake, name)
     if folder.exists():
         changed_paths.append(folder)
         shutil.rmtree(folder)

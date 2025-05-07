@@ -13,9 +13,9 @@ export async function get_inventory(client: QueryClient, base_path: string) {
     queryKey: [base_path, "inventory"],
     queryFn: () => {
       console.log("Refreshing inventory");
-      return callApi("get_inventory", { base_path }) as Promise<
-        ApiEnvelope<Inventory>
-      >;
+      return callApi("get_inventory", {
+        flake: { identifier: base_path },
+      }) as Promise<ApiEnvelope<Inventory>>;
     },
     revalidateIfStale: true,
     staleTime: 60 * 1000,

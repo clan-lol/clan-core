@@ -37,7 +37,9 @@ export const DiskStep = (props: StepProps<DiskValues>) => {
     queryKey: [props.dir, props.machine_id, "disk_schemas"],
     queryFn: async () => {
       const result = await callApi("get_disk_schemas", {
-        base_path: props.dir,
+        flake: {
+          identifier: props.dir,
+        },
         machine_name: props.machine_id,
       });
       if (result.status === "error") throw new Error("Failed to fetch data");
