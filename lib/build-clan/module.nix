@@ -45,7 +45,7 @@ let
       inherit inventory directory;
       flakeInputs = config.self.inputs;
       prefix = config._prefix ++ [ "inventoryClass" ];
-      localModuleSet = config.self.clan.modules;
+      localModuleSet = config.modules;
     }
   );
 
