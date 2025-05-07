@@ -9,7 +9,7 @@ import {
 import { activeURI } from "@/src/App";
 import { callApi, OperationResponse } from "@/src/api";
 import toast from "solid-toast";
-import { MachineListItem } from "@/src/components/MachineListItem";
+import { MachineListItem } from "@/src/components/machine-list-item";
 import { createQuery, useQueryClient } from "@tanstack/solid-query";
 import { useNavigate } from "@solidjs/router";
 import { Button } from "@/src/components/button";
@@ -112,16 +112,6 @@ export const MachineListView: Component = () => {
       />
       <div>
         <div class="my-1 flex w-full gap-2 p-2">
-          <div class="flex w-full justify-end px-4 py-1">
-            <div class="flex">
-              <Button
-                // onClick={() => navigate("create")}
-                size="s"
-                variant="light"
-                startIcon={<Icon icon="Filter" />}
-              ></Button>
-            </div>
-          </div>
           <For each={filter().tags.sort()}>
             {(tag) => (
               <button
@@ -142,21 +132,38 @@ export const MachineListView: Component = () => {
             )}
           </For>
         </div>
-        {/* </Show> */}
         <Switch>
           <Match when={inventoryQuery.isLoading}>
             {/* Loading skeleton */}
-            <div>
-              <div class="  m-2 shadow-lg">
-                <figure class="pl-2">
-                  <div class=" size-12"></div>
-                </figure>
-                <div class="">
-                  <h2 class="">
-                    <div class=" h-12 w-80"></div>
-                  </h2>
-                  <div class=" h-8 w-72"></div>
+            <div class="grid grid-cols-4"></div>
+            <div class="machine-item-loader">
+              <div class="machine-item-loader__thumb-wrapper">
+                <div class="machine-item-loader__thumb">
+                  <div class="machine-item-loader__loader" />
                 </div>
+              </div>
+              <div class="machine-item-loader__headline">
+                <div class="machine-item-loader__loader" />
+              </div>
+            </div>
+            <div class="machine-item-loader">
+              <div class="machine-item-loader__thumb-wrapper">
+                <div class="machine-item-loader__thumb">
+                  <div class="machine-item-loader__loader" />
+                </div>
+              </div>
+              <div class="machine-item-loader__headline">
+                <div class="machine-item-loader__loader" />
+              </div>
+            </div>
+            <div class="machine-item-loader">
+              <div class="machine-item-loader__thumb-wrapper">
+                <div class="machine-item-loader__thumb">
+                  <div class="machine-item-loader__loader" />
+                </div>
+              </div>
+              <div class="machine-item-loader__headline">
+                <div class="machine-item-loader__loader" />
               </div>
             </div>
           </Match>
@@ -178,10 +185,10 @@ export const MachineListView: Component = () => {
           </Match>
           <Match when={!inventoryQuery.isLoading}>
             <div
-              class="my-4 flex flex-wrap gap-6 px-3 py-2"
+              class="my-4 grid gap-6 p-6"
               classList={{
-                "flex-col": view() === "list",
-                "": view() === "grid",
+                "grid-cols-1": view() === "list",
+                "grid-cols-4": view() === "grid",
               }}
             >
               <For each={inventoryMachines()}>

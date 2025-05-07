@@ -30,6 +30,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./"), // Adjust the path as needed
     },
   },
+  optimizeDeps: {
+    include: ["debug", "extend"],
+  },
   plugins: [
     /*
     Uncomment the following line to enable solid-devtools.

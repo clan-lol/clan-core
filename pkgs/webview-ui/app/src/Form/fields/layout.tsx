@@ -18,7 +18,7 @@ export const FieldLayout = (props: LayoutProps) => {
       class={cx("grid grid-cols-10 items-center", intern.class)}
       {...divProps}
     >
-      <label class="col-span-5">{props.label}</label>
+      <div class="col-span-5 flex items-center">{props.label}</div>
       <div class="col-span-5">{props.field}</div>
       {props.error && <span class="col-span-full">{props.error}</span>}
     </div>

@@ -21,7 +21,7 @@ export default function Accordion(props: AccordionProps) {
           fallback={
             <Button
               endIcon={<Icon size={12} icon={"CaretDown"} />}
-              variant="light"
+              variant="ghost"
               size="s"
             >
               {props.title}
@@ -30,7 +30,7 @@ export default function Accordion(props: AccordionProps) {
         >
           <Button
             endIcon={<Icon size={12} icon={"CaretUp"} />}
-            variant="dark"
+            variant="ghost"
             size="s"
           >
             {props.title}

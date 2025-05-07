@@ -121,7 +121,7 @@ export const ModuleList = () => {
   return (
     <>
       <Header
-        title="Modules"
+        title="App Store"
         toolbar={
           <>
             <Button

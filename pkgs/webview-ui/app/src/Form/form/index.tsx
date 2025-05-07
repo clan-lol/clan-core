@@ -96,6 +96,7 @@ export const DynForm = (props: FormProps) => {
 
   return (
     <>
+      {/* @ts-expect-error: This happened after solidjs upgrade. TOOD: fixme */}
       <ModuleForm {...props.formProps} onSubmit={handleSubmit}>
         {props.components?.before}
         <SchemaFields

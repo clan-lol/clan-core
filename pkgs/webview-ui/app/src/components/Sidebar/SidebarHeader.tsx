@@ -1,7 +1,8 @@
-import { createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { Typography } from "@/src/components/Typography";
 import { SidebarFlyout } from "./SidebarFlyout";
 import "./css/sidebar.css";
+import Icon from "../icon";
 
 interface SidebarProps {
   clanName: string;
@@ -53,8 +54,16 @@ export const SidebarHeader = (props: SidebarProps) => {
   return (
     <header class="sidebar__header">
       <div onClick={handleClick} class="sidebar__header__inner">
-        <ClanProfile clanName={props.clanName} showFlyout={showFlyout} />
-        <ClanTitle clanName={props.clanName} />
+        {/* <ClanProfile clanName={props.clanName} showFlyout={showFlyout} /> */}
+        <div class="w-full pl-1 text-white">
+          <ClanTitle clanName={props.clanName} />
+        </div>
+        <Show
+          when={showFlyout}
+          fallback={<Icon size={12} class="text-white" icon="CaretDown" />}
+        >
+          <Icon size={12} class="text-white" icon="CaretDown" />
+        </Show>
       </div>
       {showFlyout() && <SidebarFlyout />}
     </header>

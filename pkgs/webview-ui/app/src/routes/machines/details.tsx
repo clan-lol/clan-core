@@ -1,9 +1,4 @@
 import { callApi, SuccessData } from "@/src/api";
-import { activeURI } from "@/src/App";
-import { Button } from "@/src/components/button";
-import Icon from "@/src/components/icon";
-import { TextInput } from "@/src/Form/fields/TextInput";
-
 import {
   createForm,
   FieldValues,
@@ -14,6 +9,12 @@ import {
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { createQuery, useQueryClient } from "@tanstack/solid-query";
 import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
+
+import { activeURI } from "@/src/App";
+import { Button } from "@/src/components/button";
+import Icon from "@/src/components/icon";
+import { TextInput } from "@/src/Form/fields/TextInput";
+import Accordion from "@/src/components/accordion";
 import toast from "solid-toast";
 import { MachineAvatar } from "./avatar";
 import { Header } from "@/src/layout/header";
@@ -26,6 +27,7 @@ import { DiskStep, DiskValues } from "./install/disk-step";
 import { SummaryStep } from "./install/summary-step";
 import cx from "classnames";
 import { VarsStep, VarsValues } from "./install/vars-step";
+import Fieldset from "@/src/Form/fieldset";
 
 type MachineFormInterface = MachineData & {
   sshKey?: File;
@@ -242,7 +244,7 @@ const InstallMachine = (props: InstallMachineProps) => {
                 <div class="flex flex-col items-center gap-3 fg-def-1">
                   <Typography
                     classList={{
-                      [cx("bg-inv-4 fg-inv-1")]: idx == step(),
+                      [cx("bg-inv-4 fg-inv-1")]: idx === step(),
                       [cx("bg-def-4 fg-def-1")]: idx < step(),
                     }}
                     color="inherit"
@@ -517,83 +519,71 @@ const MachineForm = (props: MachineDetailsProps) => {
 
   return (
     <>
-      <div class="flex flex-col gap-6 p-4">
-        <span class="mb-2 flex w-full justify-center">
-          <MachineAvatar name={machineName()} />
-        </span>
-        <Form onSubmit={handleSubmit} class="flex flex-col gap-6">
-          <Field name="machine.name">
-            {(field, props) => (
-              <TextInput
-                inputProps={props}
-                label="Name"
-                value={field.value ?? ""}
-                error={field.error}
-                class="col-span-2"
-                required
-              />
-            )}
-          </Field>
-          <Field name="machine.tags" type="string[]">
-            {(field, props) => (
-              <>
-                <FieldLayout
-                  label={<InputLabel>Tags</InputLabel>}
-                  field={
-                    <span class="col-span-10">
-                      <For each={field.value}>
-                        {(tag) => (
-                          <span class="mx-2 w-fit rounded-full px-3 py-1 bg-inv-4 fg-inv-1">
-                            {tag}
-                          </span>
-                        )}
-                      </For>
-                    </span>
-                  }
-                />
-              </>
-            )}
-          </Field>
-          <Field name="machine.description">
-            {(field, props) => (
-              <TextInput
-                inputProps={props}
-                label="Description"
-                value={field.value ?? ""}
-                error={field.error}
-                class="col-span-2"
-                required
-              />
-            )}
-          </Field>
-          <Field name="hw_config">
-            {(field, props) => (
-              <FieldLayout
-                label={<InputLabel>Hardware Configuration</InputLabel>}
-                field={<span>{field.value || "None"}</span>}
-              />
-            )}
-          </Field>
-          <Field name="disk_schema.schema_name">
-            {(field, props) => (
-              <>
-                <FieldLayout
-                  label={<InputLabel>Disk schema</InputLabel>}
-                  field={<span>{field.value || "None"}</span>}
-                />
-              </>
-            )}
-          </Field>
-
-          <div class="  col-span-full" tabindex="0">
-            <input type="checkbox" />
-            <div class="  px-0 text-xl ">Connection Settings</div>
-            <div class="">
-              <Field name="machine.deploy.targetHost">
+      <div class="flex flex-col gap-6">
+        <div class="sticky top-0 flex items-center justify-end gap-2 border-b border-secondary-100 bg-secondary-50 px-4 py-2">
+          <div class="flex items-center gap-3">
+            <div class="w-fit" data-tip="Machine must be online">
+              {/* <Button
+                class="w-full"
+                size="s"
+                // disabled={!online()}
+                onClick={() => {
+                  setInstallModalOpen(true);
+                }}
+                endIcon={<Icon icon="Flash" />}
+              >
+                Install
+              </Button> */}
+            </div>
+            {/* <Typography hierarchy="label" size="default">
+              Installs the system for the first time. Used to bootstrap the
+              remote device.
+            </Typography> */}
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="button-group flex">
+              <Button
+                variant="light"
+                class="w-full"
+                size="s"
+                onClick={() => {
+                  setInstallModalOpen(true);
+                }}
+                endIcon={<Icon size={14} icon="Flash" />}
+              >
+                Install
+              </Button>
+              <Button
+                variant="light"
+                class="w-full"
+                size="s"
+                onClick={() => handleUpdate()}
+                endIcon={<Icon size={12} icon="Update" />}
+              >
+                Update
+              </Button>
+            </div>
+            <div class=" w-fit" data-tip="Machine must be online"></div>
+            {/* <Typography hierarchy="label" size="default">
+              Update the system if changes should be synced after the
+              installation process.
+            </Typography> */}
+          </div>
+        </div>
+        <div class="p-4">
+          <span class="mb-2 flex w-full justify-center">
+            <MachineAvatar name={machineName()} />
+          </span>
+          <Form
+            onSubmit={handleSubmit}
+            class="mx-auto flex w-full max-w-2xl flex-col gap-y-6"
+          >
+            <Fieldset legend="General">
+              <Field name="machine.name">
                 {(field, props) => (
                   <TextInput
                     inputProps={props}
-                    label="Target Host"
+                    label="Name"
                     value={field.value ?? ""}
                     error={field.error}
                     class="col-span-2"
@@ -601,73 +591,106 @@ const MachineForm = (props: MachineDetailsProps) => {
                   />
                 )}
               </Field>
-            </div>
-          </div>
+              <Field name="machine.description">
+                {(field, props) => (
+                  <TextInput
+                    inputProps={props}
+                    label="Description"
+                    value={field.value ?? ""}
+                    error={field.error}
+                    class="col-span-2"
+                  />
+                )}
+              </Field>
+              <Field name="machine.tags" type="string[]">
+                {(field, props) => (
+                  <div class="flex items-center gap-4">
+                    <Typography hierarchy="label" size="default" weight="bold">
+                      Tags{" "}
+                    </Typography>
+                    <For each={field.value}>
+                      {(tag) => (
+                        <span class="mx-2 w-fit rounded-full px-3 py-0.5 bg-inv-4 fg-inv-1">
+                          <Typography
+                            hierarchy="label"
+                            size="s"
+                            inverted={true}
+                          >
+                            {tag}
+                          </Typography>
+                        </span>
+                      )}
+                    </For>
+                  </div>
+                )}
+              </Field>
+            </Fieldset>
 
-          {
-            <div class=" col-span-full justify-end">
-              <Button
-                type="submit"
-                disabled={formStore.submitting || !formStore.dirty}
-              >
-                Save
-              </Button>
-            </div>
-          }
-        </Form>
-      </div>
+            <Fieldset legend="Hardware">
+              <Field name="hw_config">
+                {(field, props) => (
+                  <FieldLayout
+                    label={<InputLabel>Hardware Configuration</InputLabel>}
+                    field={<span>{field.value || "None"}</span>}
+                  />
+                )}
+              </Field>
+              <hr />
+              <Field name="disk_schema.schema_name">
+                {(field, props) => (
+                  <>
+                    <FieldLayout
+                      label={<InputLabel>Disk schema</InputLabel>}
+                      field={<span>{field.value || "None"}</span>}
+                    />
+                  </>
+                )}
+              </Field>
+            </Fieldset>
 
-      <div class="">
-        <div class=""></div>
+            <Accordion title="Connection Settings">
+              <Fieldset>
+                <Field name="machine.deploy.targetHost">
+                  {(field, props) => (
+                    <TextInput
+                      inputProps={props}
+                      label="Target Host"
+                      value={field.value ?? ""}
+                      error={field.error}
+                      class="col-span-2"
+                      required
+                    />
+                  )}
+                </Field>
+              </Fieldset>
+            </Accordion>
 
-        <span class="text-xl text-primary-800">Actions</span>
-        <div class="my-4 flex flex-col gap-6">
-          <span class="max-w-md">
-            Installs the system for the first time. Used to bootstrap the remote
-            device.
-          </span>
-          <div class=" w-fit" data-tip="Machine must be online">
-            <Button
-              class="w-full"
-              // disabled={!online()}
-              onClick={() => {
-                setInstallModalOpen(true);
-              }}
-              endIcon={<Icon icon="Flash" />}
-            >
-              Install
-            </Button>
-          </div>
-
-          <Modal
-            title={`Install machine`}
-            open={installModalOpen()}
-            handleClose={() => setInstallModalOpen(false)}
-            class="min-w-[600px]"
-          >
-            <InstallMachine
-              name={machineName()}
-              targetHost={getValue(formStore, "machine.deploy.targetHost")}
-              machine={props.initialData}
-            />
-          </Modal>
-
-          <span class="max-w-md">
-            Update the system if changes should be synced after the installation
-            process.
-          </span>
-          <div class=" w-fit" data-tip="Machine must be online">
-            <Button
-              class="w-full"
-              // disabled={!online()}
-              onClick={() => handleUpdateButton()}
-              endIcon={<Icon icon="Update" />}
-            >
-              Update
-            </Button>
-          </div>
+            {
+              <footer class="flex justify-end gap-y-3 border-t border-secondary-200 pt-5">
+                <Button
+                  type="submit"
+                  disabled={formStore.submitting || !formStore.dirty}
+                >
+                  Update edits
+                </Button>
+              </footer>
+            }
+          </Form>
         </div>
       </div>
+
+      <Modal
+        title={`Install machine`}
+        open={installModalOpen()}
+        handleClose={() => setInstallModalOpen(false)}
+        class="min-w-[600px]"
+      >
+        <InstallMachine
+          name={machineName()}
+          targetHost={getValue(formStore, "machine.deploy.targetHost")}
+          machine={props.initialData}
+        />
+      </Modal>
     </>
   );
 };

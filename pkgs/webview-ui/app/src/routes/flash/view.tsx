@@ -22,6 +22,8 @@ import toast from "solid-toast";
 import { FieldLayout } from "@/src/Form/fields/layout";
 import { InputLabel } from "@/src/components/inputBase";
 import { Modal } from "@/src/components/modal";
+import Fieldset from "@/src/Form/fieldset";
+import Accordion from "@/src/components/accordion";
 
 interface Wifi extends FieldValues {
   ssid: string;
@@ -233,16 +235,23 @@ export const Flash = () => {
           </div>
         </div>
       </Modal>
-      <div class="p-4">
-        <Typography tag="p" hierarchy="body" size="default" color="primary">
+      <div class="w-full self-stretch p-8">
+        {/* <Typography tag="p" hierarchy="body" size="default" color="primary">
           USB Utility image.
         </Typography>
         <Typography tag="p" hierarchy="body" size="default" color="secondary">
           Will make bootstrapping new machines easier by providing secure remote
           connection to any machine when plugged in.
-        </Typography>
-        <Form onSubmit={handleSubmit}>
-          <div class="my-4">
+        </Typography> */}
+        <Form
+          onSubmit={handleSubmit}
+          class="mx-auto flex w-full max-w-2xl flex-col gap-y-6"
+        >
+          <Fieldset legend="Authorized SSH Keys">
+            <Typography hierarchy="body" size="s" weight="medium">
+              Provide your SSH public key. For secure and passwordless SSH
+              connections.
+            </Typography>
             <Field name="sshKeys" type="File[]">
               {(field, props) => (
                 <>
@@ -267,146 +276,72 @@ export const Flash = () => {
                     }}
                     value={field.value}
                     error={field.error}
-                    helperText="Provide your SSH public key. For secure and passwordless SSH connections."
-                    label="Authorized SSH Keys"
+                    //helperText="Provide your SSH public key. For secure and passwordless SSH connections."
+                    //label="Authorized SSH Keys"
                     multiple
-                    required
                   />
                 </>
               )}
             </Field>
-          </div>
-
-          <Field name="disk" validate={[required("This field is required")]}>
-            {(field, props) => (
-              <SelectInput
-                loading={deviceQuery.isFetching}
-                selectProps={props}
-                label="Flash Disk"
-                labelProps={{
-                  labelAction: (
-                    <Button
-                      disabled={isFlashing()}
-                      class="ml-auto"
-                      variant="ghost"
-                      size="s"
-                      type="button"
-                      startIcon={<Icon icon="Update" />}
-                      onClick={() => deviceQuery.refetch()}
-                    />
-                  ),
-                }}
-                value={field.value || ""}
-                error={field.error}
-                required
-                placeholder="Select a drive where the clan-installer will be flashed to"
-                options={
-                  deviceQuery.data?.blockdevices.map((d) => ({
-                    value: d.path,
-                    label: `${d.path} -- ${d.size} bytes`,
-                  })) || []
-                }
-              />
-            )}
-          </Field>
-
-          {/* WiFi Networks */}
-          <div class="my-4 py-2">
-            <FieldLayout
-              label={<InputLabel class="mb-4">Networks</InputLabel>}
-              field={
+          </Fieldset>
+          <Fieldset legend="General">
+            <Field name="disk" validate={[required("This field is required")]}>
+              {(field, props) => (
                 <>
+                  <SelectInput
+                    loading={deviceQuery.isFetching}
+                    selectProps={props}
+                    label="Flash Disk"
+                    labelProps={{
+                      labelAction: (
+                        <Button
+                          disabled={isFlashing()}
+                          class="ml-auto"
+                          variant="ghost"
+                          size="s"
+                          type="button"
+                          startIcon={<Icon icon="Update" />}
+                          onClick={() => deviceQuery.refetch()}
+                        />
+                      ),
+                    }}
+                    value={field.value || ""}
+                    error={field.error}
+                    required
+                    placeholder="Select a drive"
+                    options={
+                      deviceQuery.data?.blockdevices.map((d) => ({
+                        value: d.path,
+                        label: `${d.path} -- ${d.size} bytes`,
+                      })) || []
+                    }
+                  />
+                </>
+              )}
+            </Field>
+          </Fieldset>
+
+          <Fieldset legend="Network Settings">
+            <FieldLayout
+              label={<InputLabel>Networks</InputLabel>}
+              field={
+                <div class="flex w-full justify-end">
                   <Button
                     type="button"
                     size="s"
                     variant="light"
                     onClick={addWifiNetwork}
-                    startIcon={<Icon icon="Plus" />}
+                    startIcon={<Icon size={12} icon="Plus" />}
                   >
                     WiFi Network
                   </Button>
-                </>
+                </div>
               }
             />
-            <For each={wifiNetworks()}>
-              {(network, index) => (
-                <div class="flex w-full gap-2">
-                  <div class="mb-2 grid w-full grid-cols-6 gap-2 align-middle">
-                    <Field
-                      name={`wifi.${index()}.ssid`}
-                      validate={[required("SSID is required")]}
-                    >
-                      {(field, props) => (
-                        <TextInput
-                          inputProps={props}
-                          label="SSID"
-                          value={field.value ?? ""}
-                          error={field.error}
-                          class="col-span-full "
-                          required
-                        />
-                      )}
-                    </Field>
-                    <Field
-                      name={`wifi.${index()}.password`}
-                      validate={[required("Password is required")]}
-                    >
-                      {(field, props) => (
-                        <TextInput
-                          class="col-span-full"
-                          inputProps={{
-                            ...props,
-                            type: passwordVisibility()[index()]
-                              ? "text"
-                              : "password",
-                          }}
-                          label="Password"
-                          value={field.value ?? ""}
-                          error={field.error}
-                          // adornment={{
-                          //   position: "end",
-                          //   content: (
-                          //     <Button
-                          //       variant="light"
-                          //       type="button"
-                          //       class="flex justify-center opacity-70"
-                          //       onClick={() =>
-                          //         togglePasswordVisibility(index())
-                          //       }
-                          //       startIcon={
-                          //         passwordVisibility()[index()] ? (
-                          //           <Icon icon="EyeClose" />
-                          //         ) : (
-                          //           <Icon icon="EyeOpen" />
-                          //         )
-                          //       }
-                          //     ></Button>
-                          //   ),
-                          // }}
-                          required
-                        />
-                      )}
-                    </Field>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="light"
-                    class="h-10"
-                    size="s"
-                    onClick={() => removeWifiNetwork(index())}
-                    startIcon={<Icon icon="Trash" />}
-                  ></Button>
-                </div>
-              )}
-            </For>
-          </div>
+          </Fieldset>
 
-          <div class=" " tabindex="0">
-            <input type="checkbox" />
-            <div class=" px-0">
-              <InputLabel class="mb-4">Advanced</InputLabel>
-            </div>
-            <div class="">
+          <Accordion title="Advanced">
+            <Fieldset>
               <Field
                 name="machine.flake"
                 validate={[required("This field is required")]}
@@ -508,10 +443,8 @@ export const Flash = () => {
                   </>
                 )}
               </Field>
-            </div>
-          </div>
-
-          <hr></hr>
+            </Fieldset>
+          </Accordion>
           <div class="mt-2 flex justify-end pt-2">
             <Button
               class="self-end"

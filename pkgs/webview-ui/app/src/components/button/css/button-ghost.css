@@ -1,0 +1,11 @@
+.button--ghost-hover:hover {
+  @apply hover:bg-secondary-100 hover:text-secondary-900;
+}
+
+.button--ghost-focus:focus {
+  @apply focus:bg-secondary-200 focus:text-secondary-900;
+}
+
+.button--ghost-active:active {
+  @apply active:bg-secondary-200 active:text-secondary-900 active:shadow-inner-primary-active;
+}

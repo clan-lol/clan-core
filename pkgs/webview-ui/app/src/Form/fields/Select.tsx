@@ -142,91 +142,87 @@ export function SelectInput(props: SelectInputpProps) {
           </InputLabel>
         }
         field={
-          <>
-            <InputBase
-              error={!!props.error}
-              disabled={props.disabled}
-              required={props.required}
-              class="!justify-start"
-              divRef={setReference}
-              inputElem={
-                <button
-                  // TODO: Keyboard acessibililty
-                  // Currently the popover only opens with onClick
-                  // Options are not selectable with keyboard
-                  tabIndex={-1}
-                  disabled={props.disabled}
-                  onClick={() => {
-                    const popover = document.getElementById(_id);
-                    if (popover) {
-                      popover.togglePopover(); // Show or hide the popover
-                    }
-                  }}
-                  type="button"
-                  class="flex w-full items-center gap-2"
-                  formnovalidate
-                  // TODO: Use native popover once Webkit supports it within <form>
-                  // popovertarget={_id}
-                  // popovertargetaction="toggle"
+          <InputBase
+            error={!!props.error}
+            disabled={props.disabled}
+            required={props.required}
+            class="!justify-start"
+            divRef={setReference}
+            inputElem={
+              <button
+                // TODO: Keyboard acessibililty
+                // Currently the popover only opens with onClick
+                // Options are not selectable with keyboard
+                tabIndex={-1}
+                disabled={props.disabled}
+                onClick={() => {
+                  const popover = document.getElementById(_id);
+                  if (popover) {
+                    popover.togglePopover(); // Show or hide the popover
+                  }
+                }}
+                type="button"
+                class="flex w-full items-center gap-2"
+                formnovalidate
+                // TODO: Use native popover once Webkit supports it within <form>
+                // popovertarget={_id}
+                // popovertargetaction="toggle"
+              >
+                <Show
+                  when={props.adornment && props.adornment.position === "start"}
                 >
+                  {props.adornment?.content}
+                </Show>
+                {props.inlineLabel}
+                <div class="flex cursor-default flex-row gap-2">
                   <Show
                     when={
-                      props.adornment && props.adornment.position === "start"
+                      getValues() &&
+                      getValues.length !== 1 &&
+                      getValues()[0] !== ""
                     }
+                    fallback={props.placeholder}
                   >
-                    {props.adornment?.content}
+                    <For each={getValues()} fallback={"Select"}>
+                      {(item) => (
+                        <div class="rounded-xl bg-slate-800 px-4 py-1 text-sm text-white">
+                          {item}
+                          <Show when={props.multiple}>
+                            <button
+                              class=""
+                              type="button"
+                              onClick={(_e) => {
+                                // @ts-expect-error: fieldName is not known ahead of time
+                                props.selectProps.onInput({
+                                  currentTarget: {
+                                    options: getValues()
+                                      .filter((o) => o !== item)
+                                      .map((value) => ({
+                                        value,
+                                        selected: true,
+                                        disabled: false,
+                                      })),
+                                  },
+                                });
+                              }}
+                            >
+                              X
+                            </button>
+                          </Show>
+                        </div>
+                      )}
+                    </For>
                   </Show>
-                  {props.inlineLabel}
-                  <div class="flex cursor-default flex-row gap-2">
-                    <Show
-                      when={
-                        getValues() &&
-                        getValues.length !== 1 &&
-                        getValues()[0] !== ""
-                      }
-                      fallback={props.placeholder}
-                    >
-                      <For each={getValues()} fallback={"Select"}>
-                        {(item) => (
-                          <div class="rounded-xl bg-slate-800 px-4 py-1 text-sm text-white">
-                            {item}
-                            <Show when={props.multiple}>
-                              <button
-                                class=""
-                                type="button"
-                                onClick={(_e) => {
-                                  // @ts-expect-error: fieldName is not known ahead of time
-                                  props.selectProps.onInput({
-                                    currentTarget: {
-                                      options: getValues()
-                                        .filter((o) => o !== item)
-                                        .map((value) => ({
-                                          value,
-                                          selected: true,
-                                          disabled: false,
-                                        })),
-                                    },
-                                  });
-                                }}
-                              >
-                                X
-                              </button>
-                            </Show>
-                          </div>
-                        )}
-                      </For>
-                    </Show>
-                  </div>
-                  <Show
-                    when={props.adornment && props.adornment.position === "end"}
-                  >
-                    {props.adornment?.content}
-                  </Show>
-                  <Icon icon="CaretDown" class="ml-auto mr-2"></Icon>
-                </button>
-              }
-            />
-          </>
+                </div>
+                <Show
+                  when={props.adornment && props.adornment.position === "end"}
+                >
+                  {props.adornment?.content}
+                </Show>
+                <Icon size={12} icon="CaretDown" class="ml-auto mr-2" />
+              </button>
+            }
+          />
         }
       />
 
