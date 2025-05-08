@@ -58,7 +58,16 @@ in
               )
             )
             ''
-              The config.clan.core.vars.generators.${generator.name}.files.${file.name} is not secret, but has non-default owner/group/mode set.
+              The config.clan.core.vars.generators.${generator.name}.files.${file.name} is not secret:
+              ${lib.optionalString (file.owner != "root") ''
+                The owner is set to ${file.owner}, but should be root.
+              ''}
+              ${lib.optionalString (file.group != (if _class == "darwin" then "wheel" else "root")) ''
+                The group is set to ${file.group}, but should be ${if _class == "darwin" then "wheel" else "root"}.
+              ''}
+              ${lib.optionalString (file.mode != "0400") ''
+                The mode is set to ${file.mode}, but should be 0400.
+              ''}
               This doesn't work because the file will be added to the nix store
             ''
       ) [ ] (lib.attrValues generator.files)
