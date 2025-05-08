@@ -46,7 +46,8 @@ let
       flakeInputs = config.self.inputs;
       prefix = config._prefix ++ [ "inventoryClass" ];
       # TODO: remove inventory.modules, this is here for backwards compatibility
-      localModuleSet = inventory.modules // config.modules;
+      localModuleSet =
+        lib.filterAttrs (n: _: !inventory._legacyModules ? ${n}) inventory.modules // config.modules;
     }
   );
 
