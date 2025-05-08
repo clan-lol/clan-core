@@ -33,6 +33,7 @@ let
 
             distributedServices = clanLib.inventory.mapInstances {
               inherit (config) inventory;
+              inherit localModuleSet;
               inherit flakeInputs;
               prefix = prefix ++ [ "distributedServices" ];
             };

@@ -54,7 +54,7 @@ let
                   )
                 }
 
-                To import a local module from 'inventory.modules' remove the 'input' attribute from the module definition
+                To import a local module from 'clan.modules' remove the 'input' attribute from the module definition
                 Remove the following line from the module definition:
 
                 ...
@@ -81,6 +81,7 @@ in
       flakeInputs,
       # The clan inventory
       inventory,
+      localModuleSet,
       prefix ? [ ],
     }:
     let
@@ -92,7 +93,7 @@ in
         let
           resolvedModule = resolveModule {
             moduleSpec = instance.module;
-            localModuleSet = inventory.modules;
+            inherit localModuleSet;
             inherit flakeInputs;
           };
 
