@@ -29,7 +29,7 @@ clanLib.test.makeTestClan {
             ssh-test-one = {
               module.name = "@clan/admin";
               roles.default.machines."server".settings = {
-                allowedKeys = {testkey = public-key;};
+                allowedKeys.testkey = public-key;
               };
             };
           };
@@ -38,12 +38,18 @@ clanLib.test.makeTestClan {
 
       nodes = {
         client.environment.etc.private-test-key.source = ./private-test-key;
+
+        server = {
+          services.openssh = {
+            enable = true;
+            settings.UsePAM = false;
+          };
+        };
       };
 
       testScript = ''
         start_all()
 
-        # Show all addresses
         machines = [client, server]
         for m in machines:
             m.systemctl("start network-online.target")
@@ -51,8 +57,7 @@ clanLib.test.makeTestClan {
         for m in machines:
             m.wait_for_unit("network-online.target")
 
-        client.succeed(f"&>2")
-        client.succeed(f"ssh -F /dev/null -i /etc/private-test-key -o BatchMode=yes root@server true &>/dev/null")
+        client.succeed(f"ssh -F /dev/null -i /etc/private-test-key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes root@server true &>/dev/null")
       '';
     }
   );
