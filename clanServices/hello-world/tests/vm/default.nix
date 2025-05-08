@@ -14,16 +14,15 @@ clanLib.test.makeTestClan {
 
       clan = {
         directory = ./.;
+        modules = {
+          hello-service = module;
+        };
         inventory = {
           machines.peer1 = { };
 
           instances."test" = {
             module.name = "hello-service";
             roles.peer.machines.peer1 = { };
-          };
-
-          modules = {
-            hello-service = module;
           };
         };
       };

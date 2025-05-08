@@ -18,7 +18,7 @@ let
     };
 
     # Register the module for the test
-    inventory.modules.hello-world = module;
+    modules.hello-world = module;
 
     # Use the module in the test
     inventory.instances = {
