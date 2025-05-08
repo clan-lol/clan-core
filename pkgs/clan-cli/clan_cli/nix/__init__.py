@@ -1,12 +1,13 @@
 import json
 import logging
 import os
+import shutil
 import tempfile
 from functools import cache
 from pathlib import Path
 from typing import Any
 
-from clan_cli.cmd import run, run_no_stdout
+from clan_cli.cmd import run
 from clan_cli.dirs import nixpkgs_flake, nixpkgs_source
 from clan_cli.errors import ClanError
 from clan_cli.locked_open import locked_open
@@ -55,7 +56,7 @@ def nix_add_to_gcroots(nix_path: Path, dest: Path) -> None:
 @cache
 def nix_config() -> dict[str, Any]:
     cmd = nix_command(["config", "show", "--json"])
-    proc = run_no_stdout(cmd)
+    proc = run(cmd)
     data = json.loads(proc.stdout)
     config = {}
     for key, value in data.items():
@@ -131,7 +132,16 @@ class Packages:
             cls.static_packages = set(
                 os.environ.get("CLAN_PROVIDED_PACKAGES", "").split(":")
             )
-        return program in cls.static_packages
+
+        if program in cls.static_packages:
+            if shutil.which(program) is None:
+                log.warning(
+                    "Program %s is not in the path even though it should be shipped with clan",
+                    program,
+                )
+                return False
+            return True
+        return False
 
 
 #   Features:
