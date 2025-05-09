@@ -63,7 +63,8 @@ def upload(
                     for mdir in dirs:
                         dir_path = Path(root) / mdir
                         tarinfo = tar.gettarinfo(
-                            dir_path, arcname=str(dir_path.relative_to(str(local_src)))
+                            dir_path,
+                            arcname=str(dir_path.relative_to(str(local_src))),
                         )
                         tarinfo.mode = dir_mode
                         tarinfo.uname = file_user

@@ -21,7 +21,7 @@ from typing import Any
 
 from clan_lib.api import API, dataclass_to_dict, from_dict
 
-from clan_cli.cmd import run_no_stdout
+from clan_cli.cmd import run
 from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.flake import Flake
 from clan_cli.git import commit_file
@@ -80,7 +80,7 @@ def load_inventory_eval(flake_dir: Flake) -> Inventory:
         ]
     )
 
-    proc = run_no_stdout(cmd)
+    proc = run(cmd)
 
     try:
         res = proc.stdout.strip()
@@ -380,7 +380,7 @@ def get_inventory_current_priority(flake: Flake) -> dict:
         ]
     )
 
-    proc = run_no_stdout(cmd)
+    proc = run(cmd)
 
     try:
         res = proc.stdout.strip()

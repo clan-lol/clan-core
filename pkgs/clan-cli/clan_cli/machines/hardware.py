@@ -7,11 +7,10 @@ from pathlib import Path
 
 from clan_lib.api import API
 
-from clan_cli.cmd import RunOpts, run_no_stdout
+from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.dirs import specific_machine_dir
 from clan_cli.errors import ClanCmdError, ClanError
-from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_config, nix_eval
@@ -26,39 +25,35 @@ class HardwareConfig(Enum):
     NIXOS_GENERATE_CONFIG = "nixos-generate-config"
     NONE = "none"
 
-    def config_path(self, flake: Flake, machine_name: str) -> Path:
-        machine_dir = specific_machine_dir(flake, machine_name)
+    def config_path(self, machine: Machine) -> Path:
+        machine_dir = specific_machine_dir(machine)
         if self == HardwareConfig.NIXOS_FACTER:
             return machine_dir / "facter.json"
         return machine_dir / "hardware-configuration.nix"
 
     @classmethod
-    def detect_type(
-        cls: type["HardwareConfig"], flake: Flake, machine_name: str
-    ) -> "HardwareConfig":
-        hardware_config = HardwareConfig.NIXOS_GENERATE_CONFIG.config_path(
-            flake, machine_name
-        )
+    def detect_type(cls: type["HardwareConfig"], machine: Machine) -> "HardwareConfig":
+        hardware_config = HardwareConfig.NIXOS_GENERATE_CONFIG.config_path(machine)
 
         if hardware_config.exists() and "throw" not in hardware_config.read_text():
             return HardwareConfig.NIXOS_GENERATE_CONFIG
 
-        if HardwareConfig.NIXOS_FACTER.config_path(flake, machine_name).exists():
+        if HardwareConfig.NIXOS_FACTER.config_path(machine).exists():
             return HardwareConfig.NIXOS_FACTER
 
         return HardwareConfig.NONE
 
 
 @API.register
-def show_machine_hardware_config(flake: Flake, machine_name: str) -> HardwareConfig:
+def show_machine_hardware_config(machine: Machine) -> HardwareConfig:
     """
     Show hardware information for a machine returns None if none exist.
     """
-    return HardwareConfig.detect_type(flake, machine_name)
+    return HardwareConfig.detect_type(machine)
 
 
 @API.register
-def show_machine_hardware_platform(flake: Flake, machine_name: str) -> str | None:
+def show_machine_hardware_platform(machine: Machine) -> str | None:
     """
     Show hardware information for a machine returns None if none exist.
     """
@@ -66,13 +61,13 @@ def show_machine_hardware_platform(flake: Flake, machine_name: str) -> str | Non
     system = config["system"]
     cmd = nix_eval(
         [
-            f"{flake}#clanInternals.machines.{system}.{machine_name}",
+            f"{machine.flake}#clanInternals.machines.{system}.{machine.name}",
             "--apply",
             "machine: { inherit (machine.pkgs) system; }",
             "--json",
         ]
     )
-    proc = run_no_stdout(cmd, RunOpts(prefix=machine_name))
+    proc = run(cmd, RunOpts(prefix=machine.name))
     res = proc.stdout.strip()
 
     host_platform = json.loads(res)
@@ -81,11 +76,8 @@ def show_machine_hardware_platform(flake: Flake, machine_name: str) -> str | Non
 
 @dataclass
 class HardwareGenerateOptions:
-    flake: Flake
-    machine: str
+    machine: Machine
     backend: HardwareConfig
-    target_host: str | None = None
-    keyfile: str | None = None
     password: str | None = None
 
 
@@ -96,14 +88,9 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
     and place the resulting *.nix file in the machine's directory.
     """
 
-    machine = Machine(
-        opts.machine,
-        flake=opts.flake,
-        private_key=Path(opts.keyfile) if opts.keyfile else None,
-        override_target_host=opts.target_host,
-    )
+    machine = opts.machine
 
-    hw_file = opts.backend.config_path(opts.flake, opts.machine)
+    hw_file = opts.backend.config_path(opts.machine)
     hw_file.parent.mkdir(parents=True, exist_ok=True)
 
     if opts.backend == HardwareConfig.NIXOS_FACTER:
@@ -148,11 +135,11 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
 
     commit_file(
         hw_file,
-        opts.flake.path,
+        opts.machine.flake.path,
         f"machines/{opts.machine}/{hw_file.name}: update hardware configuration",
     )
     try:
-        show_machine_hardware_platform(opts.flake, opts.machine)
+        show_machine_hardware_platform(opts.machine)
         if backup_file:
             backup_file.unlink(missing_ok=True)
     except ClanCmdError as e:
@@ -173,10 +160,13 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
 
 
 def update_hardware_config_command(args: argparse.Namespace) -> None:
-    opts = HardwareGenerateOptions(
+    machine = Machine(
         flake=args.flake,
-        machine=args.machine,
-        target_host=args.target_host,
+        name=args.machine,
+        override_target_host=args.target_host,
+    )
+    opts = HardwareGenerateOptions(
+        machine=machine,
         password=args.password,
         backend=HardwareConfig(args.backend),
     )

@@ -6,8 +6,9 @@ from urllib.parse import urlparse
 
 from clan_lib.api import API
 
-from clan_cli.cmd import run_no_stdout
+from clan_cli.cmd import run
 from clan_cli.errors import ClanCmdError, ClanError
+from clan_cli.flake import Flake
 from clan_cli.inventory import Meta
 from clan_cli.nix import nix_eval
 
@@ -15,26 +16,26 @@ log = logging.getLogger(__name__)
 
 
 @API.register
-def show_clan_meta(uri: str) -> Meta:
-    if uri.startswith("/") and not Path(uri).exists():
-        msg = f"Path {uri} does not exist"
+def show_clan_meta(flake: Flake) -> Meta:
+    if flake.is_local and not flake.path.exists():
+        msg = f"Path {flake} does not exist"
         raise ClanError(msg, description="clan directory does not exist")
     cmd = nix_eval(
         [
-            f"{uri}#clanInternals.inventory.meta",
+            f"{flake}#clanInternals.inventory.meta",
             "--json",
         ]
     )
     res = "{}"
 
     try:
-        proc = run_no_stdout(cmd)
+        proc = run(cmd)
         res = proc.stdout.strip()
     except ClanCmdError as e:
         msg = "Evaluation failed on meta attribute"
         raise ClanError(
             msg,
-            location=f"show_clan {uri}",
+            location=f"show_clan {flake}",
             description=str(e.cmd),
         ) from e
 
@@ -53,16 +54,16 @@ def show_clan_meta(uri: str) -> Meta:
                 msg = "Invalid absolute path"
                 raise ClanError(
                     msg,
-                    location=f"show_clan {uri}",
+                    location=f"show_clan {flake}",
                     description="Icon path must be a URL or a relative path",
                 )
 
-            icon_path = str((Path(uri) / meta_icon).resolve())
+            icon_path = str((flake.path / meta_icon).resolve())
         else:
             msg = "Invalid schema"
             raise ClanError(
                 msg,
-                location=f"show_clan {uri}",
+                location=f"show_clan {flake}",
                 description="Icon path must be a URL or a relative path",
             )
 

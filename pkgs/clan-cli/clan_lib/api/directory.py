@@ -4,9 +4,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
-from clan_cli.cmd import RunOpts
+from clan_cli.cmd import RunOpts, run
 from clan_cli.errors import ClanError
-from clan_cli.nix import nix_shell, run_no_stdout
+from clan_cli.flake import Flake
+from clan_cli.nix import nix_shell
 
 from . import API
 
@@ -52,8 +53,8 @@ class Directory:
 
 
 @API.register
-def get_directory(current_path: str) -> Directory:
-    curr_dir = Path(current_path)
+def get_directory(flake: Flake) -> Directory:
+    curr_dir = flake.path
     directory = Directory(path=str(curr_dir))
 
     if not curr_dir.is_dir():
@@ -135,7 +136,7 @@ def show_block_devices() -> Blockdevices:
             "PATH,NAME,RM,SIZE,RO,MOUNTPOINTS,TYPE,ID-LINK",
         ],
     )
-    proc = run_no_stdout(cmd, RunOpts(needs_user_terminal=True))
+    proc = run(cmd, RunOpts(needs_user_terminal=True))
     res = proc.stdout.strip()
 
     blk_info: dict[str, Any] = json.loads(res)

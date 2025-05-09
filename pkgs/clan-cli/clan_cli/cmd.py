@@ -403,23 +403,3 @@ def run(
         raise ClanCmdError(cmd_out)
 
     return cmd_out
-
-
-def run_no_stdout(
-    cmd: list[str],
-    opts: RunOpts | None = None,
-) -> CmdOut:
-    """
-    Like run, but automatically suppresses all output, if not in DEBUG log level.
-    If in DEBUG log level the stdout of commands will be shown.
-    """
-    if opts is None:
-        opts = RunOpts()
-
-    if cmdlog.isEnabledFor(logging.DEBUG):
-        opts.log = opts.log if opts.log.value > Log.STDERR.value else Log.STDERR
-
-    return run(
-        cmd,
-        opts,
-    )

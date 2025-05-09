@@ -52,10 +52,12 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
     queryKey: [props.dir, props.machine_id, "hw_report"],
     queryFn: async () => {
       const result = await callApi("show_machine_hardware_config", {
-        flake: {
-          identifier: props.dir,
+        machine: {
+          flake: {
+            identifier: props.dir,
+          },
+          name: props.machine_id,
         },
-        machine_name: props.machine_id,
       });
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
@@ -85,9 +87,13 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
     setIsGenerating(true);
     const r = await callApi("generate_machine_hardware_info", {
       opts: {
-        flake: { identifier: curr_uri },
-        machine: props.machine_id,
-        target_host: target,
+        machine: {
+          name: props.machine_id,
+          override_target_host: target,
+          flake: {
+            identifier: curr_uri,
+          },
+        },
         backend: "nixos-facter",
       },
     });

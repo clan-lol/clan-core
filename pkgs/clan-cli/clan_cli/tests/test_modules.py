@@ -11,7 +11,7 @@ from clan_cli.inventory import (
     set_inventory,
 )
 from clan_cli.machines.create import CreateOptions, create_machine
-from clan_cli.nix import nix_eval, run_no_stdout
+from clan_cli.nix import nix_eval, run
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_lib.api.modules import list_modules
 
@@ -120,7 +120,7 @@ def test_add_module_to_inventory(
                 "--json",
             ]
         )
-        proc = run_no_stdout(cmd)
+        proc = run(cmd)
         res = json.loads(proc.stdout.strip())
 
         assert res["machine1"]["authorizedKeys"] == [ssh_key.decode()]

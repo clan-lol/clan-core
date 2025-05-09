@@ -9,7 +9,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from clan_cli.cmd import Log, RunOpts, run_no_stdout
+from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.facts import public_modules as facts_public_modules
 from clan_cli.facts import secret_modules as facts_secret_modules
@@ -188,7 +188,7 @@ class Machine:
         # however there is a soon to be merged PR that requires deployment
         # as root to match NixOS: https://github.com/nix-darwin/nix-darwin/pull/1341
         return json.loads(
-            run_no_stdout(
+            run(
                 nix_eval(
                     [
                         f"{self.flake}#darwinConfigurations.{self.name}.options.system",

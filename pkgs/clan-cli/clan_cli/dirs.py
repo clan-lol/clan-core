@@ -10,6 +10,7 @@ from .errors import ClanError
 
 if TYPE_CHECKING:
     from clan_cli.flake import Flake
+    from clan_cli.machines.machines import Machine
 
 log = logging.getLogger(__name__)
 
@@ -144,8 +145,8 @@ def machines_dir(flake: "Flake") -> Path:
     return Path(store_path) / "machines"
 
 
-def specific_machine_dir(flake: "Flake", machine: str) -> Path:
-    return machines_dir(flake) / machine
+def specific_machine_dir(machine: "Machine") -> Path:
+    return machines_dir(machine.flake) / machine.name
 
 
 def module_root() -> Path:
