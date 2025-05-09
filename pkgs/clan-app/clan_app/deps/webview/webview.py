@@ -113,6 +113,7 @@ class Webview:
                         reconciled_arguments["op_key"] = seq.decode()
                         # TODO: We could remove the wrapper in the MethodRegistry
                         # and just call the method directly
+
                         result = wrap_method(**reconciled_arguments)
 
                         serialized = json.dumps(

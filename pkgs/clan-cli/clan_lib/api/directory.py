@@ -33,6 +33,11 @@ class FileRequest:
 
 
 @API.register_abstract
+def cancel_task(task_id: str) -> None:
+    """Cancel a task by its op_key."""
+
+
+@API.register_abstract
 def open_file(file_request: FileRequest) -> list[str] | None:
     """
     Abstract api method to open a file dialog window.

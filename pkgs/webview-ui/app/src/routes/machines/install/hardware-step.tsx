@@ -15,15 +15,19 @@ import {
   setValue,
 } from "@modular-forms/solid";
 import { createEffect, createSignal, JSX, Match, Switch } from "solid-js";
-import toast from "solid-toast";
 import { TextInput } from "@/src/Form/fields";
 import { createQuery } from "@tanstack/solid-query";
 import { Badge } from "@/src/components/badge";
 import { Group } from "@/src/components/group";
+import {
+  FileSelectorField,
+  type FileDialogOptions,
+} from "@/src/components/fileSelect";
 
 export type HardwareValues = FieldValues & {
   report: boolean;
   target: string;
+  sshKey?: File;
 };
 
 export interface StepProps<T> {
@@ -75,21 +79,21 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
     const curr_uri = activeURI();
     if (!curr_uri) return;
 
-    const loading_toast = toast.loading("Generating hardware report...");
-
     await validate(formStore, "target");
     const target = getValue(formStore, "target");
+    const sshFile = getValue(formStore, "sshKey") as File | undefined;
 
     if (!target) {
-      toast.error("Target ip must be provided");
+      console.error("Target is not set");
       return;
     }
-    setIsGenerating(true);
+
     const r = await callApi("generate_machine_hardware_info", {
       opts: {
         machine: {
           name: props.machine_id,
           override_target_host: target,
+          private_key: sshFile?.name,
           flake: {
             identifier: curr_uri,
           },
@@ -97,16 +101,9 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
         backend: "nixos-facter",
       },
     });
-    setIsGenerating(false);
-    toast.dismiss(loading_toast);
+
     // TODO: refresh the machine details
 
-    if (r.status === "error") {
-      toast.error(`Failed to generate report. ${r.errors[0].message}`);
-    }
-    if (r.status === "success") {
-      toast.success("Report generated successfully");
-    }
     hwReportQuery.refetch();
     submit(formStore);
   };
@@ -128,6 +125,22 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
                 />
               )}
             </Field>
+            <FileSelectorField
+              Field={Field}
+              name="sshKey" // Corresponds to FlashFormValues.sshKeys
+              label="SSH Private Key"
+              description="Provide your SSH private key for secure, passwordless connections."
+              multiple={false}
+              fileDialogOptions={
+                {
+                  title: "Select SSH Keys",
+                  initial_folder: "~/.ssh",
+                } as FileDialogOptions
+              }
+              // You could add custom validation via modular-forms 'validate' prop on CustomFileField if needed
+              // e.g. validate={[required("At least one SSH key is required.")]}
+              // This would require CustomFileField to accept and pass `validate` to its internal `Field`.
+            />
           </Group>
           <Group>
             <Field

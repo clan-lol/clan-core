@@ -35,6 +35,7 @@
     "vitest": "^1.6.0"
   },
   "dependencies": {
+    "@babel/plugin-syntax-import-attributes": "^7.27.1",
     "@floating-ui/dom": "^1.6.8",
     "@modular-forms/solid": "^0.21.0",
     "@solid-primitives/storage": "^3.7.1",

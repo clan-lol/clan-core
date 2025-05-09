@@ -12,6 +12,7 @@ from pathlib import Path
 from clan_cli.custom_logger import setup_logging
 from clan_lib.api import API
 
+from clan_app.api.cancel import cancel_task
 from clan_app.api.file_gtk import open_file
 from clan_app.deps.webview.webview import Size, SizeHint, Webview
 
@@ -42,6 +43,8 @@ def app_run(app_opts: ClanAppOptions) -> int:
     webview = Webview(debug=app_opts.debug)
 
     API.overwrite_fn(open_file)
+    # breakpoint()
+    API.overwrite_fn(cancel_task)
     webview.bind_jsonschema_api(API)
     webview.size = Size(1280, 1024, SizeHint.NONE)
     webview.navigate(content_uri)

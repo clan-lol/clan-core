@@ -1,11 +1,9 @@
 import { callApi } from "@/src/api";
 import { Button } from "@/src/components/button";
-import { FileInput } from "@/src/components/FileInput";
+// Icon is used in CustomFileField, ensure it's available or remove if not needed there
 import Icon from "@/src/components/icon";
-
 import { Typography } from "@/src/components/Typography";
 import { Header } from "@/src/layout/header";
-
 import { SelectInput } from "@/src/Form/fields/Select";
 import { TextInput } from "@/src/Form/fields/TextInput";
 import {
@@ -17,20 +15,26 @@ import {
   getValues,
 } from "@modular-forms/solid";
 import { createQuery } from "@tanstack/solid-query";
-import { createEffect, createSignal, For, Show } from "solid-js";
+import { createEffect, createSignal, For, Show } from "solid-js"; // For, Show might not be needed directly here now
 import toast from "solid-toast";
 import { FieldLayout } from "@/src/Form/fields/layout";
 import { InputLabel } from "@/src/components/inputBase";
 import { Modal } from "@/src/components/modal";
-import Fieldset from "@/src/Form/fieldset";
+import Fieldset from "@/src/Form/fieldset"; // Still used for other fieldsets
 import Accordion from "@/src/components/accordion";
+
+// Import the new generic component
+import {
+  FileSelectorField,
+  type FileDialogOptions,
+} from "@/src/components/fileSelect"; // Adjust path
 
 interface Wifi extends FieldValues {
   ssid: string;
   password: string;
 }
 
-interface FlashFormValues extends FieldValues {
+export interface FlashFormValues extends FieldValues {
   machine: {
     devicePath: string;
     flake: string;
@@ -39,7 +43,7 @@ interface FlashFormValues extends FieldValues {
   language: string;
   keymap: string;
   wifi: Wifi[];
-  sshKeys: File[];
+  sshKeys: File[]; // This field will use CustomFileField
 }
 
 export const Flash = () => {
@@ -51,15 +55,15 @@ export const Flash = () => {
       },
       language: "en_US.UTF-8",
       keymap: "en",
+      // sshKeys: [] // Initial value for sshKeys (optional, modular-forms handles undefined)
     },
   });
 
-  /* ==== WIFI NETWORK ==== */
+  /* ==== WIFI NETWORK (logic remains the same) ==== */
   const [wifiNetworks, setWifiNetworks] = createSignal<Wifi[]>([]);
   const [passwordVisibility, setPasswordVisibility] = createSignal<boolean[]>(
     [],
   );
-
   createEffect(() => {
     const formWifi = getValue(formStore, "wifi");
     if (formWifi !== undefined) {
@@ -67,7 +71,6 @@ export const Flash = () => {
       setPasswordVisibility(new Array(formWifi.length).fill(false));
     }
   });
-
   const addWifiNetwork = () => {
     setWifiNetworks((c) => {
       const res = [...c, { ssid: "", password: "" }];
@@ -76,7 +79,6 @@ export const Flash = () => {
     });
     setPasswordVisibility((c) => [...c, false]);
   };
-
   const removeWifiNetwork = (index: number) => {
     const updatedNetworks = wifiNetworks().filter((_, i) => i !== index);
     setWifiNetworks(updatedNetworks);
@@ -86,7 +88,6 @@ export const Flash = () => {
     setPasswordVisibility(updatedVisibility);
     setValue(formStore, "wifi", updatedNetworks);
   };
-
   const togglePasswordVisibility = (index: number) => {
     const updatedVisibility = [...passwordVisibility()];
     updatedVisibility[index] = !updatedVisibility[index];
@@ -123,40 +124,33 @@ export const Flash = () => {
     },
     staleTime: Infinity,
   }));
-
-  /**
-   * Opens the custom file dialog
-   * Returns a native FileList to allow interaction with the native input type="file"
-   */
-  const selectSshKeys = async (): Promise<FileList> => {
-    const dataTransfer = new DataTransfer();
-
-    const response = await callApi("open_file", {
-      file_request: {
-        title: "Select SSH Key",
-        mode: "open_multiple_files",
-        filters: { patterns: ["*.pub"] },
-        initial_folder: "~/.ssh",
-      },
-    });
-    if (response.status === "success" && response.data) {
-      // Add synthetic files to the DataTransfer object
-      // FileList cannot be instantiated directly.
-      response.data.forEach((filename) => {
-        dataTransfer.items.add(new File([], filename));
-      });
-    }
-    return dataTransfer.files;
+  // Define the options for the SSH key file dialog
+  const sshKeyDialogOptions: FileDialogOptions = {
+    title: "Select SSH Public Key(s)",
+    filters: { patterns: ["*.pub"] },
+    initial_folder: "~/.ssh",
   };
+
   const [confirmOpen, setConfirmOpen] = createSignal(false);
   const [isFlashing, setFlashing] = createSignal(false);
 
   const handleSubmit = (values: FlashFormValues) => {
+    // Basic check for sshKeys, could add to modular-forms validation
+    if (!values.sshKeys || values.sshKeys.length === 0) {
+      toast.error("Please select at least one SSH key.");
+      return;
+    }
     setConfirmOpen(true);
   };
+
   const handleConfirm = async () => {
-    // Wait for the flash to complete
     const values = getValues(formStore) as FlashFormValues;
+    // Additional check, though handleSubmit should catch it
+    if (!values.sshKeys || values.sshKeys.length === 0) {
+      toast.error("SSH keys are missing. Cannot proceed with flash.");
+      setConfirmOpen(false);
+      return;
+    }
     setFlashing(true);
     console.log("Confirmed flash:", values);
     try {
@@ -173,6 +167,7 @@ export const Flash = () => {
           system_config: {
             language: values.language,
             keymap: values.keymap,
+            // Ensure sshKeys is correctly mapped (File[] to string[])
             ssh_keys_path: values.sshKeys.map((file) => file.name),
           },
           dry_run: false,
@@ -202,6 +197,7 @@ export const Flash = () => {
         handleClose={() => !isFlashing() && setConfirmOpen(false)}
         title="Confirm"
       >
+        {/* ... Modal content as before ... */}
         <div class="flex flex-col gap-4 p-4">
           <div class="flex flex-col justify-between rounded-sm border p-4 align-middle text-red-900 border-def-2">
             <Typography
@@ -236,54 +232,22 @@ export const Flash = () => {
         </div>
       </Modal>
       <div class="w-full self-stretch p-8">
-        {/* <Typography tag="p" hierarchy="body" size="default" color="primary">
-          USB Utility image.
-        </Typography>
-        <Typography tag="p" hierarchy="body" size="default" color="secondary">
-          Will make bootstrapping new machines easier by providing secure remote
-          connection to any machine when plugged in.
-        </Typography> */}
         <Form
           onSubmit={handleSubmit}
           class="mx-auto flex w-full max-w-2xl flex-col gap-y-6"
         >
-          <Fieldset legend="Authorized SSH Keys">
-            <Typography hierarchy="body" size="s" weight="medium">
-              Provide your SSH public key. For secure and passwordless SSH
-              connections.
-            </Typography>
-            <Field name="sshKeys" type="File[]">
-              {(field, props) => (
-                <>
-                  <FileInput
-                    {...props}
-                    onClick={async (event) => {
-                      event.preventDefault(); // Prevent the native file dialog from opening
-                      const input = event.target;
-                      const files = await selectSshKeys();
+          <FileSelectorField
+            Field={Field}
+            name="sshKeys" // Corresponds to FlashFormValues.sshKeys
+            label="Authorized SSH Keys"
+            description="Provide your SSH public key(s) for secure, passwordless connections. (.pub files)"
+            multiple={true} // Allow multiple SSH keys
+            fileDialogOptions={sshKeyDialogOptions}
+            // You could add custom validation via modular-forms 'validate' prop on CustomFileField if needed
+            // e.g. validate={[required("At least one SSH key is required.")]}
+            // This would require CustomFileField to accept and pass `validate` to its internal `Field`.
+          />
 
-                      // Set the files
-                      Object.defineProperty(input, "files", {
-                        value: files,
-                        writable: true,
-                      });
-                      // Define the files property on the input element
-                      const changeEvent = new Event("input", {
-                        bubbles: true,
-                        cancelable: true,
-                      });
-                      input.dispatchEvent(changeEvent);
-                    }}
-                    value={field.value}
-                    error={field.error}
-                    //helperText="Provide your SSH public key. For secure and passwordless SSH connections."
-                    //label="Authorized SSH Keys"
-                    multiple
-                  />
-                </>
-              )}
-            </Field>
-          </Fieldset>
           <Fieldset legend="General">
             <Field name="disk" validate={[required("This field is required")]}>
               {(field, props) => (
@@ -322,6 +286,7 @@ export const Flash = () => {
           </Fieldset>
 
           <Fieldset legend="Network Settings">
+            {/* ... Network settings as before ... */}
             <FieldLayout
               label={<InputLabel>Networks</InputLabel>}
               field={
@@ -338,6 +303,7 @@ export const Flash = () => {
                 </div>
               }
             />
+            {/* TODO: You would render the actual WiFi input fields here using a <For> loop over wifiNetworks() signal */}
           </Fieldset>
 
           <Accordion title="Advanced">
@@ -445,20 +411,23 @@ export const Flash = () => {
               </Field>
             </Fieldset>
           </Accordion>
+
           <div class="mt-2 flex justify-end pt-2">
             <Button
               class="self-end"
               type="submit"
-              disabled={formStore.submitting}
+              disabled={formStore.submitting || isFlashing()}
               startIcon={
-                formStore.submitting ? (
+                formStore.submitting || isFlashing() ? (
                   <Icon icon="Load" />
                 ) : (
                   <Icon icon="Flash" />
                 )
               }
             >
-              {formStore.submitting ? "Flashing..." : "Flash Installer"}
+              {formStore.submitting || isFlashing()
+                ? "Flashing..."
+                : "Flash Installer"}
             </Button>
           </div>
         </Form>

@@ -20,6 +20,9 @@
 		},
 		{
 			"path": "../webview-lib"
+		},
+		{
+			"path": "../clan-cli/clan_lib"
 		}
 	],
 	"settings": {
