@@ -240,7 +240,7 @@ def test_clan_create_api(
     facter_json = test_lib_root / "assets" / "facter.json"
     assert facter_json.exists(), f"Source facter file not found: {facter_json}"
 
-    dest_dir = specific_machine_dir(Flake(str(clan_dir_flake.path)), machine.name)
+    dest_dir = specific_machine_dir(machine)
     # specific_machine_dir should create the directory, but ensure it exists just in case
     dest_dir.mkdir(parents=True, exist_ok=True)
 
@@ -253,10 +253,7 @@ def test_clan_create_api(
     )
 
     # ===== Create Disko Config ======
-    facter_path = (
-        specific_machine_dir(Flake(str(clan_dir_flake.path)), machine.name)
-        / "facter.json"
-    )
+    facter_path = specific_machine_dir(machine) / "facter.json"
     with facter_path.open("r") as f:
         facter_report = json.load(f)
 
@@ -265,7 +262,7 @@ def test_clan_create_api(
     assert disk_devs is not None
 
     placeholders = {"mainDisk": disk_devs[0]}
-    set_machine_disk_schema(clan_dir_flake, machine.name, "single-disk", placeholders)
+    set_machine_disk_schema(machine, "single-disk", placeholders)
     clan_dir_flake.invalidate_cache()
 
     with pytest.raises(ClanError) as exc_info:

@@ -117,8 +117,10 @@ const InstallMachine = (props: InstallMachineProps) => {
     if (shouldRunDisk) {
       setProgressText("Setting up disk ... (1/5)");
       const disk_response = await callApi("set_machine_disk_schema", {
-        flake: { identifier: curr_uri },
-        machine_name: props.name,
+        machine: {
+          flake: { identifier: curr_uri },
+          name: props.name,
+        },
         placeholders: diskValues.placeholders,
         schema_name: diskValues.schema,
         force: true,

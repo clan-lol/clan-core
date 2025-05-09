@@ -52,7 +52,9 @@ export const Sidebar = (props: RouteSectionProps) => {
     queryFn: async () => {
       const curr = activeURI();
       if (curr) {
-        const result = await callApi("show_clan_meta", { uri: curr });
+        const result = await callApi("show_clan_meta", {
+          flake: { identifier: curr },
+        });
         console.log("refetched meta for ", curr);
         if (result.status === "error") throw new Error("Failed to fetch data");
 

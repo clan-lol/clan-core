@@ -10,8 +10,15 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 import pytest
-from clan_cli.dirs import TemplateType, clan_templates, nixpkgs_source
+from clan_cli.dirs import (
+    TemplateType,
+    clan_templates,
+    nixpkgs_source,
+    specific_machine_dir,
+)
+from clan_cli.flake import Flake
 from clan_cli.locked_open import locked_open
+from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_test_store
 from clan_cli.tests import age_keys
 from clan_cli.tests.fixture_error import FixtureError
@@ -70,11 +77,10 @@ class FlakeForTest(NamedTuple):
 
 
 def set_machine_settings(
-    flake: Path,
-    machine_name: str,
+    machine: Machine,
     machine_settings: dict,
 ) -> None:
-    config_path = flake / "machines" / machine_name / "configuration.json"
+    config_path = specific_machine_dir(machine) / "configuration.json"
     config_path.write_text(json.dumps(machine_settings, indent=2))
 
 
@@ -202,7 +208,8 @@ class ClanFlake:
                 }}
             """
             )
-            set_machine_settings(self.path, machine_name, machine_config)
+            machine = Machine(name=machine_name, flake=Flake(str(self.path)))
+            set_machine_settings(machine, machine_config)
         sp.run(["git", "add", "."], cwd=self.path, check=True)
         sp.run(
             ["git", "commit", "-a", "-m", "Update by flake generator"],

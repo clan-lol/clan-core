@@ -67,9 +67,9 @@ def get_machine_details(machine: Machine) -> MachineDetails:
         msg = f"Machine {machine.name} not found in inventory"
         raise ClanError(msg)
 
-    hw_config = HardwareConfig.detect_type(machine.flake, machine.name)
+    hw_config = HardwareConfig.detect_type(machine)
 
-    machine_dir = specific_machine_dir(machine.flake, machine.name)
+    machine_dir = specific_machine_dir(machine)
     disk_schema: MachineDiskMatter | None = None
     disk_path = machine_dir / "disko.nix"
     if disk_path.exists():

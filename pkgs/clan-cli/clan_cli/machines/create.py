@@ -110,7 +110,7 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
         new_machine["deploy"] = {"targetHost": target_host}
 
     patch_inventory_with(
-        Flake(str(clan_dir)), f"machines.{machine_name}", dataclass_to_dict(new_machine)
+        opts.clan_dir, f"machines.{machine_name}", dataclass_to_dict(new_machine)
     )
 
     # Commit at the end in that order to avoid committing halve-baked machines

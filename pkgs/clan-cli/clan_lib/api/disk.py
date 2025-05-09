@@ -7,9 +7,9 @@ from uuid import uuid4
 
 from clan_cli.dirs import TemplateType, clan_templates
 from clan_cli.errors import ClanError
-from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 from clan_cli.machines.hardware import HardwareConfig, show_machine_hardware_config
+from clan_cli.machines.machines import Machine
 
 from clan_lib.api import API
 from clan_lib.api.modules import Frontmatter, extract_frontmatter
@@ -74,9 +74,7 @@ templates: dict[str, dict[str, Callable[[dict[str, Any]], Placeholder]]] = {
 
 
 @API.register
-def get_disk_schemas(
-    flake: Flake, machine_name: str | None = None
-) -> dict[str, DiskSchema]:
+def get_disk_schemas(machine: Machine) -> dict[str, DiskSchema]:
     """
     Get the available disk schemas
     """
@@ -84,13 +82,12 @@ def get_disk_schemas(
     disk_schemas = {}
     hw_report = {}
 
-    if machine_name is not None:
-        hw_report_path = HardwareConfig.NIXOS_FACTER.config_path(flake, machine_name)
-        if not hw_report_path.exists():
-            msg = "Hardware configuration missing"
-            raise ClanError(msg)
-        with hw_report_path.open("r") as hw_report_file:
-            hw_report = json.load(hw_report_file)
+    hw_report_path = HardwareConfig.NIXOS_FACTER.config_path(machine)
+    if not hw_report_path.exists():
+        msg = "Hardware configuration missing"
+        raise ClanError(msg)
+    with hw_report_path.open("r") as hw_report_file:
+        hw_report = json.load(hw_report_file)
 
     for disk_template in disk_templates.iterdir():
         if disk_template.is_dir():
@@ -130,8 +127,7 @@ class MachineDiskMatter(TypedDict):
 
 @API.register
 def set_machine_disk_schema(
-    flake: Flake,
-    machine_name: str,
+    machine: Machine,
     schema_name: str,
     # Placeholders are used to fill in the disk schema
     # Use get disk schemas to get the placeholders and their options
@@ -142,8 +138,8 @@ def set_machine_disk_schema(
     Set the disk placeholders of the template
     """
     # Assert the hw-config must exist before setting the disk
-    hw_config = show_machine_hardware_config(flake, machine_name)
-    hw_config_path = hw_config.config_path(flake, machine_name)
+    hw_config = show_machine_hardware_config(machine)
+    hw_config_path = hw_config.config_path(machine)
 
     if not hw_config_path.exists():
         msg = "Hardware configuration must exist before applying disk schema"
@@ -160,7 +156,7 @@ def set_machine_disk_schema(
         raise ClanError(msg)
 
     # Check that the placeholders are valid
-    disk_schema = get_disk_schemas(flake, machine_name)[schema_name]
+    disk_schema = get_disk_schemas(machine)[schema_name]
     # check that all required placeholders are present
     for placeholder_name, schema_placeholder in disk_schema.placeholders.items():
         if schema_placeholder.required and placeholder_name not in placeholders:
@@ -221,6 +217,6 @@ def set_machine_disk_schema(
 
         commit_file(
             disko_file_path,
-            flake.path,
-            commit_message=f"Set disk schema of machine: {machine_name} to {schema_name}",
+            machine.flake.path,
+            commit_message=f"Set disk schema of machine: {machine.name} to {schema_name}",
         )

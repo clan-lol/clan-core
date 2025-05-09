@@ -141,7 +141,7 @@ def deploy_machine(machine: Machine) -> None:
         generate_facts([machine], service=None, regenerate=False)
         generate_vars([machine], generator_name=None, regenerate=False)
 
-        upload_secrets(machine, target_host)
+        upload_secrets(machine)
         upload_secret_vars(machine, target_host)
 
         path = upload_sources(machine, host)

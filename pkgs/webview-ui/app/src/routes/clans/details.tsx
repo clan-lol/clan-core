@@ -329,7 +329,9 @@ export const ClanDetails = () => {
   const clanQuery = createQuery(() => ({
     queryKey: [clan_dir, "inventory", "meta"],
     queryFn: async () => {
-      const result = await callApi("show_clan_meta", { uri: clan_dir });
+      const result = await callApi("show_clan_meta", {
+        flake: { identifier: clan_dir },
+      });
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
