@@ -3,16 +3,13 @@ import logging
 from clan_cli.profiler import profile
 
 log = logging.getLogger(__name__)
-
-
 import os
 from dataclasses import dataclass
 from pathlib import Path
 
 from clan_cli.custom_logger import setup_logging
-from clan_lib.api import API
+from clan_lib.api import API, ErrorDataClass, SuccessDataClass
 
-from clan_app.api.cancel import cancel_task
 from clan_app.api.file_gtk import open_file
 from clan_app.deps.webview.webview import Size, SizeHint, Webview
 
@@ -42,8 +39,25 @@ def app_run(app_opts: ClanAppOptions) -> int:
 
     webview = Webview(debug=app_opts.debug)
 
+    def cancel_task(
+        task_id: str, *, op_key: str
+    ) -> SuccessDataClass[None] | ErrorDataClass:
+        """Cancel a task by its op_key."""
+        log.info(f"Cancelling task with op_key: {task_id}")
+        with webview.lock:
+            if task_id in webview.threads:
+                future = webview.threads[task_id]
+                future.stop_event.set()
+                log.info(f"Task {task_id} cancelled.")
+            else:
+                log.warning(f"Task {task_id} not found.")
+        return SuccessDataClass(
+            op_key=op_key,
+            data=None,
+            status="success",
+        )
+
     API.overwrite_fn(open_file)
-    # breakpoint()
     API.overwrite_fn(cancel_task)
     webview.bind_jsonschema_api(API)
     webview.size = Size(1280, 1024, SizeHint.NONE)

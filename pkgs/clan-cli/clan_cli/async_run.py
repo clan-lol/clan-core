@@ -71,7 +71,9 @@ class AsyncContext:
     prefix: str | None = None  # prefix for logging
     stdout: IO[bytes] | None = None  # stdout of subprocesses
     stderr: IO[bytes] | None = None  # stderr of subprocesses
-    cancel: bool = False  # Used to signal cancellation of task
+    should_cancel: Callable[[], bool] = (
+        lambda: False
+    )  # Used to signal cancellation of task
 
 
 @dataclass
@@ -92,7 +94,14 @@ def is_async_cancelled() -> bool:
     """
     Check if the current task has been cancelled.
     """
-    return get_async_ctx().cancel
+    return get_async_ctx().should_cancel()
+
+
+def set_should_cancel(should_cancel: Callable[[], bool]) -> None:
+    """
+    Set the cancellation function for the current task.
+    """
+    get_async_ctx().should_cancel = should_cancel
 
 
 def get_async_ctx() -> AsyncContext:
@@ -313,7 +322,7 @@ class AsyncRuntime:
         """
         for name, task in self.tasks.items():
             if not task.finished:
-                task.async_opts.async_ctx.cancel = True
+                set_should_cancel(lambda: True)
                 log.debug(f"Canceling task {name}")
 
 
