@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
   inherit (lib) mkOption;
   inherit (lib) types;
@@ -14,6 +14,42 @@ in
       '';
       type = types.str;
     };
+    description = mkOption {
+      type = types.str;
+      description = ''
+        A Short description of the module.
+      '';
+      defaultText = "Short description";
+      default = config.name;
+    };
+    categories = mkOption {
+      default = [ "Uncategorized" ];
+      description = ''
+        Categories are used for Grouping and searching.
+
+        While initial oriented on [freedesktop](https://specifications.freedesktop.org/menu-spec/latest/category-registry.html) the following categories are allowed
+      '';
+      type = types.listOf (
+        types.enum [
+          "AudioVideo"
+          "Audio"
+          "Video"
+          "Development"
+          "Education"
+          "Game"
+          "Graphics"
+          "Social"
+          "Network"
+          "Office"
+          "Science"
+          "System"
+          "Settings"
+          "Utility"
+          "Uncategorized"
+        ]
+      );
+    };
+
     features = mkOption {
       description = ''
         Enable built-in features for the module
