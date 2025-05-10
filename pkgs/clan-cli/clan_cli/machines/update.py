@@ -10,7 +10,7 @@ from contextlib import ExitStack
 from clan_lib.api import API
 
 from clan_cli.async_run import AsyncContext, AsyncOpts, AsyncRuntime, is_async_cancelled
-from clan_cli.cmd import MsgColor, RunOpts, run
+from clan_cli.cmd import Log, MsgColor, RunOpts, run
 from clan_cli.colors import AnsiColor
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -182,15 +182,15 @@ def deploy_machine(machine: Machine) -> None:
         remote_env = host.nix_ssh_env(None, local_ssh=False)
         ret = host.run(
             switch_cmd,
-            RunOpts(check=False, msg_color=MsgColor(stderr=AnsiColor.DEFAULT)),
+            RunOpts(
+                check=False,
+                log=Log.BOTH,
+                msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
+                needs_user_terminal=True,
+            ),
             extra_env=remote_env,
             become_root=become_root,
         )
-
-        # Last output line (config store path) is printed to stdout instead of stderr
-        lines = ret.stdout.splitlines()
-        if lines:
-            print(lines[-1])
 
         if is_async_cancelled():
             return
@@ -206,6 +206,7 @@ def deploy_machine(machine: Machine) -> None:
             ret = host.run(
                 test_cmd if is_mobile else switch_cmd,
                 RunOpts(
+                    log=Log.BOTH,
                     msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
                     needs_user_terminal=True,
                 ),
