@@ -1,9 +1,12 @@
 {
-  lib,
-  config,
   resolvedRoles,
   instanceName,
   moduleName,
+  allRoles,
+}:
+{
+  lib,
+  config,
   ...
 }:
 let
@@ -11,7 +14,7 @@ let
 in
 {
   imports = [
-    ./interface.nix
+    (lib.modules.importApply ./interface.nix { inherit allRoles; })
     # Role assertions
     {
       config.assertions = lib.foldlAttrs (
@@ -24,7 +27,7 @@ in
             "${moduleName}.${instanceName}.roles.${roleName}.min" = {
               assertion = memberCount >= roleConstraints.min;
               message = ''
-                The ${moduleName} module requires at least ${builtins.toString roleConstraints.min} members of the '${roleName}' role
+                The '${moduleName}' module requires at least ${builtins.toString roleConstraints.min} members of the '${roleName}' role
                 but found '${builtins.toString memberCount}' members within instance '${instanceName}':
 
                 ${lib.concatLines members}
