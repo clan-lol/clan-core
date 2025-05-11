@@ -58,7 +58,7 @@ nav:
       - Autoincludes: manual/adding-machines.md
       - Inventory:
           - Inventory: manual/inventory.md
-          - Instances: manual/distributed-services.md
+          - Services: manual/distributed-services.md
       - Secure Boot: manual/secure-boot.md
       - Flake-parts: manual/flake-parts.md
       - Authoring:

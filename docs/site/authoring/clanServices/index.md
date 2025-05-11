@@ -12,7 +12,7 @@ We discussed the initial architecture in [01-clan-service-modules](https://git.c
 
 ### A Minimal module
 
-First of all we need to register our module into the `inventory.modules` attribute. Make sure to choose a unique name so the module doesn't have a name collision with any of the core modules.
+First of all we need to register our module into the `clan.modules` attribute. Make sure to choose a unique name so the module doesn't have a name collision with any of the core modules.
 
 While not required we recommend to prefix your module attribute name.
 
@@ -22,20 +22,15 @@ i.e. `@hsjobeki/customNetworking`
 
 ```nix title="flake.nix"
 # ...
-
-outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({
+outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } ({
     imports = [ inputs.clan-core.flakeModules.default ];
     # ...
     clan = {
-        inventory = {
-            # We could also inline the complete module spec here
-            # For example
-            # {...}: { _class = "clan.service"; ... };
-            modules."@hsjobeki/customNetworking" = import ./service-modules/networking.nix;
-        };
-
         # If needed: Exporting the module for other people
         modules."@hsjobeki/customNetworking" = import ./service-modules/networking.nix;
+        # We could also inline the complete module spec here
+        # For example
+        # {...}: { _class = "clan.service"; ... };
     };
 })
 ```
@@ -221,9 +216,6 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
     # ...
     clan = {
         # Register the module
-        inventory.modules."@hsjobeki/messaging" = lib.importApply ./service-modules/messaging.nix { inherit self; };
-
-        # Expose the module for downstream users, 'self' would always point to this flake.
         modules."@hsjobeki/messaging" = lib.importApply ./service-modules/messaging.nix { inherit self; };
     };
 })
@@ -250,7 +242,7 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
     # ...
     clan = {
         # Register the module
-        inventory.modules."@hsjobeki/messaging" = {
+        modules."@hsjobeki/messaging" = {
             # Create an option 'myClan' and assign it to 'self'
             options.myClan = lib.mkOption {
                 default = self;
