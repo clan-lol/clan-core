@@ -103,6 +103,7 @@ def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
             "--unshare-all",
             "--tmpfs",  "/",
             "--ro-bind", "/nix/store", "/nix/store",
+            "--ro-bind", "/bin/sh", "/bin/sh",
             *(["--ro-bind", str(test_store), str(test_store)] if test_store else []),
             "--dev", "/dev",
             # not allowed to bind procfs in some sandboxes

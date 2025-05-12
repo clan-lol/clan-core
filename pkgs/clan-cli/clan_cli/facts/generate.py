@@ -48,6 +48,7 @@ def bubblewrap_cmd(generator: str, facts_dir: Path, secrets_dir: Path) -> list[s
             "--unshare-all",
             "--tmpfs",  "/",
             "--ro-bind", "/nix/store", "/nix/store",
+            "--ro-bind", "/bin/sh", "/bin/sh",
             "--dev", "/dev",
             # not allowed to bind procfs in some sandboxes
             "--bind", str(facts_dir), str(facts_dir),
