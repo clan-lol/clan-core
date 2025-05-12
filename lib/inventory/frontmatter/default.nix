@@ -64,15 +64,30 @@ let
       ];
     }).options;
 
+  migratedModules = [ "admin" ];
+
+  makeModuleNotFoundError =
+    serviceName:
+    if builtins.elem serviceName migratedModules then
+      ''
+        (Legacy) ClanModule not found: '${serviceName}'.
+
+        Please update your configuration to use this module via 'inventory.instances'
+        See: https://docs.clan.lol/manual/distributed-services/
+      ''
+    else
+      ''
+        (Legacy) ClanModule not found: '${serviceName}'.
+
+        Make sure the module is added to inventory.modules.${serviceName}
+      '';
   # This is a legacy function
   # Old modules needed to define their roles by directory
   # This means if this function gets anything other than a string/path it will throw
   getRoles =
-    scope: allModules: serviceName:
+    _scope: allModules: serviceName:
     let
-      module =
-        allModules.${serviceName}
-          or (throw "(Legacy) ClanModule not found: '${serviceName}'. Make sure the module is added to ${scope}");
+      module = allModules.${serviceName} or (throw (makeModuleNotFoundError serviceName));
       moduleType = (lib.typeOf module);
       checked =
         if

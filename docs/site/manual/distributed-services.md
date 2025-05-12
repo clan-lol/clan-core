@@ -1,8 +1,10 @@
-# Instances
+# Setting up `inventory.instances`
+
+In Clan *distributed services* can be declaratively deployed using the `inventory.instances` attribute
 
 First of all it might be needed to explain what we mean by the term *distributed service*
 
-## What is considered a service?
+## What is considered a distributed service?
 
 A **distributed service** is a system where multiple machines work together to provide a certain functionality, abstracting complexity and allowing for declarative configuration and management.
 

@@ -71,14 +71,16 @@ nav:
           - Testing: contributing/testing.md
       - Repo Layout: manual/repo-layout.md
       - Migrate existing Flakes: manual/migration-guide.md
+      - Migrate inventory Services: guides/migrate-inventory-services.md
   - Reference:
       - Overview: reference/index.md
       - Clan Modules:
           - Overview:
               - reference/clanModules/index.md
               - reference/clanModules/frontmatter/index.md
+          # TODO: display the docs of the clan.service modules
+          # - reference/clanServices/admin.md
           # This is the module overview and should stay at the top
-          - reference/clanModules/admin.md
           - reference/clanModules/borgbackup-static.md
           - reference/clanModules/data-mesher.md
           - reference/clanModules/borgbackup.md
