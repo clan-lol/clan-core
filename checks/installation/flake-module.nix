@@ -15,6 +15,7 @@ let
         pkgs.bash.drvPath
         pkgs.nixos-anywhere
         pkgs.bubblewrap
+        pkgs.buildPackages.xorg.lndir
       ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
     in
@@ -197,7 +198,7 @@ in
             installer.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../assets/ssh/privkey} /root/.ssh/id_ed25519")
 
             installer.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@localhost hostname")
-            installer.succeed("cp -r ${../..} test-flake && chmod -R +w test-flake")
+            installer.succeed("cp -r ${self.checks.x86_64-linux.clan-core-for-checks} test-flake && chmod -R +w test-flake")
 
             installer.succeed("clan machines install --no-reboot --debug --flake test-flake --yes test-install-machine-without-system --target-host nonrootuser@localhost --update-hardware-config nixos-facter >&2")
             installer.shutdown()
@@ -217,7 +218,7 @@ in
             installer.start()
             installer.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../assets/ssh/privkey} /root/.ssh/id_ed25519")
             installer.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@localhost hostname")
-            installer.succeed("cp -r ${../..} test-flake && chmod -R +w test-flake")
+            installer.succeed("cp -r ${self.checks.x86_64-linux.clan-core-for-checks} test-flake && chmod -R +w test-flake")
             installer.fail("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
             installer.fail("test -f test-flake/machines/test-install-machine/facter.json")
 

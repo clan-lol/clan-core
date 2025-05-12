@@ -36,6 +36,7 @@
         classgen = pkgs.callPackage ./classgen { };
         zerotierone = pkgs.callPackage ./zerotierone { };
         webview-lib = pkgs.callPackage ./webview-lib { };
+        update-clan-core-for-checks = pkgs.callPackage ./update-clan-core-for-checks { };
       };
     };
 }
