@@ -18,7 +18,7 @@ let
       config.clan.core.settings.directory
       + "/vars/per-machine/${machineName}/${secret.generator}/${secret.name}/secret";
 
-  vars = collectFiles config.clan.core.vars;
+  vars = collectFiles config.clan.core.vars.generators;
 in
 {
   config.clan.core.vars.settings = lib.mkIf (config.clan.core.vars.settings.secretStore == "sops") {
