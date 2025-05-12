@@ -23,7 +23,7 @@ export const createModulesQuery = (
           base_path: uri,
         });
         if (response.status === "error") {
-          toast.error("Failed to fetch data");
+          console.error("Failed to fetch data");
         } else {
           console.log(response.data.localModules["hello-world"]["manifest"]);
           return response.data;
@@ -47,7 +47,7 @@ export const tagsQuery = (uri: string | null) =>
         flake: { identifier: uri },
       });
       if (response.status === "error") {
-        toast.error("Failed to fetch data");
+        console.error("Failed to fetch data");
       } else {
         const machines = response.data.machines || {};
         const tags = Object.values(machines).flatMap((m) => m.tags || []);
@@ -68,7 +68,7 @@ export const machinesQuery = (uri: string | null) =>
         flake: { identifier: uri },
       });
       if (response.status === "error") {
-        toast.error("Failed to fetch data");
+        console.error("Failed to fetch data");
       } else {
         const machines = response.data.machines || {};
         return Object.keys(machines);
