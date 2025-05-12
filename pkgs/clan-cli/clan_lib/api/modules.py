@@ -143,6 +143,8 @@ def get_roles(module_path: Path) -> None | list[str]:
 
 class ModuleManifest(TypedDict):
     name: str
+    description: str
+    categories: list[str]
     features: dict[str, bool]
 
 
