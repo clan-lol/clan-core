@@ -77,20 +77,22 @@ Examples:
             f"""
 This subcommand allows listing all non-secret vars for a specific machine.
 
-The resulting list will be a json string with the name of the variable as its key
-and the variable itself as it's value.
+The resulting list will be strings terminated by newlines as key-value pairs separated by a space.
 
 This is how an example output might look like:
 ```
-\u007b
-"[FACT_NAME]": "[FACT]"
-\u007d
+[GENERATOR_NAME/VAR_1] [VALUE_1]
+[GENERATOR_NAME/VAR_2] [VALUE_2]
 ```
 
 Examples:
 
   $ clan vars list [MACHINE]
-  Will list non-secret vars for the specified machine.
+  Will list vars for the specified machine.
+  Secret vars will be masked by ******** and can be queried directly.
+
+  $ clan vars get [MACHINE] [GENERATOR_NAME/VAR]
+  This will print secret as well as public vars directly.
 
 
 For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
