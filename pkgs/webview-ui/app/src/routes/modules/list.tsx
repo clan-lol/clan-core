@@ -48,6 +48,7 @@ const Roles = (props: RolesProps) => {
 const ModuleItem = (props: {
   name: string;
   info: ModuleInfo;
+  source: string;
   class?: string;
 }) => {
   const { name, info } = props;
@@ -60,42 +61,38 @@ const ModuleItem = (props: {
         props.class,
       )}
     >
-      {/* <div class="stat-figure text-primary-800">
-        <div class="join">
-          <Menu popoverid={`menu-${props.name}`} label={<Icon icon={"More"} />}>
-            <ul class="z-[1] w-52 p-2 shadow">
-              <li>
-                <a
-                  onClick={() => {
-                    navigate(`/modules/details/${name}`);
-                  }}
-                >
-                  Configure
-                </a>
-              </li>
-            </ul>
-          </Menu>
-        </div>
-      </div> */}
-
-      <header class="flex flex-col gap-4">
-        <A href={`/modules/details/${name}`}>
-          <div class="">
-            <div class="flex flex-col">
-              {/* <Categories categories={info.categories} /> */}
-              <Typography hierarchy="title" size="m" weight="medium">
-                {name}
-              </Typography>
+      <header class="flex flex-row items-center justify-between">
+        <div class="flex flex-col gap-4">
+          <A href={`/modules/details/${props.source}/${info.manifest.name}`}>
+            <div class="">
+              <div class="flex flex-col">
+                {/* <Categories categories={info.categories} /> */}
+                <Typography hierarchy="title" size="m" weight="medium">
+                  {info.manifest.name}
+                </Typography>
+              </div>
             </div>
-          </div>
-        </A>
+          </A>
 
-        <div class="w-full">
-          <Typography hierarchy="body" size="xs">
-            description
-            {/* TODO: {info.description} */}
-          </Typography>
+          <div class="w-full">
+            <Typography hierarchy="body" size="xs">
+              {info.manifest.description}
+            </Typography>
+          </div>
         </div>
+        <Menu popoverid={`menu-${props.name}`} label={<Icon icon={"More"} />}>
+          <ul class="z-[1] w-52 bg-slate-100 p-2 shadow">
+            <li>
+              <a
+                onClick={() => {
+                  navigate(`/modules/details/${name}`);
+                }}
+              >
+                Configure
+              </a>
+            </li>
+          </ul>
+        </Menu>
       </header>
       <Roles roles={info.roles || {}} />
     </div>
@@ -181,6 +178,7 @@ export const ModuleList = () => {
                     <For each={Object.entries(v)}>
                       {([moduleName, moduleInfo]) => (
                         <ModuleItem
+                          source={sourceName}
                           info={moduleInfo}
                           name={moduleName}
                           class={view() == "grid" ? cx("max-w-md") : ""}
@@ -194,6 +192,7 @@ export const ModuleList = () => {
               <For each={Object.entries(modules().localModules)}>
                 {([moduleName, moduleInfo]) => (
                   <ModuleItem
+                    source={"localModules"}
                     info={moduleInfo}
                     name={moduleName}
                     class={view() == "grid" ? cx("max-w-md") : ""}

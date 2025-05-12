@@ -22,10 +22,10 @@ export const createModulesQuery = (
         const response = await callApi("list_modules", {
           base_path: uri,
         });
-        console.log({ response });
         if (response.status === "error") {
           toast.error("Failed to fetch data");
         } else {
+          console.log(response.data.localModules["hello-world"]["manifest"]);
           return response.data;
         }
       }
