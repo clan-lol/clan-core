@@ -1,0 +1,33 @@
+name: "Update pinned clan-core for checks"
+on:
+  repository_dispatch:
+  workflow_dispatch:
+  schedule:
+    - cron: "51 2 * * *"
+jobs:
+  update-pinned-clan-core:
+    runs-on: nix
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Update clan-core for checks
+        run: nix run .#update-clan-core-for-checks
+      - uses: github.com/quentinlegot/gitea-create-pull-request@c05fb67b080696dcdb2d2b7ea83051ec413f7285 # Change full sha to last commit of this repo if needed
+        with:
+          commit-message: Bump clan-core
+          branch: update-clan-core-for-checks
+      - name: Create pull request
+        run: |
+          git commit -am ""
+          git push origin HEAD:update-clan-core-for-checks
+          curl -X POST \
+            -H "Authorization: token $GITEA_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "head": "update-clan-core-branch",
+              "base": "main",
+              "title": "Automated Update: Clan Core",
+              "body": "This PR updates the pinned clan-core for checks."
+            }' \
+            "${GITEA_SERVER_URL}/api/v1/repos/${GITEA_OWNER}/${GITEA_REPO}/pulls"

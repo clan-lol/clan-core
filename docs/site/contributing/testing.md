@@ -32,7 +32,7 @@ VM tests should be avoided wherever it is possible to implement a cheaper unit t
 
 Existing nixos vm tests in clan-core can be found by using ripgrep:
 ```shellSession
-rg "import.*/lib/test-base.nix"
+rg self.clanLib.test.baseTest
 ```
 
 ### Locating definitions of failing VM tests
@@ -50,7 +50,7 @@ example: locating the vm test named `borgbackup`:
 ```shellSession
 $ rg "borgbackup =" ./checks
 ./checks/flake-module.nix
-41:            borgbackup = import ./borgbackup nixosTestArgs;
+44-            wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
 ```
 
 -> the location of that test is `/checks/flake-module.nix` line `41`.
@@ -99,15 +99,15 @@ Basically everything stated under the NixOS VM tests sections applies here, exce
 
 Limitations:
 
-- does not yet support networking
-- supports only one machine as of now
-
+- Cannot run in interactive mode, however while the container test runs, it logs a nsenter command that can be used to log into each of the container.
+- setuid binaries don't work
 
 ### Where to find examples for NixOS container tests
 
 Existing nixos container tests in clan-core can be found by using ripgrep:
+
 ```shellSession
-rg "import.*/lib/container-test.nix"
+rg self.clanLib.test.containerTest
 ```
 
 

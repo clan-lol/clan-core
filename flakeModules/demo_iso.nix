@@ -37,7 +37,7 @@ let
       done
       if ! test -e ~/clan-core; then
         # git clone https://git.clan.lol/clan/clan-core.git ~/clan-core
-        cp -rv ${self} clan-core
+        cp -rv ${self.checks.x86_64-linux.clan-core-for-checks} clan-core
       fi
       cd clan-core
       clan machines morph demo-template --i-will-be-fired-for-using-this

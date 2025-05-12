@@ -43,6 +43,7 @@
     let
       dependencies = [
         pkgs.disko
+        pkgs.buildPackages.xorg.lndir
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".pkgs.perlPackages.ConfigIniFiles
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".pkgs.perlPackages.FileSlurp
 
@@ -80,7 +81,7 @@
 
             # Some distros like to automount disks with spaces
             machine.succeed('mkdir -p "/mnt/with spaces" && mkfs.ext4 /dev/vdb && mount /dev/vdb "/mnt/with spaces"')
-            machine.succeed("clan flash write --debug --flake ${../..} --yes --disk main /dev/vdb test-flash-machine-${pkgs.hostPlatform.system}")
+            machine.succeed("clan flash write --debug --flake ${self.checks.x86_64-linux.clan-core-for-checks} --yes --disk main /dev/vdb test-flash-machine-${pkgs.hostPlatform.system}")
           '';
         } { inherit pkgs self; };
       };
