@@ -77,8 +77,9 @@ nav:
           - Overview:
               - reference/clanModules/index.md
               - reference/clanModules/frontmatter/index.md
+          # TODO: display the docs of the clan.service modules
+          # - reference/clanServices/admin.md
           # This is the module overview and should stay at the top
-          - reference/clanModules/admin.md
           - reference/clanModules/borgbackup-static.md
           - reference/clanModules/data-mesher.md
           - reference/clanModules/borgbackup.md

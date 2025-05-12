@@ -4,10 +4,7 @@
     ./hello-world/flake-module.nix
   ];
 
-  clan.inventory.modules = {
-    admin = lib.modules.importApply ./admin/default.nix {
-      # inherit (self) packages;
-    };
+  clan.modules = {
+    admin = lib.modules.importApply ./admin/default.nix { };
   };
-
 }
