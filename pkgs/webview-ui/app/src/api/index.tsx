@@ -5,7 +5,7 @@ import { Schema as Inventory } from "@/api/Inventory";
 import { toast, Toast } from "solid-toast";
 import {
   ErrorToastComponent,
-  InfoToastComponent,
+  CancelToastComponent,
 } from "@/src/components/toast";
 export type OperationNames = keyof API;
 export type OperationArgs<T extends OperationNames> = API[T]["arguments"];
@@ -62,10 +62,14 @@ const _callApi = <K extends OperationNames>(
   return { promise, op_key };
 };
 
-const handleCancel = async (ops_key: string) => {
+const handleCancel = async <K extends OperationNames>(
+  ops_key: string,
+  orig_task: Promise<OperationResponse<K>>,
+) => {
   console.log("Canceling operation: ", ops_key);
   const { promise, op_key } = _callApi("cancel_task", { task_id: ops_key });
   const resp = await promise;
+
   if (resp.status === "error") {
     toast.custom(
       (t) => (
@@ -79,14 +83,8 @@ const handleCancel = async (ops_key: string) => {
       },
     );
   } else {
-    toast.custom(
-      (t) => (
-        <InfoToastComponent t={t} message={"Canceled operation: " + ops_key} />
-      ),
-      {
-        duration: 5000,
-      },
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (orig_task as any).cancelled = true;
   }
   console.log("Cancel response: ", resp);
 };
@@ -102,10 +100,10 @@ export const callApi = async <K extends OperationNames>(
     (
       t, // t is the Toast object, t.id is the id of THIS toast instance
     ) => (
-      <InfoToastComponent
+      <CancelToastComponent
         t={t}
         message={"Exectuting " + method}
-        onCancel={handleCancel.bind(null, op_key)}
+        onCancel={handleCancel.bind(null, op_key, promise)}
       />
     ),
     {
@@ -114,16 +112,23 @@ export const callApi = async <K extends OperationNames>(
   );
 
   const response = await promise;
-  if (response.status === "error") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cancelled = (promise as any).cancelled;
+  if (cancelled) {
+    console.log("Not printing toast because operation was cancelled");
+  }
+
+  if (response.status === "error" && !cancelled) {
     toast.remove(toastId);
-    toast.error(
-      <div>
-        {response.errors.map((err) => (
-          <p>{err.message}</p>
-        ))}
-      </div>,
+    toast.custom(
+      (t) => (
+        <ErrorToastComponent
+          t={t}
+          message={"Error: " + response.errors[0].message}
+        />
+      ),
       {
-        duration: 5000,
+        duration: Infinity,
       },
     );
   } else {

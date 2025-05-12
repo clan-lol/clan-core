@@ -44,7 +44,7 @@ export const MachineListView: Component = () => {
           },
         });
         if (response.status === "error") {
-          toast.error("Failed to fetch data");
+          console.error("Failed to fetch data");
         } else {
           return response.data;
         }

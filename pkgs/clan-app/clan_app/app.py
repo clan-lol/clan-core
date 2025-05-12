@@ -57,6 +57,21 @@ def app_run(app_opts: ClanAppOptions) -> int:
             status="success",
         )
 
+    def list_tasks(
+        *,
+        op_key: str,
+    ) -> SuccessDataClass[list[str]] | ErrorDataClass:
+        """List all tasks."""
+        log.info("Listing all tasks.")
+        with webview.lock:
+            tasks = list(webview.threads.keys())
+        return SuccessDataClass(
+            op_key=op_key,
+            data=tasks,
+            status="success",
+        )
+
+    API.overwrite_fn(list_tasks)
     API.overwrite_fn(open_file)
     API.overwrite_fn(cancel_task)
     webview.bind_jsonschema_api(API)
