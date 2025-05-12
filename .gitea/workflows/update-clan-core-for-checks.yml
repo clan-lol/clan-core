@@ -15,7 +15,7 @@ jobs:
         run: nix run .#update-clan-core-for-checks
       - name: Create pull request
         run: |
-          export GIT_AUTHOR_NAME=clan-bot GIT_AUTHOR_EMAIL=clan-bot@clan.lol GIT_AUTHOR_NAME=clan-bot GIT_COMMITTER_EMAIL=clan-bot@clan.lol
+          export GIT_AUTHOR_NAME=clan-bot GIT_AUTHOR_EMAIL=clan-bot@clan.lol GIT_COMMITTER_NAME=clan-bot GIT_COMMITTER_EMAIL=clan-bot@clan.lol
           git commit -am "Update pinned clan-core for checks"
           git push origin HEAD:update-clan-core-for-checks
           curl -X POST \
