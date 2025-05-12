@@ -13,10 +13,6 @@ jobs:
           submodules: true
       - name: Update clan-core for checks
         run: nix run .#update-clan-core-for-checks
-      - uses: github.com/quentinlegot/gitea-create-pull-request@c05fb67b080696dcdb2d2b7ea83051ec413f7285 # Change full sha to last commit of this repo if needed
-        with:
-          commit-message: Bump clan-core
-          branch: update-clan-core-for-checks
       - name: Create pull request
         run: |
           git commit -am ""
