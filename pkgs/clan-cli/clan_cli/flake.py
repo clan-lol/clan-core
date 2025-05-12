@@ -735,7 +735,7 @@ class Flake:
             let
               flake = builtins.getFlake "path:{self.store_path}?narHash={self.hash}";
               selectLib = (builtins.getFlake "{select_source()}?narHash={select_hash}").lib;
-              nixpkgs = flake.inputs.nixpkgs or (builtins.getFlake "{nixpkgs_source()}?narHash={fallback_nixpkgs_hash}");
+              nixpkgs = flake.inputs.nixpkgs or (builtins.getFlake "path:{nixpkgs_source()}?narHash={fallback_nixpkgs_hash}");
             in
               nixpkgs.legacyPackages.{config["system"]}.writeText "clan-flake-select" (
                 builtins.toJSON [ {" ".join([f"(selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake)" for attr in str_selectors])} ]
