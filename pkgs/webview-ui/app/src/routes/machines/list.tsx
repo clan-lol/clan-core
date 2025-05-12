@@ -68,7 +68,7 @@ export const MachineListView: Component = () => {
     });
   const navigate = useNavigate();
 
-  const [view, setView] = makePersisted(createSignal<"list" | "grid">("list"), {
+  const [view, setView] = makePersisted(createSignal<"list" | "grid">("grid"), {
     name: "machines_view",
     storage: localStorage,
   });
