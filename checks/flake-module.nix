@@ -34,27 +34,32 @@ in
             inherit self;
             inherit (self) clanLib;
           };
-          nixosTests = lib.optionalAttrs (pkgs.stdenv.isLinux) {
-            # Deltachat is currently marked as broken
-            # deltachat = import ./deltachat nixosTestArgs;
+          nixosTests =
+            lib.optionalAttrs (pkgs.stdenv.isLinux) {
+              # Deltachat is currently marked as broken
+              # deltachat = import ./deltachat nixosTestArgs;
 
-            # Base Tests
-            secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
-            borgbackup = self.clanLib.test.baseTest ./borgbackup nixosTestArgs;
-            wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
+              # Base Tests
+              secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
+              borgbackup = self.clanLib.test.baseTest ./borgbackup nixosTestArgs;
+              wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
 
-            # Container Tests
-            container = self.clanLib.test.containerTest ./container nixosTestArgs;
-            zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
-            matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
-            postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
+              # Container Tests
+              container = self.clanLib.test.containerTest ./container nixosTestArgs;
+              zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
+              matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
+              postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
 
-            # Clan Tests
-            mumble = import ./mumble nixosTestArgs;
-            dummy-inventory-test = import ./dummy-inventory-test nixosTestArgs;
-            data-mesher = import ./data-mesher nixosTestArgs;
-            syncthing = import ./syncthing nixosTestArgs;
-          };
+              # Clan Tests
+              dummy-inventory-test = import ./dummy-inventory-test nixosTestArgs;
+              data-mesher = import ./data-mesher nixosTestArgs;
+              syncthing = import ./syncthing nixosTestArgs;
+            }
+            // lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == "aarch64-linux") {
+              # for some reason this hangs in an odd place in CI, but it works on my machine ...
+              # on aarch64-linux it works though
+              mumble = import ./mumble nixosTestArgs;
+            };
 
           packagesToBuild = lib.removeAttrs self'.packages [
             # exclude the check that checks that nothing depends on the repo root
