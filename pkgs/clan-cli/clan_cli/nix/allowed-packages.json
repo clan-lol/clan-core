@@ -6,6 +6,7 @@
   "age-plugin-sss",
   "age-plugin-tpm",
   "age-plugin-yubikey",
+  "age-plugin-1p",
   "avahi",
   "bash",
   "bubblewrap",
