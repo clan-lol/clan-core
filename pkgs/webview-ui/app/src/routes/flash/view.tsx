@@ -243,6 +243,7 @@ export const Flash = () => {
             description="Provide your SSH public key(s) for secure, passwordless connections. (.pub files)"
             multiple={true} // Allow multiple SSH keys
             fileDialogOptions={sshKeyDialogOptions}
+            of={Array<File>}
             // You could add custom validation via modular-forms 'validate' prop on CustomFileField if needed
             // e.g. validate={[required("At least one SSH key is required.")]}
             // This would require CustomFileField to accept and pass `validate` to its internal `Field`.

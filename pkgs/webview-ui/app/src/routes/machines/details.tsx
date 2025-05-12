@@ -623,10 +623,11 @@ const MachineForm = (props: MachineDetailsProps) => {
                 </Field>
                 <FileSelectorField
                   Field={Field}
+                  of={Array<File>}
+                  multiple={true}
                   name="sshKeys" // Corresponds to FlashFormValues.sshKeys
                   label="SSH Private Key"
                   description="Provide your SSH private key for secure, passwordless connections."
-                  multiple={false}
                   fileDialogOptions={
                     {
                       title: "Select SSH Keys",

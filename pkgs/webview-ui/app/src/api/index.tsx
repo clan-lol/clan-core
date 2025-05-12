@@ -56,8 +56,9 @@ const _callApi = <K extends OperationNames>(
       ) => Promise<OperationResponse<OperationNames>>
     >
   )[method](args) as Promise<OperationResponse<K>>;
-  const op_key = (promise as any)._webviewMessageId as string;
-  debugger;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const op_key = (promise as any)._webviewMessageId as string; 
+
   return { promise, op_key };
 };
 

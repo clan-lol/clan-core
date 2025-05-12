@@ -107,8 +107,7 @@ const closeButtonStyle: JSX.CSSProperties = {
 // --- Toast Component Definitions ---
 
 // Error Toast
-export interface ErrorToastProps extends BaseToastProps {}
-export const ErrorToastComponent: Component<ErrorToastProps> = (props) => {
+export const ErrorToastComponent: Component<BaseToastProps> = (props) => {
   const handleCancelClick = () => {
     if (props.onCancel) {
       props.onCancel();
@@ -136,8 +135,7 @@ export const ErrorToastComponent: Component<ErrorToastProps> = (props) => {
 };
 
 // Info Toast
-export interface InfoToastProps extends BaseToastProps {}
-export const InfoToastComponent: Component<InfoToastProps> = (props) => {
+export const InfoToastComponent: Component<BaseToastProps> = (props) => {
   const handleCancelClick = () => {
     if (props.onCancel) {
       props.onCancel();
@@ -165,8 +163,7 @@ export const InfoToastComponent: Component<InfoToastProps> = (props) => {
 };
 
 // Warning Toast
-export interface WarningToastProps extends BaseToastProps {}
-export const WarningToastComponent: Component<WarningToastProps> = (props) => {
+export const WarningToastComponent: Component<BaseToastProps> = (props) => {
   const handleCancelClick = () => {
     if (props.onCancel) {
       props.onCancel();

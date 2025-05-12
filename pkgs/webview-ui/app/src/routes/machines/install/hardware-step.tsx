@@ -127,10 +127,11 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
             </Field>
             <FileSelectorField
               Field={Field}
+              of={File}
+              multiple={false}
               name="sshKey" // Corresponds to FlashFormValues.sshKeys
               label="SSH Private Key"
               description="Provide your SSH private key for secure, passwordless connections."
-              multiple={false}
               fileDialogOptions={
                 {
                   title: "Select SSH Keys",

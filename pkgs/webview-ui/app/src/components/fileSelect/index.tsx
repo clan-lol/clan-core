@@ -3,11 +3,7 @@ import { Typography } from "@/src/components/Typography";
 import Fieldset from "@/src/Form/fieldset";
 import Icon from "@/src/components/icon"; // For displaying file icons
 import { callApi } from "@/src/api";
-import type {
-  FieldComponent,
-  FieldValues,
-  FieldName,
-} from "@modular-forms/solid";
+import type { FieldValues } from "@modular-forms/solid";
 import { Show, For, type Component, type JSX } from "solid-js";
 
 // Types for the file dialog options passed to callApi
@@ -23,24 +19,23 @@ export interface FileDialogOptions {
 }
 
 // Props for the CustomFileField component
-interface FileSelectorOpts<
-  TForm extends FieldValues,
-  TFieldName extends FieldName<TForm>,
-> {
-  Field: FieldComponent<TForm>; // The Field component from createForm
+interface FileSelectorOpts<TFieldName extends string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Field: any; // The Field component from createForm
   name: TFieldName; // Name of the form field (e.g., "sshKeys", "profilePicture")
   label: string; // Legend for Fieldset or main label for the input
   description?: string | JSX.Element; // Optional description text
   multiple?: boolean; // True if multiple files can be selected, false for single file
   fileDialogOptions: FileDialogOptions; // Configuration for the custom file dialog
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  of: any;
   // Optional props for styling
   inputClass?: string;
   fileListClass?: string;
   // You can add more specific props like `validate` if you want to pass them to Field
 }
 
-export const FileSelectorField: Component<FileSelectorOpts<any, any>> = (
+export const FileSelectorField: Component<FileSelectorOpts<string>> = (
   props,
 ) => {
   const {
@@ -57,7 +52,7 @@ export const FileSelectorField: Component<FileSelectorOpts<any, any>> = (
   // Ref to the underlying HTMLInputElement (assuming FileInput forwards refs or is simple)
   let actualInputElement: HTMLInputElement | undefined;
 
-  const openAndSetFiles = async (event: MouseEvent) => {
+  const openAndSetFiles = async (event: Event) => {
     event.preventDefault();
     if (!actualInputElement) {
       console.error(
@@ -127,7 +122,10 @@ export const FileSelectorField: Component<FileSelectorOpts<any, any>> = (
         ))}
 
       <Field name={name} type={multiple ? "File[]" : "File"}>
-        {(field, fieldProps) => (
+        {(
+          field: { value: File | File[]; error?: string },
+          fieldProps: Record<string, unknown>,
+        ) => (
           <>
             {/* 
               This FileInput component should be clickable.
@@ -135,8 +133,9 @@ export const FileSelectorField: Component<FileSelectorOpts<any, any>> = (
               If FileInput is complex, it might need an 'inputRef' prop or similar.
             */}
             <FileInput
-              {...(fieldProps as FileInputProps)} // Spread modular-forms props
+              {...(fieldProps as unknown as FileInputProps)} // Spread modular-forms props
               ref={(el: HTMLInputElement) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (fieldProps as any).ref(el); // Pass ref to modular-forms
                 actualInputElement = el; // Capture for local use
               }}
@@ -150,7 +149,7 @@ export const FileSelectorField: Component<FileSelectorOpts<any, any>> = (
               error={field.error} // Display error from modular-forms
             />
             {field.error && (
-              <Typography color="error" hierarchy="body" size="xs" class="mt-1">
+              <Typography hierarchy="body" size="xs" class="mt-1">
                 {field.error}
               </Typography>
             )}
@@ -175,9 +174,8 @@ export const FileSelectorField: Component<FileSelectorOpts<any, any>> = (
                   }
                 >
                   {(file) => (
-                    <div class="flex items-center justify-between rounded border border-def-1 bg-bg-2 p-2 text-sm">
+                    <div class="flex items-center justify-between rounded border p-2 text-sm border-def-1">
                       <span class="truncate" title={file.name}>
-                        <Icon icon="File" class="mr-2 inline-block" size={14} />
                         {file.name}
                       </span>
                       {/* A remove button per file is complex with FileList & modular-forms.
