@@ -19,8 +19,8 @@ clanLib.test.makeTestClan {
 
       clan = {
         directory = ./.;
+        modules."@clan/admin" = ../../clanServices/admin/default.nix;
         inventory = {
-          modules."@clan/admin" = import ../../clanServices/admin/default.nix;
 
           machines.client = { };
           machines.server = { };
