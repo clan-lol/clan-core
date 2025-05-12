@@ -105,10 +105,7 @@ in
           private_key = {
             inherit owner;
           };
-          public_key = {
-            inherit owner;
-            secret = false;
-          };
+          public_key.secret = false;
         };
 
       runtimeInputs = [
@@ -134,10 +131,7 @@ in
           private_key = {
             inherit owner;
           };
-          public_key = {
-            inherit owner;
-            secret = false;
-          };
+          public_key.secret = false;
         };
 
       runtimeInputs = [
