@@ -32,7 +32,6 @@
               { pkgs, ... }:
               let
                 dependencies = [
-                  self
                   pkgs.stdenv.drvPath
                   pkgs.stdenvNoCC
                   self.nixosConfigurations.test-morph-machine.config.system.build.toplevel
