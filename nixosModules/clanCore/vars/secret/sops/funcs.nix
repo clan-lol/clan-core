@@ -13,7 +13,7 @@ in
 {
 
   collectFiles =
-    vars:
+    generators:
     let
       relevantFiles =
         generator:
@@ -30,7 +30,7 @@ in
             inherit (generator) share;
             inherit (file) owner group mode;
           }) (relevantFiles generator)
-        ) vars.generators
+        ) generators
       );
     in
     allFiles;
