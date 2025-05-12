@@ -561,7 +561,7 @@ const MachineForm = (props: MachineDetailsProps) => {
                 variant="light"
                 class="w-full"
                 size="s"
-                onClick={() => handleUpdate()}
+                onClick={() => handleUpdateButton()}
                 endIcon={<Icon size={12} icon="Update" />}
               >
                 Update
