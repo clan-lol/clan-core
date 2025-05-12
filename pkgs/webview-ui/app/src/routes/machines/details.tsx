@@ -28,7 +28,10 @@ import { SummaryStep } from "./install/summary-step";
 import cx from "classnames";
 import { VarsStep, VarsValues } from "./install/vars-step";
 import Fieldset from "@/src/Form/fieldset";
-
+import {
+  FileSelectorField,
+  type FileDialogOptions,
+} from "@/src/components/fileSelect";
 type MachineFormInterface = MachineData & {
   sshKey?: File;
   disk?: string;
@@ -50,6 +53,7 @@ export interface AllStepsValues extends FieldValues {
   "2": DiskValues;
   "3": VarsValues;
   "4": NonNullable<unknown>;
+  sshKey?: File;
 }
 
 const LoadingBar = () => (
@@ -104,9 +108,6 @@ const InstallMachine = (props: InstallMachineProps) => {
       return;
     }
 
-    const loading_toast = toast.loading(
-      "Installing machine. Grab coffee (15min)...",
-    );
     setIsInstalling(true);
 
     // props.machine.disk_
@@ -125,16 +126,6 @@ const InstallMachine = (props: InstallMachineProps) => {
         schema_name: diskValues.schema,
         force: true,
       });
-
-      if (disk_response.status === "error") {
-        toast.error(
-          `Failed to set disk schema: ${disk_response.errors[0].message}`,
-        );
-        setProgressText(
-          "Failed to set disk schema. \n" + disk_response.errors[0].message,
-        );
-        return;
-      }
     }
 
     setProgressText("Installing machine ... (2/5)");
@@ -147,6 +138,7 @@ const InstallMachine = (props: InstallMachineProps) => {
             identifier: curr_uri,
           },
           override_target_host: target,
+          private_key: values.sshKey?.name,
         },
         password: "",
       },
@@ -164,24 +156,6 @@ const InstallMachine = (props: InstallMachineProps) => {
     await sleep(10 * 1000);
 
     const installResponse = await installPromise;
-
-    toast.dismiss(loading_toast);
-
-    if (installResponse.status === "error") {
-      toast.error("Failed to install machine");
-      setIsDone(true);
-      setProgressText(
-        "Failed to install machine. \n" + installResponse.errors[0].message,
-      );
-    }
-
-    if (installResponse.status === "success") {
-      toast.success("Machine installed successfully");
-      setIsDone(true);
-      setProgressText(
-        "Machine installed successfully. Please unplug the usb stick and reboot the system.",
-      );
-    }
   };
 
   const [step, setStep] = createSignal<StepIdx>("1");
@@ -431,14 +405,6 @@ const MachineForm = (props: MachineDetailsProps) => {
         ),
       },
     });
-    if (machine_response.status === "error") {
-      toast.error(
-        `Failed to set machine: ${machine_response.errors[0].message}`,
-      );
-    }
-    if (machine_response.status === "success") {
-      toast.success("Machine set successfully");
-    }
 
     return null;
   };
@@ -461,9 +427,8 @@ const MachineForm = (props: MachineDetailsProps) => {
   }));
 
   const handleUpdateButton = async () => {
-    const t = toast.loading("Checking for generators...");
     await generatorsQuery.refetch();
-    toast.dismiss(t);
+
     if (generatorsQuery.data?.length !== 0) {
       navigate(`/machines/${machineName()}/vars`);
     } else {
@@ -489,7 +454,6 @@ const MachineForm = (props: MachineDetailsProps) => {
 
     const target = targetHost();
 
-    const loading_toast = toast.loading("Updating machine...");
     setIsUpdating(true);
     const r = await callApi("update_machines", {
       base_path: curr_uri,
@@ -502,15 +466,6 @@ const MachineForm = (props: MachineDetailsProps) => {
         },
       ],
     });
-    setIsUpdating(false);
-    toast.dismiss(loading_toast);
-
-    if (r.status === "error") {
-      toast.error("Failed to update machine");
-    }
-    if (r.status === "success") {
-      toast.success("Machine updated successfully");
-    }
   };
 
   createEffect(() => {
@@ -666,6 +621,23 @@ const MachineForm = (props: MachineDetailsProps) => {
                     />
                   )}
                 </Field>
+                <FileSelectorField
+                  Field={Field}
+                  of={Array<File>}
+                  multiple={true}
+                  name="sshKeys" // Corresponds to FlashFormValues.sshKeys
+                  label="SSH Private Key"
+                  description="Provide your SSH private key for secure, passwordless connections."
+                  fileDialogOptions={
+                    {
+                      title: "Select SSH Keys",
+                      initial_folder: "~/.ssh",
+                    } as FileDialogOptions
+                  }
+                  // You could add custom validation via modular-forms 'validate' prop on CustomFileField if needed
+                  // e.g. validate={[required("At least one SSH key is required.")]}
+                  // This would require CustomFileField to accept and pass `validate` to its internal `Field`.
+                />
               </Fieldset>
             </Accordion>
 

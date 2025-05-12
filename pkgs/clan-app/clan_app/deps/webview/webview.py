@@ -2,10 +2,13 @@ import ctypes
 import json
 import logging
 import threading
+import time
 from collections.abc import Callable
+from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any
 
+from clan_cli.async_run import set_should_cancel
 from clan_lib.api import (
     ApiError,
     ErrorDataClass,
@@ -38,15 +41,28 @@ class Size:
         self.hint = hint
 
 
+@dataclass
+class WebThread:
+    thread: threading.Thread
+    stop_event: threading.Event
+
+
 class Webview:
     def __init__(
         self, debug: bool = False, size: Size | None = None, window: int | None = None
     ) -> None:
         self._handle = _webview_lib.webview_create(int(debug), window)
         self._callbacks: dict[str, Callable[..., Any]] = {}
+        self.threads: dict[str, WebThread] = {}
+        self.stopped_threads: set[str] = set()
+        self.lock = threading.Lock()
+        self.stop_garbage_collection: threading.Event = threading.Event()
 
         if size:
             self.size = size
+
+    def __enter__(self) -> "Webview":
+        return self
 
     @property
     def size(self) -> Size:
@@ -78,8 +94,28 @@ class Webview:
     def navigate(self, url: str) -> None:
         _webview_lib.webview_navigate(self._handle, _encode_c_string(url))
 
+    def collect_garbage(self) -> None:
+        while not self.stop_garbage_collection.is_set():
+            with self.lock:
+                for op_key in list(self.threads.keys()):
+                    if op_key in self.stopped_threads:
+                        log.debug(f"Collecting garbage op_key: {op_key}")
+                        del self.threads[op_key]
+                        self.stopped_threads.remove(op_key)
+            if self.stop_garbage_collection.is_set():
+                break
+        time.sleep(1)
+
     def run(self) -> None:
+        thread = threading.Thread(
+            target=self.collect_garbage, name="WebviewGarbageCollector"
+        )
+        thread.start()
         _webview_lib.webview_run(self._handle)
+        self.stop_garbage_collection.set()
+        log.info("Shutting down webview...")
+        if self.lock.locked():
+            self.lock.release()
         self.destroy()
 
     def bind_jsonschema_api(self, api: MethodRegistry) -> None:
@@ -92,7 +128,7 @@ class Webview:
                 wrap_method: Callable[..., Any] = method,
                 method_name: str = name,
             ) -> None:
-                def thread_task() -> None:
+                def thread_task(stop_event: threading.Event) -> None:
                     try:
                         args = json.loads(req.decode())
 
@@ -110,9 +146,12 @@ class Webview:
                             # from_dict really takes Anything and returns an instance of the type/class
                             reconciled_arguments[k] = from_dict(arg_class, v)
 
-                        reconciled_arguments["op_key"] = seq.decode()
+                        op_key = seq.decode()
+                        reconciled_arguments["op_key"] = op_key
                         # TODO: We could remove the wrapper in the MethodRegistry
                         # and just call the method directly
+
+                        set_should_cancel(lambda: stop_event.is_set())
                         result = wrap_method(**reconciled_arguments)
 
                         serialized = json.dumps(
@@ -138,9 +177,18 @@ class Webview:
                             dataclass_to_dict(result), indent=4, ensure_ascii=False
                         )
                         self.return_(seq.decode(), FuncStatus.FAILURE, serialized)
+                    finally:
+                        self.stopped_threads.add(seq.decode())
 
-                thread = threading.Thread(target=thread_task)
+                stop_event = threading.Event()
+                thread = threading.Thread(
+                    target=thread_task, args=(stop_event,), name="WebviewThread"
+                )
                 thread.start()
+                with self.lock:
+                    self.threads[seq.decode()] = WebThread(
+                        thread=thread, stop_event=stop_event
+                    )
 
             c_callback = _webview_lib.CFUNCTYPE(
                 None, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_void_p

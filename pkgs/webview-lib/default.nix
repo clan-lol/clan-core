@@ -7,9 +7,14 @@ pkgs.clangStdenv.mkDerivation {
   src = pkgs.fetchFromGitHub {
     owner = "webview";
     repo = "webview";
-    rev = "83a4b4a5bbcb4b0ba2ca3ee226c2da1414719106";
-    sha256 = "sha256-5R8kllvP2EBuDANIl07fxv/EcbPpYgeav8Wfz7Kt13c=";
+    rev = "f1a9d6b6fb8bcc2e266057224887a3d628f30f90";
+    sha256 = "sha256-sK7GXDbb2zEntWH5ylC2B39zW+gXvqQ1l843gvziDZo=";
   };
+
+  # We add the function id to the promise to be able to cancel it through the UI
+  # We disallow remote connections from the UI on Linux
+  # TODO: Disallow remote connections on MacOS
+  patches = [ ./fixes.patch ];
 
   outputs = [
     "out"

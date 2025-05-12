@@ -1,7 +1,7 @@
 import cx from "classnames";
 import { createMemo, JSX, Show, splitProps } from "solid-js";
 
-interface FileInputProps {
+export interface FileInputProps {
   ref: (element: HTMLInputElement) => void;
   name: string;
   value?: File[] | File;
