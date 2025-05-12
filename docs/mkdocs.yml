@@ -55,6 +55,7 @@ nav:
       - Backup & Restore: getting-started/backups.md
       - Vars Backend: manual/vars-backend.md
       - Facts Backend: manual/secrets.md
+      - Facts Vars Migration: manual/migration-facts-vars.md
       - Autoincludes: manual/adding-machines.md
       - Inventory:
           - Inventory: manual/inventory.md
