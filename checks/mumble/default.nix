@@ -47,6 +47,20 @@ clanLib.test.makeTestClan {
       nodes.peer2 = common;
 
       testScript = ''
+        import time
+        import re
+
+
+        def machine_has_text(machine: Machine, regex: str) -> bool:
+            variants = machine.get_screen_text_variants()
+            # for debugging
+            # machine.screenshot(f"/tmp/{machine.name}.png")
+            for text in variants:
+                print(f"Expecting '{regex}' in '{text}'")
+                if re.search(regex, text) is not None:
+                    return True
+            return False
+
         start_all()
 
         with subtest("Waiting for x"):
@@ -63,41 +77,53 @@ clanLib.test.makeTestClan {
           peer2.execute("mumble >&2 &")
 
         with subtest("Wait for Mumble"):
-          peer1.wait_for_window(r"^Mumble$")
-          peer2.wait_for_window(r"^Mumble$")
+          peer1.wait_for_window(r"Mumble")
+          peer2.wait_for_window(r"Mumble")
 
         with subtest("Wait for certificate creation"):
-          peer1.wait_for_window(r"^Mumble$")
-          peer1.sleep(3) # mumble is slow to register handlers
-          peer1.send_chars("\n")
-          peer1.send_chars("\n")
-          peer2.wait_for_window(r"^Mumble$")
-          peer2.sleep(3) # mumble is slow to register handlers
-          peer2.send_chars("\n")
-          peer2.send_chars("\n")
+          peer1.wait_for_window(r"Mumble")
+          peer2.wait_for_window(r"Mumble")
 
-        with subtest("Wait for server connect"):
-          peer1.wait_for_window(r"^Mumble Server Connect$")
-          peer2.wait_for_window(r"^Mumble Server Connect$")
+          for i in range(20):
+            time.sleep(1)
+            peer1.send_chars("\n")
+            peer1.send_chars("\n")
+            peer2.send_chars("\n")
+            peer2.send_chars("\n")
+            if machine_has_text(peer1, r"Mumble Server Connect") and \
+               machine_has_text(peer2, r"Mumble Server Connect"):
+              break
+          else:
+            raise Exception("Timeout waiting for certificate creation")
 
         with subtest("Check validity of server certificates"):
           peer1.execute("killall .mumble-wrapped")
           peer1.sleep(1)
           peer1.execute("mumble mumble://peer2 >&2 &")
-          peer1.wait_for_window(r"^Mumble$")
-          peer1.sleep(3) # mumble is slow to register handlers
-          peer1.send_chars("\n")
-          peer1.send_chars("\n")
-          peer1.wait_for_text("Connected.")
+          peer1.wait_for_window(r"Mumble")
+
+          for i in range(20):
+            time.sleep(1)
+            peer1.send_chars("\n")
+            peer1.send_chars("\n")
+            if machine_has_text(peer1, "Connected."):
+              break
+          else:
+            raise Exception("Timeout waiting for certificate creation")
 
           peer2.execute("killall .mumble-wrapped")
           peer2.sleep(1)
           peer2.execute("mumble mumble://peer1 >&2 &")
-          peer2.wait_for_window(r"^Mumble$")
-          peer2.sleep(3) # mumble is slow to register handlers
-          peer2.send_chars("\n")
-          peer2.send_chars("\n")
-          peer2.wait_for_text("Connected.")
+          peer2.wait_for_window(r"Mumble")
+
+          for i in range(20):
+            time.sleep(1)
+            peer2.send_chars("\n")
+            peer2.send_chars("\n")
+            if machine_has_text(peer2, "Connected."):
+              break
+          else:
+            raise Exception("Timeout waiting for certificate creation")
       '';
     }
   );
