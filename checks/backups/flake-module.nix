@@ -147,25 +147,7 @@
   perSystem =
     { pkgs, ... }:
     let
-      clanCore = self.filter {
-        include = [
-          "checks/backups"
-          "checks/flake-module.nix"
-          "clanModules/borgbackup"
-          "clanModules/flake-module.nix"
-          "clanModules/localbackup"
-          "clanModules/packages"
-          "clanModules/single-disk"
-          "clanModules/zerotier"
-          "flake.lock"
-          "flakeModules"
-          "inventory.json"
-          "nixosModules"
-          # Just include everything in 'lib'
-          # If anything changes in /lib that may affect everything
-          "lib"
-        ];
-      };
+      clanCore = self.checks.x86_64-linux.clan-core-for-checks;
     in
     {
       checks = pkgs.lib.mkIf pkgs.stdenv.isLinux {
@@ -182,11 +164,6 @@
               # import the inventory generated nixosModules
               self.clanInternals.inventoryClass.machines.test-backup.machineImports;
             clan.core.settings.directory = ./.;
-            environment.systemPackages = [
-              (pkgs.writeShellScriptBin "foo" ''
-                echo ${clanCore}
-              '')
-            ];
           };
 
           testScript = ''
