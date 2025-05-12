@@ -17,7 +17,6 @@ export const createModulesQuery = (
     },
     enabled: !!uri,
     queryFn: async () => {
-      console.log({ uri });
       if (uri) {
         const response = await callApi("list_modules", {
           base_path: uri,
@@ -25,7 +24,6 @@ export const createModulesQuery = (
         if (response.status === "error") {
           console.error("Failed to fetch data");
         } else {
-          console.log(response.data.localModules["hello-world"]["manifest"]);
           return response.data;
         }
       }

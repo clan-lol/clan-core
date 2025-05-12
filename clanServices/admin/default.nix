@@ -2,6 +2,8 @@
 {
   _class = "clan.service";
   manifest.name = "clan-core/admin";
+  manifest.description = "Convenient Administration for the Clan App";
+  manifest.categories = [ "Utility" ];
 
   roles.default = {
     interface =
