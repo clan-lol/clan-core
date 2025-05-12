@@ -1,6 +1,5 @@
 {
   lib,
-  specialArgs,
   ...
 }:
 let
@@ -76,9 +75,8 @@ in
         ```
       '';
       type = types.submoduleWith {
-        inherit specialArgs;
         modules = [
-          ../constraints
+
         ];
       };
     };

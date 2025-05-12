@@ -1,7 +1,8 @@
 {
-  lib,
   allRoles,
-  moduleName,
+}:
+{
+  lib,
   ...
 }:
 let
@@ -9,12 +10,6 @@ let
   rolesAttrs = builtins.groupBy lib.id allRoles;
 in
 {
-  options.serviceName = mkOption {
-    type = types.str;
-    default = moduleName;
-    readOnly = true;
-    visible = false;
-  };
   options.roles = lib.mapAttrs (
     _name: _:
     mkOption {

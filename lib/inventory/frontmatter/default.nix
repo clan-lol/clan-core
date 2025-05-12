@@ -34,25 +34,33 @@ let
       allModules,
     }:
     lib.evalModules {
-      specialArgs = {
-        inherit moduleName resolvedRoles instanceName;
-        allRoles = getRoles "inventory.modules" allModules moduleName;
-      };
       modules = [
         (getFrontmatter allModules.${moduleName} moduleName)
         ./interface.nix
+        {
+          constraints.imports = [
+            (lib.modules.importApply ../constraints {
+              inherit moduleName resolvedRoles instanceName;
+              allRoles = getRoles "inventory.modules" allModules moduleName;
+            })
+          ];
+        }
       ];
     };
 
   # For Documentation purposes only
   frontmatterOptions =
     (lib.evalModules {
-      specialArgs = {
-        moduleName = "{moduleName}";
-        allRoles = [ "{roleName}" ];
-      };
       modules = [
         ./interface.nix
+        {
+          constraints.imports = [
+            (lib.modules.importApply ../constraints {
+              moduleName = "{moduleName}";
+              allRoles = [ "{roleName}" ];
+            })
+          ];
+        }
       ];
     }).options;
 
