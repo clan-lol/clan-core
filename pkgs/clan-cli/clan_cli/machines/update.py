@@ -19,8 +19,6 @@ from clan_cli.completions import (
 from clan_cli.errors import ClanError
 from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.upload import upload_secrets
-from clan_cli.flake import Flake
-from clan_cli.inventory import Machine as InventoryMachine
 from clan_cli.machines.list import list_machines
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_command, nix_config, nix_metadata
@@ -103,29 +101,6 @@ def upload_sources(machine: Machine, host: Host) -> str:
 
 
 @API.register
-def update_machines(base_path: str, machines: list[InventoryMachine]) -> None:
-    group_machines: list[Machine] = []
-
-    # Convert InventoryMachine to Machine
-    flake = Flake(base_path)
-    for machine in machines:
-        name = machine.get("name")
-        # prefer target host set via inventory, but fallback to the one set in the machine
-        target_host = machine.get("deploy", {}).get("targetHost")
-
-        if not name:
-            msg = "Machine name is not set"
-            raise ClanError(msg)
-        m = Machine(
-            name,
-            flake=flake,
-            override_target_host=target_host,
-        )
-        group_machines.append(m)
-
-    deploy_machines(group_machines)
-
-
 def deploy_machine(machine: Machine) -> None:
     with ExitStack() as stack:
         target_host = stack.enter_context(machine.target_host())
