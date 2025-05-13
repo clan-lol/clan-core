@@ -198,21 +198,33 @@ def terminate_process_group(process: subprocess.Popen) -> Iterator[None]:
             pass
 
 
+def _terminate_process(process: subprocess.Popen) -> None:
+    try:
+        process.terminate()
+    except ProcessLookupError:
+        return
+
+    with contextlib.suppress(subprocess.TimeoutExpired):
+        # give the process time to terminate
+        process.wait(3)
+        return
+
+    try:
+        process.kill()
+    except ProcessLookupError:
+        return
+
+    with contextlib.suppress(subprocess.TimeoutExpired):
+        # give the process time to terminate
+        process.wait(3)
+
+
 @contextmanager
 def terminate_process(process: subprocess.Popen) -> Iterator[None]:
     try:
         yield
     finally:
-        try:
-            process.terminate()
-            try:
-                with contextlib.suppress(subprocess.TimeoutExpired):
-                    # give the process time to terminate
-                    process.wait(3)
-            finally:
-                process.kill()
-        except ProcessLookupError:
-            pass
+        _terminate_process(process)
 
 
 class TimeTable:
