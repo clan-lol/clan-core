@@ -257,7 +257,7 @@ in
                 description = ''
                   !!! example "Predefined Tag"
 
-                      Will be added to all machines that set `machineClass = "darwin"`
+                      Will be added to all machines that set `machineClass = "nixos"`
 
                       ```nix
                       inventory.machines.machineA.tags = [ "nixos" ];
