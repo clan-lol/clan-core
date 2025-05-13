@@ -58,13 +58,16 @@ let
     (pythonRuntime.withPackages pyTestDeps)
   ];
 
-  source =
+  nixFilter = import ../../lib/filter-clan-core/nix-filter.nix;
+
+  cliSource =
+    source:
     runCommand "clan-cli-source"
       {
         nativeBuildInputs = [ jq ];
       }
       ''
-        cp -r ${./.} $out
+        cp -r ${source} $out
         chmod -R +w $out
 
         # In cases where the devshell created this file, this will already exist
@@ -77,6 +80,19 @@ let
         ln -sf ${nix-select} $out/clan_cli/select
         cp -r ${../../templates} $out/clan_cli/templates
       '';
+
+  sourceWithoutTests = cliSource (
+    nixFilter.filter {
+      root = ./.;
+      include = [
+        (
+          _root: path: _type:
+          (builtins.match "test_.*\.py" path) == null
+        )
+      ];
+    }
+  );
+  sourceWithTests = cliSource ./.;
 
   # Create a custom nixpkgs for use within the project
   nixpkgs' =
@@ -106,7 +122,7 @@ let
 in
 pythonRuntime.pkgs.buildPythonApplication {
   name = "clan-cli";
-  src = source;
+  src = sourceWithoutTests;
   format = "pyproject";
 
   # Arguments for the wrapper to unset LD_LIBRARY_PATH to avoid glibc version issues
@@ -150,7 +166,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           }
           ''
             set -euo pipefail
-            cp -r ${source} ./src
+            cp -r ${sourceWithTests} ./src
             chmod +w -R ./src
             cd ./src
 
@@ -193,7 +209,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           }
           ''
             set -euo pipefail
-            cp -r ${source} ./src
+            cp -r ${sourceWithTests} ./src
             chmod +w -R ./src
             cd ./src
 
@@ -246,7 +262,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           }
           ''
             set -euo pipefail
-            cp -r ${source} ./src
+            cp -r ${sourceWithTests} ./src
             chmod +w -R ./src
             cd ./src
 
