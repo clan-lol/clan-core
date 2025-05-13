@@ -30,4 +30,4 @@ jobs:
               "title": "Automated Update: Clan Core",
               "body": "This PR updates the pinned clan-core for checks."
             }' \
-           "http://git.clan.lol/api/v1/repos/clan/clan-core/pulls"
+           "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls"
