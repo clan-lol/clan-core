@@ -83,5 +83,25 @@ hide:
 
     Learn how to interface with Clan programmatically
 
+-   [Cli Reference](./reference/cli/index.md)
+
+    ---
+
+    The `clan` cli command
+
+-   [Modules](./reference/clanModules/index.md)
+
+    ---
+
+    An overview of available clan modules
+
+-   [Core](./reference/clan-core/index.md)
+
+    ---
+
+    The clan core nix module. 
+    This is imported when using clan and is the basis of the extra functionality 
+    that can be provided.
+
 
 </div>
