@@ -457,16 +457,14 @@ const MachineForm = (props: MachineDetailsProps) => {
     const target = targetHost();
 
     setIsUpdating(true);
-    const r = await callApi("update_machines", {
-      base_path: curr_uri,
-      machines: [
-        {
-          name: machine,
-          deploy: {
-            targetHost: target,
-          },
+    const r = await callApi("deploy_machine", {
+      machine: {
+        name: machine,
+        flake: {
+          identifier: curr_uri,
         },
-      ],
+        override_target_host: target,
+      },
     });
   };
 
