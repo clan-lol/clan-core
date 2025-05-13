@@ -5,11 +5,12 @@ in
 {
   flake.filter =
     {
+      name ? "source",
       include ? [ ],
       exclude ? [ ],
     }:
     nixFilter.filter {
-      inherit exclude;
+      inherit name exclude;
       include = include ++ [
         "flake.nix"
       ];
