@@ -43,7 +43,17 @@ else
     :
   }
 fi
-if ! treefmt --fail-on-change --no-cache; then
+mapfile -t untracked < <(git ls-files --others --exclude-standard)
+if [[ ${#untracked[@]} -gt 0 ]]; then
+  for item in "${untracked[@]}"; do
+    exclude_args+=("--excludes" "$item")
+  done
+  treefmt=(treefmt "${exclude_args[@]}")
+else
+  treefmt=(treefmt)
+fi
+
+if ! "${treefmt[@]}" --fail-on-change --no-cache; then
   pop
   exit 1
 fi
