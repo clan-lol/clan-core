@@ -21,7 +21,7 @@ jobs:
           git commit -am "Update pinned clan-core for checks"
           git push origin +HEAD:update-clan-core-for-checks
           set -x
-          nix run --inputs-from . nixpkgs#curl -- -X POST \
+          resp=$(nix run --inputs-from . nixpkgs#curl -- -X POST \
             -H "Authorization: token $CI_BOT_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{
@@ -30,4 +30,16 @@ jobs:
               "title": "Update Clan Core for Checks",
               "body": "This PR updates the pinned clan-core flake input that is used for checks."
             }' \
-           "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls"
+           "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls")
+          pr_id=$(echo "$resp" | jq -r '.id')
+
+          # Merge when succeed
+          nix run --inputs-from . nixpkgs#curl -- -X POST \
+            -H "Authorization: token $CI_BOT_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "Do": "merge",
+              "merge_when_checks_succeed": true,
+              "delete_branch_after_merge": true,
+            }' \
+            "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls/$pr_id/merge"
