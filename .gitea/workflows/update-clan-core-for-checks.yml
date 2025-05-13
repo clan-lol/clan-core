@@ -31,7 +31,7 @@ jobs:
               "body": "This PR updates the pinned clan-core flake input that is used for checks."
             }' \
            "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls")
-          pr_id=$(echo "$resp" | jq -r '.id')
+          pr_number=$(echo "$resp" | jq -r '.number')
 
           # Merge when succeed
           nix run --inputs-from . nixpkgs#curl -- -X POST \
@@ -42,4 +42,4 @@ jobs:
               "merge_when_checks_succeed": true,
               "delete_branch_after_merge": true
             }' \
-            "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls/$pr_id/merge"
+            "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls/$pr_number/merge"
