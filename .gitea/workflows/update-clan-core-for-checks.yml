@@ -27,7 +27,7 @@ jobs:
             -d '{
               "head": "update-clan-core-for-checks",
               "base": "main",
-              "title": "Automated Update: Clan Core",
-              "body": "This PR updates the pinned clan-core for checks."
+              "title": "Update Clan Core for Checks",
+              "body": "This PR updates the pinned clan-core flake input that is used for checks."
             }' \
            "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls"
