@@ -25,7 +25,7 @@ jobs:
             -H "Authorization: token $GITEA_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{
-              "head": "update-clan-core-branch",
+              "head": "update-clan-core-for-checks",
               "base": "main",
               "title": "Automated Update: Clan Core",
               "body": "This PR updates the pinned clan-core for checks."
