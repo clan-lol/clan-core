@@ -104,7 +104,7 @@ class Webview:
                         self.stopped_threads.remove(op_key)
             if self.stop_garbage_collection.is_set():
                 break
-        time.sleep(1)
+            time.sleep(1)
 
     def run(self) -> None:
         thread = threading.Thread(
