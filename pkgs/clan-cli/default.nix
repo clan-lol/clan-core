@@ -41,12 +41,7 @@ let
   allDependencies = lib.importJSON ./clan_cli/nix/allowed-packages.json;
   generateRuntimeDependenciesMap =
     deps:
-    lib.filterAttrs (
-      attr: pkg:
-      !pkg.meta.unsupported or false
-      # Currently fails to build because of swift
-      && !(stdenv.hostPlatform.system == "aarch64-linux" && attr == "age-plugin-se")
-    ) (lib.genAttrs deps (name: pkgs.${name}));
+    lib.filterAttrs (_: pkg: !pkg.meta.unsupported or false) (lib.genAttrs deps (name: pkgs.${name}));
   testRuntimeDependenciesMap = generateRuntimeDependenciesMap allDependencies;
   testRuntimeDependencies = (lib.attrValues testRuntimeDependenciesMap);
   bundledRuntimeDependenciesMap = generateRuntimeDependenciesMap includedRuntimeDeps;
