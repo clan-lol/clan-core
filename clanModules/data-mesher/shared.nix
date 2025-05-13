@@ -12,13 +12,16 @@ let
   # currently only supports zerotier
   defaultBootstrapNodes = builtins.foldl' (
     urls: name:
-    if
-      builtins.pathExists "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value"
-    then
+    let
+
+      ipPath = "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value";
+
+    in
+    if builtins.pathExists ipPath then
       let
-        ip = builtins.readFile "${config.clan.core.settings.directory}/vars/per-machine/${name}/zerotier/zerotier-ip/value";
+        ip = builtins.readFile ipPath;
       in
-      urls ++ "${ip}:${cfg.network.port}"
+      urls ++ [ "[${ip}]:${builtins.toString cfg.network.port}" ]
     else
       urls
   ) [ ] (dmLib.machines config).bootstrap;
@@ -87,7 +90,8 @@ in
           push_pull_interval = "30s";
 
           interface = cfg.network.interface;
-          bootstrap_nodes = cfg.bootstrapNodes or defaultBootstrapNodes;
+
+          bootstrap_nodes = if cfg.bootstrapNodes == null then defaultBootstrapNodes else cfg.bootstrapNodes;
         };
 
         http.port = 7331;
