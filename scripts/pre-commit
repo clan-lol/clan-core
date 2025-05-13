@@ -15,7 +15,19 @@ unstash() {
 }
 git stash push --quiet --keep-index --message "pre-commit"
 trap unstash EXIT
-treefmt
+
+# always ignore untracked files
+mapfile -t untracked < <(git ls-files --others --exclude-standard)
+if [[ ${#untracked[@]} -gt 0 ]]; then
+  for item in "${untracked[@]}"; do
+    exclude_args+=("--excludes" "$item")
+  done
+  treefmt=(treefmt "${exclude_args[@]}")
+else
+  treefmt=(treefmt)
+fi
+"${treefmt[@]}"
+
 {
   changed=$(git diff --name-only --exit-code);
   status=$?;

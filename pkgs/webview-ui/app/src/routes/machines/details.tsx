@@ -78,7 +78,6 @@ function sleep(ms: number) {
 }
 interface InstallMachineProps {
   name?: string;
-  targetHost?: string | null;
   machine: MachineData;
 }
 const InstallMachine = (props: InstallMachineProps) => {
@@ -104,7 +103,7 @@ const InstallMachine = (props: InstallMachineProps) => {
     if (!curr_uri) {
       return;
     }
-    if (!props.name || !props.targetHost) {
+    if (!props.name) {
       return;
     }
 
@@ -266,7 +265,7 @@ const InstallMachine = (props: InstallMachineProps) => {
                 }}
                 initial={
                   getValue(formStore, "1") || {
-                    target: props.targetHost || "",
+                    target: props.machine.machine.deploy?.targetHost || "",
                     report: false,
                   }
                 }
@@ -404,6 +403,9 @@ const MachineForm = (props: MachineDetailsProps) => {
           values.machine.tags || props.initialData.machine.tags || [],
         ),
       },
+    });
+    queryClient.invalidateQueries({
+      queryKey: [activeURI(), "machine", machineName(), "get_machine_details"],
     });
 
     return null;
@@ -661,11 +663,7 @@ const MachineForm = (props: MachineDetailsProps) => {
         handleClose={() => setInstallModalOpen(false)}
         class="min-w-[600px]"
       >
-        <InstallMachine
-          name={machineName()}
-          targetHost={getValue(formStore, "machine.deploy.targetHost")}
-          machine={props.initialData}
-        />
+        <InstallMachine name={machineName()} machine={props.initialData} />
       </Modal>
     </>
   );
