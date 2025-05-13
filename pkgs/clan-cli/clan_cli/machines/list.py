@@ -11,6 +11,7 @@ from clan_lib.api import API
 from clan_lib.api.disk import MachineDiskMatter
 from clan_lib.api.modules import parse_frontmatter
 from clan_lib.api.serde import dataclass_to_dict
+from clan_lib.nix_models.inventory import Machine as InventoryMachine
 
 from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import add_dynamic_completer, complete_tags
@@ -21,7 +22,6 @@ from clan_cli.inventory import (
     load_inventory_eval,
     patch_inventory_with,
 )
-from clan_cli.inventory.classes import Machine as InventoryMachine
 from clan_cli.machines.hardware import HardwareConfig
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_eval

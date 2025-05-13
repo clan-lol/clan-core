@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 
 from clan_lib.api import API
+from clan_lib.nix_models.inventory import Inventory, Meta
 
 from clan_cli.flake import Flake
-from clan_cli.inventory import Inventory, Meta, load_inventory_json, set_inventory
+from clan_cli.inventory import load_inventory_json, set_inventory
 
 
 @dataclass

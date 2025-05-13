@@ -1,4 +1,4 @@
-from clan_cli.inventory.classes import Inventory, Machine, Meta, Service
+from clan_lib.nix_models.inventory import Inventory, Machine, Meta, Service
 
 
 def test_make_meta_minimal() -> None:

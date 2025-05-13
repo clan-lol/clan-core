@@ -104,10 +104,10 @@
       checks = self'.packages.clan-cli.tests // {
         inventory-classes-up-to-date = pkgs.stdenv.mkDerivation {
           name = "inventory-classes-up-to-date";
-          src = ./clan_cli/inventory;
+          src = ./clan_lib/nix_models;
 
           env = {
-            classFile = "classes.py";
+            classFile = "inventory.py";
           };
           installPhase = ''
             ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.inventory-schema-abstract}/schema.json b_classes.py
