@@ -23,6 +23,7 @@ import { IconVariant } from "./components/icon";
 import { Components } from "./routes/components";
 import { activeURI } from "./App";
 import { VarsForMachine, VarsStep } from "./routes/machines/install/vars-step";
+import { ThreePlayground } from "./three";
 
 export const client = new QueryClient();
 
@@ -156,6 +157,11 @@ export const routes: AppRoute[] = [
         path: "/hosts",
         label: "Local Hosts",
         component: () => <HostList />,
+      },
+      {
+        path: "/3d",
+        label: "3D-Playground",
+        component: () => <ThreePlayground />,
       },
       {
         path: "/api_testing",

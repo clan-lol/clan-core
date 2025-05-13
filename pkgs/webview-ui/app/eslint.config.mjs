@@ -27,6 +27,7 @@ const config = tseslint.config(
       // TODO: make this more strict by removing later
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
     },
   },
 );

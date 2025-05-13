@@ -6,7 +6,7 @@ import "./css/typography.css";
 export type Hierarchy = "body" | "title" | "headline" | "label";
 type Color = "primary" | "secondary" | "tertiary";
 type Weight = "normal" | "medium" | "bold";
-type Tag = "span" | "p" | "h1" | "h2" | "h3" | "h4";
+type Tag = "span" | "p" | "h1" | "h2" | "h3" | "h4" | "div";
 
 const colorMap: Record<Color, string> = {
   primary: cx("fnt-clr-primary"),

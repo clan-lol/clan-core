@@ -20,8 +20,13 @@ interface CategoryProps {
 const Categories = (props: CategoryProps) => {
   return (
     <span class="inline-flex h-full align-middle">
+      <Typography hierarchy="label" size="default" class="w-16" tag="div">
+        Categories:
+      </Typography>
       {props.categories.map((category) => (
-        <span class="text-sm font-normal">{category}</span>
+        <Typography hierarchy="label" size="default">
+          {category}
+        </Typography>
       ))}
     </span>
   );
@@ -32,14 +37,15 @@ interface RolesProps {
 }
 const Roles = (props: RolesProps) => {
   return (
-    <div class="flex flex-wrap items-center gap-2">
-      <span>
-        <Typography hierarchy="body" size="xs">
-          Service
-        </Typography>
-      </span>
+    <div class="inline-flex h-full align-middle">
+      <Typography hierarchy="label" size="default" class="w-16" tag="div">
+        Type:
+      </Typography>
+
       {Object.keys(props.roles).map((role) => (
-        <span class="">{role}</span>
+        <Typography hierarchy="label" size="default">
+          {role}
+        </Typography>
       ))}
     </div>
   );
@@ -57,12 +63,12 @@ const ModuleItem = (props: {
   return (
     <div
       class={cx(
-        "col-span-1 flex flex-col gap-3 border-b border-secondary-200 pb-4",
+        "col-span-1 flex flex-col border-b border-secondary-200 pb-4 gap-2",
         props.class,
       )}
     >
       <header class="flex flex-row items-center justify-between">
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-0">
           <A href={`/modules/details/${props.source}/${info.manifest.name}`}>
             <div class="">
               <div class="flex flex-col">
@@ -95,6 +101,9 @@ const ModuleItem = (props: {
         </Menu>
       </header>
       <Roles roles={info.roles || {}} />
+      <div class="w-full">
+        <Categories categories={info.manifest.categories} />
+      </div>
     </div>
   );
 };
@@ -144,15 +153,6 @@ export const ModuleList = () => {
                 startIcon={<Icon icon="Grid" />}
               />
             </div>
-            <span class="" data-tip="New Machine">
-              <Button
-                size="s"
-                variant="light"
-                startIcon={<Icon size={14} icon="CaretUp" />}
-              >
-                Import Module
-              </Button>
-            </span>
           </>
         }
       />
