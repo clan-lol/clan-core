@@ -63,7 +63,7 @@ const ModuleItem = (props: {
   return (
     <div
       class={cx(
-        "col-span-1 flex flex-col gap-3 border-b border-secondary-200 pb-4 gap-2",
+        "col-span-1 flex flex-col border-b border-secondary-200 pb-4 gap-2",
         props.class,
       )}
     >
