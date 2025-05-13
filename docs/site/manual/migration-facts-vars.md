@@ -118,7 +118,7 @@ vars.generators.syncthing = {
 ```
 Most of the usage patterns stay the same, but `vars` have a more ergonomic interface.
 There are not two different ways to define files anymore (public/secret).
-Not files are defined under the files attribute and are secret by default. 
+Now files are defined under the `files` attribute and are secret by default.
 
 
 ## Happy Migration
