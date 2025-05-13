@@ -34,12 +34,20 @@ jobs:
           pr_number=$(echo "$resp" | jq -r '.number')
 
           # Merge when succeed
-          nix run --inputs-from . nixpkgs#curl -- -X POST \
-            -H "Authorization: token $CI_BOT_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "Do": "merge",
-              "merge_when_checks_succeed": true,
-              "delete_branch_after_merge": true
-            }' \
-            "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls/$pr_number/merge"
+          while true; do
+            resp=$(nix run --inputs-from . nixpkgs#curl -- -X POST \
+              -H "Authorization: token $CI_BOT_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "Do": "merge",
+                "merge_when_checks_succeed": true,
+                "delete_branch_after_merge": true
+              }' \
+              "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls/$pr_number/merge")
+            msg=$(echo $resp | jq -r '.message')
+            if [[ "$msg" != "Please try again later" ]]; then
+              break
+            fi
+            echo "Retrying in 2 seconds..."
+            sleep 2
+          done
