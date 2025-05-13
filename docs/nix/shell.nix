@@ -17,6 +17,9 @@ pkgs.mkShell {
     self'.devShells.default
   ];
   shellHook = ''
+    git_root=$(git rev-parse --show-toplevel)
+    cd ''${git_root}/docs
+
     mkdir -p ./site/reference/cli
     cp -af ${module-docs}/* ./site/reference/
     cp -af ${clan-cli-docs}/* ./site/reference/cli/
