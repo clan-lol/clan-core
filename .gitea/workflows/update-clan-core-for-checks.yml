@@ -40,6 +40,6 @@ jobs:
             -d '{
               "Do": "merge",
               "merge_when_checks_succeed": true,
-              "delete_branch_after_merge": true,
+              "delete_branch_after_merge": true
             }' \
             "https://git.clan.lol/api/v1/repos/clan/clan-core/pulls/$pr_id/merge"
