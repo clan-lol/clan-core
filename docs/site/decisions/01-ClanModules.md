@@ -1,6 +1,8 @@
 # Clan service modules
 
-Status: Accepted
+## Status
+
+Accepted
 
 ## Context
 
@@ -65,9 +67,9 @@ Problems with the current way of writing clanModules:
 1. No way to retrieve the config of a single service instance, together with its name.
 2. Directly exporting a single, anonymous nixosModule without any intermediary attribute layers doesn't leave room for exporting other inventory resources such as potentially `vars` or `homeManagerConfig`.
 3. Can't access multiple config instances individually.
-   Example:
-   ```nix
-   inventory = {
+    Example:
+    ```nix
+    inventory = {
       services = {
         network.c-base = {
           instanceConfig.ips = {
@@ -81,7 +83,7 @@ Problems with the current way of writing clanModules:
         };
       };
     };
-   ```
+    ```
    This doesn't work because all instance configs are applied to the same namespace. So this results in a conflict currently.
    Resolving this problem means that new inventory modules cannot be plain nixos modules anymore. If they are configured via `instances` / `instanceConfig` they cannot be configured without using the inventory. (There might be ways to inject instanceConfig but that requires knowledge of inventory internals)
 
@@ -256,7 +258,6 @@ The following thoughts went into this:
 
 We want to implement the system as described. Once we have sufficient data on real world use-cases and modules we might revisit this document along with the updated implementation.
 
-
 ## Real world example
 
 The following module demonstrates the idea in the example of *borgbackup*.
@@ -407,7 +408,7 @@ The following module demonstrates the idea in the example of *borgbackup*.
               ''
             ) (lib.attrValues config.clan.core.state)}
 
-            if [[ ''${#preCommandErrors[@]} -gt 0 ]]; then
+            if [[ ''${preCommandErrors[@]} -gt 0 ]]; then
               echo "pre-backup commands failed for the following services:"
               for state in "''${!preCommandErrors[@]}"; do
                 echo "  $state"

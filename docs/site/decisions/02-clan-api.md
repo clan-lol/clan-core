@@ -22,11 +22,9 @@ This leads to the conclusion that we should do `library` centric development.
 With the current `clan` python code being a library that can be imported to create various tools ontop of it.
 All **CLI** or **UI** related parts should be moved out of the main library.
 
-*Note: The next person who wants implement any new frontend should do this first. Currently it looks like the TUI is the next one.*
-
 Imagine roughly the following architecture:
 
-```mermaid
+``` mermaid
 graph TD
   %% Define styles
   classDef frontend fill:#f9f,stroke:#333,stroke-width:2px;
@@ -75,7 +73,7 @@ Integration tests and smaller unit-tests should both be utilized to ensure the s
 
 Note: Library function don't have to be json-serializable in general.
 
-Persistence includes but is not limited to: creating git commits, writing to inventory.json, reading and writing vars and to/from disk in general.
+Persistence includes but is not limited to: creating git commits, writing to inventory.json, reading and writing vars, and interacting with persisted data in general.
 
 ## Benefits / Drawbacks
 

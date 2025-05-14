@@ -22,7 +22,11 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.tasklist:
       custom_checkbox: true
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.details
@@ -75,6 +79,12 @@ nav:
       - Migrate inventory Services: guides/migrate-inventory-services.md
   - Reference:
       - Overview: reference/index.md
+      - Architecture Decisions:
+          - Architecture Decisions: decisions/README.md
+          - 01-clanModules: decisions/01-ClanModules.md
+          - 02-clan-api: decisions/02-clan-api.md
+          - 03-adr-numbering-process: decisions/03-adr-numbering-process.md
+          - Template: decisions/_template.md
       - Clan Modules:
           - Overview:
               - reference/clanModules/index.md
