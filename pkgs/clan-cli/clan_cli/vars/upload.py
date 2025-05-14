@@ -24,6 +24,7 @@ def upload_command(args: argparse.Namespace) -> None:
     directory = None
     if args.directory:
         directory = Path(args.directory)
+        directory.mkdir(parents=True, exist_ok=True)
         populate_secret_vars(machine, directory)
         return
 
