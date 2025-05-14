@@ -2,6 +2,7 @@
 {
   imports = [
     ./hello-world/flake-module.nix
+    ./wifi/flake-module.nix
   ];
 
   clan.modules = {
