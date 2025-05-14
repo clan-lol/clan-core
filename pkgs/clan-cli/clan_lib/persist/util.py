@@ -1,24 +1,12 @@
 """
-All read/write operations MUST use the inventory.
-
-Machine data, clan data or service data can be accessed in a performant way.
-
-This file exports stable classnames for static & dynamic type safety.
-
-Utilize:
-
-- load_inventory_eval: To load the actual inventory with nix declarations merged.
-Operate on the returned inventory to make changes
-- save_inventory: To persist changes.
+Utilities for working with nested dictionaries, particularly for
+flattening, unmerging lists, finding duplicates, and calculating patches.
 """
 
 from collections import Counter
-from dataclasses import dataclass
 from typing import Any
 
 from clan_cli.errors import ClanError
-
-from clan_lib.nix_models.inventory import Inventory
 
 
 def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict:
@@ -334,10 +322,3 @@ def patch(d: dict[str, Any], path: str, content: Any) -> None:
     for key in keys[:-1]:
         current = current.setdefault(key, {})
     current[keys[-1]] = content
-
-
-@dataclass
-class WriteInfo:
-    writeables: dict[str, set[str]]
-    data_eval: Inventory
-    data_disk: Inventory
