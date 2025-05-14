@@ -84,6 +84,15 @@ class Webview:
         _webview_lib.webview_set_title(self._handle, _encode_c_string(value))
         self._title = value
 
+    @property
+    def icon(self) -> str:
+        return self._icon
+
+    @icon.setter
+    def icon(self, value: str) -> None:
+        _webview_lib.webview_set_icon(self._handle, _encode_c_string(value))
+        self._icon = value
+
     def destroy(self) -> None:
         for name in list(self._callbacks.keys()):
             self.unbind(name)

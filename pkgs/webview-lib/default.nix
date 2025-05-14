@@ -11,13 +11,19 @@ pkgs.clangStdenv.mkDerivation {
   src = pkgs.fetchFromGitHub {
     owner = "clan-lol";
     repo = "webview";
-    rev = "33374e1030c5e243dac491e6c0e84d32e895c2e5";
-    sha256 = "sha256-8BgfQL0V3f2n5lq5MDwJCJo6MkVSYvJkwpKCj2tBRz8=";
+    rev = "7d24f0192765b7e08f2d712fae90c046d08f318e";
+    hash = "sha256-yokVI9tFiEEU5M/S2xAeJOghqqiCvTelLo8WLKQZsSY=";
   };
 
   outputs = [
     "out"
     "dev"
+  ];
+
+  enableParallelBuilding = true;
+
+  cmakeFlags = [
+    "-DWEBVIEW_BUILD_TESTS=OFF"
   ];
 
   # Dependencies used during the build process, if any
