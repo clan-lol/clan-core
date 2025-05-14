@@ -19,6 +19,10 @@ def main(argv: list[str] = sys.argv) -> int:
     args = parser.parse_args(argv[1:])
 
     app_opts = ClanAppOptions(content_uri=args.content_uri, debug=args.debug)
-    app_run(app_opts)
+    try:
+        app_run(app_opts)
+    except KeyboardInterrupt:
+        log.info("Keyboard interrupt received, exiting...")
+        return 0
 
     return 0
