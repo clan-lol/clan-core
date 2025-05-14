@@ -1,6 +1,6 @@
 ---
 description = "Configures Wifi networks to join"
-features = [ "inventory", "experimental" ]
+features = [ "inventory", "experimental", "deprecated" ]
 categories = [ "Network", "System" ]
 ---
 

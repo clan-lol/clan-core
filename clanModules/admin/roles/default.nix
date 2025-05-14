@@ -18,14 +18,6 @@
     ../../root-password
   ];
   config = {
-
-    warnings = [
-      ''
-        The admin module has been migrated from `clan.services` to `clan.instances`
-        See https://docs.clan.lol/manual/distributed-services for usage.
-      ''
-    ];
-
     users.users.root.openssh.authorizedKeys.keys = builtins.attrValues config.clan.admin.allowedKeys;
   };
 }
