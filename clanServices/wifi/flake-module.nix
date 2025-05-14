@@ -10,9 +10,6 @@ let
   };
 in
 {
-  clan.inventory.modules = {
-    wifi = module;
-  };
   clan.modules = {
     wifi = module;
   };
