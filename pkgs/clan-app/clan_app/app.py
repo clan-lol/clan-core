@@ -38,6 +38,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
         content_uri = f"file://{site_index}"
 
     webview = Webview(debug=app_opts.debug)
+    webview.title = "Clan App"
 
     def cancel_task(
         task_id: str, *, op_key: str
