@@ -68,29 +68,28 @@ class Webview:
         arg: int,
     ) -> None:
         op_key = op_key_bytes.decode()
+        args = json.loads(request_data.decode())
+        log.debug(f"Calling {method_name}({args[0]})")
+
+        # Initialize dataclasses from the payload
+        reconciled_arguments = {}
+        for k, v in args[0].items():
+            # Some functions expect to be called with dataclass instances
+            # But the js api returns dictionaries.
+            # Introspect the function and create the expected dataclass from dict dynamically
+            # Depending on the introspected argument_type
+            arg_class = api.get_method_argtype(method_name, k)
+
+            # TODO: rename from_dict into something like construct_checked_value
+            # from_dict really takes Anything and returns an instance of the type/class
+            reconciled_arguments[k] = from_dict(arg_class, v)
+
+        reconciled_arguments["op_key"] = op_key
+        # TODO: We could remove the wrapper in the MethodRegistry
+        # and just call the method directly
 
         def thread_task(stop_event: threading.Event) -> None:
             try:
-                args = json.loads(request_data.decode())
-
-                log.debug(f"Calling {method_name}({args[0]})")
-                # Initialize dataclasses from the payload
-                reconciled_arguments = {}
-                for k, v in args[0].items():
-                    # Some functions expect to be called with dataclass instances
-                    # But the js api returns dictionaries.
-                    # Introspect the function and create the expected dataclass from dict dynamically
-                    # Depending on the introspected argument_type
-                    arg_class = api.get_method_argtype(method_name, k)
-
-                    # TODO: rename from_dict into something like construct_checked_value
-                    # from_dict really takes Anything and returns an instance of the type/class
-                    reconciled_arguments[k] = from_dict(arg_class, v)
-
-                reconciled_arguments["op_key"] = op_key
-                # TODO: We could remove the wrapper in the MethodRegistry
-                # and just call the method directly
-
                 set_should_cancel(lambda: stop_event.is_set())
                 result = wrap_method(**reconciled_arguments)
 
