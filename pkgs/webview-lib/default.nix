@@ -4,17 +4,16 @@ pkgs.clangStdenv.mkDerivation {
   pname = "webview";
   version = "nightly";
 
-  src = pkgs.fetchFromGitHub {
-    owner = "webview";
-    repo = "webview";
-    rev = "f1a9d6b6fb8bcc2e266057224887a3d628f30f90";
-    sha256 = "sha256-sK7GXDbb2zEntWH5ylC2B39zW+gXvqQ1l843gvziDZo=";
-  };
-
   # We add the function id to the promise to be able to cancel it through the UI
   # We disallow remote connections from the UI on Linux
   # TODO: Disallow remote connections on MacOS
-  patches = [ ./fixes.patch ];
+
+  src = pkgs.fetchFromGitHub {
+    owner = "clan-lol";
+    repo = "webview";
+    rev = "33374e1030c5e243dac491e6c0e84d32e895c2e5";
+    sha256 = "sha256-8BgfQL0V3f2n5lq5MDwJCJo6MkVSYvJkwpKCj2tBRz8=";
+  };
 
   outputs = [
     "out"
