@@ -107,12 +107,24 @@ let
         extraModules = map (s: if builtins.typeOf s == "string" then "${directory}/${s}" else s) (
           globalExtraModules ++ machineExtraModules ++ roleServiceExtraModules
         );
+
+        features =
+          (clanLib.modules.getFrontmatter inventory.modules.${serviceName} serviceName).features or [ ];
+        deprecationWarning = lib.optionalAttrs (builtins.elem "deprecated" features) {
+          warnings = [
+            ''
+              The '${serviceName}' module has been migrated from `inventory.services` to `inventory.instances`
+              See https://docs.clan.lol/manual/distributed-services/ for usage.
+            ''
+          ];
+        };
       in
       if !(serviceConfig.enabled or true) then
         acc2
       else if isInService then
         acc2
         ++ [
+          deprecationWarning
           {
             imports = roleModules ++ extraModules;
             clan.inventory.services.${serviceName}.${instanceName} = {
