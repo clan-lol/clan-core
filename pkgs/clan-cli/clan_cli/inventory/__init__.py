@@ -19,10 +19,10 @@ from clan_lib.api import API
 from clan_lib.nix_models.inventory import Inventory
 from clan_lib.persist.inventory_store import WriteInfo
 from clan_lib.persist.util import (
+    apply_patch,
     calc_patches,
     delete_by_path,
     determine_writeability,
-    patch,
 )
 
 from clan_cli.cmd import run
@@ -150,7 +150,7 @@ def patch_inventory_with(flake: Flake, section: str, content: dict[str, Any]) ->
         with inventory_file.open("r") as f:
             curr_inventory = json.load(f)
 
-    patch(curr_inventory, section, content)
+    apply_patch(curr_inventory, section, content)
 
     with inventory_file.open("w") as f:
         json.dump(curr_inventory, f, indent=2)
@@ -206,7 +206,7 @@ def set_inventory(
     persisted = dict(write_info.data_disk)
 
     for patch_path, data in patchset.items():
-        patch(persisted, patch_path, data)
+        apply_patch(persisted, patch_path, data)
 
     for delete_path in delete_set:
         delete_by_path(persisted, delete_path)
