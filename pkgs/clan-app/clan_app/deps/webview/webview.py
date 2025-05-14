@@ -2,6 +2,7 @@ import ctypes
 import json
 import logging
 import threading
+import functools
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import IntEnum
@@ -57,6 +58,77 @@ class Webview:
         if size:
             self.size = size
 
+    def api_wrapper(
+        self,
+        api: MethodRegistry,
+        wrap_method: Callable[..., Any],
+        method_name: str,
+
+        seq: bytes,
+        req: bytes,
+        arg: int,
+    ) -> None:
+        def thread_task(stop_event: threading.Event) -> None:
+            try:
+                args = json.loads(req.decode())
+
+                log.debug(f"Calling {method_name}({args[0]})")
+                # Initialize dataclasses from the payload
+                reconciled_arguments = {}
+                for k, v in args[0].items():
+                    # Some functions expect to be called with dataclass instances
+                    # But the js api returns dictionaries.
+                    # Introspect the function and create the expected dataclass from dict dynamically
+                    # Depending on the introspected argument_type
+                    arg_class = api.get_method_argtype(method_name, k)
+
+                    # TODO: rename from_dict into something like construct_checked_value
+                    # from_dict really takes Anything and returns an instance of the type/class
+                    reconciled_arguments[k] = from_dict(arg_class, v)
+
+                op_key = seq.decode()
+                reconciled_arguments["op_key"] = op_key
+                # TODO: We could remove the wrapper in the MethodRegistry
+                # and just call the method directly
+
+                set_should_cancel(lambda: stop_event.is_set())
+                result = wrap_method(**reconciled_arguments)
+
+                serialized = json.dumps(
+                    dataclass_to_dict(result), indent=4, ensure_ascii=False
+                )
+
+                log.debug(f"Result for {method_name}: {serialized}")
+                self.return_(seq.decode(), FuncStatus.SUCCESS, serialized)
+            except Exception as e:
+                log.exception(f"Error while handling result of {method_name}")
+                result = ErrorDataClass(
+                    op_key=seq.decode(),
+                    status="error",
+                    errors=[
+                        ApiError(
+                            message="An internal error occured",
+                            description=str(e),
+                            location=["bind_jsonschema_api", method_name],
+                        )
+                    ],
+                )
+                serialized = json.dumps(
+                    dataclass_to_dict(result), indent=4, ensure_ascii=False
+                )
+                self.return_(seq.decode(), FuncStatus.FAILURE, serialized)
+            finally:
+                del self.threads[op_key]
+
+        stop_event = threading.Event()
+        thread = threading.Thread(
+            target=thread_task, args=(stop_event,), name="WebviewThread"
+        )
+        thread.start()
+        self.threads[seq.decode()] = WebThread(
+            thread=thread, stop_event=stop_event
+        )
+
     def __enter__(self) -> "Webview":
         return self
 
@@ -97,75 +169,12 @@ class Webview:
 
     def bind_jsonschema_api(self, api: MethodRegistry) -> None:
         for name, method in api.functions.items():
-
-            def wrapper(
-                seq: bytes,
-                req: bytes,
-                arg: int,
-                wrap_method: Callable[..., Any] = method,
-                method_name: str = name,
-            ) -> None:
-                def thread_task(stop_event: threading.Event) -> None:
-                    try:
-                        args = json.loads(req.decode())
-
-                        log.debug(f"Calling {method_name}({args[0]})")
-                        # Initialize dataclasses from the payload
-                        reconciled_arguments = {}
-                        for k, v in args[0].items():
-                            # Some functions expect to be called with dataclass instances
-                            # But the js api returns dictionaries.
-                            # Introspect the function and create the expected dataclass from dict dynamically
-                            # Depending on the introspected argument_type
-                            arg_class = api.get_method_argtype(method_name, k)
-
-                            # TODO: rename from_dict into something like construct_checked_value
-                            # from_dict really takes Anything and returns an instance of the type/class
-                            reconciled_arguments[k] = from_dict(arg_class, v)
-
-                        op_key = seq.decode()
-                        reconciled_arguments["op_key"] = op_key
-                        # TODO: We could remove the wrapper in the MethodRegistry
-                        # and just call the method directly
-
-                        set_should_cancel(lambda: stop_event.is_set())
-                        result = wrap_method(**reconciled_arguments)
-
-                        serialized = json.dumps(
-                            dataclass_to_dict(result), indent=4, ensure_ascii=False
-                        )
-
-                        log.debug(f"Result for {method_name}: {serialized}")
-                        self.return_(seq.decode(), FuncStatus.SUCCESS, serialized)
-                    except Exception as e:
-                        log.exception(f"Error while handling result of {method_name}")
-                        result = ErrorDataClass(
-                            op_key=seq.decode(),
-                            status="error",
-                            errors=[
-                                ApiError(
-                                    message="An internal error occured",
-                                    description=str(e),
-                                    location=["bind_jsonschema_api", method_name],
-                                )
-                            ],
-                        )
-                        serialized = json.dumps(
-                            dataclass_to_dict(result), indent=4, ensure_ascii=False
-                        )
-                        self.return_(seq.decode(), FuncStatus.FAILURE, serialized)
-                    finally:
-                        del self.threads[op_key]
-
-                stop_event = threading.Event()
-                thread = threading.Thread(
-                    target=thread_task, args=(stop_event,), name="WebviewThread"
-                )
-                thread.start()
-                self.threads[seq.decode()] = WebThread(
-                    thread=thread, stop_event=stop_event
-                )
-
+            wrapper = functools.partial(
+                self.api_wrapper,
+                api,
+                name,
+                method,
+            )
             c_callback = _webview_lib.CFUNCTYPE(
                 None, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_void_p
             )(wrapper)
