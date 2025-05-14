@@ -3,6 +3,7 @@ from typing import Any
 
 import pytest
 from clan_cli.errors import ClanError
+
 from clan_lib.persist.util import (
     calc_patches,
     delete_by_path,
