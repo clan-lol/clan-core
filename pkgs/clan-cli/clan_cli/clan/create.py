@@ -10,7 +10,7 @@ from clan_lib.nix_models.inventory import Inventory
 from clan_cli.cmd import CmdOut, RunOpts, run
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
-from clan_cli.inventory import init_inventory
+from clan_cli.inventory import set_inventory
 from clan_cli.nix import nix_command, nix_metadata, nix_shell
 from clan_cli.templates import (
     InputPrio,
@@ -108,7 +108,11 @@ def create_clan(opts: CreateOptions) -> CreateClanResponse:
         response.flake_update = flake_update
 
     if opts.initial:
-        init_inventory(Flake(str(opts.dest)), init=opts.initial)
+        set_inventory(
+            flake=Flake(str(opts.dest)),
+            inventory=opts.initial,
+            message="Init inventory",
+        )
 
     return response
 

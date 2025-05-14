@@ -7,7 +7,7 @@ name = "clan"
 description = "clan cli tool"
 dynamic = ["version"]
 scripts = { clan = "clan_cli:main" }
-license = {text = "MIT"}
+license = { text = "MIT" }
 
 [project.urls]
 Homepage = "https://clan.lol/"
@@ -20,12 +20,12 @@ exclude = ["clan_cli.nixpkgs*", "result"]
 
 [tool.setuptools.package-data]
 clan_cli = [
-  "**/allowed-packages.json",
-  "py.typed",
-  "templates/**/*",
-  "vms/mimetypes/**/*",
-  "webui/assets/**/*",
-  "flash/*.sh"
+    "**/allowed-packages.json",
+    "py.typed",
+    "templates/**/*",
+    "vms/mimetypes/**/*",
+    "webui/assets/**/*",
+    "flash/*.sh",
 ]
 
 [tool.pytest.ini_options]
@@ -44,6 +44,12 @@ markers = ["impure", "with_core"]
 filterwarnings = "default::ResourceWarning"
 python_files = ["test_*.py", "*_test.py"]
 
+# TODO: cov seems to conflict with xdist
+# [tool.coverage.run]
+# branch = true
+# source = ["clan_lib"]
+# omit = ["*/tests/*", "*/test_*.py", "*/*_test.py", "*/conftest.py", "docs.py"]
+
 [tool.mypy]
 python_version = "3.12"
 warn_redundant_casts = true
@@ -51,5 +57,3 @@ disallow_untyped_calls = true
 disallow_untyped_defs = true
 no_implicit_optional = true
 exclude = "clan_cli.nixpkgs"
-
-
