@@ -1,11 +1,8 @@
-{ lib, ... }:
+{ ... }:
 {
   imports = [
+    ./admin/flake-module.nix
     ./hello-world/flake-module.nix
     ./wifi/flake-module.nix
   ];
-
-  clan.modules = {
-    admin = lib.modules.importApply ./admin/default.nix { };
-  };
 }
