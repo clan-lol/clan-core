@@ -123,7 +123,6 @@ class Machine:
             return self.deployment["facts"]["services"]
         return {}
 
-    @property
     def vars_generators(self) -> list["Generator"]:
         from clan_cli.vars.generate import Generator
 

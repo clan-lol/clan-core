@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 def fix_vars(machine: Machine, generator_name: None | str = None) -> None:
-    generators = machine.vars_generators
+    generators = machine.vars_generators()
     if generator_name:
         for generator in generators:
             if generator_name == generator.name:

@@ -132,7 +132,7 @@ def decrypt_dependencies(
     decrypted_dependencies: dict[str, Any] = {}
     for generator_name in set(generator.dependencies):
         decrypted_dependencies[generator_name] = {}
-        for dep_generator in machine.vars_generators:
+        for dep_generator in machine.vars_generators():
             if generator_name == dep_generator.name:
                 break
         else:
@@ -320,7 +320,7 @@ def get_closure(
 ) -> list[Generator]:
     from .graph import all_missing_closure, full_closure
 
-    vars_generators = machine.vars_generators
+    vars_generators = machine.vars_generators()
     generators: dict[str, Generator] = {
         generator.name: generator for generator in vars_generators
     }
@@ -399,7 +399,7 @@ def generate_vars_for_machine(
 
     machine = Machine(name=machine_name, flake=Flake(str(base_dir)))
     generators_set = set(generators)
-    generators_ = [g for g in machine.vars_generators if g.name in generators_set]
+    generators_ = [g for g in machine.vars_generators() if g.name in generators_set]
 
     return _generate_vars_for_machine(
         machine=machine,
@@ -417,7 +417,7 @@ def generate_vars_for_machine_interactive(
 ) -> bool:
     _generator = None
     if generator_name:
-        for generator in machine.vars_generators:
+        for generator in machine.vars_generators():
             if generator.name == generator_name:
                 _generator = generator
                 break

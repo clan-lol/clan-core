@@ -141,7 +141,7 @@ class SecretStore(StoreBase):
         hashes.sort()
 
         manifest = []
-        for generator in self.machine.vars_generators:
+        for generator in self.machine.vars_generators():
             for file in generator.files:
                 manifest.append(f"{generator.name}/{file.name}".encode())
         manifest += hashes
@@ -165,11 +165,12 @@ class SecretStore(StoreBase):
         return local_hash.decode() != remote_hash
 
     def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
+        vars_generators = self.machine.vars_generators()
         if "users" in phases:
             with tarfile.open(
                 output_dir / "secrets_for_users.tar.gz", "w:gz"
             ) as user_tar:
-                for generator in self.machine.vars_generators:
+                for generator in vars_generators:
                     dir_exists = False
                     for file in generator.files:
                         if not file.deploy:
@@ -184,7 +185,7 @@ class SecretStore(StoreBase):
 
         if "services" in phases:
             with tarfile.open(output_dir / "secrets.tar.gz", "w:gz") as tar:
-                for generator in self.machine.vars_generators:
+                for generator in vars_generators:
                     dir_exists = False
                     for file in generator.files:
                         if not file.deploy:
@@ -205,7 +206,7 @@ class SecretStore(StoreBase):
                         tar_file.gname = file.group
                         tar.addfile(tarinfo=tar_file, fileobj=io.BytesIO(content))
         if "activation" in phases:
-            for generator in self.machine.vars_generators:
+            for generator in vars_generators:
                 for file in generator.files:
                     if file.needed_for == "activation":
                         out_file = (
@@ -214,7 +215,7 @@ class SecretStore(StoreBase):
                         out_file.parent.mkdir(parents=True, exist_ok=True)
                         out_file.write_bytes(self.get(generator, file.name))
         if "partitioning" in phases:
-            for generator in self.machine.vars_generators:
+            for generator in vars_generators:
                 for file in generator.files:
                     if file.needed_for == "partitioning":
                         out_file = (

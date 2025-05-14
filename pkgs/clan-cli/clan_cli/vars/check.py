@@ -33,7 +33,7 @@ def vars_status(machine: Machine, generator_name: None | str = None) -> VarStatu
     # signals if a var needs to be updated (eg. needs re-encryption due to new users added)
     unfixed_secret_vars = []
     invalid_generators = []
-    generators = machine.vars_generators
+    generators = machine.vars_generators()
     if generator_name:
         for generator in generators:
             if generator_name == generator.name:

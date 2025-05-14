@@ -51,10 +51,11 @@ class SecretStore(StoreBase):
         self.machine = machine
 
         # no need to generate keys if we don't manage secrets
-        if not self.machine.vars_generators:
+        vars_generators = self.machine.vars_generators()
+        if not vars_generators:
             return
         has_secrets = False
-        for generator in self.machine.vars_generators:
+        for generator in vars_generators:
             for file in generator.files:
                 if file.secret:
                     has_secrets = True
@@ -108,7 +109,7 @@ class SecretStore(StoreBase):
         """
 
         if generator is None:
-            generators = self.machine.vars_generators
+            generators = self.machine.vars_generators()
         else:
             generators = [generator]
         file_found = False
@@ -179,6 +180,7 @@ class SecretStore(StoreBase):
         return [store_folder]
 
     def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
+        vars_generators = self.machine.vars_generators()
         if "users" in phases or "services" in phases:
             key_name = f"{self.machine.name}-age.key"
             if not has_secret(sops_secrets_folder(self.machine.flake_dir) / key_name):
@@ -192,7 +194,7 @@ class SecretStore(StoreBase):
             (output_dir / "key.txt").write_text(key)
 
         if "activation" in phases:
-            for generator in self.machine.vars_generators:
+            for generator in vars_generators:
                 for file in generator.files:
                     if file.needed_for == "activation":
                         target_path = (
@@ -208,7 +210,7 @@ class SecretStore(StoreBase):
                         target_path.chmod(file.mode)
 
         if "partitioning" in phases:
-            for generator in self.machine.vars_generators:
+            for generator in vars_generators:
                 for file in generator.files:
                     if file.needed_for == "partitioning":
                         target_path = output_dir / generator.name / file.name
@@ -284,7 +286,7 @@ class SecretStore(StoreBase):
         from clan_cli.secrets.secrets import update_keys
 
         if generator is None:
-            generators = self.machine.vars_generators
+            generators = self.machine.vars_generators()
         else:
             generators = [generator]
         file_found = False

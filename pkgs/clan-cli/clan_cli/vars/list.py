@@ -19,7 +19,7 @@ def get_vars(base_dir: str, machine_name: str) -> list[Var]:
     pub_store = machine.public_vars_store
     sec_store = machine.secret_vars_store
     all_vars = []
-    for generator in machine.vars_generators:
+    for generator in machine.vars_generators():
         for var in generator.files:
             if var.secret:
                 var.store(sec_store)
@@ -50,7 +50,7 @@ def _get_previous_value(
 @API.register
 def get_generators(base_dir: str, machine_name: str) -> list[Generator]:
     machine = Machine(name=machine_name, flake=Flake(base_dir))
-    generators: list[Generator] = machine.vars_generators
+    generators: list[Generator] = machine.vars_generators()
     for generator in generators:
         for prompt in generator.prompts:
             prompt.previous_value = _get_previous_value(machine, generator, prompt)
@@ -66,7 +66,7 @@ def set_prompts(
 ) -> None:
     machine = Machine(name=machine_name, flake=Flake(base_dir))
     for update in updates:
-        for generator in machine.vars_generators:
+        for generator in machine.vars_generators():
             if generator.name == update.generator:
                 break
         else:
