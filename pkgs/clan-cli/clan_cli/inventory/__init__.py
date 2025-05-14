@@ -1,15 +1,14 @@
 """
-All read/write operations MUST use the inventory.
+DEPRECATED:
 
-Machine data, clan data or service data can be accessed in a performant way.
+Don't use this module anymore
 
-This file exports stable classnames for static & dynamic type safety.
+Instead use:
+'clan_lib.persistence.inventoryStore'
 
-Utilize:
+Which is an abstraction over the inventory
 
-- load_inventory_eval: To load the actual inventory with nix declarations merged.
-Operate on the returned inventory to make changes
-- save_inventory: To persist changes.
+Interacting with 'clan_cli.inventory' is NOT recommended and will be removed
 """
 
 import contextlib
