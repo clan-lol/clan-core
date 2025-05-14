@@ -11,7 +11,6 @@ Which is an abstraction over the inventory
 Interacting with 'clan_cli.inventory' is NOT recommended and will be removed
 """
 
-import contextlib
 import json
 from collections import Counter
 from dataclasses import dataclass
@@ -22,7 +21,7 @@ from clan_lib.api import API
 from clan_lib.nix_models.inventory import Inventory
 
 from clan_cli.cmd import run
-from clan_cli.errors import ClanCmdError, ClanError
+from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
@@ -558,22 +557,6 @@ def delete(flake: Flake, delete_set: set[str]) -> None:
         flake.path,
         commit_message=f"Delete inventory keys {delete_set}",
     )
-
-
-def init_inventory(flake: Flake, init: Inventory | None = None) -> None:
-    inventory = None
-    # Try reading the current flake
-    if init is None:
-        with contextlib.suppress(ClanCmdError):
-            inventory = load_inventory_eval(flake)
-
-    if init is not None:
-        inventory = init
-
-    # Write inventory.json file
-    if inventory is not None:
-        # Persist creates a commit message for each change
-        set_inventory(inventory, flake, "Init inventory")
 
 
 @API.register
