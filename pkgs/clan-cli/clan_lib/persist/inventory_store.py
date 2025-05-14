@@ -8,10 +8,10 @@ from clan_cli.git import commit_file
 from clan_lib.nix_models.inventory import Inventory
 
 from .util import (
+    apply_patch,
     calc_patches,
     delete_by_path,
     determine_writeability,
-    patch,
 )
 
 
@@ -102,6 +102,15 @@ class InventoryStore:
 
         return WriteInfo(writeables, data_eval, data_disk)
 
+    def read(self) -> Inventory:
+        """
+        Accessor to the merged inventory
+
+        Side Effects:
+            Runs 'nix eval' through the '_flake' member of this class
+        """
+        return self._load_merged_inventory()
+
     def delete(self, delete_set: set[str]) -> None:
         """
         Delete keys from the inventory
@@ -144,7 +153,7 @@ class InventoryStore:
         persisted = dict(write_info.data_disk)
 
         for patch_path, data in patchset.items():
-            patch(persisted, patch_path, data)
+            apply_patch(persisted, patch_path, data)
 
         for delete_path in delete_set:
             delete_by_path(persisted, delete_path)

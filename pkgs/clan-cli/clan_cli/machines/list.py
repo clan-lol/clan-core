@@ -10,18 +10,15 @@ from typing import Literal
 from clan_lib.api import API
 from clan_lib.api.disk import MachineDiskMatter
 from clan_lib.api.modules import parse_frontmatter
-from clan_lib.api.serde import dataclass_to_dict
 from clan_lib.nix_models.inventory import Machine as InventoryMachine
+from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import apply_patch
 
 from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.dirs import specific_machine_dir
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
-from clan_cli.inventory import (
-    load_inventory_eval,
-    patch_inventory_with,
-)
 from clan_cli.machines.hardware import HardwareConfig
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_eval
@@ -32,12 +29,18 @@ log = logging.getLogger(__name__)
 
 @API.register
 def set_machine(flake: Flake, machine_name: str, machine: InventoryMachine) -> None:
-    patch_inventory_with(flake, f"machines.{machine_name}", dataclass_to_dict(machine))
+    inventory_store = InventoryStore(flake=flake)
+    inventory = inventory_store.read()
+    apply_patch(inventory, f"machines.{machine_name}", machine)
+    inventory_store.write(
+        inventory, message=f"Update information about machine {machine_name}"
+    )
 
 
 @API.register
 def list_machines(flake: Flake) -> dict[str, InventoryMachine]:
-    inventory = load_inventory_eval(flake)
+    inventory_store = InventoryStore(flake=flake)
+    inventory = inventory_store.read()
     return inventory.get("machines", {})
 
 
@@ -61,7 +64,8 @@ def extract_header(c: str) -> str:
 
 @API.register
 def get_machine_details(machine: Machine) -> MachineDetails:
-    inventory = load_inventory_eval(machine.flake)
+    inventory_store = InventoryStore(flake=machine.flake)
+    inventory = inventory_store.read()
     machine_inv = inventory.get("machines", {}).get(machine.name)
     if machine_inv is None:
         msg = f"Machine {machine.name} not found in inventory"
