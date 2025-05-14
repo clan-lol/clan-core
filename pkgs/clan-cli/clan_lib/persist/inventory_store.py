@@ -102,6 +102,15 @@ class InventoryStore:
 
         return WriteInfo(writeables, data_eval, data_disk)
 
+    def read(self) -> Inventory:
+        """
+        Accessor to the merged inventory
+
+        Side Effects:
+            Runs 'nix eval' through the '_flake' member of this class
+        """
+        return self._load_merged_inventory()
+
     def delete(self, delete_set: set[str]) -> None:
         """
         Delete keys from the inventory
