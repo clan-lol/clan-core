@@ -37,10 +37,6 @@ def get_inventory_path(flake: Flake) -> Path:
     return inventory_file
 
 
-# Default inventory
-default_inventory: Inventory = {"meta": {"name": "New Clan"}}
-
-
 def load_inventory_eval(flake_dir: Flake) -> Inventory:
     """
     Loads the evaluated inventory.
