@@ -43,11 +43,11 @@ def app_run(app_opts: ClanAppOptions) -> int:
         task_id: str, *, op_key: str
     ) -> SuccessDataClass[None] | ErrorDataClass:
         """Cancel a task by its op_key."""
-        log.info(f"Cancelling task with op_key: {task_id}")
-        if task_id in webview.threads:
-            future = webview.threads[task_id]
+        log.debug(f"Cancelling task with op_key: {task_id}")
+        future = webview.threads.get(task_id)
+        if future:
             future.stop_event.set()
-            log.info(f"Task {task_id} cancelled.")
+            log.debug(f"Task {task_id} cancelled.")
         else:
             log.warning(f"Task {task_id} not found.")
         return SuccessDataClass(
@@ -61,7 +61,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
         op_key: str,
     ) -> SuccessDataClass[list[str]] | ErrorDataClass:
         """List all tasks."""
-        log.info("Listing all tasks.")
+        log.debug("Listing all tasks.")
         tasks = list(webview.threads.keys())
         return SuccessDataClass(
             op_key=op_key,
