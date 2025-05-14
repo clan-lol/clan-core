@@ -1,8 +1,8 @@
 import ctypes
+import functools
 import json
 import logging
 import threading
-import functools
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import IntEnum
@@ -61,16 +61,17 @@ class Webview:
     def api_wrapper(
         self,
         api: MethodRegistry,
-        wrap_method: Callable[..., Any],
         method_name: str,
-
-        seq: bytes,
-        req: bytes,
+        wrap_method: Callable[..., Any],
+        op_key_bytes: bytes,
+        request_data: bytes,
         arg: int,
     ) -> None:
+        op_key = op_key_bytes.decode()
+
         def thread_task(stop_event: threading.Event) -> None:
             try:
-                args = json.loads(req.decode())
+                args = json.loads(request_data.decode())
 
                 log.debug(f"Calling {method_name}({args[0]})")
                 # Initialize dataclasses from the payload
@@ -86,7 +87,6 @@ class Webview:
                     # from_dict really takes Anything and returns an instance of the type/class
                     reconciled_arguments[k] = from_dict(arg_class, v)
 
-                op_key = seq.decode()
                 reconciled_arguments["op_key"] = op_key
                 # TODO: We could remove the wrapper in the MethodRegistry
                 # and just call the method directly
@@ -99,11 +99,11 @@ class Webview:
                 )
 
                 log.debug(f"Result for {method_name}: {serialized}")
-                self.return_(seq.decode(), FuncStatus.SUCCESS, serialized)
+                self.return_(op_key, FuncStatus.SUCCESS, serialized)
             except Exception as e:
                 log.exception(f"Error while handling result of {method_name}")
                 result = ErrorDataClass(
-                    op_key=seq.decode(),
+                    op_key=op_key,
                     status="error",
                     errors=[
                         ApiError(
@@ -116,7 +116,7 @@ class Webview:
                 serialized = json.dumps(
                     dataclass_to_dict(result), indent=4, ensure_ascii=False
                 )
-                self.return_(seq.decode(), FuncStatus.FAILURE, serialized)
+                self.return_(op_key, FuncStatus.FAILURE, serialized)
             finally:
                 del self.threads[op_key]
 
@@ -125,9 +125,7 @@ class Webview:
             target=thread_task, args=(stop_event,), name="WebviewThread"
         )
         thread.start()
-        self.threads[seq.decode()] = WebThread(
-            thread=thread, stop_event=stop_event
-        )
+        self.threads[op_key] = WebThread(thread=thread, stop_event=stop_event)
 
     def __enter__(self) -> "Webview":
         return self
