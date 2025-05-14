@@ -19,35 +19,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from clan_lib.api import API, dataclass_to_dict, from_dict
+from clan_lib.api import API
+from clan_lib.nix_models.inventory import Inventory
 
 from clan_cli.cmd import run
 from clan_cli.errors import ClanCmdError, ClanError
 from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 from clan_cli.nix import nix_eval
-
-from .classes import (
-    Inventory,
-    # Machine classes
-    Machine,
-    MachineDeploy,
-    # General classes
-    Meta,
-    Service,
-)
-
-# Re export classes here
-# This allows to renaming of classes in the generated code
-__all__ = [
-    "Inventory",
-    "Machine",
-    "MachineDeploy",
-    "Meta",
-    "Service",
-    "dataclass_to_dict",
-    "from_dict",
-]
 
 
 def get_inventory_path(flake: Flake) -> Path:

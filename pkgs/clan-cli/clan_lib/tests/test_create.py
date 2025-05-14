@@ -13,8 +13,6 @@ from clan_cli.dirs import specific_machine_dir
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.inventory import patch_inventory_with
-from clan_cli.inventory.classes import Machine as InventoryMachine
-from clan_cli.inventory.classes import MachineDeploy
 from clan_cli.machines.create import CreateOptions as ClanCreateOptions
 from clan_cli.machines.create import create_machine
 from clan_cli.machines.list import check_machine_online
@@ -28,6 +26,8 @@ from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.vars.generate import generate_vars_for_machine, get_generators_closure
 
 from clan_lib.api.disk import hw_main_disk_options, set_machine_disk_schema
+from clan_lib.nix_models.inventory import Machine as InventoryMachine
+from clan_lib.nix_models.inventory import MachineDeploy
 
 log = logging.getLogger(__name__)
 

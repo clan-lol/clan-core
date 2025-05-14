@@ -5,6 +5,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from clan_lib.api import API
+from clan_lib.api.serde import dataclass_to_dict
+from clan_lib.nix_models.inventory import (
+    Machine as InventoryMachine,
+)
+from clan_lib.nix_models.inventory import (
+    MachineDeploy,
+)
 
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.dirs import get_clan_flake_toplevel_or_env
@@ -12,11 +19,6 @@ from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 from clan_cli.inventory import (
-    Machine as InventoryMachine,
-)
-from clan_cli.inventory import (
-    MachineDeploy,
-    dataclass_to_dict,
     patch_inventory_with,
 )
 from clan_cli.machines.list import list_nixos_machines

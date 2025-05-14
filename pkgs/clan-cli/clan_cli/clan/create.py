@@ -5,11 +5,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from clan_lib.api import API
+from clan_lib.nix_models.inventory import Inventory
 
 from clan_cli.cmd import CmdOut, RunOpts, run
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
-from clan_cli.inventory import Inventory, init_inventory
+from clan_cli.inventory import init_inventory
 from clan_cli.nix import nix_command, nix_metadata, nix_shell
 from clan_cli.templates import (
     InputPrio,
