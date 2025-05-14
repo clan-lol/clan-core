@@ -5,6 +5,7 @@ import os
 import shlex
 import socket
 import subprocess
+import sys
 import types
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -43,7 +44,14 @@ class Host:
     _temp_dir: TemporaryDirectory | None = None
 
     def __enter__(self) -> "Host":
-        self._temp_dir = TemporaryDirectory(prefix="clan-ssh-")
+        directory = None
+        if sys.platform == "darwin" and os.environ.get("TMPDIR", "").startswith(
+            "/var/folders/"
+        ):
+            # macOS's tmpdir is too long for unix domain sockets
+            directory = "/tmp/"
+
+        self._temp_dir = TemporaryDirectory(prefix="clan-ssh-", dir=directory)
         return self
 
     def __exit__(
