@@ -1,0 +1,3 @@
+{
+  imports = [ ./roles/default.nix ];
+}
