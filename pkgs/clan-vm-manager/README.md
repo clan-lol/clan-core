@@ -45,7 +45,7 @@ Appending `--debug` flag enables debug logging printed into the console.
 To activate profiling you can run
 
 ```bash
-PERF=1 ./bin/clan-vm-manager
+CLAN_CLI_PERF=1 ./bin/clan-vm-manager
 ```
 
 ### Library Components
