@@ -44,47 +44,40 @@ mkShell {
   ] ++ clan-app.runtimeDeps;
 
   shellHook = ''
-    export GIT_ROOT=$(git rev-parse --show-toplevel)
+    export CLAN_CORE_PATH=$(git rev-parse --show-toplevel)
 
-    export CLAN_CORE_PATH="$GIT_ROOT"
-
-    export PKG_ROOT_UI="$GIT_ROOT/pkgs/ui"
-    export PKG_ROOT_CLAN_APP="$PKG_ROOT_UI"/clan-app
-    export PKG_ROOT_WEBVIEW_UI="$PKG_ROOT_UI"/webview-ui
-
-    export NODE_PATH="$PKG_ROOT_WEBVIEW_UI/app/node_modules"
-
-    # Add current package to PYTHONPATH
-    export PYTHONPATH="$PKG_ROOT_CLAN_APP''${PYTHONPATH:+:$PYTHONPATH:}"
-
+    ## Clan app
     # Add clan-app command to PATH
-    export PATH="$PKG_ROOT_CLAN_APP/bin":"$PATH"
-
-    # Add webview-ui scripts to PATH
-    scriptsPath="$PKG_ROOT/bin"
-    export PATH="$NODE_PATH/.bin:$scriptsPath:$PATH"
-
-    # Add clan-cli to the python path so that we can import it without building it in nix first
-    export PYTHONPATH="$GIT_ROOT/pkgs/clan-cli":"$PYTHONPATH"
-
+    pushd "$CLAN_CORE_PATH/pkgs/clan-app"
+    export PATH="$(pwd)/bin":"$PATH"
+    # Add current package to PYTHONPATH
+    export PYTHONPATH="$(pwd)/pkgs/clan-app/''${PYTHONPATH:+:$PYTHONPATH:}"
     export XDG_DATA_DIRS=$GSETTINGS_SCHEMAS_PATH:$XDG_DATA_DIRS
-
     export WEBVIEW_LIB_DIR=${webview-lib}/lib
-    source $PKG_ROOT_CLAN_APP/.local.env
+    # Add clan-cli to the python path so that we can import it without building it in nix first
+    export PYTHONPATH="$(pwd)":"$PYTHONPATH"
+    popd
 
-    cp -r ${self'.packages.fonts} "$PKG_ROOT_WEBVIEW_UI/app/.fonts"
-    chmod -R +w "$PKG_ROOT_WEBVIEW_UI/app/.fonts"
+    ## Webview UI
+    # Add webview-ui scripts to PATH
+    pushd "$CLAN_CORE_PATH/pkgs/clan-app/webview-ui/app"
+    export NODE_PATH="$(pwd)/node_modules"
+    export PATH="$NODE_PATH/.bin:$(pwd)/bin:$PATH"
+    cp -r ${self'.packages.fonts} .fonts
+    chmod -R +w .fonts
+    mkdir -p api
+    cp -r ${clan-ts-api}/* api
+    chmod -R +w api
+    popd
 
+    # configure process-compose
+    if test -f "$GIT_ROOT/pkgs/clan-app/.local.env"; then
+      source "$GIT_ROOT/pkgs/clan-app/.local.env"
+    fi
     # Define the yellow color code
     YELLOW='\033[1;33m'
     # Define the reset color code
     NC='\033[0m'
-
-    mkdir -p "$PKG_ROOT_WEBVIEW_UI/app/api"
-    cp -r ${clan-ts-api}/* "$PKG_ROOT_WEBVIEW_UI/app/api"
-    chmod -R +w "$PKG_ROOT_WEBVIEW_UI/app/api"
-
-    # configure process-compose
-    export PC_CONFIG_FILES="$PKG_ROOT_UI/process-compose.yaml"
+    export PC_CONFIG_FILES="$CLAN_CORE_PATH/pkgs/clan-app/process-compose.yaml"
   '';
 }
