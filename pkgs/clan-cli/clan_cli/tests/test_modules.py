@@ -107,7 +107,7 @@ def test_add_module_to_inventory(
 
         generator = None
 
-        for gen in machine.vars_generators:
+        for gen in machine.vars_generators():
             if gen.name == "borgbackup":
                 generator = gen
                 break

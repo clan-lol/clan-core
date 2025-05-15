@@ -33,19 +33,19 @@ def set_var(machine: str | Machine, var: str | Var, value: bytes, flake: Flake) 
         )
 
 
-def set_via_stdin(machine: str, var_id: str, flake: Flake) -> None:
-    var = get_var(str(flake.path), machine, var_id)
+def set_via_stdin(machine_name: str, var_id: str, flake: Flake) -> None:
+    machine = Machine(name=machine_name, flake=flake)
+    var = get_var(str(flake.path), machine_name, var_id)
     if sys.stdin.isatty():
         new_value = ask(
             var.id,
-            PromptType.HIDDEN,
+            PromptType.MULTILINE_HIDDEN,
             None,
         ).encode("utf-8")
     else:
         new_value = sys.stdin.buffer.read()
 
-    _machine = Machine(name=machine, flake=flake)
-    set_var(_machine, var, new_value, flake)
+    set_var(machine, var, new_value, flake)
 
 
 def _set_command(args: argparse.Namespace) -> None:

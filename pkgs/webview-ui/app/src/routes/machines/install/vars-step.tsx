@@ -1,9 +1,9 @@
 import { callApi } from "@/src/api";
 import {
   createForm,
+  FieldValues,
   SubmitHandler,
   validate,
-  FieldValues,
 } from "@modular-forms/solid";
 import { createQuery, useQueryClient } from "@tanstack/solid-query";
 import { Typography } from "@/src/components/Typography";
@@ -113,21 +113,43 @@ export const VarsStep = (props: VarsStepProps) => {
                             </Typography>
                             {/* Avoid nesting issue in case of a "." */}
                             <Field
-                              name={`${generator.name.replaceAll(".", "__dot__")}.${prompt.name.replaceAll(".", "__dot__")}`}
+                              name={`${generator.name.replaceAll(
+                                ".",
+                                "__dot__",
+                              )}.${prompt.name.replaceAll(".", "__dot__")}`}
                             >
                               {(field, props) => (
-                                <TextInput
-                                  inputProps={{
-                                    ...props,
-                                    type:
-                                      prompt.prompt_type === "hidden"
-                                        ? "password"
-                                        : "text",
-                                  }}
-                                  label={prompt.description}
-                                  value={prompt.previous_value ?? ""}
-                                  error={field.error}
-                                />
+                                <Switch
+                                  fallback={
+                                    <TextInput
+                                      inputProps={{
+                                        ...props,
+                                        type:
+                                          prompt.prompt_type === "hidden"
+                                            ? "password"
+                                            : "text",
+                                      }}
+                                      label={prompt.description}
+                                      value={prompt.previous_value ?? ""}
+                                      error={field.error}
+                                    />
+                                  }
+                                >
+                                  <Match
+                                    when={
+                                      prompt.prompt_type === "multiline" ||
+                                      prompt.prompt_type === "multiline-hidden"
+                                    }
+                                  >
+                                    <textarea
+                                      {...props}
+                                      class="w-full h-32 border border-gray-300 rounded-md p-2"
+                                      placeholder={prompt.description}
+                                      value={prompt.previous_value ?? ""}
+                                      name={prompt.description}
+                                    />
+                                  </Match>
+                                </Switch>
                               )}
                             </Field>
                           </Group>

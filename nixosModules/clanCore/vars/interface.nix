@@ -364,11 +364,13 @@ in
                           - hidden: A hidden text (e.g. password)
                           - line: A single line of text
                           - multiline: A multiline text
+                          - multiline-hidden: A multiline text
                       '';
                       type = enum [
                         "hidden"
                         "line"
                         "multiline"
+                        "multiline-hidden"
                       ];
                       default = "line";
                     };
