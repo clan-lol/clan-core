@@ -6,7 +6,6 @@
   clan-app-ui,
   clan-ts-api,
   process-compose,
-  python3,
   json2ts,
   self',
 }:
@@ -21,7 +20,6 @@ mkShell {
 
   packages = [
     # required for reload-python-api.sh script
-    python3
     json2ts
   ];
 
