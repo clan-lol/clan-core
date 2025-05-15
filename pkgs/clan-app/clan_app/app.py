@@ -38,6 +38,9 @@ def app_run(app_opts: ClanAppOptions) -> int:
         content_uri = f"file://{site_index}"
 
     webview = Webview(debug=app_opts.debug)
+    webview.title = "Clan App"
+    # This seems to call the gtk api correctly but and gtk also seems to our icon, but somehow the icon is not loaded.
+    webview.icon = "clan-white"
 
     def cancel_task(
         task_id: str, *, op_key: str

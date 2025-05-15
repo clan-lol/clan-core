@@ -88,6 +88,9 @@ class _WebviewLibrary:
         self.webview_set_title = self.lib.webview_set_title
         self.webview_set_title.argtypes = [c_void_p, c_char_p]
 
+        self.webview_set_icon = self.lib.webview_set_icon
+        self.webview_set_icon.argtypes = [c_void_p, c_char_p]
+
         self.webview_set_size = self.lib.webview_set_size
         self.webview_set_size.argtypes = [c_void_p, c_int, c_int, c_int]
 

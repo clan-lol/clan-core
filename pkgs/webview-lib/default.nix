@@ -4,21 +4,26 @@ pkgs.clangStdenv.mkDerivation {
   pname = "webview";
   version = "nightly";
 
-  src = pkgs.fetchFromGitHub {
-    owner = "webview";
-    repo = "webview";
-    rev = "f1a9d6b6fb8bcc2e266057224887a3d628f30f90";
-    sha256 = "sha256-sK7GXDbb2zEntWH5ylC2B39zW+gXvqQ1l843gvziDZo=";
-  };
-
   # We add the function id to the promise to be able to cancel it through the UI
   # We disallow remote connections from the UI on Linux
   # TODO: Disallow remote connections on MacOS
-  patches = [ ./fixes.patch ];
+
+  src = pkgs.fetchFromGitHub {
+    owner = "clan-lol";
+    repo = "webview";
+    rev = "7d24f0192765b7e08f2d712fae90c046d08f318e";
+    hash = "sha256-yokVI9tFiEEU5M/S2xAeJOghqqiCvTelLo8WLKQZsSY=";
+  };
 
   outputs = [
     "out"
     "dev"
+  ];
+
+  enableParallelBuilding = true;
+
+  cmakeFlags = [
+    "-DWEBVIEW_BUILD_TESTS=OFF"
   ];
 
   # Dependencies used during the build process, if any
