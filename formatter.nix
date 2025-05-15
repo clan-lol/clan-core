@@ -100,9 +100,9 @@
             extraPythonPackages = (self'.packages.clan-cli.devshellPyDeps pkgs.python3Packages);
           };
           "clan-app" = {
-            directory = "pkgs/clan-app";
+            directory = "pkgs/ui/clan-app";
             extraPythonPackages = (self'.packages.clan-app.devshellPyDeps pkgs.python3Packages);
-            extraPythonPaths = [ "../clan-cli" ];
+            extraPythonPaths = [ "../../clan-cli" ];
           };
         }
         // (

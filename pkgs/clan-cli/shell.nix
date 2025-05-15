@@ -1,7 +1,6 @@
 {
   lib,
   nix-unit,
-  nix-select,
   clan-cli,
   mkShell,
   ruff,
@@ -41,10 +40,6 @@ mkShell {
 
     # Add clan command to PATH
     export PATH="$PKG_ROOT/bin":"$PATH"
-
-    # Needed for impure tests
-    ln -sfT ${clan-cli.nixpkgs} "$PKG_ROOT/clan_cli/nixpkgs"
-    ln -sfT ${nix-select} "$PKG_ROOT/clan_cli/select"
 
     # Generate classes.py from inventory schema
     # This file is in .gitignore

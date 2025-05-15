@@ -9,7 +9,7 @@ Follow the instructions below to set up your development environment and start t
 
 1. **Navigate to the Webview UI Directory**
 
-   Go to the `clan-core/pkgs/webview-ui/app` directory and start the web server by executing:
+   Go to the `clan-core/pkgs/ui/webview-ui/app` directory and start the web server by executing:
 
    ```bash
    npm install
@@ -25,7 +25,6 @@ Follow the instructions below to set up your development environment and start t
    ```
 
 This will start the application in debug mode and link it to the web server running at `http://localhost:3000`.
-
 
 ### Debugging Style and Layout
 

@@ -35,9 +35,8 @@
     in
     {
       devShells.clan-cli = pkgs.callPackage ./shell.nix {
-        inherit (self'.packages) clan-cli;
         inherit self';
-        inherit (inputs) nix-select;
+        inherit (self'.packages) clan-cli;
       };
       packages = {
         clan-cli = pkgs.callPackage ./default.nix {

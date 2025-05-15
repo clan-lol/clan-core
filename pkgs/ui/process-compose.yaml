@@ -1,0 +1,24 @@
+version: "0.5"
+
+env_cmds:
+  PRJ_ROOT: "git rev-parse --show-toplevel"
+
+processes:
+  webview-ui:
+    command: |
+      direnv allow
+      direnv exec . npm install
+      direnv exec . vite
+    ready_log_line: "VITE"
+    working_dir: "$PKG_ROOT_WEBVIEW_UI/app"
+
+  clan-app:
+    command: |
+      direnv allow
+      direnv exec . clan-app --debug --content-uri http://localhost:3000
+    depends_on:
+      webview-ui:
+        condition: "process_log_ready"
+    is_foreground: true
+    ready_log_line: "Debug mode enabled"
+    working_dir: "$PKG_ROOT_CLAN_APP"
