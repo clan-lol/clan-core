@@ -1,12 +1,10 @@
 import tarfile
 from pathlib import Path
-from shlex import quote
 from tempfile import TemporaryDirectory
 
 from clan_lib.errors import ClanError
 
 from clan_cli.cmd import Log, RunOpts
-from clan_cli.cmd import run as run_local
 from clan_cli.ssh.host import Host
 
 
@@ -91,10 +89,6 @@ def upload(
                 with local_src.open("rb") as f:
                     tar.addfile(tarinfo, f)
 
-        sudo = ""
-        if host.user != "root":
-            sudo = "sudo -- "
-
         cmd = None
         if local_src.is_dir():
             cmd = 'install -d -m "$1" "$0" && find "$0" -mindepth 1 -delete && tar -C "$0" -xzf -'
@@ -106,11 +100,11 @@ def upload(
 
         # TODO accept `input` to be  an IO object instead of bytes so that we don't have to read the tarfile into memory.
         with tar_path.open("rb") as f:
-            run_local(
+            host.run(
                 [
-                    *host.ssh_cmd(),
-                    "--",
-                    f"{sudo}bash -c {quote(cmd)}",
+                    "bash",
+                    "-c",
+                    cmd,
                     str(remote_dest),
                     f"{dir_mode:o}",
                 ],
@@ -120,4 +114,5 @@ def upload(
                     prefix=host.command_prefix,
                     needs_user_terminal=True,
                 ),
+                become_root=True,
             )
