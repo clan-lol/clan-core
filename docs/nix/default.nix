@@ -45,7 +45,7 @@ pkgs.stdenv.mkDerivation {
     ln -snf ${fira-code}/share/fonts/truetype/FiraCode-VF.ttf ./site/static/
 
     # Copy icons into place
-    cp -af ../pkgs/webview-ui/app/icons ./site/static/
+    cp -af ../pkgs/ui/webview-ui/app/icons ./site/static/
   '';
 
   buildPhase = ''

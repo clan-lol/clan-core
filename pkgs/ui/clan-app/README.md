@@ -4,28 +4,14 @@ A powerful application that allows users to create and manage their own Clans.
 
 ## Getting Started
 
-Follow the instructions below to set up your development environment and start the application:
+To run the local dev environment:
 
+```console
+❯ nix run .#ui-dev
+```
 
-1. **Navigate to the Webview UI Directory**
-
-   Go to the `clan-core/pkgs/webview-ui/app` directory and start the web server by executing:
-
-   ```bash
-   npm install
-   vite
-   ```
-
-2. **Start the Clan App**
-
-   In the `clan-app` directory, execute the following command:
-
-   ```bash
-   clan-app --debug --content-uri http://localhost:3000
-   ```
-
-This will start the application in debug mode and link it to the web server running at `http://localhost:3000`.
-
+This will start a [process-compose] instance running `pkgs/ui/webview-ui/app` and `pkgs/ui/clan-app`, with the web server
+accessible at `http://localhost:3000`.
 
 ### Debugging Style and Layout
 
@@ -87,3 +73,5 @@ Here are some important documentation links related to the Clan App:
 > Error dialogs should be avoided where possible, since they are disruptive.
 >
 > For simple non-critical errors, toasts can be a good alternative.
+
+[process-compose]: https://f1bonacc1.github.io/process-compose/

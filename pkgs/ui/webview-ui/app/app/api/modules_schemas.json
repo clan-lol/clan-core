@@ -1,0 +1,1064 @@
+{
+  "admin": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "allowedKeys": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "admin", "allowedKeys"]
+          },
+          "additionalProperties": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "admin", "allowedKeys"]
+            },
+            "type": "string"
+          },
+          "default": {},
+          "description": "The allowed public keys for ssh access to the admin user",
+          "examples": [
+            {
+              "key_1": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD..."
+            }
+          ],
+          "type": "object"
+        }
+      },
+      "type": "object",
+      "title": "admin-config-role-default"
+    }
+  },
+  "auto-upgrade": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "flake": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "auto-upgrade", "flake"]
+          },
+          "description": "Flake reference",
+          "type": "string"
+        }
+      },
+      "required": ["flake"],
+      "type": "object",
+      "title": "auto-upgrade-config-role-default"
+    }
+  },
+  "borgbackup": {
+    "client": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "destinations": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "borgbackup", "destinations"]
+          },
+          "additionalProperties": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "borgbackup", "destinations", "<name>"]
+            },
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "$exportedModuleInfo": {
+                  "path": [
+                    "clan",
+                    "borgbackup",
+                    "destinations",
+                    "<name>",
+                    "name"
+                  ]
+                },
+                "default": "\u2039name\u203a",
+                "description": "the name of the backup job",
+                "type": "string"
+              },
+              "repo": {
+                "$exportedModuleInfo": {
+                  "path": [
+                    "clan",
+                    "borgbackup",
+                    "destinations",
+                    "<name>",
+                    "repo"
+                  ]
+                },
+                "description": "the borgbackup repository to backup to",
+                "type": "string"
+              },
+              "rsh": {
+                "$exportedModuleInfo": {
+                  "defaultText": "ssh -i ${config.clan.core.vars.generators.borgbackup.files.\"borgbackup.ssh\".path} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null",
+                  "path": [
+                    "clan",
+                    "borgbackup",
+                    "destinations",
+                    "<name>",
+                    "rsh"
+                  ]
+                },
+                "description": "the rsh to use for the backup",
+                "type": "string"
+              }
+            },
+            "required": ["repo", "rsh"],
+            "type": "object"
+          },
+          "default": {},
+          "description": "destinations where the machine should be backuped to\n",
+          "type": "object"
+        },
+        "exclude": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "borgbackup", "exclude"]
+          },
+          "default": [],
+          "description": "Directories/Files to exclude from the backup.\nUse * as a wildcard.\n",
+          "examples": ["*.pyc"],
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "borgbackup", "exclude"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object",
+      "title": "borgbackup-config-role-client"
+    },
+    "server": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "directory": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "borgbackup", "directory"]
+          },
+          "default": "/var/lib/borgbackup",
+          "description": "The directory where the borgbackup repositories are stored.\n",
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "title": "borgbackup-config-role-server"
+    }
+  },
+  "borgbackup-static": {},
+  "data-mesher": {
+    "admin": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "bootstrapNodes": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "data-mesher", "bootstrapNodes"]
+          },
+          "default": null,
+          "description": "A list of bootstrap nodes that act as an initial gateway when joining\nthe cluster.\n",
+          "examples": ["192.168.1.1:7946", "192.168.1.2:7946"],
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "bootstrapNodes"]
+              },
+              "items": {
+                "$exportedModuleInfo": {
+                  "path": ["clan", "data-mesher", "bootstrapNodes"]
+                },
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "network": {
+          "$exportedModuleInfo": {
+            "path": ["network"]
+          },
+          "additionalProperties": false,
+          "properties": {
+            "hostTTL": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "network", "hostTTL"]
+              },
+              "default": "672h",
+              "description": "The TTL for hosts in the network, in the form of a Go time.Duration",
+              "examples": ["24h"],
+              "type": "string"
+            },
+            "interface": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "network", "interface"]
+              },
+              "description": "The interface over which cluster communication should be performed.\nAll the ip addresses associate with this interface will be part of\nour host claim, including both ipv4 and ipv6.\n\nThis should be set to an internal/VPN interface.\n",
+              "examples": ["tailscale0"],
+              "type": "string"
+            },
+            "port": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "network", "port"]
+              },
+              "default": 7946,
+              "description": "Port to listen on for cluster communication.\n",
+              "type": "integer"
+            },
+            "tld": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "network", "tld"]
+              },
+              "default": null,
+              "description": "Top level domain to use for the network",
+              "type": "string"
+            }
+          },
+          "required": ["interface"],
+          "type": "object"
+        }
+      },
+      "required": ["network"],
+      "type": "object",
+      "title": "data-mesher-config-role-admin"
+    },
+    "peer": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "bootstrapNodes": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "data-mesher", "bootstrapNodes"]
+          },
+          "default": null,
+          "description": "A list of bootstrap nodes that act as an initial gateway when joining\nthe cluster.\n",
+          "examples": ["192.168.1.1:7946", "192.168.1.2:7946"],
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "bootstrapNodes"]
+              },
+              "items": {
+                "$exportedModuleInfo": {
+                  "path": ["clan", "data-mesher", "bootstrapNodes"]
+                },
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "network": {
+          "$exportedModuleInfo": {
+            "path": ["network"]
+          },
+          "additionalProperties": false,
+          "properties": {
+            "interface": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "network", "interface"]
+              },
+              "description": "The interface over which cluster communication should be performed.\nAll the ip addresses associate with this interface will be part of\nour host claim, including both ipv4 and ipv6.\n\nThis should be set to an internal/VPN interface.\n",
+              "examples": ["tailscale0"],
+              "type": "string"
+            },
+            "port": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "network", "port"]
+              },
+              "default": 7946,
+              "description": "Port to listen on for cluster communication.\n",
+              "type": "integer"
+            }
+          },
+          "required": ["interface"],
+          "type": "object"
+        }
+      },
+      "required": ["network"],
+      "type": "object",
+      "title": "data-mesher-config-role-peer"
+    },
+    "signer": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "bootstrapNodes": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "data-mesher", "bootstrapNodes"]
+          },
+          "default": null,
+          "description": "A list of bootstrap nodes that act as an initial gateway when joining\nthe cluster.\n",
+          "examples": ["192.168.1.1:7946", "192.168.1.2:7946"],
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "bootstrapNodes"]
+              },
+              "items": {
+                "$exportedModuleInfo": {
+                  "path": ["clan", "data-mesher", "bootstrapNodes"]
+                },
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "network": {
+          "$exportedModuleInfo": {
+            "path": ["network"]
+          },
+          "additionalProperties": false,
+          "properties": {
+            "interface": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "network", "interface"]
+              },
+              "description": "The interface over which cluster communication should be performed.\nAll the ip addresses associate with this interface will be part of\nour host claim, including both ipv4 and ipv6.\n\nThis should be set to an internal/VPN interface.\n",
+              "examples": ["tailscale0"],
+              "type": "string"
+            },
+            "port": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "data-mesher", "network", "port"]
+              },
+              "default": 7946,
+              "description": "Port to listen on for cluster communication.\n",
+              "type": "integer"
+            }
+          },
+          "required": ["interface"],
+          "type": "object"
+        }
+      },
+      "required": ["network"],
+      "type": "object",
+      "title": "data-mesher-config-role-signer"
+    }
+  },
+  "deltachat": {},
+  "disk-id": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+      "title": "disk-id-config-role-default"
+    }
+  },
+  "dyndns": {},
+  "ergochat": {},
+  "garage": {},
+  "golem-provider": {},
+  "heisenbridge": {},
+  "importer": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+      "title": "importer-config-role-default"
+    }
+  },
+  "iwd": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "networks": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "iwd", "networks"]
+          },
+          "additionalProperties": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "iwd", "networks", "<name>"]
+            },
+            "additionalProperties": false,
+            "properties": {
+              "AutoConnect": {
+                "$exportedModuleInfo": {
+                  "path": ["clan", "iwd", "networks", "<name>", "AutoConnect"]
+                },
+                "default": true,
+                "description": "Automatically try to join this wifi network",
+                "type": "boolean"
+              },
+              "ssid": {
+                "$exportedModuleInfo": {
+                  "path": ["clan", "iwd", "networks", "<name>", "ssid"]
+                },
+                "default": "\u2039name\u203a",
+                "description": "The name of the wifi network",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "default": {},
+          "description": "Wifi networks to predefine",
+          "type": "object"
+        }
+      },
+      "type": "object",
+      "title": "iwd-config-role-default"
+    }
+  },
+  "localbackup": {},
+  "localsend": {},
+  "machine-id": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+      "title": "machine-id-config-role-default"
+    }
+  },
+  "matrix-synapse": {},
+  "moonlight": {},
+  "mumble": {
+    "server": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+      "title": "mumble-config-role-server"
+    }
+  },
+  "mycelium": {
+    "peer": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "addHostedPublicNodes": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "mycelium", "addHostedPublicNodes"]
+          },
+          "default": true,
+          "description": "Add hosted Public nodes",
+          "type": "boolean"
+        },
+        "openFirewall": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "mycelium", "openFirewall"]
+          },
+          "default": true,
+          "description": "Open the firewall for mycelium",
+          "type": "boolean"
+        }
+      },
+      "type": "object",
+      "title": "mycelium-config-role-peer"
+    }
+  },
+  "nginx": {},
+  "packages": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "packages": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "packages", "packages"]
+          },
+          "description": "The packages to install on the machine",
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "packages", "packages"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["packages"],
+      "type": "object",
+      "title": "packages-config-role-default"
+    }
+  },
+  "postgresql": {},
+  "root-password": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+      "title": "root-password-config-role-default"
+    }
+  },
+  "single-disk": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "device": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "single-disk", "device"]
+          },
+          "default": null,
+          "description": "The primary disk device to install the system on",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$exportedModuleInfo": {
+                "path": ["clan", "single-disk", "device"]
+              },
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "object",
+      "title": "single-disk-config-role-default"
+    }
+  },
+  "sshd": {
+    "client": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "certificate": {
+          "$exportedModuleInfo": {
+            "path": ["certificate"]
+          },
+          "additionalProperties": false,
+          "properties": {
+            "searchDomains": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "sshd", "certificate", "searchDomains"]
+              },
+              "default": [],
+              "description": "List of domains to include in the certificate. This option will prepend the machine name in front of each domain before adding it to the certificate.",
+              "examples": ["mydomain.com"],
+              "items": {
+                "$exportedModuleInfo": {
+                  "path": ["clan", "sshd", "certificate", "searchDomains"]
+                },
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "required": ["certificate"],
+      "type": "object",
+      "title": "sshd-config-role-client"
+    },
+    "server": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "certificate": {
+          "$exportedModuleInfo": {
+            "path": ["certificate"]
+          },
+          "additionalProperties": false,
+          "properties": {
+            "searchDomains": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "sshd", "certificate", "searchDomains"]
+              },
+              "default": [],
+              "description": "List of domains to include in the certificate. This option will prepend the machine name in front of each domain before adding it to the certificate.",
+              "examples": ["mydomain.com"],
+              "items": {
+                "$exportedModuleInfo": {
+                  "path": ["clan", "sshd", "certificate", "searchDomains"]
+                },
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "hostKeys": {
+          "$exportedModuleInfo": {
+            "path": ["hostKeys"]
+          },
+          "additionalProperties": false,
+          "properties": {
+            "rsa": {
+              "$exportedModuleInfo": {
+                "path": ["hostKeys", "rsa"]
+              },
+              "additionalProperties": false,
+              "properties": {
+                "enable": {
+                  "$exportedModuleInfo": {
+                    "path": ["clan", "sshd", "hostKeys", "rsa", "enable"]
+                  },
+                  "default": false,
+                  "description": "Whether to enable Generate RSA host key.",
+                  "examples": [true],
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": ["rsa"],
+          "type": "object"
+        }
+      },
+      "required": ["certificate", "hostKeys"],
+      "type": "object",
+      "title": "sshd-config-role-server"
+    }
+  },
+  "state-version": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+      "title": "state-version-config-role-default"
+    }
+  },
+  "static-hosts": {},
+  "sunshine": {},
+  "syncthing": {
+    "introducer": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "autoAcceptDevices": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "syncthing", "autoAcceptDevices"]
+          },
+          "default": false,
+          "description": "Auto accept incoming device requests.\nShould only be used on the introducer.\n",
+          "type": "boolean"
+        },
+        "autoShares": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "syncthing", "autoShares"]
+          },
+          "default": [],
+          "description": "Auto share the following Folders by their ID's with introduced devices.\nShould only be used on the introducer.\n",
+          "examples": ["folder1", "folder2"],
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "syncthing", "autoShares"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "$exportedModuleInfo": {
+            "defaultText": "config.clan.core.vars.generators.syncthing.files.\"id\".value",
+            "path": ["clan", "syncthing", "id"]
+          },
+          "description": "The ID of the machine.\nIt is generated automatically by default.\n",
+          "examples": [
+            "BABNJY4-G2ICDLF-QQEG7DD-N3OBNGF-BCCOFK6-MV3K7QJ-2WUZHXS-7DTW4AS"
+          ],
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$exportedModuleInfo": {
+                "path": ["clan", "syncthing", "id"]
+              },
+              "type": "string"
+            }
+          ]
+        },
+        "introducer": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "syncthing", "introducer"]
+          },
+          "default": null,
+          "description": "The introducer for the machine.\n",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$exportedModuleInfo": {
+                "path": ["clan", "syncthing", "introducer"]
+              },
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": ["id"],
+      "type": "object",
+      "title": "syncthing-config-role-introducer"
+    },
+    "peer": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "autoAcceptDevices": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "syncthing", "autoAcceptDevices"]
+          },
+          "default": false,
+          "description": "Auto accept incoming device requests.\nShould only be used on the introducer.\n",
+          "type": "boolean"
+        },
+        "autoShares": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "syncthing", "autoShares"]
+          },
+          "default": [],
+          "description": "Auto share the following Folders by their ID's with introduced devices.\nShould only be used on the introducer.\n",
+          "examples": ["folder1", "folder2"],
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "syncthing", "autoShares"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "$exportedModuleInfo": {
+            "defaultText": "config.clan.core.vars.generators.syncthing.files.\"id\".value",
+            "path": ["clan", "syncthing", "id"]
+          },
+          "description": "The ID of the machine.\nIt is generated automatically by default.\n",
+          "examples": [
+            "BABNJY4-G2ICDLF-QQEG7DD-N3OBNGF-BCCOFK6-MV3K7QJ-2WUZHXS-7DTW4AS"
+          ],
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$exportedModuleInfo": {
+                "path": ["clan", "syncthing", "id"]
+              },
+              "type": "string"
+            }
+          ]
+        },
+        "introducer": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "syncthing", "introducer"]
+          },
+          "default": null,
+          "description": "The introducer for the machine.\n",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$exportedModuleInfo": {
+                "path": ["clan", "syncthing", "introducer"]
+              },
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": ["id"],
+      "type": "object",
+      "title": "syncthing-config-role-peer"
+    }
+  },
+  "syncthing-static-peers": {},
+  "thelounge": {},
+  "trusted-nix-caches": {},
+  "user-password": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "prompt": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "user-password", "prompt"]
+          },
+          "default": true,
+          "description": "Whether the user should be prompted.",
+          "examples": [false],
+          "type": "boolean"
+        },
+        "user": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "user-password", "user"]
+          },
+          "description": "The user the password should be generated for.",
+          "examples": ["alice"],
+          "type": "string"
+        }
+      },
+      "required": ["user"],
+      "type": "object",
+      "title": "user-password-config-role-default"
+    }
+  },
+  "vaultwarden": {},
+  "wifi": {
+    "default": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object",
+      "title": "wifi-config-role-default"
+    }
+  },
+  "xfce": {},
+  "zerotier": {
+    "controller": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "excludeHosts": {
+          "$exportedModuleInfo": {
+            "defaultText": {
+              "_type": "literalExpression",
+              "text": "[ config.clan.core.settings.machine.name ]"
+            },
+            "path": ["clan", "zerotier", "excludeHosts"]
+          },
+          "description": "Hosts that should be excluded",
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "zerotier", "excludeHosts"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "networkIds": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "zerotier", "networkIds"]
+          },
+          "default": [],
+          "description": "Extra zerotier network Ids that should be accepted",
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "zerotier", "networkIds"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "networkIps": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "zerotier", "networkIps"]
+          },
+          "default": [],
+          "description": "Extra zerotier network Ips that should be accepted",
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "zerotier", "networkIps"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["excludeHosts"],
+      "type": "object",
+      "title": "zerotier-config-role-controller"
+    },
+    "moon": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "excludeHosts": {
+          "$exportedModuleInfo": {
+            "defaultText": {
+              "_type": "literalExpression",
+              "text": "[ config.clan.core.settings.machine.name ]"
+            },
+            "path": ["clan", "zerotier", "excludeHosts"]
+          },
+          "description": "Hosts that should be excluded",
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "zerotier", "excludeHosts"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "moon": {
+          "$exportedModuleInfo": {
+            "path": ["moon"]
+          },
+          "additionalProperties": false,
+          "properties": {
+            "stableEndpoints": {
+              "$exportedModuleInfo": {
+                "path": ["clan", "zerotier", "moon", "stableEndpoints"]
+              },
+              "description": "Make this machine a moon.\nOther machines can join this moon by adding this moon in their config.\nIt will be reachable under the given stable endpoints.\n",
+              "examples": [
+                "[ 1.2.3.4\" \"10.0.0.3/9993\" \"2001:abcd:abcd::3/9993\" ]\n"
+              ],
+              "items": {
+                "$exportedModuleInfo": {
+                  "path": ["clan", "zerotier", "moon", "stableEndpoints"]
+                },
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": ["stableEndpoints"],
+          "type": "object"
+        },
+        "networkIds": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "zerotier", "networkIds"]
+          },
+          "default": [],
+          "description": "Extra zerotier network Ids that should be accepted",
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "zerotier", "networkIds"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "networkIps": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "zerotier", "networkIps"]
+          },
+          "default": [],
+          "description": "Extra zerotier network Ips that should be accepted",
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "zerotier", "networkIps"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["excludeHosts", "moon"],
+      "type": "object",
+      "title": "zerotier-config-role-moon"
+    },
+    "peer": {
+      "$exportedModuleInfo": {
+        "path": []
+      },
+      "additionalProperties": false,
+      "properties": {
+        "excludeHosts": {
+          "$exportedModuleInfo": {
+            "defaultText": {
+              "_type": "literalExpression",
+              "text": "[ config.clan.core.settings.machine.name ]"
+            },
+            "path": ["clan", "zerotier", "excludeHosts"]
+          },
+          "description": "Hosts that should be excluded",
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "zerotier", "excludeHosts"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "networkIds": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "zerotier", "networkIds"]
+          },
+          "default": [],
+          "description": "Extra zerotier network Ids that should be accepted",
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "zerotier", "networkIds"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "networkIps": {
+          "$exportedModuleInfo": {
+            "path": ["clan", "zerotier", "networkIps"]
+          },
+          "default": [],
+          "description": "Extra zerotier network Ips that should be accepted",
+          "items": {
+            "$exportedModuleInfo": {
+              "path": ["clan", "zerotier", "networkIps"]
+            },
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": ["excludeHosts"],
+      "type": "object",
+      "title": "zerotier-config-role-peer"
+    }
+  },
+  "zerotier-static-peers": {},
+  "zt-tcp-relay": {}
+}

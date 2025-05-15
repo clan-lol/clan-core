@@ -3,6 +3,7 @@
   mkShell,
   ruff,
   webview-lib,
+  process-compose,
   self',
 }:
 
@@ -11,7 +12,11 @@ mkShell {
 
   inputsFrom = [ self'.devShells.default ];
 
-  inherit (clan-app) nativeBuildInputs propagatedBuildInputs;
+  inherit (clan-app) propagatedBuildInputs;
+
+  nativeBuildInputs = clan-app.nativeBuildInputs ++ [
+    process-compose
+  ];
 
   buildInputs = [
     (clan-app.pythonRuntime.withPackages (
@@ -27,7 +32,7 @@ mkShell {
 
   shellHook = ''
     export GIT_ROOT=$(git rev-parse --show-toplevel)
-    export PKG_ROOT=$GIT_ROOT/pkgs/clan-app
+    export PKG_ROOT=$GIT_ROOT/pkgs/ui/clan-app
 
     export CLAN_CORE_PATH="$GIT_ROOT"
 

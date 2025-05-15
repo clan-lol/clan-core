@@ -60,7 +60,7 @@
         ];
         shellHook = ''
           export GIT_ROOT="$(git rev-parse --show-toplevel)"
-          export PKG_ROOT="$GIT_ROOT/pkgs/webview-ui"
+          export PKG_ROOT="$GIT_ROOT/pkgs/ui/webview-ui"
           export NODE_PATH="$PKG_ROOT/app/node_modules"
 
           scriptsPath="$PKG_ROOT/bin"
