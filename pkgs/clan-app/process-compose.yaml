@@ -1,24 +1,20 @@
 version: "0.5"
 
-env_cmds:
-  PRJ_ROOT: "git rev-parse --show-toplevel"
-
 processes:
   webview-ui:
     command: |
+      cd $(git rev-parse --show-toplevel)/pkgs/clan-app/webview-ui/app
       direnv allow
       direnv exec . npm install
       direnv exec . vite
     ready_log_line: "VITE"
-    working_dir: "$PRJ_ROOT/pkgs/clan-app/webview-ui/app"
 
   clan-app:
     command: |
-      direnv allow
-      direnv exec . ./bin/clan-app --debug --content-uri http://localhost:3000
+      cd $(git rev-parse --show-toplevel)/pkgs/clan-app
+      ./bin/clan-app --debug --content-uri http://localhost:3000
     depends_on:
       webview-ui:
         condition: "process_log_ready"
     is_foreground: true
     ready_log_line: "Debug mode enabled"
-    working_dir: "$PRJ_ROOT/pkgs/clan-app"
