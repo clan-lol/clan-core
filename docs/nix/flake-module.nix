@@ -36,6 +36,9 @@
       # Options available when imported via ` inventory.${moduleName}....${rolesName} `
       clanModulesViaRoles = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesViaRoles);
 
+      # clan service options
+      clanModulesViaService = pkgs.writeText "info.json" (builtins.toJSON jsonDocs.clanModulesViaService);
+
       # Simply evaluated options (JSON)
       renderOptions =
         pkgs.runCommand "render-options"
@@ -85,6 +88,7 @@
             export CLAN_CORE_DOCS=${jsonDocs.clanCore}/share/doc/nixos/options.json
             # A file that contains the links to all clanModule docs
             export CLAN_MODULES_VIA_ROLES=${clanModulesViaRoles}
+            export CLAN_MODULES_VIA_SERVICE=${clanModulesViaService}
             export CLAN_MODULES_VIA_NIX=${clanModulesViaNix}
             # Frontmatter format for clanModules
             export CLAN_MODULES_FRONTMATTER_DOCS=${clanModulesFrontmatter}/share/doc/nixos/options.json
@@ -100,7 +104,12 @@
     in
     {
       legacyPackages = {
-        inherit jsonDocs clanModulesViaNix clanModulesViaRoles;
+        inherit
+          jsonDocs
+          clanModulesViaNix
+          clanModulesViaRoles
+          clanModulesViaService
+          ;
       };
       devShells.docs = pkgs.callPackage ./shell.nix {
         inherit (self'.packages) docs clan-cli-docs inventory-api-docs;

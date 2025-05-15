@@ -85,6 +85,10 @@ nav:
           - 02-clan-api: decisions/02-clan-api.md
           - 03-adr-numbering-process: decisions/03-adr-numbering-process.md
           - Template: decisions/_template.md
+      - Clan Services:
+          - reference/clanServices/admin.md
+          - reference/clanServices/hello-world.md
+          - reference/clanServices/wifi.md
       - Clan Modules:
           - Overview:
               - reference/clanModules/index.md
