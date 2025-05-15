@@ -1,6 +1,5 @@
 {
   imports = [
-    ./clan-app/flake-module.nix
     ./webview-ui/flake-module.nix
   ];
 
@@ -21,5 +20,16 @@
         inherit (self'.packages) clan-app webview-lib webview-ui;
         inherit (config.packages) clan-ts-api;
       };
+
+      devShells.clan-app = pkgs.callPackage ./shell.nix {
+        inherit (config.packages) clan-app webview-lib;
+        inherit self';
+      };
+      packages.clan-app = pkgs.callPackage ./default.nix {
+        inherit (config.packages) clan-cli webview-ui webview-lib;
+        pythonRuntime = pkgs.python3;
+      };
+
+      checks = config.packages.clan-app.tests;
     };
 }

@@ -46,3 +46,11 @@ dist
 
 # TODO: remove after bug in select is fixed
 select
+
+# Generated files
+pkgs/ui/webview-ui/app/api/API.json
+pkgs/ui/webview-ui/app/api/API.ts
+pkgs/ui/webview-ui/app/api/Inventory.ts
+pkgs/ui/webview-ui/app/api/modules_schemas.json
+pkgs/ui/webview-ui/app/api/schema.json
+pkgs/ui/webview-ui/app/.fonts

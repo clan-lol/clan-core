@@ -9,7 +9,7 @@
     ./icon-update/flake-module.nix
     ./generate-test-vars/flake-module.nix
     ./clan-core-flake/flake-module.nix
-    ./ui/flake-module.nix
+    ./clan-app/flake-module.nix
   ];
 
   flake.packages.x86_64-linux =
