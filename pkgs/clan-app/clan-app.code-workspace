@@ -16,10 +16,10 @@
 			"path": "../../lib/build-clan"
 		},
 		{
-			"path": "../webview-ui"
+			"path": "./ui"
 		},
 		{
-			"path": "../webview-lib"
+			"path": "./webview-lib"
 		},
 		{
 			"path": "../clan-cli/clan_lib"

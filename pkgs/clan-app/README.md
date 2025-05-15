@@ -4,7 +4,7 @@ A powerful application that allows users to create and manage their own Clans.
 
 ## Getting Started
 
-Enter the `pkgs/ui` directory and allow [direnv] to load the `ui` devshell with `direnv allow`:
+Enter the `pkgs/clan-app` directory and allow [direnv] to load the `clan-app` devshell with `direnv allow`:
 
 ```console
 ❯ direnv allow
@@ -27,11 +27,11 @@ Once that has loaded, you can run the local dev environment by running `process-
 
 This will start a [process-compose] instance containing two processes:
 
-* `webview-ui` which is a background process running a [vite] server for `./webview-ui` in a hot-reload fashion
+* `clan-app-ui` which is a background process running a [vite] server for `./ui` in a hot-reload fashion
 * `clan-app` which is a [foreground process](https://f1bonacc1.github.io/process-compose/launcher/?h=foreground#foreground-processes),
 that is started on demand and provides the [webview] wrapper for the UI.
 
-Wait for the `webview-ui` process to enter the `Running` state, then navigate to the `clan-app` process and press `F7`.
+Wait for the `clan-app-ui` process to enter the `Running` state, then navigate to the `clan-app` process and press `F7`.
 This will start the [webview] window and bring `clan-app`'s terminal into the foreground, allowing for interaction with
 the debugger if required.
 
@@ -52,7 +52,7 @@ Follow the instructions below to set up your development environment and start t
 
 1. **Navigate to the Webview UI Directory**
 
-   Go to the `clan-core/pkgs/clan-app/webview-ui/app` directory and start the web server by executing:
+   Go to the `clan-core/pkgs/clan-app/ui` directory and start the web server by executing:
 
    ```bash
    npm install

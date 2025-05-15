@@ -48,9 +48,9 @@ dist
 select
 
 # Generated files
-pkgs/ui/webview-ui/app/api/API.json
-pkgs/ui/webview-ui/app/api/API.ts
-pkgs/ui/webview-ui/app/api/Inventory.ts
-pkgs/ui/webview-ui/app/api/modules_schemas.json
-pkgs/ui/webview-ui/app/api/schema.json
-pkgs/ui/webview-ui/app/.fonts
+pkgs/clan-app/ui/api/API.json
+pkgs/clan-app/ui/api/API.ts
+pkgs/clan-app/ui/api/Inventory.ts
+pkgs/clan-app/ui/api/modules_schemas.json
+pkgs/clan-app/ui/api/schema.json
+pkgs/clan-app/ui/.fonts

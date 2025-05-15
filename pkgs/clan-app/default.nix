@@ -3,7 +3,7 @@
   copyDesktopItems,
   clan-cli,
   makeDesktopItem,
-  webview-ui,
+  clan-app-ui,
   webview-lib,
   fontconfig,
   pythonRuntime,
@@ -146,7 +146,7 @@ pythonRuntime.pkgs.buildPythonApplication {
 
   postInstall = ''
     mkdir -p $out/${pythonRuntime.sitePackages}/clan_app/.webui
-    cp -r ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/* $out/${pythonRuntime.sitePackages}/clan_app/.webui
+    cp -r ${clan-app-ui}/lib/node_modules/@clan/ui/dist/* $out/${pythonRuntime.sitePackages}/clan_app/.webui
     mkdir -p $out/share/icons/hicolor
     cp -r ./clan_app/assets/white-favicons/* $out/share/icons/hicolor
   '';

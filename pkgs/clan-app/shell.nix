@@ -3,7 +3,7 @@
   mkShell,
   ruff,
   webview-lib,
-  webview-ui,
+  clan-app-ui,
   clan-ts-api,
   process-compose,
   python3,
@@ -16,7 +16,7 @@ mkShell {
 
   inputsFrom = [
     self'.devShells.default
-    webview-ui
+    clan-app-ui
   ];
 
   packages = [
@@ -59,8 +59,8 @@ mkShell {
     popd
 
     ## Webview UI
-    # Add webview-ui scripts to PATH
-    pushd "$CLAN_CORE_PATH/pkgs/clan-app/webview-ui/app"
+    # Add clan-app-ui scripts to PATH
+    pushd "$CLAN_CORE_PATH/pkgs/clan-app/ui"
     export NODE_PATH="$(pwd)/node_modules"
     export PATH="$NODE_PATH/.bin:$(pwd)/bin:$PATH"
     cp -r ${self'.packages.fonts} .fonts
