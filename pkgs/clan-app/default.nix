@@ -3,16 +3,30 @@
   copyDesktopItems,
   clan-cli,
   makeDesktopItem,
-  webview-ui,
+  clan-app-ui,
   webview-lib,
   fontconfig,
   pythonRuntime,
   wrapGAppsHook4,
   gobject-introspection,
   gtk4,
+  lib,
 }:
 let
-  source = ./.;
+  source =
+    {
+      withTests ? true,
+    }:
+    lib.fileset.toSource {
+      root = ./.;
+      fileset = lib.fileset.unions (
+        [
+          ./clan_app
+          ./pyproject.toml
+        ]
+        ++ lib.optional withTests ./tests
+      );
+    };
 
   desktop-file = makeDesktopItem {
     name = "org.clan.app";
@@ -53,7 +67,7 @@ let
 in
 pythonRuntime.pkgs.buildPythonApplication {
   name = "clan-app";
-  src = source;
+  src = source { };
   format = "pyproject";
 
   dontWrapGApps = true;
@@ -99,7 +113,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             ];
           }
           ''
-            cp -r ${source} ./src
+            cp -r ${source { withTests = true; }} ./src
             chmod +w -R ./src
             cd ./src
 
@@ -132,7 +146,7 @@ pythonRuntime.pkgs.buildPythonApplication {
 
   postInstall = ''
     mkdir -p $out/${pythonRuntime.sitePackages}/clan_app/.webui
-    cp -r ${webview-ui}/lib/node_modules/@clan/webview-ui/dist/* $out/${pythonRuntime.sitePackages}/clan_app/.webui
+    cp -r ${clan-app-ui}/lib/node_modules/@clan/ui/dist/* $out/${pythonRuntime.sitePackages}/clan_app/.webui
     mkdir -p $out/share/icons/hicolor
     cp -r ./clan_app/assets/white-favicons/* $out/share/icons/hicolor
   '';

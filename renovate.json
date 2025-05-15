@@ -8,7 +8,7 @@
   "packageRules": [
     {
       "matchManagers": ["npm"],
-      "matchPaths": ["pkgs/webview-ui/**"],
+      "matchPaths": ["pkgs/clan-app/ui/**"],
       "enabled": false
     }
   ]

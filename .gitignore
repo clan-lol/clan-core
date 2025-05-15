@@ -46,3 +46,11 @@ dist
 
 # TODO: remove after bug in select is fixed
 select
+
+# Generated files
+pkgs/clan-app/ui/api/API.json
+pkgs/clan-app/ui/api/API.ts
+pkgs/clan-app/ui/api/Inventory.ts
+pkgs/clan-app/ui/api/modules_schemas.json
+pkgs/clan-app/ui/api/schema.json
+pkgs/clan-app/ui/.fonts
