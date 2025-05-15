@@ -10,9 +10,23 @@
   wrapGAppsHook4,
   gobject-introspection,
   gtk4,
+  lib,
 }:
 let
-  source = ./.;
+  source =
+    {
+      withTests ? true,
+    }:
+    lib.fileset.toSource {
+      root = ./.;
+      fileset = lib.fileset.unions (
+        [
+          ./clan_app
+          ./pyproject.toml
+        ]
+        ++ lib.optional withTests ./tests
+      );
+    };
 
   desktop-file = makeDesktopItem {
     name = "org.clan.app";
@@ -53,7 +67,7 @@ let
 in
 pythonRuntime.pkgs.buildPythonApplication {
   name = "clan-app";
-  src = source;
+  src = source { };
   format = "pyproject";
 
   dontWrapGApps = true;
@@ -99,7 +113,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             ];
           }
           ''
-            cp -r ${source} ./src
+            cp -r ${source { withTests = true; }} ./src
             chmod +w -R ./src
             cd ./src
 
