@@ -6,13 +6,16 @@ env_cmds:
 processes:
   webview-ui:
     command: |
-      npm install
-      vite
-    ready_log_line: "ready in"
+      direnv allow
+      direnv exec . npm install
+      direnv exec . vite
+    ready_log_line: "VITE"
     working_dir: "$PKG_ROOT_WEBVIEW_UI/app"
 
   clan-app:
-    command: "clan-app --debug --content-uri http://localhost:3000"
+    command: |
+      direnv allow
+      direnv exec . clan-app --debug --content-uri http://localhost:3000
     depends_on:
       webview-ui:
         condition: "process_log_ready"
