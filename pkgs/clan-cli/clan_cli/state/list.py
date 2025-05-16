@@ -56,17 +56,33 @@ def list_state_folders(machine: Machine, service: None | str = None) -> None:
             )
 
     for service in state:
+        if not service:
+            continue
+
         print(f"· service: {service}")
-        if folders := state.get(service)["folders"]:
+        service_cfg = state.get(service)
+
+        if not service_cfg:
+            continue  # or handle missing config
+
+        folders = service_cfg.get("folders")
+        if folders:
             print("  folders:")
             for folder in folders:
                 print(f"  - {folder}")
-        if pre_backup := state.get(service)["preBackupCommand"]:
+
+        pre_backup = service_cfg.get("preBackupCommand")
+        if pre_backup:
             print(f"  preBackupCommand: {pre_backup}")
-        if pre_restore := state.get(service)["preRestoreCommand"]:
+
+        pre_restore = service_cfg.get("preRestoreCommand")
+        if pre_restore:
             print(f"  preRestoreCommand: {pre_restore}")
-        if post_restore := state.get(service)["postRestoreCommand"]:
+
+        post_restore = service_cfg.get("postRestoreCommand")
+        if post_restore:
             print(f"  postRestoreCommand: {post_restore}")
+
         print("")
 
 

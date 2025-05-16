@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-import urllib
+import urllib.parse
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING

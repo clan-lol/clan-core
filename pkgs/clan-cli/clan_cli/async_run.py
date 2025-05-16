@@ -122,8 +122,8 @@ def set_async_ctx(ctx: AsyncContext) -> None:
 
 class AsyncThread(threading.Thread, Generic[P, R]):
     function: Callable[P, R]
-    args: Any
-    kwargs: Any
+    args: tuple[Any, ...]
+    kwargs: dict[str, Any]
     result: AsyncResult[R] | None
     finished: bool
     condition: threading.Condition
@@ -155,6 +155,7 @@ class AsyncThread(threading.Thread, Generic[P, R]):
         """
         try:
             set_async_ctx(self.async_opts.async_ctx)
+            # Arguments for ParamSpec "P@AsyncThread" are missing
             self.result = AsyncResult(_result=self.function(*self.args, **self.kwargs))
         except Exception as ex:
             self.result = AsyncResult(_result=ex)

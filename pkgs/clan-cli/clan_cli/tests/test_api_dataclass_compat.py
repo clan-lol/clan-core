@@ -4,6 +4,7 @@ import os
 import sys
 from dataclasses import is_dataclass
 from pathlib import Path
+from typing import cast
 
 from clan_lib.api import API
 from clan_lib.api.util import JSchemaTypeError, type_to_dict
@@ -108,7 +109,7 @@ def load_dataclass_from_file(
     dataclass_type = getattr(module, class_name, None)
 
     if dataclass_type and is_dataclass(dataclass_type):
-        return dataclass_type
+        return cast(type, dataclass_type)
 
     msg = f"Could not load dataclass {class_name} from file: {file_path}"
     raise ClanError(msg)
