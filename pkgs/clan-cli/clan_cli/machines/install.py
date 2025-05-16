@@ -163,6 +163,7 @@ def install_command(args: argparse.Namespace) -> None:
         target_host = args.target_host
         deploy_info: DeployInfo | None = ssh_command_parse(args)
 
+        use_tor = False
         if deploy_info and not args.target_host:
             host = find_reachable_host(deploy_info, host_key_check)
             if host is None:
@@ -184,7 +185,6 @@ def install_command(args: argparse.Namespace) -> None:
             nix_options=args.option,
             override_target_host=target_host,
         )
-        use_tor = False
 
         if machine._class_ == "darwin":
             msg = "Installing macOS machines is not yet supported"
