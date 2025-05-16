@@ -6,8 +6,9 @@ from typing import Any, Literal
 
 from clan_cli.cmd import RunOpts, run
 from clan_cli.errors import ClanError
-from clan_cli.flake import Flake
 from clan_cli.nix import nix_shell
+
+from clan_lib.flake.flake import Flake
 
 from . import API
 

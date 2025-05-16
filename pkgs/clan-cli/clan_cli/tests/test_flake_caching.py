@@ -1,14 +1,14 @@
 import logging
 
 import pytest
-from clan_cli.flake import (
+from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_lib.flake.flake import (
     Flake,
     FlakeCache,
     FlakeCacheEntry,
     parse_selector,
     selectors_as_dict,
 )
-from clan_cli.tests.fixtures_flakes import ClanFlake
 
 log = logging.getLogger(__name__)
 
@@ -348,7 +348,7 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
 def test_caching_works(flake: ClanFlake) -> None:
     from unittest.mock import patch
 
-    from clan_cli.flake import Flake
+    from clan_lib.flake.flake import Flake
 
     my_flake = Flake(str(flake.path))
 

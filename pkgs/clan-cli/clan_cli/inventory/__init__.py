@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from clan_lib.api import API
+from clan_lib.flake.flake import Flake
 from clan_lib.nix_models.inventory import Inventory
 from clan_lib.persist.inventory_store import WriteInfo
 from clan_lib.persist.util import (
@@ -26,7 +27,6 @@ from clan_lib.persist.util import (
 )
 
 from clan_cli.errors import ClanError
-from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 
 

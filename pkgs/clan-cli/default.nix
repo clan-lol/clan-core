@@ -68,7 +68,7 @@ let
         # In cases where the devshell created this file, this will already exist
         rm -f $out/clan_cli/nixpkgs
 
-        substituteInPlace $out/clan_cli/flake.py \
+        substituteInPlace $out/clan_lib/flake/flake.py \
           --replace-fail '@fallback_nixpkgs_hash@' "$(jq -r '.nodes.nixpkgs.locked.narHash' ${nixpkgs'}/flake.lock)" \
           --replace-fail '@select_hash@' "$(jq -r '.nodes."nix-select".locked.narHash' ${../../flake.lock})"
         ln -sf ${nixpkgs'} $out/clan_cli/nixpkgs
