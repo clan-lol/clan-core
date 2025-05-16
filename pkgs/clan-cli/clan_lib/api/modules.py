@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 from clan_lib.errors import ClanError
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 from . import API
 

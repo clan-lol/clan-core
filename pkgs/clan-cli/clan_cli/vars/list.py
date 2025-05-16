@@ -5,7 +5,7 @@ from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.machines.machines import Machine
 from clan_lib.api import API
 from clan_lib.errors import ClanError
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 from ._types import GeneratorUpdate
 from .generate import Generator, Prompt, Var, execute_generator

@@ -23,7 +23,7 @@ from clan_cli.tests import age_keys
 from clan_cli.tests.fixture_error import FixtureError
 from clan_cli.tests.root import CLAN_CORE
 from clan_cli.tests.temporary_dir import TEMPDIR
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 log = logging.getLogger(__name__)
 

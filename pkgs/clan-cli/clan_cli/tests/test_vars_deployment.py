@@ -12,7 +12,7 @@ from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.nix_config import ConfigItem
 from clan_cli.vms.run import inspect_vm, spawn_vm
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 
 @pytest.mark.impure

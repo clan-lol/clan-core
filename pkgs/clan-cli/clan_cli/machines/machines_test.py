@@ -1,5 +1,5 @@
 import pytest
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 from clan_cli.machines.machines import Machine
 

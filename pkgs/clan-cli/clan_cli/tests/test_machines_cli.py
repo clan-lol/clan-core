@@ -5,7 +5,7 @@ from clan_cli.tests import fixtures_flakes
 from clan_cli.tests.age_keys import SopsSetup, assert_secrets_file_recipients
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 
 @pytest.mark.impure

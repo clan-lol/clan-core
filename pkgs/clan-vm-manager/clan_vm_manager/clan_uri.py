@@ -4,7 +4,7 @@ import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 
 # Define the ClanURI class

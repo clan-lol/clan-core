@@ -348,7 +348,7 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
 def test_caching_works(flake: ClanFlake) -> None:
     from unittest.mock import patch
 
-    from clan_lib.flake.flake import Flake
+    from clan_lib.flake import Flake
 
     my_flake = Flake(str(flake.path))
 

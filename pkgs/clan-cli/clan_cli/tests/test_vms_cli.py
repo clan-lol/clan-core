@@ -7,7 +7,7 @@ from clan_cli.tests.fixtures_flakes import ClanFlake, FlakeForTest
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 from clan_cli.vms.run import inspect_vm, spawn_vm
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 if TYPE_CHECKING:
     from .age_keys import KeyPair

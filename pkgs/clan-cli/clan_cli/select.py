@@ -1,7 +1,7 @@
 import argparse
 import json
 
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 
 def select_command(args: argparse.Namespace) -> None:

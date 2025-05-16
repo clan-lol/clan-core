@@ -8,7 +8,7 @@ from clan_cli.secrets.folders import sops_secrets_folder
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.helpers.validator import is_valid_age_key
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 if TYPE_CHECKING:
     from .age_keys import KeyPair

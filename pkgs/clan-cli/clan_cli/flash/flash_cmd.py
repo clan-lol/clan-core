@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.machines.machines import Machine

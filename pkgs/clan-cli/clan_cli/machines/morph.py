@@ -8,7 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from clan_lib.errors import ClanError
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 from clan_lib.nix_models.inventory import Machine as InventoryMachine
 
 from clan_cli.cmd import Log, RunOpts, run
