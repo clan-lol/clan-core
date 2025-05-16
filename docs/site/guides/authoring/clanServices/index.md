@@ -1,7 +1,7 @@
 # Authoring a 'clan.service' module
 
 !!! Tip
-    This is the successor format to the older [clanModules](../legacyModules/index.md)
+    This is the successor format to the older [clanModules](../clanModules/index.md)
 
     While some features might still be missing we recommend to adapt this format early and give feedback.
 

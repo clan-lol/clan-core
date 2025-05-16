@@ -108,7 +108,7 @@ You can use services exposed by Clan’s core module library, `clan-core`.
 
 You can also author your own `clanService` modules.
 
-🔗 Learn how to write your own service: [Authoring a clanService](../authoring/clanServices/index.md)
+🔗 Learn how to write your own service: [Authoring a clanService](../guides/authoring/clanServices/index.md)
 
 You might expose your service module from your flake — this makes it easy for other people to also use your module in their clan.
 
@@ -124,6 +124,6 @@ You might expose your service module from your flake — this makes it easy for 
 
 ## What’s Next?
 
-* [Author your own clanService →](../authoring/clanServices/index.md)
+* [Author your own clanService →](../guides/authoring/clanServices/index.md)
 * [Migrate from clanModules →](../guides/migrate-inventory-services.md)
 <!-- TODO: * [Understand the architecture →](../explanation/clan-architecture.md) -->

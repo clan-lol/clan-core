@@ -1,7 +1,7 @@
 # Migrating from using `clanModules` to `clanServices`
 
 **Audience**: This is a guide for **people using `clanModules`**.
-If you are a **module author** and need to migrate your modules please consult our **new** [clanServices authoring guide](../authoring/clanServices/index.md)
+If you are a **module author** and need to migrate your modules please consult our **new** [clanServices authoring guide](../guides/authoring/clanServices/index.md)
 
 ## What's Changing?
 
@@ -142,6 +142,6 @@ roles.default.machines."test-inventory-machine".settings = {
 
 ## Further reference
 
-* [Authoring a 'clan.service' module](../authoring/clanServices/index.md)
+* [Authoring a 'clan.service' module](../guides/authoring/clanServices/index.md)
 * [ClanServices](../guides/clanServices.md)
 * [Inventory Reference](../reference/nix-api/inventory.md)
