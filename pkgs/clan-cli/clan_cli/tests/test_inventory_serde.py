@@ -1,11 +1,9 @@
-from typing import Any
+from typing import Any, cast
 
 import pytest
 from clan_cli.flake import Flake
-
-# Functions to test
-from clan_cli.inventory import load_inventory_eval
 from clan_cli.tests.fixtures_flakes import FlakeForTest
+from clan_lib.persist.inventory_store import InventoryStore
 
 
 @pytest.mark.parametrize(
@@ -44,7 +42,11 @@ def test_inventory_deserialize_variants(
     Testing different inventory deserializations
     Inventory should always be deserializable to a dict
     """
-    inventory: dict[str, Any] = load_inventory_eval(Flake(test_flake_with_core.path))  # type: ignore
+    inventory_store = InventoryStore(Flake(str(test_flake_with_core.path)))
+
+    # Cast the inventory to a dict for the following assertions
+    inventory = cast(dict[str, Any], inventory_store.read())
+
     # Check that the inventory is a dict
     assert isinstance(inventory, dict)
 

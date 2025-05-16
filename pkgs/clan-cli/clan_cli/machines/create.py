@@ -5,22 +5,20 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from clan_lib.api import API
-from clan_lib.api.serde import dataclass_to_dict
 from clan_lib.nix_models.inventory import (
     Machine as InventoryMachine,
 )
 from clan_lib.nix_models.inventory import (
     MachineDeploy,
 )
+from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import apply_patch
 
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.dirs import get_clan_flake_toplevel_or_env
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.git import commit_file
-from clan_cli.inventory import (
-    patch_inventory_with,
-)
 from clan_cli.machines.list import list_machines
 from clan_cli.templates import (
     InputPrio,
@@ -111,9 +109,14 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
     if target_host:
         new_machine["deploy"] = {"targetHost": target_host}
 
-    patch_inventory_with(
-        opts.clan_dir, f"machines.{machine_name}", dataclass_to_dict(new_machine)
+    inventory_store = InventoryStore(opts.clan_dir)
+    inventory = inventory_store.read()
+    apply_patch(
+        inventory,
+        f"machines.{machine_name}",
+        new_machine,
     )
+    inventory_store.write(inventory, message=f"machine '{machine_name}'")
 
     # Commit at the end in that order to avoid committing halve-baked machines
     # TODO: automatic rollbacks if something goes wrong

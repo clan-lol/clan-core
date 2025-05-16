@@ -162,4 +162,8 @@ class InventoryStore:
             json.dump(persisted, f, indent=2)
 
         if commit:
-            commit_file(self.inventory_file, self._flake.path, commit_message=message)
+            commit_file(
+                self.inventory_file,
+                self._flake.path,
+                commit_message=f"update({self.inventory_file.name}): {message}",
+            )
