@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from clan_lib.api import API
 from clan_lib.api.disk import MachineDiskMatter
 from clan_lib.api.modules import parse_frontmatter
+from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 from clan_lib.nix_models.inventory import Machine as InventoryMachine
 from clan_lib.persist.inventory_store import InventoryStore
@@ -42,12 +43,19 @@ def list_machines(
         nix_options = []
 
     for inv_machine in inventory.get("machines", {}).values():
+        name = inv_machine.get("name")
+        # Technically, this should not happen, but we are defensive here.
+        if name is None:
+            msg = "InternalError: Machine name is required. But got a machine without a name."
+            raise ClanError(msg)
+
         machine = Machine(
-            name=inv_machine["name"],
+            name=name,
             flake=flake,
             nix_options=nix_options,
         )
         res[machine.name] = machine
+
     return res
 
 
@@ -62,7 +70,8 @@ def query_machines_by_tags(flake: Flake, tags: list[str]) -> dict[str, Machine]:
     filtered_machines = {}
     for machine in machines.values():
         inv_machine = get_machine(machine)
-        if all(tag in inv_machine["tags"] for tag in tags):
+        machine_tags = inv_machine.get("tags", [])
+        if all(tag in machine_tags for tag in tags):
             filtered_machines[machine.name] = machine
 
     return filtered_machines
