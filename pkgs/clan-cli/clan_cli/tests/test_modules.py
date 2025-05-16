@@ -4,9 +4,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 from clan_cli.flake import Flake
-from clan_cli.inventory import (
-    set_inventory,
-)
 from clan_cli.machines.create import CreateOptions, create_machine
 from clan_cli.nix import nix_eval, run
 from clan_cli.tests.fixtures_flakes import FlakeForTest
@@ -16,6 +13,7 @@ from clan_lib.nix_models.inventory import (
     Machine,
     MachineDeploy,
 )
+from clan_lib.persist.inventory_store import InventoryStore
 
 if TYPE_CHECKING:
     from .age_keys import KeyPair
@@ -88,7 +86,12 @@ def test_add_module_to_inventory(
             }
         }
 
-        set_inventory(inventory, Flake(str(base_path)), "Add borgbackup service")
+        inventory_store = InventoryStore(Flake(str(test_flake_with_core.path)))
+        inventory_store.write(
+            inventory,
+            message="Add borgbackup service",
+            commit=False,
+        )
 
         # cmd = ["facts", "generate", "--flake", str(test_flake_with_core.path), "machine1"]
         cmd = [
