@@ -218,7 +218,7 @@ def generate_facts(
                 raise ClanError(msg)
 
     if not was_regenerated and len(machines) > 0:
-        machine.info("All secrets and facts are already up to date")
+        log.info("All secrets and facts are already up to date")
     return was_regenerated
 
 
