@@ -297,6 +297,13 @@ def get_public_age_keys(contents: str) -> set[str]:
 
         if match:
             recipient = match[1]
+            if not recipient:
+                msg = (
+                    f"Empty or invalid recipient on line {line_number}. "
+                    "Expected a valid `# recipient: age1...` comment or a recognized recipient format."
+                )
+                raise ClanError(msg)
+
             keys.add(recipient)
 
         if line.startswith("#"):
