@@ -5,7 +5,8 @@ import time
 from collections.abc import Iterator
 from pathlib import Path
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
+
 from clan_cli.nix import nix_shell
 
 

@@ -5,9 +5,9 @@ import sys
 from dataclasses import is_dataclass
 from pathlib import Path
 
-from clan_cli.errors import ClanError
 from clan_lib.api import API
 from clan_lib.api.util import JSchemaTypeError, type_to_dict
+from clan_lib.errors import ClanError
 
 
 def should_skip(file_path: Path, excludes: list[Path]) -> bool:

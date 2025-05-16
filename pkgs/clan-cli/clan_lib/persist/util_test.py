@@ -2,8 +2,8 @@
 from typing import Any
 
 import pytest
-from clan_cli.errors import ClanError
 
+from clan_lib.errors import ClanError
 from clan_lib.persist.util import (
     apply_patch,
     calc_patches,

@@ -2,13 +2,14 @@ import argparse
 import json
 from dataclasses import dataclass
 
+from clan_lib.errors import ClanError
+
 from clan_cli.cmd import Log, RunOpts
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_backup_providers_for_machine,
     complete_machines,
 )
-from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
 from clan_cli.ssh.host import Host
 

@@ -4,8 +4,9 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
+from clan_lib.errors import ClanError
+
 from clan_cli.cmd import Log, RunOpts, run
-from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
 
 log = logging.getLogger(__name__)

@@ -3,9 +3,10 @@ from pathlib import Path
 from shlex import quote
 from tempfile import TemporaryDirectory
 
+from clan_lib.errors import ClanError
+
 from clan_cli.cmd import Log, RunOpts
 from clan_cli.cmd import run as run_local
-from clan_cli.errors import ClanError
 from clan_cli.ssh.host import Host
 
 

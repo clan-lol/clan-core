@@ -18,7 +18,7 @@ from .serde import dataclass_to_dict, from_dict, sanitize_string
 
 __all__ = ["dataclass_to_dict", "from_dict", "sanitize_string"]
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 T = TypeVar("T")
 

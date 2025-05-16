@@ -8,6 +8,7 @@ import sys
 from contextlib import ExitStack
 
 from clan_lib.api import API
+from clan_lib.errors import ClanError
 
 from clan_cli.async_run import AsyncContext, AsyncOpts, AsyncRuntime, is_async_cancelled
 from clan_cli.cmd import Log, MsgColor, RunOpts, run
@@ -16,7 +17,6 @@ from clan_cli.completions import (
     add_dynamic_completer,
     complete_machines,
 )
-from clan_cli.errors import ClanError
 from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.upload import upload_secrets
 from clan_cli.machines.list import list_machines

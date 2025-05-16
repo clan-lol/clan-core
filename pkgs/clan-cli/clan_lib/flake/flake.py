@@ -7,17 +7,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any
 
-from clan_cli.cmd import Log, RunOpts, run
-from clan_cli.dirs import nixpkgs_source, select_source, user_cache_dir
-from clan_cli.errors import ClanError
-from clan_cli.nix import (
-    nix_build,
-    nix_command,
-    nix_config,
-    nix_eval,
-    nix_metadata,
-    nix_test_store,
-)
+from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
 
@@ -624,6 +614,11 @@ class Flake:
         """
         Loads the flake into the store and populates self.store_path and self.hash such that the flake can evaluate locally and offline
         """
+        from clan_cli.cmd import run
+        from clan_cli.nix import (
+            nix_command,
+        )
+
         cmd = [
             "flake",
             "prefetch",
@@ -649,6 +644,11 @@ class Flake:
 
         This method is used to refresh the cache by reloading it from the flake.
         """
+        from clan_cli.dirs import user_cache_dir
+        from clan_cli.nix import (
+            nix_metadata,
+        )
+
         self.prefetch()
 
         self._cache = FlakeCache()
@@ -697,6 +697,14 @@ class Flake:
             ClanError: If the number of outputs does not match the number of selectors.
             AssertionError: If the cache or flake cache path is not properly initialized.
         """
+        from clan_cli.cmd import Log, RunOpts, run
+        from clan_cli.dirs import nixpkgs_source, select_source
+        from clan_cli.nix import (
+            nix_build,
+            nix_config,
+            nix_test_store,
+        )
+
         if self._cache is None:
             self.invalidate_cache()
         assert self._cache is not None
@@ -786,6 +794,12 @@ class Flake:
         > '{ ...JSONSchema... }'
 
         """
+        from clan_cli.cmd import Log, RunOpts, run
+        from clan_cli.nix import (
+            nix_eval,
+            nix_test_store,
+        )
+
         # Always prefetch, so we don't get any stale information
         self.prefetch()
 

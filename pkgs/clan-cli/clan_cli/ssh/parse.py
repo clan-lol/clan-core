@@ -3,7 +3,8 @@ import urllib.parse
 from pathlib import Path
 from typing import Any
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
+
 from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
 

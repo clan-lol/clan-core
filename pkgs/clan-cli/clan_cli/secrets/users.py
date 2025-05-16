@@ -5,8 +5,9 @@ import sys
 from collections.abc import Iterable
 from pathlib import Path
 
+from clan_lib.errors import ClanError
+
 from clan_cli.completions import add_dynamic_completer, complete_secrets, complete_users
-from clan_cli.errors import ClanError
 from clan_cli.git import commit_files
 
 from . import groups, secrets, sops

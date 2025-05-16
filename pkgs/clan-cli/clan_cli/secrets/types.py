@@ -3,7 +3,7 @@ import re
 from collections.abc import Callable
 from pathlib import Path
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 from .sops import get_public_age_keys
 

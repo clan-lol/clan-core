@@ -4,7 +4,6 @@ import shutil
 from pathlib import Path
 
 import pytest
-from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_eval, run
 from clan_cli.tests.age_keys import SopsSetup
@@ -23,6 +22,7 @@ from clan_cli.vars.list import stringify_all_vars
 from clan_cli.vars.public_modules import in_repo
 from clan_cli.vars.secret_modules import password_store, sops
 from clan_cli.vars.set import set_var
+from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 
 

@@ -3,7 +3,8 @@ import json
 import logging
 import sys
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
+
 from clan_cli.git import commit_files
 
 from . import sops

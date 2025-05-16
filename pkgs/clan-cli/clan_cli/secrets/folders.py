@@ -2,7 +2,7 @@ import shutil
 from collections.abc import Callable
 from pathlib import Path
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 
 def get_sops_folder(flake_dir: Path) -> Path:

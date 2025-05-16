@@ -5,9 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from clan_cli.errors import ClanError
 from clan_cli.machines import machines
 from clan_cli.ssh.host import Host
+from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
     from .generate import Generator, Var

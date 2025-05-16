@@ -14,11 +14,11 @@ from tempfile import NamedTemporaryFile
 from typing import IO, Any
 
 from clan_lib.api import API
+from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.dirs import user_config_dir
-from clan_cli.errors import ClanError
 from clan_cli.nix import nix_shell
 
 from .folders import sops_users_folder

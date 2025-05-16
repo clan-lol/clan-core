@@ -2,8 +2,8 @@ import argparse
 import logging
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
+from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
 

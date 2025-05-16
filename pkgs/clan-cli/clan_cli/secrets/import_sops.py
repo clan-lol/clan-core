@@ -3,6 +3,8 @@ import json
 import sys
 from pathlib import Path
 
+from clan_lib.errors import ClanError
+
 from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -10,7 +12,6 @@ from clan_cli.completions import (
     complete_machines,
     complete_users,
 )
-from clan_cli.errors import ClanError
 from clan_cli.nix import nix_shell
 
 from .secrets import encrypt_secret, sops_secrets_folder

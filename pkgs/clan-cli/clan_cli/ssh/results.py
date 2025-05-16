@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import Generic
 
-from clan_cli.errors import CmdOut
+from clan_lib.errors import CmdOut
+
 from clan_cli.ssh import T
 from clan_cli.ssh.host import Host
 

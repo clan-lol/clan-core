@@ -3,7 +3,8 @@ import time
 import types
 from dataclasses import dataclass
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
+
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
 
 

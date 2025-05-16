@@ -2,11 +2,11 @@ import shutil
 from collections.abc import Iterable
 from pathlib import Path
 
-from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
 from clan_cli.ssh.host import Host
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
+from clan_lib.errors import ClanError
 
 
 class FactStore(StoreBase):

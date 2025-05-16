@@ -5,7 +5,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import override
 
-from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
 from clan_cli.secrets import sops
 from clan_cli.secrets.folders import (
@@ -28,6 +27,7 @@ from clan_cli.ssh.upload import upload
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator
 from clan_cli.vars.var import Var
+from clan_lib.errors import ClanError
 
 
 @dataclass

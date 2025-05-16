@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 # Get environment variables
 INVENTORY_SCHEMA_PATH = Path(os.environ["INVENTORY_SCHEMA_PATH"])
