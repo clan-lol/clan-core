@@ -1,47 +1,71 @@
 import argparse
-import json
 import logging
 import re
-import time
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Literal
 
 from clan_lib.api import API
 from clan_lib.api.disk import MachineDiskMatter
 from clan_lib.api.modules import parse_frontmatter
 from clan_lib.nix_models.inventory import Machine as InventoryMachine
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import apply_patch
 
-from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.dirs import specific_machine_dir
-from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.machines.hardware import HardwareConfig
+from clan_cli.machines.inventory import get_inv_machine
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_eval
-from clan_cli.tags import list_nixos_machines_by_tags
 
 log = logging.getLogger(__name__)
 
 
 @API.register
-def set_machine(flake: Flake, machine_name: str, machine: InventoryMachine) -> None:
+def list_inv_machines(flake: Flake) -> dict[str, InventoryMachine]:
+    """
+    List machines in the inventory for the UI.
+    """
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
-    apply_patch(inventory, f"machines.{machine_name}", machine)
-    inventory_store.write(
-        inventory, message=f"Update information about machine {machine_name}"
-    )
+
+    res = inventory.get("machines", {})
+    return res
 
 
-@API.register
-def list_machines(flake: Flake) -> dict[str, InventoryMachine]:
+def list_machines(
+    flake: Flake, nix_options: list[str] | None = None
+) -> dict[str, Machine]:
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
-    return inventory.get("machines", {})
+    res = {}
+
+    if nix_options is None:
+        nix_options = []
+
+    for inv_machine in inventory.get("machines", {}).values():
+        machine = Machine(
+            name=inv_machine["name"],
+            flake=flake,
+            nix_options=nix_options,
+        )
+        res[machine.name] = machine
+    return res
+
+
+def query_machines_by_tags(flake: Flake, tags: list[str]) -> dict[str, Machine]:
+    """
+    Query machines by their respective tags, if multiple tags are specified
+    then only machines that have those respective tags specified will be listed.
+    It is an intersection of the tags and machines.
+    """
+    machines = list_machines(flake)
+
+    filtered_machines = {}
+    for machine in machines.values():
+        inv_machine = get_inv_machine(machine)
+        if all(tag in inv_machine["tags"] for tag in tags):
+            filtered_machines[machine.name] = machine
+
+    return filtered_machines
 
 
 @dataclass
@@ -64,13 +88,7 @@ def extract_header(c: str) -> str:
 
 @API.register
 def get_machine_details(machine: Machine) -> MachineDetails:
-    inventory_store = InventoryStore(flake=machine.flake)
-    inventory = inventory_store.read()
-    machine_inv = inventory.get("machines", {}).get(machine.name)
-    if machine_inv is None:
-        msg = f"Machine {machine.name} not found in inventory"
-        raise ClanError(msg)
-
+    machine_inv = get_inv_machine(machine)
     hw_config = HardwareConfig.detect_type(machine)
 
     machine_dir = specific_machine_dir(machine)
@@ -85,73 +103,21 @@ def get_machine_details(machine: Machine) -> MachineDetails:
                 disk_schema = data  # type: ignore
 
     return MachineDetails(
-        machine=machine_inv, hw_config=hw_config, disk_schema=disk_schema
+        machine=machine_inv,
+        hw_config=hw_config,
+        disk_schema=disk_schema,
     )
-
-
-def list_nixos_machines(flake_url: str | Path) -> list[str]:
-    cmd = nix_eval(
-        [
-            f"{flake_url}#clanInternals.machines.x86_64-linux",
-            "--apply",
-            "builtins.attrNames",
-            "--json",
-        ]
-    )
-
-    proc = run(cmd)
-
-    try:
-        res = proc.stdout.strip()
-        data = json.loads(res)
-    except json.JSONDecodeError as e:
-        msg = f"Error decoding machines from flake: {e}"
-        raise ClanError(msg) from e
-    else:
-        return data
-
-
-@dataclass
-class ConnectionOptions:
-    timeout: int = 2
-    retries: int = 10
-
-
-from clan_cli.machines.machines import Machine
-
-
-@API.register
-def check_machine_online(
-    machine: Machine, opts: ConnectionOptions | None = None
-) -> Literal["Online", "Offline"]:
-    hostname = machine.target_host_address
-    if not hostname:
-        msg = f"Machine {machine.name} does not specify a targetHost"
-        raise ClanError(msg)
-
-    timeout = opts.timeout if opts and opts.timeout else 2
-
-    for _ in range(opts.retries if opts and opts.retries else 10):
-        with machine.target_host() as target:
-            res = target.run(
-                ["true"],
-                RunOpts(timeout=timeout, check=False, needs_user_terminal=True),
-            )
-
-            if res.returncode == 0:
-                return "Online"
-        time.sleep(timeout)
-
-    return "Offline"
 
 
 def list_command(args: argparse.Namespace) -> None:
-    flake_path = args.flake.path
+    flake: Flake = args.flake
+
     if args.tags:
-        list_nixos_machines_by_tags(flake_path, args.tags)
-        return
-    for name in list_nixos_machines(flake_path):
-        print(name)
+        for name in query_machines_by_tags(flake, args.tags):
+            print(name)
+    else:
+        for name in list_machines(flake):
+            print(name)
 
 
 def register_list_parser(parser: argparse.ArgumentParser) -> None:

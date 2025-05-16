@@ -30,8 +30,8 @@ if TYPE_CHECKING:
 class Machine:
     name: str
     flake: Flake
+
     nix_options: list[str] = field(default_factory=list)
-    cached_deployment: None | dict[str, Any] = None
     override_target_host: None | str = None
     override_build_host: None | str = None
     private_key: Path | None = None

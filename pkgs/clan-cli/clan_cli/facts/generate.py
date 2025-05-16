@@ -15,7 +15,7 @@ from clan_cli.completions import (
 )
 from clan_cli.errors import ClanError
 from clan_cli.git import commit_files
-from clan_cli.machines.inventory import get_all_machines, get_selected_machines
+from clan_cli.machines.list import list_machines
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
 
@@ -225,10 +225,15 @@ def generate_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         msg = "Could not find clan flake toplevel directory"
         raise ClanError(msg)
-    if len(args.machines) == 0:
-        machines = get_all_machines(args.flake, args.option)
-    else:
-        machines = get_selected_machines(args.flake, args.option, args.machines)
+
+    machines: list[Machine] = list(list_machines(args.flake).values())
+    if len(args.machines) > 0:
+        machines = list(
+            filter(
+                lambda m: m.name in args.machines,
+                machines,
+            )
+        )
     generate_facts(machines, args.service, args.regenerate)
 
 

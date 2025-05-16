@@ -10,7 +10,7 @@ import { Filter } from "../../routes/machines";
 import { Typography } from "../Typography";
 import "./css/index.css";
 
-type MachineDetails = SuccessQuery<"list_machines">["data"][string];
+type MachineDetails = SuccessQuery<"list_inv_machines">["data"][string];
 
 interface MachineListItemProps {
   name: string;
