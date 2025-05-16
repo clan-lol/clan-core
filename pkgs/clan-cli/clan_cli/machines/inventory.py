@@ -23,12 +23,12 @@ def get_inv_machine(machine: Machine) -> InventoryMachine:
 
 
 @API.register
-def set_inv_machine(machine: Machine, inventory_machine: InventoryMachine) -> None:
-    assert machine.name == inventory_machine["name"], "Machine name mismatch"
+def set_inv_machine(machine: Machine, update: InventoryMachine) -> None:
+    assert machine.name == update.get("name", machine.name), "Machine name mismatch"
     inventory_store = InventoryStore(flake=machine.flake)
     inventory = inventory_store.read()
 
-    apply_patch(inventory, f"machines.{machine.name}", inventory_machine)
+    apply_patch(inventory, f"machines.{machine.name}", update)
     inventory_store.write(
         inventory, message=f"Update information about machine {machine.name}"
     )

@@ -398,7 +398,7 @@ const MachineForm = (props: MachineDetailsProps) => {
           identifier: curr_uri,
         },
       },
-      inventory_machine: {
+      update: {
         ...values.machine,
         // TODO: Remove this workaround
         tags: Array.from(
