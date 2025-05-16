@@ -96,7 +96,7 @@ def upload(
 
         cmd = None
         if local_src.is_dir():
-            cmd = 'rm -rf "$0" && mkdir -m "$1" -p "$0" && tar -C "$0" -xzf -'
+            cmd = 'install -d -m "$1" "$0" && find "$0" -mindepth 1 -delete && tar -C "$0" -xzf -'
         elif local_src.is_file():
             cmd = 'rm -f "$0" && tar -C "$(dirname "$0")" -xzf -'
         else:
