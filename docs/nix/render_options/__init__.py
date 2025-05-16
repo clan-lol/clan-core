@@ -30,7 +30,12 @@ from pathlib import Path
 from typing import Any
 
 from clan_cli.errors import ClanError
-from clan_lib.api.modules import Frontmatter, extract_frontmatter, get_roles
+from clan_lib.api.modules import (
+    CategoryInfo,
+    Frontmatter,
+    extract_frontmatter,
+    get_roles,
+)
 
 # Get environment variables
 CLAN_CORE_PATH = Path(os.environ["CLAN_CORE_PATH"])
@@ -44,6 +49,7 @@ CLAN_MODULES_VIA_NIX = os.environ.get("CLAN_MODULES_VIA_NIX")
 # Some modules can be imported via inventory
 CLAN_MODULES_VIA_ROLES = os.environ.get("CLAN_MODULES_VIA_ROLES")
 
+CLAN_MODULES_VIA_SERVICE = os.environ.get("CLAN_MODULES_VIA_SERVICE")
 
 OUT = os.environ.get("out")
 
@@ -58,7 +64,8 @@ def replace_store_path(text: str) -> tuple[str, str]:
         res = "https://git.clan.lol/clan/clan-core/src/branch/main/" + str(
             Path(*Path(text).parts[4:])
         )
-    name = Path(res).name
+    # name = Path(res).name
+    name = str(Path(*Path(text).parts[4:]))
     return (res, name)
 
 
@@ -149,8 +156,12 @@ def render_option(
     decls = option.get("declarations", [])
     if decls:
         source_path, name = replace_store_path(decls[0])
+
+        name = name.split(",")[0]
+        source_path = source_path.split(",")[0]
+
         res += f"""
-:simple-git: [{name}]({source_path})
+:simple-git: Declared in: [{name}]({source_path})
 """
         res += "\n\n"
 
@@ -221,7 +232,8 @@ def produce_clan_modules_frontmatter_docs() -> None:
         # header
         output = """# Frontmatter
 
-Every clan module has a `frontmatter` section within its readme. It provides machine readable metadata about the module.
+Every clan module has a `frontmatter` section within its readme. It provides
+machine readable metadata about the module.
 
 !!! example
 
@@ -246,7 +258,8 @@ Every clan module has a `frontmatter` section within its readme. It provides mac
 
         output += """## Overview
 
-This provides an overview of the available attributes of the `frontmatter` within the `README.md` of a clan module.
+This provides an overview of the available attributes of the `frontmatter`
+within the `README.md` of a clan module.
 
 """
         # for option_name, info in options.items():
@@ -331,7 +344,7 @@ def produce_clan_core_docs() -> None:
 
 def render_roles(roles: list[str] | None, module_name: str) -> str:
     if roles:
-        roles_list = "\n".join([f"    - `{r}`" for r in roles])
+        roles_list = "\n".join([f"- `{r}`" for r in roles])
         return (
             f"""
 ### Roles
@@ -341,7 +354,7 @@ This module can be used via predefined roles
 {roles_list}
 """
             """
-Every role has its own configuration options. Which are each listed below.
+Every role has its own configuration options, which are each listed below.
 
 For more information, see the [inventory guide](../../manual/inventory.md).
 
@@ -350,8 +363,10 @@ For more information, see the [inventory guide](../../manual/inventory.md).
 
     `clan.admin.allowedkeys`
 
-    This means there are two equivalent ways to set the `allowedkeys` option. Either via a nixos module or via the inventory interface.
-    **But it is recommended to keep together `imports` and `config` to preserve locality of the module configuration.**
+    This means there are two equivalent ways to set the `allowedkeys` option.
+    Either via a nixos module or via the inventory interface.
+    **But it is recommended to keep together `imports` and `config` to preserve
+    locality of the module configuration.**
 
     === "Inventory"
 
@@ -383,7 +398,11 @@ For more information, see the [inventory guide](../../manual/inventory.md).
     return ""
 
 
-clan_modules_descr = """Clan modules are [NixOS modules](https://wiki.nixos.org/wiki/NixOS_modules) which have been enhanced with additional features provided by Clan, with certain option types restricted to enable configuration through a graphical interface.
+clan_modules_descr = """
+Clan modules are [NixOS modules](https://wiki.nixos.org/wiki/NixOS_modules)
+which have been enhanced with additional features provided by Clan, with
+certain option types restricted to enable configuration through a graphical
+interface.
 
 !!! note "🔹"
     Modules with this indicator support the [inventory](../../manual/inventory.md) feature.
@@ -391,12 +410,12 @@ clan_modules_descr = """Clan modules are [NixOS modules](https://wiki.nixos.org/
 """
 
 
-def render_categories(categories: list[str], frontmatter: Frontmatter) -> str:
-    cat_info = frontmatter.categories_info
+def render_categories(
+    categories: list[str], categories_info: dict[str, CategoryInfo]
+) -> str:
     res = """<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">"""
     for cat in categories:
-        color = cat_info[cat]["color"]
-        # description = cat_info[cat]["description"]
+        color = categories_info[cat]["color"]
         res += f"""
     <div style="background-color: {color}; color: white; padding: 10px; border-radius: 20px; text-align: center;">
         {cat}
@@ -404,6 +423,83 @@ def render_categories(categories: list[str], frontmatter: Frontmatter) -> str:
 """
     res += "</div>"
     return res
+
+
+def produce_clan_service_docs() -> None:
+    if not CLAN_MODULES_VIA_SERVICE:
+        msg = f"Environment variables are not set correctly: $CLAN_MODULES_VIA_SERVICE={CLAN_MODULES_VIA_SERVICE}"
+        raise ClanError(msg)
+
+    if not CLAN_CORE_PATH:
+        msg = f"Environment variables are not set correctly: $CLAN_CORE_PATH={CLAN_CORE_PATH}"
+        raise ClanError(msg)
+
+    if not OUT:
+        msg = f"Environment variables are not set correctly: $out={OUT}"
+        raise ClanError(msg)
+
+    indexfile = Path(OUT) / "clanServices/index.md"
+    indexfile.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    index = "# Clan Services\n\n"
+    index += """
+**`clanServices`** are modular building blocks that simplify the configuration and orchestration of multi-host services.
+
+Each `clanService`:
+
+* Is a module of class **`clan.service`**
+* Can define **roles** (e.g., `client`, `server`)
+* Uses **`inventory.instances`** to configure where and how it is deployed
+* Replaces the legacy `clanModules` and `inventory.services` system altogether
+
+!!! Note
+    `clanServices` are part of Clan's next-generation service model and are intended to replace `clanModules`.
+
+    See [Migration Guide](../../guides/migrate-inventory-services.md) for help on migrating.
+
+Learn how to use `clanServices` in practice in the [Using clanServices guide](../../guides/clanServices.md).
+"""
+
+    with indexfile.open("w") as of:
+        of.write(index)
+
+    with Path(CLAN_MODULES_VIA_SERVICE).open() as f3:
+        service_links: dict[str, dict[str, dict[str, Any]]] = json.load(f3)
+
+    for module_name, module_info in service_links.items():
+        output = f"# {module_name}\n\n"
+        # output += f"`clan.modules.{module_name}`\n"
+        output += f"*{module_info['manifest']['description']}*\n"
+
+        fm = Frontmatter("")
+        # output += "## Categories\n\n"
+        output += render_categories(
+            module_info["manifest"]["categories"], fm.categories_info
+        )
+        output += "\n---\n\n## Roles\n"
+
+        output += f"The {module_name} module has the following roles:\n\n"
+
+        for role_name, _ in module_info["roles"].items():
+            output += f"- {role_name}\n"
+
+        for role_name, role_filename in module_info["roles"].items():
+            output += print_options(
+                role_filename,
+                f"## Options for the `{role_name}` role",
+                "This role has no configuration",
+                replace_prefix=f"clan.{module_name}",
+            )
+
+        outfile = Path(OUT) / f"clanServices/{module_name}.md"
+        outfile.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        with outfile.open("w") as of:
+            of.write(output)
 
 
 def produce_clan_modules_docs() -> None:
@@ -456,11 +552,27 @@ def produce_clan_modules_docs() -> None:
 
         # 2. Description from README.md
         if frontmatter.description:
-            output += f"**{frontmatter.description}**\n\n"
+            output += f"*{frontmatter.description}*\n\n"
+
+        # 2. Deprecation note if the module is deprecated
+        if "deprecated" in frontmatter.features:
+            output += f"""
+!!! Warning "Deprecated"
+    The `{module_name}` module is deprecated.*
+
+    Use: [clanServices/{module_name}](../clanServices/{module_name}.md) instead
+"""
+        else:
+            output += f"""
+!!! Warning "Will be deprecated"
+    The `{module_name}` module might eventually be migrated to 'clanServices'*
+
+    See: [clanServices](../../guides/clanServices.md)
+"""
 
         # 3. Categories from README.md
         output += "## Categories\n\n"
-        output += render_categories(frontmatter.categories, frontmatter)
+        output += render_categories(frontmatter.categories, frontmatter.categories_info)
         output += "\n---\n\n"
 
         # 3. README.md content
@@ -785,7 +897,7 @@ def options_docs_from_tree(
     root: Option, init_level: int = 1, prefix: list[str] | None = None
 ) -> str:
     """
-    Render the options from the tree structure.
+    eender the options from the tree structure.
 
     Args:
     root (Option): The root option node.
@@ -829,5 +941,6 @@ if __name__ == "__main__":  #
     produce_inventory_docs()
 
     produce_clan_modules_docs()
+    produce_clan_service_docs()
 
     produce_clan_modules_frontmatter_docs()

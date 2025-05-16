@@ -3,6 +3,7 @@
 {
   _class = "clan.service";
   manifest.name = "clan-core/hello-word";
+  manifest.description = "This is a test";
 
   roles.peer = {
     interface =
@@ -10,6 +11,8 @@
       {
         options.foo = lib.mkOption {
           type = lib.types.str;
+          # default = "";
+          description = "Some option";
         };
       };
   };
