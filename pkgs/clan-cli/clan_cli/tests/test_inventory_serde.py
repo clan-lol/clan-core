@@ -1,6 +1,7 @@
 from typing import Any
 
 import pytest
+from clan_cli.flake import Flake
 
 # Functions to test
 from clan_cli.inventory import load_inventory_eval
@@ -43,7 +44,7 @@ def test_inventory_deserialize_variants(
     Testing different inventory deserializations
     Inventory should always be deserializable to a dict
     """
-    inventory: dict[str, Any] = load_inventory_eval(test_flake_with_core.path)  # type: ignore
+    inventory: dict[str, Any] = load_inventory_eval(Flake(test_flake_with_core.path))  # type: ignore
     # Check that the inventory is a dict
     assert isinstance(inventory, dict)
 

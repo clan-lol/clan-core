@@ -1,45 +1,34 @@
-import json
-from pathlib import Path
+from clan_lib.api import API
+from clan_lib.nix_models.inventory import (
+    Machine as InventoryMachine,
+)
+from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import apply_patch
 
-from clan_cli.cmd import run
-from clan_cli.flake import Flake
-from clan_cli.nix import nix_build, nix_config, nix_test_store
-
-from .machines import Machine
+from clan_cli.errors import ClanError
+from clan_cli.machines.machines import Machine
 
 
-# function to speedup eval if we want to evaluate all machines
-def get_all_machines(flake: Flake, nix_options: list[str]) -> list[Machine]:
-    config = nix_config()
-    system = config["system"]
-    json_path = Path(
-        run(
-            nix_build([f'{flake}#clanInternals.all-machines-json."{system}"'])
-        ).stdout.rstrip()
+@API.register
+def get_inv_machine(machine: Machine) -> InventoryMachine:
+    inventory_store = InventoryStore(flake=machine.flake)
+    inventory = inventory_store.read()
+
+    machine_inv = inventory.get("machines", {}).get(machine.name)
+    if machine_inv is None:
+        msg = f"Machine {machine.name} not found in inventory"
+        raise ClanError(msg)
+
+    return InventoryMachine(**machine_inv)
+
+
+@API.register
+def set_inv_machine(machine: Machine, inventory_machine: InventoryMachine) -> None:
+    assert machine.name == inventory_machine["name"], "Machine name mismatch"
+    inventory_store = InventoryStore(flake=machine.flake)
+    inventory = inventory_store.read()
+
+    apply_patch(inventory, f"machines.{machine.name}", inventory_machine)
+    inventory_store.write(
+        inventory, message=f"Update information about machine {machine.name}"
     )
-
-    if test_store := nix_test_store():
-        json_path = test_store.joinpath(*json_path.parts[1:])
-
-    machines_json = json.loads(json_path.read_text())
-
-    machines = []
-    for name, machine_data in machines_json.items():
-        machines.append(
-            Machine(
-                name=name,
-                flake=flake,
-                cached_deployment=machine_data,
-                nix_options=nix_options,
-            )
-        )
-    return machines
-
-
-def get_selected_machines(
-    flake: Flake, nix_options: list[str], machine_names: list[str]
-) -> list[Machine]:
-    machines = []
-    for name in machine_names:
-        machines.append(Machine(name=name, flake=flake, nix_options=nix_options))
-    return machines

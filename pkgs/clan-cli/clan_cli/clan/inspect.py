@@ -7,7 +7,7 @@ from clan_cli.cmd import run
 from clan_cli.dirs import machine_gcroot
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
-from clan_cli.machines.list import list_nixos_machines
+from clan_cli.machines.list import list_machines
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import (
     nix_add_to_gcroots,
@@ -57,7 +57,7 @@ def inspect_flake(flake_url: str | Path, machine_name: str) -> FlakeConfig:
     system = config["system"]
 
     # Check if the machine exists
-    machines: list[str] = list_nixos_machines(flake_url)
+    machines: dict[str, Machine] = list_machines(Flake(str(flake_url)))
     if machine_name not in machines:
         msg = f"Machine {machine_name} not found in {flake_url}. Available machines: {', '.join(machines)}"
         raise ClanError(msg)

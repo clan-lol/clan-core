@@ -25,11 +25,9 @@ from clan_lib.persist.util import (
     determine_writeability,
 )
 
-from clan_cli.cmd import run
 from clan_cli.errors import ClanError
 from clan_cli.flake import Flake
 from clan_cli.git import commit_file
-from clan_cli.nix import nix_eval
 
 
 def get_inventory_path(flake: Flake) -> Path:
@@ -40,7 +38,7 @@ def get_inventory_path(flake: Flake) -> Path:
     return inventory_file
 
 
-def load_inventory_eval(flake_dir: Flake) -> Inventory:
+def load_inventory_eval(flake: Flake) -> Inventory:
     """
     Loads the evaluated inventory.
     After all merge operations with eventual nix code in buildClan.
@@ -51,18 +49,9 @@ def load_inventory_eval(flake_dir: Flake) -> Inventory:
     - Contains all machines
     - and more
     """
-    cmd = nix_eval(
-        [
-            f"{flake_dir}#clanInternals.inventory",
-            "--json",
-        ]
-    )
-
-    proc = run(cmd)
+    data = flake.select("clanInternals.inventory")
 
     try:
-        res = proc.stdout.strip()
-        data: dict = json.loads(res)
         inventory = Inventory(data)  # type: ignore
     except json.JSONDecodeError as e:
         msg = f"Error decoding inventory from flake: {e}"
@@ -89,18 +78,9 @@ def get_inventory_current_priority(flake: Flake) -> dict:
         };
     }
     """
-    cmd = nix_eval(
-        [
-            f"{flake}#clanInternals.inventoryClass.introspection",
-            "--json",
-        ]
-    )
-
-    proc = run(cmd)
 
     try:
-        res = proc.stdout.strip()
-        data = json.loads(res)
+        data = flake.select("clanInternals.inventoryClass.introspection")
     except json.JSONDecodeError as e:
         msg = f"Error decoding inventory from flake: {e}"
         raise ClanError(msg) from e

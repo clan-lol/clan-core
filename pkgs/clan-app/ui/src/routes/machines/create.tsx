@@ -61,7 +61,7 @@ export function CreateMachine() {
       reset(formStore);
 
       queryClient.invalidateQueries({
-        queryKey: [activeURI(), "list_machines"],
+        queryKey: [activeURI(), "list_inv_machines"],
       });
       navigate("/machines");
     } else {

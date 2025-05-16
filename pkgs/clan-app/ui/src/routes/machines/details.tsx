@@ -391,12 +391,14 @@ const MachineForm = (props: MachineDetailsProps) => {
       return;
     }
 
-    const machine_response = await callApi("set_machine", {
-      flake: {
-        identifier: curr_uri,
-      },
-      machine_name: props.initialData.machine.name || "My machine",
+    const machine_response = await callApi("set_inv_machine", {
       machine: {
+        name: props.initialData.machine.name || "My machine",
+        flake: {
+          identifier: curr_uri,
+        },
+      },
+      inventory_machine: {
         ...values.machine,
         // TODO: Remove this workaround
         tags: Array.from(

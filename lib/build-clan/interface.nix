@@ -180,8 +180,8 @@ in
           meta = lib.mkOption { type = lib.types.raw; };
           secrets = lib.mkOption { type = lib.types.raw; };
           clanLib = lib.mkOption { type = lib.types.raw; };
-          all-machines-json = lib.mkOption { type = lib.types.raw; };
           machines = lib.mkOption { type = lib.types.raw; };
+          all-machines-json = lib.mkOption { type = lib.types.raw; };
         };
       };
     };

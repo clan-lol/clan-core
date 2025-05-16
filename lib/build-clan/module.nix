@@ -231,11 +231,14 @@ in
 
     # machine specifics
     machines = configsPerSystem;
-    all-machines-json = lib.mapAttrs (
-      system: configs:
-      nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (
-        lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs
-      )
-    ) configsPerSystem;
+    all-machines-json =
+      lib.trace "Your clan-cli and the clan-core input have incompatible versions" lib.mapAttrs
+        (
+          system: configs:
+          nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (
+            lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs
+          )
+        )
+        configsPerSystem;
   };
 }

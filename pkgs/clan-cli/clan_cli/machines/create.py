@@ -21,7 +21,7 @@ from clan_cli.git import commit_file
 from clan_cli.inventory import (
     patch_inventory_with,
 )
-from clan_cli.machines.list import list_nixos_machines
+from clan_cli.machines.list import list_machines
 from clan_cli.templates import (
     InputPrio,
     TemplateName,
@@ -62,9 +62,9 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
     log.info(f"Found template '{template.name}' in '{template.input_variant}'")
 
     machine_name = opts.machine.get("name")
-    if opts.template_name in list_nixos_machines(clan_dir) and not opts.machine.get(
-        "name"
-    ):
+    if opts.template_name in list_machines(
+        Flake(str(clan_dir))
+    ) and not opts.machine.get("name"):
         msg = f"{opts.template_name} is already defined in {clan_dir}"
         description = (
             "Please add the --rename option to import the machine with a different name"
