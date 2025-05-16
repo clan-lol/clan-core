@@ -391,7 +391,7 @@ const MachineForm = (props: MachineDetailsProps) => {
       return;
     }
 
-    const machine_response = await callApi("set_inv_machine", {
+    const machine_response = await callApi("update_machine", {
       machine: {
         name: props.initialData.machine.name || "My machine",
         flake: {

@@ -13,7 +13,7 @@ from clan_lib.persist.inventory_store import InventoryStore
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.dirs import specific_machine_dir
 from clan_cli.machines.hardware import HardwareConfig
-from clan_cli.machines.inventory import get_inv_machine
+from clan_cli.machines.inventory import get_machine
 from clan_cli.machines.machines import Machine
 
 log = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ def query_machines_by_tags(flake: Flake, tags: list[str]) -> dict[str, Machine]:
 
     filtered_machines = {}
     for machine in machines.values():
-        inv_machine = get_inv_machine(machine)
+        inv_machine = get_machine(machine)
         if all(tag in inv_machine["tags"] for tag in tags):
             filtered_machines[machine.name] = machine
 
@@ -88,7 +88,7 @@ def extract_header(c: str) -> str:
 
 @API.register
 def get_machine_details(machine: Machine) -> MachineDetails:
-    machine_inv = get_inv_machine(machine)
+    machine_inv = get_machine(machine)
     hw_config = HardwareConfig.detect_type(machine)
 
     machine_dir = specific_machine_dir(machine)
