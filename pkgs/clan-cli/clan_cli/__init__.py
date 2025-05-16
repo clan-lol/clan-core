@@ -14,6 +14,8 @@ from .clan import show, update
 # API endpoints that are not used in the cli.
 __all__ = ["directory", "disk", "mdns_discovery", "modules", "update"]
 
+from clan_lib.flake.flake import Flake
+
 from . import (
     backups,
     clan,
@@ -26,7 +28,6 @@ from .custom_logger import setup_logging
 from .dirs import get_clan_flake_toplevel_or_env
 from .errors import ClanError
 from .facts import cli as facts
-from .flake import Flake
 from .flash import cli as flash_cli
 from .hyperlink import help_hyperlink
 from .machines import cli as machines

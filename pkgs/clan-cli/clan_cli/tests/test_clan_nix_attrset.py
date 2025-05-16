@@ -6,7 +6,6 @@ from typing import Any
 
 import pytest
 from clan_cli.cmd import run
-from clan_cli.flake import Flake
 from clan_cli.git import commit_file
 from clan_cli.locked_open import locked_open
 from clan_cli.nix import nix_command
@@ -20,6 +19,7 @@ from clan_cli.templates import (
     list_templates,
 )
 from clan_cli.tests.fixtures_flakes import FlakeForTest
+from clan_lib.flake.flake import Flake
 
 
 # Function to write clan attributes to a file

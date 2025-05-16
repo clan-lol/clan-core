@@ -3,12 +3,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 from clan_cli.facts.secret_modules.sops import SecretStore
-from clan_cli.flake import Flake
 from clan_cli.machines.machines import Machine
 from clan_cli.secrets.folders import sops_secrets_folder
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.helpers.validator import is_valid_age_key
+from clan_lib.flake.flake import Flake
 
 if TYPE_CHECKING:
     from .age_keys import KeyPair

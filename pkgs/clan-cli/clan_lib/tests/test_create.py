@@ -11,7 +11,6 @@ import pytest
 from clan_cli.cmd import RunOpts, run
 from clan_cli.dirs import specific_machine_dir
 from clan_cli.errors import ClanError
-from clan_cli.flake import Flake
 from clan_cli.inventory import patch_inventory_with
 from clan_cli.machines.create import CreateOptions as ClanCreateOptions
 from clan_cli.machines.create import create_machine
@@ -26,6 +25,7 @@ from clan_cli.vars.generate import generate_vars_for_machine, get_generators_clo
 
 from clan_lib.api.disk import hw_main_disk_options, set_machine_disk_schema
 from clan_lib.api.network import check_machine_online
+from clan_lib.flake.flake import Flake
 from clan_lib.nix_models.inventory import Machine as InventoryMachine
 from clan_lib.nix_models.inventory import MachineDeploy
 

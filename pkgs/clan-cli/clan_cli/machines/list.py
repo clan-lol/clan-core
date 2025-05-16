@@ -6,12 +6,12 @@ from dataclasses import dataclass
 from clan_lib.api import API
 from clan_lib.api.disk import MachineDiskMatter
 from clan_lib.api.modules import parse_frontmatter
+from clan_lib.flake.flake import Flake
 from clan_lib.nix_models.inventory import Machine as InventoryMachine
 from clan_lib.persist.inventory_store import InventoryStore
 
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.dirs import specific_machine_dir
-from clan_cli.flake import Flake
 from clan_cli.machines.hardware import HardwareConfig
 from clan_cli.machines.inventory import get_inv_machine
 from clan_cli.machines.machines import Machine

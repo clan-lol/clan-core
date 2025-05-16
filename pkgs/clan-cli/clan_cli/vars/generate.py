@@ -16,13 +16,13 @@ from clan_cli.completions import (
     complete_services_for_machine,
 )
 from clan_cli.errors import ClanError
-from clan_cli.flake import Flake
 from clan_cli.git import commit_files
 from clan_cli.machines.list import list_machines
 from clan_cli.nix import nix_config, nix_shell, nix_test_store
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.migration import check_can_migrate, migrate_files
 from clan_lib.api import API
+from clan_lib.flake.flake import Flake
 
 from .check import check_vars
 from .graph import (

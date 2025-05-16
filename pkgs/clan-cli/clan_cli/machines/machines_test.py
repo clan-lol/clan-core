@@ -1,6 +1,6 @@
 import pytest
+from clan_lib.flake.flake import Flake
 
-from clan_cli.flake import Flake
 from clan_cli.machines.machines import Machine
 
 # Functions to test

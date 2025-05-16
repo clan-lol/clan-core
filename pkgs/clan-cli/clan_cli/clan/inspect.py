@@ -3,10 +3,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from clan_lib.flake.flake import Flake
+
 from clan_cli.cmd import run
 from clan_cli.dirs import machine_gcroot
 from clan_cli.errors import ClanError
-from clan_cli.flake import Flake
 from clan_cli.machines.list import list_machines
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import (
