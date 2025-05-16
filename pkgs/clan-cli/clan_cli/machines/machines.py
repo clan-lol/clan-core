@@ -223,7 +223,6 @@ class Machine:
     def eval_nix(
         self,
         attr: str,
-        refresh: bool = False,
         extra_config: None | dict = None,
         nix_options: list[str] | None = None,
     ) -> Any:
