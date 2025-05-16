@@ -207,7 +207,8 @@ def complete_secrets(
     """
     Provides completion functionality for clan secrets
     """
-    from . import Flake
+    from clan_lib.flake.flake import Flake
+
     from .secrets.secrets import list_secrets
 
     flake = clan_dir_result if (clan_dir_result := clan_dir(None)) is not None else "."

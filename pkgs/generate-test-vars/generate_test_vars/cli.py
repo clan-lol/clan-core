@@ -11,10 +11,10 @@ from tempfile import NamedTemporaryFile
 from typing import Any, override
 
 from clan_cli.dirs import find_git_repo_root
-from clan_cli.flake import Flake
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_config, nix_eval
 from clan_cli.vars.generate import generate_vars
+from clan_lib.flake.flake import Flake
 
 sops_priv_key = (
     "AGE-SECRET-KEY-1PL0M9CWRCG3PZ9DXRTTLMCVD57U6JDFE8K7DNVQ35F4JENZ6G3MQ0RQLRV"
