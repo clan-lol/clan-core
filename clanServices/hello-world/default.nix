@@ -5,18 +5,6 @@
   manifest.name = "clan-core/hello-word";
   manifest.description = "This is a test";
 
-  roles.test = {
-    interface =
-      { lib, ... }:
-      {
-        options.foo = lib.mkOption {
-          type = lib.types.str;
-          # default = "";
-          description = "Some option";
-        };
-      };
-  };
-
   roles.peer = {
     interface =
       { lib, ... }:

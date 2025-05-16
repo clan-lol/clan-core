@@ -54,6 +54,7 @@ nav:
       - Deploy Machine: getting-started/deploy.md
       - Continuous Integration: getting-started/check.md
   - Guides:
+      - clanServices: guides/clanServices.md
       - Disk Encryption: getting-started/disk-encryption.md
       - Mesh VPN: getting-started/mesh-vpn.md
       - Backup & Restore: getting-started/backups.md
@@ -86,6 +87,7 @@ nav:
           - 03-adr-numbering-process: decisions/03-adr-numbering-process.md
           - Template: decisions/_template.md
       - Clan Services:
+          - reference/clanServices/index.md
           - reference/clanServices/admin.md
           - reference/clanServices/hello-world.md
           - reference/clanServices/wifi.md

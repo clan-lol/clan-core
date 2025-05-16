@@ -438,6 +438,33 @@ def produce_clan_service_docs() -> None:
         msg = f"Environment variables are not set correctly: $out={OUT}"
         raise ClanError(msg)
 
+    indexfile = Path(OUT) / "clanServices/index.md"
+    indexfile.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    index = "# Clan Services\n\n"
+    index += """
+**`clanServices`** are modular building blocks that simplify the configuration and orchestration of multi-host services.
+
+Each `clanService`:
+
+* Is a module of class **`clan.service`**
+* Can define **roles** (e.g., `client`, `server`)
+* Uses **`inventory.instances`** to configure where and how it is deployed
+* Replaces the legacy `clanModules` and `inventory.services` system altogether
+
+!!! Note
+    `clanServices` are part of Clan's next-generation service model and are intended to replace `clanModules`.
+
+    See [Migration Guide](../../guides/migrate-inventory-services.md) for help on migrating.
+
+Learn how to use `clanServices` in practice in the [Using clanServices guide](../../guides/clanServices.md).
+"""
+
+    with indexfile.open("w") as of:
+        of.write(index)
+
     with Path(CLAN_MODULES_VIA_SERVICE).open() as f3:
         service_links: dict[str, dict[str, dict[str, Any]]] = json.load(f3)
 
@@ -526,6 +553,22 @@ def produce_clan_modules_docs() -> None:
         # 2. Description from README.md
         if frontmatter.description:
             output += f"*{frontmatter.description}*\n\n"
+
+        # 2. Deprecation note if the module is deprecated
+        if "deprecated" in frontmatter.features:
+            output += f"""
+!!! Warning "Deprecated"
+    The `{module_name}` module is deprecated.*
+
+    Use: [clanServices/{module_name}](../clanServices/{module_name}.md) instead
+"""
+        else:
+            output += f"""
+!!! Warning "Will be deprecated"
+    The `{module_name}` module might eventually be migrated to 'clanServices'*
+
+    See: [clanServices](../../guides/clanServices.md)
+"""
 
         # 3. Categories from README.md
         output += "## Categories\n\n"
