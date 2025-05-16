@@ -26,7 +26,7 @@ Dependencies:
 - pydantic: A library for data validation and settings management.
 - pydantic_core: Core functionality for Pydantic.
 
-Note: This module assumes the presence of other modules and classes such as `ClanError` and `ErrorDetails` from the `clan_cli.errors` module.
+Note: This module assumes the presence of other modules and classes such as `ClanError` and `ErrorDetails` from the `clan_lib.errors` module.
 """
 
 import dataclasses
@@ -45,7 +45,7 @@ from typing import (
     is_typeddict,
 )
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 
 def sanitize_string(s: str) -> str:

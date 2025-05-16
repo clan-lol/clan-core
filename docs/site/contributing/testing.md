@@ -77,9 +77,9 @@ Locate the definition (see above) and add print statements, like, for example `p
 
 #### Interactive Shell
 
-- Execute the vm test outside the nix Sandbox via the following command:  
+- Execute the vm test outside the nix Sandbox via the following command:
 `nix run .#checks.x86_64-linux.{test-attr-name}.driver -- --interactive`
-- Then run the commands in the machines manually, like for example:  
+- Then run the commands in the machines manually, like for example:
   ```python3
     start_all()
     machine1.succeed("echo hello")
@@ -87,7 +87,7 @@ Locate the definition (see above) and add print statements, like, for example `p
 
 #### Breakpoints
 
-To get an interactive shell at a specific line in the VM test script, add a `breakpoint()` call before the line to debug, then run the test outside of the sandbox via:  
+To get an interactive shell at a specific line in the VM test script, add a `breakpoint()` call before the line to debug, then run the test outside of the sandbox via:
 `nix run .#checks.x86_64-linux.{test-attr-name}.driver`
 
 
@@ -115,7 +115,7 @@ rg self.clanLib.test.containerTest
 
 Since the clan cli is written in python, the `pytest` framework is used to define unit tests and integration tests via python
 
-Due to superior efficiency, 
+Due to superior efficiency,
 
 ### When to use python tests
 
@@ -141,7 +141,7 @@ rg "import pytest"
 If any python test fails in the CI pipeline, an error message like this can be found at the end of the log:
 ```
 ...
-FAILED tests/test_machines_cli.py::test_machine_delete - clan_cli.errors.ClanError: Template 'new-machine' not in 'inputs.clan-core
+FAILED tests/test_machines_cli.py::test_machine_delete - clan_lib.errors.ClanError: Template 'new-machine' not in 'inputs.clan-core
 ...
 ```
 
@@ -244,7 +244,7 @@ Find the attribute via ripgrep:
 $ rg "lib-values-eval ="
 lib/values/flake-module.nix
 21:        lib-values-eval = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-grmpf@grmpf-nix ~/p/c/clan-core (test-docs)> 
+grmpf@grmpf-nix ~/p/c/clan-core (test-docs)>
 ```
 
 In this case the test is defined in the file `lib/values/flake-module.nix` line 21
@@ -296,9 +296,9 @@ Example:
 $ nix repl
 Nix 2.25.5
 Type :? for help.
-nix-repl> tests = import ./lib/values/test.nix {}  
+nix-repl> tests = import ./lib/values/test.nix {}
 
-nix-repl> tests                                   
+nix-repl> tests
 {
   test_attrsOf_attrsOf_submodule = { ... };
   test_attrsOf_submodule = { ... };
@@ -309,7 +309,7 @@ nix-repl> tests
   test_submodule_with_merging = { ... };
 }
 
-nix-repl> tests.test_default.expr                 
+nix-repl> tests.test_default.expr
 {
   foo = { ... };
 }

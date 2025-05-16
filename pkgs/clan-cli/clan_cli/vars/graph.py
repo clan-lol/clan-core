@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from graphlib import TopologicalSorter
 from typing import TYPE_CHECKING
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
     from .generate import Generator

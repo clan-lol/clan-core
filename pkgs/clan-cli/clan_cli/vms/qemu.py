@@ -4,7 +4,8 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
+
 from clan_cli.qemu.qmp import QEMUMonitorProtocol
 
 from .inspect import VmConfig
@@ -74,7 +75,7 @@ def graphics_options(vm: VmConfig) -> GraphicOptions:
         "-device", "usb-ccid",
         "-chardev", "spicevmc,id=ccid,name=smartcard",
     ], None)
-        # fmt: on
+    # fmt: on
 
 
 @dataclass
@@ -140,19 +141,31 @@ def qemu_command(
         "-device", "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
     ]  # fmt: on
     if interactive:
-        command.extend([
-          "-serial", "null",
-          "-chardev", "stdio,mux=on,id=char0,signal=off",
-          "-mon", "chardev=char0,mode=readline",
-          "-device", "virtconsole,chardev=char0,nr=0",
-        ])
+        command.extend(
+            [
+                "-serial",
+                "null",
+                "-chardev",
+                "stdio,mux=on,id=char0,signal=off",
+                "-mon",
+                "chardev=char0,mode=readline",
+                "-device",
+                "virtconsole,chardev=char0,nr=0",
+            ]
+        )
     else:
-        command.extend([
-            "-serial", "null",
-            "-chardev", "file,id=char0,path=/dev/stdout",
-            "-device", "virtconsole,chardev=char0,nr=0",
-            "-monitor", "none",
-        ])
+        command.extend(
+            [
+                "-serial",
+                "null",
+                "-chardev",
+                "file,id=char0,path=/dev/stdout",
+                "-device",
+                "virtconsole,chardev=char0,nr=0",
+                "-monitor",
+                "none",
+            ]
+        )
 
     vsock_cid = None
     if vm.graphics:

@@ -2,7 +2,7 @@
 
 from enum import Enum
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 
 class HostKeyCheck(Enum):

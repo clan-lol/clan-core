@@ -5,7 +5,7 @@ from functools import partial
 from typing import Any, TypeVar
 
 import gi
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 from clan_vm_manager.clan_uri import ClanURI
 from clan_vm_manager.components.gkvstore import GKVStore

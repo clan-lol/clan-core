@@ -1,8 +1,9 @@
 import os
 from pathlib import Path
 
+from clan_lib.errors import ClanError
+
 from .cmd import Log, RunOpts, run
-from .errors import ClanError
 from .locked_open import locked_open
 from .nix import nix_shell
 

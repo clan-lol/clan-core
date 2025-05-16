@@ -2,8 +2,8 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from clan_cli.errors import ClanError
 from clan_cli.git import commit_files
+from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
 

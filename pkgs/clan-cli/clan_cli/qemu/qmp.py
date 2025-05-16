@@ -16,7 +16,7 @@ import socket
 import types
 from typing import Any
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 
 class QMPError(Exception):

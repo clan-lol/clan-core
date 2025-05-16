@@ -4,8 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypedDict
 
-from clan_cli.errors import ClanError
-
+from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
 
 from . import API

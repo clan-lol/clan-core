@@ -3,11 +3,11 @@ import logging
 import os
 from pathlib import Path
 
-from clan_cli.errors import ClanError
 from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import maybe_get_admin_public_key
 from clan_cli.secrets.users import add_user
 from clan_lib.api import API
+from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
 

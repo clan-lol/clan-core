@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from typing import Literal
 
 from clan_cli.cmd import RunOpts
-from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
 
 from clan_lib.api import API
+from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
 

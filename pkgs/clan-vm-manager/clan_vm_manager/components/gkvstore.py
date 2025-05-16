@@ -5,7 +5,7 @@ from typing import Any, Generic, TypeVar
 import gi
 
 gi.require_version("Gio", "2.0")
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 from gi.repository import Gio, GObject
 
 log = logging.getLogger(__name__)

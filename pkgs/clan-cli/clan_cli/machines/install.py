@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from clan_lib.api import API
+from clan_lib.errors import ClanError
 
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.completions import (
@@ -15,7 +16,6 @@ from clan_cli.completions import (
     complete_machines,
     complete_target_host,
 )
-from clan_cli.errors import ClanError
 from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.hardware import HardwareConfig
 from clan_cli.machines.machines import Machine

@@ -9,12 +9,12 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 import pytest
-from clan_cli.errors import ClanError
 from clan_cli.tests.age_keys import assert_secrets_file_recipients
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_cli.tests.gpg_keys import GpgKey
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
+from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
     from .age_keys import KeyPair

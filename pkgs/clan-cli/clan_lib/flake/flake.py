@@ -9,7 +9,6 @@ from typing import Any
 
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.dirs import nixpkgs_source, select_source, user_cache_dir
-from clan_cli.errors import ClanError
 from clan_cli.nix import (
     nix_build,
     nix_command,
@@ -18,6 +17,8 @@ from clan_cli.nix import (
     nix_metadata,
     nix_test_store,
 )
+
+from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
 

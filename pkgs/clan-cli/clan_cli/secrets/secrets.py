@@ -9,6 +9,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import IO
 
+from clan_lib.errors import ClanError
+
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_groups,
@@ -16,7 +18,6 @@ from clan_cli.completions import (
     complete_secrets,
     complete_users,
 )
-from clan_cli.errors import ClanError
 from clan_cli.git import commit_files
 
 from . import sops

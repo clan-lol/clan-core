@@ -6,7 +6,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .errors import ClanError
+from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
     from clan_lib.flake.flake import Flake

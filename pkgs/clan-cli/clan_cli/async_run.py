@@ -7,7 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import IO, Any, Generic, ParamSpec, TypeVar
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
 

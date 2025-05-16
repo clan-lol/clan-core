@@ -6,13 +6,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from clan_lib.errors import ClanError
+
 from clan_cli.async_run import AsyncRuntime
 from clan_cli.cmd import run
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_machines,
 )
-from clan_cli.errors import ClanError
 from clan_cli.machines.machines import Machine
 from clan_cli.nix import nix_shell
 from clan_cli.ssh.host import Host, is_ssh_reachable

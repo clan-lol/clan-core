@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 from clan_cli import git
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 
 def test_commit_file(git_repo: Path) -> None:

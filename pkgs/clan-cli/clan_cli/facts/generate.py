@@ -7,13 +7,14 @@ from collections.abc import Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from clan_lib.errors import ClanError
+
 from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_machines,
     complete_services_for_machine,
 )
-from clan_cli.errors import ClanError
 from clan_cli.git import commit_files
 from clan_cli.machines.list import list_machines
 from clan_cli.machines.machines import Machine

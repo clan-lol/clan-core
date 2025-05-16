@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from getpass import getpass
 from typing import Any
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
 

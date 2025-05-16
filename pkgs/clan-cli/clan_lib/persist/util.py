@@ -6,7 +6,7 @@ flattening, unmerging lists, finding duplicates, and calculating patches.
 from collections import Counter
 from typing import Any
 
-from clan_cli.errors import ClanError
+from clan_lib.errors import ClanError
 
 
 def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict:
