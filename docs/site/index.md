@@ -29,7 +29,7 @@ hide:
 
     Create ressources that can be reused by the community.
 
-    [:octicons-arrow-right-24: Authoring guides](./authoring/legacyModules/index.md)
+    [:octicons-arrow-right-24: Authoring guides](./guides/authoring/clanModules/index.md)
 
 </div>
 
@@ -99,8 +99,8 @@ hide:
 
     ---
 
-    The clan core nix module. 
-    This is imported when using clan and is the basis of the extra functionality 
+    The clan core nix module.
+    This is imported when using clan and is the basis of the extra functionality
     that can be provided.
 
 

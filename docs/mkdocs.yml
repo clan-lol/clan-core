@@ -64,13 +64,12 @@ nav:
       - Autoincludes: manual/adding-machines.md
       - Inventory:
           - Inventory: manual/inventory.md
-          - Services: manual/distributed-services.md
       - Secure Boot: manual/secure-boot.md
       - Flake-parts: manual/flake-parts.md
       - Authoring:
-          - clan.service: authoring/clanServices/index.md
-          - Disk Templates: authoring/templates/disk/disko-templates.md
-          - clanModules: authoring/legacyModules/index.md
+          - clanService: guides/authoring/clanServices/index.md
+          - Disk Template: guides/authoring/templates/disk/disko-templates.md
+          - clanModule: guides/authoring/clanModules/index.md
       - Contributing:
           - Contribute: contributing/contribute.md
           - Debugging: contributing/debugging.md
