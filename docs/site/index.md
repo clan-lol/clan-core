@@ -52,23 +52,17 @@ hide:
 
 <div class="grid cards" markdown>
 
--   [Reference Overview](./reference/index.md)
-
-    ---
-
-    Learn how to interface with Clan programmatically
-
 -   [Cli Reference](./reference/cli/index.md)
 
     ---
 
     The `clan` cli command
 
--   [Modules](./reference/clanModules/index.md)
+-   [Service Modules](./reference/clanServices/index.md)
 
     ---
 
-    An overview of available clan modules
+    An overview of available service modules
 
 -   [Core](./reference/clan-core/index.md)
 
@@ -77,6 +71,14 @@ hide:
     The clan core nix module.
     This is imported when using clan and is the basis of the extra functionality
     that can be provided.
+
+-   [(Legacy) Modules](./reference/clanModules/index.md)
+
+    ---
+
+    An overview of available clanModules
+
+    !!! Example "Those will get deprecated soon"
 
 
 </div>

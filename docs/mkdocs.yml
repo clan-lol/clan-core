@@ -79,12 +79,6 @@ nav:
       - Migrate inventory Services: guides/migrate-inventory-services.md
   - Reference:
       - Overview: reference/index.md
-      - Architecture Decisions:
-          - Architecture Decisions: decisions/README.md
-          - 01-clanModules: decisions/01-ClanModules.md
-          - 02-clan-api: decisions/02-clan-api.md
-          - 03-adr-numbering-process: decisions/03-adr-numbering-process.md
-          - Template: decisions/_template.md
       - Clan Services:
           - reference/clanServices/index.md
           - reference/clanServices/admin.md
@@ -165,6 +159,12 @@ nav:
       - Nix API:
           - buildClan: reference/nix-api/buildclan.md
           - Inventory: reference/nix-api/inventory.md
+      - Decisions:
+          - Architecture Decisions: decisions/README.md
+          - 01-clanModules: decisions/01-ClanModules.md
+          - 02-clan-api: decisions/02-clan-api.md
+          - 03-adr-numbering-process: decisions/03-adr-numbering-process.md
+          - Template: decisions/_template.md
 
 docs_dir: site
 site_dir: out
