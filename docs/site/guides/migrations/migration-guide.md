@@ -4,7 +4,7 @@ This guide will help you migrate your existing Nix configurations into Clan.
 
 !!! Warning
     Migrating instead of starting new can be trickier and might lead to bugs or
-    unexpected issues. We recommend following the [Getting Started](../guides/getting-started/index.md) guide first. Once you have a working setup, you can easily transfer your Nix configurations over.
+    unexpected issues. We recommend following the [Getting Started](../getting-started/index.md) guide first. Once you have a working setup, you can easily transfer your Nix configurations over.
 
 ## Back up your existing configuration!
 Before you start, it is strongly recommended to back up your existing

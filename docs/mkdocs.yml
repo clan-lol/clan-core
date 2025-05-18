@@ -60,7 +60,6 @@ nav:
       - Backup & Restore: guides/backups.md
       - Vars Backend: manual/vars-backend.md
       - Facts Backend: manual/secrets.md
-      - Facts Vars Migration: manual/migration-facts-vars.md
       - Autoincludes: manual/adding-machines.md
       - Inventory:
           - Inventory: manual/inventory.md
@@ -75,8 +74,9 @@ nav:
           - Debugging: guides/contributing/debugging.md
           - Testing: guides/contributing/testing.md
       - Migrations:
-          - Migrate existing Flakes: manual/migration-guide.md
+          - Migrate existing Flakes: guides/migrations/migration-guide.md
           - Migrate inventory Services: guides/migrations/migrate-inventory-services.md
+          - Facts Vars Migration: guides/migrations/migration-facts-vars.md
   - Reference:
       - Overview: reference/index.md
       - Clan Services:

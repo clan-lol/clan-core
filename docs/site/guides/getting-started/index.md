@@ -54,7 +54,7 @@ clan --help
 
 ### Step 2: Initialize Your Project
 
-If you want to migrate an existing project, follow this [guide](../../manual/migration-guide.md).
+If you want to migrate an existing project, follow this [guide](../migrations/migration-guide.md).
 
 Set the foundation of your Clan project by initializing it as follows:
 
