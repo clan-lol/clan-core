@@ -19,7 +19,7 @@ from clan_cli.templates import (
     list_templates,
 )
 from clan_cli.tests.fixtures_flakes import FlakeForTest
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 
 # Function to write clan attributes to a file

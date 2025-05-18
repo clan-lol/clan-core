@@ -2,7 +2,7 @@ from typing import Any, cast
 
 import pytest
 from clan_cli.tests.fixtures_flakes import FlakeForTest
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 from clan_lib.persist.inventory_store import InventoryStore
 
 

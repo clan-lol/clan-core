@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from clan_lib.errors import ClanCmdError, ClanError
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.facts import public_modules as facts_public_modules

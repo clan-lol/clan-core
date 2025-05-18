@@ -7,7 +7,7 @@ from clan_cli.git import commit_files
 from clan_cli.machines.machines import Machine
 from clan_cli.vars.get import get_var
 from clan_cli.vars.prompt import PromptType
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 from .generate import Var
 from .prompt import ask

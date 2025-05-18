@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from clan_cli.tests.fixtures_flakes import ClanFlake
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 from clan_vm_manager.clan_uri import ClanURI
 
 

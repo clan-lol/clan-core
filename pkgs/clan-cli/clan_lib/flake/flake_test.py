@@ -2,6 +2,7 @@ import logging
 
 import pytest
 from clan_cli.tests.fixtures_flakes import ClanFlake
+
 from clan_lib.flake.flake import (
     Flake,
     FlakeCache,
@@ -332,10 +333,10 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
     assert isinstance(flake1._cache, FlakeCache)  # noqa: SLF001
     assert isinstance(flake2._cache, FlakeCache)  # noqa: SLF001
     log.info("First select")
-    res1 = flake1.select("inputs.*.{?clan,?missing}")
+    res1 = flake1.select("inputs.*.{?clan,?missing}.templates.*.*.description")
 
     log.info("Second (cached) select")
-    res2 = flake1.select("inputs.*.{?clan,?missing}")
+    res2 = flake1.select("inputs.*.{?clan,?missing}.templates.*.*.description")
 
     assert res1 == res2
     assert res1["clan-core"].get("clan") is not None
@@ -348,7 +349,7 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
 def test_caching_works(flake: ClanFlake) -> None:
     from unittest.mock import patch
 
-    from clan_lib.flake.flake import Flake
+    from clan_lib.flake import Flake
 
     my_flake = Flake(str(flake.path))
 

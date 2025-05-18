@@ -22,7 +22,7 @@ from clan_cli.vars._types import StoreBase
 from clan_cli.vars.migration import check_can_migrate, migrate_files
 from clan_lib.api import API
 from clan_lib.errors import ClanError
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 from .check import check_vars
 from .graph import (

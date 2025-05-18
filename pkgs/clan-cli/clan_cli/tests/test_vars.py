@@ -23,7 +23,7 @@ from clan_cli.vars.public_modules import in_repo
 from clan_cli.vars.secret_modules import password_store, sops
 from clan_cli.vars.set import set_var
 from clan_lib.errors import ClanError
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 
 def test_dependencies_as_files(temp_dir: Path) -> None:

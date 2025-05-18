@@ -227,7 +227,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             touch $out
           '';
     }
-    // {
+    // lib.optionalAttrs (!stdenv.isDarwin) {
       # disabled on macOS until we fix all remaining issues
       clan-lib-pytest =
         runCommand "clan-lib-pytest"

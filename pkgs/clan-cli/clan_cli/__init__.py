@@ -15,7 +15,7 @@ from .clan import show, update
 __all__ = ["directory", "disk", "mdns_discovery", "modules", "update"]
 
 from clan_lib.errors import ClanError
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 
 from . import (
     backups,

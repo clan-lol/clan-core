@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
-    from clan_lib.flake.flake import Flake
+    from clan_lib.flake import Flake
 
     from clan_cli.machines.machines import Machine
 

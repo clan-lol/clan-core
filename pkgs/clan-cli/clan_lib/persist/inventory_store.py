@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from clan_cli.git import commit_file
 
 from clan_lib.errors import ClanError
-from clan_lib.flake.flake import Flake
+from clan_lib.flake import Flake
 from clan_lib.nix_models.inventory import Inventory
 
 from .util import (
