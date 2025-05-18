@@ -163,8 +163,8 @@ in
               map (m: "'${m}'") (lib.attrNames (lib.filterAttrs (n: _v: !builtins.elem n allowedNames) moduleSet))
             )}
 
-            See: https://docs.clan.lol/manual/distributed-services/
-            And: https://docs.clan.lol/authoring/clanServices/
+            See: https://docs.clan.lol/guides/clanServices/
+            And: https://docs.clan.lol/guides/authoring/clanServices/
           '' moduleSet;
     };
 

@@ -114,7 +114,7 @@ let
           warnings = [
             ''
               The '${serviceName}' module has been migrated from `inventory.services` to `inventory.instances`
-              See https://docs.clan.lol/manual/distributed-services/ for usage.
+              See https://docs.clan.lol/guides/clanServices/ for usage.
             ''
           ];
         };

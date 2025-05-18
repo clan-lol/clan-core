@@ -16,7 +16,7 @@ After the system was installed/deployed the following command can be used to dis
 clan vars get [machine_name] root-password/root-password
 ```
 
-See also: [Vars](../../manual/vars-backend.md)
+See also: [Vars](../../guides/vars-backend.md)
 
 To regenerate the password run:
 ```

@@ -13,7 +13,7 @@ This site will guide you through authoring your first module. Explaining which c
 
 ## Bootstrapping the `clanModule`
 
-A ClanModule is a specific subset of a [NixOS Module](https://nix.dev/tutorials/module-system/index.html), but it has some constraints and might be used via the [Inventory](../../../manual/inventory.md) interface.
+A ClanModule is a specific subset of a [NixOS Module](https://nix.dev/tutorials/module-system/index.html), but it has some constraints and might be used via the [Inventory](../../../guides/inventory.md) interface.
 In fact a `ClanModule` can be thought of as a layer of abstraction on-top of NixOS and/or other ClanModules. It may configure sane defaults and provide an ergonomic interface that is easy to use and can also be used via a UI that is under development currently.
 
 Because ClanModules should be configurable via `json`/`API` all of its interface (`options`) must be serializable.
