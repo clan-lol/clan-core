@@ -10,7 +10,7 @@ In this example, we will guide you through automating that interaction using cla
 For a more general explanation of what clan vars are and how it works, see the intro of the [Reference Documentation for vars](https://docs.clan.lol/reference/clan-core/vars/)
 
 This guide assumes
-- clan is set up already (see [Getting Started](../getting-started/index.md))
+- clan is set up already (see [Getting Started](../guides/getting-started/index.md))
 - a machine has been added to the clan (see [Adding Machines](./adding-machines.md))
 
 This section will walk you through the following steps:

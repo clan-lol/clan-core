@@ -46,14 +46,14 @@ exclude_docs: |
 
 nav:
   - Home: index.md
-  - Getting Started:
-      - Setup Clan: getting-started/index.md
-      - Create Installer: getting-started/installer.md
-      - Add Machines: getting-started/configure.md
-      - Secrets & Facts: getting-started/secrets.md
-      - Deploy Machine: getting-started/deploy.md
-      - Continuous Integration: getting-started/check.md
   - Guides:
+      - Getting Started:
+          - Setup Clan: guides/getting-started/index.md
+          - Create Installer: guides/getting-started/installer.md
+          - Add Machines: guides/getting-started/configure.md
+          - Secrets & Facts: guides/getting-started/secrets.md
+          - Deploy Machine: guides/getting-started/deploy.md
+          - Continuous Integration: guides/getting-started/check.md
       - clanServices: guides/clanServices.md
       - Disk Encryption: guides/disk-encryption.md
       - Mesh VPN: guides/mesh-vpn.md

@@ -6,32 +6,7 @@ hide:
 
 # :material-home: Welcome to **Clan**'s  documentation
 
-[Getting Started](./getting-started/index.md){ .md-button }
-
-## Tutorials
-
-**Learning-oriented adventures with a hands-on experience.**
-
-<div class="grid cards" markdown>
-
--   :material-clock-fast:{ .lg .middle } __Set up in 15 minutes__
-
-    ---
-
-    Create your own clan and get everything
-    running in minutes
-
-    [:octicons-arrow-right-24: Getting started](./getting-started/index.md)
-
--   :fontawesome-solid-user-group:{ .lg .middle } __Authoring Modules__
-
-    ---
-
-    Create ressources that can be reused by the community.
-
-    [:octicons-arrow-right-24: Authoring guides](./guides/authoring/clanModules/index.md)
-
-</div>
+[Getting Started](./guides/getting-started/index.md){ .md-button }
 
 ## :material-book: Guides
 

@@ -45,7 +45,7 @@ Add the Clan CLI into your development workflow:
 nix shell git+https://git.clan.lol/clan/clan-core#clan-cli --refresh
 ```
 
-You can find reference documentation for the `clan` cli program [here](../reference/cli/index.md).
+You can find reference documentation for the `clan` cli program [here](../../reference/cli/index.md).
 
 Alternatively you can check out the help pages directly:
 ```terminalSession
@@ -104,8 +104,8 @@ This should yield the following:
     That way you will have the tool available in the shell environment.
     We also recommend setting up [direnv](https://direnv.net/) for your shell, for a more convenient
     experience.
-    
-    
+
+
 
 ```bash
 clan machines list
