@@ -6,32 +6,7 @@ hide:
 
 # :material-home: Welcome to **Clan**'s  documentation
 
-[Getting Started](./getting-started/index.md){ .md-button }
-
-## Tutorials
-
-**Learning-oriented adventures with a hands-on experience.**
-
-<div class="grid cards" markdown>
-
--   :material-clock-fast:{ .lg .middle } __Set up in 15 minutes__
-
-    ---
-
-    Create your own clan and get everything
-    running in minutes
-
-    [:octicons-arrow-right-24: Getting started](./getting-started/index.md)
-
--   :fontawesome-solid-user-group:{ .lg .middle } __Authoring Modules__
-
-    ---
-
-    Create ressources that can be reused by the community.
-
-    [:octicons-arrow-right-24: Authoring guides](./guides/authoring/clanModules/index.md)
-
-</div>
+[Getting Started](./guides/getting-started/index.md){ .md-button }
 
 ## :material-book: Guides
 
@@ -63,7 +38,7 @@ hide:
 
     Use clan with [https://flake.parts/]()
 
--   [Contribute](./contributing/contribute.md)
+-   [Contribute](./guides/contributing/CONTRIBUTING.md)
 
     ---
 
@@ -77,23 +52,17 @@ hide:
 
 <div class="grid cards" markdown>
 
--   [Reference Overview](./reference/index.md)
-
-    ---
-
-    Learn how to interface with Clan programmatically
-
 -   [Cli Reference](./reference/cli/index.md)
 
     ---
 
     The `clan` cli command
 
--   [Modules](./reference/clanModules/index.md)
+-   [Service Modules](./reference/clanServices/index.md)
 
     ---
 
-    An overview of available clan modules
+    An overview of available service modules
 
 -   [Core](./reference/clan-core/index.md)
 
@@ -102,6 +71,14 @@ hide:
     The clan core nix module.
     This is imported when using clan and is the basis of the extra functionality
     that can be provided.
+
+-   [(Legacy) Modules](./reference/clanModules/index.md)
+
+    ---
+
+    An overview of available clanModules
+
+    !!! Example "Those will get deprecated soon"
 
 
 </div>

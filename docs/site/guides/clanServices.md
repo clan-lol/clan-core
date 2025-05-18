@@ -125,5 +125,5 @@ You might expose your service module from your flake — this makes it easy for 
 ## What’s Next?
 
 * [Author your own clanService →](../guides/authoring/clanServices/index.md)
-* [Migrate from clanModules →](../guides/migrate-inventory-services.md)
+* [Migrate from clanModules →](../guides/migrations/migrate-inventory-services.md)
 <!-- TODO: * [Understand the architecture →](../explanation/clan-architecture.md) -->

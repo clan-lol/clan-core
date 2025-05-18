@@ -24,7 +24,7 @@ If you're new to Clan and eager to dive in, start with our quickstart guide and 
 
 In the Clan ecosystem, security is paramount. Learn how to handle secrets effectively:
 
-- **Secrets Management**: Securely manage secrets by consulting [secrets](https://docs.clan.lol/getting-started/secrets/)<!-- [secrets.md](docs/site/getting-started/secrets.md) -->.
+- **Secrets Management**: Securely manage secrets by consulting [secrets](https://docs.clan.lol/guides/getting-started/secrets/)<!-- [secrets.md](docs/site/guides/getting-started/secrets.md) -->.
 
 ### Contributing to Clan
 

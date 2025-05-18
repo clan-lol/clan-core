@@ -14,7 +14,7 @@ Clan currently offers the following methods to configure machines:
 
     - machines/`machine_name`/configuration.nix (`autoincluded` if it exists)
 
-    See the complete [list](../manual/adding-machines.md#automatic-registration) of auto-loaded files.
+    See the complete [list](../../manual/adding-machines.md#automatic-registration) of auto-loaded files.
 
 ???+ Note "Used by CLI & UI"
 
@@ -40,7 +40,7 @@ In the `flake.nix` file:
 
 === "**template using flake-parts**"
 
-    !!! info "See [Clan with flake-parts](../manual/flake-parts.md) for help migrating to flake-parts."
+    !!! info "See [Clan with flake-parts](../../manual/flake-parts.md) for help migrating to flake-parts."
 
     ```nix title="flake.nix" hl_lines="3"
     clan = {
@@ -106,7 +106,7 @@ Adding or configuring a new machine requires two simple steps:
       clan.core.networking.targetHost = "root@__IP__";
 
 
-      # Replace this __CHANGE_ME__ with the result of the lsblk command from step 1. 
+      # Replace this __CHANGE_ME__ with the result of the lsblk command from step 1.
       disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
 
       # IMPORTANT! Add your SSH key here

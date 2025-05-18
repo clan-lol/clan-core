@@ -1,6 +1,6 @@
 # Migrate existing NixOS configurations
 
-This guide will help you migrate your existing Nix configurations into Clan. 
+This guide will help you migrate your existing Nix configurations into Clan.
 
 !!! Warning
     Migrating instead of starting new can be trickier and might lead to bugs or
@@ -77,9 +77,9 @@ For the provide flake example, your flake should now look like this:
 ```nix
 {
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-  
+
   inputs.clan-core = {
-    url = "git+https://git.clan.lol/clan/clan-core";    
+    url = "git+https://git.clan.lol/clan/clan-core";
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
@@ -104,9 +104,9 @@ For the provide flake example, your flake should now look like this:
   in
   {
       nixosConfigurations = clan.nixosConfigurations;
-      
+
       inherit (clan) clanInternals;
-      
+
       clan = {
         inherit (clan) templates;
       };
