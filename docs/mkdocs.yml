@@ -74,7 +74,6 @@ nav:
           - Contribute: guides/contributing/CONTRIBUTING.md
           - Debugging: guides/contributing/debugging.md
           - Testing: guides/contributing/testing.md
-      - Repo Layout: manual/repo-layout.md
       - Migrations:
           - Migrate existing Flakes: manual/migration-guide.md
           - Migrate inventory Services: guides/migrations/migrate-inventory-services.md
