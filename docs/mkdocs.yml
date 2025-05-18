@@ -55,9 +55,9 @@ nav:
       - Continuous Integration: getting-started/check.md
   - Guides:
       - clanServices: guides/clanServices.md
-      - Disk Encryption: getting-started/disk-encryption.md
-      - Mesh VPN: getting-started/mesh-vpn.md
-      - Backup & Restore: getting-started/backups.md
+      - Disk Encryption: guides/disk-encryption.md
+      - Mesh VPN: guides/mesh-vpn.md
+      - Backup & Restore: guides/backups.md
       - Vars Backend: manual/vars-backend.md
       - Facts Backend: manual/secrets.md
       - Facts Vars Migration: manual/migration-facts-vars.md
@@ -71,9 +71,9 @@ nav:
           - Disk Template: guides/authoring/templates/disk/disko-templates.md
           - clanModule: guides/authoring/clanModules/index.md
       - Contributing:
-          - Contribute: contributing/contribute.md
-          - Debugging: contributing/debugging.md
-          - Testing: contributing/testing.md
+          - Contribute: guides/contributing/CONTRIBUTING.md
+          - Debugging: guides/contributing/debugging.md
+          - Testing: guides/contributing/testing.md
       - Repo Layout: manual/repo-layout.md
       - Migrate existing Flakes: manual/migration-guide.md
       - Migrate inventory Services: guides/migrate-inventory-services.md

@@ -63,7 +63,7 @@ hide:
 
     Use clan with [https://flake.parts/]()
 
--   [Contribute](./contributing/contribute.md)
+-   [Contribute](./guides/contributing/CONTRIBUTING.md)
 
     ---
 
