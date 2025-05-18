@@ -95,7 +95,7 @@ Examples:
   This will print secret as well as public vars directly.
 
 
-For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/manual/vars-backend/")}
+For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/guides/vars-backend/")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -114,7 +114,7 @@ Examples:
     $ clan vars get my-server zerotier/vpn-ip
     Will get the var for the specified machine.
 
-For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/manual/vars-backend/")}
+For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/guides/vars-backend/")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -133,7 +133,7 @@ Examples:
     $ clan vars set my-server zerotier/vpn-ip
     Will set the var for the specified machine.
 
-For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/manual/vars-backend/")}
+For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/guides/vars-backend/")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -173,7 +173,7 @@ Examples:
   This is especially useful for resetting certain passwords while leaving the rest
   of the vars for a machine in place.
 
-For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/manual/vars-backend/")}
+For more detailed information, visit: {help_hyperlink("vars", "https://docs.clan.lol/guides/vars-backend/")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,

@@ -14,25 +14,25 @@ hide:
 
 <div class="grid cards" markdown>
 
--   [Autoincludes](./manual/adding-machines.md)
+-   [Autoincludes](./guides/adding-machines.md)
 
     ---
 
     Learn how Clan automatically includes machines and Nix files.
 
--   [Vars Backend](./manual/vars-backend.md)
+-   [Vars Backend](./guides/vars-backend.md)
 
     ---
 
     Learn how to manage secrets with facts.
 
--   [Inventory](./manual/inventory.md)
+-   [Inventory](./guides/inventory.md)
 
     ---
 
     Clan's declaration format for running **services** on one or multiple **machines**.
 
--   [Flake-parts](./manual/flake-parts.md)
+-   [Flake-parts](./guides/flake-parts.md)
 
     ---
 

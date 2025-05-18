@@ -21,7 +21,7 @@ Every folder `machines/{machineName}` will be registered automatically as a Clan
 
 ## Manual declaration
 
-Machines can also be added manually under `buildClan`, `clan.*` in flake-parts or via [`inventory`](../manual/inventory.md).
+Machines can also be added manually under `buildClan`, `clan.*` in flake-parts or via [`inventory`](../guides/inventory.md).
 
 !!! Note
     It is possible to use `inventory` and `buildClan` together at the same time.

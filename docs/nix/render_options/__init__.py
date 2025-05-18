@@ -356,7 +356,7 @@ This module can be used via predefined roles
             """
 Every role has its own configuration options, which are each listed below.
 
-For more information, see the [inventory guide](../../manual/inventory.md).
+For more information, see the [inventory guide](../../guides/inventory.md).
 
 ??? Example
     For example the `admin` module adds the following options globally to all machines where it is used.
@@ -405,7 +405,7 @@ certain option types restricted to enable configuration through a graphical
 interface.
 
 !!! note "🔹"
-    Modules with this indicator support the [inventory](../../manual/inventory.md) feature.
+    Modules with this indicator support the [inventory](../../guides/inventory.md) feature.
 
 """
 
@@ -705,7 +705,7 @@ Each attribute is documented below
         };
         ```
 
-- **flake-parts**: Each attribute can be defined via `clan.<attribute name>`. See our [flake-parts](../../manual/flake-parts.md) guide.
+- **flake-parts**: Each attribute can be defined via `clan.<attribute name>`. See our [flake-parts](../../guides/flake-parts.md) guide.
 
     ??? example "flake-parts Example"
 

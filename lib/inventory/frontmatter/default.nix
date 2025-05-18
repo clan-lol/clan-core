@@ -73,7 +73,7 @@ let
         (Legacy) ClanModule not found: '${serviceName}'.
 
         Please update your configuration to use this module via 'inventory.instances'
-        See: https://docs.clan.lol/manual/distributed-services/
+        See: https://docs.clan.lol/guides/clanServices/
       ''
     else
       ''

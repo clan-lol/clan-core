@@ -58,13 +58,13 @@ nav:
       - Disk Encryption: guides/disk-encryption.md
       - Mesh VPN: guides/mesh-vpn.md
       - Backup & Restore: guides/backups.md
-      - Vars Backend: manual/vars-backend.md
-      - Facts Backend: manual/secrets.md
-      - Autoincludes: manual/adding-machines.md
+      - Vars Backend: guides/vars-backend.md
+      - Facts Backend: guides/secrets.md
+      - Autoincludes: guides/adding-machines.md
       - Inventory:
-          - Inventory: manual/inventory.md
-      - Secure Boot: manual/secure-boot.md
-      - Flake-parts: manual/flake-parts.md
+          - Inventory: guides/inventory.md
+      - Secure Boot: guides/secure-boot.md
+      - Flake-parts: guides/flake-parts.md
       - Authoring:
           - clanService: guides/authoring/clanServices/index.md
           - Disk Template: guides/authoring/templates/disk/disko-templates.md

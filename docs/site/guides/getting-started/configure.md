@@ -14,7 +14,7 @@ Clan currently offers the following methods to configure machines:
 
     - machines/`machine_name`/configuration.nix (`autoincluded` if it exists)
 
-    See the complete [list](../../manual/adding-machines.md#automatic-registration) of auto-loaded files.
+    See the complete [list](../../guides/adding-machines.md#automatic-registration) of auto-loaded files.
 
 ???+ Note "Used by CLI & UI"
 
@@ -40,7 +40,7 @@ In the `flake.nix` file:
 
 === "**template using flake-parts**"
 
-    !!! info "See [Clan with flake-parts](../../manual/flake-parts.md) for help migrating to flake-parts."
+    !!! info "See [Clan with flake-parts](../../guides/flake-parts.md) for help migrating to flake-parts."
 
     ```nix title="flake.nix" hl_lines="3"
     clan = {
