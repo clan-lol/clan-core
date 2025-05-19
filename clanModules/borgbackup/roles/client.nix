@@ -106,7 +106,8 @@ in
     systemd.services = lib.mapAttrs' (
       _: dest:
       lib.nameValuePair "borgbackup-job-${dest.name}" {
-        # since borgbackup mounts the system read-only, we need to run in a ExecStartPre script, so we can generate additional files.
+        # since borgbackup mounts the system read-only, we need to run in a
+        # ExecStartPre script, so we can generate additional files.
         serviceConfig.ExecStartPre = [
           ''+${pkgs.writeShellScript "borgbackup-job-${dest.name}-pre-backup-commands" preBackupScript}''
         ];
