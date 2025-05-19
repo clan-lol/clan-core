@@ -1,6 +1,6 @@
 from clan_cli.async_run import AsyncRuntime
-from clan_cli.cmd import ClanCmdTimeoutError, Log, RunOpts
 from clan_cli.ssh.host import Host
+from clan_lib.cmd import ClanCmdTimeoutError, Log, RunOpts
 
 host = Host("some_host")
 

@@ -4,10 +4,9 @@ import os
 from pathlib import Path
 
 from clan_lib.api import API
+from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_build
-
-from clan_cli.cmd import Log, RunOpts, run
 
 log = logging.getLogger(__name__)
 

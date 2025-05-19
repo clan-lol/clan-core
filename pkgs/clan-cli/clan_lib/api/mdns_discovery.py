@@ -2,8 +2,7 @@ import argparse
 import re
 from dataclasses import dataclass
 
-from clan_cli.cmd import run
-
+from clan_lib.cmd import run
 from clan_lib.nix import nix_shell
 
 from . import API

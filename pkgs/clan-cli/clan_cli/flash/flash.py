@@ -7,10 +7,10 @@ from tempfile import TemporaryDirectory
 from typing import Any
 
 from clan_lib.api import API
+from clan_lib.cmd import Log, RunOpts, cmd_with_root, run
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_shell
 
-from clan_cli.cmd import Log, RunOpts, cmd_with_root, run
 from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.machines import Machine
 from clan_cli.vars.generate import generate_vars

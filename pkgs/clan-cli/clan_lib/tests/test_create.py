@@ -8,7 +8,6 @@ from typing import Any
 
 import clan_cli.clan.create
 import pytest
-from clan_cli.cmd import RunOpts, run
 from clan_cli.dirs import specific_machine_dir
 from clan_cli.inventory import patch_inventory_with
 from clan_cli.machines.create import CreateOptions as ClanCreateOptions
@@ -23,6 +22,7 @@ from clan_cli.vars.generate import generate_vars_for_machine, get_generators_clo
 
 from clan_lib.api.disk import hw_main_disk_options, set_machine_disk_schema
 from clan_lib.api.network import check_machine_online
+from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_command

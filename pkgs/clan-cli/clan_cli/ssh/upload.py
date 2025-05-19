@@ -2,9 +2,9 @@ import tarfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from clan_lib.cmd import Log, RunOpts
 from clan_lib.errors import ClanError
 
-from clan_cli.cmd import Log, RunOpts
 from clan_cli.ssh.host import Host
 
 

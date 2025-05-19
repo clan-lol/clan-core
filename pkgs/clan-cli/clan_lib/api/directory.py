@@ -4,8 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
-from clan_cli.cmd import RunOpts, run
-
+from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_shell

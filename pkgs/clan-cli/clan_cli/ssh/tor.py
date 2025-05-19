@@ -7,11 +7,11 @@ import struct
 import time
 from dataclasses import dataclass
 
+from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.errors import TorConnectionError, TorSocksError
 from clan_lib.nix import nix_shell
 
 from clan_cli.async_run import AsyncRuntime
-from clan_cli.cmd import Log, RunOpts, run
 
 log = logging.getLogger(__name__)
 

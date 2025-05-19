@@ -12,10 +12,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from clan_lib.cmd import CmdOut, Log, RunOpts, handle_io, run
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.nix import nix_shell
 
-from clan_cli.cmd import CmdOut, Log, RunOpts, handle_io, run
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.dirs import module_root, user_cache_dir, vm_state_dir
 from clan_cli.facts.generate import generate_facts

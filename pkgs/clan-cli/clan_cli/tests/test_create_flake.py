@@ -3,10 +3,10 @@ import logging
 from pathlib import Path
 
 import pytest
-from clan_cli.cmd import run
 from clan_cli.tests.fixtures_flakes import FlakeForTest, substitute
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
+from clan_lib.cmd import run
 from clan_lib.nix import nix_flake_show
 
 log = logging.getLogger(__name__)
