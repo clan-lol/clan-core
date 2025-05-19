@@ -620,7 +620,8 @@ class Flake:
         Loads the flake into the store and populates self.store_path and self.hash such that the flake can evaluate locally and offline
         """
         from clan_cli.cmd import run
-        from clan_cli.nix import (
+
+        from clan_lib.nix import (
             nix_command,
         )
 
@@ -650,7 +651,8 @@ class Flake:
         This method is used to refresh the cache by reloading it from the flake.
         """
         from clan_cli.dirs import user_cache_dir
-        from clan_cli.nix import (
+
+        from clan_lib.nix import (
             nix_metadata,
         )
 
@@ -704,7 +706,8 @@ class Flake:
         """
         from clan_cli.cmd import Log, RunOpts, run
         from clan_cli.dirs import nixpkgs_source, select_source
-        from clan_cli.nix import (
+
+        from clan_lib.nix import (
             nix_build,
             nix_config,
             nix_test_store,
@@ -818,7 +821,8 @@ class Flake:
 
         """
         from clan_cli.cmd import Log, RunOpts, run
-        from clan_cli.nix import (
+
+        from clan_lib.nix import (
             nix_eval,
             nix_test_store,
         )

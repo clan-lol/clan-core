@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from clan_lib.errors import ClanError
+from clan_lib.nix import nix_shell
 
 from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import (
@@ -12,7 +13,6 @@ from clan_cli.completions import (
     complete_machines,
     complete_users,
 )
-from clan_cli.nix import nix_shell
 
 from .secrets import encrypt_secret, sops_secrets_folder
 

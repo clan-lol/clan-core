@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from clan_cli.nix import nix_shell
+from clan_lib.nix import nix_shell
 
 
 # fixture for git_repo

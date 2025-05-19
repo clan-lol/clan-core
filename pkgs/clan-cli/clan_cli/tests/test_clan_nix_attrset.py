@@ -8,7 +8,6 @@ import pytest
 from clan_cli.cmd import run
 from clan_cli.git import commit_file
 from clan_cli.locked_open import locked_open
-from clan_cli.nix import nix_command
 from clan_cli.templates import (
     ClanExports,
     InputName,
@@ -20,6 +19,7 @@ from clan_cli.templates import (
 )
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_lib.flake import Flake
+from clan_lib.nix import nix_command
 
 
 # Function to write clan attributes to a file

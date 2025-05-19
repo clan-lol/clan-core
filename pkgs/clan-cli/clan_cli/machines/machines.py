@@ -11,11 +11,11 @@ from typing import TYPE_CHECKING, Any
 
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
+from clan_lib.nix import nix_config, nix_eval, nix_test_store
 
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.facts import public_modules as facts_public_modules
 from clan_cli.facts import secret_modules as facts_secret_modules
-from clan_cli.nix import nix_config, nix_eval, nix_test_store
 from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.ssh.parse import parse_deployment_address

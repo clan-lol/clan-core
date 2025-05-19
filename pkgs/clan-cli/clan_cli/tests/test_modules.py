@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 from clan_cli.machines.create import CreateOptions, create_machine
-from clan_cli.nix import nix_eval, run
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_lib.api.modules import list_modules
 from clan_lib.flake import Flake
+from clan_lib.nix import nix_eval, run
 from clan_lib.nix_models.inventory import (
     Inventory,
     Machine,

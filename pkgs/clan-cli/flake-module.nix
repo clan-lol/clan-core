@@ -54,7 +54,7 @@
           clan-core-path = clanCoreWithVendoredDeps;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
-          includedRuntimeDeps = lib.importJSON ./clan_cli/nix/allowed-packages.json;
+          includedRuntimeDeps = lib.importJSON ./clan_lib/nix/allowed-packages.json;
         };
         clan-cli-docs = pkgs.stdenv.mkDerivation {
           name = "clan-cli-docs";
