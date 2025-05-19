@@ -293,7 +293,19 @@ const InstallMachine = (props: InstallMachineProps) => {
               />
             </Match>
             <Match when={step() === "3"}>
-              <div>TODO: vars</div>
+              <VarsStep
+                // @ts-expect-error: This cannot be undefined in this context.
+                machine_id={props.name}
+                // @ts-expect-error: This cannot be undefined in this context.
+                dir={activeURI()}
+                handleNext={(data) => {
+                  const prev = getValue(formStore, "3");
+                  setValue(formStore, "3", { ...prev, ...data });
+                  handleNext();
+                }}
+                initial={getValue(formStore, "3") || {}}
+                footer={<Footer />}
+              />
             </Match>
             <Match when={step() === "4"}>
               <SummaryStep
@@ -433,8 +445,10 @@ const MachineForm = (props: MachineDetailsProps) => {
   const handleUpdateButton = async () => {
     await generatorsQuery.refetch();
 
-    if (generatorsQuery.data?.length !== 0) {
-      navigate(`/machines/${machineName()}/vars`);
+    if (
+      generatorsQuery.data?.some((generator) => generator.prompts?.length !== 0)
+    ) {
+      navigate(`/machines/${machineName()}/vars?action=update`);
     } else {
       handleUpdate();
     }
@@ -472,6 +486,7 @@ const MachineForm = (props: MachineDetailsProps) => {
 
   createEffect(() => {
     const action = searchParams.action;
+    console.log({ action });
     if (action === "update") {
       setSearchParams({ action: undefined });
       handleUpdate();

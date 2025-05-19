@@ -22,7 +22,7 @@ import { ApiTester } from "./api_test";
 import { IconVariant } from "./components/icon";
 import { Components } from "./routes/components";
 import { activeURI } from "./App";
-import { VarsForMachine, VarsStep } from "./routes/machines/install/vars-step";
+import { VarsPage, VarsForm } from "./routes/machines/install/vars-step";
 import { ThreePlayground } from "./three";
 
 export const client = new QueryClient();
@@ -79,7 +79,7 @@ export const routes: AppRoute[] = [
         path: "/:id/vars",
         label: "Vars",
         hidden: true,
-        component: () => <VarsForMachine />,
+        component: () => <VarsPage />,
       },
     ],
   },
