@@ -109,11 +109,6 @@ def deploy_machine(machine: Machine) -> None:
         target_host = stack.enter_context(machine.target_host())
         build_host = stack.enter_context(machine.build_host())
 
-        if machine._class_ == "darwin":
-            if not machine.deploy_as_root and target_host.user == "root":
-                msg = f"'targetHost' should be set to a non-root user for deploying to nix-darwin on machine '{machine.name}'"
-                raise ClanError(msg)
-
         host = build_host or target_host
 
         generate_facts([machine], service=None, regenerate=False)
@@ -138,7 +133,7 @@ def deploy_machine(machine: Machine) -> None:
             f"{path}#{machine.name}",
         ]
 
-        become_root = machine.deploy_as_root
+        become_root = True
 
         if machine._class_ == "nixos":
             nix_options += [
