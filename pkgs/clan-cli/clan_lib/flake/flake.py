@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from hashlib import sha1
@@ -318,10 +319,11 @@ class FlakeCacheEntry:
         # strings need to be checked if they are store paths
         # if they are, we store them as a dict with the outPath key
         # this is to mirror nix behavior, where the outPath of an attrset is used if no further key is specified
-        elif isinstance(value, str) and value.startswith("/nix/store/"):
+        elif isinstance(value, str) and value.startswith(
+            os.environ.get("NIX_STORE_DIR", "/nix/store")
+        ):
             assert selectors == []
-            if value.startswith("/nix/store/"):
-                self.value = {"outPath": FlakeCacheEntry(value)}
+            self.value = {"outPath": FlakeCacheEntry(value)}
 
         # if we have a normal scalar, we check if it conflicts with a maybe already store value
         # since an empty attrset is the default value, we cannot check that, so we just set it to the value
@@ -337,7 +339,9 @@ class FlakeCacheEntry:
         selector: Selector
 
         # for store paths we have to check if they still exist, otherwise they have to be rebuild and are thus not cached
-        if isinstance(self.value, str) and self.value.startswith("/nix/store/"):
+        if isinstance(self.value, str) and self.value.startswith(
+            os.environ.get("NIX_STORE_DIR", "/nix/store")
+        ):
             return Path(self.value).exists()
 
         # if self.value is not dict but we request more selectors, we assume we are cached and an error will be thrown in the select function
