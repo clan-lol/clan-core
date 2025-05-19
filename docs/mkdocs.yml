@@ -159,6 +159,7 @@ nav:
       - Nix API:
           - buildClan: reference/nix-api/buildclan.md
           - Inventory: reference/nix-api/inventory.md
+      - Glossary: reference/glossary.md
       - Decisions:
           - Architecture Decisions: decisions/README.md
           - 01-clanModules: decisions/01-ClanModules.md
