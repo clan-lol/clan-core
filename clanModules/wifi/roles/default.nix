@@ -7,9 +7,18 @@
 
 let
   cfg = config.clan.wifi;
-  secret_path =
+
+  inherit (lib)
+    concatMapAttrsStringSep
+    flip
+    mapAttrs
+    ;
+
+  password_path =
     network_name: config.clan.core.vars.generators."iwd.${network_name}".files.password.path;
+
   ssid_path = network_name: config.clan.core.vars.generators."iwd.${network_name}".files.ssid.path;
+
   secret_generator = name: value: {
     name = "iwd.${name}";
     value = {
@@ -49,61 +58,53 @@ in
     };
   };
 
-  config = lib.mkMerge [
-    (lib.mkIf (cfg.networks != { }) {
+  config = lib.mkIf (cfg.networks != { }) {
 
-      clan.core.vars.generators = lib.mapAttrs' secret_generator cfg.networks;
+    clan.core.vars.generators = lib.mapAttrs' secret_generator cfg.networks;
 
-      systemd.services.iwd.partOf = [ "nixos-activation.service" ];
+    networking.networkmanager.enable = true;
 
-      /*
-        script that generates iwd config files inside /var/lib/iwd/clan and symlinks
-          them to /var/lib/iwd.
-      */
-      systemd.services.iwd.serviceConfig.ExecStartPre = pkgs.writeShellScript "clan-iwd-setup" ''
-        set -e
+    networking.networkmanager.ensureProfiles.environmentFiles = [
+      "/run/secrets/NetworkManager/wifi-secrets"
+    ];
 
-        rm -rf /var/lib/iwd/clan
-        mkdir -p /var/lib/iwd/clan
+    networking.networkmanager.ensureProfiles.profiles = flip mapAttrs cfg.networks (
+      name: _network: {
+        connection.id = "$ssid_${name}";
+        connection.type = "wifi";
+        wifi.mode = "infrastructure";
+        wifi.ssid = "$ssid_${name}";
+        wifi-security.psk = "$pw_${name}";
+        wifi-security.key-mgmt = "wpa-psk";
+      }
+    );
 
-        # remove all existing symlinks in /var/lib/iwd
-        ${pkgs.findutils}/bin/find /var/lib/iwd -type l -exec rm {} \;
+    # service to generate the environment file containing all secrets, as
+    #   expected by the nixos NetworkManager-ensure-profile service
+    systemd.services.NetworkManager-setup-secrets = {
+      description = "Generate wifi secrets for NetworkManager";
+      requiredBy = [ "NetworkManager-ensure-profiles.service" ];
+      partOf = [ "NetworkManager-ensure-profiles.service" ];
+      before = [ "NetworkManager-ensure-profiles.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = pkgs.writeShellScript "wifi-secrets" ''
+          set -euo pipefail
 
-        ${toString (
-          lib.mapAttrsToList (name: network: ''
-            passwd=$(cat "${secret_path name}")
-            ssid=$(cat "${ssid_path name}")
-            echo "
-            [Settings]
-              autoConnect=${if network.autoConnect then "true" else "false"}
-            [Security]
-              Passphrase=$passwd
-            " > "/var/lib/iwd/clan/$ssid.psk"
-          '') cfg.networks
-        )}
+          env_file=/run/secrets/NetworkManager/wifi-secrets
+          mkdir -p $(dirname "$env_file")
+          : > "$env_file"
 
-        # link all files in /var/lib/iwd/clan to /var/lib/iwd
-        ${pkgs.findutils}/bin/find /var/lib/iwd/clan -type f -exec ln -s {} /var/lib/iwd \;
-      '';
-    })
-    {
-      # disable wpa supplicant
-      networking.wireless.enable = false;
-
-      # Set the network manager backend to iwd
-      networking.networkmanager.wifi.backend = "iwd";
-
-      # Use iwd instead of wpa_supplicant. It has a user friendly CLI
-      networking.wireless.iwd = {
-        enable = true;
-        settings = {
-          Network = {
-            EnableIPv6 = true;
-            RoutePriorityOffset = 300;
-          };
-          Settings.autoConnect = true;
-        };
+          # Generate the secrets file
+          echo "Generating wifi secrets file: $env_file"
+          ${flip (concatMapAttrsStringSep "\n") cfg.networks (
+            name: _network: ''
+              echo "ssid_${name}=\"$(cat "${ssid_path name}")\"" >> /run/secrets/NetworkManager/wifi-secrets
+              echo "pw_${name}=\"$(cat "${password_path name}")\"" >> /run/secrets/NetworkManager/wifi-secrets
+            ''
+          )}
+        '';
       };
-    }
-  ];
+    };
+  };
 }
