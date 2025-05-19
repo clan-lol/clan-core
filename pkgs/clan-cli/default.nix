@@ -66,14 +66,14 @@ let
         chmod -R +w $out
 
         # In cases where the devshell created this file, this will already exist
-        rm -f $out/clan_cli/nixpkgs
+        rm -f $out/clan_lib/nixpkgs
 
         substituteInPlace $out/clan_lib/flake/flake.py \
           --replace-fail '@fallback_nixpkgs_hash@' "$(jq -r '.nodes.nixpkgs.locked.narHash' ${nixpkgs'}/flake.lock)" \
           --replace-fail '@select_hash@' "$(jq -r '.nodes."nix-select".locked.narHash' ${../../flake.lock})"
-        ln -sf ${nixpkgs'} $out/clan_cli/nixpkgs
-        ln -sf ${nix-select} $out/clan_cli/select
-        cp -r ${../../templates} $out/clan_cli/templates
+        ln -sf ${nixpkgs'} $out/clan_lib/nixpkgs
+        ln -sf ${nix-select} $out/clan_lib/select
+        cp -r ${../../templates} $out/clan_lib/templates
       '';
 
   sourceWithoutTests = cliSource (
@@ -295,8 +295,8 @@ pythonRuntime.pkgs.buildPythonApplication {
   # leading to a different NAR hash and copying it here would also lead to `patchShebangs`
   # changing the contents
   postInstall = ''
-    cp -r ${nixpkgs'} $out/${pythonRuntime.sitePackages}/clan_cli/nixpkgs
-    ln -sf ${nix-select} $out/${pythonRuntime.sitePackages}/clan_cli/select
+    cp -r ${nixpkgs'} $out/${pythonRuntime.sitePackages}/clan_lib/nixpkgs
+    ln -sf ${nix-select} $out/${pythonRuntime.sitePackages}/clan_lib/select
     installShellCompletion --bash --name clan \
       <(${pythonRuntimeWithDeps.pkgs.argcomplete}/bin/register-python-argcomplete --shell bash clan)
     installShellCompletion --fish --name clan.fish \

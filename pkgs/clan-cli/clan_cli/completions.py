@@ -27,7 +27,7 @@ COMPLETION_TIMEOUT: int = 3
 
 
 def clan_dir(flake: str | None) -> str | None:
-    from .dirs import get_clan_flake_toplevel_or_env
+    from clan_lib.dirs import get_clan_flake_toplevel_or_env
 
     path_result = get_clan_flake_toplevel_or_env()
     return str(path_result) if path_result is not None else None

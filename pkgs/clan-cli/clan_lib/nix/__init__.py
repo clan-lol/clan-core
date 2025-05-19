@@ -7,10 +7,10 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
-from clan_cli.dirs import nixpkgs_flake, nixpkgs_source
 from clan_cli.locked_open import locked_open
 
 from clan_lib.cmd import run
+from clan_lib.dirs import nixpkgs_flake, nixpkgs_source
 from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)

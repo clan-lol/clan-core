@@ -6,9 +6,9 @@ import logging
 from typing import Any
 
 from clan_cli.clan.inspect import FlakeConfig, inspect_flake
-from clan_cli.dirs import user_history_file
 from clan_cli.locked_open import read_history_file, write_history_file
 from clan_cli.machines.list import list_machines
+from clan_lib.dirs import user_history_file
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 

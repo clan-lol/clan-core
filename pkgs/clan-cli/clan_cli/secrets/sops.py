@@ -15,11 +15,10 @@ from typing import IO, Any
 
 from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, run
+from clan_lib.dirs import user_config_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_shell
-
-from clan_cli.dirs import user_config_dir
 
 from .folders import sops_users_folder
 

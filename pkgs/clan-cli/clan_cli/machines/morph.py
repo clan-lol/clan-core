@@ -8,12 +8,12 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from clan_lib.cmd import Log, RunOpts, run
+from clan_lib.dirs import get_clan_flake_toplevel_or_env
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_build, nix_command
 from clan_lib.nix_models.inventory import Machine as InventoryMachine
 
-from clan_cli.dirs import get_clan_flake_toplevel_or_env
 from clan_cli.machines.create import CreateOptions, create_machine
 from clan_cli.machines.machines import Machine
 from clan_cli.vars.generate import generate_vars

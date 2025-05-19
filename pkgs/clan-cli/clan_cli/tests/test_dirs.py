@@ -1,4 +1,4 @@
-# from clan_cli.dirs import _get_clan_flake_toplevel
+# from clan_lib.dirs import _get_clan_flake_toplevel
 
 # TODO: Reimplement test?
 # def test_get_clan_flake_toplevel(
@@ -16,7 +16,7 @@
 #     (subdir / ".clan-flake").touch()
 #     assert _get_clan_flake_toplevel() == subdir
 
-from clan_cli.dirs import clan_key_safe, vm_state_dir
+from clan_lib.dirs import clan_key_safe, vm_state_dir
 
 
 def test_clan_key_safe() -> None:

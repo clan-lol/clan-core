@@ -16,7 +16,7 @@ Repository = "https://git.clan.lol/clan/clan-core"
 
 [tool.setuptools.packages.find]
 include = ["clan_lib*", "clan_cli*"]
-exclude = ["clan_cli.nixpkgs*", "result"]
+exclude = ["clan_lib.nixpkgs*", "result"]
 
 [tool.setuptools.package-data]
 clan_cli = [
@@ -36,7 +36,7 @@ faulthandler_timeout = 240
 log_level = "DEBUG"
 log_format = "%(message)s"
 addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --durations 5 --color=yes --new-first -W error -n auto" # Add --pdb for debugging
-norecursedirs = ["clan_cli/tests/helpers", "clan_cli/nixpkgs"]
+norecursedirs = ["clan_cli/tests/helpers", "clan_lib/nixpkgs"]
 #  All tests which evaluate any nix library code from clan-core need to use the
 #  `with_core` marker, so basically all tests which evaluate a flake with
 #  machines. In the CI pipeline we run these tests in a separate derivation

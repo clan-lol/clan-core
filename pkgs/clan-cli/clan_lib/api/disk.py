@@ -5,13 +5,13 @@ from dataclasses import dataclass
 from typing import Any, TypedDict
 from uuid import uuid4
 
-from clan_cli.dirs import TemplateType, clan_templates
 from clan_cli.git import commit_file
 from clan_cli.machines.hardware import HardwareConfig, show_machine_hardware_config
 from clan_cli.machines.machines import Machine
 
 from clan_lib.api import API
 from clan_lib.api.modules import Frontmatter, extract_frontmatter
+from clan_lib.dirs import TemplateType, clan_templates
 from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)

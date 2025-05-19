@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 from clan_lib.cmd import RunOpts, run
+from clan_lib.dirs import get_clan_flake_toplevel_or_env
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.nix import nix_eval
 
@@ -12,7 +13,6 @@ from clan_cli.completions import (
     complete_machines,
     complete_state_services_for_machine,
 )
-from clan_cli.dirs import get_clan_flake_toplevel_or_env
 from clan_cli.machines.machines import Machine
 
 log = logging.getLogger(__name__)
