@@ -1,8 +1,8 @@
 import argparse
 
+from clan_lib.cmd import Log, RunOpts
 from clan_lib.errors import ClanError
 
-from clan_cli.cmd import Log, RunOpts
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_backup_providers_for_machine,

@@ -5,10 +5,10 @@ from typing import Any, NamedTuple
 
 import pytest
 from clan_cli.async_run import AsyncRuntime
-from clan_cli.cmd import ClanCmdTimeoutError, Log, RunOpts
 from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.ssh.parse import parse_deployment_address
+from clan_lib.cmd import ClanCmdTimeoutError, Log, RunOpts
 from clan_lib.errors import ClanError, CmdOut
 
 if sys.platform == "darwin":

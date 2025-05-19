@@ -5,12 +5,11 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from clan_lib.api import API
+from clan_lib.cmd import run
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_eval
 from clan_lib.nix_models.inventory import Meta
-
-from clan_cli.cmd import run
 
 log = logging.getLogger(__name__)
 

@@ -9,7 +9,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Any
 
-from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_machines,
@@ -20,6 +19,7 @@ from clan_cli.machines.list import list_machines
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.migration import check_can_migrate, migrate_files
 from clan_lib.api import API
+from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_config, nix_shell, nix_test_store

@@ -3,9 +3,9 @@ import subprocess
 from pathlib import Path
 from typing import override
 
+from clan_lib.cmd import Log, RunOpts
 from clan_lib.nix import nix_shell
 
-from clan_cli.cmd import Log, RunOpts
 from clan_cli.machines.machines import Machine
 from clan_cli.ssh.host import Host
 

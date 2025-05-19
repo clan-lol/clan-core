@@ -619,8 +619,7 @@ class Flake:
         """
         Loads the flake into the store and populates self.store_path and self.hash such that the flake can evaluate locally and offline
         """
-        from clan_cli.cmd import run
-
+        from clan_lib.cmd import run
         from clan_lib.nix import (
             nix_command,
         )
@@ -704,9 +703,9 @@ class Flake:
             ClanError: If the number of outputs does not match the number of selectors.
             AssertionError: If the cache or flake cache path is not properly initialized.
         """
-        from clan_cli.cmd import Log, RunOpts, run
         from clan_cli.dirs import nixpkgs_source, select_source
 
+        from clan_lib.cmd import Log, RunOpts, run
         from clan_lib.nix import (
             nix_build,
             nix_config,
@@ -820,8 +819,7 @@ class Flake:
         > '{ ...JSONSchema... }'
 
         """
-        from clan_cli.cmd import Log, RunOpts, run
-
+        from clan_lib.cmd import Log, RunOpts, run
         from clan_lib.nix import (
             nix_eval,
             nix_test_store,

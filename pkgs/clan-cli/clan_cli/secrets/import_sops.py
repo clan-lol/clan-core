@@ -3,10 +3,10 @@ import json
 import sys
 from pathlib import Path
 
+from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_shell
 
-from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_groups,
