@@ -774,7 +774,6 @@ class Flake:
         """
         # fmt: on
         if tmp_store := nix_test_store():
-            nix_options += ["--store", str(tmp_store)]
             nix_options.append("--impure")
 
         build_output = Path(
