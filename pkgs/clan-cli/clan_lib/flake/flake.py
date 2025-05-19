@@ -345,8 +345,9 @@ class FlakeCacheEntry:
             return True
 
         if selectors == []:
-            return self.fetched_all
-        selector = selectors[0]
+            selector = Selector(type=SelectorType.ALL)
+        else:
+            selector = selectors[0]
 
         # we just fetch all subkeys, so we need to check of we inserted all keys at this level before
         if selector.type == SelectorType.ALL:
