@@ -9,6 +9,10 @@
   json2ts,
   self',
 }:
+let
+  GREEN = "\\033[1;32m";
+  NC = "\\033[0m";
+in
 
 mkShell {
   name = "ui";
@@ -72,10 +76,8 @@ mkShell {
     if test -f "$GIT_ROOT/pkgs/clan-app/.local.env"; then
       source "$GIT_ROOT/pkgs/clan-app/.local.env"
     fi
-    # Define the yellow color code
-    YELLOW='\033[1;33m'
-    # Define the reset color code
-    NC='\033[0m'
     export PC_CONFIG_FILES="$CLAN_CORE_PATH/pkgs/clan-app/process-compose.yaml"
+
+    echo -e "${GREEN}To launch a qemu VM for testing, run:\n  start-vm <number of VMs>${NC}"
   '';
 }

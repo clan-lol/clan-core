@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+script_dir=$(dirname "$(realpath "$0")")
+
+trap 'rm -rf "$tmpdir"' EXIT
+tmpdir=$(mktemp -d)
+cd "$tmpdir"
+
+number_vms="$1"
+
+for i in $(seq 1 "$number_vms"); do
+  "$script_dir/start-qemu-vm.sh" "$i" &
+done
+
+while true; do sleep 1; done
