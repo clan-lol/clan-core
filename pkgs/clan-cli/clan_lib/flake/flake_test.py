@@ -1,4 +1,8 @@
 import logging
+import subprocess
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import pytest
 from clan_cli.tests.fixtures_flakes import ClanFlake
@@ -347,10 +351,6 @@ def test_conditional_all_selector(flake: ClanFlake) -> None:
 # Test that the caching works
 @pytest.mark.with_core
 def test_caching_works(flake: ClanFlake) -> None:
-    from unittest.mock import patch
-
-    from clan_lib.flake import Flake
-
     my_flake = Flake(str(flake.path))
 
     with patch.object(
@@ -361,6 +361,42 @@ def test_caching_works(flake: ClanFlake) -> None:
         assert tracked_build.call_count == 1
         my_flake.select("clanInternals.inventory.meta")
         assert tracked_build.call_count == 1
+
+
+@pytest.mark.with_core
+def test_cache_gc(monkeypatch: pytest.MonkeyPatch) -> None:
+    with TemporaryDirectory() as tempdir_:
+        tempdir = Path(tempdir_)
+
+        monkeypatch.setenv("NIX_STATE_DIR", str(tempdir / "var"))
+        monkeypatch.setenv("NIX_LOG_DIR", str(tempdir / "var" / "log"))
+        monkeypatch.setenv("NIX_STORE_DIR", str(tempdir / "store"))
+        monkeypatch.setenv("NIX_CACHE_HOME", str(tempdir / "cache"))
+        monkeypatch.setenv("HOME", str(tempdir / "home"))
+        monkeypatch.delenv("CLAN_TEST_STORE")
+        monkeypatch.setenv("NIX_BUILD_TOP", str(tempdir / "build"))
+
+        test_file = tempdir / "flake" / "testfile"
+        test_file.parent.mkdir(parents=True, exist_ok=True)
+        test_file.write_text("test")
+
+        test_flake = tempdir / "flake" / "flake.nix"
+        test_flake.write_text("""
+            {
+              outputs = _: {
+                testfile = ./testfile;
+              };
+            }
+        """)
+
+        my_flake = Flake(str(tempdir / "flake"))
+        my_flake.select(
+            "testfile", nix_options=["--sandbox-build-dir", str(tempdir / "build")]
+        )
+        assert my_flake._cache is not None  # noqa: SLF001
+        assert my_flake._cache.is_cached("testfile")  # noqa: SLF001
+        subprocess.run(["nix-collect-garbage"], check=True)
+        assert not my_flake._cache.is_cached("testfile")  # noqa: SLF001
 
 
 # This test fails because the CI sandbox does not have the required packages to run the generators
