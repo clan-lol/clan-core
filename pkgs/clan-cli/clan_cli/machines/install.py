@@ -9,6 +9,7 @@ from tempfile import TemporaryDirectory
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
+from clan_lib.nix import nix_shell
 
 from clan_cli.cmd import Log, RunOpts, run
 from clan_cli.completions import (
@@ -19,7 +20,6 @@ from clan_cli.completions import (
 from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.hardware import HardwareConfig
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell
 from clan_cli.ssh.deploy_info import DeployInfo, find_reachable_host, ssh_command_parse
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.vars.generate import generate_vars

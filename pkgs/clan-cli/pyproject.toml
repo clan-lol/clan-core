@@ -20,12 +20,14 @@ exclude = ["clan_cli.nixpkgs*", "result"]
 
 [tool.setuptools.package-data]
 clan_cli = [
-    "**/allowed-packages.json",
     "py.typed",
     "templates/**/*",
     "vms/mimetypes/**/*",
     "webui/assets/**/*",
     "flash/*.sh",
+]
+clan_lib = [
+    "**/allowed-packages.json",
 ]
 
 [tool.pytest.ini_options]

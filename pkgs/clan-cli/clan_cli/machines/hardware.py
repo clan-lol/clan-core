@@ -7,13 +7,13 @@ from pathlib import Path
 
 from clan_lib.api import API
 from clan_lib.errors import ClanCmdError, ClanError
+from clan_lib.nix import nix_config, nix_eval
 
 from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.dirs import specific_machine_dir
 from clan_cli.git import commit_file
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_config, nix_eval
 
 from .types import machine_name_type
 

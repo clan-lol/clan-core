@@ -6,8 +6,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from clan_lib.errors import ClanError
-
-from clan_cli.nix import nix_shell
+from clan_lib.nix import nix_shell
 
 
 @contextlib.contextmanager

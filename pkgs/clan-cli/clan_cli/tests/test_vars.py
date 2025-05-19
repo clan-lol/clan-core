@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pytest
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_eval, run
 from clan_cli.tests.age_keys import SopsSetup
 from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_cli.tests.helpers import cli
@@ -24,6 +23,7 @@ from clan_cli.vars.secret_modules import password_store, sops
 from clan_cli.vars.set import set_var
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.nix import nix_eval, run
 
 
 def test_dependencies_as_files(temp_dir: Path) -> None:
@@ -451,7 +451,7 @@ def test_generate_secret_for_multiple_machines(
 ) -> None:
     flake = flake_with_sops
 
-    from clan_cli.nix import nix_config
+    from clan_lib.nix import nix_config
 
     local_system = nix_config()["system"]
 

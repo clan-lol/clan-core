@@ -2,8 +2,9 @@ import os
 import shutil
 from pathlib import Path
 
+from clan_lib.nix import nix_shell
+
 from clan_cli.cmd import Log, RunOpts, run
-from clan_cli.nix import nix_shell
 
 _works: bool | None = None
 

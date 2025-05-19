@@ -7,8 +7,9 @@ from collections.abc import Callable, Iterable
 from types import ModuleType
 from typing import Any
 
+from clan_lib.nix import nix_eval
+
 from .cmd import run
-from .nix import nix_eval
 
 """
 This module provides dynamic completions.

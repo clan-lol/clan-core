@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from clan_lib.errors import ClanError
+from clan_lib.nix import nix_shell
 
 from clan_cli.cmd import RunOpts, run
 from clan_cli.completions import (
@@ -18,7 +19,6 @@ from clan_cli.completions import (
 from clan_cli.git import commit_files
 from clan_cli.machines.list import list_machines
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_shell
 
 from .check import check_secrets
 from .public_modules import FactStoreBase

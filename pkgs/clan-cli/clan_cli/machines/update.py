@@ -9,6 +9,7 @@ from contextlib import ExitStack
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
+from clan_lib.nix import nix_command, nix_config, nix_metadata
 
 from clan_cli.async_run import AsyncContext, AsyncOpts, AsyncRuntime, is_async_cancelled
 from clan_cli.cmd import Log, MsgColor, RunOpts, run
@@ -21,7 +22,6 @@ from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.upload import upload_secrets
 from clan_cli.machines.list import list_machines
 from clan_cli.machines.machines import Machine
-from clan_cli.nix import nix_command, nix_config, nix_metadata
 from clan_cli.ssh.host import Host, HostKeyCheck
 from clan_cli.vars.generate import generate_vars
 from clan_cli.vars.upload import upload_secret_vars
