@@ -744,16 +744,35 @@ class Flake:
             )
             select_hash = select_flake.hash
 
+        # fmt: off
         nix_code = f"""
             let
               flake = builtins.getFlake "path:{self.store_path}?narHash={self.hash}";
-              selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
-              nixpkgs = flake.inputs.nixpkgs or (builtins.getFlake "path:{nixpkgs_source()}?narHash={fallback_nixpkgs_hash}");
+              selectLib = (
+                builtins.getFlake
+                  "path:{select_source()}?narHash={select_hash}"
+              ).lib;
             in
-              nixpkgs.legacyPackages.{config["system"]}.writeText "clan-flake-select" (
-                builtins.toJSON [ {" ".join([f"(selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake)" for attr in str_selectors])} ]
-              )
+              derivation {{
+                name = "clan-flake-select";
+                system = "{config["system"]}";
+                builder = "/bin/sh";
+                args = [
+                  "-c"
+                  ''
+                    printf %s '${{builtins.toJSON [
+                      {" ".join(
+                          [
+                              f"(selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake)"
+                              for attr in str_selectors
+                          ]
+                      )}
+                    ]}}' > $out
+                  ''
+                ];
+              }}
         """
+        # fmt: on
         if tmp_store := nix_test_store():
             nix_options += ["--store", str(tmp_store)]
             nix_options.append("--impure")
