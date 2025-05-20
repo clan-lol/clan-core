@@ -32,8 +32,6 @@ class PrefixFormatter(logging.Formatter):
         self.hostname_color_offset = 0
 
     def format(self, record: logging.LogRecord) -> str:
-        filepath = _get_filepath(record)
-
         # If extra["color"] is set, use that color for the message.
         msg_color = getattr(record, "color", None)
         if not msg_color:
@@ -71,6 +69,7 @@ class PrefixFormatter(logging.Formatter):
 
         # Add the source file and line number if trace_prints is enabled.
         if self.trace_prints:
+            filepath = _get_filepath(record)
             format_str += f"\nSource: {filepath}:%(lineno)d::%(funcName)s\n"
 
         return logging.Formatter(format_str).format(record)
