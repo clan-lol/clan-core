@@ -73,7 +73,7 @@ let
           --replace-fail '@select_hash@' "$(jq -r '.nodes."nix-select".locked.narHash' ${../../flake.lock})"
         ln -sf ${nixpkgs'} $out/clan_lib/nixpkgs
         ln -sf ${nix-select} $out/clan_lib/select
-        cp -r ${../../templates} $out/clan_lib/templates
+        cp -r ${../../templates} $out/clan_lib/clan_core_templates
       '';
 
   sourceWithoutTests = cliSource (

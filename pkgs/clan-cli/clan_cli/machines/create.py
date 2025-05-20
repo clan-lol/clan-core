@@ -17,15 +17,15 @@ from clan_lib.nix_models.inventory import (
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import apply_patch
-
-from clan_cli.completions import add_dynamic_completer, complete_tags
-from clan_cli.machines.list import list_machines
-from clan_cli.templates import (
+from clan_lib.templates import (
     InputPrio,
     TemplateName,
     copy_from_nixstore,
     get_template,
 )
+
+from clan_cli.completions import add_dynamic_completer, complete_tags
+from clan_cli.machines.list import list_machines
 
 log = logging.getLogger(__name__)
 

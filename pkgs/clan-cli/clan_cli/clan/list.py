@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from clan_cli.templates import list_templates
+from clan_lib.templates import list_templates
 
 log = logging.getLogger(__name__)
 

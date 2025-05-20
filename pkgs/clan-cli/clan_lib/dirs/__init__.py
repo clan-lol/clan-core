@@ -65,7 +65,7 @@ def clan_templates(template_type: TemplateType | None = None) -> Path:
     if template_path.exists():
         return template_path
 
-    template_path = module_root() / "templates"
+    template_path = module_root() / "clan_core_templates"
 
     if template_type is not None:
         template_path /= template_type.value

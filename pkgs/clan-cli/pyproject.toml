@@ -21,12 +21,12 @@ exclude = ["clan_lib.nixpkgs*", "result"]
 [tool.setuptools.package-data]
 clan_cli = [
     "py.typed",
-    "templates/**/*",
     "vms/mimetypes/**/*",
     "webui/assets/**/*",
     "flash/*.sh",
 ]
 clan_lib = [
+    "clan_core_templates/**/*",
     "**/allowed-packages.json",
 ]
 
