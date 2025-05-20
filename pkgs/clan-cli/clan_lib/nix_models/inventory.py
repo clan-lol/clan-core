@@ -11,6 +11,9 @@ from typing import Any, Literal, NotRequired, TypedDict
 class MachineDeploy(TypedDict):
     targetHost: NotRequired[str]
 
+MachineDeployTargethostType = NotRequired[str]
+
+
 
 class Machine(TypedDict):
     deploy: NotRequired[MachineDeploy]
@@ -20,11 +23,24 @@ class Machine(TypedDict):
     name: NotRequired[str]
     tags: NotRequired[list[str]]
 
+MachineDeployType = NotRequired[MachineDeploy]
+MachineDescriptionType = NotRequired[str]
+MachineIconType = NotRequired[str]
+MachineMachineclassType = NotRequired[Literal["nixos", "darwin"]]
+MachineNameType = NotRequired[str]
+MachineTagsType = NotRequired[list[str]]
+
+
 
 class Meta(TypedDict):
     name: str
     description: NotRequired[str]
     icon: NotRequired[str]
+
+MetaNameType = str
+MetaDescriptionType = NotRequired[str]
+MetaIconType = NotRequired[str]
+
 
 Service = dict[str, Any]
 
@@ -35,3 +51,10 @@ class Inventory(TypedDict):
     modules: NotRequired[dict[str, Any]]
     services: NotRequired[dict[str, Service]]
     tags: NotRequired[dict[str, Any]]
+
+InventoryMachinesType = NotRequired[dict[str, Machine]]
+InventoryMetaType = NotRequired[Meta]
+InventoryModulesType = NotRequired[dict[str, Any]]
+InventoryServicesType = NotRequired[dict[str, Service]]
+InventoryTagsType = NotRequired[dict[str, Any]]
+

@@ -67,6 +67,9 @@
         "*/bin/clan-app"
         "*/bin/clan-config"
       ];
+      treefmt.settings.formatter.ruff-format.excludes = [
+        "*/clan_lib/nix_models/*"
+      ];
       treefmt.settings.formatter.shellcheck.includes = [
         "scripts/pre-commit"
       ];
