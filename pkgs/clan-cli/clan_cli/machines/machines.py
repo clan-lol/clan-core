@@ -9,10 +9,9 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
-from clan_lib.nix import nix_config, nix_eval, nix_test_store
+from clan_lib.nix import nix_config, nix_test_store
 
 from clan_cli.facts import public_modules as facts_public_modules
 from clan_cli.facts import secret_modules as facts_secret_modules
@@ -178,27 +177,6 @@ class Machine:
             meta={"machine": self},
         ) as build_host:
             yield build_host
-
-    @cached_property
-    def deploy_as_root(self) -> bool:
-        if self._class_ == "nixos":
-            return True
-
-        # Currently nix-darwin HEAD requires you to deploy as a non-root user
-        # however there is a soon to be merged PR that requires deployment
-        # as root to match NixOS: https://github.com/nix-darwin/nix-darwin/pull/1341
-        return json.loads(
-            run(
-                nix_eval(
-                    [
-                        f"{self.flake}#darwinConfigurations.{self.name}.options.system",
-                        "--apply",
-                        "system: system ? primaryUser",
-                    ]
-                ),
-                RunOpts(log=Log.NONE),
-            ).stdout.strip()
-        )
 
     def nix(
         self,

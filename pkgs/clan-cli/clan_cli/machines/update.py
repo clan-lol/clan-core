@@ -58,11 +58,18 @@ def upload_sources(machine: Machine, host: Host) -> str:
     if not has_path_inputs:
         # Just copy the flake to the remote machine, we can substitute other inputs there.
         path = flake_data["path"]
+
+        remote_url = f"ssh-ng://{host.target}"
+
+        # MacOS doesn't come with a proper login shell for ssh and therefore doesn't have nix in $PATH as it doesn't source /etc/profile
+        if machine._class_ == "darwin":
+            remote_url += "?remote-program=bash -lc 'exec nix-daemon --stdio'"
+
         cmd = nix_command(
             [
                 "copy",
                 "--to",
-                f"ssh://{host.target}",
+                remote_url,
                 "--no-check-sigs",
                 path,
             ]
@@ -109,11 +116,6 @@ def deploy_machine(machine: Machine) -> None:
         target_host = stack.enter_context(machine.target_host())
         build_host = stack.enter_context(machine.build_host())
 
-        if machine._class_ == "darwin":
-            if not machine.deploy_as_root and target_host.user == "root":
-                msg = f"'targetHost' should be set to a non-root user for deploying to nix-darwin on machine '{machine.name}'"
-                raise ClanError(msg)
-
         host = build_host or target_host
 
         generate_facts([machine], service=None, regenerate=False)
@@ -138,9 +140,10 @@ def deploy_machine(machine: Machine) -> None:
             f"{path}#{machine.name}",
         ]
 
-        become_root = machine.deploy_as_root
+        become_root = True
 
         if machine._class_ == "nixos":
+            switch_cmd = ["nixos-rebuild", "switch", *nix_options]
             nix_options += [
                 "--fast",
                 "--build-host",
@@ -153,9 +156,13 @@ def deploy_machine(machine: Machine) -> None:
 
                 if target_host.user != "root":
                     nix_options += ["--use-remote-sudo"]
-
-        switch_cmd = [f"{machine._class_}-rebuild", "switch", *nix_options]
-        test_cmd = [f"{machine._class_}-rebuild", "test", *nix_options]
+        elif machine._class_ == "darwin":
+            # use absolute path to darwin-rebuild
+            switch_cmd = [
+                "/run/current-system/sw/bin/darwin-rebuild",
+                "switch",
+                *nix_options,
+            ]
 
         remote_env = host.nix_ssh_env(None, local_ssh=False)
         ret = host.run(
@@ -182,7 +189,7 @@ def deploy_machine(machine: Machine) -> None:
                     "Mobile machine detected, applying workaround deployment method"
                 )
             ret = host.run(
-                test_cmd if is_mobile else switch_cmd,
+                ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,
                 RunOpts(
                     log=Log.BOTH,
                     msg_color=MsgColor(stderr=AnsiColor.DEFAULT),

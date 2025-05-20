@@ -140,15 +140,15 @@ class Host:
         if opts is None:
             opts = RunOpts()
 
-        # If we are not root and we need to become root, prepend sudo
-        sudo = ""
-        if become_root and self.user != "root":
-            sudo = "sudo -- "
-
         # Quote all added environment variables
         env_vars = []
         for k, v in extra_env.items():
             env_vars.append(f"{shlex.quote(k)}={shlex.quote(v)}")
+
+        sudo = []
+        if become_root and self.user != "root":
+            # If we are not root and we need to become root, prepend sudo
+            sudo = ["sudo", "--"]
 
         if opts.prefix is None:
             opts.prefix = self.command_prefix
@@ -185,7 +185,12 @@ class Host:
         ssh_cmd = [
             *self.ssh_cmd(verbose_ssh=verbose_ssh, tty=tty),
             "--",
-            f"{sudo}bash -c {quote(bash_cmd)} -- {' '.join(map(quote, cmd))}",
+            *sudo,
+            "bash",
+            "-c",
+            quote(bash_cmd),
+            "--",
+            " ".join(map(quote, cmd)),
         ]
 
         # Run the ssh command
