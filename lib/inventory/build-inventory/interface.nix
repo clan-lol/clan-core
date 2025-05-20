@@ -424,12 +424,6 @@ in
         }
       );
       default = { };
-      apply =
-        v:
-        if v == { } then
-          v
-        else
-          lib.warn "Inventory.instances and related features are still under development. Please use with care." v;
     };
 
     services = lib.mkOption {
