@@ -58,11 +58,18 @@ def upload_sources(machine: Machine, host: Host) -> str:
     if not has_path_inputs:
         # Just copy the flake to the remote machine, we can substitute other inputs there.
         path = flake_data["path"]
+
+        remote_url = f"ssh-ng://{host.target}"
+
+        # MacOS doesn't come with a proper login shell for ssh and therefore doesn't have nix in $PATH as it doesn't source /etc/profile
+        if machine._class_ == "darwin":
+            remote_url += "?remote-program=bash -lc 'exec nix-daemon --stdio'"
+
         cmd = nix_command(
             [
                 "copy",
                 "--to",
-                f"ssh://{host.target}",
+                remote_url,
                 "--no-check-sigs",
                 path,
             ]
