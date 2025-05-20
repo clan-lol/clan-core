@@ -1,5 +1,5 @@
 import pytest
-from clan_cli.async_run import AsyncRuntime
+from clan_lib.async_run import AsyncRuntime
 
 
 @pytest.fixture

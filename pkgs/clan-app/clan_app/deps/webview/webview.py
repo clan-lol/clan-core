@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any
 
-from clan_cli.async_run import set_should_cancel
 from clan_lib.api import (
     ApiError,
     ErrorDataClass,
@@ -16,6 +15,7 @@ from clan_lib.api import (
     dataclass_to_dict,
     from_dict,
 )
+from clan_lib.async_run import set_should_cancel
 
 from ._webview_ffi import _encode_c_string, _webview_lib
 
