@@ -306,9 +306,11 @@ def produce_clan_core_docs() -> None:
         indexfile = f"{module_name}/index.md"
         core_outputs[indexfile] = module_header(module_name) + clan_core_descr
 
-        core_outputs[indexfile] += """!!! info "# Submodules"\n"""
+        core_outputs[indexfile] += """!!! info "Submodules"\n"""
         for submodule_name, _ in split.items():
-            core_outputs[indexfile] += f"      - {submodule_name}\n"
+            core_outputs[indexfile] += (
+                f"      - [{submodule_name}](./{submodule_name}.md)\n"
+            )
 
         core_outputs[indexfile] += options_head
 
