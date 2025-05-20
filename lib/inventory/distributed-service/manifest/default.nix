@@ -1,4 +1,4 @@
-{ lib, config, ... }:
+{ lib, ... }:
 let
   inherit (lib) mkOption;
   inherit (lib) types;
@@ -19,8 +19,14 @@ in
       description = ''
         A Short description of the module.
       '';
-      defaultText = "Short description";
-      default = config.name;
+      default = "No description";
+    };
+    readme = mkOption {
+      type = types.str;
+      description = ''
+        Extended usage description
+      '';
+      default = "";
     };
     categories = mkOption {
       default = [ "Uncategorized" ];
