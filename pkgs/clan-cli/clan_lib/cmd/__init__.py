@@ -342,18 +342,22 @@ def run(
     if options.requires_root_perm:
         cmd = cmd_with_root(cmd, options.graphical_perm)
 
-    if options.input and isinstance(options.input, bytes):
-        if any(not ch.isprintable() for ch in options.input.decode("ascii", "replace")):
-            filtered_input = "<<binary_blob>>"
+    if cmdlog.isEnabledFor(logging.DEBUG):
+        if options.input and isinstance(options.input, bytes):
+            if any(
+                not ch.isprintable() for ch in options.input.decode("ascii", "replace")
+            ):
+                filtered_input = "<<binary_blob>>"
+            else:
+                filtered_input = options.input.decode("ascii", "replace")
+
+            print_trace(
+                f"echo '{filtered_input}' | {indent_command(cmd)}",
+                cmdlog,
+                options.prefix,
+            )
         else:
-            filtered_input = options.input.decode("ascii", "replace")
-        print_trace(
-            f"echo '{filtered_input}' | {indent_command(cmd)}",
-            cmdlog,
-            options.prefix,
-        )
-    elif cmdlog.isEnabledFor(logging.DEBUG):
-        print_trace(f"{indent_command(cmd)}", cmdlog, options.prefix)
+            print_trace(f"{indent_command(cmd)}", cmdlog, options.prefix)
 
     start = timeit.default_timer()
     with ExitStack() as stack:
