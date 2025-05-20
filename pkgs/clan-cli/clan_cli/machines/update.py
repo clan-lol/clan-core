@@ -143,6 +143,7 @@ def deploy_machine(machine: Machine) -> None:
         become_root = True
 
         if machine._class_ == "nixos":
+            switch_cmd = ["nixos-rebuild", "switch", *nix_options]
             nix_options += [
                 "--fast",
                 "--build-host",
@@ -155,9 +156,13 @@ def deploy_machine(machine: Machine) -> None:
 
                 if target_host.user != "root":
                     nix_options += ["--use-remote-sudo"]
-
-        switch_cmd = [f"{machine._class_}-rebuild", "switch", *nix_options]
-        test_cmd = [f"{machine._class_}-rebuild", "test", *nix_options]
+        elif machine._class_ == "darwin":
+            # use absolute path to darwin-rebuild
+            switch_cmd = [
+                "/run/current-system/sw/bin/darwin-rebuild",
+                "switch",
+                *nix_options,
+            ]
 
         remote_env = host.nix_ssh_env(None, local_ssh=False)
         ret = host.run(
@@ -184,7 +189,7 @@ def deploy_machine(machine: Machine) -> None:
                     "Mobile machine detected, applying workaround deployment method"
                 )
             ret = host.run(
-                test_cmd if is_mobile else switch_cmd,
+                ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,
                 RunOpts(
                     log=Log.BOTH,
                     msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
