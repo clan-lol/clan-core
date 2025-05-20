@@ -102,7 +102,7 @@ export const callApi = async <K extends OperationNames>(
     ) => (
       <CancelToastComponent
         t={t}
-        message={"Exectuting " + method}
+        message={"Executing " + method}
         onCancel={handleCancel.bind(null, op_key, promise)}
       />
     ),
