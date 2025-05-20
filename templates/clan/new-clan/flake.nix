@@ -14,7 +14,7 @@
         # All machines in ./machines will be imported.
 
         # Prerequisite: boot into the installer.
-        # See: https://docs.clan.lol/getting-started/installer
+        # See: https://docs.clan.lol/guides/getting-started/installer
         # local> mkdir -p ./machines/machine1
         # local> Edit ./machines/<machine>/configuration.nix to your liking.
         machines = {

@@ -37,7 +37,7 @@ Examples:
   To exclude machines being updated `clan.deployment.requireExplicitUpdate = true;`
   can be set in the machine config.
 
-For more detailed information, visit: https://docs.clan.lol/getting-started/deploy
+For more detailed information, visit: https://docs.clan.lol/guides/getting-started/deploy
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -93,7 +93,7 @@ Examples:
   $ clan machines update-hardware-config [MACHINE] [TARGET_HOST]
   Will generate hardware specifics for the the specified `[TARGET_HOST]` and place the result in hardware.nix for the given machine `[MACHINE]`.
 
-For more detailed information, visit: https://docs.clan.lol/getting-started/configure/#machine-configuration
+For more detailed information, visit: https://docs.clan.lol/guides/getting-started/configure/#machine-configuration
 
 """
         ),
@@ -123,8 +123,8 @@ Examples:
   Will install the specified machine [MACHINE] to the host exposed by
   the deployment information of the [JSON] deployment string.
 
-For information on how to set up the installer see: https://docs.clan.lol/getting-started/installer/
-For more detailed information, visit: https://docs.clan.lol/getting-started/deploy
+For information on how to set up the installer see: https://docs.clan.lol/guides/getting-started/installer/
+For more detailed information, visit: https://docs.clan.lol/guides/getting-started/deploy
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,

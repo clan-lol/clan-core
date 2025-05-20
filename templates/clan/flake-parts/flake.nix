@@ -19,7 +19,7 @@
         "aarch64-darwin"
       ];
       imports = [ inputs.clan-core.flakeModules.default ];
-      # https://docs.clan.lol/getting-started/flake-parts/
+      # https://docs.clan.lol/guides/getting-started/flake-parts/
       clan = {
         meta.name = "__CHANGE_ME__"; # Ensure this is unique among all clans you want to use.
 

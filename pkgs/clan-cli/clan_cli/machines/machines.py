@@ -93,7 +93,7 @@ class Machine:
             msg = f"'targetHost' is not set for machine '{self.name}'"
             raise ClanError(
                 msg,
-                description="See https://docs.clan.lol/getting-started/deploy/#setting-the-target-host for more information.",
+                description="See https://docs.clan.lol/guides/getting-started/deploy/#setting-the-target-host for more information.",
             )
         return val
 

@@ -119,7 +119,7 @@ def create_parser(prog: str | None = None) -> argparse.ArgumentParser:
         description="The clan cli tool",
         epilog=(
             f"""
-Online reference for the clan cli tool: {help_hyperlink("cli reference", "https://docs.clan.lol/reference/cli/")}
+Online reference for the clan cli tool: {help_hyperlink("cli reference", "https://docs.clan.lol/reference/cli")}
 For more detailed information, visit: {help_hyperlink("docs", "https://docs.clan.lol")}
         """
         ),
@@ -171,7 +171,7 @@ Examples:
   The backup to restore for the machine [MACHINE] with the configured [PROVIDER]
   with the name [NAME].
 
-For more detailed information visit: {help_hyperlink("backups", "https://docs.clan.lol/getting-started/backups")}.
+For more detailed information visit: {help_hyperlink("backups", "https://docs.clan.lol/guides/backups")}.
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -190,7 +190,7 @@ Examples:
   Will create a new clan flake in the specified directory and create it if it
   doesn't exist yet. The flake will be created from a default template.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/getting-started/index.html")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -208,7 +208,7 @@ Examples:
   $ clan flash write mymachine --disk main /dev/sd<X> --ssh-pubkey ~/.ssh/id_rsa.pub
   Will flash the machine 'mymachine' to the disk '/dev/sd<X>' with the ssh public key '~/.ssh/id_rsa.pub'.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/getting-started/installer")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/getting-started/installer")}
             """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -235,7 +235,7 @@ Examples:
   the json string. [JSON] can either be a json formatted string itself, or point
   towards a file containing the deployment information
 
-For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/deploy")}
+For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/guides/getting-started/deploy")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -259,7 +259,7 @@ Examples:
   $ clan secrets get [SECRET]
   Will display the content of the specified secret.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -296,7 +296,7 @@ Examples:
   This is especially useful for resetting certain passwords while leaving the rest
   of the facts for a machine in place.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -334,7 +334,7 @@ Examples:
     This is especially useful for resetting certain passwords while leaving the rest
     of the vars for a machine in place.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -364,7 +364,7 @@ Examples:
   If the `--target-host` flag is omitted will try to find host information by
   checking the deployment configuration inside the specified machine.
 
-For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/getting-started/deploy")}
+For more detailed information, visit: {help_hyperlink("deploy", "https://docs.clan.lol/guides/getting-started/deploy")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -427,7 +427,7 @@ Examples:
   $ clan state list [MACHINE]
   List state of the machines managed by Clan.
 
-For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/backups")}
+For more detailed information, visit: {help_hyperlink("getting-started", "https://docs.clan.lol/guides/backups")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,

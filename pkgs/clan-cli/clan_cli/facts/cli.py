@@ -31,7 +31,7 @@ Examples:
   Will check facts for the specified machine.
 
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -61,7 +61,7 @@ Examples:
   Will list facts for the specified machine.
 
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -101,7 +101,7 @@ Examples:
   This is especially useful for resetting certain passwords while leaving the rest
   of the facts for a machine in place.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
@@ -125,7 +125,7 @@ Examples:
   $ clan facts upload [MACHINE]
   Will upload secrets to a specific machine.
 
-For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/getting-started/secrets")}
+For more detailed information, visit: {help_hyperlink("secrets", "https://docs.clan.lol/guides/getting-started/secrets")}
         """
         ),
         formatter_class=argparse.RawTextHelpFormatter,
