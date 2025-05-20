@@ -130,6 +130,7 @@ class Host:
         extra_env: dict[str, str] | None = None,
         tty: bool = False,
         verbose_ssh: bool = False,
+        quiet: bool = False,
     ) -> CmdOut:
         """
         Command to run on the host via ssh
@@ -166,13 +167,15 @@ class Host:
             export_cmd = f"export {' '.join(env_vars)}; "
             displayed_cmd += export_cmd
         displayed_cmd += " ".join(cmd)
-        cmdlog.info(
-            f"$ {displayed_cmd}",
-            extra={
-                "command_prefix": self.command_prefix,
-                "color": AnsiColor.GREEN.value,
-            },
-        )
+
+        if not quiet:
+            cmdlog.info(
+                f"$ {displayed_cmd}",
+                extra={
+                    "command_prefix": self.command_prefix,
+                    "color": AnsiColor.GREEN.value,
+                },
+            )
 
         # Build the ssh command
         bash_cmd = export_cmd

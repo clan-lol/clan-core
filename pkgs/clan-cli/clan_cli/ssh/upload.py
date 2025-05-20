@@ -108,7 +108,8 @@ def upload(
                     str(remote_dest),
                     f"{dir_mode:o}",
                 ],
-                RunOpts(
+                quiet=True,
+                opts=RunOpts(
                     input=f,
                     log=Log.BOTH,
                     prefix=host.command_prefix,
