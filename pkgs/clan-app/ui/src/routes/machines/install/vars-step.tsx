@@ -17,64 +17,6 @@ import { StepProps } from "./hardware-step";
 
 export type VarsValues = FieldValues & Record<string, Record<string, string>>;
 
-export const VarsStep = (props: StepProps<VarsValues>) => {
-  const queryClient = useQueryClient();
-
-  const generatorsQuery = createQuery(() => ({
-    queryKey: [props.dir, props.machine_id, "generators"],
-    queryFn: async () => {
-      const result = await callApi("get_generators_closure", {
-        base_dir: props.dir,
-        machine_name: props.machine_id,
-      });
-      if (result.status === "error") throw new Error("Failed to fetch data");
-      return result.data;
-    },
-  }));
-
-  const handleSubmit: SubmitHandler<VarsValues> = async (values, event) => {
-    const loading_toast = toast.loading("Generating vars...");
-    if (generatorsQuery.data === undefined) {
-      toast.error("Error fetching data");
-      return;
-    }
-    const result = await callApi("generate_vars_for_machine", {
-      machine_name: props.machine_id,
-      base_dir: props.dir,
-      generators: generatorsQuery.data.map((generator) => generator.name),
-      all_prompt_values: values,
-    });
-    queryClient.invalidateQueries({
-      queryKey: [props.dir, props.machine_id, "generators"],
-    });
-    toast.dismiss(loading_toast);
-    if (result.status === "error") {
-      toast.error(result.errors[0].message);
-      return;
-    }
-    if (result.status === "success") {
-      toast.success("Vars saved successfully");
-    }
-    props.handleNext(values);
-  };
-
-  return (
-    <Switch>
-      <Match when={generatorsQuery.isLoading}>Loading ...</Match>
-      <Match when={generatorsQuery.data}>
-        {(generators) => (
-          <VarsForm
-            machine_id={props.machine_id}
-            dir={props.dir}
-            handleSubmit={handleSubmit}
-            generators={generators()}
-          />
-        )}
-      </Match>
-    </Switch>
-  );
-};
-
 export interface VarsFormProps {
   machine_id: string;
   dir: string;
@@ -185,6 +127,64 @@ export const VarsForm = (props: VarsFormProps) => {
       </div>
       <button type="submit">Submit</button>
     </Form>
+  );
+};
+
+export const VarsStep = (props: StepProps<VarsValues>) => {
+  const queryClient = useQueryClient();
+
+  const generatorsQuery = createQuery(() => ({
+    queryKey: [props.dir, props.machine_id, "generators"],
+    queryFn: async () => {
+      const result = await callApi("get_generators_closure", {
+        base_dir: props.dir,
+        machine_name: props.machine_id,
+      });
+      if (result.status === "error") throw new Error("Failed to fetch data");
+      return result.data;
+    },
+  }));
+
+  const handleSubmit: SubmitHandler<VarsValues> = async (values, event) => {
+    const loading_toast = toast.loading("Generating vars...");
+    if (generatorsQuery.data === undefined) {
+      toast.error("Error fetching data");
+      return;
+    }
+    const result = await callApi("generate_vars_for_machine", {
+      machine_name: props.machine_id,
+      base_dir: props.dir,
+      generators: generatorsQuery.data.map((generator) => generator.name),
+      all_prompt_values: values,
+    });
+    queryClient.invalidateQueries({
+      queryKey: [props.dir, props.machine_id, "generators"],
+    });
+    toast.dismiss(loading_toast);
+    if (result.status === "error") {
+      toast.error(result.errors[0].message);
+      return;
+    }
+    if (result.status === "success") {
+      toast.success("Vars saved successfully");
+    }
+    props.handleNext(values);
+  };
+
+  return (
+    <Switch>
+      <Match when={generatorsQuery.isLoading}>Loading ...</Match>
+      <Match when={generatorsQuery.data}>
+        {(generators) => (
+          <VarsForm
+            machine_id={props.machine_id}
+            dir={props.dir}
+            handleSubmit={handleSubmit}
+            generators={generators()}
+          />
+        )}
+      </Match>
+    </Switch>
   );
 };
 
