@@ -9,9 +9,9 @@ from typing import TYPE_CHECKING
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
-    from clan_lib.flake import Flake
-
     from clan_cli.machines.machines import Machine
+
+    from clan_lib.flake import Flake
 
 log = logging.getLogger(__name__)
 
@@ -151,7 +151,7 @@ def specific_machine_dir(machine: "Machine") -> Path:
 
 
 def module_root() -> Path:
-    return Path(__file__).parent
+    return Path(__file__).parent.parent
 
 
 def nixpkgs_flake() -> Path:

@@ -5,7 +5,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
-from .dirs import user_history_file
+from clan_lib.dirs import user_history_file
+
 from .jsonrpc import ClanJSONEncoder
 
 

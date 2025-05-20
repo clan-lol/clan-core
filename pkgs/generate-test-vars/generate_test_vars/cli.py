@@ -10,9 +10,9 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Any, override
 
-from clan_cli.dirs import find_git_repo_root
 from clan_cli.machines.machines import Machine
 from clan_cli.vars.generate import generate_vars
+from clan_lib.dirs import find_git_repo_root
 from clan_lib.flake.flake import Flake
 from clan_lib.nix import nix_config, nix_eval
 

@@ -4,10 +4,9 @@ from pathlib import Path
 from typing import Any, Literal, NewType, TypedDict, cast
 
 from clan_lib.cmd import run
+from clan_lib.dirs import clan_templates
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
-
-from clan_cli.dirs import clan_templates
 
 log = logging.getLogger(__name__)
 

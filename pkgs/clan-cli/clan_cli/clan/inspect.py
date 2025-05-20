@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from clan_lib.cmd import run
+from clan_lib.dirs import machine_gcroot
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import (
@@ -14,7 +15,6 @@ from clan_lib.nix import (
     nix_metadata,
 )
 
-from clan_cli.dirs import machine_gcroot
 from clan_cli.machines.list import list_machines
 from clan_cli.machines.machines import Machine
 from clan_cli.vms.inspect import VmConfig, inspect_vm

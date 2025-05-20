@@ -649,8 +649,7 @@ class Flake:
 
         This method is used to refresh the cache by reloading it from the flake.
         """
-        from clan_cli.dirs import user_cache_dir
-
+        from clan_lib.dirs import user_cache_dir
         from clan_lib.nix import (
             nix_metadata,
         )
@@ -703,9 +702,8 @@ class Flake:
             ClanError: If the number of outputs does not match the number of selectors.
             AssertionError: If the cache or flake cache path is not properly initialized.
         """
-        from clan_cli.dirs import nixpkgs_source, select_source
-
         from clan_lib.cmd import Log, RunOpts, run
+        from clan_lib.dirs import nixpkgs_source, select_source
         from clan_lib.nix import (
             nix_build,
             nix_config,
