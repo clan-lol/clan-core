@@ -297,7 +297,7 @@ def produce_clan_core_docs() -> None:
     core_outputs: dict[str, str] = {}
     with CLAN_CORE_DOCS.open() as f:
         options: dict[str, dict[str, Any]] = json.load(f)
-        module_name = "clan-core"
+        module_name = "clan.core"
 
         transform = {n.replace("clan.core.", ""): v for n, v in options.items()}
         split = split_options_by_root(transform)

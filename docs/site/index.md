@@ -70,7 +70,7 @@ hide:
 
     An overview of available service modules
 
--   [Core](./reference/clan-core/index.md)
+-   [Core](./reference/clan.core/index.md)
 
     ---
 
