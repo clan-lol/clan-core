@@ -1,11 +1,14 @@
 # ruff: noqa: RUF001
 import argparse
 import json
+import logging
 import sys
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class Error(Exception):
@@ -56,7 +59,7 @@ known_classes = set()
 root_class = "Inventory"
 # TODO: make this configurable
 # For now this only includes static top-level attributes of the inventory.
-attrs = ["machines", "meta", "services"]
+attrs = ["machines", "meta", "services", "instances"]
 
 static: dict[str, str] = {"Service": "dict[str, Any]"}
 
@@ -130,6 +133,12 @@ def field_def_from_default_value(
     finalize_field: Callable[..., tuple[str, str]],
 ) -> tuple[str, str] | None:
     # default_value = prop_info.get("default")
+    if "Unknown" in field_types:
+        # Unknown type, doesnt matter what the default value is
+        # type Unknown | a -> Unknown
+        return finalize_field(
+            field_types=field_types,
+        )
     if default_value is None:
         return finalize_field(
             field_types=field_types | {"None"},
@@ -189,7 +198,7 @@ def get_field_def(
         if "None" in field_types:
             field_types.remove("None")
         serialised_types = " | ".join(field_types) + type_appendix
-        serialised_types = f"NotRequired[{serialised_types}]"
+        serialised_types = f"{serialised_types}"
     else:
         serialised_types = " | ".join(field_types) + type_appendix
 
@@ -218,7 +227,7 @@ def generate_dataclass(
         field_name = prop.replace("-", "_")
 
         if len(attr_path) == 0 and prop not in attrs:
-            field_def = field_name, "NotRequired[dict[str, Any]]"
+            field_def = field_name, "dict[str, Any]"
             fields_with_default.append(field_def)
             # breakpoint()
             continue
@@ -235,8 +244,9 @@ def generate_dataclass(
         nested_class_name = f"""{class_name if class_name != root_class and not prop_info.get("title") else ""}{title_sanitized}"""
 
         if not prop_type and not union_variants and not enum_variants:
-            msg = f"Type not found for property {prop} {prop_info}"
-            raise Error(msg)
+            msg = f"Type not found for property {prop} {prop_info}.\nConverting to unknown type.\n"
+            logger.warning(msg)
+            prop_type = "Unknown"
 
         if union_variants:
             field_types = map_json_type(union_variants)
@@ -283,6 +293,8 @@ def generate_dataclass(
                         )
                     )
                     known_classes.add(nested_class_name)
+        elif prop_type == "Unknown":
+            field_types = {"Unknown"}
         else:
             field_types = map_json_type(
                 prop_type,
@@ -347,8 +359,9 @@ def generate_dataclass(
 
     # Join field name with type to form a complete field declaration
     # e.g. "name: str"
-    all_field_declarations = [
-        f"{n}: {t}" for n, t in (required_fields + fields_with_default)
+    all_field_declarations = [f"{n}: {t}" for n, t in (required_fields)] + [
+        f"{n}: NotRequired[{class_name}{n.capitalize()}Type]"
+        for n, t in (fields_with_default)
     ]
     hoisted_types: str = "\n".join(
         [
@@ -359,13 +372,12 @@ def generate_dataclass(
     fields_str = "\n    ".join(all_field_declarations)
     nested_classes_str = "\n\n".join(nested_classes)
 
-    class_def = f"\nclass {class_name}(TypedDict):\n"
+    class_def = f"\n\n{hoisted_types}\n"
+    class_def += f"\nclass {class_name}(TypedDict):\n"
     if not required_fields + fields_with_default:
         class_def += "    pass"
     else:
         class_def += f"    {fields_str}"
-
-    class_def += f"\n\n{hoisted_types}\n"
 
     return f"{nested_classes_str}\n\n{class_def}" if nested_classes_str else class_def
 
@@ -388,6 +400,12 @@ def run_gen(args: argparse.Namespace) -> None:
 # ruff: noqa: F401
 # fmt: off
 from typing import Any, Literal, NotRequired, TypedDict\n
+
+# Mimic "unknown".
+# 'Any' is unsafe because it allows any operations
+# This forces the user to use type-narrowing or casting in the code
+class Unknown:
+    pass
 """
         )
         f.write(dataclass_code)

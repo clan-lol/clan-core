@@ -359,9 +359,6 @@ in
     };
 
     instances = lib.mkOption {
-      # Keep as internal until all de-/serialization issues are resolved
-      visible = false;
-      internal = true;
       description = "Multi host service module instances";
       type = types.attrsOf (
         types.submodule {
@@ -402,14 +399,7 @@ in
                       default = { };
                     };
                     tags = lib.mkOption {
-                      type = types.attrsOf (
-                        types.submodule {
-                          options.settings = lib.mkOption {
-                            default = { };
-                            type = types.deferredModule;
-                          };
-                        }
-                      );
+                      type = types.attrsOf (types.submodule { });
                       default = { };
                     };
                     settings = lib.mkOption {

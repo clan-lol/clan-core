@@ -1,5 +1,6 @@
 import copy
 import dataclasses
+import inspect
 import pathlib
 from dataclasses import MISSING
 from enum import EnumType
@@ -109,6 +110,12 @@ def type_to_dict(
         type_map = {}
     if t is None:
         return {"type": "null"}
+
+    if inspect.isclass(t) and t.__name__ == "Unknown":
+        # Empty should represent unknown
+        # We don't know anything about this type
+        # Nor about the nested fields, if there are any
+        return {}
 
     if dataclasses.is_dataclass(t):
         fields = dataclasses.fields(t)

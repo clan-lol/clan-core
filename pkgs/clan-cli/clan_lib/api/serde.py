@@ -30,6 +30,7 @@ Note: This module assumes the presence of other modules and classes such as `Cla
 """
 
 import dataclasses
+import inspect
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum
 from pathlib import Path
@@ -260,6 +261,10 @@ def construct_value(
             raise ClanError(msg, location=f"{loc}")
 
         return t(field_value)  # type: ignore
+
+    if inspect.isclass(t) and t.__name__ == "Unknown":
+        # Return the field value as is
+        return field_value
 
     msg = f"Unhandled field type {t} with value {field_value}"
     raise ClanError(msg)
