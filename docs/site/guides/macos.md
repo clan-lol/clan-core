@@ -63,15 +63,6 @@ Replace `yourmachine` with your chosen machine name.
 Install Nix on your macOS machine using one of the methods described in the [nix-darwin prerequisites](https://github.com/nix-darwin/nix-darwin?tab=readme-ov-file#prerequisites).
 
 
-## Step 4: Install darwin-nix
-
-For installation the `clan flake` needs to be uploaded to the macOS machine.
-Run this command inside your flake (replacing `yourmachine` with the name chosen in Step 1)
-
-```command
-sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#yourmachine
-```
-
 ## Step 5: Install nix-darwin
 
 Upload your Clan flake to the macOS machine. Then, from within your flake directory, run:
