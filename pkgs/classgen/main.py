@@ -59,7 +59,7 @@ known_classes = set()
 root_class = "Inventory"
 # TODO: make this configurable
 # For now this only includes static top-level attributes of the inventory.
-attrs = ["machines", "meta", "services"]
+attrs = ["machines", "meta", "services", "instances"]
 
 static: dict[str, str] = {"Service": "dict[str, Any]"}
 
