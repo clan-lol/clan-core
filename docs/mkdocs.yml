@@ -167,6 +167,7 @@ nav:
           - 02-clan-api: decisions/02-clan-api.md
           - 03-adr-numbering-process: decisions/03-adr-numbering-process.md
           - 04-fetching-nix-from-python: decisions/04-fetching-nix-from-python.md
+          - 05-deployment-parameters: decisions/05-deployment-parameters.md
           - Template: decisions/_template.md
 
 docs_dir: site
