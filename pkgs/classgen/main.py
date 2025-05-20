@@ -198,7 +198,7 @@ def get_field_def(
         if "None" in field_types:
             field_types.remove("None")
         serialised_types = " | ".join(field_types) + type_appendix
-        serialised_types = f"NotRequired[{serialised_types}]"
+        serialised_types = f"{serialised_types}"
     else:
         serialised_types = " | ".join(field_types) + type_appendix
 
@@ -227,7 +227,7 @@ def generate_dataclass(
         field_name = prop.replace("-", "_")
 
         if len(attr_path) == 0 and prop not in attrs:
-            field_def = field_name, "NotRequired[dict[str, Any]]"
+            field_def = field_name, "dict[str, Any]"
             fields_with_default.append(field_def)
             # breakpoint()
             continue
@@ -244,8 +244,6 @@ def generate_dataclass(
         nested_class_name = f"""{class_name if class_name != root_class and not prop_info.get("title") else ""}{title_sanitized}"""
 
         if not prop_type and not union_variants and not enum_variants:
-            msg = f"Type not found for property {prop} {prop_info}"
-            raise Error(msg)
             msg = f"Type not found for property {prop} {prop_info}.\nConverting to unknown type.\n"
             logger.warning(msg)
             prop_type = "Unknown"
@@ -361,8 +359,9 @@ def generate_dataclass(
 
     # Join field name with type to form a complete field declaration
     # e.g. "name: str"
-    all_field_declarations = [
-        f"{n}: {t}" for n, t in (required_fields + fields_with_default)
+    all_field_declarations = [f"{n}: {t}" for n, t in (required_fields)] + [
+        f"{n}: NotRequired[{class_name}{n.capitalize()}Type]"
+        for n, t in (fields_with_default)
     ]
     hoisted_types: str = "\n".join(
         [
@@ -373,13 +372,12 @@ def generate_dataclass(
     fields_str = "\n    ".join(all_field_declarations)
     nested_classes_str = "\n\n".join(nested_classes)
 
-    class_def = f"\nclass {class_name}(TypedDict):\n"
+    class_def = f"\n\n{hoisted_types}\n"
+    class_def += f"\nclass {class_name}(TypedDict):\n"
     if not required_fields + fields_with_default:
         class_def += "    pass"
     else:
         class_def += f"    {fields_str}"
-
-    class_def += f"\n\n{hoisted_types}\n"
 
     return f"{nested_classes_str}\n\n{class_def}" if nested_classes_str else class_def
 
