@@ -4,7 +4,7 @@ import os
 import sys
 from pathlib import Path
 
-from clan_cli.colors import AnsiColor, RgbColor, color_by_tuple
+from clan_lib.colors import AnsiColor, RgbColor, color_by_tuple
 
 # https://no-color.org
 DISABLE_COLOR = not sys.stderr.isatty() or os.environ.get("NO_COLOR", "") != ""

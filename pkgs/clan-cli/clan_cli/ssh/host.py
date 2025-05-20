@@ -14,10 +14,10 @@ from tempfile import TemporaryDirectory
 from typing import Any
 
 from clan_lib.cmd import CmdOut, RunOpts, run
+from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_shell
 
-from clan_cli.colors import AnsiColor
 from clan_cli.ssh.host_key import HostKeyCheck
 
 cmdlog = logging.getLogger(__name__)
