@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import IO
 
 from clan_lib.errors import ClanError
+from clan_lib.git import commit_files
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -18,7 +19,6 @@ from clan_cli.completions import (
     complete_secrets,
     complete_users,
 )
-from clan_cli.git import commit_files
 
 from . import sops
 from .folders import (

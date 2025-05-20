@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from clan_cli.git import commit_file
 from clan_cli.locked_open import locked_open
 from clan_cli.templates import (
     ClanExports,
@@ -19,6 +18,7 @@ from clan_cli.templates import (
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_lib.cmd import run
 from clan_lib.flake import Flake
+from clan_lib.git import commit_file
 from clan_lib.nix import nix_command
 
 

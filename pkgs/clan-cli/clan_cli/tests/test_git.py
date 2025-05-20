@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-from clan_cli import git
+from clan_lib import git
 from clan_lib.errors import ClanError
 
 
