@@ -18,10 +18,9 @@ from enum import Enum
 from pathlib import Path
 from typing import IO, Any
 
-from clan_cli.custom_logger import print_trace
-
 from clan_lib.async_run import get_async_ctx, is_async_cancelled
 from clan_lib.colors import Color
+from clan_lib.custom_logger import print_trace
 from clan_lib.errors import ClanCmdError, ClanError, CmdOut, indent_command
 
 cmdlog = logging.getLogger(__name__)

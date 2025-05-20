@@ -10,7 +10,7 @@ from clan_vm_manager.singletons.toast import InfoToast, ToastOverlay
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
-from clan_cli.custom_logger import setup_logging
+from clan_lib.custom_logger import setup_logging
 from gi.repository import Adw, Gdk, Gio, Gtk
 
 from clan_vm_manager.components.interfaces import ClanConfig

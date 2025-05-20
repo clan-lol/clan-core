@@ -3,7 +3,7 @@ import os
 import shlex
 
 from clan_app import main
-from clan_cli.custom_logger import get_callers
+from clan_lib.custom_logger import get_callers
 
 log = logging.getLogger(__name__)
 
