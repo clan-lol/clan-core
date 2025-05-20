@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 import pytest
-from clan_cli.locked_open import locked_open
 from clan_cli.machines.machines import Machine
 from clan_cli.tests import age_keys
 from clan_cli.tests.fixture_error import FixtureError
@@ -23,6 +22,7 @@ from clan_lib.dirs import (
     specific_machine_dir,
 )
 from clan_lib.flake import Flake
+from clan_lib.locked_open import locked_open
 from clan_lib.nix import nix_test_store
 
 log = logging.getLogger(__name__)
