@@ -294,3 +294,31 @@ def test_enum_roundtrip() -> None:
     assert from_dict(Person, data2) == expected2
 
     assert dataclass_to_dict(expected2) == data2
+
+
+# for the test below
+# we would import this from the nix_models
+class Unknown:
+    pass
+
+
+def test_unknown_deserialize() -> None:
+    @dataclass
+    class Person:
+        name: Unknown
+
+    data = {"name": ["a", "b"]}
+
+    person = from_dict(Person, data)
+    person.name = ["a", "b"]
+
+
+def test_unknown_serialize() -> None:
+    @dataclass
+    class Person:
+        name: Unknown
+
+    data = Person(["a", "b"])  # type: ignore
+
+    person = dataclass_to_dict(data)
+    assert person == {"name": ["a", "b"]}
