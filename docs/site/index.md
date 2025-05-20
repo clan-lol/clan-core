@@ -44,6 +44,12 @@ hide:
 
     Discover how to set up a development environment to contribute to Clan!
 
+    ---
+
+    Manage macOS machines with nix-darwin
+
+-   [MacOS machines](./guides/macos.md)
+
 </div>
 
 ## API Reference
