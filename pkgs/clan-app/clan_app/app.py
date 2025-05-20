@@ -23,11 +23,9 @@ class ClanAppOptions:
 @profile
 def app_run(app_opts: ClanAppOptions) -> int:
     if app_opts.debug:
-        setup_logging(logging.DEBUG, root_log_name=__name__.split(".")[0])
-        setup_logging(logging.DEBUG, root_log_name="clan_cli")
+        setup_logging(logging.DEBUG)
     else:
-        setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
-        setup_logging(logging.INFO, root_log_name="clan_cli")
+        setup_logging(logging.INFO)
 
     log.debug("Debug mode enabled")
 

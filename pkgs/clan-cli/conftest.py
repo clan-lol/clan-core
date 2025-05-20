@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 from clan_cli.custom_logger import setup_logging
 
@@ -19,4 +21,4 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     # You can access the session config, items, testsfailed, etc.
     print(f"Session config: {session.config}")
 
-    setup_logging(level="INFO")
+    setup_logging(logging.DEBUG)

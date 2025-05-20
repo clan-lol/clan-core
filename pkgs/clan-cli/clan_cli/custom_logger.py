@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any
 
 from clan_cli.colors import AnsiColor, RgbColor, color_by_tuple
 
@@ -153,19 +152,13 @@ def print_trace(msg: str, logger: logging.Logger, prefix: str | None) -> None:
     logger.debug(f"{msg} \n{callers_str}", extra={"command_prefix": prefix})
 
 
-def setup_logging(
-    level: Any,
-    root_log_name: str = __name__.split(".")[0],
-) -> None:
-    # Get the root logger and set its level
-    main_logger = logging.getLogger(root_log_name)
-    main_logger.setLevel(level)
+def setup_logging(level: int) -> None:
+    root_logger = logging.getLogger()
+    root_logger.setLevel(level)
 
-    # Create and add the default handler
+    # Set our formatter handler
     default_handler = logging.StreamHandler()
-
-    # Create and add your custom handler
     default_handler.setLevel(level)
     trace_prints = bool(int(os.environ.get("TRACE_PRINT", "0")))
     default_handler.setFormatter(PrefixFormatter(trace_prints))
-    main_logger.addHandler(default_handler)
+    root_logger.addHandler(default_handler)
