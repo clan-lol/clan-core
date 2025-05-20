@@ -341,6 +341,8 @@ def run(
 
     if options.requires_root_perm:
         cmd = cmd_with_root(cmd, options.graphical_perm)
+        # Use our sudo ask proxy here as well
+        options.needs_user_terminal = True
 
     if cmdlog.isEnabledFor(logging.DEBUG):
         if options.input and isinstance(options.input, bytes):
