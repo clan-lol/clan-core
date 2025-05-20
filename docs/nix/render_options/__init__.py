@@ -206,7 +206,12 @@ Some modules are considered 'low-level' or 'expert modules' and are not availabl
 """
 
 
-clan_core_descr = """`clan.core` is always included in each machine `config`.
+clan_core_descr = """
+`clan.core` is always present in a clan machine
+
+* It is a module of class **`nixos`**
+* Provides a set of common options for every machine (in addition to the NixOS options)
+
 Your can customize your machines behavior with the configuration [options](#module-options) provided below.
 """
 
@@ -299,9 +304,13 @@ def produce_clan_core_docs() -> None:
 
         # Prepopulate the index file header
         indexfile = f"{module_name}/index.md"
-        core_outputs[indexfile] = (
-            module_header(module_name) + clan_core_descr + options_head
-        )
+        core_outputs[indexfile] = module_header(module_name) + clan_core_descr
+
+        core_outputs[indexfile] += """!!! info "# Submodules"\n"""
+        for submodule_name, _ in split.items():
+            core_outputs[indexfile] += f"      - {submodule_name}\n"
+
+        core_outputs[indexfile] += options_head
 
         for submodule_name, split_options in split.items():
             outfile = f"{module_name}/{submodule_name}.md"
