@@ -1,3 +1,4 @@
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -27,7 +28,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     # You can access the session config, items, testsfailed, etc.
     print(f"Session config: {session.config}")
 
-    setup_logging(level="DEBUG")
+    setup_logging(logging.DEBUG)
 
 
 # fixture for git_repo

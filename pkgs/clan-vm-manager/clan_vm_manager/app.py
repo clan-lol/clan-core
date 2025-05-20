@@ -71,10 +71,9 @@ class MainApplication(Adw.Application):
         options = options.end().unpack()
 
         if "debug" in options and self.window is None:
-            setup_logging(logging.DEBUG, root_log_name=__name__.split(".")[0])
-            setup_logging(logging.DEBUG, root_log_name="clan_cli")
+            setup_logging(logging.DEBUG)
         elif self.window is None:
-            setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
+            setup_logging(logging.INFO)
         log.debug("Debug logging enabled")
 
         if "debug" in options:

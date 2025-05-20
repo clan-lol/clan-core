@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any
 
 from clan_cli.colors import AnsiColor, RgbColor, color_by_tuple
 
@@ -33,8 +32,6 @@ class PrefixFormatter(logging.Formatter):
         self.hostname_color_offset = 0
 
     def format(self, record: logging.LogRecord) -> str:
-        filepath = _get_filepath(record)
-
         # If extra["color"] is set, use that color for the message.
         msg_color = getattr(record, "color", None)
         if not msg_color:
@@ -72,6 +69,7 @@ class PrefixFormatter(logging.Formatter):
 
         # Add the source file and line number if trace_prints is enabled.
         if self.trace_prints:
+            filepath = _get_filepath(record)
             format_str += f"\nSource: {filepath}:%(lineno)d::%(funcName)s\n"
 
         return logging.Formatter(format_str).format(record)
@@ -137,11 +135,7 @@ def get_callers(start: int = 2, end: int = 2) -> list[str]:
 def print_trace(msg: str, logger: logging.Logger, prefix: str | None) -> None:
     trace_depth = int(os.environ.get("TRACE_DEPTH", "0"))
     callers = get_callers(3, 4 + trace_depth)
-
-    if "run_no_stdout" in callers[0]:
-        callers = callers[1:]
-    else:
-        callers.pop()
+    callers.pop()
 
     if len(callers) == 1:
         callers_str = f"Caller: {callers[0]}\n"
@@ -153,19 +147,13 @@ def print_trace(msg: str, logger: logging.Logger, prefix: str | None) -> None:
     logger.debug(f"{msg} \n{callers_str}", extra={"command_prefix": prefix})
 
 
-def setup_logging(
-    level: Any,
-    root_log_name: str = __name__.split(".")[0],
-) -> None:
-    # Get the root logger and set its level
-    main_logger = logging.getLogger(root_log_name)
-    main_logger.setLevel(level)
+def setup_logging(level: int) -> None:
+    root_logger = logging.getLogger()
+    root_logger.setLevel(level)
 
-    # Create and add the default handler
+    # Set our formatter handler
     default_handler = logging.StreamHandler()
-
-    # Create and add your custom handler
     default_handler.setLevel(level)
     trace_prints = bool(int(os.environ.get("TRACE_PRINT", "0")))
     default_handler.setFormatter(PrefixFormatter(trace_prints))
-    main_logger.addHandler(default_handler)
+    root_logger.addHandler(default_handler)

@@ -452,10 +452,10 @@ def main() -> None:
         parser.print_help()
 
     if debug := getattr(args, "debug", False):
-        setup_logging(logging.DEBUG, root_log_name=__name__.split(".")[0])
+        setup_logging(logging.DEBUG)
         log.debug("Debug log activated")
     else:
-        setup_logging(logging.INFO, root_log_name=__name__.split(".")[0])
+        setup_logging(logging.INFO)
 
     if not hasattr(args, "func"):
         return
