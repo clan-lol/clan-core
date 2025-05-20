@@ -109,7 +109,7 @@ def upload(
                     f"{dir_mode:o}",
                 ],
                 RunOpts(
-                    input=f.read(),
+                    input=f,
                     log=Log.BOTH,
                     prefix=host.command_prefix,
                     needs_user_terminal=True,
