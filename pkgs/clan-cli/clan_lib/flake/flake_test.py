@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import subprocess
 from pathlib import Path
@@ -373,7 +374,8 @@ def test_cache_gc(monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("NIX_STORE_DIR", str(tempdir / "store"))
         monkeypatch.setenv("NIX_CACHE_HOME", str(tempdir / "cache"))
         monkeypatch.setenv("HOME", str(tempdir / "home"))
-        monkeypatch.delenv("CLAN_TEST_STORE")
+        with contextlib.suppress(KeyError):
+            monkeypatch.delenv("CLAN_TEST_STORE")
         monkeypatch.setenv("NIX_BUILD_TOP", str(tempdir / "build"))
 
         test_file = tempdir / "flake" / "testfile"
