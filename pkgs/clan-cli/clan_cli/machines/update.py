@@ -8,12 +8,12 @@ import sys
 from contextlib import ExitStack
 
 from clan_lib.api import API
+from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime, is_async_cancelled
 from clan_lib.cmd import Log, MsgColor, RunOpts, run
 from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_command, nix_config, nix_metadata
 
-from clan_cli.async_run import AsyncContext, AsyncOpts, AsyncRuntime, is_async_cancelled
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_machines,

@@ -1,7 +1,7 @@
 import logging
 
 import pytest
-from clan_cli.custom_logger import setup_logging
+from clan_lib.custom_logger import setup_logging
 
 # Every fixture registered here will be available in clan_cli and clan_lib
 pytest_plugins = [

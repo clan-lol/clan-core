@@ -3,7 +3,7 @@ import logging
 import shlex
 
 from clan_cli import create_parser
-from clan_cli.custom_logger import print_trace
+from clan_lib.custom_logger import print_trace
 
 log = logging.getLogger(__name__)
 

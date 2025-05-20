@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from clan_cli.custom_logger import setup_logging
+from clan_lib.custom_logger import setup_logging
 from clan_lib.nix import nix_shell
 
 sys.path.append(str(Path(__file__).parent / "helpers"))
