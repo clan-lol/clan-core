@@ -8,53 +8,104 @@
 from typing import Any, Literal, NotRequired, TypedDict
 
 
+# Mimic "unknown".
+# 'Any' is unsafe because it allows any operations
+# This forces the user to use type-narrowing or casting in the code
+class Unknown:
+    pass
+
+
+InstanceModuleNameType = str
+InstanceModuleInputType = str
+
+class InstanceModule(TypedDict):
+    name: str
+    input: NotRequired[InstanceModuleInputType]
+
+
+
+InstanceRoleMachineSettingsType = Unknown
+
+class InstanceRoleMachine(TypedDict):
+    settings: NotRequired[InstanceRoleMachineSettingsType]
+
+
+
+
+
+class InstanceRoleTag(TypedDict):
+    pass
+
+
+
+InstanceRoleMachinesType = dict[str, InstanceRoleMachine]
+InstanceRoleSettingsType = Unknown
+InstanceRoleTagsType = dict[str, InstanceRoleTag]
+
+class InstanceRole(TypedDict):
+    machines: NotRequired[InstanceRoleMachinesType]
+    settings: NotRequired[InstanceRoleSettingsType]
+    tags: NotRequired[InstanceRoleTagsType]
+
+
+
+InstanceModuleType = InstanceModule
+InstanceRolesType = dict[str, InstanceRole]
+
+class Instance(TypedDict):
+    module: NotRequired[InstanceModuleType]
+    roles: NotRequired[InstanceRolesType]
+
+
+
+MachineDeployTargethostType = str
+
 class MachineDeploy(TypedDict):
-    targetHost: NotRequired[str]
-
-MachineDeployTargethostType = NotRequired[str]
+    targetHost: NotRequired[MachineDeployTargethostType]
 
 
+
+MachineDeployType = MachineDeploy
+MachineDescriptionType = str
+MachineIconType = str
+MachineMachineclassType = Literal["nixos", "darwin"]
+MachineNameType = str
+MachineTagsType = list[str]
 
 class Machine(TypedDict):
-    deploy: NotRequired[MachineDeploy]
-    description: NotRequired[str]
-    icon: NotRequired[str]
-    machineClass: NotRequired[Literal["nixos", "darwin"]]
-    name: NotRequired[str]
-    tags: NotRequired[list[str]]
-
-MachineDeployType = NotRequired[MachineDeploy]
-MachineDescriptionType = NotRequired[str]
-MachineIconType = NotRequired[str]
-MachineMachineclassType = NotRequired[Literal["nixos", "darwin"]]
-MachineNameType = NotRequired[str]
-MachineTagsType = NotRequired[list[str]]
+    deploy: NotRequired[MachineDeployType]
+    description: NotRequired[MachineDescriptionType]
+    icon: NotRequired[MachineIconType]
+    machineClass: NotRequired[MachineMachineclassType]
+    name: NotRequired[MachineNameType]
+    tags: NotRequired[MachineTagsType]
 
 
+
+MetaNameType = str
+MetaDescriptionType = str
+MetaIconType = str
 
 class Meta(TypedDict):
     name: str
-    description: NotRequired[str]
-    icon: NotRequired[str]
-
-MetaNameType = str
-MetaDescriptionType = NotRequired[str]
-MetaIconType = NotRequired[str]
-
+    description: NotRequired[MetaDescriptionType]
+    icon: NotRequired[MetaIconType]
 
 Service = dict[str, Any]
 
 
+
+InventoryInstancesType = dict[str, Instance]
+InventoryMachinesType = dict[str, Machine]
+InventoryMetaType = Meta
+InventoryModulesType = dict[str, Any]
+InventoryServicesType = dict[str, Service]
+InventoryTagsType = dict[str, Any]
+
 class Inventory(TypedDict):
-    machines: NotRequired[dict[str, Machine]]
-    meta: NotRequired[Meta]
-    modules: NotRequired[dict[str, Any]]
-    services: NotRequired[dict[str, Service]]
-    tags: NotRequired[dict[str, Any]]
-
-InventoryMachinesType = NotRequired[dict[str, Machine]]
-InventoryMetaType = NotRequired[Meta]
-InventoryModulesType = NotRequired[dict[str, Any]]
-InventoryServicesType = NotRequired[dict[str, Service]]
-InventoryTagsType = NotRequired[dict[str, Any]]
-
+    instances: NotRequired[InventoryInstancesType]
+    machines: NotRequired[InventoryMachinesType]
+    meta: NotRequired[InventoryMetaType]
+    modules: NotRequired[InventoryModulesType]
+    services: NotRequired[InventoryServicesType]
+    tags: NotRequired[InventoryTagsType]
