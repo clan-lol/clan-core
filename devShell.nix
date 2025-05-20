@@ -41,8 +41,8 @@
           export PRJ_ROOT=$(git rev-parse --show-toplevel)
 
           # vendoring / needed for impure tests
-          ln -sfT ${self'.packages.clan-cli.nixpkgs} "$PRJ_ROOT/pkgs/clan-cli/clan_cli/nixpkgs"
-          ln -sfT ${inputs.nix-select} "$PRJ_ROOT/pkgs/clan-cli/clan_cli/select"
+          ln -sfT ${self'.packages.clan-cli.nixpkgs} "$PRJ_ROOT/pkgs/clan-cli/clan_lib/nixpkgs"
+          ln -sfT ${inputs.nix-select} "$PRJ_ROOT/pkgs/clan-cli/clan_lib/select"
         '';
       };
     };
