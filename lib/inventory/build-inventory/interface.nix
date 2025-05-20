@@ -402,14 +402,7 @@ in
                       default = { };
                     };
                     tags = lib.mkOption {
-                      type = types.attrsOf (
-                        types.submodule {
-                          options.settings = lib.mkOption {
-                            default = { };
-                            type = types.deferredModule;
-                          };
-                        }
-                      );
+                      type = types.attrsOf (types.submodule { });
                       default = { };
                     };
                     settings = lib.mkOption {
