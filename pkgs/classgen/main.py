@@ -1,11 +1,14 @@
 # ruff: noqa: RUF001
 import argparse
 import json
+import logging
 import sys
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class Error(Exception):
@@ -130,6 +133,12 @@ def field_def_from_default_value(
     finalize_field: Callable[..., tuple[str, str]],
 ) -> tuple[str, str] | None:
     # default_value = prop_info.get("default")
+    if "Unknown" in field_types:
+        # Unknown type, doesnt matter what the default value is
+        # type Unknown | a -> Unknown
+        return finalize_field(
+            field_types=field_types,
+        )
     if default_value is None:
         return finalize_field(
             field_types=field_types | {"None"},
@@ -237,6 +246,9 @@ def generate_dataclass(
         if not prop_type and not union_variants and not enum_variants:
             msg = f"Type not found for property {prop} {prop_info}"
             raise Error(msg)
+            msg = f"Type not found for property {prop} {prop_info}.\nConverting to unknown type.\n"
+            logger.warning(msg)
+            prop_type = "Unknown"
 
         if union_variants:
             field_types = map_json_type(union_variants)
@@ -283,6 +295,8 @@ def generate_dataclass(
                         )
                     )
                     known_classes.add(nested_class_name)
+        elif prop_type == "Unknown":
+            field_types = {"Unknown"}
         else:
             field_types = map_json_type(
                 prop_type,
@@ -388,6 +402,12 @@ def run_gen(args: argparse.Namespace) -> None:
 # ruff: noqa: F401
 # fmt: off
 from typing import Any, Literal, NotRequired, TypedDict\n
+
+# Mimic "unknown".
+# 'Any' is unsafe because it allows any operations
+# This forces the user to use type-narrowing or casting in the code
+class Unknown:
+    pass
 """
         )
         f.write(dataclass_code)
