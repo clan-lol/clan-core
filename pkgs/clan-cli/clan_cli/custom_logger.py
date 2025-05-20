@@ -135,11 +135,7 @@ def get_callers(start: int = 2, end: int = 2) -> list[str]:
 def print_trace(msg: str, logger: logging.Logger, prefix: str | None) -> None:
     trace_depth = int(os.environ.get("TRACE_DEPTH", "0"))
     callers = get_callers(3, 4 + trace_depth)
-
-    if "run_no_stdout" in callers[0]:
-        callers = callers[1:]
-    else:
-        callers.pop()
+    callers.pop()
 
     if len(callers) == 1:
         callers_str = f"Caller: {callers[0]}\n"
