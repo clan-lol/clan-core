@@ -4,8 +4,7 @@ import logging
 import sys
 
 from clan_lib.errors import ClanError
-
-from clan_cli.git import commit_files
+from clan_lib.git import commit_files
 
 from . import sops
 from .secrets import update_secrets

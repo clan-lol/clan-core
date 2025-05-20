@@ -2,13 +2,13 @@ import argparse
 from pathlib import Path
 
 from clan_lib.errors import ClanError
+from clan_lib.git import commit_files
 
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_machines,
     complete_secrets,
 )
-from clan_cli.git import commit_files
 from clan_cli.machines.types import machine_name_type, validate_hostname
 
 from . import secrets, sops

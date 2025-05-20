@@ -8,6 +8,7 @@ from clan_lib.api import API
 from clan_lib.dirs import get_clan_flake_toplevel_or_env
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.git import commit_file
 from clan_lib.nix_models.inventory import (
     Machine as InventoryMachine,
 )
@@ -18,7 +19,6 @@ from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import apply_patch
 
 from clan_cli.completions import add_dynamic_completer, complete_tags
-from clan_cli.git import commit_file
 from clan_cli.machines.list import list_machines
 from clan_cli.templates import (
     InputPrio,
