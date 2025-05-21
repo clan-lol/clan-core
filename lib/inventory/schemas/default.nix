@@ -17,7 +17,9 @@ let
 
   frontMatterSchema = jsonLib.parseOptions self.clanLib.modules.frontmatterOptions { };
 
-  inventorySchema = jsonLib.parseModule (import ../build-inventory/interface.nix);
+  inventorySchema = jsonLib.parseModule (
+    import ../build-inventory/interface.nix { inherit (self) clanLib; }
+  );
 
   renderSchema = pkgs.writers.writePython3Bin "render-schema" {
     flakeIgnore = [

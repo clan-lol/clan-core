@@ -1,9 +1,13 @@
-{ pkgs, lib }:
+{
+  pkgs,
+  lib,
+  clanLib,
+}:
 let
   eval = lib.evalModules {
     class = "nixos";
     modules = [
-      ./interface.nix
+      (lib.modules.importApply ./interface.nix { inherit clanLib; })
     ];
   };
   evalDocs = pkgs.nixosOptionsDoc {

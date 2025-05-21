@@ -19,6 +19,7 @@ in
     let
       jsonDocs = import ./eval-docs.nix {
         inherit pkgs lib;
+        inherit (self) clanLib;
       };
     in
     {
