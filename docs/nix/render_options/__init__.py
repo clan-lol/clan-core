@@ -576,7 +576,7 @@ def produce_clan_modules_docs() -> None:
 !!! Warning "Deprecated"
     The `{module_name}` module is deprecated.*
 
-    Use: [clanServices/{module_name}](../clanServices/{module_name}.md) instead
+    Use [clanServices/{module_name}](../clanServices/{module_name}.md) instead
 """
         else:
             output += f"""

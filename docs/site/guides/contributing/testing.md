@@ -113,7 +113,7 @@ rg self.clanLib.test.containerTest
 
 ## Python tests via pytest
 
-Since the clan cli is written in python, the `pytest` framework is used to define unit tests and integration tests via python
+Since the Clan CLI is written in python, the `pytest` framework is used to define unit tests and integration tests via python
 
 Due to superior efficiency,
 

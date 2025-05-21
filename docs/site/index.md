@@ -14,7 +14,7 @@ hide:
 
 <div class="grid cards" markdown>
 
--   [Autoincludes](./guides/adding-machines.md)
+-   [Adding more machines](./guides/more-machines.md)
 
     ---
 
@@ -24,7 +24,7 @@ hide:
 
     ---
 
-    Learn how to manage secrets with facts.
+    Learn how to manage secrets with vars.
 
 -   [Inventory](./guides/inventory.md)
 
@@ -36,7 +36,7 @@ hide:
 
     ---
 
-    Use clan with [https://flake.parts/]()
+    Use Clan with [https://flake.parts/]()
 
 -   [Contribute](./guides/contributing/CONTRIBUTING.md)
 
@@ -44,11 +44,11 @@ hide:
 
     Discover how to set up a development environment to contribute to Clan!
 
+-   [macOS machines](./guides/macos.md)
+
     ---
 
     Manage macOS machines with nix-darwin
-
--   [MacOS machines](./guides/macos.md)
 
 </div>
 
@@ -58,11 +58,11 @@ hide:
 
 <div class="grid cards" markdown>
 
--   [Cli Reference](./reference/cli/index.md)
+-   [CLI Reference](./reference/cli/index.md)
 
     ---
 
-    The `clan` cli command
+    The `clan` CLI command
 
 -   [Service Modules](./reference/clanServices/index.md)
 
@@ -84,7 +84,7 @@ hide:
 
     An overview of available clanModules
 
-    !!! Example "Those will get deprecated soon"
+    !!! Example "These will be deprecated soon"
 
 
 </div>

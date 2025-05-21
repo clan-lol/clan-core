@@ -1,24 +1,24 @@
 .direnv
-**/.nixos-test-history
-***/.hypothesis
+.nixos-test-history
+.hypothesis
 out.log
 .coverage.*
-**/qubeclan
+qubeclan
 pkgs/repro-hook
-**/testdir
+testdir
 democlan
 example_clan
-**/result
+result*
 /pkgs/clan-cli/clan_lib/nixpkgs
 /pkgs/clan-cli/clan_cli/webui/assets
 nixos.qcow2
-**/*.glade~
+*.glade~
 /docs/out
 /pkgs/clan-cli/clan_lib/select
-**/.local.env
+.local.env
 
-# MacOS stuff
-**/.DS_store
+# macOS stuff
+.DS_Store
 
 # dream2nix
 .dream2nix

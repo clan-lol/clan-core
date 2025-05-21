@@ -10,13 +10,13 @@ In this example, we will guide you through automating that interaction using cla
 For a more general explanation of what clan vars are and how it works, see the intro of the [Reference Documentation for vars](../reference/clan.core/vars.md)
 
 This guide assumes
-- clan is set up already (see [Getting Started](../guides/getting-started/index.md))
-- a machine has been added to the clan (see [Adding Machines](./adding-machines.md))
+- Clan is set up already (see [Getting Started](../guides/getting-started/index.md))
+- a machine has been added to the clan (see [Adding Machines](./more-machines.md))
 
 This section will walk you through the following steps:
 
 1. declare a `generator` in the machine's nixos configuration
-2. inspect the status via the clan cli
+2. inspect the status via the Clan CLI
 3. generate the vars
 4. observer the changes
 5. update the machine
@@ -147,5 +147,5 @@ Updated var root-password/password-hash
 
 ## Further Reading
 
-- [Reference Documentation for `clan.core.vars` nixos options](../reference/clan.core/vars.md)
-- [Reference Documentation for the `clan vars` cli command](../reference/cli/vars.md)
+- [Reference Documentation for `clan.core.vars` NixOS options](../reference/clan.core/vars.md)
+- [Reference Documentation for the `clan vars` CLI command](../reference/cli/vars.md)
