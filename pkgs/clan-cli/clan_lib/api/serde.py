@@ -50,9 +50,8 @@ from clan_lib.errors import ClanError
 
 
 def sanitize_string(s: str) -> str:
-    # Using the native string sanitizer to handle all edge cases
-    # Remove the outer quotes '"string"'
-    # return json.dumps(s)[1:-1]
+    # Currently, this is a no-op
+    # but it can be extended to escape special characters if we need it
     return s
 
 
@@ -86,6 +85,23 @@ def get_enum_value(obj: Any) -> Any:
 
 
 def dataclass_to_dict(obj: Any, *, use_alias: bool = True) -> Any:
+    """
+    Converts objects to dictionaries.
+
+    This function is round trip safe.
+    Meaning that if you convert the object to a dict and then back to a dataclass using 'from_dict'
+
+    List of supported types:
+    - dataclass
+    - list
+    - tuple
+    - set
+    - dict
+    - Path: Gets converted to string
+    - Enum: Gets converted to its value
+
+    """
+
     def _to_dict(obj: Any) -> Any:
         """
         Utility function to convert dataclasses to dictionaries
@@ -158,6 +174,26 @@ def construct_value(
 ) -> Any:
     """
     Construct a field value from a type hint and a field value.
+
+    The following types are supported and matched in this order:
+
+    - None
+    - dataclass
+    - Path: Constructed from a string, Error if value is not string
+    - dict
+    - str
+    - int, float: Constructed from any value, Error if value is string
+    - bool: Constructed from any value, Error if value is not boolean
+    - Union: Construct the value of the first non-None type. Example: 'None | Path | str' -> Path
+    - list: Construct Members recursively from inner type of the list. Error if value not a list
+    - dict: Construct Members recursively from inner type of the dict. Error if value not a dict
+    - Literal: Check if the value is one of the valid values. Error if value not in valid values
+    - Enum: Construct the Enum by passing the value into the enum constructor. Error is Enum cannot be constructed
+    - Annotated: Unwrap the type and construct the value
+    - TypedDict: Construct the TypedDict by passing the value into the TypedDict constructor. Error if value not a dict
+    - Unknown: Return the field value as is, type reserved 'class Unknown'
+
+    - Otherwise: Raise a ClanError
     """
     if loc is None:
         loc = []
@@ -276,6 +312,8 @@ def construct_dataclass(
     """
     type t MUST be a dataclass
     Dynamically instantiate a data class from a dictionary, handling nested data classes.
+
+    Constructs the field values from the data dictionary using 'construct_value'
     """
     if path is None:
         path = []
@@ -326,6 +364,11 @@ def construct_dataclass(
 def from_dict(
     t: type | UnionType, data: dict[str, Any] | Any, path: list[str] | None = None
 ) -> Any:
+    """
+    Dynamically instantiate a data class from a dictionary, handling nested data classes.
+
+    This function is round trip safe in conjunction with 'dataclass_to_dict'
+    """
     if path is None:
         path = []
     if is_dataclass(t):
