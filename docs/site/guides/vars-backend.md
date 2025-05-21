@@ -7,7 +7,7 @@ Defining a linux user's password via the nixos configuration previously required
 
 In this example, we will guide you through automating that interaction using clan `vars`.
 
-For a more general explanation of what clan vars are and how it works, see the intro of the [Reference Documentation for vars](https://docs.clan.lol/reference/clan-core/vars/)
+For a more general explanation of what clan vars are and how it works, see the intro of the [Reference Documentation for vars](../reference/clan.core/vars.md)
 
 This guide assumes
 - clan is set up already (see [Getting Started](../guides/getting-started/index.md))
@@ -147,5 +147,5 @@ Updated var root-password/password-hash
 
 ## Further Reading
 
-- [Reference Documentation for `clan.core.vars` nixos options](../reference/clan-core/vars.md)
+- [Reference Documentation for `clan.core.vars` nixos options](../reference/clan.core/vars.md)
 - [Reference Documentation for the `clan vars` cli command](../reference/cli/vars.md)

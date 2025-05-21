@@ -206,7 +206,12 @@ Some modules are considered 'low-level' or 'expert modules' and are not availabl
 """
 
 
-clan_core_descr = """`clan.core` is always included in each machine `config`.
+clan_core_descr = """
+`clan.core` is always present in a clan machine
+
+* It is a module of class **`nixos`**
+* Provides a set of common options for every machine (in addition to the NixOS options)
+
 Your can customize your machines behavior with the configuration [options](#module-options) provided below.
 """
 
@@ -292,16 +297,28 @@ def produce_clan_core_docs() -> None:
     core_outputs: dict[str, str] = {}
     with CLAN_CORE_DOCS.open() as f:
         options: dict[str, dict[str, Any]] = json.load(f)
-        module_name = "clan-core"
+        module_name = "clan.core"
 
         transform = {n.replace("clan.core.", ""): v for n, v in options.items()}
         split = split_options_by_root(transform)
 
         # Prepopulate the index file header
         indexfile = f"{module_name}/index.md"
-        core_outputs[indexfile] = (
-            module_header(module_name) + clan_core_descr + options_head
-        )
+        core_outputs[indexfile] = module_header(module_name) + clan_core_descr
+
+        core_outputs[indexfile] += """!!! info "Submodules"\n"""
+
+        for submodule_name, split_options in split.items():
+            root = options_to_tree(split_options, debug=True)
+            module = root.suboptions[0]
+            module_type = module.info.get("type")
+            if module_type is not None and "submodule" not in module_type:
+                continue
+            core_outputs[indexfile] += (
+                f"      - [{submodule_name}](./{submodule_name}.md)\n"
+            )
+
+        core_outputs[indexfile] += options_head
 
         for submodule_name, split_options in split.items():
             outfile = f"{module_name}/{submodule_name}.md"
@@ -317,7 +334,6 @@ def produce_clan_core_docs() -> None:
             print("type", module.info.get("type"))
 
             module_type = module.info.get("type")
-
             if module_type is not None and "submodule" not in module_type:
                 outfile = indexfile
                 init_level = 2

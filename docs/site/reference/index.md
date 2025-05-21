@@ -6,7 +6,7 @@ This section of the site provides an overview of available options and commands 
 
 - Learn how to use the [Clan CLI](./cli/index.md)
 - Explore available services and application [modules](./clanModules/index.md)
-- Discover [configuration options](./clan-core/index.md) that manage essential features
+- Discover [configuration options](./clan.core/index.md) that manage essential features
 - Find descriptions of the [Nix interfaces](./nix-api/buildclan.md) for defining a Clan
 
 ---

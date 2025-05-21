@@ -5,7 +5,7 @@ For a high level overview about `vars` see our [blog post](https://clan.lol/blog
 This guide will help you migrate your modules that still use our [`facts`](../../guides/secrets.md) backend
 to the [`vars`](../../guides/vars-backend.md) backend.
 
-The `vars` [module](../../reference/clan-core/vars.md) and the clan [command](../../reference/cli/vars.md) work in tandem, they should ideally be kept in sync.
+The `vars` [module](../../reference/clan.core/vars.md) and the clan [command](../../reference/cli/vars.md) work in tandem, they should ideally be kept in sync.
 
 ## Keep Existing Values
 

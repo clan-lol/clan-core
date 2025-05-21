@@ -81,14 +81,14 @@ nav:
   - Reference:
       - Overview: reference/index.md
       - Clan Services:
-          - reference/clanServices/index.md
+          - Overview: reference/clanServices/index.md
           - reference/clanServices/admin.md
           - reference/clanServices/hello-world.md
           - reference/clanServices/wifi.md
       - Clan Modules:
-          - Overview:
-              - reference/clanModules/index.md
-              - reference/clanModules/frontmatter/index.md
+          - Overview: reference/clanModules/index.md
+          - Frontmatter Format: reference/clanModules/frontmatter/index.md
+          - reference/clanModules/frontmatter/index.md
           # TODO: display the docs of the clan.service modules
           - reference/clanModules/admin.md
           # This is the module overview and should stay at the top
@@ -132,7 +132,7 @@ nav:
           - reference/clanModules/zerotier.md
           - reference/clanModules/zt-tcp-relay.md
       - CLI:
-          - reference/cli/index.md
+          - Overview: reference/cli/index.md
 
           - reference/cli/backups.md
           - reference/cli/facts.md
@@ -146,17 +146,18 @@ nav:
           - reference/cli/state.md
           - reference/cli/vars.md
           - reference/cli/vms.md
-      - Clan Core:
-          - reference/clan-core/index.md
+      - NixOS Modules:
+          - clan.core:
+              - Overview: reference/clan.core/index.md
 
-          - reference/clan-core/backups.md
-          - reference/clan-core/deployment.md
-          - reference/clan-core/facts.md
-          - reference/clan-core/networking.md
-          - reference/clan-core/settings.md
-          - reference/clan-core/sops.md
-          - reference/clan-core/state.md
-          - reference/clan-core/vars.md
+              - reference/clan.core/backups.md
+              - reference/clan.core/deployment.md
+              - reference/clan.core/facts.md
+              - reference/clan.core/networking.md
+              - reference/clan.core/settings.md
+              - reference/clan.core/sops.md
+              - reference/clan.core/state.md
+              - reference/clan.core/vars.md
       - Nix API:
           - buildClan: reference/nix-api/buildclan.md
           - Inventory: reference/nix-api/inventory.md
