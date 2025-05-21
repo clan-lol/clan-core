@@ -43,6 +43,8 @@ lib.fix (clanLib: {
   inventory = clanLib.callLib ./inventory { };
   modules = clanLib.callLib ./inventory/frontmatter { };
   test = clanLib.callLib ./test { };
+  # Custom types
+  types = clanLib.callLib ./types { };
 
   # Plain imports.
   introspection = import ./introspection { inherit lib; };
