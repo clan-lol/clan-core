@@ -58,12 +58,15 @@ let
                 getPrios { options = submoduleEval.options; }
               else
                 # Nested attrsOf
-                (lib.optionalAttrs (type.nestedTypes.elemType.name == "attrsOf") (
-                  prioPerValue {
-                    type = type.nestedTypes.elemType;
-                    defs = zipDefs defs.${attrName};
-                  } prioSet.value
-                ))
+                (lib.optionalAttrs
+                  (type.nestedTypes.elemType.name == "attrsOf" || type.nestedTypes.elemType.name == "lazyAttrsOf")
+                  (
+                    prioPerValue {
+                      type = type.nestedTypes.elemType;
+                      defs = zipDefs defs.${attrName};
+                    } prioSet.value
+                  )
+                )
             )
           );
 
@@ -79,7 +82,7 @@ let
       in
       if opt ? type && opt.type.name == "submodule" then
         (prio) // submodulePrios
-      else if opt ? type && opt.type.name == "attrsOf" then
+      else if opt ? type && (opt.type.name == "attrsOf" || opt.type.name == "lazyAttrsOf") then
         prio
         // (prioPerValue {
           type = opt.type;
