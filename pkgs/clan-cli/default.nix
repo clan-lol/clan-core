@@ -274,6 +274,10 @@ pythonRuntime.pkgs.buildPythonApplication {
             xargs cp --recursive --target "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
             nix-store --load-db --store "$CLAN_TEST_STORE" < "$closureInfo/registration"
 
+            # used for tests without flakes
+            export NIXPKGS=${nixpkgs}
+            export NIX_SELECT=${nix-select}
+
             # limit build cores to 4
             jobs="$((NIX_BUILD_CORES>4 ? 4 : NIX_BUILD_CORES))"
 

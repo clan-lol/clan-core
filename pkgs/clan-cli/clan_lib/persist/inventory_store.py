@@ -1,8 +1,9 @@
 import json
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Protocol
 
 from clan_lib.errors import ClanError
-from clan_lib.flake import Flake
 from clan_lib.git import commit_file
 from clan_lib.nix_models.inventory import Inventory
 
@@ -21,13 +22,23 @@ class WriteInfo:
     data_disk: Inventory
 
 
+class FlakeInterface(Protocol):
+    def select(
+        self,
+        selector: str,
+        nix_options: list[str] | None = None,
+    ) -> Any: ...
+
+    @property
+    def path(self) -> Path: ...
+
+
 class InventoryStore:
     def __init__(
-        self,
-        flake: Flake,
+        self, flake: FlakeInterface, inventory_file_name: str = "inventory.json"
     ) -> None:
         self._flake = flake
-        self.inventory_file = self._flake.path / "inventory.json"
+        self.inventory_file = self._flake.path / inventory_file_name
 
     def _load_merged_inventory(self) -> Inventory:
         """
@@ -49,7 +60,6 @@ class InventoryStore:
         """
 
         # TODO: make this configurable
-
         if not self.inventory_file.exists():
             return {}
         with self.inventory_file.open() as f:
@@ -110,13 +120,11 @@ class InventoryStore:
         """
         return self._load_merged_inventory()
 
-    def delete(self, delete_set: set[str]) -> None:
+    def delete(self, delete_set: set[str], commit: bool = True) -> None:
         """
         Delete keys from the inventory
         """
-        write_info = self._write_info()
-
-        data_disk = dict(write_info.data_disk)
+        data_disk = dict(self._get_persisted())
 
         for delete_path in delete_set:
             delete_by_path(data_disk, delete_path)
@@ -124,11 +132,12 @@ class InventoryStore:
         with self.inventory_file.open("w") as f:
             json.dump(data_disk, f, indent=2)
 
-        commit_file(
-            self.inventory_file,
-            self._flake.path,
-            commit_message=f"Delete inventory keys {delete_set}",
-        )
+        if commit:
+            commit_file(
+                self.inventory_file,
+                self._flake.path,
+                commit_message=f"Delete inventory keys {delete_set}",
+            )
 
     def write(self, update: Inventory, message: str, commit: bool = True) -> None:
         """
@@ -157,8 +166,7 @@ class InventoryStore:
         for patch_path, data in patchset.items():
             apply_patch(persisted, patch_path, data)
 
-        for delete_path in delete_set:
-            delete_by_path(persisted, delete_path)
+        self.delete(delete_set, commit=False)
 
         with self.inventory_file.open("w") as f:
             json.dump(persisted, f, indent=2)
