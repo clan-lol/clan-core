@@ -218,7 +218,7 @@ def execute_generator(
                 prompt_file = tmpdir_prompts / prompt.name
                 value = get_prompt_value(prompt.name)
                 prompt_file.write_text(value)
-        from clan_cli import bwrap
+        from clan_lib import bwrap
 
         final_script = generator.final_script()
 

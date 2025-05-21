@@ -104,7 +104,7 @@ def generate_service_facts(
                 service, machine.facts_data[service]["generator"]["prompt"]
             )
             env["prompt_value"] = prompt_value
-    from clan_cli import bwrap
+    from clan_lib import bwrap
 
     if sys.platform == "linux" and bwrap.bubblewrap_works():
         cmd = bubblewrap_cmd(generator, facts_dir, secrets_dir)

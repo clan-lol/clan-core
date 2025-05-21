@@ -1,7 +1,7 @@
 import sys
 
 import pytest
-from clan_cli.bwrap import bubblewrap_works
+from clan_lib.bwrap import bubblewrap_works
 
 
 @pytest.mark.skipif(sys.platform != "linux", reason="bubblewrap only works on linux")
