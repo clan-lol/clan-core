@@ -1,3 +1,4 @@
+{ clanLib }:
 {
   lib,
   self,
@@ -94,7 +95,11 @@ in
     };
 
     inventory = lib.mkOption {
-      type = types.submodule { imports = [ ../inventory/build-inventory/interface.nix ]; };
+      type = types.submodule {
+        imports = [
+          (lib.modules.importApply ../inventory/build-inventory/interface.nix { inherit clanLib; })
+        ];
+      };
       description = ''
         The `Inventory` submodule.
 

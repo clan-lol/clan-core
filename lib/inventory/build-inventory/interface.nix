@@ -403,7 +403,7 @@ in
                     };
                     settings = lib.mkOption {
                       default = { };
-                      type = types.uniqueDeferredSerializableModule;
+                      type = clanLib.types.uniqueDeferredSerializableModule;
                     };
                   };
                 }

@@ -3,12 +3,13 @@
 ## Add any logic to ./module.nix
 {
   lib,
+  clanLib,
   ...
 }:
 {
   flakePartsModule = {
     imports = [
-      ./interface.nix
+      (lib.modules.importApply ./interface.nix { inherit clanLib; })
       ./module.nix
     ];
   };

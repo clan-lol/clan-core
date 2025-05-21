@@ -18,7 +18,7 @@ module:
       ;
   };
   modules = [
-    ./interface.nix
+    (lib.modules.importApply ./interface.nix { inherit (clan-core) clanLib; })
     module
     {
       inherit specialArgs;

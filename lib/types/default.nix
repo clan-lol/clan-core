@@ -4,7 +4,12 @@
     self:
 
     let
-      checkDef = loc: def: if def.value ? imports then throw "uniqueDeferredSerializableModule doesn't allow nested imports" else def;
+      checkDef =
+        _loc: def:
+        if def.value ? imports then
+          throw "uniqueDeferredSerializableModule doesn't allow nested imports"
+        else
+          def;
     in
     # Essentially the "raw" type, but with a custom name and check
     lib.mkOptionType {
@@ -18,8 +23,9 @@
         merge = loc: defs: {
           imports = map (
             def:
-            lib.seq (checkDef loc def)
-            lib.setDefaultModuleLocation "${def.file}, via option ${lib.showOption loc}" def.value
+            lib.seq (checkDef loc def) lib.setDefaultModuleLocation
+              "${def.file}, via option ${lib.showOption loc}"
+              def.value
           ) defs;
         };
       };

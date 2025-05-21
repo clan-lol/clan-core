@@ -43,7 +43,7 @@ in
     let
       eval = evalSettingsModule {
         foo = {
-          imports = [];
+          imports = [ ];
         };
       };
     in
@@ -53,15 +53,17 @@ in
       expectedError = {
         type = "ThrownError";
         message = "*nested imports";
-       };
+      };
     };
 
   test_no_function_modules =
     let
       eval = evalSettingsModule {
-        foo = {...}: {
+        foo =
+          { ... }:
+          {
 
-        };
+          };
       };
     in
     {

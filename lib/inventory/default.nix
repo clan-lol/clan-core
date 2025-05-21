@@ -5,7 +5,7 @@ in
 {
   inherit (services) evalClanService mapInstances resolveModule;
   inherit (import ./build-inventory { inherit lib clanLib; }) buildInventory;
-  interface = ./build-inventory/interface.nix;
+  interface = lib.modules.importApply ./build-inventory/interface.nix { inherit clanLib; };
   # Returns the list of machine names
   # { ... } -> [ string ]
   resolveTags =
