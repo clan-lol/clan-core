@@ -315,10 +315,10 @@ def _get_previous_value(
 def get_closure(
     machine: "Machine",
     generator_name: str | None,
-    regenerate: bool,
+    full_closure: bool,
     include_previous_values: bool = False,
 ) -> list[Generator]:
-    from .graph import all_missing_closure, full_closure
+    from . import graph
 
     vars_generators = machine.vars_generators()
     generators: dict[str, Generator] = {
@@ -331,12 +331,12 @@ def get_closure(
 
     result_closure = []
     if generator_name is None:  # all generators selected
-        if regenerate:
-            result_closure = full_closure(generators)
+        if full_closure:
+            result_closure = graph.full_closure(generators)
         else:
-            result_closure = all_missing_closure(generators)
+            result_closure = graph.all_missing_closure(generators)
     # specific generator selected
-    elif regenerate:
+    elif full_closure:
         result_closure = requested_closure([generator_name], generators)
     else:
         result_closure = minimal_closure([generator_name], generators)
@@ -353,7 +353,7 @@ def get_closure(
 def get_generators_closure(
     machine_name: str,
     base_dir: Path,
-    regenerate: bool = False,
+    full_closure: bool = False,
     include_previous_values: bool = False,
 ) -> list[Generator]:
     from clan_cli.machines.machines import Machine
@@ -361,7 +361,7 @@ def get_generators_closure(
     return get_closure(
         machine=Machine(name=machine_name, flake=Flake(str(base_dir))),
         generator_name=None,
-        regenerate=regenerate,
+        full_closure=full_closure,
         include_previous_values=include_previous_values,
     )
 

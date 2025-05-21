@@ -8,12 +8,14 @@ import {
 import { createQuery, useQueryClient } from "@tanstack/solid-query";
 import { Typography } from "@/src/components/Typography";
 import { Group } from "@/src/components/group";
-import { For, Match, Show, Switch } from "solid-js";
+import { For, JSX, Match, Show, Switch } from "solid-js";
 import { TextInput } from "@/src/Form/fields";
 import toast from "solid-toast";
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { activeURI } from "@/src/App";
 import { StepProps } from "./hardware-step";
+import { BackButton } from "@/src/components/BackButton";
+import { Button } from "@/src/components/button";
 
 export type VarsValues = FieldValues & Record<string, Record<string, string>>;
 
@@ -22,6 +24,7 @@ export interface VarsFormProps {
   dir: string;
   handleSubmit: SubmitHandler<VarsValues>;
   generators: SuccessData<"get_generators_closure">;
+  footer: JSX.Element;
 }
 
 export const VarsForm = (props: VarsFormProps) => {
@@ -58,87 +61,98 @@ export const VarsForm = (props: VarsFormProps) => {
     >
       <div class="max-h-[calc(100vh-20rem)] overflow-y-scroll">
         <div class="flex h-full flex-col gap-6 p-4">
-          <For each={props.generators}>
-            {(generator) => (
-              <Group>
-                <Typography hierarchy="label" size="default">
-                  {generator.name}
-                </Typography>
-                <div>
-                  Bound to module (shared): {generator.share ? "True" : "False"}
-                </div>
-                <For each={generator.prompts}>
-                  {(prompt) => (
-                    <Group>
-                      <Typography hierarchy="label" size="s">
-                        {!prompt.previous_value ? "Required" : "Optional"}
-                      </Typography>
-                      <Typography hierarchy="label" size="s">
-                        {prompt.name}
-                      </Typography>
-                      <Field
-                        // Avoid nesting issue in case of  a "."
-                        name={`${generator.name.replaceAll(
-                          ".",
-                          "__dot__",
-                        )}.${prompt.name.replaceAll(".", "__dot__")}`}
-                      >
-                        {(field, props) => (
-                          <Switch
-                            fallback={
-                              <TextInput
-                                inputProps={{
-                                  ...props,
-                                  type:
-                                    prompt.prompt_type === "hidden"
-                                      ? "password"
-                                      : "text",
-                                }}
-                                label={prompt.description}
-                                value={prompt.previous_value ?? ""}
-                                error={field.error}
-                              />
-                            }
-                          >
-                            <Match
-                              when={
-                                prompt.prompt_type === "multiline" ||
-                                prompt.prompt_type === "multiline-hidden"
+          <Show
+            when={props.generators.length > 0}
+            fallback="No credentials needed"
+          >
+            <For each={props.generators}>
+              {(generator) => (
+                <Group>
+                  <Typography hierarchy="label" size="default">
+                    {generator.name}
+                  </Typography>
+                  <div>
+                    Bound to module (shared):{" "}
+                    {generator.share ? "True" : "False"}
+                  </div>
+                  <For each={generator.prompts}>
+                    {(prompt) => (
+                      <Group>
+                        <Typography hierarchy="label" size="s">
+                          {!prompt.previous_value ? "Required" : "Optional"}
+                        </Typography>
+                        <Typography hierarchy="label" size="s">
+                          {prompt.name}
+                        </Typography>
+                        <Field
+                          // Avoid nesting issue in case of  a "."
+                          name={`${generator.name.replaceAll(
+                            ".",
+                            "__dot__",
+                          )}.${prompt.name.replaceAll(".", "__dot__")}`}
+                        >
+                          {(field, props) => (
+                            <Switch
+                              fallback={
+                                <TextInput
+                                  inputProps={{
+                                    ...props,
+                                    type:
+                                      prompt.prompt_type === "hidden"
+                                        ? "password"
+                                        : "text",
+                                  }}
+                                  label={prompt.description}
+                                  value={prompt.previous_value ?? ""}
+                                  error={field.error}
+                                />
                               }
                             >
-                              <textarea
-                                {...props}
-                                class="w-full h-32 border border-gray-300 rounded-md p-2"
-                                placeholder={prompt.description}
-                                value={prompt.previous_value ?? ""}
-                                name={prompt.description}
-                              />
-                            </Match>
-                          </Switch>
-                        )}
-                      </Field>
-                    </Group>
-                  )}
-                </For>
-              </Group>
-            )}
-          </For>
+                              <Match
+                                when={
+                                  prompt.prompt_type === "multiline" ||
+                                  prompt.prompt_type === "multiline-hidden"
+                                }
+                              >
+                                <textarea
+                                  {...props}
+                                  class="w-full h-32 border border-gray-300 rounded-md p-2"
+                                  placeholder={prompt.description}
+                                  value={prompt.previous_value ?? ""}
+                                  name={prompt.description}
+                                />
+                              </Match>
+                            </Switch>
+                          )}
+                        </Field>
+                      </Group>
+                    )}
+                  </For>
+                </Group>
+              )}
+            </For>
+          </Show>
         </div>
       </div>
-      <button type="submit">Submit</button>
+      {props.footer}
     </Form>
   );
 };
 
-export const VarsStep = (props: StepProps<VarsValues>) => {
+type VarsStepProps = StepProps<VarsValues> & {
+  fullClosure?: boolean;
+};
+
+export const VarsStep = (props: VarsStepProps) => {
   const queryClient = useQueryClient();
 
   const generatorsQuery = createQuery(() => ({
-    queryKey: [props.dir, props.machine_id, "generators"],
+    queryKey: [props.dir, props.machine_id, "generators", props.fullClosure],
     queryFn: async () => {
       const result = await callApi("get_generators_closure", {
         base_dir: props.dir,
         machine_name: props.machine_id,
+        full_closure: props.fullClosure,
       });
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
@@ -181,6 +195,7 @@ export const VarsStep = (props: StepProps<VarsValues>) => {
             dir={props.dir}
             handleSubmit={handleSubmit}
             generators={generators()}
+            footer={props.footer}
           />
         )}
       </Match>
@@ -196,19 +211,40 @@ export const VarsPage = () => {
     if (searchParams?.action === "update") {
       navigate(`/machines/${params.id}?action=update`);
     } else {
-      toast.error("Invalid action for vars page");
+      navigate(-1);
     }
   };
+  const fullClosure = searchParams?.full_closure !== undefined;
+  const footer = (
+    <footer class="flex justify-end gap-y-3 border-t border-secondary-200 pt-5">
+      <Button
+        type="submit"
+        // disabled={formStore.submitting || !formStore.dirty}
+      >
+        Update edits
+      </Button>
+    </footer>
+  );
   return (
-    <Show when={activeURI()}>
-      {(uri) => (
-        <VarsStep
-          machine_id={params.id}
-          dir={uri()}
-          handleNext={handleNext}
-          footer
-        />
-      )}
-    </Show>
+    <div class="p-1">
+      {/* BackButton and header */}
+      <BackButton />
+      <div class="p-2">
+        <h3 class="text-2xl">{params.id}</h3>
+      </div>
+
+      {/* VarsStep component */}
+      <Show when={activeURI()}>
+        {(uri) => (
+          <VarsStep
+            machine_id={params.id}
+            dir={uri()}
+            handleNext={handleNext}
+            footer={footer}
+            fullClosure={fullClosure}
+          />
+        )}
+      </Show>
+    </div>
   );
 };

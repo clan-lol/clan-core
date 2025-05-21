@@ -538,6 +538,17 @@ const MachineForm = (props: MachineDetailsProps) => {
               >
                 Update
               </Button>
+              <Button
+                variant="light"
+                class="w-full"
+                size="s"
+                onClick={() => {
+                  navigate(`/machines/${machineName()}/vars`);
+                }}
+                endIcon={<Icon size={12} icon="Folder" />}
+              >
+                Credentials
+              </Button>
             </div>
             <div class=" w-fit" data-tip="Machine must be online"></div>
             {/* <Typography hierarchy="label" size="default">

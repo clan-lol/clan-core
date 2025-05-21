@@ -684,7 +684,7 @@ def test_api_set_prompts(
     generators = get_generators_closure(
         machine_name="my_machine",
         base_dir=flake.path,
-        regenerate=True,
+        full_closure=True,
         include_previous_values=True,
     )
     assert len(generators) == 1
