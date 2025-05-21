@@ -1,6 +1,6 @@
 {
   buildNpmPackage,
-  nodejs_20,
+  nodejs_22,
   importNpmLock,
 
   clan-ts-api,
@@ -9,7 +9,7 @@
 buildNpmPackage {
   pname = "clan-app-ui";
   version = "0.0.1";
-  nodejs = nodejs_20;
+  nodejs = nodejs_22;
   src = ./ui;
 
   npmDeps = importNpmLock {
