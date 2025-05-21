@@ -8,7 +8,7 @@ Instead use:
 
 Which is an abstraction over the inventory
 
-Interacting with 'clan_cli.inventory' is NOT recommended and will be removed
+Interacting with 'clan_lib.inventory' is NOT recommended and will be removed
 """
 
 import json
