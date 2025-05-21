@@ -1,13 +1,13 @@
-import { callApi } from "@/src/api";
-import { activeURI, clanList, setActiveURI, setClanList } from "@/src/App";
-import { createSignal, For, Match, Setter, Show, Switch } from "solid-js";
-import { createQuery } from "@tanstack/solid-query";
+import { createSignal, For, Show } from "solid-js";
 import { useFloating } from "@/src/floating";
 import { autoUpdate, flip, hide, offset, shift } from "@floating-ui/dom";
-import { useNavigate, A } from "@solidjs/router";
+import { A, useNavigate } from "@solidjs/router";
 import { registerClan } from "@/src/hooks";
 import { Button } from "@/src/components/button";
 import Icon from "@/src/components/icon";
+import { useClanContext } from "@/src/contexts/clan";
+import { clanURIs, setActiveClanURI } from "@/src/stores/clan";
+import { clanMetaQuery } from "@/src/queries/clan-meta";
 
 interface ClanItemProps {
   clan_dir: string;
@@ -15,19 +15,13 @@ interface ClanItemProps {
 const ClanItem = (props: ClanItemProps) => {
   const { clan_dir } = props;
 
-  const details = createQuery(() => ({
-    queryKey: [clan_dir, "meta"],
-    queryFn: async () => {
-      const result = await callApi("show_clan_meta", {
-        flake: { identifier: clan_dir },
-      });
-      if (result.status === "error") throw new Error("Failed to fetch data");
-      return result.data;
-    },
-  }));
+  const details = clanMetaQuery(clan_dir);
+
   const navigate = useNavigate();
   const [reference, setReference] = createSignal<HTMLElement>();
   const [floating, setFloating] = createSignal<HTMLElement>();
+
+  const { activeClanURI, removeClanURI } = useClanContext();
 
   // `position` is a reactive object.
   const position = useFloating(reference, floating, {
@@ -50,15 +44,7 @@ const ClanItem = (props: ClanItemProps) => {
   });
 
   const handleRemove = () => {
-    setClanList((s) =>
-      s.filter((v, idx) => {
-        if (v == clan_dir) {
-          setActiveURI(clanList()[idx - 1] || clanList()[idx + 1] || null);
-          return false;
-        }
-        return true;
-      }),
-    );
+    removeClanURI(clan_dir);
   };
 
   return (
@@ -77,10 +63,10 @@ const ClanItem = (props: ClanItemProps) => {
             variant="light"
             class=" "
             onClick={() => {
-              setActiveURI(clan_dir);
+              setActiveClanURI(clan_dir);
             }}
           >
-            {activeURI() === clan_dir ? "active" : "select"}
+            {activeClanURI() === clan_dir ? "active" : "select"}
           </Button>
           <Button
             size="s"
@@ -117,7 +103,7 @@ const ClanItem = (props: ClanItemProps) => {
       <div
         class=""
         classList={{
-          "": activeURI() === clan_dir,
+          "": activeClanURI() === clan_dir,
         }}
       >
         {clan_dir}
@@ -164,7 +150,7 @@ export const ClanList = () => {
           </div>
         </div>
         <div class=" shadow">
-          <For each={clanList()}>
+          <For each={clanURIs()}>
             {(value) => <ClanItem clan_dir={value} />}
           </For>
         </div>

@@ -6,7 +6,7 @@ export interface ModulesFilter {
   features: string[];
 }
 export const createModulesQuery = (
-  uri: string | null,
+  uri: string | undefined,
   filter?: ModulesFilter,
 ) =>
   createQuery(() => ({
@@ -34,7 +34,7 @@ export const createModulesQuery = (
     },
   }));
 
-export const tagsQuery = (uri: string | null) =>
+export const tagsQuery = (uri: string | undefined) =>
   createQuery<string[]>(() => ({
     queryKey: [uri, "tags"],
     placeholderData: [],
@@ -55,7 +55,7 @@ export const tagsQuery = (uri: string | null) =>
     },
   }));
 
-export const machinesQuery = (uri: string | null) =>
+export const machinesQuery = (uri: string | undefined) =>
   createQuery<string[]>(() => ({
     queryKey: [uri, "machines"],
     placeholderData: [],

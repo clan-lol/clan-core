@@ -1,16 +1,17 @@
 import { Component, createEffect } from "solid-js";
 import { Sidebar } from "@/src/components/Sidebar";
-import { clanList } from "../App";
 import { RouteSectionProps, useNavigate } from "@solidjs/router";
+import { useClanContext } from "@/src/contexts/clan";
 
 export const Layout: Component<RouteSectionProps> = (props) => {
   const navigate = useNavigate();
+  const { clanURIs } = useClanContext();
   createEffect(() => {
     console.log(
       "empty ClanList, redirect to welcome page",
-      clanList().length === 0,
+      clanURIs().length === 0,
     );
-    if (clanList().length === 0) {
+    if (clanURIs().length === 0) {
       navigate("/welcome");
     }
   });

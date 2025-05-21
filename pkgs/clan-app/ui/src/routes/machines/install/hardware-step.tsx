@@ -1,19 +1,17 @@
 import { callApi } from "@/src/api";
-import { activeURI } from "@/src/App";
 import { Button } from "@/src/components/button";
 import Icon from "@/src/components/icon";
 import { InputError, InputLabel } from "@/src/components/inputBase";
 import { FieldLayout } from "@/src/Form/fields/layout";
 import {
   createForm,
-  SubmitHandler,
   FieldValues,
-  validate,
-  required,
   getValue,
-  submit,
+  required,
   setValue,
-  FormStore,
+  submit,
+  SubmitHandler,
+  validate,
 } from "@modular-forms/solid";
 import { createEffect, createSignal, JSX, Match, Switch } from "solid-js";
 import { TextInput } from "@/src/Form/fields";
@@ -21,9 +19,10 @@ import { createQuery } from "@tanstack/solid-query";
 import { Badge } from "@/src/components/badge";
 import { Group } from "@/src/components/group";
 import {
-  FileSelectorField,
   type FileDialogOptions,
+  FileSelectorField,
 } from "@/src/components/fileSelect";
+import { useClanContext } from "@/src/contexts/clan";
 
 export type HardwareValues = FieldValues & {
   report: boolean;
@@ -76,8 +75,10 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
     }
   });
 
+  const { activeClanURI } = useClanContext();
+
   const generateReport = async (e: Event) => {
-    const curr_uri = activeURI();
+    const curr_uri = activeClanURI();
     if (!curr_uri) return;
 
     await validate(formStore, "target");

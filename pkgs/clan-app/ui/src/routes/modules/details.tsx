@@ -1,9 +1,7 @@
-import { activeURI } from "@/src/App";
 import { BackButton } from "@/src/components/BackButton";
 import { createModulesQuery } from "@/src/queries";
-import { useParams, useNavigate } from "@solidjs/router";
+import { useNavigate, useParams } from "@solidjs/router";
 import { createEffect, For, Match, Switch } from "solid-js";
-import { SolidMarkdown } from "solid-markdown";
 import { ModuleInfo } from "./list";
 import { createQuery } from "@tanstack/solid-query";
 import { JSONSchema7 } from "json-schema";
@@ -11,10 +9,13 @@ import { SubmitHandler } from "@modular-forms/solid";
 import { DynForm } from "@/src/Form/form";
 import { Button } from "@/src/components/button";
 import Icon from "@/src/components/icon";
+import { useClanContext } from "@/src/contexts/clan";
+import { activeClanURI } from "@/src/stores/clan";
 
 export const ModuleDetails = () => {
   const params = useParams();
-  const modulesQuery = createModulesQuery(activeURI());
+  const { activeClanURI } = useClanContext();
+  const modulesQuery = createModulesQuery(activeClanURI());
 
   return (
     <div class="p-1">
@@ -143,7 +144,7 @@ export const ModuleForm = (props: { id: string }) => {
   // TODO: Fetch the synced schema for all the modules at runtime
   // We use static schema file at build time for now. (Different versions might have different schema at runtime)
   const schemaQuery = createQuery(() => ({
-    queryKey: [activeURI(), "modules_schema"],
+    queryKey: [activeClanURI(), "modules_schema"],
     queryFn: async () => {
       const moduleSchema = await import(
         "../../../api/modules_schemas.json"

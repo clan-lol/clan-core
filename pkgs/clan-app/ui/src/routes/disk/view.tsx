@@ -1,13 +1,14 @@
 import { callApi } from "@/src/api";
-import { activeURI } from "@/src/App";
-import { createQuery } from "@tanstack/solid-query";
-import { createEffect } from "solid-js";
+import { useQuery } from "@tanstack/solid-query";
+import { useClanContext } from "@/src/contexts/clan";
 
 export function DiskView() {
-  const query = createQuery(() => ({
-    queryKey: ["disk", activeURI()],
+  const { activeClanURI } = useClanContext();
+
+  const query = useQuery(() => ({
+    queryKey: ["disk", activeClanURI()],
     queryFn: async () => {
-      const currUri = activeURI();
+      const currUri = activeClanURI();
       if (currUri) {
         // Example of calling an API
         const result = await callApi("get_inventory", {

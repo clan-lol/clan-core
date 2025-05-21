@@ -7,11 +7,11 @@ import {
   SubmitHandler,
 } from "@modular-forms/solid";
 import toast from "solid-toast";
-import { activeURI, setActiveURI, setClanList } from "@/src/App";
 import { TextInput } from "@/src/Form/fields/TextInput";
 import { useNavigate } from "@solidjs/router";
 import { Button } from "@/src/components/button";
 import Icon from "@/src/components/icon";
+import { useClanContext } from "@/src/contexts/clan";
 
 type CreateForm = Meta & {
   template: string;
@@ -26,6 +26,8 @@ export const CreateClan = () => {
     },
   });
   const navigate = useNavigate();
+
+  const { setActiveClanURI, addClanURI } = useClanContext();
 
   const handleSubmit: SubmitHandler<CreateForm> = async (values, event) => {
     const { template, ...meta } = values;
@@ -74,8 +76,10 @@ export const CreateClan = () => {
 
     if (r.status === "success") {
       toast.success("Clan Successfully Created");
-      setActiveURI(target_dir[0]);
-      setClanList((list) => [...list, target_dir[0]]);
+
+      addClanURI(target_dir[0]);
+      setActiveClanURI(target_dir[0]);
+
       navigate("/machines");
       reset(formStore);
     }

@@ -7,10 +7,9 @@ import {
   setValue,
 } from "@modular-forms/solid";
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
-import { createQuery, useQueryClient } from "@tanstack/solid-query";
+import { createQuery, useQuery, useQueryClient } from "@tanstack/solid-query";
 import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
 
-import { activeURI } from "@/src/App";
 import { Button } from "@/src/components/button";
 import Icon from "@/src/components/icon";
 import { TextInput } from "@/src/Form/fields/TextInput";
@@ -29,9 +28,11 @@ import cx from "classnames";
 import { VarsStep, VarsValues } from "./install/vars-step";
 import Fieldset from "@/src/Form/fieldset";
 import {
-  FileSelectorField,
   type FileDialogOptions,
+  FileSelectorField,
 } from "@/src/components/fileSelect";
+import { useClanContext } from "@/src/contexts/clan";
+
 type MachineFormInterface = MachineData & {
   sshKey?: File;
   disk?: string;
@@ -81,7 +82,9 @@ interface InstallMachineProps {
   machine: MachineData;
 }
 const InstallMachine = (props: InstallMachineProps) => {
-  const curr = activeURI();
+  const { activeClanURI } = useClanContext();
+
+  const curr = activeClanURI();
   const { name } = props;
   if (!curr || !name) {
     return <span>No Clan selected</span>;
@@ -95,7 +98,7 @@ const InstallMachine = (props: InstallMachineProps) => {
 
   const handleInstall = async (values: AllStepsValues) => {
     console.log("Installing", values);
-    const curr_uri = activeURI();
+    const curr_uri = activeClanURI();
 
     const target = values["1"].target;
     const diskValues = values["2"];
@@ -257,7 +260,7 @@ const InstallMachine = (props: InstallMachineProps) => {
                 // @ts-expect-error: This cannot be undefined in this context.
                 machine_id={props.name}
                 // @ts-expect-error: This cannot be undefined in this context.
-                dir={activeURI()}
+                dir={activeClanURI()}
                 handleNext={(data) => {
                   const prev = getValue(formStore, "1");
                   setValue(formStore, "1", { ...prev, ...data });
@@ -277,7 +280,7 @@ const InstallMachine = (props: InstallMachineProps) => {
                 // @ts-expect-error: This cannot be undefined in this context.
                 machine_id={props.name}
                 // @ts-expect-error: This cannot be undefined in this context.
-                dir={activeURI()}
+                dir={activeClanURI()}
                 footer={<Footer />}
                 handleNext={(data) => {
                   const prev = getValue(formStore, "2");
@@ -297,7 +300,7 @@ const InstallMachine = (props: InstallMachineProps) => {
                 // @ts-expect-error: This cannot be undefined in this context.
                 machine_id={props.name}
                 // @ts-expect-error: This cannot be undefined in this context.
-                dir={activeURI()}
+                dir={activeClanURI()}
                 handleNext={(data) => {
                   const prev = getValue(formStore, "3");
                   setValue(formStore, "3", { ...prev, ...data });
@@ -312,7 +315,7 @@ const InstallMachine = (props: InstallMachineProps) => {
                 // @ts-expect-error: This cannot be undefined in this context.
                 machine_id={props.name}
                 // @ts-expect-error: This cannot be undefined in this context.
-                dir={activeURI()}
+                dir={activeClanURI()}
                 handleNext={() => handleNext()}
                 // @ts-expect-error: This cannot be known.
                 initial={getValues(formStore)}
@@ -394,11 +397,12 @@ const MachineForm = (props: MachineDetailsProps) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const { activeClanURI } = useClanContext();
 
   const handleSubmit = async (values: MachineFormInterface) => {
     console.log("submitting", values);
 
-    const curr_uri = activeURI();
+    const curr_uri = activeClanURI();
     if (!curr_uri) {
       return;
     }
@@ -418,18 +422,18 @@ const MachineForm = (props: MachineDetailsProps) => {
         ),
       },
     });
-    queryClient.invalidateQueries({
-      queryKey: [activeURI(), "machine", machineName(), "get_machine_details"],
+    await queryClient.invalidateQueries({
+      queryKey: [curr_uri, "machine", machineName(), "get_machine_details"],
     });
 
     return null;
   };
 
   const generatorsQuery = createQuery(() => ({
-    queryKey: [activeURI(), machineName(), "generators"],
+    queryKey: [activeClanURI(), machineName(), "generators"],
     queryFn: async () => {
       const machine_name = machineName();
-      const base_dir = activeURI();
+      const base_dir = activeClanURI();
       if (!machine_name || !base_dir) {
         return [];
       }
@@ -460,7 +464,7 @@ const MachineForm = (props: MachineDetailsProps) => {
     if (isUpdating()) {
       return;
     }
-    const curr_uri = activeURI();
+    const curr_uri = activeClanURI();
     if (!curr_uri) {
       return;
     }
@@ -697,10 +701,12 @@ const MachineForm = (props: MachineDetailsProps) => {
 
 export const MachineDetails = () => {
   const params = useParams();
-  const genericQuery = createQuery(() => ({
-    queryKey: [activeURI(), "machine", params.id, "get_machine_details"],
+  const { activeClanURI } = useClanContext();
+
+  const genericQuery = useQuery(() => ({
+    queryKey: [activeClanURI(), "machine", params.id, "get_machine_details"],
     queryFn: async () => {
-      const curr = activeURI();
+      const curr = activeClanURI();
       if (curr) {
         const result = await callApi("get_machine_details", {
           machine: {

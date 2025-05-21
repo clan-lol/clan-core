@@ -5,12 +5,12 @@ import { Navigate, RouteDefinition, Router } from "@solidjs/router";
 import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 import {
+  CreateMachine,
   MachineDetails,
   MachineListView,
-  CreateMachine,
 } from "./routes/machines";
 import { Layout } from "./layout/layout";
-import { ClanList, CreateClan, ClanDetails } from "./routes/clans";
+import { ClanDetails, ClanList, CreateClan } from "./routes/clans";
 import { Flash } from "./routes/flash/view";
 import { HostList } from "./routes/hosts/view";
 import { Welcome } from "./routes/welcome";
@@ -21,9 +21,9 @@ import { ModuleDetails as AddModule } from "./routes/modules/add";
 import { ApiTester } from "./api_test";
 import { IconVariant } from "./components/icon";
 import { Components } from "./routes/components";
-import { activeURI } from "./App";
-import { VarsPage, VarsForm } from "./routes/machines/install/vars-step";
+import { VarsPage } from "./routes/machines/install/vars-step";
 import { ThreePlayground } from "./three";
+import { ClanProvider } from "./contexts/clan";
 
 export const client = new QueryClient();
 
@@ -186,7 +186,9 @@ render(
         <Toaster position="top-right" containerClassName="z-[9999]" />
       </Portal>
       <QueryClientProvider client={client}>
-        <Router root={Layout}>{routes}</Router>
+        <ClanProvider>
+          <Router root={Layout}>{routes}</Router>
+        </ClanProvider>
       </QueryClientProvider>
     </>
   ),

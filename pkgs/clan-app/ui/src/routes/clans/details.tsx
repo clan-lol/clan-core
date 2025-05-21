@@ -16,6 +16,7 @@ import toast from "solid-toast";
 import { Button } from "@/src/components/button";
 import Icon from "@/src/components/icon";
 import { Header } from "@/src/layout/header";
+import { clanMetaQuery } from "@/src/queries/clan-meta";
 
 interface EditClanFormProps {
   initial: GeneralData;
@@ -44,7 +45,7 @@ const EditClanForm = (props: EditClanFormProps) => {
         error: "Failed to update clan",
       },
     );
-    queryClient.invalidateQueries({
+    await queryClient.invalidateQueries({
       queryKey: [props.directory, "meta"],
     });
   };
@@ -142,16 +143,7 @@ export const ClanDetails = () => {
   const params = useParams();
   const clan_dir = window.atob(params.id);
   // Fetch general meta data
-  const clanQuery = createQuery(() => ({
-    queryKey: [clan_dir, "inventory", "meta"],
-    queryFn: async () => {
-      const result = await callApi("show_clan_meta", {
-        flake: { identifier: clan_dir },
-      });
-      if (result.status === "error") throw new Error("Failed to fetch data");
-      return result.data;
-    },
-  }));
+  const clanQuery = clanMetaQuery(clan_dir);
 
   return (
     <>

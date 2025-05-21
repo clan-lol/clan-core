@@ -1,18 +1,17 @@
 import { callApi } from "../api";
-import { setActiveURI, setClanList } from "../App";
+import { useClanContext } from "@/src/contexts/clan";
 
 export const registerClan = async () => {
+  const { setActiveClanURI, addClanURI } = useClanContext();
+
   try {
     const loc = await callApi("open_file", {
       file_request: { mode: "select_folder" },
     });
     if (loc.status === "success" && loc.data) {
       const data = loc.data[0];
-      setClanList((s) => {
-        const res = new Set([...s, data]);
-        return Array.from(res);
-      });
-      setActiveURI(data);
+      addClanURI(data);
+      setActiveClanURI(data);
       return data;
     }
   } catch (e) {

@@ -1,14 +1,12 @@
-import { For, createEffect, Show, type JSX, children } from "solid-js";
-import { A, RouteSectionProps } from "@solidjs/router";
-import { activeURI } from "@/src/App";
-import { createQuery } from "@tanstack/solid-query";
-import { callApi } from "@/src/api";
-import { AppRoute, routes } from "@/src/index";
+import { For, type JSX, Show } from "solid-js";
+import { RouteSectionProps } from "@solidjs/router";
+import { AppRoute, routes } from "@/src";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarListItem } from "./SidebarListItem";
 import { Typography } from "../Typography";
 import "./css/sidebar.css";
 import Icon, { IconVariant } from "../icon";
+import { clanMetaQuery } from "@/src/queries/clan-meta";
 
 export const SidebarSection = (props: {
   title: string;
@@ -42,26 +40,7 @@ export const SidebarSection = (props: {
 };
 
 export const Sidebar = (props: RouteSectionProps) => {
-  createEffect(() => {
-    console.log("machines");
-    console.log(routes);
-  });
-
-  const query = createQuery(() => ({
-    queryKey: [activeURI(), "meta"],
-    queryFn: async () => {
-      const curr = activeURI();
-      if (curr) {
-        const result = await callApi("show_clan_meta", {
-          flake: { identifier: curr },
-        });
-        console.log("refetched meta for ", curr);
-        if (result.status === "error") throw new Error("Failed to fetch data");
-
-        return result.data;
-      }
-    },
-  }));
+  const query = clanMetaQuery();
 
   return (
     <div class="sidebar">
