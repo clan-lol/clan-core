@@ -143,6 +143,9 @@ class InventoryStore:
         update.pop("options", None)  # type: ignore
         update.pop("assertions", None)  # type: ignore
 
+        # Remove instances until the 'settings' deferred module is properly supported.
+        update.pop("instances", None)
+
         patchset, delete_set = calc_patches(
             dict(write_info.data_disk),
             dict(update),
