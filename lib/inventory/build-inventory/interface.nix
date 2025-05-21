@@ -1,3 +1,4 @@
+{ clanLib }:
 {
   lib,
   config,
@@ -390,9 +391,7 @@ in
                         types.submodule {
                           options.settings = lib.mkOption {
                             default = { };
-                            # Dont transform the value with `types.deferredModule` here. We need to keep it json serializable
-                            # TODO: We need a custom serializer for deferredModule
-                            type = types.deferredModule;
+                            type = clanLib.types.uniqueDeferredSerializableModule;
                           };
                         }
                       );
@@ -404,7 +403,7 @@ in
                     };
                     settings = lib.mkOption {
                       default = { };
-                      type = types.deferredModule;
+                      type = types.uniqueDeferredSerializableModule;
                     };
                   };
                 }
