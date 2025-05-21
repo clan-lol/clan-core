@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TypedDict
 
 import pytest
 from clan_cli.machines import machines
@@ -226,6 +226,36 @@ def test_roundtrip_escape() -> None:
     # g(f(x)) == x
     assert from_dict(str, dataclass_to_dict("\n")) == "\n"
     assert dataclass_to_dict(from_dict(str, "\\n")) == "\\n"
+
+
+def test_roundtrip_typed_dict() -> None:
+    class Person(TypedDict):
+        name: str
+
+    data = {"name": "John"}
+    person = Person(name="John")
+
+    # Check that the functions are the inverses of each other
+    # f(g(x)) == x
+    # and
+    # g(f(x)) == x
+    assert from_dict(Person, dataclass_to_dict(person)) == person
+    assert dataclass_to_dict(from_dict(Person, data)) == person
+
+
+def test_construct_typed_dict() -> None:
+    class Person(TypedDict):
+        name: str
+
+    data = {"name": "John"}
+    person = Person(name="John")
+
+    # Check that the from_dict function works with TypedDict
+    assert from_dict(Person, data) == person
+
+    with pytest.raises(ClanError):
+        # Not a valid value
+        from_dict(Person, None)
 
 
 def test_path_field() -> None:
