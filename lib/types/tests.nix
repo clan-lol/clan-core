@@ -14,7 +14,7 @@ let
     };
 in
 {
-  test_1 =
+  test_simple =
     let
       eval = evalSettingsModule {
         foo = { };
@@ -36,6 +36,55 @@ in
             ];
           }
         ];
+      };
+    };
+
+  test_no_nested_imports =
+    let
+      eval = evalSettingsModule {
+        foo = {
+          imports = [];
+        };
+      };
+    in
+    {
+      inherit eval;
+      expr = eval.config.foo;
+      expectedError = {
+        type = "ThrownError";
+        message = "*nested imports";
+       };
+    };
+
+  test_no_function_modules =
+    let
+      eval = evalSettingsModule {
+        foo = {...}: {
+
+        };
+      };
+    in
+    {
+      inherit eval;
+      expr = eval.config.foo;
+      expectedError = {
+        type = "TypeError";
+        message = "cannot convert a function to JSON";
+      };
+    };
+
+  test_non_attrs_module =
+    let
+      eval = evalSettingsModule {
+        foo = "foo.nix";
+      };
+    in
+    {
+      inherit eval;
+      expr = eval.config.foo;
+      expectedError = {
+        type = "ThrownError";
+        message = ".*foo.* is not of type";
       };
     };
 }
