@@ -19,7 +19,7 @@ See also: [Inventory API Documentation](../reference/nix-api/inventory.md)
 
 ## Prerequisites
 
-- [x] [Add machines](./adding-machines.md) to your clan.
+- [x] [Add multiple machines](./more-machines.md) to your Clan.
 
 ## Services
 
@@ -29,7 +29,7 @@ See each [modules documentation](../reference/clanModules/index.md) for its avai
 
 ### Adding services to machines
 
-A service can be added to one or multiple machines via `Roles`. clan's `Role` interface provide sane defaults for a module this allows the module author to reduce the configuration overhead to a minimum.
+A service can be added to one or multiple machines via `Roles`. Clan's `Role` interface provide sane defaults for a module this allows the module author to reduce the configuration overhead to a minimum.
 
 Each service can still be customized and configured according to the modules options.
 

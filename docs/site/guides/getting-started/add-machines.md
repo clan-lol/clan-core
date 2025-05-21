@@ -1,20 +1,20 @@
 
 Managing machine configurations can be done in the following ways:
 
-- writing `nix` expressions in a `flake.nix` file,
-- placing `autoincluded` files into your machine directory,
+- writing Nix expressions in a `flake.nix` file
+- placing `autoincluded` files into your machine directory
 
 Clan currently offers the following methods to configure machines:
 
-!!! Success "Recommended for nix people"
+!!! Success "Recommended for advanced Nix users"
 
     - flake.nix (i.e. via `buildClan`)
         - `machine` argument
         - `inventory` argument
 
-    - machines/`machine_name`/configuration.nix (`autoincluded` if it exists)
+    - machines/`machine_name`/configuration.nix (automatically included if it exists)
 
-    See the complete [list](../../guides/adding-machines.md#automatic-registration) of auto-loaded files.
+    See the complete [list](../../guides/more-machines.md#automatic-registration) of auto-loaded files.
 
 ???+ Note "Used by CLI & UI"
 
@@ -124,7 +124,7 @@ Adding or configuring a new machine requires two simple steps:
 !!! Info "Replace `__YOUR_SSH_KEY__` with your personal key, like `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILoMI0NC5eT9pHlQExrvR5ASV3iW9+BXwhfchq0smXUJ jon@jon-desktop`"
 
 
-   You can also create additional machines using the cli:
+   You can also create additional machines using the CLI:
 
    ```
    $ clan machines create <machinename>

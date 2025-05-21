@@ -8,7 +8,7 @@ Now that you have created a new machine, we will walk through how to install it.
 === "**Physical Hardware**"
 
     - [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
-    - [x] **Machine configuration**: See our basic [configuration guide](./configure.md)
+    - [x] **Machine configuration**: See our basic [adding and configuring machine guide](./add-machines.md)
     - [x] **Initialized secrets**: See [secrets](secrets.md) for how to initialize your secrets.
     - [x] **USB Flash Drive**: See [Clan Installer](installer.md)
 
@@ -21,7 +21,7 @@ Now that you have created a new machine, we will walk through how to install it.
 === "**Cloud VMs**"
 
     - [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
-    - [x] **Machine configuration**: See our basic [configuration guide](./configure.md)
+    - [x] **Machine configuration**: See our basic [adding and configuring machine guide](./add-machines.md)
     - [x] **Initialized secrets**: See [secrets](secrets.md) for how to initialize your secrets.
 
     !!! Steps
@@ -171,7 +171,7 @@ clan machines update
 
 If the machine does not have enough resources to run the NixOS evaluation or build itself,
 it is also possible to specify a build host instead.
-During an update, the cli will ssh into the build host and run `nixos-rebuild` from there.
+During an update, the CLI will SSH into the build host and run `nixos-rebuild` from there.
 
 
 ```{.nix hl_lines="5" .no-copy}

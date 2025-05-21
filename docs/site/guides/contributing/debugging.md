@@ -112,7 +112,7 @@ You can execute every test separately by following the tree path `nix run .#chec
 
 ## Test Locally in Devshell with Breakpoints
 
-To test the cli locally in a development environment and set breakpoints for debugging, follow these steps:
+To test the CLI locally in a development environment and set breakpoints for debugging, follow these steps:
 
 1. Run the following command to execute your tests and allow for debugging with breakpoints:
    ```bash

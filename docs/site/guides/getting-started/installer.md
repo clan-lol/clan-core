@@ -3,7 +3,7 @@
 To install Clan on physical machines, you need to use our custom installer image. This is necessary for proper installation and operation.
 
 !!! note "Using a Cloud VM?"
-    If you're using a cloud provider's virtual machine (VM), you can skip this section and go directly to the [Configure Machines](configure.md) step. In this scenario, we automatically use [nixos-anywhere](https://github.com/nix-community/nixos-anywhere) to replace the kernel during runtime.
+    If you're using a cloud provider's virtual machine (VM), you can skip this section and go directly to the [Add Machines](add-machines.md) step. In this scenario, we automatically use [nixos-anywhere](https://github.com/nix-community/nixos-anywhere) to replace the kernel during runtime.
 
 ??? info "Why nixos-anywhere Doesn't Work on Physical Hardware?"
     nixos-anywhere relies on [kexec](https://wiki.archlinux.org/title/Kexec) to replace the running kernel with our custom one. This method often has compatibility issues with real hardware, especially systems with dedicated graphics cards like laptops and servers, leading to crashes and black screens.

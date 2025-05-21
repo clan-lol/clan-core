@@ -1,17 +1,17 @@
 # clan-cli
 
-The clan-cli contains the command line interface
+The Clan CLI contains the command line interface.
 
-## Hacking on the cli
+## Hacking on the CLI
 
-We recommend setting up [direnv](https://direnv.net/) to load the development with nix.
+We recommend setting up [direnv](https://direnv.net/) to load the development with Nix.
 If you do not have it set up you can also use `nix develop` directly like this:
 
 ```
 use flake .#clan-cli --builders ''
 ```
 
-After you can use the local bin wrapper to test things in the cli:
+After you can use the local bin wrapper to test things in the CLI:
 
 ```
 ./bin/clan
