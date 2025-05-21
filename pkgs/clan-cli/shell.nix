@@ -4,6 +4,7 @@
   clan-cli,
   mkShell,
   ruff,
+  self,
   self',
 }:
 
@@ -34,6 +35,10 @@ mkShell {
     export PYTHONWARNINGS=error
 
     export CLAN_CORE_PATH="$GIT_ROOT"
+
+     # used for tests without flakes
+    export NIXPKGS=${self.inputs.nixpkgs.outPath}
+    export NIX_SELECT=${self.inputs.nix-select.outPath}
 
     # Add current package to PYTHONPATH
     export PYTHONPATH="$PKG_ROOT''${PYTHONPATH:+:$PYTHONPATH:}"
