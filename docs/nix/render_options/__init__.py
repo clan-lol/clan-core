@@ -307,7 +307,13 @@ def produce_clan_core_docs() -> None:
         core_outputs[indexfile] = module_header(module_name) + clan_core_descr
 
         core_outputs[indexfile] += """!!! info "Submodules"\n"""
-        for submodule_name, _ in split.items():
+
+        for submodule_name, split_options in split.items():
+            root = options_to_tree(split_options, debug=True)
+            module = root.suboptions[0]
+            module_type = module.info.get("type")
+            if module_type is not None and "submodule" not in module_type:
+                continue
             core_outputs[indexfile] += (
                 f"      - [{submodule_name}](./{submodule_name}.md)\n"
             )
@@ -328,7 +334,6 @@ def produce_clan_core_docs() -> None:
             print("type", module.info.get("type"))
 
             module_type = module.info.get("type")
-
             if module_type is not None and "submodule" not in module_type:
                 outfile = indexfile
                 init_level = 2
