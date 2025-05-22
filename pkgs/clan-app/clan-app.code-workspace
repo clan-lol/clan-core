@@ -23,9 +23,6 @@
 		},
 		{
 			"path": "../clan-cli/clan_lib"
-		},
-		{
-			"path": "../webview-ui"
 		}
 	],
 	"settings": {
