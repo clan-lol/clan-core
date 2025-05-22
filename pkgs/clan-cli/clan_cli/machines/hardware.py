@@ -10,10 +10,10 @@ from clan_lib.cmd import RunOpts, run
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.git import commit_file
+from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_cli.machines.machines import Machine
 
 from .types import machine_name_type
 

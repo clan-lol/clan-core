@@ -18,8 +18,8 @@ from clan_lib.persist.inventory_store import InventoryStore
 if TYPE_CHECKING:
     from .age_keys import KeyPair
 
-from clan_cli.machines.machines import Machine as MachineMachine
 from clan_cli.tests.helpers import cli
+from clan_lib.machines.machines import Machine as MachineMachine
 
 
 @pytest.mark.with_core

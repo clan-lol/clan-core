@@ -7,6 +7,7 @@ from clan_lib.cmd import run
 from clan_lib.dirs import machine_gcroot
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.machines.machines import Machine
 from clan_lib.nix import (
     nix_add_to_gcroots,
     nix_build,
@@ -16,7 +17,6 @@ from clan_lib.nix import (
 )
 
 from clan_cli.machines.list import list_machines
-from clan_cli.machines.machines import Machine
 from clan_cli.vms.inspect import VmConfig, inspect_vm
 
 

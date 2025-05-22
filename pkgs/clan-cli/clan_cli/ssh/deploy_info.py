@@ -9,6 +9,7 @@ from typing import Any
 from clan_lib.async_run import AsyncRuntime
 from clan_lib.cmd import run
 from clan_lib.errors import ClanError
+from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.parse import parse_deployment_address
 from clan_lib.ssh.remote import Remote, is_ssh_reachable
@@ -17,7 +18,6 @@ from clan_cli.completions import (
     add_dynamic_completer,
     complete_machines,
 )
-from clan_cli.machines.machines import Machine
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.ssh.tor import TorTarget, spawn_tor, ssh_tor_reachable
 

@@ -2,13 +2,13 @@ import argparse
 
 from clan_lib.backups.restore import restore_backup
 from clan_lib.errors import ClanError
+from clan_lib.machines.machines import Machine
 
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_backup_providers_for_machine,
     complete_machines,
 )
-from clan_cli.machines.machines import Machine
 
 
 def restore_command(args: argparse.Namespace) -> None:

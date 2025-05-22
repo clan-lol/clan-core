@@ -35,7 +35,7 @@ from .var import Var
 log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from clan_cli.machines.machines import Machine
+    from clan_lib.machines.machines import Machine
 
 
 @dataclass
@@ -356,7 +356,7 @@ def get_generators_closure(
     full_closure: bool = False,
     include_previous_values: bool = False,
 ) -> list[Generator]:
-    from clan_cli.machines.machines import Machine
+    from clan_lib.machines.machines import Machine
 
     return get_closure(
         machine=Machine(name=machine_name, flake=Flake(str(base_dir))),
@@ -395,7 +395,7 @@ def generate_vars_for_machine(
     base_dir: Path,
     no_sandbox: bool = False,
 ) -> bool:
-    from clan_cli.machines.machines import Machine
+    from clan_lib.machines.machines import Machine
 
     machine = Machine(name=machine_name, flake=Flake(str(base_dir)))
     generators_set = set(generators)

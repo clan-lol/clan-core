@@ -4,11 +4,11 @@ from pathlib import Path
 from typing import override
 
 from clan_lib.cmd import Log, RunOpts
+from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.remote import Remote
 
 from clan_cli.facts.secret_modules import SecretStoreBase
-from clan_cli.machines.machines import Machine
 
 
 class SecretStore(SecretStoreBase):

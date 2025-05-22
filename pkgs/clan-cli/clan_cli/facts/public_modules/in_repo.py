@@ -1,8 +1,7 @@
 from pathlib import Path
 
 from clan_lib.errors import ClanError
-
-from clan_cli.machines.machines import Machine
+from clan_lib.machines.machines import Machine
 
 from . import FactStoreBase
 
