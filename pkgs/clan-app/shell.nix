@@ -49,16 +49,21 @@ mkShell {
     export CLAN_CORE_PATH=$(git rev-parse --show-toplevel)
 
     ## Clan app
-    # Add clan-app command to PATH
     pushd "$CLAN_CORE_PATH/pkgs/clan-app"
+
+    # Add clan-app command to PATH
     export PATH="$(pwd)/bin":"$PATH"
+
     # Add current package to PYTHONPATH
-    export PYTHONPATH="$(pwd)/pkgs/clan-app/''${PYTHONPATH:+:$PYTHONPATH:}"
+    export PYTHONPATH="$(pwd)''${PYTHONPATH:+:$PYTHONPATH:}"
+
+    popd
+
+    # Add clan-cli to the python path so that we can import it without building it in nix first
+    export PYTHONPATH="$CLAN_CORE_PATH/pkgs/clan-cli":"$PYTHONPATH"
+
     export XDG_DATA_DIRS=$GSETTINGS_SCHEMAS_PATH:$XDG_DATA_DIRS
     export WEBVIEW_LIB_DIR=${webview-lib}/lib
-    # Add clan-cli to the python path so that we can import it without building it in nix first
-    export PYTHONPATH="$(pwd)":"$PYTHONPATH"
-    popd
 
     ## Webview UI
     # Add clan-app-ui scripts to PATH
