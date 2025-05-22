@@ -143,7 +143,6 @@ def deploy_machine(machine: Machine) -> None:
         become_root = True
 
         if machine._class_ == "nixos":
-            switch_cmd = ["nixos-rebuild", "switch", *nix_options]
             nix_options += [
                 "--fast",
                 "--build-host",
@@ -156,6 +155,7 @@ def deploy_machine(machine: Machine) -> None:
 
                 if target_host.user != "root":
                     nix_options += ["--use-remote-sudo"]
+            switch_cmd = ["nixos-rebuild", "switch", *nix_options]
         elif machine._class_ == "darwin":
             # use absolute path to darwin-rebuild
             switch_cmd = [
