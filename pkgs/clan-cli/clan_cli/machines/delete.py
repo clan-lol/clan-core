@@ -6,9 +6,9 @@ from pathlib import Path
 from clan_lib import inventory
 from clan_lib.api import API
 from clan_lib.dirs import specific_machine_dir
+from clan_lib.machines.machines import Machine
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_cli.machines.machines import Machine
 from clan_cli.secrets.folders import sops_secrets_folder
 from clan_cli.secrets.machines import has_machine as secrets_has_machine
 from clan_cli.secrets.machines import remove_machine as secrets_machine_remove

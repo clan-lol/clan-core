@@ -10,7 +10,6 @@ import clan_cli.clan.create
 import pytest
 from clan_cli.machines.create import CreateOptions as ClanCreateOptions
 from clan_cli.machines.create import create_machine
-from clan_cli.machines.machines import Machine
 from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import maybe_get_admin_public_key
 from clan_cli.secrets.users import add_user
@@ -24,6 +23,7 @@ from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.inventory import patch_inventory_with
+from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command
 from clan_lib.nix_models.inventory import Machine as InventoryMachine
 from clan_lib.nix_models.inventory import MachineDeploy

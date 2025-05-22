@@ -2,9 +2,9 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from clan_cli.machines.machines import Machine
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
+from clan_lib.machines.machines import Machine
 from clan_lib.ssh.remote import Remote
 
 

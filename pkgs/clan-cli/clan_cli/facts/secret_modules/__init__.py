@@ -3,9 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+import clan_lib.machines.machines as machines
 from clan_lib.ssh.remote import Remote
-
-import clan_cli.machines.machines as machines
 
 
 class SecretStoreBase(ABC):

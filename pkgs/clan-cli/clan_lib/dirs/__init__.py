@@ -9,9 +9,8 @@ from typing import TYPE_CHECKING
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
-    from clan_cli.machines.machines import Machine
-
     from clan_lib.flake import Flake
+    from clan_lib.machines.machines import Machine
 
 log = logging.getLogger(__name__)
 

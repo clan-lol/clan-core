@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 import gi
-from clan_cli.machines.machines import Machine
 from clan_lib.flake import Flake
+from clan_lib.machines.machines import Machine
 
 from clan_vm_manager import assets
 from clan_vm_manager.clan_uri import ClanURI

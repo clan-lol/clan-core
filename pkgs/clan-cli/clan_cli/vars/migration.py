@@ -8,8 +8,8 @@ from clan_lib.git import commit_files
 log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from clan_cli.machines.machines import Machine
     from clan_cli.vars.generate import Generator
+    from clan_lib.machines.machines import Machine
 
 
 def _migration_file_exists(

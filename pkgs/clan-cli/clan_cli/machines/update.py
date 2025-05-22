@@ -11,6 +11,7 @@ from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime, is_async_c
 from clan_lib.cmd import Log, MsgColor, RunOpts, run
 from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError
+from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command, nix_config, nix_metadata
 from clan_lib.ssh.remote import HostKeyCheck, Remote
 
@@ -21,7 +22,6 @@ from clan_cli.completions import (
 from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.upload import upload_secrets
 from clan_cli.machines.list import list_machines
-from clan_cli.machines.machines import Machine
 from clan_cli.vars.generate import generate_vars
 from clan_cli.vars.upload import upload_secret_vars
 

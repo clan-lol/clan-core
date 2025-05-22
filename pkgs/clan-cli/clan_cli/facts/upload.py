@@ -3,8 +3,9 @@ import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from clan_lib.machines.machines import Machine
+
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_cli.machines.machines import Machine
 from clan_cli.ssh.upload import upload
 
 log = logging.getLogger(__name__)

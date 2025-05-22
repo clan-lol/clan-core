@@ -3,11 +3,11 @@ from pathlib import Path
 from typing import Any, Literal, TypedDict
 
 import pytest
-from clan_cli.machines import machines
 
 # Functions to test
 from clan_lib.api import dataclass_to_dict, from_dict
 from clan_lib.errors import ClanError
+from clan_lib.machines import machines
 
 
 def test_simple() -> None:

@@ -1,9 +1,9 @@
 from pathlib import Path
 from typing import override
 
+from clan_lib.machines.machines import Machine
 from clan_lib.ssh.remote import Remote
 
-from clan_cli.machines.machines import Machine
 from clan_cli.secrets.folders import sops_secrets_folder
 from clan_cli.secrets.machines import add_machine, has_machine
 from clan_cli.secrets.secrets import decrypt_secret, encrypt_secret, has_secret

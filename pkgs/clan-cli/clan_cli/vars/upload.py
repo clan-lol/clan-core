@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_cli.machines.machines import Machine
+from clan_lib.machines.machines import Machine
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)

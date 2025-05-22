@@ -4,7 +4,7 @@ from collections.abc import Callable
 from typing import Any, ClassVar, cast
 
 import gi
-from clan_cli.machines.machines import Machine
+from clan_lib.machines.machines import Machine
 
 from clan_vm_manager.clan_uri import ClanURI
 from clan_vm_manager.components.gkvstore import GKVStore

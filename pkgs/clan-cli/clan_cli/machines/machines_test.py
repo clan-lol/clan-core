@@ -1,7 +1,6 @@
 import pytest
 from clan_lib.flake import Flake
-
-from clan_cli.machines.machines import Machine
+from clan_lib.machines.machines import Machine
 
 # Functions to test
 from clan_cli.tests.fixtures_flakes import FlakeForTest
