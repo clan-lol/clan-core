@@ -57,9 +57,9 @@ def install_machine(opts: InstallOptions) -> None:
     generate_facts([machine])
     generate_vars([machine])
 
+    host = machine.target_host()
     with (
         TemporaryDirectory(prefix="nixos-install-") as _base_directory,
-        machine.target_host() as host,
     ):
         base_directory = Path(_base_directory).resolve()
         activation_secrets = base_directory / "activation_secrets"

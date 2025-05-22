@@ -4,12 +4,11 @@ from collections.abc import Generator
 from typing import Any, NamedTuple
 
 import pytest
-from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
-from clan_cli.ssh.parse import parse_deployment_address
 from clan_lib.async_run import AsyncRuntime
 from clan_lib.cmd import ClanCmdTimeoutError, Log, RunOpts
 from clan_lib.errors import ClanError, CmdOut
+from clan_lib.ssh.remote import Remote
 
 if sys.platform == "darwin":
     pytest.skip("preload doesn't work on darwin", allow_module_level=True)
@@ -110,12 +109,16 @@ def test_parse_deployment_address(
 
     with maybe_check_exception:
         machine_name = "foo"
-        result = parse_deployment_address(machine_name, test_addr, HostKeyCheck.STRICT)
+        result = Remote.from_deployment_address(
+            machine_name=machine_name,
+            address=test_addr,
+            host_key_check=HostKeyCheck.STRICT,
+        )
 
     if expected_exception:
         return
 
-    assert result.host == expected_host
+    assert result.address == expected_host
     assert result.port == expected_port
     assert result.user == expected_user or (
         expected_user == "" and result.user == "root"
@@ -126,16 +129,18 @@ def test_parse_deployment_address(
 
 
 def test_parse_ssh_options() -> None:
-    addr = "root@example.com:2222?IdentityFile=/path/to/private/key&StrictHostKeyChecking=yes"
-    host = parse_deployment_address("foo", addr, HostKeyCheck.STRICT)
-    assert host.host == "example.com"
+    addr = "root@example.com:2222?IdentityFile=/path/to/private/key&StrictRemoteKeyChecking=yes"
+    host = Remote.from_deployment_address(
+        machine_name="foo", address=addr, host_key_check=HostKeyCheck.STRICT
+    )
+    assert host.address == "example.com"
     assert host.port == 2222
     assert host.user == "root"
     assert host.ssh_options["IdentityFile"] == "/path/to/private/key"
-    assert host.ssh_options["StrictHostKeyChecking"] == "yes"
+    assert host.ssh_options["StrictRemoteKeyChecking"] == "yes"
 
 
-def test_run(hosts: list[Host], runtime: AsyncRuntime) -> None:
+def test_run(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
             None, host.run_local, ["echo", "hello"], RunOpts(log=Log.STDERR)
@@ -143,7 +148,7 @@ def test_run(hosts: list[Host], runtime: AsyncRuntime) -> None:
     assert proc.wait().result.stdout == "hello\n"
 
 
-def test_run_environment(hosts: list[Host], runtime: AsyncRuntime) -> None:
+def test_run_environment(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
             None,
@@ -165,7 +170,7 @@ def test_run_environment(hosts: list[Host], runtime: AsyncRuntime) -> None:
     assert "env_var=true" in p2.wait().result.stdout
 
 
-def test_run_no_shell(hosts: list[Host], runtime: AsyncRuntime) -> None:
+def test_run_no_shell(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
             None, host.run_local, ["echo", "hello"], RunOpts(log=Log.STDERR)
@@ -173,9 +178,10 @@ def test_run_no_shell(hosts: list[Host], runtime: AsyncRuntime) -> None:
     assert proc.wait().result.stdout == "hello\n"
 
 
-def test_run_function(hosts: list[Host], runtime: AsyncRuntime) -> None:
-    def some_func(h: Host) -> bool:
-        p = h.run(["echo", "hello"])
+def test_run_function(hosts: list[Remote], runtime: AsyncRuntime) -> None:
+    def some_func(h: Remote) -> bool:
+        with h.ssh_control_master() as ssh:
+            p = ssh.run(["echo", "hello"])
         return p.stdout == "hello\n"
 
     for host in hosts:
@@ -183,7 +189,7 @@ def test_run_function(hosts: list[Host], runtime: AsyncRuntime) -> None:
     assert proc.wait().result
 
 
-def test_timeout(hosts: list[Host], runtime: AsyncRuntime) -> None:
+def test_timeout(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
             None, host.run_local, ["sleep", "10"], RunOpts(timeout=0.01)
@@ -192,7 +198,7 @@ def test_timeout(hosts: list[Host], runtime: AsyncRuntime) -> None:
     assert isinstance(error, ClanCmdTimeoutError)
 
 
-def test_run_exception(hosts: list[Host], runtime: AsyncRuntime) -> None:
+def test_run_exception(hosts: list[Remote], runtime: AsyncRuntime) -> None:
     for host in hosts:
         proc = runtime.async_run(
             None, host.run_local, ["exit 1"], RunOpts(shell=True, check=False)
@@ -211,8 +217,8 @@ def test_run_exception(hosts: list[Host], runtime: AsyncRuntime) -> None:
         raise AssertionError(msg)
 
 
-def test_run_function_exception(hosts: list[Host], runtime: AsyncRuntime) -> None:
-    def some_func(h: Host) -> CmdOut:
+def test_run_function_exception(hosts: list[Remote], runtime: AsyncRuntime) -> None:
+    def some_func(h: Remote) -> CmdOut:
         return h.run_local(["exit 1"], RunOpts(shell=True))
 
     try:

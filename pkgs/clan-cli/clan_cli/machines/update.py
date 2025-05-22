@@ -5,7 +5,6 @@ import os
 import re
 import shlex
 import sys
-from contextlib import ExitStack
 
 from clan_lib.api import API
 from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime, is_async_cancelled
@@ -13,6 +12,7 @@ from clan_lib.cmd import Log, MsgColor, RunOpts, run
 from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_command, nix_config, nix_metadata
+from clan_lib.ssh.remote import HostKeyCheck, Remote
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -22,7 +22,6 @@ from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.upload import upload_secrets
 from clan_cli.machines.list import list_machines
 from clan_cli.machines.machines import Machine
-from clan_cli.ssh.host import Host, HostKeyCheck
 from clan_cli.vars.generate import generate_vars
 from clan_cli.vars.upload import upload_secret_vars
 
@@ -44,160 +43,159 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
     return local
 
 
-def upload_sources(machine: Machine, host: Host) -> str:
-    env = host.nix_ssh_env(os.environ.copy())
+def upload_sources(machine: Machine, host: Remote) -> str:
+    with host.ssh_control_master() as ssh:
+        env = ssh.nix_ssh_env(os.environ.copy())
 
-    flake_url = (
-        str(machine.flake.path) if machine.flake.is_local else machine.flake.identifier
-    )
-    flake_data = nix_metadata(flake_url)
-    has_path_inputs = any(
-        is_local_input(node) for node in flake_data["locks"]["nodes"].values()
-    )
+        flake_url = (
+            str(machine.flake.path)
+            if machine.flake.is_local
+            else machine.flake.identifier
+        )
+        flake_data = nix_metadata(flake_url)
+        has_path_inputs = any(
+            is_local_input(node) for node in flake_data["locks"]["nodes"].values()
+        )
 
-    if not has_path_inputs:
-        # Just copy the flake to the remote machine, we can substitute other inputs there.
-        path = flake_data["path"]
+        if not has_path_inputs:
+            # Just copy the flake to the remote machine, we can substitute other inputs there.
+            path = flake_data["path"]
+            cmd = nix_command(
+                [
+                    "copy",
+                    "--to",
+                    f"ssh://{host.target}",
+                    "--no-check-sigs",
+                    path,
+                ]
+            )
+            run(
+                cmd,
+                RunOpts(
+                    env=env,
+                    needs_user_terminal=True,
+                    error_msg="failed to upload sources",
+                    prefix=machine.name,
+                ),
+            )
+            return path
 
-        remote_url = f"ssh-ng://{host.target}"
-
-        # MacOS doesn't come with a proper login shell for ssh and therefore doesn't have nix in $PATH as it doesn't source /etc/profile
-        if machine._class_ == "darwin":
-            remote_url += "?remote-program=bash -lc 'exec nix-daemon --stdio'"
-
+        # Slow path: we need to upload all sources to the remote machine
         cmd = nix_command(
             [
-                "copy",
+                "flake",
+                "archive",
                 "--to",
-                remote_url,
-                "--no-check-sigs",
-                path,
+                f"ssh://{host.target}",
+                "--json",
+                flake_url,
             ]
         )
-        run(
+        proc = run(
             cmd,
             RunOpts(
-                env=env,
-                needs_user_terminal=True,
-                error_msg="failed to upload sources",
-                prefix=machine.name,
+                env=env, needs_user_terminal=True, error_msg="failed to upload sources"
             ),
         )
-        return path
 
-    # Slow path: we need to upload all sources to the remote machine
-    cmd = nix_command(
-        [
-            "flake",
-            "archive",
-            "--to",
-            f"ssh://{host.target}",
-            "--json",
-            flake_url,
-        ]
-    )
-    proc = run(
-        cmd,
-        RunOpts(
-            env=env, needs_user_terminal=True, error_msg="failed to upload sources"
-        ),
-    )
-
-    try:
-        return json.loads(proc.stdout)["path"]
-    except (json.JSONDecodeError, OSError) as e:
-        msg = f"failed to parse output of {shlex.join(cmd)}: {e}\nGot: {proc.stdout}"
-        raise ClanError(msg) from e
+        try:
+            return json.loads(proc.stdout)["path"]
+        except (json.JSONDecodeError, OSError) as e:
+            msg = (
+                f"failed to parse output of {shlex.join(cmd)}: {e}\nGot: {proc.stdout}"
+            )
+            raise ClanError(msg) from e
 
 
 @API.register
 def deploy_machine(machine: Machine) -> None:
-    with ExitStack() as stack:
-        target_host = stack.enter_context(machine.target_host())
-        build_host = stack.enter_context(machine.build_host())
+    target_host = machine.target_host()
+    build_host = machine.build_host()
 
-        host = build_host or target_host
+    host = build_host or target_host
 
-        generate_facts([machine], service=None, regenerate=False)
-        generate_vars([machine], generator_name=None, regenerate=False)
+    generate_facts([machine], service=None, regenerate=False)
+    generate_vars([machine], generator_name=None, regenerate=False)
 
-        upload_secrets(machine)
-        upload_secret_vars(machine, target_host)
+    upload_secrets(machine)
+    upload_secret_vars(machine, target_host)
 
-        path = upload_sources(machine, host)
+    path = upload_sources(machine, host)
 
-        nix_options = [
-            "--show-trace",
-            "--option",
-            "keep-going",
-            "true",
-            "--option",
-            "accept-flake-config",
-            "true",
-            "-L",
-            *machine.nix_options,
-            "--flake",
-            f"{path}#{machine.name}",
+    nix_options = [
+        "--show-trace",
+        "--option",
+        "keep-going",
+        "true",
+        "--option",
+        "accept-flake-config",
+        "true",
+        "-L",
+        *machine.nix_options,
+        "--flake",
+        f"{path}#{machine.name}",
+    ]
+
+    become_root = True
+
+    if machine._class_ == "nixos":
+        nix_options += [
+            "--fast",
+            "--build-host",
+            "",
         ]
 
-        become_root = True
+        if build_host:
+            become_root = False
+            nix_options += ["--target-host", target_host.target]
 
-        if machine._class_ == "nixos":
-            nix_options += [
-                "--fast",
-                "--build-host",
-                "",
-            ]
+            if target_host.user != "root":
+                nix_options += ["--use-remote-sudo"]
+        switch_cmd = ["nixos-rebuild", "switch", *nix_options]
+    elif machine._class_ == "darwin":
+        # use absolute path to darwin-rebuild
+        switch_cmd = [
+            "/run/current-system/sw/bin/darwin-rebuild",
+            "switch",
+            *nix_options,
+        ]
 
-            if build_host:
-                become_root = False
-                nix_options += ["--target-host", target_host.target]
+    remote_env = host.nix_ssh_env(control_master=False)
+    ret = host.run(
+        switch_cmd,
+        RunOpts(
+            check=False,
+            log=Log.BOTH,
+            msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
+            needs_user_terminal=True,
+        ),
+        extra_env=remote_env,
+        become_root=become_root,
+        control_master=False,
+    )
 
-                if target_host.user != "root":
-                    nix_options += ["--use-remote-sudo"]
-            switch_cmd = ["nixos-rebuild", "switch", *nix_options]
-        elif machine._class_ == "darwin":
-            # use absolute path to darwin-rebuild
-            switch_cmd = [
-                "/run/current-system/sw/bin/darwin-rebuild",
-                "switch",
-                *nix_options,
-            ]
+    if is_async_cancelled():
+        return
 
-        remote_env = host.nix_ssh_env(None, local_ssh=False)
+    # retry nixos-rebuild switch if the first attempt failed
+    if ret.returncode != 0:
+        is_mobile = machine.deployment.get("nixosMobileWorkaround", False)
+        # if the machine is mobile, we retry to deploy with the mobile workaround method
+        if is_mobile:
+            machine.info(
+                "Mobile machine detected, applying workaround deployment method"
+            )
         ret = host.run(
-            switch_cmd,
+            ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,
             RunOpts(
-                check=False,
                 log=Log.BOTH,
                 msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
                 needs_user_terminal=True,
             ),
             extra_env=remote_env,
             become_root=become_root,
+            control_master=False,
         )
-
-        if is_async_cancelled():
-            return
-
-        # retry nixos-rebuild switch if the first attempt failed
-        if ret.returncode != 0:
-            is_mobile = machine.deployment.get("nixosMobileWorkaround", False)
-            # if the machine is mobile, we retry to deploy with the mobile workaround method
-            if is_mobile:
-                machine.info(
-                    "Mobile machine detected, applying workaround deployment method"
-                )
-            ret = host.run(
-                ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,
-                RunOpts(
-                    log=Log.BOTH,
-                    msg_color=MsgColor(stderr=AnsiColor.DEFAULT),
-                    needs_user_terminal=True,
-                ),
-                extra_env=remote_env,
-                become_root=become_root,
-            )
 
 
 def deploy_machines(machines: list[Machine]) -> None:

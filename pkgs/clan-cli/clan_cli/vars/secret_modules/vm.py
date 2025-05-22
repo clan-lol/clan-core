@@ -3,10 +3,10 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from clan_cli.machines.machines import Machine
-from clan_cli.ssh.host import Host
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
 from clan_lib.dirs import vm_state_dir
+from clan_lib.ssh.remote import Remote
 
 
 class SecretStore(StoreBase):
@@ -61,6 +61,6 @@ class SecretStore(StoreBase):
             shutil.rmtree(output_dir)
         shutil.copytree(self.dir, output_dir)
 
-    def upload(self, host: Host, phases: list[str]) -> None:
+    def upload(self, host: Remote, phases: list[str]) -> None:
         msg = "Cannot upload secrets to VMs"
         raise NotImplementedError(msg)

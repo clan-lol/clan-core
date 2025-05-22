@@ -30,8 +30,9 @@ def check_machine_online(
     timeout = opts.timeout if opts and opts.timeout else 2
 
     for _ in range(opts.retries if opts and opts.retries else 10):
-        with machine.target_host() as target:
-            res = target.run(
+        host = machine.target_host()
+        with host.ssh_control_master() as ssh:
+            res = ssh.run(
                 ["true"],
                 RunOpts(timeout=timeout, check=False, needs_user_terminal=True),
             )

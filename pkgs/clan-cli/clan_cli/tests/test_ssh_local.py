@@ -1,8 +1,8 @@
-from clan_cli.ssh.host import Host
 from clan_lib.async_run import AsyncRuntime
 from clan_lib.cmd import ClanCmdTimeoutError, Log, RunOpts
+from clan_lib.ssh.remote import Remote
 
-host = Host("some_host")
+host = Remote("some_host", user="root", command_prefix="local_test")
 
 
 def test_run_environment(runtime: AsyncRuntime) -> None:

@@ -2,8 +2,6 @@ import importlib
 import json
 import logging
 import re
-from collections.abc import Iterator
-from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
@@ -12,12 +10,11 @@ from typing import TYPE_CHECKING, Any
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_config, nix_test_store
+from clan_lib.ssh.remote import Remote
 
 from clan_cli.facts import public_modules as facts_public_modules
 from clan_cli.facts import secret_modules as facts_secret_modules
-from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
-from clan_cli.ssh.parse import parse_deployment_address
 from clan_cli.vars._types import StoreBase
 
 log = logging.getLogger(__name__)
@@ -146,37 +143,31 @@ class Machine:
     def flake_dir(self) -> Path:
         return self.flake.path
 
-    @contextmanager
-    def target_host(self) -> Iterator[Host]:
-        with parse_deployment_address(
-            self.name,
-            self.target_host_address,
-            self.host_key_check,
+    def target_host(self) -> Remote:
+        return Remote.from_deployment_address(
+            machine_name=self.name,
+            address=self.target_host_address,
+            host_key_check=self.host_key_check,
             private_key=self.private_key,
-            meta={"machine": self},
-        ) as target_host:
-            yield target_host
+        )
 
-    @contextmanager
-    def build_host(self) -> Iterator[Host | None]:
+    def build_host(self) -> Remote | None:
         """
         The host where the machine is built and deployed from.
         Can be the same as the target host.
         """
-        build_host = self.override_build_host or self.deployment.get("buildHost")
-        if build_host is None:
-            yield None
-            return
+        address = self.override_build_host or self.deployment.get("buildHost")
+        if address is None:
+            return None
         # enable ssh agent forwarding to allow the build host to access the target host
-        with parse_deployment_address(
-            self.name,
-            build_host,
-            self.host_key_check,
+        host = Remote.from_deployment_address(
+            machine_name=self.name,
+            address=address,
+            host_key_check=self.host_key_check,
             forward_agent=True,
             private_key=self.private_key,
-            meta={"machine": self},
-        ) as build_host:
-            yield build_host
+        )
+        return host
 
     def nix(
         self,

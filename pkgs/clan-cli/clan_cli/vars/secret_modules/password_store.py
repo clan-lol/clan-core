@@ -8,12 +8,12 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from clan_cli.machines.machines import Machine
-from clan_cli.ssh.host import Host
 from clan_cli.ssh.upload import upload
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
 from clan_lib.cmd import CmdOut, Log, RunOpts, run
 from clan_lib.nix import nix_shell
+from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
 
@@ -147,16 +147,17 @@ class SecretStore(StoreBase):
         manifest += hashes
         return b"\n".join(manifest)
 
-    def needs_upload(self, host: Host) -> bool:
+    def needs_upload(self, host: Remote) -> bool:
         local_hash = self.generate_hash()
-        remote_hash = host.run(
-            # TODO get the path to the secrets from the machine
-            [
-                "cat",
-                f"{self.machine.deployment['password-store']['secretLocation']}/.{self._store_backend}_info",
-            ],
-            RunOpts(log=Log.STDERR, check=False),
-        ).stdout.strip()
+        with host.ssh_control_master() as ssh:
+            remote_hash = ssh.run(
+                # TODO get the path to the secrets from the machine
+                [
+                    "cat",
+                    f"{self.machine.deployment['password-store']['secretLocation']}/.{self._store_backend}_info",
+                ],
+                RunOpts(log=Log.STDERR, check=False),
+            ).stdout.strip()
 
         if not remote_hash:
             print("remote hash is empty")
@@ -226,7 +227,7 @@ class SecretStore(StoreBase):
 
         (output_dir / f".{self._store_backend}_info").write_bytes(self.generate_hash())
 
-    def upload(self, host: Host, phases: list[str]) -> None:
+    def upload(self, host: Remote, phases: list[str]) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)

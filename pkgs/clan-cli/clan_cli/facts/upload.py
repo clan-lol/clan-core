@@ -11,16 +11,17 @@ log = logging.getLogger(__name__)
 
 
 def upload_secrets(machine: Machine) -> None:
-    with machine.target_host() as host:
-        if not machine.secret_facts_store.needs_upload(host):
-            machine.info("Secrets already uploaded")
-            return
+    host = machine.target_host()
 
-        with TemporaryDirectory(prefix="facts-upload-") as _tempdir:
-            local_secret_dir = Path(_tempdir).resolve()
-            machine.secret_facts_store.upload(local_secret_dir)
-            remote_secret_dir = Path(machine.secrets_upload_directory)
-            upload(host, local_secret_dir, remote_secret_dir)
+    if not machine.secret_facts_store.needs_upload(host):
+        machine.info("Secrets already uploaded")
+        return
+
+    with TemporaryDirectory(prefix="facts-upload-") as _tempdir:
+        local_secret_dir = Path(_tempdir).resolve()
+        machine.secret_facts_store.upload(local_secret_dir)
+        remote_secret_dir = Path(machine.secrets_upload_directory)
+        upload(host, local_secret_dir, remote_secret_dir)
 
 
 def upload_command(args: argparse.Namespace) -> None:

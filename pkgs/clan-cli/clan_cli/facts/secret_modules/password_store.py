@@ -5,11 +5,10 @@ from typing import override
 
 from clan_lib.cmd import Log, RunOpts
 from clan_lib.nix import nix_shell
+from clan_lib.ssh.remote import Remote
 
+from clan_cli.facts.secret_modules import SecretStoreBase
 from clan_cli.machines.machines import Machine
-from clan_cli.ssh.host import Host
-
-from . import SecretStoreBase
 
 
 class SecretStore(SecretStoreBase):
@@ -95,13 +94,14 @@ class SecretStore(SecretStoreBase):
         return b"\n".join(hashes)
 
     @override
-    def needs_upload(self, host: Host) -> bool:
+    def needs_upload(self, host: Remote) -> bool:
         local_hash = self.generate_hash()
-        remote_hash = host.run(
-            # TODO get the path to the secrets from the machine
-            ["cat", f"{self.machine.secrets_upload_directory}/.pass_info"],
-            RunOpts(log=Log.STDERR, check=False),
-        ).stdout.strip()
+        with host.ssh_control_master() as ssh:
+            remote_hash = ssh.run(
+                # TODO get the path to the secrets from the machine
+                ["cat", f"{self.machine.secrets_upload_directory}/.pass_info"],
+                RunOpts(log=Log.STDERR, check=False),
+            ).stdout.strip()
 
         if not remote_hash:
             print("remote hash is empty")

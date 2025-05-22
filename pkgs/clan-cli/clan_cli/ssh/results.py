@@ -2,14 +2,14 @@ from dataclasses import dataclass
 from typing import Generic
 
 from clan_lib.errors import CmdOut
+from clan_lib.ssh.remote import Remote
 
 from clan_cli.ssh import T
-from clan_cli.ssh.host import Host
 
 
 @dataclass
 class HostResult(Generic[T]):
-    host: Host
+    host: Remote
     _result: T | Exception
 
     @property

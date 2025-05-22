@@ -3,8 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+from clan_lib.ssh.remote import Remote
+
 import clan_cli.machines.machines as machines
-from clan_cli.ssh.host import Host
 
 
 class SecretStoreBase(ABC):
@@ -26,7 +27,7 @@ class SecretStoreBase(ABC):
     def exists(self, service: str, name: str) -> bool:
         pass
 
-    def needs_upload(self, host: Host) -> bool:
+    def needs_upload(self, host: Remote) -> bool:
         return True
 
     @abstractmethod

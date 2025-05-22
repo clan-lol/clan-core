@@ -22,12 +22,12 @@ from clan_cli.secrets.secrets import (
     groups_folder,
     has_secret,
 )
-from clan_cli.ssh.host import Host
 from clan_cli.ssh.upload import upload
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator
 from clan_cli.vars.var import Var
 from clan_lib.errors import ClanError
+from clan_lib.ssh.remote import Remote
 
 
 @dataclass
@@ -224,7 +224,7 @@ class SecretStore(StoreBase):
                         target_path.chmod(file.mode)
 
     @override
-    def upload(self, host: Host, phases: list[str]) -> None:
+    def upload(self, host: Remote, phases: list[str]) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)

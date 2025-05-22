@@ -1,23 +1,26 @@
 import re
 import urllib.parse
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+from clan_cli.ssh.host_key import HostKeyCheck
 
 from clan_lib.errors import ClanError
 
-from clan_cli.ssh.host import Host
-from clan_cli.ssh.host_key import HostKeyCheck
+if TYPE_CHECKING:
+    from clan_lib.ssh.remote import Remote
 
 
 def parse_deployment_address(
+    *,
     machine_name: str,
-    host: str,
+    address: str,
     host_key_check: HostKeyCheck,
     forward_agent: bool = True,
     meta: dict[str, Any] | None = None,
     private_key: Path | None = None,
-) -> Host:
-    parts = host.split("?", maxsplit=1)
+) -> "Remote":
+    parts = address.split("?", maxsplit=1)
     endpoint, maybe_options = parts if len(parts) == 2 else (parts[0], "")
 
     parts = endpoint.split("@")
@@ -25,15 +28,15 @@ def parse_deployment_address(
         case 2:
             user, host_port = parts
         case 1:
-            user, host_port = "", parts[0]
+            user, host_port = "root", parts[0]
         case _:
-            msg = f"Invalid host, got `{host}` but expected something like `[user@]hostname[:port]`"
+            msg = f"Invalid host, got `{address}` but expected something like `[user@]hostname[:port]`"
             raise ClanError(msg)
 
     # Make this check now rather than failing with a `ValueError`
     # when looking up the port from the `urlsplit` result below:
     if host_port.count(":") > 1 and not re.match(r".*\[.*]", host_port):
-        msg = f"Invalid hostname: {host}. IPv6 addresses must be enclosed in brackets , e.g. [::1]"
+        msg = f"Invalid hostname: {address}. IPv6 addresses must be enclosed in brackets , e.g. [::1]"
         raise ClanError(msg)
 
     options: dict[str, str] = {}
@@ -43,7 +46,7 @@ def parse_deployment_address(
         parts = o.split("=", maxsplit=1)
         if len(parts) != 2:
             msg = (
-                f"Invalid option in host `{host}`: option `{o}` does not have "
+                f"Invalid option in host `{address}`: option `{o}` does not have "
                 f"a value (i.e. expected something like `name=value`)"
             )
             raise ClanError(msg)
@@ -52,19 +55,19 @@ def parse_deployment_address(
 
     result = urllib.parse.urlsplit(f"//{host_port}")
     if not result.hostname:
-        msg = f"Invalid host, got `{host}` but expected something like `[user@]hostname[:port]`"
+        msg = f"Invalid host, got `{address}` but expected something like `[user@]hostname[:port]`"
         raise ClanError(msg)
     hostname = result.hostname
     port = result.port
+    from clan_lib.ssh.remote import Remote
 
-    return Host(
-        hostname,
+    return Remote(
+        address=hostname,
         user=user,
         port=port,
         private_key=private_key,
         host_key_check=host_key_check,
         command_prefix=machine_name,
         forward_agent=forward_agent,
-        meta={} if meta is None else meta.copy(),
         ssh_options=options,
     )

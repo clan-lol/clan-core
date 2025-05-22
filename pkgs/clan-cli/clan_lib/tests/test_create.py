@@ -14,7 +14,6 @@ from clan_cli.machines.machines import Machine
 from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import maybe_get_admin_public_key
 from clan_cli.secrets.users import add_user
-from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.vars.generate import generate_vars_for_machine, get_generators_closure
 
@@ -28,6 +27,7 @@ from clan_lib.inventory import patch_inventory_with
 from clan_lib.nix import nix_command
 from clan_lib.nix_models.inventory import Machine as InventoryMachine
 from clan_lib.nix_models.inventory import MachineDeploy
+from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
 
@@ -118,9 +118,9 @@ def fix_flake_inputs(clan_dir: Path, clan_core_dir: Path) -> None:
 @pytest.mark.with_core
 @pytest.mark.skipif(sys.platform == "darwin", reason="sshd fails to start on darwin")
 def test_clan_create_api(
-    temporary_home: Path, test_lib_root: Path, clan_core: Path, hosts: list[Host]
+    temporary_home: Path, test_lib_root: Path, clan_core: Path, hosts: list[Remote]
 ) -> None:
-    host_ip = hosts[0].host
+    host_ip = hosts[0].address
     host_user = hosts[0].user
     vm_name = "test-clan"
     clan_core_dir_var = str(clan_core)
@@ -176,7 +176,9 @@ def test_clan_create_api(
     clan_dir_flake = Flake(str(dest_clan_dir))
     machines: list[Machine] = []
 
-    host = Host(user=host_user, host=host_ip, port=int(ssh_port_var))
+    host = Remote(
+        user=host_user, address=host_ip, port=int(ssh_port_var), command_prefix=vm_name
+    )
     # TODO: We need to merge Host and Machine class these duplicate targetHost stuff is a nightmare
     inv_machine = InventoryMachine(
         name=vm_name, deploy=MachineDeploy(targetHost=f"{host.target}:{ssh_port_var}")

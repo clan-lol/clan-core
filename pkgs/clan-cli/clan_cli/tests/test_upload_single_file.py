@@ -1,18 +1,17 @@
 from pathlib import Path
 
 import pytest
-from clan_cli.ssh.host import Host, HostKeyCheck
 from clan_cli.ssh.upload import upload
+from clan_lib.ssh.remote import Remote
 
 
 @pytest.mark.with_core
 def test_upload_single_file(
     monkeypatch: pytest.MonkeyPatch,
     temporary_home: Path,
-    hosts: list[Host],
+    hosts: list[Remote],
 ) -> None:
     host = hosts[0]
-    host.host_key_check = HostKeyCheck.NONE
 
     src_file = temporary_home / "test.txt"
     src_file.write_text("test")
