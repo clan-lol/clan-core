@@ -4,11 +4,11 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from clan_cli.machines.machines import Machine
-from clan_cli.ssh.host import Host
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
 from clan_lib.dirs import vm_state_dir
 from clan_lib.errors import ClanError
+from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
 
@@ -70,6 +70,6 @@ class FactStore(StoreBase):
         msg = "populate_dir is not implemented for public vars stores"
         raise NotImplementedError(msg)
 
-    def upload(self, host: Host, phases: list[str]) -> None:
+    def upload(self, host: Remote, phases: list[str]) -> None:
         msg = "upload is not implemented for public vars stores"
         raise NotImplementedError(msg)

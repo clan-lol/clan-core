@@ -10,15 +10,15 @@ from clan_lib.async_run import AsyncRuntime
 from clan_lib.cmd import run
 from clan_lib.errors import ClanError
 from clan_lib.nix import nix_shell
+from clan_lib.ssh.parse import parse_deployment_address
+from clan_lib.ssh.remote import Remote, is_ssh_reachable
 
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_machines,
 )
 from clan_cli.machines.machines import Machine
-from clan_cli.ssh.host import Host, is_ssh_reachable
 from clan_cli.ssh.host_key import HostKeyCheck
-from clan_cli.ssh.parse import parse_deployment_address
 from clan_cli.ssh.tor import TorTarget, spawn_tor, ssh_tor_reachable
 
 log = logging.getLogger(__name__)
@@ -51,12 +51,12 @@ def is_ipv6(ip: str) -> bool:
 
 def find_reachable_host(
     deploy_info: DeployInfo, host_key_check: HostKeyCheck
-) -> Host | None:
+) -> Remote | None:
     host = None
     for addr in deploy_info.addrs:
         host_addr = f"[{addr}]" if is_ipv6(addr) else addr
         host_ = parse_deployment_address(
-            machine_name="uknown", host=host_addr, host_key_check=host_key_check
+            machine_name="uknown", address=host_addr, host_key_check=host_key_check
         )
         if is_ssh_reachable(host_):
             host = host_
@@ -88,7 +88,8 @@ def ssh_shell_from_deploy(
     deploy_info: DeployInfo, runtime: AsyncRuntime, host_key_check: HostKeyCheck
 ) -> None:
     if host := find_reachable_host(deploy_info, host_key_check):
-        host.interactive_ssh()
+        with host.ssh_control_master() as ssh:
+            ssh.interactive_ssh()
     else:
         log.info("Could not reach host via clearnet 'addrs'")
         log.info(f"Trying to reach host via tor '{deploy_info.tor}'")
@@ -97,7 +98,13 @@ def ssh_shell_from_deploy(
             msg = "No tor address provided, please provide a tor address."
             raise ClanError(msg)
         if ssh_tor_reachable(TorTarget(onion=deploy_info.tor, port=22)):
-            host = Host(host=deploy_info.tor, password=deploy_info.pwd, tor_socks=True)
+            host = Remote(
+                address=deploy_info.tor,
+                user="root",
+                password=deploy_info.pwd,
+                tor_socks=True,
+                command_prefix="tor",
+            )
         else:
             msg = "Could not reach host via tor either."
             raise ClanError(msg)

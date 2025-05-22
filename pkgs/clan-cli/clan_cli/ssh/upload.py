@@ -4,12 +4,11 @@ from tempfile import TemporaryDirectory
 
 from clan_lib.cmd import Log, RunOpts
 from clan_lib.errors import ClanError
-
-from clan_cli.ssh.host import Host
+from clan_lib.ssh.remote import Remote
 
 
 def upload(
-    host: Host,
+    host: Remote,
     local_src: Path,
     remote_dest: Path,  # must be a directory
     file_user: str = "root",
@@ -99,8 +98,8 @@ def upload(
             raise ClanError(msg)
 
         # TODO accept `input` to be  an IO object instead of bytes so that we don't have to read the tarfile into memory.
-        with tar_path.open("rb") as f:
-            host.run(
+        with tar_path.open("rb") as f, host.ssh_control_master() as ssh:
+            ssh.run(
                 [
                     "bash",
                     "-c",

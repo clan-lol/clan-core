@@ -3,21 +3,22 @@ import pwd
 from pathlib import Path
 
 import pytest
-from clan_cli.ssh.host import Host
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.tests.sshd import Sshd
+from clan_lib.ssh.remote import Remote
 
 
 @pytest.fixture
-def hosts(sshd: Sshd) -> list[Host]:
+def hosts(sshd: Sshd) -> list[Remote]:
     login = pwd.getpwuid(os.getuid()).pw_name
     group = [
-        Host(
+        Remote(
             "127.0.0.1",
             port=sshd.port,
             user=login,
             private_key=Path(sshd.key),
             host_key_check=HostKeyCheck.NONE,
+            command_prefix="local_test",
         )
     ]
 

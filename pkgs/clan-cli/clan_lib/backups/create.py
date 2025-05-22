@@ -6,13 +6,14 @@ from clan_lib.errors import ClanError
 def create_backup(machine: Machine, provider: str | None = None) -> None:
     machine.info(f"creating backup for {machine.name}")
     backup_scripts = machine.eval_nix("config.clan.core.backups")
+    host = machine.target_host()
     if provider is None:
         if not backup_scripts["providers"]:
             msg = "No providers specified"
             raise ClanError(msg)
-        with machine.target_host() as host:
+        with host.ssh_control_master() as ssh:
             for provider in backup_scripts["providers"]:
-                proc = host.run(
+                proc = ssh.run(
                     [backup_scripts["providers"][provider]["create"]],
                 )
                 if proc.returncode != 0:
@@ -23,8 +24,8 @@ def create_backup(machine: Machine, provider: str | None = None) -> None:
         if provider not in backup_scripts["providers"]:
             msg = f"provider {provider} not found"
             raise ClanError(msg)
-        with machine.target_host() as host:
-            proc = host.run(
+        with host.ssh_control_master() as ssh:
+            proc = ssh.run(
                 [backup_scripts["providers"][provider]["create"]],
             )
         if proc.returncode != 0:

@@ -1,12 +1,13 @@
 from pathlib import Path
 from typing import override
 
+from clan_lib.ssh.remote import Remote
+
 from clan_cli.machines.machines import Machine
 from clan_cli.secrets.folders import sops_secrets_folder
 from clan_cli.secrets.machines import add_machine, has_machine
 from clan_cli.secrets.secrets import decrypt_secret, encrypt_secret, has_secret
 from clan_cli.secrets.sops import generate_private_key
-from clan_cli.ssh.host import Host
 
 from . import SecretStoreBase
 
@@ -61,7 +62,7 @@ class SecretStore(SecretStoreBase):
         )
 
     @override
-    def needs_upload(self, host: Host) -> bool:
+    def needs_upload(self, host: Remote) -> bool:
         return False
 
     # We rely now on the vars backend to upload the age key
