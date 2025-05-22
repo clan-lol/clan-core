@@ -133,6 +133,7 @@ class AsyncThread(threading.Thread, Generic[P, R]):
         self,
         async_opts: AsyncOpts,
         condition: threading.Condition,
+        stop_event: threading.Event,
         function: Callable[P, R],
         *args: P.args,
         **kwargs: P.kwargs,
@@ -148,13 +149,14 @@ class AsyncThread(threading.Thread, Generic[P, R]):
         self.finished = False  # Set to True after the thread finishes execution
         self.condition = condition  # Shared condition variable
         self.async_opts = async_opts
+        self.stop_event = stop_event  # Event to signal cancellation
 
     def run(self) -> None:
         """
         Run the function in a separate thread.
         """
         try:
-            set_async_ctx(self.async_opts.async_ctx)
+            set_should_cancel(lambda: self.stop_event.is_set())
             # Arguments for ParamSpec "P@AsyncThread" are missing
             self.result = AsyncResult(_result=self.function(*self.args, **self.kwargs))
         except Exception as ex:
@@ -246,8 +248,11 @@ class AsyncRuntime:
             msg = f"A task with the name '{opts.tid}' is already running."
             raise ClanError(msg)
 
+        stop_event = threading.Event()
         # Create and start the new AsyncThread
-        thread = AsyncThread(opts, self.condition, function, *args, **kwargs)
+        thread = AsyncThread(
+            opts, self.condition, stop_event, function, *args, **kwargs
+        )
         self.tasks[opts.tid] = thread
         thread.start()
         return AsyncFuture(opts.tid, self)
@@ -323,7 +328,7 @@ class AsyncRuntime:
         """
         for name, task in self.tasks.items():
             if not task.finished:
-                set_should_cancel(lambda: True)
+                task.stop_event.set()
                 log.debug(f"Canceling task {name}")
 
 
