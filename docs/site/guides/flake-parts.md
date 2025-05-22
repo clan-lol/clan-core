@@ -1,7 +1,7 @@
 
-Clan supports integration with [flake.parts](https://flake.parts/) a tool which allows composing nixos modules in a modular way.
+Clan supports integration with [flake-parts](https://flake.parts/), a framework for constructing your `flake.nix` using modules.
 
-Here's how to set up Clan using `nix flakes` and `flake-parts`.
+To construct your Clan using flake-parts, follow these steps:
 
 ## 1. Update Your Flake Inputs
 
@@ -10,7 +10,7 @@ To begin, you'll need to add `flake-parts` as a new dependency in your flake's i
 ```nix
 # flake.nix
 inputs = {
-  nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+  nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-unstable";
 
   # New flake-parts input
   flake-parts.url = "github:hercules-ci/flake-parts";
@@ -18,77 +18,76 @@ inputs = {
 
   clan-core = {
     url = "git+https://git.clan.lol/clan/clan-core";
-    inputs.nixpkgs.follows = "nixpkgs"; # Needed if your configuration uses nixpkgs unstable.
+    inputs.nixpkgs.follows = "nixpkgs"; # Necessary if you are using a stable NixOS channel
     # New
     inputs.flake-parts.follows = "flake-parts";
   };
 }
 ```
 
-## 2. Import Clan-Core Flake Module
+## 2. Import the Clan flake-parts Module
 
-After updating your flake inputs, the next step is to import the `clan-core` flake module. This will make the [clan options](../reference/nix-api/buildclan.md) available within `mkFlake`.
+After updating your flake inputs, the next step is to import the Clan flake-parts module. This will make the [Clan options](../reference/nix-api/buildclan.md) available within `mkFlake`.
 
 ```nix
+{
   outputs =
     inputs@{ flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } (
       {
-        #
         imports = [
           inputs.clan-core.flakeModules.default
         ];
       }
     );
+}
 ```
 
 ### 3. Configure Clan Settings and Define Machines
 
-Configure your clan settings and define machine configurations.
-
-Below is a guide on how to structure this in your flake.nix:
+Next you'll need to configure Clan wide settings and define machines, here's an example of how `flake.nix` should look:
 
 ```nix
+{
   outputs = inputs@{ flake-parts, clan-core, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } ({self, pkgs, ...}: {
-      # We define our own systems below. you can still use this to add system specific outputs to your flake.
       # See: https://flake.parts/getting-started
-      systems = [];
+      systems = [
+        "x86_64-linux"
+      ];
 
-      # import clan-core modules
+      # Import the Clan flake-parts module
       imports = [
         clan-core.flakeModules.default
       ];
-      # Define your clan
+
+      # Define your Clan
       # See: https://docs.clan.lol/reference/nix-api/buildclan/
       clan = {
-        # Clan wide settings. (Required)
-        meta.name = ""; # Ensure to choose a unique name.
+        # Clan wide settings
+        meta.name = ""; # This is required and must be unique
 
         machines = {
           jon = {
             imports = [
-              ./machines/jon/configuration.nix
-              ./modules/disko.nix
+              ./modules/firefox.nix
               # ... more modules
             ];
+
             nixpkgs.hostPlatform = "x86_64-linux";
 
-            # Set this for clan commands use ssh i.e. `clan machines update`
-            clan.core.networking.targetHost = pkgs.lib.mkDefault "root@jon";
+            # Set this for Clan commands to work remotely over SSH like `clan machines update`
+            clan.core.networking.targetHost = "root@jon";
 
             # remote> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
             disko.devices.disk.main = {
               device = "/dev/disk/by-id/nvme-eui.e8238fa6bf530001001b448b4aec2929";
             };
-
-            # There needs to be exactly one controller per clan
-            clan.core.networking.zerotier.controller.enable = true;
-
           };
         };
       };
     });
+}
 ```
 
 For detailed information about configuring `flake-parts` and the available options within Clan,

@@ -1,10 +1,10 @@
 # Migrate existing NixOS configurations
 
-This guide will help you migrate your existing Nix configurations into Clan.
+This guide will help you migrate your existing NixOS configurations into Clan.
 
 !!! Warning
     Migrating instead of starting new can be trickier and might lead to bugs or
-    unexpected issues. We recommend following the [Getting Started](../getting-started/index.md) guide first. Once you have a working setup, you can easily transfer your Nix configurations over.
+    unexpected issues. We recommend following the [Getting Started](../getting-started/index.md) guide first. Once you have a working setup, you can easily transfer your NixOS configurations over.
 
 ## Back up your existing configuration!
 Before you start, it is strongly recommended to back up your existing
@@ -31,12 +31,12 @@ have have two hosts: **berlin** and **cologne**.
 
       berlin = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [./machines/berlin/configuration.nix];
+        modules = [ ./machines/berlin/configuration.nix ];
       };
 
       cologne = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [./machines/cologne/configuration.nix];
+        modules = [ ./machines/cologne/configuration.nix ];
       };
     };
   };
@@ -53,7 +53,7 @@ inputs.clan-core = {
   url = "git+https://git.clan.lol/clan/clan-core";
   # Don't do this if your machines are on nixpkgs stable.
   inputs.nixpkgs.follows = "nixpkgs";
-};
+}
 ```
 
 ## Update Outputs
@@ -86,20 +86,20 @@ For the provide flake example, your flake should now look like this:
   outputs = { self, nixpkgs, clan-core, ... }:
   let
     clan = clan-core.lib.buildClan {
-        self = self; # this needs to point at the repository root
-        specialArgs = {};
-        meta.name = throw "Change me to something unique";
+      self = self; # this needs to point at the repository root
+      specialArgs = {};
+      meta.name = throw "Change me to something unique";
 
-        machines = {
-            berlin = {
-                nixpkgs.hostPlatform = "x86_64-linux";
-                imports = [ ./machines/berlin/configuration.nix ];
-            };
-            cologne = {
-                nixpkgs.hostPlatform = "x86_64-linux";
-                imports = [ ./machines/cologne/configuration.nix ];
-            };
+      machines = {
+        berlin = {
+          nixpkgs.hostPlatform = "x86_64-linux";
+          imports = [ ./machines/berlin/configuration.nix ];
         };
+        cologne = {
+          nixpkgs.hostPlatform = "x86_64-linux";
+          imports = [ ./machines/cologne/configuration.nix ];
+        };
+      };
     };
   in
   {
@@ -144,7 +144,7 @@ A minimal example is provided below, add it to your flake outputs.
 ```nix
 devShells."x86_64-linux".default = nixpkgs.legacyPackages."x86_64-linux".mkShell {
   packages = [ clan-core.packages."x86_64-linux".clan-cli ];
-};
+}
 ```
 
 To use the CLI, execute `nix develop` in the directory of your flake. The
@@ -178,4 +178,3 @@ Clan needs to know where it can reach your hosts. For each of your hosts, set
 You are now fully set up. Use the CLI to manage your hosts or proceed to
 configure further services. At this point you should be able to run commands
 like `clan machines update berlin` to deploy a host.
-
