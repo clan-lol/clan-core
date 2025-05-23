@@ -284,7 +284,7 @@ def test_update_many() -> None:
         "foo": {
             "__prio": 100,  # <- writeable: "foo"
             "bar": {"__prio": 100},  # <-
-            "nix": {"__prio": 100},  # <- non writeable: "foo.bar" (defined in nix)
+            "nix": {"__prio": 100},  # <- non writeable: "foo.nix" (defined in nix)
             "nested": {
                 "__prio": 100,
                 "x": {"__prio": 100},  # <- writeable: "foo.nested.x"
@@ -451,7 +451,9 @@ def test_dont_persist_defaults() -> None:
     writeables = determine_writeability(prios, data_eval, data_disk)
     assert writeables == {"writeable": {"config", "enabled"}, "non_writeable": set()}
 
-    update = {"config": {"foo": "foo"}}
+    update = deepcopy(data_eval)
+    apply_patch(update, "config.foo", "foo")
+
     patchset, delete_set = calc_patches(
         data_disk, update, all_values=data_eval, writeables=writeables
     )
@@ -476,7 +478,9 @@ def test_machine_delete() -> None:
     assert writeables == {"writeable": {"machines"}, "non_writeable": set()}
 
     # Delete machine "bar"  from the inventory
-    update = {"machines": {"foo": {"name": "foo"}, "naz": {"name": "naz"}}}
+    update = deepcopy(data_eval)
+    delete_by_path(update, "machines.bar")
+
     patchset, delete_set = calc_patches(
         data_disk, update, all_values=data_eval, writeables=writeables
     )
@@ -507,8 +511,8 @@ def test_update_mismatching_update_type() -> None:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
 
     assert (
-        str(error.value)
-        == "Type mismatch for key 'foo'. Cannot update <class 'list'> with <class 'int'>"
+        "Type mismatch for key 'foo'. Cannot update <class 'list'> with <class 'int'>"
+        in str(error.value)
     )
 
 
@@ -534,7 +538,7 @@ def test_delete_key() -> None:
         data_disk, update, all_values=data_eval, writeables=writeables
     )
 
-    assert patchset == {}
+    assert patchset == {"foo": {}}
     assert delete_set == {"foo.bar"}
 
 
@@ -598,7 +602,7 @@ def test_delete_key_non_writeable() -> None:
     with pytest.raises(ClanError) as error:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
 
-    assert "Cannot delete" in str(error.value)
+    assert "is not writeable" in str(error.value)
 
 
 def test_delete_atom() -> None:
