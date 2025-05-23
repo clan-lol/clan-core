@@ -1,4 +1,5 @@
 # Functions to test
+from copy import deepcopy
 from typing import Any
 
 import pytest
@@ -251,6 +252,31 @@ def test_update_simple() -> None:
     )
 
     assert patchset == {"foo.bar": "new value"}
+
+
+def test_update_add_empty_dict() -> None:
+    prios = {
+        "foo": {
+            "__prio": 100,  # <- writeable: "foo"
+            "nix": {"__prio": 100},  # <- non writeable: "foo.nix" (defined in nix)
+        },
+    }
+
+    data_eval: dict = {"foo": {"nix": {}}}
+
+    data_disk: dict = {}
+
+    writeables = determine_writeability(prios, data_eval, data_disk)
+
+    update = deepcopy(data_eval)
+
+    apply_patch(update, "foo.mimi", {})
+
+    patchset, _ = calc_patches(
+        data_disk, update, all_values=data_eval, writeables=writeables
+    )
+
+    assert patchset == {"foo.mimi": {}}  # this is what gets persisted
 
 
 def test_update_many() -> None:
