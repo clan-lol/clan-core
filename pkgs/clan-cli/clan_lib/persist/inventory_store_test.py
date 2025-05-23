@@ -11,6 +11,7 @@ import pytest
 
 from clan_lib.errors import ClanError
 from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import apply_patch, delete_by_path
 
 
 class MockFlake:
@@ -112,3 +113,51 @@ def test_simple_read_write() -> None:
         # Technically data = { } should also work
         data = {"protected": "protected"}
         store.write(data, "test", commit=False)  # type: ignore
+
+
+def test_read_deferred() -> None:
+    entry_file = "deferred.nix"
+    inventory_file = entry_file.replace(".nix", ".json")
+
+    nix_file = folder_path / f"fixtures/{entry_file}"
+    json_file = folder_path / f"fixtures/{inventory_file}"
+    with TemporaryDirectory() as tmp:
+        shutil.copyfile(
+            str(nix_file),
+            str(Path(tmp) / entry_file),
+        )
+        shutil.copyfile(
+            str(json_file),
+            str(Path(tmp) / inventory_file),
+        )
+
+        store = InventoryStore(
+            flake=MockFlake(Path(tmp) / entry_file),
+            inventory_file_name=inventory_file,
+            _allowed_path_transforms=["foo.*"],
+        )
+
+        data = store.read()
+        assert data == {"foo": {"a": {}, "b": {}}}
+
+        # Create a new "deferredModule" "C"
+        apply_patch(data, "foo.c", {})
+        store.write(data, "test", commit=False)  # type: ignore
+
+        assert store.read() == {"foo": {"a": {}, "b": {}, "c": {}}}
+
+        # Remove the "deferredModule" "C"
+        delete_by_path(data, "foo.c")  # type: ignore
+        store.write(data, "test", commit=False)
+        assert store.read() == {"foo": {"a": {}, "b": {}}}
+
+        # Write settings into a new "deferredModule" "C" and read them back
+        apply_patch(data, "foo.c", {"timeout": "1s"})
+        store.write(data, "test", commit=False)  # type: ignore
+
+        assert store.read() == {"foo": {"a": {}, "b": {}, "c": {"timeout": "1s"}}}
+
+        # Remove the "deferredModule" "C" along with its settings
+        delete_by_path(data, "foo.c")  # type: ignore
+        store.write(data, "test", commit=False)
+        assert store.read() == {"foo": {"a": {}, "b": {}}}
