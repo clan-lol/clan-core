@@ -2,7 +2,7 @@ import contextlib
 import logging
 import subprocess
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from sys import platform
 from unittest.mock import patch
 
 import pytest
@@ -365,40 +365,40 @@ def test_caching_works(flake: ClanFlake) -> None:
 
 
 @pytest.mark.with_core
-def test_cache_gc(monkeypatch: pytest.MonkeyPatch) -> None:
-    with TemporaryDirectory() as tempdir_:
-        tempdir = Path(tempdir_)
+def test_cache_gc(temp_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("NIX_STATE_DIR", str(temp_dir / "var"))
+    monkeypatch.setenv("NIX_LOG_DIR", str(temp_dir / "var" / "log"))
+    monkeypatch.setenv("NIX_STORE_DIR", str(temp_dir / "store"))
+    monkeypatch.setenv("NIX_CACHE_HOME", str(temp_dir / "cache"))
+    monkeypatch.setenv("HOME", str(temp_dir / "home"))
+    with contextlib.suppress(KeyError):
+        monkeypatch.delenv("CLAN_TEST_STORE")
+    monkeypatch.setenv("NIX_BUILD_TOP", str(temp_dir / "build"))
 
-        monkeypatch.setenv("NIX_STATE_DIR", str(tempdir / "var"))
-        monkeypatch.setenv("NIX_LOG_DIR", str(tempdir / "var" / "log"))
-        monkeypatch.setenv("NIX_STORE_DIR", str(tempdir / "store"))
-        monkeypatch.setenv("NIX_CACHE_HOME", str(tempdir / "cache"))
-        monkeypatch.setenv("HOME", str(tempdir / "home"))
-        with contextlib.suppress(KeyError):
-            monkeypatch.delenv("CLAN_TEST_STORE")
-        monkeypatch.setenv("NIX_BUILD_TOP", str(tempdir / "build"))
+    test_file = temp_dir / "flake" / "testfile"
+    test_file.parent.mkdir(parents=True, exist_ok=True)
+    test_file.write_text("test")
 
-        test_file = tempdir / "flake" / "testfile"
-        test_file.parent.mkdir(parents=True, exist_ok=True)
-        test_file.write_text("test")
+    test_flake = temp_dir / "flake" / "flake.nix"
+    test_flake.write_text("""
+        {
+          outputs = _: {
+            testfile = ./testfile;
+          };
+        }
+    """)
 
-        test_flake = tempdir / "flake" / "flake.nix"
-        test_flake.write_text("""
-            {
-              outputs = _: {
-                testfile = ./testfile;
-              };
-            }
-        """)
-
-        my_flake = Flake(str(tempdir / "flake"))
+    my_flake = Flake(str(temp_dir / "flake"))
+    if platform == "darwin":
+        my_flake.select("testfile")
+    else:
         my_flake.select(
-            "testfile", nix_options=["--sandbox-build-dir", str(tempdir / "build")]
+            "testfile", nix_options=["--sandbox-build-dir", str(temp_dir / "build")]
         )
-        assert my_flake._cache is not None  # noqa: SLF001
-        assert my_flake._cache.is_cached("testfile")  # noqa: SLF001
-        subprocess.run(["nix-collect-garbage"], check=True)
-        assert not my_flake._cache.is_cached("testfile")  # noqa: SLF001
+    assert my_flake._cache is not None  # noqa: SLF001
+    assert my_flake._cache.is_cached("testfile")  # noqa: SLF001
+    subprocess.run(["nix-collect-garbage"], check=True)
+    assert not my_flake._cache.is_cached("testfile")  # noqa: SLF001
 
 
 # This test fails because the CI sandbox does not have the required packages to run the generators
