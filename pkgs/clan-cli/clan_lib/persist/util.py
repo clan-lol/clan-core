@@ -55,7 +55,11 @@ def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict
 
         if isinstance(value, dict):
             # Recursively flatten the nested dictionary
-            flattened.update(flatten_data(value, new_key, separator))
+            if value:
+                flattened.update(flatten_data(value, new_key, separator))
+            else:
+                # If the value is an empty dictionary, add it to the flattened dict
+                flattened[new_key] = {}
         else:
             flattened[new_key] = value
 
