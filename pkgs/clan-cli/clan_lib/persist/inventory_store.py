@@ -239,7 +239,8 @@ class InventoryStore:
         for patch_path, data in patchset.items():
             apply_patch(persisted, patch_path, data)
 
-        self.delete(delete_set, commit=False)
+        for delete_path in delete_set:
+            delete_by_path(persisted, delete_path)
 
         with self.inventory_file.open("w") as f:
             json.dump(persisted, f, indent=2)
