@@ -106,8 +106,7 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
     target_host = opts.target_host
 
     new_machine = opts.machine
-    if target_host:
-        new_machine["deploy"] = {"targetHost": target_host}
+    new_machine["deploy"] = {"targetHost": target_host} # type: ignore
 
     inventory_store = InventoryStore(opts.clan_dir)
     inventory = inventory_store.read()
