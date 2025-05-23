@@ -134,6 +134,16 @@ def find_deleted_paths(
     return deleted_paths
 
 
+def parent_is_dict(key: str, data: dict[str, Any]) -> bool:
+    parts = key.split(".")
+    while len(parts) > 1:
+        parts.pop()
+        parent_key = ".".join(parts)
+        if parent_key in data:
+            return isinstance(data[parent_key], dict)
+    return False
+
+
 def calc_patches(
     persisted: dict[str, Any],
     update: dict[str, Any],
