@@ -106,10 +106,18 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
     target_host = opts.target_host
 
     new_machine = opts.machine
-    new_machine["deploy"] = {"targetHost": target_host} # type: ignore
+    new_machine["deploy"] = {"targetHost": target_host}  # type: ignore
 
     inventory_store = InventoryStore(opts.clan_dir)
     inventory = inventory_store.read()
+
+    if machine_name in inventory.get("machines", {}):
+        msg = f"Machine {machine_name} already exists in inventory"
+        description = (
+            "Please delete the existing machine or import with a different name"
+        )
+        raise ClanError(msg, description=description)
+
     apply_patch(
         inventory,
         f"machines.{machine_name}",
@@ -153,7 +161,7 @@ def create_command(args: argparse.Namespace) -> None:
     machine = InventoryMachine(
         name=args.machine_name,
         tags=args.tags,
-        deploy=MachineDeploy(),
+        deploy=MachineDeploy(targetHost=args.target_host),
     )
     opts = CreateOptions(
         input_prio=input_prio,
