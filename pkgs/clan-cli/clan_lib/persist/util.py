@@ -89,7 +89,7 @@ def find_duplicates(string_list: list[str]) -> list[str]:
 
 
 def find_deleted_paths(
-    persisted: dict[str, Any], update: dict[str, Any], parent_key: str = ""
+    curr: dict[str, Any], update: dict[str, Any], parent_key: str = ""
 ) -> set[str]:
     """
     Recursively find keys (at any nesting level) that exist in persisted but do not
@@ -103,7 +103,7 @@ def find_deleted_paths(
     deleted_paths = set()
 
     # Iterate over keys in persisted
-    for key, p_value in persisted.items():
+    for key, p_value in curr.items():
         current_path = f"{parent_key}.{key}" if parent_key else key
         # Check if this key exists in update
         if key not in update:
