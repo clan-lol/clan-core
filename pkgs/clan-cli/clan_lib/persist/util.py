@@ -9,6 +9,33 @@ from typing import Any
 from clan_lib.errors import ClanError
 
 
+def path_match(path: list[str], whitelist_paths: list[list[str]]) -> bool:
+    """
+    Returns True if path matches any whitelist path with "*" wildcards.
+
+    I.e.:
+    whitelist_paths = [["a.b.*"]]
+    path = ["a", "b", "c"]
+    path_match(path, whitelist_paths) == True
+
+
+    whitelist_paths = ["a.b.c", "a.b.*"]
+    path = ["a", "b", "d"]
+    path_match(path, whitelist_paths) == False
+    """
+    for wp in whitelist_paths:
+        if len(path) != len(wp):
+            continue
+        match = True
+        for p, w in zip(path, wp, strict=False):
+            if w != "*" and p != w:
+                match = False
+                break
+        if match:
+            return True
+    return False
+
+
 def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict:
     """
     Recursively flattens a nested dictionary structure where keys are joined by the separator.

@@ -9,8 +9,56 @@ from clan_lib.persist.util import (
     calc_patches,
     delete_by_path,
     determine_writeability,
+    path_match,
     unmerge_lists,
 )
+
+
+@pytest.mark.parametrize(
+    ("path", "whitelist", "expected"),
+    [
+        # Exact matches
+        (["a", "b", "c"], [["a", "b", "c"]], True),
+        (["a", "b"], [["a", "b"]], True),
+        ([], [[]], True),
+        # Wildcard matches
+        (["a", "b", "c"], [["a", "*", "c"]], True),
+        (["a", "x", "c"], [["a", "*", "c"]], True),
+        (["a", "b", "c"], [["*", "b", "c"]], True),
+        (["a", "b", "c"], [["a", "b", "*"]], True),
+        (["a", "b", "c"], [["*", "*", "*"]], True),
+        # Multiple patterns - one matches
+        (["a", "b", "c"], [["x", "y", "z"], ["a", "*", "c"]], True),
+        (["x", "y", "z"], [["a", "*", "c"], ["x", "y", "z"]], True),
+        # Length mismatch
+        (["a", "b", "c"], [["a", "b"]], False),
+        (["a", "b"], [["a", "b", "c"]], False),
+        # Non-matching
+        (["a", "b", "c"], [["a", "b", "x"]], False),
+        (["a", "b", "c"], [["a", "x", "x"]], False),
+        (["a", "b", "c"], [["x", "x", "x"]], False),
+        # Empty whitelist
+        (["a"], [], False),
+        # Wildcards and exact mixed
+        (
+            ["instances", "inst1", "roles", "roleA", "settings"],
+            [["instances", "*", "roles", "*", "settings"]],
+            True,
+        ),
+        # Partial wildcard - length mismatch should fail
+        (
+            ["instances", "inst1", "roles", "roleA"],
+            [["instances", "*", "roles", "*", "settings"]],
+            False,
+        ),
+        # Empty path, no patterns
+        ([], [], False),
+    ],
+)
+def test_path_match(
+    path: list[str], whitelist: list[list[str]], expected: bool
+) -> None:
+    assert path_match(path, whitelist) == expected
 
 
 # --------- Patching tests ---------
