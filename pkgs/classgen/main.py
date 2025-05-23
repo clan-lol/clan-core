@@ -229,7 +229,6 @@ def generate_dataclass(
         if len(attr_path) == 0 and prop not in attrs:
             field_def = field_name, "dict[str, Any]"
             fields_with_default.append(field_def)
-            # breakpoint()
             continue
 
         prop_type = prop_info.get("type", None)
