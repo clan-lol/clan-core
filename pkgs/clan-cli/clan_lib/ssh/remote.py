@@ -126,9 +126,7 @@ class Remote:
             "/var/folders/"
         ):
             directory = "/tmp/"
-        # Use more specific prefix for the temp dir to avoid potential collisions if multiple hosts used
-        prefix = f"clan-ssh-{self.address}-{self.port or 22}-{self.user}-"
-        temp_dir = TemporaryDirectory(prefix=prefix, dir=directory)
+        temp_dir = TemporaryDirectory(prefix="clan-ssh", dir=directory)
         yield Remote(
             address=self.address,
             user=self.user,
@@ -245,10 +243,7 @@ class Remote:
             ssh_opts.extend(["-i", str(self.private_key)])
 
         if effective_control_path_dir:
-            socket_path = (
-                effective_control_path_dir
-                / f"clan-{self.address}-{self.port or 22}-{self.user}"
-            )
+            socket_path = effective_control_path_dir / "socket"
             ssh_opts.extend(["-o", "ControlPersist=30m"])
             ssh_opts.extend(["-o", f"ControlPath={socket_path}"])
             ssh_opts.extend(["-o", "ControlMaster=auto"])
