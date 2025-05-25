@@ -18,7 +18,7 @@ This section will walk you through the following steps:
 1. declare a `generator` in the machine's nixos configuration
 2. inspect the status via the Clan CLI
 3. generate the vars
-4. observer the changes
+4. observe the changes
 5. update the machine
 6. share the root password between machines
 7. change the password
