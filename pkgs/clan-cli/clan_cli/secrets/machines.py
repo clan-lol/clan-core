@@ -49,7 +49,7 @@ def remove_machine(flake_dir: Path, name: str) -> None:
     )
 
 
-def get_machine(flake_dir: Path, name: str) -> str:
+def get_machine_pubkey(flake_dir: Path, name: str) -> str:
     key = read_key(sops_machines_folder(flake_dir) / name)
     return key.pubkey
 
@@ -120,7 +120,7 @@ def get_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         msg = "Could not find clan flake toplevel directory"
         raise ClanError(msg)
-    print(get_machine(args.flake.path, args.machine))
+    print(get_machine_pubkey(args.flake.path, args.machine))
 
 
 def remove_command(args: argparse.Namespace) -> None:
