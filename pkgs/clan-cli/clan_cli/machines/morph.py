@@ -74,7 +74,7 @@ def morph_machine(
             machine=InventoryMachine(name=name),
             clan_dir=Flake(str(flakedir)),
         )
-        create_machine(create_opts, commit=False)
+        create_machine(create_opts, commit=False, _persist=False)
 
         machine = Machine(name=name, flake=Flake(str(flakedir)))
 
