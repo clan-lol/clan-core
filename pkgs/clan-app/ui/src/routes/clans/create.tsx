@@ -9,7 +9,7 @@ import {
 import toast from "solid-toast";
 import { TextInput } from "@/src/Form/fields/TextInput";
 import { useNavigate } from "@solidjs/router";
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";
 import { useClanContext } from "@/src/contexts/clan";
 

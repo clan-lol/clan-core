@@ -1,5 +1,5 @@
 import { SuccessData } from "@/src/api";
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import { Header } from "@/src/layout/header";
 import { createModulesQuery } from "@/src/queries";
 import { A, useNavigate } from "@solidjs/router";

@@ -5,7 +5,7 @@ import {
   SubmitHandler,
 } from "@modular-forms/solid";
 import { TextInput } from "@/src/Form/fields/TextInput";
-import { Button } from "./components/button";
+import { Button } from "./components/Button/Button";
 import { callApi } from "./api";
 import { API } from "@/api/API";
 import { createSignal, Match, Switch } from "solid-js";

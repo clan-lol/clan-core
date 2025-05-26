@@ -10,7 +10,7 @@ import {
 import { Portal } from "solid-js/web";
 import { useFloating } from "../base";
 import { autoUpdate, flip, hide, offset, shift, size } from "@floating-ui/dom";
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import {
   InputBase,
   InputError,

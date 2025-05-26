@@ -1,5 +1,5 @@
 import { callApi } from "@/src/api";
-import { Button } from "@/src/components/button";
+import { Button } from "../../../components/Button/Button";
 import Icon from "@/src/components/icon";
 import { InputError, InputLabel } from "@/src/components/inputBase";
 import { FieldLayout } from "@/src/Form/fields/layout";

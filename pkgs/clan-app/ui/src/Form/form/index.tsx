@@ -20,7 +20,7 @@ import { createEffect, For, JSX, Match, Show, Switch } from "solid-js";
 import cx from "classnames";
 import { Label } from "../base/label";
 import { SelectInput } from "../fields/Select";
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";
 
 function generateDefaults(schema: JSONSchema7): unknown {

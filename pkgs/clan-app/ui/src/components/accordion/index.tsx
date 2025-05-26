@@ -1,6 +1,6 @@
 import { createSignal, JSX, Show } from "solid-js";
 import Icon from "../icon";
-import { Button } from "../button";
+import { Button } from "../Button/Button";
 import cx from "classnames";
 import "./accordion.css";
 

@@ -13,7 +13,7 @@ import {
 } from "@modular-forms/solid";
 import { TextInput } from "@/src/Form/fields/TextInput";
 import toast from "solid-toast";
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";
 import { Header } from "@/src/layout/header";
 import { clanMetaQuery } from "@/src/queries/clan-meta";

@@ -31,6 +31,12 @@ Solid in production mode and optimizes the build for the best performance.
 The build is minified and the filenames include the hashes.<br> Your app is
 ready to be deployed!
 
+### `npm run storybook`
+
+Starts an instance of [storybook](https://storybook.js.org/).
+
+For more info on how to write stories, please [see here](https://storybook.js.org/docs).
+
 ## Deployment
 
 You can deploy the `dist` folder to any static host provider (netlify, surge,

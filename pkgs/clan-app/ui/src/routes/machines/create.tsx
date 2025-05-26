@@ -1,5 +1,5 @@
 import { callApi, OperationArgs } from "@/src/api";
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";
 import { TextInput } from "@/src/Form/fields/TextInput";
 import { Header } from "@/src/layout/header";

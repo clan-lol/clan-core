@@ -1,8 +1,8 @@
 import { splitProps, type JSX } from "solid-js";
 import cx from "classnames";
 import { Typography } from "../Typography";
-//import './css/index.css'
-import "./css/index.css";
+
+import "./Button-Base.css";
 
 type Variants = "dark" | "light" | "ghost";
 type Size = "default" | "s";
@@ -42,7 +42,8 @@ const sizeFont: Record<Size, string> = {
   s: cx("text-[0.75rem]"),
 };
 
-interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps
+  extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variants;
   size?: Size;
   children?: JSX.Element;
