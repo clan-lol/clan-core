@@ -107,22 +107,22 @@ class Remote:
             "/var/folders/"
         ):
             directory = "/tmp/"
-        temp_dir = TemporaryDirectory(prefix="clan-ssh", dir=directory)
-        yield Remote(
-            address=self.address,
-            user=self.user,
-            command_prefix=self.command_prefix,
-            port=self.port,
-            private_key=self.private_key,
-            password=self.password,
-            forward_agent=self.forward_agent,
-            host_key_check=self.host_key_check,
-            verbose_ssh=self.verbose_ssh,
-            ssh_options=self.ssh_options,
-            tor_socks=self.tor_socks,
-            _control_path_dir=Path(temp_dir.name),
-        )
-        temp_dir.cleanup()
+        with TemporaryDirectory(prefix="clan-ssh", dir=directory) as temp_dir:
+            yield Remote(
+                address=self.address,
+                user=self.user,
+                command_prefix=self.command_prefix,
+                port=self.port,
+                private_key=self.private_key,
+                password=self.password,
+                forward_agent=self.forward_agent,
+                host_key_check=self.host_key_check,
+                verbose_ssh=self.verbose_ssh,
+                ssh_options=self.ssh_options,
+                tor_socks=self.tor_socks,
+                _control_path_dir=Path(temp_dir),
+                _askpass_path=self._askpass_path,
+            )
 
     def run(
         self,
