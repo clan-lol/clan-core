@@ -7,7 +7,7 @@ import { createQuery } from "@tanstack/solid-query";
 import { JSONSchema7 } from "json-schema";
 import { SubmitHandler } from "@modular-forms/solid";
 import { DynForm } from "@/src/Form/form";
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";
 import { useClanContext } from "@/src/contexts/clan";
 import { activeClanURI } from "@/src/stores/clan";

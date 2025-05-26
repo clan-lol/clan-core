@@ -3,7 +3,7 @@ import { callApi, OperationResponse } from "@/src/api";
 import { MachineListItem } from "@/src/components/machine-list-item";
 import { useQuery, useQueryClient } from "@tanstack/solid-query";
 import { useNavigate } from "@solidjs/router";
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";
 import { Header } from "@/src/layout/header";
 import { makePersisted } from "@solid-primitives/storage";

@@ -1,4 +1,4 @@
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import { registerClan } from "@/src/hooks";
 import { useNavigate } from "@solidjs/router";
 import { useClanContext } from "@/src/contexts/clan";

@@ -1,6 +1,6 @@
 import Dialog from "corvu/dialog";
 import { createSignal, JSX } from "solid-js";
-import { Button } from "../button";
+import { Button } from "../Button/Button";
 import Icon from "../icon";
 import cx from "classnames";
 

@@ -1,5 +1,5 @@
 import { useNavigate } from "@solidjs/router";
-import { Button } from "./button";
+import { Button } from "./Button/Button";
 import Icon from "./icon";
 
 export const BackButton = () => {

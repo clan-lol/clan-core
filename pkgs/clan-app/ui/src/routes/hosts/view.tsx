@@ -1,6 +1,6 @@
 import { type Component, createSignal, For, Show } from "solid-js";
 import { OperationResponse, callApi } from "@/src/api";
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";
 
 type ServiceModel = Extract<

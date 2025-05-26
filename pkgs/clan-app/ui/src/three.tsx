@@ -1,6 +1,6 @@
 import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
 import * as THREE from "three";
-import { Button } from "./components/button";
+import { Button } from "./components/Button/Button";
 import Icon from "./components/icon";
 
 function addCubesSpiral({

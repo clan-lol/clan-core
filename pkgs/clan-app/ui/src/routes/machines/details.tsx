@@ -10,7 +10,7 @@ import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { createQuery, useQuery, useQueryClient } from "@tanstack/solid-query";
 import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
 
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";
 import { TextInput } from "@/src/Form/fields/TextInput";
 import Accordion from "@/src/components/accordion";

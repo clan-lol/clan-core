@@ -1,4 +1,4 @@
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import { InputBase, InputLabel } from "@/src/components/inputBase";
 import { TextInput } from "@/src/Form/fields";
 import { Header } from "@/src/layout/header";

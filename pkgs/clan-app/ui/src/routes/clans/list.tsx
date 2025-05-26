@@ -3,7 +3,7 @@ import { useFloating } from "@/src/floating";
 import { autoUpdate, flip, hide, offset, shift } from "@floating-ui/dom";
 import { A, useNavigate } from "@solidjs/router";
 import { registerClan } from "@/src/hooks";
-import { Button } from "@/src/components/button";
+import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";
 import { useClanContext } from "@/src/contexts/clan";
 import { clanURIs, setActiveClanURI } from "@/src/stores/clan";

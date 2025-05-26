@@ -14,7 +14,7 @@ import toast from "solid-toast";
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { StepProps } from "./hardware-step";
 import { BackButton } from "@/src/components/BackButton";
-import { Button } from "@/src/components/button";
+import { Button } from "../../../components/Button/Button";
 import { useClanContext } from "@/src/contexts/clan";
 
 export type VarsValues = FieldValues & Record<string, Record<string, string>>;

@@ -9,7 +9,7 @@ import {
   shift,
 } from "@floating-ui/dom";
 import cx from "classnames";
-import { Button } from "./button";
+import { Button } from "./Button/Button";
 
 interface MenuProps {
   /**
