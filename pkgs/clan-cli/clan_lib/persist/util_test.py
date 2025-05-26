@@ -1,4 +1,5 @@
 # Functions to test
+from copy import deepcopy
 from typing import Any
 
 import pytest
@@ -9,8 +10,56 @@ from clan_lib.persist.util import (
     calc_patches,
     delete_by_path,
     determine_writeability,
+    path_match,
     unmerge_lists,
 )
+
+
+@pytest.mark.parametrize(
+    ("path", "whitelist", "expected"),
+    [
+        # Exact matches
+        (["a", "b", "c"], [["a", "b", "c"]], True),
+        (["a", "b"], [["a", "b"]], True),
+        ([], [[]], True),
+        # Wildcard matches
+        (["a", "b", "c"], [["a", "*", "c"]], True),
+        (["a", "x", "c"], [["a", "*", "c"]], True),
+        (["a", "b", "c"], [["*", "b", "c"]], True),
+        (["a", "b", "c"], [["a", "b", "*"]], True),
+        (["a", "b", "c"], [["*", "*", "*"]], True),
+        # Multiple patterns - one matches
+        (["a", "b", "c"], [["x", "y", "z"], ["a", "*", "c"]], True),
+        (["x", "y", "z"], [["a", "*", "c"], ["x", "y", "z"]], True),
+        # Length mismatch
+        (["a", "b", "c"], [["a", "b"]], False),
+        (["a", "b"], [["a", "b", "c"]], False),
+        # Non-matching
+        (["a", "b", "c"], [["a", "b", "x"]], False),
+        (["a", "b", "c"], [["a", "x", "x"]], False),
+        (["a", "b", "c"], [["x", "x", "x"]], False),
+        # Empty whitelist
+        (["a"], [], False),
+        # Wildcards and exact mixed
+        (
+            ["instances", "inst1", "roles", "roleA", "settings"],
+            [["instances", "*", "roles", "*", "settings"]],
+            True,
+        ),
+        # Partial wildcard - length mismatch should fail
+        (
+            ["instances", "inst1", "roles", "roleA"],
+            [["instances", "*", "roles", "*", "settings"]],
+            False,
+        ),
+        # Empty path, no patterns
+        ([], [], False),
+    ],
+)
+def test_path_match(
+    path: list[str], whitelist: list[list[str]], expected: bool
+) -> None:
+    assert path_match(path, whitelist) == expected
 
 
 # --------- Patching tests ---------
@@ -205,12 +254,37 @@ def test_update_simple() -> None:
     assert patchset == {"foo.bar": "new value"}
 
 
+def test_update_add_empty_dict() -> None:
+    prios = {
+        "foo": {
+            "__prio": 100,  # <- writeable: "foo"
+            "nix": {"__prio": 100},  # <- non writeable: "foo.nix" (defined in nix)
+        },
+    }
+
+    data_eval: dict = {"foo": {"nix": {}}}
+
+    data_disk: dict = {}
+
+    writeables = determine_writeability(prios, data_eval, data_disk)
+
+    update = deepcopy(data_eval)
+
+    apply_patch(update, "foo.mimi", {})
+
+    patchset, _ = calc_patches(
+        data_disk, update, all_values=data_eval, writeables=writeables
+    )
+
+    assert patchset == {"foo.mimi": {}}  # this is what gets persisted
+
+
 def test_update_many() -> None:
     prios = {
         "foo": {
             "__prio": 100,  # <- writeable: "foo"
             "bar": {"__prio": 100},  # <-
-            "nix": {"__prio": 100},  # <- non writeable: "foo.bar" (defined in nix)
+            "nix": {"__prio": 100},  # <- non writeable: "foo.nix" (defined in nix)
             "nested": {
                 "__prio": 100,
                 "x": {"__prio": 100},  # <- writeable: "foo.nested.x"
@@ -377,7 +451,9 @@ def test_dont_persist_defaults() -> None:
     writeables = determine_writeability(prios, data_eval, data_disk)
     assert writeables == {"writeable": {"config", "enabled"}, "non_writeable": set()}
 
-    update = {"config": {"foo": "foo"}}
+    update = deepcopy(data_eval)
+    apply_patch(update, "config.foo", "foo")
+
     patchset, delete_set = calc_patches(
         data_disk, update, all_values=data_eval, writeables=writeables
     )
@@ -402,7 +478,9 @@ def test_machine_delete() -> None:
     assert writeables == {"writeable": {"machines"}, "non_writeable": set()}
 
     # Delete machine "bar"  from the inventory
-    update = {"machines": {"foo": {"name": "foo"}, "naz": {"name": "naz"}}}
+    update = deepcopy(data_eval)
+    delete_by_path(update, "machines.bar")
+
     patchset, delete_set = calc_patches(
         data_disk, update, all_values=data_eval, writeables=writeables
     )
@@ -433,8 +511,8 @@ def test_update_mismatching_update_type() -> None:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
 
     assert (
-        str(error.value)
-        == "Type mismatch for key 'foo'. Cannot update <class 'list'> with <class 'int'>"
+        "Type mismatch for key 'foo'. Cannot update <class 'list'> with <class 'int'>"
+        in str(error.value)
     )
 
 
@@ -460,7 +538,7 @@ def test_delete_key() -> None:
         data_disk, update, all_values=data_eval, writeables=writeables
     )
 
-    assert patchset == {}
+    assert patchset == {"foo": {}}
     assert delete_set == {"foo.bar"}
 
 
@@ -524,7 +602,7 @@ def test_delete_key_non_writeable() -> None:
     with pytest.raises(ClanError) as error:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
 
-    assert "Cannot delete" in str(error.value)
+    assert "is not writeable" in str(error.value)
 
 
 def test_delete_atom() -> None:

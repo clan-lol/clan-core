@@ -40,7 +40,19 @@ class CreateOptions:
 
 
 @API.register
-def create_machine(opts: CreateOptions, commit: bool = True) -> None:
+def create_machine(
+    opts: CreateOptions, commit: bool = True, _persist: bool = True
+) -> None:
+    """
+    Create a new machine in the clan directory.
+
+    This function will create a new machine based on a template.
+
+    :param opts: Options for creating the machine, including clan directory, machine details, and template name.
+    :param commit: Whether to commit the changes to the git repository.
+    :param _persist: Temporary workaround for 'morph'. Whether to persist the changes to the inventory store.
+    """
+
     if not opts.clan_dir.is_local:
         msg = f"Clan {opts.clan_dir} is not a local clan."
         description = "Import machine only works on local clans"
@@ -51,6 +63,9 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
 
     clan_dir = opts.clan_dir.path
 
+    # TODO(@Qubasa): make this a proper template handler
+    # i.e. with_template (use context manager)
+    # And move the checks and template handling into the template handler
     template = get_template(
         TemplateName(opts.template_name),
         "machine",
@@ -64,10 +79,7 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
         Flake(str(clan_dir))
     ) and not opts.machine.get("name"):
         msg = f"{opts.template_name} is already defined in {clan_dir}"
-        description = (
-            "Please add the --rename option to import the machine with a different name"
-        )
-        raise ClanError(msg, description=description)
+        raise ClanError(msg)
 
     machine_name = machine_name if machine_name else opts.template_name
     src = Path(template.src["path"])
@@ -91,32 +103,39 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
 
     if dst.exists():
         msg = f"Machine {machine_name} already exists in {clan_dir}"
-        description = (
-            "Please delete the existing machine or import with a different name"
-        )
+        description = "Please remove the existing machine folder"
         raise ClanError(msg, description=description)
 
+    # TODO(@Qubasa): move this into the template handler
     if not (src / "configuration.nix").exists():
         msg = f"Template machine '{opts.template_name}' does not contain a configuration.nix"
         description = "Template machine must contain a configuration.nix"
         raise ClanError(msg, description=description)
 
+    # TODO(@Qubasa): move this into the template handler
     copy_from_nixstore(src, dst)
 
-    target_host = opts.target_host
+    if _persist:
+        target_host = opts.target_host
+        new_machine = opts.machine
+        new_machine["deploy"] = {"targetHost": target_host}  # type: ignore
 
-    new_machine = opts.machine
-    if target_host:
-        new_machine["deploy"] = {"targetHost": target_host}
+        inventory_store = InventoryStore(opts.clan_dir)
+        inventory = inventory_store.read()
 
-    inventory_store = InventoryStore(opts.clan_dir)
-    inventory = inventory_store.read()
-    apply_patch(
-        inventory,
-        f"machines.{machine_name}",
-        new_machine,
-    )
-    inventory_store.write(inventory, message=f"machine '{machine_name}'")
+        if machine_name in inventory.get("machines", {}):
+            msg = f"Machine {machine_name} already exists in inventory"
+            description = (
+                "Please delete the existing machine or import with a different name"
+            )
+            raise ClanError(msg, description=description)
+
+        apply_patch(
+            inventory,
+            f"machines.{machine_name}",
+            new_machine,
+        )
+        inventory_store.write(inventory, message=f"machine '{machine_name}'")
 
     # Commit at the end in that order to avoid committing halve-baked machines
     # TODO: automatic rollbacks if something goes wrong
@@ -154,7 +173,7 @@ def create_command(args: argparse.Namespace) -> None:
     machine = InventoryMachine(
         name=args.machine_name,
         tags=args.tags,
-        deploy=MachineDeploy(),
+        deploy=MachineDeploy(targetHost=args.target_host),
     )
     opts = CreateOptions(
         input_prio=input_prio,

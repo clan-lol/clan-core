@@ -11,6 +11,7 @@ import pytest
 
 from clan_lib.errors import ClanError
 from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import apply_patch, delete_by_path
 
 
 class MockFlake:
@@ -67,32 +68,36 @@ class MockFlake:
 folder_path = Path(__file__).parent.resolve()
 
 
-def test_for_johannes() -> None:
-    nix_file = folder_path / "fixtures/1.nix"
-    json_file = folder_path / "fixtures/1.json"
+def test_simple_read_write() -> None:
+    entry_file = "1.nix"
+    inventory_file = entry_file.replace(".nix", ".json")
+
+    nix_file = folder_path / f"fixtures/{entry_file}"
+    json_file = folder_path / f"fixtures/{inventory_file}"
     with TemporaryDirectory() as tmp:
         shutil.copyfile(
             str(nix_file),
-            str(Path(tmp) / "1.nix"),
+            str(Path(tmp) / entry_file),
         )
         shutil.copyfile(
             str(json_file),
-            str(Path(tmp) / "1.json"),
+            str(Path(tmp) / inventory_file),
         )
 
         store = InventoryStore(
-            flake=MockFlake(Path(tmp) / "1.nix"),
-            inventory_file_name="1.json",
+            flake=MockFlake(Path(tmp) / entry_file),
+            inventory_file_name=inventory_file,
         )
-        assert store.read() == {"foo": "bar", "protected": "protected"}
+        data: dict = store.read()  # type: ignore
+        assert data == {"foo": "bar", "protected": "protected"}
 
-        data = {"foo": "foo"}
+        apply_patch(data, "foo", "foo")  # type: ignore
         store.write(data, "test", commit=False)  # type: ignore
         # Default method to access the inventory
         assert store.read() == {"foo": "foo", "protected": "protected"}
 
         # Test the data is actually persisted
-        assert store._get_persisted() == data
+        assert store._get_persisted() == {"foo": "foo"}
 
         # clan_lib.errors.ClanError: Key 'protected' is not writeable.
         invalid_data = {"protected": "foo"}
@@ -101,10 +106,58 @@ def test_for_johannes() -> None:
         assert str(e.value) == "Key 'protected' is not writeable."
 
         # Test the data is not touched
-        assert store.read() == {"foo": "foo", "protected": "protected"}
-        assert store._get_persisted() == data
+        assert store.read() == data
+        assert store._get_persisted() == {"foo": "foo"}
 
         # Remove the foo key from the persisted data
         # Technically data = { } should also work
         data = {"protected": "protected"}
         store.write(data, "test", commit=False)  # type: ignore
+
+
+def test_read_deferred() -> None:
+    entry_file = "deferred.nix"
+    inventory_file = entry_file.replace(".nix", ".json")
+
+    nix_file = folder_path / f"fixtures/{entry_file}"
+    json_file = folder_path / f"fixtures/{inventory_file}"
+    with TemporaryDirectory() as tmp:
+        shutil.copyfile(
+            str(nix_file),
+            str(Path(tmp) / entry_file),
+        )
+        shutil.copyfile(
+            str(json_file),
+            str(Path(tmp) / inventory_file),
+        )
+
+        store = InventoryStore(
+            flake=MockFlake(Path(tmp) / entry_file),
+            inventory_file_name=inventory_file,
+            _allowed_path_transforms=["foo.*"],
+        )
+
+        data = store.read()
+        assert data == {"foo": {"a": {}, "b": {}}}
+
+        # Create a new "deferredModule" "C"
+        apply_patch(data, "foo.c", {})
+        store.write(data, "test", commit=False)  # type: ignore
+
+        assert store.read() == {"foo": {"a": {}, "b": {}, "c": {}}}
+
+        # Remove the "deferredModule" "C"
+        delete_by_path(data, "foo.c")  # type: ignore
+        store.write(data, "test", commit=False)
+        assert store.read() == {"foo": {"a": {}, "b": {}}}
+
+        # Write settings into a new "deferredModule" "C" and read them back
+        apply_patch(data, "foo.c", {"timeout": "1s"})
+        store.write(data, "test", commit=False)  # type: ignore
+
+        assert store.read() == {"foo": {"a": {}, "b": {}, "c": {"timeout": "1s"}}}
+
+        # Remove the "deferredModule" "C" along with its settings
+        delete_by_path(data, "foo.c")  # type: ignore
+        store.write(data, "test", commit=False)
+        assert store.read() == {"foo": {"a": {}, "b": {}}}

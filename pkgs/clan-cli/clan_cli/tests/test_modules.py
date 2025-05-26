@@ -9,11 +9,11 @@ from clan_lib.api.modules import list_modules
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_eval, run
 from clan_lib.nix_models.inventory import (
-    Inventory,
     Machine,
     MachineDeploy,
 )
 from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.util import apply_patch
 
 if TYPE_CHECKING:
     from .age_keys import KeyPair
@@ -72,21 +72,25 @@ def test_add_module_to_inventory(
         )
         subprocess.run(["git", "add", "."], cwd=test_flake_with_core.path, check=True)
 
-        inventory: Inventory = {}
-
-        inventory["services"] = {
-            "borgbackup": {
-                "borg1": {
-                    "meta": {"name": "borg1"},
-                    "roles": {
-                        "client": {"machines": ["machine1"]},
-                        "server": {"machines": ["machine1"]},
-                    },
-                }
-            }
-        }
-
         inventory_store = InventoryStore(Flake(str(test_flake_with_core.path)))
+        inventory = inventory_store.read()
+
+        apply_patch(
+            inventory,
+            "services",
+            {
+                "borgbackup": {
+                    "borg1": {
+                        "meta": {"name": "borg1"},
+                        "roles": {
+                            "client": {"machines": ["machine1"]},
+                            "server": {"machines": ["machine1"]},
+                        },
+                    }
+                }
+            },
+        )
+
         inventory_store.write(
             inventory,
             message="Add borgbackup service",

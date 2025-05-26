@@ -9,6 +9,33 @@ from typing import Any
 from clan_lib.errors import ClanError
 
 
+def path_match(path: list[str], whitelist_paths: list[list[str]]) -> bool:
+    """
+    Returns True if path matches any whitelist path with "*" wildcards.
+
+    I.e.:
+    whitelist_paths = [["a.b.*"]]
+    path = ["a", "b", "c"]
+    path_match(path, whitelist_paths) == True
+
+
+    whitelist_paths = ["a.b.c", "a.b.*"]
+    path = ["a", "b", "d"]
+    path_match(path, whitelist_paths) == False
+    """
+    for wp in whitelist_paths:
+        if len(path) != len(wp):
+            continue
+        match = True
+        for p, w in zip(path, wp, strict=False):
+            if w != "*" and p != w:
+                match = False
+                break
+        if match:
+            return True
+    return False
+
+
 def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict:
     """
     Recursively flattens a nested dictionary structure where keys are joined by the separator.
@@ -28,7 +55,11 @@ def flatten_data(data: dict, parent_key: str = "", separator: str = ".") -> dict
 
         if isinstance(value, dict):
             # Recursively flatten the nested dictionary
-            flattened.update(flatten_data(value, new_key, separator))
+            if value:
+                flattened.update(flatten_data(value, new_key, separator))
+            else:
+                # If the value is an empty dictionary, add it to the flattened dict
+                flattened[new_key] = {}
         else:
             flattened[new_key] = value
 
@@ -58,7 +89,7 @@ def find_duplicates(string_list: list[str]) -> list[str]:
 
 
 def find_deleted_paths(
-    persisted: dict[str, Any], update: dict[str, Any], parent_key: str = ""
+    curr: dict[str, Any], update: dict[str, Any], parent_key: str = ""
 ) -> set[str]:
     """
     Recursively find keys (at any nesting level) that exist in persisted but do not
@@ -72,7 +103,7 @@ def find_deleted_paths(
     deleted_paths = set()
 
     # Iterate over keys in persisted
-    for key, p_value in persisted.items():
+    for key, p_value in curr.items():
         current_path = f"{parent_key}.{key}" if parent_key else key
         # Check if this key exists in update
         if key not in update:
@@ -103,6 +134,16 @@ def find_deleted_paths(
     return deleted_paths
 
 
+def parent_is_dict(key: str, data: dict[str, Any]) -> bool:
+    parts = key.split(".")
+    while len(parts) > 1:
+        parts.pop()
+        parent_key = ".".join(parts)
+        if parent_key in data:
+            return isinstance(data[parent_key], dict)
+    return False
+
+
 def calc_patches(
     persisted: dict[str, Any],
     update: dict[str, Any],
@@ -114,7 +155,7 @@ def calc_patches(
 
     Given its current state and the update to apply.
 
-    Filters out nix-values so it doesnt matter if the anyone sends them.
+    Filters out nix-values so it doesn't matter if the anyone sends them.
 
     : param persisted: The current state of the inventory.
     : param update: The update to apply.
@@ -124,9 +165,9 @@ def calc_patches(
 
     Returns a tuple with the SET and DELETE patches.
     """
-    persisted_flat = flatten_data(persisted)
-    update_flat = flatten_data(update)
-    all_values_flat = flatten_data(all_values)
+    data_all = flatten_data(all_values)
+    data_all_updated = flatten_data(update)
+    data_dyn = flatten_data(persisted)
 
     def is_writeable_key(key: str) -> bool:
         """
@@ -146,49 +187,66 @@ def calc_patches(
         msg = f"Cannot determine writeability for key '{key}'"
         raise ClanError(msg, description="F001")
 
+    all_keys = set(data_all) | set(data_all_updated)
     patchset = {}
-    for update_key, update_data in update_flat.items():
-        if not is_writeable_key(update_key):
-            if update_data != all_values_flat.get(update_key):
-                msg = f"Key '{update_key}' is not writeable."
-                raise ClanError(msg)
-            continue
 
-        if is_writeable_key(update_key):
-            prev_value = all_values_flat.get(update_key)
-            if prev_value and type(update_data) is not type(prev_value):
-                msg = f"Type mismatch for key '{update_key}'. Cannot update {type(all_values_flat.get(update_key))} with {type(update_data)}"
+    delete_set = find_deleted_paths(all_values, update, parent_key="")
+
+    for key in all_keys:
+        # Get the old and new values
+        old = data_all.get(key, None)
+        new = data_all_updated.get(key, None)
+
+        # Some kind of change
+        if old != new:
+            # If there is a change, check if the key is writeable
+            if not is_writeable_key(key):
+                msg = f"Key '{key}' is not writeable."
                 raise ClanError(msg)
 
-            # Handle list separation
-            if isinstance(update_data, list):
-                duplicates = find_duplicates(update_data)
+            if any(key.startswith(d) for d in delete_set):
+                # Skip this key if it or any of its parent paths are marked for deletion
+                continue
+
+            if old is not None and type(old) is not type(new):
+                if new is None:
+                    # If this is a deleted key, they are handled by 'find_deleted_paths'
+                    continue
+
+                msg = f"Type mismatch for key '{key}'. Cannot update {type(old)} with {type(new)}"
+                description = f"""
+Previous_value is of type '{type(old)}' this operation would change it to '{type(new)}'.
+
+Prev: {old}
+->
+After: {new}
+"""
+                raise ClanError(msg, description=description)
+
+            if isinstance(new, list):
+                duplicates = find_duplicates(new)
                 if duplicates:
-                    msg = f"Key '{update_key}' contains duplicates: {duplicates}. This not supported yet."
+                    msg = f"Key '{key}' contains duplicates: {duplicates}. This not supported yet."
                     raise ClanError(msg)
                 # List of current values
-                persisted_data = persisted_flat.get(update_key, [])
+                persisted_data = data_dyn.get(key, [])
                 # List including nix values
-                all_list = all_values_flat.get(update_key, [])
+                all_list = data_all.get(key, [])
                 nix_list = unmerge_lists(all_list, persisted_data)
-                if update_data != all_list:
-                    patchset[update_key] = unmerge_lists(update_data, nix_list)
+                if new != all_list:
+                    patchset[key] = unmerge_lists(new, nix_list)
+            else:
+                patchset[key] = new
 
-            elif update_data != persisted_flat.get(update_key, None):
-                patchset[update_key] = update_data
-
-            continue
-
-        msg = f"Cannot determine writeability for key '{update_key}'"
+    # Ensure not inadvertently patching something already marked for deletion
+    conflicts = {key for d in delete_set for key in patchset if key.startswith(d)}
+    if conflicts:
+        conflict_list = ", ".join(sorted(conflicts))
+        msg = (
+            f"The following keys are marked for deletion but also have update values: {conflict_list}. "
+            "You cannot delete and patch the same key and its subkeys."
+        )
         raise ClanError(msg)
-
-    delete_set = find_deleted_paths(persisted, update)
-
-    for delete_key in delete_set:
-        if not is_writeable_key(delete_key):
-            msg = f"Cannot delete: Key '{delete_key}' is not writeable."
-            raise ClanError(msg)
-
     return patchset, delete_set
 
 
