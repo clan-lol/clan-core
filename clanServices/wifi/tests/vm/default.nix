@@ -34,8 +34,8 @@ clanLib.test.makeTestClan {
 
       testScript = ''
         start_all()
-        test.wait_for_unit("iwd.service")
-        psk = test.succeed("cat /var/lib/iwd/ssid-one.psk")
+        test.wait_for_unit("NetworkManager.service")
+        psk = test.succeed("cat /run/NetworkManager/system-connections/one.nmconnection")
         assert "password-eins" in psk, "Password is incorrect"
       '';
     }
