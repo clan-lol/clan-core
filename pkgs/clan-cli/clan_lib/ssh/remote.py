@@ -49,25 +49,6 @@ class Remote:
         return f"{self.user}@{self.address}"
 
     @classmethod
-    def with_user(cls, host: "Remote", user: str) -> "Remote":
-        """
-        Return a new Remote object with the specified user.
-        """
-        return cls(
-            address=host.address,
-            user=user,
-            command_prefix=host.command_prefix,
-            port=host.port,
-            private_key=host.private_key,
-            password=host.password,
-            forward_agent=host.forward_agent,
-            host_key_check=host.host_key_check,
-            verbose_ssh=host.verbose_ssh,
-            ssh_options=host.ssh_options,
-            tor_socks=host.tor_socks,
-        )
-
-    @classmethod
     def from_deployment_address(
         cls,
         *,
