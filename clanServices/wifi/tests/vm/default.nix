@@ -15,8 +15,8 @@ clanLib.test.makeTestClan {
 
       clan = {
         directory = ./.;
+        modules."@clan/wifi" = module;
         inventory = {
-          modules."@clan/wifi" = module;
 
           machines.test = { };
 
