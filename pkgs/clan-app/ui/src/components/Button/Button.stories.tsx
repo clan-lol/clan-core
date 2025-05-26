@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@kachurun/storybook-solid";
 import { Button, ButtonProps } from "./Button";
-import FlashIcon from "@/icons/flash.svg";
+import Icon from "../icon";
 
 const meta: Meta<ButtonProps> = {
   title: "Components/Button",
@@ -12,12 +12,10 @@ export default meta;
 type Story = StoryObj<ButtonProps>;
 
 const children = "click me";
-const startIcon = <FlashIcon width={16} height={16} viewBox="0 0 48 48" />;
 
 export const Default: Story = {
   args: {
     children,
-    startIcon,
   },
 };
 
@@ -39,5 +37,19 @@ export const Ghost: Story = {
   args: {
     ...Default.args,
     variant: "ghost",
+  },
+};
+
+export const StartIcon: Story = {
+  args: {
+    ...Default.args,
+    startIcon: <Icon size={12} icon="Flash" />,
+  },
+};
+
+export const EndIcon: Story = {
+  args: {
+    ...Default.args,
+    endIcon: <Icon size={12} icon="Flash" />,
   },
 };
