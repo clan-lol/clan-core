@@ -51,6 +51,9 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
 
     clan_dir = opts.clan_dir.path
 
+    # TODO(@Qubasa): make this a proper template handler
+    # i.e. with_template (use context manager)
+    # And move the checks and template handling into the template handler
     template = get_template(
         TemplateName(opts.template_name),
         "machine",
@@ -64,10 +67,7 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
         Flake(str(clan_dir))
     ) and not opts.machine.get("name"):
         msg = f"{opts.template_name} is already defined in {clan_dir}"
-        description = (
-            "Please add the --rename option to import the machine with a different name"
-        )
-        raise ClanError(msg, description=description)
+        raise ClanError(msg)
 
     machine_name = machine_name if machine_name else opts.template_name
     src = Path(template.src["path"])
@@ -92,15 +92,17 @@ def create_machine(opts: CreateOptions, commit: bool = True) -> None:
     if dst.exists():
         msg = f"Machine {machine_name} already exists in {clan_dir}"
         description = (
-            "Please delete the existing machine or import with a different name"
+            "Please remove the existing machine folder"
         )
         raise ClanError(msg, description=description)
 
+    # TODO(@Qubasa): move this into the template handler
     if not (src / "configuration.nix").exists():
         msg = f"Template machine '{opts.template_name}' does not contain a configuration.nix"
         description = "Template machine must contain a configuration.nix"
         raise ClanError(msg, description=description)
 
+    # TODO(@Qubasa): move this into the template handler
     copy_from_nixstore(src, dst)
 
     target_host = opts.target_host
