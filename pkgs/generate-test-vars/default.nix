@@ -11,4 +11,9 @@ buildPythonApplication {
   nativeBuildInputs = [
     (python.withPackages (ps: [ ps.setuptools ]))
   ];
+  checkPhase = ''
+    runHook preCheck
+    $out/bin/generate-test-vars --help
+    runHook preCheck
+  '';
 }
