@@ -1,14 +1,13 @@
-import { createSignal, For, Setter, Show } from "solid-js";
+import { createSignal, Setter } from "solid-js";
 import { callApi, SuccessQuery } from "../../api";
 
-import { activeURI } from "../../App";
-import toast from "solid-toast";
 import { A, useNavigate } from "@solidjs/router";
 import { RndThumbnail } from "../noiseThumbnail";
 
 import { Filter } from "../../routes/machines";
 import { Typography } from "../Typography";
 import "./css/index.css";
+import { useClanContext } from "@/src/contexts/clan";
 
 type MachineDetails = SuccessQuery<"list_inv_machines">["data"][string];
 
@@ -28,6 +27,8 @@ export const MachineListItem = (props: MachineListItemProps) => {
   // Later only updates
   const [updating, setUpdating] = createSignal<boolean>(false);
 
+  const { activeClanURI } = useClanContext();
+
   const navigate = useNavigate();
 
   const handleInstall = async () => {
@@ -35,7 +36,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
       return;
     }
 
-    const active_clan = activeURI();
+    const active_clan = activeClanURI();
     if (!active_clan) {
       console.error("No active clan selected");
       return;
@@ -70,7 +71,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
       return;
     }
 
-    const active_clan = activeURI();
+    const active_clan = activeClanURI();
     if (!active_clan) {
       console.error("No active clan selected");
       return;

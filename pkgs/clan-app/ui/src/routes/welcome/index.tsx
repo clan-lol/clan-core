@@ -1,10 +1,11 @@
-import { setActiveURI } from "@/src/App";
 import { Button } from "@/src/components/button";
 import { registerClan } from "@/src/hooks";
 import { useNavigate } from "@solidjs/router";
+import { useClanContext } from "@/src/contexts/clan";
 
 export const Welcome = () => {
   const navigate = useNavigate();
+  const { setActiveClanURI } = useClanContext();
   return (
     <div class="min-h-[calc(100vh-10rem)]">
       <div class="mb-32 text-center">
@@ -21,7 +22,7 @@ export const Welcome = () => {
               onClick={async () => {
                 const uri = await registerClan();
                 if (uri) {
-                  setActiveURI(uri);
+                  setActiveClanURI(uri);
                   navigate("/machines");
                 }
               }}

@@ -1,4 +1,3 @@
-import { activeURI } from "@/src/App";
 import { BackButton } from "@/src/components/BackButton";
 import { createModulesQuery, machinesQuery, tagsQuery } from "@/src/queries";
 import { useParams } from "@solidjs/router";
@@ -6,10 +5,12 @@ import { For, Match, Switch } from "solid-js";
 import { ModuleInfo } from "./list";
 import { createForm, FieldValues, SubmitHandler } from "@modular-forms/solid";
 import { SelectInput } from "@/src/Form/fields/Select";
+import { useClanContext } from "@/src/contexts/clan";
 
 export const ModuleDetails = () => {
   const params = useParams();
-  const modulesQuery = createModulesQuery(activeURI());
+  const { activeClanURI } = useClanContext();
+  const modulesQuery = createModulesQuery(activeClanURI());
 
   return (
     <div class="p-1">
@@ -32,8 +33,9 @@ interface AddModuleProps {
 }
 
 export const AddModule = (props: AddModuleProps) => {
-  const tags = tagsQuery(activeURI());
-  const machines = machinesQuery(activeURI());
+  const { activeClanURI } = useClanContext();
+  const tags = tagsQuery(activeClanURI());
+  const machines = machinesQuery(activeClanURI());
   return (
     <div>
       <div>Add to your clan</div>

@@ -1,5 +1,4 @@
 import { SuccessData } from "@/src/api";
-import { activeURI } from "@/src/App";
 import { Button } from "@/src/components/button";
 import { Header } from "@/src/layout/header";
 import { createModulesQuery } from "@/src/queries";
@@ -11,6 +10,7 @@ import { makePersisted } from "@solid-primitives/storage";
 import { useQueryClient } from "@tanstack/solid-query";
 import cx from "classnames";
 import Icon from "@/src/components/icon";
+import { useClanContext } from "@/src/contexts/clan";
 
 export type ModuleInfo = SuccessData<"list_modules">["localModules"][string];
 
@@ -110,7 +110,8 @@ const ModuleItem = (props: {
 
 export const ModuleList = () => {
   const queryClient = useQueryClient();
-  const modulesQuery = createModulesQuery(activeURI(), {
+  const { activeClanURI } = useClanContext();
+  const modulesQuery = createModulesQuery(activeClanURI(), {
     features: ["inventory"],
   });
 
@@ -120,9 +121,16 @@ export const ModuleList = () => {
   });
 
   const refresh = async () => {
-    queryClient.invalidateQueries({
+    const clanURI = activeClanURI();
+
+    // do nothing if there is no active URI
+    if (!clanURI) {
+      return;
+    }
+
+    await queryClient.invalidateQueries({
       // Invalidates the cache for of all types of machine list at once
-      queryKey: [activeURI(), "list_modules"],
+      queryKey: [clanURI, "list_modules"],
     });
   };
   return (

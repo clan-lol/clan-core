@@ -1,5 +1,4 @@
 import { callApi, OperationArgs } from "@/src/api";
-import { activeURI } from "@/src/App";
 import { Button } from "@/src/components/button";
 import Icon from "@/src/components/icon";
 import { TextInput } from "@/src/Form/fields/TextInput";
@@ -13,16 +12,19 @@ import { MachineAvatar } from "./avatar";
 import { DynForm } from "@/src/Form/form";
 import Fieldset from "@/src/Form/fieldset";
 import Accordion from "@/src/components/accordion";
+import { useClanContext } from "@/src/contexts/clan";
 
 type CreateMachineForm = OperationArgs<"create_machine">;
 
 export function CreateMachine() {
   const navigate = useNavigate();
+  const { activeClanURI } = useClanContext();
+
   const [formStore, { Form, Field }] = createForm<CreateMachineForm>({
     initialValues: {
       opts: {
         clan_dir: {
-          identifier: activeURI() || "",
+          identifier: activeClanURI() || "",
         },
         machine: {
           tags: ["all"],
@@ -39,7 +41,7 @@ export function CreateMachine() {
   const queryClient = useQueryClient();
 
   const handleSubmit = async (values: CreateMachineForm) => {
-    const active_dir = activeURI();
+    const active_dir = activeClanURI();
     if (!active_dir) {
       toast.error("Open a clan to create the machine within");
       return;
@@ -60,9 +62,10 @@ export function CreateMachine() {
       toast.success(`Successfully created ${values.opts.machine.name}`);
       reset(formStore);
 
-      queryClient.invalidateQueries({
-        queryKey: [activeURI(), "list_inv_machines"],
+      await queryClient.invalidateQueries({
+        queryKey: [active_dir, "list_inv_machines"],
       });
+
       navigate("/machines");
     } else {
       toast.error(

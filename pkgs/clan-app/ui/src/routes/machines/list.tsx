@@ -1,21 +1,13 @@
-import {
-  type Component,
-  createSignal,
-  For,
-  Match,
-  Show,
-  Switch,
-} from "solid-js";
-import { activeURI } from "@/src/App";
+import { type Component, createSignal, For, Match, Switch } from "solid-js";
 import { callApi, OperationResponse } from "@/src/api";
-import toast from "solid-toast";
 import { MachineListItem } from "@/src/components/machine-list-item";
-import { createQuery, useQueryClient } from "@tanstack/solid-query";
+import { useQuery, useQueryClient } from "@tanstack/solid-query";
 import { useNavigate } from "@solidjs/router";
 import { Button } from "@/src/components/button";
 import Icon from "@/src/components/icon";
 import { Header } from "@/src/layout/header";
 import { makePersisted } from "@solid-primitives/storage";
+import { useClanContext } from "@/src/contexts/clan";
 
 type MachinesModel = Extract<
   OperationResponse<"list_inv_machines">,
@@ -30,19 +22,22 @@ export const MachineListView: Component = () => {
   const queryClient = useQueryClient();
 
   const [filter, setFilter] = createSignal<Filter>({ tags: [] });
+  const { activeClanURI } = useClanContext();
 
-  const inventoryQuery = createQuery<MachinesModel>(() => ({
-    queryKey: [activeURI(), "list_inv_machines"],
+  const inventoryQuery = useQuery<MachinesModel>(() => ({
+    queryKey: [activeClanURI(), "list_inv_machines"],
     placeholderData: {},
-    enabled: !!activeURI(),
+    enabled: !!activeClanURI(),
     queryFn: async () => {
-      const uri = activeURI();
+      console.log("fetching inventory", activeClanURI());
+      const uri = activeClanURI();
       if (uri) {
         const response = await callApi("list_inv_machines", {
           flake: {
             identifier: uri,
           },
         });
+        console.log("response", response);
         if (response.status === "error") {
           console.error("Failed to fetch data");
         } else {
@@ -54,9 +49,18 @@ export const MachineListView: Component = () => {
   }));
 
   const refresh = async () => {
-    queryClient.invalidateQueries({
+    const clanURI = activeClanURI();
+
+    // do nothing if there is no active URI
+    if (!clanURI) {
+      return;
+    }
+
+    console.log("refreshing", clanURI);
+
+    await queryClient.invalidateQueries({
       // Invalidates the cache for of all types of machine list at once
-      queryKey: [activeURI(), "list_inv_machines"],
+      queryKey: [clanURI, "list_inv_machines"],
     });
   };
 

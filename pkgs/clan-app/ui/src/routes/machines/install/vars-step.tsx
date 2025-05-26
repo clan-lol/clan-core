@@ -12,10 +12,10 @@ import { For, JSX, Match, Show, Switch } from "solid-js";
 import { TextInput } from "@/src/Form/fields";
 import toast from "solid-toast";
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
-import { activeURI } from "@/src/App";
 import { StepProps } from "./hardware-step";
 import { BackButton } from "@/src/components/BackButton";
 import { Button } from "@/src/components/button";
+import { useClanContext } from "@/src/contexts/clan";
 
 export type VarsValues = FieldValues & Record<string, Record<string, string>>;
 
@@ -206,6 +206,7 @@ export const VarsStep = (props: VarsStepProps) => {
 export const VarsPage = () => {
   const params = useParams();
   const navigate = useNavigate();
+  const { activeClanURI } = useClanContext();
   const [searchParams, setSearchParams] = useSearchParams();
   const handleNext = (values: VarsValues) => {
     if (searchParams?.action === "update") {
@@ -234,7 +235,7 @@ export const VarsPage = () => {
       </div>
 
       {/* VarsStep component */}
-      <Show when={activeURI()}>
+      <Show when={activeClanURI()}>
         {(uri) => (
           <VarsStep
             machine_id={params.id}
