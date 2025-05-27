@@ -18,7 +18,7 @@ inputs = {
 
   clan-core = {
     url = "git+https://git.clan.lol/clan/clan-core";
-    inputs.nixpkgs.follows = "nixpkgs"; # Necessary if you are using a stable NixOS channel
+    inputs.nixpkgs.follows = "nixpkgs"; # Don't do this if your machines are on nixpkgs stable.
     # New
     inputs.flake-parts.follows = "flake-parts";
   };
