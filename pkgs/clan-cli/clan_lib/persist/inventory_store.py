@@ -132,7 +132,10 @@ class InventoryStore:
         - and more
         """
         raw_value = self._flake.select("clanInternals.inventoryClass.inventory")
-        filtered = {k: v for k, v in raw_value.items() if k in self._keys}
+        if self._keys:
+            filtered = {k: v for k, v in raw_value.items() if k in self._keys}
+        else:
+            filtered = raw_value
         sanitized = sanitize(filtered, self._allowed_path_transforms, [])
 
         return sanitized
