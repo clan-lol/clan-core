@@ -16,7 +16,7 @@ from clan_lib.nix_models.inventory import (
     MachineDeploy,
 )
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import apply_patch
+from clan_lib.persist.util import set_value_by_path
 from clan_lib.templates import (
     InputPrio,
     TemplateName,
@@ -130,7 +130,7 @@ def create_machine(
             )
             raise ClanError(msg, description=description)
 
-        apply_patch(
+        set_value_by_path(
             inventory,
             f"machines.{machine_name}",
             new_machine,

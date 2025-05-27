@@ -8,11 +8,11 @@ from clan_lib.git import commit_file
 from clan_lib.nix_models.inventory import Inventory
 
 from .util import (
-    apply_patch,
     calc_patches,
     delete_by_path,
     determine_writeability,
     path_match,
+    set_value_by_path,
 )
 
 
@@ -239,7 +239,7 @@ class InventoryStore:
 
         persisted = dict(write_info.data_disk)
         for patch_path, data in patchset.items():
-            apply_patch(persisted, patch_path, data)
+            set_value_by_path(persisted, patch_path, data)
 
         for delete_path in delete_set:
             delete_by_path(persisted, delete_path)

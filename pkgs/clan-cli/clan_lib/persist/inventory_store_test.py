@@ -11,7 +11,7 @@ import pytest
 
 from clan_lib.errors import ClanError
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import apply_patch, delete_by_path
+from clan_lib.persist.util import delete_by_path, set_value_by_path
 
 
 class MockFlake:
@@ -94,7 +94,7 @@ def test_simple_read_write() -> None:
         data: dict = store.read()  # type: ignore
         assert data == {"foo": "bar", "protected": "protected"}
 
-        apply_patch(data, "foo", "foo")  # type: ignore
+        set_value_by_path(data, "foo", "foo")  # type: ignore
         store.write(data, "test", commit=False)  # type: ignore
         # Default method to access the inventory
         assert store.read() == {"foo": "foo", "protected": "protected"}
@@ -144,7 +144,7 @@ def test_read_deferred() -> None:
         assert data == {"foo": {"a": {}, "b": {}}}
 
         # Create a new "deferredModule" "C"
-        apply_patch(data, "foo.c", {})
+        set_value_by_path(data, "foo.c", {})
         store.write(data, "test", commit=False)  # type: ignore
 
         assert store.read() == {"foo": {"a": {}, "b": {}, "c": {}}}
@@ -155,7 +155,7 @@ def test_read_deferred() -> None:
         assert store.read() == {"foo": {"a": {}, "b": {}}}
 
         # Write settings into a new "deferredModule" "C" and read them back
-        apply_patch(data, "foo.c", {"timeout": "1s"})
+        set_value_by_path(data, "foo.c", {"timeout": "1s"})
         store.write(data, "test", commit=False)  # type: ignore
 
         assert store.read() == {"foo": {"a": {}, "b": {}, "c": {"timeout": "1s"}}}

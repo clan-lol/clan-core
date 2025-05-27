@@ -368,7 +368,7 @@ def delete_by_path(d: dict[str, Any], path: str) -> Any:
 type DictLike = dict[str, Any] | Any
 
 
-def apply_patch(d: DictLike, path: str, content: Any) -> None:
+def set_value_by_path(d: DictLike, path: str, content: Any) -> None:
     """
     Update the value at a specific dot-separated path in a nested dictionary.
 
