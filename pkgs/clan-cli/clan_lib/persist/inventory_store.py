@@ -1,11 +1,17 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, NotRequired, Protocol, TypedDict
 
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_file
-from clan_lib.nix_models.clan import Inventory
+from clan_lib.nix_models.clan import (
+    Inventory,
+    InventoryInstancesType,
+    InventoryMachinesType,
+    InventoryMetaType,
+    InventoryServicesType,
+)
 
 from .util import (
     calc_patches,
@@ -75,8 +81,8 @@ def sanitize(data: Any, whitelist_paths: list[str], current_path: list[str]) -> 
 @dataclass
 class WriteInfo:
     writeables: dict[str, set[str]]
-    data_eval: Inventory
-    data_disk: Inventory
+    data_eval: "InventorySnapshot"
+    data_disk: "InventorySnapshot"
 
 
 class FlakeInterface(Protocol):
@@ -90,6 +96,19 @@ class FlakeInterface(Protocol):
 
     @property
     def path(self) -> Path: ...
+
+
+class InventorySnapshot(TypedDict):
+    """
+    Restricted view of an Inventory.
+
+    It contains only the keys that are convertible to python types and can be serialized to JSON.
+    """
+
+    machines: NotRequired[InventoryMachinesType]
+    instances: NotRequired[InventoryInstancesType]
+    meta: NotRequired[InventoryMetaType]
+    services: NotRequired[InventoryServicesType]
 
 
 class InventoryStore:
@@ -117,10 +136,11 @@ class InventoryStore:
         self._allowed_path_transforms = _allowed_path_transforms
 
         if _keys is None:
-            _keys = ["machines", "instances", "meta", "services"]
+            _keys = list(InventorySnapshot.__annotations__.keys())
+
         self._keys = _keys
 
-    def _load_merged_inventory(self) -> Inventory:
+    def _load_merged_inventory(self) -> InventorySnapshot:
         """
         Loads the evaluated inventory.
         After all merge operations with eventual nix code in buildClan.
@@ -140,7 +160,7 @@ class InventoryStore:
 
         return sanitized
 
-    def _get_persisted(self) -> Inventory:
+    def _get_persisted(self) -> InventorySnapshot:
         """
         Load the inventory FILE from the flake directory
         If no file is found, returns an empty dictionary
@@ -189,8 +209,8 @@ class InventoryStore:
         """
         current_priority = self._get_inventory_current_priority()
 
-        data_eval: Inventory = self._load_merged_inventory()
-        data_disk: Inventory = self._get_persisted()
+        data_eval: InventorySnapshot = self._load_merged_inventory()
+        data_disk: InventorySnapshot = self._get_persisted()
 
         writeables = determine_writeability(
             current_priority, dict(data_eval), dict(data_disk)
@@ -198,7 +218,7 @@ class InventoryStore:
 
         return WriteInfo(writeables, data_eval, data_disk)
 
-    def read(self) -> Inventory:
+    def read(self) -> InventorySnapshot:
         """
         Accessor to the merged inventory
 
@@ -226,7 +246,9 @@ class InventoryStore:
                 commit_message=f"Delete inventory keys {delete_set}",
             )
 
-    def write(self, update: Inventory, message: str, commit: bool = True) -> None:
+    def write(
+        self, update: InventorySnapshot, message: str, commit: bool = True
+    ) -> None:
         """
         Write the inventory to the flake directory
         and commit it to git with the given message
