@@ -77,10 +77,12 @@ const LoadingBar = () => (
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
 interface InstallMachineProps {
   name?: string;
   machine: MachineData;
 }
+
 const InstallMachine = (props: InstallMachineProps) => {
   const { activeClanURI } = useClanContext();
 
@@ -381,6 +383,7 @@ const InstallMachine = (props: InstallMachineProps) => {
 interface MachineDetailsProps {
   initialData: MachineData;
 }
+
 const MachineForm = (props: MachineDetailsProps) => {
   const [formStore, { Form, Field }] =
     // TODO: retrieve the correct initial values from API
@@ -617,27 +620,29 @@ const MachineForm = (props: MachineDetailsProps) => {
               </Field>
             </Fieldset>
 
-            <Fieldset legend="Hardware">
-              <Field name="hw_config">
-                {(field, props) => (
-                  <FieldLayout
-                    label={<InputLabel>Hardware Configuration</InputLabel>}
-                    field={<span>{field.value || "None"}</span>}
-                  />
-                )}
-              </Field>
-              <hr />
-              <Field name="disk_schema.schema_name">
-                {(field, props) => (
-                  <>
+            <Typography hierarchy={"body"} size={"s"}>
+              <Fieldset legend="Hardware">
+                <Field name="hw_config">
+                  {(field, props) => (
                     <FieldLayout
-                      label={<InputLabel>Disk schema</InputLabel>}
+                      label={<InputLabel>Hardware Configuration</InputLabel>}
                       field={<span>{field.value || "None"}</span>}
                     />
-                  </>
-                )}
-              </Field>
-            </Fieldset>
+                  )}
+                </Field>
+                <hr />
+                <Field name="disk_schema.schema_name">
+                  {(field, props) => (
+                    <>
+                      <FieldLayout
+                        label={<InputLabel>Disk schema</InputLabel>}
+                        field={<span>{field.value || "None"}</span>}
+                      />
+                    </>
+                  )}
+                </Field>
+              </Fieldset>
+            </Typography>
 
             <Accordion title="Connection Settings">
               <Fieldset>
