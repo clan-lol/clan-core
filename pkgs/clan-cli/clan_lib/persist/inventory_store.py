@@ -109,8 +109,8 @@ class InventoryStore:
         self.inventory_file = self._flake.path / inventory_file_name
         if _allowed_path_transforms is None:
             _allowed_path_transforms = [
-                "instances.*.settings",
-                "instances.*.machines.*.settings",
+                "instances.*.roles.*.settings",
+                "instances.*.roles.*.machines.*.settings",
             ]
         self._allowed_path_transforms = _allowed_path_transforms
 
