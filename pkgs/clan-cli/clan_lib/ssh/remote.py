@@ -324,7 +324,7 @@ class Remote:
         return nix_shell(packages, cmd)
 
     def interactive_ssh(self) -> None:
-        cmd_list = self.ssh_cmd(tty=True)
+        cmd_list = self.ssh_cmd(tty=True, control_master=False)
         subprocess.run(cmd_list)
 
 
