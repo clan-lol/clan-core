@@ -71,6 +71,7 @@ class MockFlake:
 folder_path = Path(__file__).parent.resolve()
 
 
+@pytest.mark.with_core
 def test_simple_read_write() -> None:
     entry_file = "1.nix"
     inventory_file = entry_file.replace(".nix", ".json")
@@ -90,7 +91,9 @@ def test_simple_read_write() -> None:
         store = InventoryStore(
             flake=MockFlake(Path(tmp) / entry_file),
             inventory_file_name=inventory_file,
+            _keys=[],  # disable toplevel filtering
         )
+        store._flake.invalidate_cache()
         data: dict = store.read()  # type: ignore
         assert data == {"foo": "bar", "protected": "protected"}
 
@@ -118,6 +121,7 @@ def test_simple_read_write() -> None:
         store.write(data, "test", commit=False)  # type: ignore
 
 
+@pytest.mark.with_core
 def test_read_deferred() -> None:
     entry_file = "deferred.nix"
     inventory_file = entry_file.replace(".nix", ".json")
@@ -138,6 +142,7 @@ def test_read_deferred() -> None:
             flake=MockFlake(Path(tmp) / entry_file),
             inventory_file_name=inventory_file,
             _allowed_path_transforms=["foo.*"],
+            _keys=[],  # disable toplevel filtering
         )
 
         data = store.read()
