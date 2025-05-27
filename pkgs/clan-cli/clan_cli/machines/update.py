@@ -44,68 +44,63 @@ def is_local_input(node: dict[str, dict[str, str]]) -> bool:
     return local
 
 
-def upload_sources(machine: Machine, host: Remote) -> str:
-    with host.ssh_control_master() as ssh:
-        env = ssh.nix_ssh_env(os.environ.copy())
+def upload_sources(machine: Machine, ssh: Remote) -> str:
+    env = ssh.nix_ssh_env(os.environ.copy())
 
-        flake_url = (
-            str(machine.flake.path)
-            if machine.flake.is_local
-            else machine.flake.identifier
-        )
-        flake_data = nix_metadata(flake_url)
-        has_path_inputs = any(
-            is_local_input(node) for node in flake_data["locks"]["nodes"].values()
-        )
+    flake_url = (
+        str(machine.flake.path) if machine.flake.is_local else machine.flake.identifier
+    )
+    flake_data = nix_metadata(flake_url)
+    has_path_inputs = any(
+        is_local_input(node) for node in flake_data["locks"]["nodes"].values()
+    )
 
-        if not has_path_inputs:
-            # Just copy the flake to the remote machine, we can substitute other inputs there.
-            path = flake_data["path"]
-            cmd = nix_command(
-                [
-                    "copy",
-                    "--to",
-                    f"ssh://{host.target}",
-                    "--no-check-sigs",
-                    path,
-                ]
-            )
-            run(
-                cmd,
-                RunOpts(
-                    env=env,
-                    needs_user_terminal=True,
-                    error_msg="failed to upload sources",
-                    prefix=machine.name,
-                ),
-            )
-            return path
-
-        # Slow path: we need to upload all sources to the remote machine
+    if not has_path_inputs:
+        # Just copy the flake to the remote machine, we can substitute other inputs there.
+        path = flake_data["path"]
         cmd = nix_command(
             [
-                "flake",
-                "archive",
+                "copy",
                 "--to",
-                f"ssh://{host.target}",
-                "--json",
-                flake_url,
+                f"ssh://{ssh.target}",
+                "--no-check-sigs",
+                path,
             ]
         )
-        proc = run(
+        run(
             cmd,
             RunOpts(
-                env=env, needs_user_terminal=True, error_msg="failed to upload sources"
+                env=env,
+                needs_user_terminal=True,
+                error_msg="failed to upload sources",
+                prefix=machine.name,
             ),
         )
+        return path
 
-        try:
-            return json.loads(proc.stdout)["path"]
-        except (json.JSONDecodeError, OSError) as e:
-            msg = (
-                f"failed to parse output of {shlex.join(cmd)}: {e}\nGot: {proc.stdout}"
-            )
-            raise ClanError(msg) from e
+    # Slow path: we need to upload all sources to the remote machine
+    cmd = nix_command(
+        [
+            "flake",
+            "archive",
+            "--to",
+            f"ssh://{ssh.target}",
+            "--json",
+            flake_url,
+        ]
+    )
+    proc = run(
+        cmd,
+        RunOpts(
+            env=env, needs_user_terminal=True, error_msg="failed to upload sources"
+        ),
+    )
+
+    try:
+        return json.loads(proc.stdout)["path"]
+    except (json.JSONDecodeError, OSError) as e:
+        msg = f"failed to parse output of {shlex.join(cmd)}: {e}\nGot: {proc.stdout}"
+        raise ClanError(msg) from e
 
 
 @API.register
