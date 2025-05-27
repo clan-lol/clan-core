@@ -149,15 +149,14 @@ class SecretStore(StoreBase):
 
     def needs_upload(self, host: Remote) -> bool:
         local_hash = self.generate_hash()
-        with host.ssh_control_master() as ssh:
-            remote_hash = ssh.run(
-                # TODO get the path to the secrets from the machine
-                [
-                    "cat",
-                    f"{self.machine.deployment['password-store']['secretLocation']}/.{self._store_backend}_info",
-                ],
-                RunOpts(log=Log.STDERR, check=False),
-            ).stdout.strip()
+        remote_hash = host.run(
+            # TODO get the path to the secrets from the machine
+            [
+                "cat",
+                f"{self.machine.deployment['password-store']['secretLocation']}/.{self._store_backend}_info",
+            ],
+            RunOpts(log=Log.STDERR, check=False),
+        ).stdout.strip()
 
         if not remote_hash:
             print("remote hash is empty")

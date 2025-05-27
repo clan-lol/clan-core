@@ -17,11 +17,10 @@ def list_provider(machine: Machine, host: Remote, provider: str) -> list[Backup]
     results = []
     backup_metadata = machine.eval_nix("config.clan.core.backups")
     list_command = backup_metadata["providers"][provider]["list"]
-    with host.ssh_control_master() as ssh:
-        proc = ssh.run(
-            [list_command],
-            RunOpts(log=Log.NONE, check=False),
-        )
+    proc = host.run(
+        [list_command],
+        RunOpts(log=Log.NONE, check=False),
+    )
     if proc.returncode != 0:
         # TODO this should be a warning, only raise exception if no providers succeed
         msg = f"Failed to list backups for provider {provider}:"
@@ -44,12 +43,12 @@ def list_provider(machine: Machine, host: Remote, provider: str) -> list[Backup]
 def list_backups(machine: Machine, provider: str | None = None) -> list[Backup]:
     backup_metadata = machine.eval_nix("config.clan.core.backups")
     results = []
-    host = machine.target_host()
-    if provider is None:
-        for _provider in backup_metadata["providers"]:
-            results += list_provider(machine, host, _provider)
+    with machine.target_host().ssh_control_master() as host:
+        if provider is None:
+            for _provider in backup_metadata["providers"]:
+                results += list_provider(machine, host, _provider)
 
-    else:
-        results += list_provider(machine, host, provider)
+        else:
+            results += list_provider(machine, host, provider)
 
     return results

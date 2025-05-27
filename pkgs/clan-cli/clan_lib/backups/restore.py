@@ -58,8 +58,7 @@ def restore_backup(
     service: str | None = None,
 ) -> None:
     errors = []
-    host = machine.target_host()
-    with host.ssh_control_master():
+    with machine.target_host().ssh_control_master() as host:
         if service is None:
             backup_folders = machine.eval_nix("config.clan.core.state")
             for _service in backup_folders:
