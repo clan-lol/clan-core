@@ -86,6 +86,8 @@ class FlakeInterface(Protocol):
         nix_options: list[str] | None = None,
     ) -> Any: ...
 
+    def invalidate_cache(self) -> None: ...
+
     @property
     def path(self) -> Path: ...
 
@@ -251,3 +253,5 @@ class InventoryStore:
                 self._flake.path,
                 commit_message=f"update({self.inventory_file.name}): {message}",
             )
+
+        self._flake.invalidate_cache()
