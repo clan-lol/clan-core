@@ -2,7 +2,7 @@
 Managing machine configurations can be done in the following ways:
 
 - writing Nix expressions in a `flake.nix` file
-- placing `autoincluded` files into your machine directory
+- placing configuration files into your machine directory
 
 Clan currently offers the following methods to configure machines:
 
@@ -33,8 +33,8 @@ In the `flake.nix` file:
     buildClan {
         # Set a unique name
         meta.name = "Lobsters";
-        # Should usually point to the directory of flake.nix
-        directory = ./.;
+        # Necessary for importing external Clan services
+        inherit self;
     }
     ```
 
@@ -46,6 +46,8 @@ In the `flake.nix` file:
     clan = {
         # Set a unique name
         meta.name = "Lobsters";
+        # Necessary for importing external Clan services
+        inherit self;
     };
     ```
 
