@@ -275,7 +275,7 @@ class Remote:
         if self._control_path_dir is None and not control_master:
             effective_control_path_dir = None
         elif self._control_path_dir is None and control_master:
-            msg = "Control path directory is not set. Please with Remote.ssh_control_master() as ctx to set it."
+            msg = "Bug! Control path directory is not set. Please use Remote.ssh_control_master() or set control_master to false."
             raise ClanError(msg)
 
         ssh_opts = ["-A"] if self.forward_agent else []
