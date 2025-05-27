@@ -179,6 +179,35 @@ pythonRuntime.pkgs.buildPythonApplication {
             python -m pytest -m "not impure and not with_core" -n $jobs ./clan_cli/tests
             touch $out
           '';
+      clan-lib-pytest-without-core =
+        runCommand "clan-lib-pytest-without-core"
+          {
+            nativeBuildInputs = testDependencies;
+            closureInfo = pkgs.closureInfo {
+              rootPaths = [
+                templateDerivation
+              ];
+            };
+          }
+          ''
+            set -euo pipefail
+            cp -r ${sourceWithTests} ./src
+            chmod +w -R ./src
+            cd ./src
+
+            export NIX_STATE_DIR=$TMPDIR/nix IN_NIX_SANDBOX=1 PYTHONWARNINGS=error
+
+            # required to prevent concurrent 'nix flake lock' operations
+            export CLAN_TEST_STORE=$TMPDIR/store
+            export LOCK_NIX=$TMPDIR/nix_lock
+            mkdir -p "$CLAN_TEST_STORE/nix/store"
+
+            # limit build cores to 16
+            jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
+
+            python -m pytest -m "not impure and not with_core" -n $jobs ./clan_lib
+            touch $out
+          '';
     }
     // lib.optionalAttrs (!stdenv.isDarwin) {
       # disabled on macOS until we fix all remaining issues
