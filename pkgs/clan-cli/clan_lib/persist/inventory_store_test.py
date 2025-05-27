@@ -20,6 +20,9 @@ class MockFlake:
         assert f.exists(), f"File {f} does not exist"
         self._file = f
 
+    def invalidate_cache(self) -> None:
+        pass
+
     def select(
         self,
         selector: str,
