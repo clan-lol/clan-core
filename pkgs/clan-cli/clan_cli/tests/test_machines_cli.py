@@ -1,3 +1,4 @@
+# ruff: noqa: SLF001
 import pytest
 from clan_cli.secrets.folders import sops_machines_folder
 from clan_cli.tests import fixtures_flakes
@@ -13,6 +14,10 @@ def test_machine_subcommands(
     test_flake_with_core: fixtures_flakes.FlakeForTest,
     capture_output: CaptureOutput,
 ) -> None:
+    inventory_store = InventoryStore(Flake(str(test_flake_with_core.path)))
+    inventory = inventory_store.read()
+    assert "machine1" not in inventory.get("machines", {})
+
     cli.run(
         [
             "machines",
@@ -24,11 +29,14 @@ def test_machine_subcommands(
             "vm",
         ]
     )
+    # Usually this is done by `inventory.write` but we created a separate flake object in the test that now holds stale data
+    inventory_store._flake.invalidate_cache()
 
-    inventory_store = InventoryStore(Flake(str(test_flake_with_core.path)))
-    inventory: dict = dict(inventory_store.read())
-    assert "machine1" in inventory["machines"]
-    assert "service" not in inventory
+    inventory = inventory_store.read()
+    persisted_inventory = inventory_store._get_persisted()
+    assert "machine1" in inventory.get("machines", {})
+
+    assert "services" not in persisted_inventory
 
     with capture_output as output:
         cli.run(["machines", "list", "--flake", str(test_flake_with_core.path)])
@@ -41,10 +49,14 @@ def test_machine_subcommands(
     cli.run(
         ["machines", "delete", "--flake", str(test_flake_with_core.path), "machine1"]
     )
+    # See comment above
+    inventory_store._flake.invalidate_cache()
 
     inventory_2: dict = dict(inventory_store.read())
     assert "machine1" not in inventory_2["machines"]
-    assert "service" not in inventory_2
+
+    persisted_inventory = inventory_store._get_persisted()
+    assert "services" not in persisted_inventory
 
     with capture_output as output:
         cli.run(["machines", "list", "--flake", str(test_flake_with_core.path)])

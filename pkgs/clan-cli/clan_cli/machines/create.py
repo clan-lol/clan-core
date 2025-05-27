@@ -137,6 +137,7 @@ def create_machine(
         )
         inventory_store.write(inventory, message=f"machine '{machine_name}'")
 
+    opts.clan_dir.invalidate_cache()
     # Commit at the end in that order to avoid committing halve-baked machines
     # TODO: automatic rollbacks if something goes wrong
 
