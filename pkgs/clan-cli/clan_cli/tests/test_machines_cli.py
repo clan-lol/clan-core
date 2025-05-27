@@ -5,7 +5,7 @@ from clan_cli.tests.age_keys import SopsSetup, assert_secrets_file_recipients
 from clan_cli.tests.helpers import cli
 from clan_cli.tests.stdout import CaptureOutput
 from clan_lib.flake import Flake
-from clan_lib.inventory import load_inventory_json
+from clan_lib.persist.inventory_store import InventoryStore
 
 
 @pytest.mark.impure
@@ -25,7 +25,8 @@ def test_machine_subcommands(
         ]
     )
 
-    inventory: dict = dict(load_inventory_json(Flake(str(test_flake_with_core.path))))
+    inventory_store = InventoryStore(Flake(str(test_flake_with_core.path)))
+    inventory: dict = dict(inventory_store.read())
     assert "machine1" in inventory["machines"]
     assert "service" not in inventory
 
@@ -41,7 +42,7 @@ def test_machine_subcommands(
         ["machines", "delete", "--flake", str(test_flake_with_core.path), "machine1"]
     )
 
-    inventory_2: dict = dict(load_inventory_json(Flake(str(test_flake_with_core.path))))
+    inventory_2: dict = dict(inventory_store.read())
     assert "machine1" not in inventory_2["machines"]
     assert "service" not in inventory_2
 

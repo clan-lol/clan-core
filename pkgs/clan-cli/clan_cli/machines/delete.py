@@ -21,8 +21,11 @@ log = logging.getLogger(__name__)
 
 @API.register
 def delete_machine(machine: Machine) -> None:
+    inventory_store = inventory.InventoryStore(machine.flake)
     try:
-        inventory.delete(machine.flake, {f"machines.{machine.name}"})
+        inventory_store.delete(
+            {f"machines.{machine.name}"},
+        )
     except KeyError as exc:
         # louis@(2025-03-09): test infrastructure does not seem to set the
         # inventory properly, but more importantly only one machine in my

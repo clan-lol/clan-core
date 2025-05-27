@@ -22,7 +22,6 @@ from clan_lib.cmd import RunOpts, run
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.inventory import patch_inventory_with
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command
 from clan_lib.nix_models.inventory import Machine as InventoryMachine
@@ -204,16 +203,17 @@ def test_clan_create_api(
     result = check_machine_online(machine)
     assert result == "Online", f"Machine {machine.name} is not online"
 
-    ssh_keys = [
-        SSHKeyPair(
-            private=private_key,
-            public=public_key,
-        )
-    ]
+    # ssh_keys = [
+    #     SSHKeyPair(
+    #         private=private_key,
+    #         public=public_key,
+    #     )
+    # ]
 
     # ===== CREATE BASE INVENTORY ======
-    inventory = create_base_inventory(ssh_keys)
-    patch_inventory_with(Flake(str(dest_clan_dir)), "services", inventory.services)
+    # TODO(@Qubasa): This seems unused?
+    # inventory = create_base_inventory(ssh_keys)
+    # patch_inventory_with(Flake(str(dest_clan_dir)), "services", inventory.services)
 
     # Invalidate cache because of new inventory
     clan_dir_flake.invalidate_cache()
