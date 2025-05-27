@@ -5,7 +5,7 @@ from typing import Any, Protocol
 
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_file
-from clan_lib.nix_models.inventory import Inventory
+from clan_lib.nix_models.clan import Inventory
 
 from .util import (
     calc_patches,

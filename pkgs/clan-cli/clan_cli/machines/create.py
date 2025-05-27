@@ -9,12 +9,8 @@ from clan_lib.dirs import get_clan_flake_toplevel_or_env
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.git import commit_file
-from clan_lib.nix_models.inventory import (
-    Machine as InventoryMachine,
-)
-from clan_lib.nix_models.inventory import (
-    MachineDeploy,
-)
+from clan_lib.nix_models.clan import InventoryMachine
+from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path
 from clan_lib.templates import (
