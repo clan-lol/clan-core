@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@kachurun/storybook-solid";
-import {TagList, TagListProps } from "./TagList";
+import { TagList, TagListProps } from "./TagList";
 
 const meta: Meta<TagListProps> = {
   title: "Components/TagList",

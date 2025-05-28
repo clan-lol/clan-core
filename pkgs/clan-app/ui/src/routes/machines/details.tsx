@@ -32,7 +32,7 @@ import {
   FileSelectorField,
 } from "@/src/components/fileSelect";
 import { useClanContext } from "@/src/contexts/clan";
-import {TagList} from "@/src/components/TagList/TagList";
+import { TagList } from "@/src/components/TagList/TagList";
 
 type MachineFormInterface = MachineData & {
   sshKey?: File;
