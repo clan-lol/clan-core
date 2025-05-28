@@ -226,13 +226,26 @@ After: {new}
             if isinstance(new, list):
                 duplicates = find_duplicates(new)
                 if duplicates:
-                    msg = f"Key '{key}' contains duplicates: {duplicates}. This not supported yet."
+                    msg = f"Key '{key}' contains list duplicates: {duplicates} - List values must be unique."
                     raise ClanError(msg)
                 # List of current values
                 persisted_data = data_dyn.get(key, [])
                 # List including nix values
                 all_list = data_all.get(key, [])
                 nix_list = unmerge_lists(all_list, persisted_data)
+
+                # every item in nix_list MUST be in new
+                nix_items_to_remove = list(
+                    filter(lambda item: item not in new, nix_list)
+                )
+
+                if nix_items_to_remove:
+                    msg = (
+                        f"Key '{key}' doesn't contain items {nix_items_to_remove} - "
+                        "Deleting them is not possible, they are static values set via a .nix file"
+                    )
+                    raise ClanError(msg)
+
                 if new != all_list:
                     patchset[key] = unmerge_lists(new, nix_list)
             else:
