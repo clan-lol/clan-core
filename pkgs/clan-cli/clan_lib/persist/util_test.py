@@ -6,11 +6,11 @@ import pytest
 
 from clan_lib.errors import ClanError
 from clan_lib.persist.util import (
-    apply_patch,
     calc_patches,
     delete_by_path,
     determine_writeability,
     path_match,
+    set_value_by_path,
     unmerge_lists,
 )
 
@@ -66,7 +66,7 @@ def test_path_match(
 def test_patch_nested() -> None:
     orig = {"a": 1, "b": {"a": 2.1, "b": 2.2}, "c": 3}
 
-    apply_patch(orig, "b.b", "foo")
+    set_value_by_path(orig, "b.b", "foo")
 
     # Should only update the nested value
     assert orig == {"a": 1, "b": {"a": 2.1, "b": "foo"}, "c": 3}
@@ -77,7 +77,7 @@ def test_patch_nested_dict() -> None:
 
     # This should update the whole "b" dict
     # Which also removes all other keys
-    apply_patch(orig, "b", {"b": "foo"})
+    set_value_by_path(orig, "b", {"b": "foo"})
 
     # Should only update the nested value
     assert orig == {"a": 1, "b": {"b": "foo"}, "c": 3}
@@ -86,13 +86,13 @@ def test_patch_nested_dict() -> None:
 def test_create_missing_paths() -> None:
     orig = {"a": 1}
 
-    apply_patch(orig, "b.c", "foo")
+    set_value_by_path(orig, "b.c", "foo")
 
     # Should only update the nested value
     assert orig == {"a": 1, "b": {"c": "foo"}}
 
     orig = {}
-    apply_patch(orig, "a.b.c", "foo")
+    set_value_by_path(orig, "a.b.c", "foo")
 
     assert orig == {"a": {"b": {"c": "foo"}}}
 
@@ -270,7 +270,7 @@ def test_update_add_empty_dict() -> None:
 
     update = deepcopy(data_eval)
 
-    apply_patch(update, "foo.mimi", {})
+    set_value_by_path(update, "foo.mimi", {})
 
     patchset, _ = calc_patches(
         data_disk, update, all_values=data_eval, writeables=writeables
@@ -452,7 +452,7 @@ def test_dont_persist_defaults() -> None:
     assert writeables == {"writeable": {"config", "enabled"}, "non_writeable": set()}
 
     update = deepcopy(data_eval)
-    apply_patch(update, "config.foo", "foo")
+    set_value_by_path(update, "config.foo", "foo")
 
     patchset, delete_set = calc_patches(
         data_disk, update, all_values=data_eval, writeables=writeables

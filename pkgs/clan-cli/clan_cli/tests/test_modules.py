@@ -13,7 +13,7 @@ from clan_lib.nix_models.inventory import (
     MachineDeploy,
 )
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import apply_patch
+from clan_lib.persist.util import set_value_by_path
 
 if TYPE_CHECKING:
     from .age_keys import KeyPair
@@ -75,7 +75,7 @@ def test_add_module_to_inventory(
         inventory_store = InventoryStore(Flake(str(test_flake_with_core.path)))
         inventory = inventory_store.read()
 
-        apply_patch(
+        set_value_by_path(
             inventory,
             "services",
             {

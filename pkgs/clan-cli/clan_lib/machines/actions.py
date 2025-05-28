@@ -5,7 +5,7 @@ from clan_lib.nix_models.inventory import (
     Machine as InventoryMachine,
 )
 from clan_lib.persist.inventory_store import InventoryStore
-from clan_lib.persist.util import apply_patch
+from clan_lib.persist.util import set_value_by_path
 
 
 @API.register
@@ -27,7 +27,7 @@ def update_machine(machine: Machine, update: InventoryMachine) -> None:
     inventory_store = InventoryStore(flake=machine.flake)
     inventory = inventory_store.read()
 
-    apply_patch(inventory, f"machines.{machine.name}", update)
+    set_value_by_path(inventory, f"machines.{machine.name}", update)
     inventory_store.write(
         inventory, message=f"Update information about machine {machine.name}"
     )
