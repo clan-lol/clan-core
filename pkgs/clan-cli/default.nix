@@ -83,7 +83,9 @@ let
       include = [
         (
           _root: path: _type:
-          (builtins.match "test_.*\.py" path) == null
+          (builtins.match ".*/test_[^/]+\.py" path) == null
+          && (builtins.match ".*/[^/]+_test\.py" path) == null
+          # && (builtins.match ".*/tests/.+" path) == null
         )
       ];
     }
@@ -176,7 +178,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             # limit build cores to 16
             jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-            python -m pytest -m "not impure and not with_core" -n $jobs ./clan_cli/tests
+            python -m pytest -m "not impure and not with_core" -n $jobs ./clan_cli ./clan_lib
             touch $out
           '';
     }

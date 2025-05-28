@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 
 from clan_lib.errors import ClanError
+from clan_lib.nix import nix_eval
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import delete_by_path, set_value_by_path
 
@@ -36,12 +37,9 @@ class MockFlake:
         assert select, "NIX_SELECT environment variable is not set"
         assert clan_core_path, "CLAN_CORE_PATH environment variable is not set"
 
-        output = subprocess.run(
+        cmd = nix_eval(
             [
-                "nix",
-                "eval",
                 "--impure",
-                "--json",
                 "--expr",
                 f"""
             let
@@ -54,6 +52,9 @@ class MockFlake:
                 select "{selector}" result
             """,
             ],
+        )
+        output = subprocess.run(
+            cmd,
             capture_output=True,
         )
         res_str = output.stdout.decode()
@@ -71,6 +72,7 @@ class MockFlake:
 folder_path = Path(__file__).parent.resolve()
 
 
+@pytest.mark.with_core
 def test_simple_read_write() -> None:
     entry_file = "1.nix"
     inventory_file = entry_file.replace(".nix", ".json")
@@ -90,7 +92,9 @@ def test_simple_read_write() -> None:
         store = InventoryStore(
             flake=MockFlake(Path(tmp) / entry_file),
             inventory_file_name=inventory_file,
+            _keys=[],  # disable toplevel filtering
         )
+        store._flake.invalidate_cache()
         data: dict = store.read()  # type: ignore
         assert data == {"foo": "bar", "protected": "protected"}
 
@@ -118,6 +122,7 @@ def test_simple_read_write() -> None:
         store.write(data, "test", commit=False)  # type: ignore
 
 
+@pytest.mark.with_core
 def test_read_deferred() -> None:
     entry_file = "deferred.nix"
     inventory_file = entry_file.replace(".nix", ".json")
@@ -138,6 +143,7 @@ def test_read_deferred() -> None:
             flake=MockFlake(Path(tmp) / entry_file),
             inventory_file_name=inventory_file,
             _allowed_path_transforms=["foo.*"],
+            _keys=[],  # disable toplevel filtering
         )
 
         data = store.read()
