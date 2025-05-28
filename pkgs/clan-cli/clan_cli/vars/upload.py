@@ -28,7 +28,7 @@ def upload_command(args: argparse.Namespace) -> None:
         populate_secret_vars(machine, directory)
         return
 
-    with machine.target_host().ssh_control_master() as host:
+    with machine.target_host().ssh_control_master() as host, host.become_root() as host:
         upload_secret_vars(machine, host)
 
 
