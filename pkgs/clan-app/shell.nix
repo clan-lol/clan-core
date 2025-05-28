@@ -5,8 +5,11 @@
   webview-lib,
   clan-app-ui,
   clan-ts-api,
+  ps,
   process-compose,
   json2ts,
+  playwright-driver,
+  luakit,
   self',
 }:
 let
@@ -25,11 +28,14 @@ mkShell {
   packages = [
     # required for reload-python-api.sh script
     json2ts
+    # for viewing the storybook in a webkit-based browser to match webview
+    luakit
   ];
 
   inherit (clan-app) propagatedBuildInputs;
 
   nativeBuildInputs = clan-app.nativeBuildInputs ++ [
+    ps
     process-compose
   ];
 
@@ -56,7 +62,6 @@ mkShell {
 
     # Add current package to PYTHONPATH
     export PYTHONPATH="$(pwd)''${PYTHONPATH:+:$PYTHONPATH:}"
-
     popd
 
     # Add clan-cli to the python path so that we can import it without building it in nix first
@@ -76,6 +81,18 @@ mkShell {
     cp -r ${clan-ts-api}/* api
     chmod -R +w api
     popd
+
+    # configure playwright for storybook snapshot testing
+    export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+    export PLAYWRIGHT_BROWSERS_PATH=${
+      playwright-driver.browsers.override {
+        withFfmpeg = false;
+        withFirefox = false;
+        withChromium = false;
+        withChromiumHeadlessShell = true;
+      }
+    }
+    export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="ubuntu-24.04"
 
     # configure process-compose
     if test -f "$GIT_ROOT/pkgs/clan-app/.local.env"; then

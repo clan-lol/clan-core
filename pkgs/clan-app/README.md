@@ -26,7 +26,7 @@ direnv: export +AR +AS +CC +CLAN_CORE_PATH +CONFIG_SHELL +CXX +DETERMINISTIC_BUI
 Once that has loaded, you can run the local dev environment by running:
 
 ```
-$ process-compose --use-uds --keep-project
+$ process-compose --use-uds --keep-project -n app
 ```
 
 This will start a [process-compose] instance containing two processes:
@@ -50,6 +50,24 @@ From there you can start `clan-app` again with `F7`.
 
 Follow the instructions below to set up your development environment and start the application:
 
+## Storybook
+
+We use [Storybook] to develop UI components. 
+It can be started by running the following:
+
+```console
+$ process-compose --use-uds --keep-project -n storybook
+```
+
+This will start a [process-compose] instance containing two processes:
+
+* `storybook` which is the main [storybook] process.
+* `luakit` which is a [webkit]-based browser for viewing the stories with. This is the same underlying engine used when
+rendering the app. 
+
+You can run storybook tests with `npm run test-storybook`.
+If you change how a component(s) renders, 
+you will need to update the snapshots with `npm run test-storybook-update-snapshots`.
 
 ## Start clan-app without process-compose
 
@@ -139,3 +157,5 @@ Here are some important documentation links related to the Clan App:
 [process-compose]: https://f1bonacc1.github.io/process-compose/
 [vite]: https://vite.dev/
 [webview]: https://github.com/webview/webview
+[Storybook]: https://storybook.js.org/
+[webkit]: https://webkit.org/

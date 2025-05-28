@@ -29,6 +29,8 @@
         fonts = config.packages.fonts;
       };
 
+      packages.clan-app-ui-storybook = self'.packages.clan-app-ui.storybook;
+
       checks = config.packages.clan-app.tests;
     };
 }
