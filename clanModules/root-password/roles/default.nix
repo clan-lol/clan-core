@@ -1,6 +1,7 @@
 {
   pkgs,
   config,
+  lib,
   ...
 }:
 {
@@ -12,6 +13,7 @@
     files.password-hash = {
       neededFor = "users";
     };
+    files.password-hash.restartUnits = lib.optional (config.services.userborn.enable) "userborn.service";
     files.password = {
       deploy = false;
     };

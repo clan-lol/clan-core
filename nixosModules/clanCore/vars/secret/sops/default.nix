@@ -48,6 +48,7 @@ in
             group
             mode
             neededForUsers
+            restartUnits
             ;
           sopsFile = builtins.path {
             name = "${secret.generator}_${secret.name}";
