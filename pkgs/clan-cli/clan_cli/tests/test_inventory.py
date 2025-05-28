@@ -1,4 +1,7 @@
-from clan_lib.nix_models.inventory import Inventory, Machine, Meta, Service
+from clan_lib.nix_models.clan import Inventory
+from clan_lib.nix_models.clan import InventoryMachine as Machine
+from clan_lib.nix_models.clan import InventoryMeta as Meta
+from clan_lib.nix_models.clan import InventoryService as Service
 
 
 def test_make_meta_minimal() -> None:

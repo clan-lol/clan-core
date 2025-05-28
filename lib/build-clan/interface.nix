@@ -14,6 +14,7 @@ in
     _prefix = lib.mkOption {
       type = types.listOf types.str;
       internal = true;
+      visible = false;
       default = [ ];
     };
     self = lib.mkOption {
@@ -79,6 +80,8 @@ in
     };
 
     modules = lib.mkOption {
+      # Correct type would be `types.attrsOf types.deferredModule` but that allows for
+      # Merging and transforms the value, which add eval overhead.
       type = types.attrsOf types.raw;
       default = { };
       description = ''

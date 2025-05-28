@@ -1,4 +1,9 @@
-{ self, inputs, ... }:
+{
+  self,
+  inputs,
+  options,
+  ...
+}:
 let
   inputOverrides = builtins.concatStringsSep " " (
     builtins.map (input: " --override-input ${input} ${inputs.${input}}") (builtins.attrNames inputs)
@@ -28,6 +33,7 @@ in
 
       legacyPackages.schemas = (
         import ./schemas {
+          flakeOptions = options;
           inherit
             pkgs
             self

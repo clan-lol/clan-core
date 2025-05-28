@@ -1,8 +1,8 @@
 from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
-from clan_lib.nix_models.inventory import (
-    Machine as InventoryMachine,
+from clan_lib.nix_models.clan import (
+    InventoryMachine,
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path

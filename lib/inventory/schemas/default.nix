@@ -2,6 +2,7 @@
   self,
   self',
   pkgs,
+  flakeOptions,
   ...
 }:
 let
@@ -21,6 +22,8 @@ let
     import ../build-inventory/interface.nix { inherit (self) clanLib; }
   );
 
+  clanSchema = jsonLib.parseOptions (flakeOptions.clan.type.getSubOptions [ "clan" ]) { };
+
   renderSchema = pkgs.writers.writePython3Bin "render-schema" {
     flakeIgnore = [
       "F401"
@@ -28,12 +31,12 @@ let
     ];
   } ./render_schema.py;
 
-  inventory-schema-abstract = pkgs.stdenv.mkDerivation {
-    name = "inventory-schema-files";
+  clan-schema-abstract = pkgs.stdenv.mkDerivation {
+    name = "clan-schema-files";
     buildInputs = [ pkgs.cue ];
     src = ./.;
     buildPhase = ''
-      export SCHEMA=${builtins.toFile "inventory-schema.json" (builtins.toJSON inventorySchema)}
+      export SCHEMA=${builtins.toFile "clan-schema.json" (builtins.toJSON clanSchema)}
       cp $SCHEMA schema.json
       # Also generate a CUE schema version that is derived from the JSON schema
       cue import -f -p compose -l '#Root:' schema.json
@@ -45,11 +48,13 @@ let
 in
 {
   inherit
+    flakeOptions
     frontMatterSchema
+    clanSchema
     inventorySchema
     modulesSchema
     renderSchema
-    inventory-schema-abstract
+    clan-schema-abstract
     ;
 
   # Inventory schema, with the modules schema added per role

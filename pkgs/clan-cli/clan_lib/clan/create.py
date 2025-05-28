@@ -7,8 +7,7 @@ from clan_lib.cmd import CmdOut, RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_command, nix_metadata, nix_shell
-from clan_lib.nix_models.inventory import Inventory
-from clan_lib.persist.inventory_store import InventoryStore
+from clan_lib.persist.inventory_store import InventorySnapshot, InventoryStore
 from clan_lib.templates import (
     InputPrio,
     TemplateName,
@@ -35,7 +34,7 @@ class CreateOptions:
     src_flake: Flake | None = None
     input_prio: InputPrio | None = None
     setup_git: bool = True
-    initial: Inventory | None = None
+    initial: InventorySnapshot | None = None
     update_clan: bool = True
 
 

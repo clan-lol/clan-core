@@ -13,7 +13,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_build, nix_command
-from clan_lib.nix_models.inventory import Machine as InventoryMachine
+from clan_lib.nix_models.clan import InventoryMachine
 
 from clan_cli.machines.create import CreateOptions, create_machine
 from clan_cli.vars.generate import generate_vars

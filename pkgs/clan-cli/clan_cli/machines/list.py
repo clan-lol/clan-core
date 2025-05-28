@@ -11,7 +11,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import get_machine
 from clan_lib.machines.machines import Machine
-from clan_lib.nix_models.inventory import Machine as InventoryMachine
+from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.persist.inventory_store import InventoryStore
 
 from clan_cli.completions import add_dynamic_completer, complete_tags

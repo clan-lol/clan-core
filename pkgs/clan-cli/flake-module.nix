@@ -106,10 +106,10 @@
           src = ./clan_lib/nix_models;
 
           env = {
-            classFile = "inventory.py";
+            classFile = "clan.py";
           };
           installPhase = ''
-            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.inventory-schema-abstract}/schema.json b_classes.py
+            ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.clan-schema-abstract}/schema.json b_classes.py
             file1=$classFile
             file2=b_classes.py
 

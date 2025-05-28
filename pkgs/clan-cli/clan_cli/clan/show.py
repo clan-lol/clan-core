@@ -9,7 +9,7 @@ from clan_lib.cmd import run
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_eval
-from clan_lib.nix_models.inventory import Meta
+from clan_lib.nix_models.clan import InventoryMeta as Meta
 
 log = logging.getLogger(__name__)
 

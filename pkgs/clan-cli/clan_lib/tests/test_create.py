@@ -24,8 +24,8 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command
-from clan_lib.nix_models.inventory import Machine as InventoryMachine
-from clan_lib.nix_models.inventory import MachineDeploy
+from clan_lib.nix_models.clan import InventoryMachine
+from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)

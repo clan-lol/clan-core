@@ -8,9 +8,11 @@ from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_lib.api.modules import list_modules
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_eval, run
-from clan_lib.nix_models.inventory import (
-    Machine,
-    MachineDeploy,
+from clan_lib.nix_models.clan import (
+    InventoryMachine as Machine,
+)
+from clan_lib.nix_models.clan import (
+    InventoryMachineDeploy as MachineDeploy,
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path
