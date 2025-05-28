@@ -39,6 +39,8 @@ class MockFlake:
         output = subprocess.run(
             [
                 "nix",
+                "--extra-experimental-features",
+                "nix-command flakes",
                 "eval",
                 "--impure",
                 "--json",
