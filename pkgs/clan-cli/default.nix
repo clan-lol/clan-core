@@ -83,7 +83,9 @@ let
       include = [
         (
           _root: path: _type:
-          (builtins.match "test_.*\.py" path) == null
+          (builtins.match ".*/test_[^/]+\.py" path) == null
+          && (builtins.match ".*/[^/]+_test\.py" path) == null
+          # && (builtins.match ".*/tests/.+" path) == null
         )
       ];
     }
