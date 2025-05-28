@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 
 from clan_lib.errors import ClanError
+from clan_lib.nix import nix_eval
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import delete_by_path, set_value_by_path
 
@@ -36,14 +37,9 @@ class MockFlake:
         assert select, "NIX_SELECT environment variable is not set"
         assert clan_core_path, "CLAN_CORE_PATH environment variable is not set"
 
-        output = subprocess.run(
+        cmd = nix_eval(
             [
-                "nix",
-                "--extra-experimental-features",
-                "nix-command flakes",
-                "eval",
                 "--impure",
-                "--json",
                 "--expr",
                 f"""
             let
@@ -56,6 +52,9 @@ class MockFlake:
                 select "{selector}" result
             """,
             ],
+        )
+        output = subprocess.run(
+            cmd,
             capture_output=True,
         )
         res_str = output.stdout.decode()
