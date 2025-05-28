@@ -5,10 +5,12 @@ from typing import Any, NamedTuple
 
 import pytest
 from clan_cli.ssh.host_key import HostKeyCheck
+
 from clan_lib.async_run import AsyncRuntime
 from clan_lib.cmd import ClanCmdTimeoutError, Log, RunOpts
 from clan_lib.errors import ClanError, CmdOut
 from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
 
 if sys.platform == "darwin":
     pytest.skip("preload doesn't work on darwin", allow_module_level=True)
@@ -176,6 +178,23 @@ def test_run_no_shell(hosts: list[Remote], runtime: AsyncRuntime) -> None:
             None, host.run_local, ["echo", "hello"], RunOpts(log=Log.STDERR)
         )
     assert proc.wait().result.stdout == "hello\n"
+
+
+def test_sudo_ask_proxy(hosts: list[Remote]) -> None:
+    host = hosts[0]
+    with host.ssh_control_master() as host:
+        proxy = SudoAskpassProxy(host, prompt_command=["bash", "-c", "echo yes"])
+
+        try:
+            askpass_path = proxy.run()
+            out = host.run(
+                ["bash", "-c", askpass_path],
+                opts=RunOpts(check=False, log=Log.BOTH),
+            )
+            assert out.returncode == 0
+            assert out.stdout == "yes\n"
+        finally:
+            proxy.cleanup()
 
 
 def test_run_function(hosts: list[Remote], runtime: AsyncRuntime) -> None:

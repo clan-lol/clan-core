@@ -28,8 +28,8 @@ def upload_command(args: argparse.Namespace) -> None:
         populate_secret_vars(machine, directory)
         return
 
-    host = machine.target_host()
-    upload_secret_vars(machine, host)
+    with machine.target_host().ssh_control_master() as host:
+        upload_secret_vars(machine, host)
 
 
 def register_upload_parser(parser: argparse.ArgumentParser) -> None:

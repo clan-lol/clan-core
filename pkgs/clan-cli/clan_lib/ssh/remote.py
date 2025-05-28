@@ -19,6 +19,7 @@ from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError  # Assuming these are available
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.parse import parse_deployment_address
+from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
 
 cmdlog = logging.getLogger(__name__)
 
@@ -39,7 +40,9 @@ class Remote:
     verbose_ssh: bool = False
     ssh_options: dict[str, str] = field(default_factory=dict)
     tor_socks: bool = False
+
     _control_path_dir: Path | None = None
+    _askpass_path: str | None = None
 
     def __str__(self) -> str:
         return self.target
@@ -47,25 +50,6 @@ class Remote:
     @property
     def target(self) -> str:
         return f"{self.user}@{self.address}"
-
-    @classmethod
-    def with_user(cls, host: "Remote", user: str) -> "Remote":
-        """
-        Return a new Remote object with the specified user.
-        """
-        return cls(
-            address=host.address,
-            user=user,
-            command_prefix=host.command_prefix,
-            port=host.port,
-            private_key=host.private_key,
-            password=host.password,
-            forward_agent=host.forward_agent,
-            host_key_check=host.host_key_check,
-            verbose_ssh=host.verbose_ssh,
-            ssh_options=host.ssh_options,
-            tor_socks=host.tor_socks,
-        )
 
     @classmethod
     def from_deployment_address(
@@ -126,28 +110,78 @@ class Remote:
             "/var/folders/"
         ):
             directory = "/tmp/"
-        temp_dir = TemporaryDirectory(prefix="clan-ssh", dir=directory)
-        yield Remote(
-            address=self.address,
-            user=self.user,
-            command_prefix=self.command_prefix,
-            port=self.port,
-            private_key=self.private_key,
-            password=self.password,
-            forward_agent=self.forward_agent,
-            host_key_check=self.host_key_check,
-            verbose_ssh=self.verbose_ssh,
-            ssh_options=self.ssh_options,
-            tor_socks=self.tor_socks,
-            _control_path_dir=Path(temp_dir.name),
-        )
-        temp_dir.cleanup()
+        with TemporaryDirectory(prefix="clan-ssh", dir=directory) as temp_dir:
+            yield Remote(
+                address=self.address,
+                user=self.user,
+                command_prefix=self.command_prefix,
+                port=self.port,
+                private_key=self.private_key,
+                password=self.password,
+                forward_agent=self.forward_agent,
+                host_key_check=self.host_key_check,
+                verbose_ssh=self.verbose_ssh,
+                ssh_options=self.ssh_options,
+                tor_socks=self.tor_socks,
+                _control_path_dir=Path(temp_dir),
+                _askpass_path=self._askpass_path,
+            )
+
+    @contextmanager
+    def become_root(self) -> Iterator["Remote"]:
+        """
+        Context manager to set up sudo askpass proxy.
+        This will set up a proxy for sudo password prompts.
+        """
+        if self.user == "root":
+            yield self
+            return
+
+        if (
+            os.environ.get("DISPLAY")
+            or os.environ.get("WAYLAND_DISPLAY")
+            or sys.platform == "darwin"
+        ):
+            command = ["zenity", "--password", "--title", "%title%"]
+            dependencies = ["zenity"]
+        else:
+            command = [
+                "dialog",
+                "--stdout",
+                "--insecure",
+                "--title",
+                "%title%",
+                "--passwordbox",
+                "",
+                "10",
+                "50",
+            ]
+            dependencies = ["dialog"]
+        proxy = SudoAskpassProxy(self, nix_shell(dependencies, command))
+        try:
+            askpass_path = proxy.run()
+            yield Remote(
+                address=self.address,
+                user=self.user,
+                command_prefix=self.command_prefix,
+                port=self.port,
+                private_key=self.private_key,
+                password=self.password,
+                forward_agent=self.forward_agent,
+                host_key_check=self.host_key_check,
+                verbose_ssh=self.verbose_ssh,
+                ssh_options=self.ssh_options,
+                tor_socks=self.tor_socks,
+                _control_path_dir=self._control_path_dir,
+                _askpass_path=askpass_path,
+            )
+        finally:
+            proxy.cleanup()
 
     def run(
         self,
         cmd: list[str],
         opts: RunOpts | None = None,
-        become_root: bool = False,
         extra_env: dict[str, str] | None = None,
         tty: bool = False,
         verbose_ssh: bool = False,
@@ -163,9 +197,14 @@ class Remote:
         if opts is None:
             opts = RunOpts()
 
-        sudo = ""
-        if become_root and self.user != "root":
-            sudo = "sudo -- "
+        sudo = []
+        if self._askpass_path is not None:
+            sudo = [
+                f"SUDO_ASKPASS={shlex.quote(self._askpass_path)}",
+                "sudo",
+                "-A",
+                "--",
+            ]
 
         env_vars = []
         for k, v in extra_env.items():
@@ -201,14 +240,20 @@ class Remote:
         else:
             bash_cmd += 'exec "$@"'
 
-        ssh_cmd_list = self.ssh_cmd(
-            verbose_ssh=verbose_ssh, tty=tty, control_master=control_master
-        )
-        ssh_cmd_list.extend(
-            ["--", f"{sudo}bash -c {quote(bash_cmd)} -- {' '.join(map(quote, cmd))}"]
-        )
+        ssh_cmd = [
+            *self.ssh_cmd(
+                verbose_ssh=verbose_ssh, tty=tty, control_master=control_master
+            ),
+            "--",
+            *sudo,
+            "bash",
+            "-c",
+            quote(bash_cmd),
+            "--",
+            " ".join(map(quote, cmd)),
+        ]
 
-        return run(ssh_cmd_list, opts)
+        return run(ssh_cmd, opts)
 
     def nix_ssh_env(
         self,
@@ -230,7 +275,7 @@ class Remote:
         if self._control_path_dir is None and not control_master:
             effective_control_path_dir = None
         elif self._control_path_dir is None and control_master:
-            msg = "Control path directory is not set. Please with Remote.ssh_control_master() as ctx to set it."
+            msg = "Bug! Control path directory is not set. Please use Remote.ssh_control_master() or set control_master to false."
             raise ClanError(msg)
 
         ssh_opts = ["-A"] if self.forward_agent else []
@@ -279,7 +324,7 @@ class Remote:
         return nix_shell(packages, cmd)
 
     def interactive_ssh(self) -> None:
-        cmd_list = self.ssh_cmd(tty=True)
+        cmd_list = self.ssh_cmd(tty=True, control_master=False)
         subprocess.run(cmd_list)
 
 

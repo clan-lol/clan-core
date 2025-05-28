@@ -1,12 +1,12 @@
 [
   "age",
+  "age-plugin-1p",
   "age-plugin-fido2-hmac",
   "age-plugin-ledger",
   "age-plugin-se",
   "age-plugin-sss",
   "age-plugin-tpm",
   "age-plugin-yubikey",
-  "age-plugin-1p",
   "avahi",
   "bash",
   "bubblewrap",
@@ -14,6 +14,7 @@
   "e2fsprogs",
   "git",
   "gnupg",
+  "dialog",
   "mypy",
   "netcat",
   "nix",
@@ -30,5 +31,6 @@
   "virt-viewer",
   "virtiofsd",
   "waypipe",
-  "zbar"
+  "zbar",
+  "zenity"
 ]

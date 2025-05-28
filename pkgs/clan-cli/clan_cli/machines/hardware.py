@@ -105,8 +105,8 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
 
     host = opts.machine.target_host()
 
-    with host.ssh_control_master() as ssh:
-        out = ssh.run(config_command, become_root=True, opts=RunOpts(check=False))
+    with host.ssh_control_master() as ssh, ssh.become_root() as sudo_ssh:
+        out = sudo_ssh.run(config_command, opts=RunOpts(check=False))
     if out.returncode != 0:
         if "nixos-facter" in out.stderr and "not found" in out.stderr:
             machine.error(str(out.stderr))

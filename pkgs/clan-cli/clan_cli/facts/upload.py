@@ -4,6 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from clan_lib.machines.machines import Machine
+from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_cli.ssh.upload import upload
@@ -11,9 +12,7 @@ from clan_cli.ssh.upload import upload
 log = logging.getLogger(__name__)
 
 
-def upload_secrets(machine: Machine) -> None:
-    host = machine.target_host()
-
+def upload_secrets(machine: Machine, host: Remote) -> None:
     if not machine.secret_facts_store.needs_upload(host):
         machine.info("Secrets already uploaded")
         return
@@ -27,7 +26,8 @@ def upload_secrets(machine: Machine) -> None:
 
 def upload_command(args: argparse.Namespace) -> None:
     machine = Machine(name=args.machine, flake=args.flake)
-    upload_secrets(machine)
+    with machine.target_host().ssh_control_master() as host:
+        upload_secrets(machine, host)
 
 
 def register_upload_parser(parser: argparse.ArgumentParser) -> None:
