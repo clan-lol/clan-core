@@ -1,5 +1,7 @@
 import type { Preview } from "@kachurun/storybook-solid";
 
+import "@/src/components/v2/index.css";
+
 export const preview: Preview = {
   tags: ["autodocs"],
   parameters: {
@@ -7,7 +9,7 @@ export const preview: Preview = {
     backgrounds: {
       values: [
         { name: "Dark", value: "#333" },
-        { name: "Light", value: "#F7F9F2" },
+        { name: "Light", value: "#ffffff" },
       ],
       default: "Light",
     },
