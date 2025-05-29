@@ -14,35 +14,29 @@ const mkBorderUtils = (
 ) => ({
   // - def colors
   [`.${prefix}-def-1`]: {
-    [cssProperty]: theme("colors.secondary.50"),
-  },
-  [`.${prefix}-def-2`]: {
     [cssProperty]: theme("colors.secondary.100"),
   },
-  [`.${prefix}-def-3`]: {
+  [`.${prefix}-def-2`]: {
     [cssProperty]: theme("colors.secondary.200"),
   },
-  [`.${prefix}-def-4`]: {
+  [`.${prefix}-def-3`]: {
     [cssProperty]: theme("colors.secondary.300"),
   },
-  [`.${prefix}-def-5`]: {
+  [`.${prefix}-def-4`]: {
     [cssProperty]: theme("colors.secondary.400"),
   },
   // - inverse colors
   [`.${prefix}-inv-1`]: {
-    [cssProperty]: theme("colors.secondary.800"),
+    [cssProperty]: theme("colors.secondary.700"),
   },
   [`.${prefix}-inv-2`]: {
-    [cssProperty]: theme("colors.secondary.900"),
+    [cssProperty]: theme("colors.secondary.800"),
   },
   [`.${prefix}-inv-3`]: {
     [cssProperty]: theme("colors.secondary.900"),
   },
   [`.${prefix}-inv-4`]: {
     [cssProperty]: theme("colors.secondary.950"),
-  },
-  [`.${prefix}-inv-5`]: {
-    [cssProperty]: theme("colors.black"),
   },
 
   [`.${prefix}-int-1`]: {
@@ -84,6 +78,8 @@ export default plugin.withOptions(
       });
       addUtilities({
         // Background colors
+
+        // default
         ".bg-def-1": {
           backgroundColor: theme("colors.white"),
         },
@@ -96,7 +92,17 @@ export default plugin.withOptions(
         ".bg-def-4": {
           backgroundColor: theme("colors.secondary.200"),
         },
-        ".bg-def-5": {
+        // default accessible
+        ".bg-def-acc-1": {
+          backgroundColor: theme("colors.primary.50"),
+        },
+        ".bg-def-acc-2": {
+          backgroundColor: theme("colors.secondary.100"),
+        },
+        ".bg-def-acc-3": {
+          backgroundColor: theme("colors.secondary.200"),
+        },
+        ".bg-def-acc-4": {
           backgroundColor: theme("colors.secondary.300"),
         },
         // bg inverse
@@ -112,21 +118,18 @@ export default plugin.withOptions(
         ".bg-inv-4": {
           backgroundColor: theme("colors.primary.900"),
         },
-        ".bg-inv-5": {
-          backgroundColor: theme("colors.primary.950"),
+        // bg inverse accessible
+        ".bg-inv-acc-1": {
+          backgroundColor: theme("colors.secondary.500")
         },
-        // bg inverse accent
-        ".bg-acc-1": {
-          backgroundColor: theme("colors.primary.50"),
+        ".bg-inv-acc-2": {
+          backgroundColor: theme("colors.secondary.600")
         },
-        ".bg-acc-2": {
-          backgroundColor: theme("colors.secondary.100"),
+        ".bg-inv-acc-3": {
+          backgroundColor: theme("colors.secondary.700")
         },
-        ".bg-acc-3": {
-          backgroundColor: theme("colors.secondary.200"),
-        },
-        ".bg-acc-4": {
-          backgroundColor: theme("colors.secondary.300"),
+        ".bg-inv-acc-4": {
+          backgroundColor: theme("colors.secondary.900")
         },
 
         // bg inverse accent
@@ -143,20 +146,6 @@ export default plugin.withOptions(
           backgroundColor: theme("colors.error.300"),
         },
 
-        // bg inverse accent
-        ".bg-inv-acc-1": {
-          backgroundColor: theme("colors.secondary.500"),
-        },
-        ".bg-inv-acc-2": {
-          backgroundColor: theme("colors.secondary.600"),
-        },
-        ".bg-inv-acc-3": {
-          backgroundColor: theme("colors.secondary.700"),
-        },
-        ".bg-inv-acc-4": {
-          backgroundColor: theme("colors.primary.900"),
-        },
-
         // Text colors
         ".fg-def-1": {
           color: theme("colors.secondary.950"),
@@ -168,7 +157,7 @@ export default plugin.withOptions(
           color: theme("colors.secondary.700"),
         },
         ".fg-def-4": {
-          color: theme("colors.secondary.500"),
+          color: theme("colors.secondary.400"),
         },
         // fg inverse
         ".fg-inv-1": {
