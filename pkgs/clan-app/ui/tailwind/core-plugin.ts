@@ -120,16 +120,16 @@ export default plugin.withOptions(
         },
         // bg inverse accessible
         ".bg-inv-acc-1": {
-          backgroundColor: theme("colors.secondary.500")
+          backgroundColor: theme("colors.secondary.500"),
         },
         ".bg-inv-acc-2": {
-          backgroundColor: theme("colors.secondary.600")
+          backgroundColor: theme("colors.secondary.600"),
         },
         ".bg-inv-acc-3": {
-          backgroundColor: theme("colors.secondary.700")
+          backgroundColor: theme("colors.secondary.700"),
         },
         ".bg-inv-acc-4": {
-          backgroundColor: theme("colors.secondary.900")
+          backgroundColor: theme("colors.secondary.900"),
         },
 
         // bg inverse accent
@@ -187,6 +187,10 @@ export default plugin.withOptions(
         },
 
         ...mkBorderUtils(theme, "border", "borderColor"),
+        ...mkBorderUtils(theme, "border-b", "borderBottom"),
+        ...mkBorderUtils(theme, "border-t", "borderTop"),
+        ...mkBorderUtils(theme, "border-l", "borderLeft"),
+        ...mkBorderUtils(theme, "border-r", "borderRight"),
         ...mkBorderUtils(theme, "outline", "outlineColor"),
 
         // Example: dark mode utilities (all elements within <html class="dark"> )

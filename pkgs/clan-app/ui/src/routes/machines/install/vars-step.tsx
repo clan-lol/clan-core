@@ -116,7 +116,7 @@ export const VarsForm = (props: VarsFormProps) => {
                               >
                                 <textarea
                                   {...props}
-                                  class="w-full h-32 border border-gray-300 rounded-md p-2"
+                                  class="h-32 w-full rounded-md border border-gray-300 p-2"
                                   placeholder={prompt.description}
                                   value={prompt.previous_value ?? ""}
                                   name={prompt.description}

@@ -1,8 +1,4 @@
 {
-  "exclude": [
-    // ignore storybook stories
-    "**/*.stories.tsx"
-  ],
   "compilerOptions": {
     "strict": true,
     "target": "ESNext",

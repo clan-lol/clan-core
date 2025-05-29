@@ -29,7 +29,6 @@
     "@storybook/addon-links": "^8.6.14",
     "@storybook/addon-viewport": "^8.6.14",
     "@storybook/builder-vite": "^8.6.14",
-    "@storybook/codegen": "^8.6.14",
     "@storybook/test-runner": "^0.22.0",
     "@tailwindcss/typography": "^0.5.13",
     "@types/json-schema": "^7.0.15",

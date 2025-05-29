@@ -1,4 +1,8 @@
-{ fetchurl, runCommand }:
+{
+  fetchurl,
+  fetchzip,
+  runCommand,
+}:
 let
 
   archivo = {
@@ -41,15 +45,23 @@ let
     };
   };
 
+  firaCode = fetchzip {
+    url = "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip";
+    stripRoot = false;
+    hash = "sha256-UHOwZL9WpCHk6vZaqI/XfkZogKgycs5lWg1p0XdQt0A=";
+  };
+
 in
 runCommand "" { } ''
   mkdir -p $out
 
   cp ${archivo.regular} $out/Archivo-Regular.woff2
-    cp ${archivo.medium} $out/Archivo-Medium.woff2
-    cp ${archivo.semiBold} $out/Archivo-SemiBold.woff2
+  cp ${archivo.medium} $out/Archivo-Medium.woff2
+  cp ${archivo.semiBold} $out/Archivo-SemiBold.woff2
 
   cp ${archivoSemi.regular} $out/ArchivoSemiCondensed-Regular.woff2
   cp ${archivoSemi.medium} $out/ArchivoSemiCondensed-Medium.woff2
   cp ${archivoSemi.semiBold} $out/ArchivoSemiCondensed-SemiBold.woff2
+
+  cp ${firaCode}/woff2/FiraCode-Regular.woff2 $out/FiraCode-Regular.woff2
 ''

@@ -42,6 +42,12 @@
   src: url(../../../.fonts/ArchivoSemiCondensed-SemiBold.woff2) format("woff2");
 }
 
+@font-face {
+  font-family: "Fira Code";
+  font-weight: 400;
+  src: url(../../../.fonts/FiraCode-Regular.woff2) format("woff2");
+}
+
 html {
   @apply font-sans;
   overflow-x: hidden;

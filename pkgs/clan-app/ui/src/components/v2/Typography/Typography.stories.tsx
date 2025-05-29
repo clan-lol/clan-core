@@ -1,37 +1,83 @@
 import type { Meta, StoryObj } from "@kachurun/storybook-solid";
-import { Title as BlockTitle, Subtitle, Description, Primary, Stories } from '@storybook/blocks';
 
 import {
   AllowedSizes,
+  Color,
+  Family,
   Hierarchy,
   Typography,
-  TypographyProps,
   Weight,
 } from "./Typography";
-import { Component, For } from "solid-js";
+import { Component, For, Show } from "solid-js";
 
-interface TypographyExamplesProps<H extends Hierarchy> {
-  weights: Weight[]
-  sizes: AllowedSizes<H>
+interface TypographyExamplesProps {
+  weights: Weight[];
+  sizes: ("default" | "s" | "xs" | "xxs" | "m" | "l")[];
   hierarchy: Hierarchy;
+  colors?: boolean;
+  family?: Family;
+  inverted?: boolean;
 }
 
+const colors: (Color | "inherit")[] = [
+  "inherit",
+  "primary",
+  "secondary",
+  "tertiary",
+  "quaternary",
+];
+
 const TypographyExamples: Component<TypographyExamplesProps> = (props) => (
-  <table class="w-full text-left table-auto min-w-max">
+  <table
+    class="w-full min-w-max table-auto text-left"
+    classList={{
+      "text-white bg-inv-1": props.inverted,
+    }}
+  >
     <tbody>
       <For each={props.sizes}>
         {(size) => (
-          <tr>
+          <tr
+            class="border-b border-def-3 even:bg-def-2"
+            classList={{
+              "border-inv-3 even:bg-inv-2": props.inverted,
+              "border-def-3 even:bg-def-2": !props.inverted,
+            }}
+          >
             <For each={props.weights}>
               {(weight) => (
-                <td class="p-2 border-b">
-                  <Typography
-                    hierarchy={props.hierarchy}
-                    size={size}
-                    weight={weight}
-                  >
-                    {props.hierarchy} / {size} / {weight}
-                  </Typography>
+                <td class="px-6 py-2 ">
+                  <Show when={!props.colors}>
+                    <Typography
+                      hierarchy={props.hierarchy}
+                      //@ts-expect-error: difficult to generify for the story
+                      size={size}
+                      weight={weight}
+                      family={props.family}
+                    >
+                      {props.hierarchy} / {size} / {weight}
+                    </Typography>
+                  </Show>
+                  <Show when={props.colors}>
+                    <For each={colors}>
+                      {(color) => (
+                        <>
+                          <Typography
+                            hierarchy={props.hierarchy}
+                            //@ts-expect-error: difficult to generify for the story
+                            size={size}
+                            weight={weight}
+                            color={color}
+                            family={props.family}
+                            inverted={props.inverted}
+                          >
+                            {props.hierarchy} / {size} / {weight} / {color}
+                          </Typography>
+                          <br />
+                        </>
+                      )}
+                    </For>
+                  </Show>
                 </td>
               )}
             </For>
@@ -42,65 +88,79 @@ const TypographyExamples: Component<TypographyExamplesProps> = (props) => (
   </table>
 );
 
-const meta: Meta<TypographyExamplesProps<never>> = {
+const meta: Meta<TypographyExamplesProps> = {
   title: "Components/Typography",
   component: TypographyExamples,
-  parameters: {
-    docs: {
-      // custom page template to remove controls and primary story example
-      // gives a much nicer overview
-      page: () => (
-        <>
-          <BlockTitle />
-          <Subtitle />
-          <Description />
-          <Stories />
-        </>
-      ),
-
-    }
-  },
-  decorators: [
-    (Story) => (
-      <div className="bg-white">
-        <Story />
-      </div>
-    ),
-  ],
 };
 
 export default meta;
 
-type Story = StoryObj<TypographyProps>;
+type Story = StoryObj<TypographyExamplesProps>;
 
-export const Body: Story = {
+export const BodyCondensed: Story = {
   args: {
     hierarchy: "body",
     sizes: ["default", "s", "xs", "xxs"],
-    weights: ["normal", "medium", "bold"]
+    weights: ["normal", "medium", "bold"],
   },
 };
 
-export const Label: Story = {
+export const Body: Story = {
+  args: {
+    ...BodyCondensed.args,
+    family: "regular",
+  },
+};
+
+export const LabelCondensed: Story = {
   args: {
     hierarchy: "label",
     sizes: ["default", "s", "xs"],
-    weights: ["normal", "medium", "bold"]
+    weights: ["normal", "medium", "bold"],
+  },
+};
+
+export const LabelMono: Story = {
+  args: {
+    ...LabelCondensed.args,
+    family: "mono",
   },
 };
 
 export const Title: Story = {
   args: {
     hierarchy: "title",
-    sizes: ["default", "s", "xs"],
-    weights: ["normal", "medium", "bold"]
+    sizes: ["default", "m", "l"],
+    weights: ["normal", "medium", "bold"],
   },
-}
+};
 
 export const Headline: Story = {
   args: {
     hierarchy: "headline",
-    sizes: ["default", "s", "xs"],
-    weights: ["normal", "medium", "bold"]
+    sizes: ["default", "m", "l"],
+    weights: ["normal", "medium", "bold"],
   },
-}
+};
+
+export const Teaser: Story = {
+  args: {
+    hierarchy: "teaser",
+    sizes: ["default"],
+    weights: ["bold"],
+  },
+};
+
+export const Colors: Story = {
+  args: {
+    ...BodyCondensed.args,
+    colors: true,
+  },
+};
+
+export const ColorsInverted: Story = {
+  args: {
+    ...Colors.args,
+    inverted: true,
+  },
+};

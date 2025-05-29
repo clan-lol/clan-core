@@ -1,0 +1,955 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Components/Typography Body smoke-test 1`] = `
+<table class="w-full min-w-max table-auto text-left">
+  <tbody>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-default font-body">
+          body / default / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-default font-body">
+          body / default / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-default font-body">
+          body / default / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-s font-body">
+          body / s / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-s font-body">
+          body / s / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-s font-body">
+          body / s / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-xs font-body">
+          body / xs / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-xs font-body">
+          body / xs / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-xs font-body">
+          body / xs / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-xxs font-body">
+          body / xxs / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-xxs font-body">
+          body / xxs / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-xxs font-body">
+          body / xxs / bold
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+`;
+
+exports[`Components/Typography BodyCondensed smoke-test 1`] = `
+<table class="w-full min-w-max table-auto text-left">
+  <tbody>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+`;
+
+exports[`Components/Typography Colors smoke-test 1`] = `
+<table class="w-full min-w-max table-auto text-left">
+  <tbody>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold / quaternary
+        </span>
+        <br>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold / quaternary
+        </span>
+        <br>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold / quaternary
+        </span>
+        <br>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold / inherit
+        </span>
+        <br>
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold / primary
+        </span>
+        <br>
+        <span class="typography fg-def-2 font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold / secondary
+        </span>
+        <br>
+        <span class="typography fg-def-3 font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold / tertiary
+        </span>
+        <br>
+        <span class="typography fg-def-4 font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold / quaternary
+        </span>
+        <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+`;
+
+exports[`Components/Typography ColorsInverted smoke-test 1`] = `
+<table class="w-full min-w-max table-auto text-left text-white bg-inv-1">
+  <tbody>
+    <tr class="border-b border-def-3 even:bg-def-2 border-inv-3 even:bg-inv-2">
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-normal font-size-default font-body">
+          body / default / normal / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-medium font-size-default font-body">
+          body / default / medium / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-bold font-size-default font-body">
+          body / default / bold / quaternary
+        </span>
+        <br>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2 border-inv-3 even:bg-inv-2">
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-normal font-size-s font-body">
+          body / s / normal / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-medium font-size-s font-body">
+          body / s / medium / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-bold font-size-s font-body">
+          body / s / bold / quaternary
+        </span>
+        <br>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2 border-inv-3 even:bg-inv-2">
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-normal font-size-xs font-body">
+          body / xs / normal / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-medium font-size-xs font-body">
+          body / xs / medium / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-bold font-size-xs font-body">
+          body / xs / bold / quaternary
+        </span>
+        <br>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2 border-inv-3 even:bg-inv-2">
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-normal font-size-xxs font-body">
+          body / xxs / normal / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-medium font-size-xxs font-body">
+          body / xxs / medium / quaternary
+        </span>
+        <br>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography text-inherit font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold / inherit
+        </span>
+        <br>
+        <span class="typography fg-inv-1 font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold / primary
+        </span>
+        <br>
+        <span class="typography fg-inv-2 font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold / secondary
+        </span>
+        <br>
+        <span class="typography fg-inv-3 font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold / tertiary
+        </span>
+        <br>
+        <span class="typography fg-inv-4 font-family-condensed font-weight-bold font-size-xxs font-body">
+          body / xxs / bold / quaternary
+        </span>
+        <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+`;
+
+exports[`Components/Typography Headline smoke-test 1`] = `
+<table class="w-full min-w-max table-auto text-left">
+  <tbody>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-default font-body font-headline">
+          headline / default / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-default font-body font-headline">
+          headline / default / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-default font-body font-headline">
+          headline / default / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-m font-body font-headline">
+          headline / m / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-m font-body font-headline">
+          headline / m / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-m font-body font-headline">
+          headline / m / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-l font-body font-headline">
+          headline / l / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-l font-body font-headline">
+          headline / l / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-l font-body font-headline">
+          headline / l / bold
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+`;
+
+exports[`Components/Typography LabelCondensed smoke-test 1`] = `
+<table class="w-full min-w-max table-auto text-left">
+  <tbody>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-default font-body font-label">
+          label / default / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-default font-body font-label">
+          label / default / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-default font-body font-label">
+          label / default / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-s font-body font-label">
+          label / s / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-s font-body font-label">
+          label / s / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-s font-body font-label">
+          label / s / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-xs font-body font-label">
+          label / xs / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-xs font-body font-label">
+          label / xs / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-xs font-body font-label">
+          label / xs / bold
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+`;
+
+exports[`Components/Typography LabelMono smoke-test 1`] = `
+<table class="w-full min-w-max table-auto text-left">
+  <tbody>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-mono font-weight-normal font-size-default font-body font-label">
+          label / default / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-mono font-weight-medium font-size-default font-body font-label">
+          label / default / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-mono font-weight-bold font-size-default font-body font-label">
+          label / default / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-mono font-weight-normal font-size-s font-body font-label">
+          label / s / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-mono font-weight-medium font-size-s font-body font-label">
+          label / s / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-mono font-weight-bold font-size-s font-body font-label">
+          label / s / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-mono font-weight-normal font-size-xs font-body font-label">
+          label / xs / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-mono font-weight-medium font-size-xs font-body font-label">
+          label / xs / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-mono font-weight-bold font-size-xs font-body font-label">
+          label / xs / bold
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+`;
+
+exports[`Components/Typography Teaser smoke-test 1`] = `
+<table class="w-full min-w-max table-auto text-left">
+  <tbody>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-default font-body font-teaser">
+          teaser / default / bold
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+`;
+
+exports[`Components/Typography Title smoke-test 1`] = `
+<table class="w-full min-w-max table-auto text-left">
+  <tbody>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-default font-body font-title">
+          title / default / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-default font-body font-title">
+          title / default / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-default font-body font-title">
+          title / default / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-m font-body font-title">
+          title / m / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-m font-body font-title">
+          title / m / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-m font-body font-title">
+          title / m / bold
+        </span>
+      </td>
+    </tr>
+    <tr class="border-b border-def-3 even:bg-def-2">
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-l font-body font-title">
+          title / l / normal
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-l font-body font-title">
+          title / l / medium
+        </span>
+      </td>
+      <td class="px-6 py-2 ">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-l font-body font-title">
+          title / l / bold
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+`;
