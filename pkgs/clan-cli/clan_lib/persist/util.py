@@ -201,7 +201,7 @@ def calc_patches(
         if old != new:
             # If there is a change, check if the key is writeable
             if not is_writeable_key(key):
-                msg = f"Key '{key}' is not writeable."
+                msg = f"Key '{key}' is not writeable. It seems its value is statically defined in nix."
                 raise ClanError(msg)
 
             if any(key.startswith(d) for d in delete_set):

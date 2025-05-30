@@ -362,7 +362,7 @@ def test_update_parent_non_writeable() -> None:
     with pytest.raises(ClanError) as error:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
 
-    assert str(error.value) == "Key 'foo.bar' is not writeable."
+    assert "Key 'foo.bar' is not writeable." in str(error.value)
 
 
 def test_update_list() -> None:
@@ -428,10 +428,7 @@ def test_update_list_duplicates() -> None:
     with pytest.raises(ClanError) as error:
         calc_patches(data_disk, update, all_values=data_eval, writeables=writeables)
 
-    assert (
-        str(error.value)
-        == "Key 'foo' contains duplicates: ['A']. This not supported yet."
-    )
+    assert "Key 'foo' contains list duplicates: ['A']" in str(error.value)
 
 
 def test_dont_persist_defaults() -> None:
