@@ -40,10 +40,7 @@ clanLib.test.makeTestClan {
         client.environment.etc.private-test-key.source = ./private-test-key;
 
         server = {
-          services.openssh = {
-            enable = true;
-            settings.UsePAM = false;
-          };
+          services.openssh.enable = true;
         };
       };
 
