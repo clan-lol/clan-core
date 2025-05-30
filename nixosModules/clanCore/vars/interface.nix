@@ -298,6 +298,16 @@ in
                       description = "The unix file mode of the file. Must be a 4-digit octal number.";
                       default = "0400";
                     };
+                    restartUnits = lib.mkOption {
+                      description = ''
+                        A list of systemd units that should be restarted after the file is deployed.
+                        This is useful for services that need to reload their configuration after the file is updated.
+
+                        WARNING: currently only sops-nix implements this option.
+                      '';
+                      type = listOf str;
+                      default = [ ];
+                    };
                     value =
                       lib.mkOption {
                         description = ''

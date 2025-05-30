@@ -31,6 +31,7 @@ in
 
     clan.core.vars.generators.user-password = {
       files.user-password-hash.neededFor = "users";
+      files.user-password-hash.restartUnits = lib.optional (config.services.userborn.enable) "userborn.service";
 
       prompts.user-password.type = "hidden";
       prompts.user-password.persist = true;
