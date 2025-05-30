@@ -119,7 +119,10 @@ def test_simple_read_write(setup_test_files: Path) -> None:
     invalid_data = {"protected": "foo"}
     with pytest.raises(ClanError) as e:
         store.write(invalid_data, "test", commit=False)  # type: ignore
-    assert str(e.value) == "Key 'protected' is not writeable."
+    assert (
+        str(e.value)
+        == "Key 'protected' is not writeable. It seems its value is statically defined in nix."
+    )
 
     # Test the data is not touched
     assert store.read() == data
@@ -133,7 +136,7 @@ def test_simple_read_write(setup_test_files: Path) -> None:
 
 @pytest.mark.with_core
 @pytest.mark.parametrize("setup_test_files", ["deferred.nix"], indirect=True)
-def test_read_deferred(setup_test_files: Path) -> None:
+def test_simple_deferred(setup_test_files: Path) -> None:
     files = list(setup_test_files.iterdir())
     nix_file = next(f for f in files if f.suffix == ".nix")
     json_file = next(f for f in files if f.suffix == ".json")
@@ -144,6 +147,7 @@ def test_read_deferred(setup_test_files: Path) -> None:
     store = InventoryStore(
         flake=MockFlake(nix_file),
         inventory_file_name=json_file.name,
+        # Needed to allow auto-transforming deferred modules
         _allowed_path_transforms=["foo.*"],
         _keys=[],  # disable toplevel filtering
     )
@@ -168,7 +172,121 @@ def test_read_deferred(setup_test_files: Path) -> None:
 
     assert store.read() == {"foo": {"a": {}, "b": {}, "c": {"timeout": "1s"}}}
 
-    # Remove the "deferredModule" "C" along with its settings
+    # Remove the "deferredModle" "C" along with its settings
     delete_by_path(data, "foo.c")  # type: ignore
     store.write(data, "test", commit=False)
     assert store.read() == {"foo": {"a": {}, "b": {}}}
+
+
+# TODO: Add this feature. We want it, but its more complex than expected.
+# @pytest.mark.with_core
+# @pytest.mark.parametrize("setup_test_files", ["deferred.nix"], indirect=True)
+# def test_conflicts_deferred(setup_test_files: Path) -> None:
+#     files = list(setup_test_files.iterdir())
+#     nix_file = next(f for f in files if f.suffix == ".nix")
+#     json_file = next(f for f in files if f.suffix == ".json")
+
+#     assert nix_file.exists()
+#     assert json_file.exists()
+
+#     store = InventoryStore(
+#         flake=MockFlake(nix_file),
+#         inventory_file_name=json_file.name,
+#         # Needed to allow auto-transforming deferred modules
+#         _allowed_path_transforms=["foo.*"],
+#         _keys=[],  # disable toplevel filtering
+#     )
+
+#     data = store.read()
+#     assert data == {"foo": {"a": {}, "b": {}}}
+
+#     # Create a new "deferredModule" "a" which collides with existing foo.a
+#     set_value_by_path(data, "foo.a", {"timeout": "1s"})  # type: ignore
+#     with pytest.raises(ClanError) as e:
+#         store.write(data, "test", commit=False)
+#     assert (
+#         str(e.value)
+#         == "Key 'foo.a' is not writeable. It seems its value is statically defined in nix."
+#     )
+
+#     # Giving an empty value to a deferred module does not throw an error
+#     # This is deduplicated with the module in nix and does not need to create a new module
+#     set_value_by_path(data, "foo.a", {})
+#     store.write(data, "test", commit=False)
+#     # unchanged data
+#     assert store.read() == {"foo": {"a": {}, "b": {}}}
+
+
+@pytest.mark.with_core
+@pytest.mark.parametrize("setup_test_files", ["lists.nix"], indirect=True)
+def test_manipulate_list(setup_test_files: Path) -> None:
+    files = list(setup_test_files.iterdir())
+    nix_file = next(f for f in files if f.suffix == ".nix")
+    json_file = next(f for f in files if f.suffix == ".json")
+
+    assert nix_file.exists()
+    assert json_file.exists()
+
+    store = InventoryStore(
+        flake=MockFlake(nix_file),
+        inventory_file_name=json_file.name,
+        _keys=[],  # disable toplevel filtering
+    )
+
+    data = store.read()
+
+    # [a, b] are static items in the list
+    assert data == {"empty": [], "predefined": ["a", "b"]}
+
+    # Add a new item to the list
+    set_value_by_path(data, "predefined", ["a", "b", "c"])
+    store.write(data, "test", commit=False)
+
+    assert store.read() == {"empty": [], "predefined": ["c", "a", "b"]}
+
+    # Remove an item from the list
+    set_value_by_path(data, "predefined", ["a", "b"])
+    store.write(data, "test", commit=False)
+    assert store.read() == {"empty": [], "predefined": ["a", "b"]}
+
+    # Test adding more than one of the same item
+    set_value_by_path(data, "empty", ["a", "b", "a"])
+
+    with pytest.raises(ClanError) as e:
+        store.write(data, "test", commit=False)
+    assert (
+        str(e.value)
+        == "Key 'empty' contains list duplicates: ['a'] - List values must be unique."
+    )
+
+    assert store.read() == {"empty": [], "predefined": ["a", "b"]}
+
+
+@pytest.mark.with_core
+@pytest.mark.parametrize("setup_test_files", ["lists.nix"], indirect=True)
+def test_static_list_items(setup_test_files: Path) -> None:
+    files = list(setup_test_files.iterdir())
+    nix_file = next(f for f in files if f.suffix == ".nix")
+    json_file = next(f for f in files if f.suffix == ".json")
+
+    assert nix_file.exists()
+    assert json_file.exists()
+
+    store = InventoryStore(
+        flake=MockFlake(nix_file),
+        inventory_file_name=json_file.name,
+        _keys=[],  # disable toplevel filtering
+    )
+
+    data = store.read()
+    assert data == {"empty": [], "predefined": ["a", "b"]}
+
+    # Removing a nix defined item from the list throws an error
+    set_value_by_path(data, "predefined", ["b"])
+    with pytest.raises(ClanError) as e:
+        store.write(data, "test", commit=False)
+
+    assert (
+        str(e.value)
+        == "Key 'predefined' doesn't contain items ['a'] - Deleting them is not possible, they are static values set via a .nix file"
+    )
