@@ -484,7 +484,9 @@ class Driver:
                 f"systemd-run /bin/sh -c '{sleep} 999999999 && echo {nspawn_uuid}'",
             )
 
-            print(f"nsenter for {machine.name}:")
+            print(
+                f"To attach to container {machine.name} run on the same machine that runs the test:"
+            )
             print(
                 " ".join(
                     [
