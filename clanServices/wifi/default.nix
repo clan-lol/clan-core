@@ -46,17 +46,15 @@ in
           { pkgs, config, ... }:
           let
             password_path =
-              network_name: config.clan.core.vars.generators."wifi.${network_name}".files.password.path;
+              network_name: config.clan.core.vars.generators."iwd.${network_name}".files.password.path;
 
-            ssid_path =
-              network_name: config.clan.core.vars.generators."wifi.${network_name}".files.network-name.path;
+            ssid_path = network_name: config.clan.core.vars.generators."iwd.${network_name}".files.ssid.path;
 
             secret_generator = name: value: {
-              name = "wifi.${name}";
+              name = "iwd.${name}";
               value = {
-                prompts.network-name.type = "line";
-                prompts.network-name.persist = true;
-                prompts.network-name.description = "name of the wifi network";
+                prompts.ssid.type = "line";
+                prompts.ssid.persist = true;
                 prompts.password.type = "hidden";
                 prompts.password.persist = true;
                 share = true;
