@@ -189,6 +189,10 @@ in
     ./computed-tags.nix
   ];
 
+  specialArgs = {
+    self = lib.mkDefault config.self;
+  };
+
   # Ready to use configurations
   # These are only shallow wrapping the 'nixosModules' or 'darwinModules' with
   # lib.nixosSystem

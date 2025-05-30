@@ -22,12 +22,6 @@
       clan = {
         meta.name = "__CHANGE_ME__"; # Ensure this is unique among all clans you want to use.
 
-        # This makes flake inputs available in NixOS modules.
-        specialArgs = {
-          self = self;
-          inputs = self.inputs;
-        };
-
         inherit self;
         machines = {
           # "jon" will be the hostname of the machine
