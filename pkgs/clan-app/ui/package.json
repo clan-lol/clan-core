@@ -11,12 +11,16 @@
     "serve": "vite preview",
     "check": "tsc --noEmit --skipLibCheck && eslint ./src",
     "test": "vitest run --typecheck",
-    "storybook": "storybook dev -p 6006"
+    "storybook": "storybook",
+    "storybook-build": "storybook build",
+    "storybook-dev": "storybook dev -p 6006",
+    "test-storybook": "test-storybook --browsers chromium --ci",
+    "test-storybook-update-snapshots": "npm run test-storybook -- --updateSnapshot",
+    "test-storybook-static": "npm run storybook-build && concurrently -k -s first -n 'SB,TEST' -c 'magenta,blue' 'http-server storybook-static --port 6006 --silent' 'wait-on tcp:127.0.0.1:6006 && npm run test-storybook'"
   },
   "license": "MIT",
   "devDependencies": {
     "@babel/plugin-syntax-import-attributes": "^7.27.1",
-    "@chromatic-com/storybook": "^3.2.6",
     "@eslint/js": "^9.3.0",
     "@kachurun/storybook-solid": "^8.6.7",
     "@kachurun/storybook-solid-vite": "^8.6.7",
@@ -33,8 +37,10 @@
     "@typescript-eslint/parser": "^8.32.1",
     "autoprefixer": "^10.4.19",
     "classnames": "^2.5.1",
+    "concurrently": "^9.1.2",
     "eslint": "^9.27.0",
     "eslint-plugin-tailwindcss": "^3.17.0",
+    "http-server": "^14.1.1",
     "jsdom": "^26.1.0",
     "postcss": "^8.4.38",
     "postcss-url": "^10.1.3",
@@ -47,7 +53,8 @@
     "vite": "^6.3.5",
     "vite-plugin-solid": "^2.8.2",
     "vite-plugin-solid-svg": "^0.8.1",
-    "vitest": "^3.1.4"
+    "vitest": "^3.1.4",
+    "wait-on": "^8.0.3"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.6.8",

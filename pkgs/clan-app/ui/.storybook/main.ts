@@ -12,7 +12,6 @@ const config: StorybookConfig = {
   addons: [
     getAbsolutePath("@storybook/addon-links"),
     getAbsolutePath("@storybook/addon-essentials"),
-    getAbsolutePath("@chromatic-com/storybook"),
     getAbsolutePath("@storybook/addon-interactions"),
   ],
   framework: {
@@ -26,6 +25,9 @@ const config: StorybookConfig = {
   },
   docs: {
     autodocs: "tag",
+  },
+  core: {
+    disableTelemetry: true,
   },
 };
 
