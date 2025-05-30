@@ -3,13 +3,19 @@
   inputs.nixpkgs.follows = "clan-core/nixpkgs";
 
   outputs =
-    { self, clan-core, ... }:
+    { self, clan-core, ... } @ inputs:
     let
       # Usage see: https://docs.clan.lol
       clan = clan-core.clanLib.buildClan {
         inherit self;
         # Ensure this is unique among all clans you want to use.
         meta.name = "__CHANGE_ME__";
+
+        # This makes flake inputs available in NixOS modules.
+        specialArgs = {
+          self = self;
+          inputs = inputs;
+        };
 
         # All machines in ./machines will be imported.
 

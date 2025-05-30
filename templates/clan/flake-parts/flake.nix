@@ -7,11 +7,10 @@
   outputs =
     inputs@{
       self,
-      clan-core,
       flake-parts,
       ...
     }:
-    flake-parts.lib.mkFlake { inherit inputs; } ({
+    flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -23,10 +22,12 @@
       clan = {
         meta.name = "__CHANGE_ME__"; # Ensure this is unique among all clans you want to use.
 
-        # Make flake available in modules
-        specialArgs.self = {
-          inherit (self) inputs nixosModules packages;
+        # This makes flake inputs available in NixOS modules.
+        specialArgs = {
+          self = self;
+          inputs = self.inputs;
         };
+
         inherit self;
         machines = {
           # "jon" will be the hostname of the machine
@@ -109,5 +110,5 @@
         {
           devShells.default = pkgs.mkShell { packages = [ inputs'.clan-core.packages.clan-cli ]; };
         };
-    });
+    };
 }
