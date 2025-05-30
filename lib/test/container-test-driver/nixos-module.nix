@@ -10,6 +10,9 @@
   virtualisation.sharedDirectories = lib.mkForce { };
   networking.useDHCP = false;
 
+  # PAM requires setuid and doesn't work in our containers
+  services.openssh.settings.UsePAM = false;
+
   # We use networkd to assign static ip addresses
   networking.useNetworkd = true;
   services.resolved.enable = false;
