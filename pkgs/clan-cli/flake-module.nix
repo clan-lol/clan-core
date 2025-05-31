@@ -9,6 +9,7 @@
     {
       self',
       pkgs,
+      system,
       ...
     }:
     let
@@ -41,6 +42,7 @@
       packages = {
         clan-cli = pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs nix-select;
+          inherit (self.legacyPackages.${system}) setupNixInNix;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;
           clan-core-path = clanCoreWithVendoredDeps;
@@ -51,6 +53,7 @@
         };
         clan-cli-full = pkgs.callPackage ./default.nix {
           inherit (inputs) nixpkgs nix-select;
+          inherit (self.legacyPackages.${system}) setupNixInNix;
           clan-core-path = clanCoreWithVendoredDeps;
           templateDerivation = templateDerivation;
           pythonRuntime = pkgs.python3;

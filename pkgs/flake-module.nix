@@ -10,6 +10,7 @@
     ./generate-test-vars/flake-module.nix
     ./clan-core-flake/flake-module.nix
     ./clan-app/flake-module.nix
+    ./testing/flake-module.nix
   ];
 
   flake.packages.x86_64-linux =

@@ -10,10 +10,11 @@
   stdenv,
   # custom args
   clan-core-path,
-  nixpkgs,
-  nix-select,
   includedRuntimeDeps,
+  nix-select,
+  nixpkgs,
   pythonRuntime,
+  setupNixInNix,
   templateDerivation,
 }:
 let
@@ -211,17 +212,10 @@ pythonRuntime.pkgs.buildPythonApplication {
             chmod +w -R ./src
             cd ./src
 
+            ${setupNixInNix}
+
             export CLAN_CORE_PATH=${clan-core-path}
-            export NIX_STATE_DIR=$TMPDIR/nix
-            export IN_NIX_SANDBOX=1
             export PYTHONWARNINGS=error
-            export CLAN_TEST_STORE=$TMPDIR/store
-            # required to prevent concurrent 'nix flake lock' operations
-            export LOCK_NIX=$TMPDIR/nix_lock
-            mkdir -p "$CLAN_TEST_STORE/nix/store"
-            mkdir -p "$CLAN_TEST_STORE/nix/var/nix/gcroots"
-            xargs cp --recursive --target "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
-            nix-store --load-db --store "$CLAN_TEST_STORE" < "$closureInfo/registration"
 
             # limit build cores to 16
             jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
@@ -264,17 +258,10 @@ pythonRuntime.pkgs.buildPythonApplication {
             chmod +w -R ./src
             cd ./src
 
+            ${setupNixInNix}
+
             export CLAN_CORE_PATH=${clan-core-path}
-            export NIX_STATE_DIR=$TMPDIR/nix
-            export IN_NIX_SANDBOX=1
             export PYTHONWARNINGS=error
-            export CLAN_TEST_STORE=$TMPDIR/store
-            # required to prevent concurrent 'nix flake lock' operations
-            export LOCK_NIX=$TMPDIR/nix_lock
-            mkdir -p "$CLAN_TEST_STORE/nix/store"
-            mkdir -p "$CLAN_TEST_STORE/nix/var/nix/gcroots"
-            xargs cp --recursive --target "$CLAN_TEST_STORE/nix/store"  < "$closureInfo/store-paths"
-            nix-store --load-db --store "$CLAN_TEST_STORE" < "$closureInfo/registration"
 
             # used for tests without flakes
             export NIXPKGS=${nixpkgs}

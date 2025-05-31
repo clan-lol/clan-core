@@ -14,7 +14,7 @@ from clan_cli.vars.generate import generate_vars
 from clan_lib.dirs import find_git_repo_root
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_config, nix_eval
+from clan_lib.nix import nix_config, nix_eval, nix_test_store
 
 sops_priv_key = (
     "AGE-SECRET-KEY-1PL0M9CWRCG3PZ9DXRTTLMCVD57U6JDFE8K7DNVQ35F4JENZ6G3MQ0RQLRV"
@@ -26,11 +26,15 @@ def get_machine_names(repo_root: Path, check_attr: str) -> list[str]:
     """
     Get the machine names from the test flake
     """
+    nix_options = []
+    if tmp_store := nix_test_store():
+        nix_options += ["--store", str(tmp_store)]
     cmd = nix_eval(
         [
-            f"git+file://{repo_root}#checks.{nix_config()['system']}.{check_attr}.nodes",
+            f"path://{repo_root}#checks.{nix_config()['system']}.{check_attr}.nodes",
             "--apply",
             "builtins.attrNames",
+            *nix_options,
         ]
     )
     out = subprocess.run(cmd, check=True, text=True, stdout=subprocess.PIPE)
@@ -93,7 +97,7 @@ def parse_args() -> Options:
         """,
     )
     parser.add_argument(
-        "--repo_root",
+        "--repo-root",
         type=Path,
         help="""
             Should be an absolute path to the repo root.
@@ -127,7 +131,7 @@ def parse_args() -> Options:
 def main() -> None:
     os.environ["CLAN_NO_COMMIT"] = "1"
     opts = parse_args()
-    test_dir = opts.repo_root / opts.test_dir
+    test_dir = opts.test_dir
 
     shutil.rmtree(test_dir / "vars", ignore_errors=True)
     shutil.rmtree(test_dir / "sops", ignore_errors=True)
