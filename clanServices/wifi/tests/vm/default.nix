@@ -11,7 +11,7 @@ clanLib.test.makeTestClan {
   nixosTest = (
     { ... }:
     {
-      name = "wifi";
+      name = "wifi-service";
 
       clan = {
         directory = ./.;

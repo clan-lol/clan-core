@@ -87,6 +87,7 @@ class Options:
     repo_root: Path
     test_dir: Path
     check_attr: str
+    clean: bool
 
 
 def parse_args() -> Options:
@@ -108,6 +109,13 @@ def parse_args() -> Options:
         default=os.environ.get("PRJ_ROOT", find_git_repo_root()),
     )
     parser.add_argument(
+        "--clean",
+        help="wipe vars and sops directories before generating new vars",
+        action="store_true",
+        default=False,
+    )
+
+    parser.add_argument(
         "test_dir",
         type=Path,
         help="""
@@ -125,6 +133,7 @@ def parse_args() -> Options:
         repo_root=args.repo_root,
         test_dir=args.test_dir,
         check_attr=args.check_attr,
+        clean=args.clean,
     )
 
 
@@ -133,8 +142,9 @@ def main() -> None:
     opts = parse_args()
     test_dir = opts.test_dir
 
-    shutil.rmtree(test_dir / "vars", ignore_errors=True)
-    shutil.rmtree(test_dir / "sops", ignore_errors=True)
+    if opts.clean:
+        shutil.rmtree(test_dir / "vars", ignore_errors=True)
+        shutil.rmtree(test_dir / "sops", ignore_errors=True)
 
     flake = Flake(str(opts.repo_root))
     machine_names = get_machine_names(
@@ -162,8 +172,10 @@ def main() -> None:
             {
                 "publickey": sops_pub_key,
                 "type": "age",
-            }
+            },
+            indent=2,
         )
+        + "\n"
     )
     with NamedTemporaryFile("w") as f:
         f.write("# created: 2023-07-17T10:51:45+02:00\n")
@@ -171,7 +183,7 @@ def main() -> None:
         f.write(sops_priv_key)
         f.seek(0)
         os.environ["SOPS_AGE_KEY_FILE"] = f.name
-        generate_vars(list(machines))
+        generate_vars(list(machines), fake_prompts=True)
 
 
 if __name__ == "__main__":

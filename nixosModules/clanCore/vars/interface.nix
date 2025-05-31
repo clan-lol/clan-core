@@ -246,7 +246,7 @@ in
                         The path to the file containing the content of the generated value.
                         This will be set automatically
                       '';
-                      type = nullOr str;
+                      type = nullOr path;
                       default = null;
                     };
                     path = lib.mkOption {

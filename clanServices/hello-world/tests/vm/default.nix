@@ -10,7 +10,7 @@ clanLib.test.makeTestClan {
   nixosTest = (
     { ... }:
     {
-      name = "service-hello-test";
+      name = "hello-service";
 
       clan = {
         directory = ./.;
