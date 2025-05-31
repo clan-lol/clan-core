@@ -29,7 +29,7 @@ from .graph import (
     minimal_closure,
     requested_closure,
 )
-from .prompt import Prompt, ask
+from .prompt import Prompt, PromptType, ask
 from .var import Var
 
 log = logging.getLogger(__name__)
@@ -295,6 +295,26 @@ def _ask_prompts(
     return prompt_values
 
 
+def _fake_prompts(
+    generator: Generator,
+) -> dict[str, str]:
+    prompt_values: dict[str, str] = {}
+    for prompt in generator.prompts:
+        var_id = f"{generator.name}/{prompt.name}"
+        if prompt.prompt_type == PromptType.HIDDEN:
+            prompt_values[prompt.name] = "fake_hidden_value"
+        elif prompt.prompt_type == PromptType.MULTILINE_HIDDEN:
+            prompt_values[prompt.name] = "fake\nmultiline\nhidden\nvalue"
+        elif prompt.prompt_type == PromptType.MULTILINE:
+            prompt_values[prompt.name] = "fake\nmultiline\nvalue"
+        elif prompt.prompt_type == PromptType.LINE:
+            prompt_values[prompt.name] = "fake_line_value"
+        else:
+            msg = f"Unknown prompt type {prompt.prompt_type} for prompt {var_id} in generator {generator.name}"
+            raise ClanError(msg)
+    return prompt_values
+
+
 def _get_previous_value(
     machine: "Machine",
     generator: Generator,
@@ -414,6 +434,7 @@ def generate_vars_for_machine_interactive(
     generator_name: str | None,
     regenerate: bool,
     no_sandbox: bool = False,
+    fake_prompts: bool = False,
 ) -> bool:
     _generator = None
     if generator_name:
@@ -438,7 +459,10 @@ def generate_vars_for_machine_interactive(
         return False
     all_prompt_values = {}
     for generator in generators:
-        all_prompt_values[generator.name] = _ask_prompts(generator)
+        if fake_prompts:
+            all_prompt_values[generator.name] = _fake_prompts(generator)
+        else:
+            all_prompt_values[generator.name] = _ask_prompts(generator)
     return _generate_vars_for_machine(
         machine,
         generators,
@@ -452,13 +476,18 @@ def generate_vars(
     generator_name: str | None = None,
     regenerate: bool = False,
     no_sandbox: bool = False,
+    fake_prompts: bool = False,
 ) -> bool:
     was_regenerated = False
     for machine in machines:
         errors = []
         try:
             was_regenerated |= generate_vars_for_machine_interactive(
-                machine, generator_name, regenerate, no_sandbox=no_sandbox
+                machine,
+                generator_name,
+                regenerate,
+                no_sandbox=no_sandbox,
+                fake_prompts=fake_prompts,
             )
         except Exception as exc:
             errors += [(machine, exc)]
@@ -504,7 +533,11 @@ def generate_command(args: argparse.Namespace) -> None:
         ]
     )
     has_changed = generate_vars(
-        machines, args.generator, args.regenerate, no_sandbox=args.no_sandbox
+        machines,
+        args.generator,
+        args.regenerate,
+        no_sandbox=args.no_sandbox,
+        fake_prompts=args.fake_prompts,
     )
     if has_changed:
         args.flake.invalidate_cache()
@@ -541,6 +574,13 @@ def register_generate_parser(parser: argparse.ArgumentParser) -> None:
         "--no-sandbox",
         action="store_true",
         help="disable sandboxing when executing the generator. WARNING: potentially executing untrusted code from external clan modules",
+        default=False,
+    )
+
+    parser.add_argument(
+        "--fake-prompts",
+        action="store_true",
+        help="automatically fill prompt responses for testing (unsafe)",
         default=False,
     )
 

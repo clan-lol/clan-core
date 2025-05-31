@@ -7,6 +7,10 @@ let
     mkOption
     removePrefix
     types
+    mapAttrsToList
+    flip
+    unique
+    flatten
     ;
 
 in
@@ -46,10 +50,18 @@ in
 
       testSrc = lib.cleanSource test.config.clan.directory;
 
+      inputsForMachine =
+        machine:
+        flip mapAttrsToList machine.clan.core.vars.generators (_name: generator: generator.runtimeInputs);
+
+      generatorRuntimeInputs = unique (
+        flatten (flip mapAttrsToList test.config.nodes (_machineName: machine: inputsForMachine machine))
+      );
+
       vars-check =
         pkgs.runCommand "update-vars-check"
           {
-            nativeBuildInputs = [
+            nativeBuildInputs = generatorRuntimeInputs ++ [
               pkgs.nix
               pkgs.git
               pkgs.age
@@ -57,7 +69,7 @@ in
               pkgs.bubblewrap
             ];
             closureInfo = pkgs.closureInfo {
-              rootPaths = [
+              rootPaths = generatorRuntimeInputs ++ [
                 pkgs.bash
                 pkgs.coreutils
                 pkgs.jq.dev
@@ -74,7 +86,9 @@ in
             cp -r ${testSrc} ./src
             chmod +w -R ./src
             find ./src/sops ./src/vars | sort > filesBefore
-            ${update-vars-script} ./src ${testName} --repo-root ${self.packages.${pkgs.system}.clan-core-flake}
+            ${update-vars-script} ./src ${testName} \
+              --repo-root ${self.packages.${pkgs.system}.clan-core-flake} \
+              --clean
             find ./src/sops ./src/vars | sort > filesAfter
             if ! diff -q filesBefore filesAfter; then
               echo "The update-vars script changed the files in ${testSrc}."
