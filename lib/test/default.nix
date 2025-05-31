@@ -5,6 +5,7 @@
 let
   inherit (lib)
     mkOption
+    removePrefix
     types
     ;
 
@@ -37,11 +38,13 @@ in
 
       update-vars-script = "${self.packages.${pkgs.system}.generate-test-vars}/bin/generate-test-vars";
 
+      relativeDir = removePrefix ("${self}/") (toString test.config.clan.directory);
+
       update-vars = pkgs.writeShellScriptBin "update-vars" ''
-        ${update-vars-script} $PRJ_ROOT/checks/${testName} ${testName}
+        ${update-vars-script} $PRJ_ROOT/${relativeDir} ${testName}
       '';
 
-      testSrc = lib.cleanSource (self + "/checks/${testName}");
+      testSrc = lib.cleanSource test.config.clan.directory;
 
       vars-check =
         pkgs.runCommand "update-vars-check"
@@ -67,9 +70,6 @@ in
             };
           }
           ''
-            # make the test depend on its vars-check derivation
-            echo ${vars-check} >/dev/null
-
             ${self.legacyPackages.${pkgs.system}.setupNixInNix}
             cp -r ${testSrc} ./src
             chmod +w -R ./src
@@ -182,6 +182,8 @@ in
                   #     Harder to handle advanced setups (like TPM, LUKS, or LVM-on-LUKS) but not needed since we are in a test
                   #     No systemd journal logs from initrd.
                   boot.initrd.systemd.enable = false;
+                  # make the test depend on its vars-check derivation
+                  environment.variables.CLAN_VARS_CHECK = "${vars-check}";
                 }
               );
 
