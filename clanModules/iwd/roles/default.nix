@@ -35,7 +35,7 @@ let
 in
 lib.warn
   ''
-    The clan module `iwd` is deprecated and replaced by the clans service `wifi`
+    The clan module `iwd` is deprecated and replaced by the clan service `wifi`
     Please migrate your config to the new service (see: https://docs.clan.lol/reference/clanServices/wifi/)
 
     To keep passwords after migrating the config, use:
