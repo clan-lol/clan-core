@@ -310,7 +310,7 @@ The following module demonstrates the idea in the example of *borgbackup*.
                 else
                   lib.warn ''
                     Machine ${machine} does not have a borgbackup key at ${fullPath},
-                    run `clan var generate ${machine}` to generate it.
+                    run `clan vars generate ${machine}` to generate it.
                   '' null
               ) allClients;
 
