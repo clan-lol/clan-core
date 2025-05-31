@@ -14,7 +14,6 @@ in
   roles.default = {
     interface = {
       options.networks = lib.mkOption {
-        visible = false;
         type = lib.types.attrsOf (
           lib.types.submodule (
             { ... }:
