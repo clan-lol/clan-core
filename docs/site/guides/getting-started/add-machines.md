@@ -55,6 +55,14 @@ In the `flake.nix` file:
 
 Adding or configuring a new machine requires two simple steps:
 
+???+ Note "Cloud Machines"
+  NixOS can cause strange issues when booting in certain cloud environments.
+  
+  Find out if your cloud environment:
+  - supports UEFI, if not, use BIOS
+  - has enough RAM (2GB minimum)
+  - If on Linode: Make sure that the system uses Direct Disk boot kernel (found in the configuration pannel)
+
 ### Step 1. Identify Target Disk-ID
 
 1. Find the remote disk id by executing:
