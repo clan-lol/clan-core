@@ -14,6 +14,7 @@ from clan_cli.completions import (
     complete_users,
 )
 from clan_cli.machines.types import machine_name_type, validate_hostname
+from clan_cli.secrets.sops import load_age_plugins
 
 from . import secrets
 from .folders import (
@@ -239,12 +240,14 @@ def add_group_argument(parser: argparse.ArgumentParser) -> None:
     add_dynamic_completer(group_action, complete_groups)
 
 
-def add_secret(flake_dir: Path, group: str, name: str) -> None:
+def add_secret(
+    flake_dir: Path, group: str, name: str, age_plugins: list[str] | None
+) -> None:
     secrets.allow_member(
-        flake_dir,
         secrets.groups_folder(sops_secrets_folder(flake_dir) / name),
         sops_groups_folder(flake_dir),
         group,
+        age_plugins=age_plugins,
     )
 
 
@@ -264,12 +267,21 @@ def get_groups(flake_dir: Path, what: str, name: str) -> list[str]:
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
-    add_secret(args.flake.path, args.group, args.secret)
+    add_secret(
+        args.flake.path,
+        args.group,
+        args.secret,
+        age_plugins=load_age_plugins(args.flake),
+    )
 
 
-def remove_secret(flake_dir: Path, group: str, name: str) -> None:
+def remove_secret(
+    flake_dir: Path, group: str, name: str, age_plugins: list[str]
+) -> None:
     updated_paths = secrets.disallow_member(
-        flake_dir, secrets.groups_folder(sops_secrets_folder(flake_dir) / name), group
+        secrets.groups_folder(sops_secrets_folder(flake_dir) / name),
+        group,
+        age_plugins=age_plugins,
     )
     commit_files(
         updated_paths,
@@ -279,7 +291,12 @@ def remove_secret(flake_dir: Path, group: str, name: str) -> None:
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    remove_secret(args.flake.path, args.group, args.secret)
+    remove_secret(
+        args.flake.path,
+        args.group,
+        args.secret,
+        age_plugins=load_age_plugins(args.flake),
+    )
 
 
 def register_groups_parser(parser: argparse.ArgumentParser) -> None:

@@ -21,6 +21,7 @@ from clan_cli.secrets.secrets import (
     groups_folder,
     has_secret,
 )
+from clan_cli.secrets.sops import load_age_plugins
 from clan_cli.ssh.upload import upload
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator
@@ -71,6 +72,7 @@ class SecretStore(StoreBase):
             / f"{self.machine.name}-age.key",
             priv_key,
             add_groups=self.machine.deployment["sops"]["defaultGroups"],
+            age_plugins=load_age_plugins(self.machine.flake),
         )
         add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)
 
@@ -158,12 +160,14 @@ class SecretStore(StoreBase):
             add_machines=[self.machine.name] if var.deploy else [],
             add_groups=self.machine.deployment["sops"]["defaultGroups"],
             git_commit=False,
+            age_plugins=load_age_plugins(self.machine.flake),
         )
         return secret_folder
 
     def get(self, generator: Generator, name: str) -> bytes:
         return decrypt_secret(
-            self.machine.flake_dir, self.secret_path(generator, name)
+            self.secret_path(generator, name),
+            age_plugins=load_age_plugins(self.machine.flake),
         ).encode("utf-8")
 
     def delete(self, generator: "Generator", name: str) -> Iterable[Path]:
@@ -187,8 +191,8 @@ class SecretStore(StoreBase):
                 # skip uploading the secret, not managed by us
                 return
             key = decrypt_secret(
-                self.machine.flake_dir,
                 sops_secrets_folder(self.machine.flake_dir) / key_name,
+                age_plugins=load_age_plugins(self.machine.flake),
             )
             (output_dir / "key.txt").touch(mode=0o600)
             (output_dir / "key.txt").write_text(key)
@@ -241,7 +245,12 @@ class SecretStore(StoreBase):
         if self.machine_has_access(generator, name):
             return
         secret_folder = self.secret_path(generator, name)
-        add_secret(self.machine.flake_dir, self.machine.name, secret_folder)
+        add_secret(
+            self.machine.flake_dir,
+            self.machine.name,
+            secret_folder,
+            age_plugins=load_age_plugins(self.machine.flake),
+        )
 
     def collect_keys_for_secret(self, path: Path) -> set[sops.SopsKey]:
         from clan_cli.secrets.secrets import (
@@ -303,20 +312,22 @@ class SecretStore(StoreBase):
 
                 secret_path = self.secret_path(generator, file.name)
 
+                age_plugins = load_age_plugins(self.machine.flake)
+
                 for group in self.machine.deployment["sops"]["defaultGroups"]:
                     allow_member(
-                        self.machine.flake_dir,
                         groups_folder(secret_path),
                         sops_groups_folder(self.machine.flake_dir),
                         group,
                         # we just want to create missing symlinks, we call update_keys below:
                         do_update_keys=False,
+                        age_plugins=age_plugins,
                     )
 
                 update_keys(
-                    self.machine.flake_dir,
                     secret_path,
                     collect_keys_for_path(secret_path),
+                    age_plugins=age_plugins,
                 )
         if file_name and not file_found:
             msg = f"file {file_name} was not found"

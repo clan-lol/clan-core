@@ -20,7 +20,7 @@ from .folders import (
     sops_secrets_folder,
 )
 from .secrets import update_secrets
-from .sops import read_key, write_key
+from .sops import load_age_plugins, read_key, write_key
 from .types import public_or_private_age_key_type, secret_name_type
 
 
@@ -73,12 +73,17 @@ def list_sops_machines(flake_dir: Path) -> list[str]:
     return list_objects(path, validate)
 
 
-def add_secret(flake_dir: Path, machine: str, secret_path: Path) -> None:
+def add_secret(
+    flake_dir: Path,
+    machine: str,
+    secret_path: Path,
+    age_plugins: list[str] | None,
+) -> None:
     paths = secrets.allow_member(
-        flake_dir,
         secrets.machines_folder(secret_path),
         sops_machines_folder(flake_dir),
         machine,
+        age_plugins=age_plugins,
     )
     commit_files(
         paths,
@@ -87,11 +92,13 @@ def add_secret(flake_dir: Path, machine: str, secret_path: Path) -> None:
     )
 
 
-def remove_secret(flake_dir: Path, machine: str, secret: str) -> None:
+def remove_secret(
+    flake_dir: Path, machine: str, secret: str, age_plugins: list[str] | None
+) -> None:
     updated_paths = secrets.disallow_member(
-        flake_dir,
         secrets.machines_folder(sops_secrets_folder(flake_dir) / secret),
         machine,
+        age_plugins=age_plugins,
     )
     commit_files(
         updated_paths,
@@ -138,6 +145,7 @@ def add_secret_command(args: argparse.Namespace) -> None:
         args.flake.path,
         args.machine,
         sops_secrets_folder(args.flake.path) / args.secret,
+        age_plugins=load_age_plugins(args.flake),
     )
 
 
@@ -145,7 +153,12 @@ def remove_secret_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         msg = "Could not find clan flake toplevel directory"
         raise ClanError(msg)
-    remove_secret(args.flake.path, args.machine, args.secret)
+    remove_secret(
+        args.flake.path,
+        args.machine,
+        args.secret,
+        age_plugins=load_age_plugins(args.flake),
+    )
 
 
 def register_machines_parser(parser: argparse.ArgumentParser) -> None:

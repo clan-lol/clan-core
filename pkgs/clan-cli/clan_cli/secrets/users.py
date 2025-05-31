@@ -20,7 +20,7 @@ from .folders import (
     sops_users_folder,
 )
 from .secrets import update_secrets
-from .sops import append_keys, read_keys, remove_keys, write_keys
+from .sops import append_keys, load_age_plugins, read_keys, remove_keys, write_keys
 from .types import (
     VALID_USER_NAME,
     public_or_private_age_key_type,
@@ -92,12 +92,14 @@ def list_users(flake_dir: Path) -> list[str]:
     return list_objects(path, validate)
 
 
-def add_secret(flake_dir: Path, user: str, secret: str) -> None:
+def add_secret(
+    flake_dir: Path, user: str, secret: str, age_plugins: list[str] | None
+) -> None:
     updated_paths = secrets.allow_member(
-        flake_dir,
         secrets.users_folder(sops_secrets_folder(flake_dir) / secret),
         sops_users_folder(flake_dir),
         user,
+        age_plugins=age_plugins,
     )
     commit_files(
         updated_paths,
@@ -106,9 +108,11 @@ def add_secret(flake_dir: Path, user: str, secret: str) -> None:
     )
 
 
-def remove_secret(flake_dir: Path, user: str, secret: str) -> None:
+def remove_secret(
+    flake_dir: Path, user: str, secret: str, age_plugins: list[str] | None
+) -> None:
     updated_paths = secrets.disallow_member(
-        flake_dir, secrets.users_folder(sops_secrets_folder(flake_dir) / secret), user
+        secrets.users_folder(sops_secrets_folder(flake_dir) / secret), user, age_plugins
     )
     commit_files(
         updated_paths,
@@ -215,14 +219,24 @@ def add_secret_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         msg = "Could not find clan flake toplevel directory"
         raise ClanError(msg)
-    add_secret(args.flake.path, args.user, args.secret)
+    add_secret(
+        args.flake.path,
+        args.user,
+        args.secret,
+        age_plugins=load_age_plugins(args.flake),
+    )
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         msg = "Could not find clan flake toplevel directory"
         raise ClanError(msg)
-    remove_secret(args.flake.path, args.user, args.secret)
+    remove_secret(
+        args.flake.path,
+        args.user,
+        args.secret,
+        age_plugins=load_age_plugins(args.flake),
+    )
 
 
 def add_key_command(args: argparse.Namespace) -> None:

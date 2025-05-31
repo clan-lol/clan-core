@@ -13,6 +13,7 @@ from clan_cli.completions import (
     complete_machines,
     complete_users,
 )
+from clan_cli.secrets.sops import load_age_plugins
 
 from .secrets import encrypt_secret, sops_secrets_folder
 
@@ -56,6 +57,7 @@ def import_sops(args: argparse.Namespace) -> None:
                 add_groups=args.group,
                 add_machines=args.machine,
                 add_users=args.user,
+                age_plugins=load_age_plugins(args.flake),
             )
 
 
