@@ -1,51 +1,118 @@
-(
-  { ... }:
-  {
-    name = "borgbackup";
+{
+  pkgs,
+  self,
+  clanLib,
+  ...
+}:
 
-    nodes.machine =
-      { self, pkgs, ... }:
-      {
-        imports = [
-          self.clanModules.borgbackup
-          self.nixosModules.clanCore
-          {
-            services.openssh.enable = true;
-            services.borgbackup.repos.testrepo = {
-              authorizedKeys = [ (builtins.readFile ../assets/ssh/pubkey) ];
-            };
-          }
-          {
-            clan.core.settings.directory = ./.;
-            clan.core.state.testState.folders = [ "/etc/state" ];
-            environment.etc.state.text = "hello world";
-            systemd.tmpfiles.settings."vmsecrets" = {
-              "/etc/secrets/borgbackup/borgbackup.ssh" = {
-                C.argument = "${../assets/ssh/privkey}";
-                z = {
-                  mode = "0400";
-                  user = "root";
-                };
-              };
-              "/etc/secrets/borgbackup/borgbackup.repokey" = {
-                C.argument = builtins.toString (pkgs.writeText "repokey" "repokey12345");
-                z = {
-                  mode = "0400";
-                  user = "root";
-                };
-              };
-            };
-            # clan.core.facts.secretStore = "vm";
-            clan.core.vars.settings.secretStore = "vm";
+clanLib.test.makeTestClan {
+  inherit pkgs self;
+  useContainers = true;
 
-            clan.borgbackup.destinations.test.repo = "borg@localhost:.";
-          }
-        ];
+  nixosTest = (
+    { ... }:
+
+    {
+      name = "borgbackup";
+
+      clan = {
+        directory = ./.;
+        modules."@clan/borgbackup" = ../../clanServices/borgbackup/default.nix;
+        inventory = {
+
+          machines.clientone = { };
+          machines.serverone = { };
+
+          instances = {
+            borgone = {
+
+              module.name = "@clan/borgbackup";
+
+              roles.client.machines."clientone" = { };
+              roles.server.machines."serverone".settings.directory = "/tmp/borg-test";
+            };
+          };
+        };
       };
-    testScript = ''
-      start_all()
-      machine.systemctl("start --wait borgbackup-job-test.service")
-      assert "machine-test" in machine.succeed("BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes /run/current-system/sw/bin/borg-job-test list")
-    '';
-  }
-)
+
+      nodes = {
+
+        serverone = {
+          services.openssh.enable = true;
+          # Needed so PAM doesn't see the user as locked
+          users.users.borg.password = "borg";
+        };
+
+        clientone =
+          { config, pkgs, ... }:
+          let
+            dependencies = [
+              self
+              pkgs.stdenv.drvPath
+            ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
+            closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
+
+          in
+          {
+
+            services.openssh.enable = true;
+
+            users.users.root.openssh.authorizedKeys.keyFiles = [ ../assets/ssh/pubkey ];
+
+            clan.core.networking.targetHost = config.networking.hostName;
+
+            environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
+
+            environment.etc.install-closure.source = "${closureInfo}/store-paths";
+            nix.settings = {
+              substituters = pkgs.lib.mkForce [ ];
+              hashed-mirrors = null;
+              connect-timeout = pkgs.lib.mkForce 3;
+              flake-registry = pkgs.writeText "flake-registry" ''{"flakes":[],"version":2}'';
+            };
+            system.extraDependencies = dependencies;
+
+            clan.core.state.test-backups.folders = [ "/var/test-backups" ];
+          };
+
+      };
+
+      testScript = ''
+        import json
+        start_all()
+
+        machines = [clientone, serverone]
+
+        for m in machines:
+            m.systemctl("start network-online.target")
+
+        for m in machines:
+            m.wait_for_unit("network-online.target")
+
+        # dummy data
+        clientone.succeed("mkdir -p /var/test-backups /var/test-service")
+        clientone.succeed("echo testing > /var/test-backups/somefile")
+
+        clientone.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../assets/ssh/privkey} /root/.ssh/id_ed25519")
+        clientone.succeed("${pkgs.coreutils}/bin/touch /root/.ssh/known_hosts")
+        clientone.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new localhost hostname")
+        clientone.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new $(hostname) hostname")
+
+        # create
+        clientone.succeed("borgbackup-create >&2")
+        clientone.wait_until_succeeds("! systemctl is-active borgbackup-job-serverone >&2")
+
+        # list
+        backup_id = json.loads(clientone.succeed("borg-job-serverone list --json"))["archives"][0]["archive"]
+        out = clientone.succeed("borgbackup-list").strip()
+        print(out)
+        assert backup_id in out, f"backup {backup_id} not found in {out}"
+
+        # borgbackup restore
+        clientone.succeed("rm -f /var/test-backups/somefile")
+        clientone.succeed(f"NAME='serverone::borg@serverone:.::{backup_id}' borgbackup-restore >&2")
+        assert clientone.succeed("cat /var/test-backups/somefile").strip() == "testing", "restore failed"
+      '';
+    }
+  );
+}

@@ -83,6 +83,7 @@ nav:
       - Clan Services:
           - Overview: reference/clanServices/index.md
           - reference/clanServices/admin.md
+          - reference/clanServices/borgbackup.md
           - reference/clanServices/hello-world.md
           - reference/clanServices/wifi.md
       - Clan Modules:
