@@ -45,10 +45,10 @@ let
     };
   };
 
-  firaCode = fetchzip {
-    url = "https://github.com/tonsky/FiraCode/releases/download/6.2/Fira_Code_v6.2.zip";
+  commitMono = fetchzip {
+    url = "https://github.com/eigilnikolajsen/commit-mono/releases/download/v1.143/CommitMono-1.143.zip";
     stripRoot = false;
-    hash = "sha256-UHOwZL9WpCHk6vZaqI/XfkZogKgycs5lWg1p0XdQt0A=";
+    hash = "sha256-JTyPgWfbWq+lXQU/rgnyvPG6+V3f+FB5QUkd+I1oFKE=";
   };
 
 in
@@ -63,5 +63,5 @@ runCommand "" { } ''
   cp ${archivoSemi.medium} $out/ArchivoSemiCondensed-Medium.woff2
   cp ${archivoSemi.semiBold} $out/ArchivoSemiCondensed-SemiBold.woff2
 
-  cp ${firaCode}/woff2/FiraCode-Regular.woff2 $out/FiraCode-Regular.woff2
+  cp ${commitMono}/CommitMono-1.143/CommitMono-400-Regular.otf $out/CommitMono-400-Regular.otf
 ''
