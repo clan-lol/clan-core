@@ -347,7 +347,12 @@ in
                     type = types.listOf types.str;
                   };
                   deploy.targetHost = lib.mkOption {
-                    description = "Configuration for the deployment of the machine";
+                    description = "SSH address of the host to deploy the machine to";
+                    default = null;
+                    type = types.nullOr types.str;
+                  };
+                  deploy.buildHost = lib.mkOption {
+                    description = "SSH address of the host to build the machine on";
                     default = null;
                     type = types.nullOr types.str;
                   };
