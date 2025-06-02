@@ -22,6 +22,7 @@
             "nixosModules"
             "flake.lock"
             "templates"
+            "clanServices"
           ];
         };
       };

@@ -149,7 +149,7 @@ class ModuleManifest(TypedDict):
 
 
 @dataclass
-class ModuleInfo:
+class ModuleInfo(TypedDict):
     manifest: ModuleManifest
     roles: dict[str, None]
 
