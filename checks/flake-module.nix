@@ -109,13 +109,11 @@ in
                 cat $schemaFile > $out/allSchemas.json
               '';
 
-          clan-core-for-checks = self;
-
-          #     pkgs.runCommand "clan-core-for-checks" { } ''
-          #   cp -r ${pkgs.callPackage ./clan-core-for-checks.nix { }} $out
-          #   chmod +w $out/flake.lock
-          #   cp ${../flake.lock} $out/flake.lock
-          # '';
+          clan-core-for-checks = pkgs.runCommand "clan-core-for-checks" { } ''
+            cp -r ${pkgs.callPackage ./clan-core-for-checks.nix { }} $out
+            chmod +w $out/flake.lock
+            cp ${../flake.lock} $out/flake.lock
+          '';
         };
       legacyPackages = {
         nixosTests =
