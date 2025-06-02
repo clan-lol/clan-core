@@ -15,10 +15,9 @@ let
 
 in
 {
-  #
   containerTest = import ./container-test.nix;
   baseTest = import ./test-base.nix;
-  #
+
   flakeModules = clanLib.callLib ./flakeModules.nix { };
 
   minifyModule = ./minify.nix;
@@ -30,84 +29,82 @@ in
       nixosTest,
       pkgs,
       self,
-      useContainers ? true,
-      # Displayed for better error messages, otherwise the placeholder
-      attrName ? "<check_name>",
       ...
     }:
     let
       nixos-lib = import (pkgs.path + "/nixos/lib") { };
 
-      testName = test.config.name;
-
-      update-vars-script = "${self.packages.${pkgs.system}.generate-test-vars}/bin/generate-test-vars";
-
-      relativeDir = removePrefix ("${self}/") (toString test.config.clan.directory);
-
-      update-vars = pkgs.writeShellScriptBin "update-vars" ''
-        ${update-vars-script} $PRJ_ROOT/${relativeDir} ${testName}
-      '';
-
-      testSrc = lib.cleanSource test.config.clan.directory;
-
-      inputsForMachine =
-        machine:
-        flip mapAttrsToList machine.clan.core.vars.generators (_name: generator: generator.runtimeInputs);
-
-      generatorRuntimeInputs = unique (
-        flatten (flip mapAttrsToList test.config.nodes (_machineName: machine: inputsForMachine machine))
-      );
-
-      vars-check =
-        pkgs.runCommand "update-vars-check"
-          {
-            nativeBuildInputs = generatorRuntimeInputs ++ [
-              pkgs.nix
-              pkgs.git
-              pkgs.age
-              pkgs.sops
-              pkgs.bubblewrap
-            ];
-            closureInfo = pkgs.closureInfo {
-              rootPaths = generatorRuntimeInputs ++ [
-                pkgs.bash
-                pkgs.coreutils
-                pkgs.jq.dev
-                pkgs.stdenv
-                pkgs.stdenvNoCC
-                pkgs.shellcheck-minimal
-                pkgs.age
-                pkgs.sops
-              ];
-            };
-          }
-          ''
-            ${self.legacyPackages.${pkgs.system}.setupNixInNix}
-            cp -r ${testSrc} ./src
-            chmod +w -R ./src
-            find ./src/sops ./src/vars | sort > filesBefore
-            ${update-vars-script} ./src ${testName} \
-              --repo-root ${self.packages.${pkgs.system}.clan-core-flake} \
-              --clean
-            find ./src/sops ./src/vars | sort > filesAfter
-            if ! diff -q filesBefore filesAfter; then
-              echo "The update-vars script changed the files in ${testSrc}."
-              echo "Diff:"
-              diff filesBefore filesAfter || true
-              exit 1
-            fi
-            touch $out
-          '';
-      test =
-        (nixos-lib.runTest (
+      test = (
+        nixos-lib.runTest (
           { config, ... }:
           let
             clanFlakeResult = config.clan;
+            testName = config.name;
+
+            update-vars-script = "${self.packages.${pkgs.system}.generate-test-vars}/bin/generate-test-vars";
+
+            relativeDir = removePrefix ("${self}/") (toString config.clan.directory);
+
+            update-vars = pkgs.writeShellScriptBin "update-vars" ''
+              ${update-vars-script} $PRJ_ROOT/${relativeDir} ${testName}
+            '';
+
+            testSrc = lib.cleanSource config.clan.directory;
+
+            inputsForMachine =
+              machine:
+              flip mapAttrsToList machine.clan.core.vars.generators (_name: generator: generator.runtimeInputs);
+
+            generatorRuntimeInputs = unique (
+              flatten (flip mapAttrsToList config.nodes (_machineName: machine: inputsForMachine machine))
+            );
+
+            vars-check =
+              pkgs.runCommand "update-vars-check"
+                {
+                  nativeBuildInputs = generatorRuntimeInputs ++ [
+                    pkgs.nix
+                    pkgs.git
+                    pkgs.age
+                    pkgs.sops
+                    pkgs.bubblewrap
+                  ];
+                  closureInfo = pkgs.closureInfo {
+                    rootPaths = generatorRuntimeInputs ++ [
+                      pkgs.bash
+                      pkgs.coreutils
+                      pkgs.jq.dev
+                      pkgs.stdenv
+                      pkgs.stdenvNoCC
+                      pkgs.shellcheck-minimal
+                      pkgs.age
+                      pkgs.sops
+                    ];
+                  };
+                }
+                ''
+                  ${self.legacyPackages.${pkgs.system}.setupNixInNix}
+                  cp -r ${testSrc} ./src
+                  chmod +w -R ./src
+                  find ./src/sops ./src/vars | sort > filesBefore
+                  ${update-vars-script} ./src ${testName} \
+                    --repo-root ${self.packages.${pkgs.system}.clan-core-flake} \
+                    --clean
+                  find ./src/sops ./src/vars | sort > filesAfter
+                  if ! diff -q filesBefore filesAfter; then
+                    echo "The update-vars script changed the files in ${testSrc}."
+                    echo "Diff:"
+                    diff filesBefore filesAfter || true
+                    exit 1
+                  fi
+                  touch $out
+                '';
           in
           {
             imports = [
               nixosTest
-            ] ++ lib.optionals useContainers [ ./container-test-driver/driver-module.nix ];
+              ./container-test-driver/driver-module.nix
+            ];
             options = {
               clanSettings = mkOption {
                 default = { };
@@ -136,10 +133,17 @@ in
                       _prefix = [
                         "checks"
                         "<system>"
-                        attrName
+                        config.name
                         "config"
                         "clan"
                       ];
+                      options = {
+                        test.useContainers = mkOption {
+                          default = true;
+                          type = types.bool;
+                          description = "Whether to use containers for the test.";
+                        };
+                      };
                     }
                   ];
                 };
@@ -201,17 +205,11 @@ in
                 }
               );
 
-              # TODO: figure out if we really need this
-              # I am proposing for less magic in the test-framework
-              # People may add this in their own tests
-              # _module.args = { inherit self; };
-              # node.specialArgs.self = self;
+              result = { inherit update-vars vars-check; };
             };
           }
-        )).config.result;
+        )
+      );
     in
-    test
-    // {
-      inherit update-vars vars-check;
-    };
+    test;
 }

@@ -6,8 +6,6 @@
 }:
 clanLib.test.makeTestClan {
   inherit pkgs self;
-  # TODO: container driver does not support: sleep, wait_for_window, send_chars, wait_for_text
-  useContainers = false;
   nixosTest = (
     { lib, ... }:
     let
@@ -31,6 +29,8 @@ clanLib.test.makeTestClan {
 
       clan = {
         directory = ./.;
+        # TODO: container driver does not support: sleep, wait_for_window, send_chars, wait_for_text
+        test.useContainers = false;
         inventory = {
           machines = lib.genAttrs machines (_: { });
           services = {

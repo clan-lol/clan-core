@@ -36,7 +36,7 @@ let
   machineNames = map (name: "${name}: Machine;") pythonizedNames;
   pythonizedNames = map pythonizeName nodeHostNames;
 in
-{
+lib.mkIf (config.clan.test.useContainers or true) {
   defaults.imports = [
     ./nixos-module.nix
   ];

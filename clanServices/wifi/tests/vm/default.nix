@@ -7,7 +7,6 @@
 }:
 clanLib.test.makeTestClan {
   inherit pkgs self;
-  useContainers = false;
   nixosTest = (
     { ... }:
     {
@@ -15,6 +14,7 @@ clanLib.test.makeTestClan {
 
       clan = {
         directory = ./.;
+        test.useContainers = false;
         modules."@clan/wifi" = module;
         inventory = {
 

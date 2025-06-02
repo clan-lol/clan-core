@@ -6,8 +6,6 @@
 }:
 clanLib.test.makeTestClan {
   inherit pkgs self;
-  # TODO: container driver does not support wait_for_file() yet
-  useContainers = false;
   nixosTest = (
     { lib, ... }:
     {
@@ -15,6 +13,8 @@ clanLib.test.makeTestClan {
 
       clan = {
         directory = ./.;
+        # TODO: container driver does not support wait_for_file() yet
+        test.useContainers = false;
         inventory = {
           machines = lib.genAttrs [
             "introducer"
