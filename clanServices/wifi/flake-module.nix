@@ -28,8 +28,9 @@ in
         lib.optionalAttrs (pkgs.stdenv.isLinux) {
           wifi-service = import ./tests/vm/default.nix {
             inherit module;
-            inherit self inputs pkgs;
-            clanLib = self.clanLib;
+            inherit inputs pkgs;
+            clan-core = self;
+            nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
           };
         };
     };
