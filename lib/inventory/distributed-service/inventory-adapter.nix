@@ -190,7 +190,7 @@ in
           acc: _module_ident: eval:
           acc ++ [ eval.config.result.final.${machineName}.nixosModule or { } ]
         ) [ ] importedModulesEvaluated;
-      }) inventory.machines;
+      }) inventory.machines or { };
     in
     {
       inherit
