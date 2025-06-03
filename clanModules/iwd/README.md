@@ -1,6 +1,6 @@
 ---
 description = "Automatically provisions wifi credentials"
-features = [ "inventory" ]
+features = [ "inventory", "deprecated" ]
 categories = [ "Network" ]
 ---
 
