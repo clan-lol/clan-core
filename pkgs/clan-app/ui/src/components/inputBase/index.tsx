@@ -137,7 +137,7 @@ export const InputLabel = (props: InputLabelProps) => {
               weight="bold"
               size="xs"
             >
-              {"∗"}
+              <>&#42;</>
             </Typography>
           )}
           {props.help && (
