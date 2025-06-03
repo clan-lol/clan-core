@@ -1,6 +1,6 @@
 ---
 description = "Email-based instant messaging for Desktop."
-categories = ["Communication"]
+categories = ["Social"]
 features = [ "inventory", "deprecated" ]
 ---
 

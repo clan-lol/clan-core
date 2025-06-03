@@ -3,7 +3,7 @@
   _class = "clan.service";
   manifest.name = "clan-core/deltachat";
   manifest.description = "Email-based instant messaging for Desktop";
-  manifest.categories = [ "Communication" ];
+  manifest.categories = [ "Social" ];
 
   roles.default = {
     interface =
