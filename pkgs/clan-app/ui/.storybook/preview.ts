@@ -1,5 +1,7 @@
 import type { Preview } from "@kachurun/storybook-solid";
 
+import "../src/index.css";
+
 export const preview: Preview = {
   tags: ["autodocs"],
   parameters: {
