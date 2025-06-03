@@ -38,8 +38,8 @@ in
           };
           nixosTests =
             lib.optionalAttrs (pkgs.stdenv.isLinux) {
-              # Deltachat is currently marked as broken
-              # deltachat = import ./deltachat nixosTestArgs;
+              # Deltachat test
+              deltachat = import ./deltachat nixosTestArgs;
 
               # Base Tests
               secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
