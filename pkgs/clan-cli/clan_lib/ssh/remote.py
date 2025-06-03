@@ -271,13 +271,6 @@ class Remote:
         self,
         control_master: bool = True,
     ) -> list[str]:
-        effective_control_path_dir = self._control_path_dir
-        if self._control_path_dir is None and not control_master:
-            effective_control_path_dir = None
-        elif self._control_path_dir is None and control_master:
-            msg = "Bug! Control path directory is not set. Please use Remote.ssh_control_master() or set control_master to false."
-            raise ClanError(msg)
-
         ssh_opts = ["-A"] if self.forward_agent else []
         if self.port:
             ssh_opts.extend(["-p", str(self.port)])
@@ -287,11 +280,21 @@ class Remote:
         if self.private_key:
             ssh_opts.extend(["-i", str(self.private_key)])
 
-        if effective_control_path_dir:
-            socket_path = effective_control_path_dir / "socket"
-            ssh_opts.extend(["-o", "ControlPersist=30m"])
-            ssh_opts.extend(["-o", f"ControlPath={socket_path}"])
-            ssh_opts.extend(["-o", "ControlMaster=auto"])
+        if control_master:
+            if self._control_path_dir is None:
+                msg = "Bug! Control path directory is not set. Please use Remote.ssh_control_master() or set control_master to False."
+                raise ClanError(msg)
+            socket_path = self._control_path_dir / "socket"
+            ssh_opts.extend(
+                [
+                    "-o",
+                    "ControlMaster=auto",
+                    "-o",
+                    "ControlPersist=30m",
+                    "-o",
+                    f"ControlPath={socket_path}",
+                ]
+            )
         return ssh_opts
 
     def ssh_cmd(
