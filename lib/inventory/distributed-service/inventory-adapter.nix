@@ -157,6 +157,7 @@ in
           modules =
             [
               # Import the resolved module.
+              # i.e. clan.modules.admin
               (builtins.head instances).instance.resolvedModule
             ] # Include all the instances that correlate to the resolved module
             ++ (builtins.map (v: {
@@ -185,20 +186,18 @@ in
         }
       ) { } importedModuleWithInstances;
 
-      # TODO: Return an attribute set of resources instead of a plain list of nixosModules
-      allMachines = lib.foldlAttrs (
-        acc: _module_ident: eval:
-        acc
-        // lib.mapAttrs (
-          machineName: result: acc.${machineName} or [ ] ++ [ result.nixosModule ]
-        ) eval.config.result.final
-      ) { } importedModulesEvaluated;
+      allMachines = lib.mapAttrs (machineName: _: {
+        # This is the list of nixosModules for each machine
+        machineImports = lib.foldlAttrs (
+          acc: _module_ident: eval:
+          acc ++ [ eval.config.result.final.${machineName}.nixosModule or {}]
+        ) [ ] importedModulesEvaluated;
+      }) inventory.machines;
     in
     {
       inherit
         importedModuleWithInstances
         grouped
-
         allMachines
         importedModulesEvaluated
         ;
