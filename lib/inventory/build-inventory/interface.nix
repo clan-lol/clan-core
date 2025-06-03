@@ -448,7 +448,8 @@ in
                       type = types.listOf (
                         types.oneOf [
                           types.str
-                          types.anything
+                          types.path
+                          (types.attrsOf types.anything)
                         ]
                       );
                     };
