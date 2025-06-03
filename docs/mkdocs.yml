@@ -87,6 +87,7 @@ nav:
           - reference/clanServices/borgbackup.md
           - reference/clanServices/deltachat.md
           - reference/clanServices/ergochat.md
+          - reference/clanServices/garage.md
           - reference/clanServices/hello-world.md
           - reference/clanServices/wifi.md
       - Clan Modules:

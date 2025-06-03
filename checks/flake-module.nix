@@ -44,6 +44,9 @@ in
               # Ergochat test
               ergochat = import ./ergochat nixosTestArgs;
 
+              # Garage test
+              garage = import ./garage nixosTestArgs;
+
               # Base Tests
               secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
               borgbackup-legacy = self.clanLib.test.baseTest ./borgbackup-legacy nixosTestArgs;

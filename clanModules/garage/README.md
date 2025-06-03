@@ -1,5 +1,7 @@
 ---
 description = "S3-compatible object store for small self-hosted geo-distributed deployments"
+categories = ["System"]
+features = [ "inventory", "deprecated" ]
 ---
 
 This module generates garage specific keys automatically.
