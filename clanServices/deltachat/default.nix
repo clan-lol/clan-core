@@ -7,7 +7,7 @@
 
   roles.default = {
     interface =
-      { lib, ... }:
+      { ... }:
       {
         options = { };
       };
