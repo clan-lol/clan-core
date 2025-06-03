@@ -1,7 +1,7 @@
 ---
 description = "Set up automatic upgrades"
 categories = ["System"]
-features = [ "inventory" ]
+features = [ "inventory", "deprecated" ]
 ---
 
 Whether to periodically upgrade NixOS to the latest version. If enabled, a
