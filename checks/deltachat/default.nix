@@ -1,28 +1,51 @@
-(import ../lib/container-test.nix) (
-  { pkgs, ... }:
+{
+  pkgs,
+  nixosLib,
+  clan-core,
+  ...
+}:
+nixosLib.runTest (
+  { ... }:
   {
+    imports = [
+      clan-core.modules.nixosVmTest.clanTest
+    ];
+
+    hostPkgs = pkgs;
+
     name = "deltachat";
 
-    nodes.machine =
-      { self, ... }:
-      {
-        imports = [
-          self.clanModules.deltachat
-          self.nixosModules.clanCore
-          {
-            clan.core.settings.directory = ./.;
-          }
-        ];
+    clan = {
+      directory = ./.;
+      modules."@clan/deltachat" = ../../clanServices/deltachat/default.nix;
+      inventory = {
+        machines.server = { };
+
+        instances = {
+          deltachat-test = {
+            module.name = "@clan/deltachat";
+            roles.default.machines."server".settings = { };
+          };
+        };
       };
+    };
+
+    nodes = {
+      server = { };
+    };
+
     testScript = ''
       start_all()
-      machine.wait_for_unit("maddy")
+
+      server.wait_for_unit("network-online.target")
+      server.wait_for_unit("maddy")
+
       # imap
-      machine.succeed("${pkgs.netcat}/bin/nc -z -v ::1 143")
+      server.succeed("${pkgs.netcat}/bin/nc -z -v ::1 143")
       # smtp submission
-      machine.succeed("${pkgs.netcat}/bin/nc -z -v ::1 587")
+      server.succeed("${pkgs.netcat}/bin/nc -z -v ::1 587")
       # smtp
-      machine.succeed("${pkgs.netcat}/bin/nc -z -v ::1 25")
+      server.succeed("${pkgs.netcat}/bin/nc -z -v ::1 25")
     '';
   }
 )
