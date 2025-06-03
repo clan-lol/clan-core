@@ -1,7 +1,0 @@
-div.tag-list {
-  @apply flex flex-wrap gap-2;
-
-  span.tag {
-    @apply w-fit rounded-full px-3 py-2 bg-inv-4 fg-inv-1;
-  }
-}

@@ -32,7 +32,6 @@ import {
   FileSelectorField,
 } from "@/src/components/fileSelect";
 import { useClanContext } from "@/src/contexts/clan";
-import { TagList } from "@/src/components/TagList/TagList";
 
 type MachineFormInterface = MachineData & {
   sshKey?: File;
@@ -78,12 +77,10 @@ const LoadingBar = () => (
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
 interface InstallMachineProps {
   name?: string;
   machine: MachineData;
 }
-
 const InstallMachine = (props: InstallMachineProps) => {
   const { activeClanURI } = useClanContext();
 
@@ -384,7 +381,6 @@ const InstallMachine = (props: InstallMachineProps) => {
 interface MachineDetailsProps {
   initialData: MachineData;
 }
-
 const MachineForm = (props: MachineDetailsProps) => {
   const [formStore, { Form, Field }] =
     // TODO: retrieve the correct initial values from API
@@ -599,47 +595,49 @@ const MachineForm = (props: MachineDetailsProps) => {
               </Field>
               <Field name="machine.tags" type="string[]">
                 {(field, props) => (
-                  <div class="grid grid-cols-10 items-center">
-                    <Typography
-                      hierarchy="label"
-                      size="default"
-                      weight="bold"
-                      class="col-span-5"
-                    >
+                  <div class="flex items-center gap-4">
+                    <Typography hierarchy="label" size="default" weight="bold">
                       Tags{" "}
                     </Typography>
-                    <div class="col-span-5 justify-self-end">
-                      {/* alphabetically sort the tags */}
-                      <TagList values={[...(field.value || [])].sort()} />
-                    </div>
+                    <For each={field.value}>
+                      {(tag) => (
+                        <span class="mx-2 w-fit rounded-full px-3 py-0.5 bg-inv-4 fg-inv-1">
+                          <Typography
+                            hierarchy="label"
+                            size="s"
+                            inverted={true}
+                          >
+                            {tag}
+                          </Typography>
+                        </span>
+                      )}
+                    </For>
                   </div>
                 )}
               </Field>
             </Fieldset>
 
-            <Typography hierarchy={"body"} size={"s"}>
-              <Fieldset legend="Hardware">
-                <Field name="hw_config">
-                  {(field, props) => (
+            <Fieldset legend="Hardware">
+              <Field name="hw_config">
+                {(field, props) => (
+                  <FieldLayout
+                    label={<InputLabel>Hardware Configuration</InputLabel>}
+                    field={<span>{field.value || "None"}</span>}
+                  />
+                )}
+              </Field>
+              <hr />
+              <Field name="disk_schema.schema_name">
+                {(field, props) => (
+                  <>
                     <FieldLayout
-                      label={<InputLabel>Hardware Configuration</InputLabel>}
+                      label={<InputLabel>Disk schema</InputLabel>}
                       field={<span>{field.value || "None"}</span>}
                     />
-                  )}
-                </Field>
-                <hr />
-                <Field name="disk_schema.schema_name">
-                  {(field, props) => (
-                    <>
-                      <FieldLayout
-                        label={<InputLabel>Disk schema</InputLabel>}
-                        field={<span>{field.value || "None"}</span>}
-                      />
-                    </>
-                  )}
-                </Field>
-              </Fieldset>
-            </Typography>
+                  </>
+                )}
+              </Field>
+            </Fieldset>
 
             <Accordion title="Connection Settings">
               <Fieldset>
