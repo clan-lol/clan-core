@@ -86,6 +86,7 @@ nav:
           - reference/clanServices/borgbackup.md
           - reference/clanServices/hello-world.md
           - reference/clanServices/wifi.md
+          - reference/clanServices/zerotier.md
       - Clan Modules:
           - Overview: reference/clanModules/index.md
           - reference/clanModules/frontmatter/index.md
