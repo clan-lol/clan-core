@@ -494,6 +494,9 @@ Learn how to use `clanServices` in practice in the [Using clanServices guide](..
         output += render_categories(
             module_info["manifest"]["categories"], fm.categories_info
         )
+
+        output += f"{module_info['manifest']['readme']}\n"
+
         output += "\n---\n\n## Roles\n"
 
         output += f"The {module_name} module has the following roles:\n\n"

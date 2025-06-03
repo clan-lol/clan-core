@@ -41,7 +41,7 @@ in
 
               # Base Tests
               secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
-              borgbackup = self.clanLib.test.baseTest ./borgbackup nixosTestArgs;
+              borgbackup-legacy = self.clanLib.test.baseTest ./borgbackup-legacy nixosTestArgs;
               wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
 
               # Container Tests
@@ -53,6 +53,7 @@ in
               # Clan Tests
               dummy-inventory-test = import ./dummy-inventory-test nixosTestArgs;
               admin = import ./admin nixosTestArgs;
+              borgbackup = import ./borgbackup nixosTestArgs;
               data-mesher = import ./data-mesher nixosTestArgs;
               syncthing = import ./syncthing nixosTestArgs;
             }

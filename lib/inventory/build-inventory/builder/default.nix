@@ -50,7 +50,10 @@ let
     {
       machineImports = [
         (lib.optionalAttrs (machineConfig.deploy.targetHost or null != null) {
-          config.clan.core.networking.targetHost = machineConfig.deploy.targetHost;
+          config.clan.core.networking.targetHost = lib.mkForce machineConfig.deploy.targetHost;
+        })
+        (lib.optionalAttrs (machineConfig.deploy.buildHost or null != null) {
+          config.clan.core.networking.buildHost = lib.mkForce machineConfig.deploy.buildHost;
         })
       ];
       assertions = { };

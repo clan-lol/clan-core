@@ -58,9 +58,11 @@ class Instance(TypedDict):
 
 
 
+MachineDeployBuildhostType = str
 MachineDeployTargethostType = str
 
 class MachineDeploy(TypedDict):
+    buildHost: NotRequired[MachineDeployBuildhostType]
     targetHost: NotRequired[MachineDeployTargethostType]
 
 

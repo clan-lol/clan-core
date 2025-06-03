@@ -58,9 +58,11 @@ class InventoryInstance(TypedDict):
 
 
 
+InventoryMachineDeployBuildhostType = str | None
 InventoryMachineDeployTargethostType = str | None
 
 class InventoryMachineDeploy(TypedDict):
+    buildHost: NotRequired[InventoryMachineDeployBuildhostType]
     targetHost: NotRequired[InventoryMachineDeployTargethostType]
 
 

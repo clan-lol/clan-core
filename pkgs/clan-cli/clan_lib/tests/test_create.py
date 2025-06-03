@@ -4,7 +4,7 @@ import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import clan_cli.clan.create
 import pytest
@@ -17,15 +17,23 @@ from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.vars.generate import generate_vars_for_machine, get_generators_closure
 
 from clan_lib.api.disk import hw_main_disk_options, set_machine_disk_schema
+from clan_lib.api.modules import list_modules
 from clan_lib.api.network import check_machine_online
 from clan_lib.cmd import RunOpts, run
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.inventory import InventoryStore
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command
-from clan_lib.nix_models.clan import InventoryMachine
+from clan_lib.nix_models.clan import (
+    InventoryInstancesType,
+    InventoryMachine,
+    InventoryServicesType,
+    Unknown,
+)
 from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
+from clan_lib.persist.util import set_value_by_path
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -33,8 +41,8 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class InventoryWrapper:
-    services: dict[str, Any]
-    instances: dict[str, Any]
+    services: InventoryServicesType
+    instances: InventoryInstancesType
 
 
 @dataclass
@@ -58,16 +66,6 @@ def create_base_inventory(ssh_keys_pairs: list[SSHKeyPair]) -> InventoryWrapper:
 
     """Create the base inventory structure."""
     legacy_services: dict[str, Any] = {
-        "sshd": {
-            "someid": {
-                "roles": {
-                    "server": {
-                        "tags": ["all"],
-                        "config": {},
-                    }
-                }
-            }
-        },
         "state-version": {
             "someid": {
                 "roles": {
@@ -78,21 +76,27 @@ def create_base_inventory(ssh_keys_pairs: list[SSHKeyPair]) -> InventoryWrapper:
             }
         },
     }
-    instances = {
-        "admin-1": {
-            "module": {"name": "admin"},
-            "roles": {
-                "default": {
-                    "tags": {"all": {}},
-                    "settings": {
-                        "allowedKeys": {
-                            key.username: key.ssh_pubkey_txt for key in ssh_keys
-                        },
+
+    instances = InventoryInstancesType(
+        {
+            "admin-inst": {
+                "module": {"name": "admin", "input": "clan-core"},
+                "roles": {
+                    "default": {
+                        "tags": {"all": {}},
+                        "settings": cast(
+                            Unknown,
+                            {
+                                "allowedKeys": {
+                                    key.username: key.ssh_pubkey_txt for key in ssh_keys
+                                }
+                            },
+                        ),
                     },
                 },
-            },
+            }
         }
-    }
+    )
 
     return InventoryWrapper(services=legacy_services, instances=instances)
 
@@ -187,7 +191,6 @@ def test_clan_create_api(
             clan_dir_flake, inv_machine, target_host=f"{host.target}:{ssh_port_var}"
         )
     )
-
     machine = Machine(
         name=vm_name,
         flake=clan_dir_flake,
@@ -203,22 +206,35 @@ def test_clan_create_api(
     result = check_machine_online(machine)
     assert result == "Online", f"Machine {machine.name} is not online"
 
-    # ssh_keys = [
-    #     SSHKeyPair(
-    #         private=private_key,
-    #         public=public_key,
-    #     )
-    # ]
+    ssh_keys = [
+        SSHKeyPair(
+            private=private_key,
+            public=public_key,
+        )
+    ]
 
     # ===== CREATE BASE INVENTORY ======
-    # TODO(@Qubasa): This seems unused?
-    # inventory = create_base_inventory(ssh_keys)
-    # patch_inventory_with(Flake(str(dest_clan_dir)), "services", inventory.services)
+    inventory_conf = create_base_inventory(ssh_keys)
+    store = InventoryStore(clan_dir_flake)
+    inventory = store.read()
+
+    modules = list_modules(str(clan_dir_flake.path))
+    assert (
+        modules["modulesPerSource"]["clan-core"]["admin"]["manifest"]["name"]
+        == "clan-core/admin"
+    )
+
+    set_value_by_path(inventory, "services", inventory_conf.services)
+    set_value_by_path(inventory, "instances", inventory_conf.instances)
+    store.write(
+        inventory,
+        "base config",
+    )
 
     # Invalidate cache because of new inventory
     clan_dir_flake.invalidate_cache()
 
-    generators = get_generators_closure(machine.name, dest_clan_dir)
+    generators = get_generators_closure(machine.name, machine.flake.path)
     all_prompt_values = {}
     for generator in generators:
         prompt_values = {}
@@ -232,9 +248,9 @@ def test_clan_create_api(
         all_prompt_values[generator.name] = prompt_values
 
     generate_vars_for_machine(
-        machine.name,
+        machine_name=machine.name,
+        base_dir=machine.flake.path,
         generators=[gen.name for gen in generators],
-        base_dir=dest_clan_dir,
         all_prompt_values=all_prompt_values,
     )
 
@@ -269,7 +285,6 @@ def test_clan_create_api(
     set_machine_disk_schema(machine, "single-disk", placeholders)
     clan_dir_flake.invalidate_cache()
 
-    # @Qubasa what does this assert check, why does it raise?
-    # with pytest.raises(ClanError) as exc_info:
-    #     machine.build_nix("config.system.build.toplevel")
-    # assert "nixos-system-test-clan" in str(exc_info.value)
+    with pytest.raises(ClanError) as exc_info:
+        machine.build_nix("config.system.build.toplevel")
+    assert "nixos-system-test-clan" in str(exc_info.value)

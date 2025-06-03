@@ -1,8 +1,3 @@
----
-description = "Efficient, deduplicating backup program with optional compression and secure encryption."
-categories = ["System"]
-features = [ "inventory", "deprecated" ]
----
 BorgBackup (short: Borg) gives you:
 
 - Space efficient storage of backups.
