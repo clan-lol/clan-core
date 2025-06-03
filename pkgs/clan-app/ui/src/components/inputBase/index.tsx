@@ -38,7 +38,7 @@ export const InputBase = (props: InputBaseProps) => {
         "flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6",
 
         // Background
-        "bg-def-1 hover:bg-acc-1",
+        "bg-def-1 hover:bg-def-acc-1",
 
         // Text
         "fg-def-1",

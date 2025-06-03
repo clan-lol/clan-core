@@ -341,7 +341,7 @@ const InstallMachine = (props: InstallMachineProps) => {
     >
       <Match when={isInstalling()}>
         <div class="flex h-96 w-[40rem] flex-col fg-inv-1">
-          <div class="flex w-full gap-1 p-4 bg-inv-5">
+          <div class="flex w-full gap-1 p-4 bg-inv-4">
             <Typography
               color="inherit"
               hierarchy="label"

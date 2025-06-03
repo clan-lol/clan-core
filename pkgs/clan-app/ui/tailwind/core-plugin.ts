@@ -14,35 +14,29 @@ const mkBorderUtils = (
 ) => ({
   // - def colors
   [`.${prefix}-def-1`]: {
-    [cssProperty]: theme("colors.secondary.50"),
-  },
-  [`.${prefix}-def-2`]: {
     [cssProperty]: theme("colors.secondary.100"),
   },
-  [`.${prefix}-def-3`]: {
+  [`.${prefix}-def-2`]: {
     [cssProperty]: theme("colors.secondary.200"),
   },
-  [`.${prefix}-def-4`]: {
+  [`.${prefix}-def-3`]: {
     [cssProperty]: theme("colors.secondary.300"),
   },
-  [`.${prefix}-def-5`]: {
+  [`.${prefix}-def-4`]: {
     [cssProperty]: theme("colors.secondary.400"),
   },
   // - inverse colors
   [`.${prefix}-inv-1`]: {
-    [cssProperty]: theme("colors.secondary.800"),
+    [cssProperty]: theme("colors.secondary.700"),
   },
   [`.${prefix}-inv-2`]: {
-    [cssProperty]: theme("colors.secondary.900"),
+    [cssProperty]: theme("colors.secondary.800"),
   },
   [`.${prefix}-inv-3`]: {
     [cssProperty]: theme("colors.secondary.900"),
   },
   [`.${prefix}-inv-4`]: {
     [cssProperty]: theme("colors.secondary.950"),
-  },
-  [`.${prefix}-inv-5`]: {
-    [cssProperty]: theme("colors.black"),
   },
 
   [`.${prefix}-int-1`]: {
@@ -84,6 +78,8 @@ export default plugin.withOptions(
       });
       addUtilities({
         // Background colors
+
+        // default
         ".bg-def-1": {
           backgroundColor: theme("colors.white"),
         },
@@ -96,7 +92,17 @@ export default plugin.withOptions(
         ".bg-def-4": {
           backgroundColor: theme("colors.secondary.200"),
         },
-        ".bg-def-5": {
+        // default accessible
+        ".bg-def-acc-1": {
+          backgroundColor: theme("colors.primary.50"),
+        },
+        ".bg-def-acc-2": {
+          backgroundColor: theme("colors.secondary.100"),
+        },
+        ".bg-def-acc-3": {
+          backgroundColor: theme("colors.secondary.200"),
+        },
+        ".bg-def-acc-4": {
           backgroundColor: theme("colors.secondary.300"),
         },
         // bg inverse
@@ -112,21 +118,18 @@ export default plugin.withOptions(
         ".bg-inv-4": {
           backgroundColor: theme("colors.primary.900"),
         },
-        ".bg-inv-5": {
-          backgroundColor: theme("colors.primary.950"),
+        // bg inverse accessible
+        ".bg-inv-acc-1": {
+          backgroundColor: theme("colors.secondary.500"),
         },
-        // bg inverse accent
-        ".bg-acc-1": {
-          backgroundColor: theme("colors.primary.50"),
+        ".bg-inv-acc-2": {
+          backgroundColor: theme("colors.secondary.600"),
         },
-        ".bg-acc-2": {
-          backgroundColor: theme("colors.secondary.100"),
+        ".bg-inv-acc-3": {
+          backgroundColor: theme("colors.secondary.700"),
         },
-        ".bg-acc-3": {
-          backgroundColor: theme("colors.secondary.200"),
-        },
-        ".bg-acc-4": {
-          backgroundColor: theme("colors.secondary.300"),
+        ".bg-inv-acc-4": {
+          backgroundColor: theme("colors.secondary.900"),
         },
 
         // bg inverse accent
@@ -143,20 +146,6 @@ export default plugin.withOptions(
           backgroundColor: theme("colors.error.300"),
         },
 
-        // bg inverse accent
-        ".bg-inv-acc-1": {
-          backgroundColor: theme("colors.secondary.500"),
-        },
-        ".bg-inv-acc-2": {
-          backgroundColor: theme("colors.secondary.600"),
-        },
-        ".bg-inv-acc-3": {
-          backgroundColor: theme("colors.secondary.700"),
-        },
-        ".bg-inv-acc-4": {
-          backgroundColor: theme("colors.primary.900"),
-        },
-
         // Text colors
         ".fg-def-1": {
           color: theme("colors.secondary.950"),
@@ -168,7 +157,7 @@ export default plugin.withOptions(
           color: theme("colors.secondary.700"),
         },
         ".fg-def-4": {
-          color: theme("colors.secondary.500"),
+          color: theme("colors.secondary.400"),
         },
         // fg inverse
         ".fg-inv-1": {
@@ -198,6 +187,10 @@ export default plugin.withOptions(
         },
 
         ...mkBorderUtils(theme, "border", "borderColor"),
+        ...mkBorderUtils(theme, "border-b", "borderBottom"),
+        ...mkBorderUtils(theme, "border-t", "borderTop"),
+        ...mkBorderUtils(theme, "border-l", "borderLeft"),
+        ...mkBorderUtils(theme, "border-r", "borderRight"),
         ...mkBorderUtils(theme, "outline", "outlineColor"),
 
         // Example: dark mode utilities (all elements within <html class="dark"> )
@@ -233,24 +226,24 @@ export default plugin.withOptions(
             300: toRGB("#8abebc"),
             400: toRGB("#478585"),
             500: toRGB("#526f6f"),
-            600: toRGB("#4b6667"),
+            600: toRGB("#4b6767"),
             700: toRGB("#345253"),
-            800: toRGB("#2a4647"),
-            900: toRGB("#1f3536"),
+            800: toRGB("#2b4647"),
+            900: toRGB("#203637"),
             950: toRGB("#162324"),
           },
           secondary: {
-            50: toRGB("#F7F9FA"),
-            100: toRGB("#E7F2F4"),
-            200: toRGB("#D8E8EB"),
-            300: toRGB("#AFC6CA"),
-            400: toRGB("#90B2B7"),
-            500: toRGB("#7B9B9F"),
-            600: toRGB("#4F747A"),
-            700: toRGB("#415E63"),
+            50: toRGB("#f7f9fA"),
+            100: toRGB("#e7f2f4"),
+            200: toRGB("#d8e8eb"),
+            300: toRGB("#afc6ca"),
+            400: toRGB("#90b2b7"),
+            500: toRGB("#7b9b9f"),
+            600: toRGB("#4f747A"),
+            700: toRGB("#415e63"),
             800: toRGB("#446065"),
-            900: toRGB("#2C4347"),
-            950: toRGB("#0D1416"),
+            900: toRGB("#2c4347"),
+            950: toRGB("#0d1416"),
           },
           info: {
             50: toRGB("#eff9ff"),

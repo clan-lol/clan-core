@@ -66,7 +66,7 @@ export const SummaryStep = (props: StepProps<AllStepsValues>) => {
                   </Typography>
                 }
               ></FieldLayout>
-              <hr class="h-px w-full border-none bg-acc-3"></hr>
+              <hr class="h-px w-full border-none bg-def-acc-3"></hr>
               <FieldLayout
                 label={<InputLabel>Main Disk</InputLabel>}
                 field={

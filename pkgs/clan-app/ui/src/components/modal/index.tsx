@@ -76,7 +76,7 @@ export const Modal = (props: ModalProps) => {
         >
           <Dialog.Label
             as="div"
-            class="flex w-full justify-center border-b-2 px-4 py-2 align-middle bg-def-3  border-def-5"
+            class="flex w-full justify-center border-b-2 px-4 py-2 align-middle bg-def-3  border-def-4"
             onMouseDown={handleMouseDown}
           >
             <div

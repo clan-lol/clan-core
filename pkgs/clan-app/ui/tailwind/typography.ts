@@ -3,7 +3,7 @@ import type { Config } from "tailwindcss";
 
 export const typography: Partial<Config["theme"]> = {
   fontFamily: {
-    sans: ["Archivo", ...defaultTheme.fontFamily.sans],
+    sans: ["Archivo SemiCondensed", ...defaultTheme.fontFamily.sans],
   },
   fontSize: {
     ...defaultTheme.fontSize,

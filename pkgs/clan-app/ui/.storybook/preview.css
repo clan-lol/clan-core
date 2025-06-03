@@ -1,0 +1,5 @@
+html {
+  /* revert this which only makes sense when rendering inside the clan app webview */
+  overflow-x: revert;
+  overflow-y: revert;
+}
