@@ -88,26 +88,38 @@ let
       roles.peer.tags.all = { };
     };
   };
+
+  /*
+    1 { imports = [ { instanceName = "instance_foo"; machine = { name = "jon"; roles = [ "controller" "pe 1 null
+    . er" ]; }; roles = { controller = { machines = { jon = { settings = { }; }; }; settings = { }; }; pe .
+    . er = { machines = { jon = { settings = { timeout = "foo-peer-jon"; }; }; }; settings = { timeout =  .
+    . "foo-peer"; }; }; }; settings = { timeout = "foo-peer-jon"; }; vendoredSettings = { timeout = "conf .
+    . ig.thing"; }; } ]; }                                                                                .
+  */
+  unwrapModule = m: (builtins.head m.imports);
 in
 {
   # settings should evaluate
   test_per_instance_arguments = {
-    expr = {
-      instanceName =
-        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule.instanceName;
+    expr =
+      let
+        m = (
+          unwrapModule
+            res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule
+        );
+      in
+      {
+        instanceName = m.instanceName;
 
-      # settings are specific.
-      # Below we access:
-      # instance = instance_foo
-      # roles = peer
-      # machines = jon
-      settings =
-        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.settings;
-      machine =
-        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.machine;
-      roles =
-        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.nixosModule.roles;
-    };
+        # settings are specific.
+        # Below we access:
+        # instance = instance_foo
+        # roles = peer
+        # machines = jon
+        settings = m.settings;
+        machine = m.machine;
+        roles = m.roles;
+      };
     expected = {
       instanceName = "instance_foo";
       settings = {
@@ -147,10 +159,12 @@ in
     };
   };
 
+  # TODO: Cannot be tested like this anymore
   test_per_instance_settings_vendoring = {
     expr =
-
-      res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule.vendoredSettings;
+      (unwrapModule
+        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule
+      ).vendoredSettings;
     expected = {
       timeout = "config.thing";
     };

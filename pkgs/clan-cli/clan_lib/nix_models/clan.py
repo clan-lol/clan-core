@@ -38,11 +38,13 @@ class InventoryInstanceRoleTag(TypedDict):
 
 
 
+InventoryInstanceRoleExtramodulesType = list[dict[str, Any] | str]
 InventoryInstanceRoleMachinesType = dict[str, InventoryInstanceRoleMachine]
 InventoryInstanceRoleSettingsType = Unknown
 InventoryInstanceRoleTagsType = dict[str, InventoryInstanceRoleTag]
 
 class InventoryInstanceRole(TypedDict):
+    extraModules: NotRequired[InventoryInstanceRoleExtramodulesType]
     machines: NotRequired[InventoryInstanceRoleMachinesType]
     settings: NotRequired[InventoryInstanceRoleSettingsType]
     tags: NotRequired[InventoryInstanceRoleTagsType]

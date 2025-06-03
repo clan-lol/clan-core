@@ -30,16 +30,13 @@ let
           # config.distributedServices.allMachines.${name} or [ ];
           { config, ... }:
           {
-
             distributedServices = clanLib.inventory.mapInstances {
               inherit (config) inventory;
               inherit localModuleSet;
               inherit flakeInputs;
               prefix = prefix ++ [ "distributedServices" ];
             };
-            machines = lib.mapAttrs (_machineName: v: {
-              machineImports = v;
-            }) config.distributedServices.allMachines;
+            machines = config.distributedServices.allMachines;
 
           }
         )

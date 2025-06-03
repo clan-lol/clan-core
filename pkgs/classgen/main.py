@@ -2,7 +2,7 @@
 import argparse
 import json
 import logging
-import sys
+import traceback
 from collections.abc import Callable, Iterable
 from functools import partial
 from pathlib import Path
@@ -38,6 +38,7 @@ def map_json_type(
         for t in json_type:
             res.extend(map_json_type(t))
         return sort_types(set(res))
+
     if isinstance(json_type, dict):
         items = json_type.get("items")
         if items:
@@ -45,6 +46,13 @@ def map_json_type(
 
         if not json_type.get("type") and json_type.get("tsType") == "unknown":
             return ["Unknown"]
+
+        union = json_type.get("oneOf")
+        if union:
+            res: list[str] = []
+            for t in union:
+                res.extend(map_json_type(t, nested_types, parent))
+            return sort_types(set(res))
 
         return sort_types(map_json_type(json_type.get("type"), nested_types))
     if json_type == "string":
@@ -67,6 +75,7 @@ def map_json_type(
         return [f"""dict[str, {" | ".join(sort_types(nested_types))}]"""]
     if json_type == "null":
         return ["None"]
+
     msg = f"Python type not found for {json_type}"
     raise Error(msg)
 
@@ -432,15 +441,13 @@ def main() -> None:
         default=None,
     )
     parser.set_defaults(func=run_gen)
-
     args = parser.parse_args()
-
-    try:
-        args.func(args)
-    except Error as e:
-        print(e)
-        sys.exit(1)
+    args.func(args)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        print("An error occurred:")
+        traceback.print_exc()
