@@ -93,8 +93,8 @@ class Options:
 def parse_args() -> Options:
     parser = argparse.ArgumentParser(
         description="""
-            Update the vars of a 'makeTestClan' integration test.
-            See 'clanLib.test.makeTestClan' for more information on how to create such a test.
+            Update the vars of a 'clanTest' integration test.
+            See 'clanLib.test.clanTest' for more information on how to create such a test.
         """,
     )
     parser.add_argument(

@@ -4,6 +4,7 @@ let
     filter
     pathExists
     ;
+  nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
 in
 {
   imports = filter pathExists [
@@ -29,10 +30,11 @@ in
         let
           nixosTestArgs = {
             # reference to nixpkgs for the current system
-            inherit pkgs lib;
+            inherit pkgs lib nixosLib;
             # this gives us a reference to our flake but also all flake inputs
             inherit self;
             inherit (self) clanLib;
+            clan-core = self;
           };
           nixosTests =
             lib.optionalAttrs (pkgs.stdenv.isLinux) {

@@ -8,7 +8,6 @@ let
     evalModules
     ;
 
-  # TODO: Use makeTestClan
   evalInventory =
     m:
     (evalModules {
