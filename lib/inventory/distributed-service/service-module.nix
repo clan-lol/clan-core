@@ -214,6 +214,11 @@ in
                               description = "Settings of 'role': ${name}";
                               default = { };
                             };
+
+                            options.extraModules = lib.mkOption {
+                              default = [ ];
+                              type = types.listOf (types.deferredModule);
+                            };
                           }
                         )
                       ];
@@ -405,12 +410,43 @@ in
     # Intermediate result by mapping over the 'roles', 'instances', and 'machines'.
     # During this step the 'perMachine' and 'perInstance' are applied.
     # The result-set for a single machine can then be found by collecting all 'nixosModules' recursively.
+
+    /**
+      allRoles :: {
+        <roleName> :: {
+          allInstances :: {
+            <instanceName> :: {
+              allMachines :: {
+                <machineName> :: {
+                  nixosModule :: NixOSModule;
+                  services :: { }; # TODO: nested services
+                };
+              };
+            };
+          };
+        };
+      }
+    */
     result.allRoles = mkOption {
       readOnly = true;
       default = lib.mapAttrs (roleName: roleCfg: {
         allInstances = lib.mapAttrs (instanceName: instanceCfg: {
           allMachines = lib.mapAttrs (
-            machineName: _machineCfg: roleCfg.perInstance instanceName machineName
+            machineName: _machineCfg:
+            let
+              instanceRes = roleCfg.perInstance instanceName machineName;
+            in
+            {
+              nixosModule = {
+                imports = [
+                  # Result of the applied 'perInstance = {...}: {  nixosModule = { ... }; }'
+                  instanceRes.nixosModule
+                ] ++ instanceCfg.roles.${roleName}.extraModules;
+              };
+              # TODO: nested services
+              services = { };
+            }
+
           ) instanceCfg.roles.${roleName}.machines or { };
         }) config.instances;
       }) config.roles;
@@ -434,6 +470,9 @@ in
               ) [ ] instance.roles
             );
           # The service machines are defined by collecting all instance machines
+          # returns "allMachines" that are part of the service in the form:
+          # serviceMachines :: { ${machineName} :: MachineOrigin; }
+          # MachineOrigin :: { instances :: [ string ]; roles :: [ string ]; }
           serviceMachines = lib.foldlAttrs (
             acc: instanceName: instance:
             acc
@@ -470,8 +509,6 @@ in
       default = lib.mapAttrs (
         machineName: machineResult:
         let
-          # config.result.allRoles.client.allInstances.bar.allMachines.test
-          # instanceResults = config.result.allRoles.client.allInstances.bar.allMachines.${machineName};
           instanceResults = lib.foldlAttrs (
             acc: roleName: role:
             acc

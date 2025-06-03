@@ -188,7 +188,7 @@ in
         # This is the list of nixosModules for each machine
         machineImports = lib.foldlAttrs (
           acc: _module_ident: eval:
-          acc ++ [ eval.config.result.final.${machineName}.nixosModule or {}]
+          acc ++ [ eval.config.result.final.${machineName}.nixosModule or { } ]
         ) [ ] importedModulesEvaluated;
       }) inventory.machines;
     in
