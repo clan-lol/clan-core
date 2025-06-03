@@ -114,7 +114,9 @@ in
               };
             in
             # instances.<instanceName>.roles.<roleName> =
-            {
+            # Remove "tags", they are resolved into "machines"
+            (removeAttrs role [ "tags" ])
+            // {
               machines = lib.genAttrs resolvedMachines.machines (
                 machineName:
                 let
@@ -136,10 +138,6 @@ in
                   };
                 }
               );
-              # Maps to settings for the role.
-              # In other words this sets the following path of a clan.service module:
-              # instances.<instanceName>.roles.<roleName>.settings
-              settings = role.settings;
             }
           ) instance.roles;
         in
