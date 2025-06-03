@@ -73,10 +73,12 @@ in
             ${self.legacyPackages.${hostPkgs.system}.setupNixInNix}
             cp -r ${testSrc} ./src
             chmod +w -R ./src
+            mkdir -p ./src/sops ./src/vars # create dirs case the test has no vars
             find ./src/sops ./src/vars | sort > filesBefore
             ${update-vars-script} ./src ${testName} \
               --repo-root ${self.packages.${hostPkgs.system}.clan-core-flake} \
               --clean
+            mkdir -p ./src/sops ./src/vars
             find ./src/sops ./src/vars | sort > filesAfter
             if ! diff -q filesBefore filesAfter; then
               echo "The update-vars script changed the files in ${testSrc}."

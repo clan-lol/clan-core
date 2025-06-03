@@ -37,7 +37,6 @@ nixosLib.runTest (
     testScript = ''
       start_all()
 
-      server.wait_for_unit("network-online.target")
       server.wait_for_unit("maddy")
 
       # imap
