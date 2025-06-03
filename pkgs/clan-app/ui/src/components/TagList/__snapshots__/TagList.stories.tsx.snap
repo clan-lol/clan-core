@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Components/TagList Default smoke-test 1`] = `
+<div style="width: 20em;">
+  <div class="tag-list">
+    <span class="fnt-clr-primary fnt-clr--inverted fnt-label-s fnt-weight-normal tag">
+      Titan
+    </span>
+    <span class="fnt-clr-primary fnt-clr--inverted fnt-label-s fnt-weight-normal tag">
+      Enceladus
+    </span>
+    <span class="fnt-clr-primary fnt-clr--inverted fnt-label-s fnt-weight-normal tag">
+      Mimas
+    </span>
+    <span class="fnt-clr-primary fnt-clr--inverted fnt-label-s fnt-weight-normal tag">
+      Dione
+    </span>
+    <span class="fnt-clr-primary fnt-clr--inverted fnt-label-s fnt-weight-normal tag">
+      Iapetus
+    </span>
+    <span class="fnt-clr-primary fnt-clr--inverted fnt-label-s fnt-weight-normal tag">
+      Tethys
+    </span>
+    <span class="fnt-clr-primary fnt-clr--inverted fnt-label-s fnt-weight-normal tag">
+      Hyperion
+    </span>
+    <span class="fnt-clr-primary fnt-clr--inverted fnt-label-s fnt-weight-normal tag">
+      Epimetheus
+    </span>
+  </div>
+</div>
+`;
