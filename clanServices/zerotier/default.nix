@@ -51,14 +51,18 @@
 
       };
     perInstance =
-      { instanceName, roles, ... }:
+      {
+        instanceName,
+        settings,
+        roles,
+        ...
+      }:
       {
         nixosModule =
           {
             config,
             lib,
             pkgs,
-            settings,
             ...
           }:
           {
