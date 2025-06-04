@@ -43,6 +43,16 @@ in
         }
       );
 
+      legacyPackages.clan-service-module-interface =
+        (pkgs.nixosOptionsDoc {
+          options =
+            (self.clanLib.inventory.evalClanService {
+              modules = [ ];
+              prefix = [ ];
+            }).options;
+          warningsAreErrors = true;
+        }).optionsJSON;
+
       # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests
       legacyPackages.evalTests-inventory = import ./tests {
         inherit lib;

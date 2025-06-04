@@ -37,17 +37,19 @@ let
         };
       in
       {
-        nixosModule = {
-          inherit
-            instanceName
-            settings
-            machine
-            roles
-            ;
+        options.passthru = lib.mkOption {
+          default = {
+            inherit
+              instanceName
+              settings
+              machine
+              roles
+              ;
 
-          # We are double vendoring the settings
-          # To test that we can do it indefinitely
-          vendoredSettings = finalSettings;
+            # We are double vendoring the settings
+            # To test that we can do it indefinitely
+            vendoredSettings = finalSettings;
+          };
         };
       };
   };
@@ -101,25 +103,22 @@ in
 {
   # settings should evaluate
   test_per_instance_arguments = {
-    expr =
-      let
-        m = (
-          unwrapModule
-            res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule
-        );
-      in
-      {
-        instanceName = m.instanceName;
+    expr = {
+      instanceName =
+        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.passthru.instanceName;
 
-        # settings are specific.
-        # Below we access:
-        # instance = instance_foo
-        # roles = peer
-        # machines = jon
-        settings = m.settings;
-        machine = m.machine;
-        roles = m.roles;
-      };
+      # settings are specific.
+      # Below we access:
+      # instance = instance_foo
+      # roles = peer
+      # machines = jon
+      settings =
+        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.settings;
+      machine =
+        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.machine;
+      roles =
+        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.roles;
+    };
     expected = {
       instanceName = "instance_foo";
       settings = {
@@ -162,9 +161,8 @@ in
   # TODO: Cannot be tested like this anymore
   test_per_instance_settings_vendoring = {
     expr =
-      (unwrapModule
-        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.nixosModule
-      ).vendoredSettings;
+
+      res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.passthru.vendoredSettings;
     expected = {
       timeout = "config.thing";
     };

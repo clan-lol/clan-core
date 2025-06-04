@@ -10,6 +10,7 @@ in
 { lib, config, ... }:
 {
   options.result.api = lib.mkOption {
+    visible = false;
     default = { };
     type = lib.types.submodule ({
       options.schema = lib.mkOption {

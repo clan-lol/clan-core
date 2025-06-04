@@ -26,13 +26,6 @@ let
         ${builtins.toJSON (lib.attrNames config.roles)}
       '';
 
-  # checkInstanceSettings =
-  #   instanceName: instanceSettings:
-  #   let
-  #     unmatchedRoles = 1;
-  #   in
-  #   unmatchedRoles;
-
   /**
     Merges the role- and machine-settings using the role interface
 
@@ -154,11 +147,29 @@ let
 in
 {
   options = {
+    # TODO: deduplicate this with inventory.instances
+    # Although inventory has stricter constraints
     instances = mkOption {
+      # Instances are created in the inventory
+      visible = false;
+      defaultText = "Throws: 'The service must define its instances' when not defined";
       default = throw ''
         The clan service module ${config.manifest.name} doesn't define any instances.
 
-        Did you forget to create instances via 'inventory.instances' ?
+        Did you forget to create instances via 'inventory.instances'?
+      '';
+      description = ''
+        Instances of the service.
+
+        An Instance is a user-specific deployment or configuration of a service.
+        It represents the active usage of the service configured to the user's settings or use case.
+        The `<instanceName>` of the instance is arbitrary, but must be unique.
+
+        A common best practice is to name the instance after the 'service' and the 'use-case'.
+
+        For example:
+
+        - 'instances.zerotier-homelab = ...' for a zerotier instance that connects all machines of a homelab
       '';
 
       type = attrsWith {
@@ -174,6 +185,21 @@ in
                 #   apply = v: lib.seq (checkInstanceSettings name v) v;
                 # };
                 options.roles = mkOption {
+                  description = ''
+                    Roles of the instance.
+
+                    A role is a specific behavior or configuration of the service.
+                    It defines how the service should behave in the context of this instance.
+                    The `<roleName>` must match one of the roles defined in the service
+
+                    For example:
+
+                    - 'roles.client = ...' for a client role that connects to the service
+                    - 'roles.server = ...' for a server role that provides the service
+
+                    Throws an error if empty, since this would mean that the service has no members.
+                  '';
+                  defaultText = "Throws: 'The service must define members via roles' when not defined";
                   default = throw ''
                     Instance '${name}' of service '${config.manifest.name}' mut define members via 'roles'.
 
@@ -184,26 +210,35 @@ in
                     placeholder = "roleName";
                     elemType = submoduleWith {
                       modules = [
-                        (
-                          { ... }:
-                          {
-                            # instances.{instanceName}.roles.{roleName}.machines
-                            options.machines = mkOption {
-                              type = attrsWith {
-                                placeholder = "machineName";
-                                elemType = submoduleWith {
-                                  modules = [
-                                    (m: {
-                                      options.settings = mkOption {
-                                        type = types.raw;
-                                        description = "Settings of '${name}-machine': ${m.name}.";
-                                        default = { };
-                                      };
-                                    })
-                                  ];
-                                };
+                        ({
+                          # instances.{instanceName}.roles.{roleName}.machines
+                          options.machines = mkOption {
+                            description = ''
+                              Machines of the role.
+
+                              A machine is a physical or virtual machine that is part of the instance.
+                              The `<machineName>` must match the name of any machine defined in the clan.
+
+                              For example:
+
+                              - 'machines.my-machine = { ...; }' for a machine that is part of the instance
+                              - 'machines.my-other-machine = { ...; }' for another machine that is part of the instance
+                            '';
+                            type = attrsWith {
+                              placeholder = "machineName";
+                              elemType = submoduleWith {
+                                modules = [
+                                  (m: {
+                                    options.settings = mkOption {
+                                      type = types.raw;
+                                      description = "Settings of '${name}-machine': ${m.name or "<machineName>"}.";
+                                      default = { };
+                                    };
+                                  })
+                                ];
                               };
                             };
+                          };
 
                             # instances.{instanceName}.roles.{roleName}.settings
                             # options._settings = mkOption { };
@@ -242,6 +277,22 @@ in
       };
     };
     roles = mkOption {
+      description = ''
+        Roles of the service.
+
+        A role is a specific behavior or configuration of the service.
+        It defines how the service should behave in the context of the clan.
+
+        The `<roleName>`s of the service are defined here. Later usage of the roles must match one of the `roleNames`.
+
+        For example:
+
+        - 'roles.client = ...' for a client role that connects to the service
+        - 'roles.server = ...' for a server role that provides the service
+
+        Throws an error if empty, since this would mean that the service has no way of adding members.
+      '';
+      defaultText = "Throws: 'The service must define its roles' when not defined";
       default = throw ''
         Role behavior of service '${config.manifest.name}' must be defined.
         A 'clan.service' module should always define its behavior via 'roles'
@@ -263,32 +314,138 @@ in
               in
               {
                 options.interface = mkOption {
+                  description = ''
+                    Abstract interface of the role.
+
+                    This is an abstract module which should define 'options' for the role's settings.
+
+                    Example:
+
+                    ```nix
+                    {
+                      options.timeout = mkOption {
+                        type = types.int;
+                        default = 30;
+                        description = "Timeout in seconds";
+                      };
+                    }
+                    ```
+
+                    Note:
+
+                    - `machine.config` is not available here, since the role is definition is abstract.
+                    - *defaults* that depend on the *machine* or *instance* should be added to *settings* later in 'perInstance' or 'perMachine'
+                  '';
                   type = types.deferredModule;
                   # TODO: Default to an empty module
                   # need to test that an the empty module can be evaluated to empty settings
                   default = { };
                 };
                 options.perInstance = mkOption {
-                  type = types.deferredModuleWith {
-                    staticModules = [
-                      # Common output format
-                      # As described by adr
-                      # { nixosModule, services, ... }
-                      (
-                        { ... }:
+                  description = ''
+                    Per-instance configuration of the role.
+
+                    This option is used to define instance-specific behavior for the service-role. (Example below)
+
+                    Although the type is a `deferredModule`, it helps to think of it as a function.
+                    The 'function' takes the `instance-name` and some other `arguments`.
+
+                    *Arguments*:
+
+                    - `instanceName` (`string`): The name of the instance.
+                    - `machine`: Machine information, containing:
+                      ```nix
                         {
-                          options.nixosModule = mkOption { default = { }; };
-                          options.services = mkOption {
-                            type = attrsWith {
-                              placeholder = "serviceName";
-                              elemType = submoduleWith {
-                                modules = [ ./service-module.nix ];
+                          name = "machineName";
+                          roles = ["client" "server" ... ];
+                        }
+                      ```
+                    - `roles`: Attribute set of all roles of the instance, in the form:
+                      ```nix
+                      roles = {
+                        client = {
+                          machines = {
+                            jon = {
+                              settings = {
+                                timeout = 60;
                               };
                             };
-                            default = { };
+                            # ...
                           };
-                        }
-                      )
+                          settings = {
+                            timeout = 30;
+                          };
+                        };
+                        # ...
+                      };
+                      ```
+
+                    - `settings`: The settings of the role, as defined in `inventory`
+                      ```nix
+                      {
+                        timeout = 30;
+                      }
+                      ```
+                    - `extendSettings`: A function that takes a module and returns a new module with extended settings.
+                      ```nix
+                      extendSettings {
+                        timeout = mkForce 60;
+                      };
+                      ->
+                      {
+                        timeout = 60;
+                      }
+                      ```
+
+                    *Returns* an `attribute set` containing:
+
+                    - `nixosModule`: The NixOS module for the instance.
+
+                  '';
+                  type = types.deferredModuleWith {
+                    staticModules = [
+                      ({
+                        options.nixosModule = mkOption {
+                          type = types.deferredModule;
+                          default = { };
+                          description = ''
+                            This module is later imported to configure the machine with the config derived from service's settings.
+
+                            Example:
+
+                            ```nix
+                            roles.client.perInstance = { instanceName, ... }:
+                            {
+                              # Keep in mind that this module is produced once per-instance
+                              # Meaning you might end up with multiple of these modules.
+                              # Make sure they can be imported all together without conflicts
+                              #
+                              #                 ↓ nixos-config
+                              nixosModule = { config ,... }: {
+                                # create one systemd service per instance
+                                # It is a common practice to concatenate the *service-name* and *instance-name*
+                                # To ensure globally unique systemd-units for the target machine
+                                systemd.services."webly-''${instanceName}" = {
+                                  ...
+                                };
+                              };
+                            }
+                            ```
+                          '';
+                        };
+                        # TODO: Recursive services
+                        options.services = mkOption {
+                          visible = false;
+                          type = attrsWith {
+                            placeholder = "serviceName";
+                            elemType = submoduleWith {
+                              modules = [ ./service-module.nix ];
+                            };
+                          };
+                          apply = _: throw "Not implemented yet";
+                          default = { };
+                        };
+                      })
                     ];
                   };
                   default = { };
@@ -333,26 +490,78 @@ in
     };
 
     perMachine = mkOption {
+      description = ''
+        Per-machine configuration of the service.
+
+        This option is used to define machine-specific settings for the service **once**, if any service-instance is used.
+
+        Although the type is a `deferredModule`, it helps to think of it as a function.
+        The 'function' takes the `machine-name` and some other 'arguments'
+
+        *Arguments*:
+
+        - `machine`: `{ name :: string; roles :: listOf String }`
+        - `instances`: The scope of the machine, containing all instances and roles that the machine is part of.
+          ```nix
+          {
+            instances = {
+              <instanceName> = {
+                roles = {
+                  <roleName> = {
+                    # Per-machine settings
+                    machines = { <machineName> = { settings = { ... }; }; }; };
+                    # Per-role settings
+                    settings = { ... };
+                };
+              };
+            };
+          }
+          ```
+
+        *Returns* an `attribute set` containing:
+
+        - `nixosModule`: The NixOS module for the machine.
+
+      '';
       type = types.deferredModuleWith {
         staticModules = [
-          # Common output format
-          # As described by adr
-          # { nixosModule, services, ... }
-          (
-            { ... }:
-            {
-              options.nixosModule = mkOption { default = { }; };
-              options.services = mkOption {
-                type = attrsWith {
-                  placeholder = "serviceName";
-                  elemType = submoduleWith {
-                    modules = [ ./service-module.nix ];
-                  };
+          ({
+            options.nixosModule = mkOption {
+              type = types.deferredModule;
+              default = { };
+              description = ''
+                A single NixOS module for the machine.
+
+                This module is later imported to configure the machine with the config derived from service's settings.
+
+                Example:
+
+                ```nix
+                #              ↓ machine.roles ...
+                perMachine = { machine, ... }:
+                {               # ↓ nixos-config
+                  nixosModule = { config ,... }: {
+                    systemd.services.foo = {
+                      enable = true;
+                    };
+                  }
+                }
+                ```
+              '';
+            };
+            # TODO: Recursive services
+            options.services = mkOption {
+              visible = false;
+              type = attrsWith {
+                placeholder = "serviceName";
+                elemType = submoduleWith {
+                  modules = [ ./service-module.nix ];
                 };
-                default = { };
               };
-            }
-          )
+              apply = _: throw "Not implemented yet";
+              default = { };
+            };
+          })
         ];
       };
       default = { };
@@ -428,6 +637,7 @@ in
       }
     */
     result.allRoles = mkOption {
+      visible = false;
       readOnly = true;
       default = lib.mapAttrs (roleName: roleCfg: {
         allInstances = lib.mapAttrs (instanceName: instanceCfg: {
@@ -454,10 +664,12 @@ in
 
     result.assertions = mkOption {
       default = { };
+      visible = false;
       type = types.attrsOf types.raw;
     };
 
     result.allMachines = mkOption {
+      visible = false;
       readOnly = true;
       default =
         let
@@ -505,6 +717,7 @@ in
     };
 
     result.final = mkOption {
+      visible = false;
       readOnly = true;
       default = lib.mapAttrs (
         machineName: machineResult:
