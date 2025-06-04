@@ -788,7 +788,7 @@ class Flake:
             build_output = tmp_store.joinpath(*build_output.parts[1:])
         outputs = json.loads(build_output.read_bytes())
         if len(outputs) != len(selectors):
-            msg = f"flake_prepare_cache: Expected {len(outputs)} outputs, got {len(outputs)}"
+            msg = f"flake_prepare_cache: Expected {len(outputs)} outputs, got {len(selectors)}"
             raise ClanError(msg)
         self.load_cache()
         for i, selector in enumerate(selectors):
