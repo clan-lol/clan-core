@@ -7,29 +7,31 @@
 let
   description = "Test Description";
 
+  # Wrap the parseOption function to reduce the surface that needs to be migrated, when '$exportedModuleInfo' changes
+  parseOption = opt: filterSchema (slib.parseOption opt);
+
   evalType =
     type: default:
+    (evalModuleOptions {
+      options.opt = lib.mkOption {
+        inherit type description;
+        default = default;
+      };
+    }).opt;
+
+  evalModuleOptions =
+    module:
     let
       evaledConfig = lib.evalModules {
         modules = [
-          {
-            options.opt = lib.mkOption {
-              inherit type;
-              inherit default;
-              inherit description;
-            };
-          }
+          module
         ];
       };
     in
-    evaledConfig.options.opt;
+    evaledConfig.options;
 
-  # All options should have the same path
-  commonModuleInfo = {
-    "$exportedModuleInfo" = {
-      path = [ "opt" ];
-    };
-  };
+  filterSchema =
+    schema: lib.filterAttrsRecursive (name: _value: name != "$exportedModuleInfo") schema;
 in
 {
   testNoDefaultNoDescription =
@@ -39,8 +41,8 @@ in
       };
     in
     {
-      expr = slib.parseOption evaledConfig.options.opt;
-      expected = commonModuleInfo // {
+      expr = parseOption evaledConfig.options.opt;
+      expected = {
         type = "boolean";
       };
     };
@@ -62,8 +64,8 @@ in
       };
     in
     {
-      expr = slib.parseOption evaledConfig.options.opt;
-      expected = commonModuleInfo // {
+      expr = parseOption evaledConfig.options.opt;
+      expected = {
         type = "boolean";
         inherit description;
       };
@@ -74,8 +76,8 @@ in
       default = false;
     in
     {
-      expr = slib.parseOption (evalType lib.types.bool default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType lib.types.bool default);
+      expected = {
         type = "boolean";
         inherit default description;
       };
@@ -86,8 +88,8 @@ in
       default = "hello";
     in
     {
-      expr = slib.parseOption (evalType lib.types.str default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType lib.types.str default);
+      expected = {
         type = "string";
         inherit default description;
       };
@@ -98,8 +100,8 @@ in
       default = 42;
     in
     {
-      expr = slib.parseOption (evalType lib.types.int default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType lib.types.int default);
+      expected = {
         type = "integer";
         inherit default description;
       };
@@ -110,8 +112,8 @@ in
       default = 42.42;
     in
     {
-      expr = slib.parseOption (evalType lib.types.float default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType lib.types.float default);
+      expected = {
         type = "number";
         inherit default description;
       };
@@ -127,8 +129,8 @@ in
       ];
     in
     {
-      expr = slib.parseOption (evalType (lib.types.enum values) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.enum values) default);
+      expected = {
         enum = values;
         inherit default description;
       };
@@ -143,14 +145,11 @@ in
       ];
     in
     {
-      expr = slib.parseOption (evalType (lib.types.listOf lib.types.int) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.listOf lib.types.int) default);
+      expected = {
         type = "array";
         items = {
           type = "integer";
-          "$exportedModuleInfo" = {
-            path = [ "opt" ];
-          };
         };
         inherit default description;
       };
@@ -165,13 +164,10 @@ in
       ];
     in
     {
-      expr = slib.parseOption (evalType (lib.types.listOf lib.types.unspecified) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.listOf lib.types.unspecified) default);
+      expected = {
         type = "array";
         items = {
-          "$exportedModuleInfo" = {
-            path = [ "opt" ];
-          };
           type = [
             "boolean"
             "integer"
@@ -195,8 +191,8 @@ in
       };
     in
     {
-      expr = slib.parseOption (evalType (lib.types.attrs) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.attrs) default);
+      expected = {
         type = "object";
         additionalProperties = true;
         inherit default description;
@@ -212,13 +208,11 @@ in
       };
     in
     {
-      expr = slib.parseOption (evalType (lib.types.attrsOf lib.types.int) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.attrsOf lib.types.int) default);
+      expected = {
         type = "object";
         additionalProperties = {
-          "$exportedModuleInfo" = {
-            path = [ "opt" ];
-          };
+
           type = "integer";
         };
         inherit default description;
@@ -234,13 +228,11 @@ in
       };
     in
     {
-      expr = slib.parseOption (evalType (lib.types.lazyAttrsOf lib.types.int) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.lazyAttrsOf lib.types.int) default);
+      expected = {
         type = "object";
         additionalProperties = {
-          "$exportedModuleInfo" = {
-            path = [ "opt" ];
-          };
+
           type = "integer";
         };
         inherit default description;
@@ -252,14 +244,17 @@ in
       default = null; # null is a valid value for this type
     in
     {
-      expr = slib.parseOption (evalType (lib.types.nullOr lib.types.bool) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.nullOr lib.types.bool) default);
+      expected = {
         oneOf = [
           { type = "null"; }
           {
             type = "boolean";
             "$exportedModuleInfo" = {
               path = [ "opt" ];
+              default = null;
+              defaultText = null;
+              required = true;
             };
           }
         ];
@@ -272,19 +267,25 @@ in
       default = null; # null is a valid value for this type
     in
     {
-      expr = slib.parseOption (evalType (lib.types.nullOr (lib.types.nullOr lib.types.bool)) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.nullOr (lib.types.nullOr lib.types.bool)) default);
+      expected = {
         oneOf = [
           { type = "null"; }
           {
             "$exportedModuleInfo" = {
+              default = null;
+              defaultText = null;
               path = [ "opt" ];
+              required = true;
             };
             oneOf = [
               { type = "null"; }
               {
                 "$exportedModuleInfo" = {
+                  default = null;
+                  defaultText = null;
                   path = [ "opt" ];
+                  required = true;
                 };
                 type = "boolean";
               }
@@ -306,8 +307,8 @@ in
       };
     in
     {
-      expr = slib.parseOption (evalType (lib.types.submodule subModule) { });
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.submodule subModule) { });
+      expected = {
         type = "object";
         additionalProperties = false;
         description = "Test Description";
@@ -316,14 +317,9 @@ in
             type = "boolean";
             default = true;
             inherit description;
-            "$exportedModuleInfo" = {
-              path = [
-                "opt"
-                "opt"
-              ];
-            };
           };
         };
+        required = [ ];
         default = { };
       };
     };
@@ -331,32 +327,28 @@ in
   testSubmoduleOptionWithoutDefault =
     let
       subModule = {
-        options.opt = lib.mkOption {
+        options.foo = lib.mkOption {
           type = lib.types.bool;
           inherit description;
         };
       };
+      opt = evalType (lib.types.submodule subModule) { };
     in
     {
-      expr = slib.parseOption (evalType (lib.types.submodule subModule) { });
-      expected = commonModuleInfo // {
+      inherit opt;
+      expr = parseOption (opt);
+      expected = {
         type = "object";
         additionalProperties = false;
         description = "Test Description";
         properties = {
-          opt = {
+          foo = {
             type = "boolean";
             inherit description;
-            "$exportedModuleInfo" = {
-              path = [
-                "opt"
-                "opt"
-              ];
-            };
           };
         };
         default = { };
-        required = [ "opt" ];
+        required = [ "foo" ];
       };
     };
 
@@ -375,32 +367,21 @@ in
       };
     in
     {
-      expr = slib.parseOption (evalType (lib.types.attrsOf (lib.types.submodule subModule)) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.attrsOf (lib.types.submodule subModule)) default);
+      expected = {
         type = "object";
         additionalProperties = {
-          "$exportedModuleInfo" = {
-            path = [
-              "opt"
-              "<name>"
-            ];
-          };
+
           type = "object";
           additionalProperties = false;
           properties = {
             opt = {
-              "$exportedModuleInfo" = {
-                path = [
-                  "opt"
-                  "<name>"
-                  "opt"
-                ];
-              };
               type = "boolean";
               default = true;
               inherit description;
             };
           };
+          required = [ ];
         };
         inherit default description;
       };
@@ -421,13 +402,10 @@ in
       ];
     in
     {
-      expr = slib.parseOption (evalType (lib.types.listOf (lib.types.submodule subModule)) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.listOf (lib.types.submodule subModule)) default);
+      expected = {
         type = "array";
         items = {
-          "$exportedModuleInfo" = {
-            path = [ "opt" ];
-          };
           type = "object";
           additionalProperties = false;
           properties = {
@@ -435,15 +413,9 @@ in
               type = "boolean";
               default = true;
               inherit description;
-              "$exportedModuleInfo" = {
-                path = [
-                  "opt"
-                  "*"
-                  "opt"
-                ];
-              };
             };
           };
+          required = [ ];
         };
         inherit default description;
       };
@@ -454,18 +426,24 @@ in
       default = "foo";
     in
     {
-      expr = slib.parseOption (evalType (lib.types.either lib.types.bool lib.types.str) default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType (lib.types.either lib.types.bool lib.types.str) default);
+      expected = {
         oneOf = [
           {
             "$exportedModuleInfo" = {
               path = [ "opt" ];
+              default = null;
+              defaultText = null;
+              required = true;
             };
             type = "boolean";
           }
           {
             "$exportedModuleInfo" = {
               path = [ "opt" ];
+              default = null;
+              defaultText = null;
+              required = true;
             };
             type = "string";
           }
@@ -479,8 +457,8 @@ in
       default = "foo";
     in
     {
-      expr = slib.parseOption (evalType lib.types.anything default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType lib.types.anything default);
+      expected = {
         inherit default description;
         type = [
           "boolean"
@@ -499,8 +477,8 @@ in
       default = "foo";
     in
     {
-      expr = slib.parseOption (evalType lib.types.unspecified default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType lib.types.unspecified default);
+      expected = {
         inherit default description;
         type = [
           "boolean"
@@ -519,8 +497,8 @@ in
       default = "foo";
     in
     {
-      expr = slib.parseOption (evalType lib.types.raw default);
-      expected = commonModuleInfo // {
+      expr = parseOption (evalType lib.types.raw default);
+      expected = {
         inherit default description;
         type = [
           "boolean"
@@ -533,4 +511,61 @@ in
         ];
       };
     };
+
+  test_option_with_default_text = {
+    expr = (
+      parseOption (evalModuleOptions {
+        options.opt = lib.mkOption {
+          type = lib.types.bool;
+          defaultText = "This option is a optional, but we cannot assign a default value to it yet.";
+        };
+      })
+    );
+
+    expected = {
+      additionalProperties = false;
+      properties = {
+        opt = {
+          type = "boolean";
+        };
+      };
+      # opt is not required, because it has a defaultText
+      required = [ ];
+      type = "object";
+    };
+  };
+  test_nested_option_with_default_text = {
+    expr = (
+      parseOption (evalModuleOptions {
+        options.opt = lib.mkOption {
+          type = lib.types.submodule {
+            options = {
+              foo = lib.mkOption {
+                type = lib.types.bool;
+                defaultText = "Not required";
+              };
+            };
+          };
+          defaultText = "Not required";
+        };
+      })
+    );
+    expected = {
+      additionalProperties = false;
+      properties = {
+        opt = {
+          additionalProperties = false;
+          properties = {
+            foo = {
+              type = "boolean";
+            };
+          };
+          required = [ ];
+          type = "object";
+        };
+      };
+      required = [ ];
+      type = "object";
+    };
+  };
 }
