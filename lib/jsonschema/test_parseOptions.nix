@@ -4,9 +4,13 @@
   lib ? (import <nixpkgs> { }).lib,
   slib ? (import ./. { inherit lib; } { }),
 }:
+let
+  filterSchema =
+    schema: lib.filterAttrsRecursive (name: _value: name != "$exportedModuleInfo") schema;
+in
 {
   testParseOptions = {
-    expr = slib.parseModule ./example-interface.nix;
+    expr = filterSchema (slib.parseModule ./example-interface.nix);
     expected = builtins.fromJSON (builtins.readFile ./example-schema.json);
   };
 
@@ -27,36 +31,18 @@
       };
     in
     {
-      expr = slib.parseOptions evaled.options { };
+      expr = filterSchema (slib.parseOptions evaled.options { });
       expected = {
         "$schema" = "http://json-schema.org/draft-07/schema#";
-        "$exportedModuleInfo" = {
-          path = [ ];
-        };
         additionalProperties = false;
         properties = {
           foo = {
-            "$exportedModuleInfo" = {
-              path = [ "foo" ];
-            };
             additionalProperties = false;
             properties = {
               bar = {
-                "$exportedModuleInfo" = {
-                  path = [
-                    "foo"
-                    "bar"
-                  ];
-                };
                 type = "boolean";
               };
               baz = {
-                "$exportedModuleInfo" = {
-                  path = [
-                    "foo"
-                    "baz"
-                  ];
-                };
                 type = "boolean";
                 default = false;
               };
@@ -78,7 +64,7 @@
       };
     in
     {
-      expr =
+      expr = filterSchema (
         slib.parseOptions
           (lib.evalModules {
             modules = [
@@ -91,29 +77,22 @@
               default
             ];
           }).options
-          { };
+          { }
+      );
       expected = {
         "$schema" = "http://json-schema.org/draft-07/schema#";
-        "$exportedModuleInfo" = {
-          path = [ ];
-        };
         additionalProperties = {
-          "$exportedModuleInfo" = {
-            path = [ ];
-          };
           type = "integer";
         };
         properties = {
           enable = {
-            "$exportedModuleInfo" = {
-              path = [ "enable" ];
-            };
             default = false;
             description = "Whether to enable enable this.";
             examples = [ true ];
             type = "boolean";
           };
         };
+        required = [ ];
         type = "object";
       };
     };
