@@ -1,7 +1,7 @@
 ---
 description = "End-2-end encrypted IPv6 overlay network"
 categories = ["System", "Network"]
-features = [ "inventory" ]
+features = [ "inventory", "deprecated" ]
 ---
 Mycelium is an IPv6 overlay network written in Rust. Each node that joins the overlay network will receive an overlay network IP in the 400::/7 range.
 

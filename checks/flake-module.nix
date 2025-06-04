@@ -50,6 +50,9 @@ in
               # Heisenbridge test
               heisenbridge = import ./heisenbridge nixosTestArgs;
 
+              # Mycelium test
+              mycelium = import ./mycelium nixosTestArgs;
+
               # Base Tests
               secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
               borgbackup-legacy = self.clanLib.test.baseTest ./borgbackup-legacy nixosTestArgs;
