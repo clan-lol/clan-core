@@ -92,6 +92,7 @@ nav:
           - reference/clanServices/localsend.md
           - reference/clanServices/mycelium.md
           - reference/clanServices/hello-world.md
+          - reference/clanServices/importer.md
           - reference/clanServices/wifi.md
           - reference/clanServices/zerotier.md
       - Interface for making Services: reference/clanServices/clan-service-author-interface.md
