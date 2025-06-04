@@ -8,7 +8,9 @@
 ## Service Module Specification
 
 This section explains how to author a clan service module.
-We discussed the initial architecture in [01-clan-service-modules](../../../decisions/01-ClanModules.md) and decided to rework the format as follows:
+We discussed the initial architecture in [01-clan-service-modules](../../../decisions/01-ClanModules.md) and decided to rework the format.
+
+For the full specification and current state see: **[Service Author Reference](../../../reference/clanServices/clan-service-author-interface.md)**
 
 ### A Minimal module
 
@@ -48,6 +50,8 @@ The imported module file must fulfill at least the following requirements:
     # ...
 }
 ```
+
+For more attributes see: **[Service Author Reference](../../../reference/clanServices/clan-service-author-interface.md)**
 
 ### Adding functionality to the module
 
@@ -254,3 +258,11 @@ outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}:
 ```
 
 The benefit of this approach is that downstream users can override the value of `myClan` by using `mkForce` or other priority modifiers.
+
+---
+
+## Further
+
+- [Reference Documentation for Service Authors](../../../reference/clanServices/clan-service-author-interface.md)
+- [Migration Guide from ClanModules to ClanServices](../../migrations/migrate-inventory-services.md)
+- [Decision that lead to ClanServices](../../../decisions/01-ClanModules.md)

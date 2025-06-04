@@ -20,6 +20,5 @@
     in
     {
       imports = [ test-types-module ];
-      legacyPackages.xxx = { };
     };
 }
