@@ -98,7 +98,6 @@ let
     . "foo-peer"; }; }; }; settings = { timeout = "foo-peer-jon"; }; vendoredSettings = { timeout = "conf .
     . ig.thing"; }; } ]; }                                                                                .
   */
-  unwrapModule = m: (builtins.head m.imports);
 in
 {
   # settings should evaluate
@@ -160,9 +159,9 @@ in
 
   # TODO: Cannot be tested like this anymore
   test_per_instance_settings_vendoring = {
+    x = res.importedModulesEvaluated.self-A.config;
     expr =
-
-      res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.passthru.vendoredSettings;
+      res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.vendoredSettings;
     expected = {
       timeout = "config.thing";
     };
