@@ -6,6 +6,7 @@
     ./ergochat/flake-module.nix
     ./garage/flake-module.nix
     ./heisenbridge/flake-module.nix
+    ./localsend/flake-module.nix
     ./mycelium/flake-module.nix
     ./auto-upgrade/flake-module.nix
     ./hello-world/flake-module.nix
