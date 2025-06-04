@@ -4,15 +4,22 @@ import sys
 import urllib.parse
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
     from clan_lib.flake import Flake
-    from clan_lib.machines.machines import Machine
 
 log = logging.getLogger(__name__)
+
+
+class MachineSpecProtocol(Protocol):
+    @property
+    def flake(self) -> "Flake": ...
+
+    @property
+    def name(self) -> str: ...
 
 
 def get_clan_flake_toplevel_or_env() -> Path | None:
@@ -145,7 +152,7 @@ def machines_dir(flake: "Flake") -> Path:
     return Path(store_path) / "machines"
 
 
-def specific_machine_dir(machine: "Machine") -> Path:
+def specific_machine_dir(machine: "MachineSpecProtocol") -> Path:
     return machines_dir(machine.flake) / machine.name
 
 
