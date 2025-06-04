@@ -23,9 +23,10 @@ in
     package = lib.mkPackageOption pkgs "localsend" { };
 
     ipv4Addr = lib.mkOption {
-      type = lib.types.str;
+      type = lib.types.nullOr lib.types.str;
+      default = null;
       example = "192.168.56.2/24";
-      description = "Every machine needs a unique ipv4 address";
+      description = "Optional IPv4 address for ZeroTier network.";
     };
   };
 
@@ -51,9 +52,11 @@ in
     networking.firewall.interfaces."zt+".allowedUDPPorts = [ 53317 ];
 
     #TODO: This is currently needed because there is no ipv6 multicasting support yet
-    systemd.network.networks."09-zerotier" = {
-      networkConfig = {
-        Address = cfg.ipv4Addr;
+    systemd.network.networks = lib.mkIf (cfg.ipv4Addr != null) {
+      "09-zerotier" = {
+        networkConfig = {
+          Address = cfg.ipv4Addr;
+        };
       };
     };
   };
