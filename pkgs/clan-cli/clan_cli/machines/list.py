@@ -69,7 +69,7 @@ def query_machines_by_tags(flake: Flake, tags: list[str]) -> dict[str, Machine]:
 
     filtered_machines = {}
     for machine in machines.values():
-        inv_machine = get_machine(machine)
+        inv_machine = get_machine(machine.flake, machine.name)
         machine_tags = inv_machine.get("tags", [])
         if all(tag in machine_tags for tag in tags):
             filtered_machines[machine.name] = machine
@@ -97,7 +97,7 @@ def extract_header(c: str) -> str:
 
 @API.register
 def get_machine_details(machine: Machine) -> MachineDetails:
-    machine_inv = get_machine(machine)
+    machine_inv = get_machine(machine.flake, machine.name)
     hw_config = HardwareConfig.detect_type(machine)
 
     machine_dir = specific_machine_dir(machine)
