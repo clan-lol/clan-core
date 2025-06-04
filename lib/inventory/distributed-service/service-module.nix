@@ -240,22 +240,21 @@ in
                             };
                           };
 
-                            # instances.{instanceName}.roles.{roleName}.settings
-                            # options._settings = mkOption { };
-                            # options._settingsViaTags = mkOption { };
-                            # A deferred module that combines _settingsViaTags with _settings
-                            options.settings = mkOption {
-                              type = types.raw;
-                              description = "Settings of 'role': ${name}";
-                              default = { };
-                            };
+                          # instances.{instanceName}.roles.{roleName}.settings
+                          # options._settings = mkOption { };
+                          # options._settingsViaTags = mkOption { };
+                          # A deferred module that combines _settingsViaTags with _settings
+                          options.settings = mkOption {
+                            type = types.raw;
+                            description = "Settings of 'role': ${name}";
+                            default = { };
+                          };
 
-                            options.extraModules = lib.mkOption {
-                              default = [ ];
-                              type = types.listOf (types.deferredModule);
-                            };
-                          }
-                        )
+                          options.extraModules = lib.mkOption {
+                            default = [ ];
+                            type = types.listOf (types.deferredModule);
+                          };
+                        })
                       ];
                     };
                   };
@@ -646,15 +645,14 @@ in
             let
               instanceRes = roleCfg.perInstance instanceName machineName;
             in
-            {
+            instanceRes
+            // {
               nixosModule = {
                 imports = [
                   # Result of the applied 'perInstance = {...}: {  nixosModule = { ... }; }'
                   instanceRes.nixosModule
                 ] ++ instanceCfg.roles.${roleName}.extraModules;
               };
-              # TODO: nested services
-              services = { };
             }
 
           ) instanceCfg.roles.${roleName}.machines or { };
