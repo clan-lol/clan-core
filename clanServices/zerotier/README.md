@@ -1,14 +1,3 @@
----
-description = "Configures [Zerotier VPN](https://zerotier.com) secure and efficient networking within a Clan."
-features = [ "inventory" ]
-categories = [ "Network", "System" ]
-
-[constraints]
-roles.controller.min = 1
-roles.controller.max = 1
-roles.moon.max = 7
----
-
 ## Overview
 
 This guide explains how to set up and manage a [ZeroTier VPN](https://zerotier.com) for a clan network. Each VPN requires a single controller and can support multiple peers and optional moons for better connectivity.
@@ -41,4 +30,4 @@ They connect to other peers, moons, and the controller as needed.
 
 - **Purpose:**
   - General role for all machines that are neither controllers nor moons.
-  - Ideal for most clan members' devices.
+  - Ideal for most clan members devices.
