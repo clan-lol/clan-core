@@ -755,19 +755,21 @@ class Flake:
             in
               derivation {{
                 name = "clan-flake-select";
+                result = builtins.toJSON [
+                    {" ".join(
+                        [
+                            f"(selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake)"
+                            for attr in str_selectors
+                        ]
+                    )}
+                ];
+                passAsFile = [ "result" ];
                 system = "{config["system"]}";
                 builder = "/bin/sh";
                 args = [
                   "-c"
                   ''
-                    printf %s '${{builtins.toJSON [
-                      {" ".join(
-                          [
-                              f"(selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake)"
-                              for attr in str_selectors
-                          ]
-                      )}
-                    ]}}' > $out
+                     read -r x < "$resultPath"; printf %s "$x" > $out
                   ''
                 ];
               }}
@@ -784,7 +786,7 @@ class Flake:
 
         if tmp_store:
             build_output = tmp_store.joinpath(*build_output.parts[1:])
-        outputs = json.loads(build_output.read_text())
+        outputs = json.loads(build_output.read_bytes())
         if len(outputs) != len(selectors):
             msg = f"flake_prepare_cache: Expected {len(outputs)} outputs, got {len(outputs)}"
             raise ClanError(msg)
