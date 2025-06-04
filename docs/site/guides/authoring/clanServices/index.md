@@ -8,7 +8,7 @@
 ## Service Module Specification
 
 This section explains how to author a clan service module.
-We discussed the initial architecture in [01-clan-service-modules](https://git.clan.lol/clan/clan-core/src/branch/main/decisions/01-ClanModules.md) and decided to rework the format as follows:
+We discussed the initial architecture in [01-clan-service-modules](../../../decisions/01-ClanModules.md) and decided to rework the format as follows:
 
 ### A Minimal module
 
