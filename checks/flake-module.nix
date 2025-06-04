@@ -47,6 +47,9 @@ in
               # Garage test
               garage = import ./garage nixosTestArgs;
 
+              # Heisenbridge test
+              heisenbridge = import ./heisenbridge nixosTestArgs;
+
               # Base Tests
               secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
               borgbackup-legacy = self.clanLib.test.baseTest ./borgbackup-legacy nixosTestArgs;
