@@ -7,6 +7,8 @@
     "package"
   ],
   includeDefaults ? true,
+  filterSchema ?
+    schema: lib.filterAttrsRecursive (name: _value: name != "$exportedModuleInfo") schema,
   header ? {
     "$schema" = "http://json-schema.org/draft-07/schema#";
   },
@@ -59,7 +61,7 @@ rec {
         inherit specialArgs;
       };
     in
-    parseOptions evaled.options { };
+    (_parseOptions evaled.options { });
 
   # get default value from option
 
@@ -88,10 +90,12 @@ rec {
     let
       subOptions = option.type.getSubOptions option.loc;
     in
-    parseOptions subOptions {
+    _parseOptions subOptions {
       addHeader = false;
       path = option.loc ++ prefix;
     };
+
+  parseOptions = opts: args: filterSchema (_parseOptions opts args);
 
   makeModuleInfo =
     {
@@ -115,7 +119,7 @@ rec {
     };
 
   # parses a set of evaluated nixos options to a jsonschema
-  parseOptions =
+  _parseOptions =
     options:
     {
       # The top-level header object should specify at least the schema version
@@ -146,7 +150,7 @@ rec {
       checkFreeformDefs =
         defs:
         if (builtins.length defs) != 1 then
-          throw "parseOptions: freeformType definitions not supported"
+          throw "_parseOptions: freeformType definitions not supported"
         else
           defs;
       # It seems that freeformType has [ null ]
@@ -222,7 +226,7 @@ rec {
       # handle nested options (not a submodule)
       # foo.bar = mkOption { type = str; };
       else if !option ? _type then
-        (parseOptions option {
+        (_parseOptions option {
           addHeader = false;
           path = currentPath;
         })
