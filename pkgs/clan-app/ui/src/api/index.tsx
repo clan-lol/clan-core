@@ -1,5 +1,5 @@
 import schema from "@/api/API.json" with { type: "json" };
-import { API, Error } from "@/api/API";
+import { API, Error as ApiError } from "@/api/API";
 import { nanoid } from "nanoid";
 import { Schema as Inventory } from "@/api/Inventory";
 import { toast, Toast } from "solid-toast";
@@ -17,7 +17,7 @@ export type ApiEnvelope<T> =
       data: T;
       op_key: string;
     }
-  | Error;
+  | ApiError;
 
 export type Services = NonNullable<Inventory["services"]>;
 export type ServiceNames = keyof Services;
@@ -48,6 +48,25 @@ const _callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
 ): { promise: Promise<OperationResponse<K>>; op_key: string } => {
+  // if window[method] does not exist, throw an error
+  if (!(method in window)) {
+    console.error(`Method ${method} not found on window object`);
+    // return a rejected promise
+    return {
+      promise: Promise.resolve({
+        status: "error",
+        errors: [
+          {
+            message: `Method ${method} not found on window object`,
+            code: "method_not_found",
+          },
+        ],
+        op_key: "noop",
+      }),
+      op_key: "noop",
+    };
+  }
+
   const promise = (
     window as unknown as Record<
       OperationNames,
@@ -56,6 +75,7 @@ const _callApi = <K extends OperationNames>(
       ) => Promise<OperationResponse<OperationNames>>
     >
   )[method](args) as Promise<OperationResponse<K>>;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const op_key = (promise as any)._webviewMessageId as string;
 
@@ -94,6 +114,7 @@ export const callApi = async <K extends OperationNames>(
   args: OperationArgs<K>,
 ): Promise<OperationResponse<K>> => {
   console.log("Calling API", method, args);
+
   const { promise, op_key } = _callApi(method, args);
 
   const toastId = toast.custom(
