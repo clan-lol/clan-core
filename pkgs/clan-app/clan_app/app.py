@@ -70,6 +70,10 @@ def app_run(app_opts: ClanAppOptions) -> int:
             status="success",
         )
 
+    # TODO: We have to manually import python files to make the API.register be triggered.
+    # We NEED to fix this, as this is super unintuitive and error-prone.
+    import clan_lib.machines.actions  # noqa: F401
+
     API.overwrite_fn(list_tasks)
     API.overwrite_fn(open_file)
     API.overwrite_fn(cancel_task)
