@@ -90,6 +90,7 @@
             export CLAN_MODULES_VIA_ROLES=${clanModulesViaRoles}
             export CLAN_MODULES_VIA_SERVICE=${clanModulesViaService}
             export CLAN_MODULES_VIA_NIX=${clanModulesViaNix}
+            export CLAN_SERVICE_INTERFACE=${self'.legacyPackages.clan-service-module-interface}/share/doc/nixos/options.json
             # Frontmatter format for clanModules
             export CLAN_MODULES_FRONTMATTER_DOCS=${clanModulesFrontmatter}/share/doc/nixos/options.json
 

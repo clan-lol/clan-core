@@ -49,6 +49,10 @@ CLAN_MODULES_VIA_NIX = os.environ.get("CLAN_MODULES_VIA_NIX")
 # Some modules can be imported via inventory
 CLAN_MODULES_VIA_ROLES = os.environ.get("CLAN_MODULES_VIA_ROLES")
 
+# Options how to author clan.modules
+# perInstance, perMachine, ...
+CLAN_SERVICE_INTERFACE = os.environ.get("CLAN_SERVICE_INTERFACE")
+
 CLAN_MODULES_VIA_SERVICE = os.environ.get("CLAN_MODULES_VIA_SERVICE")
 
 OUT = os.environ.get("out")
@@ -309,7 +313,7 @@ def produce_clan_core_docs() -> None:
         core_outputs[indexfile] += """!!! info "Submodules"\n"""
 
         for submodule_name, split_options in split.items():
-            root = options_to_tree(split_options, debug=True)
+            root = options_to_tree(split_options)
             module = root.suboptions[0]
             module_type = module.info.get("type")
             if module_type is not None and "submodule" not in module_type:
@@ -798,6 +802,44 @@ def split_options_by_root(options: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return res
 
 
+def produce_clan_service_author_docs() -> None:
+    if not CLAN_SERVICE_INTERFACE:
+        msg = f"Environment variables are not set correctly: CLAN_SERVICE_INTERFACE={CLAN_SERVICE_INTERFACE}. Expected a path to the optionsJSON"
+        raise ClanError(msg)
+
+    if not OUT:
+        msg = f"Environment variables are not set correctly: $out={OUT}"
+        raise ClanError(msg)
+
+    output = """
+This document describes the structure and configurable attributes of a `clan.service` module.
+
+Typically needed by module authors to define roles, behavior and metadata for distributed services.
+
+!!! Note
+    This is not a user-facing documentation, but rather meant as a reference for *module authors*
+
+    See: [clanService Authoring Guide](../../guides/authoring/clanServices/index.md)
+"""
+    # Inventory options are already included under the buildClan attribute
+    # We just omitted them in the buildClan docs, because we want a separate output for the inventory model
+    with Path(CLAN_SERVICE_INTERFACE).open() as f:
+        options: dict[str, dict[str, Any]] = json.load(f)
+
+        options_tree = options_to_tree(options, debug=True)
+        # Find the inventory options
+
+        # Render the inventory options
+        # This for loop excludes the root node
+        # for option in options_tree.suboptions:
+        output += options_docs_from_tree(options_tree, init_level=2)
+
+    outfile = Path(OUT) / "clanServices/clan-service-author-interface.md"
+    outfile.parent.mkdir(parents=True, exist_ok=True)
+    with Path.open(outfile, "w") as of:
+        of.write(output)
+
+
 @dataclass
 class Option:
     name: str
@@ -958,6 +1000,8 @@ if __name__ == "__main__":  #
 
     produce_build_clan_docs()
     produce_inventory_docs()
+
+    produce_clan_service_author_docs()
 
     produce_clan_modules_docs()
     produce_clan_service_docs()
