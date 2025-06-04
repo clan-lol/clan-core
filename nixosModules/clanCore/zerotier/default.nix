@@ -227,7 +227,7 @@ in
     (lib.mkIf
       (!cfg.controller.enable && cfg.networkId != null && config.clan.core.vars.generators ? zerotier)
       {
-        clan.core.networking.targetHost = lib.mkDefault config.clan.core.vars.generators.zerotier.files.zerotier-ip.value;
+        clan.core.networking.targetHost = lib.mkDefault "root@[${config.clan.core.vars.generators.zerotier.files.zerotier-ip.value}]";
       }
     )
     (lib.mkIf (cfg.controller.enable && config.clan.core.vars.generators ? zerotier) {
