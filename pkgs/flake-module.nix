@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 
 {
   imports = [
@@ -12,14 +12,6 @@
     ./clan-app/flake-module.nix
     ./testing/flake-module.nix
   ];
-
-  flake.packages.x86_64-linux =
-    let
-      pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
-    in
-    {
-      yagna = pkgs.callPackage ./yagna { };
-    };
 
   perSystem =
     { config, pkgs, ... }:

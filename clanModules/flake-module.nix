@@ -18,7 +18,6 @@ in
     dyndns = ./dyndns;
     ergochat = ./ergochat;
     garage = ./garage;
-    golem-provider = ./golem-provider;
     heisenbridge = ./heisenbridge;
     importer = ./importer;
     iwd = ./iwd;

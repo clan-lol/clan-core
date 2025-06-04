@@ -106,7 +106,6 @@ nav:
           - reference/clanModules/dyndns.md
           - reference/clanModules/ergochat.md
           - reference/clanModules/garage.md
-          - reference/clanModules/golem-provider.md
           - reference/clanModules/heisenbridge.md
           - reference/clanModules/importer.md
           - reference/clanModules/iwd.md
