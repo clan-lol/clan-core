@@ -37,7 +37,7 @@
     interface =
       { lib, ... }:
       {
-        options.zerotier.moon.stableEndpoints = lib.mkOption {
+        options.stableEndpoints = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           description = ''
             Make this machine a moon.
@@ -66,7 +66,7 @@
             ...
           }:
           {
-            config.clan.core.networking.zerotier.moon.stableEndpoints = settings.zerotier.moon.stableEndpoints;
+            config.clan.core.networking.zerotier.moon.stableEndpoints = settings.stableEndpoints;
 
             imports = [
               (import ./shared.nix {
