@@ -568,4 +568,27 @@ in
       type = "object";
     };
   };
+
+  # Default MUST not be evaluated if defaultText is present
+  test_default_lazyness = {
+    expr = (
+      parseOption (evalModuleOptions {
+        options.opt = lib.mkOption {
+          type = lib.types.bool;
+          default = throw "This option is lazy";
+          defaultText = "This option is lazy";
+        };
+      })
+    );
+    expected = {
+      additionalProperties = false;
+      properties = {
+        opt = {
+          type = "boolean";
+        };
+      };
+      required = [ ];
+      type = "object";
+    };
+  };
 }

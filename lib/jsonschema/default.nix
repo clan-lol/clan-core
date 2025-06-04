@@ -100,9 +100,12 @@ rec {
       defaultText ? null,
       ...
     }@attrs:
+    let
+      sanitizedAttrs = removeAttrs attrs (lib.optionals (defaultText != null) [ "default" ]);
+    in
     {
       "$exportedModuleInfo" =
-        attrs
+        sanitizedAttrs
         // {
           inherit path required;
         }
