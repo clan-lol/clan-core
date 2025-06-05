@@ -89,6 +89,7 @@ nav:
           - reference/clanServices/ergochat.md
           - reference/clanServices/garage.md
           - reference/clanServices/heisenbridge.md
+          - reference/clanServices/importer.md
           - reference/clanServices/localsend.md
           - reference/clanServices/mycelium.md
           - reference/clanServices/hello-world.md
