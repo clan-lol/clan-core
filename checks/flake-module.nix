@@ -38,20 +38,6 @@ in
           };
           nixosTests =
             lib.optionalAttrs (pkgs.stdenv.isLinux) {
-              # Deltachat test
-              deltachat = import ./deltachat nixosTestArgs;
-
-              # Ergochat test
-              ergochat = import ./ergochat nixosTestArgs;
-
-              # Garage test
-              garage = import ./garage nixosTestArgs;
-
-              # Heisenbridge test
-              heisenbridge = import ./heisenbridge nixosTestArgs;
-
-              # Mycelium test
-              mycelium = import ./mycelium nixosTestArgs;
 
               # Base Tests
               secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
@@ -70,6 +56,11 @@ in
               borgbackup = import ./borgbackup nixosTestArgs;
               data-mesher = import ./data-mesher nixosTestArgs;
               syncthing = import ./syncthing nixosTestArgs;
+              deltachat = import ./deltachat nixosTestArgs;
+              ergochat = import ./ergochat nixosTestArgs;
+              garage = import ./garage nixosTestArgs;
+              heisenbridge = import ./heisenbridge nixosTestArgs;
+              mycelium = import ./mycelium nixosTestArgs;
             }
             // lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == "aarch64-linux") {
               # for some reason this hangs in an odd place in CI, but it works on my machine ...
