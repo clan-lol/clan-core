@@ -84,10 +84,26 @@
   };
 
   roles.controller = {
+    interface =
+      { lib, ... }:
+      {
+        options.allowedIps = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          description = ''
+            Extra machines by their zerotier ip that the zerotier controller
+            should accept. These could be external machines.
+          '';
+          example = ''
+            [ "fd5d:bbe3:cbc5:fe6b:f699:935d:bbe3:cbc5" ]
+          '';
+        };
+      };
+
     perInstance =
       {
         instanceName,
         roles,
+        settings,
         ...
       }:
       {
@@ -133,7 +149,7 @@
                     else
                       ips
                   ) [ ] machines;
-                  allHostIPs = networkIps;
+                  allHostIPs = settings.allowedIps ++ networkIps;
                 in
                 {
                   wantedBy = [ "multi-user.target" ];
