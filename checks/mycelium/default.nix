@@ -47,7 +47,7 @@ nixosLib.runTest (
       server.succeed("systemctl status mycelium")
 
       # Check that mycelium is listening on its default port
-      server.succeed("${pkgs.iproute2}/bin/ss -tulpn | grep -q 'mycelium'")
+      server.wait_until_succeeds("${pkgs.iproute2}/bin/ss -tulpn | grep -q 'mycelium'", 10)
     '';
   }
 )
