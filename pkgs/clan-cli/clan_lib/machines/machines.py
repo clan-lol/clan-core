@@ -63,7 +63,7 @@ class Machine:
     def _class_(self) -> str:
         try:
             return self.flake.select(
-                f"clanInternals.inventory.machines.{self.name}.machineClass"
+                f'clanInternals.inventory.machines."{self.name}".machineClass'
             )
         except ClanCmdError as e:
             if re.search(f"error: attribute '{self.name}' missing", e.cmd.stderr):
@@ -73,7 +73,7 @@ class Machine:
     @property
     def system(self) -> str:
         return self.flake.select(
-            f"{self._class_}Configurations.{self.name}.pkgs.hostPlatform.system"
+            f'{self._class_}Configurations."{self.name}".pkgs.hostPlatform.system'
         )
 
     @property
@@ -185,7 +185,7 @@ class Machine:
         system = config["system"]
 
         return self.flake.select(
-            f'clanInternals.machines."{system}".{self.name}.{attr}',
+            f'clanInternals.machines."{system}"."{self.name}".{attr}',
             nix_options=nix_options,
         )
 
