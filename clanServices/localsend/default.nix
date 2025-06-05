@@ -65,8 +65,7 @@
                 in
                 [ localsend ];
 
-              networking.firewall.interfaces."zt+".allowedTCPPorts = [ 53317 ];
-              networking.firewall.interfaces."zt+".allowedUDPPorts = [ 53317 ];
+              networking.firewall.allowedTCPPorts = [ 53317 ];
 
               # This is currently needed because there is no ipv6 multicasting support yet
               systemd.network.networks = lib.mkIf (settings.ipv4Addr != null) {
