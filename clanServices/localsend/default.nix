@@ -1,7 +1,7 @@
 { ... }:
 {
   _class = "clan.service";
-  manifest.name = "clan-core/localsend";
+  manifest.name = "localsend";
   manifest.description = "Local network file sharing application";
   manifest.categories = [ "Utility" ];
 
