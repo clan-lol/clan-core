@@ -1,3 +1,24 @@
+## Example Usage
+
+```
+  inventory.instances = {
+    zerotier = {
+      module = {
+        name = "zerotier";
+        input = "clan";
+      };
+      roles.peer.tags.all = { };
+      roles.controller.machines.jon = { };
+      roles.moon.machines.sara.settings.stableEndpoints = [ "77.52.165.46" ];
+    };
+```
+
+The input should be named according to your flake input.
+All machines will be peers and connected to the zerotier network.
+Jon is the controller machine, which will will accept other machines into the network.
+Sara is a moon and sets the `stableEndpoint` setting with a publically reachable IP.
+
+
 ## Overview
 
 This guide explains how to set up and manage a [ZeroTier VPN](https://zerotier.com) for a clan network. Each VPN requires a single controller and can support multiple peers and optional moons for better connectivity.
