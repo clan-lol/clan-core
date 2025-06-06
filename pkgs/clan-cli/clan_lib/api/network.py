@@ -21,7 +21,8 @@ class ConnectionOptions:
 def check_machine_online(
     machine: Machine, opts: ConnectionOptions | None = None
 ) -> Literal["Online", "Offline"]:
-    hostname = machine.target_host_address
+    hostname = machine.target_host().target
+
     if not hostname:
         msg = f"Machine {machine.name} does not specify a targetHost"
         raise ClanError(msg)
