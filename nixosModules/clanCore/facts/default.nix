@@ -5,6 +5,10 @@
   ...
 }:
 {
+  config.warnings = lib.optionals (config.clan.core.facts.services != { }) [
+    "Facts are deprecated, please migrate them to vars instead, see: https://docs.clan.lol/guides/migrations/migration-facts-vars/"
+  ];
+
   options.clan.core.facts = {
     secretStore = lib.mkOption {
       type = lib.types.enum [
