@@ -352,6 +352,7 @@ def generate_private_key(out_file: Path | None = None) -> tuple[str, str]:
             raise ClanError(msg)
         if out_file:
             out_file.parent.mkdir(parents=True, exist_ok=True)
+            out_file.touch(mode=0o600)
             out_file.write_text(res)
     except subprocess.CalledProcessError as e:
         msg = "Failed to generate private sops key"
