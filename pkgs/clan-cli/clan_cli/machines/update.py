@@ -121,7 +121,7 @@ def deploy_machine(machine: Machine) -> None:
         upload_secrets(machine, sudo_host)
         upload_secret_vars(machine, sudo_host)
 
-        path = upload_sources(machine, sudo_host)
+        path = upload_sources(machine, host)
 
         nix_options = [
             "--show-trace",
