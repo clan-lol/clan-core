@@ -167,7 +167,20 @@ class Machine:
                 msg,
                 description="See https://docs.clan.lol/guides/getting-started/deploy/#setting-the-target-host for more information.",
             )
-        return remote.data
+        data = remote.data
+        return Remote(
+            address=data.address,
+            user=data.user,
+            command_prefix=data.command_prefix,
+            port=data.port,
+            private_key=self.private_key,
+            password=data.password,
+            forward_agent=data.forward_agent,
+            host_key_check=self.host_key_check,
+            verbose_ssh=data.verbose_ssh,
+            ssh_options=data.ssh_options,
+            tor_socks=data.tor_socks,
+        )
 
     def build_host(self) -> Remote | None:
         """
@@ -183,9 +196,25 @@ class Machine:
                 private_key=self.private_key,
             )
 
-        remote = get_build_host(self)
+        remote = get_build_host(self.name, self.flake)
 
-        return remote.data if remote else None
+        if remote:
+            data = remote.data
+            return Remote(
+                address=data.address,
+                user=data.user,
+                command_prefix=data.command_prefix,
+                port=data.port,
+                private_key=self.private_key,
+                password=data.password,
+                forward_agent=data.forward_agent,
+                host_key_check=self.host_key_check,
+                verbose_ssh=data.verbose_ssh,
+                ssh_options=data.ssh_options,
+                tor_socks=data.tor_socks,
+            )
+
+        return None
 
     def nix(
         self,
@@ -268,7 +297,7 @@ def get_target_host(name: str, flake: Flake) -> RemoteSource | None:
     machine = Machine(name=name, flake=flake)
     inv_machine = machine.get_inv_machine()
 
-    source = "inventory"
+    source: Literal["inventory", "nix_machine"] = "inventory"
     target_host_str = inv_machine.get("deploy", {}).get("targetHost")
 
     if target_host_str is None:
@@ -300,7 +329,7 @@ def get_build_host(name: str, flake: Flake) -> RemoteSource | None:
     machine = Machine(name=name, flake=flake)
     inv_machine = machine.get_inv_machine()
 
-    source = "inventory"
+    source: Literal["inventory", "nix_machine"] = "inventory"
     target_host_str = inv_machine.get("deploy", {}).get("buildHost")
 
     if target_host_str is None:
