@@ -114,52 +114,6 @@ let
 in
 {
   imports = [
-    {
-      options.outputs.moduleForMachine = lib.mkOption {
-        type = lib.types.attrsOf lib.types.deferredModule;
-      };
-      config.outputs.moduleForMachine = lib.mkMerge [
-        # Create some modules for each machine
-        # These can depend on the 'name' and
-        # everything that can be derived from the machine 'name'
-        # i.e. by looking up the corresponding information in the 'inventory' or 'clan' submodule
-        (lib.mapAttrs (
-          name: v:
-          (
-            { ... }@args:
-            let
-              _class =
-                args._class or (throw ''
-                  Your version of nixpkgs is incompatible with the latest clan.
-                  Please update nixpkgs input to the latest nixos-unstable or nixpkgs-unstable.
-                  Run:
-                    nix flake update nixpkgs
-                '');
-            in
-            {
-              imports = [
-                (lib.modules.importApply ./machineModules/forName.nix {
-                  inherit (config.inventory) meta;
-                  inherit
-                    name
-                    directory
-                    ;
-                })
-                # Import the correct 'core' module
-                # We assume either:
-                # - nixosModules (_class = nixos)
-                # - darwinModules (_class = darwin)
-                (lib.optionalAttrs (clan-core ? "${_class}Modules") clan-core."${_class}Modules".clanCore)
-              ] ++ lib.optionals (_class == "nixos") (v.machineImports or [ ]);
-            }
-          )
-        ) inventoryClass.machines)
-
-        # The user can define some machine config here
-        # i.e. 'clan.machines.jon = ...'
-        config.machines
-      ];
-    }
     # Merge the inventory file
     {
       inventory = _: {
@@ -167,8 +121,8 @@ in
         config = inventoryLoaded;
       };
     }
-    # TODO: Figure out why this causes infinite recursion
     {
+      # TODO: Figure out why this causes infinite recursion
       inventory.machines = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (
         builtins.mapAttrs (_n: _v: { }) (
           lib.filterAttrs (_: t: t == "directory") (builtins.readDir "${directory}/machines")
@@ -178,71 +132,118 @@ in
     {
       inventory.machines = lib.mapAttrs (_n: _: { }) config.machines;
     }
-    # Merge the meta attributes from the buildClan function
-    {
-      inventory.modules = clan-core.clanModules;
-      inventory._legacyModules = clan-core.clanModules;
-    }
     # config.inventory.meta <- config.meta
-    { inventory.meta = config.meta; }
     # Set default for computed tags
     ./computed-tags.nix
   ];
 
-  specialArgs = {
-    self = lib.mkDefault config.self;
+  options.outputs.moduleForMachine = lib.mkOption {
+    type = lib.types.attrsOf lib.types.deferredModule;
   };
 
-  # Ready to use configurations
-  # These are only shallow wrapping the 'nixosModules' or 'darwinModules' with
-  # lib.nixosSystem
-  inherit nixosConfigurations;
-  inherit darwinConfigurations;
+  config = {
+    inventory.modules = clan-core.clanModules;
+    inventory._legacyModules = clan-core.clanModules;
+    # Merge the meta attributes from the buildClan function
+    inventory.meta = config.meta;
 
-  clanInternals = {
-    # Expose reusable modules these can be imported or wrapped or instantiated
-    # - by the user
-    # - by some test frameworks
-    # IMPORTANT!: It is utterly important that we don't add any logic outside of these modules, as it would get tested.
-    nixosModules = lib.filterAttrs (
-      name: _: inventory.machines.${name}.machineClass or "nixos" == "nixos"
-    ) (config.outputs.moduleForMachine);
-    darwinModules = lib.filterAttrs (
-      name: _: inventory.machines.${name}.machineClass or "nixos" == "darwin"
-    ) (config.outputs.moduleForMachine);
-
-    inherit inventoryClass;
-
-    # Endpoint that can be called to get a service schema
-    evalServiceSchema = clan-core.clanLib.evalServiceSchema config.self;
-
-    # TODO: unify this interface
-    # We should have only clan.modules. (consistent with clan.templates)
-    inherit (clan-core) clanModules clanLib;
-    modules = config.modules;
-
-    inherit inventoryFile;
-
-    templates = config.templates;
-    inventory = config.inventory;
-    # TODO: Remove this in about a month
-    # It is only here for backwards compatibility for people with older CLI versions
-    inventoryValuesPrios = inventoryClass.introspection;
-    meta = config.inventory.meta;
-    secrets = config.secrets;
-
-    source = "${clan-core}";
-
-    # machine specifics
-    machines = configsPerSystem;
-    all-machines-json =
-      lib.trace "Your clan-cli and the clan-core input have incompatible versions" lib.mapAttrs
+    outputs.moduleForMachine = lib.mkMerge [
+      # Create some modules for each machine
+      # These can depend on the 'name' and
+      # everything that can be derived from the machine 'name'
+      # i.e. by looking up the corresponding information in the 'inventory' or 'clan' submodule
+      (lib.mapAttrs (
+        name: v:
         (
-          system: configs:
-          nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (
-            lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs
-          )
+          { ... }@args:
+          let
+            _class =
+              args._class or (throw ''
+                Your version of nixpkgs is incompatible with the latest clan.
+                Please update nixpkgs input to the latest nixos-unstable or nixpkgs-unstable.
+                Run:
+                  nix flake update nixpkgs
+              '');
+          in
+          {
+            imports = [
+              (lib.modules.importApply ./machineModules/forName.nix {
+                inherit (config.inventory) meta;
+                inherit
+                  name
+                  directory
+                  ;
+              })
+              # Import the correct 'core' module
+              # We assume either:
+              # - nixosModules (_class = nixos)
+              # - darwinModules (_class = darwin)
+              (lib.optionalAttrs (clan-core ? "${_class}Modules") clan-core."${_class}Modules".clanCore)
+            ] ++ lib.optionals (_class == "nixos") (v.machineImports or [ ]);
+          }
         )
-        configsPerSystem;
+      ) inventoryClass.machines)
+
+      # The user can define some machine config here
+      # i.e. 'clan.machines.jon = ...'
+      config.machines
+    ];
+
+    specialArgs = {
+      self = lib.mkDefault config.self;
+    };
+
+    # Ready to use configurations
+    # These are only shallow wrapping the 'nixosModules' or 'darwinModules' with
+    # lib.nixosSystem
+    inherit nixosConfigurations;
+    inherit darwinConfigurations;
+
+    clanInternals = {
+      # Expose reusable modules these can be imported or wrapped or instantiated
+      # - by the user
+      # - by some test frameworks
+      # IMPORTANT!: It is utterly important that we don't add any logic outside of these modules, as it would get tested.
+      nixosModules = lib.filterAttrs (
+        name: _: inventory.machines.${name}.machineClass or "nixos" == "nixos"
+      ) (config.outputs.moduleForMachine);
+      darwinModules = lib.filterAttrs (
+        name: _: inventory.machines.${name}.machineClass or "nixos" == "darwin"
+      ) (config.outputs.moduleForMachine);
+
+      inherit inventoryClass;
+
+      # Endpoint that can be called to get a service schema
+      evalServiceSchema = clan-core.clanLib.evalServiceSchema config.self;
+
+      # TODO: unify this interface
+      # We should have only clan.modules. (consistent with clan.templates)
+      inherit (clan-core) clanModules clanLib;
+      modules = config.modules;
+
+      inherit inventoryFile;
+
+      templates = config.templates;
+      inventory = config.inventory;
+      # TODO: Remove this in about a month
+      # It is only here for backwards compatibility for people with older CLI versions
+      inventoryValuesPrios = inventoryClass.introspection;
+      meta = config.inventory.meta;
+      secrets = config.secrets;
+
+      source = "${clan-core}";
+
+      # machine specifics
+      machines = configsPerSystem;
+      all-machines-json =
+        lib.trace "Your clan-cli and the clan-core input have incompatible versions" lib.mapAttrs
+          (
+            system: configs:
+            nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (
+              lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs
+            )
+          )
+          configsPerSystem;
+    };
   };
 }
