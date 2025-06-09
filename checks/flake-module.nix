@@ -51,7 +51,6 @@ in
               postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
 
               dummy-inventory-test = import ./dummy-inventory-test nixosTestArgs;
-              admin = import ./admin nixosTestArgs;
               borgbackup = import ./borgbackup nixosTestArgs;
               data-mesher = import ./data-mesher nixosTestArgs;
               syncthing = import ./syncthing nixosTestArgs;
