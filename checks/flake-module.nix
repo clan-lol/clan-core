@@ -57,7 +57,6 @@ in
               syncthing = import ./syncthing nixosTestArgs;
               deltachat = import ./deltachat nixosTestArgs;
               ergochat = import ./ergochat nixosTestArgs;
-              garage = import ./garage nixosTestArgs;
               heisenbridge = import ./heisenbridge nixosTestArgs;
               mycelium = import ./mycelium nixosTestArgs;
             }

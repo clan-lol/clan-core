@@ -17,7 +17,7 @@ nixosLib.runTest (
 
     clan = {
       directory = ./.;
-      modules."@clan/garage" = ../../clanServices/garage/default.nix;
+      modules."@clan/garage" = ../../default.nix;
       inventory = {
         machines.server = { };
 
