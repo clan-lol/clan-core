@@ -21,7 +21,7 @@ nixosLib.runTest (
 
     clan = {
       directory = ./.;
-      modules."@clan/admin" = ../../clanServices/admin/default.nix;
+      modules."@clan/admin" = ../../default.nix;
       inventory = {
 
         machines.client = { };
