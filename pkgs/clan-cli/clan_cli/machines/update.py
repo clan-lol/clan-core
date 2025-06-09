@@ -22,7 +22,7 @@ from clan_cli.completions import (
 )
 from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.upload import upload_secrets
-from clan_cli.machines.list import list_machines
+from clan_cli.machines.list import list_full_machines
 from clan_cli.vars.generate import generate_vars
 from clan_cli.vars.upload import upload_secret_vars
 
@@ -225,7 +225,7 @@ def update_command(args: argparse.Namespace) -> None:
         machines: list[Machine] = []
         # if no machines are passed, we will update all machines
         selected_machines = (
-            args.machines if args.machines else list_machines(args.flake).keys()
+            args.machines if args.machines else list_full_machines(args.flake).keys()
         )
 
         if args.target_host is not None and len(args.machines) > 1:

@@ -18,8 +18,8 @@ def list_machines(flake: Flake) -> dict[str, InventoryMachine]:
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
-    machine = inventory.get("machines", {})
-    return machine
+    machines = inventory.get("machines", {})
+    return machines
 
 
 @API.register
