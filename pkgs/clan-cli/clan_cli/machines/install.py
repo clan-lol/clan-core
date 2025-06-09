@@ -156,7 +156,7 @@ def install_machine(opts: InstallOptions) -> None:
 
 
 def install_command(args: argparse.Namespace) -> None:
-    HostKeyCheck.from_str(args.host_key_check)
+    host_key_check = HostKeyCheck.from_str(args.host_key_check)
     try:
         # Only if the caller did not specify a target_host via args.target_host
         # Find a suitable target_host that is reachable
@@ -165,17 +165,17 @@ def install_command(args: argparse.Namespace) -> None:
 
         use_tor = False
         if deploy_info and not args.target_host:
-            host = find_reachable_host(deploy_info)
+            host = find_reachable_host(deploy_info, host_key_check)
             if host is None:
                 use_tor = True
-                target_host = deploy_info.tor.target
+                target_host = f"root@{deploy_info.tor}"
             else:
                 target_host = host.target
 
         if args.password:
             password = args.password
-        elif deploy_info and deploy_info.addrs[0].password:
-            password = deploy_info.addrs[0].password
+        elif deploy_info and deploy_info.pwd:
+            password = deploy_info.pwd
         else:
             password = None
 

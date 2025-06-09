@@ -35,6 +35,11 @@ This guide shows you how to configure `zerotier` either through `NixOS Options` 
     - The `new_machine` machine, which is the machine we want to add to the vpn network.
 
     ## 2. Configure the Inventory
+
+    Note: consider picking a more descriptive name for the VPN than "default".
+    It will be added as an altname for the Zerotier virtual ethernet interface, and
+    will also be visible in the Zerotier app.
+
     ```nix
     clan.inventory = {
       services.zerotier.default = {

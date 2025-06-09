@@ -1,5 +1,4 @@
 # ruff: noqa: SLF001
-import ipaddress
 import logging
 import os
 import shlex
@@ -48,12 +47,6 @@ class Remote:
     def __str__(self) -> str:
         return self.target
 
-    def is_ipv6(self) -> bool:
-        try:
-            return isinstance(ipaddress.ip_address(self.address), ipaddress.IPv6Address)
-        except ValueError:
-            return False
-
     @property
     def target(self) -> str:
         return f"{self.user}@{self.address}"
@@ -67,8 +60,6 @@ class Remote:
         host_key_check: HostKeyCheck,
         forward_agent: bool = True,
         private_key: Path | None = None,
-        password: str | None = None,
-        tor_socks: bool = False,
     ) -> "Remote":
         """
         Parse a deployment address and return a Host object.
@@ -80,8 +71,6 @@ class Remote:
             host_key_check=host_key_check,
             forward_agent=forward_agent,
             private_key=private_key,
-            password=password,
-            tor_socks=tor_socks,
         )
 
     def run_local(
@@ -308,18 +297,6 @@ class Remote:
             )
         return ssh_opts
 
-    def ssh_url(self) -> str:
-        """
-        Generates a standard SSH URL (ssh://[user@]host[:port]).
-        """
-        url = "ssh://"
-        if self.user:
-            url += f"{self.user}@"
-        url += self.address
-        if self.port:
-            url += f":{self.port}"
-        return url
-
     def ssh_cmd(
         self, verbose_ssh: bool = False, tty: bool = False, control_master: bool = True
     ) -> list[str]:
@@ -349,52 +326,18 @@ class Remote:
         ]
         return nix_shell(packages, cmd)
 
-    def check_sshpass_errorcode(self, res: subprocess.CompletedProcess) -> None:
-        """
-        Check the return code of the sshpass command and raise an error if it indicates a failure.
-        """
-        if res.returncode == 0:
-            return
-
-        match res.returncode:
-            case 1:
-                msg = "Invalid command line argument"
-                raise ClanError(msg)
-            case 2:
-                msg = "Conflicting arguments given"
-                raise ClanError(msg)
-            case 3:
-                msg = "General runtime error"
-                raise ClanError(msg)
-            case 4:
-                msg = "Unrecognized response from ssh (parse error)"
-                raise ClanError(msg)
-            case 5:
-                msg = "Invalid/incorrect password"
-                raise ClanError(msg)
-            case 6:
-                msg = "Host public key is unknown. sshpass exits without confirming the new key. Try using --host-key-heck none"
-                raise ClanError(msg)
-            case 7:
-                msg = "IP public key changed. sshpass exits without confirming the new key."
-                raise ClanError(msg)
-            case _:
-                msg = f"SSH command failed with return code {res.returncode}"
-                raise ClanError(msg)
-
     def interactive_ssh(self) -> None:
         cmd_list = self.ssh_cmd(tty=True, control_master=False)
-        res = subprocess.run(cmd_list, check=False)
+        subprocess.run(cmd_list)
 
-        self.check_sshpass_errorcode(res)
 
-    def is_ssh_reachable(self) -> bool:
-        address_family = socket.AF_INET6 if ":" in self.address else socket.AF_INET
-        with socket.socket(address_family, socket.SOCK_STREAM) as sock:
-            sock.settimeout(2)
-            try:
-                sock.connect((self.address, self.port or 22))
-            except OSError:
-                return False
-            else:
-                return True
+def is_ssh_reachable(host: Remote) -> bool:
+    address_family = socket.AF_INET6 if ":" in host.address else socket.AF_INET
+    with socket.socket(address_family, socket.SOCK_STREAM) as sock:
+        sock.settimeout(2)
+        try:
+            sock.connect((host.address, host.port or 22))
+        except OSError:
+            return False
+        else:
+            return True
