@@ -55,7 +55,6 @@ in
               data-mesher = import ./data-mesher nixosTestArgs;
               syncthing = import ./syncthing nixosTestArgs;
               ergochat = import ./ergochat nixosTestArgs;
-              heisenbridge = import ./heisenbridge nixosTestArgs;
             }
             // lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == "aarch64-linux") {
               # for some reason this hangs in an odd place in CI, but it works on my machine ...

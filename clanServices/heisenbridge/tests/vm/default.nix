@@ -18,7 +18,7 @@ nixosLib.runTest (
 
     clan = {
       directory = ./.;
-      modules."@clan/heisenbridge" = ../../clanServices/heisenbridge/default.nix;
+      modules."@clan/heisenbridge" = ../../default.nix;
       inventory = {
         machines.server = { };
 
