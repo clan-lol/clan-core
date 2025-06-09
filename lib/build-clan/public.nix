@@ -14,6 +14,8 @@
   topLevel = [
     "clanInternals"
     "nixosConfigurations"
+    "nixosModules"
     "darwinConfigurations"
+    "darwinModules"
   ];
 }

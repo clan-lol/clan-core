@@ -100,7 +100,7 @@ are loaded when using Clan:
       };
     in
     {
-      inherit (clan) nixosConfigurations clanInternals;
+      inherit (clan) nixosConfigurations nixosModules clanInternals;
 
       # elided for brevity
     };

@@ -7,11 +7,16 @@
   ...
 }:
 let
+  inherit (lib)
+    flip
+    mapAttrs'
+    ;
+
   inherit (config)
     directory
+    inventory
     pkgsForSystem
     specialArgs
-    inventory
     ;
 
   inherit (clan-core.clanLib.inventory) buildInventory;
@@ -74,6 +79,31 @@ let
       } // specialArgs;
     }
   ) allMachines;
+
+  # Expose reusable modules these can be imported or wrapped or instantiated
+  # - by the user
+  # - by some test frameworks
+  # IMPORTANT!: It is utterly important that we don't add any logic outside of these modules, as it would get tested.
+  nixosModules' = lib.filterAttrs (
+    name: _: inventory.machines.${name}.machineClass or "nixos" == "nixos"
+  ) (config.outputs.moduleForMachine);
+  darwinModules' = lib.filterAttrs (
+    name: _: inventory.machines.${name}.machineClass or "nixos" == "darwin"
+  ) (config.outputs.moduleForMachine);
+
+  nixosModules = flip mapAttrs' nixosModules' (
+    name: machineModule: {
+      name = "clan-machine-${name}";
+      value = machineModule;
+    }
+  );
+
+  darwinModules = flip mapAttrs' darwinModules' (
+    name: machineModule: {
+      name = "clan-machine-${name}";
+      value = machineModule;
+    }
+  );
 
   nixosConfigurations = lib.filterAttrs (name: _: machineClasses.${name} == "nixos") configurations;
   darwinConfigurations = lib.filterAttrs (name: _: machineClasses.${name} == "darwin") configurations;
@@ -180,6 +210,9 @@ in
               # - darwinModules (_class = darwin)
               (lib.optionalAttrs (clan-core ? "${_class}Modules") clan-core."${_class}Modules".clanCore)
             ] ++ lib.optionals (_class == "nixos") (v.machineImports or [ ]);
+
+            # default hostname
+            networking.hostName = lib.mkDefault name;
           }
         )
       ) inventoryClass.machines)
@@ -193,6 +226,10 @@ in
       self = lib.mkDefault config.self;
     };
 
+    # expose all machines as modules for re-use
+    inherit nixosModules;
+    inherit darwinModules;
+
     # Ready to use configurations
     # These are only shallow wrapping the 'nixosModules' or 'darwinModules' with
     # lib.nixosSystem
@@ -200,17 +237,6 @@ in
     inherit darwinConfigurations;
 
     clanInternals = {
-      # Expose reusable modules these can be imported or wrapped or instantiated
-      # - by the user
-      # - by some test frameworks
-      # IMPORTANT!: It is utterly important that we don't add any logic outside of these modules, as it would get tested.
-      nixosModules = lib.filterAttrs (
-        name: _: inventory.machines.${name}.machineClass or "nixos" == "nixos"
-      ) (config.outputs.moduleForMachine);
-      darwinModules = lib.filterAttrs (
-        name: _: inventory.machines.${name}.machineClass or "nixos" == "darwin"
-      ) (config.outputs.moduleForMachine);
-
       inherit inventoryClass;
 
       # Endpoint that can be called to get a service schema

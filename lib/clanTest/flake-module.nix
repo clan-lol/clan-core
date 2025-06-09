@@ -6,13 +6,14 @@
 }:
 let
   inherit (lib)
+    flatten
+    flip
+    mapAttrs'
+    mapAttrsToList
     mkOption
     removePrefix
     types
-    mapAttrsToList
-    flip
     unique
-    flatten
     ;
 
   clanLib = config.flake.clanLib;
@@ -143,7 +144,12 @@ in
         # Inherit all nodes from the clan
         # i.e. nodes.jon <- clan.machines.jon
         # clanInternals.nixosModules contains nixosModules per node
-        nodes = clanFlakeResult.clanInternals.nixosModules;
+        nodes = flip mapAttrs' clanFlakeResult.nixosModules (
+          name: machineModule: {
+            name = removePrefix "clan-machine-" name;
+            value = machineModule;
+          }
+        );
 
         # !WARNING: Write a detailed comment if adding new options here
         # We should be very careful about adding new options here because it affects all tests

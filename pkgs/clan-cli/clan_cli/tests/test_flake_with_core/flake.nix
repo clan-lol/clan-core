@@ -62,6 +62,6 @@
     in
     {
       clan = clan_attrs_json;
-      inherit (clan) nixosConfigurations clanInternals;
+      inherit (clan) nixosConfigurations nixosModules clanInternals;
     };
 }

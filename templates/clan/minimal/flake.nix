@@ -10,6 +10,6 @@
     in
     {
       # all machines managed by Clan
-      inherit (clan) nixosConfigurations clanInternals;
+      inherit (clan) nixosConfigurations nixosModules clanInternals;
     };
 }

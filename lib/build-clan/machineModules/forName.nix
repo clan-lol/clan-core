@@ -26,7 +26,4 @@
       inherit name;
     };
   };
-
-  # TODO: move into nixosModules
-  networking.hostName = lib.mkDefault name;
 }

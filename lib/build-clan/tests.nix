@@ -157,6 +157,24 @@ in
       ];
     };
 
+  test_machines_are_modules =
+    let
+      result = buildClan {
+        self = {
+          inputs = { };
+        };
+        directory = ../../.;
+        meta.name = "test-clan-core";
+      };
+    in
+    {
+      expr = builtins.attrNames result.nixosModules;
+      expected = [
+        "clan-machine-test-backup"
+        "clan-machine-test-inventory-machine"
+      ];
+    };
+
   test_buildClan_all_machines =
     let
       result = buildClan {
