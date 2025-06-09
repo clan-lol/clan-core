@@ -21,7 +21,6 @@ from clan_cli.completions import (
 from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.hardware import HardwareConfig
 from clan_cli.ssh.deploy_info import DeployInfo, find_reachable_host, ssh_command_parse
-from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.vars.generate import generate_vars
 
 log = logging.getLogger(__name__)
@@ -156,7 +155,6 @@ def install_machine(opts: InstallOptions) -> None:
 
 
 def install_command(args: argparse.Namespace) -> None:
-    host_key_check = HostKeyCheck.from_str(args.host_key_check)
     try:
         # Only if the caller did not specify a target_host via args.target_host
         # Find a suitable target_host that is reachable
@@ -165,17 +163,17 @@ def install_command(args: argparse.Namespace) -> None:
 
         use_tor = False
         if deploy_info and not args.target_host:
-            host = find_reachable_host(deploy_info, host_key_check)
+            host = find_reachable_host(deploy_info)
             if host is None:
                 use_tor = True
-                target_host = f"root@{deploy_info.tor}"
+                target_host = deploy_info.tor.target
             else:
                 target_host = host.target
 
         if args.password:
             password = args.password
-        elif deploy_info and deploy_info.pwd:
-            password = deploy_info.pwd
+        elif deploy_info and deploy_info.addrs[0].password:
+            password = deploy_info.addrs[0].password
         else:
             password = None
 
