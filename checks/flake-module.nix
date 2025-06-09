@@ -54,7 +54,6 @@ in
               borgbackup = import ./borgbackup nixosTestArgs;
               data-mesher = import ./data-mesher nixosTestArgs;
               syncthing = import ./syncthing nixosTestArgs;
-              deltachat = import ./deltachat nixosTestArgs;
               ergochat = import ./ergochat nixosTestArgs;
               heisenbridge = import ./heisenbridge nixosTestArgs;
             }

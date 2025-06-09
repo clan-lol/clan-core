@@ -17,7 +17,7 @@ nixosLib.runTest (
 
     clan = {
       directory = ./.;
-      modules."@clan/deltachat" = ../../clanServices/deltachat/default.nix;
+      modules."@clan/deltachat" = ../../default.nix;
       inventory = {
         machines.server = { };
 
