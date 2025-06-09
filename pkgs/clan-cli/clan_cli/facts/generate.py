@@ -18,7 +18,7 @@ from clan_cli.completions import (
     complete_machines,
     complete_services_for_machine,
 )
-from clan_cli.machines.list import list_machines
+from clan_cli.machines.list import list_full_machines
 
 from .check import check_secrets
 from .public_modules import FactStoreBase
@@ -227,7 +227,7 @@ def generate_command(args: argparse.Namespace) -> None:
         msg = "Could not find clan flake toplevel directory"
         raise ClanError(msg)
 
-    machines: list[Machine] = list(list_machines(args.flake).values())
+    machines: list[Machine] = list(list_full_machines(args.flake).values())
     if len(args.machines) > 0:
         machines = list(
             filter(

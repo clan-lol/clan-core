@@ -21,7 +21,7 @@ from clan_lib.templates import (
 )
 
 from clan_cli.completions import add_dynamic_completer, complete_tags
-from clan_cli.machines.list import list_machines
+from clan_cli.machines.list import list_full_machines
 
 log = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ def create_machine(
     log.info(f"Found template '{template.name}' in '{template.input_variant}'")
 
     machine_name = opts.machine.get("name")
-    if opts.template_name in list_machines(
+    if opts.template_name in list_full_machines(
         Flake(str(clan_dir))
     ) and not opts.machine.get("name"):
         msg = f"{opts.template_name} is already defined in {clan_dir}"

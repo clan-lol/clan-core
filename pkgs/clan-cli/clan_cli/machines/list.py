@@ -9,10 +9,9 @@ from clan_lib.api.modules import parse_frontmatter
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.machines.actions import get_machine
+from clan_lib.machines.actions import get_machine, list_machines
 from clan_lib.machines.machines import Machine
 from clan_lib.nix_models.clan import InventoryMachine
-from clan_lib.persist.inventory_store import InventoryStore
 
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.machines.hardware import HardwareConfig
@@ -20,29 +19,20 @@ from clan_cli.machines.hardware import HardwareConfig
 log = logging.getLogger(__name__)
 
 
-@API.register
-def list_inv_machines(flake: Flake) -> dict[str, InventoryMachine]:
-    """
-    List machines in the inventory for the UI.
-    """
-    inventory_store = InventoryStore(flake=flake)
-    inventory = inventory_store.read()
-
-    res = inventory.get("machines", {})
-    return res
-
-
-def list_machines(
+def list_full_machines(
     flake: Flake, nix_options: list[str] | None = None
 ) -> dict[str, Machine]:
-    inventory_store = InventoryStore(flake=flake)
-    inventory = inventory_store.read()
-    res = {}
+    """
+    Like `list_machines`, but returns a full 'machine' instance for each machine.
+    """
+    machines = list_machines(flake)
+
+    res: dict[str, Machine] = {}
 
     if nix_options is None:
         nix_options = []
 
-    for inv_machine in inventory.get("machines", {}).values():
+    for inv_machine in machines.values():
         name = inv_machine.get("name")
         # Technically, this should not happen, but we are defensive here.
         if name is None:
@@ -65,7 +55,7 @@ def query_machines_by_tags(flake: Flake, tags: list[str]) -> dict[str, Machine]:
     then only machines that have those respective tags specified will be listed.
     It is an intersection of the tags and machines.
     """
-    machines = list_machines(flake)
+    machines = list_full_machines(flake)
 
     filtered_machines = {}
     for machine in machines.values():
@@ -125,7 +115,7 @@ def list_command(args: argparse.Namespace) -> None:
         for name in query_machines_by_tags(flake, args.tags):
             print(name)
     else:
-        for name in list_machines(flake):
+        for name in list_full_machines(flake):
             print(name)
 
 

@@ -10,7 +10,7 @@ import { makePersisted } from "@solid-primitives/storage";
 import { useClanContext } from "@/src/contexts/clan";
 
 type MachinesModel = Extract<
-  OperationResponse<"list_inv_machines">,
+  OperationResponse<"list_machines">,
   { status: "success" }
 >["data"];
 
@@ -25,14 +25,14 @@ export const MachineListView: Component = () => {
   const { activeClanURI } = useClanContext();
 
   const inventoryQuery = useQuery<MachinesModel>(() => ({
-    queryKey: [activeClanURI(), "list_inv_machines"],
+    queryKey: [activeClanURI(), "list_machines"],
     placeholderData: {},
     enabled: !!activeClanURI(),
     queryFn: async () => {
       console.log("fetching inventory", activeClanURI());
       const uri = activeClanURI();
       if (uri) {
-        const response = await callApi("list_inv_machines", {
+        const response = await callApi("list_machines", {
           flake: {
             identifier: uri,
           },
@@ -60,7 +60,7 @@ export const MachineListView: Component = () => {
 
     await queryClient.invalidateQueries({
       // Invalidates the cache for of all types of machine list at once
-      queryKey: [clanURI, "list_inv_machines"],
+      queryKey: [clanURI, "list_machines"],
     });
   };
 
