@@ -3,6 +3,7 @@
     legacyPackages.setupNixInNix = ''
       export HOME=$TMPDIR
       export NIX_STATE_DIR=$TMPDIR/nix
+      export NIX_CONF_DIR=$TMPDIR/etc
       export IN_NIX_SANDBOX=1
       export CLAN_TEST_STORE=$TMPDIR/store
       # required to prevent concurrent 'nix flake lock' operations
