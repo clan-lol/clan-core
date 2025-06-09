@@ -51,6 +51,11 @@ lib.fix (clanLib: {
   jsonschema = import ./jsonschema { inherit lib; };
   facts = import ./facts.nix { inherit lib; };
 
+  # flakes
+  flakes = clanLib.callLib ./flakes.nix {
+    clan-core = self;
+  };
+
   # deprecated
   # remove when https://git.clan.lol/clan/clan-core/pulls/3212 is implemented
   inherit (self.inputs.nix-select.lib) select;
