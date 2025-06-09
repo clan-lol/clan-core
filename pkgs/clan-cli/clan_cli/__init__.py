@@ -9,10 +9,10 @@ from types import ModuleType
 from clan_lib.api import directory, disk, mdns_discovery, modules
 
 from .arg_actions import AppendOptionAction
-from .clan import show, update
+from .clan import show
 
 # API endpoints that are not used in the cli.
-__all__ = ["directory", "disk", "mdns_discovery", "modules", "update"]
+__all__ = ["directory", "disk", "mdns_discovery", "modules"]
 
 from clan_lib.custom_logger import setup_logging
 from clan_lib.dirs import get_clan_flake_toplevel_or_env
