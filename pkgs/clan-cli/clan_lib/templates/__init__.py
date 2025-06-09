@@ -7,6 +7,9 @@ from clan_lib.cmd import run
 from clan_lib.dirs import clan_templates
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
+from clan_lib.nix import (
+    nix_command,
+)
 
 log = logging.getLogger(__name__)
 
@@ -202,16 +205,26 @@ def list_templates(
     return result
 
 
-def realize_nix_path(clan_dir: Flake, nix_path: str) -> None:
+def realize_nix_path(flake: Flake, nix_store_path: str) -> None:
     """
     Downloads / realizes a nix path into the nix store
     """
 
-    if Path(nix_path).exists():
+    if Path(nix_store_path).exists():
         return
 
-    flake = Flake(identifier=nix_path, inputs_from=clan_dir.identifier)
-    flake.invalidate_cache()
+    cmd = [
+        "flake",
+        "prefetch",
+        "--inputs-from",
+        flake.identifier,
+        "--option",
+        "flake-registry",
+        "",
+        nix_store_path,
+    ]
+
+    run(nix_command(cmd))
 
 
 def get_template(
