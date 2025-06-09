@@ -20,18 +20,6 @@ from clan_cli.machines.hardware import HardwareConfig
 log = logging.getLogger(__name__)
 
 
-@API.register
-def list_inv_machines(flake: Flake) -> dict[str, InventoryMachine]:
-    """
-    List machines in the inventory for the UI.
-    """
-    inventory_store = InventoryStore(flake=flake)
-    inventory = inventory_store.read()
-
-    res = inventory.get("machines", {})
-    return res
-
-
 def list_machines(
     flake: Flake, nix_options: list[str] | None = None
 ) -> dict[str, Machine]:

@@ -11,6 +11,18 @@ from clan_lib.persist.util import set_value_by_path
 
 
 @API.register
+def list_machines(flake: Flake) -> dict[str, InventoryMachine]:
+    """
+    List machines in the inventory for the UI.
+    """
+    inventory_store = InventoryStore(flake=flake)
+    inventory = inventory_store.read()
+
+    machine = inventory.get("machines", {})
+    return machine
+
+
+@API.register
 def get_machine(flake: Flake, name: str) -> InventoryMachine:
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()

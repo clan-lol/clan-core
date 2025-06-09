@@ -63,7 +63,7 @@ export function CreateMachine() {
       reset(formStore);
 
       await queryClient.invalidateQueries({
-        queryKey: [active_dir, "list_inv_machines"],
+        queryKey: [active_dir, "list_machines"],
       });
 
       navigate("/machines");
