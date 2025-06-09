@@ -19,13 +19,7 @@ def parse_deployment_address(
     forward_agent: bool = True,
     meta: dict[str, Any] | None = None,
     private_key: Path | None = None,
-    password: str | None = None,
-    tor_socks: bool = False,
 ) -> "Remote":
-    if address.startswith("ssh://"):
-        # Strip the `ssh://` prefix if it exists
-        address = address[len("ssh://") :]
-
     parts = address.split("?", maxsplit=1)
     endpoint, maybe_options = parts if len(parts) == 2 else (parts[0], "")
 
@@ -72,10 +66,8 @@ def parse_deployment_address(
         user=user,
         port=port,
         private_key=private_key,
-        password=password,
         host_key_check=host_key_check,
         command_prefix=machine_name,
         forward_agent=forward_agent,
         ssh_options=options,
-        tor_socks=tor_socks,
     )
