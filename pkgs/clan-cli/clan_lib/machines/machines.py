@@ -15,9 +15,9 @@ from clan_cli.vars._types import StoreBase
 from clan_lib.api import API
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
+from clan_lib.machines.actions import get_machine
 from clan_lib.nix import nix_config, nix_test_store
 from clan_lib.nix_models.clan import InventoryMachine
-from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -38,16 +38,7 @@ class Machine:
     host_key_check: HostKeyCheck = HostKeyCheck.STRICT
 
     def get_inv_machine(self) -> "InventoryMachine":
-        inventory_store = InventoryStore(flake=self.flake)
-        inv = inventory_store.read()
-
-        inv_machine = inv.get("machines", {}).get(self.name, None)
-
-        if inv_machine is None:
-            msg = f"Machine '{self.name}' not found in clan"
-            raise ClanError(msg, description="Check your inventory configuration.")
-
-        return inv_machine
+        return get_machine(self.flake, self.name)
 
     def get_id(self) -> str:
         return f"{self.flake}#{self.name}"
