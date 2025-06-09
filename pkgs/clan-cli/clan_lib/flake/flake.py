@@ -568,7 +568,6 @@ class Flake:
     """
 
     identifier: str
-    inputs_from: str | None = None
     hash: str | None = None
     store_path: str | None = None
 
@@ -633,9 +632,6 @@ class Flake:
             "",
             self.identifier,
         ]
-
-        if self.inputs_from:
-            cmd += ["--inputs-from", self.inputs_from]
 
         flake_prefetch = run(nix_command(cmd))
         flake_metadata = json.loads(flake_prefetch.stdout)
