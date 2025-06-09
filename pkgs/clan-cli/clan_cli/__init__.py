@@ -5,15 +5,6 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
-# These imports are unused, but necessary for @API.register to run once.
-from clan_lib.api import directory, disk, mdns_discovery, modules
-
-from .arg_actions import AppendOptionAction
-from .clan import show
-
-# API endpoints that are not used in the cli.
-__all__ = ["directory", "disk", "mdns_discovery", "modules"]
-
 from clan_lib.custom_logger import setup_logging
 from clan_lib.dirs import get_clan_flake_toplevel_or_env
 from clan_lib.errors import ClanError
@@ -27,6 +18,8 @@ from . import (
     state,
     vms,
 )
+from .arg_actions import AppendOptionAction
+from .clan import show
 from .facts import cli as facts
 from .flash import cli as flash_cli
 from .hyperlink import help_hyperlink
