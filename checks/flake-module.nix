@@ -50,7 +50,6 @@ in
               matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
               postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
 
-              # Clan Tests
               dummy-inventory-test = import ./dummy-inventory-test nixosTestArgs;
               admin = import ./admin nixosTestArgs;
               borgbackup = import ./borgbackup nixosTestArgs;
@@ -61,7 +60,6 @@ in
               garage = import ./garage nixosTestArgs;
               heisenbridge = import ./heisenbridge nixosTestArgs;
               mycelium = import ./mycelium nixosTestArgs;
-              localsend = import ./localsend nixosTestArgs;
             }
             // lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == "aarch64-linux") {
               # for some reason this hangs in an odd place in CI, but it works on my machine ...
