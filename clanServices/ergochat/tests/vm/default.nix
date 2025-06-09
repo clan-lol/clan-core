@@ -16,7 +16,7 @@ nixosLib.runTest (
 
     clan = {
       directory = ./.;
-      modules."@clan/ergochat" = ../../clanServices/ergochat/default.nix;
+      modules."@clan/ergochat" = ../../default.nix;
       inventory = {
         machines.server = { };
 
