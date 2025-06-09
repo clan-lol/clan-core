@@ -1,5 +1,6 @@
 from clan_lib.api import API
 from clan_lib.errors import ClanError
+from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix_models.clan import (
     InventoryMachine,
@@ -9,13 +10,13 @@ from clan_lib.persist.util import set_value_by_path
 
 
 @API.register
-def get_machine(machine: Machine) -> InventoryMachine:
-    inventory_store = InventoryStore(flake=machine.flake)
+def get_machine(flake: Flake, name: str) -> InventoryMachine:
+    inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
-    machine_inv = inventory.get("machines", {}).get(machine.name)
+    machine_inv = inventory.get("machines", {}).get(name)
     if machine_inv is None:
-        msg = f"Machine {machine.name} not found in inventory"
+        msg = f"Machine {name} not found in inventory"
         raise ClanError(msg)
 
     return InventoryMachine(**machine_inv)
