@@ -18,7 +18,7 @@ nixosLib.runTest (
 
     clan = {
       directory = ./.;
-      modules."@clan/localsend" = ../../clanServices/localsend/default.nix;
+      modules."@clan/localsend" = ../../default.nix;
       inventory = {
         machines.server = { };
 
