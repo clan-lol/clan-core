@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, NotRequired, Protocol, TypedDict
+from typing import Any, NotRequired, Protocol, TypedDict, cast
 
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_file
@@ -145,20 +145,26 @@ class InventoryStore:
         Loads the evaluated inventory.
         After all merge operations with eventual nix code in buildClan.
 
-        Evaluates clanInternals.inventory with nix. Which is performant.
+        Evaluates clanInternals.inventoryClass.inventory with nix. Which is performant.
 
         - Contains all clan metadata
         - Contains all machines
         - and more
         """
-        raw_value = self._flake.select("clanInternals.inventoryClass.inventory")
+        raw_value = self.get_readonly_raw()
         if self._keys:
-            filtered = {k: v for k, v in raw_value.items() if k in self._keys}
+            filtered = cast(
+                InventorySnapshot,
+                {k: v for k, v in raw_value.items() if k in self._keys},
+            )
         else:
-            filtered = raw_value
+            filtered = cast(InventorySnapshot, raw_value)
         sanitized = sanitize(filtered, self._allowed_path_transforms, [])
 
         return sanitized
+
+    def get_readonly_raw(self) -> Inventory:
+        return self._flake.select("clanInternals.inventoryClass.inventory")
 
     def _get_persisted(self) -> InventorySnapshot:
         """
