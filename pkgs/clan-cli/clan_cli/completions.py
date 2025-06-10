@@ -8,7 +8,9 @@ from types import ModuleType
 from typing import Any
 
 from clan_lib.cmd import run
+from clan_lib.flake.flake import Flake
 from clan_lib.nix import nix_eval
+from clan_lib.persist.inventory_store import InventoryStore
 
 """
 This module provides dynamic completions.
@@ -311,45 +313,11 @@ def complete_tags(
                 flake = clan_dir_result
             else:
                 flake = "."
-            computed_tags_result = json.loads(
-                run(
-                    nix_eval(
-                        flags=[
-                            f"{flake}#clanInternals.inventory.tags",
-                            "--apply",
-                            "builtins.attrNames",
-                        ],
-                    ),
-                ).stdout.strip()
-            )
 
-            tags.extend(computed_tags_result)
-        except subprocess.CalledProcessError:
-            pass
-
-    def run_services_tags_cmd() -> None:
-        services_tags: list[str] = []
-        try:
-            if (clan_dir_result := clan_dir(None)) is not None:
-                flake = clan_dir_result
-            else:
-                flake = "."
-            services_tags_result = json.loads(
-                run(
-                    nix_eval(
-                        flags=[
-                            f"{flake}#clanInternals.inventory.services",
-                        ],
-                    ),
-                ).stdout.strip()
-            )
-            for service in services_tags_result.values():
-                for environment in service.values():
-                    roles = environment.get("roles", {})
-                    for role_details in roles.values():
-                        services_tags += role_details.get("tags", [])
-
-            tags.extend(services_tags)
+            inventory_store = InventoryStore(Flake(str(flake)))
+            inventory = inventory_store.get_readonly_raw()
+            if "tags" in inventory:
+                tags.extend(inventory["tags"].keys())
 
         except subprocess.CalledProcessError:
             pass
@@ -361,15 +329,11 @@ def complete_tags(
                 flake = clan_dir_result
             else:
                 flake = "."
-            machine_tags_result = json.loads(
-                run(
-                    nix_eval(
-                        flags=[
-                            f"{flake}#clanInternals.inventory.machines",
-                        ],
-                    ),
-                ).stdout.strip()
-            )
+            inventory_store = InventoryStore(Flake(str(flake)))
+            inventory = inventory_store.get_readonly_raw()
+            machine_tags_result = inventory.get("machines")
+            if machine_tags_result is None:
+                return
 
             for machine in machine_tags_result.values():
                 machine_tags.extend(machine.get("tags", []))
@@ -385,7 +349,6 @@ def complete_tags(
 
     functions_to_run = [
         run_computed_tags_cmd,
-        run_services_tags_cmd,
         run_machines_tags_cmd,
     ]
 
