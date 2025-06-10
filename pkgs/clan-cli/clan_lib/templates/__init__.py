@@ -1,15 +1,11 @@
 import logging
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any, Literal, NewType, TypedDict, cast
 
-from clan_lib.cmd import run
 from clan_lib.dirs import clan_templates
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
-from clan_lib.nix import (
-    nix_command,
-)
+from clan_lib.templates.filesystem import realize_nix_path
 
 log = logging.getLogger(__name__)
 
@@ -170,11 +166,6 @@ class InputPrio:
         return InputPrio(prioritize_self=True, input_names=input_names)
 
 
-def copy_from_nixstore(src: Path, dest: Path) -> None:
-    run(["cp", "-r", str(src), str(dest)])
-    run(["chmod", "-R", "u+w", str(dest)])
-
-
 @dataclass
 class TemplateList:
     inputs: dict[InputName, dict[TemplateName, Template]] = field(default_factory=dict)
@@ -203,28 +194,6 @@ def list_templates(
             result.inputs[input_name][template_name] = template
 
     return result
-
-
-def realize_nix_path(flake: Flake, nix_store_path: str) -> None:
-    """
-    Downloads / realizes a nix path into the nix store
-    """
-
-    if Path(nix_store_path).exists():
-        return
-
-    cmd = [
-        "flake",
-        "prefetch",
-        "--inputs-from",
-        flake.identifier,
-        "--option",
-        "flake-registry",
-        "",
-        nix_store_path,
-    ]
-
-    run(nix_command(cmd))
 
 
 def get_template(

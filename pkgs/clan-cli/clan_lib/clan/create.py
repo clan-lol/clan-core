@@ -11,9 +11,9 @@ from clan_lib.persist.inventory_store import InventorySnapshot, InventoryStore
 from clan_lib.templates import (
     InputPrio,
     TemplateName,
-    copy_from_nixstore,
     get_template,
 )
+from clan_lib.templates.filesystem import copy_from_nixstore
 
 log = logging.getLogger(__name__)
 

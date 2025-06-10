@@ -15,11 +15,11 @@ from clan_lib.templates import (
     ClanExports,
     InputName,
     TemplateName,
-    copy_from_nixstore,
     get_clan_nix_attrset,
     get_template,
     list_templates,
 )
+from clan_lib.templates.filesystem import copy_from_nixstore
 
 
 # Function to write clan attributes to a file

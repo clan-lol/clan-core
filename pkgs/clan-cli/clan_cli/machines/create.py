@@ -16,9 +16,9 @@ from clan_lib.persist.util import set_value_by_path
 from clan_lib.templates import (
     InputPrio,
     TemplateName,
-    copy_from_nixstore,
     get_template,
 )
+from clan_lib.templates.filesystem import copy_from_nixstore
 
 from clan_cli.completions import add_dynamic_completer, complete_tags
 from clan_cli.machines.list import list_full_machines
