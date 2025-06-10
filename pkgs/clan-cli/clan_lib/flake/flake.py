@@ -792,61 +792,6 @@ class Flake:
         if self.flake_cache_path:
             self._cache.save_to_file(self.flake_cache_path)
 
-    def uncached_nix_eval_with_args(
-        self,
-        attr_path: str,
-        f_args: dict[str, str],
-        nix_options: list[str] | None = None,
-    ) -> str:
-        """
-        Calls a nix function with the provided arguments 'f_args'
-        The argument must be an attribute set.
-
-         Args:
-            attr_path (str): The attribute path to the nix function
-            f_args (dict[str, nix_expr]): A python dictionary mapping from the name of the argument to a raw nix expression.
-
-        Example
-
-        flake.uncached_nix_eval_with_args(
-            "clanInternals.evalServiceSchema",
-            { "moduleSpec": "{ name = \"hello-world\"; input = null; }" }
-        )
-        > '{ ...JSONSchema... }'
-
-        """
-        from clan_lib.cmd import Log, RunOpts, run
-        from clan_lib.nix import (
-            nix_eval,
-            nix_test_store,
-        )
-
-        # Always prefetch, so we don't get any stale information
-        self.prefetch()
-
-        if nix_options is None:
-            nix_options = []
-
-        arg_expr = "{"
-        for arg_name, arg_value in f_args.items():
-            arg_expr += f"  {arg_name} = {arg_value}; "
-        arg_expr += "}"
-
-        nix_code = f"""
-            let
-              flake = builtins.getFlake "path:{self.store_path}?narHash={self.hash}";
-            in
-              flake.{attr_path} {arg_expr}
-        """
-        if tmp_store := nix_test_store():
-            nix_options += ["--store", str(tmp_store)]
-            nix_options.append("--impure")
-
-        output = run(
-            nix_eval(["--expr", nix_code, *nix_options]), RunOpts(log=Log.NONE)
-        ).stdout.strip()
-
-        return output
 
     def precache(
         self,
