@@ -50,31 +50,37 @@ def substitute(
 ) -> None:
     sops_key = str(flake.joinpath("sops.key"))
     buf = ""
+
+    clan_core_replacement = None
+    if clan_core_flake:
+        clan_core_replacement = f"path://{clan_core_flake}"
+
+        if not nix_test_store():
+            _flake = Flake(str(clan_core_flake))
+            _flake.prefetch()
+
+            assert _flake.hash, "Clan core flake hash is empty"
+            assert _flake.store_path, "Clan core flake store path is empty"
+            clan_core_replacement = f"path://{_flake.store_path}?narHash={_flake.hash}"
+
     with file.open() as f:
         for line in f:
-            line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
-            if clan_core_flake:
-                _flake = Flake(str(clan_core_flake))
-                _flake.prefetch()
-
-                assert _flake.hash, "Clan core flake hash is empty"
-                assert _flake.store_path, "Clan core flake store path is empty"
-
+            if clan_core_replacement:
+                line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
+                line = line.replace("__CLAN_CORE__", clan_core_replacement)
                 line = line.replace(
-                    "__CLAN_CORE__", f"path:{_flake.store_path}?narHash={_flake.hash}"
-                )
-                line = line.replace(
-                    "git+https://git.clan.lol/clan/clan-core",
-                    f"path:{_flake.store_path}?narHash={_flake.hash}",
+                    "git+https://git.clan.lol/clan/clan-core", clan_core_replacement
                 )
                 line = line.replace(
                     "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
-                    f"path:{_flake.store_path}?narHash={_flake.hash}",
+                    clan_core_replacement,
                 )
                 line = line.replace("__INVENTORY_EXPR__", str(inventory_expr))
+
             line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
             line = line.replace("__CLAN_SOPS_KEY_DIR__", str(flake / "facts"))
             buf += line
+
     print(f"file: {file}")
     print(f"clan_core: {clan_core_flake}")
     print(f"flake: {flake}")
@@ -133,11 +139,24 @@ class ClanFlake:
         self.machines = nested_dict()
 
         clan_core_flake = Flake(str(CLAN_CORE))
-        clan_core_flake.prefetch()
+
+        clan_core_replacement = f"path://{clan_core_flake}"
+
+        # If the test doesnt define a nix_test_store, we assume it is running from a local pytest
+        # and we need to prefetch the clan core flake, this would fail in a nix build
+        # But is required for local testing
+        if not nix_test_store():
+            clan_core_flake.prefetch()
+
+            assert clan_core_flake.hash, "Clan core flake hash is empty"
+            assert clan_core_flake.store_path, "Clan core flake store path is empty"
+            clan_core_replacement = (
+                f"path://{clan_core_flake.store_path}?narHash={clan_core_flake.hash}"
+            )
 
         self.substitutions: dict[str, str] = {
-            "git+https://git.clan.lol/clan/clan-core": f"path://{clan_core_flake.store_path}?narHash={clan_core_flake.hash}",
-            "https://git.clan.lol/clan/clan-core/archive/main.tar.gz": f"path://{clan_core_flake.store_path}?narHash={clan_core_flake.hash}",
+            "git+https://git.clan.lol/clan/clan-core": clan_core_replacement,
+            "https://git.clan.lol/clan/clan-core/archive/main.tar.gz": clan_core_replacement,
         }
         self.clan_modules: list[str] = []
         self.temporary_home = temporary_home
