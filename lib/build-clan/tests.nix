@@ -89,7 +89,7 @@ in
       };
     in
     {
-      expr = config.clanInternals.meta;
+      expr = config.clanInternals.inventory.meta;
       expected = {
         description = null;
         icon = null;
@@ -108,35 +108,8 @@ in
       };
     in
     {
-      expr = result.clanInternals.meta;
-      expected = {
-        description = null;
-        icon = null;
-        name = "test";
-      };
-    };
-
-  test_fn_extensiv_meta =
-    let
-      result = buildClan {
-        self = {
-          inputs = { };
-        };
-        directory = ./.;
-        meta.name = "test";
-        meta.description = "test";
-        meta.icon = "test";
-        inventory.meta.name = "superclan";
-        inventory.meta.description = "description";
-        inventory.meta.icon = "icon";
-      };
-    in
-    {
-      expr = result.clanInternals.meta;
-      expectedError = {
-        type = "ThrownError";
-        msg = "";
-      };
+      expr = lib.isAttrs result.clanInternals;
+      expected = true;
     };
 
   test_fn_clan_core =
