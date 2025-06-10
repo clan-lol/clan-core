@@ -13,16 +13,15 @@ let
 
   publicAttrs = import ../lib/build-clan/public.nix;
   # Create output options only for listed attributes
+  # TODO: Refactor this into an explicit module, so we can have description and other attributes to be listed in flake-parts
   outputModule = {
     clan = lib.genAttrs publicAttrs.clan (
-      name:
-      config.clan.clanInternals.${name}
-        or (throw "Output: clanInternals.${name} not found. Check: ${config.file}")
+      name: config.clan.${name} or (throw "Output: clan.${name} not found.")
     );
     topLevel = {
       options = lib.genAttrs publicAttrs.topLevel (_: lib.mkOption { });
       config = lib.genAttrs publicAttrs.topLevel (
-        name: config.clan.${name} or (throw "Output: clan.${name} not found. See: ${config.file}")
+        name: config.clan.${name} or (throw "Output: clan.${name} not found.")
       );
     };
   };

@@ -150,7 +150,9 @@ in
             inventory._inventoryFile = file;
           }
         ];
-        inventory = inventoryLoaded;
+        # Weirdly this works only if it is a function
+        # This seems to be a bug in nixpkgs
+        inventory = _: lib.setDefaultModuleLocation file inventoryLoaded;
       }
     )
     {

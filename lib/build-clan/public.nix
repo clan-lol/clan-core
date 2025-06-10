@@ -5,7 +5,7 @@
   This list is used to guarantee equivalent attribute sets for both flake-parts and buildClan users.
 */
 {
-  # flake.clan.{name} <- clanInternals.{name}
+  # flake.clan.{name} <- clan.{name}
   clan = [
     "templates"
     "modules"
