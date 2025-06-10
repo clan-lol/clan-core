@@ -97,6 +97,12 @@ in
     ./assertions.nix
   ];
   options = {
+    _inventoryFile = lib.mkOption {
+      type = types.path;
+      readOnly = true;
+      internal = true;
+      visible = false;
+    };
     _legacyModules = lib.mkOption {
       internal = true;
       visible = false;

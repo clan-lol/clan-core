@@ -133,24 +133,28 @@ let
     ) supportedSystems
   );
 
-  inventoryFile = "${directory}/inventory.json";
-
-  inventoryLoaded =
-    if builtins.pathExists inventoryFile then
-      (builtins.fromJSON (builtins.readFile inventoryFile))
-    else
-      { };
-
 in
 {
   imports = [
-    # Merge the inventory file
-    {
-      inventory = _: {
-        _file = inventoryFile;
-        config = inventoryLoaded;
-      };
-    }
+    (
+      { ... }:
+      let
+        file = "${directory}/inventory.json";
+
+        inventoryLoaded =
+          if builtins.pathExists file then (builtins.fromJSON (builtins.readFile file)) else { };
+      in
+      {
+        imports = [
+          {
+            inventory._inventoryFile = file;
+          }
+        ];
+        # Weirdly this works only if it is a function
+        # This seems to be a bug in nixpkgs
+        inventory = _: lib.setDefaultModuleLocation file inventoryLoaded;
+      }
+    )
     {
       # TODO: Figure out why this causes infinite recursion
       inventory.machines = lib.optionalAttrs (builtins.pathExists "${directory}/machines") (
@@ -238,38 +242,18 @@ in
 
     clanInternals = {
       inherit inventoryClass;
-
-      # Endpoint that can be called to get a service schema
-      evalServiceSchema = clan-core.clanLib.evalServiceSchema config.self;
+      inventory = config.inventory;
 
       # TODO: unify this interface
       # We should have only clan.modules. (consistent with clan.templates)
-      inherit (clan-core) clanModules clanLib;
-      modules = config.modules;
-
-      inherit inventoryFile;
+      inherit (clan-core) clanModules;
 
       templates = config.templates;
-      inventory = config.inventory;
-      # TODO: Remove this in about a month
-      # It is only here for backwards compatibility for people with older CLI versions
-      inventoryValuesPrios = inventoryClass.introspection;
-      meta = config.inventory.meta;
-      secrets = config.secrets;
 
-      source = "${clan-core}";
+      secrets = config.secrets;
 
       # machine specifics
       machines = configsPerSystem;
-      all-machines-json =
-        lib.trace "Your clan-cli and the clan-core input have incompatible versions" lib.mapAttrs
-          (
-            system: configs:
-            nixpkgs.legacyPackages.${system}.writers.writeJSON "machines.json" (
-              lib.mapAttrs (_: m: m.config.system.clan.deployment.data) configs
-            )
-          )
-          configsPerSystem;
     };
   };
 }
