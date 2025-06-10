@@ -242,13 +242,13 @@ in
 
     clanInternals = {
       inherit inventoryClass;
+      # TODO: remove this after a month or so
+      # This is here for backwards compatibility for older CLI versions
       inventory = config.inventory;
 
       # TODO: unify this interface
       # We should have only clan.modules. (consistent with clan.templates)
       inherit (clan-core) clanModules;
-
-      templates = config.templates;
 
       secrets = config.secrets;
 
