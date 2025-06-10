@@ -1,4 +1,5 @@
 {
+  _class,
   pkgs,
   config,
   lib,
@@ -30,8 +31,13 @@ in
     };
 
     clan.core.vars.generators.user-password = {
-      files.user-password-hash.neededFor = "users";
-      files.user-password-hash.restartUnits = lib.optional (config.services.userborn.enable) "userborn.service";
+      files.user-password-hash =
+        {
+          neededFor = "users";
+        }
+        // (lib.optionalAttrs (_class == "nixos") {
+          restartUnits = lib.optional (config.services.userborn.enable) "userborn.service";
+        });
 
       prompts.user-password.type = "hidden";
       prompts.user-password.persist = true;
