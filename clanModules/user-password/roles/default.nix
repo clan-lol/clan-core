@@ -19,7 +19,10 @@ in
       type = lib.types.bool;
       default = true;
       example = false;
-      description = "Whether the user should be prompted.";
+      description = ''
+        Whether the user should be prompted
+        If disabled, will autogenerate the password without prompting.
+      '';
     };
   };
 
