@@ -11,6 +11,7 @@ from .secrets import update_secrets
 from .sops import (
     default_admin_private_key_path,
     generate_private_key,
+    load_age_plugins,
     maybe_get_admin_public_key,
 )
 
@@ -51,7 +52,11 @@ def show_command(args: argparse.Namespace) -> None:
 
 def update_command(args: argparse.Namespace) -> None:
     flake_dir = args.flake.path
-    commit_files(update_secrets(flake_dir), flake_dir, "Updated secrets with new keys.")
+    commit_files(
+        update_secrets(flake_dir, age_plugins=load_age_plugins(args.flake)),
+        flake_dir,
+        "Updated secrets with new keys",
+    )
 
 
 def register_key_parser(parser: argparse.ArgumentParser) -> None:
