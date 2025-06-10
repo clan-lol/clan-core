@@ -17,6 +17,7 @@
     { config, pkgs, ... }:
     {
       packages = {
+        agit = pkgs.callPackage ./agit { };
         tea-create-pr = pkgs.callPackage ./tea-create-pr { };
         zerotier-members = pkgs.callPackage ./zerotier-members { };
         zt-tcp-relay = pkgs.callPackage ./zt-tcp-relay { };
