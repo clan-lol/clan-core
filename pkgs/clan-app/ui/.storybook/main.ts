@@ -8,7 +8,6 @@ const config: StorybookConfig = {
     "@storybook/addon-links",
     "@storybook/addon-docs",
     "@storybook/addon-a11y",
-    "@storybook/addon-onboarding",
   ],
   async viteFinal(config) {
     return mergeConfig(config, {

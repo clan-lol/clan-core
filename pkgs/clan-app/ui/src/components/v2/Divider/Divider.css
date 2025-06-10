@@ -1,0 +1,15 @@
+div.divider {
+  @apply bg-inv-2;
+
+  &.inverted {
+    @apply bg-def-3;
+  }
+
+  &.horizontal {
+    @apply w-full h-px;
+  }
+
+  &.vertical {
+    @apply h-full w-px;
+  }
+}

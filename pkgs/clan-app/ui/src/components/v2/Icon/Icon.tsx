@@ -1,5 +1,5 @@
 import cx from "classnames";
-import { Component, JSX, Show, splitProps } from "solid-js";
+import { Component, JSX, splitProps } from "solid-js";
 import ArrowBottom from "@/icons/arrow-bottom.svg";
 import ArrowLeft from "@/icons/arrow-left.svg";
 import ArrowRight from "@/icons/arrow-right.svg";
@@ -45,8 +45,9 @@ import Offline from "@/icons/offline.svg";
 import Switch from "@/icons/switch.svg";
 import Tag from "@/icons/tag.svg";
 import Machine from "@/icons/machine.svg";
-import Loader from "@/icons/loader.svg";
 import { Dynamic } from "solid-js/web";
+
+import { Color, fgClass } from "../colors";
 
 const icons = {
   AI,
@@ -98,24 +99,43 @@ const icons = {
 
 export type IconVariant = keyof typeof icons;
 
+const viewBoxes: Partial<Record<IconVariant, string>> = {
+  ClanIcon: "0 0 72 89",
+  Offline: "0 0 38 27",
+};
+
 export interface IconProps extends JSX.SvgSVGAttributes<SVGElement> {
   icon: IconVariant;
   class?: string;
   size?: number | string;
+  color?: Color;
+  inverted?: boolean;
 }
 
 const Icon: Component<IconProps> = (props) => {
-  const [local, iconProps] = splitProps(props, ["icon", "class"]);
+  const [local, iconProps] = splitProps(props, [
+    "icon",
+    "color",
+    "class",
+    "size",
+    "inverted",
+  ]);
 
   const IconComponent = () => icons[local.icon];
+
+  // we need to adjust the view box for certain icons
+  const viewBox = () => viewBoxes[local.icon] ?? "0 0 48 48";
 
   return IconComponent() ? (
     <Dynamic
       component={IconComponent()}
-      class={cx("icon", local.class)}
-      width={iconProps.size || "1em"}
-      height={iconProps.size || "1em"}
-      viewBox="0 0 48 48"
+      class={cx("icon", local.class, fgClass(local.color, local.inverted), {
+        inverted: local.inverted,
+      })}
+      data-icon-name={local.icon}
+      width={local.size || "1em"}
+      height={local.size || "1em"}
+      viewBox={viewBox()}
       ref={iconProps.ref}
       {...iconProps}
     />

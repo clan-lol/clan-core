@@ -1,35 +1,13 @@
-import { type JSX, mergeProps } from "solid-js";
+import { type JSX } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import cx from "classnames";
 import "./Typography.css";
+import { Color, fgClass } from "@/src/components/v2/colors";
 
 export type Tag = "span" | "p" | "h1" | "h2" | "h3" | "h4" | "div";
-export type Color = "primary" | "secondary" | "tertiary" | "quaternary";
 export type Hierarchy = "body" | "title" | "headline" | "label" | "teaser";
 export type Weight = "normal" | "medium" | "bold";
 export type Family = "regular" | "condensed" | "mono";
-
-const colorMap: Record<Color, string> = {
-  primary: cx("fg-def-1"),
-  secondary: cx("fg-def-2"),
-  tertiary: cx("fg-def-3"),
-  quaternary: cx("fg-def-4"),
-};
-
-const invertedColorMap: Record<Color, string> = {
-  primary: cx("fg-inv-1"),
-  secondary: cx("fg-inv-2"),
-  tertiary: cx("fg-inv-3"),
-  quaternary: cx("fg-inv-4"),
-};
-
-const colorFor = (color: Color | "inherit" = "primary", inverted = false) => {
-  if (color === "inherit") {
-    return "text-inherit";
-  }
-
-  return inverted ? invertedColorMap[color] : colorMap[color];
-};
 
 // type Size = "default" | "xs" | "s" | "m" | "l";
 interface SizeForHierarchy {
@@ -63,30 +41,30 @@ export type AllowedSizes<H extends Hierarchy> = keyof SizeForHierarchy[H];
 
 const sizeHierarchyMap: SizeForHierarchy = {
   body: {
-    default: cx("font-size-default"),
-    s: cx("font-size-s"),
-    xs: cx("font-size-xs"),
-    xxs: cx("font-size-xxs"),
+    default: cx("size-default"),
+    s: cx("size-s"),
+    xs: cx("size-xs"),
+    xxs: cx("size-xxs"),
   },
   headline: {
-    default: cx("font-size-default"),
-    m: cx("font-size-m"),
-    l: cx("font-size-l"),
+    default: cx("size-default"),
+    m: cx("size-m"),
+    l: cx("size-l"),
   },
   title: {
-    default: cx("font-size-default"),
-    // xs: cx("font-size-xs"),
-    // s: cx("font-size-s"),
-    m: cx("font-size-m"),
-    l: cx("font-size-l"),
+    default: cx("size-default"),
+    // xs: cx("size-xs"),
+    // s: cx("size-s"),
+    m: cx("size-m"),
+    l: cx("size-l"),
   },
   label: {
-    default: cx("font-size-default"),
-    s: cx("font-size-s"),
-    xs: cx("font-size-xs"),
+    default: cx("size-default"),
+    s: cx("size-s"),
+    xs: cx("size-xs"),
   },
   teaser: {
-    default: cx("font-size-default"),
+    default: cx("size-default"),
   },
 };
 
@@ -99,50 +77,43 @@ const defaultFamilyMap: Record<Hierarchy, Family> = {
 };
 
 const weightMap: Record<Weight, string> = {
-  normal: cx("font-weight-normal"),
-  medium: cx("font-weight-medium"),
-  bold: cx("font-weight-bold"),
+  normal: cx("weight-normal"),
+  medium: cx("weight-medium"),
+  bold: cx("weight-bold"),
 };
 
 interface _TypographyProps<H extends Hierarchy> {
   hierarchy: H;
   size: AllowedSizes<H>;
-  color?: Color | "inherit";
+  color?: Color;
   children: JSX.Element;
   weight?: Weight;
   family?: Family;
   inverted?: boolean;
   tag?: Tag;
   class?: string;
-  classList?: Record<string, boolean>;
 }
 
 export const Typography = <H extends Hierarchy>(props: _TypographyProps<H>) => {
   const family = () =>
-    `font-family-${props.family || defaultFamilyMap[props.hierarchy]}`;
-
-  const color = () => colorFor(props.color, props.inverted);
-
-  const classList = mergeProps(props.classList, {
-    "font-body": props.hierarchy === "body" || !props.hierarchy,
-    "font-label": props.hierarchy === "label",
-    "font-title": props.hierarchy === "title",
-    "font-headline": props.hierarchy === "headline",
-    "font-teaser": props.hierarchy === "teaser",
-  });
+    `family-${props.family || defaultFamilyMap[props.hierarchy]}`;
+  const hierarchy = () => props.hierarchy || "body";
+  const size = () => sizeHierarchyMap[props.hierarchy][props.size] as string;
+  const weight = () => weightMap[props.weight || "normal"];
+  const color = () => fgClass(props.color, props.inverted);
 
   return (
     <Dynamic
       class={cx(
         "typography",
-        color(),
+        hierarchy(),
         family(),
-        weightMap[props.weight || "normal"],
-        sizeHierarchyMap[props.hierarchy][props.size] as string,
+        weight(),
+        size(),
+        color(),
         props.class,
       )}
       component={props.tag || "span"}
-      classList={classList}
     >
       {props.children}
     </Dynamic>

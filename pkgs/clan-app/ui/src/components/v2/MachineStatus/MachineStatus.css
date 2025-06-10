@@ -1,0 +1,19 @@
+span.tag-status {
+  @apply flex items-center gap-1;
+
+  .indicator {
+    @apply w-1.5 h-1.5 rounded-full m-1.5;
+  }
+
+  &.online > .indicator {
+    background-color: #0ae856; /* todo get from theme */
+  }
+
+  &.offline > .indicator {
+    background-color: #ff2c78; /* todo get from theme */
+  }
+
+  &.installed > .indicator {
+    background-color: var(--clr-fg-inv-3);
+  }
+}

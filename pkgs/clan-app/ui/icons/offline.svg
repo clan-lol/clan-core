@@ -1,13 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="38" height="27" viewBox="0 0 38 27" fill="none">
-    <rect x="4.46155" y="4.15381" width="4.15385" height="4.15385" fill="black"/>
-    <rect x="29.3846" y="4.15381" width="4.15385" height="4.15385" fill="black"/>
-    <rect x="8.61539" width="4.15385" height="4.15385" fill="black"/>
-    <rect x="33.5385" width="4.15385" height="4.15385" fill="black"/>
-    <rect x="0.307678" width="4.15385" height="4.15385" fill="black"/>
-    <rect x="25.2308" width="4.15385" height="4.15385" fill="black"/>
-    <rect x="0.307678" y="8.30762" width="4.15385" height="4.15385" fill="black"/>
-    <rect x="25.2308" y="8.30762" width="4.15385" height="4.15385" fill="black"/>
-    <rect x="8.61539" y="8.30762" width="4.15385" height="4.15385" fill="black"/>
-    <rect x="33.5385" y="8.30762" width="4.15385" height="4.15385" fill="black"/>
-    <rect x="4" y="23" width="30" height="4" fill="black"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="38" height="27" viewBox="0 0 38 27" fill="currentColor">
+    <rect x="4.46155" y="4.15381" width="4.15385" height="4.15385"/>
+    <rect x="29.3846" y="4.15381" width="4.15385" height="4.15385"/>
+    <rect x="8.61539" width="4.15385" height="4.15385"/>
+    <rect x="33.5385" width="4.15385" height="4.15385"/>
+    <rect x="0.307678" width="4.15385" height="4.15385"/>
+    <rect x="25.2308" width="4.15385" height="4.15385"/>
+    <rect x="0.307678" y="8.30762" width="4.15385" height="4.15385"/>
+    <rect x="25.2308" y="8.30762" width="4.15385" height="4.15385"/>
+    <rect x="8.61539" y="8.30762" width="4.15385" height="4.15385"/>
+    <rect x="33.5385" y="8.30762" width="4.15385" height="4.15385"/>
+    <rect x="4" y="23" width="30" height="4"/>
 </svg>

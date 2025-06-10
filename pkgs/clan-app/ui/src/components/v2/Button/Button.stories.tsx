@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@kachurun/storybook-solid";
 import { Button, ButtonProps } from "./Button";
 import { Component } from "solid-js";
 import { expect, fn, waitFor } from "storybook/test";
-import { PlayFunctionContext } from "storybook/internal/csf";
 import { StoryContext } from "@kachurun/storybook-solid-vite";
 
 const getCursorStyle = (el: Element) => window.getComputedStyle(el).cursor;
@@ -150,7 +149,7 @@ export const Primary: Story = {
     hierarchy: "primary",
     onAction: fn(async () => {
       // wait 500 ms to simulate an action
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       // randomly fail to check that the loading state still returns to normal
       if (Math.random() > 0.5) {
         throw new Error("Action failure");
@@ -159,6 +158,7 @@ export const Primary: Story = {
   },
   parameters: {
     test: {
+      // increase test timeout to allow for the loading action
       mockTimers: true,
     },
   },
@@ -205,14 +205,17 @@ export const Primary: Story = {
         });
 
         // wait for the action handler to finish
-        await waitFor(async () => {
-          // the loading class should be removed
-          await expect(button).not.toHaveClass("loading");
-          // the loader should be hidden
-          await expect(loader.clientWidth).toEqual(0);
-          // the pointer should be normal
-          await expect(getCursorStyle(button)).toEqual("pointer");
-        });
+        await waitFor(
+          async () => {
+            // the loading class should be removed
+            await expect(button).not.toHaveClass("loading");
+            // the loader should be hidden
+            await expect(loader.clientWidth).toEqual(0);
+            // the pointer should be normal
+            await expect(getCursorStyle(button)).toEqual("pointer");
+          },
+          { timeout: 1500 },
+        );
       });
     }
   },
