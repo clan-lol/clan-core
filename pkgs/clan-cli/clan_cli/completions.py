@@ -49,19 +49,10 @@ def complete_machines(
                 flake = clan_dir_result
             else:
                 flake = "."
-            services_result = json.loads(
-                run(
-                    nix_eval(
-                        flags=[
-                            f"{flake}#clanInternals.machines.x86_64-linux",
-                            "--apply",
-                            "builtins.attrNames",
-                        ],
-                    ),
-                ).stdout.strip()
-            )
 
-            machines.extend(services_result)
+            inventory = InventoryStore(Flake(str(flake))).read()
+            machines.extend(inventory.get("machines", {}).keys())
+
         except subprocess.CalledProcessError:
             pass
 

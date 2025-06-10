@@ -194,7 +194,8 @@ in
       visible = false;
       # ClanInternals
       type = types.submodule {
-        freeformType = types.attrsOf types.raw;
+        # Uncomment this if you want to add more stuff while debugging
+        # freeformType = types.attrsOf types.raw;
         options = {
           # Those options are interfaced by the CLI
           # We don't specify the type here, for better performance.
