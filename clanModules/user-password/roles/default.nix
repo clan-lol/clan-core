@@ -1,5 +1,4 @@
 {
-  _class,
   pkgs,
   config,
   lib,
@@ -34,13 +33,8 @@ in
     };
 
     clan.core.vars.generators.user-password = {
-      files.user-password-hash =
-        {
-          neededFor = "users";
-        }
-        // (lib.optionalAttrs (_class == "nixos") {
-          restartUnits = lib.optional (config.services.userborn.enable) "userborn.service";
-        });
+      files.user-password-hash.neededFor = "users";
+      files.user-password-hash.restartUnits = lib.optional (config.services.userborn.enable) "userborn.service";
 
       prompts.user-password.type = "hidden";
       prompts.user-password.persist = true;
@@ -58,7 +52,7 @@ in
         if [[ -n "''${prompt_value-}" ]]; then
           echo "$prompt_value" | tr -d "\n" > "$out"/user-password
         else
-          xkcdpass --numwords 3 --delimiter - --count 1 | tr -d "\n" > "$out"/user-password
+          xkcdpass --numwords 4 --delimiter - --count 1 | tr -d "\n" > "$out"/user-password
         fi
         mkpasswd -s -m sha-512 < "$out"/user-password | tr -d "\n" > "$out"/user-password-hash
       '';

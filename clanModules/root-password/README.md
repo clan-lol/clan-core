@@ -1,8 +1,10 @@
 ---
 description = "Automatically generates and configures a password for the root user."
 categories = ["System"]
-features = [ "inventory" ]
+features = ["inventory", "deprecated"]
 ---
+
+This module is deprecated and will be removed in a future release. It's functionality has been replaced by the user-password service.
 
 After the system was installed/deployed the following command can be used to display the root-password:
 
