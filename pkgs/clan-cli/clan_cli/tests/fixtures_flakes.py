@@ -54,13 +54,22 @@ def substitute(
         for line in f:
             line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
             if clan_core_flake:
-                line = line.replace("__CLAN_CORE__", f"path:{clan_core_flake}")
+                _flake = Flake(str(clan_core_flake))
+                _flake.prefetch()
+
+                assert _flake.hash, "Clan core flake hash is empty"
+                assert _flake.store_path, "Clan core flake store path is empty"
+
                 line = line.replace(
-                    "git+https://git.clan.lol/clan/clan-core", f"path:{clan_core_flake}"
+                    "__CLAN_CORE__", f"path:{_flake.store_path}?narHash={_flake.hash}"
+                )
+                line = line.replace(
+                    "git+https://git.clan.lol/clan/clan-core",
+                    f"path:{_flake.store_path}?narHash={_flake.hash}",
                 )
                 line = line.replace(
                     "https://git.clan.lol/clan/clan-core/archive/main.tar.gz",
-                    f"path:{clan_core_flake}",
+                    f"path:{_flake.store_path}?narHash={_flake.hash}",
                 )
                 line = line.replace("__INVENTORY_EXPR__", str(inventory_expr))
             line = line.replace("__CLAN_SOPS_KEY_PATH__", sops_key)
@@ -122,10 +131,13 @@ class ClanFlake:
         self._flake_template = flake_template
         self.inventory = nested_dict()
         self.machines = nested_dict()
+
+        clan_core_flake = Flake(str(CLAN_CORE))
+        clan_core_flake.prefetch()
+
         self.substitutions: dict[str, str] = {
-            "git+https://git.clan.lol/clan/clan-core": "path://" + str(CLAN_CORE),
-            "https://git.clan.lol/clan/clan-core/archive/main.tar.gz": "path://"
-            + str(CLAN_CORE),
+            "git+https://git.clan.lol/clan/clan-core": f"path://{clan_core_flake.store_path}?narHash={clan_core_flake.hash}",
+            "https://git.clan.lol/clan/clan-core/archive/main.tar.gz": f"path://{clan_core_flake.store_path}?narHash={clan_core_flake.hash}",
         }
         self.clan_modules: list[str] = []
         self.temporary_home = temporary_home
