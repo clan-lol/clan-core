@@ -213,6 +213,8 @@ in
 
           secrets = lib.mkOption { type = lib.types.raw; };
 
+          templates = lib.mkOption { type = lib.types.raw; };
+
           machines = lib.mkOption { type = lib.types.raw; };
         };
       };
