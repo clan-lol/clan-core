@@ -1,0 +1,100 @@
+import logging
+import shutil
+from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
+
+from clan_lib.dirs import specific_machine_dir
+from clan_lib.errors import ClanError
+from clan_lib.flake import Flake
+from clan_lib.machines.actions import MachineID, list_machines
+from clan_lib.templates.filesystem import copy_from_nixstore, realize_nix_path
+from clan_lib.templates.template_url import transform_url
+
+log = logging.getLogger(__name__)
+
+
+@contextmanager
+def with_machine_template(
+    flake: Flake, template_ident: str, dst_machine_name: str
+) -> Iterator[Path]:
+    """
+    Create a machine from a template.
+    This function will copy the template files to the machine specific directory of the specified flake.
+
+    :param flake: The flake to create the machine in.
+    :param template_ident: The identifier of the template to use. Example ".#template_name"
+    :param dst_machine_name: The name of the machine to create.
+
+    Example usage:
+
+    >>> with with_machine_template(
+    ...     Flake("/home/johannes/git/clan-core"), ".#new-machine", "my-machine"
+    ... ) as machine_path:
+    ...     # Use `machine_path` here if you want to access the created machine directory
+
+    ... The machine directory is removed if the context raised any errors.
+    ... Only if the context is exited without errors, the machine directory is kept.
+    """
+
+    # Check for duplicates
+    if dst_machine_name in list_machines(flake):
+        msg = f"Machine '{dst_machine_name}' already exists"
+        raise ClanError(
+            msg,
+            description="Please remove the existing machine or choose a different name",
+        )
+
+    # Get the clan template from the specifier
+    [flake_ref, template_selector] = transform_url("machine", template_ident)
+    template_flake = Flake(flake_ref)
+    template = template_flake.select(template_selector)
+
+    # For pretty error messages
+    printable_template_ref = f"{flake_ref}#{template_ident}"
+
+    src = template.get("path")
+    if not src:
+        msg = f"Malformed template: {printable_template_ref} does not have a 'path' attribute"
+        raise ClanError(msg)
+
+    src_path = Path(src).resolve()
+
+    realize_nix_path(template_flake, str(src_path))
+
+    if not src_path.exists():
+        msg = f"Template {printable_template_ref} does not exist at {src_path}"
+        raise ClanError(msg)
+
+    if not src_path.is_dir():
+        msg = f"Template {printable_template_ref} is not a directory at {src_path}"
+        raise ClanError(msg)
+
+    # TODO: Do we really need to check for a specific file in the template?
+    if not (src_path / "configuration.nix").exists():
+        msg = f"Template {printable_template_ref} does not contain a configuration.nix"
+        raise ClanError(
+            msg,
+            description="Template machine must contain a configuration.nix",
+        )
+
+    tmp_machine = MachineID(flake=flake, name=dst_machine_name)
+
+    dst_machine_dir = specific_machine_dir(tmp_machine)
+
+    copy_from_nixstore(src_path, dst_machine_dir)
+
+    try:
+        yield dst_machine_dir
+    except Exception as e:
+        log.error(f"An error occurred inside the 'with_machine_template' context: {e}")
+
+        # Ensure that the directory is removed to avoid half-created machines
+        # Everything in the with block is considered part of the context
+        # So if the context raises an error, we clean up the machine directory
+        log.info(f"Removing left-over machine directory: {dst_machine_dir}")
+        shutil.rmtree(dst_machine_dir, ignore_errors=True)
+        raise
+    finally:
+        # If no error occurred, the machine directory is kept
+        pass
