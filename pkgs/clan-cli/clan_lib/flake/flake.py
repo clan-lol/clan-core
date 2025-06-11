@@ -680,6 +680,7 @@ class Flake:
         self,
         selectors: list[str],
         nix_options: list[str] | None = None,
+        apply: str = "v: v",
     ) -> None:
         """
         Retrieves specific attributes from a Nix flake using the provided selectors.
@@ -754,7 +755,7 @@ class Flake:
                 result = builtins.toJSON [
                     {" ".join(
                         [
-                            f"(selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake)"
+                            f"(({apply}) (selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake))"
                             for attr in str_selectors
                         ]
                     )}
@@ -823,6 +824,7 @@ class Flake:
         self,
         selector: str,
         nix_options: list[str] | None = None,
+        apply: str = "v: v",
     ) -> Any:
         """
         Selects a value from the cache based on the provided selector string.
@@ -839,6 +841,6 @@ class Flake:
 
         if not self._cache.is_cached(selector):
             log.debug(f"Cache miss for {selector}")
-            self.get_from_nix([selector], nix_options)
+            self.get_from_nix([selector], nix_options, apply=apply)
         value = self._cache.select(selector)
         return value
