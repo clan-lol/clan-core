@@ -49,12 +49,15 @@ def machine_template(
     [flake_ref, template_selector] = transform_url(
         "machine", template_ident, flake=flake
     )
+    # For pretty error messages
+    printable_template_ref = f"{flake_ref}#{template_selector}"
 
     template_flake = Flake(flake_ref)
-    template = template_flake.select(template_selector)
-
-    # For pretty error messages
-    printable_template_ref = f"{flake_ref}#{template_ident}"
+    try:
+        template = template_flake.select(template_selector)
+    except ClanError as e:
+        msg = f"Failed to select template '{template_ident}' from flake '{flake_ref}' (via attribute path: {printable_template_ref})"
+        raise ClanError(msg) from e
 
     src = template.get("path")
     if not src:
@@ -85,7 +88,7 @@ def machine_template(
 
     dst_machine_dir = specific_machine_dir(tmp_machine)
 
-    dst_machine_dir.mkdir(exist_ok=True, parents=True)
+    dst_machine_dir.parent.mkdir(exist_ok=True, parents=True)
 
     copy_from_nixstore(src_path, dst_machine_dir)
 
