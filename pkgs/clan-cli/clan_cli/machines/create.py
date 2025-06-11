@@ -29,7 +29,8 @@ class CreateOptions:
 
 @API.register
 def create_machine(
-    opts: CreateOptions, commit: bool = True, _persist: bool = True
+    opts: CreateOptions,
+    commit: bool = True,
 ) -> None:
     """
     Create a new machine in the clan directory.
@@ -60,30 +61,31 @@ def create_machine(
         raise ClanError(msg, location="Create Machine")
 
     with machine_template(
-        flake=opts.clan_dir, template_ident=opts.template, dst_machine_name=machine_name
+        flake=opts.clan_dir,
+        template_ident=opts.template,
+        dst_machine_name=machine_name,
     ) as _machine_dir:
         # Write to the inventory if persist is true
-        if _persist:
-            target_host = opts.target_host
-            new_machine = opts.machine
-            new_machine["deploy"] = {"targetHost": target_host}  # type: ignore
+        target_host = opts.target_host
+        new_machine = opts.machine
+        new_machine["deploy"] = {"targetHost": target_host}  # type: ignore
 
-            inventory_store = InventoryStore(opts.clan_dir)
-            inventory = inventory_store.read()
+        inventory_store = InventoryStore(opts.clan_dir)
+        inventory = inventory_store.read()
 
-            if machine_name in inventory.get("machines", {}):
-                msg = f"Machine {machine_name} already exists in inventory"
-                description = (
-                    "Please delete the existing machine or import with a different name"
-                )
-                raise ClanError(msg, description=description)
-
-            set_value_by_path(
-                inventory,
-                f"machines.{machine_name}",
-                new_machine,
+        if machine_name in inventory.get("machines", {}):
+            msg = f"Machine {machine_name} already exists in inventory"
+            description = (
+                "Please delete the existing machine or import with a different name"
             )
-            inventory_store.write(inventory, message=f"machine '{machine_name}'")
+            raise ClanError(msg, description=description)
+
+        set_value_by_path(
+            inventory,
+            f"machines.{machine_name}",
+            new_machine,
+        )
+        inventory_store.write(inventory, message=f"machine '{machine_name}'")
 
         if commit:
             commit_file(
