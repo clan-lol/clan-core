@@ -7,11 +7,10 @@
 let
   inherit (lib)
     flatten
-    flip
-    mapAttrs'
     mapAttrsToList
+    mkForce
+    mkIf
     mkOption
-    removePrefix
     types
     unique
     ;
@@ -24,8 +23,47 @@ in
   flake.modules.nixosVmTest.clanTest =
     { config, hostPkgs, ... }:
     let
-      clanFlakeResult = config.clan;
       testName = config.name;
+
+      clan-core = self;
+
+      inherit (lib)
+        filterAttrs
+        flip
+        hasPrefix
+        intersectAttrs
+        mapAttrs'
+        pathExists
+        removePrefix
+        throwIf
+        ;
+
+      # only relevant if config.clan.test.fromFlake is used
+      importFlake =
+        flakeDir:
+        let
+          flakeExpr = import (flakeDir + "/flake.nix");
+          inputs = intersectAttrs flakeExpr.inputs clan-core.inputs;
+          flake = flakeExpr.outputs (
+            inputs
+            // {
+              self = flake // {
+                outPath = flakeDir;
+              };
+              clan-core = clan-core;
+            }
+          );
+        in
+        throwIf (pathExists (
+          flakeDir + "/flake.lock"
+        )) "Test ${testName} should not have a flake.lock file" flake;
+
+      clanFlakeResult =
+        if config.clan.test.fromFlake != null then importFlake config.clan.test.fromFlake else config.clan;
+
+      machineModules = flip filterAttrs clanFlakeResult.nixosModules (
+        name: _module: hasPrefix "clan-machine-" name
+      );
 
       update-vars-script = "${
         self.packages.${hostPkgs.system}.generate-test-vars
@@ -48,7 +86,7 @@ in
       );
 
       vars-check =
-        hostPkgs.runCommand "update-vars-check"
+        hostPkgs.runCommand "update-vars-check-${testName}"
           {
             nativeBuildInputs = generatorRuntimeInputs ++ [
               hostPkgs.nix
@@ -89,6 +127,16 @@ in
             fi
             touch $out
           '';
+
+      # the test's flake.nix with locked clan-core input
+      flakeForSandbox = hostPkgs.runCommand "offline-flake-for-test-${config.name}" { } ''
+        cp -r ${config.clan.directory} $out
+        chmod +w -R $out
+        substituteInPlace $out/flake.nix \
+          --replace-fail \
+            "https://git.clan.lol/clan/clan-core/archive/main.tar.gz" \
+            "${clan-core.packages.${hostPkgs.system}.clan-core-flake}"
+      '';
     in
     {
       imports = [
@@ -115,6 +163,9 @@ in
                 nixpkgs
                 nix-darwin
                 ;
+              # By default clan.directory defaults to self, but we don't
+              # have a sensible default for self here
+              self = throw "set clan.directory in the test";
             };
             modules = [
               clanLib.buildClanModule.flakePartsModule
@@ -134,6 +185,28 @@ in
                     type = types.bool;
                     description = "Whether to use containers for the test.";
                   };
+                  test.fromFlake = mkOption {
+                    default = null;
+                    type = types.nullOr types.path;
+                    description = ''
+                      path to a directory containing a `flake.nix` defining the clan
+
+                      Only use this if the clan CLI needs to be used inside the test.
+                      Otherwise, use the other clan.XXX options instead to specify the clan.
+
+                      Loads the clan from a flake instead of using clan.XXX options.
+                      This has the benefit that a real flake.nix will be available in the test.
+                      This is useful to test CLI interactions which require a flake.nix.
+
+                      Using this introduces dependencies that should otherwise be avoided.
+                    '';
+                  };
+                  test.flakeForSandbox = mkOption {
+                    default = flakeForSandbox;
+                    type = types.path;
+                    description = "The flake.nix to use for the test.";
+                    readOnly = true;
+                  };
                 };
               }
             ];
@@ -141,10 +214,12 @@ in
         };
       };
       config = {
+        clan.directory = mkIf (config.clan.test.fromFlake != null) (mkForce config.clan.test.fromFlake);
+
         # Inherit all nodes from the clan
         # i.e. nodes.jon <- clan.machines.jon
         # clanInternals.nixosModules contains nixosModules per node
-        nodes = flip mapAttrs' clanFlakeResult.nixosModules (
+        nodes = flip mapAttrs' machineModules (
           name: machineModule: {
             name = removePrefix "clan-machine-" name;
             value = machineModule;
@@ -168,11 +243,6 @@ in
               # configures a static age-key to skip the age-key generation
               clanLib.test.sopsModule
             ];
-
-            # Disable documentation
-            # This is nice to speed up the evaluation
-            # And also suppresses any warnings or errors about the documentation
-            documentation.enable = lib.mkDefault false;
 
             # Disable garbage collection during the test
             # https://nix.dev/manual/nix/2.28/command-ref/conf-file.html?highlight=min-free#available-settings

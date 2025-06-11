@@ -8,4 +8,5 @@
   nix.registry = lib.mkForce { };
   documentation.doc.enable = false;
   documentation.man.enable = false;
+  documentation.enable = lib.mkDefault false;
 }
