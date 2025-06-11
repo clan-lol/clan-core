@@ -147,8 +147,8 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
         "-t",
         "--template",
         type=str,
-        help="""Reference to the template to use for the machine. In the format '<flake_ref>#template_name' Where <flake_ref> is a flake reference (e.g. github:org/repo) or a local path (e.g. '.' ).
-        Omitting '<flake_ref>#' will use the pre-provided templates (e.g. just 'new-machine' (default) ).
+        help="""Reference to the template to use for the machine. default="new-machine". In the format '<flake_ref>#template_name' Where <flake_ref> is a flake reference (e.g. github:org/repo) or a local path (e.g. '.' ).
+        Omitting '<flake_ref>#' will use the builtin templates (e.g. just 'new-machine' from clan-core ).
         """,
         default="new-machine",
     )
