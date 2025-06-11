@@ -598,6 +598,9 @@ class Flake:
         assert isinstance(self._is_local, bool)
         return self._is_local
 
+    def get_input_names(self) -> list[str]:
+        return self.select("inputs", apply="builtins.attrNames")
+
     @property
     def path(self) -> Path:
         if self._path is None:
