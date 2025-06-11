@@ -36,7 +36,7 @@ testpaths = ["tests", "clan_cli", "clan_lib"]
 faulthandler_timeout = 240
 log_level = "DEBUG"
 log_format = "%(message)s"
-addopts = "--cov . --cov-report term --cov-report html:.reports/html --no-cov-on-fail --durations 5 --color=yes --new-first -W error -n auto" # Add --pdb for debugging
+addopts = "--durations 5 --color=yes --new-first -W error -n auto" # Add --pdb for debugging
 norecursedirs = ["clan_cli/tests/helpers", "clan_lib/nixpkgs"]
 #  All tests which evaluate any nix library code from clan-core need to use the
 #  `with_core` marker, so basically all tests which evaluate a flake with
@@ -46,12 +46,6 @@ norecursedirs = ["clan_cli/tests/helpers", "clan_lib/nixpkgs"]
 markers = ["impure", "with_core"]
 filterwarnings = "default::ResourceWarning"
 python_files = ["test_*.py", "*_test.py"]
-
-# TODO: cov seems to conflict with xdist
-# [tool.coverage.run]
-# branch = true
-# source = ["clan_lib"]
-# omit = ["*/tests/*", "*/test_*.py", "*/*_test.py", "*/conftest.py", "docs.py"]
 
 [tool.mypy]
 python_version = "3.12"

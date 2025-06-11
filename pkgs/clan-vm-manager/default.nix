@@ -10,7 +10,6 @@
   pygobject-stubs,
   pygobject3,
   pytest, # Testing framework
-  pytest-cov, # Generate coverage reports
   pytest-subprocess, # fake the real subprocess behavior to make your tests more independent.
   pytest-timeout, # Add timeouts to your tests
   pytest-xdist, # Run tests in parallel on multiple cores
@@ -62,7 +61,6 @@ let
     ++ runtimeDependencies
     ++ [
       pytest # Testing framework
-      pytest-cov # Generate coverage reports
       pytest-subprocess # fake the real subprocess behavior to make your tests more independent.
       pytest-xdist # Run tests in parallel on multiple cores
       pytest-timeout # Add timeouts to your tests

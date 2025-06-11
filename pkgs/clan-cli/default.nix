@@ -28,7 +28,6 @@ let
     ps:
     [
       ps.pytest
-      ps.pytest-cov
       ps.pytest-subprocess
       ps.pytest-xdist
       ps.pytest-timeout

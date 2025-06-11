@@ -53,7 +53,6 @@ let
     [
       # Testing framework
       ps.pytest
-      ps.pytest-cov # Generate coverage reports
       ps.pytest-subprocess # fake the real subprocess behavior to make your tests more independent.
       ps.pytest-xdist # Run tests in parallel on multiple cores
       ps.pytest-timeout # Add timeouts to your tests
