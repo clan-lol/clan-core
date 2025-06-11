@@ -33,6 +33,7 @@
           self'.packages.tea-create-pr
           self'.packages.merge-after-ci
           self'.packages.pending-reviews
+          self'.packages.agit
           # treefmt with config defined in ./flake-parts/formatting.nix
           config.treefmt.build.wrapper
         ];
