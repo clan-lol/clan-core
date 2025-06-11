@@ -122,7 +122,7 @@ class Remote:
         ):
             directory = "/tmp/"
         with TemporaryDirectory(prefix="clan-ssh", dir=directory) as temp_dir:
-            yield Remote(
+            remote = Remote(
                 address=self.address,
                 user=self.user,
                 command_prefix=self.command_prefix,
@@ -137,6 +137,25 @@ class Remote:
                 _control_path_dir=Path(temp_dir),
                 _askpass_path=self._askpass_path,
             )
+            try:
+                yield remote
+            finally:
+                # Terminate the SSH master connection
+                socket_path = Path(temp_dir) / "socket"
+                if socket_path.exists():
+                    try:
+                        exit_cmd = [
+                            "ssh",
+                            "-o",
+                            f"ControlPath={socket_path}",
+                            "-O",
+                            "exit",
+                        ]
+                        exit_cmd.append(remote.target)
+                        subprocess.run(exit_cmd, capture_output=True, timeout=5)
+                    except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
+                        # If exit fails still try to stop the master connection
+                        pass
 
     @contextmanager
     def become_root(self) -> Iterator["Remote"]:
@@ -301,7 +320,7 @@ class Remote:
                     "-o",
                     "ControlMaster=auto",
                     "-o",
-                    "ControlPersist=30m",
+                    "ControlPersist=1m",
                     "-o",
                     f"ControlPath={socket_path}",
                 ]
