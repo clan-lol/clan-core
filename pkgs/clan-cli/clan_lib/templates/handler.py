@@ -47,7 +47,7 @@ def machine_template(
 
     # Get the clan template from the specifier
     [flake_ref, template_selector] = transform_url(
-        "machine", template_ident, local_path=flake
+        "machine", template_ident, flake=flake
     )
 
     template_flake = Flake(flake_ref)

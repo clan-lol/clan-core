@@ -16,10 +16,10 @@ class Flake(Protocol):
     @property
     def path(self) -> Path: ...
 
+    def get_input_names(self) -> list[str]: ...
 
-def transform_url(
-    template_type: str, identifier: str, local_path: Flake
-) -> tuple[str, str]:
+
+def transform_url(template_type: str, identifier: str, flake: Flake) -> tuple[str, str]:
     """
     Transform a template flake ref by injecting the context (clan|machine|disko) into the url.
     We do this for shorthand notation of URLs.
@@ -56,6 +56,11 @@ def transform_url(
     clan machines create --template github:/org/repo#new.machine
     -> clanInternals.templates.machine."new.machine"
 
+    6. Templates locked via inputs:
+    clan machines create --template clan-core#new-machine
+    path: clan-core matches one of the input attributes.
+    -> <local_flake>#inputs.clan-core.clan.templates.machine."new-machine"
+
     As of URL specification (RFC 3986).
     scheme:[//[user:password@]host[:port]][/path][?query][#fragment]
 
@@ -76,11 +81,17 @@ def transform_url(
     # Substitute the flake reference with the local flake path if it is empty or just a dot.
     # This is required if the command will be executed from a different place, than the local flake root.
     if not flake_ref or flake_ref == ".":
-        flake_ref = str(local_path.path)
+        flake_ref = str(flake.path)
 
     if "#" not in identifier:
         # No fragment, so we assume its a builtin template
         return (flake_ref, f'clanInternals.templates.{template_type}."{selector}"')
+
+    input_prefix = ""
+    if flake_ref in flake.get_input_names():
+        # Interpret the flake reference as an input of the local flake.
+        input_prefix = f"inputs.{flake_ref}."
+        flake_ref = str(flake.path)
 
     # TODO: implement support for quotes in the tail "a.b".c
     # If the tail contains a dot, or is quoted we assume its a path and don't transform it.
@@ -88,10 +99,10 @@ def transform_url(
         log.warning(
             "Quotes in template paths are not yet supported. Please use unquoted paths."
         )
-        return (flake_ref, selector)
+        return (flake_ref, input_prefix + selector)
 
     if "." in selector:
-        return (flake_ref, selector)
+        return (flake_ref, input_prefix + selector)
 
     # Tail doesn't contain a dot at this point, so we can inject the context.
-    return (flake_ref, f'clan.templates.{template_type}."{selector}"')
+    return (flake_ref, input_prefix + f'clan.templates.{template_type}."{selector}"')
