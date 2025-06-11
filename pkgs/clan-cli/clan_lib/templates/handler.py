@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 @contextmanager
-def with_machine_template(
+def machine_template(
     flake: Flake, template_ident: str, dst_machine_name: str
 ) -> Iterator[Path]:
     """
@@ -28,7 +28,7 @@ def with_machine_template(
 
     Example usage:
 
-    >>> with with_machine_template(
+    >>> with machine_template(
     ...     Flake("/home/johannes/git/clan-core"), ".#new-machine", "my-machine"
     ... ) as machine_path:
     ...     # Use `machine_path` here if you want to access the created machine directory
@@ -46,7 +46,10 @@ def with_machine_template(
         )
 
     # Get the clan template from the specifier
-    [flake_ref, template_selector] = transform_url("machine", template_ident, local_path=flake)
+    [flake_ref, template_selector] = transform_url(
+        "machine", template_ident, local_path=flake
+    )
+
     template_flake = Flake(flake_ref)
     template = template_flake.select(template_selector)
 
@@ -82,12 +85,14 @@ def with_machine_template(
 
     dst_machine_dir = specific_machine_dir(tmp_machine)
 
+    dst_machine_dir.mkdir(exist_ok=True, parents=True)
+
     copy_from_nixstore(src_path, dst_machine_dir)
 
     try:
         yield dst_machine_dir
     except Exception as e:
-        log.error(f"An error occurred inside the 'with_machine_template' context: {e}")
+        log.error(f"An error occurred inside the 'machine_template' context: {e}")
 
         # Ensure that the directory is removed to avoid half-created machines
         # Everything in the with block is considered part of the context

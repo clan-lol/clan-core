@@ -41,7 +41,7 @@ def random_hostname() -> str:
 
 
 def morph_machine(
-    flake: Flake, template_name: str, ask_confirmation: bool, name: str | None = None
+    flake: Flake, template: str, ask_confirmation: bool, name: str | None = None
 ) -> None:
     cmd = nix_command(
         [
@@ -70,7 +70,7 @@ def morph_machine(
             name = random_hostname()
 
         create_opts = CreateOptions(
-            template_name=template_name,
+            template=template,
             machine=InventoryMachine(name=name),
             clan_dir=Flake(str(flakedir)),
         )
@@ -149,7 +149,7 @@ def morph_command(args: argparse.Namespace) -> None:
 
     morph_machine(
         flake=Flake(str(args.flake)),
-        template_name=args.template_name,
+        template=args.template,
         ask_confirmation=args.confirm_firing,
         name=args.name,
     )
@@ -159,7 +159,7 @@ def register_morph_parser(parser: argparse.ArgumentParser) -> None:
     parser.set_defaults(func=morph_command)
 
     parser.add_argument(
-        "template_name",
+        "template",
         default="new-machine",
         type=str,
         help="The name of the template to use",
