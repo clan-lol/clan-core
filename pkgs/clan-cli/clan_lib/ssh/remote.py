@@ -309,7 +309,7 @@ class Remote:
                     "-o",
                     "ControlMaster=auto",
                     "-o",
-                    "ControlPersist=30m",
+                    "ControlPersist=1m",
                     "-o",
                     f"ControlPath={socket_path}",
                 ]
