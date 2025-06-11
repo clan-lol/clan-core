@@ -8,7 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from clan_lib.cmd import Log, RunOpts, run
-from clan_lib.dirs import get_clan_flake_toplevel_or_env
+from clan_lib.dirs import get_clan_flake_toplevel_or_env, specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import list_machines
@@ -91,9 +91,9 @@ def morph_machine(
         # facter_json = run(["nixos-facter"]).stdout
         # run(["cp", "facter.json", f"{flakedir}/machines/{name}/facter.json"]).stdout
 
-        Path(f"{flakedir}/machines/{name}/facter.json").write_text(
-            '{"system": "x86_64-linux"}'
-        )
+        machine_dir = specific_machine_dir(machine)
+        machine_dir.mkdir(parents=True, exist_ok=True)
+        Path(f"{machine_dir}/facter.json").write_text('{"system": "x86_64-linux"}')
         result_path = run(
             nix_build(
                 [f"{flakedir}#nixosConfigurations.{name}.config.system.build.toplevel"]
