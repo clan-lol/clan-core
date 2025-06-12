@@ -2,7 +2,9 @@ import inspect
 import logging
 import os
 import sys
+from dataclasses import dataclass
 from pathlib import Path
+from typing import IO
 
 from clan_lib.colors import AnsiColor, RgbColor, color_by_tuple
 
@@ -147,13 +149,24 @@ def print_trace(msg: str, logger: logging.Logger, prefix: str | None) -> None:
     logger.debug(f"{msg} \n{callers_str}", extra={"command_prefix": prefix})
 
 
-def setup_logging(level: int) -> None:
+@dataclass
+class RegisteredHandler:
+    root_logger: logging.Logger
+    new_handler: logging.StreamHandler
+
+
+def setup_logging(level: int, log_file: IO[str] | None = None) -> RegisteredHandler:
     root_logger = logging.getLogger()
     root_logger.setLevel(level)
 
     # Set our formatter handler
-    default_handler = logging.StreamHandler()
+    default_handler = logging.StreamHandler(log_file)
     default_handler.setLevel(level)
     trace_prints = bool(int(os.environ.get("TRACE_PRINT", "0")))
     default_handler.setFormatter(PrefixFormatter(trace_prints))
     root_logger.addHandler(default_handler)
+
+    return RegisteredHandler(
+        root_logger=root_logger,
+        new_handler=default_handler,
+    )
