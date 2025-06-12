@@ -22,7 +22,7 @@ sops_priv_key = (
 sops_pub_key = "age1qm0p4vf9jvcnn43s6l4prk8zn6cx0ep9gzvevxecv729xz540v8qa742eg"
 
 
-def get_machine_names(repo_root: Path, check_attr: str) -> list[str]:
+def get_machine_names(repo_root: Path, check_attr: str, system: str) -> list[str]:
     """
     Get the machine names from the test flake
     """
@@ -31,7 +31,7 @@ def get_machine_names(repo_root: Path, check_attr: str) -> list[str]:
         nix_options += ["--store", str(tmp_store)]
     cmd = nix_eval(
         [
-            f"path://{repo_root}#checks.{nix_config()['system']}.{check_attr}.nodes",
+            f"path://{repo_root}#checks.{system}.{check_attr}.nodes",
             "--apply",
             "builtins.attrNames",
             *nix_options,
@@ -75,9 +75,12 @@ class TestMachine(Machine):
 
         config = nix_config()
         system = config["system"]
+        test_system = system
+        if system.endswith("-darwin"):
+            test_system = system.rstrip("darwin") + "linux"
 
         return self.flake.select(
-            f'checks."{system}".{self.check_attr}.nodes.{self.name}.{attr}',
+            f'checks."{test_system}".{self.check_attr}.machinesCross.{system}.{self.name}.{attr}',
             nix_options=nix_options,
         )
 
@@ -146,18 +149,23 @@ def main() -> None:
         shutil.rmtree(test_dir / "vars", ignore_errors=True)
         shutil.rmtree(test_dir / "sops", ignore_errors=True)
 
+    config = nix_config()
+    system = config["system"]
+    test_system = system
+    if system.endswith("-darwin"):
+        test_system = system.rstrip("darwin") + "linux"
+
     flake = Flake(str(opts.repo_root))
     machine_names = get_machine_names(
         opts.repo_root,
         opts.check_attr,
+        test_system,
     )
 
-    config = nix_config()
-    system = config["system"]
     flake.precache(
         [
-            f"checks.{system}.{opts.check_attr}.nodes.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-            f"checks.{system}.{opts.check_attr}.nodes.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
+            f"checks.{test_system}.{opts.check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
+            f"checks.{test_system}.{opts.check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
         ]
     )
 
