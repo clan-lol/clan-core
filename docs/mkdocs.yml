@@ -93,6 +93,7 @@ nav:
           - reference/clanServices/localsend.md
           - reference/clanServices/mycelium.md
           - reference/clanServices/sshd.md
+          - reference/clanServices/trusted-nix-caches.md
           - reference/clanServices/users.md
           - reference/clanServices/hello-world.md
           - reference/clanServices/wifi.md
