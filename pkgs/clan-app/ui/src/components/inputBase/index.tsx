@@ -33,6 +33,7 @@ export const InputBase = (props: InputBaseProps) => {
   const [internal, inputProps] = splitProps(props, ["class", "divRef"]);
   return (
     <div
+      // eslint-disable-next-line tailwindcss/no-custom-classname
       class={cx(
         // Layout
         "flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6",
@@ -58,6 +59,7 @@ export const InputBase = (props: InputBaseProps) => {
         props.class,
       )}
       classList={{
+        // eslint-disable-next-line tailwindcss/no-custom-classname
         [cx("!border !border-semantic-1 !outline-semantic-1")]: !!props.error,
       }}
       aria-invalid={props.error}

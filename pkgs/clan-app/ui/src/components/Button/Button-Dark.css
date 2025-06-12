@@ -27,5 +27,5 @@
 }
 
 .button--dark-active:active {
-  @apply active:border-secondary-900 active:shadow-inner-primary-active;
+  @apply active:border-secondary-900 active:shadow-button-primary-active;
 }

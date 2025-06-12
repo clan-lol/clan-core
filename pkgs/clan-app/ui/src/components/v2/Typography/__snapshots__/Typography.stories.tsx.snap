@@ -713,51 +713,51 @@ exports[`Components/Typography Headline smoke-test 1`] = `
   <tbody>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-default font-body font-headline">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-default font-headline">
           headline / default / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-default font-body font-headline">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-default font-headline">
           headline / default / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-default font-body font-headline">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-default font-headline">
           headline / default / bold
         </span>
       </td>
     </tr>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-m font-body font-headline">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-m font-headline">
           headline / m / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-m font-body font-headline">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-m font-headline">
           headline / m / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-m font-body font-headline">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-m font-headline">
           headline / m / bold
         </span>
       </td>
     </tr>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-l font-body font-headline">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-l font-headline">
           headline / l / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-l font-body font-headline">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-l font-headline">
           headline / l / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-l font-body font-headline">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-l font-headline">
           headline / l / bold
         </span>
       </td>
@@ -771,51 +771,51 @@ exports[`Components/Typography LabelCondensed smoke-test 1`] = `
   <tbody>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-default font-body font-label">
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-default font-label">
           label / default / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-default font-body font-label">
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-default font-label">
           label / default / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-default font-body font-label">
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-default font-label">
           label / default / bold
         </span>
       </td>
     </tr>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-s font-body font-label">
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-s font-label">
           label / s / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-s font-body font-label">
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-s font-label">
           label / s / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-s font-body font-label">
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-s font-label">
           label / s / bold
         </span>
       </td>
     </tr>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-xs font-body font-label">
+        <span class="typography fg-def-1 font-family-condensed font-weight-normal font-size-xs font-label">
           label / xs / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-xs font-body font-label">
+        <span class="typography fg-def-1 font-family-condensed font-weight-medium font-size-xs font-label">
           label / xs / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-xs font-body font-label">
+        <span class="typography fg-def-1 font-family-condensed font-weight-bold font-size-xs font-label">
           label / xs / bold
         </span>
       </td>
@@ -829,51 +829,51 @@ exports[`Components/Typography LabelMono smoke-test 1`] = `
   <tbody>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-mono font-weight-normal font-size-default font-body font-label">
+        <span class="typography fg-def-1 font-family-mono font-weight-normal font-size-default font-label">
           label / default / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-mono font-weight-medium font-size-default font-body font-label">
+        <span class="typography fg-def-1 font-family-mono font-weight-medium font-size-default font-label">
           label / default / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-mono font-weight-bold font-size-default font-body font-label">
+        <span class="typography fg-def-1 font-family-mono font-weight-bold font-size-default font-label">
           label / default / bold
         </span>
       </td>
     </tr>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-mono font-weight-normal font-size-s font-body font-label">
+        <span class="typography fg-def-1 font-family-mono font-weight-normal font-size-s font-label">
           label / s / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-mono font-weight-medium font-size-s font-body font-label">
+        <span class="typography fg-def-1 font-family-mono font-weight-medium font-size-s font-label">
           label / s / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-mono font-weight-bold font-size-s font-body font-label">
+        <span class="typography fg-def-1 font-family-mono font-weight-bold font-size-s font-label">
           label / s / bold
         </span>
       </td>
     </tr>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-mono font-weight-normal font-size-xs font-body font-label">
+        <span class="typography fg-def-1 font-family-mono font-weight-normal font-size-xs font-label">
           label / xs / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-mono font-weight-medium font-size-xs font-body font-label">
+        <span class="typography fg-def-1 font-family-mono font-weight-medium font-size-xs font-label">
           label / xs / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-mono font-weight-bold font-size-xs font-body font-label">
+        <span class="typography fg-def-1 font-family-mono font-weight-bold font-size-xs font-label">
           label / xs / bold
         </span>
       </td>
@@ -887,7 +887,7 @@ exports[`Components/Typography Teaser smoke-test 1`] = `
   <tbody>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-default font-body font-teaser">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-default font-teaser">
           teaser / default / bold
         </span>
       </td>
@@ -901,51 +901,51 @@ exports[`Components/Typography Title smoke-test 1`] = `
   <tbody>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-default font-body font-title">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-default font-title">
           title / default / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-default font-body font-title">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-default font-title">
           title / default / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-default font-body font-title">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-default font-title">
           title / default / bold
         </span>
       </td>
     </tr>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-m font-body font-title">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-m font-title">
           title / m / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-m font-body font-title">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-m font-title">
           title / m / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-m font-body font-title">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-m font-title">
           title / m / bold
         </span>
       </td>
     </tr>
     <tr class="border-b border-def-3 even:bg-def-2">
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-l font-body font-title">
+        <span class="typography fg-def-1 font-family-regular font-weight-normal font-size-l font-title">
           title / l / normal
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-l font-body font-title">
+        <span class="typography fg-def-1 font-family-regular font-weight-medium font-size-l font-title">
           title / l / medium
         </span>
       </td>
       <td class="px-6 py-2 ">
-        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-l font-body font-title">
+        <span class="typography fg-def-1 font-family-regular font-weight-bold font-size-l font-title">
           title / l / bold
         </span>
       </td>

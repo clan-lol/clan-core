@@ -1,0 +1,1863 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Components/Button GhostPrimary play-test 1`] = `
+<div class="bg-def-3 p-10">
+  <div class="grid w-fit grid-cols-4 gap-8">
+    <div>
+      <button type="button"
+              class="button default primary ghost"
+              data-testid="default"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+          Label
+        </span>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              class="button s primary ghost"
+              data-testid="small"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+          Label
+        </span>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              disabled
+              data-disabled
+              class="button default primary ghost"
+              data-testid="default-disabled"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+          Disabled
+        </span>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              disabled
+              data-disabled
+              class="button s primary ghost"
+              data-testid="small-disabled"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+          Disabled
+        </span>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              class="button default primary ghost"
+              data-testid="default-start-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="1rem"
+             height="1rem"
+             fill="currentColor"
+             class="icon icon-start"
+             viewbox="0 0 48 48"
+             size="1rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+          Label
+        </span>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              class="button s primary ghost"
+              data-testid="small-start-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="0.8125rem"
+             height="0.8125rem"
+             fill="currentColor"
+             class="icon icon-start"
+             viewbox="0 0 48 48"
+             size="0.8125rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+          Label
+        </span>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              disabled
+              data-disabled
+              class="button default primary ghost"
+              data-testid="default-disabled-start-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="1rem"
+             height="1rem"
+             fill="currentColor"
+             class="icon icon-start"
+             viewbox="0 0 48 48"
+             size="1rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+          Disabled
+        </span>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              disabled
+              data-disabled
+              class="button s primary ghost"
+              data-testid="small-disabled-start-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="0.8125rem"
+             height="0.8125rem"
+             fill="currentColor"
+             class="icon icon-start"
+             viewbox="0 0 48 48"
+             size="0.8125rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+          Disabled
+        </span>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              class="button default primary ghost"
+              data-testid="default-end-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+          Label
+        </span>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="1rem"
+             height="1rem"
+             fill="currentColor"
+             class="icon icon-end"
+             viewbox="0 0 48 48"
+             size="1rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              class="button s primary ghost"
+              data-testid="small-end-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+          Label
+        </span>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="0.8125rem"
+             height="0.8125rem"
+             fill="currentColor"
+             class="icon icon-end"
+             viewbox="0 0 48 48"
+             size="0.8125rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              disabled
+              data-disabled
+              class="button default primary ghost"
+              data-testid="default-disabled-end-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+          Disabled
+        </span>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="1rem"
+             height="1rem"
+             fill="currentColor"
+             class="icon icon-end"
+             viewbox="0 0 48 48"
+             size="1rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              disabled
+              data-disabled
+              class="button s primary ghost"
+              data-testid="small-disabled-end-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+          Disabled
+        </span>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="0.8125rem"
+             height="0.8125rem"
+             fill="currentColor"
+             class="icon icon-end"
+             viewbox="0 0 48 48"
+             size="0.8125rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              class="button default primary icon ghost"
+              data-testid="default-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="1rem"
+             height="1rem"
+             fill="currentColor"
+             class="icon icon"
+             viewbox="0 0 48 48"
+             size="1rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              class="button s primary icon ghost"
+              data-testid="small-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="0.8125rem"
+             height="0.8125rem"
+             fill="currentColor"
+             class="icon icon"
+             viewbox="0 0 48 48"
+             size="0.8125rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              disabled
+              data-disabled
+              class="button default primary icon ghost"
+              data-testid="default-disabled-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="1rem"
+             height="1rem"
+             fill="currentColor"
+             class="icon icon"
+             viewbox="0 0 48 48"
+             size="1rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+      </button>
+    </div>
+    <div>
+      <button type="button"
+              disabled
+              data-disabled
+              class="button s primary icon ghost"
+              data-testid="small-disabled-icon"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="0.8125rem"
+             height="0.8125rem"
+             fill="currentColor"
+             class="icon icon"
+             viewbox="0 0 48 48"
+             size="0.8125rem"
+        >
+          <path fill-rule="evenodd"
+                d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Components/Button GhostSecondary play-test 1`] = `
+<div class="grid w-fit grid-cols-4 gap-8">
+  <div>
+    <button type="button"
+            class="button default secondary ghost"
+            data-testid="default"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s secondary ghost"
+            data-testid="small"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default secondary ghost"
+            data-testid="default-disabled"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s secondary ghost"
+            data-testid="small-disabled"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button default secondary ghost"
+            data-testid="default-start-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s secondary ghost"
+            data-testid="small-start-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default secondary ghost"
+            data-testid="default-disabled-start-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s secondary ghost"
+            data-testid="small-disabled-start-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button default secondary ghost"
+            data-testid="default-end-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Label
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s secondary ghost"
+            data-testid="small-end-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Label
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default secondary ghost"
+            data-testid="default-disabled-end-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Disabled
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s secondary ghost"
+            data-testid="small-disabled-end-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Disabled
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button default secondary icon ghost"
+            data-testid="default-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s secondary icon ghost"
+            data-testid="small-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default secondary icon ghost"
+            data-testid="default-disabled-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s secondary icon ghost"
+            data-testid="small-disabled-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Components/Button Primary play-test 1`] = `
+<div class="grid w-fit grid-cols-4 gap-8">
+  <div>
+    <button type="button"
+            class="button default primary"
+            data-testid="default"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s primary"
+            data-testid="small"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default primary"
+            data-testid="default-disabled"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s primary"
+            data-testid="small-disabled"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button default primary"
+            data-testid="default-start-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s primary"
+            data-testid="small-start-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default primary"
+            data-testid="default-disabled-start-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s primary"
+            data-testid="small-disabled-start-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button default primary"
+            data-testid="default-end-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Label
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s primary"
+            data-testid="small-end-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Label
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default primary"
+            data-testid="default-disabled-end-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Disabled
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s primary"
+            data-testid="small-disabled-end-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Disabled
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button default primary icon"
+            data-testid="default-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s primary icon"
+            data-testid="small-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default primary icon"
+            data-testid="default-disabled-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s primary icon"
+            data-testid="small-disabled-icon"
+    >
+      <div class="loader primary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+</div>
+`;
+
+exports[`Components/Button Secondary play-test 1`] = `
+<div class="grid w-fit grid-cols-4 gap-8">
+  <div>
+    <button type="button"
+            class="button default secondary"
+            data-testid="default"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s secondary"
+            data-testid="small"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default secondary"
+            data-testid="default-disabled"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s secondary"
+            data-testid="small-disabled"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button default secondary"
+            data-testid="default-start-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s secondary"
+            data-testid="small-start-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Label
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default secondary"
+            data-testid="default-disabled-start-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s secondary"
+            data-testid="small-disabled-start-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-start"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Disabled
+      </span>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button default secondary"
+            data-testid="default-end-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Label
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s secondary"
+            data-testid="small-end-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Label
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default secondary"
+            data-testid="default-disabled-end-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+        Disabled
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s secondary"
+            data-testid="small-disabled-end-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <span class="typography text-inherit font-family-mono font-weight-bold font-size-s label font-label">
+        Disabled
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon-end"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button default secondary icon"
+            data-testid="default-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            class="button s secondary icon"
+            data-testid="small-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button default secondary icon"
+            data-testid="default-disabled-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="1rem"
+           height="1rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="1rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+  <div>
+    <button type="button"
+            disabled
+            data-disabled
+            class="button s secondary icon"
+            data-testid="small-disabled-icon"
+    >
+      <div class="loader secondary">
+        <div class="wrapper">
+          <div class="parent">
+          </div>
+        </div>
+        <div class="child">
+        </div>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="0.8125rem"
+           height="0.8125rem"
+           fill="currentColor"
+           class="icon icon"
+           viewbox="0 0 48 48"
+           size="0.8125rem"
+      >
+        <path fill-rule="evenodd"
+              d="M24 6.4h3.2v12.8H40v6.4h-3.2v3.2h-3.2V32h-3.2v3.2h-3.2v3.2H24v3.2h-3.2V28.8H8v-6.4h3.2v-3.2h3.2V16h3.2v-3.2h3.2V9.6H24z"
+              clip-rule="evenodd"
+        >
+        </path>
+      </svg>
+    </button>
+  </div>
+</div>
+`;

@@ -25,6 +25,19 @@ const mkBorderUtils = (
   [`.${prefix}-def-4`]: {
     [cssProperty]: theme("colors.secondary.400"),
   },
+  // - def acc colors
+  [`.${prefix}-def-acc-1`]: {
+    [cssProperty]: theme("colors.secondary.500"),
+  },
+  [`.${prefix}-def-acc-2`]: {
+    [cssProperty]: theme("colors.secondary.900"),
+  },
+  [`.${prefix}-def-acc-3`]: {
+    [cssProperty]: theme("colors.secondary.900"),
+  },
+  [`.${prefix}-def-acc-4`]: {
+    [cssProperty]: theme("colors.secondary.950"),
+  },
   // - inverse colors
   [`.${prefix}-inv-1`]: {
     [cssProperty]: theme("colors.secondary.700"),
@@ -38,7 +51,19 @@ const mkBorderUtils = (
   [`.${prefix}-inv-4`]: {
     [cssProperty]: theme("colors.secondary.950"),
   },
-
+  // - inverse acc
+  [`.${prefix}-inv-acc-1`]: {
+    [cssProperty]: theme("colors.secondary.300"),
+  },
+  [`.${prefix}-inv-acc-2`]: {
+    [cssProperty]: theme("colors.secondary.200"),
+  },
+  [`.${prefix}-inv-acc-3`]: {
+    [cssProperty]: theme("colors.secondary.100"),
+  },
+  [`.${prefix}-inv-acc-4`]: {
+    [cssProperty]: theme("colors.secondary.50"),
+  },
   [`.${prefix}-int-1`]: {
     [cssProperty]: theme("colors.info.500"),
   },
@@ -191,7 +216,6 @@ export default plugin.withOptions(
         ...mkBorderUtils(theme, "border-t", "borderTop"),
         ...mkBorderUtils(theme, "border-l", "borderLeft"),
         ...mkBorderUtils(theme, "border-r", "borderRight"),
-        ...mkBorderUtils(theme, "outline", "outlineColor"),
 
         // Example: dark mode utilities (all elements within <html class="dark"> )
         // ".dark .bg-def-1": {
@@ -274,13 +298,21 @@ export default plugin.withOptions(
         },
         boxShadow: {
           "input-active": "0px 0px 0px 1px #FFF, 0px 0px 0px 2px #203637",
-          "inner-primary":
+          "button-primary":
             "2px 2px 0px 0px var(--clr-bg-inv-acc-3, #415E63) inset",
-          "inner-primary-active":
-            "0px 0px 0px 1px #FFF, 0px 0px 0px 2px var(--clr-bg-inv-acc-4, #203637)",
-          "inner-secondary":
+          "button-primary-hover":
+            "2px 2px 0px 0px var(--clr-bg-inv-acc-2, #4F747A) inset",
+          "button-primary-focus":
+            "0px 0px 0px 1px #FFF, 0px 0px 0px 2px var(--clr-border-def-sem-inf-1, #06AAF1), 2px 2px 0px 0px var(--clr-bg-inv-acc-2, #4F747A) inset",
+          "button-primary-active":
+            "0px 0px 0px 1px #FFF, 0px 0px 0px 2px var(--clr-bg-inv-acc-4, #203637), -2px -2px 0px 0px var(--clr-bg-inv-acc-1, #7B9B9F) inset",
+          "button-secondary":
             "-2px -2px 0px 0px #CEDFE2 inset, 2px 2px 0px 0px white inset",
-          "inner-secondary-active":
+          "button-secondary-hover":
+            "-2px -2px 0px 0px #CEDFE2 inset, 2px 2px 0px 0px #FFF inset",
+          "button-secondary-focus":
+            "0px 0px 0px 1px #FFF, 0px 0px 0px 2px var(--clr-border-def-sem-inf-1, #06AAF1), -2px -2px 0px 0px #CEDFE2 inset, 2px 2px 0px 0px #FFF inset",
+          "button-secondary-active":
             "0px 0px 0px 1px white, 0px 0px 0px 2px var(--clr-bg-inv-acc-4, #203637), 2px 2px 0px 0px var(--clr-bg-inv-acc-2, #4F747A) inset",
         },
       },

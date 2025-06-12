@@ -90,26 +90,6 @@ const sizeHierarchyMap: SizeForHierarchy = {
   },
 };
 
-interface FamilyForHierarchy {
-  body: {
-    regular: string;
-    condensed: string;
-  };
-  label: {
-    condensed: string;
-    mono: string;
-  };
-  title: {
-    condensed: string;
-  };
-  headline: {
-    regular: string;
-  };
-  teaser: {
-    regular: string;
-  };
-}
-
 const defaultFamilyMap: Record<Hierarchy, Family> = {
   body: "condensed",
   label: "condensed",
@@ -144,7 +124,7 @@ export const Typography = <H extends Hierarchy>(props: _TypographyProps<H>) => {
   const color = () => colorFor(props.color, props.inverted);
 
   const classList = mergeProps(props.classList, {
-    "font-body": props.hierarchy === "body" || !!props.hierarchy,
+    "font-body": props.hierarchy === "body" || !props.hierarchy,
     "font-label": props.hierarchy === "label",
     "font-title": props.hierarchy === "title",
     "font-headline": props.hierarchy === "headline",

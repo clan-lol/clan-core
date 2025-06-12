@@ -1,4 +1,5 @@
-import { Component, JSX, splitProps } from "solid-js";
+import cx from "classnames";
+import { Component, JSX, Show, splitProps } from "solid-js";
 import ArrowBottom from "@/icons/arrow-bottom.svg";
 import ArrowLeft from "@/icons/arrow-left.svg";
 import ArrowRight from "@/icons/arrow-right.svg";
@@ -10,7 +11,7 @@ import CaretRight from "@/icons/caret-right.svg";
 import CaretUp from "@/icons/caret-up.svg";
 import Checkmark from "@/icons/checkmark.svg";
 import ClanIcon from "@/icons/clan-icon.svg";
-import ClanLogo from "@/icons/clan-logo.svg";
+import Cursor from "@/icons/cursor.svg";
 import Close from "@/icons/close.svg";
 import Download from "@/icons/download.svg";
 import Edit from "@/icons/edit.svg";
@@ -33,9 +34,22 @@ import Search from "@/icons/search.svg";
 import Settings from "@/icons/settings.svg";
 import Trash from "@/icons/trash.svg";
 import Update from "@/icons/update.svg";
-import Warning from "@/icons/warning-filled.svg";
+import WarningFilled from "@/icons/warning-filled.svg";
+import Modules from "@/icons/modules.svg";
+import NewMachine from "@/icons/new-machine.svg";
+import AI from "@/icons/ai.svg";
+import User from "@/icons/user.svg";
+import Heart from "@/icons/heart.svg";
+import SearchFilled from "@/icons/search-filled.svg";
+import Offline from "@/icons/offline.svg";
+import Switch from "@/icons/switch.svg";
+import Tag from "@/icons/tag.svg";
+import Machine from "@/icons/machine.svg";
+import Loader from "@/icons/loader.svg";
+import { Dynamic } from "solid-js/web";
 
 const icons = {
+  AI,
   ArrowBottom,
   ArrowLeft,
   ArrowRight,
@@ -47,8 +61,8 @@ const icons = {
   CaretUp,
   Checkmark,
   ClanIcon,
-  ClanLogo,
   Close,
+  Cursor,
   Download,
   Edit,
   Expand,
@@ -58,42 +72,55 @@ const icons = {
   Flash,
   Folder,
   Grid,
+  Heart,
   Info,
   List,
   Load,
+  Machine,
+  Modules,
   More,
+  NewMachine,
+  Offline,
   Paperclip,
   Plus,
   Reload,
   Report,
   Search,
+  SearchFilled,
   Settings,
+  Switch,
+  Tag,
   Trash,
   Update,
-  Warning,
+  User,
+  WarningFilled,
 };
 
 export type IconVariant = keyof typeof icons;
 
-interface IconProps extends JSX.SvgSVGAttributes<SVGElement> {
+export interface IconProps extends JSX.SvgSVGAttributes<SVGElement> {
   icon: IconVariant;
-  size?: number;
+  class?: string;
+  size?: number | string;
 }
 
 const Icon: Component<IconProps> = (props) => {
-  const [local, iconProps] = splitProps(props, ["icon"]);
+  const [local, iconProps] = splitProps(props, ["icon", "class"]);
 
-  const IconComponent = icons[local.icon];
-  return IconComponent ? (
-    <IconComponent
-      width={iconProps.size || 16}
-      height={iconProps.size || 16}
+  const IconComponent = () => icons[local.icon];
+
+  return IconComponent() ? (
+    <Dynamic
+      component={IconComponent()}
+      class={cx("icon", local.class)}
+      width={iconProps.size || "1em"}
+      height={iconProps.size || "1em"}
       viewBox="0 0 48 48"
       // @ts-expect-error: dont know, fix this type nit later
       ref={iconProps.ref}
       {...iconProps}
     />
-  ) : null;
+  ) : undefined;
 };
 
 export default Icon;

@@ -23,25 +23,25 @@
 
     &.font-size-default {
       font-size: 1rem;
-      line-height: 132%;
+      line-height: 1.32;
       letter-spacing: 0.02rem;
     }
 
     &.font-size-s {
       font-size: 0.875rem;
-      line-height: 132%;
+      line-height: 1.32;
       letter-spacing: 0.0175rem;
     }
 
     &.font-size-xs {
       font-size: 0.75rem;
-      line-height: 132%;
+      line-height: 1.32;
       letter-spacing: 0.0225rem;
     }
 
     &.font-size-xxs {
       font-size: 0.6875rem;
-      line-height: 132%;
+      line-height: 1.32;
       letter-spacing: 0.00688rem;
     }
   }
@@ -52,38 +52,41 @@
 
       &.font-size-default {
         font-size: 0.875rem;
-        line-height: 132%;
+        line-height: 1.32;
         letter-spacing: 0.0175rem;
       }
 
       &.font-size-s {
         font-size: 0.8125rem;
-        line-height: 132%;
+        line-height: 1.32;
         letter-spacing: 0.0175rem;
       }
 
       &.font-size-xs {
         font-size: 0.75rem;
-        line-height: 132%;
+        line-height: 1.32;
         letter-spacing: 0.0075rem;
       }
     }
 
     &.font-family-mono {
-      font-family: "Fira Code", monospace;
+      font-family: "Commit Mono", monospace;
 
       &.font-size-default {
         font-size: 0.8125rem;
+        line-height: 0;
         letter-spacing: normal;
       }
 
       &.font-size-s {
         font-size: 0.75rem;
+        line-height: 0;
         letter-spacing: normal;
       }
 
       &.font-size-xs {
         font-size: 0.6875rem;
+        line-height: 0;
         letter-spacing: normal;
       }
     }
