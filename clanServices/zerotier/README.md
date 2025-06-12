@@ -1,4 +1,4 @@
-## Example Usage
+## Usage
 
 ```
 inventory.instances = {
