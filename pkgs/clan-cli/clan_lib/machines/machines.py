@@ -151,7 +151,7 @@ class Machine:
                 private_key=self.private_key,
             )
 
-        remote = get_target_host(self.name, self.flake)
+        remote = get_host(self.name, self.flake, field="targetHost")
         if remote is None:
             msg = f"'targetHost' is not set for machine '{self.name}'"
             raise ClanError(
@@ -187,7 +187,7 @@ class Machine:
                 private_key=self.private_key,
             )
 
-        remote = get_build_host(self.name, self.flake)
+        remote = get_host(self.name, self.flake, field="buildHost")
 
         if remote:
             data = remote.data
@@ -281,7 +281,9 @@ class RemoteSource:
 
 
 @API.register
-def get_target_host(name: str, flake: Flake) -> RemoteSource | None:
+def get_host(
+    name: str, flake: Flake, field: Literal["targetHost", "buildHost"]
+) -> RemoteSource | None:
     """
     Get the build host for a machine.
     """
@@ -289,45 +291,13 @@ def get_target_host(name: str, flake: Flake) -> RemoteSource | None:
     inv_machine = machine.get_inv_machine()
 
     source: Literal["inventory", "nix_machine"] = "inventory"
-    target_host_str = inv_machine.get("deploy", {}).get("targetHost")
+    target_host_str = inv_machine.get("deploy", {}).get(field)
 
     if target_host_str is None:
         machine.info(
-            "'targetHost' is not set in inventory, falling back to slow Nix config"
+            f"'{field}' is not set in inventory, falling back to slow Nix config"
         )
-        target_host_str = machine.eval_nix("config.clan.core.networking.targetHost")
-        source = "nix_machine"
-
-    if not target_host_str:
-        return None
-
-    return RemoteSource(
-        data=Remote.from_deployment_address(
-            machine_name=machine.name,
-            address=target_host_str,
-            host_key_check=machine.host_key_check,
-            private_key=machine.private_key,
-        ),
-        source=source,
-    )
-
-
-@API.register
-def get_build_host(name: str, flake: Flake) -> RemoteSource | None:
-    """
-    Get the build host for a machine.
-    """
-    machine = Machine(name=name, flake=flake)
-    inv_machine = machine.get_inv_machine()
-
-    source: Literal["inventory", "nix_machine"] = "inventory"
-    target_host_str = inv_machine.get("deploy", {}).get("buildHost")
-
-    if target_host_str is None:
-        machine.info(
-            "'buildHost' is not set in inventory, falling back to slow Nix config"
-        )
-        target_host_str = machine.eval_nix("config.clan.core.networking.buildHost")
+        target_host_str = machine.eval_nix(f'config.clan.core.networking."{field}"')
         source = "nix_machine"
 
     if not target_host_str:
