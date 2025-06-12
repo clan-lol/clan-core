@@ -13,15 +13,16 @@ from .sops import (
     default_admin_private_key_path,
     generate_private_key,
     load_age_plugins,
-    maybe_get_admin_public_key,
+    maybe_get_admin_public_keys,
 )
 
 log = logging.getLogger(__name__)
 
 
 def generate_key() -> sops.SopsKey:
-    key = maybe_get_admin_public_key()
-    if key is not None:
+    keys = maybe_get_admin_public_keys()
+    if keys is not None:
+        key = keys[0]
         print(f"{key.key_type.name} key {key.pubkey} is already set", file=sys.stderr)
         return key
 
@@ -44,11 +45,11 @@ def generate_command(args: argparse.Namespace) -> None:
 
 
 def show_command(args: argparse.Namespace) -> None:
-    key = sops.maybe_get_admin_public_key()
-    if not key:
+    keys = sops.maybe_get_admin_public_keys()
+    if not keys:
         msg = "No public key found"
         raise ClanError(msg)
-    json.dump(key.as_dict(), sys.stdout, indent=2, sort_keys=True)
+    json.dump([key.as_dict() for key in keys], sys.stdout, indent=2, sort_keys=True)
 
 
 def update_command(args: argparse.Namespace) -> None:

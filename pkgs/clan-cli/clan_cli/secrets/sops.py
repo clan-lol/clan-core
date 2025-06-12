@@ -7,7 +7,7 @@ import os
 import re
 import shutil
 import subprocess
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 from contextlib import suppress
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -50,8 +50,8 @@ class KeyType(enum.Enum):
         )
         raise ClanError(msg)
 
-    def collect_public_keys(self) -> Sequence[str]:
-        keyring: list[str] = []
+    def collect_public_keys(self) -> list[str]:
+        keyring = []
 
         if self == self.AGE:
 
@@ -136,7 +136,7 @@ class SopsKey:
         return read_keys(folder)
 
     @classmethod
-    def collect_public_keys(cls) -> Sequence["SopsKey"]:
+    def collect_public_keys(cls) -> list["SopsKey"]:
         return [
             cls(pubkey=key, username="", key_type=key_type)
             for key_type in KeyType
@@ -374,7 +374,7 @@ def get_user_name(flake_dir: Path, user: str) -> str:
         print(f"{flake_dir / user} already exists")
 
 
-def maybe_get_user(flake_dir: Path, key: SopsKey) -> set[SopsKey] | None:
+def maybe_get_user(flake_dir: Path, keys: set[SopsKey]) -> set[SopsKey] | None:
     folder = sops_users_folder(flake_dir)
 
     if folder.exists():
@@ -382,9 +382,11 @@ def maybe_get_user(flake_dir: Path, key: SopsKey) -> set[SopsKey] | None:
             if not (user / "key.json").exists():
                 continue
 
-            keys = read_keys(user)
-            if key in keys:
-                return {SopsKey(key.pubkey, user.name, key.key_type) for key in keys}
+            user_keys = read_keys(user)
+            if len(keys.intersection(user_keys)):
+                return {
+                    SopsKey(key.pubkey, user.name, key.key_type) for key in user_keys
+                }
 
     return None
 
@@ -397,39 +399,32 @@ def default_admin_private_key_path() -> Path:
 
 
 @API.register
-def maybe_get_admin_public_key() -> SopsKey | None:
+def maybe_get_admin_public_keys() -> list[SopsKey] | None:
     keyring = SopsKey.collect_public_keys()
 
     if len(keyring) == 0:
         return None
 
-    if len(keyring) > 1:
-        last_3 = [f"{key.key_type.name.lower()}:{key.pubkey}" for key in keyring[:3]]
-        msg = (
-            f"Found {len(keyring)} public keys in your "
-            f"environment/system and cannot decide which one to "
-            f"use, first {len(last_3)}:\n\n"
-            f"- {'\n- '.join(last_3)}\n\n"
-            f"Please set one of SOPS_AGE_KEY, SOPS_AGE_KEY_FILE or "
-            f"SOPS_PGP_FP appropriately"
-        )
-        raise ClanError(msg)
-
-    return keyring[0]
+    return keyring
 
 
 def ensure_admin_public_keys(flake_dir: Path) -> set[SopsKey]:
-    key = maybe_get_admin_public_key()
+    keys = maybe_get_admin_public_keys()
 
-    if not key:
+    if not keys:
         msg = "No SOPS key found. Please generate one with `clan secrets key generate`."
         raise ClanError(msg)
 
-    user_keys = maybe_get_user(flake_dir, key)
+    user_keys = maybe_get_user(flake_dir, set(keys))
 
     if not user_keys:
-        # todo improve error message
-        msg = f"We could not figure out which Clan secrets user you are with the SOPS key we found: {key.pubkey}"
+        msg = (
+            f"We could not figure out which Clan secrets user you are with the SOPS keys we found:\n"
+            f"- {'\n- '.join(f'{key.key_type.name.lower()}: {key.pubkey}' for key in keys)}\n\n"
+            f"Please ensure you have created a Clan secrets user and added one of your SOPS keys"
+            f"to that user.\n"
+            f"For more information, see: https://docs.clan.lol/guides/getting-started/secrets/#add-your-public-keys"
+        )
         raise ClanError(msg)
 
     return user_keys

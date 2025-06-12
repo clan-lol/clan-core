@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 from clan_cli.secrets.key import generate_key
-from clan_cli.secrets.sops import maybe_get_admin_public_key
+from clan_cli.secrets.sops import maybe_get_admin_public_keys
 from clan_cli.secrets.users import add_user
 from clan_lib.api import API
 from clan_lib.errors import ClanError
@@ -19,14 +19,14 @@ def keygen(flake_dir: Path, user: str | None = None, force: bool = False) -> Non
         if not user:
             msg = "No user provided and $USER is not set. Please provide a user via --user."
             raise ClanError(msg)
-    pub_key = maybe_get_admin_public_key()
-    if not pub_key:
-        pub_key = generate_key()
+    pub_keys = maybe_get_admin_public_keys()
+    if not pub_keys:
+        pub_keys = [generate_key()]
     # TODO set flake_dir=flake.path / "vars"
     add_user(
         flake_dir=flake_dir,
         name=user,
-        keys=[pub_key],
+        keys=pub_keys,
         force=force,
     )
 
