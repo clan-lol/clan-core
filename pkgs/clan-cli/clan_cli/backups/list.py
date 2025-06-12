@@ -15,6 +15,7 @@ def list_command(args: argparse.Namespace) -> None:
     if args.flake is None:
         msg = "Could not find clan flake toplevel directory"
         raise ClanError(msg)
+
     machine = Machine(name=args.machine, flake=args.flake)
     backups = list_backups(machine=machine, provider=args.provider)
     for backup in backups:

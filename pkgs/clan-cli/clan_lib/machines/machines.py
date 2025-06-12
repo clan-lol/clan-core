@@ -5,16 +5,19 @@ import re
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from clan_cli.facts import public_modules as facts_public_modules
 from clan_cli.facts import secret_modules as facts_secret_modules
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.vars._types import StoreBase
 
+from clan_lib.api import API
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
+from clan_lib.machines.actions import get_machine
 from clan_lib.nix import nix_config, nix_test_store
+from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -33,6 +36,9 @@ class Machine:
     override_build_host: None | str = None
     private_key: Path | None = None
     host_key_check: HostKeyCheck = HostKeyCheck.STRICT
+
+    def get_inv_machine(self) -> "InventoryMachine":
+        return get_machine(self.flake, self.name)
 
     def get_id(self) -> str:
         return f"{self.flake}#{self.name}"
@@ -53,6 +59,10 @@ class Machine:
     def info(self, msg: str, *args: Any, **kwargs: Any) -> None:
         kwargs.update({"extra": {"command_prefix": self.name}})
         log.info(msg, *args, **kwargs)
+
+    def warn(self, msg: str, *args: Any, **kwargs: Any) -> None:
+        kwargs.update({"extra": {"command_prefix": self.name}})
+        log.warning(msg, *args, **kwargs)
 
     def error(self, msg: str, *args: Any, **kwargs: Any) -> None:
         kwargs.update({"extra": {"command_prefix": self.name}})
@@ -82,17 +92,6 @@ class Machine:
             self.build_nix("config.system.clan.deployment.file").read_text()
         )
         return deployment
-
-    @property
-    def target_host_address(self) -> str:
-        val = self.override_target_host or self.deployment.get("targetHost")
-        if val is None:
-            msg = f"'targetHost' is not set for machine '{self.name}'"
-            raise ClanError(
-                msg,
-                description="See https://docs.clan.lol/guides/getting-started/deploy/#setting-the-target-host for more information.",
-            )
-        return val
 
     @cached_property
     def secret_facts_store(self) -> facts_secret_modules.SecretStoreBase:
@@ -144,11 +143,34 @@ class Machine:
         return self.flake.path
 
     def target_host(self) -> Remote:
-        return Remote.from_deployment_address(
-            machine_name=self.name,
-            address=self.target_host_address,
-            host_key_check=self.host_key_check,
+        if self.override_target_host:
+            return Remote.from_deployment_address(
+                machine_name=self.name,
+                address=self.override_target_host,
+                host_key_check=self.host_key_check,
+                private_key=self.private_key,
+            )
+
+        remote = get_host(self.name, self.flake, field="targetHost")
+        if remote is None:
+            msg = f"'targetHost' is not set for machine '{self.name}'"
+            raise ClanError(
+                msg,
+                description="See https://docs.clan.lol/guides/getting-started/deploy/#setting-the-target-host for more information.",
+            )
+        data = remote.data
+        return Remote(
+            address=data.address,
+            user=data.user,
+            command_prefix=data.command_prefix,
+            port=data.port,
             private_key=self.private_key,
+            password=data.password,
+            forward_agent=data.forward_agent,
+            host_key_check=self.host_key_check,
+            verbose_ssh=data.verbose_ssh,
+            ssh_options=data.ssh_options,
+            tor_socks=data.tor_socks,
         )
 
     def build_host(self) -> Remote | None:
@@ -156,18 +178,34 @@ class Machine:
         The host where the machine is built and deployed from.
         Can be the same as the target host.
         """
-        address = self.override_build_host or self.deployment.get("buildHost")
-        if address is None:
-            return None
-        # enable ssh agent forwarding to allow the build host to access the target host
-        host = Remote.from_deployment_address(
-            machine_name=self.name,
-            address=address,
-            host_key_check=self.host_key_check,
-            forward_agent=True,
-            private_key=self.private_key,
-        )
-        return host
+
+        if self.override_build_host:
+            return Remote.from_deployment_address(
+                machine_name=self.name,
+                address=self.override_build_host,
+                host_key_check=self.host_key_check,
+                private_key=self.private_key,
+            )
+
+        remote = get_host(self.name, self.flake, field="buildHost")
+
+        if remote:
+            data = remote.data
+            return Remote(
+                address=data.address,
+                user=data.user,
+                command_prefix=data.command_prefix,
+                port=data.port,
+                private_key=self.private_key,
+                password=data.password,
+                forward_agent=data.forward_agent,
+                host_key_check=self.host_key_check,
+                verbose_ssh=data.verbose_ssh,
+                ssh_options=data.ssh_options,
+                tor_socks=data.tor_socks,
+            )
+
+        return None
 
     def nix(
         self,
@@ -234,3 +272,43 @@ class Machine:
             return output
         msg = "build_nix returned not a Path"
         raise ClanError(msg)
+
+
+@dataclass(frozen=True)
+class RemoteSource:
+    data: Remote
+    source: Literal["inventory", "nix_machine"]
+
+
+@API.register
+def get_host(
+    name: str, flake: Flake, field: Literal["targetHost", "buildHost"]
+) -> RemoteSource | None:
+    """
+    Get the build host for a machine.
+    """
+    machine = Machine(name=name, flake=flake)
+    inv_machine = machine.get_inv_machine()
+
+    source: Literal["inventory", "nix_machine"] = "inventory"
+    target_host_str = inv_machine.get("deploy", {}).get(field)
+
+    if target_host_str is None:
+        machine.info(
+            f"'{field}' is not set in inventory, falling back to slow Nix config"
+        )
+        target_host_str = machine.eval_nix(f'config.clan.core.networking."{field}"')
+        source = "nix_machine"
+
+    if not target_host_str:
+        return None
+
+    return RemoteSource(
+        data=Remote.from_deployment_address(
+            machine_name=machine.name,
+            address=target_host_str,
+            host_key_check=machine.host_key_check,
+            private_key=machine.private_key,
+        ),
+        source=source,
+    )

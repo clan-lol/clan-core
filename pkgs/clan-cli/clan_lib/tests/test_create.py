@@ -203,7 +203,7 @@ def test_clan_create_api(
     # Invalidate cache because of new machine creation
     clan_dir_flake.invalidate_cache()
 
-    result = check_machine_online(machine)
+    result = check_machine_online(machine.target_host())
     assert result == "Online", f"Machine {machine.name} is not online"
 
     ssh_keys = [

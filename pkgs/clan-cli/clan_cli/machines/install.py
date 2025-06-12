@@ -194,7 +194,7 @@ def install_command(args: argparse.Namespace) -> None:
 
         if not args.yes:
             ask = input(
-                f"Install {args.machine} to {machine.target_host_address}? [y/N] "
+                f"Install {args.machine} to {machine.target_host().target}? [y/N] "
             )
             if ask != "y":
                 return None
