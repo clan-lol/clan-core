@@ -61,8 +61,26 @@ in
       clanFlakeResult =
         if config.clan.test.fromFlake != null then importFlake config.clan.test.fromFlake else config.clan;
 
-      machineModules = flip filterAttrs clanFlakeResult.nixosModules (
+      machineModules' = flip filterAttrs clanFlakeResult.nixosModules (
         name: _module: hasPrefix "clan-machine-" name
+      );
+
+      machineModules = flip mapAttrs' machineModules' (
+        name: machineModule: {
+          name = removePrefix "clan-machine-" name;
+          value = machineModule;
+        }
+      );
+
+      machinesCross = lib.genAttrs [ "aarch64-darwin" "aarch64-linux" "x86_64-darwin" "x86_64-linux" ] (
+        system:
+        lib.mapAttrs (
+          _: module:
+          lib.nixosSystem {
+            inherit system;
+            modules = [ module ];
+          }
+        ) machineModules
       );
 
       update-vars-script = "${
@@ -219,12 +237,7 @@ in
         # Inherit all nodes from the clan
         # i.e. nodes.jon <- clan.machines.jon
         # clanInternals.nixosModules contains nixosModules per node
-        nodes = flip mapAttrs' machineModules (
-          name: machineModule: {
-            name = removePrefix "clan-machine-" name;
-            value = machineModule;
-          }
-        );
+        nodes = machineModules;
 
         # !WARNING: Write a detailed comment if adding new options here
         # We should be very careful about adding new options here because it affects all tests
@@ -269,7 +282,9 @@ in
           }
         );
 
-        result = { inherit update-vars vars-check; };
+        result = {
+          inherit update-vars vars-check machinesCross;
+        };
       };
     };
 }
