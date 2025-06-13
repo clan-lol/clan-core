@@ -4,7 +4,7 @@ This service will automatically set the emergency access password if your system
 
 ```nix
 inventory.instances = {
-  mylounge = {
+  default = {
     module = {
       name = "emergency-access";
       input = "clan-core";
