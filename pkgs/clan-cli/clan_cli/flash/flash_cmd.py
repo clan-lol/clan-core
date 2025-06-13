@@ -112,7 +112,11 @@ def register_flash_write_parser(parser: argparse.ArgumentParser) -> None:
         nargs=2,
         metavar=("name", "device"),
         action=AppendDiskAction,
-        help="device to flash to",
+        help="""
+            The device where flash to.
+            name: The name of the 'device' in the disk configuration. Example: 'main' <- disko.devices.disk.main.
+            device: The name of the physical 'device' where the utility will be flashed to. Example: '/dev/sda/'
+        """,
         default=[],
     )
     mode_help = textwrap.dedent(
