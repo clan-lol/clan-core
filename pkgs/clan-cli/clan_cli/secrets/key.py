@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import os
 import sys
 
 from clan_lib.errors import ClanError
@@ -52,8 +53,18 @@ def show_command(args: argparse.Namespace) -> None:
 
 def update_command(args: argparse.Namespace) -> None:
     flake_dir = args.flake.path
+    # Only necessary for the `secrets` test in `clan-infra` currently
+    # https://git.clan.lol/clan/clan-infra/src/commit/4cab8e49c3ac0e0395c67abaf789d806807bfb08/checks/secrets.nix
+    # TODO: add a `check` command instead that never loads age plugins
+    # rather than exposing this escape hatch
+    should_load_age_plugins = os.environ.get("CLAN_LOAD_AGE_PLUGINS", "true") != "false"
     commit_files(
-        update_secrets(flake_dir, age_plugins=load_age_plugins(args.flake)),
+        update_secrets(
+            flake_dir,
+            age_plugins=load_age_plugins(args.flake)
+            if should_load_age_plugins
+            else None,
+        ),
         flake_dir,
         "Updated secrets with new keys",
     )
