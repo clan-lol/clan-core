@@ -62,7 +62,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
         nix_options: [],
         password: null,
       },
-    });
+    }).promise;
     setInstalling(false);
   };
 
@@ -91,7 +91,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
         },
         override_target_host: info?.deploy.targetHost,
       },
-    });
+    }).promise;
 
     setUpdating(false);
   };

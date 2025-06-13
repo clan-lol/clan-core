@@ -153,7 +153,7 @@ export const VarsStep = (props: VarsStepProps) => {
         base_dir: props.dir,
         machine_name: props.machine_id,
         full_closure: props.fullClosure,
-      });
+      }).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
@@ -170,7 +170,7 @@ export const VarsStep = (props: VarsStepProps) => {
       base_dir: props.dir,
       generators: generatorsQuery.data.map((generator) => generator.name),
       all_prompt_values: values,
-    });
+    }).promise;
     queryClient.invalidateQueries({
       queryKey: [props.dir, props.machine_id, "generators"],
     });

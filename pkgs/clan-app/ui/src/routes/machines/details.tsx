@@ -7,7 +7,7 @@ import {
   setValue,
 } from "@modular-forms/solid";
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
-import { createQuery, useQuery, useQueryClient } from "@tanstack/solid-query";
+import { useQuery, useQueryClient } from "@tanstack/solid-query";
 import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
 
 import { Button } from "../../components/Button/Button";
@@ -130,7 +130,7 @@ const InstallMachine = (props: InstallMachineProps) => {
         placeholders: diskValues.placeholders,
         schema_name: diskValues.schema,
         force: true,
-      });
+      }).promise;
     }
 
     setProgressText("Installing machine ... (2/5)");
@@ -425,7 +425,7 @@ const MachineForm = (props: MachineDetailsProps) => {
           values.machine.tags || props.initialData.machine.tags || [],
         ),
       },
-    });
+    }).promise;
     await queryClient.invalidateQueries({
       queryKey: [curr_uri, "machine", machineName(), "get_machine_details"],
     });
@@ -433,7 +433,7 @@ const MachineForm = (props: MachineDetailsProps) => {
     return null;
   };
 
-  const generatorsQuery = createQuery(() => ({
+  const generatorsQuery = useQuery(() => ({
     queryKey: [activeClanURI(), machineName(), "generators"],
     queryFn: async () => {
       const machine_name = machineName();
@@ -444,7 +444,7 @@ const MachineForm = (props: MachineDetailsProps) => {
       const result = await callApi("get_generators_closure", {
         base_dir: base_dir,
         machine_name: machine_name,
-      });
+      }).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
@@ -489,7 +489,7 @@ const MachineForm = (props: MachineDetailsProps) => {
         },
         override_target_host: target,
       },
-    });
+    }).promise;
   };
 
   createEffect(() => {
@@ -717,7 +717,7 @@ export const MachineDetails = () => {
             },
             name: params.id,
           },
-        });
+        }).promise;
         if (result.status === "error") throw new Error("Failed to fetch data");
         return result.data;
       }

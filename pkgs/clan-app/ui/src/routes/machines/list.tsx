@@ -36,7 +36,7 @@ export const MachineListView: Component = () => {
           flake: {
             identifier: uri,
           },
-        });
+        }).promise;
         console.log("response", response);
         if (response.status === "error") {
           console.error("Failed to fetch data");

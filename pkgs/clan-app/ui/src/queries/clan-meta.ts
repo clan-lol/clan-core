@@ -15,7 +15,7 @@ export const clanMetaQuery = (uri: string | undefined = undefined) =>
 
         const result = await callApi("show_clan_meta", {
           flake: { identifier: clanURI! },
-        });
+        }).promise;
 
         console.log("result", result);
 

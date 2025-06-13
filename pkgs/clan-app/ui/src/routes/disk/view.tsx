@@ -13,7 +13,7 @@ export function DiskView() {
         // Example of calling an API
         const result = await callApi("get_inventory", {
           flake: { identifier: currUri },
-        });
+        }).promise;
         if (result.status === "error") throw new Error("Failed to fetch data");
         return result.data;
       }

@@ -33,7 +33,7 @@ export const CreateClan = () => {
     const { template, ...meta } = values;
     const response = await callApi("open_file", {
       file_request: { mode: "save" },
-    });
+    }).promise;
 
     if (response.status !== "success") {
       toast.error("Cannot select clan directory");
@@ -56,7 +56,7 @@ export const CreateClan = () => {
           machines: {},
         },
       },
-    });
+    }).promise;
     toast.dismiss(loading_toast);
 
     if (r.status === "error") {
@@ -67,7 +67,7 @@ export const CreateClan = () => {
     // Will generate a key if it doesn't exist, and add a user to the clan
     const k = await callApi("keygen", {
       flake_dir: target_dir[0],
-    });
+    }).promise;
 
     if (k.status === "error") {
       toast.error("Failed to generate key");
