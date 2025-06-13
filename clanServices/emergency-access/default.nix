@@ -18,7 +18,7 @@
             pkgs.mkpasswd
             pkgs.xkcdpass
           ];
-          files.password.secret = true;
+          files.password.deploy = false;
           files.password-hash.secret = false;
 
           script = ''
