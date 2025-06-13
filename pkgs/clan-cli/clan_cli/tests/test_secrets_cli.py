@@ -638,7 +638,7 @@ def test_secrets(
     with capture_output as output:
         cli.run(["secrets", "key", "show", "--flake", str(test_flake_with_core.path)])
 
-    key = json.loads(output.out)
+    key = json.loads(output.out)[0]
     assert key["publickey"].startswith("age1")
     # Add testuser with the key that was generated for the clan
     cli.run(
@@ -991,7 +991,7 @@ def test_secrets_key_generate_gpg(
             cli.run(
                 ["secrets", "key", "show", "--flake", str(test_flake_with_core.path)]
             )
-        key = json.loads(output.out)
+        key = json.loads(output.out)[0]
         assert key["type"] == "pgp"
         assert key["publickey"] == gpg_key.fingerprint
 

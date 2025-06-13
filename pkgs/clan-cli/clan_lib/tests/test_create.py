@@ -11,7 +11,7 @@ import pytest
 from clan_cli.machines.create import CreateOptions as ClanCreateOptions
 from clan_cli.machines.create import create_machine
 from clan_cli.secrets.key import generate_key
-from clan_cli.secrets.sops import maybe_get_admin_public_key
+from clan_cli.secrets.sops import maybe_get_admin_public_keys
 from clan_cli.secrets.users import add_user
 from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.vars.generate import generate_vars_for_machine, get_generators_closure
@@ -159,10 +159,10 @@ def test_clan_create_api(
     fix_flake_inputs(dest_clan_dir, clan_core_dir)
 
     # ===== CREATE SOPS KEY ======
-    sops_key = maybe_get_admin_public_key()
-    if sops_key is None:
+    sops_keys = maybe_get_admin_public_keys()
+    if sops_keys is None:
         # TODO: In the UI we need a view for this
-        sops_key = generate_key()
+        sops_keys = [generate_key()]
     else:
         msg = "SOPS key already exists, please remove it before running this test"
         raise ClanError(msg)
@@ -171,7 +171,7 @@ def test_clan_create_api(
     add_user(
         dest_clan_dir,
         name="testuser",
-        keys=[sops_key],
+        keys=sops_keys,
         force=False,
     )
 
