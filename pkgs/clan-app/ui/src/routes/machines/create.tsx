@@ -56,7 +56,7 @@ export function CreateMachine() {
           identifier: active_dir,
         },
       },
-    });
+    }).promise;
 
     if (response.status === "success") {
       toast.success(`Successfully created ${values.opts.machine.name}`);

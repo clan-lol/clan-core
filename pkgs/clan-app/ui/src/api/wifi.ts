@@ -7,7 +7,7 @@ export const instance_name = (machine_name: string) =>
 export async function get_iwd_service(base_path: string, machine_name: string) {
   const r = await callApi("get_inventory", {
     flake: { identifier: base_path },
-  });
+  }).promise;
   if (r.status == "error") {
     return null;
   }

@@ -142,11 +142,25 @@ export const ApiTester = () => {
           </Field>
           <Field name="payload">
             {(field, fieldProps) => (
-              <TextInput
-                label={"payload"}
-                value={field.value || ""}
-                inputProps={fieldProps}
-              />
+              <div class="flex flex-col my-2">
+                <label class="mb-1 font-medium" for="payload-textarea">
+                  payload
+                </label>
+                <textarea
+                  id="payload-textarea"
+                  class="border rounded p-2 text-sm min-h-[120px] resize-y focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder={`{\n  "key": "value"\n}`}
+                  value={field.value || ""}
+                  {...fieldProps}
+                  onInput={(e) => {
+                    fieldProps.onInput?.(e);
+                  }}
+                  spellcheck={false}
+                  autocomplete="off"
+                  autocorrect="off"
+                  autocapitalize="off"
+                />
+              </div>
             )}
           </Field>
           <Button class="m-2" disabled={query.isFetching}>

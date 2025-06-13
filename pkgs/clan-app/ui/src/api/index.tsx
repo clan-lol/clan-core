@@ -88,6 +88,20 @@ const handleCancel = async <K extends OperationNames>(
 ) => {
   console.log("Canceling operation: ", ops_key);
   const { promise, op_key } = _callApi("cancel_task", { task_id: ops_key });
+  promise.catch((error) => {
+    toast.custom(
+      (t) => (
+        <ErrorToastComponent
+          t={t}
+          message={"Unexpected error: " + (error?.message || String(error))}
+        />
+      ),
+      {
+        duration: 5000,
+      },
+    );
+    console.error("Unhandled promise rejection in callApi:", error);
+  });
   const resp = await promise;
 
   if (resp.status === "error") {
@@ -109,13 +123,27 @@ const handleCancel = async <K extends OperationNames>(
   console.log("Cancel response: ", resp);
 };
 
-export const callApi = async <K extends OperationNames>(
+export const callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
-): Promise<OperationResponse<K>> => {
+): { promise: Promise<OperationResponse<K>>; op_key: string } => {
   console.log("Calling API", method, args);
 
   const { promise, op_key } = _callApi(method, args);
+  promise.catch((error) => {
+    toast.custom(
+      (t) => (
+        <ErrorToastComponent
+          t={t}
+          message={"Unexpected error: " + (error?.message || String(error))}
+        />
+      ),
+      {
+        duration: 5000,
+      },
+    );
+    console.error("Unhandled promise rejection in callApi:", error);
+  });
 
   const toastId = toast.custom(
     (
@@ -132,28 +160,30 @@ export const callApi = async <K extends OperationNames>(
     },
   );
 
-  const response = await promise;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cancelled = (promise as any).cancelled;
-  if (cancelled) {
-    console.log("Not printing toast because operation was cancelled");
-  }
+  const new_promise = promise.then((response) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cancelled = (promise as any).cancelled;
+    if (cancelled) {
+      console.log("Not printing toast because operation was cancelled");
+    }
 
-  if (response.status === "error" && !cancelled) {
-    toast.remove(toastId);
-    toast.custom(
-      (t) => (
-        <ErrorToastComponent
-          t={t}
-          message={"Error: " + response.errors[0].message}
-        />
-      ),
-      {
-        duration: Infinity,
-      },
-    );
-  } else {
-    toast.remove(toastId);
-  }
-  return response as OperationResponse<K>;
+    if (response.status === "error" && !cancelled) {
+      toast.remove(toastId);
+      toast.custom(
+        (t) => (
+          <ErrorToastComponent
+            t={t}
+            message={"Error: " + response.errors[0].message}
+          />
+        ),
+        {
+          duration: Infinity,
+        },
+      );
+    } else {
+      toast.remove(toastId);
+    }
+    return response;
+  });
+  return { promise: new_promise, op_key: op_key };
 };

@@ -72,7 +72,7 @@ export const FileSelectorField: Component<FileSelectorOpts<string>> = (
           filters: fileDialogOptions.filters,
           initial_folder: fileDialogOptions.initial_folder,
         },
-      });
+      }).promise;
 
       if (
         response.status === "success" &&

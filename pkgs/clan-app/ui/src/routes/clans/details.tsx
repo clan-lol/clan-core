@@ -37,7 +37,7 @@ const EditClanForm = (props: EditClanFormProps) => {
             flake: { identifier: props.directory },
             meta: values,
           },
-        });
+        }).promise;
       })(),
       {
         loading: "Updating clan...",

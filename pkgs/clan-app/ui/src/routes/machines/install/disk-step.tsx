@@ -43,7 +43,7 @@ export const DiskStep = (props: StepProps<DiskValues>) => {
           },
           name: props.machine_id,
         },
-      });
+      }).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },

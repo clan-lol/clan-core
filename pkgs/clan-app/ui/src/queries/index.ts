@@ -1,4 +1,4 @@
-import { createQuery } from "@tanstack/solid-query";
+import { useQuery } from "@tanstack/solid-query";
 import { callApi } from "../api";
 import toast from "solid-toast";
 
@@ -9,7 +9,7 @@ export const createModulesQuery = (
   uri: string | undefined,
   filter?: ModulesFilter,
 ) =>
-  createQuery(() => ({
+  useQuery(() => ({
     queryKey: [uri, "list_modules"],
     placeholderData: {
       localModules: {},
@@ -20,7 +20,7 @@ export const createModulesQuery = (
       if (uri) {
         const response = await callApi("list_modules", {
           base_path: uri,
-        });
+        }).promise;
         if (response.status === "error") {
           console.error("Failed to fetch data");
         } else {
@@ -35,7 +35,7 @@ export const createModulesQuery = (
   }));
 
 export const tagsQuery = (uri: string | undefined) =>
-  createQuery<string[]>(() => ({
+  useQuery<string[]>(() => ({
     queryKey: [uri, "tags"],
     placeholderData: [],
     queryFn: async () => {
@@ -43,7 +43,7 @@ export const tagsQuery = (uri: string | undefined) =>
 
       const response = await callApi("get_inventory", {
         flake: { identifier: uri },
-      });
+      }).promise;
       if (response.status === "error") {
         console.error("Failed to fetch data");
       } else {
@@ -56,7 +56,7 @@ export const tagsQuery = (uri: string | undefined) =>
   }));
 
 export const machinesQuery = (uri: string | undefined) =>
-  createQuery<string[]>(() => ({
+  useQuery<string[]>(() => ({
     queryKey: [uri, "machines"],
     placeholderData: [],
     queryFn: async () => {
@@ -64,7 +64,7 @@ export const machinesQuery = (uri: string | undefined) =>
 
       const response = await callApi("get_inventory", {
         flake: { identifier: uri },
-      });
+      }).promise;
       if (response.status === "error") {
         console.error("Failed to fetch data");
       } else {

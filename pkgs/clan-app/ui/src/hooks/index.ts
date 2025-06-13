@@ -7,7 +7,7 @@ export const registerClan = async () => {
   try {
     const loc = await callApi("open_file", {
       file_request: { mode: "select_folder" },
-    });
+    }).promise;
     if (loc.status === "success" && loc.data) {
       const data = loc.data[0];
       addClanURI(data);
@@ -32,7 +32,7 @@ export const selectSshKeys = async (): Promise<FileList> => {
       mode: "open_file",
       initial_folder: "~/.ssh",
     },
-  });
+  }).promise;
   if (response.status === "success" && response.data) {
     // Add synthetic files to the DataTransfer object
     // FileList cannot be instantiated directly.

@@ -98,7 +98,7 @@ export const Flash = () => {
   const deviceQuery = createQuery(() => ({
     queryKey: ["block_devices"],
     queryFn: async () => {
-      const result = await callApi("show_block_devices", {});
+      const result = await callApi("show_block_devices", {}).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
@@ -108,7 +108,7 @@ export const Flash = () => {
   const keymapQuery = createQuery(() => ({
     queryKey: ["list_keymaps"],
     queryFn: async () => {
-      const result = await callApi("list_possible_keymaps", {});
+      const result = await callApi("list_possible_keymaps", {}).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
@@ -118,7 +118,7 @@ export const Flash = () => {
   const langQuery = createQuery(() => ({
     queryKey: ["list_languages"],
     queryFn: async () => {
-      const result = await callApi("list_possible_languages", {});
+      const result = await callApi("list_possible_languages", {}).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
@@ -174,7 +174,7 @@ export const Flash = () => {
           write_efi_boot_entries: false,
           debug: false,
           graphical: true,
-        }),
+        }).promise,
         {
           error: (errors) => `Error flashing disk: ${errors}`,
           loading: "Flashing ... This may take up to 15minutes.",
