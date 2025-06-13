@@ -26,7 +26,6 @@
         nixosModule =
           { ... }:
           {
-
             imports = [
               ../../clanModules/sshd
               ../../clanModules/root-password

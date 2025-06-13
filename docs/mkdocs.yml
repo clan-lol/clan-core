@@ -86,6 +86,7 @@ nav:
           - reference/clanServices/auto-upgrade.md
           - reference/clanServices/borgbackup.md
           - reference/clanServices/deltachat.md
+          - reference/clanServices/emergency-access.md
           - reference/clanServices/ergochat.md
           - reference/clanServices/garage.md
           - reference/clanServices/heisenbridge.md
