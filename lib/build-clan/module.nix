@@ -250,6 +250,9 @@ in
       # We should have only clan.modules. (consistent with clan.templates)
       inherit (clan-core) clanModules;
 
+      # Statically export the predefined clan modules
+      templates = clan-core.clan.templates;
+
       secrets = config.secrets;
 
       # machine specifics

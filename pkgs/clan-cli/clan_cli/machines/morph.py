@@ -8,9 +8,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from clan_lib.cmd import Log, RunOpts, run
-from clan_lib.dirs import get_clan_flake_toplevel_or_env
+from clan_lib.dirs import get_clan_flake_toplevel_or_env, specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.machines.actions import list_machines
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_build, nix_command
 from clan_lib.nix_models.clan import InventoryMachine
@@ -41,7 +42,7 @@ def random_hostname() -> str:
 
 
 def morph_machine(
-    flake: Flake, template_name: str, ask_confirmation: bool, name: str | None = None
+    flake: Flake, template: str, ask_confirmation: bool, name: str | None = None
 ) -> None:
     cmd = nix_command(
         [
@@ -69,12 +70,13 @@ def morph_machine(
         if name is None:
             name = random_hostname()
 
-        create_opts = CreateOptions(
-            template_name=template_name,
-            machine=InventoryMachine(name=name),
-            clan_dir=Flake(str(flakedir)),
-        )
-        create_machine(create_opts, commit=False, _persist=False)
+        if name not in list_machines(flake):
+            create_opts = CreateOptions(
+                template=template,
+                machine=InventoryMachine(name=name),
+                clan_dir=Flake(str(flakedir)),
+            )
+            create_machine(create_opts, commit=False)
 
         machine = Machine(name=name, flake=Flake(str(flakedir)))
 
@@ -89,9 +91,9 @@ def morph_machine(
         # facter_json = run(["nixos-facter"]).stdout
         # run(["cp", "facter.json", f"{flakedir}/machines/{name}/facter.json"]).stdout
 
-        Path(f"{flakedir}/machines/{name}/facter.json").write_text(
-            '{"system": "x86_64-linux"}'
-        )
+        machine_dir = specific_machine_dir(machine)
+        machine_dir.mkdir(parents=True, exist_ok=True)
+        Path(f"{machine_dir}/facter.json").write_text('{"system": "x86_64-linux"}')
         result_path = run(
             nix_build(
                 [f"{flakedir}#nixosConfigurations.{name}.config.system.build.toplevel"]
@@ -149,7 +151,7 @@ def morph_command(args: argparse.Namespace) -> None:
 
     morph_machine(
         flake=Flake(str(args.flake)),
-        template_name=args.template_name,
+        template=args.template,
         ask_confirmation=args.confirm_firing,
         name=args.name,
     )
@@ -159,7 +161,7 @@ def register_morph_parser(parser: argparse.ArgumentParser) -> None:
     parser.set_defaults(func=morph_command)
 
     parser.add_argument(
-        "template_name",
+        "template",
         default="new-machine",
         type=str,
         help="The name of the template to use",

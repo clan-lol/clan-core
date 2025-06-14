@@ -2,7 +2,6 @@ import argparse
 import logging
 import re
 from dataclasses import dataclass
-from pathlib import Path
 
 from clan_lib.api import API
 from clan_lib.dirs import get_clan_flake_toplevel_or_env
@@ -13,15 +12,9 @@ from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path
-from clan_lib.templates import (
-    InputPrio,
-    TemplateName,
-    get_template,
-)
-from clan_lib.templates.filesystem import copy_from_nixstore
+from clan_lib.templates.handler import machine_template
 
 from clan_cli.completions import add_dynamic_completer, complete_tags
-from clan_cli.machines.list import list_full_machines
 
 log = logging.getLogger(__name__)
 
@@ -30,14 +23,14 @@ log = logging.getLogger(__name__)
 class CreateOptions:
     clan_dir: Flake
     machine: InventoryMachine
+    template: str = "new-machine"
     target_host: str | None = None
-    input_prio: InputPrio | None = None
-    template_name: str | None = None
 
 
 @API.register
 def create_machine(
-    opts: CreateOptions, commit: bool = True, _persist: bool = True
+    opts: CreateOptions,
+    commit: bool = True,
 ) -> None:
     """
     Create a new machine in the clan directory.
@@ -54,42 +47,12 @@ def create_machine(
         description = "Import machine only works on local clans"
         raise ClanError(msg, description=description)
 
-    if not opts.template_name:
-        opts.template_name = "new-machine"
-
     clan_dir = opts.clan_dir.path
 
-    # TODO(@Qubasa): make this a proper template handler
-    # i.e. with_template (use context manager)
-    # And move the checks and template handling into the template handler
-    template = get_template(
-        TemplateName(opts.template_name),
-        "machine",
-        input_prio=opts.input_prio,
-        clan_dir=opts.clan_dir,
-    )
-    log.info(f"Found template '{template.name}' in '{template.input_variant}'")
-
     machine_name = opts.machine.get("name")
-    if opts.template_name in list_full_machines(
-        Flake(str(clan_dir))
-    ) and not opts.machine.get("name"):
-        msg = f"{opts.template_name} is already defined in {clan_dir}"
-        raise ClanError(msg)
-
-    machine_name = machine_name if machine_name else opts.template_name
-    src = Path(template.src["path"])
-
-    if not src.exists():
-        msg = f"Template {template} does not exist"
-        raise ClanError(msg)
-    if not src.is_dir():
-        msg = f"Template {template} is not a directory"
-        raise ClanError(msg)
-
-    dst = clan_dir / "machines"
-    dst.mkdir(exist_ok=True)
-    dst /= machine_name
+    if not machine_name:
+        msg = "Machine name is required"
+        raise ClanError(msg, location="Create Machine")
 
     # TODO: Move this into nix code
     hostname_regex = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$"
@@ -97,21 +60,12 @@ def create_machine(
         msg = "Machine name must be a valid hostname"
         raise ClanError(msg, location="Create Machine")
 
-    if dst.exists():
-        msg = f"Machine {machine_name} already exists in {clan_dir}"
-        description = "Please remove the existing machine folder"
-        raise ClanError(msg, description=description)
-
-    # TODO(@Qubasa): move this into the template handler
-    if not (src / "configuration.nix").exists():
-        msg = f"Template machine '{opts.template_name}' does not contain a configuration.nix"
-        description = "Template machine must contain a configuration.nix"
-        raise ClanError(msg, description=description)
-
-    # TODO(@Qubasa): move this into the template handler
-    copy_from_nixstore(src, dst)
-
-    if _persist:
+    with machine_template(
+        flake=opts.clan_dir,
+        template_ident=opts.template,
+        dst_machine_name=machine_name,
+    ) as _machine_dir:
+        # Write to the inventory if persist is true
         target_host = opts.target_host
         new_machine = opts.machine
         new_machine["deploy"] = {"targetHost": target_host}  # type: ignore
@@ -133,16 +87,14 @@ def create_machine(
         )
         inventory_store.write(inventory, message=f"machine '{machine_name}'")
 
+        if commit:
+            commit_file(
+                clan_dir / "machines" / machine_name,
+                repo_dir=clan_dir,
+                commit_message=f"Add machine {machine_name}",
+            )
+    # Invalidate the cache since this modified the flake
     opts.clan_dir.invalidate_cache()
-    # Commit at the end in that order to avoid committing halve-baked machines
-    # TODO: automatic rollbacks if something goes wrong
-
-    if commit:
-        commit_file(
-            clan_dir / "machines" / machine_name,
-            repo_dir=clan_dir,
-            commit_message=f"Add machine {machine_name}",
-        )
 
 
 def create_command(args: argparse.Namespace) -> None:
@@ -159,25 +111,15 @@ def create_command(args: argparse.Namespace) -> None:
         )
         raise ClanError(msg, description=description)
 
-    if len(args.input) == 0:
-        args.input = ["clan", "clan-core"]
-
-    if args.no_self:
-        input_prio = InputPrio.try_inputs(tuple(args.input))
-    else:
-        input_prio = InputPrio.try_self_then_inputs(tuple(args.input))
-
     machine = InventoryMachine(
         name=args.machine_name,
         tags=args.tags,
         deploy=MachineDeploy(targetHost=args.target_host),
     )
     opts = CreateOptions(
-        input_prio=input_prio,
         clan_dir=clan_dir,
         machine=machine,
-        template_name=args.template_name,
-        target_host=args.target_host,
+        template=args.template,
     )
     create_machine(opts)
 
@@ -197,28 +139,16 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
     )
     add_dynamic_completer(tag_parser, complete_tags)
     parser.add_argument(
-        "--template-name",
-        type=str,
-        help="The name of the template machine to import",
-    )
-    parser.add_argument(
         "--target-host",
         type=str,
         help="Address of the machine to install and update, in the format of user@host:1234",
     )
     parser.add_argument(
-        "--input",
+        "-t",
+        "--template",
         type=str,
-        help="""Flake input name to use as template source
-        can be specified multiple times, inputs are tried in order of definition
-        Example: --input clan --input clan-core
+        help="""Reference to the template to use for the machine. default="new-machine". In the format '<flake_ref>#template_name' Where <flake_ref> is a flake reference (e.g. github:org/repo) or a local path (e.g. '.' ).
+        Omitting '<flake_ref>#' will use the builtin templates (e.g. just 'new-machine' from clan-core ).
         """,
-        action="append",
-        default=[],
-    )
-    parser.add_argument(
-        "--no-self",
-        help="Do not look into own flake for templates",
-        action="store_true",
-        default=False,
+        default="new-machine",
     )
