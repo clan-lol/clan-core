@@ -1,8 +1,14 @@
-{ lib, config, ... }:
+{
+  lib,
+  config,
+  _ctx,
+  ...
+}:
 let
   inherit (lib) mkOption types;
   inherit (types) attrsWith submoduleWith;
 
+  errorContext = "Error context: ${lib.concatStringsSep "." _ctx}";
   # TODO:
   # Remove once this gets merged upstream; performs in O(n*log(n) instead of O(n^2))
   # https://github.com/NixOS/nixpkgs/pull/355616/files
@@ -53,7 +59,8 @@ let
       # This prints the path where the option should be defined rather than the plain path within settings
       # "The option `instances.foo.roles.server.machines.test.settings.<>' was accessed but has no value defined. Try setting the option."
       prefix =
-        [
+        _ctx
+        ++ [
           "instances"
           instanceName
           "roles"
@@ -78,7 +85,7 @@ let
         (lib.setDefaultModuleLocation "Via clan.service module: roles.${roleName}.interface"
           config.roles.${roleName}.interface
         )
-        (lib.setDefaultModuleLocation "inventory.instances.${instanceName}.roles.${roleName}.settings"
+        (lib.setDefaultModuleLocation "instances.${instanceName}.roles.${roleName}.settings"
           config.instances.${instanceName}.roles.${roleName}.settings
         )
         settings
@@ -156,7 +163,9 @@ in
       default = throw ''
         The clan service module ${config.manifest.name} doesn't define any instances.
 
-        Did you forget to create instances via 'inventory.instances'?
+        Did you forget to create instances via 'instances'?
+
+        ${errorContext}
       '';
       description = ''
         Instances of the service.
@@ -204,7 +213,9 @@ in
                     Instance '${name}' of service '${config.manifest.name}' mut define members via 'roles'.
 
                     To include a machine:
-                    'instances.${name}.roles.<role-name>.machines.<your-machine-name>' must be set.
+                    'instances.${name}.roles.<role-name>.machines.<machine-name>' must be set.
+
+                    ${errorContext}
                   '';
                   type = attrsWith {
                     placeholder = "roleName";
@@ -301,6 +312,8 @@ in
 
         To define multiple instance behavior:
         `roles.client.perInstance = { ... }: {}`
+
+        ${errorContext}
       '';
       type = attrsWith {
         placeholder = "roleName";
@@ -379,7 +392,7 @@ in
                       };
                       ```
 
-                    - `settings`: The settings of the role, as defined in `inventory`
+                    - `settings`: The settings of the role, as defined in `instances`
                       ```nix
                       {
                         timeout = 30;
@@ -438,7 +451,18 @@ in
                           type = attrsWith {
                             placeholder = "serviceName";
                             elemType = submoduleWith {
-                              modules = [ ./service-module.nix ];
+                              modules = [
+                                {
+                                  _module.args._ctx = _ctx ++ [
+                                    config.manifest.name
+                                    "roles"
+                                    roleName
+                                    "perInstance"
+                                    "services"
+                                  ];
+                                }
+                                ./service-module.nix
+                              ];
                             };
                           };
                           apply = _: throw "Not implemented yet";
@@ -554,7 +578,16 @@ in
               type = attrsWith {
                 placeholder = "serviceName";
                 elemType = submoduleWith {
-                  modules = [ ./service-module.nix ];
+                  modules = [
+                    {
+                      _module.args._ctx = _ctx ++ [
+                        config.manifest.name
+                        "perMachine"
+                        "services"
+                      ];
+                    }
+                    ./service-module.nix
+                  ];
                 };
               };
               apply = _: throw "Not implemented yet";
@@ -605,6 +638,8 @@ in
               - 'instances.<instanceName>.roles.<roleName>.machines.<machineName>.settings' should be used instead.
 
               If that is insufficient, you might also consider using 'roles.<roleName>.perInstance' instead of 'perMachine'.
+
+              ${errorContext}
             '';
           };
 
