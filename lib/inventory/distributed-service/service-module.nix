@@ -13,25 +13,6 @@ let
   # Remove once this gets merged upstream; performs in O(n*log(n) instead of O(n^2))
   # https://github.com/NixOS/nixpkgs/pull/355616/files
   uniqueStrings = list: builtins.attrNames (builtins.groupBy lib.id list);
-
-  checkInstanceRoles =
-    instanceName: instanceRoles:
-    let
-      unmatchedRoles = lib.filter (roleName: !lib.elem roleName (lib.attrNames config.roles)) (
-        lib.attrNames instanceRoles
-      );
-    in
-    if unmatchedRoles == [ ] then
-      true
-    else
-      throw ''
-        inventory instance: 'instances.${instanceName}' defines the following roles:
-        ${builtins.toJSON unmatchedRoles}
-
-        But the clan-service module '${config.manifest.name}' defines roles:
-        ${builtins.toJSON (lib.attrNames config.roles)}
-      '';
-
   /**
     Merges the role- and machine-settings using the role interface
 
@@ -95,32 +76,6 @@ let
       ];
     };
 
-  /**
-    Makes a module extensible
-    returning its config
-    and making it extensible via '__functor' polymorphism
-
-    Example:
-
-    ```nix-repl
-    res = makeExtensibleConfig (evalModules { options.foo = mkOption { default = 42; };)
-    res
-    =>
-    {
-      foo = 42;
-      _functor = <function>;
-    }
-
-    # This allows to override using mkDefault, mkForce, etc.
-    res { foo = 100; }
-    =>
-    {
-      foo = 100;
-      _functor = <function>;
-    }
-    ```
-  */
-
   # Extend evalModules result by a module, returns .config.
   extendEval = eval: m: (eval.extendModules { modules = lib.toList m; }).config;
 
@@ -154,10 +109,7 @@ let
 in
 {
   options = {
-    # TODO: deduplicate this with inventory.instances
-    # Although inventory has stricter constraints
     instances = mkOption {
-      # Instances are created in the inventory
       visible = false;
       defaultText = "Throws: 'The service must define its instances' when not defined";
       default = throw ''
@@ -269,7 +221,34 @@ in
                       ];
                     };
                   };
-                  apply = v: lib.seq (checkInstanceRoles name v) v;
+                  apply =
+                    v:
+                    lib.seq (
+                      (
+
+                        instanceName: instanceRoles:
+                        let
+                          unmatchedRoles = lib.filter (roleName: !lib.elem roleName (lib.attrNames config.roles)) (
+                            lib.attrNames instanceRoles
+                          );
+                        in
+                        if unmatchedRoles == [ ] then
+                          true
+                        else
+                          throw ''
+                            Instance: 'instances.${instanceName}' uses the following roles:
+                            ${builtins.toJSON unmatchedRoles}
+
+                            But the clan-service module '${config.manifest.name}' only defines roles:
+                            ${builtins.toJSON (lib.attrNames config.roles)}
+
+                            ${errorContext}
+                          ''
+
+                      )
+                      name
+                      v
+                    ) v;
                 };
               }
             )
