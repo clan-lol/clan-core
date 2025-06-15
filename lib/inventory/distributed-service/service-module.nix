@@ -746,7 +746,7 @@ in
                             ''
                           else
                             serviceModule.result.final.${machineName}.nixosModule
-                        ) instance.allMachines.${machineName}.services)
+                        ) instance.allMachines.${machineName}.services or { })
 
                       )
                       ++ (
