@@ -1,6 +1,6 @@
 ---
 description = "Automatically generate the state version of the nixos installation."
-features = [ "inventory" ]
+features = [ "inventory", "deprecated" ]
 ---
 
 This module generates the `system.stateVersion` of the nixos installation automatically.
