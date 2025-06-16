@@ -89,6 +89,7 @@
       {
         options.allowedIps = lib.mkOption {
           type = lib.types.listOf lib.types.str;
+          default = [ ];
           description = ''
             Extra machines by their zerotier ip that the zerotier controller
             should accept. These could be external machines.
