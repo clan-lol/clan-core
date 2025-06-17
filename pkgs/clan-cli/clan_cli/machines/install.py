@@ -134,6 +134,10 @@ def install_machine(opts: InstallOptions) -> None:
 
         if opts.debug:
             cmd.append("--debug")
+
+        # Add nix options to nixos-anywhere
+        cmd.extend(opts.nix_options)
+
         cmd.append(host.target)
         if opts.use_tor:
             # nix copy does not support tor socks proxy
