@@ -104,10 +104,12 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
 
 
 @API.register
-def deploy_machine(machine: Machine) -> None:
+def deploy_machine(
+    machine: Machine, target_host: Remote, build_host: Remote | None
+) -> None:
     with ExitStack() as stack:
-        target_host = stack.enter_context(machine.target_host().ssh_control_master())
-        build_host = machine.build_host()
+        target_host = stack.enter_context(target_host.ssh_control_master())
+
         if build_host is not None:
             build_host = stack.enter_context(build_host.ssh_control_master())
 
@@ -198,24 +200,6 @@ def deploy_machine(machine: Machine) -> None:
             )
 
 
-def deploy_machines(machines: list[Machine]) -> None:
-    """
-    Deploy to all hosts in parallel
-    """
-
-    with AsyncRuntime() as runtime:
-        for machine in machines:
-            runtime.async_run(
-                AsyncOpts(
-                    tid=machine.name, async_ctx=AsyncContext(prefix=machine.name)
-                ),
-                deploy_machine,
-                machine,
-            )
-        runtime.join_all()
-        runtime.check_all()
-
-
 def update_command(args: argparse.Namespace) -> None:
     try:
         if args.flake is None:
@@ -228,20 +212,18 @@ def update_command(args: argparse.Namespace) -> None:
             args.machines if args.machines else list_full_machines(args.flake).keys()
         )
 
-        if args.target_host is not None and len(args.machines) > 1:
-            msg = "Target Host can only be set for one machines"
-            raise ClanError(msg)
-
         for machine_name in selected_machines:
             machine = Machine(
                 name=machine_name,
                 flake=args.flake,
                 nix_options=args.option,
-                override_target_host=args.target_host,
-                override_build_host=args.build_host,
                 host_key_check=HostKeyCheck.from_str(args.host_key_check),
             )
             machines.append(machine)
+
+        if args.target_host is not None and len(machines) > 1:
+            msg = "Target Host can only be set for one machines"
+            raise ClanError(msg)
 
         def filter_machine(m: Machine) -> bool:
             if m.deployment.get("requireExplicitUpdate", False):
@@ -285,8 +267,30 @@ def update_command(args: argparse.Namespace) -> None:
                     f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
                 ]
             )
-            # Run the deplyoyment
-            deploy_machines(machines_to_update)
+
+            host_key_check = HostKeyCheck.from_str(args.host_key_check)
+            with AsyncRuntime() as runtime:
+                for machine in machines:
+                    if args.target_host:
+                        target_host = Remote.from_deployment_address(
+                            machine_name=machine.name,
+                            address=args.target_host,
+                            host_key_check=host_key_check,
+                        )
+                    else:
+                        target_host = machine.target_host()
+                    runtime.async_run(
+                        AsyncOpts(
+                            tid=machine.name,
+                            async_ctx=AsyncContext(prefix=machine.name),
+                        ),
+                        deploy_machine,
+                        machine=machine,
+                        target_host=target_host,
+                        build_host=machine.build_host(),
+                    )
+                runtime.join_all()
+                runtime.check_all()
 
     except KeyboardInterrupt:
         log.warning("Interrupted by user")

@@ -47,6 +47,27 @@ export const MachineListItem = (props: MachineListItemProps) => {
       );
       return;
     }
+    const target_host = await callApi("get_host", {
+      field: "targetHost",
+      flake: { identifier: active_clan },
+      name: name,
+    }).promise;
+
+    if (target_host.status == "error") {
+      console.error("No target host found for the machine");
+      return;
+    }
+
+    if (target_host.data === null) {
+      console.error("No target host found for the machine");
+      return;
+    }
+
+    if (!target_host.data!.data) {
+      console.error("No target host found for the machine");
+      return;
+    }
+
     setInstalling(true);
     await callApi("install_machine", {
       opts: {
@@ -55,15 +76,14 @@ export const MachineListItem = (props: MachineListItemProps) => {
           flake: {
             identifier: active_clan,
           },
-          override_target_host: info?.deploy.targetHost,
         },
         no_reboot: true,
         debug: true,
         nix_options: [],
         password: null,
       },
-    }).promise;
-    setInstalling(false);
+      target_host: target_host.data!.data,
+    }).promise.finally(() => setInstalling(false));
   };
 
   const handleUpdate = async () => {
@@ -83,14 +103,53 @@ export const MachineListItem = (props: MachineListItemProps) => {
       return;
     }
     setUpdating(true);
+
+    const target_host = await callApi("get_host", {
+      field: "targetHost",
+      flake: { identifier: active_clan },
+      name: name,
+    }).promise;
+
+    if (target_host.status == "error") {
+      console.error("No target host found for the machine");
+      return;
+    }
+
+    if (target_host.data === null) {
+      console.error("No target host found for the machine");
+      return;
+    }
+
+    if (!target_host.data!.data) {
+      console.error("No target host found for the machine");
+      return;
+    }
+
+    const build_host = await callApi("get_host", {
+      field: "buildHost",
+      flake: { identifier: active_clan },
+      name: name,
+    }).promise;
+
+    if (build_host.status == "error") {
+      console.error("No target host found for the machine");
+      return;
+    }
+
+    if (build_host.data === null) {
+      console.error("No target host found for the machine");
+      return;
+    }
+
     await callApi("deploy_machine", {
       machine: {
         name: name,
         flake: {
           identifier: active_clan,
         },
-        override_target_host: info?.deploy.targetHost,
       },
+      target_host: target_host.data!.data,
+      build_host: build_host.data?.data || null,
     }).promise;
 
     setUpdating(false);
