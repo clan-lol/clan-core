@@ -8,8 +8,15 @@
   roles.default = {
 
     perInstance.nixosModule =
-      { config, pkgs, ... }:
       {
+        config,
+        pkgs,
+        lib,
+        ...
+      }:
+      {
+        services.garage.enable = lib.mkDefault true;
+
         systemd.services.garage.serviceConfig = {
           LoadCredential = [
             "rpc_secret_path:${config.clan.core.vars.generators.garage-shared.files.rpc_secret.path}"
