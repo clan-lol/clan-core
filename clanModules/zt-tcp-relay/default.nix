@@ -13,6 +13,10 @@
     };
   };
   config = {
+    warnings = [
+      "The clan.zt-tcp-relay module is deprecated and will be removed on 2025-07-15. Please migrate to user-maintained configuration."
+    ];
+
     networking.firewall.allowedTCPPorts = [ config.clan.zt-tcp-relay.port ];
 
     systemd.services.zt-tcp-relay = {

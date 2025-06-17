@@ -38,6 +38,10 @@ in
     ] "Importing the module will already enable the service.")
   ];
   config = {
+    warnings = [
+      "The clan.localsend module is deprecated and will be removed on 2025-07-15. Please migrate to user-maintained configuration."
+    ];
+
     clan.core.state.localsend.folders = [
       "/var/localsend"
     ];
