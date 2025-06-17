@@ -1,41 +1,28 @@
 {
-  pkgs,
-  nixosLib,
-  clan-core,
+  module,
   ...
 }:
+{
+  name = "packages";
 
-nixosLib.runTest (
-  { ... }:
-  {
-    imports = [
-      clan-core.modules.nixosVmTest.clanTest
-    ];
+  clan = {
+    directory = ./.;
+    inventory = {
+      machines.server = { };
 
-    hostPkgs = pkgs;
-
-    name = "packages";
-
-    clan = {
-      directory = ./.;
-      modules."@clan/packages" = ../../default.nix;
-      inventory = {
-        machines.server = { };
-
-        instances.default = {
-          module.name = "@clan/packages";
-          roles.default.machines."server".settings = {
-            packages = [ "cbonsai" ];
-          };
+      instances.default = {
+        module.name = "@clan/packages";
+        roles.default.machines."server".settings = {
+          packages = [ "cbonsai" ];
         };
       };
     };
+  };
 
-    nodes.server = { };
+  nodes.server = { };
 
-    testScript = ''
-      start_all()
-      server.succeed("cbonsai")
-    '';
-  }
-)
+  testScript = ''
+    start_all()
+    server.succeed("cbonsai")
+  '';
+}
