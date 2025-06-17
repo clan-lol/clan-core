@@ -1,18 +1,19 @@
-{ lib, self, ... }:
+{ lib, ... }:
+let
+  module = lib.modules.importApply ./default.nix { };
+in
 {
   clan.modules = {
-    localsend = lib.modules.importApply ./default.nix { };
+    localsend = module;
   };
 
   perSystem =
-    { pkgs, ... }:
+    { ... }:
     {
-      checks = lib.optionalAttrs (pkgs.stdenv.isLinux) {
-        localsend = import ./tests/vm/default.nix {
-          inherit pkgs;
-          clan-core = self;
-          nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
-        };
+      clan.nixosTests.localsend = {
+        imports = [ ./tests/vm/default.nix ];
+
+        clan.modules."@clan/localsend" = module;
       };
     };
 }
