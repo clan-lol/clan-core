@@ -266,6 +266,7 @@ Examples:
     )
 
     create_parser.add_argument(
+        "-a",
         "--auto",
         action="store_true",
         help="Skip editor and use commit message automatically",
