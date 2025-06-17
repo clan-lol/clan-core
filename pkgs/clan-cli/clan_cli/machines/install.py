@@ -12,6 +12,7 @@ from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
+from clan_lib.ssh.remote import HostKeyCheck, Remote
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -48,7 +49,7 @@ class InstallOptions:
 
 
 @API.register
-def install_machine(opts: InstallOptions) -> None:
+def install_machine(opts: InstallOptions, target_host: Remote) -> None:
     machine = opts.machine
 
     machine.debug(f"installing {machine.name}")
@@ -56,7 +57,6 @@ def install_machine(opts: InstallOptions) -> None:
     generate_facts([machine])
     generate_vars([machine])
 
-    host = machine.target_host()
     with (
         TemporaryDirectory(prefix="nixos-install-") as _base_directory,
     ):
@@ -127,8 +127,8 @@ def install_machine(opts: InstallOptions) -> None:
         if opts.build_on:
             cmd += ["--build-on", opts.build_on.value]
 
-        if host.port:
-            cmd += ["--ssh-port", str(host.port)]
+        if target_host.port:
+            cmd += ["--ssh-port", str(target_host.port)]
         if opts.kexec:
             cmd += ["--kexec", opts.kexec]
 
@@ -138,7 +138,7 @@ def install_machine(opts: InstallOptions) -> None:
         # Add nix options to nixos-anywhere
         cmd.extend(opts.nix_options)
 
-        cmd.append(host.target)
+        cmd.append(target_host.target)
         if opts.use_tor:
             # nix copy does not support tor socks proxy
             # cmd.append("--ssh-option")
@@ -162,7 +162,7 @@ def install_command(args: argparse.Namespace) -> None:
     try:
         # Only if the caller did not specify a target_host via args.target_host
         # Find a suitable target_host that is reachable
-        target_host = args.target_host
+        target_host_str = args.target_host
         deploy_info: DeployInfo | None = ssh_command_parse(args)
 
         use_tor = False
@@ -170,9 +170,9 @@ def install_command(args: argparse.Namespace) -> None:
             host = find_reachable_host(deploy_info)
             if host is None:
                 use_tor = True
-                target_host = deploy_info.tor.target
+                target_host_str = deploy_info.tor.target
             else:
-                target_host = host.target
+                target_host_str = host.target
 
         if args.password:
             password = args.password
@@ -181,12 +181,20 @@ def install_command(args: argparse.Namespace) -> None:
         else:
             password = None
 
-        machine = Machine(
-            name=args.machine,
-            flake=args.flake,
-            nix_options=args.option,
-            override_target_host=target_host,
+        machine = Machine(name=args.machine, flake=args.flake, nix_options=args.option)
+        host_key_check = (
+            HostKeyCheck.from_str(args.host_key_check)
+            if args.host_key_check
+            else HostKeyCheck.ASK
         )
+        if target_host_str is not None:
+            target_host = Remote.from_deployment_address(
+                machine_name=machine.name,
+                address=target_host_str,
+                host_key_check=host_key_check,
+            )
+        else:
+            target_host = machine.target_host().with_data(host_key_check=host_key_check)
 
         if machine._class_ == "darwin":
             msg = "Installing macOS machines is not yet supported"
@@ -217,6 +225,7 @@ def install_command(args: argparse.Namespace) -> None:
                 identity_file=args.identity_file,
                 use_tor=use_tor,
             ),
+            target_host=target_host,
         )
     except KeyboardInterrupt:
         log.warning("Interrupted by user")

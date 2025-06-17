@@ -32,8 +32,6 @@ class Machine:
     flake: Flake
 
     nix_options: list[str] = field(default_factory=list)
-    override_target_host: None | str = None
-    override_build_host: None | str = None
     private_key: Path | None = None
     host_key_check: HostKeyCheck = HostKeyCheck.STRICT
 
@@ -143,14 +141,6 @@ class Machine:
         return self.flake.path
 
     def target_host(self) -> Remote:
-        if self.override_target_host:
-            return Remote.from_deployment_address(
-                machine_name=self.name,
-                address=self.override_target_host,
-                host_key_check=self.host_key_check,
-                private_key=self.private_key,
-            )
-
         remote = get_host(self.name, self.flake, field="targetHost")
         if remote is None:
             msg = f"'targetHost' is not set for machine '{self.name}'"
@@ -178,15 +168,6 @@ class Machine:
         The host where the machine is built and deployed from.
         Can be the same as the target host.
         """
-
-        if self.override_build_host:
-            return Remote.from_deployment_address(
-                machine_name=self.name,
-                address=self.override_build_host,
-                host_key_check=self.host_key_check,
-                private_key=self.private_key,
-            )
-
         remote = get_host(self.name, self.flake, field="buildHost")
 
         if remote:

@@ -54,6 +54,28 @@ class Remote:
         except ValueError:
             return False
 
+    def with_data(self, host_key_check: HostKeyCheck | None = None) -> "Remote":
+        """
+        Returns a new Remote instance with the same data but with a different host_key_check.
+        """
+        return Remote(
+            address=self.address,
+            user=self.user,
+            command_prefix=self.command_prefix,
+            port=self.port,
+            private_key=self.private_key,
+            password=self.password,
+            forward_agent=self.forward_agent,
+            host_key_check=host_key_check
+            if host_key_check is not None
+            else self.host_key_check,
+            verbose_ssh=self.verbose_ssh,
+            ssh_options=self.ssh_options,
+            tor_socks=self.tor_socks,
+            _control_path_dir=self._control_path_dir,
+            _askpass_path=self._askpass_path,
+        )
+
     @property
     def target(self) -> str:
         return f"{self.user}@{self.address}"

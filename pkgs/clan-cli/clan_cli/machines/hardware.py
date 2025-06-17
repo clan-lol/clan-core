@@ -12,6 +12,7 @@ from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.git import commit_file
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval
+from clan_lib.ssh.remote import HostKeyCheck, Remote
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 
@@ -82,7 +83,9 @@ class HardwareGenerateOptions:
 
 
 @API.register
-def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareConfig:
+def generate_machine_hardware_info(
+    opts: HardwareGenerateOptions, target_host: Remote
+) -> HardwareConfig:
     """
     Generate hardware information for a machine
     and place the resulting *.nix file in the machine's directory.
@@ -103,9 +106,7 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
             "--show-hardware-config",
         ]
 
-    host = opts.machine.target_host()
-
-    with host.ssh_control_master() as ssh, ssh.become_root() as sudo_ssh:
+    with target_host.ssh_control_master() as ssh, ssh.become_root() as sudo_ssh:
         out = sudo_ssh.run(config_command, opts=RunOpts(check=False))
     if out.returncode != 0:
         if "nixos-facter" in out.stderr and "not found" in out.stderr:
@@ -117,7 +118,7 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
             raise ClanError(msg)
 
         machine.error(str(out))
-        msg = f"Failed to inspect {opts.machine}. Address: {host.target}"
+        msg = f"Failed to inspect {opts.machine}. Address: {target_host.target}"
         raise ClanError(msg)
 
     backup_file = None
@@ -157,17 +158,28 @@ def generate_machine_hardware_info(opts: HardwareGenerateOptions) -> HardwareCon
 
 
 def update_hardware_config_command(args: argparse.Namespace) -> None:
+    host_key_check = HostKeyCheck.from_str(args.host_key_check)
     machine = Machine(
         flake=args.flake,
         name=args.machine,
-        override_target_host=args.target_host,
+        host_key_check=host_key_check,
     )
     opts = HardwareGenerateOptions(
         machine=machine,
         password=args.password,
         backend=HardwareConfig(args.backend),
     )
-    generate_machine_hardware_info(opts)
+
+    if args.target_host:
+        target_host = Remote.from_deployment_address(
+            machine_name=machine.name,
+            address=args.target_host,
+            host_key_check=host_key_check,
+        )
+    else:
+        target_host = machine.target_host()
+
+    generate_machine_hardware_info(opts, target_host)
 
 
 def register_update_hardware_config(parser: argparse.ArgumentParser) -> None:
@@ -183,6 +195,12 @@ def register_update_hardware_config(parser: argparse.ArgumentParser) -> None:
         type=str,
         nargs="?",
         help="ssh address to install to in the form of user@host:2222",
+    )
+    parser.add_argument(
+        "--host-key-check",
+        choices=["strict", "ask", "tofu", "none"],
+        default="ask",
+        help="Host key (.ssh/known_hosts) check mode.",
     )
     parser.add_argument(
         "--password",
