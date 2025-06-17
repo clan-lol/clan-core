@@ -55,6 +55,12 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
         is_local_input(node) for node in flake_data["locks"]["nodes"].values()
     )
 
+    # Construct the remote URL with proper parameters for Darwin
+    remote_url = f"ssh://{ssh.target}"
+    # MacOS doesn't come with a proper login shell for ssh and therefore doesn't have nix in $PATH as it doesn't source /etc/profile
+    if machine._class_ == "darwin":
+        remote_url += "?remote-program=bash -lc 'exec nix-daemon --stdio'"
+
     if not has_path_inputs:
         # Just copy the flake to the remote machine, we can substitute other inputs there.
         path = flake_data["path"]
@@ -62,7 +68,7 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
             [
                 "copy",
                 "--to",
-                f"ssh://{ssh.target}",
+                remote_url,
                 "--no-check-sigs",
                 path,
             ]
@@ -84,7 +90,7 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
             "flake",
             "archive",
             "--to",
-            f"ssh://{ssh.target}",
+            remote_url,
             "--json",
             flake_url,
         ]
