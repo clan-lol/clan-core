@@ -9,20 +9,11 @@ let
   };
 in
 {
-  clan.modules = {
-    wifi = module;
-  };
+  clan.modules.wifi = module;
   perSystem =
     { ... }:
     {
-      /**
-        1. Prepare the test vars
-        nix run .#generate-test-vars -- clanServices/hello-world/tests/vm hello-service
-
-        2. To run the test
-        nix build .#checks.x86_64-linux.hello-service
-      */
-      clan.nixosTests.wifi-service = {
+      clan.nixosTests.wifi = {
         imports = [ ./tests/vm/default.nix ];
 
         clan.modules."@clan/wifi" = module;
