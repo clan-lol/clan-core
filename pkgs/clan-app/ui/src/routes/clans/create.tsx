@@ -5,6 +5,7 @@ import {
   required,
   reset,
   SubmitHandler,
+  ResponseData,
 } from "@modular-forms/solid";
 import toast from "solid-toast";
 import { TextInput } from "@/src/Form/fields/TextInput";
@@ -18,7 +19,7 @@ type CreateForm = Meta & {
 };
 
 export const CreateClan = () => {
-  const [formStore, { Form, Field }] = createForm<CreateForm>({
+  const [formStore, { Form, Field }] = createForm<CreateForm, ResponseData>({
     initialValues: {
       name: "",
       description: "",

@@ -234,7 +234,7 @@ export const GhostPrimary: Story = {
   play: Primary.play,
   decorators: [
     (Story) => (
-      <div class="bg-def-3 p-10">
+      <div class="p-10 bg-def-3">
         <Story />
       </div>
     ),

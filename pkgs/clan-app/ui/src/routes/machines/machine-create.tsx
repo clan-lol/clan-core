@@ -8,7 +8,7 @@ import { useNavigate } from "@solidjs/router";
 import { useQueryClient } from "@tanstack/solid-query";
 import { Match, Switch } from "solid-js";
 import toast from "solid-toast";
-import { MachineAvatar } from "./avatar";
+import { MachineAvatar } from "./components";
 import { DynForm } from "@/src/Form/form";
 import Fieldset from "@/src/Form/fieldset";
 import Accordion from "@/src/components/accordion";
