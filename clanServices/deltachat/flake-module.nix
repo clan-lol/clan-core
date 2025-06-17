@@ -1,17 +1,18 @@
-{ lib, self, ... }:
+{ lib, ... }:
+let
+  module = lib.modules.importApply ./default.nix { };
+in
 {
   clan.modules = {
-    deltachat = lib.modules.importApply ./default.nix { };
+    deltachat = module;
   };
   perSystem =
-    { pkgs, ... }:
+    { ... }:
     {
-      checks = lib.optionalAttrs (pkgs.stdenv.isLinux) {
-        deltachat = import ./tests/vm/default.nix {
-          inherit pkgs;
-          clan-core = self;
-          nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
-        };
+      clan.nixosTests.deltachat = {
+        imports = [ ./tests/vm/default.nix ];
+
+        clan.modules."@clan/deltachat" = module;
       };
     };
 }
