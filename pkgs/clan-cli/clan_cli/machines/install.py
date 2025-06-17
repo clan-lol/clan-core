@@ -205,9 +205,7 @@ def install_command(args: argparse.Namespace) -> None:
             raise ClanError(msg)
 
         if not args.yes:
-            ask = input(
-                f"Install {args.machine} to {machine.target_host().target}? [y/N] "
-            )
+            ask = input(f"Install {args.machine} to {target_host.target}? [y/N] ")
             if ask != "y":
                 return None
 

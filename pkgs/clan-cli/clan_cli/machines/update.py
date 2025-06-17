@@ -212,10 +212,6 @@ def update_command(args: argparse.Namespace) -> None:
             args.machines if args.machines else list_full_machines(args.flake).keys()
         )
 
-        if args.target_host is not None and len(args.machines) > 1:
-            msg = "Target Host can only be set for one machines"
-            raise ClanError(msg)
-
         for machine_name in selected_machines:
             machine = Machine(
                 name=machine_name,
@@ -224,6 +220,10 @@ def update_command(args: argparse.Namespace) -> None:
                 host_key_check=HostKeyCheck.from_str(args.host_key_check),
             )
             machines.append(machine)
+
+        if args.target_host is not None and len(machines) > 1:
+            msg = "Target Host can only be set for one machines"
+            raise ClanError(msg)
 
         def filter_machine(m: Machine) -> bool:
             if m.deployment.get("requireExplicitUpdate", False):
