@@ -99,8 +99,16 @@ in
         machine:
         flip mapAttrsToList machine.clan.core.vars.generators (_name: generator: generator.runtimeInputs);
 
+      generatorScripts =
+        machine:
+        flip mapAttrsToList machine.clan.core.vars.generators (_name: generator: generator.finalScript);
+
       generatorRuntimeInputs = unique (
         flatten (flip mapAttrsToList config.nodes (_machineName: machine: inputsForMachine machine))
+      );
+
+      allGeneratorScripts = unique (
+        flatten (flip mapAttrsToList config.nodes (_machineName: machine: generatorScripts machine))
       );
 
       vars-check =
@@ -114,16 +122,19 @@ in
               hostPkgs.bubblewrap
             ];
             closureInfo = hostPkgs.closureInfo {
-              rootPaths = generatorRuntimeInputs ++ [
-                hostPkgs.bash
-                hostPkgs.coreutils
-                hostPkgs.jq.dev
-                hostPkgs.stdenv
-                hostPkgs.stdenvNoCC
-                hostPkgs.shellcheck-minimal
-                hostPkgs.age
-                hostPkgs.sops
-              ];
+              rootPaths =
+                generatorRuntimeInputs
+                ++ allGeneratorScripts
+                ++ [
+                  hostPkgs.bash
+                  hostPkgs.coreutils
+                  hostPkgs.jq.dev
+                  hostPkgs.stdenv
+                  hostPkgs.stdenvNoCC
+                  hostPkgs.shellcheck-minimal
+                  hostPkgs.age
+                  hostPkgs.sops
+                ];
             };
           }
           ''
