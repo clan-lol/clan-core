@@ -49,7 +49,7 @@ def get_latest_commit_info() -> tuple[str, str]:
 def open_editor_for_pr() -> tuple[str, str]:
     """Open editor to get PR title and description. First line is title, rest is description."""
     with tempfile.NamedTemporaryFile(
-        mode="w+", suffix=".txt", delete=False
+        mode="w+", suffix="COMMIT_EDITMSG", delete=False
     ) as temp_file:
         temp_file.write("\n")
         temp_file.write("# Please enter the PR title on the first line.\n")
