@@ -277,8 +277,6 @@ in
             #     Harder to handle advanced setups (like TPM, LUKS, or LVM-on-LUKS) but not needed since we are in a test
             #     No systemd journal logs from initrd.
             boot.initrd.systemd.enable = false;
-            # make the test depend on its vars-check derivation
-            environment.variables.CLAN_VARS_CHECK = "${vars-check}";
           }
         );
 
