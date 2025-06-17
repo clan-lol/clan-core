@@ -71,6 +71,7 @@
             ./flakeModules/demo_iso.nix
             ./lib/filter-clan-core/flake-module.nix
             ./lib/flake-module.nix
+            ./lib/flake-parts/clan-nixos-test.nix
             ./nixosModules/clanCore/vars/flake-module.nix
             ./nixosModules/flake-module.nix
             ./pkgs/flake-module.nix
