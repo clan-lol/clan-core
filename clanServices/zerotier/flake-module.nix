@@ -8,9 +8,7 @@ let
   module = lib.modules.importApply ./default.nix { };
 in
 {
-  clan.modules = {
-    zerotier = module;
-  };
+  clan.modules.zerotier = module;
   perSystem =
     { ... }:
     let
@@ -28,11 +26,11 @@ in
       imports = [
         unit-test-module
       ];
-      # zerotier = import ./tests/vm/default.nix {
-      #   inherit module;
-      #   inherit inputs pkgs;
-      #   clan-core = self;
-      #   nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
-      # };
+
+      clan.nixosTests.zerotier = {
+        imports = [ ./tests/vm/default.nix ];
+
+        clan.modules.zerotier = module;
+      };
     };
 }

@@ -1,43 +1,27 @@
 {
-  pkgs,
-  nixosLib,
-  clan-core,
-  module,
-  ...
-}:
-nixosLib.runTest (
-  { ... }:
-  {
-    imports = [
-      clan-core.modules.nixosVmTest.clanTest
-    ];
+  name = "zerotier";
 
-    hostPkgs = pkgs;
+  clan = {
+    directory = ./.;
+    inventory = {
 
-    name = "zerotier";
+      machines.jon = { };
+      machines.sara = { };
+      machines.bam = { };
 
-    clan = {
-      directory = ./.;
-      modules."zerotier" = module;
-      inventory = {
+      instances = {
+        "zerotier" = {
+          module.name = "zerotier";
 
-        machines.jon = { };
-        machines.sara = { };
-        machines.bam = { };
-
-        instances = {
-          "zerotier" = {
-            module.name = "zerotier";
-
-            roles.peer.tags.all = { };
-            roles.controller.machines.bam = { };
-          };
+          roles.peer.tags.all = { };
+          roles.controller.machines.bam = { };
+          roles.moon.machines = { };
         };
       };
     };
+  };
 
-    # This is not an actual vm test, this is a workaround to
-    # generate the needed vars for the eval test.
-    testScript = '''';
-  }
-)
+  # This is not an actual vm test, this is a workaround to
+  # generate the needed vars for the eval test.
+  testScript = "";
+}
