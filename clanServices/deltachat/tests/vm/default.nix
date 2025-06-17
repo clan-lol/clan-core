@@ -30,7 +30,7 @@
     server.wait_for_unit("maddy")
 
     # imap
-    server.succeed("${pkgs.netcat}/bin/nc -z -v ::1 143")
+    server.wait_until_succeeds("${pkgs.netcat}/bin/nc -z -v ::1 143")
     # smtp submission
     server.succeed("${pkgs.netcat}/bin/nc -z -v ::1 587")
     # smtp
