@@ -43,8 +43,16 @@ in
                         self.modules.nixosVmTest.clanTest
                         testModule
                       ];
-                      
+
                       hostPkgs = pkgs;
+
+                      defaults = {
+                        imports = [
+                          {
+                            _module.args.clan-core = self;
+                          }
+                        ];
+                      };
                     }
                   );
                 in
@@ -63,8 +71,16 @@ in
                     self.modules.nixosVmTest.clanTest
                     testModule
                   ];
-                  
+
                   hostPkgs = pkgs;
+
+                  defaults = {
+                    imports = [
+                      {
+                        _module.args.clan-core = self;
+                      }
+                    ];
+                  };
                 }
               )
             ) cfg)
