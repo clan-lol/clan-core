@@ -1,44 +1,29 @@
 {
-  pkgs,
-  nixosLib,
-  clan-core,
   module,
   ...
 }:
-nixosLib.runTest (
-  { ... }:
-  {
-    imports = [
-      clan-core.modules.nixosVmTest.clanTest
-    ];
+{
+  name = "hello-service";
 
-    hostPkgs = pkgs;
+  clan = {
+    directory = ./.;
+    inventory = {
+      machines.peer1 = { };
 
-    name = "hello-service";
-
-    clan = {
-      directory = ./.;
-      modules = {
-        hello-service = module;
-      };
-      inventory = {
-        machines.peer1 = { };
-
-        instances."test" = {
-          module.name = "hello-service";
-          roles.peer.machines.peer1 = { };
-        };
+      instances."test" = {
+        module.name = "hello-service";
+        roles.peer.machines.peer1 = { };
       };
     };
+  };
 
-    testScript =
-      { nodes, ... }:
-      ''
-        start_all()
+  testScript =
+    { nodes, ... }:
+    ''
+      start_all()
 
-        # peer1 should have the 'hello' file
-        value = peer1.succeed("cat ${nodes.peer1.clan.core.vars.generators.hello.files.hello.path}")
-        assert value.strip() == "Hello world from peer1", value
-      '';
-  }
-)
+      # peer1 should have the 'hello' file
+      value = peer1.succeed("cat ${nodes.peer1.clan.core.vars.generators.hello.files.hello.path}")
+      assert value.strip() == "Hello world from peer1", value
+    '';
+}

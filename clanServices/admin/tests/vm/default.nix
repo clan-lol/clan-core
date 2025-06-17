@@ -1,62 +1,45 @@
-{
-  pkgs,
-  nixosLib,
-  clan-core,
-  ...
-}:
-
 let
   public-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII6zj7ubTg6z/aDwRNwvM/WlQdUocMprQ8E92NWxl6t+ test@test";
 in
-nixosLib.runTest (
-  { ... }:
-  {
-    imports = [
-      clan-core.modules.nixosVmTest.clanTest
-    ];
+{
+  name = "admin";
 
-    hostPkgs = pkgs;
+  clan = {
+    directory = ./.;
+    inventory = {
 
-    name = "admin";
+      machines.client = { };
+      machines.server = { };
 
-    clan = {
-      directory = ./.;
-      modules."@clan/admin" = ../../default.nix;
-      inventory = {
-
-        machines.client = { };
-        machines.server = { };
-
-        instances = {
-          ssh-test-one = {
-            module.name = "@clan/admin";
-            roles.default.machines."server".settings = {
-              allowedKeys.testkey = public-key;
-            };
+      instances = {
+        ssh-test-one = {
+          module.name = "@clan/admin";
+          roles.default.machines."server".settings = {
+            allowedKeys.testkey = public-key;
           };
         };
       };
     };
+  };
 
-    nodes = {
-      client.environment.etc.private-test-key.source = ./private-test-key;
+  nodes = {
+    client.environment.etc.private-test-key.source = ./private-test-key;
 
-      server = {
-        services.openssh.enable = true;
-      };
+    server = {
+      services.openssh.enable = true;
     };
+  };
 
-    testScript = ''
-      start_all()
+  testScript = ''
+    start_all()
 
-      machines = [client, server]
-      for m in machines:
-          m.systemctl("start network-online.target")
+    machines = [client, server]
+    for m in machines:
+        m.systemctl("start network-online.target")
 
-      for m in machines:
-          m.wait_for_unit("network-online.target")
+    for m in machines:
+        m.wait_for_unit("network-online.target")
 
-      client.succeed(f"ssh -F /dev/null -i /etc/private-test-key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes root@server true &>/dev/null")
-    '';
-  }
-)
+    client.succeed(f"ssh -F /dev/null -i /etc/private-test-key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes root@server true &>/dev/null")
+  '';
+}

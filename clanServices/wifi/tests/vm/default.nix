@@ -1,46 +1,29 @@
 {
-  pkgs,
-  nixosLib,
-  clan-core,
-  module,
-  ...
-}:
-nixosLib.runTest (
-  { ... }:
-  {
-    imports = [
-      clan-core.modules.nixosVmTest.clanTest
-    ];
+  name = "wifi";
 
-    hostPkgs = pkgs;
+  clan = {
+    directory = ./.;
+    test.useContainers = false;
+    inventory = {
 
-    name = "wifi-service";
+      machines.test = { };
 
-    clan = {
-      directory = ./.;
-      test.useContainers = false;
-      modules."@clan/wifi" = module;
-      inventory = {
+      instances = {
+        wg-test-one = {
+          module.name = "@clan/wifi";
 
-        machines.test = { };
-
-        instances = {
-          wg-test-one = {
-            module.name = "@clan/wifi";
-
-            roles.default.machines = {
-              test.settings.networks.one = { };
-            };
+          roles.default.machines = {
+            test.settings.networks.one = { };
           };
         };
       };
     };
+  };
 
-    testScript = ''
-      start_all()
-      test.wait_for_unit("NetworkManager.service")
-      psk = test.succeed("cat /run/NetworkManager/system-connections/one.nmconnection")
-      assert "password-eins" in psk, "Password is incorrect"
-    '';
-  }
-)
+  testScript = ''
+    start_all()
+    test.wait_for_unit("NetworkManager.service")
+    psk = test.succeed("cat /run/NetworkManager/system-connections/one.nmconnection")
+    assert "password-eins" in psk, "Password is incorrect"
+  '';
+}

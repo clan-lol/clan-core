@@ -1,67 +1,50 @@
 {
-  pkgs,
-  nixosLib,
-  clan-core,
-  ...
-}:
+  name = "users";
 
-nixosLib.runTest (
-  { ... }:
-  {
-    imports = [
-      clan-core.modules.nixosVmTest.clanTest
-    ];
+  clan = {
+    directory = ./.;
+    inventory = {
+      machines.server = { };
 
-    hostPkgs = pkgs;
-
-    name = "users";
-
-    clan = {
-      directory = ./.;
-      modules."@clan/users" = ../../default.nix;
-      inventory = {
-        machines.server = { };
-
-        instances = {
-          root-password-test = {
-            module.name = "@clan/users";
-            roles.default.machines."server".settings = {
-              user = "root";
-              prompt = false;
-            };
+      instances = {
+        root-password-test = {
+          module.name = "@clan/users";
+          roles.default.machines."server".settings = {
+            user = "root";
+            prompt = false;
           };
-          user-password-test = {
-            module.name = "@clan/users";
-            roles.default.machines."server".settings = {
-              user = "testuser";
-              prompt = false;
-            };
+        };
+        user-password-test = {
+          module.name = "@clan/users";
+          roles.default.machines."server".settings = {
+            user = "testuser";
+            prompt = false;
           };
         };
       };
     };
+  };
 
-    nodes = {
-      server = {
-        users.users.testuser.group = "testuser";
-        users.groups.testuser = { };
-        users.users.testuser.isNormalUser = true;
-      };
+  nodes = {
+    server = {
+      users.users.testuser.group = "testuser";
+      users.groups.testuser = { };
+      users.users.testuser.isNormalUser = true;
     };
+  };
 
-    testScript = ''
-      start_all()
+  testScript = ''
+    start_all()
 
-      server.wait_for_unit("multi-user.target")
+    server.wait_for_unit("multi-user.target")
 
-      # Check that the testuser account exists
-      server.succeed("id testuser")
+    # Check that the testuser account exists
+    server.succeed("id testuser")
 
-      # Try to log in as the user using the generated password
-      # TODO: fix
-      # password = server.succeed("cat /run/clan/vars/user-password/user-password").strip()
-      # server.succeed(f"echo '{password}' | su - testuser -c 'echo Login successful'")
+    # Try to log in as the user using the generated password
+    # TODO: fix
+    # password = server.succeed("cat /run/clan/vars/user-password/user-password").strip()
+    # server.succeed(f"echo '{password}' | su - testuser -c 'echo Login successful'")
 
-    '';
-  }
-)
+  '';
+}

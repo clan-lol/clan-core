@@ -1,17 +1,18 @@
-{ lib, self, ... }:
+{ lib, ... }:
+let
+  module = lib.modules.importApply ./default.nix { };
+in
 {
   clan.modules = {
-    heisenbridge = lib.modules.importApply ./default.nix { };
+    heisenbridge = module;
   };
   perSystem =
-    { pkgs, ... }:
+    { ... }:
     {
-      checks = lib.optionalAttrs (pkgs.stdenv.isLinux) {
-        heisenbridge = import ./tests/vm/default.nix {
-          inherit pkgs;
-          clan-core = self;
-          nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
-        };
+      clan.nixosTests.heisenbridge = {
+        imports = [ ./tests/vm/default.nix ];
+
+        clan.modules."@clan/heisenbridge" = module;
       };
     };
 }

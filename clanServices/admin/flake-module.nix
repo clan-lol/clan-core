@@ -1,17 +1,18 @@
-{ lib, self, ... }:
+{ lib, ... }:
+let
+  module = lib.modules.importApply ./default.nix { };
+in
 {
   clan.modules = {
-    admin = lib.modules.importApply ./default.nix { };
+    admin = module;
   };
   perSystem =
-    { pkgs, ... }:
+    { ... }:
     {
-      checks = lib.optionalAttrs (pkgs.stdenv.isLinux) {
-        admin = import ./tests/vm/default.nix {
-          inherit pkgs;
-          clan-core = self;
-          nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
-        };
+      clan.nixosTests.admin = {
+        imports = [ ./tests/vm/default.nix ];
+
+        clan.modules."@clan/admin" = module;
       };
     };
 }

@@ -1,6 +1,5 @@
 {
   self,
-  inputs,
   lib,
   ...
 }:
@@ -10,28 +9,14 @@ let
   };
 in
 {
-  clan.modules = {
-    wifi = module;
-  };
+  clan.modules.wifi = module;
   perSystem =
-    { pkgs, ... }:
+    { ... }:
     {
-      /**
-        1. Prepare the test vars
-        nix run .#generate-test-vars -- clanServices/hello-world/tests/vm hello-service
+      clan.nixosTests.wifi = {
+        imports = [ ./tests/vm/default.nix ];
 
-        2. To run the test
-        nix build .#checks.x86_64-linux.hello-service
-      */
-      checks =
-        # Currently we don't support nixos-integration tests on darwin
-        lib.optionalAttrs (pkgs.stdenv.isLinux) {
-          wifi-service = import ./tests/vm/default.nix {
-            inherit module;
-            inherit inputs pkgs;
-            clan-core = self;
-            nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
-          };
-        };
+        clan.modules."@clan/wifi" = module;
+      };
     };
 }

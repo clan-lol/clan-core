@@ -14,7 +14,7 @@ in
     hello-world = module;
   };
   perSystem =
-    { pkgs, ... }:
+    { ... }:
     let
       # Module that contains the tests
       # This module adds:
@@ -41,15 +41,10 @@ in
         2. To run the test
         nix build .#checks.x86_64-linux.hello-service
       */
-      checks =
-        # Currently we don't support nixos-integration tests on darwin
-        lib.optionalAttrs (pkgs.stdenv.isLinux) {
-          hello-service = import ./tests/vm/default.nix {
-            inherit module;
-            inherit self inputs pkgs;
-            nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
-            clan-core = self;
-          };
-        };
+      clan.nixosTests.hello-service = {
+        imports = [ ./tests/vm/default.nix ];
+
+        clan.modules.hello-service = module;
+      };
     };
 }

@@ -1,17 +1,18 @@
-{ lib, self, ... }:
+{ lib, ... }:
+let
+  module = lib.modules.importApply ./default.nix { };
+in
 {
   clan.modules = {
-    borgbackup = lib.modules.importApply ./default.nix { };
+    borgbackup = module;
   };
   perSystem =
-    { pkgs, ... }:
+    { ... }:
     {
-      checks = lib.optionalAttrs (pkgs.stdenv.isLinux) {
-        borgbackup = import ./tests/vm/default.nix {
-          inherit pkgs;
-          clan-core = self;
-          nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
-        };
+      clan.nixosTests.borgbackup = {
+        imports = [ ./tests/vm/default.nix ];
+
+        clan.modules."@clan/borgbackup" = module;
       };
     };
 }
