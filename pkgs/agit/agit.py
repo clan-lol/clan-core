@@ -48,6 +48,8 @@ def get_latest_commit_info() -> tuple[str, str]:
 
 def open_editor_for_pr() -> tuple[str, str]:
     """Open editor to get PR title and description. First line is title, rest is description."""
+    commit_title, commit_body = get_latest_commit_info()
+
     with tempfile.NamedTemporaryFile(
         mode="w+", suffix="COMMIT_EDITMSG", delete=False
     ) as temp_file:
@@ -57,6 +59,15 @@ def open_editor_for_pr() -> tuple[str, str]:
         temp_file.write("# The first line will be used as the PR title.\n")
         temp_file.write("# Everything else will be used as the PR description.\n")
         temp_file.write("#\n")
+        temp_file.write("# Current commit information:\n")
+        temp_file.write("#\n")
+        if commit_title:
+            temp_file.write(f"# {commit_title}\n")
+        temp_file.write("#\n")
+        if commit_body:
+            for line in commit_body.split("\n"):
+                temp_file.write(f"# {line}\n")
+            temp_file.write("#\n")
         temp_file.flush()
         temp_file_path = temp_file.name
 
@@ -129,7 +140,7 @@ def create_agit_push(
         push_cmd.extend(["-o", f"title={title}"])
 
     if description:
-        escaped_desc = description.replace('"', '\\"')
+        escaped_desc = description.rstrip("\n").replace('"', '\\"')
         push_cmd.extend(["-o", f"description={escaped_desc}"])
 
     if force_push:
