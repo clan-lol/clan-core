@@ -339,10 +339,16 @@ class FlakeCacheEntry:
         selector: Selector
 
         # for store paths we have to check if they still exist, otherwise they have to be rebuild and are thus not cached
-        if isinstance(self.value, str) and self.value.startswith(
-            os.environ.get("NIX_STORE_DIR", "/nix/store")
-        ):
-            return Path(self.value).exists()
+        if isinstance(self.value, str):
+            # Check if it's a regular nix store path
+            nix_store_dir = os.environ.get("NIX_STORE_DIR", "/nix/store")
+            if self.value.startswith(nix_store_dir):
+                return Path(self.value).exists()
+
+            # Check if it's a test store path
+            test_store = os.environ.get("CLAN_TEST_STORE")
+            if test_store and self.value.startswith(test_store):
+                return Path(self.value).exists()
 
         # if self.value is not dict but we request more selectors, we assume we are cached and an error will be thrown in the select function
         if isinstance(self.value, str | float | int | None):
