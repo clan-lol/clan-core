@@ -11,11 +11,11 @@ def main() -> None:
     if len(sys.argv) != 4:
         print("Usage: genmoon.py <moon.json> <endpoint.json> <moons.d>")
         sys.exit(1)
-    moon_json = sys.argv[1]
+    moon_json_path = sys.argv[1]
     endpoint_config = sys.argv[2]
     moons_d = sys.argv[3]
 
-    moon_json = json.loads(Path(moon_json).read_text())
+    moon_json = json.loads(Path(moon_json_path).read_text())
     moon_json["roots"][0]["stableEndpoints"] = json.loads(
         Path(endpoint_config).read_text()
     )
