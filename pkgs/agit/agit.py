@@ -51,6 +51,13 @@ def open_editor_for_pr() -> tuple[str, str]:
     with tempfile.NamedTemporaryFile(
         mode="w+", suffix=".txt", delete=False
     ) as temp_file:
+        temp_file.write("\n")
+        temp_file.write("# Please enter the PR title on the first line.\n")
+        temp_file.write("# Lines starting with '#' will be ignored.\n")
+        temp_file.write("# The first line will be used as the PR title.\n")
+        temp_file.write("# Everything else will be used as the PR description.\n")
+        temp_file.write("#\n")
+        temp_file.flush()
         temp_file_path = temp_file.name
 
     try:
@@ -63,17 +70,28 @@ def open_editor_for_pr() -> tuple[str, str]:
             sys.exit(1)
 
         with Path(temp_file_path).open() as f:
-            content = f.read().strip()
+            content = f.read()
 
-        if not content:
+        lines = []
+        for line in content.split("\n"):
+            if not line.lstrip().startswith("#"):
+                lines.append(line)
+
+        cleaned_content = "\n".join(lines).strip()
+
+        if not cleaned_content:
             print("No content provided, aborting.")
             sys.exit(0)
 
-        lines = content.split("\n")
-        title = lines[0].strip()
+        content_lines = cleaned_content.split("\n")
+        title = content_lines[0].strip()
+
+        if not title:
+            print("No title provided, aborting.")
+            sys.exit(0)
 
         description_lines = []
-        for line in lines[1:]:
+        for line in content_lines[1:]:
             if description_lines or line.strip():
                 description_lines.append(line)
 
