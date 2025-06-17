@@ -69,19 +69,7 @@ in
               )
             ) cfg)
 
-            # Add a single vars-check that depends on all others XXX if we ever
-            # optimize buildbot to perform better with many builds we can
-            # remove this and just run the individual vars-checks to speed up
-            # parallel evaluation.
-            (lib.optionalAttrs (varsChecks != {}) {
-              vars-check = pkgs.runCommand "vars-check-all" {
-                buildInputs = lib.attrValues varsChecks;
-              } ''
-                echo "All vars checks passed:"
-                ${lib.concatMapStringsSep "\n" (name: "echo '  ✓ ${name}'") (lib.attrNames varsChecks)}
-                touch $out
-              '';
-            })
+            varsChecks
           ]
         );
       }
