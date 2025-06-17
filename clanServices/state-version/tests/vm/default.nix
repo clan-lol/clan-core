@@ -1,37 +1,20 @@
 {
-  pkgs,
-  nixosLib,
-  clan-core,
-  ...
-}:
+  name = "state-version";
 
-nixosLib.runTest (
-  { ... }:
-  {
-    imports = [
-      clan-core.modules.nixosVmTest.clanTest
-    ];
-
-    hostPkgs = pkgs;
-
-    name = "state-version";
-
-    clan = {
-      directory = ./.;
-      modules."@clan/state-version" = ../../default.nix;
-      inventory = {
-        machines.server = { };
-        instances.default = {
-          module.name = "@clan/state-version";
-          roles.default.machines."server" = { };
-        };
+  clan = {
+    directory = ./.;
+    inventory = {
+      machines.server = { };
+      instances.default = {
+        module.name = "@clan/state-version";
+        roles.default.machines."server" = { };
       };
     };
+  };
 
-    nodes.server = { };
+  nodes.server = { };
 
-    testScript = ''
-      start_all()
-    '';
-  }
-)
+  testScript = ''
+    start_all()
+  '';
+}
