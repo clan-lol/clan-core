@@ -112,6 +112,9 @@ in
             cp ${../flake.lock} $out/flake.lock
           '';
         };
+      packages = lib.optionalAttrs (pkgs.stdenv.isLinux) {
+        run-vm-test-offline = pkgs.callPackage ../pkgs/run-vm-test-offline { };
+      };
       legacyPackages = {
         nixosTests =
           let
