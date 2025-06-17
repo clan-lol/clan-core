@@ -78,7 +78,7 @@ nixosLib.runTest (
       server.succeed("test -d /var/lib/garage/data")
 
       # Check that the ports are open to confirm that garage is running
-      server.succeed("${pkgs.netcat}/bin/nc -z -v 127.0.0.1 3901")
+      server.wait_until_succeeds("${pkgs.netcat}/bin/nc -z -v 127.0.0.1 3901")
       server.succeed("${pkgs.netcat}/bin/nc -z -v 127.0.0.1 3900")
       server.succeed("${pkgs.netcat}/bin/nc -z -v 127.0.0.1 3902")
       server.succeed("${pkgs.netcat}/bin/nc -z -v 127.0.0.1 3903")
