@@ -1,6 +1,10 @@
 import argparse
+import contextlib
+import os
 import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
 # push origin HEAD:refs/for/main
 # HEAD: The target branch
@@ -42,6 +46,46 @@ def get_latest_commit_info() -> tuple[str, str]:
     return title, body
 
 
+def open_editor_for_pr() -> tuple[str, str]:
+    """Open editor to get PR title and description. First line is title, rest is description."""
+    with tempfile.NamedTemporaryFile(
+        mode="w+", suffix=".txt", delete=False
+    ) as temp_file:
+        temp_file_path = temp_file.name
+
+    try:
+        editor = os.environ.get("EDITOR", "vim")
+
+        exit_code = subprocess.call([editor, temp_file_path])
+
+        if exit_code != 0:
+            print(f"Editor exited with code {exit_code}")
+            sys.exit(1)
+
+        with Path(temp_file_path).open() as f:
+            content = f.read().strip()
+
+        if not content:
+            print("No content provided, aborting.")
+            sys.exit(0)
+
+        lines = content.split("\n")
+        title = lines[0].strip()
+
+        description_lines = []
+        for line in lines[1:]:
+            if description_lines or line.strip():
+                description_lines.append(line)
+
+        description = "\n".join(description_lines).strip()
+
+        return title, description
+
+    finally:
+        with contextlib.suppress(OSError):
+            Path(temp_file_path).unlink()
+
+
 def create_agit_push(
     remote: str = "origin",
     branch: str = "main",
@@ -51,13 +95,12 @@ def create_agit_push(
     force_push: bool = False,
     local_branch: str = "HEAD",
 ) -> None:
-    if topic is None or title is None:
-        commit_title, _ = get_latest_commit_info()
-
-        if topic is None:
+    if topic is None:
+        if title is not None:
+            topic = title
+        else:
+            commit_title, _ = get_latest_commit_info()
             topic = commit_title
-        if title is None:
-            title = commit_title
 
     refspec = f"{local_branch}:refs/for/{branch}"
     push_cmd = ["git", "push", remote, refspec]
@@ -98,12 +141,22 @@ def create_agit_push(
 
 def cmd_create(args: argparse.Namespace) -> None:
     """Handle the create subcommand."""
+    title = args.title
+    description = args.description
+
+    if not args.auto and (title is None or description is None):
+        editor_title, editor_description = open_editor_for_pr()
+        if title is None:
+            title = editor_title
+        if description is None:
+            description = editor_description
+
     create_agit_push(
         remote=args.remote,
         branch=args.branch,
         topic=args.topic,
-        title=args.title,
-        description=args.description,
+        title=title,
+        description=description,
         force_push=args.force,
         local_branch=args.local_branch,
     )
@@ -121,7 +174,10 @@ DEFAULT_TARGET_BRANCH = {DEFAULT_TARGET_BRANCH}
 
 Examples:
   $ agit create
-  Will create an AGit Pr with the latest commit message title as it's topic.
+  Opens editor to compose PR title and description (first line is title, rest is body).
+
+  $ agit create --auto
+  Creates PR using latest commit message automatically (old behavior).
 
   $ agit create --topic "my-feature"
   Set a custom topic.
@@ -141,7 +197,10 @@ Examples:
         epilog="""
 Examples:
   $ agit create
-  Will create an AGit Pr with the latest commit message title as it's topic.
+  Opens editor to compose PR title and description (first line is title, rest is body).
+
+  $ agit create --auto
+  Creates PR using latest commit message automatically (old behavior).
 
   $ agit create --topic "my-feature"
   Set a custom topic.
@@ -186,6 +245,12 @@ Examples:
 
     create_parser.add_argument(
         "-f", "--force", action="store_true", help="Force push the changes"
+    )
+
+    create_parser.add_argument(
+        "--auto",
+        action="store_true",
+        help="Skip editor and use commit message automatically",
     )
 
     create_parser.set_defaults(func=cmd_create)
