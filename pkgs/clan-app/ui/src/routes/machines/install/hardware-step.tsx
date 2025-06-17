@@ -90,11 +90,37 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
       return;
     }
 
+    const active_clan = activeClanURI();
+    if (!active_clan) {
+      console.error("No active clan selected");
+      return;
+    }
+
+    const target_host = await callApi("get_host", {
+      field: "targetHost",
+      flake: { identifier: active_clan },
+      name: props.machine_id,
+    }).promise;
+
+    if (target_host.status == "error") {
+      console.error("No target host found for the machine");
+      return;
+    }
+
+    if (target_host.data === null) {
+      console.error("No target host found for the machine");
+      return;
+    }
+
+    if (!target_host.data!.data) {
+      console.error("No target host found for the machine");
+      return;
+    }
+
     const r = await callApi("generate_machine_hardware_info", {
       opts: {
         machine: {
           name: props.machine_id,
-          override_target_host: target,
           private_key: sshFile?.name,
           flake: {
             identifier: curr_uri,
@@ -102,6 +128,7 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
         },
         backend: "nixos-facter",
       },
+      target_host: target_host.data!.data,
     });
 
     // TODO: refresh the machine details
