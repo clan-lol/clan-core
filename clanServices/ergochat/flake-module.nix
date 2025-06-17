@@ -1,17 +1,18 @@
-{ lib, self, ... }:
+{ lib, ... }:
+let
+  module = lib.modules.importApply ./default.nix { };
+in
 {
   clan.modules = {
-    ergochat = lib.modules.importApply ./default.nix { };
+    ergochat = module;
   };
   perSystem =
-    { pkgs, ... }:
+    { ... }:
     {
-      checks = lib.optionalAttrs (pkgs.stdenv.isLinux) {
-        ergochat = import ./tests/vm/default.nix {
-          inherit pkgs;
-          clan-core = self;
-          nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
-        };
+      clan.nixosTests.ergochat = {
+        imports = [ ./tests/vm/default.nix ];
+
+        clan.modules."@clan/ergochat" = module;
       };
     };
 }
