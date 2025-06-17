@@ -119,11 +119,11 @@ export const ApiTester = () => {
                 <Show
                   when={showSuggestions() && filteredEndpoints().length > 0}
                 >
-                  <ul class="absolute z-10 w-full bg-white border border-gray-300 rounded mt-1 max-h-60 overflow-y-auto shadow-lg">
+                  <ul class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded border border-gray-300 bg-white shadow-lg">
                     <For each={filteredEndpoints()}>
                       {(ep) => (
                         <li
-                          class="p-2 hover:bg-gray-100 cursor-pointer"
+                          class="cursor-pointer p-2 hover:bg-gray-100"
                           onMouseDown={(e) => {
                             e.preventDefault();
                             setValue(formStore, "endpoint", ep);
@@ -142,13 +142,13 @@ export const ApiTester = () => {
           </Field>
           <Field name="payload">
             {(field, fieldProps) => (
-              <div class="flex flex-col my-2">
+              <div class="my-2 flex flex-col">
                 <label class="mb-1 font-medium" for="payload-textarea">
                   payload
                 </label>
                 <textarea
                   id="payload-textarea"
-                  class="border rounded p-2 text-sm min-h-[120px] resize-y focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  class="min-h-[120px] resize-y rounded border p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   placeholder={`{\n  "key": "value"\n}`}
                   value={field.value || ""}
                   {...fieldProps}
