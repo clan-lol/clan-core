@@ -1,17 +1,16 @@
-{ lib, self, ... }:
+{ lib, ... }:
+let
+  module = lib.modules.importApply ./default.nix { };
+in
 {
-  clan.modules = {
-    trusted-nix-caches = lib.modules.importApply ./default.nix { };
-  };
+  clan.modules.trusted-nix-caches = module;
   perSystem =
-    { pkgs, ... }:
+    { ... }:
     {
-      checks = lib.optionalAttrs (pkgs.stdenv.isLinux) {
-        trusted-nix-caches = import ./tests/vm/default.nix {
-          inherit pkgs;
-          clan-core = self;
-          nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
-        };
+      clan.nixosTests.trusted-nix-caches = {
+        imports = [ ./tests/vm/default.nix ];
+
+        clan.modules."@clan/trusted-nix-caches" = module;
       };
     };
 }
