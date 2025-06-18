@@ -87,7 +87,7 @@ in
         self.packages.${hostPkgs.system}.generate-test-vars
       }/bin/generate-test-vars";
 
-      relativeDir = removePrefix ("${self}/") (toString config.clan.directory);
+      relativeDir = removePrefix "${self}/" (toString config.clan.directory);
 
       update-vars = hostPkgs.writeShellScriptBin "update-vars" ''
         ${update-vars-script} $PRJ_ROOT/${relativeDir} ${testName}

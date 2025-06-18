@@ -23,7 +23,6 @@ in
     iwd = ./iwd;
     localbackup = ./localbackup;
     localsend = ./localsend;
-    machine-id = ./machine-id;
     matrix-synapse = ./matrix-synapse;
     moonlight = ./moonlight;
     mumble = ./mumble;

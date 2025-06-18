@@ -3,6 +3,7 @@
   imports =
     [
       ./backups.nix
+      ./machine-id
       ./defaults.nix
       ./facts
       ./inventory

@@ -786,6 +786,10 @@ class Flake:
         if tmp_store := nix_test_store():
             nix_options.append("--impure")
 
+        # build_output = Path(
+        #     run(nix_build(["--expr", nix_code, *nix_options])).stdout.strip()
+        # )
+
         build_output = Path(
             run(
                 nix_build(["--expr", nix_code, *nix_options]), RunOpts(log=Log.NONE)
