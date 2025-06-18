@@ -275,8 +275,8 @@ def get_host(
     host_str = inv_machine.get("deploy", {}).get(field)
 
     if host_str is None:
-        machine.info(
-            f"'{field}' is not set in inventory, falling back to slow Nix config"
+        machine.debug(
+            f"'{field}' is not set in inventory, falling back to slower Nix config, set it either through the Nix or json interface to improve performance"
         )
         host_str = machine.eval_nix(f'config.clan.core.networking."{field}"')
         source = "nix_machine"
