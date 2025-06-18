@@ -140,7 +140,7 @@ interface SchemaFormProps {
   path: string[];
 }
 
-export const ModuleForm = (props: { id: string }) => {
+const ModuleForm = (props: { id: string }) => {
   // TODO: Fetch the synced schema for all the modules at runtime
   // We use static schema file at build time for now. (Different versions might have different schema at runtime)
   const schemaQuery = createQuery(() => ({

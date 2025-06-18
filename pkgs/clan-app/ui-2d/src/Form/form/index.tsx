@@ -139,7 +139,7 @@ interface SchemaFieldsProps<T extends FieldValues, R extends ResponseData> {
   readonly: boolean;
   parent: JSONSchema7;
 }
-export function SchemaFields<T extends FieldValues, R extends ResponseData>(
+function SchemaFields<T extends FieldValues, R extends ResponseData>(
   props: SchemaFieldsProps<T, R>,
 ) {
   return (
@@ -172,7 +172,7 @@ export function SchemaFields<T extends FieldValues, R extends ResponseData>(
   );
 }
 
-export function StringField<T extends FieldValues, R extends ResponseData>(
+function StringField<T extends FieldValues, R extends ResponseData>(
   props: SchemaFieldsProps<T, R>,
 ) {
   if (
@@ -325,7 +325,7 @@ export function StringField<T extends FieldValues, R extends ResponseData>(
 interface OptionSchemaProps {
   itemSpec: JSONSchema7Type;
 }
-export function OptionSchema(props: OptionSchemaProps) {
+function OptionSchema(props: OptionSchemaProps) {
   return (
     <Switch
       fallback={<option class="text-error-700">Item spec unhandled</option>}
@@ -344,7 +344,7 @@ interface ValueDisplayProps<T extends FieldValues, R extends ResponseData>
   idx: number;
   of: number;
 }
-export function ListValueDisplay<T extends FieldValues, R extends ResponseData>(
+function ListValueDisplay<T extends FieldValues, R extends ResponseData>(
   props: ValueDisplayProps<T, R>,
 ) {
   const removeItem = (e: Event) => {
@@ -446,7 +446,7 @@ const OnlyStringItems = (props: OnlyStringItems) => {
   );
 };
 
-export function ArrayFields<T extends FieldValues, R extends ResponseData>(
+function ArrayFields<T extends FieldValues, R extends ResponseData>(
   props: SchemaFieldsProps<T, R>,
 ) {
   if (props.schema.type !== "array") {
@@ -711,7 +711,7 @@ interface ObjectFieldPropertyLabelProps {
   schema: JSONSchema7;
   fallback: JSX.Element;
 }
-export function ObjectFieldPropertyLabel(props: ObjectFieldPropertyLabelProps) {
+function ObjectFieldPropertyLabel(props: ObjectFieldPropertyLabelProps) {
   return (
     <Switch fallback={props.fallback}>
       {/* @ts-expect-error: $exportedModuleInfo should exist since we export it */}
@@ -722,7 +722,7 @@ export function ObjectFieldPropertyLabel(props: ObjectFieldPropertyLabelProps) {
   );
 }
 
-export function ObjectFields<T extends FieldValues, R extends ResponseData>(
+function ObjectFields<T extends FieldValues, R extends ResponseData>(
   props: SchemaFieldsProps<T, R>,
 ) {
   if (props.schema.type !== "object") {

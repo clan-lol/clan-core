@@ -21,7 +21,7 @@ import { FieldLayout } from "./layout";
 import Icon from "@/src/components/icon";
 import { useContext } from "corvu/dialog";
 
-export interface Option {
+interface Option {
   value: string;
   label: string;
   disabled?: boolean;

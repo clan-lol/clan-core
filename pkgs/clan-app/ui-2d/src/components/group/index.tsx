@@ -12,7 +12,7 @@ export const Group = (props: GroupProps) => (
   </div>
 );
 
-export type SectionVariant = "attention" | "danger";
+type SectionVariant = "attention" | "danger";
 
 interface SectionHeaderProps {
   variant: SectionVariant;

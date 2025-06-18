@@ -19,7 +19,7 @@ import { useClanContext } from "@/src/contexts/clan";
 
 export type VarsValues = FieldValues & Record<string, Record<string, string>>;
 
-export interface VarsFormProps {
+interface VarsFormProps {
   machine_id: string;
   dir: string;
   handleSubmit: SubmitHandler<VarsValues>;
@@ -27,7 +27,7 @@ export interface VarsFormProps {
   footer: JSX.Element;
 }
 
-export const VarsForm = (props: VarsFormProps) => {
+const VarsForm = (props: VarsFormProps) => {
   const [formStore, { Form, Field }] = createForm<VarsValues>({});
 
   const handleSubmit: SubmitHandler<VarsValues> = async (values, event) => {

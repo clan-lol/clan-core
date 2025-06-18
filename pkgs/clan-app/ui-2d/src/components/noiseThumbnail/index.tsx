@@ -108,7 +108,7 @@ export const RndThumbnail = (props: RndThumbnailProps) => {
   return <img src={imageSrc()} alt={props.name} />;
 };
 
-export const RndThumbnailShow = () => {
+const RndThumbnailShow = () => {
   const names = ["hsjobeki", "mic92", "lassulus", "D", "A", "D", "B", "C"];
 
   return (
