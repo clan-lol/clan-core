@@ -36,29 +36,23 @@ in
             inherit (self) clanLib;
             clan-core = self;
           };
-          nixosTests =
-            lib.optionalAttrs (pkgs.stdenv.isLinux) {
+          nixosTests = lib.optionalAttrs (pkgs.stdenv.isLinux) {
 
-              # Base Tests
-              secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
-              borgbackup-legacy = self.clanLib.test.baseTest ./borgbackup-legacy nixosTestArgs;
-              wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
+            # Base Tests
+            secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
+            borgbackup-legacy = self.clanLib.test.baseTest ./borgbackup-legacy nixosTestArgs;
+            wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
 
-              # Container Tests
-              container = self.clanLib.test.containerTest ./container nixosTestArgs;
-              zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
-              matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
-              postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
+            # Container Tests
+            container = self.clanLib.test.containerTest ./container nixosTestArgs;
+            zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
+            matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
+            postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
 
-              dummy-inventory-test = import ./dummy-inventory-test nixosTestArgs;
-              dummy-inventory-test-from-flake = import ./dummy-inventory-test-from-flake nixosTestArgs;
-              data-mesher = import ./data-mesher nixosTestArgs;
-            }
-            // lib.optionalAttrs (pkgs.stdenv.hostPlatform.system == "aarch64-linux") {
-              # for some reason this hangs in an odd place in CI, but it works on my machine ...
-              # on aarch64-linux it works though
-              mumble = import ./mumble nixosTestArgs;
-            };
+            dummy-inventory-test = import ./dummy-inventory-test nixosTestArgs;
+            dummy-inventory-test-from-flake = import ./dummy-inventory-test-from-flake nixosTestArgs;
+            data-mesher = import ./data-mesher nixosTestArgs;
+          };
 
           packagesToBuild = lib.removeAttrs self'.packages [
             # exclude the check that checks that nothing depends on the repo root

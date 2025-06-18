@@ -81,15 +81,7 @@ in
     })
     {
       warnings = [
-        ''
-          The clan module `iwd` is deprecated and replaced by the clan service `wifi`
-          Please migrate your config to the new service (see: https://docs.clan.lol/reference/clanServices/wifi/)
-
-          To keep passwords after migrating the config, use:
-            clan vars get <your-machine> iwd.<network-name>/ssid | clan vars set <your-machine> wifi.<network-name>/network-name
-          and:
-            clan vars get <your-machine> iwd.<network-name>/password | clan vars set <your-machine> wifi.<network-name>/password
-        ''
+        "The clan.iwd module is deprecated and will be removed on 2025-07-15. Please migrate to a user-maintained configuration or use the wifi service."
       ];
 
       # disable wpa supplicant

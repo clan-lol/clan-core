@@ -17,6 +17,10 @@ let
   listenPort = 48011;
 in
 {
+  warnings = [
+    "The clan.sunshine module is deprecated and will be removed on 2025-07-15. Please migrate to user-maintained configuration."
+  ];
+
   networking.firewall = {
     allowedTCPPorts = [
       47984

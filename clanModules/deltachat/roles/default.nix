@@ -1,5 +1,13 @@
-{ config, pkgs, ... }:
 {
+  config,
+  pkgs,
+  ...
+}:
+{
+  warnings = [
+    "The clan.deltachat module is deprecated and will be removed on 2025-07-15. Please migrate to user-maintained configuration."
+  ];
+
   networking.firewall.interfaces."zt+".allowedTCPPorts = [ 25 ]; # smtp with other hosts
   environment.systemPackages = [ pkgs.deltachat-desktop ];
 

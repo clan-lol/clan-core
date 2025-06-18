@@ -4,6 +4,10 @@ let
   defaultPort = 48011;
 in
 {
+  warnings = [
+    "The clan.moonlight module is deprecated and will be removed on 2025-07-15. Please migrate to user-maintained configuration."
+  ];
+
   hardware.opengl.enable = true;
   environment.systemPackages = [
     pkgs.moonlight-qt

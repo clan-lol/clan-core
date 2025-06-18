@@ -1,4 +1,9 @@
 _: {
+
+  warnings = [
+    "The clan.ergochat module is deprecated and will be removed on 2025-07-15. Please migrate to user-maintained configuration."
+  ];
+
   services.ergochat = {
     enable = true;
 
