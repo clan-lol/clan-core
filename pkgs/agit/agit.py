@@ -130,12 +130,19 @@ def status_to_emoji(status: str) -> str:
     return status_map.get(status.lower(), "❓")
 
 
+def create_osc8_link(url: str, text: str) -> str:
+    return f"\033]8;;{url}\033\\{text}\033]8;;\033\\"
+
+
 def format_pr_with_status(pr: dict, remote: str = "origin") -> str:
-    """Format PR title with status emojis."""
+    """Format PR title with status emojis and OSC8 link."""
     title = pr["title"]
+    pr_url = pr.get("html_url", "")
 
     commit_sha = pr.get("head", {}).get("sha")
     if not commit_sha:
+        if pr_url:
+            return create_osc8_link(pr_url, title)
         return title
 
     try:
@@ -146,17 +153,21 @@ def format_pr_with_status(pr: dict, remote: str = "origin") -> str:
 
         statuses = fetch_pr_statuses(repo_owner, repo_name, commit_sha, host)
         if not statuses:
+            if pr_url:
+                return create_osc8_link(pr_url, title)
             return title
 
         latest_statuses = get_latest_status_by_context(statuses)
 
         emojis = [status_to_emoji(status) for status in latest_statuses.values()]
-        if emojis:
-            return f"{title} {' '.join(emojis)}"
+        formatted_title = f"{title} {' '.join(emojis)}" if emojis else title
+
+        return create_osc8_link(pr_url, formatted_title) if pr_url else formatted_title
 
     except (ValueError, IndexError):
-        # If there's any error in processing, just return the title
-        pass
+        # If there's any error in processing, just return the title with link if available
+        if pr_url:
+            return create_osc8_link(pr_url, title)
 
     return title
 
