@@ -3,7 +3,7 @@ import { Typography } from "@/src/components/Typography";
 import { FieldLayout } from "@/src/Form/fields/layout";
 import { InputLabel } from "@/src/components/inputBase";
 import { Group, Section, SectionHeader } from "@/src/components/group";
-import { AllStepsValues } from "../types";
+import { AllStepsValues } from "../details";
 import { Badge } from "@/src/components/badge";
 import Icon from "@/src/components/icon";
 

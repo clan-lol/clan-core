@@ -8,7 +8,6 @@ import {
   CreateMachine,
   MachineDetails,
   MachineListView,
-  MachineInstall,
 } from "./routes/machines";
 import { Layout } from "./layout/layout";
 import { ClanDetails, ClanList, CreateClan } from "./routes/clans";
@@ -81,12 +80,6 @@ export const routes: AppRoute[] = [
         label: "Vars",
         hidden: true,
         component: () => <VarsPage />,
-      },
-      {
-        path: "/:id/install",
-        label: "Install",
-        hidden: true,
-        component: () => <MachineInstall />,
       },
     ],
   },

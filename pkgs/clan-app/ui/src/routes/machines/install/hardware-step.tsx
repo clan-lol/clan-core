@@ -14,21 +14,20 @@ import {
   validate,
 } from "@modular-forms/solid";
 import { createEffect, createSignal, JSX, Match, Switch } from "solid-js";
-import { useQuery } from "@tanstack/solid-query";
+import { TextInput } from "@/src/Form/fields";
+import { createQuery } from "@tanstack/solid-query";
 import { Badge } from "@/src/components/badge";
 import { Group } from "@/src/components/group";
-import { useClanContext } from "@/src/contexts/clan";
 import {
-  RemoteForm,
-  type RemoteData,
-  HostKeyCheck,
-} from "@/src/components/RemoteForm";
-import { ac } from "vitest/dist/chunks/reporters.d.C-cu31ET";
+  type FileDialogOptions,
+  FileSelectorField,
+} from "@/src/components/fileSelect";
+import { useClanContext } from "@/src/contexts/clan";
 
 export type HardwareValues = FieldValues & {
   report: boolean;
   target: string;
-  remoteData: RemoteData;
+  sshKey?: File;
 };
 
 export interface StepProps<T> {
@@ -43,38 +42,17 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
     initialValues: (props.initial as HardwareValues) || {},
   });
 
-  // Initialize remote data from existing target or create new default
-  const [remoteData, setRemoteData] = createSignal<RemoteData>({
-    address: props.initial?.target || "",
-    user: "root",
-    command_prefix: "sudo",
-    port: 22,
-    forward_agent: false,
-    host_key_check: 1, // 0 = ASK
-    verbose_ssh: false,
-    ssh_options: {},
-    tor_socks: false,
-  });
-
   const handleSubmit: SubmitHandler<HardwareValues> = async (values, event) => {
     console.log("Submit Hardware", { values });
     const valid = await validate(formStore);
     console.log("Valid", valid);
     if (!valid) return;
-
-    // Include remote data in the values
-    const submitValues = {
-      ...values,
-      remoteData: remoteData(),
-      target: remoteData().address, // Keep target for backward compatibility
-    };
-
-    props.handleNext(submitValues);
+    props.handleNext(values);
   };
 
   const [isGenerating, setIsGenerating] = createSignal(false);
 
-  const hwReportQuery = useQuery(() => ({
+  const hwReportQuery = createQuery(() => ({
     queryKey: [props.dir, props.machine_id, "hw_report"],
     queryFn: async () => {
       const result = await callApi("show_machine_hardware_config", {
@@ -100,9 +78,15 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
   const { activeClanURI } = useClanContext();
 
   const generateReport = async (e: Event) => {
-    const currentRemoteData = remoteData();
-    if (!currentRemoteData.address) {
-      console.error("Target address is not set");
+    const curr_uri = activeClanURI();
+    if (!curr_uri) return;
+
+    await validate(formStore, "target");
+    const target = getValue(formStore, "target");
+    const sshFile = getValue(formStore, "sshKey") as File | undefined;
+
+    if (!target) {
+      console.error("Target is not set");
       return;
     }
 
@@ -137,8 +121,9 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
       opts: {
         machine: {
           name: props.machine_id,
+          private_key: sshFile?.name,
           flake: {
-            identifier: active_clan,
+            identifier: curr_uri,
           },
         },
         backend: "nixos-facter",
@@ -157,26 +142,35 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
       <div class="max-h-[calc(100vh-20rem)] overflow-y-scroll">
         <div class="flex h-full flex-col gap-6 p-4">
           <Group>
-            <RemoteForm
-              showSave={false}
-              machine={{
-                name: props.machine_id,
-                flake: {
-                  identifier: props.dir,
-                },
-              }}
-              field="targetHost"
-            />
-            {/* Hidden field for form validation */}
-            <Field name="target">
+            <Field name="target" validate={required("Target must be provided")}>
               {(field, fieldProps) => (
-                <input
-                  {...fieldProps}
-                  type="hidden"
-                  value={remoteData().address}
+                <TextInput
+                  error={field.error}
+                  variant="ghost"
+                  label="Target ip"
+                  value={field.value || ""}
+                  inputProps={fieldProps}
+                  required
                 />
               )}
             </Field>
+            <FileSelectorField
+              Field={Field}
+              of={File}
+              multiple={false}
+              name="sshKey" // Corresponds to FlashFormValues.sshKeys
+              label="SSH Private Key"
+              description="Provide your SSH private key for secure, passwordless connections."
+              fileDialogOptions={
+                {
+                  title: "Select SSH Keys",
+                  initial_folder: "~/.ssh",
+                } as FileDialogOptions
+              }
+              // You could add custom validation via modular-forms 'validate' prop on CustomFileField if needed
+              // e.g. validate={[required("At least one SSH key is required.")]}
+              // This would require CustomFileField to accept and pass `validate` to its internal `Field`.
+            />
           </Group>
           <Group>
             <Field

@@ -1,0 +1,52 @@
+import { DocsStory, Meta, Canvas } from "@storybook/blocks";
+
+import * as TypographyStories from "./Typography.stories";
+
+<Meta of={TypographyStories} />
+
+# Typography
+
+There are two fonts being used within our typography system:
+
+- [Archivo] in its _Standard_ and _Semi Condensed_ forms
+- [Fira Code] for mono-spaced content
+
+## UI Components
+
+When creating UI components that a user will interact with,
+you must use the condensed form of `Body`, `Label` and `Label Mono`.
+
+<DocsStory of={TypographyStories.BodyCondensed} />
+
+<DocsStory of={TypographyStories.LabelCondensed} />
+
+<DocsStory of={TypographyStories.LabelMono} />
+
+## Layout & Prose
+
+For layout components and general prose, you must use the non-condensed forms of `Body`, `Title`, `Headline` and
+`Teaser`.
+
+<DocsStory of={TypographyStories.Body} />
+<DocsStory of={TypographyStories.Title} />
+<DocsStory of={TypographyStories.Headline} />
+<DocsStory of={TypographyStories.Teaser} />
+
+## Colors
+
+Text colors come in one of five varieties:
+
+- `inherit` (which will inherit the text color from the parent)
+- `primary`
+- `secondary`
+- `tertiary`
+- `quaternary`
+
+<DocsStory of={TypographyStories.Colors} />
+
+Each color also has an inverted counterpart.
+
+<DocsStory of={TypographyStories.ColorsInverted} />
+
+[Archivo]: https://github.com/Omnibus-Type/Archivo
+[Fira Code]: https://github.com/tonsky/FiraCode

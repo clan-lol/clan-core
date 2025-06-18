@@ -1,0 +1,104 @@
+.loader {
+  @apply relative;
+  @apply w-4 h-4;
+
+  &.primary {
+    & > div.wrapper > div.parent,
+    & > div.child {
+      background: #00ff57;
+    }
+  }
+
+  &.secondary {
+    & > div.wrapper > div.parent,
+    & > div.child {
+      background: #0051ff;
+    }
+  }
+
+  & > div.wrapper {
+    @apply absolute top-0 left-0 w-full h-full;
+
+    transform: translate(0%, 0%) rotate(-45deg);
+    animation: moveLoaderWrapper 1.8s ease-in-out infinite;
+
+    & > div.parent {
+      @apply absolute top-1/2 left-1/2;
+      @apply w-2/3 h-2/3;
+
+      border-radius: 50%;
+      animation: moveLoaderParent 1.8s ease-in-out infinite;
+      transform: translateX(-50%) translateY(-50%);
+    }
+  }
+
+  & > .child {
+    @apply absolute z-10 top-1/2 left-1/2 w-1/2 h-1/2;
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+    animation: moveLoaderChild 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes moveLoaderWrapper {
+  0% {
+    transform: translate(0%, 0%) rotate(-45deg);
+  }
+
+  35% {
+    transform: translate(-25%, 0%) rotate(-45deg);
+  }
+
+  50% {
+    transform: translate(0%, 0%) rotate(-45deg);
+  }
+
+  85% {
+    transform: translate(25%, 0%) rotate(-45deg);
+  }
+}
+
+@keyframes moveLoaderParent {
+  0% {
+    animation-timing-function: ease-in-out;
+    transform: translateX(-50%) translateY(-50%);
+  }
+
+  35% {
+    animation-timing-function: cubic-bezier(0.7, -0.9, 0.3, 3.2);
+    transform: translateX(-50%) translateY(-50%) skew(20deg, 20deg);
+  }
+
+  50% {
+    animation-timing-function: ease-in-out;
+    transform: translateX(-50%) translateY(-50%) skew(0deg, 0deg);
+  }
+
+  85% {
+    animation-timing-function: cubic-bezier(0.7, -0.9, 0.3, 3.2);
+    transform: translateX(-50%) translateY(-50%) skew(20deg, 20deg);
+  }
+}
+
+@keyframes moveLoaderChild {
+  0% {
+    animation-timing-function: ease-in-out;
+    transform: translateX(-50%) translateY(-50%);
+  }
+
+  35% {
+    animation-timing-function: cubic-bezier(0.7, -0.9, 0.3, 3.2);
+    transform: translateX(50%) translateY(-50%) scale(0.56);
+  }
+
+  50% {
+    animation-timing-function: ease-in-out;
+    transform: translateX(-50%) translateY(-50%);
+  }
+
+  85% {
+    animation-timing-function: cubic-bezier(0.7, -0.9, 0.3, 3.2);
+    transform: translateX(-150%) translateY(-50%) scale(0.56);
+  }
+}

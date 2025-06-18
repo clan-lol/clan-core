@@ -1,0 +1,5 @@
+app/api
+app/.fonts
+
+.vite
+storybook-static

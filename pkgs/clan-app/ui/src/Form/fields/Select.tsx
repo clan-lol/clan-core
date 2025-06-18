@@ -241,9 +241,9 @@ export function SelectInput(props: SelectInputpProps) {
             top: `${position.y ?? 0}px`,
             left: `${position.x ?? 0}px`,
           }}
-          class="rounded-md border border-gray-200 bg-white shadow-lg"
+          class="z-[1000] shadow"
         >
-          <ul class="flex max-h-96 flex-col gap-1 overflow-x-hidden overflow-y-scroll p-1">
+          <ul class="flex max-h-96 flex-col gap-1 overflow-x-hidden overflow-y-scroll">
             <Show when={!props.loading} fallback={"Loading ...."}>
               <For each={props.options}>
                 {(opt) => (

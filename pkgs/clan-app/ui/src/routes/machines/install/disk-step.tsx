@@ -11,6 +11,7 @@ import { StepProps } from "./hardware-step";
 import { SelectInput } from "@/src/Form/fields/Select";
 import { Typography } from "@/src/components/Typography";
 import { Group } from "@/src/components/group";
+import { useContext } from "corvu/dialog";
 
 export interface DiskValues extends FieldValues {
   placeholders: {
@@ -47,6 +48,8 @@ export const DiskStep = (props: StepProps<DiskValues>) => {
       return result.data;
     },
   }));
+
+  const modalContext = useContext();
 
   return (
     <>
@@ -113,6 +116,7 @@ export const DiskStep = (props: StepProps<DiskValues>) => {
                     placeholder="Select a disk"
                     selectProps={fieldProps}
                     required={!props.initial?.initialized}
+                    portalRef={modalContext.contentRef}
                   />
                 )}
               </Field>

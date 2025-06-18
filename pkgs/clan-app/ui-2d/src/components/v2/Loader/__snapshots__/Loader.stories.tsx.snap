@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Components/Loader Primary smoke-test 1`] = `
+<div class="loader primary">
+  <div class="wrapper">
+    <div class="parent">
+    </div>
+  </div>
+  <div class="child">
+  </div>
+</div>
+`;
+
+exports[`Components/Loader Secondary smoke-test 1`] = `
+<div class="loader secondary">
+  <div class="wrapper">
+    <div class="parent">
+    </div>
+  </div>
+  <div class="child">
+  </div>
+</div>
+`;
