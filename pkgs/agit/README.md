@@ -12,7 +12,7 @@ AGit utility for creating and pulling PRs
 positional arguments:
   {create,c,list,l}  Commands
     create (c)       Create an AGit PR
-    list (l)         List open pull requests
+    list (l)         List open AGit pull requests
 
 options:
   -h, --help         show this help message and exit
