@@ -37,6 +37,16 @@ Examples:
   To exclude machines being updated `clan.deployment.requireExplicitUpdate = true;`
   can be set in the machine config.
 
+  $ clan machines update --tags [TAGS..]
+  Will update all machines that have the specified tags associated through the inventory.
+  If multiple tags are specified machines are matched against both tags.
+
+  $ clan machines update --tags vm
+  Will update all machines that are associated with the "vm" tag through the inventory.
+
+  $ clan machines update machine1 machine2 --tags production
+  Will update only machine1 and machine2 if they both have the "production" tag.
+
 For more detailed information, visit: https://docs.clan.lol/guides/getting-started/deploy
         """
         ),
