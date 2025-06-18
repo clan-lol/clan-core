@@ -2,7 +2,7 @@ import { Component, For } from "solid-js";
 import { Typography } from "@/src/components/Typography";
 import "./TagList.css";
 
-export interface TagListProps {
+interface TagListProps {
   values: string[];
 }
 

@@ -42,7 +42,7 @@ const sizeFont: Record<Size, string> = {
   s: cx("text-[0.75rem]"),
 };
 
-export interface ButtonProps
+interface ButtonProps
   extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variants;
   size?: Size;

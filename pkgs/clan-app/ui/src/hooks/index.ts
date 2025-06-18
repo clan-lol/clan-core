@@ -23,7 +23,7 @@ export const registerClan = async () => {
  * Opens the custom file dialog
  * Returns a native FileList to allow interaction with the native input type="file"
  */
-export const selectSshKeys = async (): Promise<FileList> => {
+const selectSshKeys = async (): Promise<FileList> => {
   const dataTransfer = new DataTransfer();
 
   const response = await callApi("open_file", {

@@ -1,0 +1,19 @@
+{
+  "ignore": [
+    "gtk.webview.js",
+    "stylelint.config.js",
+    "util.ts",
+    "src/components/v2/**",
+    "api/**",
+    "tailwind/**"
+  ],
+  "ignoreDependencies": [
+    "@babel/plugin-syntax-import-attributes",
+    "@storybook/addon-viewport",
+    "@typescript-eslint/parser",
+    "@vitest/coverage-v8",
+    "http-server",
+    "playwright",
+    "wait-on"
+  ]
+}

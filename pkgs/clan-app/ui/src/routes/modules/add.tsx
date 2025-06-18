@@ -32,7 +32,7 @@ interface AddModuleProps {
   id: string;
 }
 
-export const AddModule = (props: AddModuleProps) => {
+const AddModule = (props: AddModuleProps) => {
   const { activeClanURI } = useClanContext();
   const tags = tagsQuery(activeClanURI());
   const machines = machinesQuery(activeClanURI());

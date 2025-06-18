@@ -34,7 +34,7 @@ interface Wifi extends FieldValues {
   password: string;
 }
 
-export interface FlashFormValues extends FieldValues {
+interface FlashFormValues extends FieldValues {
   machine: {
     devicePath: string;
     flake: string;

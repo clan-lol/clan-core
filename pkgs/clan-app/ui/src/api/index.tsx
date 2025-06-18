@@ -7,11 +7,11 @@ import {
   ErrorToastComponent,
   CancelToastComponent,
 } from "@/src/components/toast";
-export type OperationNames = keyof API;
+type OperationNames = keyof API;
 export type OperationArgs<T extends OperationNames> = API[T]["arguments"];
 export type OperationResponse<T extends OperationNames> = API[T]["return"];
 
-export type ApiEnvelope<T> =
+type ApiEnvelope<T> =
   | {
       status: "success";
       data: T;
@@ -19,9 +19,9 @@ export type ApiEnvelope<T> =
     }
   | ApiError;
 
-export type Services = NonNullable<Inventory["services"]>;
-export type ServiceNames = keyof Services;
-export type ClanService<T extends ServiceNames> = Services[T];
+type Services = NonNullable<Inventory["services"]>;
+type ServiceNames = keyof Services;
+type ClanService<T extends ServiceNames> = Services[T];
 export type ClanServiceInstance<T extends ServiceNames> = NonNullable<
   Services[T]
 >[string];
@@ -32,15 +32,15 @@ export type SuccessQuery<T extends OperationNames> = Extract<
 >;
 export type SuccessData<T extends OperationNames> = SuccessQuery<T>["data"];
 
-export type ErrorQuery<T extends OperationNames> = Extract<
+type ErrorQuery<T extends OperationNames> = Extract<
   OperationResponse<T>,
   { status: "error" }
 >;
-export type ErrorData<T extends OperationNames> = ErrorQuery<T>["errors"];
+type ErrorData<T extends OperationNames> = ErrorQuery<T>["errors"];
 
-export type ClanOperations = Record<OperationNames, (str: string) => void>;
+type ClanOperations = Record<OperationNames, (str: string) => void>;
 
-export interface GtkResponse<T> {
+interface GtkResponse<T> {
   result: T;
   op_key: string;
 }

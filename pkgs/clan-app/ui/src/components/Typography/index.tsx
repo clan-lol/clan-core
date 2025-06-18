@@ -3,7 +3,7 @@ import { Dynamic } from "solid-js/web";
 import cx from "classnames";
 import "./css/typography.css";
 
-export type Hierarchy = "body" | "title" | "headline" | "label";
+type Hierarchy = "body" | "title" | "headline" | "label";
 type Color = "primary" | "secondary" | "tertiary";
 type Weight = "normal" | "medium" | "bold";
 type Tag = "span" | "p" | "h1" | "h2" | "h3" | "h4" | "div";

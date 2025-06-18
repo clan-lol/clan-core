@@ -6,7 +6,7 @@ import type {
 } from "@floating-ui/dom";
 import { computePosition } from "@floating-ui/dom";
 
-export interface UseFloatingOptions<
+interface UseFloatingOptions<
   R extends ReferenceElement,
   F extends HTMLElement,
 > extends Partial<ComputePositionConfig> {
@@ -23,7 +23,7 @@ interface UseFloatingState extends Omit<ComputePositionReturn, "x" | "y"> {
   y?: number | null;
 }
 
-export interface UseFloatingResult extends UseFloatingState {
+interface UseFloatingResult extends UseFloatingState {
   update(): void;
 }
 
