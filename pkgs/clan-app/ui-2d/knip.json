@@ -4,6 +4,7 @@
     "stylelint.config.js",
     "util.ts",
     "src/components/v2/**",
-    "api/**"
+    "api/**",
+    "tailwind/**"
   ]
 }

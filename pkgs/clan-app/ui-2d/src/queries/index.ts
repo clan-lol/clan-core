@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/solid-query";
 import { callApi } from "../api";
 import toast from "solid-toast";
 
-export interface ModulesFilter {
+interface ModulesFilter {
   features: string[];
 }
 export const createModulesQuery = (

@@ -1,9 +1,2 @@
-export { MachineActionsBar } from "./MachineActionsBar";
-export { MachineAvatar } from "./MachineAvatar";
-export { MachineForm } from "./MachineForm";
-export { MachineGeneralFields } from "./MachineGeneralFields";
-export { MachineHardwareInfo } from "./MachineHardwareInfo";
 export { InstallMachine } from "./InstallMachine";
-export { InstallProgress } from "./InstallProgress";
-export { InstallStepper } from "./InstallStepper";
-export { InstallStepNavigation } from "./InstallStepNavigation";
+export { MachineAvatar } from "./MachineAvatar";

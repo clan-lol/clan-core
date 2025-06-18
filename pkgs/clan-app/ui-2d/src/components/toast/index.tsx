@@ -68,7 +68,7 @@ const WarningIcon: Component = () => (
 
 // --- Base Props and Styles ---
 
-export interface BaseToastProps {
+interface BaseToastProps {
   t: Toast;
   message: string;
   onCancel?: () => void; // Optional custom function on X click
@@ -254,7 +254,7 @@ export const CancelToastComponent: Component<BaseToastProps> = (props) => {
 };
 
 // Warning Toast
-export const WarningToastComponent: Component<BaseToastProps> = (props) => {
+const WarningToastComponent: Component<BaseToastProps> = (props) => {
   let timeoutId: number | undefined;
   const [clicked, setClicked] = createSignal(false);
   const [exiting, setExiting] = createSignal(false);

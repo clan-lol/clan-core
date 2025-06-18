@@ -8,7 +8,7 @@ import "./css/sidebar.css";
 import Icon, { IconVariant } from "../icon";
 import { clanMetaQuery } from "@/src/queries/clan-meta";
 
-export const SidebarSection = (props: {
+const SidebarSection = (props: {
   title: string;
   icon: IconVariant;
   children: JSX.Element;
