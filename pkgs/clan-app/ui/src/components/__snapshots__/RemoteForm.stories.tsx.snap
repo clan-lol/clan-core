@@ -1,0 +1,970 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Components/RemoteForm Disabled smoke-test 1`] = `
+<div class="max-w-2xl p-6">
+  <h2 class="mb-6 text-2xl font-bold">
+    Remote Configuration
+  </h2>
+  <div class="space-y-4">
+    <div class="grid grid-cols-10 items-center">
+      <div class="col-span-5 flex items-center">
+        <label class="flex items-center gap-1 col-span-2"
+               error="false"
+               help="Username to connect as on the remote server"
+        >
+          <span class="flex flex-col justify-center">
+            <span>
+              <span class="fnt-clr-primary fnt-label-default fnt-weight-bold inline-flex gap-1 align-middle !fg-def-1">
+                User
+              </span>
+              <span class="text-inherit fnt-label-xs fnt-weight-bold inline-flex px-1 align-text-top leading-[0.5] fg-def-4">
+                *
+              </span>
+              <span class=" inline px-2"
+                    data-tip="Username to connect as on the remote server"
+                    style="--tooltip-color: #EFFFFF; --tooltip-text-color: #0D1416; --tooltip-tail: 0.8125rem;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="0.8125rem"
+                     height="16"
+                     fill="currentColor"
+                     viewbox="0 0 48 48"
+                     class="inline fg-def-3"
+                >
+                  <path fill-rule="evenodd"
+                        d="M8.35 4h.094L8.36 39.652h31.312V8.442H8.444V4h31.228v4.348H44v31.304h-4.328v4.328L8.35 44v-4.348H4V8.348h4.35zm13.428 13.326h4.444v-4.442h-4.444zm4.444 17.768h-4.444V21.768h4.444z"
+                        clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </span>
+            </span>
+            <span class="fnt-clr-secondary fnt-body-xs fnt-weight-normal">
+            </span>
+          </span>
+        </label>
+      </div>
+      <div class="col-span-5">
+        <div tabindex="0"
+             role="textbox"
+             class="flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6 bg-def-1 hover:bg-def-acc-1 fg-def-1 aria-disabled:fg-def-4 aria-readonly:fg-def-3 border border-inv-3 rounded-sm hover:border-inv-4 aria-disabled:border-def-2 aria-disabled:border outline-offset-1 outline-1 active:outline active:outline-inv-3 focus-visible:outline-double  focus-visible:outline-int-1 aria-readonly:cursor-no-drop col-span-10"
+             aria-invalid="false"
+             aria-disabled="true"
+        >
+          <input tabindex="-1"
+                 class="w-full bg-transparent outline-none"
+                 type="text"
+                 placeholder="username"
+                 required
+                 disabled
+                 aria-invalid="false"
+                 aria-disabled="true"
+                 error="false"
+          >
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-10 items-center">
+      <div class="col-span-5 flex items-center">
+        <label class="flex items-center gap-1 col-span-2"
+               error="false"
+               help="The hostname or IP address of the remote server"
+        >
+          <span class="flex flex-col justify-center">
+            <span>
+              <span class="fnt-clr-primary fnt-label-default fnt-weight-bold inline-flex gap-1 align-middle !fg-def-1">
+                Address
+              </span>
+              <span class="text-inherit fnt-label-xs fnt-weight-bold inline-flex px-1 align-text-top leading-[0.5] fg-def-4">
+                *
+              </span>
+              <span class=" inline px-2"
+                    data-tip="The hostname or IP address of the remote server"
+                    style="--tooltip-color: #EFFFFF; --tooltip-text-color: #0D1416; --tooltip-tail: 0.8125rem;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="0.8125rem"
+                     height="16"
+                     fill="currentColor"
+                     viewbox="0 0 48 48"
+                     class="inline fg-def-3"
+                >
+                  <path fill-rule="evenodd"
+                        d="M8.35 4h.094L8.36 39.652h31.312V8.442H8.444V4h31.228v4.348H44v31.304h-4.328v4.328L8.35 44v-4.348H4V8.348h4.35zm13.428 13.326h4.444v-4.442h-4.444zm4.444 17.768h-4.444V21.768h4.444z"
+                        clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </span>
+            </span>
+            <span class="fnt-clr-secondary fnt-body-xs fnt-weight-normal">
+            </span>
+          </span>
+        </label>
+      </div>
+      <div class="col-span-5">
+        <div tabindex="0"
+             role="textbox"
+             class="flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6 bg-def-1 hover:bg-def-acc-1 fg-def-1 aria-disabled:fg-def-4 aria-readonly:fg-def-3 border border-inv-3 rounded-sm hover:border-inv-4 aria-disabled:border-def-2 aria-disabled:border outline-offset-1 outline-1 active:outline active:outline-inv-3 focus-visible:outline-double  focus-visible:outline-int-1 aria-readonly:cursor-no-drop col-span-10"
+             aria-invalid="false"
+             aria-disabled="true"
+        >
+          <input tabindex="-1"
+                 class="w-full bg-transparent outline-none"
+                 type="text"
+                 placeholder="hostname or IP address"
+                 required
+                 disabled
+                 aria-invalid="false"
+                 aria-disabled="true"
+                 error="false"
+          >
+        </div>
+      </div>
+    </div>
+    <div tabindex="0"
+         class="accordion mt-6"
+    >
+      <div class="accordion__title">
+        <button class="button button--ghost-hover button--ghost-focus button--ghost-active button button--small">
+          <span class="text-inherit fnt-label-s fnt-weight-medium button__label">
+            Advanced Options
+          </span>
+          <span class="button__icon--end">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="12"
+                 height="12"
+                 fill="currentColor"
+                 viewbox="0 0 48 48"
+                 size="12"
+            >
+              <path fill-rule="evenodd"
+                    d="M40.25 15H7v4.75h4.75v4.75h4.75v4.75h4.75V34H26v-4.75h4.75V24.5h4.75v-4.75h4.75z"
+                    clip-rule="evenodd"
+              >
+              </path>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+    <div class="flex justify-end pt-4">
+      <button type="button"
+              disabled
+              data-disabled
+              class="min-w-24 button default primary"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+          Save
+        </span>
+      </button>
+    </div>
+  </div>
+  <details class="mt-8">
+    <summary class="cursor-pointer font-semibold">
+      Current Form Data (Debug)
+    </summary>
+    <pre class="mt-2 overflow-auto rounded bg-gray-100 p-4 text-sm">
+      {
+  "address": "example.com",
+  "user": "admin",
+  "command_prefix": "sudo",
+  "port": 22,
+  "password": "",
+  "forward_agent": true,
+  "host_key_check": 1,
+  "verbose_ssh": false,
+  "ssh_options": {
+    "StrictHostKeyChecking": "no",
+    "UserKnownHostsFile": "/dev/null"
+  },
+  "tor_socks": false
+}
+    </pre>
+  </details>
+</div>
+`;
+
+exports[`Components/RemoteForm Empty smoke-test 1`] = `
+<div class="max-w-2xl p-6">
+  <h2 class="mb-6 text-2xl font-bold">
+    Remote Configuration
+  </h2>
+  <div class="space-y-4">
+    <div class="grid grid-cols-10 items-center">
+      <div class="col-span-5 flex items-center">
+        <label class="flex items-center gap-1 col-span-2"
+               error="false"
+               help="Username to connect as on the remote server"
+        >
+          <span class="flex flex-col justify-center">
+            <span>
+              <span class="fnt-clr-primary fnt-label-default fnt-weight-bold inline-flex gap-1 align-middle !fg-def-1">
+                User
+              </span>
+              <span class="text-inherit fnt-label-xs fnt-weight-bold inline-flex px-1 align-text-top leading-[0.5] fg-def-4">
+                *
+              </span>
+              <span class=" inline px-2"
+                    data-tip="Username to connect as on the remote server"
+                    style="--tooltip-color: #EFFFFF; --tooltip-text-color: #0D1416; --tooltip-tail: 0.8125rem;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="0.8125rem"
+                     height="16"
+                     fill="currentColor"
+                     viewbox="0 0 48 48"
+                     class="inline fg-def-3"
+                >
+                  <path fill-rule="evenodd"
+                        d="M8.35 4h.094L8.36 39.652h31.312V8.442H8.444V4h31.228v4.348H44v31.304h-4.328v4.328L8.35 44v-4.348H4V8.348h4.35zm13.428 13.326h4.444v-4.442h-4.444zm4.444 17.768h-4.444V21.768h4.444z"
+                        clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </span>
+            </span>
+            <span class="fnt-clr-secondary fnt-body-xs fnt-weight-normal">
+            </span>
+          </span>
+        </label>
+      </div>
+      <div class="col-span-5">
+        <div tabindex="0"
+             role="textbox"
+             class="flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6 bg-def-1 hover:bg-def-acc-1 fg-def-1 aria-disabled:fg-def-4 aria-readonly:fg-def-3 border border-inv-3 rounded-sm hover:border-inv-4 aria-disabled:border-def-2 aria-disabled:border outline-offset-1 outline-1 active:outline active:outline-inv-3 focus-visible:outline-double  focus-visible:outline-int-1 aria-readonly:cursor-no-drop col-span-10"
+             aria-invalid="false"
+             aria-disabled="false"
+        >
+          <input tabindex="-1"
+                 class="w-full bg-transparent outline-none"
+                 type="text"
+                 placeholder="username"
+                 required
+                 aria-invalid="false"
+                 aria-disabled="false"
+                 error="false"
+          >
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-10 items-center">
+      <div class="col-span-5 flex items-center">
+        <label class="flex items-center gap-1 col-span-2"
+               error="false"
+               help="The hostname or IP address of the remote server"
+        >
+          <span class="flex flex-col justify-center">
+            <span>
+              <span class="fnt-clr-primary fnt-label-default fnt-weight-bold inline-flex gap-1 align-middle !fg-def-1">
+                Address
+              </span>
+              <span class="text-inherit fnt-label-xs fnt-weight-bold inline-flex px-1 align-text-top leading-[0.5] fg-def-4">
+                *
+              </span>
+              <span class=" inline px-2"
+                    data-tip="The hostname or IP address of the remote server"
+                    style="--tooltip-color: #EFFFFF; --tooltip-text-color: #0D1416; --tooltip-tail: 0.8125rem;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="0.8125rem"
+                     height="16"
+                     fill="currentColor"
+                     viewbox="0 0 48 48"
+                     class="inline fg-def-3"
+                >
+                  <path fill-rule="evenodd"
+                        d="M8.35 4h.094L8.36 39.652h31.312V8.442H8.444V4h31.228v4.348H44v31.304h-4.328v4.328L8.35 44v-4.348H4V8.348h4.35zm13.428 13.326h4.444v-4.442h-4.444zm4.444 17.768h-4.444V21.768h4.444z"
+                        clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </span>
+            </span>
+            <span class="fnt-clr-secondary fnt-body-xs fnt-weight-normal">
+            </span>
+          </span>
+        </label>
+      </div>
+      <div class="col-span-5">
+        <div tabindex="0"
+             role="textbox"
+             class="flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6 bg-def-1 hover:bg-def-acc-1 fg-def-1 aria-disabled:fg-def-4 aria-readonly:fg-def-3 border border-inv-3 rounded-sm hover:border-inv-4 aria-disabled:border-def-2 aria-disabled:border outline-offset-1 outline-1 active:outline active:outline-inv-3 focus-visible:outline-double  focus-visible:outline-int-1 aria-readonly:cursor-no-drop col-span-10"
+             aria-invalid="false"
+             aria-disabled="false"
+        >
+          <input tabindex="-1"
+                 class="w-full bg-transparent outline-none"
+                 type="text"
+                 placeholder="hostname or IP address"
+                 required
+                 aria-invalid="false"
+                 aria-disabled="false"
+                 error="false"
+          >
+        </div>
+      </div>
+    </div>
+    <div tabindex="0"
+         class="accordion mt-6"
+    >
+      <div class="accordion__title">
+        <button class="button button--ghost-hover button--ghost-focus button--ghost-active button button--small">
+          <span class="text-inherit fnt-label-s fnt-weight-medium button__label">
+            Advanced Options
+          </span>
+          <span class="button__icon--end">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="12"
+                 height="12"
+                 fill="currentColor"
+                 viewbox="0 0 48 48"
+                 size="12"
+            >
+              <path fill-rule="evenodd"
+                    d="M40.25 15H7v4.75h4.75v4.75h4.75v4.75h4.75V34H26v-4.75h4.75V24.5h4.75v-4.75h4.75z"
+                    clip-rule="evenodd"
+              >
+              </path>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+    <div class="flex justify-end pt-4">
+      <button type="button"
+              class="min-w-24 button default primary"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+          Save
+        </span>
+      </button>
+    </div>
+  </div>
+  <details class="mt-8">
+    <summary class="cursor-pointer font-semibold">
+      Current Form Data (Debug)
+    </summary>
+    <pre class="mt-2 overflow-auto rounded bg-gray-100 p-4 text-sm">
+      {
+  "address": "",
+  "user": "",
+  "command_prefix": "",
+  "password": "",
+  "forward_agent": false,
+  "host_key_check": 0,
+  "verbose_ssh": false,
+  "ssh_options": {},
+  "tor_socks": false
+}
+    </pre>
+  </details>
+</div>
+`;
+
+exports[`Components/RemoteForm HiddenSaveButton smoke-test 1`] = `
+<div class="max-w-2xl p-6">
+  <h2 class="mb-6 text-2xl font-bold">
+    Remote Configuration
+  </h2>
+  <div class="space-y-4">
+    <div class="grid grid-cols-10 items-center">
+      <div class="col-span-5 flex items-center">
+        <label class="flex items-center gap-1 col-span-2"
+               error="false"
+               help="Username to connect as on the remote server"
+        >
+          <span class="flex flex-col justify-center">
+            <span>
+              <span class="fnt-clr-primary fnt-label-default fnt-weight-bold inline-flex gap-1 align-middle !fg-def-1">
+                User
+              </span>
+              <span class="text-inherit fnt-label-xs fnt-weight-bold inline-flex px-1 align-text-top leading-[0.5] fg-def-4">
+                *
+              </span>
+              <span class=" inline px-2"
+                    data-tip="Username to connect as on the remote server"
+                    style="--tooltip-color: #EFFFFF; --tooltip-text-color: #0D1416; --tooltip-tail: 0.8125rem;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="0.8125rem"
+                     height="16"
+                     fill="currentColor"
+                     viewbox="0 0 48 48"
+                     class="inline fg-def-3"
+                >
+                  <path fill-rule="evenodd"
+                        d="M8.35 4h.094L8.36 39.652h31.312V8.442H8.444V4h31.228v4.348H44v31.304h-4.328v4.328L8.35 44v-4.348H4V8.348h4.35zm13.428 13.326h4.444v-4.442h-4.444zm4.444 17.768h-4.444V21.768h4.444z"
+                        clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </span>
+            </span>
+            <span class="fnt-clr-secondary fnt-body-xs fnt-weight-normal">
+            </span>
+          </span>
+        </label>
+      </div>
+      <div class="col-span-5">
+        <div tabindex="0"
+             role="textbox"
+             class="flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6 bg-def-1 hover:bg-def-acc-1 fg-def-1 aria-disabled:fg-def-4 aria-readonly:fg-def-3 border border-inv-3 rounded-sm hover:border-inv-4 aria-disabled:border-def-2 aria-disabled:border outline-offset-1 outline-1 active:outline active:outline-inv-3 focus-visible:outline-double  focus-visible:outline-int-1 aria-readonly:cursor-no-drop col-span-10"
+             aria-invalid="false"
+             aria-disabled="false"
+        >
+          <input tabindex="-1"
+                 class="w-full bg-transparent outline-none"
+                 type="text"
+                 placeholder="username"
+                 required
+                 aria-invalid="false"
+                 aria-disabled="false"
+                 error="false"
+          >
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-10 items-center">
+      <div class="col-span-5 flex items-center">
+        <label class="flex items-center gap-1 col-span-2"
+               error="false"
+               help="The hostname or IP address of the remote server"
+        >
+          <span class="flex flex-col justify-center">
+            <span>
+              <span class="fnt-clr-primary fnt-label-default fnt-weight-bold inline-flex gap-1 align-middle !fg-def-1">
+                Address
+              </span>
+              <span class="text-inherit fnt-label-xs fnt-weight-bold inline-flex px-1 align-text-top leading-[0.5] fg-def-4">
+                *
+              </span>
+              <span class=" inline px-2"
+                    data-tip="The hostname or IP address of the remote server"
+                    style="--tooltip-color: #EFFFFF; --tooltip-text-color: #0D1416; --tooltip-tail: 0.8125rem;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="0.8125rem"
+                     height="16"
+                     fill="currentColor"
+                     viewbox="0 0 48 48"
+                     class="inline fg-def-3"
+                >
+                  <path fill-rule="evenodd"
+                        d="M8.35 4h.094L8.36 39.652h31.312V8.442H8.444V4h31.228v4.348H44v31.304h-4.328v4.328L8.35 44v-4.348H4V8.348h4.35zm13.428 13.326h4.444v-4.442h-4.444zm4.444 17.768h-4.444V21.768h4.444z"
+                        clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </span>
+            </span>
+            <span class="fnt-clr-secondary fnt-body-xs fnt-weight-normal">
+            </span>
+          </span>
+        </label>
+      </div>
+      <div class="col-span-5">
+        <div tabindex="0"
+             role="textbox"
+             class="flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6 bg-def-1 hover:bg-def-acc-1 fg-def-1 aria-disabled:fg-def-4 aria-readonly:fg-def-3 border border-inv-3 rounded-sm hover:border-inv-4 aria-disabled:border-def-2 aria-disabled:border outline-offset-1 outline-1 active:outline active:outline-inv-3 focus-visible:outline-double  focus-visible:outline-int-1 aria-readonly:cursor-no-drop col-span-10"
+             aria-invalid="false"
+             aria-disabled="false"
+        >
+          <input tabindex="-1"
+                 class="w-full bg-transparent outline-none"
+                 type="text"
+                 placeholder="hostname or IP address"
+                 required
+                 aria-invalid="false"
+                 aria-disabled="false"
+                 error="false"
+          >
+        </div>
+      </div>
+    </div>
+    <div tabindex="0"
+         class="accordion mt-6"
+    >
+      <div class="accordion__title">
+        <button class="button button--ghost-hover button--ghost-focus button--ghost-active button button--small">
+          <span class="text-inherit fnt-label-s fnt-weight-medium button__label">
+            Advanced Options
+          </span>
+          <span class="button__icon--end">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="12"
+                 height="12"
+                 fill="currentColor"
+                 viewbox="0 0 48 48"
+                 size="12"
+            >
+              <path fill-rule="evenodd"
+                    d="M40.25 15H7v4.75h4.75v4.75h4.75v4.75h4.75V34H26v-4.75h4.75V24.5h4.75v-4.75h4.75z"
+                    clip-rule="evenodd"
+              >
+              </path>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <details class="mt-8">
+    <summary class="cursor-pointer font-semibold">
+      Current Form Data (Debug)
+    </summary>
+    <pre class="mt-2 overflow-auto rounded bg-gray-100 p-4 text-sm">
+      {
+  "address": "example.com",
+  "user": "admin",
+  "command_prefix": "sudo",
+  "port": 22,
+  "password": "",
+  "forward_agent": true,
+  "host_key_check": 1,
+  "verbose_ssh": false,
+  "ssh_options": {
+    "StrictHostKeyChecking": "no",
+    "UserKnownHostsFile": "/dev/null"
+  },
+  "tor_socks": false
+}
+    </pre>
+  </details>
+</div>
+`;
+
+exports[`Components/RemoteForm NixManaged smoke-test 1`] = `
+<div class="max-w-2xl p-6">
+  <h2 class="mb-6 text-2xl font-bold">
+    Remote Configuration
+  </h2>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between rounded-md border border-amber-200 bg-amber-50 p-3">
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="16"
+             height="16"
+             fill="currentColor"
+             viewbox="0 0 48 48"
+             class="size-5 text-amber-600"
+        >
+          <path fill-rule="evenodd"
+                d="M42 6H5v37h37zm-20.555 8.222h4.111v12.334h-4.111zm0 16.445h4.111v4.11h-4.111z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+        <span class="text-sm font-medium text-amber-800">
+          Configuration managed by Nix
+        </span>
+      </div>
+      <button type="button"
+              class="flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="16"
+             height="16"
+             fill="currentColor"
+             viewbox="0 0 48 48"
+             class="size-3"
+        >
+          <path fill-rule="evenodd"
+                d="M9.714 9.714h8.572V6.857h2.857V4h5.714v2.857h2.857v2.857h8.572v8.572h2.857v2.857H44v5.714h-2.857v2.857h-2.857v8.572h-8.572v2.857h-2.857V44h-5.714v-2.857h-2.857v-2.857H9.714v-8.572H6.857v-2.857H4v-5.714h2.857v-2.857h2.857zm8.572 5.715v2.857h-2.857v11.428h2.857v2.857h11.428v-2.857h2.857V18.286h-2.857v-2.857z"
+                clip-rule="evenodd"
+          >
+          </path>
+        </svg>
+        Unlock to edit
+      </button>
+    </div>
+    <div class="grid grid-cols-10 items-center">
+      <div class="col-span-5 flex items-center">
+        <label class="flex items-center gap-1 col-span-2"
+               error="false"
+               help="Username to connect as on the remote server"
+        >
+          <span class="flex flex-col justify-center">
+            <span>
+              <span class="fnt-clr-primary fnt-label-default fnt-weight-bold inline-flex gap-1 align-middle !fg-def-1">
+                User
+              </span>
+              <span class="text-inherit fnt-label-xs fnt-weight-bold inline-flex px-1 align-text-top leading-[0.5] fg-def-4">
+                *
+              </span>
+              <span class=" inline px-2"
+                    data-tip="Username to connect as on the remote server"
+                    style="--tooltip-color: #EFFFFF; --tooltip-text-color: #0D1416; --tooltip-tail: 0.8125rem;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="0.8125rem"
+                     height="16"
+                     fill="currentColor"
+                     viewbox="0 0 48 48"
+                     class="inline fg-def-3"
+                >
+                  <path fill-rule="evenodd"
+                        d="M8.35 4h.094L8.36 39.652h31.312V8.442H8.444V4h31.228v4.348H44v31.304h-4.328v4.328L8.35 44v-4.348H4V8.348h4.35zm13.428 13.326h4.444v-4.442h-4.444zm4.444 17.768h-4.444V21.768h4.444z"
+                        clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </span>
+            </span>
+            <span class="fnt-clr-secondary fnt-body-xs fnt-weight-normal">
+            </span>
+          </span>
+        </label>
+      </div>
+      <div class="col-span-5">
+        <div tabindex="0"
+             role="textbox"
+             class="flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6 bg-def-1 hover:bg-def-acc-1 fg-def-1 aria-disabled:fg-def-4 aria-readonly:fg-def-3 border border-inv-3 rounded-sm hover:border-inv-4 aria-disabled:border-def-2 aria-disabled:border outline-offset-1 outline-1 active:outline active:outline-inv-3 focus-visible:outline-double  focus-visible:outline-int-1 aria-readonly:cursor-no-drop col-span-10"
+             aria-invalid="false"
+             aria-disabled="false"
+        >
+          <input tabindex="-1"
+                 class="w-full bg-transparent outline-none"
+                 type="text"
+                 placeholder="username"
+                 required
+                 aria-invalid="false"
+                 aria-disabled="false"
+                 error="false"
+          >
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-10 items-center">
+      <div class="col-span-5 flex items-center">
+        <label class="flex items-center gap-1 col-span-2"
+               error="false"
+               help="The hostname or IP address of the remote server"
+        >
+          <span class="flex flex-col justify-center">
+            <span>
+              <span class="fnt-clr-primary fnt-label-default fnt-weight-bold inline-flex gap-1 align-middle !fg-def-1">
+                Address
+              </span>
+              <span class="text-inherit fnt-label-xs fnt-weight-bold inline-flex px-1 align-text-top leading-[0.5] fg-def-4">
+                *
+              </span>
+              <span class=" inline px-2"
+                    data-tip="The hostname or IP address of the remote server"
+                    style="--tooltip-color: #EFFFFF; --tooltip-text-color: #0D1416; --tooltip-tail: 0.8125rem;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="0.8125rem"
+                     height="16"
+                     fill="currentColor"
+                     viewbox="0 0 48 48"
+                     class="inline fg-def-3"
+                >
+                  <path fill-rule="evenodd"
+                        d="M8.35 4h.094L8.36 39.652h31.312V8.442H8.444V4h31.228v4.348H44v31.304h-4.328v4.328L8.35 44v-4.348H4V8.348h4.35zm13.428 13.326h4.444v-4.442h-4.444zm4.444 17.768h-4.444V21.768h4.444z"
+                        clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </span>
+            </span>
+            <span class="fnt-clr-secondary fnt-body-xs fnt-weight-normal">
+            </span>
+          </span>
+        </label>
+      </div>
+      <div class="col-span-5">
+        <div tabindex="0"
+             role="textbox"
+             class="flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6 bg-def-1 hover:bg-def-acc-1 fg-def-1 aria-disabled:fg-def-4 aria-readonly:fg-def-3 border border-inv-3 rounded-sm hover:border-inv-4 aria-disabled:border-def-2 aria-disabled:border outline-offset-1 outline-1 active:outline active:outline-inv-3 focus-visible:outline-double  focus-visible:outline-int-1 aria-readonly:cursor-no-drop col-span-10"
+             aria-invalid="false"
+             aria-disabled="false"
+        >
+          <input tabindex="-1"
+                 class="w-full bg-transparent outline-none"
+                 type="text"
+                 placeholder="hostname or IP address"
+                 required
+                 aria-invalid="false"
+                 aria-disabled="false"
+                 error="false"
+          >
+        </div>
+      </div>
+    </div>
+    <div tabindex="0"
+         class="accordion mt-6"
+    >
+      <div class="accordion__title">
+        <button class="button button--ghost-hover button--ghost-focus button--ghost-active button button--small">
+          <span class="text-inherit fnt-label-s fnt-weight-medium button__label">
+            Advanced Options
+          </span>
+          <span class="button__icon--end">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="12"
+                 height="12"
+                 fill="currentColor"
+                 viewbox="0 0 48 48"
+                 size="12"
+            >
+              <path fill-rule="evenodd"
+                    d="M40.25 15H7v4.75h4.75v4.75h4.75v4.75h4.75V34H26v-4.75h4.75V24.5h4.75v-4.75h4.75z"
+                    clip-rule="evenodd"
+              >
+              </path>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+    <div class="flex justify-end pt-4">
+      <button type="button"
+              class="min-w-24 button default primary"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+          Save
+        </span>
+      </button>
+    </div>
+  </div>
+  <details class="mt-8">
+    <summary class="cursor-pointer font-semibold">
+      Current Form Data (Debug)
+    </summary>
+    <pre class="mt-2 overflow-auto rounded bg-gray-100 p-4 text-sm">
+      {
+  "address": "192.168.1.100",
+  "user": "deploy",
+  "command_prefix": "doas",
+  "port": 2222,
+  "password": "",
+  "forward_agent": false,
+  "host_key_check": 2,
+  "verbose_ssh": true,
+  "ssh_options": {
+    "ConnectTimeout": "10",
+    "ServerAliveInterval": "60",
+    "ServerAliveCountMax": "3",
+    "Compression": "yes",
+    "TCPKeepAlive": "yes"
+  },
+  "tor_socks": true
+}
+    </pre>
+  </details>
+</div>
+`;
+
+exports[`Components/RemoteForm Populated smoke-test 1`] = `
+<div class="max-w-2xl p-6">
+  <h2 class="mb-6 text-2xl font-bold">
+    Remote Configuration
+  </h2>
+  <div class="space-y-4">
+    <div class="grid grid-cols-10 items-center">
+      <div class="col-span-5 flex items-center">
+        <label class="flex items-center gap-1 col-span-2"
+               error="false"
+               help="Username to connect as on the remote server"
+        >
+          <span class="flex flex-col justify-center">
+            <span>
+              <span class="fnt-clr-primary fnt-label-default fnt-weight-bold inline-flex gap-1 align-middle !fg-def-1">
+                User
+              </span>
+              <span class="text-inherit fnt-label-xs fnt-weight-bold inline-flex px-1 align-text-top leading-[0.5] fg-def-4">
+                *
+              </span>
+              <span class=" inline px-2"
+                    data-tip="Username to connect as on the remote server"
+                    style="--tooltip-color: #EFFFFF; --tooltip-text-color: #0D1416; --tooltip-tail: 0.8125rem;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="0.8125rem"
+                     height="16"
+                     fill="currentColor"
+                     viewbox="0 0 48 48"
+                     class="inline fg-def-3"
+                >
+                  <path fill-rule="evenodd"
+                        d="M8.35 4h.094L8.36 39.652h31.312V8.442H8.444V4h31.228v4.348H44v31.304h-4.328v4.328L8.35 44v-4.348H4V8.348h4.35zm13.428 13.326h4.444v-4.442h-4.444zm4.444 17.768h-4.444V21.768h4.444z"
+                        clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </span>
+            </span>
+            <span class="fnt-clr-secondary fnt-body-xs fnt-weight-normal">
+            </span>
+          </span>
+        </label>
+      </div>
+      <div class="col-span-5">
+        <div tabindex="0"
+             role="textbox"
+             class="flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6 bg-def-1 hover:bg-def-acc-1 fg-def-1 aria-disabled:fg-def-4 aria-readonly:fg-def-3 border border-inv-3 rounded-sm hover:border-inv-4 aria-disabled:border-def-2 aria-disabled:border outline-offset-1 outline-1 active:outline active:outline-inv-3 focus-visible:outline-double  focus-visible:outline-int-1 aria-readonly:cursor-no-drop col-span-10"
+             aria-invalid="false"
+             aria-disabled="false"
+        >
+          <input tabindex="-1"
+                 class="w-full bg-transparent outline-none"
+                 type="text"
+                 placeholder="username"
+                 required
+                 aria-invalid="false"
+                 aria-disabled="false"
+                 error="false"
+          >
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-10 items-center">
+      <div class="col-span-5 flex items-center">
+        <label class="flex items-center gap-1 col-span-2"
+               error="false"
+               help="The hostname or IP address of the remote server"
+        >
+          <span class="flex flex-col justify-center">
+            <span>
+              <span class="fnt-clr-primary fnt-label-default fnt-weight-bold inline-flex gap-1 align-middle !fg-def-1">
+                Address
+              </span>
+              <span class="text-inherit fnt-label-xs fnt-weight-bold inline-flex px-1 align-text-top leading-[0.5] fg-def-4">
+                *
+              </span>
+              <span class=" inline px-2"
+                    data-tip="The hostname or IP address of the remote server"
+                    style="--tooltip-color: #EFFFFF; --tooltip-text-color: #0D1416; --tooltip-tail: 0.8125rem;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="0.8125rem"
+                     height="16"
+                     fill="currentColor"
+                     viewbox="0 0 48 48"
+                     class="inline fg-def-3"
+                >
+                  <path fill-rule="evenodd"
+                        d="M8.35 4h.094L8.36 39.652h31.312V8.442H8.444V4h31.228v4.348H44v31.304h-4.328v4.328L8.35 44v-4.348H4V8.348h4.35zm13.428 13.326h4.444v-4.442h-4.444zm4.444 17.768h-4.444V21.768h4.444z"
+                        clip-rule="evenodd"
+                  >
+                  </path>
+                </svg>
+              </span>
+            </span>
+            <span class="fnt-clr-secondary fnt-body-xs fnt-weight-normal">
+            </span>
+          </span>
+        </label>
+      </div>
+      <div class="col-span-5">
+        <div tabindex="0"
+             role="textbox"
+             class="flex px-2 py-[0.375rem] flex-shrink-0 items-center justify-center gap-2 text-sm leading-6 bg-def-1 hover:bg-def-acc-1 fg-def-1 aria-disabled:fg-def-4 aria-readonly:fg-def-3 border border-inv-3 rounded-sm hover:border-inv-4 aria-disabled:border-def-2 aria-disabled:border outline-offset-1 outline-1 active:outline active:outline-inv-3 focus-visible:outline-double  focus-visible:outline-int-1 aria-readonly:cursor-no-drop col-span-10"
+             aria-invalid="false"
+             aria-disabled="false"
+        >
+          <input tabindex="-1"
+                 class="w-full bg-transparent outline-none"
+                 type="text"
+                 placeholder="hostname or IP address"
+                 required
+                 aria-invalid="false"
+                 aria-disabled="false"
+                 error="false"
+          >
+        </div>
+      </div>
+    </div>
+    <div tabindex="0"
+         class="accordion mt-6"
+    >
+      <div class="accordion__title">
+        <button class="button button--ghost-hover button--ghost-focus button--ghost-active button button--small">
+          <span class="text-inherit fnt-label-s fnt-weight-medium button__label">
+            Advanced Options
+          </span>
+          <span class="button__icon--end">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="12"
+                 height="12"
+                 fill="currentColor"
+                 viewbox="0 0 48 48"
+                 size="12"
+            >
+              <path fill-rule="evenodd"
+                    d="M40.25 15H7v4.75h4.75v4.75h4.75v4.75h4.75V34H26v-4.75h4.75V24.5h4.75v-4.75h4.75z"
+                    clip-rule="evenodd"
+              >
+              </path>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+    <div class="flex justify-end pt-4">
+      <button type="button"
+              class="min-w-24 button default primary"
+      >
+        <div class="loader primary">
+          <div class="wrapper">
+            <div class="parent">
+            </div>
+          </div>
+          <div class="child">
+          </div>
+        </div>
+        <span class="typography text-inherit font-family-mono font-weight-bold font-size-default label font-label">
+          Save
+        </span>
+      </button>
+    </div>
+  </div>
+  <details class="mt-8">
+    <summary class="cursor-pointer font-semibold">
+      Current Form Data (Debug)
+    </summary>
+    <pre class="mt-2 overflow-auto rounded bg-gray-100 p-4 text-sm">
+      {
+  "address": "example.com",
+  "user": "admin",
+  "command_prefix": "sudo",
+  "port": 22,
+  "password": "",
+  "forward_agent": true,
+  "host_key_check": 1,
+  "verbose_ssh": false,
+  "ssh_options": {
+    "StrictHostKeyChecking": "no",
+    "UserKnownHostsFile": "/dev/null"
+  },
+  "tor_socks": false
+}
+    </pre>
+  </details>
+</div>
+`;

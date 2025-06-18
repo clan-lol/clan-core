@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Components/Button GhostPrimary play-test 1`] = `
-<div class="bg-def-3 p-10">
+<div class="p-10 bg-def-3">
   <div class="grid w-fit grid-cols-4 gap-8">
     <div>
       <button type="button"

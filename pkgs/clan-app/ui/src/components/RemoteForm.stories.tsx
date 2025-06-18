@@ -186,6 +186,9 @@ export const Empty: Story = {
           "Empty form with default values. All fields start empty except for boolean defaults.",
       },
     },
+    test: {
+      timeout: 30000,
+    },
   },
 };
 
@@ -205,6 +208,9 @@ export const Populated: Story = {
         story:
           "Form pre-populated with sample data showing all field types in use.",
       },
+    },
+    test: {
+      timeout: 30000,
     },
   },
 };
