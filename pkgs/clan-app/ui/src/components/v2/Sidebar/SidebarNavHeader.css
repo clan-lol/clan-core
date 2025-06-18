@@ -4,8 +4,8 @@ div.sidebar-header {
 
   background: linear-gradient(
     90deg,
-    var(--clr-bg-inv-3) 0%,
-    var(--clr-bg-inv-4) 100%
+    theme(colors.bg.inv.3) 0%,
+    theme(colors.bg.inv.4) 0%
   );
 
   & > .dropdown-trigger {

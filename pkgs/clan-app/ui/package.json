@@ -11,6 +11,7 @@
     "serve": "vite preview",
     "check": "tsc --noEmit --skipLibCheck && eslint ./src --fix",
     "test": "vitest run --project unit --typecheck",
+    "vite": "vite",
     "storybook": "storybook",
     "knip": "knip --fix",
     "storybook-build": "storybook build",

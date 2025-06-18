@@ -13,8 +13,8 @@ div.sidebar-body {
 
   background: linear-gradient(
     180deg,
-    var(--clr-bg-inv-1) 0%,
-    var(--clr-bg-inv-3) 100%
+    theme(colors.bg.inv.1) 0%,
+    theme(colors.bg.inv.3) 100%
   );
 
   @apply backdrop-blur-sm;

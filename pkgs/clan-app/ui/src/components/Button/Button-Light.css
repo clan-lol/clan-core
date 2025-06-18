@@ -27,7 +27,7 @@
 }
 
 .button--light-active:active {
-  @apply active:bg-secondary-200 border-secondary-600 active:text-secondary-900 active:shadow-button-primary-active;
+  @apply active:bg-secondary-200 border-secondary-600 active:text-secondary-900;
 
   box-shadow: inset 2px 2px theme(backgroundColor.secondary.300);
 
