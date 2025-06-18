@@ -56,7 +56,7 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
     )
 
     # Construct the remote URL with proper parameters for Darwin
-    remote_url = f"ssh://{ssh.target}"
+    remote_url = f"ssh-ng://{ssh.target}"
     # MacOS doesn't come with a proper login shell for ssh and therefore doesn't have nix in $PATH as it doesn't source /etc/profile
     if machine._class_ == "darwin":
         remote_url += "?remote-program=bash -lc 'exec nix-daemon --stdio'"
