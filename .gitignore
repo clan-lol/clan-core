@@ -3,7 +3,6 @@
 .hypothesis
 out.log
 .coverage.*
-qubeclan
 pkgs/repro-hook
 testdir
 democlan
@@ -31,13 +30,6 @@ __pycache__
 .reports
 .ruff_cache
 htmlcov
-
-# flatpak
-.flatpak-builder
-build
-build-dir
-repo
-.env
 
 # node
 node_modules
