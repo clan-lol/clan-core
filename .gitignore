@@ -20,9 +20,6 @@ nixos.qcow2
 # macOS stuff
 .DS_Store
 
-# dream2nix
-.dream2nix
-
 # python
 __pycache__
 .coverage
