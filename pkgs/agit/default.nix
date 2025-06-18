@@ -12,6 +12,7 @@ in
 writers.writePython3Bin "agit" {
   flakeIgnore = [
     "E501"
+    "W503" # treefmt reapplies the conditions to trigger this check
   ];
   makeWrapperArgs = [
     "--prefix"
