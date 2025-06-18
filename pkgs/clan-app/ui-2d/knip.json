@@ -1,0 +1,9 @@
+{
+  "ignore": [
+    "gtk.webview.js",
+    "stylelint.config.js",
+    "util.ts",
+    "src/components/v2/**",
+    "api/**"
+  ]
+}
