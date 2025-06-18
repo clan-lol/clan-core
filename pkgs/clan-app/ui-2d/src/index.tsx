@@ -23,7 +23,6 @@ import { ApiTester } from "./api_test";
 import { IconVariant } from "./components/icon";
 import { Components } from "./routes/components";
 import { VarsPage } from "./routes/machines/install/vars-step";
-import { ThreePlayground } from "./three";
 import { ClanProvider } from "./contexts/clan";
 
 export const client = new QueryClient();
@@ -161,26 +160,10 @@ export const routes: AppRoute[] = [
     label: "Internal (Only visible in dev mode)",
     children: [
       {
-        path: "/hosts",
-        label: "Local Hosts",
-        component: () => <HostList />,
-      },
-      {
-        path: "/3d",
-        label: "3D-Playground",
-        component: () => <ThreePlayground />,
-      },
-      {
         path: "/api_testing",
         label: "api_testing",
         hidden: false,
         component: () => <ApiTester />,
-      },
-      {
-        path: "/components",
-        label: "Components",
-        hidden: false,
-        component: () => <Components />,
       },
     ],
   },

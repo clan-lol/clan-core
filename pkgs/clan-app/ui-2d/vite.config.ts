@@ -27,7 +27,7 @@ function regenPythonApiOnFileChange() {
 export default defineConfig({
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./"), // Adjust the path as needed
+      "@": path.resolve(__dirname, "./"), // This now points to ui-2d directory
     },
   },
   optimizeDeps: {

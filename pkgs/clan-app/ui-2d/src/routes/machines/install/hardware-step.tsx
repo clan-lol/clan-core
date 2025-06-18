@@ -23,7 +23,6 @@ import {
   type RemoteData,
   HostKeyCheck,
 } from "@/src/components/RemoteForm";
-import { ac } from "vitest/dist/chunks/reporters.d.C-cu31ET";
 
 export type HardwareValues = FieldValues & {
   report: boolean;
