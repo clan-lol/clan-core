@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from "@kachurun/storybook-solid";
 import { Button, ButtonProps } from "./Button";
 import { Component } from "solid-js";
-import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
+import { expect, fn, waitFor } from "storybook/test";
+import { PlayFunctionContext } from "storybook/internal/csf";
+import { StoryContext } from "@kachurun/storybook-solid-vite";
 
 const getCursorStyle = (el: Element) => window.getComputedStyle(el).cursor;
 
@@ -160,9 +162,8 @@ export const Primary: Story = {
       mockTimers: true,
     },
   },
-  play: async ({ args, canvasElement, step }) => {
-    const canvas = within(canvasElement);
 
+  play: async ({ canvas, step, userEvent, args }: StoryContext) => {
     const buttons = await canvas.findAllByRole("button");
 
     for (const button of buttons) {
@@ -233,8 +234,8 @@ export const GhostPrimary: Story = {
   },
   play: Primary.play,
   decorators: [
-    (Story) => (
-      <div class="bg-def-3 p-10">
+    (Story: StoryObj) => (
+      <div class="p-10 bg-def-3">
         <Story />
       </div>
     ),
