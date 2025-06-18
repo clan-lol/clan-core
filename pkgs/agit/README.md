@@ -22,7 +22,10 @@ DEFAULT_TARGET_BRANCH = main
 
 Examples:
   $ agit create
-  Will create an AGit Pr with the latest commit message title as it's topic.
+  Opens editor to compose PR title and description (first line is title, rest is body)
+
+  $ agit create --auto
+  Creates PR using latest commit message automatically
 
   $ agit create --topic "my-feature"
   Set a custom topic.

@@ -203,10 +203,10 @@ DEFAULT_TARGET_BRANCH = {DEFAULT_TARGET_BRANCH}
 
 Examples:
   $ agit create
-  Opens editor to compose PR title and description (first line is title, rest is body).
+  Opens editor to compose PR title and description (first line is title, rest is body)
 
   $ agit create --auto
-  Creates PR using latest commit message automatically (old behavior).
+  Creates PR using latest commit message automatically
 
   $ agit create --topic "my-feature"
   Set a custom topic.
