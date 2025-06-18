@@ -5,16 +5,17 @@ A helper script for the AGit workflow with a gitea instance.
 <!-- `$ agit --help` -->
 
 ```
-usage: agit [-h] {create,c} ...
+usage: agit [-h] {create,c,list,l} ...
 
 AGit utility for creating and pulling PRs
 
 positional arguments:
-  {create,c}    Commands
-    create (c)  Create an AGit PR
+  {create,c,list,l}  Commands
+    create (c)       Create an AGit PR
+    list (l)         List open pull requests
 
 options:
-  -h, --help    show this help message and exit
+  -h, --help         show this help message and exit
 
 The defaults that are assumed are:
 TARGET_REMOTE_REPOSITORY = origin
@@ -32,6 +33,9 @@ Examples:
 
   $ agit create --force
   Force push to a certain topic
+
+  $ agit list
+  Lists all open pull requests for the current repository
         
 ```
 

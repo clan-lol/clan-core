@@ -1,9 +1,12 @@
 import argparse
 import contextlib
+import json
 import os
 import subprocess
 import sys
 import tempfile
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 # push origin HEAD:refs/for/main
@@ -12,6 +15,60 @@ from pathlib import Path
 # HEAD: The local branch containing the changes you are proposing
 TARGET_REMOTE_REPOSITORY = "origin"
 DEFAULT_TARGET_BRANCH = "main"
+
+
+def get_gitea_api_url(remote: str = "origin") -> str:
+    """Parse the gitea api url, this parser is fairly naive, but should work for most setups"""
+    exit_code, remote_url, error = run_git_command(["git", "remote", "get-url", remote])
+
+    if exit_code != 0:
+        print(f"Error getting remote URL for '{remote}': {error}")
+        sys.exit(1)
+
+    # Parse different remote URL formats
+    # SSH formats: git@git.clan.lol:clan/clan-core.git or gitea@git.clan.lol:clan/clan-core.git
+    # HTTPS format: https://git.clan.lol/clan/clan-core.git
+
+    if (
+        "@" in remote_url
+        and ":" in remote_url
+        and not remote_url.startswith("https://")
+    ):
+        # SSH format: [user]@git.clan.lol:clan/clan-core.git
+        host_and_path = remote_url.split("@")[1]  # git.clan.lol:clan/clan-core.git
+        host = host_and_path.split(":")[0]  # git.clan.lol
+        repo_path = host_and_path.split(":")[1]  # clan/clan-core.git
+        if repo_path.endswith(".git"):
+            repo_path = repo_path[:-4]  # clan/clan-core
+    elif remote_url.startswith("https://"):
+        # HTTPS format: https://git.clan.lol/clan/clan-core.git
+        url_parts = remote_url.replace("https://", "").split("/")
+        host = url_parts[0]  # git.clan.lol
+        repo_path = "/".join(url_parts[1:])  # clan/clan-core.git
+        if repo_path.endswith(".git"):
+            repo_path = repo_path.removesuffix(".git")  # clan/clan-core
+    else:
+        print(f"Unsupported remote URL format: {remote_url}")
+        sys.exit(1)
+
+    api_url = f"https://{host}/api/v1/repos/{repo_path}/pulls"
+    return api_url
+
+
+def fetch_open_prs(remote: str = "origin") -> list[dict]:
+    """Fetch open pull requests from the Gitea API."""
+    api_url = get_gitea_api_url(remote)
+
+    try:
+        with urllib.request.urlopen(f"{api_url}?state=open") as response:
+            data = json.loads(response.read().decode())
+            return data
+    except urllib.error.URLError as e:
+        print(f"Error fetching PRs from {api_url}: {e}")
+        sys.exit(1)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON response: {e}")
+        sys.exit(1)
 
 
 def run_git_command(command: list) -> tuple[int, str, str]:
@@ -191,6 +248,26 @@ def cmd_create(args: argparse.Namespace) -> None:
     )
 
 
+def cmd_list(args: argparse.Namespace) -> None:
+    """Handle the list subcommand."""
+    prs = fetch_open_prs(args.remote)
+
+    if not prs:
+        print("No open AGit pull requests found.")
+        return
+
+    # This is the only way I found to query the actual AGit PRs
+    # Gitea doesn't seem to have an actual api endpoint for them
+    filtered_prs = [pr for pr in prs if pr.get("head", {}).get("label", "") == ""]
+
+    if not filtered_prs:
+        print("No open AGit pull requests found.")
+        return
+
+    for pr in filtered_prs:
+        print(pr["title"])
+
+
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="agit",
@@ -213,6 +290,9 @@ Examples:
 
   $ agit create --force
   Force push to a certain topic
+
+  $ agit list
+  Lists all open pull requests for the current repository
         """,
     )
 
@@ -237,6 +317,28 @@ Examples:
   $ agit create --force
   Force push to a certain topic
         """,
+    )
+
+    list_parser = subparsers.add_parser(
+        "list",
+        aliases=["l"],
+        help="List open AGit pull requests",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=f"""
+Examples:
+  $ agit list
+  Lists all open AGit PRs for the current repository.
+
+  $ agit list --remote upstream
+  Lists PRs using the 'upstream' remote instead of '{TARGET_REMOTE_REPOSITORY}'.
+        """,
+    )
+
+    list_parser.add_argument(
+        "-r",
+        "--remote",
+        default=TARGET_REMOTE_REPOSITORY,
+        help=f"Git remote to use for fetching PRs (default: {TARGET_REMOTE_REPOSITORY})",
     )
 
     create_parser.add_argument(
@@ -284,6 +386,7 @@ Examples:
     )
 
     create_parser.set_defaults(func=cmd_create)
+    list_parser.set_defaults(func=cmd_list)
     return parser
 
 
