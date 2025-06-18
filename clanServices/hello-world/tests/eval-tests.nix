@@ -44,10 +44,7 @@ in
   test_simple = {
     inherit testFlake;
 
-    expr = {
-    };
-    expected = {
-
-    };
+    expr = { };
+    expected = { };
   };
 }
