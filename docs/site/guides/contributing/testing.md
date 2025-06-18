@@ -104,7 +104,7 @@ Limitations:
 
 ### Where to find examples for NixOS container tests
 
-Existing nixos container tests in clan-core can be found by using ripgrep:
+Existing NixOS container tests in clan-core can be found by using `ripgrep`:
 
 ```shellSession
 rg self.clanLib.test.containerTest
@@ -131,7 +131,7 @@ Due to superior efficiency,
 
 ### Finding examples of python tests
 
-Existing python tests in clan-core can be found by using ripgrep:
+Existing python tests in clan-core can be found by using `ripgrep`:
 ```shellSession
 rg "import pytest"
 ```
@@ -196,17 +196,17 @@ Nix eval tests are good for testing any nix logic, including
 
 - nix functions
 - nix libraries
-- modules for the nixos module system
+- modules for the NixOS module system
 
 When not to use
 
 - tests that require building nix derivations (except some very cheap ones)
 - tests that require running programs written in other languages
-- tests that require building or running nixos machines
+- tests that require building or running NixOS machines
 
 ### Finding examples of nix eval tests
 
-Existing nix eval tests can be found via this ripgrep command:
+Existing nix eval tests can be found via this `ripgrep` command:
 
 ```shellSession
 rg "nix-unit --eval-store"
@@ -284,11 +284,11 @@ Add `lib.trace` or `lib.traceVal` statements in order to print some variables du
 
 #### Nix repl
 
-Use `nix repl` to evaluate to inspec the test.
+Use `nix repl` to evaluate and inspect the test.
 
-Each test consists opf an `expr` (expression) and an `expected` field. `nix-unit` simply checks if `expr == expected` and prints the diff if that's not the case.
+Each test consists of an `expr` (expression) and an `expected` field. `nix-unit` simply checks if `expr == expected` and prints the diff if that's not the case.
 
-`nix repl` can be used to inspect `expr` manually, or any other variables that you choose to expose.
+`nix repl` can be used to inspect an `expr` manually, or any other variables that you choose to expose.
 
 Example:
 
