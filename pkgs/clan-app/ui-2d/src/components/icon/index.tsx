@@ -89,7 +89,6 @@ const Icon: Component<IconProps> = (props) => {
       width={iconProps.size || 16}
       height={iconProps.size || 16}
       viewBox="0 0 48 48"
-      // @ts-expect-error: dont know, fix this type nit later
       ref={iconProps.ref}
       {...iconProps}
     />

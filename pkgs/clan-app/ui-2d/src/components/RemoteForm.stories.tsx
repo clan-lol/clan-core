@@ -6,7 +6,6 @@ import {
   RemoteDataSource,
 } from "./RemoteForm";
 import { createSignal } from "solid-js";
-import { fn } from "@storybook/test";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 
 // Default values for the form
