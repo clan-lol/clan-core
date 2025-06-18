@@ -266,28 +266,28 @@ def get_host(
     name: str, flake: Flake, field: Literal["targetHost", "buildHost"]
 ) -> RemoteSource | None:
     """
-    Get the build host for a machine.
+    Get the build or target host for a machine.
     """
     machine = Machine(name=name, flake=flake)
     inv_machine = machine.get_inv_machine()
 
     source: Literal["inventory", "nix_machine"] = "inventory"
-    target_host_str = inv_machine.get("deploy", {}).get(field)
+    host_str = inv_machine.get("deploy", {}).get(field)
 
-    if target_host_str is None:
+    if host_str is None:
         machine.info(
             f"'{field}' is not set in inventory, falling back to slow Nix config"
         )
-        target_host_str = machine.eval_nix(f'config.clan.core.networking."{field}"')
+        host_str = machine.eval_nix(f'config.clan.core.networking."{field}"')
         source = "nix_machine"
 
-    if not target_host_str:
+    if not host_str:
         return None
 
     return RemoteSource(
         data=Remote.from_deployment_address(
             machine_name=machine.name,
-            address=target_host_str,
+            address=host_str,
             host_key_check=machine.host_key_check,
             private_key=machine.private_key,
         ),
