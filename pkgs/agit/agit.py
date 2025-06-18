@@ -71,6 +71,96 @@ def fetch_open_prs(remote: str = "origin") -> list[dict]:
         sys.exit(1)
 
 
+def get_repo_info_from_api_url(api_url: str) -> tuple[str, str]:
+    """Extract repository owner and name from API URL."""
+    # api_url format: https://git.clan.lol/api/v1/repos/clan/clan-core/pulls
+    parts = api_url.split("/")
+    if len(parts) >= 6 and "repos" in parts:
+        repo_index = parts.index("repos")
+        if repo_index + 2 < len(parts):
+            owner = parts[repo_index + 1]
+            repo_name = parts[repo_index + 2]
+            return owner, repo_name
+    msg = f"Invalid API URL format: {api_url}"
+    raise ValueError(msg)
+
+
+def fetch_pr_statuses(
+    repo_owner: str, repo_name: str, commit_sha: str, host: str
+) -> list[dict]:
+    """Fetch CI statuses for a specific commit SHA."""
+    status_url = (
+        f"https://{host}/api/v1/repos/{repo_owner}/{repo_name}/statuses/{commit_sha}"
+    )
+
+    try:
+        request = urllib.request.Request(status_url)
+        with urllib.request.urlopen(request, timeout=3) as response:
+            data = json.loads(response.read().decode())
+            return data
+    except (urllib.error.URLError, json.JSONDecodeError, TimeoutError):
+        # Fail silently for individual status requests to keep listing fast
+        return []
+
+
+def get_latest_status_by_context(statuses: list[dict]) -> dict[str, str]:
+    """Group statuses by context and return the latest status for each context."""
+    context_statuses = {}
+
+    for status in statuses:
+        context = status.get("context", "unknown")
+        created_at = status.get("created_at", "")
+        status_state = status.get("status", "unknown")
+
+        if (
+            context not in context_statuses
+            or created_at > context_statuses[context]["created_at"]
+        ):
+            context_statuses[context] = {
+                "status": status_state,
+                "created_at": created_at,
+            }
+
+    return {context: info["status"] for context, info in context_statuses.items()}
+
+
+def status_to_emoji(status: str) -> str:
+    """Convert status string to emoji."""
+    status_map = {"success": "✅", "failure": "❌", "pending": "🟡", "error": "❓"}
+    return status_map.get(status.lower(), "❓")
+
+
+def format_pr_with_status(pr: dict, remote: str = "origin") -> str:
+    """Format PR title with status emojis."""
+    title = pr["title"]
+
+    commit_sha = pr.get("head", {}).get("sha")
+    if not commit_sha:
+        return title
+
+    try:
+        api_url = get_gitea_api_url(remote)
+        repo_owner, repo_name = get_repo_info_from_api_url(api_url)
+
+        host = api_url.split("/")[2]
+
+        statuses = fetch_pr_statuses(repo_owner, repo_name, commit_sha, host)
+        if not statuses:
+            return title
+
+        latest_statuses = get_latest_status_by_context(statuses)
+
+        emojis = [status_to_emoji(status) for status in latest_statuses.values()]
+        if emojis:
+            return f"{title} {' '.join(emojis)}"
+
+    except (ValueError, IndexError):
+        # If there's any error in processing, just return the title
+        pass
+
+    return title
+
+
 def run_git_command(command: list) -> tuple[int, str, str]:
     """Run a git command and return exit code, stdout, and stderr."""
     try:
@@ -265,7 +355,8 @@ def cmd_list(args: argparse.Namespace) -> None:
         return
 
     for pr in filtered_prs:
-        print(pr["title"])
+        formatted_pr = format_pr_with_status(pr, args.remote)
+        print(formatted_pr)
 
 
 def create_parser() -> argparse.ArgumentParser:
