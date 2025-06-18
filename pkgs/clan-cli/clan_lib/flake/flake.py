@@ -659,6 +659,8 @@ class Flake:
             nix_metadata,
         )
 
+        log.debug(f"Invalidating cache for {self.identifier}")
+
         self.prefetch()
 
         self._cache = FlakeCache()

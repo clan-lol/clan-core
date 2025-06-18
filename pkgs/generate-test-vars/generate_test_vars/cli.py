@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -15,6 +16,8 @@ from clan_lib.dirs import find_git_repo_root
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval, nix_test_store
+
+log = logging.getLogger(__name__)
 
 sops_priv_key = (
     "AGE-SECRET-KEY-1PL0M9CWRCG3PZ9DXRTTLMCVD57U6JDFE8K7DNVQ35F4JENZ6G3MQ0RQLRV"
@@ -141,6 +144,7 @@ def parse_args() -> Options:
 
 
 def main() -> None:
+    logging.basicConfig(level=logging.DEBUG)
     os.environ["CLAN_NO_COMMIT"] = "1"
     opts = parse_args()
     test_dir = opts.test_dir
