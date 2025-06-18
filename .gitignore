@@ -3,7 +3,6 @@
 .hypothesis
 out.log
 .coverage.*
-qubeclan
 pkgs/repro-hook
 testdir
 democlan
