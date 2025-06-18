@@ -1,0 +1,32 @@
+/* Sidebar Elements */
+
+@import "./sidebar-header";
+@import "./sidebar-flyout";
+@import "./sidebar-list-item";
+@import "./sidebar-profile";
+
+/* Sidebar Structure */
+
+.sidebar {
+  @apply bg-inv-2 h-full border border-solid border-inv-2 min-w-72 rounded-xl;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar__body {
+  display: flex;
+  flex-direction: column;
+  gap: theme(padding.2);
+  padding: theme(padding.4) theme(padding.2);
+}
+
+.sidebar__section {
+  @apply bg-primary-800/90;
+
+  padding: theme(padding.2);
+  border-radius: theme(borderRadius.md);
+
+  ::marker {
+    content: "";
+  }
+}

@@ -1,0 +1,160 @@
+import { createSignal, For, Show } from "solid-js";
+import { useFloating } from "@/src/floating";
+import { autoUpdate, flip, hide, offset, shift } from "@floating-ui/dom";
+import { A, useNavigate } from "@solidjs/router";
+import { registerClan } from "@/src/hooks";
+import { Button } from "../../components/Button/Button";
+import Icon from "@/src/components/icon";
+import { useClanContext } from "@/src/contexts/clan";
+import { clanURIs, setActiveClanURI } from "@/src/stores/clan";
+import { clanMetaQuery } from "@/src/queries/clan-meta";
+
+interface ClanItemProps {
+  clan_dir: string;
+}
+const ClanItem = (props: ClanItemProps) => {
+  const { clan_dir } = props;
+
+  const details = clanMetaQuery(clan_dir);
+
+  const navigate = useNavigate();
+  const [reference, setReference] = createSignal<HTMLElement>();
+  const [floating, setFloating] = createSignal<HTMLElement>();
+
+  const { activeClanURI, removeClanURI } = useClanContext();
+
+  // `position` is a reactive object.
+  const position = useFloating(reference, floating, {
+    placement: "top",
+
+    // pass options. Ensure the cleanup function is returned.
+    whileElementsMounted: (reference, floating, update) =>
+      autoUpdate(reference, floating, update, {
+        animationFrame: true,
+      }),
+    middleware: [
+      offset(5),
+      shift(),
+      flip(),
+
+      hide({
+        strategy: "referenceHidden",
+      }),
+    ],
+  });
+
+  const handleRemove = () => {
+    removeClanURI(clan_dir);
+  };
+
+  return (
+    <div class="">
+      <div class=" text-primary-800">
+        <div class="">
+          <Button
+            size="s"
+            variant="light"
+            class=""
+            onClick={() => navigate(`/clans/${window.btoa(clan_dir)}`)}
+            endIcon={<Icon icon="Settings" />}
+          ></Button>
+          <Button
+            size="s"
+            variant="light"
+            class=" "
+            onClick={() => {
+              setActiveClanURI(clan_dir);
+            }}
+          >
+            {activeClanURI() === clan_dir ? "active" : "select"}
+          </Button>
+          <Button
+            size="s"
+            variant="light"
+            popovertarget={`clan-delete-popover-${clan_dir}`}
+            popovertargetaction="toggle"
+            ref={setReference}
+            class=" "
+            endIcon={<Icon icon="Trash" />}
+          ></Button>
+          <div
+            popover="auto"
+            role="tooltip"
+            id={`clan-delete-popover-${clan_dir}`}
+            ref={setFloating}
+            style={{
+              position: position.strategy,
+              top: `${position.y ?? 0}px`,
+              left: `${position.x ?? 0}px`,
+            }}
+            class="m-0 bg-transparent"
+          >
+            <Button
+              size="s"
+              onClick={handleRemove}
+              variant="dark"
+              endIcon={<Icon icon="Trash" />}
+            >
+              Remove from App
+            </Button>
+          </div>
+        </div>
+      </div>
+      <div
+        class=""
+        classList={{
+          "": activeClanURI() === clan_dir,
+        }}
+      >
+        {clan_dir}
+      </div>
+
+      <Show when={details.isLoading}>
+        <div class=" h-12 w-80" />
+      </Show>
+      <Show when={details.isSuccess}>
+        <A href={`/clans/${window.btoa(clan_dir)}`}>
+          <div class=" underline">{details.data?.name}</div>
+        </A>
+      </Show>
+      <Show when={details.isSuccess && details.data?.description}>
+        <div class=" text-lg">{details.data?.description}</div>
+      </Show>
+    </div>
+  );
+};
+
+export const ClanList = () => {
+  const navigate = useNavigate();
+  return (
+    <div class="">
+      <div class="">
+        <div class="">
+          <div class=" text-2xl">Registered Clans</div>
+          <div class="flex gap-2">
+            <span class="" data-tip="Register clan">
+              <Button
+                variant="light"
+                onClick={registerClan}
+                startIcon={<Icon icon="List" />}
+              ></Button>
+            </span>
+            <span class="" data-tip="Create new clan">
+              <Button
+                onClick={() => {
+                  navigate("create");
+                }}
+                startIcon={<Icon icon="Plus" />}
+              ></Button>
+            </span>
+          </div>
+        </div>
+        <div class=" shadow">
+          <For each={clanURIs()}>
+            {(value) => <ClanItem clan_dir={value} />}
+          </For>
+        </div>
+      </div>
+    </div>
+  );
+};
