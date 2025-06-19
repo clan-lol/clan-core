@@ -220,10 +220,7 @@ def update_command(args: argparse.Namespace) -> None:
 
         for machine_name in selected_machines:
             machine = Machine(
-                name=machine_name,
-                flake=args.flake,
-                nix_options=args.option,
-                host_key_check=HostKeyCheck.from_str(args.host_key_check),
+                name=machine_name, flake=args.flake, nix_options=args.option
             )
             machines.append(machine)
 
@@ -281,8 +278,7 @@ def update_command(args: argparse.Namespace) -> None:
                         target_host = Remote.from_deployment_address(
                             machine_name=machine.name,
                             address=args.target_host,
-                            host_key_check=host_key_check,
-                        )
+                        ).override(host_key_check=host_key_check)
                     else:
                         target_host = machine.target_host()
                     runtime.async_run(

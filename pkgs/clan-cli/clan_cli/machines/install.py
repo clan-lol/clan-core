@@ -189,10 +189,8 @@ def install_command(args: argparse.Namespace) -> None:
         )
         if target_host_str is not None:
             target_host = Remote.from_deployment_address(
-                machine_name=machine.name,
-                address=target_host_str,
-                host_key_check=host_key_check,
-            )
+                machine_name=machine.name, address=target_host_str
+            ).override(host_key_check=host_key_check)
         else:
             target_host = machine.target_host().override(host_key_check=host_key_check)
 

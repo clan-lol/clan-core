@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from clan_cli.facts import public_modules as facts_public_modules
 from clan_cli.facts import secret_modules as facts_secret_modules
-from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.vars._types import StoreBase
 
 from clan_lib.api import API
@@ -32,8 +31,6 @@ class Machine:
     flake: Flake
 
     nix_options: list[str] = field(default_factory=list)
-
-    host_key_check: HostKeyCheck = HostKeyCheck.STRICT
 
     def get_inv_machine(self) -> "InventoryMachine":
         return get_machine(self.flake, self.name)
@@ -149,9 +146,7 @@ class Machine:
                 description="See https://docs.clan.lol/guides/getting-started/deploy/#setting-the-target-host for more information.",
             )
         data = remote.data
-        return data.override(
-            host_key_check=self.host_key_check,
-        )
+        return data
 
     def build_host(self) -> Remote | None:
         """
@@ -162,9 +157,7 @@ class Machine:
 
         if remote:
             data = remote.data
-            return data.override(
-                host_key_check=self.host_key_check,
-            )
+            return data
 
         return None
 
@@ -266,9 +259,7 @@ def get_host(
 
     return RemoteSource(
         data=Remote.from_deployment_address(
-            machine_name=machine.name,
-            address=host_str,
-            host_key_check=machine.host_key_check,
+            machine_name=machine.name, address=host_str
         ),
         source=source,
     )
