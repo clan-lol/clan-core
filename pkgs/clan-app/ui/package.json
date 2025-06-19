@@ -67,6 +67,7 @@
     "@modular-forms/solid": "^0.25.1",
     "@solid-primitives/storage": "^4.3.2",
     "@solidjs/router": "^0.15.3",
+    "@solidjs/testing-library": "^0.8.10",
     "@tanstack/eslint-plugin-query": "^5.51.12",
     "@tanstack/solid-query": "^5.76.0",
     "solid-js": "^1.9.7",

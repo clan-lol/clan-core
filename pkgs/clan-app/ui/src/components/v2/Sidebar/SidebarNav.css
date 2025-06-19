@@ -1,0 +1,10 @@
+div.sidebar {
+  @apply h-full w-auto max-w-60 border-none;
+
+  & > div.header {
+  }
+
+  & > div.body {
+    @apply pt-4 pb-3 px-2;
+  }
+}

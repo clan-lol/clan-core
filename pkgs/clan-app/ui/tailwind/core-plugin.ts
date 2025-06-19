@@ -1,5 +1,4 @@
 import plugin from "tailwindcss/plugin";
-import { typography } from "./typography";
 // @ts-expect-error: lib of tailwind has no types
 import { parseColor } from "tailwindcss/lib/util/color";
 
@@ -154,7 +153,7 @@ export default plugin.withOptions(
           backgroundColor: theme("colors.secondary.700"),
         },
         ".bg-inv-acc-4": {
-          backgroundColor: theme("colors.secondary.900"),
+          backgroundColor: theme("colors.primary.950"),
         },
 
         // bg inverse accent
@@ -252,7 +251,7 @@ export default plugin.withOptions(
             500: toRGB("#526f6f"),
             600: toRGB("#4b6767"),
             700: toRGB("#345253"),
-            800: toRGB("#2b4647"),
+            800: toRGB("#2e4a4b"),
             900: toRGB("#203637"),
             950: toRGB("#162324"),
           },
@@ -316,7 +315,6 @@ export default plugin.withOptions(
             "0px 0px 0px 1px white, 0px 0px 0px 2px var(--clr-bg-inv-acc-4, #203637), 2px 2px 0px 0px var(--clr-bg-inv-acc-2, #4F747A) inset",
         },
       },
-      ...typography,
     },
   }),
 );

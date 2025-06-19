@@ -1,14 +1,8 @@
 import type { Meta, StoryObj } from "@kachurun/storybook-solid";
 
-import {
-  AllowedSizes,
-  Color,
-  Family,
-  Hierarchy,
-  Typography,
-  Weight,
-} from "./Typography";
+import { Family, Hierarchy, Typography, Weight } from "./Typography";
 import { Component, For, Show } from "solid-js";
+import { AllColors } from "@/src/components/v2/colors";
 
 interface TypographyExamplesProps {
   weights: Weight[];
@@ -18,14 +12,6 @@ interface TypographyExamplesProps {
   family?: Family;
   inverted?: boolean;
 }
-
-const colors: (Color | "inherit")[] = [
-  "inherit",
-  "primary",
-  "secondary",
-  "tertiary",
-  "quaternary",
-];
 
 const TypographyExamples: Component<TypographyExamplesProps> = (props) => (
   <table
@@ -59,7 +45,7 @@ const TypographyExamples: Component<TypographyExamplesProps> = (props) => (
                     </Typography>
                   </Show>
                   <Show when={props.colors}>
-                    <For each={colors}>
+                    <For each={AllColors}>
                       {(color) => (
                         <>
                           <Typography
