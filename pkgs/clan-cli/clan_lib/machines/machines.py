@@ -32,7 +32,7 @@ class Machine:
     flake: Flake
 
     nix_options: list[str] = field(default_factory=list)
-    private_key: Path | None = None
+
     host_key_check: HostKeyCheck = HostKeyCheck.STRICT
 
     def get_inv_machine(self) -> "InventoryMachine":
@@ -149,18 +149,8 @@ class Machine:
                 description="See https://docs.clan.lol/guides/getting-started/deploy/#setting-the-target-host for more information.",
             )
         data = remote.data
-        return Remote(
-            address=data.address,
-            user=data.user,
-            command_prefix=data.command_prefix,
-            port=data.port,
-            private_key=self.private_key,
-            password=data.password,
-            forward_agent=data.forward_agent,
+        return data.override(
             host_key_check=self.host_key_check,
-            verbose_ssh=data.verbose_ssh,
-            ssh_options=data.ssh_options,
-            tor_socks=data.tor_socks,
         )
 
     def build_host(self) -> Remote | None:
@@ -172,18 +162,8 @@ class Machine:
 
         if remote:
             data = remote.data
-            return Remote(
-                address=data.address,
-                user=data.user,
-                command_prefix=data.command_prefix,
-                port=data.port,
-                private_key=self.private_key,
-                password=data.password,
-                forward_agent=data.forward_agent,
+            return data.override(
                 host_key_check=self.host_key_check,
-                verbose_ssh=data.verbose_ssh,
-                ssh_options=data.ssh_options,
-                tor_socks=data.tor_socks,
             )
 
         return None
@@ -289,7 +269,6 @@ def get_host(
             machine_name=machine.name,
             address=host_str,
             host_key_check=machine.host_key_check,
-            private_key=machine.private_key,
         ),
         source=source,
     )

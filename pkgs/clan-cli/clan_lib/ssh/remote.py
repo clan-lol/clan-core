@@ -54,7 +54,12 @@ class Remote:
         except ValueError:
             return False
 
-    def with_data(self, host_key_check: HostKeyCheck | None = None) -> "Remote":
+    def override(
+        self,
+        *,
+        host_key_check: HostKeyCheck | None = None,
+        private_key: Path | None = None,
+    ) -> "Remote":
         """
         Returns a new Remote instance with the same data but with a different host_key_check.
         """
@@ -63,7 +68,7 @@ class Remote:
             user=self.user,
             command_prefix=self.command_prefix,
             port=self.port,
-            private_key=self.private_key,
+            private_key=private_key if private_key is not None else self.private_key,
             password=self.password,
             forward_agent=self.forward_agent,
             host_key_check=host_key_check

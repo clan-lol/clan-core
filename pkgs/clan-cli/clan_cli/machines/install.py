@@ -194,7 +194,7 @@ def install_command(args: argparse.Namespace) -> None:
                 host_key_check=host_key_check,
             )
         else:
-            target_host = machine.target_host().with_data(host_key_check=host_key_check)
+            target_host = machine.target_host().override(host_key_check=host_key_check)
 
         if machine._class_ == "darwin":
             msg = "Installing macOS machines is not yet supported"
