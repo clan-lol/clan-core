@@ -3,8 +3,6 @@ import urllib.parse
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from clan_cli.ssh.host_key import HostKeyCheck
-
 from clan_lib.errors import ClanError
 
 if TYPE_CHECKING:
@@ -15,7 +13,6 @@ def parse_deployment_address(
     *,
     machine_name: str,
     address: str,
-    host_key_check: HostKeyCheck,
     forward_agent: bool = True,
     meta: dict[str, Any] | None = None,
     private_key: Path | None = None,
@@ -73,7 +70,6 @@ def parse_deployment_address(
         port=port,
         private_key=private_key,
         password=password,
-        host_key_check=host_key_check,
         command_prefix=machine_name,
         forward_agent=forward_agent,
         ssh_options=options,

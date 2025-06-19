@@ -159,11 +159,7 @@ def generate_machine_hardware_info(
 
 def update_hardware_config_command(args: argparse.Namespace) -> None:
     host_key_check = HostKeyCheck.from_str(args.host_key_check)
-    machine = Machine(
-        flake=args.flake,
-        name=args.machine,
-        host_key_check=host_key_check,
-    )
+    machine = Machine(flake=args.flake, name=args.machine)
     opts = HardwareGenerateOptions(
         machine=machine,
         password=args.password,
@@ -172,12 +168,10 @@ def update_hardware_config_command(args: argparse.Namespace) -> None:
 
     if args.target_host:
         target_host = Remote.from_deployment_address(
-            machine_name=machine.name,
-            address=args.target_host,
-            host_key_check=host_key_check,
-        )
+            machine_name=machine.name, address=args.target_host
+        ).override(host_key_check=host_key_check)
     else:
-        target_host = machine.target_host()
+        target_host = machine.target_host().override(host_key_check=host_key_check)
 
     generate_machine_hardware_info(opts, target_host)
 

@@ -47,10 +47,8 @@ class DeployInfo:
                 msg = "Hostname cannot be empty."
                 raise ClanError(msg)
             remote = Remote.from_deployment_address(
-                machine_name="clan-installer",
-                address=host,
-                host_key_check=host_key_check,
-            )
+                machine_name="clan-installer", address=host
+            ).override(host_key_check=host_key_check)
             remotes.append(remote)
         return DeployInfo(addrs=remotes)
 
@@ -64,9 +62,8 @@ class DeployInfo:
                 remote = Remote.from_deployment_address(
                     machine_name="clan-installer",
                     address=addr,
-                    host_key_check=host_key_check,
                     password=password,
-                )
+                ).override(host_key_check=host_key_check)
                 addrs.append(remote)
             else:
                 msg = f"Invalid address format: {addr}"
@@ -75,10 +72,9 @@ class DeployInfo:
             remote = Remote.from_deployment_address(
                 machine_name="clan-installer",
                 address=tor_addr,
-                host_key_check=host_key_check,
                 password=password,
                 tor_socks=True,
-            )
+            ).override(host_key_check=host_key_check)
             addrs.append(remote)
 
         return DeployInfo(addrs=addrs)

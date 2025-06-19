@@ -91,7 +91,6 @@ class Remote:
         *,
         machine_name: str,
         address: str,
-        host_key_check: HostKeyCheck,
         forward_agent: bool = True,
         private_key: Path | None = None,
         password: str | None = None,
@@ -104,7 +103,6 @@ class Remote:
         return parse_deployment_address(
             machine_name=machine_name,
             address=address,
-            host_key_check=host_key_check,
             forward_agent=forward_agent,
             private_key=private_key,
             password=password,
