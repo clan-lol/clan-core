@@ -2,11 +2,7 @@ import { callApi, SuccessQuery } from "@/src/api";
 import { useParams } from "@solidjs/router";
 import { useQueryClient } from "@tanstack/solid-query";
 import { Match, Switch } from "solid-js";
-import {
-  createForm,
-  required,
-  SubmitHandler,
-} from "@modular-forms/solid";
+import { createForm, required, SubmitHandler } from "@modular-forms/solid";
 import toast from "solid-toast";
 import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";

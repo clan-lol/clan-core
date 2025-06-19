@@ -17,10 +17,7 @@ import { useQuery } from "@tanstack/solid-query";
 import { Badge } from "@/src/components/badge";
 import { Group } from "@/src/components/group";
 import { useClanContext } from "@/src/contexts/clan";
-import {
-  RemoteForm,
-  type RemoteData,
-} from "@/src/components/RemoteForm";
+import { RemoteForm, type RemoteData } from "@/src/components/RemoteForm";
 
 export type HardwareValues = FieldValues & {
   report: boolean;
