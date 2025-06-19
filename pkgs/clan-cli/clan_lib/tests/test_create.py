@@ -192,10 +192,7 @@ def test_clan_create_api(
         )
     )
     machine = Machine(
-        name=vm_name,
-        flake=clan_dir_flake,
-        host_key_check=HostKeyCheck.NONE,
-        private_key=private_key,
+        name=vm_name, flake=clan_dir_flake, host_key_check=HostKeyCheck.NONE
     )
     machines.append(machine)
     assert len(machines) == 1
@@ -203,7 +200,8 @@ def test_clan_create_api(
     # Invalidate cache because of new machine creation
     clan_dir_flake.invalidate_cache()
 
-    result = check_machine_online(machine.target_host())
+    target_host = machine.target_host().override(private_key=private_key)
+    result = check_machine_online(target_host)
     assert result == "Online", f"Machine {machine.name} is not online"
 
     ssh_keys = [
