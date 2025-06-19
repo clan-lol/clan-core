@@ -5,7 +5,7 @@ import { TextInput } from "@/src/Form/fields/TextInput";
 import { SelectInput } from "@/src/Form/fields/Select";
 import { FileInput } from "@/src/components/FileInput";
 import { FieldLayout } from "@/src/Form/fields/layout";
-import { InputLabel, InputBase } from "@/src/components/inputBase";
+import { InputLabel } from "@/src/components/inputBase";
 import Icon from "@/src/components/icon";
 import { Loader } from "@/src/components/v2/Loader/Loader";
 import { Button } from "@/src/components/v2/Button/Button";

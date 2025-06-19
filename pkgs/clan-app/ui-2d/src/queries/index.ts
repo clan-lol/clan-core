@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/solid-query";
 import { callApi } from "../api";
-import toast from "solid-toast";
 
 interface ModulesFilter {
   features: string[];

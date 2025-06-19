@@ -1,8 +1,8 @@
-import { callApi, SuccessData, OperationResponse } from "@/src/api";
-import { createForm, getValue, ResponseData } from "@modular-forms/solid";
+import { callApi, OperationResponse } from "@/src/api";
+import { createForm, ResponseData } from "@modular-forms/solid";
 import { useNavigate } from "@solidjs/router";
 import { useQuery, useQueryClient } from "@tanstack/solid-query";
-import { createEffect, createSignal } from "solid-js";
+import { createSignal } from "solid-js";
 import { Button } from "@/src/components/Button/Button";
 import { useClanContext } from "@/src/contexts/clan";
 import { MachineAvatar } from "./MachineAvatar";
@@ -10,8 +10,6 @@ import toast from "solid-toast";
 import { MachineActionsBar } from "./MachineActionsBar";
 import { MachineGeneralFields } from "./MachineGeneralFields";
 import { MachineHardwareInfo } from "./MachineHardwareInfo";
-import { InstallMachine } from "./InstallMachine";
-import { debug } from "console";
 
 type DetailedMachineType = Extract<
   OperationResponse<"get_machine_details">,

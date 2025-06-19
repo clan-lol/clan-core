@@ -12,10 +12,10 @@ export function MachineActionsBar(props: MachineActionsBarProps) {
   return (
     <div class="sticky top-0 flex items-center justify-end gap-2 border-b border-secondary-100 bg-secondary-50 px-4 py-2">
       <div class="flex items-center gap-3">
-        <div class="button-group flex flex-shrink-0 min-w-0">
+        <div class="button-group flex min-w-0 shrink-0">
           <Button
             variant="light"
-            class="flex-1 min-w-0"
+            class="min-w-0 flex-1"
             size="s"
             onClick={props.onInstall}
             endIcon={<Icon size={14} icon="Flash" />}
@@ -24,7 +24,7 @@ export function MachineActionsBar(props: MachineActionsBarProps) {
           </Button>
           <Button
             variant="light"
-            class="flex-1 min-w-0"
+            class="min-w-0 flex-1"
             size="s"
             onClick={props.onUpdate}
             endIcon={<Icon size={14} icon="Update" />}
@@ -33,7 +33,7 @@ export function MachineActionsBar(props: MachineActionsBarProps) {
           </Button>
           <Button
             variant="light"
-            class="flex-1 min-w-0"
+            class="min-w-0 flex-1"
             size="s"
             onClick={props.onCredentials}
             endIcon={<Icon size={14} icon="Folder" />}

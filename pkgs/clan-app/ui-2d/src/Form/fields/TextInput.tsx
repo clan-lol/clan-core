@@ -5,7 +5,6 @@ import {
   InputLabel,
   InputVariant,
 } from "@/src/components/inputBase";
-import { Typography } from "@/src/components/Typography";
 import { FieldLayout } from "./layout";
 
 interface TextInputProps {
