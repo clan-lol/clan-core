@@ -4,24 +4,15 @@ import { Navigate, RouteDefinition, Router } from "@solidjs/router";
 
 import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
-import {
-  CreateMachine,
-  MachineDetails,
-  MachineListView,
-} from "./routes/machines";
+
 import { Layout } from "./layout/layout";
 import { ClanDetails, ClanList, CreateClan } from "./routes/clans";
-import { Flash } from "./routes/flash/view";
 import { HostList } from "./routes/hosts/view";
 import { Welcome } from "./routes/welcome";
 import { Toaster } from "solid-toast";
-import { ModuleList } from "./routes/modules/list";
-import { ModuleDetails } from "./routes/modules/details";
-import { ModuleDetails as AddModule } from "./routes/modules/add";
 import { ApiTester } from "./api_test";
 import { IconVariant } from "./components/icon";
 import { Components } from "./routes/components";
-import { VarsPage } from "./routes/machines/install/vars-step";
 import { ThreePlayground } from "./three";
 import { ClanProvider } from "./contexts/clan";
 
@@ -54,35 +45,7 @@ export const routes: AppRoute[] = [
     hidden: true,
     component: () => <Navigate href="/machines" />,
   },
-  {
-    path: "/machines",
-    label: "Machines",
-    icon: "Grid",
-    children: [
-      {
-        path: "/",
-        label: "Overview",
-        component: () => <MachineListView />,
-      },
-      {
-        path: "/create",
-        label: "Create",
-        component: () => <CreateMachine />,
-      },
-      {
-        path: "/:id",
-        label: "Details",
-        hidden: true,
-        component: () => <MachineDetails />,
-      },
-      {
-        path: "/:id/vars",
-        label: "Vars",
-        hidden: true,
-        component: () => <VarsPage />,
-      },
-    ],
-  },
+
   {
     path: "/clans",
     label: "Clans",
@@ -107,42 +70,7 @@ export const routes: AppRoute[] = [
       },
     ],
   },
-  {
-    path: "/modules",
-    label: "Modules",
-    icon: "Search",
-    children: [
-      {
-        path: "/",
-        label: "App Store",
-        component: () => <ModuleList />,
-      },
-      {
-        path: "details/:id",
-        label: "Details",
-        hidden: true,
-        component: () => <ModuleDetails />,
-      },
-      {
-        path: "/add/:id",
-        label: "Details",
-        hidden: true,
-        component: () => <AddModule />,
-      },
-    ],
-  },
-  {
-    path: "/tools",
-    label: "Tools",
-    icon: "Folder",
-    children: [
-      {
-        path: "/flash",
-        label: "Flash Installer",
-        component: () => <Flash />,
-      },
-    ],
-  },
+
   {
     path: "/welcome",
     label: "",

@@ -1,14 +1,12 @@
-import schema from "@/api/API.json" with { type: "json" };
 import { API, Error as ApiError } from "@/api/API";
-import { nanoid } from "nanoid";
 import { Schema as Inventory } from "@/api/Inventory";
-import { toast, Toast } from "solid-toast";
+import { toast } from "solid-toast";
 import {
   ErrorToastComponent,
   CancelToastComponent,
 } from "@/src/components/toast";
 type OperationNames = keyof API;
-export type OperationArgs<T extends OperationNames> = API[T]["arguments"];
+type OperationArgs<T extends OperationNames> = API[T]["arguments"];
 export type OperationResponse<T extends OperationNames> = API[T]["return"];
 
 type ApiEnvelope<T> =
@@ -22,7 +20,7 @@ type ApiEnvelope<T> =
 type Services = NonNullable<Inventory["services"]>;
 type ServiceNames = keyof Services;
 type ClanService<T extends ServiceNames> = Services[T];
-export type ClanServiceInstance<T extends ServiceNames> = NonNullable<
+type ClanServiceInstance<T extends ServiceNames> = NonNullable<
   Services[T]
 >[string];
 
@@ -30,7 +28,7 @@ export type SuccessQuery<T extends OperationNames> = Extract<
   OperationResponse<T>,
   { status: "success" }
 >;
-export type SuccessData<T extends OperationNames> = SuccessQuery<T>["data"];
+type SuccessData<T extends OperationNames> = SuccessQuery<T>["data"];
 
 type ErrorQuery<T extends OperationNames> = Extract<
   OperationResponse<T>,

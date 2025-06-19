@@ -6,10 +6,8 @@ import type {
 } from "@floating-ui/dom";
 import { computePosition } from "@floating-ui/dom";
 
-interface UseFloatingOptions<
-  R extends ReferenceElement,
-  F extends HTMLElement,
-> extends Partial<ComputePositionConfig> {
+interface UseFloatingOptions<R extends ReferenceElement, F extends HTMLElement>
+  extends Partial<ComputePositionConfig> {
   whileElementsMounted?: (
     reference: R,
     floating: F,

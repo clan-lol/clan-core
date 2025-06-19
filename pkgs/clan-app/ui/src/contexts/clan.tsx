@@ -1,5 +1,4 @@
 import { createContext, createEffect, JSX, useContext } from "solid-js";
-import { callApi } from "@/src/api";
 import {
   activeClanURI,
   addClanURI,
