@@ -80,7 +80,6 @@ const removeClanURI = (uri: string) => {
 
 export {
   store,
-  setStore,
   activeClanURI,
   setActiveClanURI,
   clanURIs,
