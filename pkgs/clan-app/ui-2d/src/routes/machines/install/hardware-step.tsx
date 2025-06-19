@@ -6,7 +6,6 @@ import { FieldLayout } from "@/src/Form/fields/layout";
 import {
   createForm,
   FieldValues,
-  getValue,
   required,
   setValue,
   submit,
@@ -21,7 +20,6 @@ import { useClanContext } from "@/src/contexts/clan";
 import {
   RemoteForm,
   type RemoteData,
-  HostKeyCheck,
 } from "@/src/components/RemoteForm";
 
 export type HardwareValues = FieldValues & {

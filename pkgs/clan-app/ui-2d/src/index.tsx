@@ -13,7 +13,6 @@ import {
 import { Layout } from "./layout/layout";
 import { ClanDetails, ClanList, CreateClan } from "./routes/clans";
 import { Flash } from "./routes/flash/view";
-import { HostList } from "./routes/hosts/view";
 import { Welcome } from "./routes/welcome";
 import { Toaster } from "solid-toast";
 import { ModuleList } from "./routes/modules/list";
@@ -21,7 +20,6 @@ import { ModuleDetails } from "./routes/modules/details";
 import { ModuleDetails as AddModule } from "./routes/modules/add";
 import { ApiTester } from "./api_test";
 import { IconVariant } from "./components/icon";
-import { Components } from "./routes/components";
 import { VarsPage } from "./routes/machines/install/vars-step";
 import { ClanProvider } from "./contexts/clan";
 

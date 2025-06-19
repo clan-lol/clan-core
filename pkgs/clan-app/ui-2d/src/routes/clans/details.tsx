@@ -1,17 +1,12 @@
-import { callApi, ClanServiceInstance, SuccessQuery } from "@/src/api";
+import { callApi, SuccessQuery } from "@/src/api";
 import { useParams } from "@solidjs/router";
-import { createQuery, useQueryClient } from "@tanstack/solid-query";
-import { createSignal, For, Match, Switch } from "solid-js";
+import { useQueryClient } from "@tanstack/solid-query";
+import { Match, Switch } from "solid-js";
 import {
   createForm,
-  FieldValues,
-  getValue,
-  getValues,
   required,
-  setValue,
   SubmitHandler,
 } from "@modular-forms/solid";
-import { TextInput } from "@/src/Form/fields/TextInput";
 import toast from "solid-toast";
 import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";

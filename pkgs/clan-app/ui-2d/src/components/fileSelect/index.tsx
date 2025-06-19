@@ -1,9 +1,8 @@
 import { FileInput, type FileInputProps } from "@/src/components/FileInput"; // Assuming FileInput can take a ref and has onClick
 import { Typography } from "@/src/components/Typography";
 import Fieldset from "@/src/Form/fieldset";
-import Icon from "@/src/components/icon"; // For displaying file icons
+// For displaying file icons
 import { callApi } from "@/src/api";
-import type { FieldValues } from "@modular-forms/solid";
 import { Show, For, type Component, type JSX } from "solid-js";
 
 // Types for the file dialog options passed to callApi
