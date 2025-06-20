@@ -1,0 +1,37 @@
+span.tag {
+  @apply flex items-center gap-1 w-fit px-2 py-1 rounded-full;
+  @apply bg-def-4;
+
+  &:focus-visible {
+    @apply bg-def-acc-3 outline-none;
+    box-shadow:
+      0 0 0 0.0625rem theme(colors.off.white),
+      0 0 0 0.125rem theme(colors.border.semantic.info.1);
+  }
+
+  &.active {
+    @apply bg-def-acc-4;
+  }
+
+  &.inverted {
+    @apply bg-inv-1;
+  }
+
+  &.has-action {
+    @apply pr-1.5;
+
+    &:hover {
+      @apply bg-def-acc-3;
+    }
+
+    &.inverted:hover {
+      @apply bg-inv-acc-3;
+    }
+  }
+
+  & > .icon {
+    &:hover {
+      @apply cursor-pointer;
+    }
+  }
+}
