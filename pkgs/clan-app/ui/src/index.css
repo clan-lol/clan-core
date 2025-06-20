@@ -1,6 +1,8 @@
 /* Material icons removed - using custom icons */
 /* @import url(./components/Typography/css/typography.css); */
 
+@config "../tailwind.config.ts";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

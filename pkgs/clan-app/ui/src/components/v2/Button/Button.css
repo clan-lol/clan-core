@@ -25,23 +25,32 @@
   &.primary {
     @apply bg-inv-acc-4 fg-inv-1;
     @apply border border-solid border-inv-4;
-    @apply shadow-button-primary;
+
+    box-shadow: 0.125rem 0.125rem 0 0 theme(colors.bg.inv.acc.3) inset;
 
     &.ghost {
       @apply bg-transparent border-none shadow-none;
     }
 
     &:hover {
-      @apply bg-inv-acc-3 border-solid shadow-button-primary-hover;
-      border-color: theme(backgroundColor.secondary.700);
+      @apply bg-inv-acc-3 border-solid border-inv-acc-3;
+      box-shadow: 0.125rem 0.125rem 0 0 theme(colors.bg.inv.acc.2) inset;
     }
 
     &:active {
-      @apply bg-inv-acc-4 border-solid border-inv-3 shadow-button-primary-active;
+      @apply bg-inv-acc-4 border-solid border-inv-3;
+      box-shadow:
+        0 0 0 0.0625rem theme(colors.off.white),
+        0 0 0 0.125rem theme(colors.bg.inv.acc.4),
+        -0.125rem -0.125rem 0 0 theme(colors.bg.inv.acc.1) inset;
     }
 
     &:focus-visible {
-      @apply bg-inv-acc-4 border-solid border-inv-3 shadow-button-primary-focus;
+      @apply bg-inv-acc-4 border-solid border-inv-3;
+      box-shadow:
+        0 0 0 0.0625rem theme(colors.off.white),
+        0 0 0 0.125rem theme(colors.border.semantic.info.1),
+        0.125rem 0.125rem 0 0 theme(colors.bg.inv.acc.2) inset;
     }
 
     &:disabled {
@@ -56,23 +65,37 @@
   &.secondary {
     @apply bg-def-acc-2 fg-def-1;
     @apply border border-solid border-inv-2;
-    @apply shadow-button-secondary;
+
+    box-shadow:
+      -0.125rem -0.125rem 0 0 #cedfe2 inset,
+      0.125rem 0.125rem 0 0 theme(colors.off.white) inset;
 
     &.ghost {
       @apply bg-transparent border-none shadow-none;
     }
 
     &:hover {
-      @apply bg-def-acc-3 border-solid shadow-button-secondary-hover;
-      border-color: theme(backgroundColor.secondary.700);
+      @apply bg-def-acc-3 border-solid border-inv-3;
+      box-shadow:
+        -0.125rem -0.125rem 0 0 #cedfe2 inset,
+        0.125rem 0.125rem 0 0 theme(colors.off.white) inset;
     }
 
     &:focus-visible {
-      @apply bg-def-acc-3 border-solid border-inv-3 shadow-button-secondary-focus;
+      @apply bg-def-acc-3 border-solid border-inv-3;
+      box-shadow:
+        0 0 0 0.0625rem theme(colors.off.white),
+        0 0 0 0.125rem theme(colors.border.semantic.info.1),
+        -0.125rem -0.125rem 0 0 #cedfe2 inset,
+        0.125rem 0.125rem 0 0 theme(colors.off.white) inset;
     }
 
     &:active {
-      @apply bg-def-acc-3 border-solid border-inv-4 shadow-button-secondary-active;
+      @apply bg-def-acc-3 border-solid border-inv-4;
+      box-shadow:
+        0 0 0 0.0625rem theme(colors.off.white),
+        0 0 0 0.125rem theme(colors.bg.inv.acc.4),
+        0.125rem 0.125rem 0 0 theme(colors.bg.inv.acc.2) inset;
     }
 
     &:disabled {

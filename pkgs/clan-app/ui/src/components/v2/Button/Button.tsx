@@ -99,8 +99,7 @@ export const Button = (props: ButtonProps) => {
           hierarchy="label"
           family="mono"
           size={local.size || "default"}
-          color="inherit"
-          inverted={local.hierarchy === "secondary"}
+          inverted={local.hierarchy === "primary"}
           weight="bold"
           tag="span"
         >

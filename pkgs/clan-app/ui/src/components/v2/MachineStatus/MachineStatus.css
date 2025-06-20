@@ -6,14 +6,14 @@ span.tag-status {
   }
 
   &.online > .indicator {
-    background-color: #0ae856; /* todo get from theme */
+    background-color: theme(colors.fg.semantic.success.1);
   }
 
   &.offline > .indicator {
-    background-color: #ff2c78; /* todo get from theme */
+    background-color: theme(colors.fg.semantic.error.1);
   }
 
   &.installed > .indicator {
-    background-color: var(--clr-fg-inv-3);
+    background-color: theme(colors.fg.inv.3);
   }
 }
