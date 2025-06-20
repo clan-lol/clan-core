@@ -19,6 +19,7 @@ let
     { modules, prefix }:
     (lib.evalModules {
       class = "clan.service";
+      specialArgs._ctx = prefix;
       modules = [
         ./service-module.nix
         # feature modules
