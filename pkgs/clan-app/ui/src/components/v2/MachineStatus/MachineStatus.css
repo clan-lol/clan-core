@@ -1,4 +1,4 @@
-span.tag-status {
+span.machine-status {
   @apply flex items-center gap-1;
 
   .indicator {
