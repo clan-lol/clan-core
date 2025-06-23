@@ -110,7 +110,7 @@ def test_parse_deployment_address(
 
     with maybe_check_exception:
         machine_name = "foo"
-        result = Remote.from_deployment_address(
+        result = Remote.from_ssh_uri(
             machine_name=machine_name,
             address=test_addr,
         ).override(host_key_check="strict")
@@ -130,7 +130,7 @@ def test_parse_deployment_address(
 
 def test_parse_ssh_options() -> None:
     addr = "root@example.com:2222?IdentityFile=/path/to/private/key&StrictRemoteKeyChecking=yes"
-    host = Remote.from_deployment_address(machine_name="foo", address=addr).override(
+    host = Remote.from_ssh_uri(machine_name="foo", address=addr).override(
         host_key_check="strict"
     )
     assert host.address == "example.com"

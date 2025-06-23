@@ -185,7 +185,7 @@ def install_command(args: argparse.Namespace) -> None:
         host_key_check = args.host_key_check
 
         if target_host_str is not None:
-            target_host = Remote.from_deployment_address(
+            target_host = Remote.from_ssh_uri(
                 machine_name=machine.name, address=target_host_str
             ).override(host_key_check=host_key_check)
         else:

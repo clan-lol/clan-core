@@ -21,7 +21,7 @@ from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError  # Assuming these are available
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.host_key import HostKeyCheck, hostkey_to_ssh_opts
-from clan_lib.ssh.parse import parse_deployment_address
+from clan_lib.ssh.parse import parse_ssh_uri
 from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
 
 cmdlog = logging.getLogger(__name__)
@@ -90,7 +90,7 @@ class Remote:
         return f"{self.user}@{self.address}"
 
     @classmethod
-    def from_deployment_address(
+    def from_ssh_uri(
         cls,
         *,
         machine_name: str,
@@ -100,7 +100,7 @@ class Remote:
         Parse a deployment address and return a Host object.
         """
 
-        return parse_deployment_address(machine_name=machine_name, address=address)
+        return parse_ssh_uri(machine_name=machine_name, address=address)
 
     def run_local(
         self,

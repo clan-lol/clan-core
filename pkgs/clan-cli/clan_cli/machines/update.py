@@ -275,7 +275,7 @@ def update_command(args: argparse.Namespace) -> None:
             with AsyncRuntime() as runtime:
                 for machine in machines:
                     if args.target_host:
-                        target_host = Remote.from_deployment_address(
+                        target_host = Remote.from_ssh_uri(
                             machine_name=machine.name,
                             address=args.target_host,
                         ).override(host_key_check=host_key_check)

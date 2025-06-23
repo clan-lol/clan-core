@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from clan_lib.ssh.remote import Remote
 
 
-def parse_deployment_address(
+def parse_ssh_uri(
     *,
     machine_name: str,
     address: str,
