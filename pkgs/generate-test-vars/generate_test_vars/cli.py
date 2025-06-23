@@ -64,17 +64,11 @@ class TestMachine(Machine):
         return self.test_dir
 
     @override
-    def nix(
-        self,
-        attr: str,
-        nix_options: list[str] | None = None,
-    ) -> Any:
+    def nix(self, attr: str) -> Any:
         """
         Build the machine and return the path to the result
         accepts a secret store and a facts store # TODO
         """
-        if nix_options is None:
-            nix_options = []
 
         config = nix_config()
         system = config["system"]
@@ -83,8 +77,7 @@ class TestMachine(Machine):
             test_system = system.rstrip("darwin") + "linux"
 
         return self.flake.select(
-            f'checks."{test_system}".{self.check_attr}.machinesCross.{system}.{self.name}.{attr}',
-            nix_options=nix_options,
+            f'checks."{test_system}".{self.check_attr}.machinesCross.{system}.{self.name}.{attr}'
         )
 
 
