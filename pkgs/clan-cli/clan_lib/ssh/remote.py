@@ -6,16 +6,19 @@ import shlex
 import socket
 import subprocess
 import sys
+import time
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from shlex import quote
 from tempfile import TemporaryDirectory
+from typing import Literal
 
 from clan_cli.ssh.host_key import HostKeyCheck
 
-from clan_lib.cmd import CmdOut, RunOpts, run
+from clan_lib.api import API
+from clan_lib.cmd import ClanCmdError, ClanCmdTimeoutError, CmdOut, RunOpts, run
 from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError  # Assuming these are available
 from clan_lib.nix import nix_shell
@@ -434,12 +437,56 @@ class Remote:
         self.check_sshpass_errorcode(res)
 
     def is_ssh_reachable(self) -> bool:
-        address_family = socket.AF_INET6 if ":" in self.address else socket.AF_INET
-        with socket.socket(address_family, socket.SOCK_STREAM) as sock:
-            sock.settimeout(2)
-            try:
-                sock.connect((self.address, self.port or 22))
-            except OSError:
-                return False
+        return is_ssh_reachable(self)
 
-        return True
+
+@dataclass(frozen=True)
+class ConnectionOptions:
+    timeout: int = 2
+    retries: int = 10
+
+
+@API.register
+def can_ssh_login(
+    remote: Remote, opts: ConnectionOptions | None = None
+) -> Literal["Online", "Offline"]:
+    if opts is None:
+        opts = ConnectionOptions()
+
+    for _ in range(opts.retries):
+        with remote.ssh_control_master() as ssh:
+            try:
+                res = ssh.run(
+                    ["true"],
+                    RunOpts(timeout=opts.timeout, needs_user_terminal=True),
+                )
+                return "Online"
+            except ClanCmdTimeoutError:
+                pass
+            except ClanCmdError as e:
+                if "Host key verification failed." in e.cmd.stderr:
+                    raise ClanError(res.stderr.strip()) from e
+            else:
+                time.sleep(opts.timeout)
+
+    return "Offline"
+
+
+@API.register
+def is_ssh_reachable(remote: Remote, opts: ConnectionOptions | None = None) -> bool:
+    if opts is None:
+        opts = ConnectionOptions()
+
+    address_family = socket.AF_INET6 if ":" in remote.address else socket.AF_INET
+    for _ in range(opts.retries):
+        with socket.socket(address_family, socket.SOCK_STREAM) as sock:
+            sock.settimeout(opts.timeout)
+            try:
+                sock.connect((remote.address, remote.port or 22))
+                return True
+            except (TimeoutError, OSError):
+                pass
+            else:
+                time.sleep(opts.timeout)
+
+    return False
