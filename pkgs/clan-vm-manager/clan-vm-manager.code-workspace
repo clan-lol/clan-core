@@ -13,7 +13,7 @@
 			"path": "../../nixosModules"
 		},
 		{
-			"path": "../../lib/build-clan"
+			"path": "../../lib/modules"
 		},
 		{
 			"path": "../../../democlan"

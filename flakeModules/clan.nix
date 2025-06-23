@@ -11,7 +11,7 @@ let
 
   buildClanModule = clan-core.clanLib.buildClanModule;
 
-  publicAttrs = import ../lib/build-clan/public.nix;
+  publicAttrs = import ../lib/modules/public.nix;
   # Create output options only for listed attributes
   # TODO: Refactor this into an explicit module, so we can have description and other attributes to be listed in flake-parts
   outputModule = {

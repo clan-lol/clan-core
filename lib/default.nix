@@ -39,7 +39,7 @@ lib.fix (clanLib: {
   # ------------------------------------
   # ClanLib functions
   evalClan = clanLib.callLib ./inventory/eval-clan-modules { };
-  buildClanModule = clanLib.callLib ./build-clan { };
+  buildClanModule = clanLib.callLib ./modules { };
   inventory = clanLib.callLib ./inventory { };
   modules = clanLib.callLib ./inventory/frontmatter { };
   test = clanLib.callLib ./test { };
