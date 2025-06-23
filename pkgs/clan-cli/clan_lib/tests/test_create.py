@@ -18,7 +18,6 @@ from clan_cli.vars.generate import generate_vars_for_machine, get_generators_clo
 
 from clan_lib.api.disk import hw_main_disk_options, set_machine_disk_schema
 from clan_lib.api.modules import list_modules
-from clan_lib.api.network import check_machine_online
 from clan_lib.cmd import RunOpts, run
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanError
@@ -34,7 +33,7 @@ from clan_lib.nix_models.clan import (
 )
 from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
 from clan_lib.persist.util import set_value_by_path
-from clan_lib.ssh.remote import Remote
+from clan_lib.ssh.remote import Remote, can_ssh_login
 
 log = logging.getLogger(__name__)
 
@@ -201,7 +200,7 @@ def test_clan_create_api(
     target_host = machine.target_host().override(
         private_key=private_key, host_key_check=HostKeyCheck.NONE
     )
-    result = check_machine_online(target_host)
+    result = can_ssh_login(target_host)
     assert result == "Online", f"Machine {machine.name} is not online"
 
     ssh_keys = [
