@@ -21,7 +21,7 @@ from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError  # Assuming these are available
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.host_key import HostKeyCheck, hostkey_to_ssh_opts
-from clan_lib.ssh.parse import parse_deployment_address
+from clan_lib.ssh.parse import parse_ssh_uri
 from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
 
 cmdlog = logging.getLogger(__name__)
@@ -61,6 +61,8 @@ class Remote:
         *,
         host_key_check: HostKeyCheck | None = None,
         private_key: Path | None = None,
+        password: str | None = None,
+        tor_socks: bool | None = None,
     ) -> "Remote":
         """
         Returns a new Remote instance with the same data but with a different host_key_check.
@@ -71,14 +73,14 @@ class Remote:
             command_prefix=self.command_prefix,
             port=self.port,
             private_key=private_key if private_key is not None else self.private_key,
-            password=self.password,
+            password=password if password is not None else self.password,
             forward_agent=self.forward_agent,
             host_key_check=host_key_check
             if host_key_check is not None
             else self.host_key_check,
             verbose_ssh=self.verbose_ssh,
             ssh_options=self.ssh_options,
-            tor_socks=self.tor_socks,
+            tor_socks=tor_socks if tor_socks is not None else self.tor_socks,
             _control_path_dir=self._control_path_dir,
             _askpass_path=self._askpass_path,
         )
@@ -88,28 +90,17 @@ class Remote:
         return f"{self.user}@{self.address}"
 
     @classmethod
-    def from_deployment_address(
+    def from_ssh_uri(
         cls,
         *,
         machine_name: str,
         address: str,
-        forward_agent: bool = True,
-        private_key: Path | None = None,
-        password: str | None = None,
-        tor_socks: bool = False,
     ) -> "Remote":
         """
         Parse a deployment address and return a Host object.
         """
 
-        return parse_deployment_address(
-            machine_name=machine_name,
-            address=address,
-            forward_agent=forward_agent,
-            private_key=private_key,
-            password=password,
-            tor_socks=tor_socks,
-        )
+        return parse_ssh_uri(machine_name=machine_name, address=address)
 
     def run_local(
         self,

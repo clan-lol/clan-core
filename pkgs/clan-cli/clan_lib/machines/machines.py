@@ -258,8 +258,6 @@ def get_host(
         return None
 
     return RemoteSource(
-        data=Remote.from_deployment_address(
-            machine_name=machine.name, address=host_str
-        ),
+        data=Remote.from_ssh_uri(machine_name=machine.name, address=host_str),
         source=source,
     )
