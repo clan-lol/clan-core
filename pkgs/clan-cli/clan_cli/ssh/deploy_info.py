@@ -62,8 +62,7 @@ class DeployInfo:
                 remote = Remote.from_deployment_address(
                     machine_name="clan-installer",
                     address=addr,
-                    password=password,
-                ).override(host_key_check=host_key_check)
+                ).override(host_key_check=host_key_check, password=password)
                 addrs.append(remote)
             else:
                 msg = f"Invalid address format: {addr}"
@@ -72,9 +71,7 @@ class DeployInfo:
             remote = Remote.from_deployment_address(
                 machine_name="clan-installer",
                 address=tor_addr,
-                password=password,
-                tor_socks=True,
-            ).override(host_key_check=host_key_check)
+            ).override(host_key_check=host_key_check, tor_socks=True, password=password)
             addrs.append(remote)
 
         return DeployInfo(addrs=addrs)

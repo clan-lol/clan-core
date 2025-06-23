@@ -1,7 +1,6 @@
 import re
 import urllib.parse
-from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from clan_lib.errors import ClanError
 
@@ -13,12 +12,14 @@ def parse_deployment_address(
     *,
     machine_name: str,
     address: str,
-    forward_agent: bool = True,
-    meta: dict[str, Any] | None = None,
-    private_key: Path | None = None,
-    password: str | None = None,
-    tor_socks: bool = False,
 ) -> "Remote":
+    """
+    Parses an SSH URI into a Remote object.
+    The address can be in the form of:
+    - `ssh://[user@]hostname[:port]?option=value&option2=value2`
+    - `[user@]hostname[:port]`
+    The specification can be found here: https://www.ietf.org/archive/id/draft-salowey-secsh-uri-00.html
+    """
     if address.startswith("ssh://"):
         # Strip the `ssh://` prefix if it exists
         address = address[len("ssh://") :]
@@ -68,10 +69,6 @@ def parse_deployment_address(
         address=hostname,
         user=user,
         port=port,
-        private_key=private_key,
-        password=password,
         command_prefix=machine_name,
-        forward_agent=forward_agent,
         ssh_options=options,
-        tor_socks=tor_socks,
     )
