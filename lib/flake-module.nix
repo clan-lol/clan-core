@@ -7,7 +7,7 @@
 rec {
   # TODO: automatically generate this from the directory conventions
   imports = [
-    ./build-clan/flake-module.nix
+    ./modules/flake-module.nix
     ./clanTest/flake-module.nix
     ./introspection/flake-module.nix
     ./inventory/flake-module.nix
