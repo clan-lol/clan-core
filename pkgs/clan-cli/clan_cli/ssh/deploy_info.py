@@ -136,7 +136,7 @@ def ssh_shell_from_deploy(deploy_info: DeployInfo) -> None:
 
 
 def ssh_command_parse(args: argparse.Namespace) -> DeployInfo | None:
-    host_key_check = HostKeyCheck.from_str(args.host_key_check)
+    host_key_check = args.host_key_check
     if args.json:
         json_file = Path(args.json)
         if json_file.is_file():

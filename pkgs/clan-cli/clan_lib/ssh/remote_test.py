@@ -4,7 +4,6 @@ from collections.abc import Generator
 from typing import Any, NamedTuple
 
 import pytest
-from clan_cli.ssh.host_key import HostKeyCheck
 
 from clan_lib.async_run import AsyncRuntime
 from clan_lib.cmd import ClanCmdTimeoutError, Log, RunOpts
@@ -114,7 +113,7 @@ def test_parse_deployment_address(
         result = Remote.from_deployment_address(
             machine_name=machine_name,
             address=test_addr,
-        ).override(host_key_check=HostKeyCheck.STRICT)
+        ).override(host_key_check="strict")
 
     if expected_exception:
         return
@@ -132,7 +131,7 @@ def test_parse_deployment_address(
 def test_parse_ssh_options() -> None:
     addr = "root@example.com:2222?IdentityFile=/path/to/private/key&StrictRemoteKeyChecking=yes"
     host = Remote.from_deployment_address(machine_name="foo", address=addr).override(
-        host_key_check=HostKeyCheck.STRICT
+        host_key_check="strict"
     )
     assert host.address == "example.com"
     assert host.port == 2222

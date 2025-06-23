@@ -15,13 +15,12 @@ from shlex import quote
 from tempfile import TemporaryDirectory
 from typing import Literal
 
-from clan_cli.ssh.host_key import HostKeyCheck
-
 from clan_lib.api import API
 from clan_lib.cmd import ClanCmdError, ClanCmdTimeoutError, CmdOut, RunOpts, run
 from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError  # Assuming these are available
 from clan_lib.nix import nix_shell
+from clan_lib.ssh.host_key import HostKeyCheck, hostkey_to_ssh_opts
 from clan_lib.ssh.parse import parse_deployment_address
 from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
 
@@ -40,7 +39,7 @@ class Remote:
     private_key: Path | None = None
     password: str | None = None
     forward_agent: bool = True
-    host_key_check: HostKeyCheck = HostKeyCheck.ASK
+    host_key_check: HostKeyCheck = "ask"
     verbose_ssh: bool = False
     ssh_options: dict[str, str] = field(default_factory=dict)
     tor_socks: bool = False
@@ -334,7 +333,7 @@ class Remote:
             ssh_opts.extend(["-p", str(self.port)])
         for k, v in self.ssh_options.items():
             ssh_opts.extend(["-o", f"{k}={shlex.quote(v)}"])
-        ssh_opts.extend(self.host_key_check.to_ssh_opt())
+        ssh_opts.extend(hostkey_to_ssh_opts(self.host_key_check))
         if self.private_key:
             ssh_opts.extend(["-i", str(self.private_key)])
 
