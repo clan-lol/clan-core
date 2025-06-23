@@ -13,7 +13,6 @@ from clan_cli.machines.create import create_machine
 from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import maybe_get_admin_public_keys
 from clan_cli.secrets.users import add_user
-from clan_cli.ssh.host_key import HostKeyCheck
 from clan_cli.vars.generate import generate_vars_for_machine, get_generators_closure
 
 from clan_lib.api.disk import hw_main_disk_options, set_machine_disk_schema
@@ -198,7 +197,7 @@ def test_clan_create_api(
     clan_dir_flake.invalidate_cache()
 
     target_host = machine.target_host().override(
-        private_key=private_key, host_key_check=HostKeyCheck.NONE
+        private_key=private_key, host_key_check="none"
     )
     result = can_ssh_login(target_host)
     assert result == "Online", f"Machine {machine.name} is not online"

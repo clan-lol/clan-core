@@ -14,7 +14,7 @@ from clan_lib.colors import AnsiColor
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command, nix_config, nix_metadata
-from clan_lib.ssh.remote import HostKeyCheck, Remote
+from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -271,7 +271,7 @@ def update_command(args: argparse.Namespace) -> None:
                 ]
             )
 
-            host_key_check = HostKeyCheck.from_str(args.host_key_check)
+            host_key_check = args.host_key_check
             with AsyncRuntime() as runtime:
                 for machine in machines:
                     if args.target_host:

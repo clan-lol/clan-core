@@ -12,7 +12,7 @@ from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
-from clan_lib.ssh.remote import HostKeyCheck, Remote
+from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import (
     add_dynamic_completer,
@@ -182,11 +182,8 @@ def install_command(args: argparse.Namespace) -> None:
             password = None
 
         machine = Machine(name=args.machine, flake=args.flake, nix_options=args.option)
-        host_key_check = (
-            HostKeyCheck.from_str(args.host_key_check)
-            if args.host_key_check
-            else HostKeyCheck.ASK
-        )
+        host_key_check = args.host_key_check
+
         if target_host_str is not None:
             target_host = Remote.from_deployment_address(
                 machine_name=machine.name, address=target_host_str

@@ -12,7 +12,7 @@ from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.git import commit_file
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_config, nix_eval
-from clan_lib.ssh.remote import HostKeyCheck, Remote
+from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 
@@ -158,7 +158,7 @@ def generate_machine_hardware_info(
 
 
 def update_hardware_config_command(args: argparse.Namespace) -> None:
-    host_key_check = HostKeyCheck.from_str(args.host_key_check)
+    host_key_check = args.host_key_check
     machine = Machine(flake=args.flake, name=args.machine)
     opts = HardwareGenerateOptions(
         machine=machine,
