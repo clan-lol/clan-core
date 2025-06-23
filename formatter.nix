@@ -106,6 +106,13 @@
             extraPythonPackages = (self'.packages.clan-app.devshellPyDeps pkgs.python3Packages);
             extraPythonPaths = [ "../../clan-cli" ];
           };
+          "generate-test-vars" = {
+            directory = "pkgs/generate-test-vars";
+            extraPythonPackages = [
+              (pkgs.python3.withPackages (ps: self'.packages.clan-cli.devshellPyDeps ps))
+            ];
+            extraPythonPaths = [ "../clan-cli" ];
+          };
         }
         // (
           if pkgs.stdenv.isLinux then
