@@ -135,9 +135,6 @@ Examples:
   Name: My Empty Clan
   Description: some nice description
   Icon: A path to the png
-
-Note: The meta results from clan/meta.json and manual flake arguments.
-      It may not be present for clans not created via the clan-app.
 """
         ),
     )
