@@ -373,97 +373,106 @@ in
     instances = lib.mkOption {
       description = "Multi host service module instances";
       type = types.attrsOf (
-        types.submodule {
-          options = {
-            # ModuleSpec
-            module = lib.mkOption {
-              type = types.submodule {
-                options.input = lib.mkOption {
-                  type = types.nullOr types.str;
-                  default = null;
-                  defaultText = "Name of the input. Default to 'null' which means the module is local";
-                  description = ''
-                    Name of the input. Default to 'null' which means the module is local
-                  '';
-                };
-                options.name = lib.mkOption {
-                  type = types.str;
-                };
-              };
-            };
-            roles = lib.mkOption {
-              default = { };
-              type = types.attrsOf (
-                types.submodule {
-                  options = {
-                    # TODO: deduplicate
-                    machines = lib.mkOption {
-                      type = types.attrsOf (
-                        types.submodule {
-                          options.settings = lib.mkOption {
+        types.submoduleWith {
+          modules = [
+            (
+              { name, ... }:
+              {
+                options = {
+                  # ModuleSpec
+                  module = lib.mkOption {
+                    type = types.submodule {
+                      options.input = lib.mkOption {
+                        type = types.nullOr types.str;
+                        default = null;
+                        defaultText = "Name of the input. Default to 'null' which means the module is local";
+                        description = ''
+                          Name of the input. Default to 'null' which means the module is local
+                        '';
+                      };
+                      options.name = lib.mkOption {
+                        type = types.str;
+                        default = name;
+                      };
+                    };
+                    default = { };
+                  };
+                  roles = lib.mkOption {
+                    default = { };
+                    type = types.attrsOf (
+                      types.submodule {
+                        options = {
+                          # TODO: deduplicate
+                          machines = lib.mkOption {
+                            type = types.attrsOf (
+                              types.submodule {
+                                options.settings = lib.mkOption {
+                                  default = { };
+                                  type = clanLib.types.uniqueDeferredSerializableModule;
+                                };
+                              }
+                            );
+                            default = { };
+                          };
+                          tags = lib.mkOption {
+                            type = types.attrsOf (types.submodule { });
+                            default = { };
+                          };
+                          settings = lib.mkOption {
                             default = { };
                             type = clanLib.types.uniqueDeferredSerializableModule;
                           };
-                        }
-                      );
-                      default = { };
-                    };
-                    tags = lib.mkOption {
-                      type = types.attrsOf (types.submodule { });
-                      default = { };
-                    };
-                    settings = lib.mkOption {
-                      default = { };
-                      type = clanLib.types.uniqueDeferredSerializableModule;
-                    };
-                    extraModules = lib.mkOption {
-                      description = ''
-                        List of additionally imported `.nix` expressions.
+                          extraModules = lib.mkOption {
+                            description = ''
+                              List of additionally imported `.nix` expressions.
 
-                        Supported types:
+                              Supported types:
 
-                        - **Strings**: Interpreted relative to the 'directory' passed to buildClan.
-                        - **Paths**: should be relative to the current file.
-                        - **Any**: Nix expression must be serializable to JSON.
+                              - **Strings**: Interpreted relative to the 'directory' passed to buildClan.
+                              - **Paths**: should be relative to the current file.
+                              - **Any**: Nix expression must be serializable to JSON.
 
-                        !!! Note
-                            **The import only happens if the machine is part of the service or role.**
+                              !!! Note
+                                  **The import only happens if the machine is part of the service or role.**
 
-                        Other types are passed through to the nixos configuration.
+                              Other types are passed through to the nixos configuration.
 
-                        ???+ Example
-                            To import the `special.nix` file
+                              ???+ Example
+                                  To import the `special.nix` file
 
-                            ```
-                            . Clan Directory
-                            ├── flake.nix
-                            ...
-                            └── modules
-                                ├── special.nix
-                                └── ...
-                            ```
+                                  ```
+                                  . Clan Directory
+                                  ├── flake.nix
+                                  ...
+                                  └── modules
+                                      ├── special.nix
+                                      └── ...
+                                  ```
 
-                            ```nix
-                            {
-                              extraModules = [ "modules/special.nix" ];
-                            }
-                            ```
-                      '';
-                      apply = value: if lib.isString value then value else builtins.seq (builtins.toJSON value) value;
-                      default = [ ];
-                      type = types.listOf (
-                        types.oneOf [
-                          types.str
-                          types.path
-                          (types.attrsOf types.anything)
-                        ]
-                      );
-                    };
+                                  ```nix
+                                  {
+                                    extraModules = [ "modules/special.nix" ];
+                                  }
+                                  ```
+                            '';
+                            apply = value: if lib.isString value then value else builtins.seq (builtins.toJSON value) value;
+                            default = [ ];
+                            type = types.listOf (
+                              types.oneOf [
+                                types.str
+                                types.path
+                                (types.attrsOf types.anything)
+                              ]
+                            );
+                          };
+                        };
+                      }
+                    );
                   };
-                }
-              );
-            };
-          };
+                };
+              }
+            )
+          ];
         }
       );
       default = { };
