@@ -2,7 +2,7 @@ import importlib
 import json
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
@@ -29,8 +29,6 @@ if TYPE_CHECKING:
 class Machine:
     name: str
     flake: Flake
-
-    nix_options: list[str] = field(default_factory=list)
 
     def get_inv_machine(self) -> "InventoryMachine":
         return get_machine(self.flake, self.name)
@@ -177,8 +175,7 @@ class Machine:
         system = config["system"]
 
         return self.flake.select(
-            f'clanInternals.machines."{system}"."{self.name}".{attr}',
-            nix_options=nix_options,
+            f'clanInternals.machines."{system}"."{self.name}".{attr}'
         )
 
     def eval_nix(

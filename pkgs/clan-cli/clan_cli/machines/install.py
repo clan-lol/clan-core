@@ -42,7 +42,7 @@ def install_command(args: argparse.Namespace) -> None:
         else:
             password = None
 
-        machine = Machine(name=args.machine, flake=args.flake, nix_options=args.option)
+        machine = Machine(name=args.machine, flake=args.flake)
         host_key_check = args.host_key_check
 
         if target_host_str is not None:

@@ -284,13 +284,14 @@ def test_cache_gc(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         }
     """)
 
-    my_flake = Flake(str(tmp_path / "flake"))
+    my_flake = Flake(
+        str(tmp_path / "flake"),
+        nix_options=["--sandbox-build-dir", str(tmp_path / "build")],
+    )
     if platform == "darwin":
         my_flake.select("testfile")
     else:
-        my_flake.select(
-            "testfile", nix_options=["--sandbox-build-dir", str(tmp_path / "build")]
-        )
+        my_flake.select("testfile")
     assert my_flake._cache is not None  # noqa: SLF001
     assert my_flake._cache.is_cached("testfile")  # noqa: SLF001
     subprocess.run(["nix-collect-garbage"], check=True)

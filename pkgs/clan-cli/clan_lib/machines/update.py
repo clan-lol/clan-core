@@ -124,6 +124,8 @@ def deploy_machine(
 
         path = upload_sources(machine, sudo_host)
 
+        nix_options = machine.flake.nix_options if machine.flake.nix_options else []
+
         nix_options = [
             "--show-trace",
             "--option",
@@ -133,7 +135,7 @@ def deploy_machine(
             "accept-flake-config",
             "true",
             "-L",
-            *machine.nix_options,
+            *nix_options,
             "--flake",
             f"{path}#{machine.name}",
         ]
