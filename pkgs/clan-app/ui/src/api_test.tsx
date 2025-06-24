@@ -61,7 +61,7 @@ export const ApiTester = () => {
         return await callApi(
           values.endpoint as keyof API,
           JSON.parse(values.payload || "{}"),
-        );
+        ).promise;
       },
       staleTime: Infinity,
       enabled: false,
