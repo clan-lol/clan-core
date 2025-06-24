@@ -280,7 +280,9 @@ def update_command(args: argparse.Namespace) -> None:
                             address=args.target_host,
                         ).override(host_key_check=host_key_check)
                     else:
-                        target_host = machine.target_host()
+                        target_host = machine.target_host().override(
+                            host_key_check=host_key_check
+                        )
                     runtime.async_run(
                         AsyncOpts(
                             tid=machine.name,
