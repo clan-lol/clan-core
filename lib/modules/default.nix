@@ -9,8 +9,7 @@
 {
   flakePartsModule = {
     imports = [
-      (lib.modules.importApply ./clan/interface.nix { inherit clanLib; })
-      ./clan/module.nix
+      (lib.modules.importApply ./clan/default.nix { inherit clanLib; })
     ];
   };
 
