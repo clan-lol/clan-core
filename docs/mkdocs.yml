@@ -116,7 +116,6 @@ nav:
           - reference/clanModules/iwd.md
           - reference/clanModules/localbackup.md
           - reference/clanModules/localsend.md
-          - reference/clanModules/machine-id.md
           - reference/clanModules/matrix-synapse.md
           - reference/clanModules/moonlight.md
           - reference/clanModules/mumble.md
