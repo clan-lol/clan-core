@@ -258,6 +258,10 @@ def open_editor_for_pr() -> tuple[str, str]:
         temp_file.write("# Lines starting with '#' will be ignored.\n")
         temp_file.write("# The first line will be used as the PR title.\n")
         temp_file.write("# Everything else will be used as the PR description.\n")
+        temp_file.write(
+            "# To abort creation of the PR, close editor with an error code.\n"
+        )
+        temp_file.write("# In vim for example you can use :cq!\n")
         temp_file.write("#\n")
         temp_file.write("# All commits since main:\n")
         temp_file.write("#\n")
@@ -277,7 +281,8 @@ def open_editor_for_pr() -> tuple[str, str]:
         exit_code = subprocess.call([editor, temp_file_path])
 
         if exit_code != 0:
-            print(f"Editor exited with code {exit_code}")
+            print(f"Editor exited with code {exit_code}.")
+            print("AGit PR creation has been aborted.")
             sys.exit(1)
 
         with Path(temp_file_path).open() as f:
