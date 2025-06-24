@@ -42,3 +42,18 @@ Examples:
 References:
 - https://docs.gitea.com/usage/agit
 - https://git-repo.info/en/2020/03/agit-flow-and-git-repo/
+
+## How to fetch AGit PR's
+
+For a hypothetical PR with the number #4077:
+
+```
+git fetch origin pull/4077/head:your-favorite-name
+```
+
+Replace `your-favorite-name` with your preferred branch name.
+
+You can push back to the PR with with:
+```
+agit create --topic="The topic of the open PR"
+```
