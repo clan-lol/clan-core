@@ -576,6 +576,7 @@ class Flake:
     identifier: str
     hash: str | None = None
     store_path: str | None = None
+    nix_options: list[str] | None = None
 
     _flake_cache_path: Path | None = field(init=False, default=None)
     _cache: FlakeCache | None = field(init=False, default=None)
@@ -583,8 +584,13 @@ class Flake:
     _is_local: bool | None = field(init=False, default=None)
 
     @classmethod
-    def from_json(cls: type["Flake"], data: dict[str, Any]) -> "Flake":
-        return cls(data["identifier"])
+    def from_json(
+        cls: type["Flake"],
+        data: dict[str, Any],
+        *,
+        nix_options: list[str] | None = None,
+    ) -> "Flake":
+        return cls(data["identifier"], nix_options=nix_options)
 
     def __str__(self) -> str:
         return self.identifier
@@ -632,10 +638,14 @@ class Flake:
             nix_command,
         )
 
+        if self.nix_options is None:
+            self.nix_options = []
+
         cmd = [
             "flake",
             "prefetch",
             "--json",
+            *self.nix_options,
             "--option",
             "flake-registry",
             "",
@@ -690,7 +700,6 @@ class Flake:
     def get_from_nix(
         self,
         selectors: list[str],
-        nix_options: list[str] | None = None,
         apply: str = "v: v",
     ) -> None:
         """
@@ -722,8 +731,7 @@ class Flake:
             self.invalidate_cache()
         assert self._cache is not None
 
-        if nix_options is None:
-            nix_options = []
+        nix_options = self.nix_options if self.nix_options is not None else []
 
         str_selectors: list[str] = []
         for selector in selectors:
@@ -736,7 +744,9 @@ class Flake:
         # method to getting the NAR hash
         fallback_nixpkgs_hash = "@fallback_nixpkgs_hash@"
         if not fallback_nixpkgs_hash.startswith("sha256-"):
-            fallback_nixpkgs = Flake(str(nixpkgs_source()))
+            fallback_nixpkgs = Flake(
+                str(nixpkgs_source()), nix_options=self.nix_options
+            )
             fallback_nixpkgs.invalidate_cache()
             assert fallback_nixpkgs.hash is not None, (
                 "this should be impossible as invalidate_cache() should always set `hash`"
@@ -745,7 +755,7 @@ class Flake:
 
         select_hash = "@select_hash@"
         if not select_hash.startswith("sha256-"):
-            select_flake = Flake(str(select_source()))
+            select_flake = Flake(str(select_source()), nix_options=self.nix_options)
             select_flake.invalidate_cache()
             assert select_flake.hash is not None, (
                 "this should be impossible as invalidate_cache() should always set `hash`"
@@ -808,11 +818,7 @@ class Flake:
         if self.flake_cache_path:
             self._cache.save_to_file(self.flake_cache_path)
 
-    def precache(
-        self,
-        selectors: list[str],
-        nix_options: list[str] | None = None,
-    ) -> None:
+    def precache(self, selectors: list[str]) -> None:
         """
         Ensures that the specified selectors are cached locally.
 
@@ -822,7 +828,6 @@ class Flake:
 
         Args:
             selectors (list[str]): A list of attribute selectors to check and cache.
-            nix_options (list[str] | None): Optional additional options to pass to the Nix build command.
         """
         if self._cache is None:
             self.invalidate_cache()
@@ -833,12 +838,11 @@ class Flake:
             if not self._cache.is_cached(selector):
                 not_fetched_selectors.append(selector)
         if not_fetched_selectors:
-            self.get_from_nix(not_fetched_selectors, nix_options)
+            self.get_from_nix(not_fetched_selectors)
 
     def select(
         self,
         selector: str,
-        nix_options: list[str] | None = None,
         apply: str = "v: v",
     ) -> Any:
         """
@@ -847,7 +851,6 @@ class Flake:
 
         Args:
             selector (str): The attribute selector string to fetch the value for.
-            nix_options (list[str] | None): Optional additional options to pass to the Nix build command.
         """
         if self._cache is None:
             self.invalidate_cache()
@@ -856,6 +859,6 @@ class Flake:
 
         if not self._cache.is_cached(selector):
             log.debug(f"Cache miss for {selector}")
-            self.get_from_nix([selector], nix_options, apply=apply)
+            self.get_from_nix([selector], apply=apply)
         value = self._cache.select(selector)
         return value

@@ -42,7 +42,7 @@ def install_command(args: argparse.Namespace) -> None:
         else:
             password = None
 
-        machine = Machine(name=args.machine, flake=args.flake, nix_options=args.option)
+        machine = Machine(name=args.machine, flake=args.flake)
         host_key_check = args.host_key_check
 
         if target_host_str is not None:
@@ -72,7 +72,6 @@ def install_command(args: argparse.Namespace) -> None:
                 phases=args.phases,
                 debug=args.debug,
                 no_reboot=args.no_reboot,
-                nix_options=args.option,
                 build_on=BuildOn(args.build_on) if args.build_on is not None else None,
                 update_hardware_config=HardwareConfig(args.update_hardware_config),
                 password=password,

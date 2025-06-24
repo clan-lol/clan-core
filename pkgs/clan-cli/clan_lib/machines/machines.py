@@ -2,7 +2,7 @@ import importlib
 import json
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
@@ -29,8 +29,6 @@ if TYPE_CHECKING:
 class Machine:
     name: str
     flake: Flake
-
-    nix_options: list[str] = field(default_factory=list)
 
     def get_inv_machine(self) -> "InventoryMachine":
         return get_machine(self.flake, self.name)
@@ -164,29 +162,20 @@ class Machine:
     def nix(
         self,
         attr: str,
-        nix_options: list[str] | None = None,
     ) -> Any:
         """
         Build the machine and return the path to the result
         accepts a secret store and a facts store # TODO
         """
-        if nix_options is None:
-            nix_options = []
 
         config = nix_config()
         system = config["system"]
 
         return self.flake.select(
-            f'clanInternals.machines."{system}"."{self.name}".{attr}',
-            nix_options=nix_options,
+            f'clanInternals.machines."{system}"."{self.name}".{attr}'
         )
 
-    def eval_nix(
-        self,
-        attr: str,
-        extra_config: None | dict = None,
-        nix_options: list[str] | None = None,
-    ) -> Any:
+    def eval_nix(self, attr: str, extra_config: None | dict = None) -> Any:
         """
         eval a nix attribute of the machine
         @attr: the attribute to get
@@ -195,17 +184,9 @@ class Machine:
         if extra_config:
             log.warning("extra_config in eval_nix is no longer supported")
 
-        if nix_options is None:
-            nix_options = []
+        return self.nix(attr)
 
-        return self.nix(attr, nix_options)
-
-    def build_nix(
-        self,
-        attr: str,
-        extra_config: None | dict = None,
-        nix_options: list[str] | None = None,
-    ) -> Path:
+    def build_nix(self, attr: str, extra_config: None | dict = None) -> Path:
         """
         build a nix attribute of the machine
         @attr: the attribute to get
@@ -214,10 +195,7 @@ class Machine:
         if extra_config:
             log.warning("extra_config in build_nix is no longer supported")
 
-        if nix_options is None:
-            nix_options = []
-
-        output = self.nix(attr, nix_options)
+        output = self.nix(attr)
         output = Path(output)
         if tmp_store := nix_test_store():
             output = tmp_store.joinpath(*output.parts[1:])

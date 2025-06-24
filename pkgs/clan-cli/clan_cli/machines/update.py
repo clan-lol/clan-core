@@ -46,9 +46,7 @@ def update_command(args: argparse.Namespace) -> None:
             raise ClanError(msg)
 
         for machine_name in selected_machines:
-            machine = Machine(
-                name=machine_name, flake=args.flake, nix_options=args.option
-            )
+            machine = Machine(name=machine_name, flake=args.flake)
             machines.append(machine)
 
         if args.target_host is not None and len(machines) > 1:

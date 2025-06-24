@@ -86,11 +86,7 @@ class WriteInfo:
 
 
 class FlakeInterface(Protocol):
-    def select(
-        self,
-        selector: str,
-        nix_options: list[str] | None = None,
-    ) -> Any: ...
+    def select(self, selector: str) -> Any: ...
 
     def invalidate_cache(self) -> None: ...
 

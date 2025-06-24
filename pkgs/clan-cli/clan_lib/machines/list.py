@@ -17,18 +17,13 @@ from clan_lib.nix_models.clan import InventoryMachine
 log = logging.getLogger(__name__)
 
 
-def list_full_machines(
-    flake: Flake, nix_options: list[str] | None = None
-) -> dict[str, Machine]:
+def list_full_machines(flake: Flake) -> dict[str, Machine]:
     """
     Like `list_machines`, but returns a full 'machine' instance for each machine.
     """
     machines = list_machines(flake)
 
     res: dict[str, Machine] = {}
-
-    if nix_options is None:
-        nix_options = []
 
     for inv_machine in machines.values():
         name = inv_machine.get("name")
@@ -37,11 +32,7 @@ def list_full_machines(
             msg = "InternalError: Machine name is required. But got a machine without a name."
             raise ClanError(msg)
 
-        machine = Machine(
-            name=name,
-            flake=flake,
-            nix_options=nix_options,
-        )
+        machine = Machine(name=name, flake=flake)
         res[machine.name] = machine
 
     return res

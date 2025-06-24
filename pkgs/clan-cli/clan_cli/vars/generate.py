@@ -511,7 +511,7 @@ def generate_command(args: argparse.Namespace) -> None:
         msg = "Could not find clan flake toplevel directory"
         raise ClanError(msg)
 
-    machines: list[Machine] = list(list_full_machines(args.flake, args.option).values())
+    machines: list[Machine] = list(list_full_machines(args.flake).values())
 
     if len(args.machines) > 0:
         machines = list(

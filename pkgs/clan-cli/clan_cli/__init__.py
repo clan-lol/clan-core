@@ -35,18 +35,25 @@ with contextlib.suppress(ImportError):
     import argcomplete  # type: ignore[no-redef]
 
 
-def flake_path(arg: str) -> Flake:
+def flake_path(arg: str) -> str:
     flake_dir = Path(arg).resolve()
     if flake_dir.exists() and flake_dir.is_dir():
-        return Flake(str(flake_dir))
-    return Flake(arg)
+        return str(flake_dir)
+    return arg
 
 
-def default_flake() -> Flake | None:
+def default_flake() -> str | None:
     val = get_clan_flake_toplevel_or_env()
     if val:
-        return Flake(str(val))
+        return str(val)
     return None
+
+
+def create_flake_from_args(args: argparse.Namespace) -> Flake:
+    """Create a Flake object from parsed arguments, including nix_options."""
+    flake_path_str = args.flake
+    nix_options = getattr(args, "option", [])
+    return Flake(flake_path_str, nix_options=nix_options)
 
 
 def add_common_flags(parser: argparse.ArgumentParser) -> None:
@@ -449,6 +456,10 @@ def main() -> None:
 
     if not hasattr(args, "func"):
         return
+
+    # Convert flake path to Flake object with nix_options if flake argument exists
+    if hasattr(args, "flake") and args.flake is not None:
+        args.flake = create_flake_from_args(args)
 
     try:
         args.func(args)
