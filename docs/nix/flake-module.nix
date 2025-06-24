@@ -1,5 +1,8 @@
 { inputs, self, ... }:
 {
+  imports = [
+    ./options/flake-module.nix
+  ];
   perSystem =
     {
       config,
@@ -124,7 +127,7 @@
       packages = {
         docs = pkgs.python3.pkgs.callPackage ./default.nix {
           clan-core = self;
-          inherit (self'.packages) clan-cli-docs inventory-api-docs;
+          inherit (self'.packages) clan-cli-docs docs-options inventory-api-docs;
           inherit (inputs) nixpkgs;
           inherit module-docs;
           inherit asciinema-player-js;

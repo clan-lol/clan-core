@@ -34,6 +34,9 @@
         treefmt-nix.follows = "treefmt-nix";
       };
     };
+
+    nuschtos.url = "github:NuschtOS/search";
+    nuschtos.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =

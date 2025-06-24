@@ -7,6 +7,7 @@
   asciinema-player-css,
   roboto,
   fira-code,
+  docs-options,
   ...
 }:
 let
@@ -55,5 +56,6 @@ pkgs.stdenv.mkDerivation {
 
   installPhase = ''
     cp -a out/ $out/
+    cp -r ${docs-options} $out/options-page
   '';
 }

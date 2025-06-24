@@ -1,4 +1,8 @@
-{ clanLib }:
+{
+  clanLib,
+  # workaround for docs rendering to include fake instance options
+  noInstanceOptions ? false,
+}:
 {
   lib,
   config,
@@ -370,121 +374,62 @@ in
       );
     };
 
-    instances = lib.mkOption {
-      description = "Multi host service module instances";
-      type = types.attrsOf (
-        types.submoduleWith {
-          modules = [
-            (
-              { name, ... }:
-              {
-                options = {
-                  # ModuleSpec
-                  module = lib.mkOption {
-                    type = types.submodule {
-                      options.input = lib.mkOption {
-                        type = types.nullOr types.str;
-                        default = null;
-                        defaultText = "Name of the input. Default to 'null' which means the module is local";
-                        description = ''
-                          Name of the input. Default to 'null' which means the module is local
-                        '';
-                      };
-                      options.name = lib.mkOption {
-                        type = types.str;
-                        default = name;
-                        defaultText = "<Name of the Instance>";
-                        description = ''
-                          Attribute of the clan service module imported from the chosen input.
-
-                          Defaults to the name of the instance.
-                        '';
-                      };
-                    };
-                    default = { };
-                  };
-                  roles = lib.mkOption {
-                    default = { };
-                    type = types.attrsOf (
-                      types.submodule {
-                        options = {
-                          # TODO: deduplicate
-                          machines = lib.mkOption {
-                            type = types.attrsOf (
-                              types.submodule {
-                                options.settings = lib.mkOption {
-                                  default = { };
-                                  type = clanLib.types.uniqueDeferredSerializableModule;
-                                };
-                              }
-                            );
-                            default = { };
-                          };
-                          tags = lib.mkOption {
-                            type = types.attrsOf (types.submodule { });
-                            default = { };
-                          };
-                          settings = lib.mkOption {
-                            default = { };
-                            type = clanLib.types.uniqueDeferredSerializableModule;
-                          };
-                          extraModules = lib.mkOption {
+    instances =
+      if noInstanceOptions then
+        { }
+      else
+        lib.mkOption {
+          description = "Multi host service module instances";
+          type = types.attrsOf (
+            types.submoduleWith {
+              modules = [
+                (
+                  { name, ... }:
+                  {
+                    options = {
+                      # ModuleSpec
+                      module = lib.mkOption {
+                        type = types.submodule {
+                          options.input = lib.mkOption {
+                            type = types.nullOr types.str;
+                            default = null;
+                            defaultText = "Name of the input. Default to 'null' which means the module is local";
                             description = ''
-                              List of additionally imported `.nix` expressions.
-
-                              Supported types:
-
-                              - **Strings**: Interpreted relative to the 'directory' passed to buildClan.
-                              - **Paths**: should be relative to the current file.
-                              - **Any**: Nix expression must be serializable to JSON.
-
-                              !!! Note
-                                  **The import only happens if the machine is part of the service or role.**
-
-                              Other types are passed through to the nixos configuration.
-
-                              ???+ Example
-                                  To import the `special.nix` file
-
-                                  ```
-                                  . Clan Directory
-                                  ├── flake.nix
-                                  ...
-                                  └── modules
-                                      ├── special.nix
-                                      └── ...
-                                  ```
-
-                                  ```nix
-                                  {
-                                    extraModules = [ "modules/special.nix" ];
-                                  }
-                                  ```
+                              Name of the input. Default to 'null' which means the module is local
                             '';
-                            apply = value: if lib.isString value then value else builtins.seq (builtins.toJSON value) value;
-                            default = [ ];
-                            type = types.listOf (
-                              types.oneOf [
-                                types.str
-                                types.path
-                                (types.attrsOf types.anything)
-                              ]
-                            );
+                          };
+                          options.name = lib.mkOption {
+                            type = types.str;
+                            default = name;
+                            defaultText = "<Name of the Instance>";
+                            description = ''
+                              Attribute of the clan service module imported from the chosen input.
+
+                              Defaults to the name of the instance.
+                            '';
                           };
                         };
-                      }
-                    );
-                  };
-                };
-              }
-            )
-          ];
-        }
-      );
-      default = { };
-    };
+                      };
+                      roles = lib.mkOption {
+                        default = { };
+                        type = types.attrsOf (
+                          types.submodule {
+                            imports = [ (import ./roles-interface.nix { inherit clanLib; }) ];
+                          }
+                        );
+                      };
+                    };
+                  }
+                )
+              ];
+            }
+          );
+          default = { };
+        };
 
     services = lib.mkOption {
+      # services are deprecated in favor of `instances`
+      visible = false;
       description = ''
         Services of the inventory.
 
