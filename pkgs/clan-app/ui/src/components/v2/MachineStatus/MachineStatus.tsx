@@ -12,14 +12,14 @@ export type MachineStatus =
   | "Installed"
   | "Not Installed";
 
-export interface TagStatusProps {
+export interface MachineStatusProps {
   label?: boolean;
   status: MachineStatus;
 }
 
-export const MachineStatus = (props: TagStatusProps) => (
+export const MachineStatus = (props: MachineStatusProps) => (
   <Badge
-    class={cx("tag-status", {
+    class={cx("machine-status", {
       online: props.status == "Online",
       offline: props.status == "Offline",
       installed: props.status == "Installed",

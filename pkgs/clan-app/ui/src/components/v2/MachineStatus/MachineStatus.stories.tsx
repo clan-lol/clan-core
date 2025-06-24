@@ -1,10 +1,10 @@
 import {
   MachineStatus,
-  TagStatusProps,
+  MachineStatusProps,
 } from "@/src/components/v2/MachineStatus/MachineStatus";
 import { Meta, StoryObj } from "@kachurun/storybook-solid";
 
-const meta: Meta<TagStatusProps> = {
+const meta: Meta<MachineStatusProps> = {
   title: "Components/MachineStatus",
   component: MachineStatus,
   decorators: [
@@ -18,7 +18,7 @@ const meta: Meta<TagStatusProps> = {
 
 export default meta;
 
-type Story = StoryObj<TagStatusProps>;
+type Story = StoryObj<MachineStatusProps>;
 
 export const Online: Story = {
   args: {
