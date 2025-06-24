@@ -1,11 +1,10 @@
 import datetime
 import logging
+import urllib.parse
 from collections.abc import Callable  # Union for str | None
 from dataclasses import dataclass
 from functools import total_ordering
 from pathlib import Path
-
-from clan_lib.api import API
 
 log = logging.getLogger(__name__)
 
@@ -25,6 +24,7 @@ def is_correct_day_format(date_day: str) -> bool:
 class LogFile:
     op_key: str
     date_day: str  # YYYY-MM-DD
+    group: str
     func_name: str
     _base_dir: Path
     date_second: str  # HH-MM-SS
@@ -51,9 +51,10 @@ class LogFile:
 
     @classmethod
     def from_path(cls, file: Path) -> "LogFile":
-        date_day = file.parent.parent.name
+        date_day = file.parent.parent.parent.name
+        group = urllib.parse.unquote(file.parent.parent.name)
         func_name = file.parent.name
-        base_dir = file.parent.parent.parent
+        base_dir = file.parent.parent.parent.parent
 
         filename_stem = file.stem
         parts = filename_stem.split("_", 1)
@@ -67,6 +68,7 @@ class LogFile:
         return LogFile(
             op_key=op_key_str,
             date_day=date_day,
+            group=group,
             date_second=date_second_str,
             func_name=func_name,
             _base_dir=base_dir,
@@ -76,6 +78,7 @@ class LogFile:
         return (
             self._base_dir
             / self.date_day
+            / urllib.parse.quote(self.group, safe="")
             / self.func_name
             / f"{self.date_second}_{self.op_key}.log"
         )
@@ -86,6 +89,7 @@ class LogFile:
         # Compare all significant fields for equality
         return (
             self._datetime_obj == other._datetime_obj
+            and self.group == other.group
             and self.func_name == other.func_name
             and self.op_key == other.op_key
             and self._base_dir == other._base_dir
@@ -97,10 +101,13 @@ class LogFile:
         # Primary sort: datetime (newest first). self is "less than" other if self is newer.
         if self._datetime_obj != other._datetime_obj:
             return self._datetime_obj > other._datetime_obj
-        # Secondary sort: func_name (alphabetical ascending)
+        # Secondary sort: group (alphabetical ascending)
+        if self.group != other.group:
+            return self.group < other.group
+        # Tertiary sort: func_name (alphabetical ascending)
         if self.func_name != other.func_name:
             return self.func_name < other.func_name
-        # Tertiary sort: op_key (alphabetical ascending)
+        # Quaternary sort: op_key (alphabetical ascending)
         return self.op_key < other.op_key
 
 
@@ -108,6 +115,7 @@ class LogFile:
 @dataclass(frozen=True)
 class LogFuncDir:
     date_day: str
+    group: str
     func_name: str
     _base_dir: Path
 
@@ -125,7 +133,12 @@ class LogFuncDir:
         )
 
     def get_dir_path(self) -> Path:
-        return self._base_dir / self.date_day / self.func_name
+        return (
+            self._base_dir
+            / self.date_day
+            / urllib.parse.quote(self.group, safe="")
+            / self.func_name
+        )
 
     def get_log_files(self) -> list[LogFile]:
         dir_path = self.get_dir_path()
@@ -149,6 +162,7 @@ class LogFuncDir:
             return NotImplemented
         return (
             self.date_day == other.date_day
+            and self.group == other.group
             and self.func_name == other.func_name
             and self._base_dir == other._base_dir
         )
@@ -159,8 +173,77 @@ class LogFuncDir:
         # Primary sort: date (newest first)
         if self._date_obj != other._date_obj:
             return self._date_obj > other._date_obj
-        # Secondary sort: func_name (alphabetical ascending)
+        # Secondary sort: group (alphabetical ascending)
+        if self.group != other.group:
+            return self.group < other.group
+        # Tertiary sort: func_name (alphabetical ascending)
         return self.func_name < other.func_name
+
+
+@total_ordering
+@dataclass(frozen=True)
+class LogGroupDir:
+    date_day: str
+    group: str
+    _base_dir: Path
+
+    def __post_init__(self) -> None:
+        if not is_correct_day_format(self.date_day):
+            msg = f"LogGroupDir.date_day '{self.date_day}' is not in YYYY-MM-DD format."
+            raise ValueError(msg)
+
+    @property
+    def _date_obj(self) -> datetime.date:
+        return (
+            datetime.datetime.strptime(self.date_day, "%Y-%m-%d")
+            .replace(tzinfo=datetime.UTC)
+            .date()
+        )
+
+    def get_dir_path(self) -> Path:
+        return self._base_dir / self.date_day / urllib.parse.quote(self.group, safe="")
+
+    def get_log_files(self) -> list[LogFuncDir]:
+        dir_path = self.get_dir_path()
+        if not dir_path.exists() or not dir_path.is_dir():
+            return []
+
+        func_dirs_list: list[LogFuncDir] = []
+        for func_dir_path in dir_path.iterdir():
+            if func_dir_path.is_dir():
+                try:
+                    func_dirs_list.append(
+                        LogFuncDir(
+                            date_day=self.date_day,
+                            group=self.group,
+                            func_name=func_dir_path.name,
+                            _base_dir=self._base_dir,
+                        )
+                    )
+                except ValueError:
+                    log.warning(
+                        f"Skipping malformed function directory '{func_dir_path.name}' in '{dir_path}'."
+                    )
+
+        return sorted(func_dirs_list)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, LogGroupDir):
+            return NotImplemented
+        return (
+            self.date_day == other.date_day
+            and self.group == other.group
+            and self._base_dir == other._base_dir
+        )
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, LogGroupDir):
+            return NotImplemented
+        # Primary sort: date (newest first)
+        if self._date_obj != other._date_obj:
+            return self._date_obj > other._date_obj
+        # Secondary sort: group (alphabetical ascending)
+        return self.group < other.group
 
 
 @total_ordering
@@ -185,32 +268,30 @@ class LogDayDir:
     def get_dir_path(self) -> Path:
         return self._base_dir / self.date_day
 
-    # This method returns a list of LogFuncDir objects, as per the original structure.
-    def get_log_files(self) -> list[LogFuncDir]:
+    def get_log_files(self) -> list[LogGroupDir]:
         dir_path = self.get_dir_path()
         if not dir_path.exists() or not dir_path.is_dir():
             return []
 
-        func_dirs_list: list[LogFuncDir] = []
-        for func_dir_path in dir_path.iterdir():
-            if func_dir_path.is_dir():
+        group_dirs_list: list[LogGroupDir] = []
+
+        # First level: group directories
+        for group_dir_path in dir_path.iterdir():
+            if group_dir_path.is_dir():
+                group_name = urllib.parse.unquote(group_dir_path.name)
                 try:
-                    func_dirs_list.append(
-                        LogFuncDir(
+                    group_dirs_list.append(
+                        LogGroupDir(
                             date_day=self.date_day,
-                            func_name=func_dir_path.name,
+                            group=group_name,
                             _base_dir=self._base_dir,
                         )
                     )
-                except (
-                    ValueError
-                ):  # Should mainly catch issues if self.date_day was somehow invalid
+                except ValueError:
                     log.warning(
-                        f"Warning: Skipping malformed function directory '{func_dir_path.name}' in '{dir_path}'."
+                        f"Warning: Skipping malformed group directory '{group_dir_path.name}' in '{dir_path}'."
                     )
-        # Sorts using LogFuncDir.__lt__ (newest date first, then by func_name).
-        # Since all LogFuncDir here share the same date_day, they'll be sorted by func_name.
-        return sorted(func_dirs_list)
+        return sorted(group_dirs_list)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, LogDayDir):
@@ -228,12 +309,15 @@ class LogDayDir:
 class LogManager:
     base_dir: Path
 
-    def create_log_file(self, func: Callable, op_key: str) -> LogFile:
+    def create_log_file(
+        self, func: Callable, op_key: str, group: str = "default"
+    ) -> LogFile:
         now_utc = datetime.datetime.now(tz=datetime.UTC)
 
         log_file = LogFile(
             op_key=op_key,
             date_day=now_utc.strftime("%Y-%m-%d"),
+            group=group,
             date_second=now_utc.strftime("%H-%M-%S"),  # Corrected original's %H-$M-%S
             func_name=func.__name__,
             _base_dir=self.base_dir,
@@ -273,7 +357,10 @@ class LogManager:
         return sorted(log_day_dirs_list)  # Sorts using LogDayDir.__lt__ (newest first)
 
     def get_log_file(
-        self, op_key_to_find: str, specific_date_day: str | None = None
+        self,
+        op_key_to_find: str,
+        specific_date_day: str | None = None,
+        specific_group: str | None = None,
     ) -> LogFile | None:
         days_to_search: list[LogDayDir]
 
@@ -298,38 +385,16 @@ class LogManager:
         for day_dir in (
             days_to_search
         ):  # Iterates newest day first if days_to_search came from list_log_days()
-            # day_dir.get_log_files() returns List[LogFuncDir], sorted by func_name (date is same)
-            for func_dir in day_dir.get_log_files():
-                # func_dir.get_log_files() returns List[LogFile], sorted newest file first
-                for log_file in func_dir.get_log_files():
-                    if log_file.op_key == op_key_to_find:
-                        return log_file
+            # day_dir.get_log_files() returns List[LogGroupDir], sorted by group name
+            for group_dir in day_dir.get_log_files():
+                # Skip this group if specific_group is provided and doesn't match
+                if specific_group is not None and group_dir.group != specific_group:
+                    continue
+
+                # group_dir.get_log_files() returns List[LogFuncDir], sorted by func_name
+                for func_dir in group_dir.get_log_files():
+                    # func_dir.get_log_files() returns List[LogFile], sorted newest file first
+                    for log_file in func_dir.get_log_files():
+                        if log_file.op_key == op_key_to_find:
+                            return log_file
         return None
-
-
-@API.register_abstract
-def list_log_days() -> list[LogDayDir]:
-    """List all logs."""
-    msg = "list_logs() is not implemented"
-    raise NotImplementedError(msg)
-
-
-@API.register_abstract
-def list_log_funcs_at_day(day: str) -> list[LogFuncDir]:
-    """List all logs for a specific function on a specific day."""
-    msg = "list_func_logs() is not implemented"
-    raise NotImplementedError(msg)
-
-
-@API.register_abstract
-def list_log_files(day: str, func_name: str) -> list[LogFile]:
-    """List all log files for a specific function on a specific day."""
-    msg = "list_func_logs() is not implemented"
-    raise NotImplementedError(msg)
-
-
-@API.register_abstract
-def get_log_file(id_key: str) -> str:
-    """Get a specific log file by op_key, function name and day."""
-    msg = "get_log_file() is not implemented"
-    raise NotImplementedError(msg)

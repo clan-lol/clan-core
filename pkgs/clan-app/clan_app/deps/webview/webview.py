@@ -16,9 +16,9 @@ from clan_lib.api import (
     dataclass_to_dict,
     from_dict,
 )
-from clan_lib.api.log_manager import LogManager
 from clan_lib.async_run import AsyncContext, get_async_ctx, set_async_ctx
 from clan_lib.custom_logger import setup_logging
+from clan_lib.log_manager import LogManager
 
 from ._webview_ffi import _encode_c_string, _webview_lib
 
