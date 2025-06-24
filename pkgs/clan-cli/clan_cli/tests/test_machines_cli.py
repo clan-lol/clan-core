@@ -65,6 +65,31 @@ def test_machine_subcommands(
     assert "vm2" in output.out
 
 
+@pytest.mark.impure
+def test_machines_update_with_tags(
+    test_flake_with_core: fixtures_flakes.FlakeForTest,
+    capture_output: CaptureOutput,
+) -> None:
+    import argparse
+
+    from clan_cli.machines.update import register_update_parser
+
+    parser = argparse.ArgumentParser()
+    register_update_parser(parser)
+
+    args = parser.parse_args(["--tags", "vm", "production"])
+    assert hasattr(args, "tags")
+    assert args.tags == ["vm", "production"]
+
+    args = parser.parse_args(["machine1", "machine2"])
+    assert hasattr(args, "tags")
+    assert args.tags == []
+
+    args = parser.parse_args(["machine1", "--tags", "vm"])
+    assert args.machines == ["machine1"]
+    assert args.tags == ["vm"]
+
+
 @pytest.mark.with_core
 def test_machine_delete(
     monkeypatch: pytest.MonkeyPatch,

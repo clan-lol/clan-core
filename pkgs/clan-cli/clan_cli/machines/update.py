@@ -19,10 +19,11 @@ from clan_lib.ssh.remote import Remote
 from clan_cli.completions import (
     add_dynamic_completer,
     complete_machines,
+    complete_tags,
 )
 from clan_cli.facts.generate import generate_facts
 from clan_cli.facts.upload import upload_secrets
-from clan_cli.machines.list import list_full_machines
+from clan_cli.machines.list import list_full_machines, query_machines_by_tags
 from clan_cli.vars.generate import generate_vars
 from clan_cli.vars.upload import upload_secret_vars
 
@@ -213,10 +214,24 @@ def update_command(args: argparse.Namespace) -> None:
             raise ClanError(msg)
 
         machines: list[Machine] = []
-        # if no machines are passed, we will update all machines
-        selected_machines = (
-            args.machines if args.machines else list_full_machines(args.flake).keys()
-        )
+        if args.tags:
+            tag_filtered_machines = query_machines_by_tags(args.flake, args.tags)
+            if args.machines:
+                selected_machines = [
+                    name for name in args.machines if name in tag_filtered_machines
+                ]
+            else:
+                selected_machines = list(tag_filtered_machines.keys())
+        else:
+            selected_machines = (
+                args.machines
+                if args.machines
+                else list(list_full_machines(args.flake).keys())
+            )
+
+        if args.tags and not selected_machines:
+            msg = f"No machines found with tags: {', '.join(args.tags)}"
+            raise ClanError(msg)
 
         for machine_name in selected_machines:
             machine = Machine(
@@ -241,7 +256,7 @@ def update_command(args: argparse.Namespace) -> None:
             return True
 
         machines_to_update = machines
-        implicit_all: bool = len(args.machines) == 0
+        implicit_all: bool = len(args.machines) == 0 and not args.tags
         if implicit_all:
             machines_to_update = list(filter(filter_machine, machines))
 
@@ -311,6 +326,14 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
         help="Machine to update. If no machines are specified, all machines that don't require explicit updates will be updated.",
     )
     add_dynamic_completer(machines_parser, complete_machines)
+
+    tag_parser = parser.add_argument(
+        "--tags",
+        nargs="+",
+        default=[],
+        help="Tags that machines should be queried for. Multiple tags will intersect.",
+    )
+    add_dynamic_completer(tag_parser, complete_tags)
 
     parser.add_argument(
         "--host-key-check",
