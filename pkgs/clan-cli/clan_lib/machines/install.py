@@ -1,6 +1,6 @@
 import logging
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -32,7 +32,6 @@ class InstallOptions:
     no_reboot: bool = False
     phases: str | None = None
     build_on: BuildOn | None = None
-    nix_options: list[str] = field(default_factory=list)
     update_hardware_config: HardwareConfig = HardwareConfig.NONE
     password: str | None = None
     identity_file: Path | None = None
@@ -127,7 +126,7 @@ def install_machine(opts: InstallOptions, target_host: Remote) -> None:
             cmd.append("--debug")
 
         # Add nix options to nixos-anywhere
-        cmd.extend(opts.nix_options)
+        cmd.extend(opts.machine.flake.nix_options or [])
 
         cmd.append(target_host.target)
         if opts.use_tor:

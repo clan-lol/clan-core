@@ -26,7 +26,6 @@ class FlashOptions:
     debug: bool
     mode: str
     write_efi_boot_entries: bool
-    nix_options: list[str]
     system_config: SystemConfig
 
 
@@ -72,7 +71,6 @@ def flash_command(args: argparse.Namespace) -> None:
             ssh_keys_path=args.ssh_pubkey,
         ),
         write_efi_boot_entries=args.write_efi_boot_entries,
-        nix_options=args.option,
     )
 
     machine = Machine(opts.machine, flake=opts.flake)
@@ -94,7 +92,6 @@ def flash_command(args: argparse.Namespace) -> None:
         dry_run=opts.dry_run,
         debug=opts.debug,
         write_efi_boot_entries=opts.write_efi_boot_entries,
-        extra_args=opts.nix_options,
     )
 
 

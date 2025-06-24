@@ -72,7 +72,6 @@ def install_command(args: argparse.Namespace) -> None:
                 phases=args.phases,
                 debug=args.debug,
                 no_reboot=args.no_reboot,
-                nix_options=args.option,
                 build_on=BuildOn(args.build_on) if args.build_on is not None else None,
                 update_hardware_config=HardwareConfig(args.update_hardware_config),
                 password=password,

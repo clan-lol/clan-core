@@ -49,20 +49,15 @@ def facts_to_nixos_config(facts: dict[str, dict[str, bytes]]) -> dict:
 
 
 # TODO move this to the Machines class
-def build_vm(
-    machine: Machine, tmpdir: Path, nix_options: list[str] | None = None
-) -> dict[str, str]:
+def build_vm(machine: Machine, tmpdir: Path) -> dict[str, str]:
     # TODO pass prompt here for the GTK gui
-    if nix_options is None:
-        nix_options = []
+
     secrets_dir = get_secrets(machine, tmpdir)
 
     public_facts = machine.public_facts_store.get_all()
 
     nixos_config_file = machine.build_nix(
-        "config.system.clan.vm.create",
-        extra_config=facts_to_nixos_config(public_facts),
-        nix_options=nix_options,
+        "config.system.clan.vm.create", extra_config=facts_to_nixos_config(public_facts)
     )
     try:
         vm_data = json.loads(Path(nixos_config_file).read_text())
@@ -204,7 +199,6 @@ def spawn_vm(
     *,
     cachedir: Path | None = None,
     socketdir: Path | None = None,
-    nix_options: list[str] | None = None,
     portmap: dict[int, int] | None = None,
     stdout: int | None = None,
     stderr: int | None = None,
@@ -212,8 +206,7 @@ def spawn_vm(
 ) -> Iterator[QemuVm]:
     if portmap is None:
         portmap = {}
-    if nix_options is None:
-        nix_options = []
+
     with ExitStack() as stack:
         machine = Machine(name=vm.machine_name, flake=vm.flake_url)
         machine.debug(f"Creating VM for {machine}")
@@ -234,7 +227,7 @@ def spawn_vm(
             socketdir = Path(socket_tmp)
 
         # TODO: We should get this from the vm argument
-        nixos_config = build_vm(machine, cachedir, nix_options)
+        nixos_config = build_vm(machine, cachedir)
 
         state_dir = vm_state_dir(vm.flake_url.identifier, machine.name)
         state_dir.mkdir(parents=True, exist_ok=True)
@@ -321,7 +314,6 @@ def spawn_vm(
 class RuntimeConfig:
     cachedir: Path | None = None
     socketdir: Path | None = None
-    nix_options: list[str] | None = None
     portmap: dict[int, int] | None = None
     command: list[str] | None = None
     no_block: bool = False
@@ -339,7 +331,6 @@ def run_vm(
             vm_config,
             cachedir=runtime_config.cachedir,
             socketdir=runtime_config.socketdir,
-            nix_options=runtime_config.nix_options,
             portmap=runtime_config.portmap,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -395,7 +386,6 @@ def run_command(
     portmap = dict(p.split(":") for p in args.publish)
 
     runtime_config = RuntimeConfig(
-        nix_options=args.option,
         portmap=portmap,
         command=args.command,
         no_block=args.no_block,
