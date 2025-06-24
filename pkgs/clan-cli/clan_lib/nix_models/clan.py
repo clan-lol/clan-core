@@ -15,12 +15,12 @@ class Unknown:
     pass
 
 
-InventoryInstanceModuleInputType = str
 InventoryInstanceModuleNameType = str
+InventoryInstanceModuleInputType = str
 
 class InventoryInstanceModule(TypedDict):
+    name: str
     input: NotRequired[InventoryInstanceModuleInputType]
-    name: NotRequired[InventoryInstanceModuleNameType]
 
 
 

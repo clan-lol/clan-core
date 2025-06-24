@@ -393,6 +393,12 @@ in
                       options.name = lib.mkOption {
                         type = types.str;
                         default = name;
+                        defaultText = "<Name of the Instance>";
+                        description = ''
+                          Attribute of the clan service module imported from the chosen input.
+
+                          Defaults to the name of the instance.
+                        '';
                       };
                     };
                     default = { };

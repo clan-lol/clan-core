@@ -204,9 +204,51 @@ def get_latest_commit_info() -> tuple[str, str]:
     return title, body
 
 
+def get_commits_since_main() -> list[tuple[str, str]]:
+    """Get all commits since main as (title, body) tuples."""
+    exit_code, commit_log, error = run_git_command(
+        [
+            "git",
+            "log",
+            "main..HEAD",
+            "--no-merges",
+            "--pretty=format:%s|%b|---END---",
+        ]
+    )
+
+    if exit_code != 0:
+        print(f"Error getting commits since main: {error}")
+        return []
+
+    if not commit_log:
+        return []
+
+    commits = []
+    commit_messages = commit_log.split("---END---")
+
+    for commit_msg in commit_messages:
+        commit_msg = commit_msg.strip()
+        if not commit_msg:
+            continue
+
+        parts = commit_msg.split("|")
+        if len(parts) < 2:
+            continue
+
+        title = parts[0].strip()
+        body = parts[1].strip() if len(parts) > 1 else ""
+
+        if not title:
+            continue
+
+        commits.append((title, body))
+
+    return commits
+
+
 def open_editor_for_pr() -> tuple[str, str]:
     """Open editor to get PR title and description. First line is title, rest is description."""
-    commit_title, commit_body = get_latest_commit_info()
+    commits_since_main = get_commits_since_main()
 
     with tempfile.NamedTemporaryFile(
         mode="w+", suffix="COMMIT_EDITMSG", delete=False
@@ -217,14 +259,14 @@ def open_editor_for_pr() -> tuple[str, str]:
         temp_file.write("# The first line will be used as the PR title.\n")
         temp_file.write("# Everything else will be used as the PR description.\n")
         temp_file.write("#\n")
-        temp_file.write("# Current commit information:\n")
+        temp_file.write("# All commits since main:\n")
         temp_file.write("#\n")
-        if commit_title:
-            temp_file.write(f"# {commit_title}\n")
-        temp_file.write("#\n")
-        if commit_body:
-            for line in commit_body.split("\n"):
-                temp_file.write(f"# {line}\n")
+        for i, (title, body) in enumerate(commits_since_main, 1):
+            temp_file.write(f"# Commit {i}:\n")
+            temp_file.write(f"# {title}\n")
+            if body:
+                for line in body.split("\n"):
+                    temp_file.write(f"# {line}\n")
             temp_file.write("#\n")
         temp_file.flush()
         temp_file_path = temp_file.name
