@@ -120,7 +120,7 @@ let
           moduleSystemConstructor.${machineClasses.${name}} {
             modules = [
               (config.outputs.moduleForMachine.${name} or { })
-              (lib.modules.importApply ./machineModules/overridePkgs.nix {
+              (lib.modules.importApply ../machineModules/overridePkgs.nix {
                 pkgs = pkgsFor.${system};
               })
             ];
@@ -201,7 +201,7 @@ in
           in
           {
             imports = [
-              (lib.modules.importApply ./machineModules/forName.nix {
+              (lib.modules.importApply ../machineModules/forName.nix {
                 inherit (config.inventory) meta;
                 inherit
                   name
