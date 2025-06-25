@@ -6,12 +6,11 @@ in
   inherit (services) evalClanService mapInstances resolveModule;
   inherit (import ./build-inventory { inherit lib clanLib; }) buildInventory;
   interface = {
+    _file = "inventory/default.nix";
     imports = [
-      (import ./build-inventory/interface.nix { inherit clanLib; })
+      ./build-inventory/interface.nix
     ];
-    _module.args = {
-      inherit clanLib;
-    };
+    _module.args = { inherit clanLib; };
   };
   # Returns the list of machine names
   # { ... } -> [ string ]

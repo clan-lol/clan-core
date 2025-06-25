@@ -1,9 +1,8 @@
 {
-  clanLib,
   settingsOption ? null,
   nestedSettingsOption ? null,
 }:
-{ lib, ... }:
+{ lib, clanLib, ... }:
 let
   inherit (lib)
     types

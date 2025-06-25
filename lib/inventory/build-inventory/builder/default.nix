@@ -170,6 +170,7 @@ in
               getRoleFile = role: builtins.seq role inventory.modules.${serviceName} + "/roles/${role}.nix";
             in
             {
+              _file = "inventory/builder.nix";
               _module.args = {
                 inherit
                   resolveTags

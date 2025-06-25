@@ -121,9 +121,10 @@
                   roleName: roleSettingsModule:
                   mkOption {
                     type = types.submodule {
+                      _file = "docs flake-module";
                       imports = [
+                        { _module.args = { inherit clanLib; }; }
                         (import ../../../lib/inventory/build-inventory/roles-interface.nix {
-                          inherit clanLib;
                           nestedSettingsOption = mkOption {
                             type = types.raw;
                             description = ''
@@ -148,10 +149,12 @@
       mkScope = name: modules: {
         inherit name;
         modules = [
-          (import ../../../lib/inventory/build-inventory/interface.nix {
-            inherit clanLib;
-            noInstanceOptions = true;
-          })
+          {
+            _module.args = { inherit clanLib; };
+            _file = "docs mkScope";
+          }
+          { noInstanceOptions = true; }
+          ../../../lib/inventory/build-inventory/interface.nix
         ] ++ mapAttrsToList fakeInstanceOptions modules;
         urlPrefix = "https://github.com/nix-community/dream2nix/blob/main/";
       };
