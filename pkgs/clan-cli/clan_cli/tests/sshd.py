@@ -40,7 +40,7 @@ class SshdConfig:
 
 @pytest.fixture(scope="session")
 def sshd_config(test_root: Path) -> Iterator[SshdConfig]:
-    # FIXME, if any parent of the sshd directory is world-writable than sshd will refuse it.
+    # FIXME, if any parent of the sshd directory is world-writable then sshd will refuse it.
     # we use .direnv instead since it's already in .gitignore
     with TemporaryDirectory(prefix="sshd-") as _dir:
         tmpdir = Path(_dir)
