@@ -16,7 +16,7 @@ let
       localModuleSet ? { },
     }:
     (lib.evalModules {
-      # TODO: remove clanLib from specialArgs
+      # TODO: move clanLib from specialArgs to options
       specialArgs = {
         inherit clanLib;
       };
