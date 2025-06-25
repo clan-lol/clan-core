@@ -181,6 +181,18 @@ def run_git_command(command: list) -> tuple[int, str, str]:
         return 1, "", str(e)
 
 
+def get_current_branch_name() -> str:
+    exit_code, branch_name, error = run_git_command(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"]
+    )
+
+    if exit_code != 0:
+        print(f"Error getting branch name: {error}")
+        sys.exit(1)
+
+    return branch_name.strip()
+
+
 def get_latest_commit_info() -> tuple[str, str]:
     """Get the title and body of the latest commit."""
     exit_code, commit_msg, error = run_git_command(
@@ -333,8 +345,7 @@ def create_agit_push(
         if title is not None:
             topic = title
         else:
-            commit_title, _ = get_latest_commit_info()
-            topic = commit_title
+            topic = get_current_branch_name()
 
     refspec = f"{local_branch}:refs/for/{branch}"
     push_cmd = ["git", "push", remote, refspec]
@@ -512,7 +523,7 @@ Examples:
     )
 
     create_parser.add_argument(
-        "-t", "--topic", help="Set PR topic (default: last commit title)"
+        "-t", "--topic", help="Set PR topic (default: current branch name)"
     )
 
     create_parser.add_argument(
