@@ -19,8 +19,6 @@ let
     specialArgs
     ;
 
-  inherit (clan-core.clanLib.inventory) buildInventory;
-
   supportedSystems = [
     "x86_64-linux"
     "aarch64-linux"
@@ -43,18 +41,7 @@ let
     if pkgs != null then pkgs else nixpkgs.legacyPackages.${system}
   );
 
-  # map from machine name to service configuration
-  # { ${machineName} :: Config }
-  inventoryClass = (
-    buildInventory {
-      inherit inventory directory;
-      flakeInputs = config.self.inputs;
-      prefix = config._prefix ++ [ "inventoryClass" ];
-      # TODO: remove inventory.modules, this is here for backwards compatibility
-      localModuleSet =
-        lib.filterAttrs (n: _: !inventory._legacyModules ? ${n}) inventory.modules // config.modules;
-    }
-  );
+  inherit (clan-core) clanLib;
 
   moduleSystemConstructor = {
     # TODO: remove default system once we have a hardware-config mechanism
@@ -62,7 +49,7 @@ let
     darwin = nix-darwin.lib.darwinSystem;
   };
 
-  allMachines = inventoryClass.machines; # <- inventory.machines <- clan.machines
+  allMachines = config.clanInternals.inventoryClass.machines; # <- inventory.machines <- clan.machines
 
   machineClasses = lib.mapAttrs (
     name: _: inventory.machines.${name}.machineClass or "nixos"
@@ -219,7 +206,7 @@ in
             networking.hostName = lib.mkDefault name;
           }
         )
-      ) inventoryClass.machines)
+      ) config.clanInternals.inventoryClass.machines)
 
       # The user can define some machine config here
       # i.e. 'clan.machines.jon = ...'
@@ -241,7 +228,39 @@ in
     inherit darwinConfigurations;
 
     clanInternals = {
-      inherit inventoryClass;
+      inventoryClass =
+        let
+          localModuleSet =
+            lib.filterAttrs (n: _: !inventory._legacyModules ? ${n}) inventory.modules // config.modules;
+          flakeInputs = config.self.inputs;
+        in
+        {
+          _module.args = {
+            inherit clanLib;
+          };
+          imports = [
+            ../inventoryClass/builder/default.nix
+            (lib.modules.importApply ../inventoryClass/service-list-from-inputs.nix {
+              inherit localModuleSet flakeInputs clanLib;
+            })
+            {
+              inherit inventory directory;
+            }
+            (
+              { config, ... }:
+              {
+                distributedServices = clanLib.inventory.mapInstances {
+                  inherit (config) inventory;
+                  inherit localModuleSet flakeInputs;
+                  prefix = [ "distributedServices" ];
+                };
+                machines = config.distributedServices.allMachines;
+              }
+            )
+            ../inventoryClass/inventory-introspection.nix
+          ];
+        };
+
       # TODO: remove this after a month or so
       # This is here for backwards compatibility for older CLI versions
       inventory = config.inventory;

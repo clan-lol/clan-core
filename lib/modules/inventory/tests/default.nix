@@ -1,7 +1,7 @@
 { clan-core, lib, ... }:
 let
   inventory = (
-    import ../build-inventory {
+    import ../../inventoryClass/default.nix {
       inherit lib;
       clanLib = clan-core.clanLib;
     }

@@ -30,7 +30,7 @@
             {
               imports = [
                 serviceModule
-                ../../../lib/inventory/distributed-service/service-module.nix
+                ../../../lib/modules/inventory/distributed-service/service-module.nix
               ];
             }
           ];
@@ -124,7 +124,7 @@
                       _file = "docs flake-module";
                       imports = [
                         { _module.args = { inherit clanLib; }; }
-                        (import ../../../lib/inventory/build-inventory/roles-interface.nix {
+                        (import ../../../lib/modules/inventoryClass/roles-interface.nix {
                           nestedSettingsOption = mkOption {
                             type = types.raw;
                             description = ''
@@ -154,7 +154,7 @@
             _file = "docs mkScope";
           }
           { noInstanceOptions = true; }
-          ../../../lib/inventory/build-inventory/interface.nix
+          ../../../lib/modules/inventoryClass/interface.nix
         ] ++ mapAttrsToList fakeInstanceOptions modules;
         urlPrefix = "https://github.com/nix-community/dream2nix/blob/main/";
       };

@@ -21,7 +21,7 @@ let
         inherit clanLib;
       };
       modules = [
-        ./builder
+        ./builder/default.nix
         (lib.modules.importApply ./service-list-from-inputs.nix {
           inherit flakeInputs clanLib localModuleSet;
         })
@@ -40,7 +40,7 @@ let
 
           }
         )
-        (lib.modules.importApply ./inventory-introspection.nix { inherit clanLib; })
+        ./inventory-introspection.nix
       ];
     }).config;
 in

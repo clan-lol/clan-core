@@ -38,10 +38,10 @@ lib.fix (clanLib: {
     }).config.result.api.schema;
   # ------------------------------------
   # ClanLib functions
-  evalClan = clanLib.callLib ./inventory/eval-clan-modules { };
+  evalClan = clanLib.callLib ./modules/inventory/eval-clan-modules { };
   buildClanModule = clanLib.callLib ./modules { };
-  inventory = clanLib.callLib ./inventory { };
-  modules = clanLib.callLib ./inventory/frontmatter { };
+  inventory = clanLib.callLib ./modules/inventory { };
+  modules = clanLib.callLib ./modules/inventory/frontmatter { };
   test = clanLib.callLib ./test { };
   # Custom types
   types = clanLib.callLib ./types { };
