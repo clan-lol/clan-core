@@ -1,5 +1,8 @@
 { inputs, self, ... }:
 {
+  imports = [
+    ./options/flake-module.nix
+  ];
   perSystem =
     {
       config,
@@ -112,19 +115,20 @@
           clanModulesViaService
           ;
       };
-      devShells.docs = pkgs.callPackage ./shell.nix {
-        inherit (self'.packages) docs clan-cli-docs inventory-api-docs;
-        inherit
-          asciinema-player-js
-          asciinema-player-css
-          module-docs
-          self'
-          ;
-      };
+      devShells.docs = self'.packages.docs.overrideAttrs (_old: {
+        nativeBuildInputs =
+          self'.devShells.default.nativeBuildInputs ++ self'.packages.docs.nativeBuildInputs;
+        shellHook = ''
+          ${self'.devShells.default.shellHook}
+          git_root=$(git rev-parse --show-toplevel)
+          cd "$git_root"
+          runPhase configurePhase
+        '';
+      });
       packages = {
         docs = pkgs.python3.pkgs.callPackage ./default.nix {
           clan-core = self;
-          inherit (self'.packages) clan-cli-docs inventory-api-docs;
+          inherit (self'.packages) clan-cli-docs docs-options inventory-api-docs;
           inherit (inputs) nixpkgs;
           inherit module-docs;
           inherit asciinema-player-js;

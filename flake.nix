@@ -34,6 +34,13 @@
         treefmt-nix.follows = "treefmt-nix";
       };
     };
+
+    # dependencies needed for nuschtos
+    flake-utils.url = "github:numtide/flake-utils";
+    flake-utils.inputs.systems.follows = "systems";
+    nuschtos.url = "github:NuschtOS/search";
+    nuschtos.inputs.nixpkgs.follows = "nixpkgs";
+    nuschtos.inputs.flake-utils.follows = "flake-utils";
   };
 
   outputs =

@@ -179,6 +179,7 @@ nav:
           - 04-fetching-nix-from-python: decisions/04-fetching-nix-from-python.md
           - 05-deployment-parameters: decisions/05-deployment-parameters.md
           - Template: decisions/_template.md
+  - Options: options.md
 
 docs_dir: site
 site_dir: out
