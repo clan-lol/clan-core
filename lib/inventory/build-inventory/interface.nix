@@ -428,8 +428,9 @@ in
         };
 
     services = lib.mkOption {
+      # TODO: deprecate these options
       # services are deprecated in favor of `instances`
-      visible = false;
+      # visible = false;
       description = ''
         Services of the inventory.
 
