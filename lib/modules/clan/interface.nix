@@ -100,7 +100,8 @@ in
     inventory = lib.mkOption {
       type = types.submodule {
         imports = [
-          (lib.modules.importApply ../../inventory/build-inventory/interface.nix { inherit clanLib; })
+          { _module.args = { inherit clanLib; }; }
+          ../../inventory/build-inventory/interface.nix
         ];
       };
       description = ''

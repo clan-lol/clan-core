@@ -18,9 +18,10 @@ let
 
   frontMatterSchema = jsonLib.parseOptions self.clanLib.modules.frontmatterOptions { };
 
-  inventorySchema = jsonLib.parseModule (
-    import ../build-inventory/interface.nix { inherit (self) clanLib; }
-  );
+  inventorySchema = jsonLib.parseModule ({
+    imports = [ ../build-inventory/interface.nix ];
+    _module.args = { inherit (self) clanLib; };
+  });
 
   clanSchema = jsonLib.parseOptions (flakeOptions.clan.type.getSubOptions [ "clan" ]) { };
 

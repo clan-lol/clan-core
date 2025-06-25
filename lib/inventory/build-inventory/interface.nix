@@ -1,10 +1,6 @@
 {
-  clanLib,
-  # workaround for docs rendering to include fake instance options
-  noInstanceOptions ? false,
-}:
-{
   lib,
+  clanLib,
   config,
   options,
   ...
@@ -101,6 +97,7 @@ in
     ./assertions.nix
   ];
   options = {
+    # Internal things
     _inventoryFile = lib.mkOption {
       type = types.path;
       readOnly = true;
@@ -112,6 +109,12 @@ in
       visible = false;
       default = { };
     };
+    noInstanceOptions = lib.mkOption {
+      type = types.bool;
+      internal = true;
+      visible = false;
+      default = false;
+    };
 
     options = lib.mkOption {
       internal = true;
@@ -119,6 +122,8 @@ in
       type = types.raw;
       default = options;
     };
+    # ---------------------------
+
     modules = lib.mkOption {
       # Don't define the type yet
       # We manually transform the value with types.deferredModule.merge later to keep them serializable
@@ -375,7 +380,7 @@ in
     };
 
     instances =
-      if noInstanceOptions then
+      if config.noInstanceOptions then
         { }
       else
         lib.mkOption {
@@ -414,7 +419,14 @@ in
                         default = { };
                         type = types.attrsOf (
                           types.submodule {
-                            imports = [ (import ./roles-interface.nix { inherit clanLib; }) ];
+                            imports = [
+                              {
+                                _module.args = {
+                                  inherit clanLib;
+                                };
+                              }
+                              (import ./roles-interface.nix { })
+                            ];
                           }
                         );
                       };
