@@ -45,8 +45,5 @@ mkShell {
 
     # Add clan command to PATH
     export PATH="$PKG_ROOT/bin":"$PATH"
-
-    # Generate classes.py from schemas
-    ${self'.packages.classgen}/bin/classgen ${self'.legacyPackages.schemas.clan-schema-abstract}/schema.json $PKG_ROOT/clan_lib/nix_models/clan.py
   '';
 }
