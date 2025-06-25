@@ -265,6 +265,15 @@ def open_editor_for_pr() -> tuple[str, str]:
     with tempfile.NamedTemporaryFile(
         mode="w+", suffix="COMMIT_EDITMSG", delete=False
     ) as temp_file:
+        temp_file.flush()
+        temp_file_path = temp_file.name
+
+        for title, body in commits_since_main:
+            temp_file.write(f"{title}\n")
+            if body:
+                temp_file.write(f"{body}\n")
+            temp_file.write("\n")
+
         temp_file.write("\n")
         temp_file.write("# Please enter the PR title on the first line.\n")
         temp_file.write("# Lines starting with '#' will be ignored.\n")
@@ -284,8 +293,6 @@ def open_editor_for_pr() -> tuple[str, str]:
                 for line in body.split("\n"):
                     temp_file.write(f"# {line}\n")
             temp_file.write("#\n")
-        temp_file.flush()
-        temp_file_path = temp_file.name
 
     try:
         editor = os.environ.get("EDITOR", "vim")
