@@ -15,9 +15,7 @@ let
       modules = [
         clanLib.inventory.interface
         {
-          _module.args = {
-            inherit clanLib;
-          };
+          _file = "test file";
           tags.all = [ ];
           tags.nixos = [ ];
           tags.darwin = [ ];

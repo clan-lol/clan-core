@@ -6,6 +6,7 @@ in
   inherit (services) evalClanService mapInstances resolveModule;
   inherit (import ./build-inventory { inherit lib clanLib; }) buildInventory;
   interface = {
+    _file = "inventory/default.nix";
     imports = [
       ./build-inventory/interface.nix
     ];

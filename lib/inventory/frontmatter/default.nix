@@ -56,7 +56,9 @@ let
         {
           constraints.imports = [
             (lib.modules.importApply ../constraints {
+              resolvedRoles = { };
               moduleName = "{moduleName}";
+              instanceName = "{instanceName}";
               allRoles = [ "{roleName}" ];
             })
           ];

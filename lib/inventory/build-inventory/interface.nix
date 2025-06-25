@@ -421,6 +421,7 @@ in
                           types.submodule {
                             imports = [
                               {
+                                _file = "inventory/interface";
                                 _module.args = {
                                   inherit clanLib;
                                 };
