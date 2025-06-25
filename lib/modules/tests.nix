@@ -23,7 +23,7 @@ in
     let
       config = buildClan {
         meta.name = "test";
-        imports = [ ./module.nix ];
+        imports = [ ./clan/module.nix ];
       };
     in
     {
@@ -42,7 +42,7 @@ in
           outPath = ./.;
         };
         meta.name = "test";
-        imports = [ ./module.nix ];
+        imports = [ ./clan/module.nix ];
       };
     in
     {
@@ -82,7 +82,7 @@ in
             inventory.meta.name = "test";
           }
 
-          ./module.nix
+          ./clan/module.nix
           # Explicit output, usually defined by flake-parts
           { options.nixosConfigurations = lib.mkOption { type = lib.types.raw; }; }
         ];

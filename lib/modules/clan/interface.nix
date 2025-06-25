@@ -90,7 +90,7 @@ in
     };
 
     templates = lib.mkOption {
-      type = types.submodule { imports = [ ./templates/interface.nix ]; };
+      type = types.submodule { imports = [ ./templates.nix ]; };
       default = { };
       description = ''
         Define Clan templates.
@@ -100,7 +100,7 @@ in
     inventory = lib.mkOption {
       type = types.submodule {
         imports = [
-          (lib.modules.importApply ../inventory/build-inventory/interface.nix { inherit clanLib; })
+          (lib.modules.importApply ../../inventory/build-inventory/interface.nix { inherit clanLib; })
         ];
       };
       description = ''
@@ -116,13 +116,13 @@ in
         Global information about the clan.
       '';
       type = types.deferredModuleWith {
-        staticModules = [ ../inventory/build-inventory/meta-interface.nix ];
+        staticModules = [ ../../inventory/build-inventory/meta-interface.nix ];
       };
       default = { };
     };
 
     secrets = lib.mkOption {
-      type = types.submodule { imports = [ ./secrets/interface.nix ]; };
+      type = types.submodule { imports = [ ./secrets.nix ]; };
       description = ''
         Secrets related options such as AGE plugins required to encrypt/decrypt secrets using the CLI.
       '';
