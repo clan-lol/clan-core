@@ -19,7 +19,7 @@ let
   frontMatterSchema = jsonLib.parseOptions self.clanLib.modules.frontmatterOptions { };
 
   inventorySchema = jsonLib.parseModule ({
-    imports = [ ../build-inventory/interface.nix ];
+    imports = [ ../../inventoryClass/interface.nix ];
     _module.args = { inherit (self) clanLib; };
   });
 

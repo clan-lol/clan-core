@@ -10,7 +10,7 @@ rec {
     ./modules/flake-module.nix
     ./clanTest/flake-module.nix
     ./introspection/flake-module.nix
-    ./inventory/flake-module.nix
+    ./modules/inventory/flake-module.nix
     ./jsonschema/flake-module.nix
     ./types/flake-module.nix
   ];

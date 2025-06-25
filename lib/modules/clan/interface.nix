@@ -104,7 +104,7 @@ in
             _module.args = { inherit clanLib; };
             _file = "clan interface";
           }
-          ../../inventory/build-inventory/interface.nix
+          ../inventoryClass/interface.nix
         ];
       };
       description = ''
@@ -120,7 +120,7 @@ in
         Global information about the clan.
       '';
       type = types.deferredModuleWith {
-        staticModules = [ ../../inventory/build-inventory/meta-interface.nix ];
+        staticModules = [ ../inventoryClass/meta-interface.nix ];
       };
       default = { };
     };

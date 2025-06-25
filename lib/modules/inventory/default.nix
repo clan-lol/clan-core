@@ -4,11 +4,11 @@ let
 in
 {
   inherit (services) evalClanService mapInstances resolveModule;
-  inherit (import ./build-inventory { inherit lib clanLib; }) buildInventory;
+  inherit (import ../inventoryClass { inherit lib clanLib; }) buildInventory;
   interface = {
-    _file = "inventory/default.nix";
+    _file = "clanLib.inventory.interface";
     imports = [
-      ./build-inventory/interface.nix
+      ../inventoryClass/interface.nix
     ];
     _module.args = { inherit clanLib; };
   };

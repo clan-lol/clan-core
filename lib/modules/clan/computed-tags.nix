@@ -9,7 +9,7 @@
       { machines, ... }:
       {
         # Only compute the default value
-        # The option MUST be defined in ./build-inventory/interface.nix
+        # The option MUST be defined in inventoryClass/interface.nix
         all = lib.mkDefault (builtins.attrNames machines);
         nixos = lib.mkDefault (
           builtins.attrNames (lib.filterAttrs (_n: m: m.machineClass == "nixos") machines)
