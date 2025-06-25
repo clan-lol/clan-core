@@ -1,4 +1,5 @@
-{clanLib}: {
+{ clanLib }:
+{
   _module.args = {
     inherit clanLib;
   };

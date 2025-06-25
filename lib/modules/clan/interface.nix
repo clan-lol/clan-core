@@ -1,6 +1,6 @@
-{ clanLib }:
 {
   lib,
+  clanLib,
   self,
   # TODO: Use dependency injection to allow for testing
   # inventoryInterface,

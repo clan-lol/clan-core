@@ -7,7 +7,7 @@ let
   eval = lib.evalModules {
     class = "nixos";
     modules = [
-      (lib.modules.importApply ./clan/interface.nix { inherit clanLib; })
+      (import ./clan/default.nix { inherit clanLib; })
     ];
   };
   evalDocs = pkgs.nixosOptionsDoc {
