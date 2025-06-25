@@ -21,6 +21,7 @@ interface SizeForHierarchy {
     default: string;
     s: string;
     xs: string;
+    xxs: string;
   };
   headline: {
     default: string;
@@ -62,6 +63,7 @@ const sizeHierarchyMap: SizeForHierarchy = {
     default: cx("size-default"),
     s: cx("size-s"),
     xs: cx("size-xs"),
+    xxs: cx("size-xxs"),
   },
   teaser: {
     default: cx("size-default"),

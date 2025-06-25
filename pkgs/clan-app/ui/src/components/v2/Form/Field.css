@@ -1,0 +1,212 @@
+div.form-field {
+  @apply flex items-center w-full;
+
+  & > div.meta {
+    @apply flex flex-col gap-1 w-full;
+
+    & > label,
+    & > div {
+      @apply w-full;
+      /* remove line height which messes with sizing */
+      @apply leading-none;
+    }
+
+    & > label {
+      @apply flex items-center gap-1;
+    }
+
+    & > label[data-required] {
+      span.typography::after {
+        @apply fg-def-4 ml-1;
+
+        content: "*";
+        font-family: "Commit Mono", monospace;
+        font-size: 0.6875rem;
+      }
+    }
+
+    .tooltip-trigger {
+    }
+  }
+
+  & input,
+  & textarea {
+    @apply w-full px-2 py-1.5 rounded-sm;
+    @apply outline outline-1 outline-def-acc-1 bg-def-1 fg-def-1;
+
+    font-weight: 500;
+    font-family: "Archivo", sans-serif;
+    line-height: 132%;
+
+    &::placeholder {
+      @apply fg-def-4;
+    }
+
+    &:hover {
+      @apply bg-def-acc-1 outline-def-acc-2;
+    }
+
+    &:focus-visible {
+      @apply bg-def-1 outline-def-acc-3;
+
+      box-shadow:
+        0 0 0 0.125rem theme(colors.bg.def.1),
+        0 0 0 0.1875rem theme(colors.border.semantic.info.1);
+    }
+
+    &[data-invalid] {
+      @apply outline-semantic-error-4;
+    }
+
+    &[data-disabled] {
+      @apply outline-def-2 fg-def-4 cursor-not-allowed;
+    }
+
+    &[data-readonly] {
+      @apply outline-def-2 cursor-not-allowed;
+    }
+  }
+
+  &.orientation-vertical {
+    @apply flex-col gap-2;
+  }
+
+  &.orientation-horizontal {
+    @apply flex-row gap-2 justify-between;
+
+    & > div.meta {
+      @apply w-1/2 shrink;
+    }
+
+    & div.input-container,
+    & textarea {
+      @apply w-1/2 grow;
+    }
+
+    &:has(> textarea) {
+      @apply items-start;
+    }
+  }
+
+  div.input-container {
+    @apply inline-block relative w-full;
+
+    /* I'm unsure why I have to do this */
+    @apply leading-none;
+
+    & > input {
+      @apply w-full;
+
+      &.has-icon {
+        @apply pl-7;
+      }
+    }
+
+    & > .icon {
+      @apply absolute left-2 top-1/2 transform -translate-y-1/2;
+      @apply w-[0.875rem] h-[0.875rem] pointer-events-none;
+    }
+  }
+
+  &.form-field-checkbox {
+    @apply items-start;
+
+    & > div.checkbox-control {
+      @apply w-5 h-5 rounded-sm bg-def-1 border border-inv-1 p-[0.0625rem];
+
+      &[data-disabled] {
+        @apply border-def-2;
+      }
+
+      &[data-invalid] {
+        @apply border-semantic-error-4;
+      }
+    }
+  }
+
+  &.size-default {
+    & input,
+    & textarea {
+      font-size: 0.875rem;
+    }
+
+    div.input-container {
+      @apply h-[1.875rem];
+
+      input {
+        @apply h-[1.875rem];
+      }
+    }
+  }
+
+  &.size-s {
+    & input,
+    & textarea {
+      @apply px-1.5 py-1;
+      font-size: 0.75rem;
+    }
+
+    div.input-container {
+      @apply h-[1.25rem];
+
+      input {
+        @apply h-[1.25rem];
+      }
+
+      input.has-icon {
+        @apply pl-6;
+      }
+
+      & > .icon {
+        @apply w-[0.6875rem] h-[0.6875rem] transform -translate-y-1/2;
+      }
+    }
+  }
+
+  &.inverted {
+    & input,
+    & textarea {
+      @apply bg-inv-1 fg-inv-1 outline-inv-acc-1;
+
+      &::placeholder {
+        @apply fg-inv-4;
+      }
+
+      &:hover {
+        @apply bg-inv-acc-2 outline-inv-acc-2;
+      }
+
+      &:focus-visible {
+        @apply bg-inv-acc-4;
+        box-shadow:
+          0 0 0 0.125rem theme(colors.bg.inv.1),
+          0 0 0 0.1875rem theme(colors.border.semantic.info.1);
+      }
+
+      &[data-invalid] {
+        @apply outline-semantic-error-4;
+      }
+    }
+
+    &.form-field-checkbox {
+      & > div.checkbox-control {
+        @apply bg-inv-acc-4;
+
+        &[data-disabled] {
+          @apply bg-def-4 border-none;
+        }
+      }
+    }
+  }
+
+  &.ghost {
+    & input,
+    & textarea {
+      @apply outline-none;
+
+      &:hover {
+        @apply outline-none;
+      }
+    }
+  }
+}

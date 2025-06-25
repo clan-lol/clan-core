@@ -202,7 +202,7 @@ const colorSystem = {
       1: primaries.secondary["950"],
       2: primaries.secondary["900"],
       3: primaries.secondary["700"],
-      4: primaries.secondary["400"],
+      4: primaries.secondary["500"],
     },
     inv: {
       1: primaries.off.white,
@@ -283,6 +283,13 @@ export default plugin.withOptions(
       addUtilities(mkColorUtil(["border-r"], "borderRight", border));
       addUtilities(mkColorUtil(["border-b"], "borderBottom", border));
       addUtilities(mkColorUtil(["border-l"], "borderLeft", border));
+
+      // re-use the border colors for outline colors
+      addUtilities(mkColorUtil(["outline"], "outlineColor", border));
+      addUtilities(mkColorUtil(["outline-t"], "outlineTop", border));
+      addUtilities(mkColorUtil(["outline-r"], "outlineRight", border));
+      addUtilities(mkColorUtil(["outline-b"], "outlineBottom", border));
+      addUtilities(mkColorUtil(["outline-l"], "outlineLeft", border));
     },
   // add configuration which is merged with the final config
   () => ({
