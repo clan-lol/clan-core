@@ -40,7 +40,7 @@ let
 
           }
         )
-        (lib.modules.importApply ./inventory-introspection.nix { inherit clanLib; })
+        ./inventory-introspection.nix
       ];
     }).config;
 in
