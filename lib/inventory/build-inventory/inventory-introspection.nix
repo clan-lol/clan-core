@@ -1,8 +1,7 @@
-{ clanLib }:
 {
   config,
-  options,
   lib,
+  clanLib,
   ...
 }:
 {

@@ -19,8 +19,6 @@ let
     specialArgs
     ;
 
-  inherit (clan-core.clanLib.inventory) buildInventory;
-
   supportedSystems = [
     "x86_64-linux"
     "aarch64-linux"
@@ -43,18 +41,39 @@ let
     if pkgs != null then pkgs else nixpkgs.legacyPackages.${system}
   );
 
-  # map from machine name to service configuration
-  # { ${machineName} :: Config }
-  inventoryClass = (
-    buildInventory {
-      inherit inventory directory;
-      flakeInputs = config.self.inputs;
-      prefix = config._prefix ++ [ "inventoryClass" ];
-      # TODO: remove inventory.modules, this is here for backwards compatibility
+  inherit (clan-core) clanLib;
+  inventoryClass =
+    let
       localModuleSet =
         lib.filterAttrs (n: _: !inventory._legacyModules ? ${n}) inventory.modules // config.modules;
-    }
-  );
+      flakeInputs = config.self.inputs;
+    in
+    {
+      _module.args = {
+        inherit clanLib;
+      };
+      imports = [
+        ../../inventory/build-inventory/builder/default.nix
+        (lib.modules.importApply ../../inventory/build-inventory/service-list-from-inputs.nix {
+          inherit localModuleSet flakeInputs clanLib;
+        })
+        {
+          inherit inventory directory;
+        }
+        (
+          { config, ... }:
+          {
+            distributedServices = clanLib.inventory.mapInstances {
+              inherit (config) inventory;
+              inherit localModuleSet flakeInputs;
+              prefix = [ "distributedServices" ];
+            };
+            machines = config.distributedServices.allMachines;
+          }
+        )
+        ../../inventory/build-inventory/inventory-introspection.nix
+      ];
+    };
 
   moduleSystemConstructor = {
     # TODO: remove default system once we have a hardware-config mechanism
