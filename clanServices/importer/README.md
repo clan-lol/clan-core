@@ -8,13 +8,13 @@ inventory.instances = {
 
   zone1 = {
     module.name = "@clan/importer";
-    roles.default.tags = [ "zone1" ];
+    roles.default.tags.zone1 = {};
     roles.default.extraModules = [ "modules/zone1.nix" ];
   };
 
   base = {
     module.name = "@clan/importer";
-    roles.default.tags = [ "all" ];
+    roles.default.tags.all = {};
     roles.default.extraModules = [ "modules/base.nix" ];
   };
 
