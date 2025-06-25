@@ -36,6 +36,11 @@ pkgs.stdenv.mkDerivation {
     mkdir -p ./site/reference/cli
     cp -af ${module-docs}/* ./site/reference/
     cp -af ${clan-cli-docs}/* ./site/reference/cli/
+    chmod -R +w ./site/reference
+    echo "Generated API documentation in './site/reference/' "
+
+    cp -r ${docs-options} ./site/options-page
+    chmod -R +w ./site/options-page
 
     mkdir -p ./site/static/asciinema-player
     ln -snf ${asciinema-player-js} ./site/static/asciinema-player/asciinema-player.min.js
@@ -56,6 +61,5 @@ pkgs.stdenv.mkDerivation {
 
   installPhase = ''
     cp -a out/ $out/
-    cp -r ${docs-options} $out/options-page
   '';
 }
