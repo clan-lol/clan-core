@@ -9,13 +9,13 @@ let
     _acc: _name: value:
     lib.seq value true
   ) true;
-  inherit (clan-core.clanLib) buildClan;
+  inherit (clan-core.clanLib) clan;
 in
 #######
 {
   test_missing_self =
     let
-      eval = buildClan {
+      eval = clan {
         meta.name = "test";
         directory = ./.;
       };
@@ -27,7 +27,7 @@ in
 
   test_only_required =
     let
-      eval = buildClan {
+      eval = clan {
         self = {
           inputs = { };
           outPath = ./.;
@@ -42,7 +42,7 @@ in
 
   test_all_simple =
     let
-      eval = buildClan {
+      eval = clan {
         self = {
           inputs = { };
         };
@@ -60,7 +60,7 @@ in
 
   test_outputs_clanInternals =
     let
-      eval = buildClan {
+      eval = clan {
         self = {
           inputs = { };
         };
@@ -86,7 +86,7 @@ in
 
   test_fn_simple =
     let
-      eval = buildClan {
+      eval = clan {
         self = {
           inputs = { };
         };
@@ -101,7 +101,7 @@ in
 
   test_fn_clan_core =
     let
-      eval = buildClan {
+      eval = clan {
         self = {
           inputs = { };
         };
@@ -119,7 +119,7 @@ in
 
   test_machines_are_modules =
     let
-      eval = buildClan {
+      eval = clan {
         self = {
           inputs = { };
         };
@@ -135,9 +135,9 @@ in
       ];
     };
 
-  test_buildClan_all_machines =
+  test_clan_all_machines =
     let
-      eval = buildClan {
+      eval = clan {
         self = {
           inputs = { };
         };
@@ -156,9 +156,9 @@ in
       ];
     };
 
-  test_buildClan_specialArgs =
+  test_clan_specialArgs =
     let
-      eval = buildClan {
+      eval = clan {
         self = {
           inputs = { };
         };
@@ -178,9 +178,9 @@ in
       expected = "dream2nix";
     };
 
-  test_buildClan_darwin_machines =
+  test_clan_darwin_machines =
     let
-      eval = buildClan {
+      eval = clan {
         self = {
           inputs = { };
         };
@@ -211,9 +211,9 @@ in
       };
     };
 
-  test_buildClan_all_machines_laziness =
+  test_clan_all_machines_laziness =
     let
-      eval = buildClan {
+      eval = clan {
         self = {
           inputs = { };
         };

@@ -22,6 +22,7 @@ lib.fix (
 
     inherit (buildClanLib)
       buildClan
+      clan
       ;
     /**
       Like callPackage, but doesn't try to automatically detect arguments
