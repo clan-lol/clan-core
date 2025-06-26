@@ -65,5 +65,9 @@ rec {
         ];
       };
     in
-    result.config;
+    # Remove result.config in 26. July
+    result
+    // (lib.mapAttrs (
+      n: v: lib.warn "buildClan output: Use 'config.${n}' instead of '${n}'" v
+    ) result.config);
 }
