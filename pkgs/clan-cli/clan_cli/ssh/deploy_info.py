@@ -93,13 +93,14 @@ class DeployInfo:
 
 
 def find_reachable_host(deploy_info: DeployInfo) -> Remote | None:
-    host = None
+    # If we only have one address, we have no choice but to use it.
+    if len(deploy_info.addrs) == 1:
+        return deploy_info.addrs[0]
+
     for addr in deploy_info.addrs:
         if addr.is_ssh_reachable():
-            host = addr
-            break
-
-    return host
+            return addr
+    return None
 
 
 def ssh_shell_from_deploy(deploy_info: DeployInfo) -> None:
