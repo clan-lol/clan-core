@@ -22,7 +22,7 @@
         dependencies = [
           self
           pkgs.stdenv.drvPath
-          self.clanInternals.machines.${pkgs.hostPlatform.system}.test-backup.config.system.clan.deployment.file
+          self.clan.clanInternals.machines.${pkgs.hostPlatform.system}.test-backup.config.system.clan.deployment.file
         ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
         closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
       in
@@ -162,7 +162,7 @@
               ]
               ++
               # import the inventory generated nixosModules
-              self.clanInternals.inventoryClass.machines.test-backup.machineImports;
+              self.clan.clanInternals.inventoryClass.machines.test-backup.machineImports;
             clan.core.settings.directory = ./.;
           };
 

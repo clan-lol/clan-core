@@ -22,11 +22,8 @@ in
   options.flake = {
     # Backwards compat
     clanInternals = lib.mkOption {
-      description = "Internals as used by the clan cli. Deprecated use clan.clanInternals";
-      visible = false;
-      readOnly = true;
+      description = "Internals as needed by the clan cli.";
       default = config.flake.clan.clanInternals;
-      apply = lib.warn "Use clan.clanInternals instead";
     };
     # The one and only clan module
     clan = lib.mkOption {

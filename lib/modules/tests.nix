@@ -15,20 +15,19 @@ in
 {
   test_missing_self =
     let
-      clan = buildClan {
+      eval = buildClan {
         meta.name = "test";
         directory = ./.;
       };
     in
     {
-      inherit clan;
-      expr = shallowForceAllAttributes clan;
+      expr = shallowForceAllAttributes eval.config;
       expected = true;
     };
 
   test_only_required =
     let
-      clan = buildClan {
+      eval = buildClan {
         self = {
           inputs = { };
           outPath = ./.;
@@ -37,13 +36,13 @@ in
       };
     in
     {
-      expr = shallowForceAllAttributes clan;
+      expr = shallowForceAllAttributes eval.config;
       expected = true;
     };
 
   test_all_simple =
     let
-      config = buildClan {
+      eval = buildClan {
         self = {
           inputs = { };
         };
@@ -55,13 +54,13 @@ in
       };
     in
     {
-      expr = config ? inventory;
+      expr = eval.config ? inventory;
       expected = true;
     };
 
   test_outputs_clanInternals =
     let
-      config = buildClan {
+      eval = buildClan {
         self = {
           inputs = { };
         };
@@ -72,15 +71,12 @@ in
             directory = ./.;
             inventory.meta.name = "test";
           }
-
-          ./clan/module.nix
-          # Explicit output, usually defined by flake-parts
-          { options.nixosConfigurations = lib.mkOption { type = lib.types.raw; }; }
         ];
       };
     in
     {
-      expr = config.clanInternals.inventory.meta;
+      inherit eval;
+      expr = eval.config.clanInternals.inventory.meta;
       expected = {
         description = null;
         icon = null;
@@ -90,7 +86,7 @@ in
 
   test_fn_simple =
     let
-      result = buildClan {
+      eval = buildClan {
         self = {
           inputs = { };
         };
@@ -99,13 +95,13 @@ in
       };
     in
     {
-      expr = lib.isAttrs result.clanInternals;
+      expr = lib.isAttrs eval.config.clanInternals;
       expected = true;
     };
 
   test_fn_clan_core =
     let
-      result = buildClan {
+      eval = buildClan {
         self = {
           inputs = { };
         };
@@ -114,7 +110,7 @@ in
       };
     in
     {
-      expr = builtins.attrNames result.nixosConfigurations;
+      expr = builtins.attrNames eval.config.nixosConfigurations;
       expected = [
         "test-backup"
         "test-inventory-machine"
@@ -123,7 +119,7 @@ in
 
   test_machines_are_modules =
     let
-      result = buildClan {
+      eval = buildClan {
         self = {
           inputs = { };
         };
@@ -132,7 +128,7 @@ in
       };
     in
     {
-      expr = builtins.attrNames result.nixosModules;
+      expr = builtins.attrNames eval.config.nixosModules;
       expected = [
         "clan-machine-test-backup"
         "clan-machine-test-inventory-machine"
@@ -141,7 +137,7 @@ in
 
   test_buildClan_all_machines =
     let
-      result = buildClan {
+      eval = buildClan {
         self = {
           inputs = { };
         };
@@ -153,7 +149,7 @@ in
       };
     in
     {
-      expr = builtins.attrNames result.nixosConfigurations;
+      expr = builtins.attrNames eval.config.nixosConfigurations;
       expected = [
         "machine1"
         "machine2"
@@ -162,7 +158,7 @@ in
 
   test_buildClan_specialArgs =
     let
-      result = buildClan {
+      eval = buildClan {
         self = {
           inputs = { };
         };
@@ -178,13 +174,13 @@ in
       };
     in
     {
-      expr = result.nixosConfigurations.machine2.config.networking.hostName;
+      expr = eval.config.nixosConfigurations.machine2.config.networking.hostName;
       expected = "dream2nix";
     };
 
   test_buildClan_darwin_machines =
     let
-      result = buildClan {
+      eval = buildClan {
         self = {
           inputs = { };
         };
@@ -201,10 +197,10 @@ in
       };
     in
     {
-      inherit result;
+      result = eval;
       expr = {
-        nixos = builtins.attrNames result.nixosConfigurations;
-        darwin = builtins.attrNames result.darwinConfigurations;
+        nixos = builtins.attrNames eval.config.nixosConfigurations;
+        darwin = builtins.attrNames eval.config.darwinConfigurations;
       };
       expected = {
         nixos = [
@@ -217,7 +213,7 @@ in
 
   test_buildClan_all_machines_laziness =
     let
-      result = buildClan {
+      eval = buildClan {
         self = {
           inputs = { };
         };
@@ -228,7 +224,7 @@ in
       };
     in
     {
-      expr = builtins.attrNames result.nixosConfigurations;
+      expr = builtins.attrNames eval.config.nixosConfigurations;
       expected = [
         "machine1"
       ];

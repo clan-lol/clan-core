@@ -46,7 +46,7 @@ in
     inherit testFlake;
 
     expr =
-      testFlake.clanInternals.inventoryClass.distributedServices.importedModulesEvaluated.self-wifi.config;
+      testFlake.clan.clanInternals.inventoryClass.distributedServices.importedModulesEvaluated.self-wifi.config;
     expected = 1;
 
     # expr = {

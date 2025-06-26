@@ -8,9 +8,9 @@ let
     { modulesPath, pkgs, ... }:
     let
       dependencies = [
-        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.toplevel
-        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.diskoScript
-        self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.clan.deployment.file
+        self.clan.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.toplevel
+        self.clan.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.diskoScript
+        self.clan.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.clan.deployment.file
         pkgs.stdenv.drvPath
         pkgs.bash.drvPath
         pkgs.nixos-anywhere
