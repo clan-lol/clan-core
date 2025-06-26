@@ -34,6 +34,7 @@
     Public attributes of buildClan. As specified in publicAttrs.
   */
   buildClanWith =
+
     {
       clan-core,
       # TODO: Below should be module options such that the user can override them?

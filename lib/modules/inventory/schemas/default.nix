@@ -1,6 +1,7 @@
 {
   self,
   self',
+  lib,
   pkgs,
   flakeOptions,
   ...
@@ -23,7 +24,19 @@ let
     _module.args = { inherit (self) clanLib; };
   });
 
-  clanSchema = jsonLib.parseOptions (flakeOptions.clan.type.getSubOptions [ "clan" ]) { };
+  opts = (flakeOptions.flake.type.getSubOptions [ "flake" ]);
+  clanOpts = opts.clan.type.getSubOptions [ "clan" ];
+  include = [
+    "directory"
+    "inventory"
+    "machines"
+    "meta"
+    "modules"
+    "outputs"
+    "secrets"
+    "templates"
+  ];
+  clanSchema = jsonLib.parseOptions (lib.filterAttrs (n: _v: lib.elem n include) clanOpts) { };
 
   renderSchema = pkgs.writers.writePython3Bin "render-schema" {
     flakeIgnore = [

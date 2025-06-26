@@ -187,8 +187,6 @@ ClanMetaType = Unknown
 ClanModulesType = dict[str, dict[str, Any] | list[Any] | bool | float | int | str | None]
 ClanOutputsType = Output
 ClanSecretsType = Secret
-ClanSelfType = dict[str, Any] | list[Any] | bool | float | int | str
-ClanSpecialargsType = dict[str, dict[str, Any] | list[Any] | bool | float | int | str | None]
 ClanTemplatesType = Template
 
 class Clan(TypedDict):
@@ -199,6 +197,4 @@ class Clan(TypedDict):
     modules: NotRequired[ClanModulesType]
     outputs: NotRequired[ClanOutputsType]
     secrets: NotRequired[ClanSecretsType]
-    self: NotRequired[ClanSelfType]
-    specialArgs: NotRequired[ClanSpecialargsType]
     templates: NotRequired[ClanTemplatesType]
