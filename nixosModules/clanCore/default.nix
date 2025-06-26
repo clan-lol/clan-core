@@ -3,7 +3,6 @@
   imports =
     [
       ./backups.nix
-      ./machine-id
       ./defaults.nix
       ./facts
       ./inventory
@@ -19,6 +18,7 @@
     ++ lib.optionals (_class == "nixos") [
       ./nixos-facter.nix
       ./vm.nix
+      ./machine-id
       ./wayland-proxy-virtwl.nix
       ./zerotier
       ./zfs.nix
