@@ -17,6 +17,13 @@ in
     ../shared.nix
   ];
   config = {
+
+    warnings = [
+      "The clan.zerotier module is deprecated and will be removed on 2025-07-15.
+      Please migrate to user-maintained configuration or the new equivalent clan services
+      (https://docs.clan.lol/reference/clanServices)."
+    ];
+
     systemd.services.zerotier-inventory-autoaccept =
       let
         machines = uniqueStrings (roles.moon.machines ++ roles.controller.machines ++ roles.peer.machines);

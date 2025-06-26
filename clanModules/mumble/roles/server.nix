@@ -37,8 +37,11 @@ in
   };
 
   config = {
+
     warnings = [
-      "The clan.mumble module is deprecated and will be removed on 2025-07-15. Please migrate to user-maintained configuration."
+      "The clan.mumble module is deprecated and will be removed on 2025-07-15.
+      Please migrate to user-maintained configuration or the new equivalent clan services
+      (https://docs.clan.lol/reference/clanServices)."
     ];
 
     services.murmur = {

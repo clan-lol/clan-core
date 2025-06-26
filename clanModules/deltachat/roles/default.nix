@@ -5,7 +5,9 @@
 }:
 {
   warnings = [
-    "The clan.deltachat module is deprecated and will be removed on 2025-07-15. Please migrate to user-maintained configuration."
+    "The clan.deltachat module is deprecated and will be removed on 2025-07-15.
+      Please migrate to user-maintained configuration or the new equivalent clan services
+      (https://docs.clan.lol/reference/clanServices)."
   ];
 
   networking.firewall.interfaces."zt+".allowedTCPPorts = [ 25 ]; # smtp with other hosts
