@@ -6,7 +6,8 @@
   clanLib,
   ...
 }:
-{
+rec {
+  # TODO: rename to clanModule
   flakePartsModule = {
     _module.args = {
       inherit clanLib;
@@ -34,53 +35,35 @@
     Public attributes of buildClan. As specified in publicAttrs.
   */
   buildClanWith =
-
     {
       clan-core,
       # TODO: Below should be module options such that the user can override them?
       nixpkgs,
-      publicAttrs ? import ./public.nix,
       nix-darwin ? null,
     }:
     {
       ## Inputs
       self ? lib.warn "Argument: 'self' must be set when using 'buildClan'." null, # Reference to the current flake
-      # allows to include machine-specific modules i.e. machines.${name} = { ... }
-      # A map from arch to pkgs, if specified this nixpkgs will be only imported once for each system.
-      # This improves performance, but all nipxkgs.* options will be ignored.
-      # deadnix: skip
-      inventory ? { },
-      ## Special inputs (not passed to the module system as config)
       specialArgs ? { }, # Extra arguments to pass to nixosSystem i.e. useful to make self available
-      ##
       ...
-    }@attrs:
+    }@m:
     let
-      eval = import ./function-adapter.nix {
-        inherit
-          lib
-          nixpkgs
-          nix-darwin
-          clan-core
-          self
-          ;
-        inherit specialArgs;
-      };
-      rest = builtins.removeAttrs attrs [ "specialArgs" ];
-      result = eval {
-        imports = [
-          rest
-          # implementation
-          ./clan/module.nix
+      result = lib.evalModules {
+        specialArgs = {
+          inherit (clan-core) clanLib;
+          inherit
+            self
+            clan-core
+            nixpkgs
+            nix-darwin
+            ;
+        };
+        modules = [
+          # buildClan arguments are equivalent to specifying a module
+          m
+          flakePartsModule
         ];
       };
     in
-    {
-      clan = lib.genAttrs publicAttrs.clan (
-        name:
-        result.clanInternals.${name}
-          or (throw "Output: clanInternals.${name} not found. Check: ${result.file}")
-      );
-    }
-    // lib.filterAttrs (name: _v: builtins.elem name publicAttrs.topLevel) result;
+    result.config;
 }

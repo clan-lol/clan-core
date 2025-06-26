@@ -1,58 +1,49 @@
 {
   lib,
-  nixpkgs,
   clan-core,
-  buildClan,
   ...
 }:
 let
-  evalClan = import ./function-adapter.nix {
-    inherit lib nixpkgs clan-core;
-    self = ./.;
-  };
-
   # Shallowly force all attribute values to be evaluated.
   shallowForceAllAttributes = lib.foldlAttrs (
     _acc: _name: value:
     lib.seq value true
   ) true;
+  inherit (clan-core.clanLib) buildClan;
 in
 #######
 {
   test_missing_self =
     let
-      config = buildClan {
+      clan = buildClan {
         meta.name = "test";
-        imports = [ ./clan/module.nix ];
+        directory = ./.;
       };
     in
     {
-      expr = shallowForceAllAttributes config;
-      expectedError = {
-        type = "ThrownError";
-        msg = "A definition for option `directory' is not of type `absolute path*";
-      };
+      inherit clan;
+      expr = shallowForceAllAttributes clan;
+      expected = true;
     };
 
   test_only_required =
     let
-      config = evalClan {
+      clan = buildClan {
         self = {
           inputs = { };
           outPath = ./.;
         };
         meta.name = "test";
-        imports = [ ./clan/module.nix ];
       };
     in
     {
-      expr = shallowForceAllAttributes config;
+      expr = shallowForceAllAttributes clan;
       expected = true;
     };
 
   test_all_simple =
     let
-      config = evalClan {
+      config = buildClan {
         self = {
           inputs = { };
         };
@@ -70,7 +61,7 @@ in
 
   test_outputs_clanInternals =
     let
-      config = evalClan {
+      config = buildClan {
         self = {
           inputs = { };
         };
