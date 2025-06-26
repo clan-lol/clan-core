@@ -3,7 +3,6 @@ clan-core:
   config,
   lib,
   self,
-  inputs,
   ...
 }:
 let
@@ -29,10 +28,7 @@ in
       default = { };
       type = types.submoduleWith {
         specialArgs = {
-          inherit clan-core self;
-          inherit (inputs) nixpkgs nix-darwin;
-          # TODO: inject the inventory interface
-          # inventoryInterface = {};
+          inherit self;
         };
         modules = [
           clan-core.modules.clan.default

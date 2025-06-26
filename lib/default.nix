@@ -1,8 +1,6 @@
 {
   lib,
   self,
-  nixpkgs,
-  nix-darwin ? null,
   ...
 }:
 # Produces the
@@ -14,7 +12,6 @@ lib.fix (
     buildClanLib = (
       clanLib.callLib ./modules {
         clan-core = self;
-        inherit nixpkgs nix-darwin;
       }
     );
   in

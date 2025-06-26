@@ -2,10 +2,8 @@
 ## This is only a wrapper such that 'clan' can be called as a function.
 {
   lib,
-  clanLib,
   clan-core,
-  nixpkgs,
-  nix-darwin,
+  ...
 }:
 rec {
   buildClan =
@@ -18,12 +16,8 @@ rec {
     }@m:
     lib.evalModules {
       specialArgs = {
-        inherit (clan-core) clanLib;
         inherit
           self
-          clan-core
-          nixpkgs
-          nix-darwin
           ;
       };
       modules = [
