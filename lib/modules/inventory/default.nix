@@ -3,7 +3,7 @@ let
   services = clanLib.callLib ./distributed-service/inventory-adapter.nix { };
 in
 {
-  inherit (services) evalClanService mapInstances resolveModule;
+  inherit (services) mapInstances;
   interface = {
     _file = "clanLib.inventory.interface";
     imports = [

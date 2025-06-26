@@ -56,7 +56,7 @@ let
       };
     };
 
-  eval = clanLib.inventory.evalClanService {
+  eval = clanLib.evalService {
     modules = [
       (service-A)
     ];

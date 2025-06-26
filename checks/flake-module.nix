@@ -81,7 +81,7 @@ in
                 _n: m:
                 let
                   schema =
-                    (self.clanLib.inventory.evalClanService {
+                    (self.clanLib.evalService {
                       modules = [ m ];
                       prefix = [
                         "checks"

@@ -46,7 +46,7 @@ in
       legacyPackages.clan-service-module-interface =
         (pkgs.nixosOptionsDoc {
           options =
-            (self.clanLib.inventory.evalClanService {
+            (self.clanLib.evalService {
               modules = [ ];
               prefix = [ ];
             }).options;

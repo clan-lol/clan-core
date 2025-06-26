@@ -23,22 +23,19 @@
 
       baseHref = "/options-page/";
 
-      evalService =
-        serviceModule:
-        lib.evalModules {
-          modules = [
-            {
-              imports = [
-                serviceModule
-                ../../../lib/modules/inventory/distributed-service/service-module.nix
-              ];
-            }
-          ];
-        };
+      getRoles =
+        module:
+        (clanLib.evalService {
+          modules = [ module ];
+          prefix = [ ];
+        }).config.roles;
 
-      getRoles = module: (evalService module).config.roles;
-
-      getManifest = module: (evalService module).config.manifest;
+      getManifest =
+        module:
+        (clanLib.evalService {
+          modules = [ module ];
+          prefix = [ ];
+        }).config.manifest;
 
       loadFile = file: if builtins.pathExists file then builtins.readFile file else "";
 

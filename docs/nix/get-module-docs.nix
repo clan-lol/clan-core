@@ -41,7 +41,7 @@
   clanModulesViaService = lib.mapAttrs (
     _moduleName: moduleValue:
     let
-      evaluatedService = clan-core.clanLib.inventory.evalClanService {
+      evaluatedService = clan-core.clanLib.evalService {
         modules = [ moduleValue ];
         prefix = [ ];
       };
