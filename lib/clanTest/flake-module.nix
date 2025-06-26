@@ -20,7 +20,7 @@ in
 {
   # A function that returns an extension to runTest
   # TODO: remove this from clanLib, add to legacyPackages, simplify signature
-  flake.modules.nixosVmTest.clanTest =
+  flake.modules.nixosTest.clanTest =
     { config, hostPkgs, ... }:
     let
       testName = config.name;
