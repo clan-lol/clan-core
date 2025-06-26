@@ -170,6 +170,7 @@ in
     {
       imports = [
         ../test/container-test-driver/driver-module.nix
+
       ];
       options = {
         clanSettings = mkOption {
@@ -197,7 +198,7 @@ in
               self = throw "set clan.directory in the test";
             };
             modules = [
-              clanLib.module
+              clan-core.modules.clan.default
               {
                 _prefix = [
                   "checks"

@@ -19,15 +19,6 @@ lib.fix (
     );
   in
   {
-    module = {
-      _class = "clan";
-      _module.args = {
-        inherit clanLib;
-      };
-      imports = [
-        ./modules/clan/default.nix
-      ];
-    };
 
     inherit (buildClanLib)
       buildClan

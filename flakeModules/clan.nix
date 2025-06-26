@@ -9,8 +9,6 @@ clan-core:
 let
   inherit (lib) types;
 
-  clanLib = clan-core.clanLib;
-
 in
 {
   # Backwards compatibility
@@ -37,7 +35,7 @@ in
           # inventoryInterface = {};
         };
         modules = [
-          clanLib.module
+          clan-core.modules.clan.default
         ];
       };
     };

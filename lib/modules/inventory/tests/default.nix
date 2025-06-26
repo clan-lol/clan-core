@@ -11,7 +11,7 @@ let
     lib.evalModules {
       specialArgs = { inherit clan-core nix-darwin clanLib; };
       modules = [
-        ../../clan/default.nix
+        clan-core.modules.clan.default
         {
           self = { };
         }
