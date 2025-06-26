@@ -82,13 +82,13 @@ let
       };
     };
 
-  eval = clanLib.inventory.evalClanService {
+  eval = clanLib.evalService {
     modules = [
       (consumer-A)
     ];
     prefix = [ ];
   };
-  eval2 = clanLib.inventory.evalClanService {
+  eval2 = clanLib.evalService {
     modules = [
       (consumer-B)
     ];

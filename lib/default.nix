@@ -20,22 +20,7 @@ lib.fix (clanLib: {
     clan-core = self;
     inherit nixpkgs nix-darwin;
   };
-  evalServiceSchema =
-    self:
-    {
-      moduleSpec,
-      flakeInputs ? self.inputs,
-      localModuleSet ? self.clan.modules,
-    }:
-    let
-      resolvedModule = clanLib.inventory.resolveModule {
-        inherit moduleSpec flakeInputs localModuleSet;
-      };
-    in
-    (clanLib.inventory.evalClanService {
-      modules = [ resolvedModule ];
-      prefix = [ ];
-    }).config.result.api.schema;
+  evalService = clanLib.callLib ./modules/inventory/distributed-service/evalService.nix { };
   # ------------------------------------
   # ClanLib functions
   evalClan = clanLib.callLib ./modules/inventory/eval-clan-modules { };

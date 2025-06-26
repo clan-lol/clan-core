@@ -10,7 +10,7 @@ let
   inspectModule =
     inputName: moduleName: module:
     let
-      eval = clanLib.inventory.evalClanService {
+      eval = clanLib.evalService {
         modules = [ module ];
         prefix = [
           inputName
