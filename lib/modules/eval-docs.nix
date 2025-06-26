@@ -5,9 +5,6 @@
 }:
 let
   eval = lib.evalModules {
-    # TODO: Move this into a 'classForMachines' or something
-    # @enzime why do we need this here?
-    class = "nixos";
     modules = [
       clanLib.module
     ];
