@@ -49,10 +49,22 @@ in
     darwinConfigurations = lib.mkOption {
       type = types.lazyAttrsOf types.raw;
       description = "darwinConfigurations produced by clan for a specific machine";
+      apply = lib.mapAttrs (
+        k: v: {
+          _file = "#nixosModules.${k}";
+          imports = [ v ];
+        }
+      );
     };
     darwinModules = lib.mkOption {
       type = types.lazyAttrsOf types.deferredModule;
       description = "darwinModules produced by clan for a specific machine";
+      apply = lib.mapAttrs (
+        k: v: {
+          _file = "#nixosModules.${k}";
+          imports = [ v ];
+        }
+      );
     };
   };
   # Use normal prio, to allow merging with user values
