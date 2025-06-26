@@ -10,6 +10,7 @@
 module:
 (lib.evalModules {
   specialArgs = {
+    inherit (clan-core) clanLib;
     inherit
       self
       clan-core
@@ -18,7 +19,7 @@ module:
       ;
   };
   modules = [
-    (import ./clan/default.nix { inherit (clan-core) clanLib; })
+    ./clan/default.nix
     module
     {
       inherit specialArgs;

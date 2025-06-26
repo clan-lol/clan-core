@@ -57,6 +57,8 @@ in
       legacyPackages.evalTests-inventory = import ./tests {
         inherit lib;
         clan-core = self;
+        inherit (self) clanLib;
+        inherit (self.inputs) nix-darwin;
       };
 
       checks = {
