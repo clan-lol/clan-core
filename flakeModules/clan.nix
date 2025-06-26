@@ -11,45 +11,58 @@ let
 
   buildClanModule = clan-core.clanLib.buildClanModule;
 
-  publicAttrs = import ../lib/modules/public.nix;
-  # Create output options only for listed attributes
-  # TODO: Refactor this into an explicit module, so we can have description and other attributes to be listed in flake-parts
-  outputModule = {
-    clan = lib.genAttrs publicAttrs.clan (
-      name: config.clan.${name} or (throw "Output: clan.${name} not found.")
-    );
-    topLevel = {
-      options = lib.genAttrs publicAttrs.topLevel (_: lib.mkOption { });
-      config = lib.genAttrs publicAttrs.topLevel (
-        name: config.clan.${name} or (throw "Output: clan.${name} not found.")
-      );
-    };
-  };
 in
 {
-  options.clan = lib.mkOption {
-    default = { };
-    type = types.submoduleWith {
-      specialArgs = {
-        inherit clan-core self;
-        inherit (inputs) nixpkgs nix-darwin;
-        # TODO: inject the inventory interface
-        # inventoryInterface = {};
+  # Backwards compatibility
+  imports = [
+    (lib.mkRenamedOptionModule [ "clan" ] [ "flake" "clan" ])
+  ];
+  # Our module is completely public, so we dont need to map it
+  # Mapped top level outputs
+  options.flake = {
+    # Backwards compat
+    clanInternals = lib.mkOption {
+      description = "Internals as used by the clan cli. Deprecated use clan.clanInternals";
+      visible = false;
+      readOnly = true;
+      default = config.flake.clan.clanInternals;
+      apply = lib.warn "Use clan.clanInternals instead";
+    };
+    # The one and only clan module
+    clan = lib.mkOption {
+      description = "The evaluated clan module";
+      default = { };
+      type = types.submoduleWith {
+        specialArgs = {
+          inherit clan-core self;
+          inherit (inputs) nixpkgs nix-darwin;
+          # TODO: inject the inventory interface
+          # inventoryInterface = {};
+        };
+        modules = [
+          buildClanModule.flakePartsModule
+        ];
       };
-      modules = [
-        buildClanModule.flakePartsModule
-      ];
+    };
+
+    # Mapped flake toplevel outputs
+    darwinConfigurations = lib.mkOption {
+      type = types.lazyAttrsOf types.raw;
+      description = "darwinConfigurations produced by clan for a specific machine";
+    };
+    darwinModules = lib.mkOption {
+      type = types.lazyAttrsOf types.deferredModule;
+      description = "darwinModules produced by clan for a specific machine";
     };
   };
-
-  options.flake = {
-    clan = lib.mkOption { type = types.raw; };
-  } // outputModule.topLevel.options;
-
-  config = {
-    flake = {
-      clan = outputModule.clan;
-    } // outputModule.topLevel.config;
+  # Use normal prio, to allow merging with user values
+  config.flake = {
+    inherit (config.flake.clan)
+      nixosConfigurations
+      nixosModules
+      darwinConfigurations
+      darwinModules
+      ;
   };
 
   _file = __curPos.file;
