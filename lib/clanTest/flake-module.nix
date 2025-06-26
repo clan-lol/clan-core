@@ -197,7 +197,7 @@ in
               self = throw "set clan.directory in the test";
             };
             modules = [
-              clanLib.buildClanModule.flakePartsModule
+              clanLib.module
               {
                 _prefix = [
                   "checks"

@@ -9,7 +9,7 @@ let
     # @enzime why do we need this here?
     class = "nixos";
     modules = [
-      clanLib.buildClanModule.flakePartsModule
+      clanLib.module
     ];
   };
   evalDocs = pkgs.nixosOptionsDoc {

@@ -4,19 +4,19 @@
 {
   lib,
   clanLib,
-  ...
+  clan-core,
+  nixpkgs,
+  nix-darwin,
 }:
 rec {
-  # TODO: rename to clanModule
-  flakePartsModule = {
-    _module.args = {
-      inherit clanLib;
-    };
-    imports = [
-      ./clan/default.nix
-    ];
+  # ------------------------------------
+  buildClan = buildClanWith {
+    inherit
+      clan-core
+      nixpkgs
+      nix-darwin
+      ;
   };
-
   /**
     A function that takes some arguments such as 'clan-core' and returns the 'buildClan' function.
 
@@ -61,7 +61,7 @@ rec {
         modules = [
           # buildClan arguments are equivalent to specifying a module
           m
-          flakePartsModule
+          clanLib.module
         ];
       };
     in
