@@ -8,40 +8,58 @@
 # Produces the
 # 'clanLib' attribute set
 # Wrapped with fix, so we can depend on other clanLib functions without passing the whole flake
-lib.fix (clanLib: {
-  /**
-    Like callPackage, but doesn't try to automatically detect arguments
-    'lib' and 'clanLib' are always passed, plus the additional arguments
-  */
-  callLib = file: args: import file ({ inherit lib clanLib; } // args);
+lib.fix (
+  clanLib:
+  let
+    buildClanLib = (
+      clanLib.callLib ./modules {
+        clan-core = self;
+        inherit nixpkgs nix-darwin;
+      }
+    );
+  in
+  {
+    module = {
+      _class = "clan";
+      _module.args = {
+        inherit clanLib;
+      };
+      imports = [
+        ./modules/clan/default.nix
+      ];
+    };
 
-  # ------------------------------------
-  buildClan = clanLib.buildClanModule.buildClanWith {
-    clan-core = self;
-    inherit nixpkgs nix-darwin;
-  };
-  evalService = clanLib.callLib ./modules/inventory/distributed-service/evalService.nix { };
-  # ------------------------------------
-  # ClanLib functions
-  evalClan = clanLib.callLib ./modules/inventory/eval-clan-modules { };
-  buildClanModule = clanLib.callLib ./modules { };
-  inventory = clanLib.callLib ./modules/inventory { };
-  modules = clanLib.callLib ./modules/inventory/frontmatter { };
-  test = clanLib.callLib ./test { };
-  # Custom types
-  types = clanLib.callLib ./types { };
+    inherit (buildClanLib)
+      buildClan
+      ;
+    /**
+      Like callPackage, but doesn't try to automatically detect arguments
+      'lib' and 'clanLib' are always passed, plus the additional arguments
+    */
+    callLib = file: args: import file ({ inherit lib clanLib; } // args);
 
-  # Plain imports.
-  introspection = import ./introspection { inherit lib; };
-  jsonschema = import ./jsonschema { inherit lib; };
-  facts = import ./facts.nix { inherit lib; };
+    evalService = clanLib.callLib ./modules/inventory/distributed-service/evalService.nix { };
+    # ------------------------------------
+    # ClanLib functions
+    evalClan = clanLib.callLib ./modules/inventory/eval-clan-modules { };
+    inventory = clanLib.callLib ./modules/inventory { };
+    modules = clanLib.callLib ./modules/inventory/frontmatter { };
+    test = clanLib.callLib ./test { };
+    # Custom types
+    types = clanLib.callLib ./types { };
 
-  # flakes
-  flakes = clanLib.callLib ./flakes.nix {
-    clan-core = self;
-  };
+    # Plain imports.
+    introspection = import ./introspection { inherit lib; };
+    jsonschema = import ./jsonschema { inherit lib; };
+    facts = import ./facts.nix { inherit lib; };
 
-  # deprecated
-  # remove when https://git.clan.lol/clan/clan-core/pulls/3212 is implemented
-  inherit (self.inputs.nix-select.lib) select;
-})
+    # flakes
+    flakes = clanLib.callLib ./flakes.nix {
+      clan-core = self;
+    };
+
+    # deprecated
+    # remove when https://git.clan.lol/clan/clan-core/pulls/3212 is implemented
+    inherit (self.inputs.nix-select.lib) select;
+  }
+)

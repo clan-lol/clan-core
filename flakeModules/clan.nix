@@ -9,7 +9,7 @@ clan-core:
 let
   inherit (lib) types;
 
-  buildClanModule = clan-core.clanLib.buildClanModule;
+  clanLib = clan-core.clanLib;
 
 in
 {
@@ -40,7 +40,7 @@ in
           # inventoryInterface = {};
         };
         modules = [
-          buildClanModule.flakePartsModule
+          clanLib.module
         ];
       };
     };
