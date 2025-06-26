@@ -1,18 +1,28 @@
-{ clan-core, lib, ... }:
+{
+  clan-core,
+  nix-darwin,
+  lib,
+  clanLib,
+}:
 let
-  inventory = (
-    import ../../inventoryClass/default.nix {
-      inherit lib;
-      clanLib = clan-core.clanLib;
-    }
-  );
-  inherit (inventory) buildInventory;
+  # TODO: Unify these tests with clan tests
+  clan =
+    m:
+    lib.evalModules {
+      specialArgs = { inherit clan-core nix-darwin clanLib; };
+      modules = [
+        ../../clan/default.nix
+        {
+          self = { };
+        }
+        m
+      ];
+    };
 in
 {
   test_inventory_a =
     let
-      compiled = buildInventory {
-        flakeInputs = { };
+      eval = clan {
         inventory = {
           machines = {
             A = { };
@@ -28,10 +38,11 @@ in
       };
     in
     {
+      inherit eval;
       expr = {
         legacyModule = lib.filterAttrs (
           name: _: name == "isClanModule"
-        ) compiled.machines.A.compiledServices.legacyModule;
+        ) eval.config.clanInternals.inventoryClass.machines.A.compiledServices.legacyModule;
       };
       expected = {
         legacyModule = {
@@ -41,24 +52,21 @@ in
 
   test_inventory_empty =
     let
-      compiled = buildInventory {
-        flakeInputs = { };
+      eval = clan {
         inventory = { };
         directory = ./.;
       };
     in
     {
       # Empty inventory should return an empty module
-      expr = compiled.machines;
+      expr = eval.config.clanInternals.inventoryClass.machines;
       expected = { };
     };
   test_inventory_role_resolve =
     let
-      compiled = buildInventory {
-        flakeInputs = { };
+      eval = clan {
         directory = ./.;
         inventory = {
-          modules = clan-core.clanModules;
           services = {
             borgbackup.instance_1 = {
               roles.server.machines = [ "backup_server" ];
@@ -78,10 +86,17 @@ in
     in
     {
       expr = {
-        m1 = (compiled.machines."backup_server").compiledServices.borgbackup.matchedRoles;
-        m2 = (compiled.machines."client_1_machine").compiledServices.borgbackup.matchedRoles;
-        m3 = (compiled.machines."client_2_machine").compiledServices.borgbackup.matchedRoles;
-        inherit ((compiled.machines."client_2_machine").compiledServices.borgbackup)
+        m1 =
+          (eval.config.clanInternals.inventoryClass.machines."backup_server")
+          .compiledServices.borgbackup.matchedRoles;
+        m2 =
+          (eval.config.clanInternals.inventoryClass.machines."client_1_machine")
+          .compiledServices.borgbackup.matchedRoles;
+        m3 =
+          (eval.config.clanInternals.inventoryClass.machines."client_2_machine")
+          .compiledServices.borgbackup.matchedRoles;
+        inherit
+          ((eval.config.clanInternals.inventoryClass.machines."client_2_machine").compiledServices.borgbackup)
           resolvedRolesPerInstance
           ;
       };
@@ -113,11 +128,9 @@ in
     };
   test_inventory_tag_resolve =
     let
-      configs = buildInventory {
-        flakeInputs = { };
+      eval = clan {
         directory = ./.;
         inventory = {
-          modules = clan-core.clanModules;
           services = {
             borgbackup.instance_1 = {
               roles.client.tags = [ "backup" ];
@@ -136,7 +149,8 @@ in
       };
     in
     {
-      expr = configs.machines.client_1_machine.compiledServices.borgbackup.resolvedRolesPerInstance;
+      expr =
+        eval.config.clanInternals.inventoryClass.machines.client_1_machine.compiledServices.borgbackup.resolvedRolesPerInstance;
       expected = {
         instance_1 = {
           client = {
@@ -154,11 +168,9 @@ in
 
   test_inventory_multiple_roles =
     let
-      configs = buildInventory {
-        flakeInputs = { };
+      eval = clan {
         directory = ./.;
         inventory = {
-          modules = clan-core.clanModules;
           services = {
             borgbackup.instance_1 = {
               roles.client.machines = [ "machine_1" ];
@@ -172,7 +184,8 @@ in
       };
     in
     {
-      expr = configs.machines.machine_1.compiledServices.borgbackup.matchedRoles;
+      expr =
+        eval.config.clanInternals.inventoryClass.machines.machine_1.compiledServices.borgbackup.matchedRoles;
       expected = [
         "client"
         "server"
@@ -181,11 +194,9 @@ in
 
   test_inventory_module_doesnt_exist =
     let
-      configs = buildInventory {
-        flakeInputs = { };
+      eval = clan {
         directory = ./.;
         inventory = {
-          modules = clan-core.clanModules;
           services = {
             fanatasy.instance_1 = {
               roles.default.machines = [ "machine_1" ];
@@ -198,8 +209,8 @@ in
       };
     in
     {
-      inherit configs;
-      expr = configs.machines.machine_1.machineImports;
+      inherit eval;
+      expr = eval.config.clanInternals.inventoryClass.machines.machine_1.machineImports;
       expectedError = {
         type = "ThrownError";
         msg = "ClanModule not found*";
@@ -208,11 +219,9 @@ in
 
   test_inventory_role_doesnt_exist =
     let
-      configs = buildInventory {
-        flakeInputs = { };
+      eval = clan {
         directory = ./.;
         inventory = {
-          modules = clan-core.clanModules;
           services = {
             borgbackup.instance_1 = {
               roles.roleXYZ.machines = [ "machine_1" ];
@@ -225,8 +234,8 @@ in
       };
     in
     {
-      inherit configs;
-      expr = configs.machines.machine_1.machineImports;
+      inherit eval;
+      expr = eval.config.clanInternals.inventoryClass.machines.machine_1.machineImports;
       expectedError = {
         type = "ThrownError";
         msg = ''Roles \["roleXYZ"\] are not defined in the service borgbackup'';
@@ -236,11 +245,9 @@ in
   # So the lib.warn is turned into abort
   test_inventory_tag_doesnt_exist =
     let
-      configs = buildInventory {
-        flakeInputs = { };
+      eval = clan {
         directory = ./.;
         inventory = {
-          modules = clan-core.clanModules;
           services = {
             borgbackup.instance_1 = {
               roles.client.machines = [ "machine_1" ];
@@ -256,7 +263,7 @@ in
       };
     in
     {
-      expr = configs.machines.machine_1.machineImports;
+      expr = eval.config.clanInternals.inventoryClass.machines.machine_1.machineImports;
       expectedError = {
         type = "Error";
         # TODO: Add warning matching in nix-unit
@@ -265,11 +272,9 @@ in
     };
   test_inventory_disabled_service =
     let
-      configs = buildInventory {
-        flakeInputs = { };
+      eval = clan {
         directory = ./.;
         inventory = {
-          modules = clan-core.clanModules;
           services = {
             borgbackup.instance_1 = {
               enabled = false;
@@ -285,10 +290,10 @@ in
       };
     in
     {
-      inherit configs;
+      inherit eval;
       expr = builtins.filter (
         v: v != { } && !v.clan.inventory.assertions ? "alive.assertion.inventory"
-      ) configs.machines.machine_1.machineImports;
+      ) eval.config.clanInternals.inventoryClass.machines.machine_1.machineImports;
       expected = [ ];
     };
 }
