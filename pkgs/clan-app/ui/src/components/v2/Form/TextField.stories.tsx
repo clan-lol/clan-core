@@ -24,7 +24,7 @@ const FieldExamples = (props: FieldProps) => (
 );
 
 const meta = {
-  title: "Components/Form/TextField",
+  title: "Components/Form/Fields/TextField",
   component: FieldExamples,
   decorators: [
     (Story: StoryObj, context: StoryContext<FieldProps>) => {

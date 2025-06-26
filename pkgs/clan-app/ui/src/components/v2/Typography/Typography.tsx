@@ -8,6 +8,7 @@ export type Tag = "span" | "p" | "h1" | "h2" | "h3" | "h4" | "div";
 export type Hierarchy = "body" | "title" | "headline" | "label" | "teaser";
 export type Weight = "normal" | "medium" | "bold";
 export type Family = "regular" | "condensed" | "mono";
+export type Transform = "uppercase" | "lowercase" | "capitalize";
 
 // type Size = "default" | "xs" | "s" | "m" | "l";
 interface SizeForHierarchy {
@@ -94,6 +95,7 @@ interface _TypographyProps<H extends Hierarchy> {
   inverted?: boolean;
   tag?: Tag;
   class?: string;
+  transform?: Transform;
 }
 
 export const Typography = <H extends Hierarchy>(props: _TypographyProps<H>) => {
@@ -113,6 +115,7 @@ export const Typography = <H extends Hierarchy>(props: _TypographyProps<H>) => {
         weight(),
         size(),
         color(),
+        props.transform,
         props.class,
       )}
       component={props.tag || "span"}

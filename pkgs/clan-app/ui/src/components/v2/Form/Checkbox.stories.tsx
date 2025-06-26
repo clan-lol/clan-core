@@ -2,7 +2,7 @@ import meta, { Story } from "./TextField.stories";
 
 const checkboxMeta = {
   ...meta,
-  title: "Components/Form/Checkbox",
+  title: "Components/Form/Fields/Checkbox",
 };
 
 export default checkboxMeta;

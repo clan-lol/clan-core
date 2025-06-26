@@ -17,7 +17,7 @@ import { Tooltip as KTooltip } from "@kobalte/core/tooltip";
 import "./Field.css";
 
 type Size = "default" | "s";
-type Orientation = "horizontal" | "vertical";
+export type Orientation = "horizontal" | "vertical";
 type FieldType = "text" | "textarea" | "checkbox";
 
 export interface TextFieldProps {

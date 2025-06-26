@@ -1,8 +1,8 @@
-import meta, { Icon, Story } from "./TextField.stories";
+import meta, { Story } from "./TextField.stories";
 
 const textAreaMeta = {
   ...meta,
-  title: "Components/Form/TextArea",
+  title: "Components/Form/Fields/TextArea",
 };
 
 export default textAreaMeta;
