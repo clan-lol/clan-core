@@ -8,25 +8,59 @@
       # Usage see: https://docs.clan.lol
       clan = clan-core.clanLib.buildClan {
         inherit self;
+
         # Ensure this is unique among all clans you want to use.
         meta.name = "__CHANGE_ME__";
 
-        # All machines in ./machines will be imported.
+        # Information about your machines. Machines under ./machines will be auto-imported.
+        inventory.machines = {
+          somemachine.tags = [ "desktop" ];
+          somemachine.deploy.targetHost = "root@somemachine";
+        };
 
-        # Prerequisite: boot into the installer.
-        # See: https://docs.clan.lol/guides/getting-started/installer
-        # local> mkdir -p ./machines/machine1
-        # local> Edit ./machines/<machine>/configuration.nix to your liking.
+        # Clan services to use. See https://docs.clan.lol/reference/clanServices
+        inventory.instances = {
+
+          admin = {
+            module = {
+              name = "admin";
+              input = "clan";
+            };
+            roles.default.tags.all = { };
+          };
+
+          zerotier = {
+            module = {
+              name = "zerotier";
+              input = "clan";
+            };
+            roles.peer.tags.all = { };
+          };
+        };
+
+        # A mapping of machine names to their nixos configuration. Allows specifying
+        # additional configuration.
         machines = {
-          # You can also specify additional machines here.
-          # somemachine = {
-          #  imports = [ ./some-machine/configuration.nix ];
-          # }
+          somemachine =
+            { pkgs, ... }:
+            {
+              environment.systemPackages = with pkgs; [ asciinema ];
+            };
         };
       };
     in
     {
-      inherit (clan) nixosConfigurations nixosModules clanInternals;
+
+      # Expose clan structures as flake outputs. clanInternals is needed for
+      # the clan-cli. Exposing nixosConfigurations allows using `nixos-rebuild` as before.
+      inherit (clan)
+        nixosConfigurations
+        nixosModules
+        clanInternals
+        darwinConfigurations
+        darwinModules
+        ;
+
       # Add the Clan cli tool to the dev shell.
       # Use "nix develop" to enter the dev shell.
       devShells =
