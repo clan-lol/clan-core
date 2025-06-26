@@ -11,6 +11,7 @@ in
   imports = [
     ../shared.nix
   ];
+
   clan.syncthing.introducer = lib.strings.removeSuffix "\n" (
     if builtins.pathExists introducerId then
       builtins.readFile introducerId

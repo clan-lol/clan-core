@@ -7,6 +7,12 @@
 {
 
   config = {
+
+    warnings = [
+      "The clan.disk-id module is deprecated and will be removed on 2025-07-15.
+      Please migrate to user-maintained configuration or the new equivalent clan services
+      (https://docs.clan.lol/reference/clanServices)."
+    ];
     clan.core.vars.generators.disk-id = {
       files.diskId.secret = false;
       runtimeInputs = [
