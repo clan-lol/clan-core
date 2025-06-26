@@ -5,6 +5,7 @@ import sys
 from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
+from clan_lib.machines.suggestions import validate_machine_names
 from clan_lib.machines.update import deploy_machine
 from clan_lib.nix import nix_config
 from clan_lib.ssh.remote import Remote
@@ -44,6 +45,9 @@ def update_command(args: argparse.Namespace) -> None:
         if args.tags and not selected_machines:
             msg = f"No machines found with tags: {', '.join(args.tags)}"
             raise ClanError(msg)
+
+        if args.machines:
+            validate_machine_names(args.machines, args.flake)
 
         for machine_name in selected_machines:
             machine = Machine(name=machine_name, flake=args.flake)

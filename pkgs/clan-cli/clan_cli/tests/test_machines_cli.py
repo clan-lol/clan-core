@@ -90,6 +90,57 @@ def test_machines_update_with_tags(
     assert args.tags == ["vm"]
 
 
+@pytest.mark.impure
+def test_machines_update_nonexistent_machine(
+    test_flake_with_core: fixtures_flakes.FlakeForTest,
+) -> None:
+    """Test that update command gives helpful error messages for non-existent machines."""
+    from clan_lib.errors import ClanError
+
+    with pytest.raises(ClanError) as exc_info:
+        cli.run(
+            [
+                "machines",
+                "update",
+                "--flake",
+                str(test_flake_with_core.path),
+                "nonexistent-machine",
+            ]
+        )
+
+    error_message = str(exc_info.value)
+    assert "nonexistent-machine" in error_message
+    assert "not found." in error_message
+    # Should suggest similar machines (vm1, vm2 exist in test flake)
+    assert "Did you mean:" in error_message or "Available machines:" in error_message
+
+
+@pytest.mark.impure
+def test_machines_update_typo_in_machine_name(
+    test_flake_with_core: fixtures_flakes.FlakeForTest,
+) -> None:
+    """Test that update command suggests similar machine names for typos."""
+    from clan_lib.errors import ClanError
+
+    with pytest.raises(ClanError) as exc_info:
+        cli.run(
+            [
+                "machines",
+                "update",
+                "--flake",
+                str(test_flake_with_core.path),
+                "v1",  # typo of "vm1"
+            ]
+        )
+
+    error_message = str(exc_info.value)
+    assert "v1" in error_message
+    assert "not found." in error_message
+    assert "Did you mean:" in error_message
+    # Should suggest vm1 as it's the closest match
+    assert "vm1" in error_message
+
+
 @pytest.mark.with_core
 def test_machine_delete(
     monkeypatch: pytest.MonkeyPatch,
