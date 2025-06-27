@@ -1050,3 +1050,28 @@ def test_secrets_key_generate_gpg(
                     ]
                 )
             assert output.out == "secret-value"
+
+
+@pytest.mark.with_core
+def test_secrets_users_add_age_plugin_error(
+    test_flake_with_core: FlakeForTest,
+) -> None:
+    """Test that AGE-PLUGIN keys raise proper error message"""
+    with pytest.raises(ClanError) as exc_info:
+        cli.run(
+            [
+                "secrets",
+                "users",
+                "add",
+                "--flake",
+                str(test_flake_with_core.path),
+                "testuser",
+                "AGE-PLUGIN-YUBIKEY-18P5XCQVZ5FE4WKCW3NJWP",
+            ]
+        )
+
+    error_msg = str(exc_info.value)
+    assert "AGE-PLUGIN keys cannot be used directly" in error_msg
+    assert "plugin identifiers, not recipient keys" in error_msg
+    assert "corresponding age1 public key instead" in error_msg
+    assert "AGE-PLUGIN-YUBIKEY-18P5XCQVZ5FE4WKCW3NJWP" in error_msg

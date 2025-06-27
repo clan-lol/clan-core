@@ -21,6 +21,12 @@ def secret_name_type(arg_value: str) -> str:
 def public_or_private_age_key_type(arg_value: str) -> str:
     if Path(arg_value).is_file():
         arg_value = Path(arg_value).read_text().strip()
+    elif arg_value.startswith("AGE-PLUGIN-"):
+        msg = (
+            f"AGE-PLUGIN keys cannot be used directly as they are plugin identifiers, not recipient keys. "
+            f"Please provide the corresponding age1 public key instead. Got: '{arg_value}'"
+        )
+        raise ClanError(msg)
 
     public_keys = get_public_age_keys(arg_value)
 
