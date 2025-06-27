@@ -731,7 +731,7 @@ class Flake:
             self.invalidate_cache()
         assert self._cache is not None
 
-        nix_options = self.nix_options if self.nix_options is not None else []
+        nix_options = self.nix_options[:] if self.nix_options is not None else []
 
         str_selectors: list[str] = []
         for selector in selectors:
