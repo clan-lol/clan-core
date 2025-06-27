@@ -7,17 +7,26 @@
 }:
 rec {
   buildClan =
-    module: lib.warn "'buildClan' is deprecated. Use 'clan-core.lib.clan' instead" (clan module).config;
+    # TODO: Once all templates and docs are migrated add: lib.warn "'buildClan' is deprecated. Use 'clan-core.lib.clan' instead"
+    module: (clan module).config;
 
   clan =
     {
-      self ? lib.warn "Argument: 'self' must be set when using 'buildClan'." null, # Reference to the current flake
+      self ? lib.warn "Argument: 'self' must be set" null, # Reference to the current flake
       ...
     }@m:
+    let
+      nixpkgs = self.inputs.nixpkgs or clan-core.inputs.nixpkgs;
+      nix-darwin = self.inputs.nix-darwin or clan-core.inputs.nix-darwin;
+    in
     lib.evalModules {
       specialArgs = {
         inherit
           self
+          ;
+        inherit
+          nixpkgs
+          nix-darwin
           ;
       };
       modules = [

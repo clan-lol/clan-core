@@ -165,7 +165,6 @@ in
   config = {
     inventory.modules = clan-core.clanModules;
     inventory._legacyModules = clan-core.clanModules;
-    # Merge the meta attributes from the buildClan function
     inventory.meta = config.meta;
 
     outputs.moduleForMachine = lib.mkMerge [
