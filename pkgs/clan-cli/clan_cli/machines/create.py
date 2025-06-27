@@ -2,6 +2,7 @@ import argparse
 import logging
 import re
 from dataclasses import dataclass
+from typing import TypeVar, cast
 
 from clan_lib.api import API
 from clan_lib.dirs import get_clan_flake_toplevel_or_env
@@ -25,6 +26,41 @@ class CreateOptions:
     machine: InventoryMachine
     template: str = "new-machine"
     target_host: str | None = None
+
+
+T = TypeVar("T")
+
+
+def merge_objects(obj1: T, obj2: T) -> T:
+    """
+    Updates values in obj2 by values of Obj1
+    The output contains values for all keys of Obj1 and Obj2 together
+
+    Lists are deduplicated and appended almost like in the nix module system.
+    """
+    result = {}
+    msg = f"cannot update non-dictionary values: {obj2} by {obj1}"
+    if not isinstance(obj1, dict):
+        raise ClanError(msg)
+    if not isinstance(obj2, dict):
+        raise ClanError(msg)
+
+    all_keys = set(obj1.keys()).union(obj2.keys())
+
+    for key in all_keys:
+        val1 = obj1.get(key)
+        val2 = obj2.get(key)
+
+        if isinstance(val1, dict) and isinstance(val2, dict):
+            result[key] = merge_objects(val1, val2)
+        elif isinstance(val1, list) and isinstance(val2, list):
+            result[key] = list(dict.fromkeys(val2 + val1))  # type: ignore
+        elif key in obj1:
+            result[key] = val1  # type: ignore
+        elif key in obj2:
+            result[key] = val2  # type: ignore
+
+    return cast(T, result)
 
 
 @API.register
@@ -66,19 +102,27 @@ def create_machine(
         dst_machine_name=machine_name,
     ) as _machine_dir:
         # Write to the inventory if persist is true
-        target_host = opts.target_host
-        new_machine = opts.machine
-        new_machine["deploy"] = {"targetHost": target_host}  # type: ignore
-
         inventory_store = InventoryStore(opts.clan_dir)
         inventory = inventory_store.read()
-
         if machine_name in inventory.get("machines", {}):
             msg = f"Machine {machine_name} already exists in inventory"
             description = (
                 "Please delete the existing machine or import with a different name"
             )
             raise ClanError(msg, description=description)
+        # Committing the machines directory can add the machine with
+        # defaults to the eval result of inventory
+        if commit:
+            commit_file(
+                clan_dir / "machines" / machine_name,
+                repo_dir=clan_dir,
+                commit_message=f"Add machine {machine_name}",
+            )
+        opts.clan_dir.invalidate_cache()
+        inventory = inventory_store.read()
+
+        curr_machine = inventory.get("machines", {}).get(machine_name, {})
+        new_machine = merge_objects(opts.machine, curr_machine)
 
         set_value_by_path(
             inventory,
@@ -87,12 +131,6 @@ def create_machine(
         )
         inventory_store.write(inventory, message=f"machine '{machine_name}'")
 
-        if commit:
-            commit_file(
-                clan_dir / "machines" / machine_name,
-                repo_dir=clan_dir,
-                commit_message=f"Add machine {machine_name}",
-            )
     # Invalidate the cache since this modified the flake
     opts.clan_dir.invalidate_cache()
 
