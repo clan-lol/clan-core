@@ -7,6 +7,7 @@ from clan_lib.machines.hardware import (
     generate_machine_hardware_info,
 )
 from clan_lib.machines.machines import Machine
+from clan_lib.machines.suggestions import validate_machine_names
 from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
@@ -17,6 +18,7 @@ log = logging.getLogger(__name__)
 
 
 def update_hardware_config_command(args: argparse.Namespace) -> None:
+    validate_machine_names([args.machine], args.flake)
     host_key_check = args.host_key_check
     machine = Machine(flake=args.flake, name=args.machine)
     opts = HardwareGenerateOptions(
