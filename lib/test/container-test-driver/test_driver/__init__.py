@@ -2,6 +2,7 @@ import argparse
 import ctypes
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import time
@@ -302,6 +303,15 @@ class Machine:
         with self.nested(f"waiting for success: {command}"):
             retry(check_success, timeout)
             return output
+
+    def wait_for_open_port(
+        self, port: int, addr: str = "localhost", timeout: int = 900
+    ) -> None:
+        """
+        Wait for a port to be open on the given address.
+        """
+        command = f"nc -z {shlex.quote(addr)} {port}"
+        self.wait_until_succeeds(command, timeout=timeout)
 
     def wait_for_unit(self, unit: str, timeout: int = 900) -> None:
         """

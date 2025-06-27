@@ -52,7 +52,7 @@ Follow the instructions below to set up your development environment and start t
 
 ## Storybook
 
-We use [Storybook] to develop UI components. 
+We use [Storybook] to develop UI components.
 It can be started by running the following:
 
 ```console
@@ -63,10 +63,10 @@ This will start a [process-compose] instance containing two processes:
 
 * `storybook` which is the main [storybook] process.
 * `luakit` which is a [webkit]-based browser for viewing the stories with. This is the same underlying engine used when
-rendering the app. 
+rendering the app.
 
 You can run storybook tests with `npm run test-storybook`.
-If you change how a component(s) renders, 
+If you change how a component(s) renders,
 you will need to update the snapshots with `npm run test-storybook-update-snapshots`.
 
 ## Start clan-app without process-compose

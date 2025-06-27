@@ -21,7 +21,7 @@ Flake URL-like syntax used to link to clans.
 Required to connect the `url-open` application to the `clan-app`.
 
 ## facts *(deprecated)*
-System for creating secrets and public files in a declarative way.  
+System for creating secrets and public files in a declarative way.
 **Note:** Deprecated, use `vars` instead.
 
 ## inventory

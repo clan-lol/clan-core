@@ -49,6 +49,8 @@ in
             zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
             matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
             postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
+            user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
+            user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
 
             dummy-inventory-test = import ./dummy-inventory-test nixosTestArgs;
             dummy-inventory-test-from-flake = import ./dummy-inventory-test-from-flake nixosTestArgs;

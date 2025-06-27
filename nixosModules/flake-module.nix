@@ -26,6 +26,7 @@ in
 {
   flake.nixosModules.hidden-ssh-announce = ./hidden-ssh-announce.nix;
   flake.nixosModules.bcachefs = ./bcachefs.nix;
+  flake.nixosModules.user-firewall = ./user-firewall;
   flake.nixosModules.installer.imports = [
     ./installer
     self.nixosModules.hidden-ssh-announce
