@@ -36,7 +36,7 @@ Examples:
 
   $ agit list
   Lists all open pull requests for the current repository
-        
+
 ```
 
 References:

@@ -52,7 +52,7 @@ This guide shows you how to configure `zerotier` either through `NixOS Options` 
       };
     };
     ```
-    
+
     ## 3. Apply the Configuration
     Update the `controller` machine:
 

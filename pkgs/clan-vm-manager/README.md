@@ -89,6 +89,6 @@ Here are some important documentation links related to the Clan VM Manager:
 
 ## Error handling
 
-> Error dialogs should be avoided where possible, since they are disruptive. 
-> 
+> Error dialogs should be avoided where possible, since they are disruptive.
+>
 > For simple non-critical errors, toasts can be a good alternative.
