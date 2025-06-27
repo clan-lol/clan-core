@@ -1,4 +1,7 @@
-# Generators
+
+!!! Note
+    This guide demonstrates the vars system for managing secrets and generated files
+
 
 Defining a linux user's password via the nixos configuration previously required running `mkpasswd ...` and then copying the hash back into the nix configuration.
 
@@ -8,7 +11,7 @@ For architectural concepts and design principles, see the [Concepts guide](vars-
 
 This guide assumes
 - Clan is set up already (see [Getting Started](../guides/getting-started/index.md))
-- a machine has been added to the clan (see [Adding Machines](../guides/getting-started/add-machines.md))
+- a machine has been added to the clan (see [Adding Machines](./more-machines.md))
 
 This section will walk you through the following steps:
 
@@ -20,7 +23,7 @@ This section will walk you through the following steps:
 6. share the root password between machines
 7. change the password
 
-## Declare a generator
+## Declare the generator
 
 In this example, a `vars` `generator` is used to:
 
