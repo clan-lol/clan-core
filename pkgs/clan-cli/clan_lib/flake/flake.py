@@ -786,12 +786,6 @@ class Flake:
               }}
         """
         # fmt: on
-        if tmp_store := nix_test_store():
-            nix_options.append("--impure")
-
-        # build_output = Path(
-        #     run(nix_build(["--expr", nix_code, *nix_options])).stdout.strip()
-        # )
 
         build_output = Path(
             run(
@@ -799,7 +793,7 @@ class Flake:
             ).stdout.strip()
         )
 
-        if tmp_store:
+        if tmp_store := nix_test_store():
             build_output = tmp_store.joinpath(*build_output.parts[1:])
         outputs = json.loads(build_output.read_bytes())
         if len(outputs) != len(selectors):
