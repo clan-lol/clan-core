@@ -8,7 +8,7 @@ Clan currently offers the following methods to configure machines:
 
 !!! Success "Recommended for advanced Nix users"
 
-    - flake.nix (i.e. via `buildClan`)
+    - flake.nix (i.e. via `clan-core.lib.clan`)
         - `machine` argument
         - `inventory` argument
 
@@ -30,7 +30,7 @@ In the `flake.nix` file:
 === "**normal flake template**"
 
     ```nix title="flake.nix" hl_lines="3"
-    buildClan {
+    clan-core.lib.clan {
         # Set a unique name
         meta.name = "Lobsters";
         # Necessary for importing external Clan services
@@ -60,7 +60,7 @@ Adding or configuring a new machine requires two simple steps:
 
 ???+ Note "Cloud Machines"
     NixOS can cause strange issues when booting in certain cloud environments.
-    
+
     - If on Linode: Make sure that the system uses Direct Disk boot kernel (found in the configuration pannel)
 
 ### Step 1. Identify Target Disk-ID

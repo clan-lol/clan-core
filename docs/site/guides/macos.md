@@ -13,10 +13,10 @@ Currently, Clan supports the following features for macOS:
 
 In this example, we'll name the machine `yourmachine`. Replace this with your preferred machine name.
 
-=== "**If using core.lib.buildClan**"
+=== "**If using clan-core.lib.clan**"
 
 ```nix
-buildClan {
+clan-core.lib.clan {
     inventory = {
         machines.yourmachine.machineClass = "darwin";
     };

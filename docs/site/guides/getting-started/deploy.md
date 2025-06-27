@@ -175,7 +175,7 @@ During an update, the CLI will SSH into the build host and run `nixos-rebuild` f
 
 
 ```{.nix hl_lines="5" .no-copy}
-buildClan {
+clan {
     # ...
     machines = {
         "jon" = {
@@ -191,7 +191,7 @@ To exclude machines from being updated when running `clan machines update` witho
 one can set the `clan.deployment.requireExplicitUpdate` option to true:
 
 ```{.nix hl_lines="5" .no-copy}
-buildClan {
+clan {
     # ...
     machines = {
         "jon" = {

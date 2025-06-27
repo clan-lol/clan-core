@@ -6,7 +6,7 @@
 let
   testFlake = clanLib.buildClan {
     # Point to the folder of the module
-    # TODO: make this optional in buildClan
+    # TODO: make this optional
     directory = ./..;
 
     # Create some test machines

@@ -97,7 +97,6 @@
             # Frontmatter format for clanModules
             export CLAN_MODULES_FRONTMATTER_DOCS=${clanModulesFrontmatter}/share/doc/nixos/options.json
 
-            # buildClan options
             export BUILD_CLAN_PATH=${buildClanOptions}/share/doc/nixos/options.json
 
             mkdir $out

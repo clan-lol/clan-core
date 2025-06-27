@@ -68,7 +68,7 @@ output parameters.
 
 The existing `nixosConfigurations` output of your flake will be created by
 clan. In addition, a new `clanInternals` output will be added. Since both of
-these are provided by the output of `lib.buildClan`, a common syntax is to use a
+these are provided by the output of `clan-core.lib.clan`, a common syntax is to use a
 `let...in` statement to create your clan and access it's parameters in the flake
 outputs.
 
@@ -85,7 +85,7 @@ For the provide flake example, your flake should now look like this:
 
   outputs = { self, nixpkgs, clan-core, ... }:
   let
-    clan = clan-core.lib.buildClan {
+    clan = clan-core.lib.clan {
       self = self; # this needs to point at the repository root
       specialArgs = {};
       meta.name = throw "Change me to something unique";

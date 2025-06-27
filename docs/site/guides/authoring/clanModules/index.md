@@ -52,7 +52,7 @@ clanModules/borgbackup
 
     ```nix title="flake.nix"
     # ...
-    buildClan {
+    clan-core.lib.clan {
         # 1. Add the module to the available clanModules with inventory support
         inventory.modules = {
             custom-module = ./modules/my_module;
@@ -175,7 +175,7 @@ The following shows how to add options to your module.
     Configuration can be set as follows.
 
     ```nix title="flake.nix"
-    buildClan {
+    clan-core.lib.clan {
         inventory.services = {
             custom-module.instance_1 = {
                 roles.default.machines = [ "machineA" ];
