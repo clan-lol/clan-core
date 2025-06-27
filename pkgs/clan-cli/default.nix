@@ -70,7 +70,6 @@ let
         rm -f $out/clan_lib/select
 
         substituteInPlace $out/clan_lib/flake/flake.py \
-          --replace-fail '@fallback_nixpkgs_hash@' "$(jq -r '.nodes.nixpkgs.locked.narHash' ${nixpkgs'}/flake.lock)" \
           --replace-fail '@select_hash@' "$(jq -r '.nodes."nix-select".locked.narHash' ${../../flake.lock})"
         ln -sf ${nixpkgs'} $out/clan_lib/nixpkgs
         ln -sf ${nix-select} $out/clan_lib/select
