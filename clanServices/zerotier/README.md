@@ -16,7 +16,7 @@ inventory.instances = {
 The input should be named according to your flake input.
 All machines will be peers and connected to the zerotier network.
 Jon is the controller machine, which will will accept other machines into the network.
-Sara is a moon and sets the `stableEndpoint` setting with a publically reachable IP, the moon is optional.
+Sara is a moon and sets the `stableEndpoint` setting with a publicly reachable IP, the moon is optional.
 
 
 ## Overview
