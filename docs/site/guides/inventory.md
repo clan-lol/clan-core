@@ -47,7 +47,7 @@ Each service can still be customized and configured according to the modules opt
     See also: [Multiple Service Instances](#multiple-service-instances)
 
     ```{.nix hl_lines="6-7"}
-    buildClan {
+    clan-core.lib.clan {
         inventory = {
             services = {
                 borgbackup.instance_1 = {
@@ -69,7 +69,7 @@ It is possible to add services to multiple machines via tags as shown
 !!! Example "Tags Example"
 
     ```{.nix hl_lines="5 8 14"}
-    buildClan {
+    clan-core.lib.clan {
         inventory = {
             machines = {
                 "jon" = {
@@ -101,7 +101,7 @@ It is possible to add services to multiple machines via tags as shown
     In this example `backup_server` has role `client` and `server` in different instances.
 
     ```{.nix hl_lines="11 14"}
-    buildClan {
+    clan-core.lib.clan {
         inventory = {
             machines = {
                 "jon" = {};

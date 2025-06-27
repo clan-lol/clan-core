@@ -168,7 +168,7 @@ nav:
               - reference/clan.core/state.md
               - reference/clan.core/vars.md
       - Nix API:
-          - buildClan: reference/nix-api/buildclan.md
+          - clan: reference/nix-api/clan.md
           - Inventory: reference/nix-api/inventory.md
       - Glossary: reference/glossary.md
       - Decisions:

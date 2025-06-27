@@ -82,7 +82,7 @@ are loaded when using Clan:
   outputs =
     { self, clan-core, ... }:
     let
-      clan = clan-core.clanLib.buildClan {
+      clan = clan-core.clanLib.clan {
         inherit self;
 
         meta.name = "myclan";

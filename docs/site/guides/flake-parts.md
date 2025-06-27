@@ -27,7 +27,7 @@ inputs = {
 
 ## 2. Import the Clan flake-parts Module
 
-After updating your flake inputs, the next step is to import the Clan flake-parts module. This will make the [Clan options](../reference/nix-api/buildclan.md) available within `mkFlake`.
+After updating your flake inputs, the next step is to import the Clan flake-parts module. This will make the [Clan options](../reference/nix-api/clan.md) available within `mkFlake`.
 
 ```nix
 {
@@ -62,7 +62,7 @@ Next you'll need to configure Clan wide settings and define machines, here's an 
       ];
 
       # Define your Clan
-      # See: https://docs.clan.lol/reference/nix-api/buildclan/
+      # See: https://docs.clan.lol/reference/nix-api/clan/
       clan = {
         # Clan wide settings
         meta.name = ""; # This is required and must be unique

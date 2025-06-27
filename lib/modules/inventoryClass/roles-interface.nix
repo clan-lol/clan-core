@@ -44,7 +44,7 @@ in
 
         Supported types:
 
-        - **Strings**: Interpreted relative to the 'directory' passed to buildClan.
+        - **Strings**: Interpreted relative to the 'directory' passed to `lib.clan`.
         - **Paths**: should be relative to the current file.
         - **Any**: Nix expression must be serializable to JSON.
 

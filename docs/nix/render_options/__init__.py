@@ -383,36 +383,16 @@ For more information, see the [inventory guide](../../guides/inventory.md).
 
     `clan.admin.allowedkeys`
 
-    This means there are two equivalent ways to set the `allowedkeys` option.
-    Either via a nixos module or via the inventory interface.
-    **But it is recommended to keep together `imports` and `config` to preserve
-    locality of the module configuration.**
-
-    === "Inventory"
-
-        ```nix
-        clan-core.lib.buildClan {
-            inventory.services = {
-                admin.me = {
-                    roles.default.machines = [ "jon" ];
-                    config.allowedkeys = [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQD..." ];
-                };
+    ```nix
+    clan-core.lib.clan {
+        inventory.services = {
+            admin.me = {
+                roles.default.machines = [ "jon" ];
+                config.allowedkeys = [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQD..." ];
             };
         };
-        ```
-
-    === "NixOS"
-
-        ```nix
-        clan-core.lib.buildClan {
-            machines = {
-                jon = {
-                    clan.admin.allowedkeys = [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQD..." ];
-                    imports = [ clanModules.admin ];
-                };
-            };
-        };
-        ```
+    };
+    ```
 """
         )
     return ""
@@ -708,18 +688,18 @@ def produce_build_clan_docs() -> None:
         msg = f"Environment variables are not set correctly: $out={OUT}"
         raise ClanError(msg)
 
-    output = """# BuildClan
+    output = """# Clan
 
 This provides an overview of the available arguments of the `clan` interface.
 
 Each attribute is documented below
 
-- **buildClan**: A function that takes an attribute set.`.
+- **clan-core.lib.clan**: A function that takes an attribute set.
 
-    ??? example "buildClan Example"
+    ??? example "clan Example"
 
         ```nix
-        buildClan {
+        clan {
             self = self;
             machines = {
                 jon = { };
@@ -728,7 +708,13 @@ Each attribute is documented below
         };
         ```
 
-- **flake-parts**: Each attribute can be defined via `clan.<attribute name>`. See our [flake-parts](../../guides/flake-parts.md) guide.
+- **clan with flake-parts**: Import the FlakeModule
+
+    After importing the FlakeModule you can define your `clan` as a flake attribute
+
+    All attribute can be defined via `clan.*`
+
+    Further information see: [flake-parts](../../guides/flake-parts.md) guide.
 
     ??? example "flake-parts Example"
 
@@ -767,7 +753,7 @@ Each attribute is documented below
             for option in root.suboptions:
                 output += options_docs_from_tree(option, init_level=2)
 
-    outfile = Path(OUT) / "nix-api/buildclan.md"
+    outfile = Path(OUT) / "nix-api/clan.md"
     outfile.parent.mkdir(parents=True, exist_ok=True)
     with Path.open(outfile, "w") as of:
         of.write(output)
@@ -821,8 +807,8 @@ Typically needed by module authors to define roles, behavior and metadata for di
 
     See: [clanService Authoring Guide](../../guides/authoring/clanServices/index.md)
 """
-    # Inventory options are already included under the buildClan attribute
-    # We just omitted them in the buildClan docs, because we want a separate output for the inventory model
+    # Inventory options are already included under the clan attribute
+    # We just omitted them in the clan docs, because we want a separate output for the inventory model
     with Path(CLAN_SERVICE_INTERFACE).open() as f:
         options: dict[str, dict[str, Any]] = json.load(f)
 
@@ -860,11 +846,11 @@ def produce_inventory_docs() -> None:
     output = """# Inventory
 This provides an overview of the available attributes of the `inventory` model.
 
-It can be set via the `inventory` attribute of the [`buildClan`](./buildclan.md#inventory) function, or via the [`clan.inventory`](./buildclan.md#inventory) attribute of flake-parts.
+It can be set via the `inventory` attribute of the [`clan`](./clan.md#inventory) function, or via the [`clan.inventory`](./clan.md#inventory) attribute of flake-parts.
 
 """
-    # Inventory options are already included under the buildClan attribute
-    # We just omitted them in the buildClan docs, because we want a separate output for the inventory model
+    # Inventory options are already included under the clan attribute
+    # We just omitted them in the clan docs, because we want a separate output for the inventory model
     with Path(BUILD_CLAN_PATH).open() as f:
         options: dict[str, dict[str, Any]] = json.load(f)
 

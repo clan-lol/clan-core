@@ -17,19 +17,14 @@ Every folder `machines/{machineName}` will be registered automatically as a Clan
     - [x] `machines/{machineName}/facter.json` Automatically configured, for further information see [nixos-facter](https://clan.lol/blog/nixos-facter/)
     - [x] `machines/{machineName}/disko.nix` Automatically loaded, for further information see the [disko docs](https://github.com/nix-community/disko/blob/master/docs/quickstart.md).
 
-
-
 ## Manual declaration
 
-Machines can also be added manually under `buildClan`, `clan.*` in flake-parts or via [`inventory`](../guides/inventory.md).
-
-!!! Note
-    It is possible to use `inventory` and `buildClan` together at the same time.
+Machines can be added via [`clan.inventory.machines`](../guides/inventory.md) or in `clan.machines`, which allows for defining NixOS options.
 
 === "**Individual Machine Configuration**"
 
     ```{.nix}
-    buildClan {
+    clan-core.lib.clan {
         machines = {
             "jon" = {
                 # Any valid nixos config
@@ -41,12 +36,13 @@ Machines can also be added manually under `buildClan`, `clan.*` in flake-parts o
 === "**Inventory Configuration**"
 
     ```{.nix}
-    buildClan {
+    clan-core.lib.clan {
         inventory = {
             machines = {
                 "jon" = {
-                    # Inventory machines can set tags
+                    # Inventory can set tags and other metadata
                     tags = [ "zone1" ];
+                    deploy.targetHost = "root@jon";
                 };
             };
         };

@@ -55,7 +55,7 @@ let
 
       Supported types:
 
-      - **Strings**: Interpreted relative to the 'directory' passed to buildClan.
+      - **Strings**: Interpreted relative to the 'directory' passed to `lib.clan`.
       - **Paths**: should be relative to the current file.
       - **Any**: Nix expression must be serializable to JSON.
 
@@ -146,7 +146,7 @@ in
 
         ???+ example
             ```nix
-            buildClan {
+            clan-core.lib.clan {
                 # 1. Add the module to the available inventory modules
                 inventory.modules = {
                   custom-module = ./modules/my_module;
