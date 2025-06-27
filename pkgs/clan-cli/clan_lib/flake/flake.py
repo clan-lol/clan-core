@@ -741,7 +741,7 @@ class Flake:
 
         select_hash = "@select_hash@"
         if not select_hash.startswith("sha256-"):
-            select_flake = Flake(str(select_source()), nix_options=self.nix_options)
+            select_flake = Flake(str(select_source()), nix_options=nix_options)
             select_flake.invalidate_cache()
             assert select_flake.hash is not None, (
                 "this should be impossible as invalidate_cache() should always set `hash`"
