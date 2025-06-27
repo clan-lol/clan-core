@@ -114,6 +114,10 @@ div.form-field {
     & > div.checkbox-control {
       @apply w-5 h-5 rounded-sm bg-def-1 border border-inv-1 p-[0.0625rem];
 
+      &:hover {
+        @apply bg-def-acc-2;
+      }
+
       &[data-disabled] {
         @apply border-def-2;
       }
@@ -190,7 +194,12 @@ div.form-field {
 
     &.form-field-checkbox {
       & > div.checkbox-control {
-        @apply bg-inv-acc-4;
+        @apply bg-inv-1;
+
+        &:hover,
+        &[data-checked] {
+          @apply bg-inv-acc-4;
+        }
 
         &[data-disabled] {
           @apply bg-def-4 border-none;
