@@ -112,15 +112,15 @@ def test_clan_core_templates(
         Path(default_template.src["path"]),
         new_clan,
     )
-    assert (new_clan / "flake.nix").exists()
-    assert (new_clan / "machines").is_dir()
-    # config_nix_p = new_clan / "machines" / "jon" / "configuration.nix"
-    # assert (config_nix_p).is_file()
+    flake_file = new_clan / "flake.nix"
 
-    # Test if we can write to the configuration.nix file
-    # with config_nix_p.open("r+") as f:
-    #     data = f.read()
-    #     f.write(data)
+    assert (flake_file).exists()
+    # Test if we can read + write files after the template was copied
+    with flake_file.open("r+") as f:
+        data = f.read()
+        f.write(data)
+
+    assert (new_clan / "machines").is_dir()
 
 
 # Test Case 1: Minimal input with empty templates
