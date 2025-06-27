@@ -27,10 +27,16 @@ in
       default = { };
       type = types.submoduleWith {
         class = "clan";
-        specialArgs = {
-          inherit self;
-          inherit (inputs) nixpkgs nix-darwin;
-        };
+        specialArgs =
+          # TODO: make these explizit options and deduplicate with lib.clan function
+          let
+            nixpkgs = inputs.nixpkgs or clan-core.inputs.nixpkgs;
+            nix-darwin = inputs.nix-darwin or clan-core.inputs.nix-darwin;
+          in
+          {
+            inherit self;
+            inherit nixpkgs nix-darwin;
+          };
         modules = [
           clan-core.modules.clan.default
         ];
