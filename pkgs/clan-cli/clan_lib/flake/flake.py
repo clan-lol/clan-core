@@ -781,6 +781,13 @@ class Flake:
                         ]
                     )}
                 ];
+
+                # We can always build this derivation locally, since /bin/sh is system independent,
+                # remote builders would introduce needless overhead.
+                preferLocalBuild = true;
+                # Save the roundtrip to check the binary caches for trival substitutions
+                allowSubstitutes = false;
+
                 passAsFile = [ "result" ];
                 system = "{config["system"]}";
                 builder = "/bin/sh";
