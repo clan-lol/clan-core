@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 name = "generate-test-vars"
 description = "vars generate"
 dynamic = ["version"]
-scripts = { generate-test-vars = "generate_test_vars:cli.main" }
+scripts = { generate-test-vars = "generate_test_vars.cli:main" }
 
 [project.urls]
 Homepage = "https://clan.lol/"
