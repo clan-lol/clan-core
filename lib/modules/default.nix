@@ -20,6 +20,7 @@ rec {
       nix-darwin = self.inputs.nix-darwin or clan-core.inputs.nix-darwin;
     in
     lib.evalModules {
+      class = "clan";
       specialArgs = {
         inherit
           self

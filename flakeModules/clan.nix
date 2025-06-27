@@ -26,6 +26,7 @@ in
       description = "Clan module. Define your clan inside here";
       default = { };
       type = types.submoduleWith {
+        class = "clan";
         specialArgs = {
           inherit self;
           inherit (inputs) nixpkgs nix-darwin;
