@@ -1,12 +1,12 @@
 {
   pkgs,
   lib,
-  clanLib,
+  clan-core,
 }:
 let
   eval = lib.evalModules {
     modules = [
-      clanLib.module
+      clan-core.modules.clan.default
     ];
   };
   evalDocs = pkgs.nixosOptionsDoc {

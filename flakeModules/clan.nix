@@ -1,43 +1,37 @@
 clan-core:
+# Downstream flake arguments
 {
-  config,
-  lib,
   self,
   inputs,
+  config,
+  lib,
   ...
 }:
 let
   inherit (lib) types;
-
-  clanLib = clan-core.clanLib;
-
 in
 {
   # Backwards compatibility
   imports = [
     (lib.mkRenamedOptionModule [ "clan" ] [ "flake" "clan" ])
   ];
-  # Our module is completely public, so we dont need to map it
-  # Mapped top level outputs
   options.flake = {
-    # Backwards compat
+    # CLI compat
     clanInternals = lib.mkOption {
-      description = "Internals as needed by the clan cli.";
+      description = "Stable nix interface interacted by the clan cli.";
       default = config.flake.clan.clanInternals;
     };
-    # The one and only clan module
+    # The clan module
     clan = lib.mkOption {
-      description = "The evaluated clan module";
+      description = "Clan module. Define your clan inside here";
       default = { };
       type = types.submoduleWith {
         specialArgs = {
-          inherit clan-core self;
+          inherit self;
           inherit (inputs) nixpkgs nix-darwin;
-          # TODO: inject the inventory interface
-          # inventoryInterface = {};
         };
         modules = [
-          clanLib.module
+          clan-core.modules.clan.default
         ];
       };
     };

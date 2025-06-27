@@ -9,7 +9,7 @@ nixosLib.runTest (
   { hostPkgs, config, ... }:
   {
     imports = [
-      clan-core.modules.nixosVmTest.clanTest
+      clan-core.modules.nixosTest.clanTest
     ];
 
     hostPkgs = pkgs;

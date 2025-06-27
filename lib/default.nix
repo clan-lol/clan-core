@@ -1,8 +1,6 @@
 {
   lib,
   self,
-  nixpkgs,
-  nix-darwin ? null,
   ...
 }:
 # Produces the
@@ -14,23 +12,14 @@ lib.fix (
     buildClanLib = (
       clanLib.callLib ./modules {
         clan-core = self;
-        inherit nixpkgs nix-darwin;
       }
     );
   in
   {
-    module = {
-      _class = "clan";
-      _module.args = {
-        inherit clanLib;
-      };
-      imports = [
-        ./modules/clan/default.nix
-      ];
-    };
 
     inherit (buildClanLib)
       buildClan
+      clan
       ;
     /**
       Like callPackage, but doesn't try to automatically detect arguments

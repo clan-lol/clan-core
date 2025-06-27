@@ -9,6 +9,9 @@ let
   );
 in
 {
+  imports = [
+    ./clan/flake-module.nix
+  ];
   perSystem =
     {
       pkgs,
@@ -19,7 +22,7 @@ in
     let
       jsonDocs = import ./eval-docs.nix {
         inherit pkgs lib;
-        inherit (self) clanLib;
+        clan-core = self;
       };
     in
     {

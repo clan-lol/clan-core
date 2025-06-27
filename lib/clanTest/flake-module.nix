@@ -20,7 +20,7 @@ in
 {
   # A function that returns an extension to runTest
   # TODO: remove this from clanLib, add to legacyPackages, simplify signature
-  flake.modules.nixosVmTest.clanTest =
+  flake.modules.nixosTest.clanTest =
     { config, hostPkgs, ... }:
     let
       testName = config.name;
@@ -170,6 +170,7 @@ in
     {
       imports = [
         ../test/container-test-driver/driver-module.nix
+
       ];
       options = {
         clanSettings = mkOption {
@@ -197,7 +198,7 @@ in
               self = throw "set clan.directory in the test";
             };
             modules = [
-              clanLib.module
+              clan-core.modules.clan.default
               {
                 _prefix = [
                   "checks"

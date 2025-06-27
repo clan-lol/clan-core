@@ -40,7 +40,7 @@ in
                     { ... }:
                     {
                       imports = [
-                        self.modules.nixosVmTest.clanTest
+                        self.modules.nixosTest.clanTest
                         testModule
                       ];
 
@@ -68,7 +68,7 @@ in
                 { ... }:
                 {
                   imports = [
-                    self.modules.nixosVmTest.clanTest
+                    self.modules.nixosTest.clanTest
                     testModule
                   ];
 

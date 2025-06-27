@@ -63,27 +63,28 @@
         clan = {
           meta.name = "clan-core";
         };
-
         systems = import systems;
         imports =
-          # only importing existing paths allows to minimize the flake for test
-          # by removing files
-          filter pathExists [
-            ./checks/flake-module.nix
-            ./clanModules/flake-module.nix
-            ./clanServices/flake-module.nix
-            ./devShell.nix
-            ./docs/nix/flake-module.nix
-            ./flakeModules/flake-module.nix
-            ./flakeModules/demo_iso.nix
-            ./lib/filter-clan-core/flake-module.nix
-            ./lib/flake-module.nix
-            ./lib/flake-parts/clan-nixos-test.nix
-            ./nixosModules/clanCore/vars/flake-module.nix
-            ./nixosModules/flake-module.nix
-            ./pkgs/flake-module.nix
-            ./templates/flake-module.nix
-          ]
+          [ flake-parts.flakeModules.modules ]
+          ++
+            # only importing existing paths allows to minimize the flake for test
+            # by removing files
+            filter pathExists [
+              ./checks/flake-module.nix
+              ./clanModules/flake-module.nix
+              ./clanServices/flake-module.nix
+              ./devShell.nix
+              ./docs/nix/flake-module.nix
+              ./flakeModules/flake-module.nix
+              ./flakeModules/demo_iso.nix
+              ./lib/filter-clan-core/flake-module.nix
+              ./lib/flake-module.nix
+              ./lib/flake-parts/clan-nixos-test.nix
+              ./nixosModules/clanCore/vars/flake-module.nix
+              ./nixosModules/flake-module.nix
+              ./pkgs/flake-module.nix
+              ./templates/flake-module.nix
+            ]
           ++ [
             (if pathExists ./flakeModules/clan.nix then import ./flakeModules/clan.nix inputs.self else { })
           ]
