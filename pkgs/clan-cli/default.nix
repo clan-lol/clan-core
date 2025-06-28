@@ -43,8 +43,14 @@ let
     deps:
     lib.filterAttrs (_: pkg: !pkg.meta.unsupported or false) (lib.genAttrs deps (name: pkgs.${name}));
   testRuntimeDependenciesMap = generateRuntimeDependenciesMap allDependencies;
-  # Filter out virt-viewer from test dependencies since it pulls quiet a lot of other packages, we don't run virt-viewer in tests.
-  testRuntimeDependencies = lib.filter (pkg: pkg.pname or "" != "virt-viewer") (
+  # Filter out packages that are not needed for tests and pull in many dependencies
+  testExcludedPackages = {
+    virt-viewer = true; # pulls in libvirt and other graphics libraries
+    age-plugin-se = true; # smartcard support not needed in tests
+    waypipe = true; # wayland forwarding not needed in tests
+    zenity = true; # GUI dialogs not needed in tests
+  };
+  testRuntimeDependencies = lib.filter (pkg: !(testExcludedPackages.${pkg.pname or ""} or false)) (
     lib.attrValues testRuntimeDependenciesMap
   );
   bundledRuntimeDependenciesMap = generateRuntimeDependenciesMap includedRuntimeDeps;
