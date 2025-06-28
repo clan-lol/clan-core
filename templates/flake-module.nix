@@ -26,7 +26,6 @@
           EOF
         '';
         evaled = (import "${initialized}/flake.nix").outputs {
-          flake-parts = inputs.flake-parts;
           self = evaled // {
             outPath = initialized;
           };
