@@ -720,7 +720,7 @@ class Flake:
             AssertionError: If the cache or flake cache path is not properly initialized.
         """
         from clan_lib.cmd import Log, RunOpts, run
-        from clan_lib.dirs import nixpkgs_source, select_source
+        from clan_lib.dirs import select_source
         from clan_lib.nix import (
             nix_build,
             nix_config,
@@ -731,7 +731,7 @@ class Flake:
             self.invalidate_cache()
         assert self._cache is not None
 
-        nix_options = self.nix_options if self.nix_options is not None else []
+        nix_options = self.nix_options[:] if self.nix_options is not None else []
 
         str_selectors: list[str] = []
         for selector in selectors:
@@ -739,23 +739,9 @@ class Flake:
 
         config = nix_config()
 
-        # these hashes should be filled in by `nix build`
-        # if we run this Python code directly then we use a fallback
-        # method to getting the NAR hash
-        fallback_nixpkgs_hash = "@fallback_nixpkgs_hash@"
-        if not fallback_nixpkgs_hash.startswith("sha256-"):
-            fallback_nixpkgs = Flake(
-                str(nixpkgs_source()), nix_options=self.nix_options
-            )
-            fallback_nixpkgs.invalidate_cache()
-            assert fallback_nixpkgs.hash is not None, (
-                "this should be impossible as invalidate_cache() should always set `hash`"
-            )
-            fallback_nixpkgs_hash = fallback_nixpkgs.hash
-
         select_hash = "@select_hash@"
         if not select_hash.startswith("sha256-"):
-            select_flake = Flake(str(select_source()), nix_options=self.nix_options)
+            select_flake = Flake(str(select_source()), nix_options=nix_options)
             select_flake.invalidate_cache()
             assert select_flake.hash is not None, (
                 "this should be impossible as invalidate_cache() should always set `hash`"
@@ -800,12 +786,6 @@ class Flake:
               }}
         """
         # fmt: on
-        if tmp_store := nix_test_store():
-            nix_options.append("--impure")
-
-        # build_output = Path(
-        #     run(nix_build(["--expr", nix_code, *nix_options])).stdout.strip()
-        # )
 
         build_output = Path(
             run(
@@ -813,7 +793,7 @@ class Flake:
             ).stdout.strip()
         )
 
-        if tmp_store:
+        if tmp_store := nix_test_store():
             build_output = tmp_store.joinpath(*build_output.parts[1:])
         outputs = json.loads(build_output.read_bytes())
         if len(outputs) != len(selectors):

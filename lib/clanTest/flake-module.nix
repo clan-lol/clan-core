@@ -158,14 +158,26 @@ in
           '';
 
       # the test's flake.nix with locked clan-core input
-      flakeForSandbox = hostPkgs.runCommand "offline-flake-for-test-${config.name}" { } ''
-        cp -r ${config.clan.directory} $out
-        chmod +w -R $out
-        substituteInPlace $out/flake.nix \
-          --replace-fail \
-            "https://git.clan.lol/clan/clan-core/archive/main.tar.gz" \
-            "${clan-core.packages.${hostPkgs.system}.clan-core-flake}"
-      '';
+      flakeForSandbox =
+        hostPkgs.runCommand "offline-flake-for-test-${config.name}"
+          {
+            nativeBuildInputs = [ hostPkgs.nix ];
+          }
+          ''
+            cp -r ${config.clan.directory} $out
+            chmod +w -R $out
+            substituteInPlace $out/flake.nix \
+              --replace-fail \
+                "https://git.clan.lol/clan/clan-core/archive/main.tar.gz" \
+                "${clan-core.packages.${hostPkgs.system}.clan-core-flake}"
+
+            # Create a proper lock file for the test flake
+            export HOME=$(mktemp -d)
+            nix flake lock $out \
+              --extra-experimental-features 'nix-command flakes' \
+              --override-input clan-core ${clan-core.packages.${hostPkgs.system}.clan-core-flake} \
+              --override-input nixpkgs ${clan-core.inputs.nixpkgs}
+          '';
     in
     {
       imports = [

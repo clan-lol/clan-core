@@ -43,7 +43,10 @@ let
     deps:
     lib.filterAttrs (_: pkg: !pkg.meta.unsupported or false) (lib.genAttrs deps (name: pkgs.${name}));
   testRuntimeDependenciesMap = generateRuntimeDependenciesMap allDependencies;
-  testRuntimeDependencies = (lib.attrValues testRuntimeDependenciesMap);
+  # Filter out virt-viewer from test dependencies since it pulls quiet a lot of other packages, we don't run virt-viewer in tests.
+  testRuntimeDependencies = lib.filter (pkg: pkg.pname or "" != "virt-viewer") (
+    lib.attrValues testRuntimeDependenciesMap
+  );
   bundledRuntimeDependenciesMap = generateRuntimeDependenciesMap includedRuntimeDeps;
   bundledRuntimeDependencies = lib.attrValues bundledRuntimeDependenciesMap;
 
@@ -70,7 +73,6 @@ let
         rm -f $out/clan_lib/select
 
         substituteInPlace $out/clan_lib/flake/flake.py \
-          --replace-fail '@fallback_nixpkgs_hash@' "$(jq -r '.nodes.nixpkgs.locked.narHash' ${nixpkgs'}/flake.lock)" \
           --replace-fail '@select_hash@' "$(jq -r '.nodes."nix-select".locked.narHash' ${../../flake.lock})"
         ln -sf ${nixpkgs'} $out/clan_lib/nixpkgs
         ln -sf ${nix-select} $out/clan_lib/select
@@ -201,48 +203,6 @@ pythonRuntime.pkgs.buildPythonApplication {
                 pkgs.jq.dev
                 pkgs.stdenv
                 pkgs.stdenvNoCC
-                pkgs.shellcheck-minimal
-              ];
-            };
-          }
-          ''
-            set -euo pipefail
-            cp -r ${sourceWithTests} ./src
-            chmod +w -R ./src
-            cd ./src
-
-            ${setupNixInNix}
-
-            export CLAN_CORE_PATH=${clan-core-path}
-            export PYTHONWARNINGS=error
-
-            # limit build cores to 16
-            jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
-
-            python -m pytest -m "not impure and with_core" ./clan_cli -n $jobs
-            touch $out
-          '';
-    }
-    // lib.optionalAttrs (!stdenv.isDarwin) {
-      # disabled on macOS until we fix all remaining issues
-      clan-lib-pytest =
-        runCommand "clan-lib-pytest"
-          {
-            nativeBuildInputs = testDependencies;
-            buildInputs = [
-              pkgs.bash
-              pkgs.coreutils
-              pkgs.nix
-
-            ];
-            closureInfo = pkgs.closureInfo {
-              rootPaths = [
-                templateDerivation
-                pkgs.bash
-                pkgs.coreutils
-                pkgs.jq.dev
-                pkgs.stdenv
-                pkgs.stdenvNoCC
                 pkgs.openssh
                 pkgs.shellcheck-minimal
                 pkgs.mkpasswd
@@ -266,10 +226,11 @@ pythonRuntime.pkgs.buildPythonApplication {
             export NIXPKGS=${nixpkgs}
             export NIX_SELECT=${nix-select}
 
-            # limit build cores to 4
-            jobs="$((NIX_BUILD_CORES>4 ? 4 : NIX_BUILD_CORES))"
+            # limit build cores to 16
+            jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-            python -m pytest -m "with_core" ./clan_lib -n $jobs
+            # Run all tests with core marker
+            python -m pytest -m "not impure and with_core" -n $jobs ./clan_cli ./clan_lib
             touch $out
           '';
     };
