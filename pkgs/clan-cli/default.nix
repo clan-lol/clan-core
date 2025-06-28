@@ -43,7 +43,10 @@ let
     deps:
     lib.filterAttrs (_: pkg: !pkg.meta.unsupported or false) (lib.genAttrs deps (name: pkgs.${name}));
   testRuntimeDependenciesMap = generateRuntimeDependenciesMap allDependencies;
-  testRuntimeDependencies = (lib.attrValues testRuntimeDependenciesMap);
+  # Filter out virt-viewer from test dependencies since it pulls quiet a lot of other packages, we don't run virt-viewer in tests.
+  testRuntimeDependencies = lib.filter (pkg: pkg.pname or "" != "virt-viewer") (
+    lib.attrValues testRuntimeDependenciesMap
+  );
   bundledRuntimeDependenciesMap = generateRuntimeDependenciesMap includedRuntimeDeps;
   bundledRuntimeDependencies = lib.attrValues bundledRuntimeDependenciesMap;
 
