@@ -24,7 +24,7 @@ def test_create_flake(
     cli.run(["flakes", "create", str(flake_dir), "--template=default", "--no-update"])
 
     assert (flake_dir / ".clan-flake").exists()
-    # Replace the inputs.clan-core.url in the template flake.nix
+    # Replace the inputs.clan.url in the template flake.nix
     substitute(
         flake_dir / "flake.nix",
         clan_core,
@@ -69,7 +69,7 @@ def test_create_flake_existing_git(
     cli.run(["flakes", "create", str(flake_dir), "--template=default", "--no-update"])
 
     assert (flake_dir / ".clan-flake").exists()
-    # Replace the inputs.clan-core.url in the template flake.nix
+    # Replace the inputs.clan.url in the template flake.nix
     substitute(
         flake_dir / "flake.nix",
         clan_core,
@@ -111,7 +111,7 @@ def test_ui_template(
 
     cli.run(["flakes", "create", str(flake_dir), "--template=minimal", "--no-update"])
 
-    # Replace the inputs.clan-core.url in the template flake.nix
+    # Replace the inputs.clan.url in the template flake.nix
     substitute(
         flake_dir / "flake.nix",
         clan_core,
