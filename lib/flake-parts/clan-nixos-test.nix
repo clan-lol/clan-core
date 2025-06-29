@@ -30,65 +30,29 @@ in
         };
 
         config.checks = lib.optionalAttrs (pkgs.stdenv.isLinux) (
-          let
-            # Build all individual vars-check derivations
-            varsChecks = lib.mapAttrs' (
-              name: testModule:
-              lib.nameValuePair "vars-check-${name}" (
-                let
-                  test = nixosLib.runTest (
-                    { ... }:
+          # Add the VM tests as checks (vars-check is part of the test closure)
+          lib.mapAttrs (
+            _name: testModule:
+            nixosLib.runTest (
+              { ... }:
+              {
+                imports = [
+                  self.modules.nixosTest.clanTest
+                  testModule
+                ];
+
+                hostPkgs = pkgs;
+
+                defaults = {
+                  imports = [
                     {
-                      imports = [
-                        self.modules.nixosTest.clanTest
-                        testModule
-                      ];
-
-                      hostPkgs = pkgs;
-
-                      defaults = {
-                        imports = [
-                          {
-                            _module.args.clan-core = self;
-                          }
-                        ];
-                      };
+                      _module.args.clan-core = self;
                     }
-                  );
-                in
-                test.config.result.vars-check
-              )
-            ) cfg;
-          in
-          lib.mkMerge [
-            # Add the VM tests as checks
-            (lib.mapAttrs' (
-              name: testModule:
-              lib.nameValuePair "service-${name}" (
-                nixosLib.runTest (
-                  { ... }:
-                  {
-                    imports = [
-                      self.modules.nixosTest.clanTest
-                      testModule
-                    ];
-
-                    hostPkgs = pkgs;
-
-                    defaults = {
-                      imports = [
-                        {
-                          _module.args.clan-core = self;
-                        }
-                      ];
-                    };
-                  }
-                )
-              )
-            ) cfg)
-
-            varsChecks
-          ]
+                  ];
+                };
+              }
+            )
+          ) cfg
         );
       }
     );
