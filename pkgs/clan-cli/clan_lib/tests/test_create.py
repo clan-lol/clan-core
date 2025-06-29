@@ -282,5 +282,5 @@ def test_clan_create_api(
     clan_dir_flake.invalidate_cache()
 
     with pytest.raises(ClanError) as exc_info:
-        machine.build_nix("config.system.build.toplevel")
+        Path(machine.select("config.system.build.toplevel"))
     assert "nixos-system-test-clan" in str(exc_info.value)

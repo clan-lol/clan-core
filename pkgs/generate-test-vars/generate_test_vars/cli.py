@@ -63,8 +63,7 @@ class TestMachine(Machine):
     def flake_dir(self) -> Path:
         return self.test_dir
 
-    @override
-    def nix(self, attr: str) -> Any:
+    def select(self, attr: str) -> Any:
         """
         Build the machine and return the path to the result
         accepts a secret store and a facts store # TODO

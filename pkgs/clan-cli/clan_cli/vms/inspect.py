@@ -55,7 +55,7 @@ class VmConfig:
 
 
 def inspect_vm(machine: Machine) -> VmConfig:
-    data = machine.eval_nix("config.clan.core.vm.inspect")
+    data = machine.select("config.clan.core.vm.inspect")
     # HACK!
     data["flake_url"] = dataclasses.asdict(machine.flake)
     return VmConfig.from_json(data)

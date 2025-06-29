@@ -72,14 +72,20 @@ class Generator:
 
     def final_script(self) -> Path:
         assert self._machine is not None
-        final_script = self._machine.build_nix(
-            f'config.clan.core.vars.generators."{self.name}".finalScript'
+        from clan_lib.nix import nix_test_store
+
+        output = Path(
+            self._machine.select(
+                f'config.clan.core.vars.generators."{self.name}".finalScript'
+            )
         )
-        return final_script
+        if tmp_store := nix_test_store():
+            output = tmp_store.joinpath(*output.parts[1:])
+        return output
 
     def validation(self) -> str | None:
         assert self._machine is not None
-        return self._machine.eval_nix(
+        return self._machine.select(
             f'config.clan.core.vars.generators."{self.name}".validationHash'
         )
 

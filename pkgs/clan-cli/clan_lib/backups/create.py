@@ -4,7 +4,7 @@ from clan_lib.machines.machines import Machine
 
 def create_backup(machine: Machine, provider: str | None = None) -> None:
     machine.info(f"creating backup for {machine.name}")
-    backup_scripts = machine.eval_nix("config.clan.core.backups")
+    backup_scripts = machine.select("config.clan.core.backups")
     host = machine.target_host()
     if provider is None:
         if not backup_scripts["providers"]:
