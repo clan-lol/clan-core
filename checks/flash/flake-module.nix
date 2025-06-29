@@ -50,7 +50,6 @@
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.toplevel
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript
         self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.build.diskoScript.drvPath
-        self.nixosConfigurations."test-flash-machine-${pkgs.hostPlatform.system}".config.system.clan.deployment.file
       ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
       closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
     in

@@ -1,5 +1,4 @@
 import importlib
-import json
 import logging
 import re
 from dataclasses import dataclass
@@ -15,7 +14,7 @@ from clan_lib.api import API
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import get_machine
-from clan_lib.nix import nix_config, nix_test_store
+from clan_lib.nix import nix_config
 from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.ssh.remote import Remote
 
@@ -79,58 +78,57 @@ class Machine:
             f'{self._class_}Configurations."{self.name}".pkgs.hostPlatform.system'
         )
 
-    @property
-    def deployment(self) -> dict:
-        output = Path(self.select("config.system.clan.deployment.file"))
-        if tmp_store := nix_test_store():
-            output = tmp_store.joinpath(*output.parts[1:])
-        deployment = json.loads(output.read_text())
-        return deployment
-
     @cached_property
     def secret_facts_store(self) -> facts_secret_modules.SecretStoreBase:
-        module = importlib.import_module(self.deployment["facts"]["secretModule"])
+        secret_module = self.select("config.clan.core.facts.secretModule")
+        module = importlib.import_module(secret_module)
         return module.SecretStore(machine=self)
 
     @cached_property
     def public_facts_store(self) -> facts_public_modules.FactStoreBase:
-        module = importlib.import_module(self.deployment["facts"]["publicModule"])
+        public_module = self.select("config.clan.core.facts.publicModule")
+        module = importlib.import_module(public_module)
         return module.FactStore(machine=self)
 
     @cached_property
     def secret_vars_store(self) -> StoreBase:
-        module = importlib.import_module(self.deployment["vars"]["secretModule"])
+        secret_module = self.select("config.clan.core.vars.settings.secretModule")
+        module = importlib.import_module(secret_module)
         return module.SecretStore(machine=self)
 
     @cached_property
     def public_vars_store(self) -> StoreBase:
-        module = importlib.import_module(self.deployment["vars"]["publicModule"])
+        public_module = self.select("config.clan.core.vars.settings.publicModule")
+        module = importlib.import_module(public_module)
         return module.FactStore(machine=self)
 
     @property
     def facts_data(self) -> dict[str, dict[str, Any]]:
-        if self.deployment["facts"]["services"]:
-            return self.deployment["facts"]["services"]
+        services = self.select("config.clan.core.facts.services")
+        if services:
+            return services
         return {}
 
     def vars_generators(self) -> list["Generator"]:
         from clan_cli.vars.generate import Generator
 
-        clan_vars = self.deployment.get("vars")
-        if clan_vars is None:
+        try:
+            generators_data = self.select(
+                "config.clan.core.vars._serialized.generators"
+            )
+            if generators_data is None:
+                return []
+            _generators = [Generator.from_json(gen) for gen in generators_data.values()]
+            for gen in _generators:
+                gen.machine(self)
+        except Exception:
             return []
-        generators: dict[str, Any] = clan_vars.get("generators")
-        if generators is None:
-            return []
-        _generators = [Generator.from_json(gen) for gen in generators.values()]
-        for gen in _generators:
-            gen.machine(self)
-
-        return _generators
+        else:
+            return _generators
 
     @property
     def secrets_upload_directory(self) -> str:
-        return self.deployment["facts"]["secretUploadDirectory"]
+        return self.select("config.clan.core.facts.secretUploadDirectory")
 
     @property
     def flake_dir(self) -> Path:

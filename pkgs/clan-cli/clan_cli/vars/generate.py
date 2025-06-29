@@ -535,7 +535,6 @@ def generate_command(args: argparse.Namespace) -> None:
     args.flake.precache(
         [
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-            f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
         ]
     )
     has_changed = generate_vars(

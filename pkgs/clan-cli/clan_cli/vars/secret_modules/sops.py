@@ -71,7 +71,7 @@ class SecretStore(StoreBase):
             sops_secrets_folder(self.machine.flake_dir)
             / f"{self.machine.name}-age.key",
             priv_key,
-            add_groups=self.machine.deployment["sops"]["defaultGroups"],
+            add_groups=self.machine.select("config.clan.core.sops.defaultGroups"),
             age_plugins=load_age_plugins(self.machine.flake),
         )
         add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)
@@ -158,7 +158,7 @@ class SecretStore(StoreBase):
             secret_folder,
             value,
             add_machines=[self.machine.name] if var.deploy else [],
-            add_groups=self.machine.deployment["sops"]["defaultGroups"],
+            add_groups=self.machine.select("config.clan.core.sops.defaultGroups"),
             git_commit=False,
             age_plugins=load_age_plugins(self.machine.flake),
         )
@@ -259,7 +259,7 @@ class SecretStore(StoreBase):
         )
 
         keys = collect_keys_for_path(path)
-        for group in self.machine.deployment["sops"]["defaultGroups"]:
+        for group in self.machine.select("config.clan.core.sops.defaultGroups"):
             keys.update(
                 collect_keys_for_type(
                     self.machine.flake_dir / "sops" / "groups" / group / "machines"
@@ -314,7 +314,7 @@ class SecretStore(StoreBase):
 
                 age_plugins = load_age_plugins(self.machine.flake)
 
-                for group in self.machine.deployment["sops"]["defaultGroups"]:
+                for group in self.machine.select("config.clan.core.sops.defaultGroups"):
                     allow_member(
                         groups_folder(secret_path),
                         sops_groups_folder(self.machine.flake_dir),

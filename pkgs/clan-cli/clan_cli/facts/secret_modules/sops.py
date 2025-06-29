@@ -31,7 +31,7 @@ class SecretStore(SecretStoreBase):
             sops_secrets_folder(self.machine.flake_dir)
             / f"{self.machine.name}-age.key",
             priv_key,
-            add_groups=self.machine.deployment["sops"]["defaultGroups"],
+            add_groups=self.machine.select("config.clan.core.sops.defaultGroups"),
             age_plugins=load_age_plugins(self.machine.flake),
         )
         add_machine(self.machine.flake_dir, self.machine.name, pub_key, False)

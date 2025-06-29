@@ -22,7 +22,6 @@
         dependencies = [
           self
           pkgs.stdenv.drvPath
-          self.clan.clanInternals.machines.${pkgs.hostPlatform.system}.test-backup.config.system.clan.deployment.file
         ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
         closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
       in

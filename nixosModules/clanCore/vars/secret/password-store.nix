@@ -64,8 +64,6 @@ in
     };
   };
   config = {
-    system.clan.deployment.data.password-store.secretLocation =
-      config.clan.vars.password-store.secretLocation;
     clan.core.vars.settings =
       lib.mkIf (config.clan.core.vars.settings.secretStore == "password-store")
         {

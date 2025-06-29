@@ -184,7 +184,12 @@ def deploy_machine(
 
         # retry nixos-rebuild switch if the first attempt failed
         if ret.returncode != 0:
-            is_mobile = machine.deployment.get("nixosMobileWorkaround", False)
+            try:
+                is_mobile = machine.select(
+                    "config.system.clan.deployment.nixosMobileWorkaround"
+                )
+            except Exception:
+                is_mobile = False
             # if the machine is mobile, we retry to deploy with the mobile workaround method
             if is_mobile:
                 machine.info(

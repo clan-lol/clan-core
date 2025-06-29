@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 {
@@ -23,6 +22,14 @@
           type = lib.types.path;
           description = ''
             the location of the deployment.json file
+          '';
+          default = throw ''
+            deployment.json file generation has been removed in favor of direct selectors.
+
+            Please upgrade your clan-cli to the latest version.
+
+            The deployment data is now accessed directly from the configuration
+            instead of being written to a separate JSON file.
           '';
         };
         deployment.buildHost = lib.mkOption {
@@ -83,8 +90,5 @@
       inherit (config.clan.core.deployment) requireExplicitUpdate;
       inherit (config.system.clan.deployment) nixosMobileWorkaround;
     };
-    system.clan.deployment.file = pkgs.writeText "deployment.json" (
-      builtins.toJSON config.system.clan.deployment.data
-    );
   };
 }

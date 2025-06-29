@@ -58,8 +58,11 @@ def update_command(args: argparse.Namespace) -> None:
             raise ClanError(msg)
 
         def filter_machine(m: Machine) -> bool:
-            if m.deployment.get("requireExplicitUpdate", False):
-                return False
+            try:
+                if m.select("config.clan.deployment.requireExplicitUpdate"):
+                    return False
+            except Exception:
+                pass
 
             try:
                 # check if the machine has a target host set
@@ -96,7 +99,17 @@ def update_command(args: argparse.Namespace) -> None:
             args.flake.precache(
                 [
                     f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.deployment.requireExplicitUpdate",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.nixosMobileWorkaround",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.facts.secretModule",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.facts.publicModule",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.secretModule",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.publicModule",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.facts.services",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars._serialized.generators",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.facts.secretUploadDirectory",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.vars.password-store.secretLocation",
+                    f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.settings.passBackend",
                 ]
             )
 
