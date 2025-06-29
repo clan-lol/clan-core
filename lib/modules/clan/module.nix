@@ -51,9 +51,7 @@ let
 
   allMachines = config.clanInternals.inventoryClass.machines; # <- inventory.machines <- clan.machines
 
-  machineClasses = lib.mapAttrs (
-    name: _: inventory.machines.${name}.machineClass
-  ) allMachines;
+  machineClasses = lib.mapAttrs (name: _: inventory.machines.${name}.machineClass) allMachines;
 
   configurations = lib.mapAttrs (
     name: _:
