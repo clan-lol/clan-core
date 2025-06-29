@@ -52,7 +52,7 @@ let
   allMachines = config.clanInternals.inventoryClass.machines; # <- inventory.machines <- clan.machines
 
   machineClasses = lib.mapAttrs (
-    name: _: inventory.machines.${name}.machineClass or "nixos"
+    name: _: inventory.machines.${name}.machineClass
   ) allMachines;
 
   configurations = lib.mapAttrs (
@@ -71,12 +71,12 @@ let
   # - by the user
   # - by some test frameworks
   # IMPORTANT!: It is utterly important that we don't add any logic outside of these modules, as it would get tested.
-  nixosModules' = lib.filterAttrs (
-    name: _: inventory.machines.${name}.machineClass or "nixos" == "nixos"
-  ) (config.outputs.moduleForMachine);
-  darwinModules' = lib.filterAttrs (
-    name: _: inventory.machines.${name}.machineClass or "nixos" == "darwin"
-  ) (config.outputs.moduleForMachine);
+  nixosModules' = lib.filterAttrs (name: _: inventory.machines.${name}.machineClass == "nixos") (
+    config.outputs.moduleForMachine
+  );
+  darwinModules' = lib.filterAttrs (name: _: inventory.machines.${name}.machineClass == "darwin") (
+    config.outputs.moduleForMachine
+  );
 
   nixosModules = flip mapAttrs' nixosModules' (
     name: machineModule: {
