@@ -62,6 +62,13 @@ in
         location where the tarball with the password-store secrets will be uploaded to and the manifest
       '';
     };
+    passPackage = lib.mkOption {
+      type = lib.types.package;
+      default = pkgs.pass;
+      description = ''
+        Password store package to use. Can be pkgs.pass for GPG-based storage or pkgs.passage for age-based storage.
+      '';
+    };
   };
   config = {
     clan.core.vars.settings =
@@ -76,7 +83,7 @@ in
                 else if file.config.neededFor == "services" then
                   "/run/secrets/${file.config.generatorName}/${file.config.name}"
                 else if file.config.neededFor == "activation" then
-                  "${config.clan.password-store.secretLocation}/activation/${file.config.generatorName}/${file.config.name}"
+                  "${config.clan.vars.password-store.secretLocation}/activation/${file.config.generatorName}/${file.config.name}"
                 else if file.config.neededFor == "partitioning" then
                   "/run/partitioning-secrets/${file.config.generatorName}/${file.config.name}"
                 else

@@ -2,6 +2,7 @@
   # callPackage args
   gnupg,
   installShellFiles,
+  pass,
   jq,
   lib,
   nix,
@@ -58,6 +59,7 @@ let
 
   testDependencies = testRuntimeDependencies ++ [
     gnupg
+    pass
     stdenv.cc # Compiler used for certain native extensions
     (pythonRuntime.withPackages pyTestDeps)
   ];
@@ -213,6 +215,7 @@ pythonRuntime.pkgs.buildPythonApplication {
                 pkgs.shellcheck-minimal
                 pkgs.mkpasswd
                 pkgs.xkcdpass
+                pkgs.pass
                 nix-select
               ];
             };
