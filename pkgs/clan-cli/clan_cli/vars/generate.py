@@ -82,11 +82,6 @@ class Generator:
             files = []
             gen_files = files_data.get(gen_name, {})
             for file_name, file_data in gen_files.items():
-                # Handle mode conversion properly
-                mode = file_data["mode"]
-                if isinstance(mode, str):
-                    mode = int(mode, 8)
-
                 var = Var(
                     id=f"{gen_name}/{file_name}",
                     name=file_name,
@@ -94,7 +89,9 @@ class Generator:
                     deploy=file_data["deploy"],
                     owner=file_data["owner"],
                     group=file_data["group"],
-                    mode=mode,
+                    mode=file_data["mode"]
+                    if isinstance(file_data["mode"], int)
+                    else int(file_data["mode"], 8),
                     needed_for=file_data["neededFor"],
                 )
                 files.append(var)
