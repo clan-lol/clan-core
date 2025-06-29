@@ -49,16 +49,24 @@ def facts_to_nixos_config(facts: dict[str, dict[str, bytes]]) -> dict:
 
 
 # TODO move this to the Machines class
-def build_vm(machine: Machine, tmpdir: Path) -> dict[str, str]:
+def build_vm(
+    machine: Machine, tmpdir: Path, nix_options: list[str] | None = None
+) -> dict[str, str]:
     # TODO pass prompt here for the GTK gui
-
+    if nix_options is None:
+        nix_options = []
     secrets_dir = get_secrets(machine, tmpdir)
 
-    public_facts = machine.public_facts_store.get_all()
+    from clan_lib.nix import nix_test_store
 
-    nixos_config_file = machine.build_nix(
-        "config.system.clan.vm.create", extra_config=facts_to_nixos_config(public_facts)
+    output = Path(
+        machine.select(
+            "config.system.clan.vm.create",
+        )
     )
+    if tmp_store := nix_test_store():
+        output = tmp_store.joinpath(*output.parts[1:])
+    nixos_config_file = output
     try:
         vm_data = json.loads(Path(nixos_config_file).read_text())
         vm_data["secrets_dir"] = str(secrets_dir)

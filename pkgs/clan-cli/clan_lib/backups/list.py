@@ -15,7 +15,7 @@ class Backup:
 
 def list_provider(machine: Machine, host: Remote, provider: str) -> list[Backup]:
     results = []
-    backup_metadata = machine.eval_nix("config.clan.core.backups")
+    backup_metadata = machine.select("config.clan.core.backups")
     list_command = backup_metadata["providers"][provider]["list"]
     proc = host.run(
         [list_command],
@@ -41,7 +41,7 @@ def list_provider(machine: Machine, host: Remote, provider: str) -> list[Backup]
 
 
 def list_backups(machine: Machine, provider: str | None = None) -> list[Backup]:
-    backup_metadata = machine.eval_nix("config.clan.core.backups")
+    backup_metadata = machine.select("config.clan.core.backups")
     results = []
     with machine.target_host().ssh_control_master() as host:
         if provider is None:

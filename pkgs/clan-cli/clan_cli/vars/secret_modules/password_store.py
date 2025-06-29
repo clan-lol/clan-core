@@ -33,7 +33,7 @@ class SecretStore(StoreBase):
 
     @property
     def _store_backend(self) -> str:
-        backend = self.machine.eval_nix("config.clan.core.vars.settings.passBackend")
+        backend = self.machine.select("config.clan.core.vars.settings.passBackend")
         return backend
 
     @property

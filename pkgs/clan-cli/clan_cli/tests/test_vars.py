@@ -992,7 +992,7 @@ def test_dynamic_invalidation(
     # before generating, dependent generator validation should be empty; see bogus hardware-configuration.nix above
     # we have to avoid `*.files.value` in this initial select because the generators haven't been run yet
     # Generators 0: The initial generators before any 'vars generate'
-    generators_0 = machine.eval_nix(f"{gen_prefix}.*.{{validationHash}}")
+    generators_0 = machine.select(f"{gen_prefix}.*.{{validationHash}}")
     assert generators_0["dependent_generator"]["validationHash"] is None
 
     # generate both my_generator and (the dependent) dependent_generator
@@ -1001,7 +1001,7 @@ def test_dynamic_invalidation(
 
     # after generating once, dependent generator validation should be set
     # Generators_1: The generators after the first 'vars generate'
-    generators_1 = machine.eval_nix(gen_prefix)
+    generators_1 = machine.select(gen_prefix)
     assert generators_1["dependent_generator"]["validationHash"] is not None
 
     # @tangential: after generating once, neither generator should want to run again because `clan vars generate` should have re-evaluated the dependent generator's validationHash after executing the parent generator but before executing the dependent generator
@@ -1014,7 +1014,7 @@ def test_dynamic_invalidation(
     cli.run(["vars", "generate", "--flake", str(flake.path), machine.name])
     clan_flake.invalidate_cache()
     # Generators_2: The generators after the second 'vars generate'
-    generators_2 = machine.eval_nix(gen_prefix)
+    generators_2 = machine.select(gen_prefix)
     assert (
         generators_1["dependent_generator"]["validationHash"]
         == generators_2["dependent_generator"]["validationHash"]

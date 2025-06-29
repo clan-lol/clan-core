@@ -81,9 +81,10 @@ class Machine:
 
     @property
     def deployment(self) -> dict:
-        deployment = json.loads(
-            self.build_nix("config.system.clan.deployment.file").read_text()
-        )
+        output = Path(self.select("config.system.clan.deployment.file"))
+        if tmp_store := nix_test_store():
+            output = tmp_store.joinpath(*output.parts[1:])
+        deployment = json.loads(output.read_text())
         return deployment
 
     @cached_property
@@ -159,13 +160,13 @@ class Machine:
 
         return None
 
-    def nix(
+    def select(
         self,
         attr: str,
     ) -> Any:
         """
-        Build the machine and return the path to the result
-        accepts a secret store and a facts store # TODO
+        Select a nix attribute of the machine
+        @attr: the attribute to get
         """
 
         config = nix_config()
@@ -174,36 +175,6 @@ class Machine:
         return self.flake.select(
             f'clanInternals.machines."{system}"."{self.name}".{attr}'
         )
-
-    def eval_nix(self, attr: str, extra_config: None | dict = None) -> Any:
-        """
-        eval a nix attribute of the machine
-        @attr: the attribute to get
-        """
-
-        if extra_config:
-            log.warning("extra_config in eval_nix is no longer supported")
-
-        return self.nix(attr)
-
-    def build_nix(self, attr: str, extra_config: None | dict = None) -> Path:
-        """
-        build a nix attribute of the machine
-        @attr: the attribute to get
-        """
-
-        if extra_config:
-            log.warning("extra_config in build_nix is no longer supported")
-
-        output = self.nix(attr)
-        output = Path(output)
-        if tmp_store := nix_test_store():
-            output = tmp_store.joinpath(*output.parts[1:])
-        assert output.exists(), f"The output {output} doesn't exist"
-        if isinstance(output, Path):
-            return output
-        msg = "build_nix returned not a Path"
-        raise ClanError(msg)
 
 
 @dataclass(frozen=True)
@@ -229,7 +200,7 @@ def get_host(
         machine.debug(
             f"'{field}' is not set in inventory, falling back to slower Nix config, set it either through the Nix or json interface to improve performance"
         )
-        host_str = machine.eval_nix(f'config.clan.core.networking."{field}"')
+        host_str = machine.select(f'config.clan.core.networking."{field}"')
         source = "nix_machine"
 
     if not host_str:

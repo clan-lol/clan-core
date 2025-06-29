@@ -7,8 +7,8 @@ from clan_lib.ssh.remote import Remote
 def restore_service(
     machine: Machine, host: Remote, name: str, provider: str, service: str
 ) -> None:
-    backup_metadata = machine.eval_nix("config.clan.core.backups")
-    backup_folders = machine.eval_nix("config.clan.core.state")
+    backup_metadata = machine.select("config.clan.core.backups")
+    backup_folders = machine.select("config.clan.core.state")
 
     if service not in backup_folders:
         msg = f"Service {service} not found in configuration. Available services are: {', '.join(backup_folders.keys())}"
@@ -60,7 +60,7 @@ def restore_backup(
     errors = []
     with machine.target_host().ssh_control_master() as host:
         if service is None:
-            backup_folders = machine.eval_nix("config.clan.core.state")
+            backup_folders = machine.select("config.clan.core.state")
             for _service in backup_folders:
                 try:
                     restore_service(machine, host, name, provider, _service)
