@@ -49,7 +49,7 @@ nav:
   - Guides:
       - Getting Started:
           - Creating Your First Clan: guides/getting-started/index.md
-          - Create Installer (optional): guides/getting-started/installer.md
+          - Create USB Installer (optional): guides/getting-started/installer.md
           - Add Machines: guides/getting-started/add-machines.md
           - Secrets & Facts: guides/getting-started/secrets.md
           - Deploy Machine: guides/getting-started/deploy.md

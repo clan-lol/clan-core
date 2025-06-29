@@ -1,4 +1,4 @@
-# Clan Installer Image for Physical Machines (optional)
+# USB Installer Image for Physical Machines (optional)
 
 To install Clan on physical machines, you need to use our custom installer image. This is necessary for proper installation and operation.
 
