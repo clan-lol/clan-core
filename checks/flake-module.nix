@@ -67,6 +67,9 @@ in
             lib.mapAttrs' (
               name: config: lib.nameValuePair "nixos-${name}" config.config.system.build.toplevel
             ) (lib.filterAttrs (n: _: !lib.hasPrefix "test-" n) self.nixosConfigurations)
+            // lib.mapAttrs' (
+              name: config: lib.nameValuePair "darwin-${name}" config.config.system.build.toplevel
+            ) (self.darwinConfigurations or { })
             // lib.mapAttrs' (n: lib.nameValuePair "package-${n}") packagesToBuild
             // lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells
             // lib.mapAttrs' (name: config: lib.nameValuePair "home-manager-${name}" config.activation-script) (
