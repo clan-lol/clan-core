@@ -12,11 +12,10 @@
 {
   lib,
   clanLib,
-  clan-core,
   ...
 }:
 let
-  resolveModule = import ./resolveModule.nix { inherit lib clan-core; };
+  resolveModule = import ./resolveModule.nix { inherit lib; };
 in
 {
   mapInstances =
@@ -26,6 +25,7 @@ in
       # The clan inventory
       inventory,
       localModuleSet,
+      clanCoreModules,
       prefix ? [ ],
     }:
     let
@@ -38,7 +38,7 @@ in
           resolvedModule = resolveModule {
             moduleSpec = instance.module;
             inherit localModuleSet;
-            inherit flakeInputs;
+            inherit flakeInputs clanCoreModules;
           };
 
           # Every instance includes machines via roles

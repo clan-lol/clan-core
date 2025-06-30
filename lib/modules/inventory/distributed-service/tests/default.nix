@@ -45,6 +45,7 @@ let
       inventory = evalInventory inventoryModule;
     in
     clanLib.inventory.mapInstances {
+      clanCoreModules = { };
       flakeInputs = flakeInputsFixture;
       inherit inventory;
       localModuleSet = inventory.modules;

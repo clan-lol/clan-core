@@ -1,5 +1,8 @@
 {
   lib,
+  # TODO: Get rid of self here.
+  # DONT add any new functions that depend on self here.
+  # If a lib function depends on a piece in clan-core add that piece to the function arguments
   self,
   ...
 }:
@@ -31,7 +34,7 @@ lib.fix (
     # ------------------------------------
     # ClanLib functions
     evalClan = clanLib.callLib ./modules/inventory/eval-clan-modules { };
-    inventory = clanLib.callLib ./modules/inventory { clan-core = self; };
+    inventory = clanLib.callLib ./modules/inventory { };
     modules = clanLib.callLib ./modules/inventory/frontmatter { };
     test = clanLib.callLib ./test { };
     # Custom types

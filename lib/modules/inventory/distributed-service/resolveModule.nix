@@ -1,8 +1,9 @@
-{ lib, clan-core }:
+{ lib }:
 {
   moduleSpec,
   flakeInputs,
   localModuleSet,
+  clanCoreModules,
 }:
 let
   inputName = if moduleSpec.input == null then "<clan>" else moduleSpec.input;
@@ -29,7 +30,7 @@ let
     let
       input =
         if moduleSpec.input == null then
-          clan-core
+          { clan.modules = clanCoreModules; }
         else if moduleSpec.input == "self" then
           { clan.modules = localModuleSet; }
         else

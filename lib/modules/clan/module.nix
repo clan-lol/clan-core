@@ -249,6 +249,7 @@ in
                 distributedServices = clanLib.inventory.mapInstances {
                   inherit (config) inventory;
                   inherit localModuleSet flakeInputs;
+                  clanCoreModules = clan-core.clan.modules;
                   prefix = [ "distributedServices" ];
                 };
                 machines = config.distributedServices.allMachines;
