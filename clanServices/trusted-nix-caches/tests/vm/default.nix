@@ -1,5 +1,5 @@
 {
-  name = "trusted-nix-caches";
+  name = "service-trusted-nix-caches";
 
   clan = {
     directory = ./.;

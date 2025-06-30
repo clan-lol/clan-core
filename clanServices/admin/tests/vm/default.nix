@@ -2,7 +2,7 @@ let
   public-key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII6zj7ubTg6z/aDwRNwvM/WlQdUocMprQ8E92NWxl6t+ test@test";
 in
 {
-  name = "admin";
+  name = "service-admin";
 
   clan = {
     directory = ./.;

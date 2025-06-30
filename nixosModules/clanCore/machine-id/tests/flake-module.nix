@@ -5,7 +5,7 @@
     {
       clan.nixosTests.machine-id = {
 
-        name = "machine-id";
+        name = "service-machine-id";
 
         clan = {
           directory = ./.;

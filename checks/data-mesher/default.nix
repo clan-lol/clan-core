@@ -20,7 +20,7 @@ nixosLib.runTest (
     ];
 
     hostPkgs = pkgs;
-    name = "data-mesher";
+    name = "service-data-mesher";
 
     clan = {
       directory = ./.;

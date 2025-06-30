@@ -1,5 +1,5 @@
 {
-  name = "packages";
+  name = "service-packages";
 
   clan = {
     directory = ./.;

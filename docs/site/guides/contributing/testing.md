@@ -234,16 +234,16 @@ Failing nix eval tests look like this:
     > error: Tests failed
 ```
 
-To locate the definition, find the flake attribute name of the failing test near the top of the CI Job page, like for example `gitea:clan/clan-core#checks.x86_64-linux.lib-values-eval/1242`.
+To locate the definition, find the flake attribute name of the failing test near the top of the CI Job page, like for example `gitea:clan/clan-core#checks.x86_64-linux.eval-lib-values/1242`.
 
-In this case `lib-values-eval` is the attribute we are looking for.
+In this case `eval-lib-values` is the attribute we are looking for.
 
 Find the attribute via ripgrep:
 
 ```shellSession
-$ rg "lib-values-eval ="
+$ rg "eval-lib-values ="
 lib/values/flake-module.nix
-21:        lib-values-eval = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
+21:        eval-lib-values = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
 grmpf@grmpf-nix ~/p/c/clan-core (test-docs)>
 ```
 

@@ -18,7 +18,7 @@ nixosLib.runTest (
     # With the test framework
     # - legacy-modules
     # - clan.service modules
-    name = "dummy-inventory-test-from-flake";
+    name = "service-dummy-test-from-flake";
 
     clan.test.fromFlake = ./.;
 

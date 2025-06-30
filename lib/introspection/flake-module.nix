@@ -18,7 +18,7 @@ in
     {
       legacyPackages.evalTests-values = tests;
       checks = {
-        lib-values-eval = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
+        eval-lib-values = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
           export HOME="$(realpath .)"
           nix-unit --eval-store "$HOME" \
             --extra-experimental-features flakes \

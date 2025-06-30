@@ -13,7 +13,7 @@ nixosLib.runTest (
 
     hostPkgs = pkgs;
 
-    name = "mycelium";
+    name = "service-mycelium";
 
     clan = {
 

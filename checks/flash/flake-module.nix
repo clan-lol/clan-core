@@ -57,7 +57,7 @@
     in
     {
       checks = pkgs.lib.mkIf pkgs.stdenv.isLinux {
-        flash = self.clanLib.test.baseTest {
+        nixos-test-flash = self.clanLib.test.baseTest {
           name = "flash";
           nodes.target = {
             virtualisation.emptyDiskImages = [ 4096 ];

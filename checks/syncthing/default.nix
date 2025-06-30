@@ -14,7 +14,7 @@ nixosLib.runTest (
 
     hostPkgs = pkgs;
 
-    name = "syncthing";
+    name = "service-syncthing";
 
     clan = {
       directory = ./.;

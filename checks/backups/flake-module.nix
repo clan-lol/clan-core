@@ -151,8 +151,8 @@
     in
     {
       checks = pkgs.lib.mkIf pkgs.stdenv.isLinux {
-        backups = self.clanLib.test.containerTest {
-          name = "backups";
+        nixos-test-backups = self.clanLib.test.containerTest {
+          name = "nixos-test-backups";
           nodes.machine = {
             imports =
               [
