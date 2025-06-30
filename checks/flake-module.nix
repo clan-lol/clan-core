@@ -10,6 +10,7 @@ in
   imports = filter pathExists [
     ./backups/flake-module.nix
     ../nixosModules/clanCore/machine-id/tests/flake-module.nix
+    ../nixosModules/clanCore/state-version/tests/flake-module.nix
     ./devshell/flake-module.nix
     ./flash/flake-module.nix
     ./impure/flake-module.nix
