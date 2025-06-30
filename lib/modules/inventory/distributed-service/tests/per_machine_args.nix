@@ -44,6 +44,7 @@ let
     instances."instance_foo" = {
       module = {
         name = "A";
+        input = "self";
       };
       roles.peer.machines.jon = {
         settings.timeout = lib.mkForce "foo-peer-jon";
@@ -55,6 +56,7 @@ let
     instances."instance_bar" = {
       module = {
         name = "A";
+        input = "self";
       };
       roles.peer.machines.jon = {
         settings.timeout = "bar-peer-jon";
@@ -63,6 +65,7 @@ let
     instances."instance_zaza" = {
       module = {
         name = "B";
+        input = "self";
       };
       roles.peer.tags.all = { };
     };

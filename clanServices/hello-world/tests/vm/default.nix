@@ -12,6 +12,7 @@
 
       instances."test" = {
         module.name = "hello-service";
+        module.input = "self";
         roles.peer.machines.peer1 = { };
       };
     };

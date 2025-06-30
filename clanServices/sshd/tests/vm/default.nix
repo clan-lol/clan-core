@@ -15,6 +15,7 @@
       instances = {
         sshd-test = {
           module.name = "@clan/sshd";
+          module.input = "self";
           roles.server.machines."server".settings = {
             certificate.searchDomains = [ "example.com" ];
             hostKeys.rsa.enable = true;

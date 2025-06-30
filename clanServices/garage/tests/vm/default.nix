@@ -14,6 +14,7 @@
       instances = {
         garage-test = {
           module.name = "@clan/garage";
+          module.input = "self";
           roles.default.machines."server".settings = { };
         };
       };

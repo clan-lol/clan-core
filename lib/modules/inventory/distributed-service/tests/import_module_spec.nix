@@ -32,7 +32,11 @@ let
 in
 {
   test_import_local_module_by_name = {
-    expr = (resolve { name = "A"; }).importedModuleWithInstances.instance_foo.resolvedModule;
+    expr =
+      (resolve {
+        name = "A";
+        input = "self";
+      }).importedModuleWithInstances.instance_foo.resolvedModule;
     expected = {
       _class = "clan.service";
       manifest = {

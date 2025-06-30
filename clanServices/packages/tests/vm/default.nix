@@ -1,8 +1,4 @@
 {
-  module,
-  ...
-}:
-{
   name = "packages";
 
   clan = {
@@ -12,6 +8,7 @@
 
       instances.default = {
         module.name = "@clan/packages";
+        module.input = "self";
         roles.default.machines."server".settings = {
           packages = [ "cbonsai" ];
         };

@@ -151,16 +151,19 @@ in
         instances."instance_foo" = {
           module = {
             name = "A";
+            input = "self";
           };
         };
         instances."instance_bar" = {
           module = {
             name = "A";
+            input = "self";
           };
         };
         instances."instance_zaza" = {
           module = {
             name = "B";
+            input = "self";
           };
         };
       };
@@ -186,6 +189,7 @@ in
           _class = "clan.service";
           manifest = {
             name = "network";
+            input = "self";
           };
           # Define a role without special behavior
           roles.peer = { };
@@ -200,18 +204,21 @@ in
         instances."instance_foo" = {
           module = {
             name = "A";
+            input = "self";
           };
           roles.peer.machines.jon = { };
         };
         instances."instance_bar" = {
           module = {
             name = "A";
+            input = "self";
           };
           roles.peer.machines.sara = { };
         };
         instances."instance_zaza" = {
           module = {
             name = "B";
+            input = "self";
           };
           roles.peer.tags.all = { };
         };
@@ -256,12 +263,14 @@ in
         instances."instance_foo" = {
           module = {
             name = "A";
+            input = "self";
           };
           roles.peer.tags.foo = { };
         };
         instances."instance_zaza" = {
           module = {
             name = "B";
+            input = "self";
           };
           roles.peer.tags.all = { };
         };

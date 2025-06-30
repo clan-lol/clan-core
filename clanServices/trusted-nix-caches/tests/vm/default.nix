@@ -9,6 +9,7 @@
       instances = {
         trusted-nix-caches = {
           module.name = "@clan/trusted-nix-caches";
+          module.input = "self";
           roles.default.machines."server" = { };
         };
       };
