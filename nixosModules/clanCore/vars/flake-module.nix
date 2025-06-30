@@ -18,7 +18,7 @@ in
         clan-core = self;
         pkgs = inputs.nixpkgs.legacyPackages.${system};
       };
-      checks.module-clan-vars-eval = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
+      checks.eval-module-clan-vars = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
         export HOME="$(realpath .)"
 
         nix-unit --eval-store "$HOME" \

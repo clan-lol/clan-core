@@ -26,7 +26,7 @@ in
       devShells.inventory-schema = pkgs.mkShell {
         name = "clan-inventory-schema";
         inputsFrom = with config.checks; [
-          lib-inventory-eval
+          eval-lib-inventory
           self'.devShells.default
         ];
       };
@@ -62,7 +62,7 @@ in
       };
 
       checks = {
-        lib-inventory-eval = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
+        eval-lib-inventory = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
           export HOME="$(realpath .)"
           export NIX_ABORT_ON_WARN=1
           nix-unit --eval-store "$HOME" \

@@ -36,7 +36,7 @@ in
         buildClan = self.clanLib.buildClan;
       };
       checks = {
-        lib-build-clan-eval = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
+        eval-lib-build-clan = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
           export HOME="$(realpath .)"
 
           nix-unit --eval-store "$HOME" \

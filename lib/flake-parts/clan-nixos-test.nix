@@ -62,26 +62,28 @@ in
           in
           lib.mkMerge [
             # Add the VM tests as checks
-            (lib.mapAttrs (
-              _name: testModule:
-              nixosLib.runTest (
-                { ... }:
-                {
-                  imports = [
-                    self.modules.nixosTest.clanTest
-                    testModule
-                  ];
-
-                  hostPkgs = pkgs;
-
-                  defaults = {
+            (lib.mapAttrs' (
+              name: testModule:
+              lib.nameValuePair "service-${name}" (
+                nixosLib.runTest (
+                  { ... }:
+                  {
                     imports = [
-                      {
-                        _module.args.clan-core = self;
-                      }
+                      self.modules.nixosTest.clanTest
+                      testModule
                     ];
-                  };
-                }
+
+                    hostPkgs = pkgs;
+
+                    defaults = {
+                      imports = [
+                        {
+                          _module.args.clan-core = self;
+                        }
+                      ];
+                    };
+                  }
+                )
               )
             ) cfg)
 
