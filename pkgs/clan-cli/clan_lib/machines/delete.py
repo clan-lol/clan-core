@@ -42,7 +42,10 @@ def delete_machine(machine: Machine) -> None:
 
     # louis@(2025-02-04): clean-up legacy (pre-vars) secrets:
     sops_folder = sops_secrets_folder(machine.flake.path)
-    filter_fn = lambda secret_name: secret_name.startswith(f"{machine.name}-")
+
+    def filter_fn(secret_name: str) -> bool:
+        return secret_name.startswith(f"{machine.name}-")
+
     for secret_name in list_secrets(machine.flake.path, filter_fn):
         secret_path = sops_folder / secret_name
         changed_paths.append(secret_path)

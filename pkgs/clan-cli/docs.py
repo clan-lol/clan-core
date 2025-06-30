@@ -1,5 +1,6 @@
 import argparse
 import sys
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -116,9 +117,6 @@ def epilog_to_md(text: str) -> str:
                 md += line
                 md += "\n"
     return md
-
-
-import re
 
 
 def contains_https_link(line: str) -> bool:

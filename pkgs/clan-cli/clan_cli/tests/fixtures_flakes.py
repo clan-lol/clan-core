@@ -5,9 +5,9 @@ import shutil
 import subprocess as sp
 import tempfile
 from collections import defaultdict
-from collections.abc import Callable, Iterator
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 import pytest
 from clan_cli.tests import age_keys
@@ -38,7 +38,12 @@ def def_value() -> defaultdict:
     return defaultdict(def_value)
 
 
-nested_dict: Callable[[], dict[str, Any]] = lambda: defaultdict(def_value)
+def nested_dict() -> defaultdict:
+    """
+    Creates a defaultdict that allows for arbitrary levels of nesting.
+    For example: d['a']['b']['c'] = value
+    """
+    return defaultdict(def_value)
 
 
 # Substitutes strings in a file.

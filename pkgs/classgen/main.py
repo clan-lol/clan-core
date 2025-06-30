@@ -1,4 +1,3 @@
-# ruff: noqa: RUF001
 import argparse
 import json
 import logging
