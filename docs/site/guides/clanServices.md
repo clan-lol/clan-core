@@ -29,7 +29,7 @@ Example of instantiating a `borgbackup` service using `clan-core`:
 
 ```nix
 inventory.instances = {
-    # Arbitrary unique name for this 'borgbackup' instance
+    # Instance Name: Arbitrary unique name for this 'borgbackup' instance
     borgbackup-example = {
         module =  {
             name = "borgbackup";  # <-- Name of the module
@@ -48,6 +48,23 @@ If you used `clan-core` as an input attribute for your flake:
 ```nix
       # ↓ module.input = "clan-core"
 inputs.clan-core.url = "git+https://git.clan.lol/clan/clan-core"
+```
+
+## Simplified Example
+
+If only one instance is needed for a service and the service is a clan core service, the `module` definition can be omitted.
+
+```nix
+# Simplified way of specifying a single instance
+inventory.instances = {
+    # instance name is `borgbackup` -> clan core module `borgbackup` will be loaded.
+    borgbackup = {
+        # Participation of the machines is defined via roles
+        # Right side needs to be an attribute set. Its purpose will become clear later
+        roles.client.machines."machine-a" = {};
+        roles.server.machines."backup-host" = {};
+    };
+}
 ```
 
 ## Configuration Example
