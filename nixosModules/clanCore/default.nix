@@ -19,6 +19,7 @@
       ./nixos-facter.nix
       ./vm.nix
       ./machine-id
+      ./state-version
       ./wayland-proxy-virtwl.nix
       ./zerotier
       ./zfs.nix
