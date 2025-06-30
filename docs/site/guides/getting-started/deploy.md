@@ -1,15 +1,17 @@
-# Deploy your Clan
+# Deploy a machine
 
 Now that you have created a new machine, we will walk through how to install it.
 
+## Prerequisites
 
-### Step 0. Prerequisites
-
-=== "**Physical Hardware**"
-
+!!! important "General Requirements"
+    - [x] RAM > 2GB
     - [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
     - [x] **Machine configuration**: See our basic [adding and configuring machine guide](./add-machines.md)
     - [x] **Initialized secrets**: See [secrets](secrets.md) for how to initialize your secrets.
+
+=== "**Physical Hardware**"
+
     - [x] **USB Flash Drive**: See [Clan Installer](installer.md)
 
     !!! Steps
@@ -20,30 +22,161 @@ Now that you have created a new machine, we will walk through how to install it.
 
 === "**Cloud VMs**"
 
-    - [x] **Two Computers**: You need one computer that you're getting ready (we'll call this the Target Computer) and another one to set it up from (we'll call this the Setup Computer). Make sure both can talk to each other over the network using SSH.
-    - [x] **Machine configuration**: See our basic [adding and configuring machine guide](./add-machines.md)
-    - [x] **Initialized secrets**: See [secrets](secrets.md) for how to initialize your secrets.
+    - [x] Any cloud machine if it is reachable via SSH and supports `kexec`.
 
-    !!! Steps
+    !!! Warning "NixOS can cause strange issues when booting in certain cloud environments."
+        If on Linode: Make sure that the system uses Direct Disk boot kernel (found in the configuration pannel)
 
-        - Any cloud machine if it is reachable via SSH and supports `kexec`.
+### Step 1. Setting `targetHost`
 
+=== "flake.nix (flake-parts)"
 
-### Step 1. Deploy the machine
+    ```nix
+    {
+        inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+        inputs.nixpkgs.follows = "clan-core/nixpkgs";
+        inputs.flake-parts.follows = "clan-core/flake-parts";
+        inputs.flake-parts.inputs.nixpkgs-lib.follows = "clan-core/nixpkgs";
+
+        outputs =
+            inputs@{ flake-parts, ... }:
+            flake-parts.lib.mkFlake { inherit inputs; } {
+            systems = [
+                "x86_64-linux"
+                "aarch64-linux"
+                "x86_64-darwin"
+                "aarch64-darwin"
+            ];
+            imports = [ inputs.clan-core.flakeModules.default ];
+
+            clan = {
+                inventory.machines = {
+                    jon = {
+                        # targetHost will get picked up by cli commands
+                        deploy.targetHost = "root@jon";
+                    };
+                };
+            };
+        };
+    }
+    ```
+
+=== "flake.nix (classic)"
+
+    ```nix
+    {
+        inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+        inputs.nixpkgs.follows = "clan-core/nixpkgs";
+
+        outputs =
+            { self, clan-core, ... }:
+            let
+                clan = clan-core.lib.clan {
+                    inherit self;
+
+                    inventory.machines = {
+                        jon = {
+                            # targetHost will get picked up by cli commands
+                            deploy.targetHost = "root@jon";
+                        };
+                    };
+                };
+            in
+            {
+                inherit (clan.config)
+                    nixosConfigurations
+                    nixosModules
+                    clanInternals
+                    darwinConfigurations
+                    darwinModules
+                    ;
+            };
+    }
+    ```
+
+!!! warning
+    The use of `root@` in the target address implies SSH access as the `root` user.
+    Ensure that the root login is secured and only used when necessary.
+
+### Step 2. Identify the Target Disk
+
+On the setup computer, SSH into the target:
+
+```bash title="setup computer"
+ssh root@<IP> lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
+```
+
+Replace `<IP>` with the machine's IP or hostname if mDNS (i.e. Avahi) is available.
+
+Which should show something like:
+
+```{.shellSession hl_lines="6" .no-copy}
+NAME        ID-LINK                                         FSTYPE   SIZE MOUNTPOINT
+sda         usb-ST_16GB_AA6271026J1000000509-0:0                    14.9G
+├─sda1      usb-ST_16GB_AA6271026J1000000509-0:0-part1                 1M
+├─sda2      usb-ST_16GB_AA6271026J1000000509-0:0-part2      vfat     100M /boot
+└─sda3      usb-ST_16GB_AA6271026J1000000509-0:0-part3      ext4     2.9G /
+nvme0n1     nvme-eui.e8238fa6bf530001001b448b4aec2929              476.9G
+├─nvme0n1p1 nvme-eui.e8238fa6bf530001001b448b4aec2929-part1 vfat     512M
+├─nvme0n1p2 nvme-eui.e8238fa6bf530001001b448b4aec2929-part2 ext4   459.6G
+└─nvme0n1p3 nvme-eui.e8238fa6bf530001001b448b4aec2929-part3 swap    16.8G
+```
+
+Look for the top-level disk device (e.g., nvme0n1 or sda) and copy its `ID-LINK`. Avoid using partition IDs like `nvme0n1p1`.
+
+In this example we would copy `nvme-eui.e8238fa6bf530001001b448b4aec2929`
+
+!!! tip
+    For advanced partitioning, see [Disko templates](https://github.com/nix-community/disko-templates) or [Disko examples](https://github.com/nix-community/disko/tree/master/example).
+
+### Step 3. Fill in hardware specific machine configuration
+
+Edit the following fields inside the `./machines/<machine_name>/configuration.nix`
+
+    <!-- Note: Use "jon" instead of "<machine>" as "<" is not supported in title tag -->
+   ```nix title="./machines/jon/configuration.nix" hl_lines="13 18 22 26"
+   {
+      imports = [
+        # contains your disk format and partitioning configuration.
+        ../../modules/disko.nix
+        # this file is shared among all machines
+        ../../modules/shared.nix
+        # enables GNOME desktop (optional)
+        ../../modules/gnome.nix
+      ];
+
+      # Put your username here for login
+      users.users.user.name = "__YOUR_USERNAME__";
+
+      # Replace this __CHANGE_ME__ with the copied result of the lsblk command
+      disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
+
+      # IMPORTANT! Add your SSH key here
+      # e.g. > cat ~/.ssh/id_ed25519.pub
+      users.users.root.openssh.authorizedKeys.keys = [ "__YOUR_SSH_KEY__" ];
+
+      # ...
+   }
+   ```
+
+!!! Info "Replace `__YOUR_USERNAME__` with the ip of your machine, if you use avahi you can also use your hostname"
+!!! Info "Replace `__CHANGE_ME__` with the appropriate `ID-LINK` identifier, such as `nvme-eui.e8238fa6bf530001001b448b4aec2929`"
+!!! Info "Replace `__YOUR_SSH_KEY__` with your personal key, like `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILoMI0NC5eT9pHlQExrvR5ASV3iW9+BXwhfchq0smXUJ jon@jon-desktop`"
+
+### Step 4. Deploy the machine
 
 **Finally deployment time!** Use the following command to build and deploy the image via SSH onto your machine.
 
-
 === "**Image Installer**"
 
-    This method makes use of the image installers of [nixos-images](https://github.com/nix-community/nixos-images).
-    See how to prepare the installer for use [here](./installer.md).
-
-    The installer will randomly generate a password and local addresses on boot, then run ssh with these preconfigured.
+    The installer will generate a password and local addresses on boot, then run ssh with these preconfigured.
     The installer shows it's deployment relevant information in two formats, a text form, as well as a QR code.
 
+    Sample boot screen shows:
 
-    This is an example of the booted installer.
+    - Root password
+    - IP address
+    - Optional Tor and mDNS details
 
     ```{ .bash .annotate .no-copy .nohighlight}
     ┌─────────────────────────────────────────────────────────────────────────────────────┐
@@ -94,85 +227,67 @@ Now that you have created a new machine, we will walk through how to install it.
     2.  The root password for the installer medium.
         This password is autogenerated and meant to be easily typeable.
     3.  See how to connect the installer medium to wlan [here](./installer.md#optional-connect-to-wifi-manually).
-    4.  :man_raising_hand: I'm a code annotation! I can contain `code`, __formatted
-        text__, images, ... basically anything that can be written in Markdown.
 
-    !!!tip
-        For easy sharing of deployment information via QR code, we highly recommend using [KDE Connect](https://apps.kde.org/de/kdeconnect/).
-
-    There are two ways to deploy your machine:
-    === "**Password Auth**"
-        Run the following command to login over SSH with password authentication
-            ```bash
-            clan machines install [MACHINE] --target-host <IP>  --update-hardware-config nixos-facter
-            ```
-    === "**QR Code Auth**"
-        Using the JSON contents of the QR Code:
-            ```terminal
-            clan machines install [MACHINE] --json "[JSON]"  --update-hardware-config nixos-facter
-            ```
-        OR using a picture containing the QR code
-            ```terminal
-            clan machines install [MACHINE] --png [PATH]  --update-hardware-config nixos-facter
-            ```
+    !!! tip
+        Use [KDE Connect](https://apps.kde.org/de/kdeconnect/) for easyily sharing QR codes from phone to desktop
 
 === "**Cloud VM**"
 
-    Replace `<target_host>` with the **target computers' ip address**:
+    Just run the command **Option B: Cloud VM** below
 
-    ```bash
-    clan machines install [MACHINE] --target-host <target_host>  --update-hardware-config nixos-facter
-    ```
+#### Deployment Commands
 
+##### Using password auth
 
-If you are using our template `[MACHINE]` would be `jon`
+```bash
+clan machines install [MACHINE] --target-host <IP> --update-hardware-config nixos-facter
+```
 
+##### Using QR JSON
+
+```bash
+clan machines install [MACHINE] --json "[JSON]" --update-hardware-config nixos-facter
+```
+
+##### Using QR image file
+
+```bash
+clan machines install [MACHINE] --png [PATH] --update-hardware-config nixos-facter
+```
+
+#### Option B: Cloud VM
+
+```bash
+clan machines install [MACHINE] --target-host <IP> --update-hardware-config nixos-facter
+```
 
 !!! success
     Your machine is all set up. 🎉 🚀
 
+## Post-Deployment: Updating Machines
 
-## Update Your Machines
+### Updating
 
-Clan CLI enables you to remotely update your machines over SSH. This requires setting up a target address for each target machine.
-
-### Setting the Target Host
-
-Replace `root@jon` with the actual hostname or IP address of your target machine in the `configuration.nix` of the machine:
-```{.nix hl_lines="9" .no-copy}
-{
-    # ...
-    # Set this for clan commands use ssh i.e. `clan machines update`
-    # If you change the hostname, you need to update this line to root@<new-hostname>
-    # This only works however if you have avahi running on your admin machine else use IP
-    clan.core.networking.targetHost = "root@jon";
-};
-```
-
-!!! warning
-    The use of `root@` in the target address implies SSH access as the `root` user.
-    Ensure that the root login is secured and only used when necessary.
-
-### Updating Machine Configurations
-
-Execute the following command to update the specified machine:
+Update a single machine:
 
 ```bash
 clan machines update jon
 ```
 
-You can also update all configured machines simultaneously by omitting the machine name:
+Update all machines:
 
 ```bash
 clan machines update
 ```
 
-### Setting a Build Host
+### Build Host Configuration
+
+If a machine is too resource-limited, use another host.
 
 If the machine does not have enough resources to run the NixOS evaluation or build itself,
-it is also possible to specify a build host instead.
-During an update, the CLI will SSH into the build host and run `nixos-rebuild` from there.
+it is also possible to specify a build host.
 
+During an update, the CLI will SSH into the build host and run `nixos-rebuild` from there.
 
 ```{.nix hl_lines="5" .no-copy}
 clan {
@@ -185,7 +300,7 @@ clan {
 };
 ```
 
-### Excluding a machine from `clan machine update`
+### Excluding from Automatic Updates
 
 To exclude machines from being updated when running `clan machines update` without any machines specified,
 one can set the `clan.deployment.requireExplicitUpdate` option to true:
@@ -202,5 +317,4 @@ clan {
 ```
 
 This is useful for machines that are not always online or are not part of the regular update cycle.
-
 

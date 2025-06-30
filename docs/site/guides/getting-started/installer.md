@@ -1,4 +1,4 @@
-# Clan Installer Image for Physical Machines
+# USB Installer Image for Physical Machines (optional)
 
 To install Clan on physical machines, you need to use our custom installer image. This is necessary for proper installation and operation.
 
@@ -44,11 +44,16 @@ To install Clan on physical machines, you need to use our custom installer image
 ```shellSession
 sudo umount /dev/sdb1
 ```
-=== "**Linux OS**"
-    ### Step 2. Create a Custom Installer
 
-    Using clan flash enables the inclusion of ssh public keys into the image.
-    It also allows to set language and keymap in the installer image.
+### Step 2. Installer
+
+=== "**Linux OS**"
+    **Create a Custom Installer**
+
+    We recommend to build your own installer because of the following reasons:
+
+    - Include your ssh public keys into the image that allows passwordless ssh connection later on.
+    - Set your preferred language and keymap
 
     ```bash
     clan flash write --flake git+https://git.clan.lol/clan/clan-core \
@@ -95,11 +100,8 @@ sudo umount /dev/sdb1
         clan flash list languages
         ```
 
-
-
-
 === "**Other OS**"
-    ### Step 2. Download Generic Installer
+    **Download Generic Installer**
 
     For x86_64:
 
