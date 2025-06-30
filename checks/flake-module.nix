@@ -41,21 +41,21 @@ in
           nixosTests = lib.optionalAttrs (pkgs.stdenv.isLinux) {
 
             # Base Tests
-            secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
-            borgbackup-legacy = self.clanLib.test.baseTest ./borgbackup-legacy nixosTestArgs;
-            wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
+            nixos-test-secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
+            nixos-test-borgbackup-legacy = self.clanLib.test.baseTest ./borgbackup-legacy nixosTestArgs;
+            nixos-test-wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
 
             # Container Tests
-            container = self.clanLib.test.containerTest ./container nixosTestArgs;
-            zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
-            matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
-            postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
-            user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
-            user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
+            nixos-test-container = self.clanLib.test.containerTest ./container nixosTestArgs;
+            nixos-test-zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
+            nixos-test-matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
+            nixos-test-postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
+            nixos-test-user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
+            nixos-test-user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
 
             service-dummy-test = import ./service-dummy-test nixosTestArgs;
             service-dummy-test-from-flake = import ./service-dummy-test-from-flake nixosTestArgs;
-            data-mesher = import ./data-mesher nixosTestArgs;
+            service-data-mesher = import ./data-mesher nixosTestArgs;
           };
 
           packagesToBuild = lib.removeAttrs self'.packages [
@@ -128,10 +128,10 @@ in
           in
           lib.optionalAttrs (pkgs.stdenv.isLinux) {
             # import our test
-            secrets = import ./secrets nixosTestArgs;
-            container = import ./container nixosTestArgs;
+            nixos-test-secrets = import ./secrets nixosTestArgs;
+            nixos-test-container = import ./container nixosTestArgs;
             # Clan app tests
-            app-ocr = self.clanLib.test.baseTest ./app-ocr nixosTestArgs;
+            nixos-test-app-ocr = self.clanLib.test.baseTest ./app-ocr nixosTestArgs;
           };
       };
     };
