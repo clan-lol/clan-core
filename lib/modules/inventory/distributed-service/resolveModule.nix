@@ -39,7 +39,11 @@ let
       or (throw "flake input ${moduleSpec.input} doesn't export any clan services via the `clan.modules` output attribute");
 
   resolvedModule =
-    resolvedModuleSet.${moduleSpec.name}
-      or (throw "flake input '${inputName}' doesn't provide clan-module with name ${moduleSpec.name}");
+    resolvedModuleSet.${moduleSpec.name} or (throw ''
+      flake input '${inputName}' doesn't provide clan-module with name ${moduleSpec.name}.
+
+      Set `module.name = "self"` if the module is defined in your own flake.
+      Set `module.input = "<flake-input>" if the module is defined by a flake input called `<flake-input>`.
+    '');
 in
 resolvedModule
