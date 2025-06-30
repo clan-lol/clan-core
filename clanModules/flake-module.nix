@@ -33,7 +33,6 @@ in
     root-password = ./root-password;
     single-disk = ./single-disk;
     sshd = ./sshd;
-    state-version = ./state-version;
     static-hosts = ./static-hosts;
     sunshine = ./sunshine;
     syncthing = ./syncthing;
