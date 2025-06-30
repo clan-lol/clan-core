@@ -17,6 +17,7 @@
             machines.server = { };
             instances.importer = {
               module.name = "@clan/importer";
+              module.input = "self";
               roles.default.tags.all = { };
               roles.default.extraModules = [
                 {
