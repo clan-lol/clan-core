@@ -22,6 +22,7 @@ let
     inventory.instances = {
       zerotier = {
         module.name = "zerotier";
+        module.input = "self";
 
         roles.peer.tags.all = { };
         roles.moon.machines.sara.settings.stableEndpoints = [ "10.0.0.3/9993" ];

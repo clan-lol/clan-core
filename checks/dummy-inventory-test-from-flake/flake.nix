@@ -24,6 +24,7 @@
 
             instances."test" = {
               module.name = "new-service";
+              module.input = "self";
               roles.peer.machines.peer1 = { };
             };
 

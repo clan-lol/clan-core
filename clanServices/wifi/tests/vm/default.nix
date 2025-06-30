@@ -11,6 +11,7 @@
       instances = {
         wg-test-one = {
           module.name = "@clan/wifi";
+          module.input = "self";
 
           roles.default.machines = {
             test.settings.networks.one = { };

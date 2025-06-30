@@ -28,6 +28,7 @@ nixosLib.runTest (
           borgone = {
 
             module.name = "@clan/borgbackup";
+            module.input = "self";
 
             roles.client.machines."clientone" = { };
             roles.server.machines."serverone".settings.directory = "/tmp/borg-test";

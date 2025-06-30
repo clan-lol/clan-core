@@ -205,9 +205,6 @@ in
                 nixpkgs
                 nix-darwin
                 ;
-              # By default clan.directory defaults to self, but we don't
-              # have a sensible default for self here
-              self = throw "set clan.directory in the test";
             };
             modules = [
               clan-core.modules.clan.default

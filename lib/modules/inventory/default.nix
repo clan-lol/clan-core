@@ -1,6 +1,12 @@
-{ lib, clanLib }:
+{
+  lib,
+  clanLib,
+  clan-core,
+}:
 let
-  services = clanLib.callLib ./distributed-service/inventory-adapter.nix { };
+  services = clanLib.callLib ./distributed-service/inventory-adapter.nix {
+    inherit clan-core;
+  };
 in
 {
   inherit (services) mapInstances;

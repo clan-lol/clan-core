@@ -9,6 +9,7 @@
       instances = {
         root-password-test = {
           module.name = "@clan/users";
+          module.input = "self";
           roles.default.machines."server".settings = {
             user = "root";
             prompt = false;
@@ -16,6 +17,7 @@
         };
         user-password-test = {
           module.name = "@clan/users";
+          module.input = "self";
           roles.default.machines."server".settings = {
             user = "testuser";
             prompt = false;

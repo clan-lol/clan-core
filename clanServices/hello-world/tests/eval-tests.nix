@@ -24,6 +24,7 @@ let
     inventory.instances = {
       "hello" = {
         module.name = "hello-world";
+        module.input = "self";
 
         roles.peer.machines.jon = { };
       };

@@ -7,6 +7,7 @@
       machines.server = { };
       instances.default = {
         module.name = "@clan/state-version";
+        module.input = "self";
         roles.default.machines."server" = { };
       };
     };

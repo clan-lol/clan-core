@@ -12,10 +12,11 @@
 {
   lib,
   clanLib,
+  clan-core,
   ...
 }:
 let
-  resolveModule = import ./resolveModule.nix { inherit lib; };
+  resolveModule = import ./resolveModule.nix { inherit lib clan-core; };
 in
 {
   mapInstances =

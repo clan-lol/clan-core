@@ -12,6 +12,7 @@
       instances = {
         "zerotier" = {
           module.name = "zerotier";
+          module.input = "self";
 
           roles.peer.tags.all = { };
           roles.controller.machines.bam = { };

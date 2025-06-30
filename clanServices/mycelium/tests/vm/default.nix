@@ -16,6 +16,7 @@
       instances = {
         mycelium-test = {
           module.name = "@clan/mycelium";
+          module.input = "self";
           roles.peer.machines."server".settings = {
             openFirewall = true;
             addHostedPublicNodes = true;

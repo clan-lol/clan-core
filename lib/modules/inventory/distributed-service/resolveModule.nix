@@ -1,43 +1,45 @@
-{ lib }:
+{ lib, clan-core }:
 {
   moduleSpec,
   flakeInputs,
   localModuleSet,
 }:
 let
+  inputName = if moduleSpec.input == null then "<clan>" else moduleSpec.input;
+  inputError = throw ''
+    Flake doesn't provide input with name '${moduleSpec.input}'
+
+    Choose one of the following inputs:
+    - ${
+      builtins.concatStringsSep "\n- " (
+        lib.attrNames (lib.filterAttrs (_name: input: input ? clan) flakeInputs)
+      )
+    }
+
+    To import a local module from 'clan.modules' remove the 'input' attribute from the module definition
+    Remove the following line from the module definition:
+
+    ...
+    - module.input = "${moduleSpec.input}"
+
+  '';
   resolvedModuleSet =
     # If the module.name is self then take the modules defined in the flake
     # Otherwise its an external input which provides the modules via 'clan.modules' attribute
-    if moduleSpec.input == null then
-      localModuleSet
-    else
-      let
-        input =
-          flakeInputs.${moduleSpec.input} or (throw ''
-            Flake doesn't provide input with name '${moduleSpec.input}'
-
-            Choose one of the following inputs:
-            - ${
-              builtins.concatStringsSep "\n- " (
-                lib.attrNames (lib.filterAttrs (_name: input: input ? clan) flakeInputs)
-              )
-            }
-
-            To import a local module from 'clan.modules' remove the 'input' attribute from the module definition
-            Remove the following line from the module definition:
-
-            ...
-            - module.input = "${moduleSpec.input}"
-
-          '');
-        clanAttrs =
-          input.clan
-            or (throw "It seems the flake input ${moduleSpec.input} doesn't export any clan resources");
-      in
-      clanAttrs.modules;
+    let
+      input =
+        if moduleSpec.input == null then
+          clan-core
+        else if moduleSpec.input == "self" then
+          { clan.modules = localModuleSet; }
+        else
+          flakeInputs.${moduleSpec.input} or inputError;
+    in
+    input.clan.modules
+      or (throw "flake input ${moduleSpec.input} doesn't export any clan services via the `clan.modules` output attribute");
 
   resolvedModule =
     resolvedModuleSet.${moduleSpec.name}
-      or (throw "flake doesn't provide clan-module with name ${moduleSpec.name}");
+      or (throw "flake input '${inputName}' doesn't provide clan-module with name ${moduleSpec.name}");
 in
 resolvedModule

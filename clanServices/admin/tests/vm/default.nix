@@ -14,6 +14,7 @@ in
       instances = {
         ssh-test-one = {
           module.name = "@clan/admin";
+          module.input = "self";
           roles.default.machines."server".settings = {
             allowedKeys.testkey = public-key;
           };

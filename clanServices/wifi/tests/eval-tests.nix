@@ -24,6 +24,7 @@ let
     inventory.instances = {
       "default" = {
         module.name = "wifi";
+        module.input = "self";
         roles.default.tags.all = { };
         roles.default.settings.networks.one = { };
         roles.default.settings.networks.two = { };
