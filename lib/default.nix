@@ -31,7 +31,7 @@ lib.fix (
     # ------------------------------------
     # ClanLib functions
     evalClan = clanLib.callLib ./modules/inventory/eval-clan-modules { };
-    inventory = clanLib.callLib ./modules/inventory { };
+    inventory = clanLib.callLib ./modules/inventory { clan-core = self; };
     modules = clanLib.callLib ./modules/inventory/frontmatter { };
     test = clanLib.callLib ./test { };
     # Custom types

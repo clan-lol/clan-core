@@ -238,7 +238,7 @@ in
           imports = [
             ../inventoryClass/builder/default.nix
             (lib.modules.importApply ../inventoryClass/service-list-from-inputs.nix {
-              inherit localModuleSet flakeInputs clanLib;
+              inherit flakeInputs clanLib localModuleSet;
             })
             {
               inherit inventory directory;
