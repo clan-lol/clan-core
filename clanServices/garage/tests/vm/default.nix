@@ -1,10 +1,9 @@
 {
-  module,
   pkgs,
   ...
 }:
 {
-  name = "garage";
+  name = "service-garage";
 
   clan = {
     directory = ./.;

@@ -78,6 +78,6 @@ in
     };
   };
 
-  flake.checks.x86_64-linux.flash-installer-disk-test =
+  flake.checks.x86_64-linux.nixos-test-flash-installer-disk =
     self.nixosConfigurations.flash-installer.config.system.build.installTest;
 }

@@ -5,7 +5,7 @@
     {
       clan.nixosTests.state-version = {
 
-        name = "state-version";
+        name = "service-state-version";
 
         clan = {
           directory = ./.;

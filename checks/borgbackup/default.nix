@@ -13,7 +13,7 @@ nixosLib.runTest (
 
     hostPkgs = pkgs;
 
-    name = "borgbackup";
+    name = "service-borgbackup";
 
     clan = {
       directory = ./.;

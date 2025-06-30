@@ -183,7 +183,7 @@ in
       # vm-test-run-test-installation-> target: Guest root shell did not produce any data yet...
       # vm-test-run-test-installation-> target:   To debug, enter the VM and run 'systemctl status backdoor.service'.
       checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
-        installation = self.clanLib.test.baseTest {
+        nixos-test-installation = self.clanLib.test.baseTest {
           name = "installation";
           nodes.target = {
             services.openssh.enable = true;
@@ -210,7 +210,7 @@ in
           '';
         } { inherit pkgs self; };
 
-        update-hardware-configuration = self.clanLib.test.baseTest {
+        nixos-test-update-hardware-configuration = self.clanLib.test.baseTest {
           name = "update-hardware-configuration";
           nodes.installer = installer;
 

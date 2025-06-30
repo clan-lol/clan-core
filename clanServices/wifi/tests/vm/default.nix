@@ -1,5 +1,5 @@
 {
-  name = "wifi";
+  name = "service-wifi";
 
   clan = {
     directory = ./.;

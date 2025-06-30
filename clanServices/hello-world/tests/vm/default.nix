@@ -1,9 +1,5 @@
 {
-  module,
-  ...
-}:
-{
-  name = "hello-service";
+  name = "service-hello-service";
 
   clan = {
     directory = ./.;
