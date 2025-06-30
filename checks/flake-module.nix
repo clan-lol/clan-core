@@ -53,8 +53,8 @@ in
             user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
             user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
 
-            dummy-inventory-test = import ./dummy-inventory-test nixosTestArgs;
-            dummy-inventory-test-from-flake = import ./dummy-inventory-test-from-flake nixosTestArgs;
+            service-dummy-test = import ./service-dummy-test nixosTestArgs;
+            service-dummy-test-from-flake = import ./service-dummy-test-from-flake nixosTestArgs;
             data-mesher = import ./data-mesher nixosTestArgs;
           };
 
