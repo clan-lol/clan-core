@@ -1,7 +1,19 @@
-{ self, lib, ... }:
+{
+  self,
+  lib,
+  inputs,
+  ...
+}:
 let
   inherit (lib)
+    attrNames
+    attrValues
+    elem
     filter
+    filterAttrs
+    flip
+    genAttrs
+    hasPrefix
     pathExists
     ;
   nixosLib = import (self.inputs.nixpkgs + "/nixos/lib") { };
@@ -19,6 +31,33 @@ in
     ./nixos-documentation/flake-module.nix
     ./dont-depend-on-repo-root.nix
   ];
+  flake.check = genAttrs [ "x86_64-linux" "aarch64-darwin" ] (
+    system:
+    let
+      checks = flip filterAttrs self.checks.${system} (
+        name: _check:
+        !(hasPrefix "nixos-test-" name)
+        && !(hasPrefix "nixos-" name)
+        && !(hasPrefix "darwin-test-" name)
+        && !(hasPrefix "service-" name)
+        && !(hasPrefix "vars-check-" name)
+        && !(hasPrefix "devShell-" name)
+        && !(elem name [
+          "clan-core-for-checks"
+          "clan-deps"
+        ])
+      );
+    in
+    inputs.nixpkgs.legacyPackages.${system}.runCommand "fast-flake-checks-${system}"
+      { passthru.checks = checks; }
+      ''
+        echo "Executed the following checks for ${system}..."
+        echo "  - ${lib.concatStringsSep "\n" (map (n: "  - " + n) (attrNames checks))}"
+        echo ${toString (attrValues checks)} >/dev/null
+        echo "All checks succeeded"
+        touch $out
+      ''
+  );
   perSystem =
     {
       pkgs,
