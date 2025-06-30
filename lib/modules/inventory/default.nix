@@ -1,6 +1,6 @@
 {
   lib,
-  clanLib
+  clanLib,
 }:
 let
   services = clanLib.callLib ./distributed-service/inventory-adapter.nix { };

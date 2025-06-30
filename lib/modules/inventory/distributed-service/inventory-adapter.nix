@@ -24,7 +24,6 @@ in
       flakeInputs,
       # The clan inventory
       inventory,
-      localModuleSet,
       clanCoreModules,
       prefix ? [ ],
     }:
@@ -37,7 +36,6 @@ in
         let
           resolvedModule = resolveModule {
             moduleSpec = instance.module;
-            inherit localModuleSet;
             inherit flakeInputs clanCoreModules;
           };
 
