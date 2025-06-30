@@ -46,9 +46,5 @@ lib.fix (
     flakes = clanLib.callLib ./flakes.nix {
       clan-core = self;
     };
-
-    # deprecated
-    # remove when https://git.clan.lol/clan/clan-core/pulls/3212 is implemented
-    inherit (self.inputs.nix-select.lib) select;
   }
 )
