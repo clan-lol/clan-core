@@ -51,6 +51,7 @@ nav:
           - Creating Your First Clan: guides/getting-started/index.md
           - Create USB Installer (optional): guides/getting-started/installer.md
           - Add Machines: guides/getting-started/add-machines.md
+          - Add Services: guides/getting-started/add-services.md
           - Secrets & Facts: guides/getting-started/secrets.md
           - Deploy Machine: guides/getting-started/deploy.md
           - Continuous Integration: guides/getting-started/check.md

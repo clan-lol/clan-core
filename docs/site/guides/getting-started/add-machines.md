@@ -10,15 +10,6 @@ See the complete [list](../../guides/more-machines.md#automatic-registration) of
 
 ## Create a machine
 
-=== "CLI (imperative)"
-
-    ```sh
-    clan machines create jon
-    ```
-
-    The imperative command might create a machine folder in `machines/jon`
-    And might persist information in `inventory.json`
-
 === "flake.nix (flake-parts)"
 
     ```{.nix hl_lines=12-15}
@@ -80,36 +71,53 @@ See the complete [list](../../guides/more-machines.md#automatic-registration) of
     }
     ```
 
+=== "CLI (imperative)"
+
+    ```sh
+    clan machines create jon
+    ```
+
+    The imperative command might create a machine folder in `machines/jon`
+    And might persist information in `inventory.json`
+
+
 ### Configuring a machine
 
-Inside of the `flake.nix` file:
+!!! Note
+    The option: `inventory.machines.<name>` is used to define metadata about the machine
+    That includes for example `deploy.targethost` `machineClass` or `tags`
 
-```nix title="flake.nix"
-clan {
+    The option: `machines.<name>` is used to add extra *nixosConfiguration* to a machine
+
+```{.nix .annotate title="flake.nix" hl_lines="3-13 18-22"}
+clan = {
     inventory.machines = {
         jon = {
             # Define targetHost here
             # Required before deployment
-            deploy.targetHost = "root@ip";
+            deploy.targetHost = "root@jon"; # (1)
             # Define tags here
-            tags = [ "desktop" "backup" ];
+            tags = [ ];
+        };
+        sara = {
+            deploy.targetHost = "root@sara";
+            tags = [ ];
         };
     };
-}
-```
-
-
-```nix title="flake.nix"
-clan {
     # Define additional nixosConfiguration here
     # Or in /machines/jon/configuration.nix (autoloaded)
     machines = {
         jon = { config, pkgs, ... }: {
-            environment.systemPackages = with pkgs; [ firefox ];
+            users.users.root.openssh.authorizedKeys.keys = [
+                "ssh-ed25519 AAAAC3NzaC..." # elided (2)
+            ];
         };
     };
 }
 ```
+
+1. It is required to define a *targetHost* for each machine before deploying. Best practice has been, to use the zerotier ip/hostname or the ip from the from overlay network you decided to use.
+2. Add your *ssh key* here - That will ensure you can always login to your machine via *ssh* in case something goes wrong.
 
 ### (Optional): Renaming Machine
 

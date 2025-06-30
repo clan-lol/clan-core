@@ -31,7 +31,7 @@ Now that you have created a new machine, we will walk through how to install it.
 
 === "flake.nix (flake-parts)"
 
-    ```nix
+    ```{.nix hl_lines="22"}
     {
         inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
         inputs.nixpkgs.follows = "clan-core/nixpkgs";
@@ -63,7 +63,7 @@ Now that you have created a new machine, we will walk through how to install it.
 
 === "flake.nix (classic)"
 
-    ```nix
+    ```{.nix hl_lines="14"}
     {
         inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
         inputs.nixpkgs.follows = "clan-core/nixpkgs";
@@ -133,31 +133,32 @@ In this example we would copy `nvme-eui.e8238fa6bf530001001b448b4aec2929`
 
 Edit the following fields inside the `./machines/<machine_name>/configuration.nix`
 
-    <!-- Note: Use "jon" instead of "<machine>" as "<" is not supported in title tag -->
-   ```nix title="./machines/jon/configuration.nix" hl_lines="13 18 22 26"
-   {
-      imports = [
-        # contains your disk format and partitioning configuration.
-        ../../modules/disko.nix
-        # this file is shared among all machines
-        ../../modules/shared.nix
-        # enables GNOME desktop (optional)
-        ../../modules/gnome.nix
-      ];
+<!-- Note: Use "jon" instead of "<machine>" as "<" is not supported in title tag -->
 
-      # Put your username here for login
-      users.users.user.name = "__YOUR_USERNAME__";
+```nix title="./machines/jon/configuration.nix" hl_lines="12 15 19"
+{
+    imports = [
+    # contains your disk format and partitioning configuration.
+    ../../modules/disko.nix
+    # this file is shared among all machines
+    ../../modules/shared.nix
+    # enables GNOME desktop (optional)
+    ../../modules/gnome.nix
+    ];
 
-      # Replace this __CHANGE_ME__ with the copied result of the lsblk command
-      disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
+    # Put your username here for login
+    users.users.user.name = "__YOUR_USERNAME__";
 
-      # IMPORTANT! Add your SSH key here
-      # e.g. > cat ~/.ssh/id_ed25519.pub
-      users.users.root.openssh.authorizedKeys.keys = [ "__YOUR_SSH_KEY__" ];
+    # Replace this __CHANGE_ME__ with the copied result of the lsblk command
+    disko.devices.disk.main.device = "/dev/disk/by-id/__CHANGE_ME__";
 
-      # ...
-   }
-   ```
+    # IMPORTANT! Add your SSH key here
+    # e.g. > cat ~/.ssh/id_ed25519.pub
+    users.users.root.openssh.authorizedKeys.keys = [ "__YOUR_SSH_KEY__" ];
+
+    # ...
+}
+```
 
 !!! Info "Replace `__YOUR_USERNAME__` with the ip of your machine, if you use avahi you can also use your hostname"
 !!! Info "Replace `__CHANGE_ME__` with the appropriate `ID-LINK` identifier, such as `nvme-eui.e8238fa6bf530001001b448b4aec2929`"

@@ -1,6 +1,6 @@
 # Using `clanServices`
 
-Clan’s `clanServices` system is a composable way to define and deploy services across machines. It replaces the legacy `clanModules` approach and introduces better structure, flexibility, and reuse.
+Clan’s `clanServices` system is a composable way to define and deploy services across machines.
 
 This guide shows how to **instantiate** a `clanService`, explains how service definitions are structured in your inventory, and how to pick or create services from modules exposed by flakes.
 
@@ -10,30 +10,40 @@ The term **Multi-host-modules** was introduced previously in the [nixus reposito
 
 ## Overview
 
-A `clanService` is used in:
+Services are used in `inventory.instances`, and then they attach to *roles* and *machines* — meaning you decide which machines run which part of the service.
+
+For example:
 
 ```nix
-inventory.instances.<instance_name>
+inventory.instances = {
+  borgbackup = {
+    roles.client.machines = [ "laptop" "server1" ];
+    roles.server.machines = [ "backup-box" ];
+  };
+}
 ```
 
-Each instance includes a reference to a **module specification** — this is how Clan knows which service module to use and where it came from.
-You can reference services from any flake input, allowing you to compose services from multiple flake sources.
+This says: “Run borgbackup as a *client* on my *laptop* and *server1*, and as a *server* on *backup-box*.”
 
-These operate on a strict *role-based membership model*, meaning machines are added by assigning them specific *roles*.
+## Module source specification
+
+Each instance includes a reference to a **module specification** — this is how Clan knows which service module to use and where it came from.
+Usually one would just use `imports` but we needd to make the `module source` configurable via Python API.
+By default it is not required to specify the `module`, in which case it defaults to the preprovided services of clan-core.
 
 ---
 
-## Basic Example
+## Override Example
 
 Example of instantiating a `borgbackup` service using `clan-core`:
 
 ```nix
 inventory.instances = {
-    # Instance Name: Arbitrary unique name for this 'borgbackup' instance
+    # Instance Name: Different name for this 'borgbackup' instance
     borgbackup-example = {
         module =  {
-            name = "borgbackup";  # <-- Name of the module
-            input = "clan-core"; # <-- The flake input where the service is defined
+            name = "borgbackup";  # <-- Name of the module (optional)
+            input = "clan-core"; # <-- The flake input where the service is defined (optional)
         };
         # Participation of the machines is defined via roles
         # Right side needs to be an attribute set. Its purpose will become clear later

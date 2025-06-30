@@ -1,4 +1,8 @@
 
+Setting up secrets is **Required** for any *machine deployments* or *vm runs* - You need to complete the steps: [Create Admin Keypair](#create-your-admin-keypair) and [Add Your Public Key(s)](#add-your-public-keys)
+
+---
+
 Clan enables encryption of secrets (such as passwords & keys) ensuring security and ease-of-use among users.
 
 By default, Clan uses the [sops](https://github.com/getsops/sops) format
