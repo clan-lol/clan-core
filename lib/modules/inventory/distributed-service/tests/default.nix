@@ -288,5 +288,4 @@ in
 
   per_machine_args = import ./per_machine_args.nix { inherit lib callInventoryAdapter; };
   per_instance_args = import ./per_instance_args.nix { inherit lib callInventoryAdapter; };
-  nested = import ./nested_services { inherit lib clanLib; };
 }
