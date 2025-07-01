@@ -4,7 +4,7 @@
   ...
 }:
 let
-  testFlake = clanLib.buildClan {
+  testFlake = clanLib.clan {
     # Point to the folder of the module
     # TODO: make this optional
     directory = ./..;
@@ -43,7 +43,7 @@ let
 in
 {
   test_simple = {
-    inherit testFlake;
+    config = testFlake.config;
 
     expr = { };
     expected = { };

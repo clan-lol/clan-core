@@ -19,7 +19,7 @@
           builtins.fromJSON (builtins.readFile ./clan_attrs.json)
         else
           { };
-      clan = clan-core.clanLib.buildClan {
+      clan = clan-core.lib.clan {
         inherit self;
         meta.name = "test_flake_with_core";
         # Don't quote this will be replaced by the inventory expression
@@ -62,6 +62,6 @@
     in
     {
       clan = clan_attrs_json;
-      inherit (clan) nixosConfigurations nixosModules clanInternals;
+      inherit (clan.config) nixosConfigurations nixosModules clanInternals;
     };
 }

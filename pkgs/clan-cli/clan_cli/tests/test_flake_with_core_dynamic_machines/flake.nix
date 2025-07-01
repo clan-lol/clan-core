@@ -8,7 +8,7 @@
   outputs =
     { self, clan-core }:
     let
-      clan = clan-core.clanLib.buildClan {
+      clan = clan-core.lib.clan {
         inherit self;
         meta.name = "test_flake_with_core_dynamic_machines";
         machines =
@@ -19,6 +19,6 @@
       };
     in
     {
-      inherit (clan) nixosConfigurations nixosModules clanInternals;
+      inherit (clan.config) nixosConfigurations nixosModules clanInternals;
     };
 }

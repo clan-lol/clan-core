@@ -31,9 +31,7 @@ in
       # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests-build-clan
       legacyPackages.evalTests-build-clan = import ./tests.nix {
         inherit lib;
-        inherit (inputs) nixpkgs;
         clan-core = self;
-        buildClan = self.clanLib.buildClan;
       };
       checks = {
         eval-lib-build-clan = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''

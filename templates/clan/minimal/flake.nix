@@ -6,10 +6,10 @@
     { self, clan-core, ... }:
     let
       # Usage see: https://docs.clan.lol
-      clan = clan-core.clanLib.buildClan { inherit self; };
+      clan = clan-core.lib.clan { inherit self; };
     in
     {
       # all machines managed by Clan
-      inherit (clan) nixosConfigurations nixosModules clanInternals;
+      inherit (clan.config) nixosConfigurations nixosModules clanInternals;
     };
 }

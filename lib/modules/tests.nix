@@ -1,7 +1,6 @@
 {
   lib,
   clan-core,
-  ...
 }:
 let
   # Shallowly force all attribute values to be evaluated.
