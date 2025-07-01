@@ -1,8 +1,5 @@
 import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
-import {
-  Fieldset,
-  FieldsetProps,
-} from "@/src/components/v2/Form/Fieldset";
+import { Fieldset, FieldsetProps } from "@/src/components/v2/Form/Fieldset";
 import cx from "classnames";
 import { TextInput } from "@/src/components/v2/Form/TextInput";
 import { TextArea } from "@/src/components/v2/Form/TextArea";
