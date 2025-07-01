@@ -110,12 +110,13 @@ in
         }
       ) { } importedModuleWithInstances;
 
+      # servicesEval.config.mappedServices.self-A.result.final.jon.nixosModule
       allMachines = lib.mapAttrs (machineName: _: {
         # This is the list of nixosModules for each machine
         machineImports = lib.foldlAttrs (
-          acc: _module_ident: eval:
-          acc ++ [ eval.config.result.final.${machineName}.nixosModule or { } ]
-        ) [ ] importedModulesEvaluated;
+          acc: _module_ident: serviceModule:
+          acc ++ [ serviceModule.result.final.${machineName}.nixosModule or { } ]
+        ) [ ] servicesEval.config.mappedServices;
       }) inventory.machines or { };
 
       evalServices =
