@@ -1,0 +1,50 @@
+@import "./Field.css";
+
+div.form-field {
+  &.checkbox {
+    @apply items-start;
+
+    & > div.checkbox-control {
+      @apply w-5 h-5 rounded-sm bg-def-1 border border-inv-1 p-[0.0625rem];
+
+      &:hover {
+        @apply bg-def-acc-2;
+      }
+
+      &[data-disabled] {
+        @apply border-def-2;
+      }
+
+      &[data-invalid] {
+        @apply border-semantic-error-4;
+      }
+    }
+  }
+
+  &.horizontal.checkbox {
+    @apply items-center;
+  }
+
+  &.inverted {
+    &.checkbox {
+      & > div.checkbox-control {
+        @apply bg-inv-1;
+
+        &:hover,
+        &[data-checked] {
+          @apply bg-inv-acc-4;
+        }
+
+        &[data-disabled] {
+          @apply bg-def-4 border-none;
+        }
+      }
+    }
+  }
+
+  &.s {
+    & > div.checkbox-control {
+      @apply w-4 h-4;
+    }
+  }
+}

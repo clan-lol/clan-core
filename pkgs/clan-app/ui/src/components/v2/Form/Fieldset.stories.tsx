@@ -1,6 +1,13 @@
 import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
-import { Fieldset, FieldsetProps } from "@/src/components/v2/Form/Fieldset";
+import {
+  Fieldset,
+  FieldsetProps,
+} from "@/src/components/v2/Form/Fieldset";
 import cx from "classnames";
+import { TextInput } from "@/src/components/v2/Form/TextInput";
+import { TextArea } from "@/src/components/v2/Form/TextArea";
+import { Checkbox } from "@/src/components/v2/Form/Checkbox";
+import { FieldProps } from "./Field";
 
 const FieldsetExamples = (props: FieldsetProps) => (
   <div class="flex flex-col gap-8">
@@ -36,30 +43,28 @@ export type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     legend: "Signup",
-    fields: [
-      {
-        type: "text",
-        label: "First Name",
-        required: true,
-        control: { placeholder: "Ron" },
-      },
-      {
-        type: "text",
-        label: "Last Name",
-        required: true,
-        control: { placeholder: "Burgundy" },
-      },
-      {
-        type: "textarea",
-        label: "Bio",
-        control: { placeholder: "Tell us a bit about yourself", rows: 8 },
-      },
-      {
-        type: "checkbox",
-        label: "Accept Terms & Conditions",
-        required: true,
-      },
-    ],
+    fields: (props: FieldProps) => (
+      <>
+        <TextInput
+          {...props}
+          label="First Name"
+          required={true}
+          input={{ placeholder: "Ron" }}
+        />
+        <TextInput
+          {...props}
+          label="Last Name"
+          required={true}
+          input={{ placeholder: "Burgundy" }}
+        />
+        <TextArea
+          {...props}
+          label="Bio"
+          input={{ placeholder: "Tell us a bit about yourself", rows: 8 }}
+        />
+        <Checkbox {...props} label="Accept Terms" required={true} />
+      </>
+    ),
   },
 };
 
@@ -88,32 +93,34 @@ export const Error: Story = {
   args: {
     legend: "Signup",
     error: "You must enter a First Name",
-    fields: [
-      {
-        type: "text",
-        label: "First Name",
-        required: true,
-        invalid: true,
-        control: { placeholder: "Ron" },
-      },
-      {
-        type: "text",
-        label: "Last Name",
-        required: true,
-        invalid: true,
-        control: { placeholder: "Burgundy" },
-      },
-      {
-        type: "textarea",
-        label: "Bio",
-        control: { placeholder: "Tell us a bit about yourself", rows: 8 },
-      },
-      {
-        type: "checkbox",
-        label: "Accept Terms & Conditions",
-        invalid: true,
-        required: true,
-      },
-    ],
+    fields: (props: FieldProps) => (
+      <>
+        <TextInput
+          {...props}
+          label="First Name"
+          required={true}
+          validationState="invalid"
+          input={{ placeholder: "Ron" }}
+        />
+        <TextInput
+          {...props}
+          label="Last Name"
+          required={true}
+          validationState="invalid"
+          input={{ placeholder: "Burgundy" }}
+        />
+        <TextArea
+          {...props}
+          label="Bio"
+          input={{ placeholder: "Tell us a bit about yourself", rows: 8 }}
+        />
+        <Checkbox
+          {...props}
+          label="Accept Terms"
+          validationState="invalid"
+          required={true}
+        />
+      </>
+    ),
   },
 };

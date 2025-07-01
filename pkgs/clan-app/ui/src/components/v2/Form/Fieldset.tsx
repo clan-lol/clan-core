@@ -1,16 +1,14 @@
 import "./Fieldset.css";
-import { Field, FieldProps, Orientation } from "./Field";
-import { For } from "solid-js";
+import { JSX } from "solid-js";
 import cx from "classnames";
 import { Typography } from "@/src/components/v2/Typography/Typography";
+import { FieldProps } from "./Field";
 
-export interface FieldsetProps {
+export interface FieldsetProps extends FieldProps {
   legend: string;
-  fields: FieldProps[];
-  inverted?: boolean;
-  disabled?: boolean;
-  orientation?: Orientation;
+  disabled: boolean;
   error?: string;
+  fields: (props: FieldProps) => JSX.Element;
 }
 
 export const Fieldset = (props: FieldsetProps) => {
@@ -36,18 +34,7 @@ export const Fieldset = (props: FieldsetProps) => {
         </Typography>
       </legend>
       <div class="fields">
-        <For each={props.fields}>
-          {(fieldProps) => {
-            return (
-              <Field
-                {...fieldProps}
-                orientation={orientation()}
-                disabled={props.disabled}
-                inverted={props.inverted}
-              />
-            );
-          }}
-        </For>
+        {props.fields({ ...props, orientation: orientation() })}
       </div>
       {props.error && (
         <div class="error" role="alert">

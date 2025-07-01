@@ -1,7 +1,6 @@
 import "./Divider.css";
 import cx from "classnames";
-
-export type Orientation = "horizontal" | "vertical";
+import { Orientation } from "@/src/components/v2/shared";
 
 export interface DividerProps {
   inverted?: boolean;

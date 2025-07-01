@@ -1,16 +1,54 @@
-import meta, { Story } from "./TextField.stories";
+import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import cx from "classnames";
+import { Checkbox, CheckboxProps } from "@/src/components/v2/Form/Checkbox";
 
-const checkboxMeta = {
-  ...meta,
-  title: "Components/Form/Fields/Checkbox",
-};
+const Examples = (props: CheckboxProps) => (
+  <div class="flex flex-col gap-8">
+    <div class="flex flex-col gap-8 p-8">
+      <Checkbox {...props} />
+      <Checkbox {...props} size="s" />
+    </div>
+    <div class="flex flex-col gap-8 p-8 bg-inv-acc-3">
+      <Checkbox {...props} inverted={true} />
+      <Checkbox {...props} inverted={true} size="s" />
+    </div>
+    <div class="flex flex-col gap-8 p-8">
+      <Checkbox {...props} orientation="horizontal" />
+      <Checkbox {...props} orientation="horizontal" size="s" />
+    </div>
+    <div class="flex flex-col gap-8 p-8 bg-inv-acc-3">
+      <Checkbox {...props} inverted={true} orientation="horizontal" />
+      <Checkbox {...props} inverted={true} orientation="horizontal" size="s" />
+    </div>
+  </div>
+);
 
-export default checkboxMeta;
+const meta = {
+  title: "Components/Form/Checkbox",
+  component: Examples,
+  decorators: [
+    (Story: StoryObj, context: StoryContext<CheckboxProps>) => {
+      return (
+        <div
+          class={cx({
+            "w-[600px]": (context.args.orientation || "vertical") == "vertical",
+            "w-[1024px]": context.args.orientation == "horizontal",
+            "bg-inv-acc-3": context.args.inverted,
+          })}
+        >
+          <Story />
+        </div>
+      );
+    },
+  ],
+} satisfies Meta<CheckboxProps>;
+
+export default meta;
+
+export type Story = StoryObj<typeof meta>;
 
 export const Bare: Story = {
-  args: {
-    type: "checkbox",
-  },
+  args: {},
 };
 
 export const Label: Story = {
@@ -45,7 +83,7 @@ export const Tooltip: Story = {
 export const Invalid: Story = {
   args: {
     ...Tooltip.args,
-    invalid: true,
+    validationState: "invalid",
   },
 };
 
@@ -60,9 +98,6 @@ export const ReadOnly: Story = {
   args: {
     ...Tooltip.args,
     readOnly: true,
-    checkbox: {
-      ...Tooltip.args.checkbox,
-      defaultChecked: true,
-    },
+    defaultChecked: true,
   },
 };

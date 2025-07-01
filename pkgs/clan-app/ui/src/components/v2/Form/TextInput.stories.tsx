@@ -1,33 +1,33 @@
 import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
-import { Field, FieldProps } from "./Field";
 import cx from "classnames";
+import { TextInput, TextInputProps } from "@/src/components/v2/Form/TextInput";
 
-const FieldExamples = (props: FieldProps) => (
+const Examples = (props: TextInputProps) => (
   <div class="flex flex-col gap-8">
     <div class="flex flex-col gap-8 p-8">
-      <Field {...props} />
-      <Field {...props} size="s" />
+      <TextInput {...props} />
+      <TextInput {...props} size="s" />
     </div>
     <div class="flex flex-col gap-8 p-8 bg-inv-acc-3">
-      <Field {...props} inverted={true} />
-      <Field {...props} inverted={true} size="s" />
+      <TextInput {...props} inverted={true} />
+      <TextInput {...props} inverted={true} size="s" />
     </div>
     <div class="flex flex-col gap-8 p-8">
-      <Field {...props} orientation="horizontal" />
-      <Field {...props} orientation="horizontal" size="s" />
+      <TextInput {...props} orientation="horizontal" />
+      <TextInput {...props} orientation="horizontal" size="s" />
     </div>
     <div class="flex flex-col gap-8 p-8 bg-inv-acc-3">
-      <Field {...props} inverted={true} orientation="horizontal" />
-      <Field {...props} inverted={true} orientation="horizontal" size="s" />
+      <TextInput {...props} inverted={true} orientation="horizontal" />
+      <TextInput {...props} inverted={true} orientation="horizontal" size="s" />
     </div>
   </div>
 );
 
 const meta = {
-  title: "Components/Form/Fields/TextField",
-  component: FieldExamples,
+  title: "Components/Form/TextInput",
+  component: Examples,
   decorators: [
-    (Story: StoryObj, context: StoryContext<FieldProps>) => {
+    (Story: StoryObj, context: StoryContext<TextInputProps>) => {
       return (
         <div
           class={cx({
@@ -41,7 +41,7 @@ const meta = {
       );
     },
   ],
-} satisfies Meta<FieldProps>;
+} satisfies Meta<TextInputProps>;
 
 export default meta;
 
@@ -49,11 +49,8 @@ export type Story = StoryObj<typeof meta>;
 
 export const Bare: Story = {
   args: {
-    type: "text",
-    text: {
-      input: {
-        placeholder: "e.g. 11/06/89",
-      },
+    input: {
+      placeholder: "e.g. 11/06/89",
     },
   },
 };
@@ -103,7 +100,7 @@ export const Ghost: Story = {
 export const Invalid: Story = {
   args: {
     ...Tooltip.args,
-    invalid: true,
+    validationState: "invalid",
   },
 };
 
@@ -118,8 +115,6 @@ export const ReadOnly: Story = {
   args: {
     ...Icon.args,
     readOnly: true,
-    text: {
-      defaultValue: "14/05/02",
-    },
+    defaultValue: "14/05/02",
   },
 };

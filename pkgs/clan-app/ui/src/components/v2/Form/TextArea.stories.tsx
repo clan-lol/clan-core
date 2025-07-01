@@ -1,20 +1,57 @@
-import meta, { Story } from "./TextField.stories";
+import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
+import cx from "classnames";
+import { TextArea, TextAreaProps } from "./TextArea";
 
-const textAreaMeta = {
-  ...meta,
-  title: "Components/Form/Fields/TextArea",
-};
+const Examples = (props: TextAreaProps) => (
+  <div class="flex flex-col gap-8">
+    <div class="flex flex-col gap-8 p-8">
+      <TextArea {...props} />
+      <TextArea {...props} size="s" />
+    </div>
+    <div class="flex flex-col gap-8 p-8 bg-inv-acc-3">
+      <TextArea {...props} inverted={true} />
+      <TextArea {...props} inverted={true} size="s" />
+    </div>
+    <div class="flex flex-col gap-8 p-8">
+      <TextArea {...props} orientation="horizontal" />
+      <TextArea {...props} orientation="horizontal" size="s" />
+    </div>
+    <div class="flex flex-col gap-8 p-8 bg-inv-acc-3">
+      <TextArea {...props} inverted={true} orientation="horizontal" />
+      <TextArea {...props} inverted={true} orientation="horizontal" size="s" />
+    </div>
+  </div>
+);
 
-export default textAreaMeta;
+const meta = {
+  title: "Components/Form/TextArea",
+  component: Examples,
+  decorators: [
+    (Story: StoryObj, context: StoryContext<TextAreaProps>) => {
+      return (
+        <div
+          class={cx({
+            "w-[600px]": (context.args.orientation || "vertical") == "vertical",
+            "w-[1024px]": context.args.orientation == "horizontal",
+            "bg-inv-acc-3": context.args.inverted,
+          })}
+        >
+          <Story />
+        </div>
+      );
+    },
+  ],
+} satisfies Meta<TextAreaProps>;
+
+export default meta;
+
+export type Story = StoryObj<typeof meta>;
 
 export const Bare: Story = {
   args: {
-    type: "textarea",
-    textarea: {
-      input: {
-        rows: 10,
-        placeholder: "I like craft beer and long walks on the beach",
-      },
+    input: {
+      rows: 10,
+      placeholder: "I like craft beer and long walks on the beach",
     },
   },
 };
@@ -58,7 +95,7 @@ export const Ghost: Story = {
 export const Invalid: Story = {
   args: {
     ...Tooltip.args,
-    invalid: true,
+    validationState: "invalid",
   },
 };
 
@@ -73,10 +110,7 @@ export const ReadOnly: Story = {
   args: {
     ...Tooltip.args,
     readOnly: true,
-    textarea: {
-      ...Tooltip.args.textarea,
-      defaultValue:
-        "Good evening. I'm Ron Burgundy, and this is what's happening in your world tonight. ",
-    },
+    defaultValue:
+      "Good evening. I'm Ron Burgundy, and this is what's happening in your world tonight. ",
   },
 };
