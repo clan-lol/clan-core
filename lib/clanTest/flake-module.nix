@@ -6,13 +6,10 @@
 }:
 let
   inherit (lib)
-    flatten
-    mapAttrsToList
     mkForce
     mkIf
     mkOption
     types
-    unique
     ;
 
   clanLib = config.flake.clanLib;
@@ -93,69 +90,12 @@ in
         ${update-vars-script} $PRJ_ROOT/${relativeDir} ${testName}
       '';
 
-      testSrc = lib.cleanSource config.clan.directory;
+      # Import the new Nix-based vars execution system
+      varsExecutor = import ./vars-executor.nix { inherit lib; };
 
-      inputsForMachine =
-        machine:
-        flip mapAttrsToList machine.clan.core.vars.generators (_name: generator: generator.runtimeInputs);
-
-      generatorScripts =
-        machine:
-        flip mapAttrsToList machine.clan.core.vars.generators (_name: generator: generator.finalScript);
-
-      generatorRuntimeInputs = unique (
-        flatten (flip mapAttrsToList config.nodes (_machineName: machine: inputsForMachine machine))
+      vars-check = hostPkgs.runCommand "vars-check-${testName}" { } (
+        varsExecutor.generateExecutionScript hostPkgs config.nodes
       );
-
-      allGeneratorScripts = unique (
-        flatten (flip mapAttrsToList config.nodes (_machineName: machine: generatorScripts machine))
-      );
-
-      vars-check =
-        hostPkgs.runCommand "update-vars-check-${testName}"
-          {
-            nativeBuildInputs = generatorRuntimeInputs ++ [
-              hostPkgs.nix
-              hostPkgs.git
-              hostPkgs.age
-              hostPkgs.sops
-              hostPkgs.bubblewrap
-            ];
-            closureInfo = hostPkgs.closureInfo {
-              rootPaths =
-                generatorRuntimeInputs
-                ++ allGeneratorScripts
-                ++ [
-                  hostPkgs.bash
-                  hostPkgs.coreutils
-                  hostPkgs.jq.dev
-                  hostPkgs.stdenv
-                  hostPkgs.stdenvNoCC
-                  hostPkgs.shellcheck-minimal
-                  hostPkgs.age
-                  hostPkgs.sops
-                ];
-            };
-          }
-          ''
-            ${self.legacyPackages.${hostPkgs.system}.setupNixInNix}
-            cp -r ${testSrc} ./src
-            chmod +w -R ./src
-            mkdir -p ./src/sops ./src/vars # create dirs case the test has no vars
-            find ./src/sops ./src/vars | sort > filesBefore
-            ${update-vars-script} ./src ${testName} \
-              --repo-root ${self.packages.${hostPkgs.system}.clan-core-flake} \
-              --clean
-            mkdir -p ./src/sops ./src/vars
-            find ./src/sops ./src/vars | sort > filesAfter
-            if ! diff -q filesBefore filesAfter; then
-              echo "The update-vars script changed the files in ${testSrc}."
-              echo "Diff:"
-              diff filesBefore filesAfter || true
-              exit 1
-            fi
-            touch $out
-          '';
 
       # the test's flake.nix with locked clan-core input
       flakeForSandbox =
@@ -298,11 +238,13 @@ in
             #     Harder to handle advanced setups (like TPM, LUKS, or LVM-on-LUKS) but not needed since we are in a test
             #     No systemd journal logs from initrd.
             boot.initrd.systemd.enable = false;
+            # Make the test depend on its vars-check derivation to reduce CI jobs
+            environment.etc."clan-vars-check".source = vars-check;
           }
         );
 
         result = {
-          inherit update-vars vars-check machinesCross;
+          inherit update-vars machinesCross;
         };
       };
     };
