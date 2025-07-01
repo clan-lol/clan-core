@@ -6,6 +6,7 @@
 let
   testFlake =
     (clanLib.clan {
+      self = { };
       directory = ./vm;
 
       machines.jon = {

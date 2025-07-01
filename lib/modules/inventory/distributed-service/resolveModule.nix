@@ -1,11 +1,10 @@
-{ lib, clan-core }:
+{ lib }:
 {
   moduleSpec,
   flakeInputs,
-  localModuleSet,
+  clanCoreModules,
 }:
 let
-  inputName = if moduleSpec.input == null then "<clan>" else moduleSpec.input;
   inputError = throw ''
     Flake doesn't provide input with name '${moduleSpec.input}'
 
@@ -29,21 +28,28 @@ let
     let
       input =
         if moduleSpec.input == null then
-          clan-core
-        else if moduleSpec.input == "self" then
-          { clan.modules = localModuleSet; }
+          { clan.modules = clanCoreModules; }
         else
           flakeInputs.${moduleSpec.input} or inputError;
     in
     input.clan.modules
-      or (throw "flake input ${moduleSpec.input} doesn't export any clan services via the `clan.modules` output attribute");
+      or (throw "flake input '${moduleSpec.input}' doesn't export any clan services via the `clan.modules` output attribute");
 
   resolvedModule =
     resolvedModuleSet.${moduleSpec.name} or (throw ''
-      flake input '${inputName}' doesn't provide clan-module with name ${moduleSpec.name}.
+      ${
+        lib.optionalString (
+          moduleSpec.input != null
+        ) "flake input '${moduleSpec.input}' doesn't provide clan-module with name '${moduleSpec.name}'."
+      }${
+        lib.optionalString (
+          moduleSpec.input == null
+        ) "clan-core doesn't provide clan-module with name '${moduleSpec.name}'."
+      }
 
-      Set `module.name = "self"` if the module is defined in your own flake.
+      Set `module.input = "self"` if the module is defined in your own flake.
       Set `module.input = "<flake-input>" if the module is defined by a flake input called `<flake-input>`.
+      Unset `module.input` (or set module.input = null) - to use the clan-core module '${moduleSpec.name}'
     '');
 in
 resolvedModule

@@ -27,27 +27,27 @@ let
       ];
     }).config;
 
-  flakeInputsFixture = {
-    # Example upstream module
-    upstream.clan.modules = {
-      uzzi = {
-        _class = "clan.service";
-        manifest = {
-          name = "uzzi-from-upstream";
-        };
-      };
-    };
-  };
-
   callInventoryAdapter =
     inventoryModule:
     let
       inventory = evalInventory inventoryModule;
+      flakeInputsFixture = {
+        self.clan.modules = inventory.modules;
+        # Example upstream module
+        upstream.clan.modules = {
+          uzzi = {
+            _class = "clan.service";
+            manifest = {
+              name = "uzzi-from-upstream";
+            };
+          };
+        };
+      };
     in
     clanLib.inventory.mapInstances {
+      clanCoreModules = { };
       flakeInputs = flakeInputsFixture;
       inherit inventory;
-      localModuleSet = inventory.modules;
     };
 in
 {
