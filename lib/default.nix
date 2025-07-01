@@ -43,8 +43,6 @@ lib.fix (
     facts = import ./facts.nix { inherit lib; };
 
     # flakes
-    flakes = clanLib.callLib ./flakes.nix {
-      clan-core = self;
-    };
+    flakes = clanLib.callLib ./flakes.nix { };
   }
 )

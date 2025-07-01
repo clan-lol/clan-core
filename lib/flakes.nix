@@ -1,16 +1,22 @@
 {
   lib,
-  clan-core,
   ...
 }:
 {
   # A flake lock for offline use.
   # All flake inputs are locked to an existing store path
   mkOfflineFlakeLock =
-    flakePath:
+    flakeRef:
+
     let
+      flake =
+        if lib.isAttrs flakeRef then
+          flakeRef
+        else
+          throw "Cannot handle flake of type ${lib.typeOf flakeRef} yet.";
+      flakePath = toString flake;
       flakeLock = lib.importJSON (flakePath + "/flake.lock");
-      flakeInputs = builtins.removeAttrs clan-core.inputs [ "self" ];
+      flakeInputs = builtins.removeAttrs flake.inputs [ "self" ];
       inputsToPaths =
         flakeLock:
         flakeLock
@@ -28,7 +34,7 @@
                   lastModified =
                     # lol, nixpkgs has a different timestamp on the fs???
                     if name == "nixpkgs" then 0 else 1;
-                  path = "${clan-core.inputs.${name}}";
+                  path = "${flake.inputs.${name}}";
                   type = "path";
                 };
               }
