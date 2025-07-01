@@ -2,6 +2,7 @@
   lib,
   clanLib,
   self,
+  config,
   # TODO: Use dependency injection to allow for testing
   # inventoryInterface,
   ...
@@ -24,6 +25,8 @@ in
       description = ''
         This is used to import external clan modules.
       '';
+      # Workaround for lib.clan
+      apply = v: if lib.isAttrs v then v // { inputs.self.clan = config; } else v;
     };
 
     directory = lib.mkOption {
