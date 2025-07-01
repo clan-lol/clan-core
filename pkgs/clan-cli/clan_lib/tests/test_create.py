@@ -271,6 +271,7 @@ def test_clan_create_api(
     set_machine_disk_schema(machine, "single-disk", placeholders)
     clan_dir_flake.invalidate_cache()
 
+    # ATTENTION: This raises only in the CI / Build sandbox executing this locally without the sandbox wouldn't raise!
     with pytest.raises(ClanError) as exc_info:
         Path(machine.select("config.system.build.toplevel"))
     assert "nixos-system-test-clan" in str(exc_info.value)
