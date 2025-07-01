@@ -92,6 +92,7 @@ nav:
           - reference/clanServices/mycelium.md
           - reference/clanServices/packages.md
           - reference/clanServices/sshd.md
+          - reference/clanServices/state-version.md
           - reference/clanServices/trusted-nix-caches.md
           - reference/clanServices/users.md
           - reference/clanServices/wifi.md
@@ -126,6 +127,7 @@ nav:
           - reference/clanModules/root-password.md
           - reference/clanModules/single-disk.md
           - reference/clanModules/sshd.md
+          - reference/clanModules/state-version.md
           - reference/clanModules/static-hosts.md
           - reference/clanModules/sunshine.md
           - reference/clanModules/syncthing-static-peers.md
