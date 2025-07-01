@@ -11,8 +11,7 @@ in
     enable = lib.mkEnableOption "automatic state-version generation.
 
     The option will take the specified version, if one is already supplied through
-    the config or generate one if not.
-    ";
+    the config or generate one if not";
   };
 
   config = lib.mkIf (config.clan.core.settings.state-version.enable) {
