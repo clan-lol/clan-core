@@ -4,9 +4,10 @@
   ...
 }:
 let
-  testFlake = (clanLib.clan {
-    self = { };
-    directory = ./vm;
+  testFlake =
+    (clanLib.clan {
+      self = { };
+      directory = ./vm;
 
       machines.jon = {
         nixpkgs.hostPlatform = "x86_64-linux";

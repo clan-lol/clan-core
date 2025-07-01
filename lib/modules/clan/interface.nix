@@ -26,7 +26,17 @@ in
         This is used to import external clan modules.
       '';
       # Workaround for lib.clan
-      apply = v: if lib.isAttrs v then v // { inputs.self.clan = config; } else v;
+      apply =
+        s:
+        if lib.isAttrs s then
+          s
+          // {
+            inputs = (s.inputs or { }) // {
+              self.clan = config;
+            };
+          }
+        else
+          s;
     };
 
     directory = lib.mkOption {
