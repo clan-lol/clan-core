@@ -4,7 +4,7 @@
   ...
 }:
 let
-  testFlake = clanLib.buildClan {
+  testFlake = clanLib.clan {
     # Point to the folder of the module
     # TODO: make this optional
     directory = ./..;
@@ -47,7 +47,7 @@ in
     inherit testFlake;
 
     expr =
-      testFlake.clan.clanInternals.inventoryClass.distributedServices.importedModulesEvaluated.self-wifi.config;
+      testFlake.config.clan.clanInternals.inventoryClass.distributedServices.importedModulesEvaluated.self-wifi.config;
     expected = 1;
 
     # expr = {

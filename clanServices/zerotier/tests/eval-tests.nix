@@ -4,32 +4,33 @@
   ...
 }:
 let
-  testFlake = clanLib.buildClan {
-    directory = ./vm;
+  testFlake =
+    (clanLib.clan {
+      directory = ./vm;
 
-    machines.jon = {
-      nixpkgs.hostPlatform = "x86_64-linux";
-    };
-    machines.sara = {
-      nixpkgs.hostPlatform = "x86_64-linux";
-    };
-    machines.bam = {
-      nixpkgs.hostPlatform = "x86_64-linux";
-    };
-
-    modules.zerotier = module;
-
-    inventory.instances = {
-      zerotier = {
-        module.name = "zerotier";
-        module.input = "self";
-
-        roles.peer.tags.all = { };
-        roles.moon.machines.sara.settings.stableEndpoints = [ "10.0.0.3/9993" ];
-        roles.controller.machines.bam = { };
+      machines.jon = {
+        nixpkgs.hostPlatform = "x86_64-linux";
       };
-    };
-  };
+      machines.sara = {
+        nixpkgs.hostPlatform = "x86_64-linux";
+      };
+      machines.bam = {
+        nixpkgs.hostPlatform = "x86_64-linux";
+      };
+
+      modules.zerotier = module;
+
+      inventory.instances = {
+        zerotier = {
+          module.name = "zerotier";
+          module.input = "self";
+
+          roles.peer.tags.all = { };
+          roles.moon.machines.sara.settings.stableEndpoints = [ "10.0.0.3/9993" ];
+          roles.controller.machines.bam = { };
+        };
+      };
+    }).config;
 in
 {
   test_peers = {
