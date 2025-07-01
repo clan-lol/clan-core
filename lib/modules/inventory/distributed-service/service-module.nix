@@ -412,27 +412,6 @@ in
                             ```
                           '';
                         };
-                        options.services = mkOption {
-                          visible = false;
-                          type = attrsWith {
-                            placeholder = "serviceName";
-                            elemType = submoduleWith {
-                              modules = [
-                                {
-                                  _module.args._ctx = _ctx ++ [
-                                    config.manifest.name
-                                    "roles"
-                                    roleName
-                                    "perInstance"
-                                    "services"
-                                  ];
-                                }
-                                ./service-module.nix
-                              ];
-                            };
-                          };
-                          default = { };
-                        };
                       })
                     ];
                   };
@@ -536,25 +515,6 @@ in
                 }
                 ```
               '';
-            };
-            options.services = mkOption {
-              visible = false;
-              type = attrsWith {
-                placeholder = "serviceName";
-                elemType = submoduleWith {
-                  modules = [
-                    {
-                      _module.args._ctx = _ctx ++ [
-                        config.manifest.name
-                        "perMachine"
-                        "services"
-                      ];
-                    }
-                    ./service-module.nix
-                  ];
-                };
-              };
-              default = { };
             };
           })
         ];
@@ -727,40 +687,18 @@ in
                   instanceAcc: instanceName: instance:
                   instanceAcc
                   // {
-                    nixosModules =
-                      (
-                        (lib.mapAttrsToList (
-                          nestedServiceName: serviceModule:
-                          let
-                            unmatchedMachines = lib.attrNames (
-                              lib.removeAttrs serviceModule.result.final (lib.attrNames config.result.allMachines)
-                            );
-                          in
-                          if unmatchedMachines != [ ] then
-                            throw ''
-                              The following machines are not part of the parent service: ${builtins.toJSON unmatchedMachines}
-                              Either remove the machines, or include them into the parent via a role.
-                              (Added via roles.${roleName}.perInstance.services.${nestedServiceName})
-
-                              ${errorContext}
-                            ''
-                          else
-                            serviceModule.result.final.${machineName}.nixosModule
-                        ) instance.allMachines.${machineName}.services or { })
-
-                      )
-                      ++ (
-                        if instance.allMachines.${machineName}.nixosModule or { } != { } then
-                          instanceAcc.nixosModules
-                          ++ [
-                            (lib.setDefaultModuleLocation
-                              "Via instances.${instanceName}.roles.${roleName}.machines.${machineName}"
-                              instance.allMachines.${machineName}.nixosModule
-                            )
-                          ]
-                        else
-                          instanceAcc.nixosModules
-                      );
+                    nixosModules = (
+                      if instance.allMachines.${machineName}.nixosModule or { } != { } then
+                        instanceAcc.nixosModules
+                        ++ [
+                          (lib.setDefaultModuleLocation
+                            "Via instances.${instanceName}.roles.${roleName}.machines.${machineName}"
+                            instance.allMachines.${machineName}.nixosModule
+                          )
+                        ]
+                      else
+                        instanceAcc.nixosModules
+                    );
                   }
                 ) roleAcc role.allInstances
               )
@@ -773,38 +711,18 @@ in
         {
           inherit instanceResults machineResult;
           nixosModule = {
-            imports =
-              [
-                # include service assertions:
-                (
-                  let
-                    failedAssertions = (lib.filterAttrs (_: v: !v.assertion) config.result.assertions);
-                  in
-                  {
-                    assertions = lib.attrValues failedAssertions;
-                  }
-                )
-                (lib.setDefaultModuleLocation "Via ${config.manifest.name}.perMachine - machine='${machineName}';" machineResult.nixosModule)
-              ]
-              ++ (lib.mapAttrsToList (
-                nestedServiceName: serviceModule:
+            imports = [
+              # include service assertions:
+              (
                 let
-                  unmatchedMachines = lib.attrNames (
-                    lib.removeAttrs serviceModule.result.final (lib.attrNames config.result.allMachines)
-                  );
+                  failedAssertions = (lib.filterAttrs (_: v: !v.assertion) config.result.assertions);
                 in
-                if unmatchedMachines != [ ] then
-                  throw ''
-                    The following machines are not part of the parent service: ${builtins.toJSON unmatchedMachines}
-                    Either remove the machines, or include them into the parent via a role.
-                    (Added via perMachine.services.${nestedServiceName})
-
-                    ${errorContext}
-                  ''
-                else
-                  serviceModule.result.final.${machineName}.nixosModule
-              ) machineResult.services)
-              ++ instanceResults.nixosModules;
+                {
+                  assertions = lib.attrValues failedAssertions;
+                }
+              )
+              (lib.setDefaultModuleLocation "Via ${config.manifest.name}.perMachine - machine='${machineName}';" machineResult.nixosModule)
+            ] ++ instanceResults.nixosModules;
           };
         }
       ) config.result.allMachines;
