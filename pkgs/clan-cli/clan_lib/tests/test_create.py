@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import shutil
 import sys
 from dataclasses import dataclass
@@ -271,7 +272,19 @@ def test_clan_create_api(
     set_machine_disk_schema(machine, "single-disk", placeholders)
     clan_dir_flake.invalidate_cache()
 
-    # ATTENTION: This raises only in the CI / Build sandbox executing this locally without the sandbox wouldn't raise!
-    with pytest.raises(ClanError) as exc_info:
-        Path(machine.select("config.system.build.toplevel"))
-    assert "nixos-system-test-clan" in str(exc_info.value)
+    # In the sandbox, building fails due to network restrictions (can't download dependencies)
+    # Outside the sandbox, the build should succeed
+    in_sandbox = os.environ.get("IN_NIX_SANDBOX") == "1"
+
+    if in_sandbox:
+        # In sandbox: expect build to fail due to network restrictions
+        with pytest.raises(ClanError) as exc_info:
+            Path(machine.select("config.system.build.toplevel"))
+        # The error should mention the system derivation name
+        assert "nixos-system-test-clan" in str(exc_info.value)
+    else:
+        # Outside sandbox: build should succeed
+        toplevel_path = Path(machine.select("config.system.build.toplevel"))
+        assert toplevel_path.exists()
+        # Verify it's a NixOS system by checking for expected content
+        assert "nixos-system-test-clan" in str(toplevel_path)
