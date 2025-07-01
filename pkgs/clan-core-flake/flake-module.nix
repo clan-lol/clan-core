@@ -33,7 +33,7 @@ in
                 export NIX_STORE_DIR=$HOME
                 cp -r ${clanCore} $out
                 chmod +w -R $out
-                cp ${mkOfflineFlakeLock clanCore} $out/flake.lock
+                cp ${mkOfflineFlakeLock self} $out/flake.lock
                 nix flake lock $out --extra-experimental-features 'nix-command flakes'
                 clanCoreHash=$(nix hash path ${clanCore} --extra-experimental-features 'nix-command')
               '';
