@@ -149,6 +149,14 @@ in
             modules = [
               clan-core.modules.clan.default
               {
+                self = {
+                  inputs = {
+                    # Simulate flake: 'self.inputs.self'
+                    # Needed because local modules are imported from inputs.self
+                    self = config;
+                    set_inputs_in_tests_fixture_warning = throw "'self.inputs' within test needs to be set manually. Set 'clan.self.inputs' to mock inputs=`{}`";
+                  };
+                };
                 _prefix = [
                   "checks"
                   "<system>"

@@ -6,7 +6,6 @@
   name = "service-mycelium";
 
   clan = {
-
     test.useContainers = false;
     directory = ./.;
     inventory = {

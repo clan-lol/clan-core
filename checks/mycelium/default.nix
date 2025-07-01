@@ -16,7 +16,6 @@ nixosLib.runTest (
     name = "service-mycelium";
 
     clan = {
-
       test.useContainers = false;
       directory = ./.;
       modules."@clan/mycelium" = ../../clanServices/mycelium/default.nix;
