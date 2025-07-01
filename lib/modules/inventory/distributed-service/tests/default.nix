@@ -48,9 +48,11 @@ let
       clanCoreModules = { };
       flakeInputs = flakeInputsFixture;
       inherit inventory;
+      exportsModule = { };
     };
 in
 {
+  exports = import ./exports.nix { inherit lib clanLib; };
   resolve_module_spec = import ./import_module_spec.nix { inherit lib callInventoryAdapter; };
   test_simple =
     let
@@ -171,7 +173,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.importedModulesEvaluated.self-A.config.instances;
+      expr = lib.attrNames res.importedModulesEvaluated.self-A.instances;
       expected = [
         "instance_bar"
         "instance_foo"
@@ -227,7 +229,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.importedModulesEvaluated.self-A.config.result.allMachines;
+      expr = lib.attrNames res.importedModulesEvaluated.self-A.result.allMachines;
       expected = [
         "jon"
         "sara"
@@ -279,7 +281,7 @@ in
     {
       # Test that the module is mapped into the output
       # We might change the attribute name in the future
-      expr = lib.attrNames res.importedModulesEvaluated.self-A.config.result.allMachines;
+      expr = lib.attrNames res.importedModulesEvaluated.self-A.result.allMachines;
       expected = [
         "jon"
         "sara"

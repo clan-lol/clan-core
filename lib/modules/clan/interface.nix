@@ -67,6 +67,41 @@ in
       '';
     };
 
+    # TODO: make this writable by moving the options from inventoryClass into clan.
+    exports = lib.mkOption {
+      readOnly = true;
+    };
+
+    exportsModule = lib.mkOption {
+      type = types.deferredModule;
+      # can be set only once
+      readOnly = true;
+      description = ''
+        A module that is used to define the module of flake level exports -
+
+        such as 'exports.machines.<name>' and 'exports.instances.<name>'
+
+        Example:
+
+        ```nix
+        {
+          options.vars.generators = lib.mkOption {
+            type = lib.types.attrsOf (
+              lib.types.submoduleWith {
+                modules = [
+                  {
+                    options.script = lib.mkOption { type = lib.types.str; };
+                  }
+                ];
+              }
+            );
+            default = { };
+          };
+        }
+        ```
+      '';
+    };
+
     specialArgs = lib.mkOption {
       type = types.attrsOf types.raw;
       default = { };

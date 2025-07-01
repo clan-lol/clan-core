@@ -384,6 +384,10 @@ in
                   type = types.deferredModuleWith {
                     staticModules = [
                       ({
+                        options.exports = mkOption {
+                          type = types.deferredModule;
+                          default = { };
+                        };
                         options.nixosModule = mkOption {
                           type = types.deferredModule;
                           default = { };
@@ -514,6 +518,10 @@ in
       type = types.deferredModuleWith {
         staticModules = [
           ({
+            options.exports = mkOption {
+              type = types.deferredModule;
+              default = { };
+            };
             options.nixosModule = mkOption {
               type = types.deferredModule;
               default = { };
@@ -607,6 +615,34 @@ in
 
           modules = [ v ];
         }).config;
+    };
+
+    exports = mkOption {
+      default = { };
+      type = types.submoduleWith {
+        # Static modules
+        modules =
+          [
+            {
+              options.instances = mkOption {
+                type = types.attrsOf types.deferredModule;
+              };
+            }
+            {
+              options.machines = mkOption {
+                type = types.attrsOf types.deferredModule;
+              };
+            }
+          ]
+          ++ lib.mapAttrsToList (_roleName: role: {
+            instances = lib.mapAttrs (_instanceName: instance: {
+              imports = lib.mapAttrsToList (_machineName: v: v.exports) instance.allMachines;
+            }) role.allInstances;
+          }) config.result.allRoles
+          ++ lib.mapAttrsToList (machineName: machine: {
+            machines.${machineName} = machine.exports;
+          }) config.result.allMachines;
+      };
     };
     # ---
     # Place the result in _module.result to mark them as "internal" and discourage usage/overrides
