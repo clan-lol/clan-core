@@ -5,6 +5,7 @@
 }:
 let
   testFlake = clanLib.clan {
+    self = { };
     # Point to the folder of the module
     # TODO: make this optional
     directory = ./..;
