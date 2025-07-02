@@ -4,7 +4,7 @@ import os
 import subprocess
 from typing import NamedTuple
 
-from .environment import setup_nix_environment
+from .nix_setup import setup_nix_in_nix
 from .port import find_free_port, setup_port_forwarding
 
 
@@ -26,12 +26,8 @@ def setup_test_environment(
     Returns:
         TestEnvironment with host_port, ssh_key, and flake_dir
     """
-    from setup_nix_in_nix import setup_nix_in_nix  # type: ignore[import-untyped]
-
-    setup_nix_environment(temp_dir, closure_info)
-
     # Run setup function
-    setup_nix_in_nix()
+    setup_nix_in_nix(closure_info)
 
     host_port = find_free_port()
     target.wait_for_unit("sshd.service")

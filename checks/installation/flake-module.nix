@@ -168,7 +168,6 @@
             nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
             extraPythonPackages = _p: [
               (import ./test-helpers.nix { inherit lib pkgs self; }).nixosTestLib
-              self.legacyPackages.${pkgs.system}.setupNixInNixPythonPackage
             ];
 
             testScript = ''
@@ -227,7 +226,6 @@
             nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
             extraPythonPackages = _p: [
               (import ./test-helpers.nix { inherit lib pkgs self; }).nixosTestLib
-              self.legacyPackages.${pkgs.system}.setupNixInNixPythonPackage
             ];
 
             testScript = ''
