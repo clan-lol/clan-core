@@ -70,9 +70,13 @@ in
     # TODO: make this writable by moving the options from inventoryClass into clan.
     exports = lib.mkOption {
       readOnly = true;
+      visible = false;
+      internal = true;
     };
 
     exportsModule = lib.mkOption {
+      internal = true;
+      visible = false;
       type = types.deferredModule;
       # can be set only once
       readOnly = true;
