@@ -7,5 +7,5 @@
 }
 
 .button--ghost-active:active {
-  @apply active:bg-secondary-200 active:text-secondary-900 active:shadow-button-primary-active;
+  @apply active:bg-secondary-200 active:text-secondary-900;
 }

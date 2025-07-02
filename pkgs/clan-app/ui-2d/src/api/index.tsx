@@ -23,9 +23,37 @@ export type SuccessQuery<T extends OperationNames> = Extract<
 >;
 export type SuccessData<T extends OperationNames> = SuccessQuery<T>["data"];
 
+function isMachine(obj: unknown): obj is Machine {
+  return (
+    !!obj &&
+    typeof obj === "object" &&
+    typeof (obj as any).name === "string" &&
+    typeof (obj as any).flake === "object" &&
+    typeof (obj as any).flake.identifier === "string"
+  );
+}
+
+// Machine type with flake for API calls
+interface Machine {
+  name: string;
+  flake: {
+    identifier: string;
+  };
+}
+
+interface BackendOpts {
+  logging?: { group: string | Machine };
+}
+
+interface BackendReturnType<K extends OperationNames> {
+  result: OperationResponse<K>;
+  metadata: Record<string, any>;
+}
+
 const _callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
+  backendOpts?: BackendOpts,
 ): { promise: Promise<OperationResponse<K>>; op_key: string } => {
   // if window[method] does not exist, throw an error
   if (!(method in window)) {
@@ -33,17 +61,28 @@ const _callApi = <K extends OperationNames>(
     // return a rejected promise
     return {
       promise: Promise.resolve({
-        status: "error",
-        errors: [
-          {
-            message: `Method ${method} not found on window object`,
-            code: "method_not_found",
-          },
-        ],
-        op_key: "noop",
+          status: "error",
+          errors: [
+            {
+              message: `Method ${method} not found on window object`,
+              code: "method_not_found",
+            },
+          ],
+          op_key: "noop",
       }),
       op_key: "noop",
     };
+  }
+
+  let metadata: BackendOpts | undefined = undefined;
+  if (backendOpts != undefined) {
+    metadata = { ...backendOpts };
+    let group = backendOpts?.logging?.group;
+    if (group != undefined && isMachine(group)) {
+      metadata = {
+        logging: { group: group.flake.identifier + "#" + group.name },
+      };
+    }
   }
 
   const promise = (
@@ -105,10 +144,11 @@ const handleCancel = async <K extends OperationNames>(
 export const callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
+  backendOpts?: BackendOpts,
 ): { promise: Promise<OperationResponse<K>>; op_key: string } => {
-  console.log("Calling API", method, args);
+  console.log("Calling API", method, args, backendOpts);
 
-  const { promise, op_key } = _callApi(method, args);
+  const { promise, op_key } = _callApi(method, args, backendOpts);
   promise.catch((error) => {
     toast.custom(
       (t) => (
@@ -146,13 +186,14 @@ export const callApi = <K extends OperationNames>(
       console.log("Not printing toast because operation was cancelled");
     }
 
-    if (response.status === "error" && !cancelled) {
+    const result = response;
+    if (result.status === "error" && !cancelled) {
       toast.remove(toastId);
       toast.custom(
         (t) => (
           <ErrorToastComponent
             t={t}
-            message={"Error: " + response.errors[0].message}
+            message={"Error: " + result.errors[0].message}
           />
         ),
         {
@@ -162,7 +203,8 @@ export const callApi = <K extends OperationNames>(
     } else {
       toast.remove(toastId);
     }
-    return response;
+    return result;
   });
+
   return { promise: new_promise, op_key: op_key };
 };

@@ -47,11 +47,14 @@ export const MachineListItem = (props: MachineListItemProps) => {
       );
       return;
     }
-    const target_host = await callApi("get_host", {
-      field: "targetHost",
-      flake: { identifier: active_clan },
-      name: name,
-    }).promise;
+    const target_host = await callApi(
+      "get_host",
+      {
+        field: "targetHost",
+        flake: { identifier: active_clan },
+        name: name,
+      }, {logging: { group: { name, flake: { identifier: active_clan } } }}
+    ).promise;
 
     if (target_host.status == "error") {
       console.error("No target host found for the machine");
@@ -79,7 +82,6 @@ export const MachineListItem = (props: MachineListItemProps) => {
         },
         no_reboot: true,
         debug: true,
-        nix_options: [],
         password: null,
       },
       target_host: target_host.data!.data,
@@ -108,6 +110,8 @@ export const MachineListItem = (props: MachineListItemProps) => {
       field: "targetHost",
       flake: { identifier: active_clan },
       name: name,
+    }, {
+      logging: { group: { name, flake: { identifier: active_clan } } },
     }).promise;
 
     if (target_host.status == "error") {
@@ -129,7 +133,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
       field: "buildHost",
       flake: { identifier: active_clan },
       name: name,
-    }).promise;
+    }, {logging: { group: { name, flake: { identifier: active_clan } } }}).promise;
 
     if (build_host.status == "error") {
       console.error("No target host found for the machine");
@@ -150,7 +154,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
       },
       target_host: target_host.data!.data,
       build_host: build_host.data?.data || null,
-    }).promise;
+    }, {logging: { group: { name, flake: { identifier: active_clan } } }}).promise;
 
     setUpdating(false);
   };

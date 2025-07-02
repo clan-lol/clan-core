@@ -1,26 +1,19 @@
-import { API, Error as ApiError } from "@/api/API";
+import { API } from "@/api/API";
 import { Schema as Inventory } from "@/api/Inventory";
 import { toast } from "solid-toast";
 import {
   ErrorToastComponent,
   CancelToastComponent,
 } from "@/src/components/toast";
+
 type OperationNames = keyof API;
-type OperationArgs<T extends OperationNames> = API[T]["arguments"];
-export type OperationResponse<T extends OperationNames> = API[T]["return"];
-
-type ApiEnvelope<T> =
-  | {
-      status: "success";
-      data: T;
-      op_key: string;
-    }
-  | ApiError;
-
 type Services = NonNullable<Inventory["services"]>;
 type ServiceNames = keyof Services;
-type ClanService<T extends ServiceNames> = Services[T];
-type ClanServiceInstance<T extends ServiceNames> = NonNullable<
+
+export type OperationArgs<T extends OperationNames> = API[T]["arguments"];
+export type OperationResponse<T extends OperationNames> = API[T]["return"];
+
+export type ClanServiceInstance<T extends ServiceNames> = NonNullable<
   Services[T]
 >[string];
 
@@ -28,41 +21,72 @@ export type SuccessQuery<T extends OperationNames> = Extract<
   OperationResponse<T>,
   { status: "success" }
 >;
-type SuccessData<T extends OperationNames> = SuccessQuery<T>["data"];
+export type SuccessData<T extends OperationNames> = SuccessQuery<T>["data"];
 
-type ErrorQuery<T extends OperationNames> = Extract<
-  OperationResponse<T>,
-  { status: "error" }
->;
-type ErrorData<T extends OperationNames> = ErrorQuery<T>["errors"];
-
-type ClanOperations = Record<OperationNames, (str: string) => void>;
-
-interface GtkResponse<T> {
-  result: T;
-  op_key: string;
+function isMachine(obj: unknown): obj is Machine {
+  return (
+    !!obj &&
+    typeof obj === "object" &&
+    typeof (obj as Machine).name === "string" &&
+    typeof (obj as Machine).flake === "object" &&
+    typeof (obj as Machine).flake.identifier === "string"
+  );
 }
+
+// Machine type with flake for API calls
+interface Machine {
+  name: string;
+  flake: {
+    identifier: string;
+  };
+}
+
+interface BackendOpts {
+  logging?: { group: string | Machine };
+}
+
+interface BackendReturnType<K extends OperationNames> {
+  result: OperationResponse<K>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata: Record<string, any>;
+}
+
 const _callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
-): { promise: Promise<OperationResponse<K>>; op_key: string } => {
+  backendOpts?: BackendOpts,
+): { promise: Promise<BackendReturnType<K>>; op_key: string } => {
   // if window[method] does not exist, throw an error
   if (!(method in window)) {
     console.error(`Method ${method} not found on window object`);
     // return a rejected promise
     return {
       promise: Promise.resolve({
-        status: "error",
-        errors: [
-          {
-            message: `Method ${method} not found on window object`,
-            code: "method_not_found",
-          },
-        ],
-        op_key: "noop",
+        result: {
+          status: "error",
+          errors: [
+            {
+              message: `Method ${method} not found on window object`,
+              code: "method_not_found",
+            },
+          ],
+          op_key: "noop",
+        },
+        metadata: {},
       }),
       op_key: "noop",
     };
+  }
+
+  let metadata: BackendOpts | undefined = undefined;
+  if (backendOpts != undefined) {
+    metadata = { ...backendOpts };
+    const group = backendOpts?.logging?.group;
+    if (group != undefined && isMachine(group)) {
+      metadata = {
+        logging: { group: group.flake.identifier + "#" + group.name },
+      };
+    }
   }
 
   const promise = (
@@ -70,9 +94,10 @@ const _callApi = <K extends OperationNames>(
       OperationNames,
       (
         args: OperationArgs<OperationNames>,
-      ) => Promise<OperationResponse<OperationNames>>
+        metadata?: BackendOpts,
+      ) => Promise<BackendReturnType<OperationNames>>
     >
-  )[method](args) as Promise<OperationResponse<K>>;
+  )[method](args, metadata) as Promise<BackendReturnType<K>>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const op_key = (promise as any)._webviewMessageId as string;
@@ -82,7 +107,7 @@ const _callApi = <K extends OperationNames>(
 
 const handleCancel = async <K extends OperationNames>(
   ops_key: string,
-  orig_task: Promise<OperationResponse<K>>,
+  orig_task: Promise<BackendReturnType<K>>,
 ) => {
   console.log("Canceling operation: ", ops_key);
   const { promise, op_key } = _callApi("cancel_task", { task_id: ops_key });
@@ -102,7 +127,7 @@ const handleCancel = async <K extends OperationNames>(
   });
   const resp = await promise;
 
-  if (resp.status === "error") {
+  if (resp.result.status === "error") {
     toast.custom(
       (t) => (
         <ErrorToastComponent
@@ -124,10 +149,11 @@ const handleCancel = async <K extends OperationNames>(
 export const callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
+  backendOpts?: BackendOpts,
 ): { promise: Promise<OperationResponse<K>>; op_key: string } => {
   console.log("Calling API", method, args);
 
-  const { promise, op_key } = _callApi(method, args);
+  const { promise, op_key } = _callApi(method, args, backendOpts);
   promise.catch((error) => {
     toast.custom(
       (t) => (
@@ -165,13 +191,14 @@ export const callApi = <K extends OperationNames>(
       console.log("Not printing toast because operation was cancelled");
     }
 
-    if (response.status === "error" && !cancelled) {
+    const result = response.result;
+    if (result.status === "error" && !cancelled) {
       toast.remove(toastId);
       toast.custom(
         (t) => (
           <ErrorToastComponent
             t={t}
-            message={"Error: " + response.errors[0].message}
+            message={"Error: " + result.errors[0].message}
           />
         ),
         {
@@ -181,7 +208,8 @@ export const callApi = <K extends OperationNames>(
     } else {
       toast.remove(toastId);
     }
-    return response;
+    return result;
   });
+
   return { promise: new_promise, op_key: op_key };
 };

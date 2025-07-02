@@ -55,7 +55,7 @@ export function MachineForm(props: MachineFormProps) {
         ...values.machine,
         tags: Array.from(values.machine.tags || detailed.machine.tags || []),
       },
-    }).promise;
+    } ).promise;
 
     await queryClient.invalidateQueries({
       queryKey: [
@@ -80,7 +80,7 @@ export function MachineForm(props: MachineFormProps) {
       const result = await callApi("get_generators_closure", {
         base_dir: base_dir,
         machine_name: machine_name,
-      }).promise;
+      }, {logging: {group: { name: machine_name, flake: {identifier: base_dir} }}}).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
@@ -118,7 +118,8 @@ export function MachineForm(props: MachineFormProps) {
       flake: {
         identifier: curr_uri,
       },
-    }).promise;
+    }, {logging: { group: { name: machine, flake: { identifier: curr_uri } } }}
+    ).promise;
 
     if (target.status === "error") {
       toast.error("Failed to get target host");
@@ -143,7 +144,7 @@ export function MachineForm(props: MachineFormProps) {
         ...target_host,
       },
       build_host: null,
-    }).promise.finally(() => {
+    },  {logging: { group: { name: machine, flake: { identifier: curr_uri } } }}).promise.finally(() => {
       setIsUpdating(false);
     });
   };

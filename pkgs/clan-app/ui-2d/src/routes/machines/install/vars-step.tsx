@@ -153,10 +153,10 @@ export const VarsStep = (props: VarsStepProps) => {
         base_dir: props.dir,
         machine_name: props.machine_id,
         full_closure: props.fullClosure,
-      }).promise;
+      }, {logging: {group: { name: props.machine_id, flake: {identifier: props.dir} }}}).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
-    },
+    }, 
   }));
 
   const handleSubmit: SubmitHandler<VarsValues> = async (values, event) => {

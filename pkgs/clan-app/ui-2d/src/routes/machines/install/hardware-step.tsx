@@ -44,7 +44,7 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
     command_prefix: "sudo",
     port: 22,
     forward_agent: false,
-    host_key_check: 1, // 0 = ASK
+    host_key_check: "ask", // 0 = ASK
     verbose_ssh: false,
     ssh_options: {},
     tor_socks: false,

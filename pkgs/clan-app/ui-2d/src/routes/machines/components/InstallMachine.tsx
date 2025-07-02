@@ -125,7 +125,6 @@ export function InstallMachine(props: InstallMachineProps) {
           machine: {
             name: props.name,
             flake: { identifier: curr_uri },
-            private_key: values.sshKey?.name,
           },
         },
         target_host: targetHostResponse.data.data,

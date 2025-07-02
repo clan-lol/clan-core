@@ -19,7 +19,6 @@ import {
 } from "@/src/components/inputBase";
 import { FieldLayout } from "./layout";
 import Icon from "@/src/components/icon";
-import { useContext } from "corvu/dialog";
 
 interface Option {
   value: string;
@@ -51,9 +50,6 @@ interface SelectInputpProps {
 }
 
 export function SelectInput(props: SelectInputpProps) {
-  const dialogContext = (dialogContextId?: string) =>
-    useContext(dialogContextId);
-
   const _id = createUniqueId();
 
   const [reference, setReference] = createSignal<HTMLElement>();
