@@ -12,7 +12,7 @@ def setup_nix_in_nix(closure_info: str) -> None:
     Args:
         closure_info: Path to closure info directory containing store-paths file
     """
-    tmpdir = os.environ.get("TMPDIR", "/tmp")
+    tmpdir = Path(os.environ.get("TMPDIR", "/tmp"))
 
     # Remove NIX_REMOTE if present (we don't have any nix daemon running)
     if "NIX_REMOTE" in os.environ:
@@ -35,10 +35,10 @@ def setup_nix_in_nix(closure_info: str) -> None:
     Path(f"{tmpdir}/store").mkdir(parents=True, exist_ok=True)
 
     # Set up Nix store if closure info is provided
-    if closure_info and os.path.exists(closure_info):
-        store_paths_file = os.path.join(closure_info, "store-paths")
-        if os.path.exists(store_paths_file):
-            with open(store_paths_file) as f:
+    if closure_info and Path(closure_info).exists():
+        store_paths_file = Path(closure_info) / "store-paths"
+        if store_paths_file.exists():
+            with store_paths_file.open() as f:
                 store_paths = f.read().strip().split("\n")
 
             # Copy store paths to test store
@@ -55,12 +55,12 @@ def setup_nix_in_nix(closure_info: str) -> None:
                             shutil.copy2(store_path, dest_path)
 
             # Load Nix database
-            registration_file = os.path.join(closure_info, "registration")
-            if os.path.exists(registration_file):
+            registration_file = Path(closure_info) / "registration"
+            if registration_file.exists():
                 env = os.environ.copy()
                 env["NIX_REMOTE"] = f"local?store={tmpdir}/store"
 
-                with open(registration_file) as f:
+                with registration_file.open() as f:
                     subprocess.run(
                         ["nix-store", "--load-db"],
                         input=f.read(),

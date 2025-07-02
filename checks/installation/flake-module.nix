@@ -167,7 +167,7 @@
             name = "installation";
             nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
             extraPythonPackages = _p: [
-              (import ./test-helpers.nix { inherit lib pkgs self; }).nixosTestLib
+              self.legacyPackages.${pkgs.system}.nixosTestLib
             ];
 
             testScript = ''
@@ -225,7 +225,7 @@
             name = "update-hardware-configuration";
             nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
             extraPythonPackages = _p: [
-              (import ./test-helpers.nix { inherit lib pkgs self; }).nixosTestLib
+              self.legacyPackages.${pkgs.system}.nixosTestLib
             ];
 
             testScript = ''

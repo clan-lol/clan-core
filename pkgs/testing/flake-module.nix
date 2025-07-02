@@ -1,6 +1,6 @@
 {
   perSystem =
-    { pkgs, ... }:
+    { pkgs, lib, ... }:
     {
       legacyPackages = {
         setupNixInNix = ''
@@ -20,6 +20,25 @@
             ${pkgs.nix}/bin/nix-store --load-db --store "$CLAN_TEST_STORE" < "$closureInfo/registration"
           fi
         '';
+
+        # NixOS test library combining port utils and clan VM test utilities
+        nixosTestLib = pkgs.python3Packages.buildPythonPackage {
+          pname = "nixos-test-lib";
+          version = "1.0.0";
+          format = "pyproject";
+          src = lib.fileset.toSource {
+            root = ./.;
+            fileset = lib.fileset.unions [
+              ./pyproject.toml
+              ./nixos_test_lib
+            ];
+          };
+          nativeBuildInputs = with pkgs.python3Packages; [
+            setuptools
+            wheel
+          ];
+          doCheck = false;
+        };
 
       };
     };

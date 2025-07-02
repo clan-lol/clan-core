@@ -1,6 +1,5 @@
 """SSH and test setup utilities"""
 
-import os
 import subprocess
 from typing import NamedTuple
 
