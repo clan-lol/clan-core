@@ -119,26 +119,34 @@ clan = {
 1. It is required to define a *targetHost* for each machine before deploying. Best practice has been, to use the zerotier ip/hostname or the ip from the from overlay network you decided to use.
 2. Add your *ssh key* here - That will ensure you can always login to your machine via *ssh* in case something goes wrong.
 
-### (Optional): Renaming Machine
+### (Optional) Renaming a Machine
 
-For renaming jon to your own machine name, you can use the following command:
+Older templates included static machine folders like `jon` and `sara`.
+If your setup still uses such static machines, you can rename a machine folder to match your own machine name:
 
-```
-git mv ./machines/jon ./machines/newname
-```
-
-Note that our clan lives inside a git repository.
-Only files that have been added with `git add` are recognized by `nix`.
-So for every file that you add or rename you also need to run:
-
-```
-git add ./path/to/my/file
+```bash
+git mv ./machines/jon ./machines/<your-machine-name>
 ```
 
-### (Optional): Removing a Machine
+Since your Clan configuration lives inside a Git repository, remember:
 
-If you only want to setup a single machine at this point, you can delete `sara` from `flake.nix` as well as from the machines directory:
+* Only files tracked by Git (`git add`) are recognized.
+* Whenever you add, rename, or remove files, run:
 
+```bash
+git add ./machines/<your-machine-name>
 ```
+
+to stage the changes.
+
+---
+
+### (Optional) Removing a Machine
+
+If you want to work with a single machine for now, you can remove other machine entries both from your `flake.nix` and from the `machines` directory. For example, to remove the machine `sara`:
+
+```bash
 git rm -rf ./machines/sara
 ```
+
+Make sure to also remove or update any references to that machine in your `nix files` or `inventory.json` if you have any of that
