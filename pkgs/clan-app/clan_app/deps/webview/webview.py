@@ -1,11 +1,9 @@
-import ctypes
 import functools
 import io
 import json
 import logging
 import threading
 from collections.abc import Callable
-from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any
 
@@ -16,6 +14,7 @@ from clan_lib.api import (
     dataclass_to_dict,
     from_dict,
 )
+from clan_lib.api.tasks import WebThread
 from clan_lib.async_run import AsyncContext, get_async_ctx, set_async_ctx
 from clan_lib.custom_logger import setup_logging
 from clan_lib.log_manager import LogManager
@@ -44,12 +43,6 @@ class Size:
         self.hint = hint
 
 
-@dataclass
-class WebThread:
-    thread: threading.Thread
-    stop_event: threading.Event
-
-
 class Webview:
     def __init__(
         self, debug: bool = False, size: Size | None = None, window: int | None = None
@@ -74,20 +67,22 @@ class Webview:
         op_key = op_key_bytes.decode()
         args = json.loads(request_data.decode())
         log.debug(f"Calling {method_name}({args[0]})")
+        metadata: dict[str, Any] = {}
 
         try:
             # Initialize dataclasses from the payload
             reconciled_arguments = {}
-            for k, v in args[0].items():
-                # Some functions expect to be called with dataclass instances
-                # But the js api returns dictionaries.
-                # Introspect the function and create the expected dataclass from dict dynamically
-                # Depending on the introspected argument_type
-                arg_class = api.get_method_argtype(method_name, k)
+            if len(args) > 0:
+                for k, v in args[0].items():
+                    # Some functions expect to be called with dataclass instances
+                    # But the js api returns dictionaries.
+                    # Introspect the function and create the expected dataclass from dict dynamically
+                    # Depending on the introspected argument_type
+                    arg_class = api.get_method_argtype(method_name, k)
 
-                # TODO: rename from_dict into something like construct_checked_value
-                # from_dict really takes Anything and returns an instance of the type/class
-                reconciled_arguments[k] = from_dict(arg_class, v)
+                    # TODO: rename from_dict into something like construct_checked_value
+                    # from_dict really takes Anything and returns an instance of the type/class
+                    reconciled_arguments[k] = from_dict(arg_class, v)
 
             reconciled_arguments["op_key"] = op_key
         except Exception as e:
@@ -112,8 +107,16 @@ class Webview:
         def thread_task(stop_event: threading.Event) -> None:
             ctx: AsyncContext = get_async_ctx()
             ctx.should_cancel = lambda: stop_event.is_set()
+            # If the API call has set log_group in metadata,
+            # create the log file under that group.
+            log_group = metadata.get("logging", {}).get("group", None)
+            if log_group is not None:
+                log.warning(
+                    f"Using log group {log_group} for {method_name} with op_key {op_key}"
+                )
+                breakpoint()
             log_file = log_manager.create_log_file(
-                wrap_method, op_key=op_key
+                wrap_method, op_key=op_key, group=log_group
             ).get_file_path()
 
             with log_file.open("ab") as log_f:
@@ -129,7 +132,6 @@ class Webview:
                 handler = setup_logging(
                     log.getEffectiveLevel(), log_file=handler_stream
                 )
-                log.info("Starting thread for webview API call")
 
                 try:
                     # Original logic: call the wrapped API method.
@@ -204,14 +206,6 @@ class Webview:
         _webview_lib.webview_set_title(self._handle, _encode_c_string(value))
         self._title = value
 
-    @property
-    def icon(self) -> str:
-        return self._icon
-
-    @icon.setter
-    def icon(self, value: str) -> None:
-        _webview_lib.webview_set_icon(self._handle, _encode_c_string(value))
-        self._icon = value
 
     def destroy(self) -> None:
         for name in list(self._callbacks.keys()):
@@ -237,9 +231,7 @@ class Webview:
                 name,
                 method,
             )
-            c_callback = _webview_lib.CFUNCTYPE(
-                None, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_void_p
-            )(wrapper)
+            c_callback = _webview_lib.binding_callback_t(wrapper)
 
             if name in self._callbacks:
                 msg = f"Callback {name} already exists. Skipping binding."
@@ -261,9 +253,7 @@ class Webview:
                 success = False
             self.return_(seq.decode(), 0 if success else 1, json.dumps(result))
 
-        c_callback = _webview_lib.CFUNCTYPE(
-            None, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_void_p
-        )(wrapper)
+        c_callback = _webview_lib.binding_callback_t(wrapper)
         self._callbacks[name] = c_callback
         _webview_lib.webview_bind(
             self._handle, _encode_c_string(name), c_callback, None
