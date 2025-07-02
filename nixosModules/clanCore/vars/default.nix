@@ -73,10 +73,5 @@ in
       ) [ ] (lib.attrValues generator.files)
     ) [ ] (lib.attrValues config.clan.core.vars.generators);
 
-    system.clan.deployment.data = {
-      vars = config.clan.core.vars._serialized;
-      inherit (config.clan.core.networking) targetHost buildHost;
-      inherit (config.clan.core.deployment) requireExplicitUpdate;
-    };
   };
 }

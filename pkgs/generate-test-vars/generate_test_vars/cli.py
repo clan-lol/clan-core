@@ -161,7 +161,6 @@ def main() -> None:
     flake.precache(
         [
             f"checks.{test_system}.{opts.check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
-            f"checks.{test_system}.{opts.check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.system.clan.deployment.file",
         ]
     )
 

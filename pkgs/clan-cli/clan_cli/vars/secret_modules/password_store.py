@@ -153,7 +153,7 @@ class SecretStore(StoreBase):
             # TODO get the path to the secrets from the machine
             [
                 "cat",
-                f"{self.machine.deployment['password-store']['secretLocation']}/.{self._store_backend}_info",
+                f"{self.machine.select('config.clan.vars.password-store.secretLocation')}/.{self._store_backend}_info",
             ],
             RunOpts(log=Log.STDERR, check=False),
         ).stdout.strip()
@@ -237,6 +237,6 @@ class SecretStore(StoreBase):
             pass_dir = Path(_tempdir).resolve()
             self.populate_dir(pass_dir, phases)
             upload_dir = Path(
-                self.machine.deployment["password-store"]["secretLocation"]
+                self.machine.select("config.clan.vars.password-store.secretLocation")
             )
             upload(host, pass_dir, upload_dir)
