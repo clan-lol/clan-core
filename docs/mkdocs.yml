@@ -48,13 +48,13 @@ nav:
   - Home: index.md
   - Guides:
       - Getting Started:
-          - Creating Your First Clan: guides/getting-started/index.md
-          - Create USB Installer (optional): guides/getting-started/installer.md
-          - Add Machines: guides/getting-started/add-machines.md
-          - Add Services: guides/getting-started/add-services.md
-          - Secrets & Facts: guides/getting-started/secrets.md
-          - Deploy Machine: guides/getting-started/deploy.md
-          - Continuous Integration: guides/getting-started/check.md
+          - 🚀 Creating Your First Clan: guides/getting-started/index.md
+          - 📀 Create USB Installer (optional): guides/getting-started/installer.md
+          - ⚙️ Add Machines: guides/getting-started/add-machines.md
+          - ⚙️ Add Services: guides/getting-started/add-services.md
+          - 🔐 Secrets & Facts: guides/getting-started/secrets.md
+          - 🚢 Deploy Machine: guides/getting-started/deploy.md
+          - 🧪 Continuous Integration: guides/getting-started/check.md
       - clanServices: guides/clanServices.md
       - Disk Encryption: guides/disk-encryption.md
       - Mesh VPN: guides/mesh-vpn.md
