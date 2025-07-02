@@ -21,7 +21,6 @@ log = logging.getLogger(__name__)
 
 def update_hardware_config_command(args: argparse.Namespace) -> None:
     validate_machine_names([args.machine], args.flake)
-    host_key_check = args.host_key_check
     machine = Machine(flake=args.flake, name=args.machine)
     opts = HardwareGenerateOptions(
         machine=machine,
@@ -32,11 +31,13 @@ def update_hardware_config_command(args: argparse.Namespace) -> None:
     if args.target_host:
         target_host = Remote.from_ssh_uri(
             machine_name=machine.name, address=args.target_host
-        ).override(host_key_check=host_key_check, private_key=args.identity_file)
-    else:
-        target_host = machine.target_host().override(
-            host_key_check=host_key_check, private_key=args.identity_file
         )
+    else:
+        target_host = machine.target_host()
+
+    target_host = target_host.override(
+        host_key_check=args.host_key_check, private_key=args.identity_file
+    )
 
     generate_machine_hardware_info(opts, target_host)
 
