@@ -34,7 +34,7 @@ Examples:
   $ clan machines update [MACHINES]
   Will update the specified machines [MACHINES], if [MACHINES] is omitted, the command
   will attempt to update every configured machine.
-  To exclude machines being updated `clan.deployment.requireExplicitUpdate = true;`
+  To exclude machines being updated `clan.core.deployment.requireExplicitUpdate = true;`
   can be set in the machine config.
 
   $ clan machines update --tags [TAGS..]
