@@ -63,8 +63,7 @@ Replace `kernelModules` with the ethernet module loaded one on your target machi
 }
 ```
 
-
-### Step 1: Copying SSH Public Key
+## Copying SSH Public Key
 
 Before starting the installation process, ensure that the SSH public key is copied to the NixOS installer.
 
@@ -74,7 +73,7 @@ Before starting the installation process, ensure that the SSH public key is copi
 ssh-copy-id -o PreferredAuthentications=password -o PubkeyAuthentication=no root@nixos-installer.local
 ```
 
-### Step 1.5: Prepare Secret Key and Partition Disks
+## Prepare Secret Key and Partition Disks
 
 1. Access the installer using SSH:
 
@@ -100,7 +99,7 @@ blkdiscard /dev/disk/by-id/<installdisk>
 clan machines install gchq-local --target-host root@nixos-installer --phases kexec,disko
 ```
 
-### Step 2: ZFS Pool Import and System Installation
+## ZFS Pool Import and System Installation
 
 1. SSH into the installer once again:
 
@@ -151,7 +150,7 @@ zpool export zroot
 
 8. Perform a reboot of the machine and remove the USB installer.
 
-### Step 3: Accessing the Initial Ramdisk (initrd) Environment
+## Accessing the Initial Ramdisk (initrd) Environment
 
 1. SSH into the initrd environment using the `initrd_rsa_key` and provided port:
 

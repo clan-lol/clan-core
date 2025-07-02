@@ -9,7 +9,7 @@ Currently, Clan supports the following features for macOS:
 - `clan machines update` for existing [nix-darwin](https://github.com/nix-darwin/nix-darwin) installations
 - Support for [vars](../guides/vars-backend.md)
 
-## Step 1: Add Your Machine to Your Clan Flake
+## Add Your Machine to Your Clan Flake
 
 In this example, we'll name the machine `yourmachine`. Replace this with your preferred machine name.
 
@@ -35,7 +35,7 @@ clan-core.lib.clan {
 }
 ```
 
-## Step 2: Add a `configuration.nix` for Your Machine
+## Add a `configuration.nix` for Your Machine
 
 Create the file `./machines/yourmachine/configuration.nix` with the following content (replace `yourmachine` with your chosen machine name):
 
@@ -48,7 +48,7 @@ Create the file `./machines/yourmachine/configuration.nix` with the following co
 
 After creating the file, run `git add` to ensure Nix recognizes it.
 
-## Step 3: Generate Vars (If Needed)
+## Generate Vars (If Needed)
 
 If your machine uses vars, generate them with:
 
@@ -58,12 +58,12 @@ clan vars generate yourmachine
 
 Replace `yourmachine` with your chosen machine name.
 
-## Step 4: Install Nix
+## Install Nix
 
 Install Nix on your macOS machine using one of the methods described in the [nix-darwin prerequisites](https://github.com/nix-darwin/nix-darwin?tab=readme-ov-file#prerequisites).
 
 
-## Step 5: Install nix-darwin
+## Install nix-darwin
 
 Upload your Clan flake to the macOS machine. Then, from within your flake directory, run:
 
@@ -73,7 +73,7 @@ sudo nix run nix-darwin/master#darwin-rebuild -- switch --flake .#yourmachine
 
 Replace `yourmachine` with your chosen machine name.
 
-## Step 6: Manage Your Machine with Clan
+## Manage Your Machine with Clan
 
 Once all the steps above are complete, you can start managing your machine with:
 

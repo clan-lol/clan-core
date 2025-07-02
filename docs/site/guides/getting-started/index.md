@@ -4,8 +4,7 @@ Ready to create your own Clan and manage a fleet of machines? Follow these simpl
 
 By the end of this guide, you'll have a fresh NixOS configuration ready to push to one or more machines. You'll create a new Git repository and a flake, and all you need is at least one machine to push to. This is the easiest way to begin, and we recommend you to copy your existing configuration into this new setup!
 
-
-### Prerequisites
+## Prerequisites
 
 === "**Linux**"
 
@@ -37,22 +36,23 @@ By the end of this guide, you'll have a fresh NixOS configuration ready to push 
 
     If you have previously installed Nix, make sure `experimental-features = nix-command flakes` is present in `~/.config/nix/nix.conf` or `/etc/nix/nix.conf`. If this is not the case, please add it to `~/.config/nix/nix.conf`.
 
-### Step 1: Add Clan CLI to Your Shell
+## Add Clan CLI to Your Shell
 
-Add the Clan CLI into your development workflow:
+Add the Clan CLI into your environment:
 
 ```bash
 nix shell git+https://git.clan.lol/clan/clan-core#clan-cli --refresh
 ```
 
-You can find reference documentation for the `clan` CLI program [here](../../reference/cli/index.md).
-
-Alternatively you can check out the help pages directly:
 ```terminalSession
 clan --help
 ```
 
-### Step 2: Initialize Your Project
+Should print the avilable commands.
+
+Also checkout the [cli-reference documentation](../../reference/cli/index.md).
+
+## Initialize Your Project
 
 If you want to migrate an existing project, follow this [guide](../migrations/migration-guide.md).
 
@@ -62,19 +62,18 @@ Set the foundation of your Clan project by initializing it by running:
 clan flakes create my-clan
 ```
 
-This command creates the `flake.nix` and `.clan-flake` files for your project.
-It will also generate files from a default template, to help show general clan usage patterns.
+This command creates a `flake.nix` and some other files for your project.
 
-### Step 3: Verify the Project Structure
+## Verify the Project Structure
 
-Ensure that all project files exist by running:
+Take a lookg at all project files:
 
 ```bash
 cd my-clan
 tree
 ```
 
-This should yield the following:
+Depending on the current template you should see something like this:
 
 ``` { .console .no-copy }
 .
@@ -109,7 +108,6 @@ This should yield the following:
     To automatically add the `clan` CLI tool to your environment without having to
     run `nix develop` every time, we recommend setting up [direnv](https://direnv.net/).
 
-
 ```bash
 clan machines list
 ```
@@ -122,4 +120,3 @@ sara
 !!! success
 
     You just successfully bootstrapped your first Clan.
-

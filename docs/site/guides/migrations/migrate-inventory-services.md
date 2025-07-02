@@ -74,9 +74,7 @@ instances = {
 
 ## Steps to Migrate
 
-
-
-### 1. Move `services` entries to `instances`
+### Move `services` entries to `instances`
 
 Check if a service that you use has been migrated [In our reference](../../reference/clanServices/index.md)
 
@@ -96,7 +94,7 @@ Each nested service-instance-pair becomes a flat key, like `borgbackup.simple â†
 
 ---
 
-### 2. Add `module.name` and `module.input`
+### Add `module.name` and `module.input`
 
 Each instance must declare the module name and flake input it comes from:
 
@@ -117,7 +115,7 @@ Then refer to it as `input = "clan-core"`.
 
 ---
 
-### 3. Move role and machine config under `roles`
+### Move role and machine config under `roles`
 
 In the new system:
 
