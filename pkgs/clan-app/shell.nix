@@ -89,9 +89,10 @@ mkShell {
       popd
 
       # configure process-compose
-      if test -f "$GIT_ROOT/pkgs/clan-app/.local.env"; then
-        source "$GIT_ROOT/pkgs/clan-app/.local.env"
+      if test -f "$CLAN_CORE_PATH/pkgs/clan-app/.local.env"; then
+        source "$CLAN_CORE_PATH/pkgs/clan-app/.local.env"
       fi
+
       export PC_CONFIG_FILES="$CLAN_CORE_PATH/pkgs/clan-app/process-compose.yaml"
 
       echo -e "${GREEN}To launch a qemu VM for testing, run:\n  start-vm <number of VMs>${NC}"

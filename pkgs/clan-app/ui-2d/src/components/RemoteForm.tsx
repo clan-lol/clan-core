@@ -11,13 +11,6 @@ import { Loader } from "@/src/components/v2/Loader/Loader";
 import { Button } from "@/src/components/v2/Button/Button";
 import Accordion from "@/src/components/accordion";
 
-// Define the HostKeyCheck enum values with proper API mapping
-export enum HostKeyCheck {
-  ASK = 0,
-  TOFU = 1,
-  IGNORE = 2,
-}
-
 // Export the API types for use in other components
 export type { RemoteData, Machine, RemoteDataSource };
 
@@ -185,40 +178,6 @@ export function RemoteForm(props: RemoteFormProps) {
   const [formData, setFormData] = createSignal<RemoteData | null>(null);
   const [isSaving, setIsSaving] = createSignal(false);
 
-  const hostKeyCheckOptions = [
-    { value: "ASK", label: "Ask" },
-    { value: "TOFU", label: "TOFU (Trust On First Use)" },
-    { value: "IGNORE", label: "Ignore" },
-  ];
-
-  // Helper function to convert enum name to numeric value
-  const getHostKeyCheckValue = (name: string): number => {
-    switch (name) {
-      case "ASK":
-        return HostKeyCheck.ASK;
-      case "TOFU":
-        return HostKeyCheck.TOFU;
-      case "IGNORE":
-        return HostKeyCheck.IGNORE;
-      default:
-        return HostKeyCheck.ASK;
-    }
-  };
-
-  // Helper function to convert numeric value to enum name
-  const getHostKeyCheckName = (value: number | undefined): string => {
-    switch (value) {
-      case HostKeyCheck.ASK:
-        return "ASK";
-      case HostKeyCheck.TOFU:
-        return "TOFU";
-      case HostKeyCheck.IGNORE:
-        return "IGNORE";
-      default:
-        return "ASK";
-    }
-  };
-
   // Query host data when machine is provided
   const hostQuery = useQuery(() => ({
     queryKey: [
@@ -241,11 +200,19 @@ export function RemoteForm(props: RemoteFormProps) {
         });
       }
 
-      const result = await callApi("get_host", {
-        name: props.machine.name,
-        flake: props.machine.flake,
-        field: props.field || "targetHost",
-      }).promise;
+      const result = await callApi(
+        "get_host",
+        {
+          name: props.machine.name,
+          flake: props.machine.flake,
+          field: props.field || "targetHost",
+        },
+        {
+          logging: {
+            group: { name: props.machine.name, flake: props.machine.flake },
+          },
+        },
+      ).promise;
 
       if (result.status === "error")
         throw new Error("Failed to fetch host data");
@@ -372,16 +339,13 @@ export function RemoteForm(props: RemoteFormProps) {
 
             <SelectInput
               label="Host Key Check"
-              value={getHostKeyCheckName(formData()?.host_key_check)}
-              options={hostKeyCheckOptions}
-              selectProps={{
-                onInput: (e) =>
-                  updateFormData({
-                    host_key_check: getHostKeyCheckValue(
-                      e.currentTarget.value,
-                    ) as 0 | 1 | 2 | 3,
-                  }),
-              }}
+              value={formData()?.host_key_check || "ask"}
+              options={[
+                { value: "ask", label: "Ask" },
+                { value: "none", label: "None" },
+                { value: "strict", label: "Strict" },
+                { value: "tofu", label: "Trust on First Use" },
+              ]}
               disabled={computedDisabled}
               helperText="How to handle host key verification"
             />

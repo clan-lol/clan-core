@@ -8,6 +8,7 @@ import Icon from "@/src/components/icon";
 import { Header } from "@/src/layout/header";
 import { makePersisted } from "@solid-primitives/storage";
 import { useClanContext } from "@/src/contexts/clan";
+import { debug } from "console";
 
 type MachinesModel = Extract<
   OperationResponse<"list_machines">,
@@ -38,6 +39,7 @@ export const MachineListView: Component = () => {
           },
         }).promise;
         console.log("response", response);
+
         if (response.status === "error") {
           console.error("Failed to fetch data");
         } else {

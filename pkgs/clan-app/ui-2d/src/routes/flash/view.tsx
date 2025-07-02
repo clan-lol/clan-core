@@ -19,9 +19,11 @@ import { createEffect, createSignal } from "solid-js"; // For, Show might not be
 import toast from "solid-toast";
 import { FieldLayout } from "@/src/Form/fields/layout";
 import { InputLabel } from "@/src/components/inputBase";
-import { Modal } from "@/src/components/modal";
+
 import Fieldset from "@/src/Form/fieldset"; // Still used for other fieldsets
 import Accordion from "@/src/components/accordion";
+
+import { SimpleModal } from "@/src/components/SimpleModal";
 
 // Import the new generic component
 import {
@@ -192,12 +194,11 @@ export const Flash = () => {
   return (
     <>
       <Header title="Flash installer" />
-      <Modal
+      <SimpleModal
         open={confirmOpen() || isFlashing()}
-        handleClose={() => !isFlashing() && setConfirmOpen(false)}
+        onClose={() => !isFlashing() && setConfirmOpen(false)}
         title="Confirm"
       >
-        {/* ... Modal content as before ... */}
         <div class="flex flex-col gap-4 p-4">
           <div class="flex flex-col justify-between rounded-sm border p-4 align-middle text-red-900 border-def-2">
             <Typography
@@ -230,7 +231,7 @@ export const Flash = () => {
             </Button>
           </div>
         </div>
-      </Modal>
+      </SimpleModal>
       <div class="w-full self-stretch p-8">
         <Form
           onSubmit={handleSubmit}

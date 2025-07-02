@@ -149,11 +149,19 @@ export const VarsStep = (props: VarsStepProps) => {
   const generatorsQuery = createQuery(() => ({
     queryKey: [props.dir, props.machine_id, "generators", props.fullClosure],
     queryFn: async () => {
-      const result = await callApi("get_generators_closure", {
-        base_dir: props.dir,
-        machine_name: props.machine_id,
-        full_closure: props.fullClosure,
-      }).promise;
+      const result = await callApi(
+        "get_generators_closure",
+        {
+          base_dir: props.dir,
+          machine_name: props.machine_id,
+          full_closure: props.fullClosure,
+        },
+        {
+          logging: {
+            group: { name: props.machine_id, flake: { identifier: props.dir } },
+          },
+        },
+      ).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },

@@ -17,7 +17,7 @@ const defaultRemoteData: RemoteData = {
   private_key: undefined,
   password: "",
   forward_agent: true,
-  host_key_check: 0,
+  host_key_check: "strict",
   verbose_ssh: false,
   ssh_options: {},
   tor_socks: false,
@@ -32,7 +32,7 @@ const sampleRemoteData: RemoteData = {
   private_key: undefined,
   password: "",
   forward_agent: true,
-  host_key_check: 1,
+  host_key_check: "ask",
   verbose_ssh: false,
   ssh_options: {
     StrictHostKeyChecking: "no",
@@ -238,7 +238,7 @@ const advancedRemoteData: RemoteData = {
   private_key: undefined,
   password: "",
   forward_agent: false,
-  host_key_check: 2,
+  host_key_check: "none",
   verbose_ssh: true,
   ssh_options: {
     ConnectTimeout: "10",

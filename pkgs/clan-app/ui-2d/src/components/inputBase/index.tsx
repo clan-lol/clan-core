@@ -125,7 +125,7 @@ export const InputLabel = (props: InputLabelProps) => {
             weight="bold"
             class="inline-flex gap-1 align-middle !fg-def-1"
             classList={{
-              [cx("!fg-semantic-1")]: !!props.error,
+              [cx("!text-red-600")]: !!props.error,
             }}
             aria-invalid={props.error}
           >
@@ -185,7 +185,7 @@ export const InputError = (props: InputErrorProps) => {
       // @ts-expect-error: Dependent type is to complex to check how it is coupled to the override for now
       size="xxs"
       weight="medium"
-      class={cx("col-span-full px-1 !fg-semantic-4", typoClasses)}
+      class={cx("col-span-full px-1 !text-red-500", typoClasses)}
       {...rest}
     >
       {props.error}

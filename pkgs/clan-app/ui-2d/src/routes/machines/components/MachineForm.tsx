@@ -77,10 +77,18 @@ export function MachineForm(props: MachineFormProps) {
       if (!machine_name || !base_dir) {
         return [];
       }
-      const result = await callApi("get_generators_closure", {
-        base_dir: base_dir,
-        machine_name: machine_name,
-      }).promise;
+      const result = await callApi(
+        "get_generators_closure",
+        {
+          base_dir: base_dir,
+          machine_name: machine_name,
+        },
+        {
+          logging: {
+            group: { name: machine_name, flake: { identifier: base_dir } },
+          },
+        },
+      ).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
@@ -112,13 +120,19 @@ export function MachineForm(props: MachineFormProps) {
       return;
     }
 
-    const target = await callApi("get_host", {
-      field: "targetHost",
-      name: machine,
-      flake: {
-        identifier: curr_uri,
+    const target = await callApi(
+      "get_host",
+      {
+        field: "targetHost",
+        name: machine,
+        flake: {
+          identifier: curr_uri,
+        },
       },
-    }).promise;
+      {
+        logging: { group: { name: machine, flake: { identifier: curr_uri } } },
+      },
+    ).promise;
 
     if (target.status === "error") {
       toast.error("Failed to get target host");
@@ -132,18 +146,24 @@ export function MachineForm(props: MachineFormProps) {
     const target_host = target.data.data;
 
     setIsUpdating(true);
-    const r = await callApi("deploy_machine", {
-      machine: {
-        name: machine,
-        flake: {
-          identifier: curr_uri,
+    const r = await callApi(
+      "deploy_machine",
+      {
+        machine: {
+          name: machine,
+          flake: {
+            identifier: curr_uri,
+          },
         },
+        target_host: {
+          ...target_host,
+        },
+        build_host: null,
       },
-      target_host: {
-        ...target_host,
+      {
+        logging: { group: { name: machine, flake: { identifier: curr_uri } } },
       },
-      build_host: null,
-    }).promise.finally(() => {
+    ).promise.finally(() => {
       setIsUpdating(false);
     });
   };
