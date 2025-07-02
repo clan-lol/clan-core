@@ -6,11 +6,11 @@ import subprocess
 from pathlib import Path
 
 
-def setup_nix_in_nix(closure_info: str) -> None:
+def setup_nix_in_nix(closure_info: str | None) -> None:
     """Set up Nix store inside test environment
 
     Args:
-        closure_info: Path to closure info directory containing store-paths file
+        closure_info: Path to closure info directory containing store-paths file, or None if no closure info
     """
     tmpdir = Path(os.environ.get("TMPDIR", "/tmp"))
 
@@ -41,18 +41,12 @@ def setup_nix_in_nix(closure_info: str) -> None:
             with store_paths_file.open() as f:
                 store_paths = f.read().strip().split("\n")
 
-            # Copy store paths to test store
-            for store_path in store_paths:
-                if store_path.strip():
-                    dest_path = f"{tmpdir}/store{store_path}"
-                    if not os.path.exists(dest_path):
-                        # Create parent directories
-                        os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-                        # Copy the store path
-                        if os.path.isdir(store_path):
-                            shutil.copytree(store_path, dest_path, dirs_exist_ok=True)
-                        else:
-                            shutil.copy2(store_path, dest_path)
+            # Copy store paths to test store using external cp command (handles symlinks better)
+            subprocess.run(
+                ["cp", "--recursive", "--target", f"{tmpdir}/store"] + 
+                [path.strip() for path in store_paths if path.strip()],
+                check=True
+            )
 
             # Load Nix database
             registration_file = Path(closure_info) / "registration"
