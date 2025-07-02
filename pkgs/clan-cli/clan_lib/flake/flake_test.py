@@ -168,6 +168,20 @@ def test_out_path() -> None:
     assert test_cache.select(selectors) == "/nix/store/bla"
 
 
+def test_out_path_in_multiselect_raises_exception() -> None:
+    with pytest.raises(ValueError, match="Cannot use 'outPath' in multiselect"):
+        parse_selector("{outPath}")
+
+    with pytest.raises(ValueError, match="Cannot use 'outPath' in multiselect"):
+        parse_selector("x.{y,outPath}")
+
+    with pytest.raises(ValueError, match="Cannot use 'outPath' in multiselect"):
+        parse_selector("a.b.{c,d,outPath,e}")
+
+    with pytest.raises(ValueError, match="Cannot use 'outPath' in multiselect"):
+        parse_selector("{?outPath}")
+
+
 @pytest.mark.with_core
 def test_conditional_all_selector(flake: ClanFlake) -> None:
     m1 = flake.machines["machine1"]

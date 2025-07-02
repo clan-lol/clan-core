@@ -168,6 +168,16 @@ def parse_selector(selector: str) -> list[Selector]:
                 else:
                     set_select_type = SetSelectorType.STR
                 acc_selectors.append(SetSelector(type=set_select_type, value=acc_str))
+                # Check for invalid multiselect patterns with outPath
+                for subselector in acc_selectors:
+                    if subselector.value == "outPath":
+                        msg = (
+                            "Cannot use 'outPath' in multiselect {...}. "
+                            "When nix evaluates attrsets with outPath in a multiselect, "
+                            "it collapses the entire attrset to just the outPath string, "
+                            "breaking further selection. Use individual selectors instead."
+                        )
+                        raise ValueError(msg)
                 selectors.append(Selector(type=SelectorType.SET, value=acc_selectors))
 
                 submode = ""
