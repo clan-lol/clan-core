@@ -27,8 +27,11 @@ function isMachine(obj: unknown): obj is Machine {
   return (
     !!obj &&
     typeof obj === "object" &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeof (obj as any).name === "string" &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeof (obj as any).flake === "object" &&
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     typeof (obj as any).flake.identifier === "string"
   );
 }
@@ -47,6 +50,8 @@ interface BackendOpts {
 
 interface BackendReturnType<K extends OperationNames> {
   body: OperationResponse<K>;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   header: Record<string, any>;
 }
 
@@ -80,7 +85,7 @@ const _callApi = <K extends OperationNames>(
   let header: BackendOpts = {};
   if (backendOpts != undefined) {
     header = { ...backendOpts };
-    let group = backendOpts?.logging?.group;
+    const group = backendOpts?.logging?.group;
     if (group != undefined && isMachine(group)) {
       header = {
         logging: { group: group.flake.identifier + "#" + group.name },
