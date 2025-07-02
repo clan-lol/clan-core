@@ -310,9 +310,12 @@ class LogManager:
     base_dir: Path
 
     def create_log_file(
-        self, func: Callable, op_key: str, group: str = "default"
+        self, func: Callable, op_key: str, group: str | None = None
     ) -> LogFile:
         now_utc = datetime.datetime.now(tz=datetime.UTC)
+
+        if group is None:
+            group = "default"
 
         log_file = LogFile(
             op_key=op_key,

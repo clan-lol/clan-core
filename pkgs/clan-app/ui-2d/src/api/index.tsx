@@ -46,21 +46,22 @@ interface BackendOpts {
 }
 
 interface BackendReturnType<K extends OperationNames> {
-  result: OperationResponse<K>;
-  metadata: Record<string, any>;
+  body: OperationResponse<K>;
+  header: Record<string, any>;
 }
 
 const _callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
   backendOpts?: BackendOpts,
-): { promise: Promise<OperationResponse<K>>; op_key: string } => {
+): { promise: Promise<BackendReturnType<K>>; op_key: string } => {
   // if window[method] does not exist, throw an error
   if (!(method in window)) {
     console.error(`Method ${method} not found on window object`);
     // return a rejected promise
     return {
       promise: Promise.resolve({
+        body: {
           status: "error",
           errors: [
             {
@@ -69,17 +70,19 @@ const _callApi = <K extends OperationNames>(
             },
           ],
           op_key: "noop",
+        },
+        header: {},
       }),
       op_key: "noop",
     };
   }
 
-  let metadata: BackendOpts | undefined = undefined;
+  let header: BackendOpts = {};
   if (backendOpts != undefined) {
-    metadata = { ...backendOpts };
+    header = { ...backendOpts };
     let group = backendOpts?.logging?.group;
     if (group != undefined && isMachine(group)) {
-      metadata = {
+      header = {
         logging: { group: group.flake.identifier + "#" + group.name },
       };
     }
@@ -90,9 +93,10 @@ const _callApi = <K extends OperationNames>(
       OperationNames,
       (
         args: OperationArgs<OperationNames>,
-      ) => Promise<OperationResponse<OperationNames>>
+        metadata: BackendOpts,
+      ) => Promise<BackendReturnType<OperationNames>>
     >
-  )[method](args) as Promise<OperationResponse<K>>;
+  )[method](args, header) as Promise<BackendReturnType<K>>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const op_key = (promise as any)._webviewMessageId as string;
@@ -102,7 +106,7 @@ const _callApi = <K extends OperationNames>(
 
 const handleCancel = async <K extends OperationNames>(
   ops_key: string,
-  orig_task: Promise<OperationResponse<K>>,
+  orig_task: Promise<BackendReturnType<K>>,
 ) => {
   console.log("Canceling operation: ", ops_key);
   const { promise, op_key } = _callApi("cancel_task", { task_id: ops_key });
@@ -122,7 +126,7 @@ const handleCancel = async <K extends OperationNames>(
   });
   const resp = await promise;
 
-  if (resp.status === "error") {
+  if (resp.body.status === "error") {
     toast.custom(
       (t) => (
         <ErrorToastComponent
@@ -186,14 +190,14 @@ export const callApi = <K extends OperationNames>(
       console.log("Not printing toast because operation was cancelled");
     }
 
-    const result = response;
-    if (result.status === "error" && !cancelled) {
+    const body = response.body;
+    if (body.status === "error" && !cancelled) {
       toast.remove(toastId);
       toast.custom(
         (t) => (
           <ErrorToastComponent
             t={t}
-            message={"Error: " + result.errors[0].message}
+            message={"Error: " + body.errors[0].message}
           />
         ),
         {
@@ -203,7 +207,7 @@ export const callApi = <K extends OperationNames>(
     } else {
       toast.remove(toastId);
     }
-    return result;
+    return body;
   });
 
   return { promise: new_promise, op_key: op_key };

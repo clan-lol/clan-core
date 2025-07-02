@@ -27,9 +27,9 @@ function isMachine(obj: unknown): obj is Machine {
   return (
     !!obj &&
     typeof obj === "object" &&
-    typeof (obj as Machine).name === "string" &&
-    typeof (obj as Machine).flake === "object" &&
-    typeof (obj as Machine).flake.identifier === "string"
+    typeof (obj as any).name === "string" &&
+    typeof (obj as any).flake === "object" &&
+    typeof (obj as any).flake.identifier === "string"
   );
 }
 
@@ -46,9 +46,8 @@ interface BackendOpts {
 }
 
 interface BackendReturnType<K extends OperationNames> {
-  result: OperationResponse<K>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  metadata: Record<string, any>;
+  body: OperationResponse<K>;
+  header: Record<string, any>;
 }
 
 const _callApi = <K extends OperationNames>(
@@ -62,7 +61,7 @@ const _callApi = <K extends OperationNames>(
     // return a rejected promise
     return {
       promise: Promise.resolve({
-        result: {
+        body: {
           status: "error",
           errors: [
             {
@@ -72,18 +71,18 @@ const _callApi = <K extends OperationNames>(
           ],
           op_key: "noop",
         },
-        metadata: {},
+        header: {},
       }),
       op_key: "noop",
     };
   }
 
-  let metadata: BackendOpts | undefined = undefined;
+  let header: BackendOpts = {};
   if (backendOpts != undefined) {
-    metadata = { ...backendOpts };
-    const group = backendOpts?.logging?.group;
+    header = { ...backendOpts };
+    let group = backendOpts?.logging?.group;
     if (group != undefined && isMachine(group)) {
-      metadata = {
+      header = {
         logging: { group: group.flake.identifier + "#" + group.name },
       };
     }
@@ -94,10 +93,10 @@ const _callApi = <K extends OperationNames>(
       OperationNames,
       (
         args: OperationArgs<OperationNames>,
-        metadata?: BackendOpts,
+        metadata: BackendOpts,
       ) => Promise<BackendReturnType<OperationNames>>
     >
-  )[method](args, metadata) as Promise<BackendReturnType<K>>;
+  )[method](args, header) as Promise<BackendReturnType<K>>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const op_key = (promise as any)._webviewMessageId as string;
@@ -127,7 +126,7 @@ const handleCancel = async <K extends OperationNames>(
   });
   const resp = await promise;
 
-  if (resp.result.status === "error") {
+  if (resp.body.status === "error") {
     toast.custom(
       (t) => (
         <ErrorToastComponent
@@ -151,7 +150,7 @@ export const callApi = <K extends OperationNames>(
   args: OperationArgs<K>,
   backendOpts?: BackendOpts,
 ): { promise: Promise<OperationResponse<K>>; op_key: string } => {
-  console.log("Calling API", method, args);
+  console.log("Calling API", method, args, backendOpts);
 
   const { promise, op_key } = _callApi(method, args, backendOpts);
   promise.catch((error) => {
@@ -191,14 +190,14 @@ export const callApi = <K extends OperationNames>(
       console.log("Not printing toast because operation was cancelled");
     }
 
-    const result = response.result;
-    if (result.status === "error" && !cancelled) {
+    const body = response.body;
+    if (body.status === "error" && !cancelled) {
       toast.remove(toastId);
       toast.custom(
         (t) => (
           <ErrorToastComponent
             t={t}
-            message={"Error: " + result.errors[0].message}
+            message={"Error: " + body.errors[0].message}
           />
         ),
         {
@@ -208,7 +207,7 @@ export const callApi = <K extends OperationNames>(
     } else {
       toast.remove(toastId);
     }
-    return result;
+    return body;
   });
 
   return { promise: new_promise, op_key: op_key };

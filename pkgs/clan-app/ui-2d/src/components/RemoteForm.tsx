@@ -207,7 +207,11 @@ export function RemoteForm(props: RemoteFormProps) {
           flake: props.machine.flake,
           field: props.field || "targetHost",
         },
-        {logging: { group: { name: props.machine.name, flake: props.machine.flake } },},
+        {
+          logging: {
+            group: { name: props.machine.name, flake: props.machine.flake },
+          },
+        },
       ).promise;
 
       if (result.status === "error")
