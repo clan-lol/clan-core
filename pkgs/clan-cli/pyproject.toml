@@ -34,8 +34,9 @@ clan_lib = [
 [tool.pytest.ini_options]
 testpaths = ["tests", "clan_cli", "clan_lib"]
 faulthandler_timeout = 240
-log_level = "DEBUG"
-log_format = "%(message)s"
+log_cli = true
+log_cli_level = "DEBUG"
+log_cli_format = "%(message)s"
 addopts = "--durations 5 --color=yes --new-first -W error -n auto" # Add --pdb for debugging
 norecursedirs = ["clan_cli/tests/helpers", "clan_lib/nixpkgs"]
 #  All tests which evaluate any nix library code from clan-core need to use the
