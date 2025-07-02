@@ -84,10 +84,6 @@ def vars_status(machine: Machine, generator_name: None | str = None) -> VarStatu
             machine.info(
                 f"Generator '{generator.name}' in machine {machine.name} has outdated invalidation hash."
             )
-    machine.debug(f"missing_secret_vars: {missing_secret_vars}")
-    machine.debug(f"missing_public_vars: {missing_public_vars}")
-    machine.debug(f"unfixed_secret_vars: {unfixed_secret_vars}")
-    machine.debug(f"invalid_generators: {invalid_generators}")
     return VarStatus(
         missing_secret_vars,
         missing_public_vars,
