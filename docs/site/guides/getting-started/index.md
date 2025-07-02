@@ -108,5 +108,17 @@ clan machines list
 
 If you see no output yet, that’s expected — [add machines](./add-machines.md) to populate it.
 
-!!! success
-    You just successfully bootstrapped your first Clan.
+---
+
+## Next Steps
+
+You can continue with **any** of the following steps at your own pace:
+
+- [x] [Install Nix & Clan CLI](./index.md)
+- [x] [Initialize Clan](./index.md#initialize-your-project)
+- [ ] [Create USB Installer (optional)](./installer.md)
+- [ ] [Add Machines](./add-machines.md)
+- [ ] [Add Services](./add-services.md)
+- [ ] [Configure Secrets](./secrets.md)
+- [ ] [Deploy](./deploy.md) - Requires configured secrets
+- [ ] [Setup CI (optional)](./check.md)
