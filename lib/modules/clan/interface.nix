@@ -78,8 +78,7 @@ in
       internal = true;
       visible = false;
       type = types.deferredModule;
-      # can be set only once
-      readOnly = true;
+      default = { };
       description = ''
         A module that is used to define the module of flake level exports -
 
