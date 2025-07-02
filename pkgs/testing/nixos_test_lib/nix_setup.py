@@ -1,7 +1,6 @@
 """Nix store setup utilities for VM tests"""
 
 import os
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -10,7 +9,8 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
     """Set up Nix store inside test environment
 
     Args:
-        closure_info: Path to closure info directory containing store-paths file, or None if no closure info
+        closure_info: Path to closure info directory containing store-paths file,
+            or None if no closure info
     """
     tmpdir = Path(os.environ.get("TMPDIR", "/tmp"))
 
@@ -22,7 +22,7 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
     os.environ["NIX_CONFIG"] = "substituters = \ntrusted-public-keys = "
 
     # Set up environment variables for test environment
-    os.environ["HOME"] = tmpdir
+    os.environ["HOME"] = str(tmpdir)
     os.environ["NIX_STATE_DIR"] = f"{tmpdir}/nix"
     os.environ["NIX_CONF_DIR"] = f"{tmpdir}/etc"
     os.environ["IN_NIX_SANDBOX"] = "1"
@@ -41,11 +41,12 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
             with store_paths_file.open() as f:
                 store_paths = f.read().strip().split("\n")
 
-            # Copy store paths to test store using external cp command (handles symlinks better)
+            # Copy store paths to test store using external cp command
+            # (handles symlinks better)
             subprocess.run(
-                ["cp", "--recursive", "--target", f"{tmpdir}/store"] + 
-                [path.strip() for path in store_paths if path.strip()],
-                check=True
+                ["cp", "--recursive", "--target", f"{tmpdir}/store"]
+                + [path.strip() for path in store_paths if path.strip()],
+                check=True,
             )
 
             # Load Nix database

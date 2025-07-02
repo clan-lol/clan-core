@@ -23,7 +23,7 @@ def check_host_port_open(port: int) -> bool:
             s.settimeout(1)
             result = s.connect_ex(("localhost", port))
             return result == 0
-    except Exception as e:
+    except OSError as e:
         print(f"Port check failed: {e}")
         return False
 

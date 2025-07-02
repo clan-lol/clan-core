@@ -41,4 +41,5 @@ ignore = [
     "ANN", # type annotations  
     "COM812", # trailing comma
     "ISC001", # string concatenation
+    "T201", # print statements
 ]
