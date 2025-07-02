@@ -104,6 +104,13 @@ let
 in
 {
   options = {
+    # Option to disable some behavior during docs rendering
+    _docs_rendering = mkOption {
+      default = false;
+      visible = false;
+      type = types.bool;
+    };
+
     instances = mkOption {
       visible = false;
       defaultText = "Throws: 'The service must define its instances' when not defined";
@@ -384,6 +391,33 @@ in
                   type = types.deferredModuleWith {
                     staticModules = [
                       ({
+                        options.exports = mkOption {
+                          type = types.deferredModule;
+                          default = { };
+                          description = ''
+                            export modules defined in 'perInstance'
+                            mapped to their instance name
+
+                            Example
+
+                            with instances:
+
+                            ```nix
+                            instances.A = { ... };
+                            instances.B= { ... };
+
+                            roles.peer.perInstance = { instanceName, machine, ... }:
+                            {
+                              exports.foo = 1;
+                            }
+
+                            This yields all other services can access these exports
+                            =>
+                            exports.instances.A.foo = 1;
+                            exports.instances.B.foo = 1;
+                            ```
+                          '';
+                        };
                         options.nixosModule = mkOption {
                           type = types.deferredModule;
                           default = { };
@@ -493,6 +527,32 @@ in
       type = types.deferredModuleWith {
         staticModules = [
           ({
+            options.exports = mkOption {
+              type = types.deferredModule;
+              default = { };
+              description = ''
+                export modules defined in 'perMachine'
+                mapped to their machine name
+
+                Example
+
+                with machines:
+                ```nix
+                instances.A = { roles.peer.machines.jon = ... };
+                instances.B = { roles.peer.machines.jon = ... };
+
+                perMachine = { machine, ... }:
+                {
+                  exports.foo = 1;
+                }
+
+                This yields all other services can access these exports
+                =>
+                exports.machines.jon.foo = 1;
+                exports.machines.sara.foo = 1;
+                ```
+              '';
+            };
             options.nixosModule = mkOption {
               type = types.deferredModule;
               default = { };
@@ -567,6 +627,96 @@ in
 
           modules = [ v ];
         }).config;
+    };
+
+    exports = mkOption {
+      description = ''
+        This services exports.
+        Gets merged with all other services exports
+
+        Final value (merged and evaluated with other services) available as `exports'` in the arguments of this module.
+
+        ```nix
+        { exports', ... }: {
+          _class = "clan.service";
+          # ...
+        }
+        ```
+      '';
+      default = { };
+      type = types.submoduleWith {
+        # Static modules
+        modules = [
+          {
+            options.instances = mkOption {
+              type = types.attrsOf types.deferredModule;
+              description = ''
+                export modules defined in 'perInstance'
+                mapped to their instance name
+
+                Example
+
+                with instances:
+
+                ```nix
+                instances.A = { ... };
+                instances.B= { ... };
+
+                roles.peer.perInstance = { instanceName, machine, ... }:
+                {
+                  exports.foo = 1;
+                }
+
+                This yields all other services can access these exports
+                =>
+                exports.instances.A.foo = 1;
+                exports.instances.B.foo = 1;
+                ```
+              '';
+            };
+            options.machines = mkOption {
+              type = types.attrsOf types.deferredModule;
+              description = ''
+                export modules defined in 'perMachine'
+                mapped to their machine name
+
+                Example
+
+                with machines:
+
+                ```nix
+                instances.A = { roles.peer.machines.jon = ... };
+                instances.B = { roles.peer.machines.jon = ... };
+
+                perMachine = { machine, ... }:
+                {
+                  exports.foo = 1;
+                }
+
+                This yields all other services can access these exports
+                =>
+                exports.machines.jon.foo = 1;
+                exports.machines.sara.foo = 1;
+                ```
+              '';
+            };
+            # Lazy default via imports
+            # should probably be moved to deferredModuleWith { staticModules = [ ]; }
+            imports =
+              if config._docs_rendering then
+                [ ]
+              else
+                lib.mapAttrsToList (_roleName: role: {
+                  instances = lib.mapAttrs (_instanceName: instance: {
+                    imports = lib.mapAttrsToList (_machineName: v: v.exports) instance.allMachines;
+                  }) role.allInstances;
+                }) config.result.allRoles
+                ++ lib.mapAttrsToList (machineName: machine: {
+                  machines.${machineName} = machine.exports;
+                }) config.result.allMachines;
+          }
+        ];
+      };
     };
     # ---
     # Place the result in _module.result to mark them as "internal" and discourage usage/overrides

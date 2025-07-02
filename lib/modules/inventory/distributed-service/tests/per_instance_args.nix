@@ -106,7 +106,7 @@ in
   test_per_instance_arguments = {
     expr = {
       instanceName =
-        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.passthru.instanceName;
+        res.importedModulesEvaluated.self-A.result.allRoles.peer.allInstances."instance_foo".allMachines.jon.passthru.instanceName;
 
       # settings are specific.
       # Below we access:
@@ -114,11 +114,11 @@ in
       # roles = peer
       # machines = jon
       settings =
-        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.settings;
+        res.importedModulesEvaluated.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.settings;
       machine =
-        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.machine;
+        res.importedModulesEvaluated.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.machine;
       roles =
-        res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.roles;
+        res.importedModulesEvaluated.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.roles;
     };
     expected = {
       instanceName = "instance_foo";
@@ -161,9 +161,9 @@ in
 
   # TODO: Cannot be tested like this anymore
   test_per_instance_settings_vendoring = {
-    x = res.importedModulesEvaluated.self-A.config;
+    x = res.importedModulesEvaluated.self-A;
     expr =
-      res.importedModulesEvaluated.self-A.config.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.vendoredSettings;
+      res.importedModulesEvaluated.self-A.result.allRoles.peer.allInstances.instance_foo.allMachines.jon.passthru.vendoredSettings;
     expected = {
       timeout = "config.thing";
     };

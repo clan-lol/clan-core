@@ -26,6 +26,7 @@ in
       inventory,
       clanCoreModules,
       prefix ? [ ],
+      exportsModule,
     }:
     let
       # machineHasTag = machineName: tagName: lib.elem tagName inventory.machines.${machineName}.tags;
@@ -89,23 +90,6 @@ in
         }
       ) inventory.instances or { };
 
-      # TODO: Eagerly check the _class of the resolved module
-      importedModulesEvaluated = lib.mapAttrs (
-        module_ident: instances:
-        clanLib.evalService {
-          prefix = prefix ++ [ module_ident ];
-          modules =
-            [
-              # Import the resolved module.
-              # i.e. clan.modules.admin
-              (builtins.head instances).instance.resolvedModule
-            ] # Include all the instances that correlate to the resolved module
-            ++ (builtins.map (v: {
-              instances.${v.instanceName}.roles = v.instance.instanceRoles;
-            }) instances);
-        }
-      ) grouped;
-
       # Group the instances by the module they resolve to
       # This is necessary to evaluate the module in a single pass
       # :: { <module.input>_<module.name> :: [ { name, value } ] }
@@ -126,16 +110,52 @@ in
         }
       ) { } importedModuleWithInstances;
 
+      # servicesEval.config.mappedServices.self-A.result.final.jon.nixosModule
       allMachines = lib.mapAttrs (machineName: _: {
         # This is the list of nixosModules for each machine
         machineImports = lib.foldlAttrs (
-          acc: _module_ident: eval:
-          acc ++ [ eval.config.result.final.${machineName}.nixosModule or { } ]
-        ) [ ] importedModulesEvaluated;
+          acc: _module_ident: serviceModule:
+          acc ++ [ serviceModule.result.final.${machineName}.nixosModule or { } ]
+        ) [ ] servicesEval.config.mappedServices;
       }) inventory.machines or { };
+
+      evalServices =
+        { modules, prefix }:
+        lib.evalModules {
+          specialArgs = {
+            inherit clanLib;
+            _ctx = prefix;
+          };
+          modules = [
+            ./all-services-wrapper.nix
+          ] ++ modules;
+        };
+
+      servicesEval = evalServices {
+        inherit prefix;
+        modules = [
+          {
+            inherit exportsModule;
+            mappedServices = lib.mapAttrs (_module_ident: instances: {
+              imports =
+                [
+                  # Import the resolved module.
+                  # i.e. clan.modules.admin
+                  (builtins.head instances).instance.resolvedModule
+                ] # Include all the instances that correlate to the resolved module
+                ++ (builtins.map (v: {
+                  instances.${v.instanceName}.roles = v.instance.instanceRoles;
+                }) instances);
+            }) grouped;
+          }
+        ];
+      };
+      importedModulesEvaluated = servicesEval.config.mappedServices;
+
     in
     {
       inherit
+        servicesEval
         importedModuleWithInstances
         grouped
         allMachines

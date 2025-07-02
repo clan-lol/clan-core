@@ -185,7 +185,6 @@ in
     ];
 
     clan.core.vars.generators.borgbackup = {
-
       files."borgbackup.ssh.pub".secret = false;
       files."borgbackup.ssh" = { };
       files."borgbackup.repokey" = { };

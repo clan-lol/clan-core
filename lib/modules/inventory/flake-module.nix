@@ -47,7 +47,7 @@ in
         (pkgs.nixosOptionsDoc {
           options =
             (self.clanLib.evalService {
-              modules = [ ];
+              modules = [ { _docs_rendering = true; } ];
               prefix = [ ];
             }).options;
           warningsAreErrors = true;
