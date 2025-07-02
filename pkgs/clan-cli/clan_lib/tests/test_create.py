@@ -64,17 +64,7 @@ def create_base_inventory(ssh_keys_pairs: list[SSHKeyPair]) -> InventoryWrapper:
         ssh_keys.append(InvSSHKeyEntry(f"user_{num}", ssh_key.public.read_text()))
 
     """Create the base inventory structure."""
-    legacy_services: dict[str, Any] = {
-        "state-version": {
-            "someid": {
-                "roles": {
-                    "default": {
-                        "tags": ["all"],
-                    }
-                }
-            }
-        },
-    }
+    legacy_services: dict[str, Any] = {}
 
     instances = InventoryInstancesType(
         {

@@ -1,5 +1,6 @@
+{ lib, ... }:
 {
-  name = "state-version";
+  name = "service-state-version";
 
   clan = {
     directory = ./.;
@@ -15,7 +16,7 @@
 
   nodes.server = { };
 
-  testScript = ''
+  testScript = lib.mkDefault ''
     start_all()
   '';
 }
