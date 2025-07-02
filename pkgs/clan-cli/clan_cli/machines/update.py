@@ -26,7 +26,7 @@ def update_command(args: argparse.Namespace) -> None:
             msg = "Could not find clan flake toplevel directory"
             raise ClanError(msg)
 
-        machines: list[Machine] = []
+        all_machines: list[Machine] = []
         if args.tags:
             tag_filtered_machines = query_machines_by_tags(args.flake, args.tags)
             if args.machines:
@@ -51,9 +51,9 @@ def update_command(args: argparse.Namespace) -> None:
 
         for machine_name in selected_machines:
             machine = Machine(name=machine_name, flake=args.flake)
-            machines.append(machine)
+            all_machines.append(machine)
 
-        if args.target_host is not None and len(machines) > 1:
+        if args.target_host is not None and len(all_machines) > 1:
             msg = "Target Host can only be set for one machines"
             raise ClanError(msg)
 
@@ -69,13 +69,13 @@ def update_command(args: argparse.Namespace) -> None:
 
             return True
 
-        machines_to_update = machines
+        machines_to_update = all_machines
         implicit_all: bool = len(args.machines) == 0 and not args.tags
         if implicit_all:
-            machines_to_update = list(filter(filter_machine, machines))
+            machines_to_update = list(filter(filter_machine, all_machines))
 
         # machines that are in the list but not included in the update list
-        ignored_machines = {m.name for m in machines if m not in machines_to_update}
+        ignored_machines = {m.name for m in all_machines if m not in machines_to_update}
 
         if not machines_to_update and ignored_machines:
             print(
@@ -102,7 +102,7 @@ def update_command(args: argparse.Namespace) -> None:
 
             host_key_check = args.host_key_check
             with AsyncRuntime() as runtime:
-                for machine in machines:
+                for machine in machines_to_update:
                     if args.target_host:
                         target_host = Remote.from_ssh_uri(
                             machine_name=machine.name,
