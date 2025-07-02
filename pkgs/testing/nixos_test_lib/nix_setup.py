@@ -4,6 +4,10 @@ import os
 import subprocess
 from pathlib import Path
 
+# These paths will be substituted during package build
+CP_BIN = "@cp@"
+NIX_STORE_BIN = "@nix-store@"
+
 
 def setup_nix_in_nix(closure_info: str | None) -> None:
     """Set up Nix store inside test environment
@@ -44,7 +48,7 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
             # Copy store paths to test store using external cp command
             # (handles symlinks better)
             subprocess.run(
-                ["cp", "--recursive", "--target", f"{tmpdir}/store"]
+                [CP_BIN, "--recursive", "--target", f"{tmpdir}/store"]
                 + [path.strip() for path in store_paths if path.strip()],
                 check=True,
             )
@@ -57,7 +61,7 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
 
                 with registration_file.open() as f:
                     subprocess.run(
-                        ["nix-store", "--load-db"],
+                        [NIX_STORE_BIN, "--load-db"],
                         input=f.read(),
                         text=True,
                         env=env,
