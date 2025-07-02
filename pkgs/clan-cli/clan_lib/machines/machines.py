@@ -112,19 +112,7 @@ class Machine:
     def vars_generators(self) -> list["Generator"]:
         from clan_cli.vars.generate import Generator
 
-        try:
-            generators_data = self.select(
-                "config.clan.core.vars._serialized.generators"
-            )
-            if generators_data is None:
-                return []
-            _generators = [Generator.from_json(gen) for gen in generators_data.values()]
-            for gen in _generators:
-                gen.machine(self)
-        except Exception:
-            return []
-        else:
-            return _generators
+        return Generator.generators_from_flake(self.name, self.flake, self)
 
     @property
     def secrets_upload_directory(self) -> str:

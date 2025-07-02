@@ -107,7 +107,7 @@ def test_generate_secret(
     )
 
     assert store2.exists("", "age.key")
-    (
+    assert (
         test_flake_with_core.path
         / "vars"
         / "per-machine"

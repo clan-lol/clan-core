@@ -35,6 +35,7 @@ from .var import Var
 log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from clan_lib.flake import Flake
     from clan_lib.machines.machines import Machine
 
 
@@ -60,15 +61,63 @@ class Generator:
         return check_vars(self._machine, generator_name=self.name)
 
     @classmethod
-    def from_json(cls: type["Generator"], data: dict[str, Any]) -> "Generator":
-        return cls(
-            name=data["name"],
-            share=data["share"],
-            files=[Var.from_json(data["name"], f) for f in data["files"].values()],
-            dependencies=data["dependencies"],
-            migrate_fact=data["migrateFact"],
-            prompts=[Prompt.from_json(p) for p in data["prompts"].values()],
+    def generators_from_flake(
+        cls: type["Generator"], machine_name: str, flake: "Flake", machine: "Machine"
+    ) -> list["Generator"]:
+        config = nix_config()
+        system = config["system"]
+
+        # Get all generator metadata in one select (safe fields only)
+        generators_data = flake.select(
+            f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.generators.*.{{share,dependencies,migrateFact,prompts}}'
         )
+        if not generators_data:
+            return []
+
+        # Get all file metadata in one select
+        files_data = flake.select(
+            f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}'
+        )
+
+        generators = []
+        for gen_name, gen_data in generators_data.items():
+            # Build files from the files_data
+            files = []
+            gen_files = files_data.get(gen_name, {})
+            for file_name, file_data in gen_files.items():
+                # Handle mode conversion properly
+                mode = file_data["mode"]
+                if isinstance(mode, str):
+                    mode = int(mode, 8)
+
+                var = Var(
+                    id=f"{gen_name}/{file_name}",
+                    name=file_name,
+                    secret=file_data["secret"],
+                    deploy=file_data["deploy"],
+                    owner=file_data["owner"],
+                    group=file_data["group"],
+                    mode=mode,
+                    needed_for=file_data["neededFor"],
+                )
+                files.append(var)
+
+            # Build prompts
+            prompts = [Prompt.from_nix(p) for p in gen_data.get("prompts", {}).values()]
+
+            generator = cls(
+                name=gen_name,
+                share=gen_data["share"],
+                files=files,
+                dependencies=gen_data["dependencies"],
+                migrate_fact=gen_data.get("migrateFact"),
+                prompts=prompts,
+            )
+            # Set the machine immediately
+            generator.machine(machine)
+            generators.append(generator)
+
+        return generators
 
     def final_script(self) -> Path:
         assert self._machine is not None
@@ -350,10 +399,6 @@ def get_closure(
     generators: dict[str, Generator] = {
         generator.name: generator for generator in vars_generators
     }
-
-    # TODO: we should remove this
-    for generator in vars_generators:
-        generator.machine(machine)
 
     result_closure = []
     if generator_name is None:  # all generators selected
