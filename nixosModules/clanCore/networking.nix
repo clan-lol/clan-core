@@ -84,31 +84,16 @@
       use = lib.trace "Obsolete option `${lib.showOption from}' is used. It was renamed to `${lib.showOption to}'.";
       withPriority = false;
     })
-    (lib.mkRenamedOptionModule
-      [
-        "clan"
-        "deployment"
-      ]
-      [
-        "clan"
-        "core"
-        "deployment"
-      ]
-    )
-    (lib.mkRenamedOptionModule
-      [
-        "clan"
-        "core"
-        "networking"
-        "deploymentAddress"
-      ]
-      [
-        "clan"
-        "core"
-        "networking"
-        "targetHost"
-      ]
-    )
+    (lib.mkRemovedOptionModule [
+      "clan"
+      "deployment"
+    ] "Use clan.core.deployment instead")
+    (lib.mkRemovedOptionModule [
+      "clan"
+      "core"
+      "networking"
+      "deploymentAddress"
+    ] "Use clan.core.network.targetHost instead")
   ];
   config = lib.optionalAttrs (_class == "nixos") (
     lib.mkIf config.clan.core.enableRecommendedDefaults {

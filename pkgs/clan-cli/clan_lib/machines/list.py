@@ -8,7 +8,6 @@ from clan_lib.api import API
 from clan_lib.api.disk import MachineDiskMatter
 from clan_lib.api.modules import parse_frontmatter
 from clan_lib.dirs import specific_machine_dir
-from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import get_machine, list_machines
 from clan_lib.machines.machines import Machine
@@ -25,13 +24,7 @@ def list_full_machines(flake: Flake) -> dict[str, Machine]:
 
     res: dict[str, Machine] = {}
 
-    for inv_machine in machines.values():
-        name = inv_machine.get("name")
-        # Technically, this should not happen, but we are defensive here.
-        if name is None:
-            msg = "InternalError: Machine name is required. But got a machine without a name."
-            raise ClanError(msg)
-
+    for name in machines:
         machine = Machine(name=name, flake=flake)
         res[machine.name] = machine
 
