@@ -64,7 +64,7 @@ clan flakes create my-clan
 
 This command creates a `flake.nix` and some other files for your project.
 
-## Verify the Project Structure
+## Explore the Project Structure
 
 Take a lookg at all project files:
 
@@ -73,23 +73,17 @@ cd my-clan
 tree
 ```
 
-Depending on the current template you should see something like this:
+For example, you might see something like:
 
 ``` { .console .no-copy }
 .
 ├── flake.nix
-├── machines
-│   ├── jon
-│   │   ├── configuration.nix
-│   │   └── hardware-configuration.nix
-│   └── sara
-│       ├── configuration.nix
-│       └── hardware-configuration.nix
-└── modules
-    └── shared.nix
-
-5 directories, 9 files
+├── machines/
+├── modules/
+└── README.md
 ```
+
+Don’t worry if your output looks different—the template evolves over time.
 
 ??? info "Recommended way of sourcing the `clan` CLI tool"
 
@@ -108,15 +102,11 @@ Depending on the current template you should see something like this:
     To automatically add the `clan` CLI tool to your environment without having to
     run `nix develop` every time, we recommend setting up [direnv](https://direnv.net/).
 
-```bash
+```
 clan machines list
 ```
 
-``` { .console .no-copy }
-jon
-sara
-```
+If you see no output yet, that’s expected — [add machines](./add-machines.md) to populate it.
 
 !!! success
-
     You just successfully bootstrapped your first Clan.
