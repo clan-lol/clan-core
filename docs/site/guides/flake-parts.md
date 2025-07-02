@@ -3,7 +3,7 @@ Clan supports integration with [flake-parts](https://flake.parts/), a framework 
 
 To construct your Clan using flake-parts, follow these steps:
 
-## 1. Update Your Flake Inputs
+## Update Your Flake Inputs
 
 To begin, you'll need to add `flake-parts` as a new dependency in your flake's inputs. This is alongside the already existing dependencies, such as `clan-core` and `nixpkgs`. Here's how you can update your `flake.nix` file:
 
@@ -25,7 +25,7 @@ inputs = {
 }
 ```
 
-## 2. Import the Clan flake-parts Module
+## Import the Clan flake-parts Module
 
 After updating your flake inputs, the next step is to import the Clan flake-parts module. This will make the [Clan options](../reference/nix-api/clan.md) available within `mkFlake`.
 
@@ -43,7 +43,7 @@ After updating your flake inputs, the next step is to import the Clan flake-part
 }
 ```
 
-### 3. Configure Clan Settings and Define Machines
+## Configure Clan Settings and Define Machines
 
 Next you'll need to configure Clan wide settings and define machines, here's an example of how `flake.nix` should look:
 
@@ -91,6 +91,6 @@ Next you'll need to configure Clan wide settings and define machines, here's an 
 ```
 
 For detailed information about configuring `flake-parts` and the available options within Clan,
-refer to the Clan module documentation located [here](https://git.clan.lol/clan/clan-core/src/branch/main/flakeModules/clan.nix).
+refer to the [Clan module](https://git.clan.lol/clan/clan-core/src/branch/main/flakeModules/clan.nix) documentation.
 
 ---
