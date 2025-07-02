@@ -12,6 +12,7 @@ from clan_lib.machines.suggestions import validate_machine_names
 from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
+from clan_cli.host_key_check import add_host_key_check_arg
 
 from .types import machine_name_type
 
@@ -54,12 +55,7 @@ def register_update_hardware_config(parser: argparse.ArgumentParser) -> None:
         nargs="?",
         help="ssh address to install to in the form of user@host:2222",
     )
-    parser.add_argument(
-        "--host-key-check",
-        choices=["strict", "ask", "tofu", "none"],
-        default="ask",
-        help="Host key (.ssh/known_hosts) check mode.",
-    )
+    add_host_key_check_arg(parser)
     parser.add_argument(
         "--password",
         help="Pre-provided password the cli will prompt otherwise if needed.",

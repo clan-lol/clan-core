@@ -16,6 +16,7 @@ from clan_cli.completions import (
     complete_machines,
     complete_tags,
 )
+from clan_cli.host_key_check import add_host_key_check_arg
 
 log = logging.getLogger(__name__)
 
@@ -163,12 +164,7 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
     )
     add_dynamic_completer(tag_parser, complete_tags)
 
-    parser.add_argument(
-        "--host-key-check",
-        choices=["strict", "ask", "tofu", "none"],
-        default="ask",
-        help="Host key (.ssh/known_hosts) check mode.",
-    )
+    add_host_key_check_arg(parser)
     parser.add_argument(
         "--target-host",
         type=str,

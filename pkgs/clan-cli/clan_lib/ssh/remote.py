@@ -39,7 +39,7 @@ class Remote:
     private_key: Path | None = None
     password: str | None = None
     forward_agent: bool = True
-    host_key_check: HostKeyCheck = "ask"
+    host_key_check: HostKeyCheck = HostKeyCheck.ASK
     verbose_ssh: bool = False
     ssh_options: dict[str, str] = field(default_factory=dict)
     tor_socks: bool = False
