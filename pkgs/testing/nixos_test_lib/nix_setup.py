@@ -7,6 +7,7 @@ from pathlib import Path
 # These paths will be substituted during package build
 CP_BIN = "@cp@"
 NIX_STORE_BIN = "@nix-store@"
+XARGS_BIN = "@xargs@"
 
 
 def setup_nix_in_nix(closure_info: str | None) -> None:
@@ -16,7 +17,7 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
         closure_info: Path to closure info directory containing store-paths file,
             or None if no closure info
     """
-    tmpdir = Path(os.environ.get("TMPDIR", "/tmp"))
+    tmpdir = Path(os.environ.get("TMPDIR", "/tmp"))  # noqa: S108
 
     # Remove NIX_REMOTE if present (we don't have any nix daemon running)
     if "NIX_REMOTE" in os.environ:
@@ -37,33 +38,36 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
     Path(f"{tmpdir}/nix").mkdir(parents=True, exist_ok=True)
     Path(f"{tmpdir}/etc").mkdir(parents=True, exist_ok=True)
     Path(f"{tmpdir}/store").mkdir(parents=True, exist_ok=True)
+    Path(f"{tmpdir}/store/nix/store").mkdir(parents=True, exist_ok=True)
+    Path(f"{tmpdir}/store/nix/var/nix/gcroots").mkdir(parents=True, exist_ok=True)
 
     # Set up Nix store if closure info is provided
     if closure_info and Path(closure_info).exists():
         store_paths_file = Path(closure_info) / "store-paths"
         if store_paths_file.exists():
+            # Use xargs to handle potentially long lists of store paths
+            # Equivalent to: xargs cp --recursive --target-directory
+            # "$CLAN_TEST_STORE/nix/store" < "$closureInfo/store-paths"
             with store_paths_file.open() as f:
-                store_paths = f.read().strip().split("\n")
-
-            # Copy store paths to test store using external cp command
-            # (handles symlinks better)
-            subprocess.run(
-                [CP_BIN, "--recursive", "--target", f"{tmpdir}/store"]
-                + [path.strip() for path in store_paths if path.strip()],
-                check=True,
-            )
+                subprocess.run(  # noqa: S603
+                    [
+                        XARGS_BIN,
+                        CP_BIN,
+                        "--recursive",
+                        "--target-directory",
+                        f"{tmpdir}/store/nix/store",
+                    ],
+                    stdin=f,
+                    check=True,
+                )
 
             # Load Nix database
             registration_file = Path(closure_info) / "registration"
             if registration_file.exists():
-                env = os.environ.copy()
-                env["NIX_REMOTE"] = f"local?store={tmpdir}/store"
-
                 with registration_file.open() as f:
-                    subprocess.run(
-                        [NIX_STORE_BIN, "--load-db"],
+                    subprocess.run(  # noqa: S603
+                        [NIX_STORE_BIN, "--load-db", "--store", f"{tmpdir}/store"],
                         input=f.read(),
                         text=True,
-                        env=env,
                         check=True,
                     )

@@ -40,7 +40,8 @@
           postPatch = ''
             substituteInPlace nixos_test_lib/nix_setup.py \
               --replace '@cp@' '${pkgs.coreutils}/bin/cp' \
-              --replace '@nix-store@' '${pkgs.nix}/bin/nix-store'
+              --replace '@nix-store@' '${pkgs.nix}/bin/nix-store' \
+              --replace '@xargs@' '${pkgs.findutils}/bin/xargs'
           '';
           doCheck = false;
         };
