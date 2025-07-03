@@ -394,6 +394,7 @@ in
                     options = {
                       # ModuleSpec
                       module = lib.mkOption {
+                        default = { };
                         type = types.submodule {
                           options.input = lib.mkOption {
                             type = types.nullOr types.str;
