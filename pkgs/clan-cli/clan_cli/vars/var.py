@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from clan_cli.vars.generate import Generator
@@ -67,16 +67,3 @@ class Var:
                 return f"{self.id}: ********"
             return f"{self.id}: {self.printable_value}"
         return f"{self.id}: <not set>"
-
-    @classmethod
-    def from_json(cls: type["Var"], generator_name: str, data: dict[str, Any]) -> "Var":
-        return cls(
-            id=f"{generator_name}/{data['name']}",
-            name=data["name"],
-            secret=data["secret"],
-            deploy=data["deploy"],
-            owner=data.get("owner", "root"),
-            group=data.get("group", "root"),
-            mode=int(data.get("mode", "0400"), 8),
-            needed_for=data.get("neededFor", "services"),
-        )

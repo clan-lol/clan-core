@@ -32,12 +32,12 @@ class Prompt:
     previous_value: str | None = None
 
     @classmethod
-    def from_json(cls: type["Prompt"], data: dict[str, Any]) -> "Prompt":
+    def from_nix(cls: type["Prompt"], data: dict[str, Any]) -> "Prompt":
         return cls(
             name=data["name"],
-            description=data["description"],
-            prompt_type=PromptType(data["type"]),
-            persist=data.get("persist", data["persist"]),
+            description=data.get("description", data["name"]),
+            prompt_type=PromptType(data.get("type", "line")),
+            persist=data.get("persist", False),
         )
 
 
