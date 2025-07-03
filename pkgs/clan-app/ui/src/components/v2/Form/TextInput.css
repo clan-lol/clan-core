@@ -1,5 +1,3 @@
-@import "./Field.css";
-
 div.form-field {
   &.text input,
   &.textarea textarea {
@@ -46,10 +44,6 @@ div.form-field {
     &.text div.input-container,
     &.textarea textarea {
       @apply w-1/2 grow;
-    }
-
-    &.textarea:has(> textarea) {
-      @apply items-start;
     }
   }
 

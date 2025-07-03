@@ -1,6 +1,3 @@
-import { Size } from "@/src/components/v2/Form/Label";
-import { Orientation } from "@/src/components/v2/shared";
-
 export interface FieldProps {
   class?: string;
   label?: string;
@@ -8,7 +5,7 @@ export interface FieldProps {
   tooltip?: string;
   ghost?: boolean;
 
-  size?: Size;
-  orientation?: Orientation;
+  size?: "default" | "s";
+  orientation?: "horizontal" | "vertical";
   inverted?: boolean;
 }

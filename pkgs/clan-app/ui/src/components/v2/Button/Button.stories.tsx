@@ -144,7 +144,7 @@ export default meta;
 
 type Story = StoryObj<ButtonProps>;
 
-const timeout = process.env.NODE_ENV === "test" ? 100 : 2000;
+const timeout = process.env.NODE_ENV === "test" ? 500 : 2000;
 
 export const Primary: Story = {
   args: {
@@ -157,12 +157,6 @@ export const Primary: Story = {
         throw new Error("Action failure");
       }
     }),
-  },
-  parameters: {
-    test: {
-      // increase test timeout to allow for the loading action
-      mockTimers: true,
-    },
   },
 
   play: async ({ canvas, step, userEvent, args }: StoryContext) => {
@@ -195,16 +189,19 @@ export const Primary: Story = {
         await userEvent.click(button);
 
         // check the button has changed
-        await waitFor(async () => {
-          // the action handler should have been called
-          await expect(args.onAction).toHaveBeenCalled();
-          // the button should have a loading class
-          await expect(button).toHaveClass("loading");
-          // the loader should be visible
-          await expect(loader.clientWidth).toBeGreaterThan(0);
-          // the pointer should have changed to wait
-          await expect(getCursorStyle(button)).toEqual("wait");
-        });
+        await waitFor(
+          async () => {
+            // the action handler should have been called
+            await expect(args.onAction).toHaveBeenCalled();
+            // the button should have a loading class
+            await expect(button).toHaveClass("loading");
+            // the loader should be visible
+            await expect(loader.clientWidth).toBeGreaterThan(0);
+            // the pointer should have changed to wait
+            await expect(getCursorStyle(button)).toEqual("wait");
+          },
+          { timeout: timeout + 500 },
+        );
 
         // wait for the action handler to finish
         await waitFor(

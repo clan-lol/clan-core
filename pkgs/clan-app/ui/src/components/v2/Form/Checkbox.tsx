@@ -10,6 +10,7 @@ import { Label } from "./Label";
 import { PolymorphicProps } from "@kobalte/core/polymorphic";
 import "./Checkbox.css";
 import { FieldProps } from "./Field";
+import { Orienter } from "./Orienter";
 
 export type CheckboxProps = FieldProps &
   KCheckboxRootProps & {
@@ -24,21 +25,23 @@ export const Checkbox = (props: CheckboxProps) => (
     })}
     {...props}
   >
-    <Label
-      labelComponent={KCheckbox.Label}
-      descriptionComponent={KCheckbox.Description}
-      {...props}
-    />
-    <KCheckbox.Input {...props.input} />
-    <KCheckbox.Control class="checkbox-control">
-      <KCheckbox.Indicator>
-        <Icon
-          icon="Checkmark"
-          inverted={props.inverted}
-          color="secondary"
-          size="100%"
-        />
-      </KCheckbox.Indicator>
-    </KCheckbox.Control>
+    <Orienter orientation={props.orientation} align={"start"}>
+      <Label
+        labelComponent={KCheckbox.Label}
+        descriptionComponent={KCheckbox.Description}
+        {...props}
+      />
+      <KCheckbox.Input {...props.input} />
+      <KCheckbox.Control class="checkbox-control">
+        <KCheckbox.Indicator>
+          <Icon
+            icon="Checkmark"
+            inverted={props.inverted}
+            color="secondary"
+            size="100%"
+          />
+        </KCheckbox.Indicator>
+      </KCheckbox.Control>
+    </Orienter>
   </KCheckbox>
 );

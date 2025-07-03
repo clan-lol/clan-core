@@ -10,6 +10,7 @@ import { Label } from "./Label";
 import "./TextInput.css";
 import { PolymorphicProps } from "@kobalte/core/polymorphic";
 import { FieldProps } from "./Field";
+import { Orienter } from "./Orienter";
 
 export type TextInputProps = FieldProps &
   TextFieldRootProps & {
@@ -25,23 +26,25 @@ export const TextInput = (props: TextInputProps) => (
     })}
     {...props}
   >
-    <Label
-      labelComponent={TextField.Label}
-      descriptionComponent={TextField.Description}
-      {...props}
-    />
-    <div class="input-container">
-      {props.icon && (
-        <Icon
-          icon={props.icon}
-          inverted={props.inverted}
-          color={props.disabled ? "tertiary" : "quaternary"}
-        />
-      )}
-      <TextField.Input
-        {...props.input}
-        classList={{ "has-icon": props.icon }}
+    <Orienter orientation={props.orientation}>
+      <Label
+        labelComponent={TextField.Label}
+        descriptionComponent={TextField.Description}
+        {...props}
       />
-    </div>
+      <div class="input-container">
+        {props.icon && (
+          <Icon
+            icon={props.icon}
+            inverted={props.inverted}
+            color={props.disabled ? "tertiary" : "quaternary"}
+          />
+        )}
+        <TextField.Input
+          {...props.input}
+          classList={{ "has-icon": props.icon }}
+        />
+      </div>
+    </Orienter>
   </TextField>
 );

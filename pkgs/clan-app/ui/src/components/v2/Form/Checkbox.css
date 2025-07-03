@@ -1,10 +1,8 @@
-@import "./Field.css";
-
 div.form-field {
   &.checkbox {
     @apply items-start;
 
-    & > div.checkbox-control {
+    & div.checkbox-control {
       @apply w-5 h-5 rounded-sm bg-def-1 border border-inv-1 p-[0.0625rem];
 
       &:hover {
@@ -21,13 +19,9 @@ div.form-field {
     }
   }
 
-  &.horizontal.checkbox {
-    @apply items-center;
-  }
-
   &.inverted {
     &.checkbox {
-      & > div.checkbox-control {
+      & div.checkbox-control {
         @apply bg-inv-1;
 
         &:hover,
@@ -43,7 +37,7 @@ div.form-field {
   }
 
   &.s {
-    & > div.checkbox-control {
+    & div.checkbox-control {
       @apply w-4 h-4;
     }
   }

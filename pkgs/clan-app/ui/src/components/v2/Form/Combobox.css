@@ -1,14 +1,12 @@
-@import "Field.css";
-
 div.form-field.combobox {
-  & > div.control {
+  div.control {
     @apply flex flex-col w-full gap-2;
 
-    & > div.selected-options {
+    div.selected-options {
       @apply flex flex-wrap gap-1 w-full min-h-5;
     }
 
-    & > div.input-container {
+    div.input-container {
       @apply relative left-0 top-0;
       @apply inline-flex justify-between w-full;
 
@@ -68,13 +66,13 @@ div.form-field.combobox {
   &.horizontal {
     @apply flex-row gap-2 justify-between;
 
-    & > div.control {
+    div.control {
       @apply w-1/2 grow;
     }
   }
 
   &.s {
-    & > div.control > div.input-container {
+    div.control > div.input-container {
       & > input {
         @apply px-1.5 py-1;
         font-size: 0.75rem;
@@ -87,7 +85,7 @@ div.form-field.combobox {
   }
 
   &.inverted {
-    & > div.control > div.input-container {
+    div.control > div.input-container {
       & > button.trigger {
         @apply bg-inv-2;
       }
@@ -118,7 +116,7 @@ div.form-field.combobox {
   }
 
   &.ghost {
-    & > div.control > div.input-container {
+    div.control > div.input-container {
       & > input {
         @apply outline-none;
 

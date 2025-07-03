@@ -10,6 +10,7 @@ import { CollectionNode } from "@kobalte/core";
 import { Label } from "./Label";
 import cx from "classnames";
 import { FieldProps } from "./Field";
+import { Orienter } from "./Orienter";
 import { Typography } from "@/src/components/v2/Typography/Typography";
 import { Accessor, Component, For, Show, splitProps } from "solid-js";
 import { Tag } from "@/src/components/v2/Tag/Tag";
@@ -100,6 +101,8 @@ export const Combobox = <Option, OptGroup = never>(
   const itemControl = () => props.itemControl || DefaultItemControl;
   const itemComponent = () => props.itemComponent || DefaultItemComponent;
 
+  const align = () => (props.orientation === "horizontal" ? "start" : "center");
+
   return (
     <KCombobox
       class={cx("form-field", "combobox", props.size, props.orientation, {
@@ -109,29 +112,31 @@ export const Combobox = <Option, OptGroup = never>(
       {...props}
       itemComponent={itemComponent()}
     >
-      <Label
-        labelComponent={KCombobox.Label}
-        descriptionComponent={KCombobox.Description}
-        {...props}
-      />
+      <Orienter orientation={props.orientation} align={align()}>
+        <Label
+          labelComponent={KCombobox.Label}
+          descriptionComponent={KCombobox.Description}
+          {...props}
+        />
 
-      <KCombobox.Control<Option> class="control">
-        {(state) => {
-          const [controlProps] = splitProps(props, [
-            "inverted",
-            "multiple",
-            "readOnly",
-            "disabled",
-          ]);
-          return itemControl()({ ...state, ...controlProps });
-        }}
-      </KCombobox.Control>
+        <KCombobox.Control<Option> class="control">
+          {(state) => {
+            const [controlProps] = splitProps(props, [
+              "inverted",
+              "multiple",
+              "readOnly",
+              "disabled",
+            ]);
+            return itemControl()({ ...state, ...controlProps });
+          }}
+        </KCombobox.Control>
 
-      <KCombobox.Portal>
-        <KCombobox.Content class="combobox-content">
-          <KCombobox.Listbox class="listbox" />
-        </KCombobox.Content>
-      </KCombobox.Portal>
+        <KCombobox.Portal>
+          <KCombobox.Content class="combobox-content">
+            <KCombobox.Listbox class="listbox" />
+          </KCombobox.Content>
+        </KCombobox.Portal>
+      </Orienter>
     </KCombobox>
   );
 };
