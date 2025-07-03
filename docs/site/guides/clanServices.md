@@ -17,8 +17,10 @@ For example:
 ```nix
 inventory.instances = {
   borgbackup = {
-    roles.client.machines = [ "laptop" "server1" ];
-    roles.server.machines = [ "backup-box" ];
+    roles.client.machines."laptop" = {};
+    roles.client.machines."server1" = {};
+
+    roles.server.machines."backup-box" = {};
   };
 }
 ```
@@ -40,7 +42,8 @@ Example of instantiating a `borgbackup` service using `clan-core`:
 ```nix
 inventory.instances = {
     # Instance Name: Different name for this 'borgbackup' instance
-    borgbackup-example = {
+    borgbackup = {
+        # Since this is instances."borgbackup" the whole `module = { ... }` below is equivalent and optional.
         module =  {
             name = "borgbackup";  # <-- Name of the module (optional)
             input = "clan-core"; # <-- The flake input where the service is defined (optional)
