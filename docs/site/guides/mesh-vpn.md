@@ -31,11 +31,7 @@ For the purpose of this guide we have two machines:
 
 ## Configure the Service
 
-Note: consider picking a more descriptive name for the VPN than "default".
-It will be added as an altname for the Zerotier virtual ethernet interface, and
-will also be visible in the Zerotier app.
-
-```nix {.nix title="flake.nix" hl_lines="13-15"}
+```nix {.nix title="flake.nix" hl_lines="19-25"}
 {
   inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
   inputs.nixpkgs.follows = "clan-core/nixpkgs";
@@ -73,10 +69,31 @@ will also be visible in the Zerotier app.
 ```
 
 ## Apply the Configuration
-Update the `controller` machine:
+
+Update the `controller` machine first:
 
 ```bash
 clan machines update controller
+```
+
+Then update all other peers:
+
+```bash
+clan machines update
+```
+
+### Verify Connection
+
+On the `new_machine` run:
+
+```bash
+$ sudo zerotier-cli info
+```
+
+The status should be "ONLINE":
+
+```{.console, .no-copy}
+200 info d2c71971db 1.12.1 ONLINE
 ```
 
 ## Further
@@ -87,3 +104,45 @@ In the future we plan to add additional network technologies like tinc, head/tai
 We chose zerotier because in our tests it was a straight forwards solution to bootstrap.
 It allows you to selfhost a controller and the controller doesn't need to be globally reachable.
 Which made it a good fit for starting the project.
+
+## Debugging
+
+### Retrieve the ZeroTier ID
+
+In the repo:
+
+```console
+$ clan vars list <machineName>
+```
+
+```{.console, .no-copy}
+$ clan vars list controller
+# ... elided
+zerotier/zerotier-identity-secret: ********
+zerotier/zerotier-ip: fd0a:b849:2928:1234:c99:930a:a959:2928
+zerotier/zerotier-network-id: 0aa959282834000c
+```
+
+On the machine:
+
+```bash
+$ sudo zerotier-cli info
+```
+
+#### Manually Authorize a Machine on the Controller
+
+=== "with ZerotierIP"
+
+      ```bash
+      $ sudo zerotier-members allow --member-ip <IP>
+      ```
+
+      Substitute `<IP>` with the ZeroTier IP obtained previously.
+
+=== "with ZerotierID"
+
+      ```bash
+      $ sudo zerotier-members allow <ID>
+      ```
+
+      Substitute `<ID>` with the ZeroTier ID obtained previously.
