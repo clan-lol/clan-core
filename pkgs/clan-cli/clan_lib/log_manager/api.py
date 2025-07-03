@@ -24,7 +24,8 @@ def list_log_groups(date_day: str) -> list[LogGroupDir]:
 def list_log_funcs_at_day(date_day: str, group: str) -> list[LogFuncDir]:
     """List all logs for a specific function on a specific day."""
     assert LOG_MANAGER_INSTANCE is not None
-    group_dir = LogGroupDir(date_day, group, LOG_MANAGER_INSTANCE.base_dir)
+    group_path = group.split("/") if group else []
+    group_dir = LogGroupDir(date_day, group_path, LOG_MANAGER_INSTANCE.base_dir)
     return group_dir.get_log_files()
 
 
