@@ -73,9 +73,10 @@ in
             ];
 
             networking.networkmanager.ensureProfiles.profiles = flip mapAttrs settings.networks (
-              name: _network: {
+              name: networkCfg: {
                 connection.id = "$ssid_${name}";
                 connection.type = "wifi";
+                connection.autoconnect = networkCfg.autoConnect;
                 wifi.mode = "infrastructure";
                 wifi.ssid = "$ssid_${name}";
                 wifi-security.psk = "$pw_${name}";
@@ -102,7 +103,7 @@ in
                   # Generate the secrets file
                   echo "Generating wifi secrets file: $env_file"
                   ${flip (concatMapAttrsStringSep "\n") settings.networks (
-                    name: _network: ''
+                    name: _networkCfg: ''
                       echo "ssid_${name}=\"$(cat "${ssid_path name}")\"" >> /run/secrets/NetworkManager/wifi-secrets
                       echo "pw_${name}=\"$(cat "${password_path name}")\"" >> /run/secrets/NetworkManager/wifi-secrets
                     ''
