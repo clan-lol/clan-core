@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Callable
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 import gi
 
@@ -22,7 +22,7 @@ V = TypeVar(
 # clan_vm_manager/components/gkvstore.py:21: error: Definition of "newv" in base class "Object" is incompatible with definition in base class "GInterface"  [misc]
 # clan_vm_manager/components/gkvstore.py:21: error: Definition of "install_properties" in base class "Object" is incompatible with definition in base class "GInterface"  [misc]
 # clan_vm_manager/components/gkvstore.py:21: error: Definition of "getv" in base class "Object" is incompatible with definition in base class "GInterface"  [misc]
-class GKVStore(GObject.GObject, Gio.ListModel, Generic[K, V]):  # type: ignore[misc]
+class GKVStore[K, V: GObject.Object](GObject.GObject, Gio.ListModel):  # type: ignore[misc]
     """
     A simple key-value store that implements the Gio.ListModel interface, with generic types for keys and values.
     Only use self[key] and del self[key] for accessing the items for better performance.

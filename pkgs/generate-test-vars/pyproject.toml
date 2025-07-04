@@ -26,7 +26,7 @@ addopts = "--durations 5 --color=yes --new-first" # Add --pdb for debugging
 norecursedirs = "tests/helpers"
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 warn_redundant_casts = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true

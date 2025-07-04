@@ -32,7 +32,7 @@ ListItem = TypeVar("ListItem", bound=GObject.Object)
 CustomStore = TypeVar("CustomStore", bound=Gio.ListModel)
 
 
-def create_boxed_list(
+def create_boxed_list[CustomStore: Gio.ListModel, ListItem: GObject.Object](
     model: CustomStore,
     render_row: Callable[[Gtk.ListBox, ListItem], Gtk.Widget],
 ) -> Gtk.ListBox:

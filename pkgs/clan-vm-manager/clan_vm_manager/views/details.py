@@ -12,7 +12,7 @@ from gi.repository import Adw, Gio, GObject, Gtk
 ListItem = TypeVar("ListItem", bound=GObject.Object)
 
 
-def create_details_list(
+def create_details_list[ListItem: GObject.Object](
     model: Gio.ListStore, render_row: Callable[[Gtk.ListBox, ListItem], Gtk.Widget]
 ) -> Gtk.ListBox:
     boxed_list = Gtk.ListBox()
