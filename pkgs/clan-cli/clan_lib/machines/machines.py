@@ -29,6 +29,15 @@ class Machine:
     name: str
     flake: Flake
 
+    @classmethod
+    def from_inventory(
+        cls,
+        name: str,
+        flake: Flake,
+        _inventory_machine: InventoryMachine,
+    ) -> "Machine":
+        return cls(name=name, flake=flake)
+
     def get_inv_machine(self) -> "InventoryMachine":
         return get_machine(self.flake, self.name)
 
@@ -166,7 +175,7 @@ class Machine:
 @dataclass(frozen=True)
 class RemoteSource:
     data: Remote
-    source: Literal["inventory", "nix_machine"]
+    source: Literal["inventory", "machine"]
 
 
 @API.register
@@ -179,15 +188,15 @@ def get_host(
     machine = Machine(name=name, flake=flake)
     inv_machine = machine.get_inv_machine()
 
-    source: Literal["inventory", "nix_machine"] = "inventory"
+    source: Literal["inventory", "machine"] = "inventory"
     host_str = inv_machine.get("deploy", {}).get(field)
 
     if host_str is None:
-        machine.debug(
-            f"'{field}' is not set in inventory, falling back to slower Nix config, set it either through the Nix or json interface to improve performance"
+        machine.warn(
+            f"'{field}' is not set in `inventory.machines.${name}.deploy.targetHost` - falling back to _slower_ nixos option: `clan.core.networking.targetHost`"
         )
         host_str = machine.select(f'config.clan.core.networking."{field}"')
-        source = "nix_machine"
+        source = "machine"
 
     if not host_str:
         return None

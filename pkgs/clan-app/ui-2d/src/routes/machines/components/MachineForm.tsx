@@ -85,7 +85,7 @@ export function MachineForm(props: MachineFormProps) {
         },
         {
           logging: {
-            group: { name: machine_name, flake: { identifier: base_dir } },
+            group_path: ["clans", base_dir, "machines", machine_name],
           },
         },
       ).promise;
@@ -130,7 +130,9 @@ export function MachineForm(props: MachineFormProps) {
         },
       },
       {
-        logging: { group: { name: machine, flake: { identifier: curr_uri } } },
+        logging: {
+          group_path: ["clans", curr_uri, "machines", machine],
+        },
       },
     ).promise;
 
@@ -161,7 +163,9 @@ export function MachineForm(props: MachineFormProps) {
         build_host: null,
       },
       {
-        logging: { group: { name: machine, flake: { identifier: curr_uri } } },
+        logging: {
+          group_path: ["clans", curr_uri, "machines", machine],
+        },
       },
     ).promise.finally(() => {
       setIsUpdating(false);

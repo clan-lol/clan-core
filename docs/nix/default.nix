@@ -3,6 +3,7 @@
   pkgs,
   module-docs,
   clan-cli-docs,
+  clan-lib-openapi,
   asciinema-player-js,
   asciinema-player-css,
   roboto,
@@ -29,6 +30,7 @@ pkgs.stdenv.mkDerivation {
       mkdocs
       mkdocs-material
       mkdocs-macros
+      mkdocs-redoc-tag
     ]);
   configurePhase = ''
     pushd docs
@@ -36,6 +38,10 @@ pkgs.stdenv.mkDerivation {
     mkdir -p ./site/reference/cli
     cp -af ${module-docs}/* ./site/reference/
     cp -af ${clan-cli-docs}/* ./site/reference/cli/
+
+    mkdir -p ./site/reference/internal
+    cp -af ${clan-lib-openapi} ./site/openapi.json
+
     chmod -R +w ./site/reference
     echo "Generated API documentation in './site/reference/' "
 

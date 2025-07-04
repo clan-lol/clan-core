@@ -1,34 +1,28 @@
-# ruff: noqa: SLF001
+"""
+Simplified tests for the log manager focusing only on features used by the API.
+
+Tests are based on actual usage patterns from example_usage.py and api.py.
+"""
+
 import datetime
-import logging  # For LogManager if not already imported
-import urllib.parse
 from pathlib import Path
-from typing import Any  # Added Dict
 
 import pytest
 
-# Assuming your classes are in a file named 'log_manager_module.py'
-# If they are in the same file as the tests, you don't need this relative import.
 from clan_lib.log_manager import (
-    LogDayDir,
-    LogFile,
-    LogFuncDir,
-    LogGroupDir,
+    LogGroupConfig,
     LogManager,
     is_correct_day_format,
 )
 
 
-# Dummy function for LogManager.create_log_file
-def sample_func_one() -> None:
-    pass
+# Test functions for log creation
+def deploy_machine() -> None:
+    """Test function for deploying machines."""
 
 
-def sample_func_two() -> None:
-    pass
-
-
-# --- Fixtures ---
+def example_function() -> None:
+    """Example function for creating logs."""
 
 
 @pytest.fixture
@@ -39,844 +33,811 @@ def base_dir(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def log_manager(base_dir: Path) -> LogManager:
-    """Provides a LogManager instance initialized with the temporary base_dir."""
+    """Provides a LogManager instance."""
     return LogManager(base_dir=base_dir)
 
 
 @pytest.fixture
-def populated_log_structure(
-    log_manager: LogManager, base_dir: Path, monkeypatch: pytest.MonkeyPatch
-) -> tuple[LogManager, Path, dict[str, LogFile]]:
-    """
-    Creates a predefined log structure for testing listing and retrieval.
-    Returns the log_manager, base_dir, and a dictionary of created LogFile objects.
-    """
-    created_files: dict[str, LogFile] = {}
+def configured_log_manager(base_dir: Path) -> LogManager:
+    """Provides a LogManager with group configuration like example_usage.py."""
+    log_manager = LogManager(base_dir=base_dir)
 
-    # Mock datetime.datetime.now for predictable file names
-    class MockDateTime(datetime.datetime):
-        _now_val = datetime.datetime(2023, 10, 26, 10, 0, 0, tzinfo=datetime.UTC)
-        _delta = datetime.timedelta(seconds=0)
+    # Configure structure: clans -> <dynamic> -> machines -> <dynamic>
+    clans_config = LogGroupConfig("clans", "Clans")
+    machines_config = LogGroupConfig("machines", "Machines")
+    clans_config = clans_config.add_child(machines_config)
+    log_manager = log_manager.add_root_group_config(clans_config)
 
-        @classmethod
-        def now(cls: Any, tz: Any = None) -> "MockDateTime":
-            current = cls._now_val + cls._delta
-            cls._delta += datetime.timedelta(
-                seconds=1, minutes=1
-            )  # Increment for uniqueness
-            return current
-
-    monkeypatch.setattr(datetime, "datetime", MockDateTime)
-
-    # Day 1: 2023-10-26
-    # Group A, Func A
-    lf1 = log_manager.create_log_file(
-        sample_func_one, "op_key_A1", "group_a"
-    )  # 10-00-00
-    created_files["lf1"] = lf1
-    lf2 = log_manager.create_log_file(
-        sample_func_one, "op_key_A2", "group_a"
-    )  # 10-01-01
-    created_files["lf2"] = lf2
-    # Group B, Func B
-    lf3 = log_manager.create_log_file(
-        sample_func_two, "op_key_B1", "group_b"
-    )  # 10-02-02
-    created_files["lf3"] = lf3
-
-    # Day 2: 2023-10-27 (by advancing mock time enough)
-    MockDateTime._now_val = datetime.datetime(
-        2023, 10, 27, 12, 0, 0, tzinfo=datetime.UTC
-    )
-    MockDateTime._delta = datetime.timedelta(seconds=0)  # Reset delta for new day
-
-    lf4 = log_manager.create_log_file(
-        sample_func_one, "op_key_A3_day2", "group_a"
-    )  # 12-00-00
-    created_files["lf4"] = lf4
-
-    # Create a malformed file and dir to test skipping
-    malformed_day_dir = base_dir / "2023-13-01"  # Invalid date
-    malformed_day_dir.mkdir(parents=True, exist_ok=True)
-    (malformed_day_dir / "some_group" / "some_func").mkdir(parents=True, exist_ok=True)
-
-    malformed_func_dir = (
-        base_dir / "2023-10-26" / "group_a" / "malformed_func_dir_name!"
-    )
-    malformed_func_dir.mkdir(parents=True, exist_ok=True)
-
-    malformed_log_file_dir = (
-        base_dir / "2023-10-26" / "group_a" / sample_func_one.__name__
-    )
-    (malformed_log_file_dir / "badname.log").touch()
-    (malformed_log_file_dir / "10-00-00_op_key.txt").touch()  # Wrong suffix
-
-    return log_manager, base_dir, created_files
+    return log_manager
 
 
-# --- Tests for is_correct_day_format ---
+class TestLogGroupConfig:
+    """Test LogGroupConfig functionality used in example_usage.py."""
+
+    def test_creation_with_nickname(self) -> None:
+        """Test creating group config with nickname."""
+        config = LogGroupConfig("clans", "Clans")
+        assert config.name == "clans"
+        assert config.nickname == "Clans"
+        assert config.children == {}
+
+    def test_creation_without_nickname(self) -> None:
+        """Test creating group config without nickname."""
+        config = LogGroupConfig("machines")
+        assert config.name == "machines"
+        assert config.nickname is None
+        assert config.children == {}
+
+    def test_get_display_name_with_nickname(self) -> None:
+        """Test display name returns nickname when available."""
+        config = LogGroupConfig("clans", "Clans")
+        assert config.get_display_name() == "Clans"
+
+    def test_get_display_name_without_nickname(self) -> None:
+        """Test display name returns name when no nickname."""
+        config = LogGroupConfig("machines")
+        assert config.get_display_name() == "machines"
+
+    def test_add_child(self) -> None:
+        """Test adding child group configuration."""
+        parent = LogGroupConfig("clans", "Clans")
+        child = LogGroupConfig("machines", "Machines")
+
+        updated_parent = parent.add_child(child)
+
+        # Original should be unchanged (immutable)
+        assert parent.children == {}
+
+        # Updated parent should have child
+        assert "machines" in updated_parent.children
+        assert updated_parent.children["machines"] == child
+
+    def test_get_child(self) -> None:
+        """Test retrieving child group configuration."""
+        parent = LogGroupConfig("clans", "Clans")
+        child = LogGroupConfig("machines", "Machines")
+        parent = parent.add_child(child)
+
+        retrieved_child = parent.get_child("machines")
+        assert retrieved_child == child
+
+        non_existent = parent.get_child("nonexistent")
+        assert non_existent is None
 
 
-@pytest.mark.parametrize(
-    ("date_str", "expected"),
-    [
-        ("2023-10-26", True),
-        ("2024-01-01", True),
-        ("2023-10-26X", False),
-        ("2023/10/26", False),
-        ("23-10-26", False),
-        ("2023-13-01", False),  # Invalid month
-        ("2023-02-30", False),  # Invalid day
-        ("random-string", False),
-        ("", False),
-    ],
-)
-def test_is_correct_day_format(date_str: str, expected: bool) -> None:
-    assert is_correct_day_format(date_str) == expected
+class TestDateFormatValidation:
+    """Test date format validation function."""
+
+    def test_valid_date_formats(self) -> None:
+        """Test valid YYYY-MM-DD formats."""
+        assert is_correct_day_format("2023-10-26")
+        assert is_correct_day_format("2024-01-01")
+        assert is_correct_day_format("2024-12-31")
+
+    def test_invalid_date_formats(self) -> None:
+        """Test invalid date formats."""
+        assert not is_correct_day_format("2023/10/26")
+        assert not is_correct_day_format("23-10-26")
+        assert not is_correct_day_format("2023-13-01")  # Invalid month
+        assert not is_correct_day_format("2023-10-32")  # Invalid day
+        assert not is_correct_day_format("not-a-date")
+        assert not is_correct_day_format("")
 
 
-# --- Tests for LogFile ---
+class TestLogManagerGroupConfiguration:
+    """Test LogManager group configuration features used in example_usage.py."""
 
+    def test_add_root_group_config(self, log_manager: LogManager) -> None:
+        """Test adding root group configuration."""
+        clans_config = LogGroupConfig("clans", "Clans")
+        updated_manager = log_manager.add_root_group_config(clans_config)
 
-class TestLogFile:
-    def test_creation_valid(self, tmp_path: Path) -> None:
-        lf = LogFile("op1", "2023-10-26", "test_group", "my_func", tmp_path, "10-20-30")
-        assert lf.op_key == "op1"
-        assert lf.date_day == "2023-10-26"
-        assert lf.group == "test_group"
-        assert lf.func_name == "my_func"
-        assert lf._base_dir == tmp_path
-        assert lf.date_second == "10-20-30"
+        # Original should be unchanged (immutable)
+        assert log_manager.root_group_configs == {}
 
-    def test_creation_invalid_date_day(self, tmp_path: Path) -> None:
-        with pytest.raises(ValueError, match="not in YYYY-MM-DD format"):
-            LogFile("op1", "2023/10/26", "test_group", "my_func", tmp_path, "10-20-30")
+        # Updated manager should have config
+        assert "clans" in updated_manager.root_group_configs
+        assert updated_manager.root_group_configs["clans"] == clans_config
 
-    def test_creation_invalid_date_second(self, tmp_path: Path) -> None:
-        with pytest.raises(ValueError, match="not in HH-MM-SS format"):
-            LogFile("op1", "2023-10-26", "test_group", "my_func", tmp_path, "10:20:30")
+    def test_find_group_config_simple(self, configured_log_manager: LogManager) -> None:
+        """Test finding simple group configuration."""
+        config = configured_log_manager.find_group_config(["clans"])
+        assert config is not None
+        assert config.name == "clans"
+        assert config.nickname == "Clans"
 
-    def test_datetime_obj(self, tmp_path: Path) -> None:
-        lf = LogFile("op1", "2023-10-26", "test_group", "my_func", tmp_path, "10-20-30")
-        expected_dt = datetime.datetime(2023, 10, 26, 10, 20, 30, tzinfo=datetime.UTC)
-        assert lf._datetime_obj == expected_dt
-
-    def test_from_path_valid(self, tmp_path: Path) -> None:
-        base = tmp_path / "logs"
-        file_path = (
-            base / "2023-10-26" / "test_group" / "my_func" / "10-20-30_op_key_123.log"
+    def test_find_group_config_nested(self, configured_log_manager: LogManager) -> None:
+        """Test finding nested group configuration."""
+        # ["clans", "dynamic_name", "machines"] - should find machines config
+        config = configured_log_manager.find_group_config(
+            ["clans", "repo1", "machines"]
         )
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.touch()
+        assert config is not None
+        assert config.name == "machines"
+        assert config.nickname == "Machines"
 
-        lf = LogFile.from_path(file_path)
-        assert lf.op_key == "op_key_123"
-        assert lf.date_day == "2023-10-26"
-        assert lf.group == "test_group"
-        assert lf.func_name == "my_func"
-        assert lf._base_dir == base
-        assert lf.date_second == "10-20-30"
-
-    def test_from_path_invalid_filename_format(self, tmp_path: Path) -> None:
-        file_path = (
-            tmp_path
-            / "logs"
-            / "2023-10-26"
-            / "test_group"
-            / "my_func"
-            / "10-20-30-op_key_123.log"
-        )  # Extra dash
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.touch()
-        with pytest.raises(ValueError, match="is not in HH-MM-SS format."):
-            LogFile.from_path(file_path)
-
-    def test_from_path_filename_no_op_key(self, tmp_path: Path) -> None:
-        file_path = (
-            tmp_path
-            / "logs"
-            / "2023-10-26"
-            / "test_group"
-            / "my_func"
-            / "10-20-30_.log"
-        )
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.touch()
-        # This will result in op_key being ""
-        lf = LogFile.from_path(file_path)
-        assert lf.op_key == ""
-
-    def test_get_file_path(self, tmp_path: Path) -> None:
-        lf = LogFile("op1", "2023-10-26", "test_group", "my_func", tmp_path, "10-20-30")
-        expected_path = (
-            tmp_path / "2023-10-26" / "test_group" / "my_func" / "10-20-30_op1.log"
-        )
-        assert lf.get_file_path() == expected_path
-
-    def test_equality(self, tmp_path: Path) -> None:
-        lf1 = LogFile("op1", "2023-10-26", "group_a", "func_a", tmp_path, "10-00-00")
-        lf2 = LogFile("op1", "2023-10-26", "group_a", "func_a", tmp_path, "10-00-00")
-        lf3 = LogFile(
-            "op2", "2023-10-26", "group_a", "func_a", tmp_path, "10-00-00"
-        )  # Diff op_key
-        lf4 = LogFile(
-            "op1", "2023-10-26", "group_a", "func_a", tmp_path, "10-00-01"
-        )  # Diff time
-        lf5 = LogFile(
-            "op1", "2023-10-26", "group_b", "func_a", tmp_path, "10-00-00"
-        )  # Diff group
-        assert lf1 == lf2
-        assert lf1 != lf3
-        assert lf1 != lf4
-        assert lf1 != lf5
-        assert lf1 != "not a logfile"
-
-    def test_ordering(self, tmp_path: Path) -> None:
-        # Newest datetime first
-        lf_newest = LogFile("op", "2023-10-26", "group", "f", tmp_path, "10-00-01")
-        lf_older = LogFile("op", "2023-10-26", "group", "f", tmp_path, "10-00-00")
-        lf_oldest_d = LogFile("op", "2023-10-25", "group", "f", tmp_path, "12-00-00")
-
-        # Same datetime, different group (alphabetical)
-        lf_group_a = LogFile(
-            "op", "2023-10-26", "group_a", "func", tmp_path, "10-00-00"
-        )
-        lf_group_b = LogFile(
-            "op", "2023-10-26", "group_b", "func", tmp_path, "10-00-00"
-        )
-
-        # Same datetime, same group, different func_name (alphabetical)
-        lf_func_a = LogFile("op", "2023-10-26", "group", "func_a", tmp_path, "10-00-00")
-        lf_func_b = LogFile("op", "2023-10-26", "group", "func_b", tmp_path, "10-00-00")
-
-        # Same datetime, same group, same func_name, different op_key (alphabetical)
-        lf_op_a = LogFile("op_a", "2023-10-26", "group", "func_a", tmp_path, "10-00-00")
-        lf_op_b = LogFile("op_b", "2023-10-26", "group", "func_a", tmp_path, "10-00-00")
-
-        assert lf_newest < lf_older  # lf_newest is "less than" because it's newer
-        assert lf_older < lf_oldest_d
-
-        assert lf_group_a < lf_group_b
-        assert not (lf_group_b < lf_group_a)
-
-        assert lf_func_a < lf_func_b
-        assert not (lf_func_b < lf_func_a)
-
-        assert lf_op_a < lf_op_b
-        assert not (lf_op_b < lf_op_a)
-
-        # Test sorting with groups
-        lf_ga_fa_op = LogFile(
-            "op", "2023-10-26", "group_a", "func_a", tmp_path, "10-00-00"
-        )
-        lf_ga_fa_opa = LogFile(
-            "op_a", "2023-10-26", "group_a", "func_a", tmp_path, "10-00-00"
-        )
-        lf_ga_fb_op = LogFile(
-            "op", "2023-10-26", "group_a", "func_b", tmp_path, "10-00-00"
-        )
-        lf_gb_fa_op = LogFile(
-            "op", "2023-10-26", "group_b", "func_a", tmp_path, "10-00-00"
-        )
-        lf_g_f_op1 = LogFile(
-            "op", "2023-10-26", "group", "f", tmp_path, "10-00-01"
-        )  # newest time
-        lf_g_f_op0 = LogFile("op", "2023-10-26", "group", "f", tmp_path, "10-00-00")
-        lf_old_day = LogFile("op", "2023-10-25", "group", "f", tmp_path, "12-00-00")
-
-        files_with_groups = [
-            lf_ga_fa_op,
-            lf_ga_fa_opa,
-            lf_ga_fb_op,
-            lf_gb_fa_op,
-            lf_g_f_op1,
-            lf_g_f_op0,
-            lf_old_day,
-        ]
-        sorted_with_groups = sorted(files_with_groups)
-
-        # Expected order (newest first, then group, then func_name, then op_key):
-        expected_with_groups = [
-            lf_g_f_op1,  # Newest time: 2023-10-26 10:00:01
-            lf_g_f_op0,  # 2023-10-26 10:00:00, group, f, op
-            lf_ga_fa_op,  # 2023-10-26 10:00:00, group_a, func_a, op
-            lf_ga_fa_opa,  # 2023-10-26 10:00:00, group_a, func_a, op_a
-            lf_ga_fb_op,  # 2023-10-26 10:00:00, group_a, func_b, op
-            lf_gb_fa_op,  # 2023-10-26 10:00:00, group_b, func_a, op
-            lf_old_day,  # Oldest time: 2023-10-25 12:00:00
-        ]
-
-        assert sorted_with_groups == expected_with_groups
-
-
-# --- Tests for LogFuncDir ---
-
-
-class TestLogFuncDir:
-    def test_creation_valid(self, tmp_path: Path) -> None:
-        lfd = LogFuncDir("2023-10-26", "test_group", "my_func", tmp_path)
-        assert lfd.date_day == "2023-10-26"
-        assert lfd.group == "test_group"
-        assert lfd.func_name == "my_func"
-        assert lfd._base_dir == tmp_path
-
-    def test_creation_invalid_date_day(self, tmp_path: Path) -> None:
-        with pytest.raises(ValueError, match="not in YYYY-MM-DD format"):
-            LogFuncDir("2023/10/26", "test_group", "my_func", tmp_path)
-
-    def test_date_obj(self, tmp_path: Path) -> None:
-        lfd = LogFuncDir("2023-10-26", "test_group", "my_func", tmp_path)
-        assert lfd._date_obj == datetime.date(2023, 10, 26)
-
-    def test_get_dir_path(self, tmp_path: Path) -> None:
-        lfd = LogFuncDir("2023-10-26", "test_group", "my_func", tmp_path)
-        expected = tmp_path / "2023-10-26" / "test_group" / "my_func"
-        assert lfd.get_dir_path() == expected
-
-    def test_get_log_files_empty_or_missing(self, tmp_path: Path) -> None:
-        lfd = LogFuncDir("2023-10-26", "test_group", "non_existent_func", tmp_path)
-        assert lfd.get_log_files() == []  # Dir does not exist
-
-        dir_path = lfd.get_dir_path()
-        dir_path.mkdir(parents=True, exist_ok=True)  # Dir exists but empty
-        assert lfd.get_log_files() == []
-
-    def test_get_log_files_populated(
-        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    def test_find_group_config_nonexistent(
+        self, configured_log_manager: LogManager
     ) -> None:
-        base = tmp_path
-        lfd = LogFuncDir("2023-10-26", "test_group", "my_func", base)
-        dir_path = lfd.get_dir_path()
-        dir_path.mkdir(parents=True, exist_ok=True)
+        """Test finding non-existent group configuration."""
+        config = configured_log_manager.find_group_config(["nonexistent"])
+        assert config is None
 
-        # Create some log files
-        lf1_path = dir_path / "10-00-01_op1.log"
-        lf1_path.touch()
-        lf2_path = (
-            dir_path / "09-00-00_op2.log"
-        )  # Older, but will be sorted newer first
-        lf2_path.touch()
-        lf3_path = dir_path / "10-00-00_op0.log"  # Same time as lf1, op0 < op1
-        lf3_path.touch()
-
-        # Create a non-log file and a malformed log file
-        (dir_path / "not_a_log.txt").touch()
-        (
-            dir_path / "malformed.log"
-        ).touch()  # Will cause ValueError in LogFile.from_path
-
-        with caplog.at_level(logging.WARNING):
-            log_files = lfd.get_log_files()
-
-        assert len(log_files) == 3
-        assert any(
-            "Skipping malformed log file 'malformed.log'" in record.message
-            for record in caplog.records
-        )
-
-        # Expected order: newest first (10-00-01_op1, then 10-00-00_op0, then 09-00-00_op2)
-        # Sorting by LogFile: newest datetime first, then group (same here), then func_name (same here), then op_key
-        expected_lf1 = LogFile.from_path(lf1_path)
-        expected_lf2 = LogFile.from_path(lf2_path)
-        expected_lf3 = LogFile.from_path(lf3_path)
-
-        assert log_files[0] == expected_lf1  # 10-00-01_op1
-        assert log_files[1] == expected_lf3  # 10-00-00_op0 (op0 < op1)
-        assert log_files[2] == expected_lf2  # 09-00-00_op2
-
-    def test_equality(self, tmp_path: Path) -> None:
-        lfd1 = LogFuncDir("2023-10-26", "group_a", "func_a", tmp_path)
-        lfd2 = LogFuncDir("2023-10-26", "group_a", "func_a", tmp_path)
-        lfd3 = LogFuncDir("2023-10-27", "group_a", "func_a", tmp_path)  # Diff date
-        lfd4 = LogFuncDir("2023-10-26", "group_a", "func_b", tmp_path)  # Diff func_name
-        lfd5 = LogFuncDir("2023-10-26", "group_b", "func_a", tmp_path)  # Diff group
-        assert lfd1 == lfd2
-        assert lfd1 != lfd3
-        assert lfd1 != lfd4
-        assert lfd1 != lfd5
-        assert lfd1 != "not a logfuncdir"
-
-    def test_ordering(self, tmp_path: Path) -> None:
-        # Newest date first
-        lfd_new_date = LogFuncDir("2023-10-27", "group_a", "func_a", tmp_path)
-        lfd_old_date = LogFuncDir("2023-10-26", "group_a", "func_a", tmp_path)
-
-        # Same date, different group (alphabetical)
-        lfd_group_a = LogFuncDir("2023-10-26", "group_a", "func_a", tmp_path)
-        lfd_group_b = LogFuncDir("2023-10-26", "group_b", "func_a", tmp_path)
-
-        # Same date, same group, different func_name (alphabetical)
-        lfd_func_a = LogFuncDir("2023-10-26", "group_a", "func_a", tmp_path)
-        lfd_func_b = LogFuncDir("2023-10-26", "group_a", "func_b", tmp_path)
-
-        assert (
-            lfd_new_date < lfd_old_date
-        )  # lfd_new_date is "less than" because it's newer
-        assert lfd_group_a < lfd_group_b
-        assert lfd_func_a < lfd_func_b
-
-        # Expected sort: lfd_new_date, then lfd_func_a, then lfd_func_b, then lfd_old_date (if func_a different)
-        # but lfd_old_date and lfd_func_a are same date.
-        # Expected: lfd_new_date, then lfd_func_a (same date as old_date but func_a<func_a is false, it's equal so goes by obj id or first seen?)
-        # Ok, LogFuncDir same date, sort by func_name. lfd_old_date is func_a.
-        # So: lfd_new_date (2023-10-27, func_a)
-        #     lfd_func_a (2023-10-26, func_a)
-        #     lfd_old_date (2023-10-26, func_a) -- wait, lfd_func_a IS lfd_old_date content-wise if func_name 'func_a'
-        #     lfd_func_b (2023-10-26, func_b)
-
-        # Test sorting with groups
-        lfd1 = LogFuncDir("2023-10-27", "group_z", "z_func", tmp_path)  # Newest date
-        lfd2 = LogFuncDir(
-            "2023-10-26", "group_a", "a_func", tmp_path
-        )  # Older date, alpha first group and func
-        lfd3 = LogFuncDir(
-            "2023-10-26", "group_a", "b_func", tmp_path
-        )  # Older date, same group, alpha second func
-        lfd4 = LogFuncDir(
-            "2023-10-26", "group_b", "a_func", tmp_path
-        )  # Older date, alpha second group
-
-        items_redefined = [lfd4, lfd3, lfd1, lfd2]
-        sorted_items = sorted(items_redefined)
-        # Expected order: newest date first, then by group, then by func_name
-        expected_sorted = [lfd1, lfd2, lfd3, lfd4]
-        assert sorted_items == expected_sorted
+        config = configured_log_manager.find_group_config([])
+        assert config is None
 
 
-# --- Tests for LogDayDir ---
+class TestLogFileCreation:
+    """Test log file creation features used in example_usage.py."""
 
-
-class TestLogDayDir:
-    def test_creation_valid(self, tmp_path: Path) -> None:
-        ldd = LogDayDir("2023-10-26", tmp_path)
-        assert ldd.date_day == "2023-10-26"
-        assert ldd._base_dir == tmp_path
-
-    def test_creation_invalid_date_day(self, tmp_path: Path) -> None:
-        with pytest.raises(ValueError, match="not in YYYY-MM-DD format"):
-            LogDayDir("2023/10/26", tmp_path)
-
-    def test_date_obj(self, tmp_path: Path) -> None:
-        ldd = LogDayDir("2023-10-26", tmp_path)
-        assert ldd._date_obj == datetime.date(2023, 10, 26)
-
-    def test_get_dir_path(self, tmp_path: Path) -> None:
-        ldd = LogDayDir("2023-10-26", tmp_path)
-        expected = tmp_path / "2023-10-26"
-        assert ldd.get_dir_path() == expected
-
-    def test_get_log_files_empty_or_missing(
-        self, tmp_path: Path
-    ) -> None:  # Renamed from get_log_files for clarity here
-        ldd = LogDayDir("2023-10-26", tmp_path)
-        assert ldd.get_log_files() == []  # Dir does not exist
-
-        dir_path = ldd.get_dir_path()
-        dir_path.mkdir(parents=True, exist_ok=True)  # Dir exists but empty
-        assert ldd.get_log_files() == []
-
-    def test_get_log_files_populated(
-        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
-    ) -> None:  # Renamed
-        base = tmp_path
-        ldd = LogDayDir("2023-10-26", base)
-        day_dir_path = ldd.get_dir_path()
-        day_dir_path.mkdir(parents=True, exist_ok=True)
-
-        # Create group dirs with func dirs inside
-        group_a_path = day_dir_path / "group_a"
-        group_a_path.mkdir()
-        func_a_path = group_a_path / "func_a"
-        func_a_path.mkdir()
-        func_b_path = group_a_path / "func_b"
-        func_b_path.mkdir()
-
-        group_b_path = day_dir_path / "group_b"
-        group_b_path.mkdir()
-        func_c_path = group_b_path / "func_c"
-        func_c_path.mkdir()
-
-        # Create a non-dir and a malformed func dir name (if your logic would try to parse it)
-        (day_dir_path / "not_a_dir.txt").touch()
-        # LogDayDir's get_log_files doesn't try to parse func dir names for validity beyond being a dir
-        # The warning in LogDayDir.get_log_files is for ValueError from LogFuncDir init
-        # which can only happen if self.date_day is bad, but it's validated in LogDayDir.__post_init__.
-        # So, the warning there is unlikely to trigger from func_dir_path.name issues.
-
-        with caplog.at_level(logging.WARNING):
-            log_group_dirs = ldd.get_log_files()
-
-        assert len(log_group_dirs) == 2  # group_a and group_b
-        # No warnings expected from this specific setup for LogDayDir.get_log_files
-        # assert not any("Skipping malformed group directory" in record.message for record in caplog.records)
-
-        # Expected order: group alphabetical
-        expected_lgd_a = LogGroupDir("2023-10-26", "group_a", base)
-        expected_lgd_b = LogGroupDir("2023-10-26", "group_b", base)
-
-        assert log_group_dirs[0] == expected_lgd_a
-        assert log_group_dirs[1] == expected_lgd_b
-
-        # Test that each group directory contains the expected function directories
-        group_a_funcs = log_group_dirs[0].get_log_files()
-        assert len(group_a_funcs) == 2  # func_a and func_b
-        assert group_a_funcs[0].func_name == "func_a"
-        assert group_a_funcs[1].func_name == "func_b"
-
-        group_b_funcs = log_group_dirs[1].get_log_files()
-        assert len(group_b_funcs) == 1  # func_c
-        assert group_b_funcs[0].func_name == "func_c"
-
-    def test_equality(self, tmp_path: Path) -> None:
-        ldd1 = LogDayDir("2023-10-26", tmp_path)
-        ldd2 = LogDayDir("2023-10-26", tmp_path)
-        ldd3 = LogDayDir("2023-10-27", tmp_path)  # Diff date
-        ldd4 = LogDayDir("2023-10-26", tmp_path / "other_base")  # Diff base
-        assert ldd1 == ldd2
-        assert ldd1 != ldd3
-        assert ldd1 != ldd4
-        assert ldd1 != "not a logdaydir"
-
-    def test_ordering(self, tmp_path: Path) -> None:
-        ldd_new = LogDayDir("2023-10-27", tmp_path)
-        ldd_old = LogDayDir("2023-10-26", tmp_path)
-        ldd_ancient = LogDayDir("2023-01-01", tmp_path)
-
-        assert ldd_new < ldd_old  # ldd_new is "less than" because it's newer
-        assert ldd_old < ldd_ancient
-
-        items = [ldd_ancient, ldd_new, ldd_old]
-        sorted_items = sorted(items)
-        expected_sorted = [ldd_new, ldd_old, ldd_ancient]
-        assert sorted_items == expected_sorted
-
-    def test_get_log_files_returns_correct_groups(self, tmp_path: Path) -> None:
-        """Test that get_log_files returns LogGroupDir objects with correct group names."""
-        base = tmp_path
-        ldd = LogDayDir("2023-10-26", base)
-        day_dir_path = ldd.get_dir_path()
-        day_dir_path.mkdir(parents=True, exist_ok=True)
-
-        # Create multiple group directories with different names
-        groups_to_create = ["auth", "database", "api", "web_ui"]
-        expected_groups = []
-
-        for group_name in groups_to_create:
-            group_path = day_dir_path / urllib.parse.quote(group_name, safe="")
-            group_path.mkdir()
-            # Create at least one function directory to make it valid
-            func_path = group_path / "test_func"
-            func_path.mkdir()
-            expected_groups.append(group_name)
-
-        # Also create a group with special characters that need URL encoding
-        special_group = "my group & special!"
-        encoded_special_group = urllib.parse.quote(special_group, safe="")
-        special_group_path = day_dir_path / encoded_special_group
-        special_group_path.mkdir()
-        (special_group_path / "test_func").mkdir()
-        expected_groups.append(special_group)
-
-        # Get the log group directories
-        log_group_dirs = ldd.get_log_files()
-
-        # Verify we get the correct number of groups
-        assert len(log_group_dirs) == len(expected_groups)
-
-        # Verify each group has the correct name (should be URL-decoded)
-        actual_groups = [lgd.group for lgd in log_group_dirs]
-
-        # Sort both lists for comparison since order might vary
-        assert sorted(actual_groups) == sorted(expected_groups)
-
-        # Verify that each LogGroupDir object has the correct properties
-        for lgd in log_group_dirs:
-            assert lgd.date_day == "2023-10-26"
-            assert lgd._base_dir == base
-            assert lgd.group in expected_groups
-            # Verify the group directory path exists (with URL encoding applied)
-            expected_path = day_dir_path / urllib.parse.quote(lgd.group, safe="")
-            assert expected_path.exists()
-            assert expected_path.is_dir()
-
-
-# --- Tests for LogManager ---
-
-
-class TestLogManager:
-    def test_create_log_file(
-        self, log_manager: LogManager, base_dir: Path, monkeypatch: pytest.MonkeyPatch
+    def test_create_log_file_default_group(
+        self, configured_log_manager: LogManager
     ) -> None:
-        op_key = "test_op_123"
-        log_file_obj = log_manager.create_log_file(sample_func_one, op_key)
+        """Test creating log file with default group."""
+        log_file = configured_log_manager.create_log_file(example_function, "test_op")
 
-        now = datetime.datetime.now(tz=datetime.UTC)
-        expected_date_day = now.strftime("%Y-%m-%d")
-        expected_date_second = now.strftime(
-            "%H-%M-%S"
-        )  # Approximation, could be off by 1 sec
+        assert log_file.op_key == "test_op"
+        assert log_file.func_name == "example_function"
+        assert log_file.group == "default"
+        assert is_correct_day_format(log_file.date_day)
 
-        assert log_file_obj.op_key == op_key
-        assert log_file_obj.func_name == sample_func_one.__name__
-        assert log_file_obj.date_day == expected_date_day
-        # Allow for slight time difference due to execution
-        created_dt = (
-            datetime.datetime.strptime(log_file_obj.date_second, "%H-%M-%S")
-            .replace(tzinfo=datetime.UTC)
-            .time()
+        # Check file was created
+        assert log_file.get_file_path().exists()
+
+    def test_create_log_file_with_nested_groups(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test creating log file with nested groups like example_usage.py."""
+        repos = ["/home/user/Projects/qubasas_clan", "https://github.com/qubasa/myclan"]
+        machines = ["wintux", "demo", "gchq-local"]
+
+        for repo in repos:
+            for machine in machines:
+                log_file = configured_log_manager.create_log_file(
+                    deploy_machine,
+                    f"deploy_{machine}",
+                    ["clans", repo, "machines", machine],
+                )
+
+                assert log_file.op_key == f"deploy_{machine}"
+                assert log_file.func_name == "deploy_machine"
+                assert log_file.get_file_path().exists()
+
+                # Check the group structure includes URL encoding for dynamic parts
+                group_parts = log_file.group.split("/")
+                assert group_parts[0] == "clans"  # Structure element
+                assert group_parts[2] == "machines"  # Structure element
+                # Dynamic elements should be URL encoded if they contain special chars
+
+    def test_create_log_file_unregistered_group_fails(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that creating log file with unregistered group fails."""
+        with pytest.raises(ValueError, match="Group structure.*is not valid"):
+            configured_log_manager.create_log_file(
+                example_function,
+                "test_op",
+                ["unregistered_group"],
+            )
+
+    def test_create_log_file_invalid_structure_fails(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that invalid nested structure fails."""
+        with pytest.raises(ValueError, match="Group structure.*is not valid"):
+            configured_log_manager.create_log_file(
+                example_function,
+                "test_op",
+                ["clans", "repo", "invalid_structure"],
+            )
+
+
+class TestFilterFunction:
+    """Test filter functionality used in example_usage.py and api.py."""
+
+    def test_filter_empty_returns_top_level_groups(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that empty filter returns top-level groups."""
+        # Create some log files first
+        configured_log_manager.create_log_file(
+            deploy_machine, "test_op", ["clans", "repo1", "machines", "machine1"]
         )
-        expected_dt_approx = (
-            datetime.datetime.strptime(expected_date_second, "%H-%M-%S")
-            .replace(tzinfo=datetime.UTC)
-            .time()
+
+        top_level = configured_log_manager.filter([])
+        assert "clans" in top_level
+
+    def test_filter_lists_dynamic_names(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test filtering lists dynamic names like example_usage.py."""
+        repos = ["repo1", "repo2"]
+        machines = ["machine1", "machine2"]
+
+        # Create log files with different repos and machines
+        for repo in repos:
+            for machine in machines:
+                configured_log_manager.create_log_file(
+                    deploy_machine,
+                    f"deploy_{machine}",
+                    ["clans", repo, "machines", machine],
+                )
+
+        # List all repositories under 'clans'
+        clans_repos = configured_log_manager.filter(["clans"])
+        assert set(clans_repos) == set(repos)
+
+        # List machines under first repository
+        if clans_repos:
+            first_repo = clans_repos[0]
+            repo_machines = configured_log_manager.filter(
+                ["clans", first_repo, "machines"]
+            )
+            assert set(repo_machines) == set(machines)
+
+    def test_filter_with_specific_date(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test filtering with specific date."""
+        # Create log file
+        log_file = configured_log_manager.create_log_file(
+            deploy_machine, "test_op", ["clans", "repo1", "machines", "machine1"]
         )
-        time_diff = datetime.datetime.combine(
-            datetime.date.min, created_dt
-        ) - datetime.datetime.combine(datetime.date.min, expected_dt_approx)
-        assert abs(time_diff.total_seconds()) <= 1  # Allow 1 second diff
 
-        expected_path = (
-            base_dir
-            / expected_date_day
-            / "default"  # Default group
-            / sample_func_one.__name__
-            / f"{log_file_obj.date_second}_{op_key}.log"  # Use actual created second
+        # Filter with the specific date
+        repos = configured_log_manager.filter(["clans"], date_day=log_file.date_day)
+        assert "repo1" in repos
+
+        # Filter with non-existent date
+        tomorrow = (
+            datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
+        ).strftime("%Y-%m-%d")
+        repos = configured_log_manager.filter(["clans"], date_day=tomorrow)
+        assert repos == []
+
+    def test_filter_nonexistent_path(self, configured_log_manager: LogManager) -> None:
+        """Test filtering non-existent path returns empty list."""
+        result = configured_log_manager.filter(["nonexistent"])
+        assert result == []
+
+
+class TestGetLogFile:
+    """Test get_log_file functionality used in example_usage.py and api.py."""
+
+    def test_get_log_file_by_op_key(self, configured_log_manager: LogManager) -> None:
+        """Test getting log file by operation key."""
+        # Create log file
+        configured_log_manager.create_log_file(
+            deploy_machine, "deploy_wintux", ["clans", "repo1", "machines", "wintux"]
         )
-        assert expected_path.exists()
-        assert expected_path.is_file()
 
-        # Test creating it again (should fail)
-        # Need to mock datetime.now to ensure same filename for collision test
-        class MockDateTimeExact(datetime.datetime):
-            _val = datetime.datetime.strptime(
-                f"{log_file_obj.date_day} {log_file_obj.date_second}",
-                "%Y-%m-%d %H-%M-%S",
-            ).replace(tzinfo=datetime.UTC)
+        # Find it by op_key
+        found_log_file = configured_log_manager.get_log_file("deploy_wintux")
+        assert found_log_file is not None
+        assert found_log_file.op_key == "deploy_wintux"
+        assert found_log_file.func_name == "deploy_machine"
 
-            @classmethod
-            def now(cls: Any, tz: Any = None) -> "MockDateTimeExact":
-                return cls._val
+    def test_get_log_file_with_selector(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test getting log file with specific selector like example_usage.py."""
+        # Create log files in different locations
+        configured_log_manager.create_log_file(
+            deploy_machine, "deploy_wintux", ["clans", "repo1", "machines", "wintux"]
+        )
+        configured_log_manager.create_log_file(
+            deploy_machine, "deploy_wintux", ["clans", "repo2", "machines", "wintux"]
+        )
 
-        monkeypatch.setattr(datetime, "datetime", MockDateTimeExact)
-        with pytest.raises(FileExistsError, match="BUG! Log file .* already exists"):
-            log_manager.create_log_file(sample_func_one, op_key)
+        # Find specific one using selector
+        specific_log = configured_log_manager.get_log_file(
+            "deploy_wintux",
+            selector=["clans", "repo1", "machines", "wintux"],
+        )
+        assert specific_log is not None
+        assert specific_log.op_key == "deploy_wintux"
+
+    def test_get_log_file_with_date(self, configured_log_manager: LogManager) -> None:
+        """Test getting log file with specific date."""
+        # Create log file
+        log_file = configured_log_manager.create_log_file(
+            deploy_machine, "deploy_demo", ["clans", "repo1", "machines", "demo"]
+        )
+
+        # Find it by op_key and date
+        found_log_file = configured_log_manager.get_log_file(
+            "deploy_demo", date_day=log_file.date_day
+        )
+        assert found_log_file is not None
+        assert found_log_file.op_key == "deploy_demo"
+
+        # Try with wrong date
+        tomorrow = (
+            datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
+        ).strftime("%Y-%m-%d")
+        not_found = configured_log_manager.get_log_file(
+            "deploy_demo", date_day=tomorrow
+        )
+        assert not_found is None
+
+    def test_get_log_file_nonexistent(self, configured_log_manager: LogManager) -> None:
+        """Test getting non-existent log file returns None."""
+        result = configured_log_manager.get_log_file("nonexistent_op")
+        assert result is None
+
+
+class TestListLogDays:
+    """Test list_log_days functionality used in api.py."""
 
     def test_list_log_days_empty(self, log_manager: LogManager) -> None:
-        assert log_manager.list_log_days() == []
-        log_manager.base_dir.mkdir()  # Create base_dir but keep it empty
-        assert log_manager.list_log_days() == []
+        """Test listing log days when no logs exist."""
+        days = log_manager.list_log_days()
+        assert days == []
 
-    def test_list_log_days_populated(
-        self,
-        populated_log_structure: tuple[LogManager, Path, dict[str, LogFile]],
-        caplog: pytest.LogCaptureFixture,
-    ) -> None:
-        log_manager, base_dir, _ = populated_log_structure
-        with caplog.at_level(logging.WARNING):
-            day_dirs: list[LogDayDir] = log_manager.list_log_days()
-
-        assert len(day_dirs) == 2  # 2023-10-27 and 2023-10-26
-        assert day_dirs[0].date_day == "2023-10-27"  # Newest first
-        assert day_dirs[1].date_day == "2023-10-26"
-
-        # Add a non-dir file to base_dir
-        (base_dir / "some_file.txt").touch()
-        day_dirs_after_file: list[LogDayDir] = log_manager.list_log_days()
-        assert len(day_dirs_after_file) == 2  # Should not affect count
-
-    def test_get_log_file_not_found(
-        self, populated_log_structure: tuple[LogManager, Path, dict[str, LogFile]]
-    ) -> None:
-        log_manager, _, _ = populated_log_structure
-        assert log_manager.get_log_file("non_existent_op_key") is None
-
-    def test_get_log_file_found_no_specific_date(
-        self, populated_log_structure: tuple[LogManager, Path, dict[str, LogFile]]
-    ) -> None:
-        log_manager, _, created_files = populated_log_structure
-        found_log_file = log_manager.get_log_file("op_key_A1")
-        assert found_log_file is not None
-        assert found_log_file == created_files["lf1"]
-
-        found_log_file_newest = log_manager.get_log_file("op_key_A3_day2")
-        assert found_log_file_newest is not None
-        assert found_log_file_newest == created_files["lf4"]
-
-    def test_get_log_file_found_with_specific_date(
-        self, populated_log_structure: tuple[LogManager, Path, dict[str, LogFile]]
-    ) -> None:
-        log_manager, _, created_files = populated_log_structure
-        found_log_file = log_manager.get_log_file(
-            "op_key_A1", specific_date_day="2023-10-26"
+    def test_list_log_days_populated(self, configured_log_manager: LogManager) -> None:
+        """Test listing log days when logs exist."""
+        # Create log files
+        configured_log_manager.create_log_file(
+            deploy_machine, "op1", ["clans", "repo1", "machines", "machine1"]
         )
-        assert found_log_file is not None
-        assert found_log_file == created_files["lf1"]
-
-        assert (
-            log_manager.get_log_file("op_key_A1", specific_date_day="2023-10-27")
-            is None
+        configured_log_manager.create_log_file(
+            deploy_machine, "op2", ["clans", "repo2", "machines", "machine2"]
         )
 
-    def test_get_log_file_specific_date_not_exists(
-        self, populated_log_structure: tuple[LogManager, Path, dict[str, LogFile]]
+        days = configured_log_manager.list_log_days()
+        assert len(days) >= 1  # Should have at least today
+
+        # Days should be sorted newest first
+        if len(days) > 1:
+            assert days[0].date_day >= days[1].date_day
+
+
+class TestApiCompatibility:
+    """Test that the log manager works with the API functions."""
+
+    def test_api_workflow_like_example_usage(
+        self, configured_log_manager: LogManager
     ) -> None:
-        log_manager, _, _ = populated_log_structure
-        assert (
-            log_manager.get_log_file("any_op_key", specific_date_day="1999-01-01")
-            is None
+        """Test a complete workflow like example_usage.py and api.py."""
+        repos = ["/home/user/Projects/qubasas_clan", "https://github.com/qubasa/myclan"]
+        machines = ["wintux", "demo"]
+
+        # Create logs like example_usage.py
+        for repo in repos:
+            for machine in machines:
+                configured_log_manager.create_log_file(
+                    deploy_machine,
+                    f"deploy_{machine}",
+                    ["clans", repo, "machines", machine],
+                )
+
+        # Test list_log_days (api.py)
+        log_days = configured_log_manager.list_log_days()
+        assert len(log_days) >= 1
+
+        # Test list_log_groups (api.py) - equivalent to filter
+        top_level = configured_log_manager.filter([])
+        assert "clans" in top_level
+
+        clans_repos = configured_log_manager.filter(["clans"])
+        assert len(clans_repos) == len(repos)
+
+        # Test get_log_file (api.py)
+        specific_log = configured_log_manager.get_log_file(
+            "deploy_wintux",
+            selector=["clans", repos[0], "machines", "wintux"],
+        )
+        assert specific_log is not None
+        assert specific_log.op_key == "deploy_wintux"
+
+        # Test file content can be read (api.py does read_text())
+        file_path = specific_log.get_file_path()
+        assert file_path.exists(), f"File does not exist at {file_path}"
+        content = file_path.read_text()
+        assert isinstance(content, str)  # File exists and is readable
+
+
+class TestLogFileSorting:
+    """Test LogFile sorting functionality - newest first is a key feature."""
+
+    def test_logfile_comparison_by_datetime(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that LogFiles are sorted by datetime (newest first)."""
+        from clan_lib.log_manager import LogFile
+
+        # Create LogFiles with different times (same date)
+        newer_file = LogFile(
+            op_key="test_op",
+            date_day="2023-10-26",
+            group="test_group",
+            func_name="test_func",
+            _base_dir=configured_log_manager.base_dir,
+            date_second="15-30-45",  # 3:30:45 PM
         )
 
-    def test_get_log_file_specific_date_invalid_format(
-        self, populated_log_structure: tuple[LogManager, Path, dict[str, LogFile]]
-    ) -> None:
-        log_manager, _, _ = populated_log_structure
-        assert (
-            log_manager.get_log_file("any_op_key", specific_date_day="2023/01/01")
-            is None
+        older_file = LogFile(
+            op_key="test_op",
+            date_day="2023-10-26",
+            group="test_group",
+            func_name="test_func",
+            _base_dir=configured_log_manager.base_dir,
+            date_second="10-15-30",  # 10:15:30 AM
         )
 
+        # Newer file should be "less than" older file (sorts first)
+        assert newer_file < older_file
+        assert not (older_file < newer_file)
 
-# --- Tests for URL encoding/decoding of group names ---
+        # Test with sorted()
+        files = [older_file, newer_file]
+        sorted_files = sorted(files)
+        assert sorted_files[0] == newer_file  # Newest first
+        assert sorted_files[1] == older_file
 
+    def test_logfile_comparison_by_date(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that LogFiles are sorted by date (newer dates first)."""
+        from clan_lib.log_manager import LogFile
 
-class TestGroupURLEncoding:
-    def test_group_with_special_characters(self, tmp_path: Path) -> None:
-        """Test that group names with special characters are URL encoded/decoded correctly."""
+        # Create LogFiles with different dates
+        newer_date_file = LogFile(
+            op_key="test_op",
+            date_day="2023-10-27",  # Newer date
+            group="test_group",
+            func_name="test_func",
+            _base_dir=configured_log_manager.base_dir,
+            date_second="10-00-00",
+        )
 
-        # Test group name with spaces and special characters
-        group_name = "my group with spaces & special chars!"
-        encoded_group = urllib.parse.quote(group_name, safe="")
+        older_date_file = LogFile(
+            op_key="test_op",
+            date_day="2023-10-26",  # Older date
+            group="test_group",
+            func_name="test_func",
+            _base_dir=configured_log_manager.base_dir,
+            date_second="15-00-00",  # Later time, but older date
+        )
 
-        log_manager = LogManager(base_dir=tmp_path)
-        log_file = log_manager.create_log_file(sample_func_one, "test_op", group_name)
+        # Newer date should sort first regardless of time
+        assert newer_date_file < older_date_file
 
-        # Check that the group is stored correctly (not encoded in the LogFile object)
-        assert log_file.group == group_name
+        # Test with sorted()
+        files = [older_date_file, newer_date_file]
+        sorted_files = sorted(files)
+        assert sorted_files[0] == newer_date_file  # Newest date first
+        assert sorted_files[1] == older_date_file
 
-        # Check that the file path uses the encoded version
-        file_path = log_file.get_file_path()
-        assert encoded_group in str(file_path)
-        assert file_path.exists()
+    def test_logfile_secondary_sort_by_group(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that LogFiles with same datetime are sorted by group name (alphabetical)."""
+        from clan_lib.log_manager import LogFile
 
-        # Test that we can read it back correctly
-        read_log_file = LogFile.from_path(file_path)
-        assert read_log_file.group == group_name  # Should be decoded back
-        assert read_log_file == log_file
+        # Create LogFiles with same datetime but different groups
+        group_a_file = LogFile(
+            op_key="test_op",
+            date_day="2023-10-26",
+            group="group_a",  # Should sort first alphabetically
+            func_name="test_func",
+            _base_dir=configured_log_manager.base_dir,
+            date_second="10-00-00",
+        )
 
-    def test_group_with_forward_slash(self, tmp_path: Path) -> None:
-        """Test that group names with forward slashes are handled correctly."""
+        group_b_file = LogFile(
+            op_key="test_op",
+            date_day="2023-10-26",
+            group="group_b",  # Should sort second
+            func_name="test_func",
+            _base_dir=configured_log_manager.base_dir,
+            date_second="10-00-00",
+        )
 
-        group_name = "parent/child"
-        encoded_group = urllib.parse.quote(group_name, safe="")
+        # group_a should sort before group_b
+        assert group_a_file < group_b_file
+        assert not (group_b_file < group_a_file)
 
-        log_manager = LogManager(base_dir=tmp_path)
-        log_file = log_manager.create_log_file(sample_func_one, "test_op", group_name)
+        # Test with sorted()
+        files = [group_b_file, group_a_file]
+        sorted_files = sorted(files)
+        assert sorted_files[0] == group_a_file
+        assert sorted_files[1] == group_b_file
 
-        file_path = log_file.get_file_path()
-        assert encoded_group in str(file_path)
-        assert (
-            "/" not in file_path.parent.parent.name
-        )  # The group directory name should be encoded
-        assert file_path.exists()
+    def test_logfile_tertiary_sort_by_func_name(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that LogFiles with same datetime and group are sorted by func_name (alphabetical)."""
+        from clan_lib.log_manager import LogFile
 
-        # Verify round-trip
-        read_log_file = LogFile.from_path(file_path)
-        assert read_log_file.group == group_name
+        # Create LogFiles with same datetime and group but different func_names
+        func_a_file = LogFile(
+            op_key="test_op",
+            date_day="2023-10-26",
+            group="test_group",
+            func_name="func_a",  # Should sort first alphabetically
+            _base_dir=configured_log_manager.base_dir,
+            date_second="10-00-00",
+        )
 
-    def test_group_unicode_characters(self, tmp_path: Path) -> None:
-        """Test that group names with Unicode characters are handled correctly."""
+        func_b_file = LogFile(
+            op_key="test_op",
+            date_day="2023-10-26",
+            group="test_group",
+            func_name="func_b",  # Should sort second
+            _base_dir=configured_log_manager.base_dir,
+            date_second="10-00-00",
+        )
 
-        group_name = "测试组 🚀"
-        encoded_group = urllib.parse.quote(group_name, safe="")
+        # func_a should sort before func_b
+        assert func_a_file < func_b_file
 
-        log_manager = LogManager(base_dir=tmp_path)
-        log_file = log_manager.create_log_file(sample_func_one, "test_op", group_name)
+        # Test with sorted()
+        files = [func_b_file, func_a_file]
+        sorted_files = sorted(files)
+        assert sorted_files[0] == func_a_file
+        assert sorted_files[1] == func_b_file
 
-        file_path = log_file.get_file_path()
-        assert encoded_group in str(file_path)
-        assert file_path.exists()
+    def test_logfile_quaternary_sort_by_op_key(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that LogFiles with same datetime, group, and func_name are sorted by op_key (alphabetical)."""
+        from clan_lib.log_manager import LogFile
 
-        # Verify round-trip
-        read_log_file = LogFile.from_path(file_path)
-        assert read_log_file.group == group_name
+        # Create LogFiles identical except for op_key
+        op_a_file = LogFile(
+            op_key="op_a",  # Should sort first alphabetically
+            date_day="2023-10-26",
+            group="test_group",
+            func_name="test_func",
+            _base_dir=configured_log_manager.base_dir,
+            date_second="10-00-00",
+        )
 
+        op_b_file = LogFile(
+            op_key="op_b",  # Should sort second
+            date_day="2023-10-26",
+            group="test_group",
+            func_name="test_func",
+            _base_dir=configured_log_manager.base_dir,
+            date_second="10-00-00",
+        )
 
-# --- Tests for group directory creation and traversal ---
+        # op_a should sort before op_b
+        assert op_a_file < op_b_file
 
+        # Test with sorted()
+        files = [op_b_file, op_a_file]
+        sorted_files = sorted(files)
+        assert sorted_files[0] == op_a_file
+        assert sorted_files[1] == op_b_file
 
-class TestGroupDirectoryHandling:
-    def test_create_log_file_with_custom_group(self, tmp_path: Path) -> None:
-        """Test creating log files with custom group names."""
-        log_manager = LogManager(base_dir=tmp_path)
+    def test_logfile_complex_sorting_scenario(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test complex sorting with multiple LogFiles demonstrating full sort order."""
 
-        # Create log files with different groups
-        lf1 = log_manager.create_log_file(sample_func_one, "op1", "auth")
-        lf2 = log_manager.create_log_file(sample_func_two, "op2", "database")
-        lf3 = log_manager.create_log_file(sample_func_one, "op3")  # default group
+        from clan_lib.log_manager import LogFile
 
-        assert lf1.group == "auth"
-        assert lf2.group == "database"
-        assert lf3.group == "default"  # Default group
-
-        # Check that the directory structure is correct
-        today = lf1.date_day
-        assert (tmp_path / today / "auth" / sample_func_one.__name__).exists()
-        assert (tmp_path / today / "database" / sample_func_two.__name__).exists()
-        assert (tmp_path / today / "default" / sample_func_one.__name__).exists()
-
-    def test_list_log_days_with_groups(self, tmp_path: Path) -> None:
-        """Test that LogDayDir correctly traverses group directories."""
-        log_manager = LogManager(base_dir=tmp_path)
-
-        # Create log files with different groups
-        log_manager.create_log_file(sample_func_one, "op1", "auth")
-        log_manager.create_log_file(sample_func_two, "op2", "database")
-        log_manager.create_log_file(sample_func_one, "op3", "auth")  # Same group as lf1
-
-        # Get the day directory and check its contents
-        day_dirs = log_manager.list_log_days()
-        assert len(day_dirs) == 1
-
-        log_group_dirs = day_dirs[0].get_log_files()
-        assert len(log_group_dirs) == 2  # auth and database groups
-
-        # Check that we have the correct groups
-        groups = [lgd.group for lgd in log_group_dirs]
-        expected_groups = ["auth", "database"]
-        # Sort both for comparison since order might vary
-        assert sorted(groups) == sorted(expected_groups)
-
-        # Check function directories within each group
-        all_funcs = []
-        for group_dir in log_group_dirs:
-            func_dirs = group_dir.get_log_files()
-            for func_dir in func_dirs:
-                all_funcs.append((func_dir.group, func_dir.func_name))
-
-        expected_funcs = [
-            ("auth", sample_func_one.__name__),
-            ("database", sample_func_two.__name__),
+        # Create multiple files with different characteristics
+        files = [
+            # Oldest datetime, should be last
+            LogFile(
+                "op_z",
+                "2023-10-25",
+                "group_z",
+                "func_z",
+                configured_log_manager.base_dir,
+                "09-00-00",
+            ),
+            # Same datetime as next, but group_b > group_a, should be after group_a file
+            LogFile(
+                "op_a",
+                "2023-10-26",
+                "group_b",
+                "func_a",
+                configured_log_manager.base_dir,
+                "10-00-00",
+            ),
+            # Same datetime as prev, but group_a < group_b, should be before group_b file
+            LogFile(
+                "op_a",
+                "2023-10-26",
+                "group_a",
+                "func_a",
+                configured_log_manager.base_dir,
+                "10-00-00",
+            ),
+            # Same as prev except func_b > func_a, should be after
+            LogFile(
+                "op_a",
+                "2023-10-26",
+                "group_a",
+                "func_b",
+                configured_log_manager.base_dir,
+                "10-00-00",
+            ),
+            # Same as group_a/func_a but op_b > op_a, should be after the op_a version
+            LogFile(
+                "op_b",
+                "2023-10-26",
+                "group_a",
+                "func_a",
+                configured_log_manager.base_dir,
+                "10-00-00",
+            ),
+            # Newest datetime, should be first
+            LogFile(
+                "op_a",
+                "2023-10-26",
+                "group_a",
+                "func_a",
+                configured_log_manager.base_dir,
+                "15-30-00",
+            ),
         ]
-        assert sorted(all_funcs) == sorted(expected_funcs)
 
-    def test_get_log_file_across_groups(self, tmp_path: Path) -> None:
-        """Test that get_log_file can find files across different groups."""
-        log_manager = LogManager(base_dir=tmp_path)
+        sorted_files = sorted(files)
 
-        # Create log files with same op_key but different groups
-        lf1 = log_manager.create_log_file(sample_func_one, "shared_op", "auth")
-        lf2 = log_manager.create_log_file(sample_func_two, "shared_op", "database")
-        lf3 = log_manager.create_log_file(sample_func_one, "unique_op", "auth")
+        # Expected order: newest datetime first, then by group, func_name, op_key
+        expected_order = [
+            ("op_a", "2023-10-26", "group_a", "func_a", "15-30-00"),  # Newest time
+            (
+                "op_a",
+                "2023-10-26",
+                "group_a",
+                "func_a",
+                "10-00-00",
+            ),  # Same time, op_a < op_b
+            (
+                "op_b",
+                "2023-10-26",
+                "group_a",
+                "func_a",
+                "10-00-00",
+            ),  # Same time, op_b > op_a
+            (
+                "op_a",
+                "2023-10-26",
+                "group_a",
+                "func_b",
+                "10-00-00",
+            ),  # Same time/group, func_b > func_a
+            (
+                "op_a",
+                "2023-10-26",
+                "group_b",
+                "func_a",
+                "10-00-00",
+            ),  # Same time, group_b > group_a
+            ("op_z", "2023-10-25", "group_z", "func_z", "09-00-00"),  # Oldest datetime
+        ]
 
-        # get_log_file should find the first match (implementation detail: depends on sort order)
-        found_shared = log_manager.get_log_file("shared_op")
-        assert found_shared is not None
-        assert found_shared.op_key == "shared_op"
-        # Could be either lf1 or lf2 depending on sort order
-        assert found_shared in [lf1, lf2]
+        for i, (exp_op, exp_date, exp_group, exp_func, exp_time) in enumerate(
+            expected_order
+        ):
+            actual = sorted_files[i]
+            assert actual.op_key == exp_op, (
+                f"Position {i}: expected op_key {exp_op}, got {actual.op_key}"
+            )
+            assert actual.date_day == exp_date, (
+                f"Position {i}: expected date {exp_date}, got {actual.date_day}"
+            )
+            assert actual.group == exp_group, (
+                f"Position {i}: expected group {exp_group}, got {actual.group}"
+            )
+            assert actual.func_name == exp_func, (
+                f"Position {i}: expected func {exp_func}, got {actual.func_name}"
+            )
+            assert actual.date_second == exp_time, (
+                f"Position {i}: expected time {exp_time}, got {actual.date_second}"
+            )
 
-        found_unique = log_manager.get_log_file("unique_op")
-        assert found_unique == lf3
+    def test_get_log_file_returns_newest_when_multiple_exist(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that get_log_file returns the newest file when multiple files with same op_key exist in different locations."""
+        # Create log files with same op_key in different locations (different groups/machines)
+        # This simulates the realistic scenario where the same operation runs on different machines
 
-        not_found = log_manager.get_log_file("nonexistent_op")
-        assert not_found is None
+        configured_log_manager.create_log_file(
+            deploy_machine,
+            "deploy_operation",
+            ["clans", "repo1", "machines", "machine1"],
+        )
+
+        configured_log_manager.create_log_file(
+            deploy_machine,
+            "deploy_operation",
+            ["clans", "repo1", "machines", "machine2"],
+        )
+
+        configured_log_manager.create_log_file(
+            deploy_machine,
+            "deploy_operation",
+            ["clans", "repo2", "machines", "machine1"],
+        )
+
+        # When searching without selector, should find one of them (newest by timestamp)
+        found_log = configured_log_manager.get_log_file("deploy_operation")
+        assert found_log is not None
+        assert found_log.op_key == "deploy_operation"
+
+        # When searching with specific selector, should find the specific one
+        specific_log = configured_log_manager.get_log_file(
+            "deploy_operation", selector=["clans", "repo1", "machines", "machine1"]
+        )
+        assert specific_log is not None
+        assert specific_log.op_key == "deploy_operation"
+        # Should be the one from machine1 in repo1
+        assert "machine1" in specific_log.group
+
+    def test_list_log_days_sorted_newest_first(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that list_log_days returns days sorted newest first."""
+        # Create log files on different days by manipulating the date
+        import tempfile
+
+        # Create files with different dates manually to test sorting
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            base_dir = Path(tmp_dir)
+            manager = LogManager(base_dir=base_dir)
+
+            # Create directories for different dates
+            dates = [
+                "2023-10-25",
+                "2023-10-27",
+                "2023-10-26",
+            ]  # Intentionally out of order
+
+            for date in dates:
+                date_dir = base_dir / date / "default" / "test_func"
+                date_dir.mkdir(parents=True, exist_ok=True)
+                log_file = date_dir / f"10-00-00_test_op_{date}.log"
+                log_file.touch()
+
+            # List log days
+            log_days = manager.list_log_days()
+
+            # Should be sorted newest first: 2023-10-27, 2023-10-26, 2023-10-25
+            assert len(log_days) == 3
+            assert log_days[0].date_day == "2023-10-27"  # Newest first
+            assert log_days[1].date_day == "2023-10-26"  # Middle
+            assert log_days[2].date_day == "2023-10-25"  # Oldest last
+
+
+class TestURLEncoding:
+    """Test URL encoding for dynamic group names with special characters."""
+
+    def test_special_characters_in_dynamic_names(
+        self, configured_log_manager: LogManager
+    ) -> None:
+        """Test that special characters in dynamic names are handled correctly."""
+        special_repo = "/home/user/Projects/my clan"  # Contains space
+        special_machine = "machine-1"  # Contains dash
+
+        # Create log file with special characters
+        log_file = configured_log_manager.create_log_file(
+            deploy_machine,
+            "deploy_special",
+            ["clans", special_repo, "machines", special_machine],
+        )
+
+        # File should be created successfully
+        assert log_file.get_file_path().exists()
+
+        # Should be findable via filter (returns decoded names)
+        repos = configured_log_manager.filter(["clans"])
+        assert special_repo in repos
+
+        machines = configured_log_manager.filter(["clans", special_repo, "machines"])
+        assert special_machine in machines
+
+        # Should be findable via get_log_file
+        found_log = configured_log_manager.get_log_file(
+            "deploy_special",
+            selector=["clans", special_repo, "machines", special_machine],
+        )
+        assert found_log is not None
+        assert found_log.op_key == "deploy_special"

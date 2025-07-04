@@ -16,6 +16,7 @@ mkShell {
       with ps;
       [
         mypy
+        pytest-cov
       ]
       ++ (clan-cli.devshellPyDeps ps)
     ))
