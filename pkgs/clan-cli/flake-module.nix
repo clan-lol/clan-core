@@ -100,6 +100,20 @@
             cp ${self'.legacyPackages.schemas.inventory}/* $out
           '';
         };
+        clan-lib-openapi = pkgs.stdenv.mkDerivation {
+          name = "clan-lib-openapi";
+          src = ./.;
+
+          buildInputs = [
+            pkgs.python3
+          ];
+
+          installPhase = ''
+            export INPUT_PATH=${self'.packages.clan-ts-api}/API.json
+            python open_api.py
+            cp openapi.json $out
+          '';
+        };
 
         default = self'.packages.clan-cli;
       };
