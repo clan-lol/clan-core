@@ -1,5 +1,6 @@
 import argparse
 import logging
+from pathlib import Path
 
 from clan_lib.machines.hardware import (
     HardwareConfig,
@@ -11,6 +12,7 @@ from clan_lib.machines.suggestions import validate_machine_names
 from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
+from clan_cli.host_key_check import add_host_key_check_arg
 
 from .types import machine_name_type
 
@@ -19,7 +21,6 @@ log = logging.getLogger(__name__)
 
 def update_hardware_config_command(args: argparse.Namespace) -> None:
     validate_machine_names([args.machine], args.flake)
-    host_key_check = args.host_key_check
     machine = Machine(flake=args.flake, name=args.machine)
     opts = HardwareGenerateOptions(
         machine=machine,
@@ -30,9 +31,13 @@ def update_hardware_config_command(args: argparse.Namespace) -> None:
     if args.target_host:
         target_host = Remote.from_ssh_uri(
             machine_name=machine.name, address=args.target_host
-        ).override(host_key_check=host_key_check)
+        )
     else:
-        target_host = machine.target_host().override(host_key_check=host_key_check)
+        target_host = machine.target_host()
+
+    target_host = target_host.override(
+        host_key_check=args.host_key_check, private_key=args.identity_file
+    )
 
     generate_machine_hardware_info(opts, target_host)
 
@@ -51,12 +56,7 @@ def register_update_hardware_config(parser: argparse.ArgumentParser) -> None:
         nargs="?",
         help="ssh address to install to in the form of user@host:2222",
     )
-    parser.add_argument(
-        "--host-key-check",
-        choices=["strict", "ask", "tofu", "none"],
-        default="ask",
-        help="Host key (.ssh/known_hosts) check mode.",
-    )
+    add_host_key_check_arg(parser)
     parser.add_argument(
         "--password",
         help="Pre-provided password the cli will prompt otherwise if needed.",
@@ -68,4 +68,10 @@ def register_update_hardware_config(parser: argparse.ArgumentParser) -> None:
         help="The type of hardware report to generate.",
         choices=["nixos-generate-config", "nixos-facter"],
         default="nixos-facter",
+    )
+    parser.add_argument(
+        "-i",
+        dest="identity_file",
+        type=Path,
+        help="specify which SSH private key file to use",
     )

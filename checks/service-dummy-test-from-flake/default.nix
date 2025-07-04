@@ -23,14 +23,14 @@ nixosLib.runTest (
     clan.test.fromFlake = ./.;
 
     extraPythonPackages = _p: [
-      clan-core.legacyPackages.${hostPkgs.system}.setupNixInNixPythonPackage
+      clan-core.legacyPackages.${hostPkgs.system}.nixosTestLib
     ];
 
     testScript =
       { nodes, ... }:
       ''
-        from setup_nix_in_nix import setup_nix_in_nix # type: ignore[import-untyped]
-        setup_nix_in_nix()
+        from nixos_test_lib.nix_setup import setup_nix_in_nix # type: ignore[import-untyped]
+        setup_nix_in_nix(None)  # No closure info for this test
 
         def run_clan(cmd: list[str], **kwargs) -> str:
             import subprocess

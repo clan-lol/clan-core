@@ -1,62 +1,9 @@
 {
   self,
   lib,
+
   ...
 }:
-let
-  installer =
-    { modulesPath, pkgs, ... }:
-    let
-      dependencies = [
-        self.clan.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.toplevel
-        self.clan.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.diskoScript
-        pkgs.stdenv.drvPath
-        pkgs.bash.drvPath
-        pkgs.nixos-anywhere
-        pkgs.bubblewrap
-        pkgs.buildPackages.xorg.lndir
-      ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
-      closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
-    in
-    {
-      imports = [
-        (modulesPath + "/../tests/common/auto-format-root-device.nix")
-      ];
-      networking.useNetworkd = true;
-      services.openssh.enable = true;
-      services.openssh.settings.UseDns = false;
-      services.openssh.settings.PasswordAuthentication = false;
-      system.nixos.variant_id = "installer";
-      environment.systemPackages = [
-        self.packages.${pkgs.system}.clan-cli-full
-        pkgs.nixos-facter
-      ];
-      environment.etc."install-closure".source = "${closureInfo}/store-paths";
-      virtualisation.emptyDiskImages = [ 512 ];
-      virtualisation.diskSize = 8 * 1024;
-      virtualisation.rootDevice = "/dev/vdb";
-      # both installer and target need to use the same diskImage
-      virtualisation.diskImage = "./target.qcow2";
-      virtualisation.memorySize = 3048;
-      nix.settings = {
-        substituters = lib.mkForce [ ];
-        hashed-mirrors = null;
-        connect-timeout = lib.mkForce 3;
-        flake-registry = pkgs.writeText "flake-registry" ''{"flakes":[],"version":2}'';
-        experimental-features = [
-          "nix-command"
-          "flakes"
-        ];
-      };
-      users.users.nonrootuser = {
-        isNormalUser = true;
-        openssh.authorizedKeys.keyFiles = [ ../assets/ssh/pubkey ];
-        extraGroups = [ "wheel" ];
-      };
-      security.sudo.wheelNeedsPassword = false;
-      system.extraDependencies = dependencies;
-    };
-in
 {
 
   # The purpose of this test is to ensure `clan machines install` works
@@ -104,6 +51,25 @@ in
         networking.hostName = "test-install-machine";
 
         environment.etc."install-successful".text = "ok";
+
+        # Enable SSH and add authorized key for testing
+        services.openssh.enable = true;
+        services.openssh.settings.PasswordAuthentication = false;
+        users.users.nonrootuser = {
+          isNormalUser = true;
+          openssh.authorizedKeys.keys = [ (builtins.readFile ../assets/ssh/pubkey) ];
+          extraGroups = [ "wheel" ];
+          home = "/home/nonrootuser";
+          createHome = true;
+        };
+        users.users.root.openssh.authorizedKeys.keys = [ (builtins.readFile ../assets/ssh/pubkey) ];
+        # Allow users to manage their own SSH keys
+        services.openssh.authorizedKeysFiles = [
+          "/root/.ssh/authorized_keys"
+          "/home/%u/.ssh/authorized_keys"
+          "/etc/ssh/authorized_keys.d/%u"
+        ];
+        security.sudo.wheelNeedsPassword = false;
 
         boot.consoleLogLevel = lib.mkForce 100;
         boot.kernelParams = [ "boot.shell_on_fail" ];
@@ -181,55 +147,199 @@ in
       # vm-test-run-test-installation-> target: waiting for the VM to finish booting
       # vm-test-run-test-installation-> target: Guest root shell did not produce any data yet...
       # vm-test-run-test-installation-> target:   To debug, enter the VM and run 'systemctl status backdoor.service'.
-      checks = pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
-        nixos-test-installation = self.clanLib.test.baseTest {
-          name = "installation";
-          nodes.target = {
-            services.openssh.enable = true;
-            virtualisation.diskImage = "./target.qcow2";
-            virtualisation.useBootLoader = true;
+      checks =
+        let
+          # Custom Python package for port management utilities
+          closureInfo = pkgs.closureInfo {
+            rootPaths = [
+              self.checks.x86_64-linux.clan-core-for-checks
+              self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.toplevel
+              self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.initialRamdisk
+              self.clanInternals.machines.${pkgs.hostPlatform.system}.test-install-machine-with-system.config.system.build.diskoScript
+              pkgs.stdenv.drvPath
+              pkgs.bash.drvPath
+              pkgs.buildPackages.xorg.lndir
+            ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
           };
-          nodes.installer = installer;
+        in
+        pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
+          nixos-test-installation = self.clanLib.test.baseTest {
+            name = "installation";
+            nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
+            extraPythonPackages = _p: [
+              self.legacyPackages.${pkgs.system}.nixosTestLib
+            ];
 
-          testScript = ''
-            installer.start()
+            testScript = ''
+              import tempfile
+              import os
+              import subprocess
+              from nixos_test_lib.ssh import setup_ssh_connection # type: ignore[import-untyped]
+              from nixos_test_lib.nix_setup import prepare_test_flake # type: ignore[import-untyped]
 
-            installer.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../assets/ssh/privkey} /root/.ssh/id_ed25519")
+              def create_test_machine(oldmachine, qemu_test_bin: str, **kwargs):
+                  """Create a new test machine from an installed disk image"""
+                  start_command = [
+                      f"{qemu_test_bin}/bin/qemu-kvm",
+                      "-cpu",
+                      "max",
+                      "-m",
+                      "3048",
+                      "-virtfs",
+                      "local,path=/nix/store,security_model=none,mount_tag=nix-store",
+                      "-drive",
+                      f"file={oldmachine.state_dir}/target.qcow2,id=drive1,if=none,index=1,werror=report",
+                      "-device",
+                      "virtio-blk-pci,drive=drive1",
+                      "-netdev",
+                      "user,id=net0",
+                      "-device",
+                      "virtio-net-pci,netdev=net0",
+                  ]
+                  machine = create_machine(start_command=" ".join(start_command), **kwargs)
+                  driver.machines.append(machine)
+                  return machine
 
-            installer.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@localhost hostname")
-            installer.succeed("cp -r ${self.checks.x86_64-linux.clan-core-for-checks} test-flake && chmod -R +w test-flake")
+              target.start()
 
-            installer.succeed("clan machines install --no-reboot --debug --flake test-flake --yes test-install-machine-without-system --target-host nonrootuser@localhost --update-hardware-config nixos-facter >&2")
-            installer.shutdown()
+              # Set up test environment
+              with tempfile.TemporaryDirectory() as temp_dir:
+                  # Prepare test flake and Nix store
+                  flake_dir = prepare_test_flake(
+                      temp_dir,
+                      "${self.checks.x86_64-linux.clan-core-for-checks}",
+                      "${closureInfo}"
+                  )
 
-            # We are missing the test instrumentation somehow. Test this later.
-            target.state_dir = installer.state_dir
-            target.start()
-            target.wait_for_unit("multi-user.target")
-          '';
-        } { inherit pkgs self; };
+                  # Set up SSH connection
+                  ssh_conn = setup_ssh_connection(
+                      target,
+                      temp_dir,
+                      "${../assets/ssh/privkey}"
+                  )
 
-        nixos-test-update-hardware-configuration = self.clanLib.test.baseTest {
-          name = "update-hardware-configuration";
-          nodes.installer = installer;
+                  # Run clan install from host using port forwarding
+                  clan_cmd = [
+                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "machines",
+                      "install",
+                      "--phases", "disko,install",
+                      "--debug",
+                      "--flake", flake_dir,
+                      "--yes", "test-install-machine-without-system",
+                      "--target-host", f"nonrootuser@localhost:{ssh_conn.host_port}",
+                      "-i", ssh_conn.ssh_key,
+                      "--option", "store", os.environ['CLAN_TEST_STORE'],
+                      "--update-hardware-config", "nixos-facter",
+                  ]
 
-          testScript = ''
-            installer.start()
-            installer.succeed("${pkgs.coreutils}/bin/install -Dm 600 ${../assets/ssh/privkey} /root/.ssh/id_ed25519")
-            installer.wait_until_succeeds("timeout 2 ssh -o StrictHostKeyChecking=accept-new -v nonrootuser@localhost hostname")
-            installer.succeed("cp -r ${self.checks.x86_64-linux.clan-core-for-checks} test-flake && chmod -R +w test-flake")
-            installer.fail("test -f test-flake/machines/test-install-machine/hardware-configuration.nix")
-            installer.fail("test -f test-flake/machines/test-install-machine/facter.json")
+                  subprocess.run(clan_cmd, check=True)
 
-            installer.succeed("clan machines update-hardware-config --debug --flake test-flake test-install-machine-without-system nonrootuser@localhost >&2")
-            installer.succeed("test -f test-flake/machines/test-install-machine-without-system/facter.json")
-            installer.succeed("rm test-flake/machines/test-install-machine-without-system/facter.json")
+              # Shutdown the installer machine gracefully
+              try:
+                  target.shutdown()
+              except BrokenPipeError:
+                  # qemu has already exited
+                  pass
 
-            installer.succeed("clan machines update-hardware-config --debug --backend nixos-generate-config --flake test-flake test-install-machine-without-system nonrootuser@localhost >&2")
-            installer.succeed("test -f test-flake/machines/test-install-machine-without-system/hardware-configuration.nix")
-            installer.succeed("rm test-flake/machines/test-install-machine-without-system/hardware-configuration.nix")
-          '';
-        } { inherit pkgs self; };
-      };
+              # Create a new machine instance that boots from the installed system
+              installed_machine = create_test_machine(target, "${pkgs.qemu_test}", name="after_install")
+              installed_machine.start()
+              installed_machine.wait_for_unit("multi-user.target")
+              installed_machine.succeed("test -f /etc/install-successful")
+            '';
+          } { inherit pkgs self; };
+
+          nixos-test-update-hardware-configuration = self.clanLib.test.baseTest {
+            name = "update-hardware-configuration";
+            nodes.target = (import ./test-helpers.nix { inherit lib pkgs self; }).target;
+            extraPythonPackages = _p: [
+              self.legacyPackages.${pkgs.system}.nixosTestLib
+            ];
+
+            testScript = ''
+              import tempfile
+              import os
+              import subprocess
+              from nixos_test_lib.ssh import setup_ssh_connection # type: ignore[import-untyped]
+              from nixos_test_lib.nix_setup import prepare_test_flake # type: ignore[import-untyped]
+
+              target.start()
+
+              # Set up test environment
+              with tempfile.TemporaryDirectory() as temp_dir:
+                  # Prepare test flake and Nix store
+                  flake_dir = prepare_test_flake(
+                      temp_dir,
+                      "${self.checks.x86_64-linux.clan-core-for-checks}",
+                      "${closureInfo}"
+                  )
+                  
+                  # Set up SSH connection
+                  ssh_conn = setup_ssh_connection(
+                      target,
+                      temp_dir,
+                      "${../assets/ssh/privkey}"
+                  )
+
+                  # Verify files don't exist initially
+                  hw_config_file = os.path.join(flake_dir, "machines/test-install-machine/hardware-configuration.nix")
+                  facter_file = os.path.join(flake_dir, "machines/test-install-machine/facter.json")
+
+                  assert not os.path.exists(hw_config_file), "hardware-configuration.nix should not exist initially"
+                  assert not os.path.exists(facter_file), "facter.json should not exist initially"
+
+                  # Set CLAN_FLAKE for the commands
+                  os.environ["CLAN_FLAKE"] = flake_dir
+
+                  # Test facter backend
+                  clan_cmd = [
+                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "machines",
+                      "update-hardware-config",
+                      "--debug",
+                      "--flake", ".",
+                      "--host-key-check", "none",
+                      "test-install-machine-without-system",
+                      "-i", ssh_conn.ssh_key,
+                      "--option", "store", os.environ['CLAN_TEST_STORE'],
+                      f"nonrootuser@localhost:{ssh_conn.host_port}"
+                  ]
+
+                  result = subprocess.run(clan_cmd, capture_output=True, cwd=flake_dir)
+                  if result.returncode != 0:
+                      print(f"Clan update-hardware-config failed: {result.stderr.decode()}")
+                      raise Exception(f"Clan update-hardware-config failed with return code {result.returncode}")
+
+                  facter_without_system_file = os.path.join(flake_dir, "machines/test-install-machine-without-system/facter.json")
+                  assert os.path.exists(facter_without_system_file), "facter.json should exist after update"
+                  os.remove(facter_without_system_file)
+
+                  # Test nixos-generate-config backend
+                  clan_cmd = [
+                      "${self.packages.${pkgs.system}.clan-cli-full}/bin/clan",
+                      "machines",
+                      "update-hardware-config",
+                      "--debug",
+                      "--backend", "nixos-generate-config",
+                      "--host-key-check", "none",
+                      "--flake", ".",
+                      "test-install-machine-without-system",
+                      "-i", ssh_conn.ssh_key,
+                      "--option", "store", os.environ['CLAN_TEST_STORE'],
+                      f"nonrootuser@localhost:{ssh_conn.host_port}"
+                  ]
+
+                  result = subprocess.run(clan_cmd, capture_output=True, cwd=flake_dir)
+                  if result.returncode != 0:
+                      print(f"Clan update-hardware-config (nixos-generate-config) failed: {result.stderr.decode()}")
+                      raise Exception(f"Clan update-hardware-config failed with return code {result.returncode}")
+
+                  hw_config_without_system_file = os.path.join(flake_dir, "machines/test-install-machine-without-system/hardware-configuration.nix")
+                  assert os.path.exists(hw_config_without_system_file), "hardware-configuration.nix should exist after update"
+            '';
+          } { inherit pkgs self; };
+
+        };
     };
 }

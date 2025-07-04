@@ -8,6 +8,7 @@ import pytest
 from clan_lib.async_run import AsyncRuntime
 from clan_lib.cmd import ClanCmdTimeoutError, Log, RunOpts
 from clan_lib.errors import ClanError, CmdOut
+from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.remote import Remote
 from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
 
@@ -113,7 +114,7 @@ def test_parse_deployment_address(
         result = Remote.from_ssh_uri(
             machine_name=machine_name,
             address=test_addr,
-        ).override(host_key_check="strict")
+        ).override(host_key_check=HostKeyCheck.STRICT)
 
     if expected_exception:
         return
@@ -131,7 +132,7 @@ def test_parse_deployment_address(
 def test_parse_ssh_options() -> None:
     addr = "root@example.com:2222?IdentityFile=/path/to/private/key&StrictRemoteKeyChecking=yes"
     host = Remote.from_ssh_uri(machine_name="foo", address=addr).override(
-        host_key_check="strict"
+        host_key_check=HostKeyCheck.STRICT
     )
     assert host.address == "example.com"
     assert host.port == 2222

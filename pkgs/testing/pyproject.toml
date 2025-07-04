@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nixos-test-lib"
+version = "1.0.0"
+description = "NixOS test utilities for clan VM testing"
+authors = [
+    {name = "Clan Core Team"}
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "mypy",
+    "ruff"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["nixos_test_lib*"]
+
+[tool.setuptools.package-data]
+"nixos_test_lib" = ["py.typed"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D", # docstrings
+    "ANN", # type annotations  
+    "COM812", # trailing comma
+    "ISC001", # string concatenation
+    "T201", # print statements
+]

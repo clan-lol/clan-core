@@ -13,6 +13,7 @@ from clan_cli.completions import (
     complete_machines,
     complete_target_host,
 )
+from clan_cli.host_key_check import add_host_key_check_arg
 from clan_cli.machines.hardware import HardwareConfig
 from clan_cli.ssh.deploy_info import DeployInfo, find_reachable_host, ssh_command_parse
 
@@ -97,12 +98,7 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         help="do not reboot after installation (deprecated)",
         default=False,
     )
-    parser.add_argument(
-        "--host-key-check",
-        choices=["strict", "ask", "tofu", "none"],
-        default="ask",
-        help="Host key (.ssh/known_hosts) check mode.",
-    )
+    add_host_key_check_arg(parser)
     parser.add_argument(
         "--build-on",
         choices=[x.value for x in BuildOn],
