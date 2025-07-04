@@ -31,21 +31,21 @@ def list_full_machines(flake: Flake) -> dict[str, Machine]:
     return res
 
 
-# TODO: Add filter to list_machines -> list_machines(flake, filter={tags=...})
-def query_machines_by_tags(flake: Flake, tags: list[str]) -> dict[str, Machine]:
+def query_machines_by_tags(
+    flake: Flake, tags: list[str]
+) -> dict[str, InventoryMachine]:
     """
     Query machines by their respective tags, if multiple tags are specified
     then only machines that have those respective tags specified will be listed.
     It is an intersection of the tags and machines.
     """
-    machines = list_full_machines(flake)
+    machines = list_machines(flake)
 
     filtered_machines = {}
-    for machine in machines.values():
-        inv_machine = get_machine(machine.flake, machine.name)
-        machine_tags = inv_machine.get("tags", [])
+    for machine_name, machine in machines.items():
+        machine_tags = machine.get("tags", [])
         if all(tag in machine_tags for tag in tags):
-            filtered_machines[machine.name] = machine
+            filtered_machines[machine_name] = machine
 
     return filtered_machines
 

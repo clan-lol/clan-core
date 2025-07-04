@@ -4,7 +4,7 @@ import sys
 
 from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime
 from clan_lib.errors import ClanError
-from clan_lib.machines.list import list_full_machines
+from clan_lib.machines.list import list_full_machines, query_machines_by_tags
 from clan_lib.machines.machines import Machine
 from clan_lib.machines.suggestions import validate_machine_names
 from clan_lib.machines.update import deploy_machine
@@ -16,7 +16,6 @@ from clan_cli.completions import (
     complete_machines,
     complete_tags,
 )
-from clan_cli.machines.list import query_machines_by_tags
 
 log = logging.getLogger(__name__)
 
