@@ -2,7 +2,8 @@ import argparse
 import logging
 
 from clan_lib.flake import Flake
-from clan_lib.machines.list import list_full_machines, query_machines_by_tags
+from clan_lib.machines.actions import list_machines
+from clan_lib.machines.list import query_machines_by_tags
 
 from clan_cli.completions import add_dynamic_completer, complete_tags
 
@@ -16,7 +17,7 @@ def list_command(args: argparse.Namespace) -> None:
         for name in query_machines_by_tags(flake, args.tags):
             print(name)
     else:
-        for name in list_full_machines(flake):
+        for name in list_machines(flake):
             print(name)
 
 

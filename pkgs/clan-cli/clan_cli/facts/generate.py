@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_files
+from clan_lib.machines.list import list_full_machines
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
 
@@ -18,7 +19,6 @@ from clan_cli.completions import (
     complete_machines,
     complete_services_for_machine,
 )
-from clan_cli.machines.list import list_full_machines
 
 from .check import check_secrets
 from .public_modules import FactStoreBase

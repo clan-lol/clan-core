@@ -31,6 +31,7 @@ def list_full_machines(flake: Flake) -> dict[str, Machine]:
     return res
 
 
+# TODO: Add filter to list_machines -> list_machines(flake, filter={tags=...})
 def query_machines_by_tags(flake: Flake, tags: list[str]) -> dict[str, Machine]:
     """
     Query machines by their respective tags, if multiple tags are specified
