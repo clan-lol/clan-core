@@ -181,6 +181,9 @@ nav:
           - 05-deployment-parameters: decisions/05-deployment-parameters.md
           - Template: decisions/_template.md
   - Options: options.md
+  - Developer:
+      - Introduction: intern/index.md
+      - API: intern/api.md
 
 docs_dir: site
 site_dir: out
@@ -238,3 +241,4 @@ extra:
 plugins:
   - search
   - macros
+  - redoc-tag
