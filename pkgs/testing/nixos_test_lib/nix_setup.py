@@ -71,3 +71,26 @@ def setup_nix_in_nix(closure_info: str | None) -> None:
                         text=True,
                         check=True,
                     )
+
+
+def prepare_test_flake(
+    temp_dir: str, clan_core_for_checks: str, closure_info: str
+) -> str:
+    """Set up Nix store and copy test flake to temporary directory
+
+    Args:
+        temp_dir: Temporary directory
+        clan_core_for_checks: Path to clan-core-for-checks
+        closure_info: Path to closure info for Nix store setup
+
+    Returns:
+        Path to the test flake directory
+    """
+    # Set up Nix store
+    setup_nix_in_nix(closure_info)
+
+    # Copy test flake
+    flake_dir = Path(temp_dir) / "test-flake"
+    subprocess.run(["cp", "-r", clan_core_for_checks, flake_dir], check=True)  # noqa: S603, S607
+    subprocess.run(["chmod", "-R", "+w", flake_dir], check=True)  # noqa: S603, S607
+    return str(flake_dir)

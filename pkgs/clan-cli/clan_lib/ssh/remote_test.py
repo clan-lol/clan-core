@@ -8,8 +8,8 @@ import pytest
 from clan_lib.async_run import AsyncRuntime
 from clan_lib.cmd import ClanCmdTimeoutError, Log, RunOpts
 from clan_lib.errors import ClanError, CmdOut
-from clan_lib.ssh.remote import Remote
 from clan_lib.ssh.host_key import HostKeyCheck
+from clan_lib.ssh.remote import Remote
 from clan_lib.ssh.sudo_askpass_proxy import SudoAskpassProxy
 
 if sys.platform == "darwin":

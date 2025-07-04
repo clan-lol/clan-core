@@ -174,7 +174,8 @@
               import tempfile
               import os
               import subprocess
-              from nixos_test_lib.ssh import setup_test_environment # type: ignore[import-untyped]
+              from nixos_test_lib.ssh import setup_ssh_connection # type: ignore[import-untyped]
+              from nixos_test_lib.nix_setup import prepare_test_flake # type: ignore[import-untyped]
 
               def create_test_machine(oldmachine, qemu_test_bin: str, **kwargs):
                   """Create a new test machine from an installed disk image"""
@@ -201,14 +202,20 @@
 
               target.start()
 
-              # Set up test environment using common helper
+              # Set up test environment
               with tempfile.TemporaryDirectory() as temp_dir:
-                  env = setup_test_environment(
-                      target, 
-                      temp_dir, 
-                      "${closureInfo}",
-                      "${../assets/ssh/privkey}",
-                      "${self.checks.x86_64-linux.clan-core-for-checks}"
+                  # Prepare test flake and Nix store
+                  flake_dir = prepare_test_flake(
+                      temp_dir,
+                      "${self.checks.x86_64-linux.clan-core-for-checks}",
+                      "${closureInfo}"
+                  )
+
+                  # Set up SSH connection
+                  ssh_conn = setup_ssh_connection(
+                      target,
+                      temp_dir,
+                      "${../assets/ssh/privkey}"
                   )
 
                   # Run clan install from host using port forwarding
@@ -218,10 +225,10 @@
                       "install",
                       "--phases", "disko,install",
                       "--debug",
-                      "--flake", env.flake_dir,
+                      "--flake", flake_dir,
                       "--yes", "test-install-machine-without-system",
-                      "--target-host", f"nonrootuser@localhost:{env.host_port}",
-                      "-i", env.ssh_key,
+                      "--target-host", f"nonrootuser@localhost:{ssh_conn.host_port}",
+                      "-i", ssh_conn.ssh_key,
                       "--option", "store", os.environ['CLAN_TEST_STORE'],
                       "--update-hardware-config", "nixos-facter",
                   ]
@@ -254,29 +261,36 @@
               import tempfile
               import os
               import subprocess
-              from nixos_test_lib.ssh import setup_test_environment # type: ignore[import-untyped]
+              from nixos_test_lib.ssh import setup_ssh_connection # type: ignore[import-untyped]
+              from nixos_test_lib.nix_setup import prepare_test_flake # type: ignore[import-untyped]
 
               target.start()
 
-              # Set up test environment using common helper
+              # Set up test environment
               with tempfile.TemporaryDirectory() as temp_dir:
-                  env = setup_test_environment(
-                      target, 
-                      temp_dir, 
-                      "${closureInfo}",
-                      "${../assets/ssh/privkey}",
-                      "${self.checks.x86_64-linux.clan-core-for-checks}"
+                  # Prepare test flake and Nix store
+                  flake_dir = prepare_test_flake(
+                      temp_dir,
+                      "${self.checks.x86_64-linux.clan-core-for-checks}",
+                      "${closureInfo}"
+                  )
+                  
+                  # Set up SSH connection
+                  ssh_conn = setup_ssh_connection(
+                      target,
+                      temp_dir,
+                      "${../assets/ssh/privkey}"
                   )
 
                   # Verify files don't exist initially
-                  hw_config_file = os.path.join(env.flake_dir, "machines/test-install-machine/hardware-configuration.nix")
-                  facter_file = os.path.join(env.flake_dir, "machines/test-install-machine/facter.json")
+                  hw_config_file = os.path.join(flake_dir, "machines/test-install-machine/hardware-configuration.nix")
+                  facter_file = os.path.join(flake_dir, "machines/test-install-machine/facter.json")
 
                   assert not os.path.exists(hw_config_file), "hardware-configuration.nix should not exist initially"
                   assert not os.path.exists(facter_file), "facter.json should not exist initially"
 
                   # Set CLAN_FLAKE for the commands
-                  os.environ["CLAN_FLAKE"] = env.flake_dir
+                  os.environ["CLAN_FLAKE"] = flake_dir
 
                   # Test facter backend
                   clan_cmd = [
@@ -287,17 +301,17 @@
                       "--flake", ".",
                       "--host-key-check", "none",
                       "test-install-machine-without-system",
-                      "-i", env.ssh_key,
+                      "-i", ssh_conn.ssh_key,
                       "--option", "store", os.environ['CLAN_TEST_STORE'],
-                      f"nonrootuser@localhost:{env.host_port}"
+                      f"nonrootuser@localhost:{ssh_conn.host_port}"
                   ]
 
-                  result = subprocess.run(clan_cmd, capture_output=True, cwd=env.flake_dir)
+                  result = subprocess.run(clan_cmd, capture_output=True, cwd=flake_dir)
                   if result.returncode != 0:
                       print(f"Clan update-hardware-config failed: {result.stderr.decode()}")
                       raise Exception(f"Clan update-hardware-config failed with return code {result.returncode}")
 
-                  facter_without_system_file = os.path.join(env.flake_dir, "machines/test-install-machine-without-system/facter.json")
+                  facter_without_system_file = os.path.join(flake_dir, "machines/test-install-machine-without-system/facter.json")
                   assert os.path.exists(facter_without_system_file), "facter.json should exist after update"
                   os.remove(facter_without_system_file)
 
@@ -311,17 +325,17 @@
                       "--host-key-check", "none",
                       "--flake", ".",
                       "test-install-machine-without-system",
-                      "-i", env.ssh_key,
+                      "-i", ssh_conn.ssh_key,
                       "--option", "store", os.environ['CLAN_TEST_STORE'],
-                      f"nonrootuser@localhost:{env.host_port}"
+                      f"nonrootuser@localhost:{ssh_conn.host_port}"
                   ]
 
-                  result = subprocess.run(clan_cmd, capture_output=True, cwd=env.flake_dir)
+                  result = subprocess.run(clan_cmd, capture_output=True, cwd=flake_dir)
                   if result.returncode != 0:
                       print(f"Clan update-hardware-config (nixos-generate-config) failed: {result.stderr.decode()}")
                       raise Exception(f"Clan update-hardware-config failed with return code {result.returncode}")
 
-                  hw_config_without_system_file = os.path.join(env.flake_dir, "machines/test-install-machine-without-system/hardware-configuration.nix")
+                  hw_config_without_system_file = os.path.join(flake_dir, "machines/test-install-machine-without-system/hardware-configuration.nix")
                   assert os.path.exists(hw_config_without_system_file), "hardware-configuration.nix should exist after update"
             '';
           } { inherit pkgs self; };
