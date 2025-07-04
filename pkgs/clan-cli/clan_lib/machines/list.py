@@ -16,19 +16,22 @@ from clan_lib.nix_models.clan import InventoryMachine
 log = logging.getLogger(__name__)
 
 
+def convert_inventory_to_machines(
+    flake: Flake, machines: dict[str, InventoryMachine]
+) -> dict[str, Machine]:
+    return {
+        name: Machine.from_inventory(name, flake, inventory_machine)
+        for name, inventory_machine in machines.items()
+    }
+
+
 def list_full_machines(flake: Flake) -> dict[str, Machine]:
     """
     Like `list_machines`, but returns a full 'machine' instance for each machine.
     """
     machines = list_machines(flake)
 
-    res: dict[str, Machine] = {}
-
-    for name in machines:
-        machine = Machine(name=name, flake=flake)
-        res[machine.name] = machine
-
-    return res
+    return convert_inventory_to_machines(flake, machines)
 
 
 def query_machines_by_tags(

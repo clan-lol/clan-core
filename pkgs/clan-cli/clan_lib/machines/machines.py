@@ -29,6 +29,15 @@ class Machine:
     name: str
     flake: Flake
 
+    @classmethod
+    def from_inventory(
+        cls,
+        name: str,
+        flake: Flake,
+        _inventory_machine: InventoryMachine,
+    ) -> "Machine":
+        return cls(name=name, flake=flake)
+
     def get_inv_machine(self) -> "InventoryMachine":
         return get_machine(self.flake, self.name)
 
