@@ -396,10 +396,6 @@ class LogDayDir:
         """Get root-level LogGroupDir instances."""
         return self._get_groups_at_path([])
 
-    def get_log_files(self) -> list[LogGroupDir]:
-        """Backward compatibility method - returns root groups."""
-        return self.get_root_groups()
-
     def _get_groups_at_path(self, current_path: list[str]) -> list[LogGroupDir]:
         # Build the current directory path
         dir_path = self._base_dir / self.date_day
@@ -587,14 +583,12 @@ class LogManager:
         )
 
     def create_log_file(
-        self, func: Callable, op_key: str, group_path: str | list[str] | None = None
+        self, func: Callable, op_key: str, group_path: list[str] | None = None
     ) -> LogFile:
         now_utc = datetime.datetime.now(tz=datetime.UTC)
 
         if group_path is None:
             group_path = ["default"]
-        elif isinstance(group_path, str):
-            group_path = group_path.split("/")
 
         # Validate that the group path structure is registered in the configuration
         if not self._is_group_path_registered(group_path):
@@ -709,18 +703,19 @@ class LogManager:
 
     def get_log_file(
         self,
-        op_key_to_find: str,
-        specific_date_day: str | None = None,
-        specific_group: list[str] | str | None = None,
+        op_key: str,
+        *,
+        date_day: str | None = None,
+        selector: list[str] | None = None,
     ) -> LogFile | None:
         days_to_search: list[LogDayDir]
 
-        if specific_date_day:
-            if not is_correct_day_format(specific_date_day):
+        if date_day:
+            if not is_correct_day_format(date_day):
                 return None
             try:
                 target_day_dir = LogDayDir(
-                    date_day=specific_date_day,
+                    date_day=date_day,
                     _base_dir=self.base_dir,
                     group_configs=self.root_group_configs,
                 )
@@ -733,16 +728,13 @@ class LogManager:
             days_to_search = self.list_log_days()
 
         # If specific_group is provided, use filter function to navigate directly
-        if specific_group is not None:
+        if selector is not None:
             # Convert string to array if needed (backward compatibility)
-            if isinstance(specific_group, str):
-                specific_group_array = specific_group.split("/")
-            else:
-                specific_group_array = specific_group
+            specific_group_array = selector
 
             for day_dir in days_to_search:
                 result = self._search_log_file_in_specific_group(
-                    day_dir, op_key_to_find, specific_group_array
+                    day_dir, op_key, specific_group_array
                 )
                 if result:
                     return result
@@ -751,7 +743,7 @@ class LogManager:
         # Search all groups if no specific group provided
         for day_dir in days_to_search:
             result = self._search_log_file_in_groups(
-                day_dir.get_root_groups(), op_key_to_find, None
+                day_dir.get_root_groups(), op_key, None
             )
             if result:
                 return result
@@ -836,7 +828,9 @@ class LogManager:
 
         return None
 
-    def filter(self, path: list[str], date_day: str | None = None) -> list[str]:
+    def filter(
+        self, selector: list[str] | None = None, date_day: str | None = None
+    ) -> list[str]:
         """Filter and list folders at the specified hierarchical path.
 
         Args:
@@ -850,6 +844,9 @@ class LogManager:
         Returns:
             List of folder names (decoded) at the specified path level.
         """
+        if selector is None:
+            selector = []
+
         # Get the day to search in
         if date_day is None:
             days = self.list_log_days()
@@ -871,12 +868,12 @@ class LogManager:
                 return []
 
         # Empty path means list top-level groups
-        if not path:
+        if not selector:
             return list(self.root_group_configs.keys())
 
         # Build the directory path to search in
         dir_path = day_dir.get_dir_path()
-        for i, component in enumerate(path):
+        for i, component in enumerate(selector):
             if i % 2 == 1:  # Odd index = dynamic element, needs URL encoding
                 dir_path = dir_path / urllib.parse.quote(component, safe="")
             else:  # Even index = structure element, no encoding needed

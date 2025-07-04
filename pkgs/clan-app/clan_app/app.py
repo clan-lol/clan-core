@@ -8,11 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import clan_lib.machines.actions  # noqa: F401
-from clan_lib.api import API, tasks
-
-# TODO: We have to manually import python files to make the API.register be triggered.
-# We NEED to fix this, as this is super unintuitive and error-prone.
-from clan_lib.api.tasks import list_tasks as dummy_list  # noqa: F401
+from clan_lib.api import API, load_in_all_api_functions, tasks
 from clan_lib.custom_logger import setup_logging
 from clan_lib.dirs import user_data_dir
 from clan_lib.log_manager import LogManager
@@ -52,8 +48,11 @@ def app_run(app_opts: ClanAppOptions) -> int:
         base_dir=user_data_dir() / "clan-app" / "logs"
     )
 
-    # Init BAKEND_THREADS in tasks module
+    # Init BAKEND_THREADS global in tasks module
     tasks.BAKEND_THREADS = webview.threads
+
+    # Populate the API global with all functions
+    load_in_all_api_functions()
 
     API.overwrite_fn(open_file)
     webview.bind_jsonschema_api(API, log_manager=log_manager_api.LOG_MANAGER_INSTANCE)

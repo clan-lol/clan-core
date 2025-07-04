@@ -76,7 +76,7 @@ def main() -> None:
     if clans_repos and len(clans_repos) > 0:
         specific_log = log_manager.get_log_file(
             "deploy_wintux",
-            specific_group=["clans", clans_repos[0], "machines", "wintux"],
+            selector=["clans", clans_repos[0], "machines", "wintux"],
         )
         if specific_log:
             print(
