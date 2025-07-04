@@ -1,8 +1,11 @@
+import importlib
 import logging
+import pkgutil
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
 from inspect import Parameter, Signature, signature
+from types import ModuleType
 from typing import (
     Annotated,
     Any,
@@ -11,6 +14,8 @@ from typing import (
     TypeVar,
     get_type_hints,
 )
+
+from clan_lib.api.util import JSchemaTypeError
 
 log = logging.getLogger(__name__)
 
@@ -217,12 +222,16 @@ API.register(open_file)
         for name, func in self._registry.items():
             hints = get_type_hints(func)
 
-            serialized_hints = {
-                key: type_to_dict(
-                    value, scope=name + " argument" if key != "return" else "return"
-                )
-                for key, value in hints.items()
-            }
+            try:
+                serialized_hints = {
+                    key: type_to_dict(
+                        value, scope=name + " argument" if key != "return" else "return"
+                    )
+                    for key, value in hints.items()
+                }
+            except JSchemaTypeError as e:
+                msg = f"Error serializing type hints for function '{name}': {e}"
+                raise JSchemaTypeError(msg) from e
 
             return_type = serialized_hints.pop("return")
 
@@ -281,6 +290,37 @@ API.register(open_file)
             return param_class
 
         return None
+
+
+def import_all_modules_from_package(pkg: ModuleType) -> None:
+    for _loader, module_name, _is_pkg in pkgutil.walk_packages(
+        pkg.__path__, prefix=f"{pkg.__name__}."
+    ):
+        base_name = module_name.split(".")[-1]
+
+        # Skip test modules
+        if (
+            base_name.startswith("test_")
+            or base_name.endswith("_test")
+            or base_name == "conftest"
+        ):
+            continue
+
+        importlib.import_module(module_name)
+
+
+def load_in_all_api_functions() -> None:
+    """
+    For the global API object, to have all functions available.
+    We have to make sure python loads every wrapped function at least once.
+    This is done by importing all modules from the clan_lib and clan_cli packages.
+    """
+    import clan_cli
+
+    import clan_lib
+
+    import_all_modules_from_package(clan_lib)
+    import_all_modules_from_package(clan_cli)
 
 
 API = MethodRegistry()

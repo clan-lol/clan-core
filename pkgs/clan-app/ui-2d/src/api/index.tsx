@@ -23,42 +23,25 @@ export type SuccessQuery<T extends OperationNames> = Extract<
 >;
 export type SuccessData<T extends OperationNames> = SuccessQuery<T>["data"];
 
-function isMachine(obj: unknown): obj is Machine {
-  return (
-    !!obj &&
-    typeof obj === "object" &&
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    typeof (obj as any).name === "string" &&
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    typeof (obj as any).flake === "object" &&
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    typeof (obj as any).flake.identifier === "string"
-  );
+interface SendHeaderType {
+  logging?: { group_path: string[] };
+}
+interface BackendSendType<K extends OperationNames> {
+  body: OperationArgs<K>;
+  header?: SendHeaderType;
 }
 
-// Machine type with flake for API calls
-interface Machine {
-  name: string;
-  flake: {
-    identifier: string;
-  };
-}
-
-interface BackendOpts {
-  logging?: { group: string | Machine };
-}
-
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface ReceiveHeaderType {}
 interface BackendReturnType<K extends OperationNames> {
   body: OperationResponse<K>;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  header: Record<string, any>;
+  header: ReceiveHeaderType;
 }
 
 const _callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
-  backendOpts?: BackendOpts,
+  backendOpts?: SendHeaderType,
 ): { promise: Promise<BackendReturnType<K>>; op_key: string } => {
   // if window[method] does not exist, throw an error
   if (!(method in window)) {
@@ -82,26 +65,19 @@ const _callApi = <K extends OperationNames>(
     };
   }
 
-  let header: BackendOpts = {};
-  if (backendOpts != undefined) {
-    header = { ...backendOpts };
-    const group = backendOpts?.logging?.group;
-    if (group != undefined && isMachine(group)) {
-      header = {
-        logging: { group: group.flake.identifier + "#" + group.name },
-      };
-    }
-  }
+  const message: BackendSendType<OperationNames> = {
+    body: args,
+    header: backendOpts,
+  };
 
   const promise = (
     window as unknown as Record<
       OperationNames,
       (
-        args: OperationArgs<OperationNames>,
-        metadata: BackendOpts,
+        args: BackendSendType<OperationNames>,
       ) => Promise<BackendReturnType<OperationNames>>
     >
-  )[method](args, header) as Promise<BackendReturnType<K>>;
+  )[method](message) as Promise<BackendReturnType<K>>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const op_key = (promise as any)._webviewMessageId as string;
@@ -153,7 +129,7 @@ const handleCancel = async <K extends OperationNames>(
 export const callApi = <K extends OperationNames>(
   method: K,
   args: OperationArgs<K>,
-  backendOpts?: BackendOpts,
+  backendOpts?: SendHeaderType,
 ): { promise: Promise<OperationResponse<K>>; op_key: string } => {
   console.log("Calling API", method, args, backendOpts);
 
