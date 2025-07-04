@@ -12,6 +12,8 @@ from typing import (
     get_type_hints,
 )
 
+from clan_lib.api.util import JSchemaTypeError
+
 log = logging.getLogger(__name__)
 
 from .serde import dataclass_to_dict, from_dict, sanitize_string
@@ -217,12 +219,16 @@ API.register(open_file)
         for name, func in self._registry.items():
             hints = get_type_hints(func)
 
-            serialized_hints = {
-                key: type_to_dict(
-                    value, scope=name + " argument" if key != "return" else "return"
-                )
-                for key, value in hints.items()
-            }
+            try:
+                serialized_hints = {
+                    key: type_to_dict(
+                        value, scope=name + " argument" if key != "return" else "return"
+                    )
+                    for key, value in hints.items()
+                }
+            except JSchemaTypeError as e:
+                msg = f"Error serializing type hints for function '{name}': {e}"
+                raise JSchemaTypeError(msg) from e
 
             return_type = serialized_hints.pop("return")
 

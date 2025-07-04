@@ -23,12 +23,21 @@ def import_all_modules_from_package(pkg: ModuleType) -> None:
         importlib.import_module(module_name)
 
 
-def main() -> None:
+def load_in_all_api_functions() -> None:
+    """
+    For the global API object, to have all functions available.
+    We have to make sure python loads every wrapped function at least once.
+    This is done by importing all modules from the clan_lib and clan_cli packages.
+    """
     import clan_cli
     import clan_lib
 
-    import_all_modules_from_package(clan_cli)
     import_all_modules_from_package(clan_lib)
+    import_all_modules_from_package(clan_cli)
+
+
+def main() -> None:
+    load_in_all_api_functions()
 
     from clan_lib.api import API
 
