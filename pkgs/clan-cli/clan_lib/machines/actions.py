@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import TypedDict
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
@@ -10,15 +11,44 @@ from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path
 
 
+class MachineFilter(TypedDict):
+    tags: list[str]
+
+
+class ListOptions(TypedDict):
+    filter: MachineFilter
+
+
 @API.register
-def list_machines(flake: Flake) -> dict[str, InventoryMachine]:
+def list_machines(
+    flake: Flake, opts: ListOptions | None = None
+) -> dict[str, InventoryMachine]:
     """
-    List machines in the inventory for the UI.
+    List machines of a clan
+
+    Usage Example:
+
+    machines = list_machines(flake, {"filter": {"tags": ["foo" "bar"]}})
+
+    lists only machines that include both "foo" AND "bar"
+
     """
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
     machines = inventory.get("machines", {})
+
+    if opts and opts.get("filter"):
+        filtered_machines = {}
+        filter_tags = opts.get("filter", {}).get("tags", [])
+
+        for machine_name, machine in machines.items():
+            machine_tags = machine.get("tags", [])
+            if all(ft in machine_tags for ft in filter_tags):
+                filtered_machines[machine_name] = machine
+
+        return filtered_machines
+
     return machines
 
 
