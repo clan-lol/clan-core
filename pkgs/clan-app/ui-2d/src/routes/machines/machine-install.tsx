@@ -16,14 +16,22 @@ export const MachineInstall = () => {
     queryFn: async () => {
       const curr = activeClanURI();
       if (curr) {
-        const result = await callApi("get_machine_details", {
-          machine: {
-            flake: {
-              identifier: curr,
+        const result = await callApi(
+          "get_machine_details",
+          {
+            machine: {
+              flake: {
+                identifier: curr,
+              },
+              name: params.id,
             },
-            name: params.id,
           },
-        }).promise;
+          {
+            logging: {
+              group_path: ["clans", curr, "machines", params.id],
+            },
+          },
+        ).promise;
         if (result.status === "error") throw new Error("Failed to fetch data");
         return result.data;
       }

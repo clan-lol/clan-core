@@ -186,6 +186,7 @@ export function RemoteForm(props: RemoteFormProps) {
       props.queryFn,
       props.machine?.name,
       props.machine?.flake,
+      props.machine?.flake.identifier,
       props.field || "targetHost",
     ],
     queryFn: async () => {
@@ -209,7 +210,12 @@ export function RemoteForm(props: RemoteFormProps) {
         },
         {
           logging: {
-            group: { name: props.machine.name, flake: props.machine.flake },
+            group_path: [
+              "clans",
+              props.machine.flake.identifier,
+              "machines",
+              props.machine.name,
+            ],
           },
         },
       ).promise;

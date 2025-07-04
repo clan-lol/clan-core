@@ -1,3 +1,4 @@
+# ruff: noqa: TRY301
 import functools
 import io
 import json
@@ -66,15 +67,24 @@ class Webview:
     ) -> None:
         op_key = op_key_bytes.decode()
         args = json.loads(request_data.decode())
-        log.debug(f"Calling {method_name}({args})")
+        log.debug(f"Calling {method_name}({json.dumps(args, indent=4)})")
         header: dict[str, Any]
 
         try:
             # Initialize dataclasses from the payload
             reconciled_arguments = {}
-            if len(args) > 1:
-                header = args[1]
-                for k, v in args[0].items():
+            if len(args) == 1:
+                request = args[0]
+                header = request.get("header", {})
+                msg = f"Expected header to be a dict, got {type(header)}"
+                if not isinstance(header, dict):
+                    raise TypeError(msg)
+                body = request.get("body", {})
+                msg = f"Expected body to be a dict, got {type(body)}"
+                if not isinstance(body, dict):
+                    raise TypeError(msg)
+
+                for k, v in body.items():
                     # Some functions expect to be called with dataclass instances
                     # But the js api returns dictionaries.
                     # Introspect the function and create the expected dataclass from dict dynamically
@@ -84,8 +94,11 @@ class Webview:
                     # TODO: rename from_dict into something like construct_checked_value
                     # from_dict really takes Anything and returns an instance of the type/class
                     reconciled_arguments[k] = from_dict(arg_class, v)
-            elif len(args) == 1:
-                header = args[0]
+            elif len(args) > 1:
+                msg = (
+                    "Expected a single argument, got multiple arguments to api_wrapper"
+                )
+                raise ValueError(msg)
 
             reconciled_arguments["op_key"] = op_key
         except Exception as e:
@@ -114,11 +127,11 @@ class Webview:
             try:
                 # If the API call has set log_group in metadata,
                 # create the log file under that group.
-                log_group: list[str] = header.get("logging", {}).get("group", None)
+                log_group: list[str] = header.get("logging", {}).get("group_path", None)
                 if log_group is not None:
                     if not isinstance(log_group, list):
                         msg = f"Expected log_group to be a list, got {type(log_group)}"
-                        raise TypeError(msg)  # noqa: TRY301
+                        raise TypeError(msg)
                     log.warning(
                         f"Using log group {log_group} for {method_name} with op_key {op_key}"
                     )

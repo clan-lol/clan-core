@@ -158,7 +158,7 @@ export const VarsStep = (props: VarsStepProps) => {
         },
         {
           logging: {
-            group: { name: props.machine_id, flake: { identifier: props.dir } },
+            group_path: ["clans", props.dir, "machines", props.machine_id],
           },
         },
       ).promise;

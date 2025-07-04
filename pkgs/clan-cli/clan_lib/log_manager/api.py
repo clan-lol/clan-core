@@ -20,7 +20,9 @@ def list_log_days() -> list[str]:
 
 
 @API.register
-def list_log_groups(selector: list[str], date_day: str | None = None) -> list[str]:
+def list_log_groups(
+    selector: list[str] | None, date_day: str | None = None
+) -> list[str]:
     """List all log groups at the specified hierarchical path.
 
     Args:

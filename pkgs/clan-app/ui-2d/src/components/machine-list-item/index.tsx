@@ -54,7 +54,9 @@ export const MachineListItem = (props: MachineListItemProps) => {
         flake: { identifier: active_clan },
         name: name,
       },
-      { logging: { group: { name, flake: { identifier: active_clan } } } },
+      {
+        logging: { group_path: ["clans", active_clan, "machines", name] },
+      },
     ).promise;
 
     if (target_host.status == "error") {
@@ -115,7 +117,9 @@ export const MachineListItem = (props: MachineListItemProps) => {
         name: name,
       },
       {
-        logging: { group: { name, flake: { identifier: active_clan } } },
+        logging: {
+          group_path: ["clans", active_clan, "machines", name],
+        },
       },
     ).promise;
 
@@ -141,7 +145,11 @@ export const MachineListItem = (props: MachineListItemProps) => {
         flake: { identifier: active_clan },
         name: name,
       },
-      { logging: { group: { name, flake: { identifier: active_clan } } } },
+      {
+        logging: {
+          group_path: ["clans", active_clan, "machines", name],
+        },
+      },
     ).promise;
 
     if (build_host.status == "error") {
@@ -166,7 +174,11 @@ export const MachineListItem = (props: MachineListItemProps) => {
         target_host: target_host.data!.data,
         build_host: build_host.data?.data || null,
       },
-      { logging: { group: { name, flake: { identifier: active_clan } } } },
+      {
+        logging: {
+          group_path: ["clans", active_clan, "machines", name],
+        },
+      },
     ).promise;
 
     setUpdating(false);

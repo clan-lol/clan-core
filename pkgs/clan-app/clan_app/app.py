@@ -11,7 +11,7 @@ import clan_lib.machines.actions  # noqa: F401
 from clan_lib.api import API, load_in_all_api_functions, tasks
 from clan_lib.custom_logger import setup_logging
 from clan_lib.dirs import user_data_dir
-from clan_lib.log_manager import LogManager
+from clan_lib.log_manager import LogGroupConfig, LogManager
 from clan_lib.log_manager import api as log_manager_api
 
 from clan_app.api.file_gtk import open_file
@@ -41,12 +41,15 @@ def app_run(app_opts: ClanAppOptions) -> int:
 
     webview = Webview(debug=app_opts.debug)
     webview.title = "Clan App"
-    # This seems to call the gtk api correctly but and gtk also seems to our icon, but somehow the icon is not loaded.
 
-    # Init LogManager global in log_manager_api module
-    log_manager_api.LOG_MANAGER_INSTANCE = LogManager(
-        base_dir=user_data_dir() / "clan-app" / "logs"
+    # Add a log group ["clans", <dynamic_name>, "machines", <dynamic_name>]
+    log_manager = LogManager(base_dir=user_data_dir() / "clan-app" / "logs")
+    clan_log_group = LogGroupConfig("clans", "Clans").add_child(
+        LogGroupConfig("machines", "Machines")
     )
+    log_manager = log_manager.add_root_group_config(clan_log_group)
+    # Init LogManager global in log_manager_api module
+    log_manager_api.LOG_MANAGER_INSTANCE = log_manager
 
     # Init BAKEND_THREADS global in tasks module
     tasks.BAKEND_THREADS = webview.threads
