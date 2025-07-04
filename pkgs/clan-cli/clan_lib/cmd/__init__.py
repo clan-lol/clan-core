@@ -179,6 +179,7 @@ def terminate_process_group(process: subprocess.Popen) -> Iterator[None]:
     try:
         process_group = os.getpgid(process.pid)
     except ProcessLookupError:
+        yield
         return
     if process_group == os.getpgid(os.getpid()):
         msg = "Bug! Refusing to terminate the current process group"
