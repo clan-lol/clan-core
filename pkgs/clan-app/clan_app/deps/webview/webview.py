@@ -110,17 +110,39 @@ class Webview:
         def thread_task(stop_event: threading.Event) -> None:
             ctx: AsyncContext = get_async_ctx()
             ctx.should_cancel = lambda: stop_event.is_set()
-            # If the API call has set log_group in metadata,
-            # create the log file under that group.
-            log_group = header.get("logging", {}).get("group", None)
-            if log_group is not None:
-                log.warning(
-                    f"Using log group {log_group} for {method_name} with op_key {op_key}"
-                )
 
-            log_file = log_manager.create_log_file(
-                wrap_method, op_key=op_key, group=log_group
-            ).get_file_path()
+            try:
+                # If the API call has set log_group in metadata,
+                # create the log file under that group.
+                log_group: list[str] = header.get("logging", {}).get("group", None)
+                if log_group is not None:
+                    if not isinstance(log_group, list):
+                        msg = f"Expected log_group to be a list, got {type(log_group)}"
+                        raise TypeError(msg)  # noqa: TRY301
+                    log.warning(
+                        f"Using log group {log_group} for {method_name} with op_key {op_key}"
+                    )
+
+                log_file = log_manager.create_log_file(
+                    wrap_method, op_key=op_key, group_path=log_group
+                ).get_file_path()
+            except Exception as e:
+                log.exception(f"Error while handling request header of {method_name}")
+                result = ErrorDataClass(
+                    op_key=op_key,
+                    status="error",
+                    errors=[
+                        ApiError(
+                            message="An internal error occured",
+                            description=str(e),
+                            location=["header_middleware", method_name],
+                        )
+                    ],
+                )
+                serialized = json.dumps(
+                    dataclass_to_dict(result), indent=4, ensure_ascii=False
+                )
+                self.return_(op_key, FuncStatus.SUCCESS, serialized)
 
             with log_file.open("ab") as log_f:
                 # Redirect all cmd.run logs to this file.
