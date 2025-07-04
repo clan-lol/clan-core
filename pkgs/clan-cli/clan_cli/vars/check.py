@@ -4,13 +4,12 @@ import logging
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
-
-log = logging.getLogger(__name__)
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .generate import Var
+
+log = logging.getLogger(__name__)
 
 
 class VarStatus:

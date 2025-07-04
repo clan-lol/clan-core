@@ -8,6 +8,7 @@ import pytest
 from clan_lib.api import dataclass_to_dict, from_dict
 from clan_lib.errors import ClanError
 from clan_lib.machines import machines
+from clan_lib.api.serde import is_type_in_union
 
 
 def test_simple() -> None:
@@ -214,6 +215,44 @@ def test_none_or_string() -> None:
 
     checked3: Person | None = from_dict(Person | None, data)
     assert checked3 is None
+
+
+def test_union_with_none_edge_cases() -> None:
+    """
+    Test various union types with None to ensure issubclass() error is avoided.
+    This specifically tests the fix for the TypeError in is_type_in_union.
+    """
+    # Test basic types with None
+    assert from_dict(str | None, None) is None
+    assert from_dict(str | None, "hello") == "hello"
+
+    # Test dict with None - this was the specific case that failed
+    assert from_dict(dict[str, str] | None, None) is None
+    assert from_dict(dict[str, str] | None, {"key": "value"}) == {"key": "value"}
+
+    # Test list with None
+    assert from_dict(list[str] | None, None) is None
+    assert from_dict(list[str] | None, ["a", "b"]) == ["a", "b"]
+
+    # Test dataclass with None
+    @dataclass
+    class TestClass:
+        value: str
+
+    assert from_dict(TestClass | None, None) is None
+    assert from_dict(TestClass | None, {"value": "test"}) == TestClass(value="test")
+
+    # Test Path with None (since it's used in the original failing test)
+    assert from_dict(Path | None, None) is None
+    assert from_dict(Path | None, "/home/test") == Path("/home/test")
+
+    # Test that the is_type_in_union function works correctly
+    # This is the core of what was fixed - ensuring None doesn't cause issubclass error
+    # These should not raise TypeError anymore
+    assert is_type_in_union(str | None, type(None)) is True
+    assert is_type_in_union(dict[str, str] | None, type(None)) is True
+    assert is_type_in_union(list[str] | None, type(None)) is True
+    assert is_type_in_union(Path | None, type(None)) is True
 
 
 def test_roundtrip_escape() -> None:

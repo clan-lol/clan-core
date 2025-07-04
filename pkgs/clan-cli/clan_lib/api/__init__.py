@@ -16,14 +16,14 @@ from typing import (
 )
 
 from clan_lib.api.util import JSchemaTypeError
+from clan_lib.errors import ClanError
+from .serde import dataclass_to_dict, from_dict, sanitize_string
 
 log = logging.getLogger(__name__)
 
-from .serde import dataclass_to_dict, from_dict, sanitize_string
 
 __all__ = ["dataclass_to_dict", "from_dict", "sanitize_string"]
 
-from clan_lib.errors import ClanError
 
 T = TypeVar("T")
 

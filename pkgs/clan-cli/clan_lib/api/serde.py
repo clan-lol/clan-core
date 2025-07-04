@@ -146,8 +146,31 @@ def is_union_type(type_hint: type | UnionType) -> bool:
 
 
 def is_type_in_union(union_type: type | UnionType, target_type: type) -> bool:
-    if get_origin(union_type) is UnionType:
-        return any(issubclass(arg, target_type) for arg in get_args(union_type))
+    # Check for Union from typing module (Union[str, None]) or UnionType (str | None)
+    if get_origin(union_type) in (Union, UnionType):
+        args = get_args(union_type)
+        for arg in args:
+            # Handle None type specially since it's not a class
+            if arg is None or arg is type(None):
+                if target_type is type(None):
+                    return True
+            # For generic types like dict[str, str], check their origin
+            elif get_origin(arg) is not None:
+                if get_origin(arg) == target_type:
+                    return True
+                # Also check if target_type is a generic with same origin
+                elif get_origin(target_type) is not None and get_origin(
+                    arg
+                ) == get_origin(target_type):
+                    return True
+            # For actual classes, use issubclass
+            elif inspect.isclass(arg) and inspect.isclass(target_type):
+                if issubclass(arg, target_type):
+                    return True
+            # For non-class types, use direct comparison
+            elif arg == target_type:
+                return True
+        return False
     return union_type == target_type
 
 

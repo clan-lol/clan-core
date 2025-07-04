@@ -143,7 +143,7 @@ class VMObject(GObject.Object):
     # We use a context manager to create the machine object
     # and make sure it is destroyed when the context is exited
     @contextmanager
-    def _create_machine(self) -> Generator[Machine, None, None]:
+    def _create_machine(self) -> Generator[Machine]:
         uri = ClanURI.from_str(
             url=str(self.data.flake.flake_url), machine_name=self.data.flake.flake_attr
         )
