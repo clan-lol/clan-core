@@ -1,0 +1,22 @@
+fieldset {
+  @apply flex flex-col w-full;
+
+  legend {
+    @apply mb-2.5 w-full;
+  }
+
+  div.fields {
+    @apply flex flex-col gap-4 w-full rounded-md;
+    @apply px-4 py-5 bg-def-2;
+  }
+
+  div.error {
+    @apply w-full;
+  }
+
+  &.inverted {
+    div.fields {
+      @apply bg-inv-2;
+    }
+  }
+}

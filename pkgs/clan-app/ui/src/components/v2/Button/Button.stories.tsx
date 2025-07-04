@@ -3,9 +3,6 @@ import { Button, ButtonProps } from "./Button";
 import { Component } from "solid-js";
 import { expect, fn, waitFor } from "storybook/test";
 import { StoryContext } from "@kachurun/storybook-solid-vite";
-import { StorybookClock } from "@/tests/clock";
-
-const clock = StorybookClock();
 
 const getCursorStyle = (el: Element) => window.getComputedStyle(el).cursor;
 
@@ -147,32 +144,22 @@ export default meta;
 
 type Story = StoryObj<ButtonProps>;
 
+const timeout = process.env.NODE_ENV === "test" ? 500 : 2000;
+
 export const Primary: Story = {
   args: {
     hierarchy: "primary",
     onAction: fn(async () => {
       // wait 500 ms to simulate an action
-      await new Promise((resolve) => clock.setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, timeout));
       // randomly fail to check that the loading state still returns to normal
       if (Math.random() > 0.5) {
         throw new Error("Action failure");
       }
     }),
   },
-  parameters: {
-    test: {
-      // increase test timeout to allow for the loading action
-      mockTimers: true,
-    },
-  },
 
-  play: async ({
-    canvas,
-    canvasElement,
-    step,
-    userEvent,
-    args,
-  }: StoryContext) => {
+  play: async ({ canvas, step, userEvent, args }: StoryContext) => {
     const buttons = await canvas.findAllByRole("button");
 
     for (const button of buttons) {
@@ -201,23 +188,20 @@ export const Primary: Story = {
         // click the button
         await userEvent.click(button);
 
-        // advance the clock
-        clock.tick(1);
-
         // check the button has changed
-        await waitFor(async () => {
-          // the action handler should have been called
-          await expect(args.onAction).toHaveBeenCalled();
-          // the button should have a loading class
-          await expect(button).toHaveClass("loading");
-          // the loader should be visible
-          await expect(loader.clientWidth).toBeGreaterThan(0);
-          // the pointer should have changed to wait
-          await expect(getCursorStyle(button)).toEqual("wait");
-        });
-
-        // advance the clock
-        clock.tick(2000);
+        await waitFor(
+          async () => {
+            // the action handler should have been called
+            await expect(args.onAction).toHaveBeenCalled();
+            // the button should have a loading class
+            await expect(button).toHaveClass("loading");
+            // the loader should be visible
+            await expect(loader.clientWidth).toBeGreaterThan(0);
+            // the pointer should have changed to wait
+            await expect(getCursorStyle(button)).toEqual("wait");
+          },
+          { timeout: timeout + 500 },
+        );
 
         // wait for the action handler to finish
         await waitFor(
@@ -229,7 +213,7 @@ export const Primary: Story = {
             // the pointer should be normal
             await expect(getCursorStyle(button)).toEqual("pointer");
           },
-          { timeout: 2500 },
+          { timeout: timeout + 500 },
         );
       });
     }

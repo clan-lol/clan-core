@@ -1,0 +1,130 @@
+div.form-field {
+  &.text input,
+  &.textarea textarea {
+    @apply w-full px-2 py-1.5 rounded-sm;
+    @apply outline outline-1 outline-def-acc-1 bg-def-1 fg-def-1;
+
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: "Archivo", sans-serif;
+    line-height: 132%;
+
+    &::placeholder {
+      @apply fg-def-4;
+    }
+
+    &:hover {
+      @apply bg-def-acc-1 outline-def-acc-2;
+    }
+
+    &:focus-visible {
+      @apply bg-def-1 outline-def-acc-3;
+
+      box-shadow:
+        0 0 0 0.125rem theme(colors.bg.def.1),
+        0 0 0 0.1875rem theme(colors.border.semantic.info.1);
+    }
+
+    &[data-invalid] {
+      @apply outline-semantic-error-4;
+    }
+
+    &[data-disabled] {
+      @apply outline-def-2 fg-def-4 cursor-not-allowed;
+    }
+
+    &[data-readonly] {
+      @apply outline-def-2 cursor-not-allowed;
+    }
+  }
+
+  &.horizontal {
+    @apply flex-row gap-2 justify-between;
+
+    &.text div.input-container,
+    &.textarea textarea {
+      @apply w-1/2 grow;
+    }
+  }
+
+  &.text div.input-container {
+    @apply inline-block relative w-full h-[1.875rem];
+
+    /* I'm unsure why I have to do this */
+    @apply leading-none;
+
+    & > input {
+      @apply w-full h-[1.875rem];
+
+      &.has-icon {
+        @apply pl-7;
+      }
+    }
+
+    & > .icon {
+      @apply absolute left-2 top-1/2 transform -translate-y-1/2;
+      @apply w-[0.875rem] h-[0.875rem] pointer-events-none;
+    }
+  }
+
+  &.s {
+    &.text input,
+    &.textarea textarea {
+      @apply px-1.5 py-1;
+      font-size: 0.75rem;
+    }
+
+    &.text div.input-container {
+      @apply h-[1.25rem];
+
+      input {
+        @apply h-[1.25rem];
+      }
+
+      input.has-icon {
+        @apply pl-6;
+      }
+
+      & > .icon {
+        @apply w-[0.6875rem] h-[0.6875rem] transform -translate-y-1/2;
+      }
+    }
+  }
+
+  &.inverted {
+    &.text input,
+    &.textarea textarea {
+      @apply bg-inv-1 fg-inv-1 outline-inv-acc-1;
+
+      &::placeholder {
+        @apply fg-inv-4;
+      }
+
+      &:hover {
+        @apply bg-inv-acc-2 outline-inv-acc-2;
+      }
+
+      &:focus-visible {
+        @apply bg-inv-acc-4;
+        box-shadow:
+          0 0 0 0.125rem theme(colors.bg.inv.1),
+          0 0 0 0.1875rem theme(colors.border.semantic.info.1);
+      }
+
+      &[data-invalid] {
+        @apply outline-semantic-error-4;
+      }
+    }
+  }
+
+  &.ghost {
+    &.text input,
+    &.textarea textarea {
+      @apply outline-none;
+
+      &:hover {
+        @apply outline-none;
+      }
+    }
+  }
+}

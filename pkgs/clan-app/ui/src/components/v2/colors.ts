@@ -3,6 +3,7 @@ export type Color =
   | "secondary"
   | "tertiary"
   | "quaternary"
+  | "error"
   | "inherit";
 
 export const AllColors: Color[] = [
@@ -10,6 +11,7 @@ export const AllColors: Color[] = [
   "secondary",
   "tertiary",
   "quaternary",
+  "error",
   "inherit",
 ];
 
@@ -18,6 +20,7 @@ const colorMap: Record<Color, string> = {
   secondary: "fg-def-2",
   tertiary: "fg-def-3",
   quaternary: "fg-def-4",
+  error: "fg-semantic-error-4",
   inherit: "text-inherit",
 };
 
@@ -26,6 +29,7 @@ const invertedColorMap: Record<Color, string> = {
   secondary: "fg-inv-2",
   tertiary: "fg-inv-3",
   quaternary: "fg-inv-4",
+  error: "fg-semantic-error-2",
   inherit: "text-inherit",
 };
 

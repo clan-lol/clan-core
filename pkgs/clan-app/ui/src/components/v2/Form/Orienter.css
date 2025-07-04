@@ -1,0 +1,22 @@
+div.orienter {
+  @apply flex flex-col gap-2 w-full;
+
+  &.vertical {
+  }
+
+  &.horizontal {
+    @apply flex-row gap-2 justify-between;
+
+    & > div.form-label {
+      @apply w-1/2 shrink;
+    }
+  }
+
+  &.align-center {
+    @apply items-center;
+  }
+
+  &.align-start {
+    @apply items-start;
+  }
+}

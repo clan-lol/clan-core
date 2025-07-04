@@ -1,0 +1,212 @@
+div.form-field.combobox {
+  div.control {
+    @apply flex flex-col w-full gap-2;
+
+    div.selected-options {
+      @apply flex flex-wrap gap-1 w-full min-h-5;
+    }
+
+    div.input-container {
+      @apply relative left-0 top-0;
+      @apply inline-flex justify-between w-full;
+
+      input {
+        @apply w-full px-2 py-1.5 rounded-sm;
+        @apply outline outline-1 outline-def-acc-1 bg-def-1 fg-def-1;
+
+        font-size: 0.875rem;
+        font-weight: 500;
+        font-family: "Archivo", sans-serif;
+        line-height: 1;
+
+        &::placeholder {
+          @apply fg-def-4;
+        }
+
+        &:hover {
+          @apply bg-def-acc-1 outline-def-acc-2;
+        }
+
+        &:focus-visible {
+          @apply bg-def-1 outline-def-acc-3;
+
+          box-shadow:
+            0 0 0 0.125rem theme(colors.bg.def.1),
+            0 0 0 0.1875rem theme(colors.border.semantic.info.1);
+        }
+
+        &[data-invalid] {
+          @apply outline-semantic-error-4;
+        }
+
+        &[data-disabled] {
+          @apply outline-def-2 fg-def-4 cursor-not-allowed;
+        }
+
+        &[data-readonly] {
+          @apply outline-def-2 cursor-not-allowed;
+        }
+      }
+
+      & > button.trigger {
+        @apply flex items-center justify-center w-8;
+        @apply absolute right-2 top-1 h-5 w-6 bg-def-2 rounded-sm;
+
+        &[data-disabled] {
+          @apply cursor-not-allowed;
+        }
+
+        & > span.icon {
+          @apply h-full w-full py-0.5 px-1;
+        }
+      }
+    }
+  }
+
+  &.horizontal {
+    @apply flex-row gap-2 justify-between;
+
+    div.control {
+      @apply w-1/2 grow;
+    }
+  }
+
+  &.s {
+    div.control > div.input-container {
+      & > input {
+        @apply px-1.5 py-1;
+        font-size: 0.75rem;
+      }
+
+      & > button.trigger {
+        @apply top-[0.1875rem] h-4 w-5;
+      }
+    }
+  }
+
+  &.inverted {
+    div.control > div.input-container {
+      & > button.trigger {
+        @apply bg-inv-2;
+      }
+
+      & > input {
+        @apply bg-inv-1 fg-inv-1 outline-inv-acc-1;
+
+        &::placeholder {
+          @apply fg-inv-4;
+        }
+
+        &:hover {
+          @apply bg-inv-acc-2 outline-inv-acc-2;
+        }
+
+        &:focus-visible {
+          @apply bg-inv-acc-4;
+          box-shadow:
+            0 0 0 0.125rem theme(colors.bg.inv.1),
+            0 0 0 0.1875rem theme(colors.border.semantic.info.1);
+        }
+
+        &[data-invalid] {
+          @apply outline-semantic-error-4;
+        }
+      }
+    }
+  }
+
+  &.ghost {
+    div.control > div.input-container {
+      & > input {
+        @apply outline-none;
+
+        &:hover {
+          @apply outline-none;
+        }
+      }
+    }
+  }
+}
+
+div.combobox-content {
+  @apply rounded-sm bg-def-1 border border-def-2;
+
+  transform-origin: var(--kb-combobox-content-transform-origin);
+  animation: comboboxContentHide 250ms ease-in forwards;
+
+  &[data-expanded] {
+    animation: comboboxContentShow 250ms ease-out;
+  }
+
+  & > ul.listbox {
+    overflow-y: auto;
+    max-height: 360px;
+
+    @apply px-2 py-3;
+
+    &:focus {
+      outline: none;
+    }
+
+    li.item {
+      @apply flex items-center justify-between;
+      @apply relative px-2 py-1;
+      @apply select-none outline-none rounded-[0.25rem];
+
+      color: hsl(240 4% 16%);
+      height: 32px;
+
+      &[data-disabled] {
+        color: hsl(240 5% 65%);
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      &[data-highlighted] {
+        @apply outline-none bg-def-4;
+      }
+    }
+
+    .item-indicator {
+      height: 20px;
+      width: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+div.combobox-control {
+  @apply flex flex-col w-full gap-2;
+
+  & > div.selected-options {
+    @apply flex gap-2 flex-wrap w-full;
+  }
+
+  & > div.input-container {
+    @apply w-full flex gap-2;
+  }
+}
+
+@keyframes comboboxContentShow {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes comboboxContentHide {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
