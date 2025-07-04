@@ -74,14 +74,6 @@ hide:
 
     ---
 
-    The clan core nix module.
-    This is imported when using clan and is the basis of the extra functionality
-    that can be provided.
-
--   [(Legacy) Modules](./reference/clanModules/index.md)
-
-    ---
-
     An overview of available clanModules
 
     !!! Example "These will be deprecated soon"

@@ -12,7 +12,6 @@ let
       imports = [
         ./iwd.nix
         self.nixosModules.installer
-        self.clanModules.trusted-nix-caches
       ];
 
       system.stateVersion = config.system.nixos.release;
