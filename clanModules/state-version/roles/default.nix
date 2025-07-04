@@ -5,9 +5,12 @@ in
 {
 
   warnings = [
-    "The clan.state-version module is deprecated and will be removed on 2025-07-15.
-      Please migrate to user-maintained configuration or the new equivalent clan services
-      (https://docs.clan.lol/reference/clanServices)."
+    ''
+      The clan.state-version service is deprecated and will be
+      removed on 2025-07-15 in favor of a nix option.
+
+      Please migrate your configuration to use `clan.core.settings.state-version.enable = true` instead.
+    ''
   ];
 
   system.stateVersion = lib.mkDefault (lib.removeSuffix "\n" var.value);

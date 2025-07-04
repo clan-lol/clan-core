@@ -13,13 +13,13 @@
       ./options.nix
       ./outputs.nix
       ./sops.nix
-      ./state-version/default.nix
       ./vars
     ]
     ++ lib.optionals (_class == "nixos") [
       ./nixos-facter.nix
       ./vm.nix
       ./machine-id
+      ./state-version
       ./wayland-proxy-virtwl.nix
       ./zerotier
       ./zfs.nix
