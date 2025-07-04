@@ -28,6 +28,7 @@ export interface LabelProps {
   tooltip?: string;
   icon?: string;
   inverted?: boolean;
+  readOnly?: boolean;
   validationState?: "valid" | "invalid";
 }
 
@@ -42,7 +43,7 @@ export const Label = (props: LabelProps) => {
             hierarchy="label"
             size={props.size || "default"}
             color={props.validationState == "invalid" ? "error" : "primary"}
-            weight="bold"
+            weight={props.readOnly ? "normal" : "bold"}
             inverted={props.inverted}
           >
             {props.label}

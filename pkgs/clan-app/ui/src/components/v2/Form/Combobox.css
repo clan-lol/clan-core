@@ -1,9 +1,9 @@
 div.form-field.combobox {
   div.control {
-    @apply flex flex-col w-full gap-2;
+    @apply flex flex-col size-full gap-2;
 
     div.selected-options {
-      @apply flex flex-wrap gap-1 w-full min-h-5;
+      @apply flex flex-wrap gap-1 size-full min-h-5;
     }
 
     div.input-container {
@@ -44,7 +44,8 @@ div.form-field.combobox {
         }
 
         &[data-readonly] {
-          @apply outline-def-2 cursor-not-allowed;
+          @apply outline-none border-none bg-inherit;
+          @apply p-0 resize-none;
         }
       }
 
@@ -76,6 +77,10 @@ div.form-field.combobox {
       & > input {
         @apply px-1.5 py-1;
         font-size: 0.75rem;
+
+        &[data-readonly] {
+          @apply p-0;
+        }
       }
 
       & > button.trigger {
@@ -110,6 +115,10 @@ div.form-field.combobox {
 
         &[data-invalid] {
           @apply outline-semantic-error-4;
+        }
+
+        &[data-readonly] {
+          @apply outline-none border-none bg-inherit cursor-auto;
         }
       }
     }
