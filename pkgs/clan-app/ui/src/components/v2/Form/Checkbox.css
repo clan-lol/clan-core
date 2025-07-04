@@ -16,6 +16,10 @@ div.form-field {
       &[data-invalid] {
         @apply border-semantic-error-4;
       }
+
+      &[data-readonly] {
+        @apply cursor-default bg-inherit border-none;
+      }
     }
   }
 
@@ -31,6 +35,10 @@ div.form-field {
 
         &[data-disabled] {
           @apply bg-def-4 border-none;
+        }
+
+        &[data-readonly] {
+          @apply bg-inherit;
         }
       }
     }

@@ -94,7 +94,15 @@ export const Disabled: Story = {
   },
 };
 
-export const ReadOnly: Story = {
+export const ReadOnlyUnchecked: Story = {
+  args: {
+    ...Tooltip.args,
+    readOnly: true,
+    defaultChecked: false,
+  },
+};
+
+export const ReadOnlyChecked: Story = {
   args: {
     ...Tooltip.args,
     readOnly: true,

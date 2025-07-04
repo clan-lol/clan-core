@@ -1,0 +1,33 @@
+div.sidebar-pane {
+  @apply h-full w-auto max-w-60 border-none;
+
+  & > div.header {
+    @apply flex items-center justify-between px-3 py-2 rounded-t-[0.5rem];
+    @apply border-t-[1px] border-t-bg-inv-3
+        border-r-[1px] border-r-bg-inv-3
+        border-b-2 border-b-bg-inv-4
+        border-l-[1px] border-l-bg-inv-3;
+    background: linear-gradient(
+      90deg,
+      theme(colors.bg.inv.3) 0%,
+      theme(colors.bg.inv.4) 100%
+    );
+  }
+
+  & > div.body {
+    @apply flex flex-col gap-4 px-2 pt-4 pb-3 w-full h-full;
+    @apply backdrop-blur-md;
+    @apply rounded-b-[0.5rem]
+        border-r-[1px] border-r-bg-inv-3
+        border-b-2 border-b-bg-inv-4
+        border-l-[1px] border-l-bg-inv-3;
+
+    background:
+      linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.2) 100%),
+      linear-gradient(
+        180deg,
+        theme(colors.bg.inv.2) 0%,
+        theme(colors.bg.inv.3) 100%
+      );
+  }
+}

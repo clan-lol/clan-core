@@ -1,15 +1,15 @@
-div.divider {
-  @apply bg-inv-2;
+hr {
+  @apply border-none outline-none bg-inv-2;
 
   &.inverted {
     @apply bg-def-3;
   }
 
-  &.horizontal {
+  &[data-orientation="horizontal"] {
     @apply w-full h-px;
   }
 
-  &.vertical {
+  &[data-orientation="vertical"] {
     @apply h-full w-px;
   }
 }
