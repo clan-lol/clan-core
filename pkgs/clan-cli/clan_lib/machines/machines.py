@@ -188,7 +188,7 @@ def get_host(
 
     if host_str is None:
         machine.warn(
-            f"'{field}' is not set in `inventory.machines.${name}.deploy.targetHost` - falling back to _slower_ nixos option: `clan.core.networking.targetHost`"
+            f"'{field}' is not set in `inventory.machines.${name}.deploy.targetHost` - falling back to _slower_ nixos option: `clan.core.networking.{field}`"
         )
         host_str = machine.select(f'config.clan.core.networking."{field}"')
         source = "machine"
