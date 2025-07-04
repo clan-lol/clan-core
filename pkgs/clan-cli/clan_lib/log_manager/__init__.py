@@ -20,28 +20,57 @@ class LogGroupConfig:
     )  # Nested child groups
 
     def get_display_name(self) -> str:
-        """Get the display name (nickname if available, otherwise the name)."""
+        """Get the display name for this log group.
+        
+        Returns:
+            The nickname if available, otherwise the group name.
+        """
         return self.nickname if self.nickname else self.name
 
     def add_child(self, child: "LogGroupConfig") -> "LogGroupConfig":
-        """Add a child group configuration and return a new LogGroupConfig instance."""
+        """Add a child group configuration and return a new LogGroupConfig instance.
+        
+        Args:
+            child: The child LogGroupConfig to add.
+            
+        Returns:
+            A new LogGroupConfig instance with the child added.
+        """
         new_children = {**self.children, child.name: child}
         return LogGroupConfig(
             name=self.name, nickname=self.nickname, children=new_children
         )
 
     def get_child(self, name: str) -> "LogGroupConfig | None":
-        """Get a child group by name."""
+        """Get a child group configuration by name.
+        
+        Args:
+            name: The name of the child group to retrieve.
+            
+        Returns:
+            The child LogGroupConfig if found, None otherwise.
+        """
         return self.children.get(name)
 
     def get_path_components(self) -> list[str]:
-        """Get the path components for this group (just the name as a single component)."""
+        """Get the path components for this group.
+        
+        Returns:
+            A list containing just the group name as a single component.
+        """
         return [self.name]
 
 
 # Global helper function for format checking (used by LogManager and internally by classes)
 def is_correct_day_format(date_day: str) -> bool:
-    """Check if the date_day is in the correct format YYYY-MM-DD."""
+    """Check if the date_day string is in the correct format YYYY-MM-DD.
+    
+    Args:
+        date_day: The date string to validate.
+        
+    Returns:
+        True if the date_day matches YYYY-MM-DD format, False otherwise.
+    """
     try:
         datetime.datetime.strptime(date_day, "%Y-%m-%d").replace(tzinfo=datetime.UTC)
     except ValueError:
@@ -60,6 +89,11 @@ class LogFile:
     date_second: str  # HH-MM-SS
 
     def __post_init__(self) -> None:
+        """Validate date and time formats after initialization.
+        
+        Raises:
+            ValueError: If date_day or date_second are not in the correct format.
+        """
         # Validate formats upon initialization.
         if not is_correct_day_format(self.date_day):
             msg = f"LogFile.date_day '{self.date_day}' is not in YYYY-MM-DD format."
@@ -74,6 +108,11 @@ class LogFile:
 
     @property
     def _datetime_obj(self) -> datetime.datetime:
+        """Get the datetime object for this log file.
+        
+        Returns:
+            A datetime object constructed from date_day and date_second.
+        """
         # Formats are pre-validated by __post_init__.
         return datetime.datetime.strptime(
             f"{self.date_day} {self.date_second}", "%Y-%m-%d %H-%M-%S"
@@ -81,6 +120,17 @@ class LogFile:
 
     @classmethod
     def from_path(cls, file: Path) -> "LogFile":
+        """Create a LogFile instance from a file path.
+        
+        Args:
+            file: The Path object pointing to the log file.
+            
+        Returns:
+            A new LogFile instance parsed from the file path.
+            
+        Raises:
+            ValueError: If the file path structure is invalid or filename doesn't match expected format.
+        """
         # Work backwards from the file path to reconstruct the hierarchical group structure
         func_name = file.parent.name
 
@@ -127,6 +177,11 @@ class LogFile:
         )
 
     def get_file_path(self) -> Path:
+        """Get the full file path for this log file.
+        
+        Returns:
+            The complete Path object for this log file including nested directory structure.
+        """
         # Create nested directory structure for hierarchical groups
         path = self._base_dir / self.date_day
 
@@ -139,6 +194,14 @@ class LogFile:
         return path / self.func_name / f"{self.date_second}_{self.op_key}.log"
 
     def __eq__(self, other: object) -> bool:
+        """Check equality with another LogFile instance.
+        
+        Args:
+            other: The object to compare with.
+            
+        Returns:
+            True if all significant fields are equal, False otherwise.
+        """
         if not isinstance(other, LogFile):
             return NotImplemented
         # Compare all significant fields for equality
@@ -151,6 +214,16 @@ class LogFile:
         )
 
     def __lt__(self, other: object) -> bool:
+        """Compare LogFile instances for sorting.
+        
+        Sorting order: datetime (newest first), then group, func_name, op_key (all ascending).
+        
+        Args:
+            other: The object to compare with.
+            
+        Returns:
+            True if this instance should be sorted before the other.
+        """
         if not isinstance(other, LogFile):
             return NotImplemented
         # Primary sort: datetime (newest first). self is "less than" other if self is newer.
@@ -175,12 +248,22 @@ class LogFuncDir:
     _base_dir: Path
 
     def __post_init__(self) -> None:
+        """Validate date format after initialization.
+        
+        Raises:
+            ValueError: If date_day is not in YYYY-MM-DD format.
+        """
         if not is_correct_day_format(self.date_day):
             msg = f"LogFuncDir.date_day '{self.date_day}' is not in YYYY-MM-DD format."
             raise ValueError(msg)
 
     @property
     def _date_obj(self) -> datetime.date:
+        """Get the date object for this log function directory.
+        
+        Returns:
+            A date object constructed from date_day.
+        """
         return (
             datetime.datetime.strptime(self.date_day, "%Y-%m-%d")
             .replace(tzinfo=datetime.UTC)
@@ -188,6 +271,11 @@ class LogFuncDir:
         )
 
     def get_dir_path(self) -> Path:
+        """Get the directory path for this log function directory.
+        
+        Returns:
+            The complete Path object for this function directory including nested group structure.
+        """
         # Create nested directory structure for hierarchical groups
         path = self._base_dir / self.date_day
 
@@ -200,6 +288,11 @@ class LogFuncDir:
         return path / self.func_name
 
     def get_log_files(self) -> list[LogFile]:
+        """Get all log files in this function directory.
+        
+        Returns:
+            A sorted list of LogFile instances (newest first). Returns empty list if directory doesn't exist.
+        """
         dir_path = self.get_dir_path()
         if not dir_path.exists() or not dir_path.is_dir():
             return []
@@ -217,6 +310,14 @@ class LogFuncDir:
         return sorted(log_files_list)  # Sorts using LogFile.__lt__ (newest first)
 
     def __eq__(self, other: object) -> bool:
+        """Check equality with another LogFuncDir instance.
+        
+        Args:
+            other: The object to compare with.
+            
+        Returns:
+            True if all significant fields are equal, False otherwise.
+        """
         if not isinstance(other, LogFuncDir):
             return NotImplemented
         return (
@@ -227,6 +328,16 @@ class LogFuncDir:
         )
 
     def __lt__(self, other: object) -> bool:
+        """Compare LogFuncDir instances for sorting.
+        
+        Sorting order: date (newest first), then group, func_name (all ascending).
+        
+        Args:
+            other: The object to compare with.
+            
+        Returns:
+            True if this instance should be sorted before the other.
+        """
         if not isinstance(other, LogFuncDir):
             return NotImplemented
         # Primary sort: date (newest first)
@@ -251,21 +362,39 @@ class LogGroupDir:
 
     @property
     def group_name(self) -> str:
-        """Get the name of this group level (last component of path)."""
+        """Get the name of this group level.
+        
+        Returns:
+            The last component of the group path, or empty string if no path.
+        """
         return self.group_path[-1] if self.group_path else ""
 
     @property
     def full_group_path(self) -> str:
-        """Get the full group path as a slash-separated string."""
+        """Get the full group path as a slash-separated string.
+        
+        Returns:
+            The complete group path joined with forward slashes.
+        """
         return "/".join(self.group_path)
 
     def __post_init__(self) -> None:
+        """Validate date format after initialization.
+        
+        Raises:
+            ValueError: If date_day is not in YYYY-MM-DD format.
+        """
         if not is_correct_day_format(self.date_day):
             msg = f"LogGroupDir.date_day '{self.date_day}' is not in YYYY-MM-DD format."
             raise ValueError(msg)
 
     @property
     def _date_obj(self) -> datetime.date:
+        """Get the date object for this log group directory.
+        
+        Returns:
+            A date object constructed from date_day.
+        """
         return (
             datetime.datetime.strptime(self.date_day, "%Y-%m-%d")
             .replace(tzinfo=datetime.UTC)
@@ -273,7 +402,11 @@ class LogGroupDir:
         )
 
     def get_dir_path(self) -> Path:
-        """Get the directory path for this nested group."""
+        """Get the directory path for this nested group.
+        
+        Returns:
+            The complete Path object for this group directory with URL encoding for dynamic elements.
+        """
         path = self._base_dir / self.date_day
         for i, component in enumerate(self.group_path):
             if i % 2 == 1:  # Odd index = dynamic element, needs URL encoding
@@ -283,11 +416,19 @@ class LogGroupDir:
         return path
 
     def get_display_name(self) -> str:
-        """Get the display name (nickname if available, otherwise group name)."""
+        """Get the display name for this group.
+        
+        Returns:
+            The nickname if available, otherwise the group name.
+        """
         return self.nickname if self.nickname else self.group_name
 
     def get_nested_groups(self) -> list["LogGroupDir"]:
-        """Get nested LogGroupDir instances within this group."""
+        """Get nested LogGroupDir instances within this group.
+        
+        Returns:
+            A sorted list of nested LogGroupDir instances. Returns empty list if directory doesn't exist.
+        """
         dir_path = self.get_dir_path()
         if not dir_path.exists() or not dir_path.is_dir():
             return []
@@ -320,6 +461,11 @@ class LogGroupDir:
         return sorted(nested_groups)
 
     def get_log_files(self) -> list[LogFuncDir]:
+        """Get all function directories containing log files in this group.
+        
+        Returns:
+            A sorted list of LogFuncDir instances that contain log files. Returns empty list if directory doesn't exist.
+        """
         dir_path = self.get_dir_path()
         if not dir_path.exists() or not dir_path.is_dir():
             return []
@@ -350,6 +496,14 @@ class LogGroupDir:
         return sorted(func_dirs_list)
 
     def __eq__(self, other: object) -> bool:
+        """Check equality with another LogGroupDir instance.
+        
+        Args:
+            other: The object to compare with.
+            
+        Returns:
+            True if all significant fields are equal, False otherwise.
+        """
         if not isinstance(other, LogGroupDir):
             return NotImplemented
         return (
@@ -360,6 +514,16 @@ class LogGroupDir:
         )
 
     def __lt__(self, other: object) -> bool:
+        """Compare LogGroupDir instances for sorting.
+        
+        Sorting order: date (newest first), then group path (alphabetical ascending).
+        
+        Args:
+            other: The object to compare with.
+            
+        Returns:
+            True if this instance should be sorted before the other.
+        """
         if not isinstance(other, LogGroupDir):
             return NotImplemented
         # Primary sort: date (newest first)
@@ -509,11 +673,27 @@ class LogDayDir:
 
 @dataclass(frozen=True)
 class LogManager:
+    """Manages hierarchical log files with group configurations and filtering capabilities.
+    
+    Provides functionality to create, search, and organize log files in a hierarchical
+    directory structure with support for dynamic group names and nicknames.
+    
+    Attributes:
+        base_dir: The base directory where all log files are stored.
+        root_group_configs: Dictionary of root-level group configurations.
+    """
     base_dir: Path
     root_group_configs: dict[str, LogGroupConfig] = field(default_factory=dict)
 
     def add_root_group_config(self, group_config: LogGroupConfig) -> "LogManager":
-        """Return a new LogManager with the added root-level group configuration."""
+        """Return a new LogManager with the added root-level group configuration.
+        
+        Args:
+            group_config: The root-level group configuration to add.
+            
+        Returns:
+            A new LogManager instance with the group configuration added.
+        """
         new_configs = {**self.root_group_configs, group_config.name: group_config}
         return LogManager(base_dir=self.base_dir, root_group_configs=new_configs)
 
@@ -521,6 +701,12 @@ class LogManager:
         """Find group configuration by traversing the hierarchical path.
 
         Only looks at structure elements (even indices), ignoring dynamic names (odd indices).
+        
+        Args:
+            group_path: The group path components to search for.
+            
+        Returns:
+            The LogGroupConfig if found, None otherwise.
         """
         if not group_path:
             return None
@@ -543,11 +729,17 @@ class LogManager:
         return current_config
 
     def get_group_display_name(self, group_path: list[str] | str) -> str:
-        """Get the display name for a group (nickname if configured, otherwise group name).
+        """Get the display name for a group.
 
         For alternating structure/dynamic pattern:
         - Structure elements (even indices): use configured nickname
         - Dynamic elements (odd indices): use actual name
+        
+        Args:
+            group_path: The group path as a list of components or slash-separated string.
+            
+        Returns:
+            The display name (nickname if configured, otherwise group name).
         """
         if isinstance(group_path, str):
             group_path = group_path.split("/")
@@ -571,7 +763,15 @@ class LogManager:
     def create_nested_log_group_dir(
         self, date_day: str, group_path: list[str]
     ) -> LogGroupDir:
-        """Create a LogGroupDir with nickname support if configured."""
+        """Create a LogGroupDir with nickname support if configured.
+        
+        Args:
+            date_day: The date in YYYY-MM-DD format.
+            group_path: The group path components.
+            
+        Returns:
+            A new LogGroupDir instance with nickname support.
+        """
         config = self.find_group_config(group_path)
         nickname = config.nickname if config else None
 
@@ -585,6 +785,20 @@ class LogManager:
     def create_log_file(
         self, func: Callable, op_key: str, group_path: list[str] | None = None
     ) -> LogFile:
+        """Create a new log file for the given function and operation.
+        
+        Args:
+            func: The function to create a log file for.
+            op_key: The operation key identifier.
+            group_path: Optional group path components. Defaults to ["default"].
+            
+        Returns:
+            A new LogFile instance with the log file created on disk.
+            
+        Raises:
+            ValueError: If the group structure is not registered.
+            FileExistsError: If the log file already exists.
+        """
         now_utc = datetime.datetime.now(tz=datetime.UTC)
 
         if group_path is None:
@@ -631,6 +845,12 @@ class LogManager:
 
         This validates the group structure (e.g., clans/<name>/machines) but allows
         dynamic names (e.g., <name> can be any value).
+        
+        Args:
+            group_path: The group path components to validate.
+            
+        Returns:
+            True if the group structure is registered, False otherwise.
         """
         # Special case: allow "default" group without registration
         if group_path == ["default"]:
@@ -650,6 +870,12 @@ class LogManager:
         Examples:
         - ["clans", "repo-name", "default"] -> clans(structure) -> repo-name(dynamic) -> default(structure)
         - ["clans", "repo-name", "machines", "machine-name"] -> clans(struct) -> repo-name(dyn) -> machines(struct) -> machine-name(dyn)
+        
+        Args:
+            group_path: The group path components to validate.
+            
+        Returns:
+            True if the group structure is valid, False otherwise.
         """
         if not group_path:
             return False
@@ -678,6 +904,11 @@ class LogManager:
         return True
 
     def list_log_days(self) -> list[LogDayDir]:
+        """List all available log days in the base directory.
+        
+        Returns:
+            A sorted list of LogDayDir instances (newest first). Returns empty list if base directory doesn't exist.
+        """
         if not self.base_dir.exists() or not self.base_dir.is_dir():
             return []
 
@@ -708,6 +939,16 @@ class LogManager:
         date_day: str | None = None,
         selector: list[str] | None = None,
     ) -> LogFile | None:
+        """Get a specific log file by operation key.
+        
+        Args:
+            op_key: The operation key to search for.
+            date_day: Optional specific date to search in (YYYY-MM-DD format).
+            selector: Optional group path to search in. If None, searches all groups.
+            
+        Returns:
+            The LogFile if found, None otherwise.
+        """
         days_to_search: list[LogDayDir]
 
         if date_day:
@@ -752,7 +993,16 @@ class LogManager:
     def _search_log_file_in_specific_group(
         self, day_dir: LogDayDir, op_key_to_find: str, specific_group: list[str]
     ) -> LogFile | None:
-        """Search for a log file in a specific group using the filter function."""
+        """Search for a log file in a specific group using the filter function.
+        
+        Args:
+            day_dir: The LogDayDir to search in.
+            op_key_to_find: The operation key to search for.
+            specific_group: The specific group path to search in.
+            
+        Returns:
+            The LogFile if found, None otherwise.
+        """
         # Build the directory path using the same logic as filter function
         dir_path = day_dir.get_dir_path()
         for i, component in enumerate(specific_group):
@@ -809,7 +1059,16 @@ class LogManager:
         op_key_to_find: str,
         specific_group: str | None = None,
     ) -> LogFile | None:
-        """Recursively search for a log file in group directories."""
+        """Recursively search for a log file in group directories.
+        
+        Args:
+            group_dirs: The list of LogGroupDir instances to search in.
+            op_key_to_find: The operation key to search for.
+            specific_group: Optional specific group name (unused in current implementation).
+            
+        Returns:
+            The LogFile if found, None otherwise.
+        """
         for group_dir in group_dirs:
             # Search in function directories of this group
             for func_dir in group_dir.get_log_files():
@@ -834,12 +1093,12 @@ class LogManager:
         """Filter and list folders at the specified hierarchical path.
 
         Args:
-            path: List of path components to navigate to. Empty list returns top-level groups.
-                  For alternating structure/dynamic pattern:
-                  - ["clans"] lists all dynamic names under clans
-                  - ["clans", <name>, "machines"] lists all dynamic names under machines
-                  - [] lists all top-level groups
-            date_day: Optional date to filter by. If None, uses most recent day.
+            selector: List of path components to navigate to. Empty list returns top-level groups.
+                     For alternating structure/dynamic pattern:
+                     - ["clans"] lists all dynamic names under clans
+                     - ["clans", <name>, "machines"] lists all dynamic names under machines
+                     - [] lists all top-level groups
+            date_day: Optional date to filter by (YYYY-MM-DD format). If None, uses most recent day.
 
         Returns:
             List of folder names (decoded) at the specified path level.
