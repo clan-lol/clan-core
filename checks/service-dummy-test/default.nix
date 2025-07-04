@@ -15,7 +15,6 @@ nixosLib.runTest (
 
     # This tests the compatibility of the inventory
     # With the test framework
-    # - legacy-modules
     # - clan.service modules
     name = "service-dummy-test";
 
@@ -24,12 +23,6 @@ nixosLib.runTest (
       inventory = {
         machines.peer1 = { };
         machines.admin1 = { };
-        services = {
-          legacy-module.default = {
-            roles.peer.machines = [ "peer1" ];
-            roles.admin.machines = [ "admin1" ];
-          };
-        };
 
         instances."test" = {
           module.name = "new-service";
@@ -37,9 +30,6 @@ nixosLib.runTest (
           roles.peer.machines.peer1 = { };
         };
 
-        modules = {
-          legacy-module = ./legacy-module;
-        };
       };
       modules.new-service = {
         _class = "clan.service";
@@ -78,9 +68,6 @@ nixosLib.runTest (
         start_all()
         admin1.wait_for_unit("multi-user.target")
         peer1.wait_for_unit("multi-user.target")
-        # Provided by the legacy module
-        print(admin1.succeed("systemctl status dummy-service"))
-        print(peer1.succeed("systemctl status dummy-service"))
 
         # peer1 should have the 'hello' file
         peer1.succeed("cat ${nodes.peer1.clan.core.vars.generators.new-service.files.not-a-secret.path}")

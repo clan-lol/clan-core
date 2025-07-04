@@ -1,34 +1,17 @@
 {
   modulesRolesOptions,
   nixosOptionsDoc,
-  clanModules,
   evalClanModules,
   lib,
   pkgs,
   clan-core,
+  ...
 }:
 let
   inherit (clan-core.clanLib.docs) stripStorePathsFromDeclarations;
   transformOptions = stripStorePathsFromDeclarations;
 in
 {
-  # clanModules docs
-  clanModulesViaNix = lib.mapAttrs (
-    name: module:
-    if builtins.pathExists (module + "/default.nix") then
-      (nixosOptionsDoc {
-        options =
-          ((evalClanModules {
-            modules = [ module ];
-            inherit pkgs clan-core;
-          }).options
-          ).clan.${name} or { };
-        warningsAreErrors = true;
-        inherit transformOptions;
-      }).optionsJSON
-    else
-      { }
-  ) clanModules;
 
   clanModulesViaRoles = lib.mapAttrs (
     _moduleName: rolesOptions:

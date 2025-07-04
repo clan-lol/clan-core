@@ -93,7 +93,6 @@ in
 
             # Base Tests
             nixos-test-secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
-            nixos-test-borgbackup-legacy = self.clanLib.test.baseTest ./borgbackup-legacy nixosTestArgs;
             nixos-test-wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
 
             # Container Tests

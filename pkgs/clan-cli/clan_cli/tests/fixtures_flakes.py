@@ -125,7 +125,11 @@ def init_git(monkeypatch: pytest.MonkeyPatch, flake: Path) -> None:
     # TODO: Find out why test_vms_api.py fails in nix build
     # but works in pytest when this bottom line is commented out
     sp.run(["git", "add", "."], cwd=flake, check=True)
-    sp.run(["git", "commit", "-a", "-m", "Initial commit"], cwd=flake, check=True)
+    sp.run(
+        ["git", "commit", "-a", "-m", "Initial commit", "--no-gpg-sign"],
+        cwd=flake,
+        check=True,
+    )
 
 
 class ClanFlake:

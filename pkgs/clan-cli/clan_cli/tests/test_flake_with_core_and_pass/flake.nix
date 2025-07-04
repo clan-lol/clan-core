@@ -15,13 +15,7 @@
           vm1 =
             { lib, config, ... }:
             {
-              imports = [
-                clan-core.clanModules.sshd
-                clan-core.clanModules.root-password
-                clan-core.clanModules.user-password
-              ];
-              clan.user-password.user = "alice";
-              clan.user-password.prompt = false;
+              imports = [ ];
 
               clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = config.system.nixos.release;

@@ -44,13 +44,7 @@
             { config, ... }:
             {
               nixpkgs.hostPlatform = "x86_64-linux";
-              imports = [
-                clan-core.clanModules.sshd
-                clan-core.clanModules.root-password
-                clan-core.clanModules.user-password
-              ];
-              clan.user-password.user = "alice";
-              clan.user-password.prompt = false;
+              imports = [ ];
               clan.core.networking.targetHost = "__CLAN_TARGET_ADDRESS__";
               system.stateVersion = config.system.nixos.release;
               sops.age.keyFile = "__CLAN_SOPS_KEY_PATH__";
