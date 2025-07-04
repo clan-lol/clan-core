@@ -110,7 +110,7 @@
 
           installPhase = ''
             export INPUT_PATH=${self'.packages.clan-ts-api}/API.json
-            python open_api.py
+            python openapi.py
             cp openapi.json $out
           '';
         };
