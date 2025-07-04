@@ -127,7 +127,12 @@
       packages = {
         docs = pkgs.python3.pkgs.callPackage ./default.nix {
           clan-core = self;
-          inherit (self'.packages) clan-cli-docs docs-options inventory-api-docs;
+          inherit (self'.packages)
+            clan-cli-docs
+            docs-options
+            inventory-api-docs
+            clan-lib-openapi
+            ;
           inherit (inputs) nixpkgs;
           inherit module-docs;
           inherit asciinema-player-js;

@@ -54,7 +54,7 @@ def normalize_tag(parts: list[str]) -> list[str]:
 
 
 def operation_to_tag(op_name: str) -> str:
-    def check_operation_name(verb: str, resource_nouns: list[str]):
+    def check_operation_name(verb: str, _resource_nouns: list[str]) -> None:
         if not is_verb(verb):
             print(
                 f"""⚠️ WARNING: Verb '{op_name}' of API operation {op_name} is not allowed.
@@ -65,7 +65,7 @@ Use one of: {", ".join(COMMON_VERBS)}
     parts = op_name.lower().split("_")
     normalized = normalize_tag(parts)
 
-    check_operation_name(verb=normalized[0], resource_nouns=normalized[1:])
+    check_operation_name(normalized[0], normalized[1:])
 
     return " / ".join(normalized[1:])
 
@@ -113,10 +113,10 @@ def make_schema_name(func_name: str, part: str) -> str:
 
 
 def main() -> None:
-    INPUT_PATH = Path(os.environ["INPUT_PATH"])
+    input_path = Path(os.environ["INPUT_PATH"])
 
     # === Load input JSON Schema ===
-    with INPUT_PATH.open() as f:
+    with input_path.open() as f:
         schema = json.load(f)
 
     defs = schema.get("$defs", {})
@@ -126,9 +126,9 @@ def main() -> None:
     openapi = {
         "openapi": "3.0.3",
         "info": {
-            "title": "Function-Based API",
+            "title": "Function-Based Python API",
             "version": "1.0.0",
-            "description": "Auto-generated OpenAPI 3.0 spec from custom JSON Schema",
+            "description": "!!! INTERNAL USE ONLY !!! We don't provide a world usable API yet.\nThis prototype maps python function calls to POST Requests because we are planning towards RESTfull API in the future.",
         },
         "paths": {},
         "components": {"schemas": {}},
@@ -142,11 +142,11 @@ def main() -> None:
         # Register schemas under components
         args_name = make_schema_name(func_name, "args")
         return_name = make_schema_name(func_name, "return")
-        openapi["components"]["schemas"][args_name] = args_schema
-        openapi["components"]["schemas"][return_name] = return_schema
+        openapi["components"]["schemas"][args_name] = args_schema  # type: ignore
+        openapi["components"]["schemas"][return_name] = return_schema  # type: ignore
         tag = operation_to_tag(func_name)
         # Create a POST endpoint for the function
-        openapi["paths"][f"/{func_name}"] = {
+        openapi["paths"][f"/{func_name}"] = {  # type: ignore
             "post": {
                 "summary": func_name,
                 "operationId": func_name,
@@ -178,7 +178,7 @@ def main() -> None:
     for def_name, def_schema in defs.items():
         fixed_schema = fix_nullables(deepcopy(def_schema))
         fix_error_refs(fixed_schema)
-        openapi["components"]["schemas"][def_name] = fixed_schema
+        openapi["components"]["schemas"][def_name] = fixed_schema  # type: ignore
 
     # === Write to output JSON ===
     with Path("openapi.json").open("w") as f:
