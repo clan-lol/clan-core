@@ -621,7 +621,9 @@ class Flake:
         return self._is_local
 
     def get_input_names(self) -> list[str]:
-        return self.select("inputs", apply="builtins.attrNames")
+        log.debug("flake.get_input_names is deprecated and will be removed")
+        flakes = self.select("inputs.*._type")
+        return list(flakes.keys())
 
     @property
     def path(self) -> Path:
@@ -710,7 +712,6 @@ class Flake:
     def get_from_nix(
         self,
         selectors: list[str],
-        apply: str = "v: v",
     ) -> None:
         """
         Retrieves specific attributes from a Nix flake using the provided selectors.
@@ -772,7 +773,7 @@ class Flake:
                 result = builtins.toJSON [
                     {" ".join(
                         [
-                            f"(({apply}) (selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake))"
+                            f"(selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake)"
                             for attr in str_selectors
                         ]
                     )}
@@ -840,7 +841,6 @@ class Flake:
     def select(
         self,
         selector: str,
-        apply: str = "v: v",
     ) -> Any:
         """
         Selects a value from the cache based on the provided selector string.
@@ -856,6 +856,6 @@ class Flake:
 
         if not self._cache.is_cached(selector):
             log.debug(f"Cache miss for {selector}")
-            self.get_from_nix([selector], apply=apply)
+            self.get_from_nix([selector])
         value = self._cache.select(selector)
         return value
