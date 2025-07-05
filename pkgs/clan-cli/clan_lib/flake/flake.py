@@ -730,7 +730,7 @@ class Flake:
             ClanError: If the number of outputs does not match the number of selectors.
             AssertionError: If the cache or flake cache path is not properly initialized.
         """
-        from clan_lib.cmd import Log, RunOpts, run
+        from clan_lib.cmd import run, RunOpts, Log
         from clan_lib.dirs import select_source
         from clan_lib.nix import (
             nix_build,
@@ -796,11 +796,38 @@ class Flake:
                 ];
               }}
         """
+        if len(selectors) > 1:
+            log.debug(f"""
+selecting: {selectors}
+to debug run:
+nix repl --expr 'rec {{
+  flake = builtins.getFlake "self.identifier";
+  selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
+  query = [
+      {" ".join(
+         [
+             f"(selectLib.select ''{selector}'' flake)"
+             for selector in selectors
+         ]
+      )}
+  ];
+}}'
+            """)
         # fmt: on
+        elif len(selectors) == 1:
+            log.debug(f"""
+selecting: {selectors[0]}
+to debug run:
+nix repl --expr 'rec {{
+  flake = builtins.getFlake "{self.identifier}";
+  selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
+  query = selectLib.select '"''{selectors[0]}''"' flake;
+}}'
+            """)
 
         build_output = Path(
             run(
-                nix_build(["--expr", nix_code, *nix_options]), RunOpts(log=Log.NONE)
+                nix_build(["--expr", nix_code, *nix_options]), RunOpts(log=Log.NONE, trace=False),
             ).stdout.strip()
         )
 
