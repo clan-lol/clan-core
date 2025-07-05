@@ -140,8 +140,13 @@ class SecretStore(StoreBase):
         # we sort the hashes to make sure that the order is always the same
         hashes.sort()
 
+        from clan_cli.vars.generate import Generator
+
         manifest = []
-        for generator in self.machine.vars_generators():
+        generators = Generator.generators_from_flake(
+            self.machine.name, self.machine.flake, self.machine
+        )
+        for generator in generators:
             for file in generator.files:
                 manifest.append(f"{generator.name}/{file.name}".encode())
         manifest += hashes
@@ -165,7 +170,11 @@ class SecretStore(StoreBase):
         return local_hash.decode() != remote_hash
 
     def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
-        vars_generators = self.machine.vars_generators()
+        from clan_cli.vars.generate import Generator
+
+        vars_generators = Generator.generators_from_flake(
+            self.machine.name, self.machine.flake, self.machine
+        )
         if "users" in phases:
             with tarfile.open(
                 output_dir / "secrets_for_users.tar.gz", "w:gz"

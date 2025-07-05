@@ -114,9 +114,14 @@ def test_add_module_to_inventory(
             name="machine1", flake=Flake(str(test_flake_with_core.path))
         )
 
+        from clan_cli.vars.generate import Generator
+
         generator = None
 
-        for gen in machine.vars_generators():
+        generators = Generator.generators_from_flake(
+            machine.name, machine.flake, machine
+        )
+        for gen in generators:
             if gen.name == "borgbackup":
                 generator = gen
                 break

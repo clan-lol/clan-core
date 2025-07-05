@@ -21,7 +21,7 @@ from clan_lib.ssh.remote import Remote
 log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from clan_cli.vars.generate import Generator
+    pass
 
 
 @dataclass(frozen=True)
@@ -117,11 +117,6 @@ class Machine:
         if services:
             return services
         return {}
-
-    def vars_generators(self) -> list["Generator"]:
-        from clan_cli.vars.generate import Generator
-
-        return Generator.generators_from_flake(self.name, self.flake, self)
 
     @property
     def secrets_upload_directory(self) -> str:

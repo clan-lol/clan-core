@@ -91,7 +91,11 @@ def flash_machine(
                 "users": {"root": {"openssh": {"authorizedKeys": {"keys": root_keys}}}}
             }
 
-        for generator in machine.vars_generators():
+        from clan_cli.vars.generate import Generator
+
+        for generator in Generator.generators_from_flake(
+            machine.name, machine.flake, machine
+        ):
             for file in generator.files:
                 if file.needed_for == "partitioning":
                     msg = f"Partitioning time secrets are not supported with `clan flash write`: clan.core.vars.generators.{generator.name}.files.{file.name}"
