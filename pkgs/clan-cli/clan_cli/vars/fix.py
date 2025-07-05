@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 def fix_vars(machine: Machine, generator_name: None | str = None) -> None:
     from clan_cli.vars.generate import Generator
 
-    generators = Generator.generators_from_flake(machine.name, machine.flake, machine)
+    generators = Generator.generators_from_flake(machine.name, machine.flake)
     if generator_name:
         for generator in generators:
             if generator_name == generator.name:

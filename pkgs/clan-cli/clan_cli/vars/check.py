@@ -4,6 +4,7 @@ import logging
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_lib.errors import ClanError
 from clan_lib.machines.machines import Machine
+from clan_lib.flake import Flake
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -26,7 +27,10 @@ class VarStatus:
         self.invalid_generators = invalid_generators
 
 
-def vars_status(machine: Machine, generator_name: None | str = None) -> VarStatus:
+def vars_status(
+    machine_name: str, flake: Flake, generator_name: None | str = None
+) -> VarStatus:
+    machine = Machine(name=machine_name, flake=flake)
     missing_secret_vars = []
     missing_public_vars = []
     # signals if a var needs to be updated (eg. needs re-encryption due to new users added)
@@ -34,7 +38,7 @@ def vars_status(machine: Machine, generator_name: None | str = None) -> VarStatu
     invalid_generators = []
     from clan_cli.vars.generate import Generator
 
-    generators = Generator.generators_from_flake(machine.name, machine.flake, machine)
+    generators = Generator.generators_from_flake(machine.name, machine.flake)
     if generator_name:
         for generator in generators:
             if generator_name == generator.name:
@@ -47,7 +51,6 @@ def vars_status(machine: Machine, generator_name: None | str = None) -> VarStatu
             raise ClanError(err_msg)
 
     for generator in generators:
-        generator.machine(machine)
         for file in generator.files:
             file.store(
                 machine.secret_vars_store if file.secret else machine.public_vars_store
@@ -93,8 +96,10 @@ def vars_status(machine: Machine, generator_name: None | str = None) -> VarStatu
     )
 
 
-def check_vars(machine: Machine, generator_name: None | str = None) -> bool:
-    status = vars_status(machine, generator_name=generator_name)
+def check_vars(
+    machine_name: str, flake: Flake, generator_name: None | str = None
+) -> bool:
+    status = vars_status(machine_name, flake, generator_name=generator_name)
     return not (
         status.missing_secret_vars
         or status.missing_public_vars
@@ -104,11 +109,7 @@ def check_vars(machine: Machine, generator_name: None | str = None) -> bool:
 
 
 def check_command(args: argparse.Namespace) -> None:
-    machine = Machine(
-        name=args.machine,
-        flake=args.flake,
-    )
-    ok = check_vars(machine, generator_name=args.generator)
+    ok = check_vars(args.machine, args.flake, generator_name=args.generator)
     if not ok:
         raise SystemExit(1)
 

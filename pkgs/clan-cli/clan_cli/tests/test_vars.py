@@ -140,7 +140,7 @@ def test_generate_public_and_secret_vars(
     monkeypatch.chdir(flake.path)
 
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
-    assert not check_vars(machine)
+    assert not check_vars(machine.name, machine.flake)
     vars_text = stringify_all_vars(machine)
     assert "my_generator/my_value: <not set>" in vars_text
     assert "my_generator/my_secret: <not set>" in vars_text
@@ -158,7 +158,7 @@ def test_generate_public_and_secret_vars(
     assert json.loads(value_non_default) == "default_value"
 
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    assert check_vars(machine)
+    assert check_vars(machine.name, machine.flake)
     # get last commit message
     commit_message = run(
         ["git", "log", "-3", "--pretty=%B"],
@@ -351,10 +351,10 @@ def test_generated_shared_secret_sops(
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
     machine2 = Machine(name="machine2", flake=Flake(str(flake.path)))
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
-    assert check_vars(machine1)
+    assert check_vars(machine1.name, machine1.flake)
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine2"])
-    assert check_vars(machine2)
-    assert check_vars(machine2)
+    assert check_vars(machine2.name, machine2.flake)
+    assert check_vars(machine2.name, machine2.flake)
     m1_sops_store = sops.SecretStore(machine1)
     m2_sops_store = sops.SecretStore(machine2)
     assert m1_sops_store.exists(
@@ -404,9 +404,9 @@ def test_generate_secret_var_password_store(
     monkeypatch.setenv("PASSWORD_STORE_DIR", str(password_store_dir))
 
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
-    assert not check_vars(machine)
+    assert not check_vars(machine.name, machine.flake)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    assert check_vars(machine)
+    assert check_vars(machine.name, machine.flake)
     store = password_store.SecretStore(
         Machine(name="my_machine", flake=Flake(str(flake.path)))
     )

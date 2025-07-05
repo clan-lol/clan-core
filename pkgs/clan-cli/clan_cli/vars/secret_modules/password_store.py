@@ -144,7 +144,7 @@ class SecretStore(StoreBase):
 
         manifest = []
         generators = Generator.generators_from_flake(
-            self.machine.name, self.machine.flake, self.machine
+            self.machine.name, self.machine.flake
         )
         for generator in generators:
             for file in generator.files:
@@ -173,7 +173,7 @@ class SecretStore(StoreBase):
         from clan_cli.vars.generate import Generator
 
         vars_generators = Generator.generators_from_flake(
-            self.machine.name, self.machine.flake, self.machine
+            self.machine.name, self.machine.flake
         )
         if "users" in phases:
             with tarfile.open(

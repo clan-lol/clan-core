@@ -21,9 +21,7 @@ def get_vars(base_dir: str, machine_name: str) -> list[Var]:
     from clan_cli.vars.generate import Generator
 
     all_vars = []
-    for generator in Generator.generators_from_flake(
-        machine_name, machine.flake, machine
-    ):
+    for generator in Generator.generators_from_flake(machine_name, machine.flake):
         for var in generator.files:
             if var.secret:
                 var.store(sec_store)
@@ -57,7 +55,7 @@ def get_generators(base_dir: str, machine_name: str) -> list[Generator]:
 
     machine = Machine(name=machine_name, flake=Flake(base_dir))
     generators: list[Generator] = Generator.generators_from_flake(
-        machine_name, machine.flake, machine
+        machine_name, machine.flake
     )
     for generator in generators:
         for prompt in generator.prompts:
@@ -76,9 +74,7 @@ def set_prompts(
 
     machine = Machine(name=machine_name, flake=Flake(base_dir))
     for update in updates:
-        generators = Generator.generators_from_flake(
-            machine_name, machine.flake, machine
-        )
+        generators = Generator.generators_from_flake(machine_name, machine.flake)
         for generator in generators:
             if generator.name == update.generator:
                 break

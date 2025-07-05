@@ -49,20 +49,17 @@ class Generator:
 
     migrate_fact: str | None = None
 
-    # TODO: remove this
-    _machine: "Machine | None" = None
-
-    def machine(self, machine: "Machine") -> None:
-        self._machine = machine
+    machine: str | None = None
+    _flake: "Flake | None" = None
 
     @cached_property
     def exists(self) -> bool:
-        assert self._machine is not None
-        return check_vars(self._machine, generator_name=self.name)
+        assert self.machine is not None and self._flake is not None
+        return check_vars(self.machine, self._flake, generator_name=self.name)
 
     @classmethod
     def generators_from_flake(
-        cls: type["Generator"], machine_name: str, flake: "Flake", machine: "Machine"
+        cls: type["Generator"], machine_name: str, flake: "Flake"
     ) -> list["Generator"]:
         config = nix_config()
         system = config["system"]
@@ -112,19 +109,21 @@ class Generator:
                 dependencies=gen_data["dependencies"],
                 migrate_fact=gen_data.get("migrateFact"),
                 prompts=prompts,
+                machine=machine_name,
+                _flake=flake,
             )
-            # Set the machine immediately
-            generator.machine(machine)
             generators.append(generator)
 
         return generators
 
     def final_script(self) -> Path:
-        assert self._machine is not None
+        assert self.machine is not None and self._flake is not None
+        from clan_lib.machines.machines import Machine
         from clan_lib.nix import nix_test_store
 
+        machine = Machine(name=self.machine, flake=self._flake)
         output = Path(
-            self._machine.select(
+            machine.select(
                 f'config.clan.core.vars.generators."{self.name}".finalScript'
             )
         )
@@ -133,8 +132,11 @@ class Generator:
         return output
 
     def validation(self) -> str | None:
-        assert self._machine is not None
-        return self._machine.select(
+        assert self.machine is not None and self._flake is not None
+        from clan_lib.machines.machines import Machine
+
+        machine = Machine(name=self.machine, flake=self._flake)
+        return machine.select(
             f'config.clan.core.vars.generators."{self.name}".validationHash'
         )
 
@@ -187,9 +189,7 @@ def decrypt_dependencies(
     decrypted_dependencies: dict[str, Any] = {}
     for generator_name in set(generator.dependencies):
         decrypted_dependencies[generator_name] = {}
-        generators = Generator.generators_from_flake(
-            machine.name, machine.flake, machine
-        )
+        generators = Generator.generators_from_flake(machine.name, machine.flake)
         for dep_generator in generators:
             if generator_name == dep_generator.name:
                 break
@@ -398,9 +398,7 @@ def get_closure(
 ) -> list[Generator]:
     from . import graph
 
-    vars_generators = Generator.generators_from_flake(
-        machine.name, machine.flake, machine
-    )
+    vars_generators = Generator.generators_from_flake(machine.name, machine.flake)
     generators: dict[str, Generator] = {
         generator.name: generator for generator in vars_generators
     }
@@ -477,7 +475,7 @@ def generate_vars_for_machine(
     generators_set = set(generators)
     generators_ = [
         g
-        for g in Generator.generators_from_flake(machine_name, machine.flake, machine)
+        for g in Generator.generators_from_flake(machine_name, machine.flake)
         if g.name in generators_set
     ]
 
@@ -498,9 +496,7 @@ def generate_vars_for_machine_interactive(
 ) -> bool:
     _generator = None
     if generator_name:
-        generators = Generator.generators_from_flake(
-            machine.name, machine.flake, machine
-        )
+        generators = Generator.generators_from_flake(machine.name, machine.flake)
         for generator in generators:
             if generator.name == generator_name:
                 _generator = generator

@@ -55,7 +55,7 @@ class SecretStore(StoreBase):
         from clan_cli.vars.generate import Generator
 
         vars_generators = Generator.generators_from_flake(
-            self.machine.name, self.machine.flake, self.machine
+            self.machine.name, self.machine.flake
         )
         if not vars_generators:
             return
@@ -118,7 +118,7 @@ class SecretStore(StoreBase):
             from clan_cli.vars.generate import Generator
 
             generators = Generator.generators_from_flake(
-                self.machine.name, self.machine.flake, self.machine
+                self.machine.name, self.machine.flake
             )
         else:
             generators = [generator]
@@ -195,7 +195,7 @@ class SecretStore(StoreBase):
         from clan_cli.vars.generate import Generator
 
         vars_generators = Generator.generators_from_flake(
-            self.machine.name, self.machine.flake, self.machine
+            self.machine.name, self.machine.flake
         )
         if "users" in phases or "services" in phases:
             key_name = f"{self.machine.name}-age.key"
@@ -310,7 +310,7 @@ class SecretStore(StoreBase):
             from clan_cli.vars.generate import Generator
 
             generators = Generator.generators_from_flake(
-                self.machine.name, self.machine.flake, self.machine
+                self.machine.name, self.machine.flake
             )
         else:
             generators = [generator]

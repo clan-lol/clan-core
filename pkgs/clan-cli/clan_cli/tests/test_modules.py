@@ -118,9 +118,7 @@ def test_add_module_to_inventory(
 
         generator = None
 
-        generators = Generator.generators_from_flake(
-            machine.name, machine.flake, machine
-        )
+        generators = Generator.generators_from_flake(machine.name, machine.flake)
         for gen in generators:
             if gen.name == "borgbackup":
                 generator = gen
