@@ -16,12 +16,12 @@ from clan_lib.nix_models.clan import InventoryMachine
 log = logging.getLogger(__name__)
 
 
-def convert_inventory_to_machines(
+def instantiate_inventory_to_machines(
     flake: Flake, machines: dict[str, InventoryMachine]
 ) -> dict[str, Machine]:
     return {
-        name: Machine.from_inventory(name, flake, inventory_machine)
-        for name, inventory_machine in machines.items()
+        name: Machine.from_inventory(name, flake, _inventory_machine)
+        for name, _inventory_machine in machines.items()
     }
 
 
@@ -31,6 +31,7 @@ def list_full_machines(flake: Flake) -> dict[str, Machine]:
     """
     machines = list_machines(flake)
 
+    return instantiate_inventory_to_machines(flake, machines)
 
 
 @dataclass
