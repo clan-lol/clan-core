@@ -7,7 +7,8 @@ from pathlib import Path
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.machines.actions import MachineID, list_machines
+from clan_lib.machines.actions import list_machines
+from clan_lib.machines.machines import Machine
 from clan_lib.templates.filesystem import copy_from_nixstore, realize_nix_path
 from clan_lib.templates.template_url import transform_url
 
@@ -84,7 +85,7 @@ def machine_template(
             description="Template machine must contain a configuration.nix",
         )
 
-    tmp_machine = MachineID(flake=flake, name=dst_machine_name)
+    tmp_machine = Machine(flake=flake, name=dst_machine_name)
 
     dst_machine_dir = specific_machine_dir(tmp_machine)
 

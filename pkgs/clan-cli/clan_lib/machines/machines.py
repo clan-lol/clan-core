@@ -13,7 +13,6 @@ from clan_cli.vars._types import StoreBase
 from clan_lib.api import API
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
-from clan_lib.machines.actions import get_machine
 from clan_lib.nix import nix_config
 from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.ssh.remote import Remote
@@ -39,6 +38,9 @@ class Machine:
         return cls(name=name, flake=flake)
 
     def get_inv_machine(self) -> "InventoryMachine":
+        # Import on demand to avoid circular imports
+        from clan_lib.machines.actions import get_machine
+
         return get_machine(self.flake, self.name)
 
     def get_id(self) -> str:
