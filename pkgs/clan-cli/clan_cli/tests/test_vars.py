@@ -14,7 +14,7 @@ from clan_cli.vars.generate import (
     create_machine_vars_interactive,
     get_generators_closure,
 )
-from clan_cli.vars.get import get_var
+from clan_cli.vars.get import get_machine_var
 from clan_cli.vars.graph import all_missing_closure, requested_closure
 from clan_cli.vars.list import stringify_all_vars
 from clan_cli.vars.public_modules import in_repo
@@ -172,13 +172,13 @@ def test_generate_public_and_secret_vars(
         in commit_message
     )
     assert (
-        get_var(
+        get_machine_var(
             str(machine.flake.path), machine.name, "my_generator/my_value"
         ).printable_value
         == "public"
     )
     assert (
-        get_var(
+        get_machine_var(
             str(machine.flake.path), machine.name, "my_shared_generator/my_shared_value"
         ).printable_value
         == "shared"
@@ -343,9 +343,9 @@ def test_generated_shared_secret_sops(
     shared_generator["script"] = 'echo hello > "$out"/my_shared_secret'
     m2_config = flake.machines["machine2"]
     m2_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
-    m2_config["clan"]["core"]["vars"]["generators"]["my_shared_generator"] = (
-        shared_generator.copy()
-    )
+    m2_config["clan"]["core"]["vars"]["generators"][
+        "my_shared_generator"
+    ] = shared_generator.copy()
     flake.refresh()
     monkeypatch.chdir(flake.path)
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
@@ -803,9 +803,9 @@ def test_migration(
     my_service = config["clan"]["core"]["facts"]["services"]["my_service"]
     my_service["public"]["my_value"] = {}
     my_service["secret"]["my_secret"] = {}
-    my_service["generator"]["script"] = (
-        'echo -n hello > "$facts"/my_value && echo -n hello > "$secrets"/my_secret'
-    )
+    my_service["generator"][
+        "script"
+    ] = 'echo -n hello > "$facts"/my_value && echo -n hello > "$secrets"/my_secret'
     my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
     my_generator["files"]["my_value"]["secret"] = False
     my_generator["files"]["my_secret"]["secret"] = True
@@ -875,9 +875,9 @@ def test_fails_when_files_are_left_from_other_backend(
             regenerate=False,
         )
     # Will raise. It was secret before, but now it's not.
-    my_secret_generator["files"]["my_secret"]["secret"] = (
-        False  # secret -> public (NOT OK)
-    )
+    my_secret_generator["files"]["my_secret"][
+        "secret"
+    ] = False  # secret -> public (NOT OK)
     # WIll not raise. It was not secret before, and it's secret now.
     my_value_generator["files"]["my_value"]["secret"] = True  # public -> secret (OK)
     flake.refresh()
@@ -932,12 +932,12 @@ def test_invalidation(
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
-    value1 = get_var(
+    value1 = get_machine_var(
         str(machine.flake.path), machine.name, "my_generator/my_value"
     ).printable_value
     # generate again and make sure nothing changes without the invalidation data being set
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    value1_new = get_var(
+    value1_new = get_machine_var(
         str(machine.flake.path), machine.name, "my_generator/my_value"
     ).printable_value
     assert value1 == value1_new
@@ -946,13 +946,13 @@ def test_invalidation(
     flake.refresh()
     # generate again and make sure the value changes
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    value2 = get_var(
+    value2 = get_machine_var(
         str(machine.flake.path), machine.name, "my_generator/my_value"
     ).printable_value
     assert value1 != value2
     # generate again without changing invalidation data -> value should not change
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    value2_new = get_var(
+    value2_new = get_machine_var(
         str(machine.flake.path), machine.name, "my_generator/my_value"
     ).printable_value
     assert value2 == value2_new
