@@ -9,7 +9,7 @@ from clan_cli.secrets.secrets import (
     list_secrets,
 )
 
-from clan_lib import inventory
+from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.api import API
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.machines.machines import Machine
@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 @API.register
 def delete_machine(machine: Machine) -> None:
-    inventory_store = inventory.InventoryStore(machine.flake)
+    inventory_store = InventoryStore(machine.flake)
     try:
         inventory_store.delete(
             {f"machines.{machine.name}"},

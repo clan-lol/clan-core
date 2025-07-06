@@ -1,5 +1,5 @@
 import { BackButton } from "@/src/components/BackButton";
-import { createModulesQuery, machinesQuery, tagsQuery } from "@/src/queries";
+import { createModulesQuery, machinesQuery } from "@/src/queries";
 import { useParams } from "@solidjs/router";
 import { For, Match, Switch } from "solid-js";
 import { ModuleInfo } from "./list";
@@ -34,28 +34,11 @@ interface AddModuleProps {
 
 const AddModule = (props: AddModuleProps) => {
   const { activeClanURI } = useClanContext();
-  const tags = tagsQuery(activeClanURI());
   const machines = machinesQuery(activeClanURI());
   return (
     <div>
       <div>Add to your clan</div>
-      <Switch fallback="loading">
-        <Match when={tags.data}>
-          {(tags) => (
-            <For each={Object.keys(props.data.roles)}>
-              {(role) => (
-                <>
-                  <div class="text-neutral-600">{role}s</div>
-                  <RoleForm
-                    avilableTags={tags()}
-                    availableMachines={machines.data || []}
-                  />
-                </>
-              )}
-            </For>
-          )}
-        </Match>
-      </Switch>
+      <Switch fallback="loading">Removed</Switch>
     </div>
   );
 };
