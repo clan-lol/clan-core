@@ -110,7 +110,7 @@ export const Flash = () => {
   const keymapQuery = createQuery(() => ({
     queryKey: ["list_keymaps"],
     queryFn: async () => {
-      const result = await callApi("list_possible_keymaps", {}).promise;
+      const result = await callApi("list_keymaps", {}).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },
@@ -120,7 +120,7 @@ export const Flash = () => {
   const langQuery = createQuery(() => ({
     queryKey: ["list_languages"],
     queryFn: async () => {
-      const result = await callApi("list_possible_languages", {}).promise;
+      const result = await callApi("list_languages", {}).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },

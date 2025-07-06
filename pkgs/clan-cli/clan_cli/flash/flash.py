@@ -17,7 +17,7 @@ from clan_cli.vars.generate import generate_vars
 from clan_cli.vars.upload import populate_secret_vars
 
 from .automount import pause_automounting
-from .list import list_possible_keymaps, list_possible_languages
+from .list import list_keymaps, list_languages
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ def flash_machine(
         generate_vars([machine])
 
         if system_config.language:
-            if system_config.language not in list_possible_languages():
+            if system_config.language not in list_languages():
                 msg = (
                     f"Language '{system_config.language}' is not a valid language. "
                     f"Run 'clan flash list languages' to see a list of possible languages."
@@ -68,7 +68,7 @@ def flash_machine(
             system_config_nix["i18n"] = {"defaultLocale": system_config.language}
 
         if system_config.keymap:
-            if system_config.keymap not in list_possible_keymaps():
+            if system_config.keymap not in list_keymaps():
                 msg = (
                     f"Keymap '{system_config.keymap}' is not a valid keymap. "
                     f"Run 'clan flash list keymaps' to see a list of possible keymaps."
