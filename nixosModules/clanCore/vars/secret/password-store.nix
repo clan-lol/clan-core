@@ -54,7 +54,7 @@ in
 {
   _class = "nixos";
 
-  options.clan.vars.password-store = {
+  options.clan.core.vars.password-store = {
     secretLocation = lib.mkOption {
       type = lib.types.path;
       default = "/etc/secret-vars";
@@ -83,7 +83,7 @@ in
                 else if file.config.neededFor == "services" then
                   "/run/secrets/${file.config.generatorName}/${file.config.name}"
                 else if file.config.neededFor == "activation" then
-                  "${config.clan.vars.password-store.secretLocation}/activation/${file.config.generatorName}/${file.config.name}"
+                  "${config.clan.core.vars.password-store.secretLocation}/activation/${file.config.generatorName}/${file.config.name}"
                 else if file.config.neededFor == "partitioning" then
                   "/run/partitioning-secrets/${file.config.generatorName}/${file.config.name}"
                 else
@@ -102,7 +102,7 @@ in
               ]
               ''
                 [ -e /run/current-system ] || echo setting up secrets...
-                ${installSecretTarball}/bin/install-secret-tarball ${config.clan.vars.password-store.secretLocation}/secrets_for_users.tar.gz /run/user-secrets
+                ${installSecretTarball}/bin/install-secret-tarball ${config.clan.core.vars.password-store.secretLocation}/secrets_for_users.tar.gz /run/user-secrets
               ''
             // lib.optionalAttrs (config.system ? dryActivationScript) {
               supportsDryActivation = true;
@@ -118,7 +118,7 @@ in
               ]
               ''
                 [ -e /run/current-system ] || echo setting up secrets...
-                ${installSecretTarball}/bin/install-secret-tarball ${config.clan.vars.password-store.secretLocation}/secrets.tar.gz /run/secrets
+                ${installSecretTarball}/bin/install-secret-tarball ${config.clan.core.vars.password-store.secretLocation}/secrets.tar.gz /run/secrets
               ''
             // lib.optionalAttrs (config.system ? dryActivationScript) {
               supportsDryActivation = true;
@@ -136,7 +136,7 @@ in
             serviceConfig = {
               Type = "oneshot";
               ExecStart = [
-                "${installSecretTarball}/bin/install-secret-tarball ${config.clan.vars.password-store.secretLocation}/secrets_for_users.tar.gz /run/user-secrets"
+                "${installSecretTarball}/bin/install-secret-tarball ${config.clan.core.vars.password-store.secretLocation}/secrets_for_users.tar.gz /run/user-secrets"
               ];
               RemainAfterExit = true;
             };
@@ -149,7 +149,7 @@ in
             serviceConfig = {
               Type = "oneshot";
               ExecStart = [
-                "${installSecretTarball}/bin/install-secret-tarball ${config.clan.vars.password-store.secretLocation}/secrets.tar.gz /run/secrets"
+                "${installSecretTarball}/bin/install-secret-tarball ${config.clan.core.vars.password-store.secretLocation}/secrets.tar.gz /run/secrets"
               ];
               RemainAfterExit = true;
             };

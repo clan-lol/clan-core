@@ -45,11 +45,11 @@ class SecretStore(StoreBase):
     @property
     def _pass_command(self) -> str:
         out_path = self.machine.select(
-            "config.clan.vars.password-store.passPackage.outPath"
+            "config.clan.core.vars.password-store.passPackage.outPath"
         )
         main_program = (
             self.machine.select(
-                "config.clan.vars.password-store.passPackage.?meta.?mainProgram"
+                "config.clan.core.vars.password-store.passPackage.?meta.?mainProgram"
             )
             .get("meta", {})
             .get("mainProgram")
@@ -158,7 +158,7 @@ class SecretStore(StoreBase):
         remote_hash = host.run(
             [
                 "cat",
-                f"{self.machine.select('config.clan.vars.password-store.secretLocation')}/.pass_info",
+                f"{self.machine.select('config.clan.core.vars.password-store.secretLocation')}/.pass_info",
             ],
             RunOpts(log=Log.STDERR, check=False),
         ).stdout.strip()
@@ -247,6 +247,8 @@ class SecretStore(StoreBase):
             pass_dir = Path(_tempdir).resolve()
             self.populate_dir(pass_dir, phases)
             upload_dir = Path(
-                self.machine.select("config.clan.vars.password-store.secretLocation")
+                self.machine.select(
+                    "config.clan.core.vars.password-store.secretLocation"
+                )
             )
             upload(host, pass_dir, upload_dir)
