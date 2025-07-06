@@ -48,9 +48,13 @@ def get_available_machines(flake: Flake) -> list[str]:
     return list(machines.keys())
 
 
-def validate_machine_names(machine_names: list[str], flake: Flake) -> None:
+def validate_machine_names(machine_names: list[str], flake: Flake) -> list[str]:
+    """
+    Returns a list of valid machine names
+    that are guaranteed to exist in the referenced clan
+    """
     if not machine_names:
-        return
+        return []
 
     available_machines = get_available_machines(flake)
     invalid_machines = [
@@ -70,3 +74,5 @@ def validate_machine_names(machine_names: list[str], flake: Flake) -> None:
             error_lines.append(f"Machine '{machine_name}' not found. {suggestion_text}")
 
         raise ClanError("\n".join(error_lines))
+
+    return machine_names
