@@ -16,12 +16,12 @@ from clan_lib.nix_models.clan import InventoryMachine
 log = logging.getLogger(__name__)
 
 
-def convert_inventory_to_machines(
+def instantiate_inventory_to_machines(
     flake: Flake, machines: dict[str, InventoryMachine]
 ) -> dict[str, Machine]:
     return {
-        name: Machine.from_inventory(name, flake, inventory_machine)
-        for name, inventory_machine in machines.items()
+        name: Machine.from_inventory(name, flake, _inventory_machine)
+        for name, _inventory_machine in machines.items()
     }
 
 
@@ -31,26 +31,7 @@ def list_full_machines(flake: Flake) -> dict[str, Machine]:
     """
     machines = list_machines(flake)
 
-    return convert_inventory_to_machines(flake, machines)
-
-
-def query_machines_by_tags(
-    flake: Flake, tags: list[str]
-) -> dict[str, InventoryMachine]:
-    """
-    Query machines by their respective tags, if multiple tags are specified
-    then only machines that have those respective tags specified will be listed.
-    It is an intersection of the tags and machines.
-    """
-    machines = list_machines(flake)
-
-    filtered_machines = {}
-    for machine_name, machine in machines.items():
-        machine_tags = machine.get("tags", [])
-        if all(tag in machine_tags for tag in tags):
-            filtered_machines[machine_name] = machine
-
-    return filtered_machines
+    return instantiate_inventory_to_machines(flake, machines)
 
 
 @dataclass
