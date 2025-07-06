@@ -621,7 +621,9 @@ class Flake:
         return self._is_local
 
     def get_input_names(self) -> list[str]:
-        return self.select("inputs", apply="builtins.attrNames")
+        log.debug("flake.get_input_names is deprecated and will be removed")
+        flakes = self.select("inputs.*._type")
+        return list(flakes.keys())
 
     @property
     def path(self) -> Path:
@@ -710,7 +712,6 @@ class Flake:
     def get_from_nix(
         self,
         selectors: list[str],
-        apply: str = "v: v",
     ) -> None:
         """
         Retrieves specific attributes from a Nix flake using the provided selectors.
@@ -729,7 +730,7 @@ class Flake:
             ClanError: If the number of outputs does not match the number of selectors.
             AssertionError: If the cache or flake cache path is not properly initialized.
         """
-        from clan_lib.cmd import Log, RunOpts, run
+        from clan_lib.cmd import run, RunOpts, Log
         from clan_lib.dirs import select_source
         from clan_lib.nix import (
             nix_build,
@@ -772,7 +773,7 @@ class Flake:
                 result = builtins.toJSON [
                     {" ".join(
                         [
-                            f"(({apply}) (selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake))"
+                            f"(selectLib.applySelectors (builtins.fromJSON ''{attr}'') flake)"
                             for attr in str_selectors
                         ]
                     )}
@@ -795,11 +796,38 @@ class Flake:
                 ];
               }}
         """
+        if len(selectors) > 1:
+            log.debug(f"""
+selecting: {selectors}
+to debug run:
+nix repl --expr 'rec {{
+  flake = builtins.getFlake "self.identifier";
+  selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
+  query = [
+      {" ".join(
+         [
+             f"(selectLib.select ''{selector}'' flake)"
+             for selector in selectors
+         ]
+      )}
+  ];
+}}'
+            """)
         # fmt: on
+        elif len(selectors) == 1:
+            log.debug(f"""
+selecting: {selectors[0]}
+to debug run:
+nix repl --expr 'rec {{
+  flake = builtins.getFlake "{self.identifier}";
+  selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
+  query = selectLib.select '"''{selectors[0]}''"' flake;
+}}'
+            """)
 
         build_output = Path(
             run(
-                nix_build(["--expr", nix_code, *nix_options]), RunOpts(log=Log.NONE)
+                nix_build(["--expr", nix_code, *nix_options]), RunOpts(log=Log.NONE, trace=False),
             ).stdout.strip()
         )
 
@@ -840,7 +868,6 @@ class Flake:
     def select(
         self,
         selector: str,
-        apply: str = "v: v",
     ) -> Any:
         """
         Selects a value from the cache based on the provided selector string.
@@ -856,6 +883,6 @@ class Flake:
 
         if not self._cache.is_cached(selector):
             log.debug(f"Cache miss for {selector}")
-            self.get_from_nix([selector], apply=apply)
+            self.get_from_nix([selector])
         value = self._cache.select(selector)
         return value

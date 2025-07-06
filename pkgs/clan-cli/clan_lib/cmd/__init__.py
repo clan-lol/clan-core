@@ -290,6 +290,7 @@ class RunOpts:
     # Ask for sudo password in a graphical way.
     # This is needed for GUI applications
     graphical_perm: bool = False
+    trace: bool = True
 
 
 def cmd_with_root(cmd: list[str], graphical: bool = False) -> list[str]:
@@ -344,7 +345,7 @@ def run(
         # Use our sudo ask proxy here as well
         options.needs_user_terminal = True
 
-    if cmdlog.isEnabledFor(logging.DEBUG):
+    if cmdlog.isEnabledFor(logging.DEBUG) and options.trace:
         if options.input and isinstance(options.input, bytes):
             if any(
                 not ch.isprintable() for ch in options.input.decode("ascii", "replace")
