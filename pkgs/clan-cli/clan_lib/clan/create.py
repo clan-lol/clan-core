@@ -4,16 +4,12 @@ from pathlib import Path
 
 from clan_lib.api import API
 from clan_lib.cmd import RunOpts, run
+from clan_lib.dirs import clan_templates
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_command, nix_metadata, nix_shell
 from clan_lib.persist.inventory_store import InventorySnapshot, InventoryStore
-from clan_lib.templates import (
-    InputPrio,
-    TemplateName,
-    get_template,
-)
-from clan_lib.templates.filesystem import copy_from_nixstore
+from clan_lib.templates.handler import clan_template
 
 log = logging.getLogger(__name__)
 
@@ -21,9 +17,9 @@ log = logging.getLogger(__name__)
 @dataclass
 class CreateOptions:
     dest: Path
-    template_name: str
+    template: str
+
     src_flake: Flake | None = None
-    input_prio: InputPrio | None = None
     setup_git: bool = True
     initial: InventorySnapshot | None = None
     update_clan: bool = True
@@ -47,44 +43,31 @@ def create_clan(opts: CreateOptions) -> None:
             log.warning("Setting src_flake to None")
             opts.src_flake = None
 
-    template = get_template(
-        TemplateName(opts.template_name),
-        "clan",
-        input_prio=opts.input_prio,
-        clan_dir=opts.src_flake,
-    )
-    log.info(f"Found template '{template.name}' in '{template.input_variant}'")
+    if opts.src_flake is None:
+        opts.src_flake = Flake(str(clan_templates()))
 
-    if dest.exists():
-        dest /= template.name
+    with clan_template(
+        opts.src_flake, template_ident=opts.template, dst_dir=opts.dest
+    ) as _clan_dir:
+        if opts.setup_git:
+            run(git_command(dest, "init"))
+            run(git_command(dest, "add", "."))
 
-    if dest.exists():
-        msg = f"Destination directory {dest} already exists"
-        raise ClanError(msg)
+            # check if username is set
+            has_username = run(
+                git_command(dest, "config", "user.name"), RunOpts(check=False)
+            )
+            if has_username.returncode != 0:
+                run(git_command(dest, "config", "user.name", "clan-tool"))
 
-    src = Path(template.src["path"])
+            has_username = run(
+                git_command(dest, "config", "user.email"), RunOpts(check=False)
+            )
+            if has_username.returncode != 0:
+                run(git_command(dest, "config", "user.email", "clan@example.com"))
 
-    copy_from_nixstore(src, dest)
-
-    if opts.setup_git:
-        run(git_command(dest, "init"))
-        run(git_command(dest, "add", "."))
-
-        # check if username is set
-        has_username = run(
-            git_command(dest, "config", "user.name"), RunOpts(check=False)
-        )
-        if has_username.returncode != 0:
-            run(git_command(dest, "config", "user.name", "clan-tool"))
-
-        has_username = run(
-            git_command(dest, "config", "user.email"), RunOpts(check=False)
-        )
-        if has_username.returncode != 0:
-            run(git_command(dest, "config", "user.email", "clan@example.com"))
-
-    if opts.update_clan:
-        run(nix_command(["flake", "update"]), RunOpts(cwd=dest))
+        if opts.update_clan:
+            run(nix_command(["flake", "update"]), RunOpts(cwd=dest))
 
     if opts.initial:
         inventory_store = InventoryStore(flake=Flake(str(opts.dest)))

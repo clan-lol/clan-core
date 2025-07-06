@@ -832,7 +832,8 @@ nix repl --expr 'rec {{
             """)
         # fmt: on
         elif len(selectors) == 1:
-            log.debug(f"""
+            log.debug(
+                f"""
 selecting: {selectors[0]}
 to debug run:
 nix repl --expr 'rec {{
@@ -840,11 +841,13 @@ nix repl --expr 'rec {{
   selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
   query = selectLib.select '"''{selectors[0]}''"' flake;
 }}'
-            """)
+            """
+            )
 
         build_output = Path(
             run(
-                nix_build(["--expr", nix_code, *nix_options]), RunOpts(log=Log.NONE, trace=False),
+                nix_build(["--expr", nix_code, *nix_options]),
+                RunOpts(log=Log.NONE, trace=False),
             ).stdout.strip()
         )
 
