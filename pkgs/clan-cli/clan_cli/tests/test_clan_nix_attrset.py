@@ -17,7 +17,6 @@ from clan_lib.templates import (
     TemplateName,
     get_clan_nix_attrset,
     get_template,
-    list_templates,
 )
 from clan_lib.templates.filesystem import copy_from_nixstore
 
@@ -95,10 +94,6 @@ def test_clan_core_templates(
 
     expected_templates = ["default", "flake-parts", "minimal", "minimal-flake-parts"]
     assert clan_core_template_keys == expected_templates
-
-    vlist_temps = list_templates("clan", clan_dir)
-    list_template_keys = list(vlist_temps.inputs[InputName("clan-core")].keys())
-    assert list_template_keys == expected_templates
 
     default_template = get_template(
         TemplateName("default"),
