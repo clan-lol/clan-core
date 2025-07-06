@@ -2,13 +2,10 @@ import argparse
 import logging
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_lib.api import API
-from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 
-from ._types import GeneratorUpdate
-from .generate import Generator, Prompt, Var, execute_generator
+from .generate import Var
 
 log = logging.getLogger(__name__)
 

@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 from pathlib import Path
+from typing import TypedDict
 
 from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, run
@@ -11,8 +12,17 @@ from clan_lib.nix import nix_build
 log = logging.getLogger(__name__)
 
 
+class FlashOptions(TypedDict):
+    languages: list[str]
+    keymaps: list[str]
+
+
 @API.register
-def list_possible_languages() -> list[str]:
+def show_flash_options() -> FlashOptions:
+    return {"languages": list_languages(), "keymaps": list_keymaps()}
+
+
+def list_languages() -> list[str]:
     cmd = nix_build(["nixpkgs#glibcLocales"])
     result = run(cmd, RunOpts(log=Log.STDERR, error_msg="Failed to find glibc locales"))
     locale_file = Path(result.stdout.strip()) / "share" / "i18n" / "SUPPORTED"
@@ -37,8 +47,7 @@ def list_possible_languages() -> list[str]:
     return languages
 
 
-@API.register
-def list_possible_keymaps() -> list[str]:
+def list_keymaps() -> list[str]:
     cmd = nix_build(["nixpkgs#kbd"])
     result = run(cmd, RunOpts(log=Log.STDERR, error_msg="Failed to find kbdinfo"))
     keymaps_dir = Path(result.stdout.strip()) / "share" / "keymaps"
@@ -61,11 +70,11 @@ def list_possible_keymaps() -> list[str]:
 
 def list_command(args: argparse.Namespace) -> None:
     if args.cmd == "languages":
-        languages = list_possible_languages()
+        languages = list_languages()
         for language in languages:
             print(language)
     elif args.cmd == "keymaps":
-        keymaps = list_possible_keymaps()
+        keymaps = list_keymaps()
         for keymap in keymaps:
             print(keymap)
 
