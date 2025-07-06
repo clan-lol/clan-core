@@ -12,7 +12,7 @@ from clan_cli.vars.generate import (
     Generator,
     create_machine_vars,
     create_machine_vars_interactive,
-    get_generators_closure,
+    get_machine_generators,
 )
 from clan_cli.vars.get import get_machine_var
 from clan_cli.vars.graph import all_missing_closure, requested_closure
@@ -694,7 +694,7 @@ def test_api_set_prompts(
     )
     assert store.get(Generator("my_generator"), "prompt1").decode() == "input2"
 
-    generators = get_generators_closure(
+    generators = get_machine_generators(
         machine_name="my_machine",
         base_dir=flake.path,
         full_closure=True,
