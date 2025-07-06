@@ -296,3 +296,81 @@ def test_cache_gc(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     assert my_flake._cache.is_cached("testfile")  # noqa: SLF001
     subprocess.run(["nix-collect-garbage"], check=True)
     assert not my_flake._cache.is_cached("testfile")  # noqa: SLF001
+
+
+def test_cache_path_with_line_numbers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test that is_cached correctly handles store paths with line numbers appended.
+
+    This is a regression test for the bug where cached store paths with line numbers
+    (e.g., /nix/store/path:123) are not properly checked for existence.
+    """
+    # Create a temporary store
+    test_store = tmp_path / "test-store"
+    test_store.mkdir()
+
+    # Set CLAN_TEST_STORE environment variable
+    monkeypatch.setenv("CLAN_TEST_STORE", str(test_store))
+
+    # Create a fake store path
+    fake_store_path = test_store / "abc123-source-file.nix"
+    fake_store_path.write_text("# nix source file\n{ foo = 123; }")
+
+    # Create cache entries for paths with line numbers
+    cache = FlakeCacheEntry()
+
+    # Test single line number format
+    path_with_line = f"{fake_store_path}:42"
+    selectors = parse_selector("testPath1")
+    cache.insert(path_with_line, selectors)
+
+    # Test line:column format
+    path_with_line_col = f"{fake_store_path}:42:10"
+    selectors2 = parse_selector("testPath2")
+    cache.insert(path_with_line_col, selectors2)
+
+    # Test path with colon but non-numeric suffix (should not be treated as line number)
+    path_with_colon = test_store / "file:with:colons"
+    path_with_colon.write_text("test")
+    selectors3 = parse_selector("testPath3")
+    cache.insert(str(path_with_colon), selectors3)
+
+    # Before the fix: These would return True even though the exact paths don't exist
+    # After the fix: They check the base file path exists
+    assert cache.is_cached(parse_selector("testPath1")), (
+        "Path with line number should be cached when base file exists"
+    )
+    assert cache.is_cached(parse_selector("testPath2")), (
+        "Path with line:column should be cached when base file exists"
+    )
+    assert cache.is_cached(parse_selector("testPath3")), (
+        "Path with colons in filename should be cached when file exists"
+    )
+
+    # Now delete the base file
+    fake_store_path.unlink()
+
+    # After deletion, paths with line numbers should not be cached
+    assert not cache.is_cached(parse_selector("testPath1")), (
+        "Path with line number should not be cached when base file doesn't exist"
+    )
+    assert not cache.is_cached(parse_selector("testPath2")), (
+        "Path with line:column should not be cached when base file doesn't exist"
+    )
+
+    # Path with colons in name still exists
+    assert cache.is_cached(parse_selector("testPath3")), (
+        "Path with colons in filename should still be cached"
+    )
+
+    # Test with regular /nix/store paths
+    monkeypatch.delenv("CLAN_TEST_STORE", raising=False)
+    cache2 = FlakeCacheEntry()
+    nix_path_with_line = "/nix/store/fake-source.nix:123"
+    cache2.insert(nix_path_with_line, parse_selector("nixPath"))
+
+    # Should return False because neither the exact path nor base path exists
+    assert not cache2.is_cached(parse_selector("nixPath")), (
+        "Nix store path with line number should not be cached when file doesn't exist"
+    )

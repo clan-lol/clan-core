@@ -15,17 +15,6 @@
     '';
   };
 
-  passBackend = lib.mkOption {
-    type = lib.types.enum [
-      "passage"
-      "pass"
-    ];
-    default = "pass";
-    description = ''
-      password-store backend to use. Valid options are `pass` and `passage`
-    '';
-  };
-
   secretModule = lib.mkOption {
     type = lib.types.str;
     internal = true;
@@ -63,6 +52,17 @@
     internal = true;
     description = ''
       the python import path to the public module
+    '';
+  };
+
+  # Legacy option that guides migration
+  passBackend = lib.mkOption {
+    type = lib.types.nullOr lib.types.str;
+    default = null;
+    visible = false;
+    description = ''
+      DEPRECATED: This option has been removed. Use clan.vars.password-store.passPackage instead.
+      Set it to pkgs.pass for GPG or pkgs.passage for age encryption.
     '';
   };
 }

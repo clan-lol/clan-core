@@ -345,6 +345,23 @@ class FlakeCacheEntry:
                 msg = f"Cannot insert {value} into cache, already have {self.value}"
                 raise TypeError(msg)
 
+    def _check_path_exists(self, path_str: str) -> bool:
+        """Check if a path exists, handling potential line number suffixes."""
+        path = Path(path_str)
+        if path.exists():
+            return True
+
+        # Try stripping line numbers if the path doesn't exist
+        # Handle format: /path/to/file:123 or /path/to/file:123:456
+        if ":" in path_str:
+            parts = path_str.split(":")
+            if len(parts) >= 2:
+                # Check if all parts after the first colon are numbers
+                if all(part.isdigit() for part in parts[1:]):
+                    base_path = parts[0]
+                    return Path(base_path).exists()
+        return False
+
     def is_cached(self, selectors: list[Selector]) -> bool:
         selector: Selector
 
@@ -353,12 +370,12 @@ class FlakeCacheEntry:
             # Check if it's a regular nix store path
             nix_store_dir = os.environ.get("NIX_STORE_DIR", "/nix/store")
             if self.value.startswith(nix_store_dir):
-                return Path(self.value).exists()
+                return self._check_path_exists(self.value)
 
             # Check if it's a test store path
             test_store = os.environ.get("CLAN_TEST_STORE")
             if test_store and self.value.startswith(test_store):
-                return Path(self.value).exists()
+                return self._check_path_exists(self.value)
 
         # if self.value is not dict but we request more selectors, we assume we are cached and an error will be thrown in the select function
         if isinstance(self.value, str | float | int | None):

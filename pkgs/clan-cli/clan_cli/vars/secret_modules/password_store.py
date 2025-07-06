@@ -1,9 +1,7 @@
 import io
 import logging
-import os
 import tarfile
 from collections.abc import Iterable
-from itertools import chain
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -12,7 +10,6 @@ from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
 from clan_lib.cmd import CmdOut, Log, RunOpts, run
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import nix_shell
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -26,31 +23,64 @@ class SecretStore(StoreBase):
     def __init__(self, machine: Machine) -> None:
         self.machine = machine
         self.entry_prefix = "clan-vars"
+        self._store_dir: Path | None = None
 
     @property
     def store_name(self) -> str:
         return "password_store"
 
     @property
-    def _store_backend(self) -> str:
-        backend = self.machine.select("config.clan.core.vars.settings.passBackend")
-        return backend
+    def store_dir(self) -> Path:
+        """Get the password store directory, cached after first access."""
+        if self._store_dir is None:
+            result = self._run_pass(
+                "git", "rev-parse", "--show-toplevel", options=RunOpts(check=False)
+            )
+            if result.returncode != 0:
+                msg = "Password store must be a git repository"
+                raise ValueError(msg)
+            self._store_dir = Path(result.stdout.strip())
+        return self._store_dir
 
     @property
-    def _password_store_dir(self) -> Path:
-        if self._store_backend == "passage":
-            lookup = os.environ.get("PASSAGE_DIR")
-            default = Path.home() / ".passage/store"
-        else:
-            lookup = os.environ.get("PASSWORD_STORE_DIR")
-            default = Path.home() / ".password-store"
-        return Path(lookup) if lookup else default
+    def _pass_command(self) -> str:
+        out_path = self.machine.select(
+            "config.clan.vars.password-store.passPackage.outPath"
+        )
+        main_program = (
+            self.machine.select(
+                "config.clan.vars.password-store.passPackage.?meta.?mainProgram"
+            )
+            .get("meta", {})
+            .get("mainProgram")
+        )
+
+        if main_program:
+            binary_path = Path(out_path) / "bin" / main_program
+            if binary_path.exists():
+                return str(binary_path)
+
+        # Look for common password store binaries
+        bin_dir = Path(out_path) / "bin"
+        if bin_dir.exists():
+            for binary in ["pass", "passage"]:
+                binary_path = bin_dir / binary
+                if binary_path.exists():
+                    return str(binary_path)
+
+            # If only one binary exists, use it
+            binaries = [f for f in bin_dir.iterdir() if f.is_file()]
+            if len(binaries) == 1:
+                return str(binaries[0])
+
+        msg = "Could not find password store binary in package"
+        raise ValueError(msg)
 
     def entry_dir(self, generator: Generator, name: str) -> Path:
         return Path(self.entry_prefix) / self.rel_dir(generator, name)
 
     def _run_pass(self, *args: str, options: RunOpts | None = None) -> CmdOut:
-        cmd = nix_shell(packages=["pass"], cmd=[self._store_backend, *args])
+        cmd = [self._pass_command, *args]
         return run(cmd, options)
 
     def _set(
@@ -68,9 +98,11 @@ class SecretStore(StoreBase):
         return self._run_pass("show", pass_name).stdout.encode()
 
     def exists(self, generator: Generator, name: str) -> bool:
-        extension = "age" if self._store_backend == "passage" else "gpg"
-        filename = f"{self.entry_dir(generator, name)}.{extension}"
-        return (self._password_store_dir / filename).exists()
+        pass_name = str(self.entry_dir(generator, name))
+        # Check if the file exists with either .age or .gpg extension
+        age_file = self.store_dir / f"{pass_name}.age"
+        gpg_file = self.store_dir / f"{pass_name}.gpg"
+        return age_file.exists() or gpg_file.exists()
 
     def delete(self, generator: Generator, name: str) -> Iterable[Path]:
         pass_name = str(self.entry_dir(generator, name))
@@ -79,66 +111,31 @@ class SecretStore(StoreBase):
 
     def delete_store(self) -> Iterable[Path]:
         machine_dir = Path(self.entry_prefix) / "per-machine" / self.machine.name
-        if not (self._password_store_dir / machine_dir).exists():
-            # The directory may not exist if the machine
-            # has no vars, or they have been deleted already.
-            return []
-        pass_call = ["rm", "--force", "--recursive", str(machine_dir)]
-        self._run_pass(*pass_call, options=RunOpts(check=True))
+        # Check if the directory exists in the password store before trying to delete
+        result = self._run_pass("ls", str(machine_dir), options=RunOpts(check=False))
+        if result.returncode == 0:
+            self._run_pass(
+                "rm",
+                "--force",
+                "--recursive",
+                str(machine_dir),
+                options=RunOpts(check=True),
+            )
         return []
 
     def generate_hash(self) -> bytes:
-        hashes = []
-        hashes.append(
-            run(
-                nix_shell(
-                    ["git"],
-                    [
-                        "git",
-                        "-C",
-                        str(self._password_store_dir),
-                        "log",
-                        "-1",
-                        "--format=%H",
-                        self.entry_prefix,
-                    ],
-                ),
-                RunOpts(check=False),
-            )
-            .stdout.strip()
-            .encode()
+        result = self._run_pass(
+            "git",
+            "log",
+            "-1",
+            "--format=%H",
+            self.entry_prefix,
+            options=RunOpts(check=False),
         )
-        shared_dir = self._password_store_dir / self.entry_prefix / "shared"
-        machine_dir = (
-            self._password_store_dir
-            / self.entry_prefix
-            / "per-machine"
-            / self.machine.name
-        )
-        for symlink in chain(shared_dir.glob("**/*"), machine_dir.glob("**/*")):
-            if symlink.is_symlink():
-                hashes.append(
-                    run(
-                        nix_shell(
-                            ["git"],
-                            [
-                                "git",
-                                "-C",
-                                str(self._password_store_dir),
-                                "log",
-                                "-1",
-                                "--format=%H",
-                                str(symlink),
-                            ],
-                        ),
-                        RunOpts(check=False),
-                    )
-                    .stdout.strip()
-                    .encode()
-                )
+        git_hash = result.stdout.strip().encode()
 
-        # we sort the hashes to make sure that the order is always the same
-        hashes.sort()
+        if not git_hash:
+            return b""
 
         from clan_cli.vars.generate import Generator
 
@@ -149,22 +146,24 @@ class SecretStore(StoreBase):
         for generator in generators:
             for file in generator.files:
                 manifest.append(f"{generator.name}/{file.name}".encode())
-        manifest += hashes
+
+        manifest.append(git_hash)
         return b"\n".join(manifest)
 
     def needs_upload(self, host: Remote) -> bool:
         local_hash = self.generate_hash()
+        if not local_hash:
+            return True
+
         remote_hash = host.run(
-            # TODO get the path to the secrets from the machine
             [
                 "cat",
-                f"{self.machine.select('config.clan.vars.password-store.secretLocation')}/.{self._store_backend}_info",
+                f"{self.machine.select('config.clan.vars.password-store.secretLocation')}/.pass_info",
             ],
             RunOpts(log=Log.STDERR, check=False),
         ).stdout.strip()
 
         if not remote_hash:
-            print("remote hash is empty")
             return True
 
         return local_hash.decode() != remote_hash
@@ -233,7 +232,9 @@ class SecretStore(StoreBase):
                         out_file.parent.mkdir(parents=True, exist_ok=True)
                         out_file.write_bytes(self.get(generator, file.name))
 
-        (output_dir / f".{self._store_backend}_info").write_bytes(self.generate_hash())
+        hash_data = self.generate_hash()
+        if hash_data:
+            (output_dir / ".pass_info").write_bytes(hash_data)
 
     def upload(self, host: Remote, phases: list[str]) -> None:
         if "partitioning" in phases:
