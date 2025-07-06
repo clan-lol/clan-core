@@ -10,7 +10,7 @@ from clan_lib.api.modules import Frontmatter, extract_frontmatter
 from clan_lib.dirs import TemplateType, clan_templates
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_file
-from clan_lib.machines.hardware import HardwareConfig, show_machine_hardware_config
+from clan_lib.machines.hardware import HardwareConfig, get_machine_hardware_config
 from clan_lib.machines.machines import Machine
 
 log = logging.getLogger(__name__)
@@ -137,7 +137,7 @@ def set_machine_disk_schema(
     Set the disk placeholders of the template
     """
     # Assert the hw-config must exist before setting the disk
-    hw_config = show_machine_hardware_config(machine)
+    hw_config = get_machine_hardware_config(machine)
     hw_config_path = hw_config.config_path(machine)
 
     if not hw_config_path.exists():

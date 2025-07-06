@@ -3,6 +3,7 @@ import logging
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing import TypedDict
 
 from clan_lib.api import API
 from clan_lib.cmd import RunOpts, run
@@ -40,19 +41,7 @@ class HardwareConfig(Enum):
         return HardwareConfig.NONE
 
 
-@API.register
-def show_machine_hardware_config(machine: Machine) -> HardwareConfig:
-    """
-    Show hardware information for a machine returns None if none exist.
-    """
-    return HardwareConfig.detect_type(machine)
-
-
-@API.register
-def show_machine_hardware_platform(machine: Machine) -> str | None:
-    """
-    Show hardware information for a machine returns None if none exist.
-    """
+def get_machine_target_platform(machine: Machine) -> str | None:
     config = nix_config()
     system = config["system"]
     cmd = nix_eval(
@@ -132,7 +121,7 @@ def generate_machine_hardware_info(
         f"machines/{opts.machine}/{hw_file.name}: update hardware configuration",
     )
     try:
-        show_machine_hardware_platform(opts.machine)
+        get_machine_target_platform(opts.machine)
         if backup_file:
             backup_file.unlink(missing_ok=True)
     except ClanCmdError as e:
@@ -150,3 +139,29 @@ def generate_machine_hardware_info(
         ) from e
 
     return opts.backend
+
+
+def get_machine_hardware_config(machine: Machine) -> HardwareConfig:
+    """
+    Detect and return the full hardware configuration for the given machine.
+
+    Returns:
+        HardwareConfig: Structured hardware information, or None if unavailable.
+    """
+    return HardwareConfig.detect_type(machine)
+
+
+class MachineHardwareBrief(TypedDict):
+    hardware_config: HardwareConfig
+    platform: str | None
+
+
+@API.register
+def describe_machine_hardware(machine: Machine) -> MachineHardwareBrief:
+    """
+    Return a high-level summary of hardware config and platform type.
+    """
+    return {
+        "hardware_config": get_machine_hardware_config(machine),
+        "platform": get_machine_target_platform(machine),
+    }
