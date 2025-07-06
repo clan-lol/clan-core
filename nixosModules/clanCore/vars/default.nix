@@ -46,7 +46,7 @@ in
         assertion = config.clan.core.vars.settings.passBackend == null;
         message = ''
           The option `clan.core.vars.settings.passBackend' has been removed.
-          Use clan.vars.password-store.passPackage instead.
+          Use clan.core.vars.password-store.passPackage instead.
           Set it to pkgs.pass for GPG or pkgs.passage for age encryption.
         '';
       }
