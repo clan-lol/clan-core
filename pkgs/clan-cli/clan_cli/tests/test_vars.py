@@ -10,8 +10,8 @@ from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generate import (
     Generator,
-    generate_vars_for_machine,
-    generate_vars_for_machine_interactive,
+    create_machine_vars,
+    create_machine_vars_interactive,
     get_generators_closure,
 )
 from clan_cli.vars.get import get_var
@@ -668,7 +668,7 @@ def test_api_set_prompts(
 
     monkeypatch.chdir(flake.path)
 
-    generate_vars_for_machine(
+    create_machine_vars(
         machine_name="my_machine",
         base_dir=flake.path,
         generators=["my_generator"],
@@ -682,7 +682,7 @@ def test_api_set_prompts(
     store = in_repo.FactStore(machine)
     assert store.exists(Generator("my_generator"), "prompt1")
     assert store.get(Generator("my_generator"), "prompt1").decode() == "input1"
-    generate_vars_for_machine(
+    create_machine_vars(
         machine_name="my_machine",
         base_dir=flake.path,
         generators=["my_generator"],
@@ -727,11 +727,11 @@ def test_stdout_of_generate(
     flake_.refresh()
     monkeypatch.chdir(flake_.path)
     flake = Flake(str(flake_.path))
-    from clan_cli.vars.generate import generate_vars_for_machine_interactive
+    from clan_cli.vars.generate import create_machine_vars_interactive
 
     # with capture_output as output:
     with caplog.at_level(logging.INFO):
-        generate_vars_for_machine_interactive(
+        create_machine_vars_interactive(
             Machine(name="my_machine", flake=flake),
             "my_generator",
             regenerate=False,
@@ -744,7 +744,7 @@ def test_stdout_of_generate(
 
     set_var("my_machine", "my_generator/my_value", b"world", flake)
     with caplog.at_level(logging.INFO):
-        generate_vars_for_machine_interactive(
+        create_machine_vars_interactive(
             Machine(name="my_machine", flake=flake),
             "my_generator",
             regenerate=True,
@@ -755,7 +755,7 @@ def test_stdout_of_generate(
     caplog.clear()
     # check the output when nothing gets regenerated
     with caplog.at_level(logging.INFO):
-        generate_vars_for_machine_interactive(
+        create_machine_vars_interactive(
             Machine(name="my_machine", flake=flake),
             "my_generator",
             regenerate=True,
@@ -764,7 +764,7 @@ def test_stdout_of_generate(
     assert "hello" in caplog.text
     caplog.clear()
     with caplog.at_level(logging.INFO):
-        generate_vars_for_machine_interactive(
+        create_machine_vars_interactive(
             Machine(name="my_machine", flake=flake),
             "my_secret_generator",
             regenerate=False,
@@ -779,7 +779,7 @@ def test_stdout_of_generate(
         Flake(str(flake.path)),
     )
     with caplog.at_level(logging.INFO):
-        generate_vars_for_machine_interactive(
+        create_machine_vars_interactive(
             Machine(name="my_machine", flake=flake),
             "my_secret_generator",
             regenerate=True,
@@ -869,7 +869,7 @@ def test_fails_when_files_are_left_from_other_backend(
     flake.refresh()
     monkeypatch.chdir(flake.path)
     for generator in ["my_secret_generator", "my_value_generator"]:
-        generate_vars_for_machine_interactive(
+        create_machine_vars_interactive(
             Machine(name="my_machine", flake=Flake(str(flake.path))),
             generator,
             regenerate=False,
@@ -886,13 +886,13 @@ def test_fails_when_files_are_left_from_other_backend(
         # This should raise an error
         if generator == "my_secret_generator":
             with pytest.raises(ClanError):
-                generate_vars_for_machine_interactive(
+                create_machine_vars_interactive(
                     Machine(name="my_machine", flake=Flake(str(flake.path))),
                     generator,
                     regenerate=False,
                 )
         else:
-            generate_vars_for_machine_interactive(
+            create_machine_vars_interactive(
                 Machine(name="my_machine", flake=Flake(str(flake.path))),
                 generator,
                 regenerate=False,
