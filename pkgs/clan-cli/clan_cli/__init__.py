@@ -15,6 +15,7 @@ from . import (
     clan,
     secrets,
     select,
+    templates,
     state,
     vms,
 )
@@ -194,6 +195,13 @@ For more detailed information, visit: {help_hyperlink("getting-started", "https:
     )
 
     clan.register_parser(parser_flake)
+
+    parser_templates = subparsers.add_parser(
+        "templates",
+        help="Subcommands to interact with templates",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    templates.register_parser(parser_templates)
 
     parser_flash = subparsers.add_parser(
         "flash",
