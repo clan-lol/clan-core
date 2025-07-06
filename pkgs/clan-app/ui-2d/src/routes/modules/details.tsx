@@ -62,7 +62,6 @@ const Details = (props: DetailsProps) => {
     navigate(`/modules/add/${props.id}`);
     // const uri = activeURI();
     // if (!uri) return;
-    // const res = await callApi("get_inventory", { base_path: uri });
     // if (res.status === "error") {
     //   toast.error("Failed to fetch inventory");
     //   return;

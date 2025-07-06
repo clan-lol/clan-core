@@ -66,7 +66,7 @@ export const CreateClan = () => {
     }
 
     // Will generate a key if it doesn't exist, and add a user to the clan
-    const k = await callApi("keygen", {
+    const k = await callApi("create_secrets_user", {
       flake_dir: target_dir[0],
     }).promise;
 

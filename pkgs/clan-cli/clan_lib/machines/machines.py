@@ -129,7 +129,7 @@ class Machine:
         return self.flake.path
 
     def target_host(self) -> Remote:
-        remote = get_host(self.name, self.flake, field="targetHost")
+        remote = get_machine_host(self.name, self.flake, field="targetHost")
         if remote is None:
             msg = f"'targetHost' is not set for machine '{self.name}'"
             raise ClanError(
@@ -144,7 +144,7 @@ class Machine:
         The host where the machine is built and deployed from.
         Can be the same as the target host.
         """
-        remote = get_host(self.name, self.flake, field="buildHost")
+        remote = get_machine_host(self.name, self.flake, field="buildHost")
 
         if remote:
             data = remote.data
@@ -176,7 +176,7 @@ class RemoteSource:
 
 
 @API.register
-def get_host(
+def get_machine_host(
     name: str, flake: Flake, field: Literal["targetHost", "buildHost"]
 ) -> RemoteSource | None:
     """

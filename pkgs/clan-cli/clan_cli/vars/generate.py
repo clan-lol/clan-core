@@ -89,9 +89,11 @@ class Generator:
                     deploy=file_data["deploy"],
                     owner=file_data["owner"],
                     group=file_data["group"],
-                    mode=file_data["mode"]
-                    if isinstance(file_data["mode"], int)
-                    else int(file_data["mode"], 8),
+                    mode=(
+                        file_data["mode"]
+                        if isinstance(file_data["mode"], int)
+                        else int(file_data["mode"], 8)
+                    ),
                     needed_for=file_data["neededFor"],
                 )
                 files.append(var)
@@ -421,7 +423,7 @@ def get_closure(
 
 
 @API.register
-def get_generators_closure(
+def get_machine_generators(
     machine_name: str,
     base_dir: Path,
     full_closure: bool = False,
@@ -459,7 +461,7 @@ def _generate_vars_for_machine(
 
 
 @API.register
-def generate_vars_for_machine(
+def create_machine_vars(
     machine_name: str,
     generators: list[str],
     all_prompt_values: dict[str, dict[str, str]],
@@ -484,7 +486,7 @@ def generate_vars_for_machine(
     )
 
 
-def generate_vars_for_machine_interactive(
+def create_machine_vars_interactive(
     machine: "Machine",
     generator_name: str | None,
     regenerate: bool,
@@ -538,7 +540,7 @@ def generate_vars(
     for machine in machines:
         errors = []
         try:
-            was_regenerated |= generate_vars_for_machine_interactive(
+            was_regenerated |= create_machine_vars_interactive(
                 machine,
                 generator_name,
                 regenerate,
