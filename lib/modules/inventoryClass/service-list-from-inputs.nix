@@ -1,12 +1,9 @@
 {
   flakeInputs,
   clanLib,
-  localModuleSet,
 }:
 { lib, config, ... }:
-
 let
-
   inspectModule =
     inputName: moduleName: module:
     let
@@ -28,16 +25,30 @@ in
 {
   options.modulesPerSource = lib.mkOption {
     # { sourceName :: { moduleName :: {} }}
+    readOnly = true;
+    type = lib.types.raw;
     default =
       let
         inputsWithModules = lib.filterAttrs (_inputName: v: v ? clan.modules) flakeInputs;
-
       in
       lib.mapAttrs (
         inputName: v: lib.mapAttrs (inspectModule inputName) v.clan.modules
       ) inputsWithModules;
   };
   options.localModules = lib.mkOption {
-    default = lib.mapAttrs (inspectModule "self") localModuleSet;
+    readOnly = true;
+    type = lib.types.raw;
+    default = config.modulesPerSource.self;
+  };
+  options.templatesPerSource = lib.mkOption {
+    # { sourceName :: { moduleName :: {} }}
+    readOnly = true;
+    type = lib.types.raw;
+    default =
+      let
+        inputsWithTemplates = lib.filterAttrs (_inputName: v: v ? clan.templates) flakeInputs;
+      in
+      lib.mapAttrs (_inputName: v: lib.mapAttrs (_n: t: t) v.clan.templates) inputsWithTemplates;
+
   };
 }

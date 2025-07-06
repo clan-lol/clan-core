@@ -229,8 +229,6 @@ in
     clanInternals = {
       inventoryClass =
         let
-          localModuleSet =
-            lib.filterAttrs (n: _: !inventory._legacyModules ? ${n}) inventory.modules // config.modules;
           flakeInputs = config.self.inputs;
         in
         {
@@ -240,7 +238,7 @@ in
           imports = [
             ../inventoryClass/builder/default.nix
             (lib.modules.importApply ../inventoryClass/service-list-from-inputs.nix {
-              inherit flakeInputs clanLib localModuleSet;
+              inherit flakeInputs clanLib;
             })
             {
               inherit inventory directory;
