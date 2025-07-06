@@ -33,7 +33,6 @@ from clan_lib.nix_models.clan import (
 )
 from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
 from clan_lib.persist.util import set_value_by_path
-from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.remote import Remote, can_ssh_login
 
 log = logging.getLogger(__name__)
@@ -189,7 +188,7 @@ def test_clan_create_api(
     clan_dir_flake.invalidate_cache()
 
     target_host = machine.target_host().override(
-        private_key=private_key, host_key_check=HostKeyCheck.NONE
+        private_key=private_key, host_key_check="none"
     )
     result = can_ssh_login(target_host)
     assert result == "Online", f"Machine {machine.name} is not online"
