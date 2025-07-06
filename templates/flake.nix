@@ -1,8 +1,8 @@
 {
   outputs =
     { ... }:
-    {
-      clan.templates = {
+    let
+      templates = {
         disko = {
           single-disk = {
             description = "A simple ext4 disk with a single partition";
@@ -41,5 +41,11 @@
           };
         };
       };
+    in
+    rec {
+      inherit (clan) clanInternals;
+
+      clan.clanInternals.templates = templates;
+      clan.templates = templates;
     };
 }
