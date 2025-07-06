@@ -900,7 +900,9 @@ def test_fails_when_files_are_left_from_other_backend(
 
 
 @pytest.mark.with_core
-def test_keygen(monkeypatch: pytest.MonkeyPatch, flake: ClanFlake) -> None:
+def test_create_sops_age_secrets(
+    monkeypatch: pytest.MonkeyPatch, flake: ClanFlake
+) -> None:
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "keygen", "--flake", str(flake.path), "--user", "user"])
     # check public key exists
