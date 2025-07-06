@@ -403,6 +403,19 @@ def test_generate_secret_var_password_store(
     shutil.copytree(test_root / "data" / "password-store", password_store_dir)
     monkeypatch.setenv("PASSWORD_STORE_DIR", str(password_store_dir))
 
+    # Initialize password store as a git repository
+    import subprocess
+
+    subprocess.run(["git", "init"], cwd=password_store_dir, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"],
+        cwd=password_store_dir,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Test User"], cwd=password_store_dir, check=True
+    )
+
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
     assert not check_vars(machine.name, machine.flake)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
