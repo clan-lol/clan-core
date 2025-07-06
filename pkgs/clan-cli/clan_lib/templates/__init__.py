@@ -1,10 +1,11 @@
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Literal, NewType, TypedDict, cast
 
 from clan_lib.dirs import clan_templates
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
+from clan_lib.nix_models.clan import ClanTemplatesType
 from clan_lib.templates.filesystem import realize_nix_path
 
 log = logging.getLogger(__name__)
@@ -168,32 +169,18 @@ class InputPrio:
 
 @dataclass
 class TemplateList:
-    inputs: dict[InputName, dict[TemplateName, Template]] = field(default_factory=dict)
-    self: dict[TemplateName, Template] = field(default_factory=dict)
+    builtins: ClanTemplatesType
+    custom: dict[str, ClanTemplatesType]
 
 
-def list_templates(
-    template_type: TemplateType, clan_dir: Flake | None = None
-) -> TemplateList:
+def list_templates(flake: Flake) -> TemplateList:
     """
-    List all templates of a specific type from a flake, without a path attribute.
-    As these paths are not yet downloaded into the nix store, and thus cannot be used directly.
+    Show information about a module
     """
-    clan_exports = get_clan_nix_attrset(clan_dir)
-    result = TemplateList()
+    custom_templates = flake.select("clanInternals.inventoryClass.templatesPerSource")
+    builtin_templates = flake.select("clanInternals.templates")
 
-    for template_name, template in clan_exports["self"]["templates"][
-        template_type
-    ].items():
-        result.self[template_name] = template
-
-    for input_name, attrset in clan_exports["inputs"].items():
-        for template_name, template in attrset["templates"][template_type].items():
-            if input_name not in result.inputs:
-                result.inputs[input_name] = {}
-            result.inputs[input_name][template_name] = template
-
-    return result
+    return TemplateList(builtin_templates, custom_templates)
 
 
 def get_template(
