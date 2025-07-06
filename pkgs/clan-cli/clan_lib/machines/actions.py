@@ -1,9 +1,9 @@
-from dataclasses import dataclass
 from typing import TypedDict
 
 from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake.flake import Flake
+from clan_lib.machines.machines import Machine
 from clan_lib.nix_models.clan import (
     InventoryMachine,
 )
@@ -65,16 +65,8 @@ def get_machine(flake: Flake, name: str) -> InventoryMachine:
     return InventoryMachine(**machine_inv)
 
 
-# TODO: remove this machine, once the Machine class is refactored
-# We added this now, to allow for dispatching actions. To require only 'name' and 'flake' of a machine.
-@dataclass(frozen=True)
-class MachineID:
-    name: str
-    flake: Flake
-
-
 @API.register
-def set_machine(machine: MachineID, update: InventoryMachine) -> None:
+def set_machine(machine: Machine, update: InventoryMachine) -> None:
     """
     Update the machine information in the inventory.
     """

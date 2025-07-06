@@ -137,7 +137,7 @@ def test_clan_create_api(
     # TODO: We need to generate a lock file for the templates
     clan_cli.clan.create.create_clan(
         clan_cli.clan.create.CreateOptions(
-            template_name="minimal", dest=dest_clan_dir, update_clan=False
+            template="minimal", dest=dest_clan_dir, update_clan=False
         )
     )
     assert dest_clan_dir.is_dir()

@@ -49,7 +49,7 @@ export const CreateClan = () => {
     const r = await callApi("create_clan", {
       opts: {
         dest: target_dir[0],
-        template_name: template,
+        template: template,
         initial: {
           meta,
           services: {},
