@@ -33,27 +33,6 @@ export const createModulesQuery = (
     },
   }));
 
-export const tagsQuery = (uri: string | undefined) =>
-  useQuery<string[]>(() => ({
-    queryKey: [uri, "tags"],
-    placeholderData: [],
-    queryFn: async () => {
-      if (!uri) return [];
-
-      const response = await callApi("get_inventory", {
-        flake: { identifier: uri },
-      }).promise;
-      if (response.status === "error") {
-        console.error("Failed to fetch data");
-      } else {
-        const machines = response.data.machines || {};
-        const tags = Object.values(machines).flatMap((m) => m.tags || []);
-        return tags;
-      }
-      return [];
-    },
-  }));
-
 export const machinesQuery = (uri: string | undefined) =>
   useQuery<string[]>(() => ({
     queryKey: [uri, "machines"],
@@ -61,7 +40,7 @@ export const machinesQuery = (uri: string | undefined) =>
     queryFn: async () => {
       if (!uri) return [];
 
-      const response = await callApi("get_inventory", {
+      const response = await callApi("list_machines", {
         flake: { identifier: uri },
       }).promise;
       if (response.status === "error") {

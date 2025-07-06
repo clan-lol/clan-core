@@ -3,19 +3,17 @@ import logging
 import sys
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 
 from .generate import Var
-from .list import get_vars
+from .list import get_machine_vars
 
 log = logging.getLogger(__name__)
 
 
-@API.register
-def get_var(base_dir: str, machine_name: str, var_id: str) -> Var:
-    vars_ = get_vars(base_dir=base_dir, machine_name=machine_name)
+def get_machine_var(base_dir: str, machine_name: str, var_id: str) -> Var:
+    vars_ = get_machine_vars(base_dir=base_dir, machine_name=machine_name)
     results = []
     for var in vars_:
         if var.id == var_id:
@@ -41,7 +39,7 @@ def get_var(base_dir: str, machine_name: str, var_id: str) -> Var:
 
 
 def get_command(machine_name: str, var_id: str, flake: Flake) -> None:
-    var = get_var(str(flake.path), machine_name, var_id)
+    var = get_machine_var(str(flake.path), machine_name, var_id)
     if not var.exists:
         msg = f"Var {var.id} has not been generated yet"
         raise ClanError(msg)

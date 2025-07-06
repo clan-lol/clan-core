@@ -3,7 +3,7 @@ import logging
 import sys
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_cli.vars.get import get_var
+from clan_cli.vars.get import get_machine_var
 from clan_cli.vars.prompt import PromptType
 from clan_lib.flake import Flake
 from clan_lib.git import commit_files
@@ -21,7 +21,7 @@ def set_var(machine: str | Machine, var: str | Var, value: bytes, flake: Flake) 
     else:
         _machine = machine
     if isinstance(var, str):
-        _var = get_var(str(flake.path), _machine.name, var)
+        _var = get_machine_var(str(flake.path), _machine.name, var)
     else:
         _var = var
     path = _var.set(value)
@@ -35,7 +35,7 @@ def set_var(machine: str | Machine, var: str | Var, value: bytes, flake: Flake) 
 
 def set_via_stdin(machine_name: str, var_id: str, flake: Flake) -> None:
     machine = Machine(name=machine_name, flake=flake)
-    var = get_var(str(flake.path), machine_name, var_id)
+    var = get_machine_var(str(flake.path), machine_name, var_id)
     if sys.stdin.isatty():
         new_value = ask(
             var.id,

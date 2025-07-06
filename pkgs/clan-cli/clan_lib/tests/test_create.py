@@ -14,7 +14,7 @@ from clan_cli.machines.create import create_machine
 from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import maybe_get_admin_public_keys
 from clan_cli.secrets.users import add_user
-from clan_cli.vars.generate import generate_vars_for_machine, get_generators_closure
+from clan_cli.vars.generate import create_machine_vars, get_machine_generators
 
 from clan_lib.api.disk import hw_main_disk_options, set_machine_disk_schema
 from clan_lib.api.modules import list_modules
@@ -22,7 +22,7 @@ from clan_lib.cmd import RunOpts, run
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.inventory import InventoryStore
+from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command
 from clan_lib.nix_models.clan import (
@@ -221,7 +221,7 @@ def test_clan_create_api(
     # Invalidate cache because of new inventory
     clan_dir_flake.invalidate_cache()
 
-    generators = get_generators_closure(machine.name, machine.flake.path)
+    generators = get_machine_generators(machine.name, machine.flake.path)
     all_prompt_values = {}
     for generator in generators:
         prompt_values = {}
@@ -234,7 +234,7 @@ def test_clan_create_api(
                 raise ClanError(msg)
         all_prompt_values[generator.name] = prompt_values
 
-    generate_vars_for_machine(
+    create_machine_vars(
         machine_name=machine.name,
         base_dir=machine.flake.path,
         generators=[gen.name for gen in generators],
