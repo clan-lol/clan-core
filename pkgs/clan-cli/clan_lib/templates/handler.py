@@ -77,14 +77,6 @@ def machine_template(
         msg = f"Template {printable_template_ref} is not a directory at {src_path}"
         raise ClanError(msg)
 
-    # TODO: Do we really need to check for a specific file in the template?
-    if not (src_path / "configuration.nix").exists():
-        msg = f"Template {printable_template_ref} does not contain a configuration.nix"
-        raise ClanError(
-            msg,
-            description="Template machine must contain a configuration.nix",
-        )
-
     tmp_machine = Machine(flake=flake, name=dst_machine_name)
 
     dst_machine_dir = specific_machine_dir(tmp_machine)
