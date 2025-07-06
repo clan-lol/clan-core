@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 from clan_cli.tests.sshd import Sshd
-from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.remote import Remote
 
 
@@ -17,7 +16,7 @@ def hosts(sshd: Sshd) -> list[Remote]:
             port=sshd.port,
             user=login,
             private_key=Path(sshd.key),
-            host_key_check=HostKeyCheck.NONE,
+            host_key_check="none",
             command_prefix="local_test",
         )
     ]

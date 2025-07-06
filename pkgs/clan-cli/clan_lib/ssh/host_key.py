@@ -1,15 +1,15 @@
 # Adapted from https://github.com/numtide/deploykit
 
-from enum import Enum
+from typing import Literal
 
 from clan_lib.errors import ClanError
 
-
-class HostKeyCheck(Enum):
-    STRICT = "strict"  # Strictly check ssh host keys, prompt for unknown ones
-    ASK = "ask"  # Ask for confirmation on first use
-    TOFU = "tofu"  # Trust on ssh keys on first use
-    NONE = "none"  # Do not check ssh host keys
+HostKeyCheck = Literal[
+    "strict",  # Strictly check ssh host keys, prompt for unknown ones
+    "ask",  # Ask for confirmation on first use
+    "tofu",  # Trust on ssh keys on first use
+    "none",  # Do not check ssh host keys
+]
 
 
 def hostkey_to_ssh_opts(host_key_check: HostKeyCheck) -> list[str]:
@@ -17,13 +17,13 @@ def hostkey_to_ssh_opts(host_key_check: HostKeyCheck) -> list[str]:
     Convert a HostKeyCheck value to SSH options.
     """
     match host_key_check:
-        case HostKeyCheck.STRICT:
+        case "strict":
             return ["-o", "StrictHostKeyChecking=yes"]
-        case HostKeyCheck.ASK:
+        case "ask":
             return []
-        case HostKeyCheck.TOFU:
+        case "tofu":
             return ["-o", "StrictHostKeyChecking=accept-new"]
-        case HostKeyCheck.NONE:
+        case "none":
             return [
                 "-o",
                 "StrictHostKeyChecking=no",
