@@ -423,7 +423,7 @@ def get_closure(
 
 
 @API.register
-def get_generators_closure(
+def get_machine_generators(
     machine_name: str,
     base_dir: Path,
     full_closure: bool = False,
