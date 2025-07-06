@@ -14,7 +14,7 @@ from clan_cli.machines.create import create_machine
 from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import maybe_get_admin_public_keys
 from clan_cli.secrets.users import add_user
-from clan_cli.vars.generate import generate_vars_for_machine, get_generators_closure
+from clan_cli.vars.generate import create_machine_vars, get_generators_closure
 
 from clan_lib.api.disk import hw_main_disk_options, set_machine_disk_schema
 from clan_lib.api.modules import list_modules
@@ -234,7 +234,7 @@ def test_clan_create_api(
                 raise ClanError(msg)
         all_prompt_values[generator.name] = prompt_values
 
-    generate_vars_for_machine(
+    create_machine_vars(
         machine_name=machine.name,
         base_dir=machine.flake.path,
         generators=[gen.name for gen in generators],
