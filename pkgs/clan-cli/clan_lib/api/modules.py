@@ -168,7 +168,6 @@ def list_modules(base_path: str) -> ModuleLists:
     modules = flake.select(
         "clanInternals.inventoryClass.{?modulesPerSource,?localModules}"
     )
-    print("Modules found:", modules)
 
     return modules
 
