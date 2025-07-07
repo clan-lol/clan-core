@@ -182,9 +182,10 @@ def get_machine_host(
     host_str = inv_machine.get("deploy", {}).get(field)
 
     if host_str is None:
-        machine.warn(
-            f"'{field}' is not set in `inventory.machines.${machine.name}.deploy.{field}` - falling back to _slower_ nixos option: `clan.core.networking.{field}`"
+        machine.info(
+            f"`inventory.machines.{machine.name}.deploy.{field}` is not set — falling back to `clan.core.networking.{field}`. See: https://docs.clan.lol/guides/target-host"
         )
+
         host_str = machine.select(f'config.clan.core.networking."{field}"')
         source = "machine"
 
