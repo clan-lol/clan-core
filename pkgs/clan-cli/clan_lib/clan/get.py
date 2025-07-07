@@ -7,6 +7,14 @@ from clan_lib.persist.inventory_store import InventoryStore
 
 @API.register
 def get_clan_details(flake: Flake) -> InventoryMeta:
+    """Retrieve the clan details from the inventory of a given flake.
+    Args:
+        flake: The Flake instance representing the clan.
+    Returns:
+        InventoryMeta: The meta information from the clan's inventory.
+    Raises:
+        ClanError: If the flake does not exist, or if the inventory is invalid (missing the meta attribute).
+    """
     if flake.is_local and not flake.path.exists():
         msg = f"Path {flake} does not exist"
         raise ClanError(msg, description="clan directory does not exist")
