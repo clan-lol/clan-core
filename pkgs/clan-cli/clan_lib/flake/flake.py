@@ -906,3 +906,20 @@ nix repl --expr 'rec {{
             self.get_from_nix([selector])
         value = self._cache.select(selector)
         return value
+
+    def select_machine(self, machine_name: str, selector: str) -> Any:
+        """
+        Select a nix attribute for a specific machine.
+
+        Args:
+            machine_name: The name of the machine
+            selector: The attribute selector string relative to the machine config
+            apply: Optional function to apply to the result
+        """
+        from clan_lib.nix import nix_config
+
+        config = nix_config()
+        system = config["system"]
+
+        full_selector = f'clanInternals.machines."{system}"."{machine_name}".{selector}'
+        return self.select(full_selector)

@@ -13,7 +13,6 @@ from clan_cli.vars._types import StoreBase
 from clan_lib.api import API
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
-from clan_lib.nix import nix_config
 from clan_lib.nix_models.clan import InventoryMachine
 from clan_lib.ssh.remote import Remote
 
@@ -105,13 +104,13 @@ class Machine:
     def secret_vars_store(self) -> StoreBase:
         secret_module = self.select("config.clan.core.vars.settings.secretModule")
         module = importlib.import_module(secret_module)
-        return module.SecretStore(machine=self)
+        return module.SecretStore(machine=self.name, flake=self.flake)
 
     @cached_property
     def public_vars_store(self) -> StoreBase:
         public_module = self.select("config.clan.core.vars.settings.publicModule")
         module = importlib.import_module(public_module)
-        return module.FactStore(machine=self)
+        return module.FactStore(machine=self.name, flake=self.flake)
 
     @property
     def facts_data(self) -> dict[str, dict[str, Any]]:
@@ -160,13 +159,7 @@ class Machine:
         Select a nix attribute of the machine
         @attr: the attribute to get
         """
-
-        config = nix_config()
-        system = config["system"]
-
-        return self.flake.select(
-            f'clanInternals.machines."{system}"."{self.name}".{attr}'
-        )
+        return self.flake.select_machine(self.name, attr)
 
 
 @dataclass(frozen=True)

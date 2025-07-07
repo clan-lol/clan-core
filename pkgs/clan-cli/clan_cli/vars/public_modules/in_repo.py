@@ -5,7 +5,7 @@ from pathlib import Path
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
 from clan_lib.errors import ClanError
-from clan_lib.machines.machines import Machine
+from clan_lib.flake import Flake
 from clan_lib.ssh.remote import Remote
 
 
@@ -14,8 +14,8 @@ class FactStore(StoreBase):
     def is_secret_store(self) -> bool:
         return False
 
-    def __init__(self, machine: Machine) -> None:
-        self.machine = machine
+    def __init__(self, machine: str, flake: Flake) -> None:
+        super().__init__(machine, flake)
         self.works_remotely = False
 
     @property
@@ -28,8 +28,8 @@ class FactStore(StoreBase):
         var: Var,
         value: bytes,
     ) -> Path | None:
-        if not self.machine.flake.is_local:
-            msg = f"in_flake fact storage is only supported for local flakes: {self.machine.flake}"
+        if not self.flake.is_local:
+            msg = f"in_flake fact storage is only supported for local flakes: {self.flake}"
             raise ClanError(msg)
         folder = self.directory(generator, var.name)
         file_path = folder / "value"
@@ -62,8 +62,8 @@ class FactStore(StoreBase):
         return [fact_folder]
 
     def delete_store(self) -> Iterable[Path]:
-        flake_root = Path(self.machine.flake_dir)
-        store_folder = flake_root / "vars/per-machine" / self.machine.name
+        flake_root = self.flake.path
+        store_folder = flake_root / "vars/per-machine" / self.machine
         if not store_folder.exists():
             return []
         shutil.rmtree(store_folder)
