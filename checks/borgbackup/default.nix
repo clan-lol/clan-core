@@ -47,14 +47,6 @@ nixosLib.runTest (
 
       clientone =
         { config, pkgs, ... }:
-        let
-          dependencies = [
-            clan-core
-            pkgs.stdenv.drvPath
-          ] ++ builtins.map (i: i.outPath) (builtins.attrValues clan-core.inputs);
-          closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
-
-        in
         {
 
           services.openssh.enable = true;
@@ -64,15 +56,6 @@ nixosLib.runTest (
           clan.core.networking.targetHost = config.networking.hostName;
 
           environment.systemPackages = [ clan-core.packages.${pkgs.system}.clan-cli ];
-
-          environment.etc.install-closure.source = "${closureInfo}/store-paths";
-          nix.settings = {
-            substituters = pkgs.lib.mkForce [ ];
-            hashed-mirrors = null;
-            connect-timeout = pkgs.lib.mkForce 3;
-            flake-registry = pkgs.writeText "flake-registry" ''{"flakes":[],"version":2}'';
-          };
-          system.extraDependencies = dependencies;
 
           clan.core.state.test-backups.folders = [ "/var/test-backups" ];
         };
