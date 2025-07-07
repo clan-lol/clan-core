@@ -444,6 +444,21 @@ class CheckResult:
 def check_machine_ssh_login(
     remote: Remote, opts: ConnectionOptions | None = None
 ) -> CheckResult:
+    """Checks if a remote machine is reachable via SSH by attempting to run a simple command.
+    Args:
+        remote (Remote): The remote host to check for SSH login.
+        opts (ConnectionOptions, optional): Connection options such as timeout and number of retries.
+            If not provided, default values are used.
+    Returns:
+        CheckResult: An object indicating whether the SSH login is successful (`ok=True`) or not (`ok=False`),
+        and a reason if the check failed.
+    Usage:
+        result = check_machine_ssh_login(remote)
+        if result.ok:
+            print("SSH login successful")
+        else:
+            print(f"SSH login failed: {result.reason}")
+    """
     if opts is None:
         opts = ConnectionOptions()
 
