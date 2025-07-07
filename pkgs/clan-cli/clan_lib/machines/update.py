@@ -106,6 +106,16 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
 def run_machine_deploy(
     machine: Machine, target_host: Remote, build_host: Remote | None
 ) -> None:
+    """Update an existing machine using nixos-rebuild or darwin-rebuild.
+    Args:
+        machine: The Machine instance to deploy.
+        target_host: Remote object representing the target host for deployment.
+        build_host: Optional Remote object representing the build host.
+    Raises:
+        ClanError: If the machine is not found in the inventory or if there are issues with
+            generating facts or variables.
+    """
+
     with ExitStack() as stack:
         target_host = stack.enter_context(target_host.ssh_control_master())
 

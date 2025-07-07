@@ -150,7 +150,7 @@ def main() -> None:
             errors.extend(check_res)
 
         if not func_schema.get("description"):
-            warnings.append(
+            errors.append(
                 f"{func_name} doesn't have a description. Python docstring is required for an API function."
             )
 

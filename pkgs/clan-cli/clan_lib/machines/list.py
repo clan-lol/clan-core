@@ -52,8 +52,22 @@ def extract_header(c: str) -> str:
     return "\n".join(header_lines)
 
 
+# TODO: Remove this function
+# Split out the disko schema extraction into a separate function
+# get machine returns the machine already
 @API.register
 def get_machine_details(machine: Machine) -> MachineDetails:
+    """Retrieve detailed information about a machine, including its inventory,
+    hardware configuration, and disk schema if available.
+    Args:
+        machine (Machine): The machine instance for which details are to be retrieved.
+    Returns:
+        MachineDetails: An instance containing the machine's inventory, hardware configuration,
+        and disk schema.
+    Raises:
+        ClanError: If the machine's inventory cannot be found or if there are issues with the
+        hardware configuration or disk schema extraction.
+    """
     machine_inv = get_machine(machine.flake, machine.name)
     hw_config = HardwareConfig.detect_type(machine)
 

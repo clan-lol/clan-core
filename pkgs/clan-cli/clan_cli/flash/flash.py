@@ -49,6 +49,21 @@ def run_machine_flash(
     extra_args: list[str] | None = None,
     graphical: bool = False,
 ) -> None:
+    """Flash a machine with the given configuration.
+    Args:
+        machine: The Machine instance to flash.
+        mode: The mode to use for flashing (e.g., "install", "reinstall
+        disks: List of Disk instances representing the disks to flash.
+        system_config: SystemConfig instance containing language, keymap, and SSH keys.
+        dry_run: If True, perform a dry run without making changes.
+        write_efi_boot_entries: If True, write EFI boot entries.
+        debug: If True, enable debug mode.
+        extra_args: Additional arguments to pass to the disko-install command.
+        graphical: If True, run the command in graphical mode.
+    Raises:
+        ClanError: If the language or keymap is invalid, or if there are issues with
+            reading SSH keys, or if disko-install fails.
+    """
     devices = [Path(disk.device) for disk in disks]
     with pause_automounting(devices, machine, request_graphical=graphical):
         if extra_args is None:
