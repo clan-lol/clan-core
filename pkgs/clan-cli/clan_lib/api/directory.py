@@ -122,7 +122,7 @@ def blk_from_dict(data: dict) -> BlkInfo:
 
 
 @API.register
-def show_block_devices() -> Blockdevices:
+def list_block_devices() -> Blockdevices:
     """
     Api method to show local block devices.
 

@@ -128,7 +128,7 @@ const EditClanForm = (props: EditClanFormProps) => {
   );
 };
 
-type GeneralData = SuccessQuery<"show_clan_meta">["data"];
+type GeneralData = SuccessQuery<"get_clan_details">["data"];
 
 export const ClanDetails = () => {
   const params = useParams();
