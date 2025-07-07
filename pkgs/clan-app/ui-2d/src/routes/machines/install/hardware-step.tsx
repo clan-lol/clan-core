@@ -127,7 +127,7 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
       return;
     }
 
-    const r = await callApi("generate_machine_hardware_info", {
+    const r = await callApi("run_machine_hardware_info", {
       opts: {
         machine: {
           name: props.machine_id,

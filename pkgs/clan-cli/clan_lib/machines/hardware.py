@@ -67,7 +67,7 @@ class HardwareGenerateOptions:
 
 
 @API.register
-def generate_machine_hardware_info(
+def run_machine_hardware_info(
     opts: HardwareGenerateOptions, target_host: Remote
 ) -> HardwareConfig:
     """
