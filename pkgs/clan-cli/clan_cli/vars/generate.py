@@ -423,7 +423,7 @@ def get_closure(
 
 
 @API.register
-def get_machine_generators(
+def get_generators(
     machine_name: str,
     base_dir: Path,
     full_closure: bool = False,
@@ -461,7 +461,7 @@ def _generate_vars_for_machine(
 
 
 @API.register
-def create_machine_vars(
+def run_generators(
     machine_name: str,
     generators: list[str],
     all_prompt_values: dict[str, dict[str, str]],
