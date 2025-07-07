@@ -16,7 +16,7 @@
   */
   makeEvalChecks =
     {
-      self,
+      fileset,
       inputs,
       testName,
       tests,
@@ -24,7 +24,7 @@
       testArgs ? { },
     }:
     let
-      inputOverrides = self.clanLib.flake-inputs.getOverrides inputs;
+      inputOverrides = clanLib.flake-inputs.getOverrides inputs;
       attrName = "eval-tests-${testName}";
     in
     {
@@ -39,16 +39,44 @@
         }
         // testArgs
       );
-      checks.${attrName} = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
-        export HOME="$(realpath .)"
+      checks.${attrName} =
+        let
+          # The root is two directories up from where this file is located
+          root = ../..;
 
-        nix-unit --eval-store "$HOME" \
-          --extra-experimental-features flakes \
-          --show-trace \
-          ${inputOverrides} \
-          --flake ${self}#legacyPackages.${system}.${attrName}
-        touch $out
-      '';
+          # Combine the user-provided fileset with all flake-module.nix files
+          # and other essential files
+          src = lib.fileset.toSource {
+            inherit root;
+            fileset = lib.fileset.unions [
+              # Core flake files
+              (root + "/flake.nix")
+              (root + "/flake.lock")
+
+              # All flake-module.nix files anywhere in the tree
+              (lib.fileset.fileFilter (file: file.name == "flake-module.nix") root)
+
+              # The flakeModules/clan.nix if it exists
+              (lib.fileset.maybeMissing (root + "/flakeModules/clan.nix"))
+
+              # Core libraries
+              (root + "/lib")
+
+              # User-provided fileset
+              fileset
+            ];
+          };
+        in
+        pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.nix-unit ]; } ''
+          export HOME="$(realpath .)"
+
+          nix-unit --eval-store "$HOME" \
+            --extra-experimental-features flakes \
+            --show-trace \
+            ${inputOverrides} \
+            --flake ${src}#legacyPackages.${system}.${attrName}
+          touch $out
+        '';
 
     };
 }
