@@ -35,10 +35,6 @@
             description = "Flake-parts";
             path = ./clan/flake-parts;
           };
-          minimal-flake-parts = {
-            description = "Minimal flake-parts clan template";
-            path = ./clan/minimal-flake-parts;
-          };
         };
       };
     in

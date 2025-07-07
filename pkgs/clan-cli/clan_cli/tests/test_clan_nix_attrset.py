@@ -45,7 +45,6 @@ def test_clan_core_templates(
         "default",
         "flake-parts",
         "minimal",
-        "minimal-flake-parts",
     ]
 
     # clan.default
