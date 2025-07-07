@@ -122,8 +122,8 @@ CTRL+D
 4. Locally generate ssh host keys. You only need to generate ones for the algorithms you're using in `authorizedKeys`.
 
 ```bash
-ssh-keygen -q -N "" -t ed25519 -f ./initrd_host_ed25519_key
-ssh-keygen -q -N "" -t rsa -b 4096 -f ./initrd_host_rsa_key
+ssh-keygen -q -N "" -C "" -t ed25519 -f ./initrd_host_ed25519_key
+ssh-keygen -q -N "" -C "" -t rsa -b 4096 -f ./initrd_host_rsa_key
 ```
 
 5. Securely copy your local initrd ssh host keys to the installer's `/mnt` directory:
