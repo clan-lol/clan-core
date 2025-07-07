@@ -254,6 +254,7 @@ API.register(open_file)
                 "type": "object",
                 "required": ["arguments", "return"],
                 "additionalProperties": False,
+                "description": func.__doc__,
                 "properties": {
                     "return": return_type,
                     "arguments": {
