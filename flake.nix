@@ -35,19 +35,13 @@
       };
     };
 
-    # dependencies needed for nuschtos
-    flake-utils.url = "github:numtide/flake-utils";
-    flake-utils.inputs.systems.follows = "systems";
-    nuschtos.url = "github:NuschtOS/search";
-    nuschtos.inputs.nixpkgs.follows = "nixpkgs";
-    nuschtos.inputs.flake-utils.follows = "flake-utils";
   };
 
   outputs =
     inputs@{
-      flake-parts,
       nixpkgs,
       systems,
+      flake-parts,
       ...
     }:
     let
@@ -56,10 +50,29 @@
         optional
         pathExists
         ;
+
+      loadDevFlake =
+        path:
+        let
+          flakeHash = nixpkgs.lib.fileContents "${toString path}.narHash";
+          flakePath = "path:${toString path}?narHash=${flakeHash}";
+        in
+        builtins.getFlake (builtins.unsafeDiscardStringContext flakePath);
+
+      devFlake =
+        if pathExists ./devFlake/private && builtins ? getFlake then
+          loadDevFlake ./devFlake/private
+        else
+          null;
+
+      privateInputs = if devFlake != null then devFlake.inputs else { };
     in
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }:
       {
+        _module.args = {
+          inherit privateInputs;
+        };
         clan = {
           meta.name = "clan-core";
           inventory = {
