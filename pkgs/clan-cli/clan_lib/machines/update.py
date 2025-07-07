@@ -103,7 +103,7 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
 
 
 @API.register
-def deploy_machine(
+def run_machine_deploy(
     machine: Machine, target_host: Remote, build_host: Remote | None
 ) -> None:
     with ExitStack() as stack:

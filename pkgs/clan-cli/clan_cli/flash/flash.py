@@ -37,7 +37,7 @@ class Disk:
 
 # TODO: unify this with machine install
 @API.register
-def flash_machine(
+def run_machine_flash(
     machine: Machine,
     *,
     mode: str,
