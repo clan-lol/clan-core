@@ -68,12 +68,18 @@ in
             --show-trace \
             ${inputOverrides} \
             --flake ${
-              self.filter {
-                include = [
-                  "flakeModules"
-                  "lib"
-                  "clanModules/flake-module.nix"
-                  "clanModules/borgbackup"
+              lib.fileset.toSource {
+                root = ../../..;
+                fileset = lib.fileset.unions [
+                  ../../../flake.nix
+                  ../../../flake.lock
+                  (lib.fileset.fileFilter (file: file.name == "flake-module.nix") ../../..)
+                  ../../../flakeModules
+                  ../../../lib
+                  ../../../nixosModules/clanCore
+                  ../../../clanModules/borgbackup
+                  ../../../machines
+                  ../../../inventory.json
                 ];
               }
             }#legacyPackages.${system}.evalTests-inventory
