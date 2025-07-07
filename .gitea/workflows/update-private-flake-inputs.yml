@@ -19,7 +19,7 @@ jobs:
           cd ../..
 
           # Update the narHash
-          ./devFlake/update-private-narhash
+          bash ./devFlake/update-private-narhash
       - name: Create pull request
         env:
           CI_BOT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
