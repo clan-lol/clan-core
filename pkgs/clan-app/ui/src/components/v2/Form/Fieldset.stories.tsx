@@ -40,7 +40,7 @@ export type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     legend: "Signup",
-    fields: (props: FieldProps) => (
+    children: (props: FieldProps) => (
       <>
         <TextInput
           {...props}
@@ -90,7 +90,7 @@ export const Error: Story = {
   args: {
     legend: "Signup",
     error: "You must enter a First Name",
-    fields: (props: FieldProps) => (
+    children: (props: FieldProps) => (
       <>
         <TextInput
           {...props}
