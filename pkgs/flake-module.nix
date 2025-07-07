@@ -27,7 +27,6 @@
         editor = pkgs.callPackage ./editor/clan-edit-codium.nix { };
         classgen = pkgs.callPackage ./classgen { };
         zerotierone = pkgs.callPackage ./zerotierone { };
-        update-clan-core-for-checks = pkgs.callPackage ./update-clan-core-for-checks { };
       };
     };
 }

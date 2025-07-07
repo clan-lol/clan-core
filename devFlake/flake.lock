@@ -1,5 +1,23 @@
 {
   "nodes": {
+    "clan-core-for-checks": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1754918666,
+        "narHash": "sha256-OHtVG9jX7FmwkB57w/nBR+Eek+a5HLT7Y72DwXUBLFo=",
+        "ref": "main",
+        "rev": "1524dc963eb4ffc5cbf14c46316844ef51e63471",
+        "shallow": true,
+        "type": "git",
+        "url": "https://git.clan.lol/clan/clan-core"
+      },
+      "original": {
+        "ref": "main",
+        "shallow": true,
+        "type": "git",
+        "url": "https://git.clan.lol/clan/clan-core"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": [
@@ -104,6 +122,7 @@
     },
     "root": {
       "inputs": {
+        "clan-core-for-checks": "clan-core-for-checks",
         "flake-utils": "flake-utils",
         "nixpkgs-dev": "nixpkgs-dev",
         "nuschtos": "nuschtos",
