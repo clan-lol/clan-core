@@ -40,6 +40,16 @@ class InstallOptions:
 
 @API.register
 def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
+    """Install a machine using nixos-anywhere.
+    Args:
+        opts: InstallOptions containing the machine to install, kexec option, debug mode,
+            no-reboot option, phases, build-on option, hardware config update, password,
+            identity file, and use_tor flag.
+        target_host: Remote object representing the target host for installation.
+    Raises:
+        ClanError: If the machine is not found in the inventory or if there are issues with
+            generating facts or variables.
+    """
     machine = opts.machine
 
     machine.debug(f"installing {machine.name}")
