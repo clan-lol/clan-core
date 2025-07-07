@@ -23,7 +23,7 @@ const EditClanForm = (props: EditClanFormProps) => {
   const handleSubmit: SubmitHandler<GeneralData> = async (values, event) => {
     await toast.promise(
       (async () => {
-        await callApi("update_clan_meta", {
+        await callApi("set_clan_details", {
           options: {
             flake: { identifier: props.directory },
             meta: values,

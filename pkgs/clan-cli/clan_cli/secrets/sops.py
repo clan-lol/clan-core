@@ -13,7 +13,6 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import IO, Any
 
-from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import user_config_dir
 from clan_lib.errors import ClanError

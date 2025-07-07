@@ -14,7 +14,7 @@ class UpdateOptions:
 
 
 @API.register
-def update_clan_meta(options: UpdateOptions) -> InventorySnapshot:
+def set_clan_details(options: UpdateOptions) -> InventorySnapshot:
     inventory_store = InventoryStore(options.flake)
     inventory = inventory_store.read()
     set_value_by_path(inventory, "meta", options.meta)
