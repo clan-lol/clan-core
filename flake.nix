@@ -59,13 +59,9 @@
         in
         builtins.getFlake (builtins.unsafeDiscardStringContext flakePath);
 
-      devFlake =
-        if pathExists ./devFlake/private && builtins ? getFlake then
-          loadDevFlake ./devFlake/private
-        else
-          null;
+      devFlake = builtins.tryEval (loadDevFlake ./devFlake/private);
 
-      privateInputs = if devFlake != null then devFlake.inputs else { };
+      privateInputs = if devFlake.success then devFlake.value.inputs else { };
     in
     flake-parts.lib.mkFlake { inherit inputs; } (
       { ... }:
