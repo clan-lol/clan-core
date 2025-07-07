@@ -88,7 +88,7 @@ def parse_avahi_output(output: str) -> DNSInfo:
 
 
 @API.register
-def show_mdns() -> DNSInfo:
+def list_mdns_services() -> DNSInfo:
     cmd = nix_shell(
         ["avahi"],
         [
@@ -107,7 +107,7 @@ def show_mdns() -> DNSInfo:
 
 
 def mdns_command(args: argparse.Namespace) -> None:
-    dns_info = show_mdns()
+    dns_info = list_mdns_services()
     for name, info in dns_info.services.items():
         print(f"Hostname: {name} - ip: {info.ip}")
 
