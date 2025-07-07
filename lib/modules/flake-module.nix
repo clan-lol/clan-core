@@ -4,9 +4,7 @@
   ...
 }:
 let
-  inputOverrides = builtins.concatStringsSep " " (
-    builtins.map (input: " --override-input ${input} ${inputs.${input}}") (builtins.attrNames inputs)
-  );
+  inputOverrides = self.clanLib.flake-inputs.getOverrides inputs;
 in
 {
   imports = [
