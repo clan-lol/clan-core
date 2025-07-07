@@ -39,7 +39,7 @@ class InstallOptions:
 
 
 @API.register
-def install_machine(opts: InstallOptions, target_host: Remote) -> None:
+def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     machine = opts.machine
 
     machine.debug(f"installing {machine.name}")

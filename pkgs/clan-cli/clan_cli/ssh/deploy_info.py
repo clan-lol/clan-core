@@ -98,7 +98,7 @@ def find_reachable_host(deploy_info: DeployInfo) -> Remote | None:
         return deploy_info.addrs[0]
 
     for addr in deploy_info.addrs:
-        if addr.is_ssh_reachable():
+        if addr.check_machine_ssh_reachable():
             return addr
     return None
 

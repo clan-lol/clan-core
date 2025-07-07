@@ -75,7 +75,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
     }
 
     setInstalling(true);
-    await callApi("install_machine", {
+    await callApi("run_machine_install", {
       opts: {
         machine: {
           name: name,
@@ -163,7 +163,7 @@ export const MachineListItem = (props: MachineListItemProps) => {
     }
 
     await callApi(
-      "deploy_machine",
+      "run_machine_deploy",
       {
         machine: {
           name: name,

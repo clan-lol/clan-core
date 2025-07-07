@@ -17,7 +17,7 @@ from clan_lib.log_manager import (
 
 
 # Test functions for log creation
-def deploy_machine() -> None:
+def run_machine_deploy() -> None:
     """Test function for deploying machines."""
 
 
@@ -194,13 +194,13 @@ class TestLogFileCreation:
         for repo in repos:
             for machine in machines:
                 log_file = configured_log_manager.create_log_file(
-                    deploy_machine,
+                    run_machine_deploy,
                     f"deploy_{machine}",
                     ["clans", repo, "machines", machine],
                 )
 
                 assert log_file.op_key == f"deploy_{machine}"
-                assert log_file.func_name == "deploy_machine"
+                assert log_file.func_name == "run_machine_deploy"
                 assert log_file.get_file_path().exists()
 
                 # Check the group structure includes URL encoding for dynamic parts
@@ -241,7 +241,7 @@ class TestFilterFunction:
         """Test that empty filter returns top-level groups."""
         # Create some log files first
         configured_log_manager.create_log_file(
-            deploy_machine, "test_op", ["clans", "repo1", "machines", "machine1"]
+            run_machine_deploy, "test_op", ["clans", "repo1", "machines", "machine1"]
         )
 
         top_level = configured_log_manager.filter([])
@@ -258,7 +258,7 @@ class TestFilterFunction:
         for repo in repos:
             for machine in machines:
                 configured_log_manager.create_log_file(
-                    deploy_machine,
+                    run_machine_deploy,
                     f"deploy_{machine}",
                     ["clans", repo, "machines", machine],
                 )
@@ -281,7 +281,7 @@ class TestFilterFunction:
         """Test filtering with specific date."""
         # Create log file
         log_file = configured_log_manager.create_log_file(
-            deploy_machine, "test_op", ["clans", "repo1", "machines", "machine1"]
+            run_machine_deploy, "test_op", ["clans", "repo1", "machines", "machine1"]
         )
 
         # Filter with the specific date
@@ -308,14 +308,16 @@ class TestGetLogFile:
         """Test getting log file by operation key."""
         # Create log file
         configured_log_manager.create_log_file(
-            deploy_machine, "deploy_wintux", ["clans", "repo1", "machines", "wintux"]
+            run_machine_deploy,
+            "deploy_wintux",
+            ["clans", "repo1", "machines", "wintux"],
         )
 
         # Find it by op_key
         found_log_file = configured_log_manager.get_log_file("deploy_wintux")
         assert found_log_file is not None
         assert found_log_file.op_key == "deploy_wintux"
-        assert found_log_file.func_name == "deploy_machine"
+        assert found_log_file.func_name == "run_machine_deploy"
 
     def test_get_log_file_with_selector(
         self, configured_log_manager: LogManager
@@ -323,10 +325,14 @@ class TestGetLogFile:
         """Test getting log file with specific selector like example_usage.py."""
         # Create log files in different locations
         configured_log_manager.create_log_file(
-            deploy_machine, "deploy_wintux", ["clans", "repo1", "machines", "wintux"]
+            run_machine_deploy,
+            "deploy_wintux",
+            ["clans", "repo1", "machines", "wintux"],
         )
         configured_log_manager.create_log_file(
-            deploy_machine, "deploy_wintux", ["clans", "repo2", "machines", "wintux"]
+            run_machine_deploy,
+            "deploy_wintux",
+            ["clans", "repo2", "machines", "wintux"],
         )
 
         # Find specific one using selector
@@ -341,7 +347,7 @@ class TestGetLogFile:
         """Test getting log file with specific date."""
         # Create log file
         log_file = configured_log_manager.create_log_file(
-            deploy_machine, "deploy_demo", ["clans", "repo1", "machines", "demo"]
+            run_machine_deploy, "deploy_demo", ["clans", "repo1", "machines", "demo"]
         )
 
         # Find it by op_key and date
@@ -378,10 +384,10 @@ class TestListLogDays:
         """Test listing log days when logs exist."""
         # Create log files
         configured_log_manager.create_log_file(
-            deploy_machine, "op1", ["clans", "repo1", "machines", "machine1"]
+            run_machine_deploy, "op1", ["clans", "repo1", "machines", "machine1"]
         )
         configured_log_manager.create_log_file(
-            deploy_machine, "op2", ["clans", "repo2", "machines", "machine2"]
+            run_machine_deploy, "op2", ["clans", "repo2", "machines", "machine2"]
         )
 
         days = configured_log_manager.list_log_days()
@@ -406,7 +412,7 @@ class TestApiCompatibility:
         for repo in repos:
             for machine in machines:
                 configured_log_manager.create_log_file(
-                    deploy_machine,
+                    run_machine_deploy,
                     f"deploy_{machine}",
                     ["clans", repo, "machines", machine],
                 )
@@ -741,19 +747,19 @@ class TestLogFileSorting:
         # This simulates the realistic scenario where the same operation runs on different machines
 
         configured_log_manager.create_log_file(
-            deploy_machine,
+            run_machine_deploy,
             "deploy_operation",
             ["clans", "repo1", "machines", "machine1"],
         )
 
         configured_log_manager.create_log_file(
-            deploy_machine,
+            run_machine_deploy,
             "deploy_operation",
             ["clans", "repo1", "machines", "machine2"],
         )
 
         configured_log_manager.create_log_file(
-            deploy_machine,
+            run_machine_deploy,
             "deploy_operation",
             ["clans", "repo2", "machines", "machine1"],
         )
@@ -819,7 +825,7 @@ class TestURLEncoding:
 
         # Create log file with special characters
         log_file = configured_log_manager.create_log_file(
-            deploy_machine,
+            run_machine_deploy,
             "deploy_special",
             ["clans", special_repo, "machines", special_machine],
         )

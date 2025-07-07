@@ -13,7 +13,6 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import IO, Any
 
-from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.dirs import user_config_dir
 from clan_lib.errors import ClanError
@@ -398,7 +397,6 @@ def default_admin_private_key_path() -> Path:
     return user_config_dir() / "sops" / "age" / "keys.txt"
 
 
-@API.register
 def maybe_get_admin_public_keys() -> list[SopsKey] | None:
     keyring = SopsKey.collect_public_keys()
 

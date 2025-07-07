@@ -17,7 +17,7 @@ def example_function() -> None:
     """Example function for creating logs."""
 
 
-def deploy_machine() -> None:
+def run_machine_deploy() -> None:
     """Function for deploying machines."""
 
 
@@ -41,7 +41,7 @@ def main() -> None:
     for repo in repos:
         for machine in machines:
             log_manager.create_log_file(
-                deploy_machine,
+                run_machine_deploy,
                 f"deploy_{machine}",
                 ["clans", repo, "machines", machine],
             )
