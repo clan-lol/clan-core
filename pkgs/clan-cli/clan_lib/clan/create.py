@@ -78,6 +78,10 @@ def create_clan(opts: CreateOptions) -> None:
         if opts.update_clan:
             run(nix_command(["flake", "update"]), RunOpts(cwd=dest))
 
+        if opts.setup_git:
+            run(git_command(dest, "add", "."))
+            run(git_command(dest, "commit", "-m", "Initial commit"))
+
     if opts.initial:
         inventory_store = InventoryStore(flake=Flake(str(opts.dest)))
         inventory_store.write(opts.initial, message="Init inventory")
