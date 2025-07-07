@@ -28,7 +28,7 @@ Benefits:
 * Caching mechanism is very simple.
 
 
-### Method 2: Direct access:
+### Method 2: Direct access
 
 Directly calling the evaluator / build sandbox via `nix build` and `nix eval`within the Python code
 
