@@ -4,7 +4,7 @@
   perSystem =
     { self', pkgs, ... }:
     {
-      treefmt.projectRootFile = ".git/config";
+      treefmt.projectRootFile = "LICENSE.md";
       treefmt.programs.shellcheck.enable = true;
 
       treefmt.programs.mypy.enable = true;
