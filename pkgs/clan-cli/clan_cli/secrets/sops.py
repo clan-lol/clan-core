@@ -62,7 +62,7 @@ class KeyType(enum.Enum):
 
                     try:
                         for public_key in get_public_age_keys(content):
-                            log.info(
+                            log.debug(
                                 f"Found age public key from a private key "
                                 f"in {key_path}: {public_key}"
                             )
@@ -85,7 +85,7 @@ class KeyType(enum.Enum):
 
                 try:
                     for public_key in get_public_age_keys(content):
-                        log.info(
+                        log.debug(
                             f"Found age public key from a private key "
                             f"in the environment (SOPS_AGE_KEY): {public_key}"
                         )
@@ -107,7 +107,7 @@ class KeyType(enum.Enum):
             if pgp_fingerprints := os.environ.get("SOPS_PGP_FP"):
                 for fp in pgp_fingerprints.strip().split(","):
                     msg = f"Found PGP public key in the environment (SOPS_PGP_FP): {fp}"
-                    log.info(msg)
+                    log.debug(msg)
                     keyring.append(fp)
             return keyring
 
