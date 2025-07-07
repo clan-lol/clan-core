@@ -11,7 +11,7 @@ from clan_lib.machines.machines import Machine
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 
-from .flash import Disk, SystemConfig, flash_machine
+from .flash import Disk, SystemConfig, run_machine_flash
 
 log = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ def flash_command(args: argparse.Namespace) -> None:
         if ask != "y":
             return
 
-    flash_machine(
+    run_machine_flash(
         machine,
         mode=opts.mode,
         disks=opts.disks,

@@ -157,7 +157,7 @@ export const Flash = () => {
     console.log("Confirmed flash:", values);
     try {
       await toast.promise(
-        callApi("flash_machine", {
+        callApi("run_machine_flash", {
           machine: {
             name: values.machine.devicePath,
             flake: {
