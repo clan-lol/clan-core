@@ -19,10 +19,11 @@
         ...
       }:
       let
-        dependencies = [
-          self
-          pkgs.stdenv.drvPath
-        ] ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs);
+        dependencies =
+          [
+            pkgs.stdenv.drvPath
+          ]
+          ++ builtins.map (i: i.outPath) (builtins.attrValues (builtins.removeAttrs self.inputs [ "self" ]));
         closureInfo = pkgs.closureInfo { rootPaths = dependencies; };
       in
       {
