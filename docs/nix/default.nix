@@ -1,5 +1,4 @@
 {
-  clan-core,
   pkgs,
   module-docs,
   clan-cli-docs,
@@ -19,7 +18,17 @@ pkgs.stdenv.mkDerivation {
 
   # Points to repository root.
   # so that we can access directories outside of docs to include code snippets
-  src = clan-core;
+  src = pkgs.lib.fileset.toSource {
+    root = ../..;
+    fileset = pkgs.lib.fileset.unions [
+      # Docs directory
+      ../../docs
+      # Icons needed for the build
+      ../../pkgs/clan-app/ui/icons
+      # Any other directories that might be referenced for code snippets
+      # Add them here as needed based on what mkdocs actually uses
+    ];
+  };
 
   nativeBuildInputs =
     [
