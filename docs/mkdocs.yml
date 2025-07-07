@@ -62,6 +62,7 @@ nav:
       - Vars Backend: guides/vars-backend.md
       - Facts Backend: guides/secrets.md
       - Adding more machines: guides/more-machines.md
+      - Target Host: guides/target-host.md
       - Inventory:
           - Inventory: guides/inventory.md
       - Secure Boot: guides/secure-boot.md
