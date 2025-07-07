@@ -398,7 +398,6 @@ def default_admin_private_key_path() -> Path:
     return user_config_dir() / "sops" / "age" / "keys.txt"
 
 
-@API.register
 def maybe_get_admin_public_keys() -> list[SopsKey] | None:
     keyring = SopsKey.collect_public_keys()
 
