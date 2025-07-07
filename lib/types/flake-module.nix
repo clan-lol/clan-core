@@ -1,4 +1,9 @@
-{ self, inputs, ... }:
+{
+  self,
+  inputs,
+  lib,
+  ...
+}:
 {
   perSystem =
     { ... }:
@@ -10,7 +15,11 @@
       test-types-module = (
         self.clanLib.test.flakeModules.makeEvalChecks {
           module = throw "";
-          inherit self inputs;
+          inherit inputs;
+          fileset = lib.fileset.unions [
+            # Only lib is needed for type tests
+            ../../lib
+          ];
           testName = "types";
           tests = ./tests.nix;
           # Optional arguments passed to the test

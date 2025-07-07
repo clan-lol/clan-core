@@ -15,7 +15,15 @@ in
       unit-test-module = (
         self.clanLib.test.flakeModules.makeEvalChecks {
           inherit module;
-          inherit self inputs;
+          inherit inputs;
+          fileset = lib.fileset.unions [
+            # The zerotier service being tested
+            ../../clanServices/zerotier
+            # Required modules
+            ../../nixosModules/clanCore
+            # Dependencies like clan-cli
+            ../../pkgs/clan-cli
+          ];
           testName = "zerotier";
           tests = ./tests/eval-tests.nix;
           testArgs = { };
