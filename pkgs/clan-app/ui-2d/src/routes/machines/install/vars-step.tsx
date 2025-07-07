@@ -173,7 +173,7 @@ export const VarsStep = (props: VarsStepProps) => {
       toast.error("Error fetching data");
       return;
     }
-    const result = await callApi("generate_vars_for_machine", {
+    const result = await callApi("run_generators", {
       machine_name: props.machine_id,
       base_dir: props.dir,
       generators: generatorsQuery.data.map((generator) => generator.name),

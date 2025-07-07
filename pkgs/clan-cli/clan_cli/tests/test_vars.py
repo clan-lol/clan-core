@@ -10,9 +10,9 @@ from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generate import (
     Generator,
-    create_machine_vars,
+    run_generators,
     create_machine_vars_interactive,
-    get_machine_generators,
+    get_generators,
 )
 from clan_cli.vars.get import get_machine_var
 from clan_cli.vars.graph import all_missing_closure, requested_closure
@@ -668,7 +668,7 @@ def test_api_set_prompts(
 
     monkeypatch.chdir(flake.path)
 
-    create_machine_vars(
+    run_generators(
         machine_name="my_machine",
         base_dir=flake.path,
         generators=["my_generator"],
@@ -682,7 +682,7 @@ def test_api_set_prompts(
     store = in_repo.FactStore(machine)
     assert store.exists(Generator("my_generator"), "prompt1")
     assert store.get(Generator("my_generator"), "prompt1").decode() == "input1"
-    create_machine_vars(
+    run_generators(
         machine_name="my_machine",
         base_dir=flake.path,
         generators=["my_generator"],
@@ -694,7 +694,7 @@ def test_api_set_prompts(
     )
     assert store.get(Generator("my_generator"), "prompt1").decode() == "input2"
 
-    generators = get_machine_generators(
+    generators = get_generators(
         machine_name="my_machine",
         base_dir=flake.path,
         full_closure=True,
