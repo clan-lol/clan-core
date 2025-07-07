@@ -1,41 +1,57 @@
 import "./Fieldset.css";
-import { JSX } from "solid-js";
+import { JSX, splitProps } from "solid-js";
 import cx from "classnames";
 import { Typography } from "@/src/components/v2/Typography/Typography";
 import { FieldProps } from "./Field";
 
-export interface FieldsetProps extends FieldProps {
-  legend: string;
-  disabled: boolean;
+export type FieldsetFieldProps = Pick<
+  FieldProps,
+  "orientation" | "inverted"
+> & {
   error?: string;
-  fields: (props: FieldProps) => JSX.Element;
+  disabled?: boolean;
+};
+
+export interface FieldsetProps
+  extends Pick<FieldProps, "orientation" | "inverted"> {
+  legend?: string;
+  disabled?: boolean;
+  error?: string;
+  children: (props: FieldsetFieldProps) => JSX.Element;
 }
 
 export const Fieldset = (props: FieldsetProps) => {
   const orientation = () => props.orientation || "vertical";
 
+  const [fieldProps] = splitProps(props, [
+    "orientation",
+    "inverted",
+    "disabled",
+    "error",
+  ]);
+
   return (
     <fieldset
       role="group"
-      class={cx(orientation(), { inverted: props.inverted })}
-      disabled={props.disabled}
+      class={cx({ inverted: props.inverted })}
+      disabled={props.disabled || false}
     >
-      <legend>
-        <Typography
-          hierarchy="label"
-          family="mono"
-          size="default"
-          weight="normal"
-          color="tertiary"
-          transform="uppercase"
-          inverted={props.inverted}
-        >
-          {props.legend}
-        </Typography>
-      </legend>
-      <div class="fields">
-        {props.fields({ ...props, orientation: orientation() })}
-      </div>
+      {props.legend && (
+        <legend>
+          <Typography
+            hierarchy="label"
+            family="mono"
+            size="default"
+            weight="normal"
+            color="tertiary"
+            transform="uppercase"
+            inverted={props.inverted}
+          >
+            {props.legend}
+          </Typography>
+        </legend>
+      )}
+      <div class="fields">{props.children(fieldProps)}</div>
       {props.error && (
         <div class="error" role="alert">
           <Typography
