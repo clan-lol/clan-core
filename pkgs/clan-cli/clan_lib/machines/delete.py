@@ -19,6 +19,13 @@ log = logging.getLogger(__name__)
 
 @API.register
 def delete_machine(machine: Machine) -> None:
+    """Delete a machine from the clan's inventory and remove its associated files.
+    Args:
+        machine: The Machine instance to be deleted.
+    Raises:
+        ClanError: If the machine does not exist in the inventory or if there are issues with
+            removing its files.
+    """
     inventory_store = InventoryStore(machine.flake)
     try:
         inventory_store.delete(
