@@ -23,7 +23,13 @@ in
       unit-test-module = (
         self.clanLib.test.flakeModules.makeEvalChecks {
           inherit module;
-          inherit self inputs;
+          inherit inputs;
+          fileset = lib.fileset.unions [
+            # The hello-world service being tested
+            ../../clanServices/hello-world
+            # Required modules
+            ../../nixosModules/clanCore
+          ];
           testName = "hello-world";
           tests = ./tests/eval-tests.nix;
           # Optional arguments passed to the test
