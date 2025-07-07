@@ -1,12 +1,12 @@
 from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.nix_models.clan import InventoryMeta as Meta
+from clan_lib.nix_models.clan import InventoryMeta
 from clan_lib.persist.inventory_store import InventoryStore
 
 
 @API.register
-def show_clan_meta(flake: Flake) -> Meta:
+def get_clan_details(flake: Flake) -> InventoryMeta:
     if flake.is_local and not flake.path.exists():
         msg = f"Path {flake} does not exist"
         raise ClanError(msg, description="clan directory does not exist")

@@ -122,11 +122,12 @@ def blk_from_dict(data: dict) -> BlkInfo:
 
 
 @API.register
-def show_block_devices() -> Blockdevices:
+def list_block_devices() -> Blockdevices:
     """
-    Api method to show local block devices.
+    List local block devices by running `lsblk`.
 
-    It must return a list of block devices.
+    Returns:
+        A list of detected block devices with metadata like size, path, type, etc.
     """
 
     cmd = nix_shell(

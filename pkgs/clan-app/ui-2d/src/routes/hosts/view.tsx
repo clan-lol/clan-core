@@ -4,7 +4,7 @@ import { Button } from "../../components/Button/Button";
 import Icon from "@/src/components/icon";
 
 type ServiceModel = Extract<
-  OperationResponse<"show_mdns">,
+  OperationResponse<"list_mdns_services">,
   { status: "success" }
 >["data"]["services"];
 
@@ -16,7 +16,7 @@ export const HostList: Component = () => {
       <div class="" data-tip="Refresh install targets">
         <Button
           variant="light"
-          onClick={() => callApi("show_mdns", {})}
+          onClick={() => callApi("list_mdns_services", {})}
           startIcon={<Icon icon="Update" />}
         ></Button>
       </div>
