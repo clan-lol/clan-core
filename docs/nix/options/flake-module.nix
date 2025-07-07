@@ -1,9 +1,15 @@
-{ self, config, ... }:
+{
+  self,
+  config,
+  inputs,
+  privateInputs ? { },
+  ...
+}:
 {
   perSystem =
     {
-      inputs',
       lib,
+      pkgs,
       ...
     }:
     let
@@ -157,11 +163,16 @@
       };
     in
     {
-      packages.docs-options = inputs'.nuschtos.packages.mkMultiSearch {
-        inherit baseHref;
-        title = "Clan Options";
-        # scopes = mapAttrsToList mkScope serviceModules;
-        scopes = [ (mkScope "Clan Inventory" serviceModules) ];
+      packages = lib.optionalAttrs ((privateInputs ? nuschtos) || (inputs ? nuschtos)) {
+        docs-options =
+          (privateInputs.nuschtos or inputs.nuschtos)
+          .packages.${pkgs.stdenv.hostPlatform.system}.mkMultiSearch
+            {
+              inherit baseHref;
+              title = "Clan Options";
+              # scopes = mapAttrsToList mkScope serviceModules;
+              scopes = [ (mkScope "Clan Inventory" serviceModules) ];
+            };
       };
     };
 }
