@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from shlex import quote
 from tempfile import TemporaryDirectory
-from typing import Literal
 
 from clan_lib.api import API
 from clan_lib.cmd import ClanCmdError, ClanCmdTimeoutError, CmdOut, RunOpts, run
@@ -74,9 +73,9 @@ class Remote:
             private_key=private_key if private_key is not None else self.private_key,
             password=password if password is not None else self.password,
             forward_agent=self.forward_agent,
-            host_key_check=host_key_check
-            if host_key_check is not None
-            else self.host_key_check,
+            host_key_check=(
+                host_key_check if host_key_check is not None else self.host_key_check
+            ),
             verbose_ssh=self.verbose_ssh,
             ssh_options=self.ssh_options,
             tor_socks=tor_socks if tor_socks is not None else self.tor_socks,
@@ -425,8 +424,8 @@ class Remote:
 
         self.check_sshpass_errorcode(res)
 
-    def is_ssh_reachable(self) -> bool:
-        return is_ssh_reachable(self)
+    def check_machine_ssh_reachable(self) -> bool:
+        return check_machine_ssh_reachable(self).ok
 
 
 @dataclass(frozen=True)
@@ -435,10 +434,16 @@ class ConnectionOptions:
     retries: int = 10
 
 
+@dataclass
+class CheckResult:
+    ok: bool
+    reason: str | None = None
+
+
 @API.register
-def can_ssh_login(
+def check_machine_ssh_login(
     remote: Remote, opts: ConnectionOptions | None = None
-) -> Literal["Online", "Offline"]:
+) -> CheckResult:
     if opts is None:
         opts = ConnectionOptions()
 
@@ -449,7 +454,7 @@ def can_ssh_login(
                     ["true"],
                     RunOpts(timeout=opts.timeout, needs_user_terminal=True),
                 )
-                return "Online"
+                return CheckResult(True)
             except ClanCmdTimeoutError:
                 pass
             except ClanCmdError as e:
@@ -458,11 +463,13 @@ def can_ssh_login(
             else:
                 time.sleep(opts.timeout)
 
-    return "Offline"
+    return CheckResult(False, f"failed after {opts.retries} attempts")
 
 
 @API.register
-def is_ssh_reachable(remote: Remote, opts: ConnectionOptions | None = None) -> bool:
+def check_machine_ssh_reachable(
+    remote: Remote, opts: ConnectionOptions | None = None
+) -> CheckResult:
     if opts is None:
         opts = ConnectionOptions()
 
@@ -472,10 +479,10 @@ def is_ssh_reachable(remote: Remote, opts: ConnectionOptions | None = None) -> b
             sock.settimeout(opts.timeout)
             try:
                 sock.connect((remote.address, remote.port or 22))
-                return True
+                return CheckResult(True)
             except (TimeoutError, OSError):
                 pass
             else:
                 time.sleep(opts.timeout)
 
-    return False
+    return CheckResult(False, f"failed after {opts.retries} attempts")

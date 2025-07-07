@@ -149,7 +149,7 @@ export function MachineForm(props: MachineFormProps) {
 
     setIsUpdating(true);
     const r = await callApi(
-      "deploy_machine",
+      "run_machine_deploy",
       {
         machine: {
           name: machine,

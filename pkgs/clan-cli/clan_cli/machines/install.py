@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from clan_lib.errors import ClanError
-from clan_lib.machines.install import BuildOn, InstallOptions, install_machine
+from clan_lib.machines.install import BuildOn, InstallOptions, run_machine_install
 from clan_lib.machines.machines import Machine
 from clan_lib.ssh.remote import Remote
 
@@ -65,7 +65,7 @@ def install_command(args: argparse.Namespace) -> None:
             if ask != "y":
                 return None
 
-        return install_machine(
+        return run_machine_install(
             InstallOptions(
                 machine=machine,
                 kexec=args.kexec,

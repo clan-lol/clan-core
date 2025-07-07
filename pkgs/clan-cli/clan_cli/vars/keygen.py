@@ -12,6 +12,7 @@ from clan_lib.errors import ClanError
 log = logging.getLogger(__name__)
 
 
+# TODO: Unify with "create clan" should be done automatically
 @API.register
 def create_secrets_user(
     flake_dir: Path, user: str | None = None, force: bool = False

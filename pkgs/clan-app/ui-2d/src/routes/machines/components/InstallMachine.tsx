@@ -120,7 +120,7 @@ export function InstallMachine(props: InstallMachineProps) {
         throw new Error("No target host found for the machine");
       }
 
-      const installPromise = callApi("install_machine", {
+      const installPromise = callApi("run_machine_install", {
         opts: {
           machine: {
             name: props.name,
