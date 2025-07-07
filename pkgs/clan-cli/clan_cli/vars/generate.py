@@ -119,7 +119,6 @@ class Generator:
         assert self.machine is not None
         assert self._flake is not None
         from clan_lib.machines.machines import Machine
-        from clan_lib.nix import nix_test_store
 
         machine = Machine(name=self.machine, flake=self._flake)
         output = Path(
@@ -178,6 +177,12 @@ def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
         ]
     )
     # fmt: on
+
+
+def sandbox_exec_cmd(generator: str, tmpdir: Path) -> tuple[list[str], str]:
+    from clan_lib.sandbox_exec import sandbox_exec_cmd as _sandbox_exec_cmd
+
+    return _sandbox_exec_cmd(generator, tmpdir)
 
 
 # TODO: implement caching to not decrypt the same secret multiple times
@@ -281,21 +286,30 @@ def execute_generator(
 
         final_script = generator.final_script()
 
-        if sys.platform == "linux":
-            if bwrap.bubblewrap_works():
-                cmd = bubblewrap_cmd(str(final_script), tmpdir)
-            else:
-                if not no_sandbox:
-                    msg = (
-                        f"Cannot safely execute generator {generator.name}: Sandboxing is not available on this system\n"
-                        f"Re-run 'vars generate' with '--no-sandbox' to disable sandboxing"
-                    )
-                    raise ClanError(msg)
-                cmd = ["bash", "-c", str(final_script)]
+        profile_path = None
+        if sys.platform == "linux" and bwrap.bubblewrap_works():
+            cmd = bubblewrap_cmd(str(final_script), tmpdir)
+        elif sys.platform == "darwin":
+            cmd, profile_path = sandbox_exec_cmd(str(final_script), tmpdir)
         else:
-            # TODO: implement sandboxing for macOS using sandbox-exec
+            # For non-sandboxed execution (Linux without bubblewrap or other platforms)
+            if not no_sandbox:
+                msg = (
+                    f"Cannot safely execute generator {generator.name}: Sandboxing is not available on this system\n"
+                    f"Re-run 'vars generate' with '--no-sandbox' to disable sandboxing"
+                )
+                raise ClanError(msg)
             cmd = ["bash", "-c", str(final_script)]
-        run(cmd, RunOpts(env=env))
+
+        try:
+            run(cmd, RunOpts(env=env, cwd=tmpdir))
+        finally:
+            # Clean up the temporary profile file if needed
+            if profile_path:
+                try:
+                    os.unlink(profile_path)
+                except OSError:
+                    pass
         files_to_commit = []
         # store secrets
         files = generator.files
