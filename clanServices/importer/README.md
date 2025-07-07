@@ -1,7 +1,7 @@
 The importer module allows users to configure importing modules in a flexible and structured way.
 It exposes the `extraModules` functionality of the inventory, without any added configuration.
 
-## Usage:
+## Usage
 
 ```nix
 inventory.instances = {
