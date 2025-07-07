@@ -49,7 +49,7 @@
                 pkgs.openssh
               ];
               script = ''
-                ssh-keygen -t ed25519 -N "" -f "$out"/id_ed25519
+                ssh-keygen -t ed25519 -N "" -C "" -f "$out"/id_ed25519
               '';
             };
 
@@ -109,7 +109,7 @@
                   pkgs.openssh
                 ];
                 script = ''
-                  ssh-keygen -t ed25519 -N "" -f "$out"/id_ed25519
+                  ssh-keygen -t ed25519 -N "" -C "" -f "$out"/id_ed25519
                 '';
               };
 
@@ -151,7 +151,7 @@
                   pkgs.openssh
                 ];
                 script = ''
-                  ssh-keygen -t rsa -b 4096 -N "" -f "$out"/ssh.id_rsa
+                  ssh-keygen -t rsa -b 4096 -N "" -C "" -f "$out"/ssh.id_rsa
                 '';
               };
 
@@ -164,7 +164,7 @@
                   pkgs.openssh
                 ];
                 script = ''
-                  ssh-keygen -t ed25519 -N "" -f "$out"/ssh.id_ed25519
+                  ssh-keygen -t ed25519 -N "" -C "" -f "$out"/ssh.id_ed25519
                 '';
               };
             };
