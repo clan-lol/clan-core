@@ -55,18 +55,18 @@ def test_clan_core_templates(
     template_path = default_template.get("path", None)
     assert template_path is not None
 
-    new_clan = temporary_home / "new_clan"
+    my_clan = temporary_home / "my_clan"
 
     copy_from_nixstore(
         Path(template_path),
-        new_clan,
+        my_clan,
     )
 
-    flake_nix = new_clan / "flake.nix"
+    flake_nix = my_clan / "flake.nix"
     assert (flake_nix).exists()
     assert (flake_nix).is_file()
 
-    assert (new_clan / "machines").is_dir()
+    assert (my_clan / "machines").is_dir()
 
     # Test if we can write to the flake.nix file
     with flake_nix.open("r+") as f:

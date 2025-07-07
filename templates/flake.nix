@@ -25,7 +25,7 @@
         clan = {
           default = {
             description = "Initialize a new clan flake";
-            path = ./clan/new-clan;
+            path = ./clan/default;
           };
           minimal = {
             description = "for clans managed via (G)UI";
