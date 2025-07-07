@@ -1,12 +1,8 @@
 import json
-import os
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any, Literal
 
 from clan_lib.cmd import RunOpts, run
-from clan_lib.errors import ClanError
-from clan_lib.flake import Flake
 from clan_lib.nix import nix_shell
 
 from . import API
@@ -40,55 +36,6 @@ def open_file(file_request: FileRequest) -> list[str] | None:
     """
     msg = "open_file() is not implemented"
     raise NotImplementedError(msg)
-
-
-@dataclass
-class File:
-    path: str
-    file_type: Literal["file", "directory", "symlink"]
-
-
-@dataclass
-class Directory:
-    path: str
-    files: list[File] = field(default_factory=list)
-
-
-@API.register
-def get_directory(flake: Flake) -> Directory:
-    curr_dir = flake.path
-    directory = Directory(path=str(curr_dir))
-
-    if not curr_dir.is_dir():
-        msg = f"Path {curr_dir} is not a directory"
-        raise ClanError(msg)
-
-    with os.scandir(curr_dir.resolve()) as it:
-        for entry in it:
-            if entry.is_symlink():
-                directory.files.append(
-                    File(
-                        path=str(curr_dir / Path(entry.name)),
-                        file_type="symlink",
-                    )
-                )
-            elif entry.is_file():
-                directory.files.append(
-                    File(
-                        path=str(curr_dir / Path(entry.name)),
-                        file_type="file",
-                    )
-                )
-
-            elif entry.is_dir():
-                directory.files.append(
-                    File(
-                        path=str(curr_dir / Path(entry.name)),
-                        file_type="directory",
-                    )
-                )
-
-    return directory
 
 
 @dataclass
