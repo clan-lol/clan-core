@@ -31,6 +31,15 @@ def git_command(directory: Path, *args: str) -> list[str]:
 
 @API.register
 def create_clan(opts: CreateOptions) -> None:
+    """Create a new clan repository with the specified template.
+    Args:
+        opts: CreateOptions containing the destination path, template name,
+            source flake, and other options.
+    Raises:
+        ClanError: If the source flake is not a valid flake or if the destination
+            directory already exists.
+    """
+
     dest = opts.dest.resolve()
 
     if opts.src_flake is not None:
