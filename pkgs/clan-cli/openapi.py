@@ -5,23 +5,27 @@ from pathlib import Path
 
 # !!! IMPORTANT !!!
 # AVOID VERBS NOT IN THIS LIST
-# We might restrict this even further to build a consistent and easy to use API
+# IF YOU WANT TO ADD TO THIS LIST CREATE AN ISSUE/DISCUSS FIRST
+#
+# Verbs are restricted to make API usage intuitive and consistent.
+#
+# Discouraged verbs:
+# do        Too vague
+# process   Sounds generic; lacks clarity.
+# generate  Ambiguous: does it mutate state or not? Prefer 'run'
+# handle    Abstract and fuzzy
+# show      overlaps with get or list
+# describe  overlap with get or list
+# can, is   often used for helpers, use check instead for structure responses
 COMMON_VERBS = {
-    "get",
-    "list",
-    "show",
-    "set",
-    "create",
-    "update",
-    "delete",
-    "generate",
-    "maybe",
-    "open",
-    "flash",
-    "install",
-    "deploy",
-    "check",
-    "cancel",
+    "get",  # fetch single item
+    "list",  # fetch collection
+    "create",  # instantiate resource
+    "set",  # update or configure
+    "delete",  # remove resource
+    "open",  # initiate session, shell, file, etc.
+    "check",  # validate, probe, or assert
+    "run",  # start imperative task or action; machine-deploy etc.
 }
 
 
@@ -39,7 +43,8 @@ def singular(word: str) -> str:
     return word
 
 
-def normalize_tag(parts: list[str]) -> list[str]:
+def normalize_op_name(op_name: str) -> list[str]:
+    parts = op_name.lower().split("_")
     # parts contains [ VERB NOUN NOUN ... ]
     # Where each NOUN is a SUB-RESOURCE
     verb = parts[0]
@@ -53,20 +58,21 @@ def normalize_tag(parts: list[str]) -> list[str]:
     return [verb, *nouns]
 
 
-def operation_to_tag(op_name: str) -> str:
-    def check_operation_name(verb: str, _resource_nouns: list[str]) -> None:
-        if not is_verb(verb):
-            print(
-                f"""⚠️ WARNING: Verb '{op_name}' of API operation {op_name} is not allowed.
+def check_operation_name(op_name: str, normalized: list[str]) -> list[str]:
+    verb = normalized[0]
+    _nouns = normalized[1:]
+    warnings = []
+    if not is_verb(verb):
+        warnings.append(
+            f"""Verb '{verb}' of API operation {op_name} is not allowed.
 Use one of: {", ".join(COMMON_VERBS)}
 """
-            )
+        )
+    return warnings
 
-    parts = op_name.lower().split("_")
-    normalized = normalize_tag(parts)
 
-    check_operation_name(normalized[0], normalized[1:])
-
+def operation_to_tag(op_name: str) -> str:
+    normalized = normalize_op_name(op_name)
     return " / ".join(normalized[1:])
 
 
@@ -133,6 +139,18 @@ def main() -> None:
         "paths": {},
         "components": {"schemas": {}},
     }
+
+    # === Convert each function ===
+    warnings = []
+    for func_name, _ in functions.items():
+        normalized = normalize_op_name(func_name)
+        check_res = check_operation_name(func_name, normalized)
+        if check_res:
+            warnings.append(check_res)
+    if warnings:
+        for message in warnings:
+            print(f"⚠️ WARNING: {message}")
+        os.abort()
 
     # === Convert each function ===
     for func_name, func_schema in functions.items():
