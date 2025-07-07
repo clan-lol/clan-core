@@ -17,7 +17,7 @@ BAKEND_THREADS: dict[str, WebThread] | None = None
 
 
 @API.register_abstract
-def cancel_task(task_id: str) -> None:
+def delete_task(task_id: str) -> None:
     """Cancel a task by its op_key."""
     assert BAKEND_THREADS is not None, "Backend threads not initialized"
     future = BAKEND_THREADS.get(task_id)

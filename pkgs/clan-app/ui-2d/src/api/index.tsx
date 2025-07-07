@@ -90,7 +90,7 @@ const handleCancel = async <K extends OperationNames>(
   orig_task: Promise<BackendReturnType<K>>,
 ) => {
   console.log("Canceling operation: ", ops_key);
-  const { promise, op_key } = _callApi("cancel_task", { task_id: ops_key });
+  const { promise, op_key } = _callApi("delete_task", { task_id: ops_key });
   promise.catch((error) => {
     toast.custom(
       (t) => (
