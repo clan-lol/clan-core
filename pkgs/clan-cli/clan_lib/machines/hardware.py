@@ -157,7 +157,7 @@ class MachineHardwareBrief(TypedDict):
 
 
 @API.register
-def describe_machine_hardware(machine: Machine) -> MachineHardwareBrief:
+def get_machine_hardware_summary(machine: Machine) -> MachineHardwareBrief:
     """
     Return a high-level summary of hardware config and platform type.
     """
