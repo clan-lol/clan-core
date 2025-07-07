@@ -5,7 +5,7 @@ from pathlib import Path
 from clan_lib.machines.hardware import (
     HardwareConfig,
     HardwareGenerateOptions,
-    generate_machine_hardware_info,
+    run_machine_hardware_info,
 )
 from clan_lib.machines.machines import Machine
 from clan_lib.machines.suggestions import validate_machine_names
@@ -38,7 +38,7 @@ def update_hardware_config_command(args: argparse.Namespace) -> None:
         host_key_check=args.host_key_check, private_key=args.identity_file
     )
 
-    generate_machine_hardware_info(opts, target_host)
+    run_machine_hardware_info(opts, target_host)
 
 
 def register_update_hardware_config(parser: argparse.ArgumentParser) -> None:
