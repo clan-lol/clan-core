@@ -11,6 +11,8 @@
   getOverrides =
     inputs:
     builtins.concatStringsSep " " (
-      builtins.map (input: " --override-input ${input} ${inputs.${input}}") (builtins.attrNames inputs)
+      builtins.map (input: " --override-input ${input} ${inputs.${input}}") (
+        builtins.filter (name: name != "self") (builtins.attrNames inputs)
+      )
     );
 }
