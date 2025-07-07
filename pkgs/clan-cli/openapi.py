@@ -140,16 +140,26 @@ def main() -> None:
         "components": {"schemas": {}},
     }
 
-    # === Convert each function ===
-    warnings = []
-    for func_name, _ in functions.items():
+    # === Check all functions ===
+    warnings: list[str] = []
+    errors: list[str] = []
+    for func_name, func_schema in functions.items():
         normalized = normalize_op_name(func_name)
         check_res = check_operation_name(func_name, normalized)
         if check_res:
-            warnings.append(check_res)
+            errors.extend(check_res)
+
+        if not func_schema.get("description"):
+            warnings.append(
+                f"{func_name} doesn't have a description. Python docstring is required for an API function."
+            )
+
     if warnings:
         for message in warnings:
-            print(f"⚠️ WARNING: {message}")
+            print(f"⚠️ Warn: {message}")
+    if errors:
+        for m in errors:
+            print(f"❌ Error: {m}")
         os.abort()
 
     # === Convert each function ===
@@ -168,6 +178,7 @@ def main() -> None:
             "post": {
                 "summary": func_name,
                 "operationId": func_name,
+                "description": func_schema.get("description"),
                 "tags": [tag],
                 "requestBody": {
                     "required": True,
