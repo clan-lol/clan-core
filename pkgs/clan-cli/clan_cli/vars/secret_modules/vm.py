@@ -5,7 +5,7 @@ from pathlib import Path
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
 from clan_lib.dirs import vm_state_dir
-from clan_lib.machines.machines import Machine
+from clan_lib.flake import Flake
 from clan_lib.ssh.remote import Remote
 
 
@@ -14,9 +14,9 @@ class SecretStore(StoreBase):
     def is_secret_store(self) -> bool:
         return True
 
-    def __init__(self, machine: Machine) -> None:
-        self.machine = machine
-        self.dir = vm_state_dir(machine.flake.identifier, machine.name) / "secrets"
+    def __init__(self, machine: str, flake: Flake) -> None:
+        super().__init__(machine, flake)
+        self.dir = vm_state_dir(flake.identifier, machine) / "secrets"
         self.dir.mkdir(parents=True, exist_ok=True)
 
     @property

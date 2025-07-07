@@ -4,7 +4,7 @@ from pathlib import Path
 
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
-from clan_lib.machines.machines import Machine
+from clan_lib.flake import Flake
 from clan_lib.ssh.remote import Remote
 
 
@@ -13,8 +13,8 @@ class SecretStore(StoreBase):
     def is_secret_store(self) -> bool:
         return True
 
-    def __init__(self, machine: Machine) -> None:
-        self.machine = machine
+    def __init__(self, machine: str, flake: Flake) -> None:
+        super().__init__(machine, flake)
         self.dir = Path(tempfile.gettempdir()) / "clan_secrets"
         self.dir.mkdir(parents=True, exist_ok=True)
 
@@ -45,6 +45,17 @@ class SecretStore(StoreBase):
             shutil.rmtree(output_dir)
         shutil.copytree(self.dir, output_dir)
         shutil.rmtree(self.dir)
+
+    def delete(self, generator: Generator, name: str) -> list[Path]:
+        secret_file = self.dir / generator.name / name
+        if secret_file.exists():
+            secret_file.unlink()
+        return []
+
+    def delete_store(self) -> list[Path]:
+        if self.dir.exists():
+            shutil.rmtree(self.dir)
+        return []
 
     def upload(self, host: Remote, phases: list[str]) -> None:
         msg = "Cannot upload secrets with FS backend"

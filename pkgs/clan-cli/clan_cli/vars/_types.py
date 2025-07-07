@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from clan_lib.errors import ClanError
-from clan_lib.machines import machines
+from clan_lib.flake import Flake
 from clan_lib.ssh.remote import Remote
 
 if TYPE_CHECKING:
@@ -29,8 +29,9 @@ class GeneratorUpdate:
 
 
 class StoreBase(ABC):
-    def __init__(self, machine: "machines.Machine") -> None:
+    def __init__(self, machine: str, flake: Flake) -> None:
         self.machine = machine
+        self.flake = flake
 
     @property
     @abstractmethod
@@ -86,10 +87,10 @@ class StoreBase(ABC):
     def rel_dir(self, generator: "Generator", var_name: str) -> Path:
         if generator.share:
             return Path("shared") / generator.name / var_name
-        return Path("per-machine") / self.machine.name / generator.name / var_name
+        return Path("per-machine") / self.machine / generator.name / var_name
 
     def directory(self, generator: "Generator", var_name: str) -> Path:
-        return Path(self.machine.flake_dir) / "vars" / self.rel_dir(generator, var_name)
+        return self.flake.path / "vars" / self.rel_dir(generator, var_name)
 
     def set(
         self,

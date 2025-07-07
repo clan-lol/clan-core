@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 from clan_cli.ssh.upload import upload
 from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
-from clan_lib.machines.machines import Machine
+from clan_lib.flake import Flake
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -20,8 +20,8 @@ class SecretStore(StoreBase):
     def is_secret_store(self) -> bool:
         return True
 
-    def __init__(self, machine: Machine) -> None:
-        self.machine = machine
+    def __init__(self, machine: str, flake: Flake) -> None:
+        super().__init__(machine, flake)
         self.entry_prefix = "clan-vars"
         self._store_dir: Path | None = None
 
@@ -42,12 +42,13 @@ class SecretStore(StoreBase):
 
     @property
     def _pass_command(self) -> str:
-        out_path = self.machine.select(
-            "config.clan.core.vars.password-store.passPackage.outPath"
+        out_path = self.flake.select_machine(
+            self.machine, "config.clan.core.vars.password-store.passPackage.outPath"
         )
         main_program = (
-            self.machine.select(
-                "config.clan.core.vars.password-store.passPackage.?meta.?mainProgram"
+            self.flake.select_machine(
+                self.machine,
+                "config.clan.core.vars.password-store.passPackage.?meta.?mainProgram",
             )
             .get("meta", {})
             .get("mainProgram")
@@ -119,7 +120,7 @@ class SecretStore(StoreBase):
         return []
 
     def delete_store(self) -> Iterable[Path]:
-        machine_dir = Path(self.entry_prefix) / "per-machine" / self.machine.name
+        machine_dir = Path(self.entry_prefix) / "per-machine" / self.machine
         # Check if the directory exists in the password store before trying to delete
         result = self._run_pass("ls", str(machine_dir), check=False)
         if result.returncode == 0:
@@ -138,9 +139,7 @@ class SecretStore(StoreBase):
         from clan_cli.vars.generate import Generator
 
         manifest = []
-        generators = Generator.generators_from_flake(
-            self.machine.name, self.machine.flake
-        )
+        generators = Generator.generators_from_flake(self.machine, self.flake)
         for generator in generators:
             for file in generator.files:
                 manifest.append(f"{generator.name}/{file.name}".encode())
@@ -158,7 +157,7 @@ class SecretStore(StoreBase):
         remote_hash = host.run(
             [
                 "cat",
-                f"{self.machine.select('config.clan.core.vars.password-store.secretLocation')}/.pass_info",
+                f"{self.flake.select_machine(self.machine, 'config.clan.core.vars.password-store.secretLocation')}/.pass_info",
             ],
             RunOpts(log=Log.STDERR, check=False),
         ).stdout.strip()
@@ -171,9 +170,7 @@ class SecretStore(StoreBase):
     def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
         from clan_cli.vars.generate import Generator
 
-        vars_generators = Generator.generators_from_flake(
-            self.machine.name, self.machine.flake
-        )
+        vars_generators = Generator.generators_from_flake(self.machine, self.flake)
         if "users" in phases:
             with tarfile.open(
                 output_dir / "secrets_for_users.tar.gz", "w:gz"
@@ -247,8 +244,8 @@ class SecretStore(StoreBase):
             pass_dir = Path(_tempdir).resolve()
             self.populate_dir(pass_dir, phases)
             upload_dir = Path(
-                self.machine.select(
-                    "config.clan.core.vars.password-store.secretLocation"
+                self.flake.select_machine(
+                    self.machine, "config.clan.core.vars.password-store.secretLocation"
                 )
             )
             upload(host, pass_dir, upload_dir)

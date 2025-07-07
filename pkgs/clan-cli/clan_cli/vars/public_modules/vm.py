@@ -7,7 +7,7 @@ from clan_cli.vars._types import StoreBase
 from clan_cli.vars.generate import Generator, Var
 from clan_lib.dirs import vm_state_dir
 from clan_lib.errors import ClanError
-from clan_lib.machines.machines import Machine
+from clan_lib.flake import Flake
 from clan_lib.ssh.remote import Remote
 
 log = logging.getLogger(__name__)
@@ -18,11 +18,14 @@ class FactStore(StoreBase):
     def is_secret_store(self) -> bool:
         return False
 
-    def __init__(self, machine: Machine) -> None:
-        self.machine = machine
+    def __init__(self, machine: str, flake: Flake) -> None:
+        super().__init__(machine, flake)
         self.works_remotely = False
-        self.dir = vm_state_dir(machine.flake.identifier, machine.name) / "facts"
-        machine.debug(f"FactStore initialized with dir {self.dir}")
+        self.dir = vm_state_dir(flake.identifier, machine) / "facts"
+        log.debug(
+            f"FactStore initialized with dir {self.dir}",
+            extra={"command_prefix": machine},
+        )
 
     @property
     def store_name(self) -> str:
