@@ -54,6 +54,19 @@ def list_machines(
 
 @API.register
 def get_machine(flake: Flake, name: str) -> InventoryMachine:
+    """
+    Retrieve a machine's inventory details by name from the given flake.
+
+    Args:
+        flake (Flake): The flake object representing the configuration source.
+        name (str): The name of the machine to retrieve from the inventory.
+
+    Returns:
+        InventoryMachine: An instance representing the machine's inventory details.
+
+    Raises:
+        ClanError: If the machine with the specified name is not found in the inventory.
+    """
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
