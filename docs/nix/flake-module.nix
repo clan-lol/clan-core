@@ -29,7 +29,10 @@
       # Frontmatter for clanModules
       clanModulesFrontmatter =
         let
-          docs = pkgs.nixosOptionsDoc { options = self.clanLib.modules.frontmatterOptions; };
+          docs = pkgs.nixosOptionsDoc {
+            options = self.clanLib.modules.frontmatterOptions;
+            transformOptions = self.clanLib.docs.stripStorePathsFromDeclarations;
+          };
         in
         docs.optionsJSON;
 

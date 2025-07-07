@@ -49,6 +49,7 @@ in
               prefix = [ ];
             }).options;
           warningsAreErrors = true;
+          transformOptions = self.clanLib.docs.stripStorePathsFromDeclarations;
         }).optionsJSON;
 
       # Run: nix-unit --extra-experimental-features flakes --flake .#legacyPackages.x86_64-linux.evalTests
