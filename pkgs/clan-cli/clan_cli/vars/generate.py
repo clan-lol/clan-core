@@ -429,6 +429,21 @@ def get_generators(
     full_closure: bool = False,
     include_previous_values: bool = False,
 ) -> list[Generator]:
+    """
+    Get the list of generators for a machine, optionally with previous values.
+    If `full_closure` is True, it returns the full closure of generators.
+    If `include_previous_values` is True, it includes the previous values for prompts.
+
+    Args:
+        machine_name (str): The name of the machine.
+        base_dir (Path): The base directory of the flake.
+        full_closure (bool): Whether to return the full closure of generators. If False,
+            it returns only the generators that are missing or need to be regenerated.
+        include_previous_values (bool): Whether to include previous values for prompts.
+    Returns:
+        list[Generator]: A list of generators for the machine.
+
+    """
     from clan_lib.machines.machines import Machine
 
     return get_closure(
@@ -468,6 +483,20 @@ def run_generators(
     base_dir: Path,
     no_sandbox: bool = False,
 ) -> bool:
+    """Run the specified generators for a machine.
+    Args:
+        machine_name (str): The name of the machine.
+        generators (list[str]): The list of generator names to run.
+        all_prompt_values (dict[str, dict[str, str]]): A dictionary mapping generator names
+            to their prompt values.
+        base_dir (Path): The base directory of the flake.
+        no_sandbox (bool): Whether to disable sandboxing when executing the generator.
+    Returns:
+        bool: True if any variables were generated, False otherwise.
+    Raises:
+        ClanError: If the machine or generator is not found, or if there are issues with
+        executing the generator.
+    """
     from clan_lib.machines.machines import Machine
 
     machine = Machine(name=machine_name, flake=Flake(str(base_dir)))
