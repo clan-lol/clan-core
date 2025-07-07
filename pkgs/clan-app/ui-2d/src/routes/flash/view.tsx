@@ -100,7 +100,7 @@ export const Flash = () => {
   const deviceQuery = createQuery(() => ({
     queryKey: ["block_devices"],
     queryFn: async () => {
-      const result = await callApi("show_block_devices", {}).promise;
+      const result = await callApi("list_block_devices", {}).promise;
       if (result.status === "error") throw new Error("Failed to fetch data");
       return result.data;
     },

@@ -202,6 +202,6 @@ export const CreateClan = () => {
 };
 
 type Meta = Extract<
-  OperationResponse<"show_clan_meta">,
+  OperationResponse<"get_clan_details">,
   { status: "success" }
 >["data"];
