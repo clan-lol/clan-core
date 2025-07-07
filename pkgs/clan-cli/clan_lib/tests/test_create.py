@@ -131,7 +131,7 @@ def test_clan_create_api(
     assert public_key.exists()
     assert public_key.is_file()
 
-    dest_clan_dir = Path("~/new-clan").expanduser()
+    dest_clan_dir = Path("~/default").expanduser()
 
     # ===== CREATE CLAN ======
     # TODO: We need to generate a lock file for the templates
