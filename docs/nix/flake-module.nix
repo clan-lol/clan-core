@@ -82,10 +82,9 @@
           }
           ''
             export CLAN_CORE_PATH=${
-              self.filter {
-                include = [
-                  "clanModules"
-                ];
+              inputs.nixpkgs.lib.fileset.toSource {
+                root = ../..;
+                fileset = ../../clanModules;
               }
             }
             export CLAN_CORE_DOCS=${jsonDocs.clanCore}/share/doc/nixos/options.json
@@ -126,7 +125,6 @@
       });
       packages = {
         docs = pkgs.python3.pkgs.callPackage ./default.nix {
-          clan-core = self;
           inherit (self'.packages)
             clan-cli-docs
             docs-options
