@@ -66,7 +66,7 @@ def get_network_id() -> str:
 
 def allow_member(args: argparse.Namespace) -> None:
     if args.member_ip:
-        member_id = compute_member_id(args.member_id)
+        member_id = compute_member_id(args.member_ip)
     else:
         member_id = args.member_id
     network_id = get_network_id()
