@@ -18,7 +18,7 @@ class FlashOptions(TypedDict):
 
 
 @API.register
-def show_flash_options() -> FlashOptions:
+def get_flash_options() -> FlashOptions:
     return {"languages": list_languages(), "keymaps": list_keymaps()}
 
 
