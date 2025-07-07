@@ -71,7 +71,7 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
   const hwReportQuery = useQuery(() => ({
     queryKey: [props.dir, props.machine_id, "hw_report"],
     queryFn: async () => {
-      const result = await callApi("describe_machine_hardware", {
+      const result = await callApi("get_machine_hardware_summary", {
         machine: {
           flake: {
             identifier: props.dir,
@@ -127,7 +127,7 @@ export const HWStep = (props: StepProps<HardwareValues>) => {
       return;
     }
 
-    const r = await callApi("generate_machine_hardware_info", {
+    const r = await callApi("run_machine_hardware_info", {
       opts: {
         machine: {
           name: props.machine_id,
