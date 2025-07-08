@@ -48,13 +48,15 @@ class SecretStore(StoreBase):
     def is_secret_store(self) -> bool:
         return True
 
-    def __init__(self, machine: str, flake: Flake) -> None:
-        super().__init__(machine, flake)
+    def __init__(self, flake: Flake) -> None:
+        super().__init__(flake)
 
+    def ensure_machine_key(self, machine: str) -> None:
+        """Ensure machine has sops keys initialized."""
         # no need to generate keys if we don't manage secrets
         from clan_cli.vars.generate import Generator
 
-        vars_generators = Generator.generators_from_flake(self.machine, self.flake)
+        vars_generators = Generator.generators_from_flake(machine, self.flake)
         if not vars_generators:
             return
         has_secrets = False
@@ -65,19 +67,19 @@ class SecretStore(StoreBase):
         if not has_secrets:
             return
 
-        if has_machine(self.flake.path, self.machine):
+        if has_machine(self.flake.path, machine):
             return
         priv_key, pub_key = sops.generate_private_key()
         encrypt_secret(
             self.flake.path,
-            sops_secrets_folder(self.flake.path) / f"{self.machine}-age.key",
+            sops_secrets_folder(self.flake.path) / f"{machine}-age.key",
             priv_key,
             add_groups=self.flake.select_machine(
-                self.machine, "config.clan.core.sops.defaultGroups"
+                machine, "config.clan.core.sops.defaultGroups"
             ),
             age_plugins=load_age_plugins(self.flake),
         )
-        add_machine(self.flake.path, self.machine, pub_key, False)
+        add_machine(self.flake.path, machine, pub_key, False)
 
     @property
     def store_name(self) -> str:
@@ -90,7 +92,9 @@ class SecretStore(StoreBase):
         return self.key_has_access(key_dir, generator, secret_name)
 
     def machine_has_access(self, generator: Generator, secret_name: str) -> bool:
-        key_dir = sops_machines_folder(self.flake.path) / self.machine
+        machine = self.get_machine(generator)
+        self.ensure_machine_key(machine)
+        key_dir = sops_machines_folder(self.flake.path) / machine
         return self.key_has_access(key_dir, generator, secret_name)
 
     def key_has_access(
@@ -106,7 +110,10 @@ class SecretStore(StoreBase):
 
     @override
     def health_check(
-        self, generator: Generator | None = None, file_name: str | None = None
+        self,
+        machine: str,
+        generator: Generator | None = None,
+        file_name: str | None = None,
     ) -> str | None:
         """
         Apply local updates to secrets like re-encrypting with missing keys
@@ -116,7 +123,7 @@ class SecretStore(StoreBase):
         if generator is None:
             from clan_cli.vars.generate import Generator
 
-            generators = Generator.generators_from_flake(self.machine, self.flake)
+            generators = Generator.generators_from_flake(machine, self.flake)
         else:
             generators = [generator]
         file_found = False
@@ -141,7 +148,7 @@ class SecretStore(StoreBase):
         if outdated:
             msg = (
                 "The local state of some secret vars is inconsistent and needs to be updated.\n"
-                f"Run 'clan vars fix {self.machine}' to apply the necessary changes."
+                f"Run 'clan vars fix {machine}' to apply the necessary changes."
                 "Problems to fix:\n"
                 "\n".join(o[2] for o in outdated if o[2])
             )
@@ -154,6 +161,8 @@ class SecretStore(StoreBase):
         var: Var,
         value: bytes,
     ) -> Path | None:
+        machine = self.get_machine(generator)
+        self.ensure_machine_key(machine)
         secret_folder = self.secret_path(generator, var.name)
         # create directory if it doesn't exist
         secret_folder.mkdir(parents=True, exist_ok=True)
@@ -162,9 +171,9 @@ class SecretStore(StoreBase):
             self.flake.path,
             secret_folder,
             value,
-            add_machines=[self.machine] if var.deploy else [],
+            add_machines=[machine] if var.deploy else [],
             add_groups=self.flake.select_machine(
-                self.machine, "config.clan.core.sops.defaultGroups"
+                machine, "config.clan.core.sops.defaultGroups"
             ),
             git_commit=False,
             age_plugins=load_age_plugins(self.flake),
@@ -182,20 +191,20 @@ class SecretStore(StoreBase):
         shutil.rmtree(secret_dir)
         return [secret_dir]
 
-    def delete_store(self) -> Iterable[Path]:
+    def delete_store(self, machine: str) -> Iterable[Path]:
         flake_root = self.flake.path
-        store_folder = flake_root / "vars/per-machine" / self.machine
+        store_folder = flake_root / "vars/per-machine" / machine
         if not store_folder.exists():
             return []
         shutil.rmtree(store_folder)
         return [store_folder]
 
-    def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
+    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
         from clan_cli.vars.generate import Generator
 
-        vars_generators = Generator.generators_from_flake(self.machine, self.flake)
+        vars_generators = Generator.generators_from_flake(machine, self.flake)
         if "users" in phases or "services" in phases:
-            key_name = f"{self.machine}-age.key"
+            key_name = f"{machine}-age.key"
             if not has_secret(sops_secrets_folder(self.flake.path) / key_name):
                 # skip uploading the secret, not managed by us
                 return
@@ -237,13 +246,13 @@ class SecretStore(StoreBase):
                         target_path.chmod(file.mode)
 
     @override
-    def upload(self, host: Remote, phases: list[str]) -> None:
+    def upload(self, machine: str, host: Remote, phases: list[str]) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)
         with TemporaryDirectory(prefix="sops-upload-") as _tempdir:
             sops_upload_dir = Path(_tempdir).resolve()
-            self.populate_dir(sops_upload_dir, phases)
+            self.populate_dir(machine, sops_upload_dir, phases)
             upload(host, sops_upload_dir, Path("/var/lib/sops-nix"))
 
     def exists(self, generator: Generator, name: str) -> bool:
@@ -251,17 +260,18 @@ class SecretStore(StoreBase):
         return (secret_folder / "secret").exists()
 
     def ensure_machine_has_access(self, generator: Generator, name: str) -> None:
+        machine = self.get_machine(generator)
         if self.machine_has_access(generator, name):
             return
         secret_folder = self.secret_path(generator, name)
         add_secret(
             self.flake.path,
-            self.machine,
+            machine,
             secret_folder,
             age_plugins=load_age_plugins(self.flake),
         )
 
-    def collect_keys_for_secret(self, path: Path) -> set[sops.SopsKey]:
+    def collect_keys_for_secret(self, machine: str, path: Path) -> set[sops.SopsKey]:
         from clan_cli.secrets.secrets import (
             collect_keys_for_path,
             collect_keys_for_type,
@@ -269,7 +279,7 @@ class SecretStore(StoreBase):
 
         keys = collect_keys_for_path(path)
         for group in self.flake.select_machine(
-            self.machine, "config.clan.core.sops.defaultGroups"
+            machine, "config.clan.core.sops.defaultGroups"
         ):
             keys.update(
                 collect_keys_for_type(
@@ -285,9 +295,10 @@ class SecretStore(StoreBase):
         return keys
 
     def needs_fix(self, generator: Generator, name: str) -> tuple[bool, str | None]:
+        machine = self.get_machine(generator)
         secret_path = self.secret_path(generator, name)
         current_recipients = sops.get_recipients(secret_path)
-        wanted_recipients = self.collect_keys_for_secret(secret_path)
+        wanted_recipients = self.collect_keys_for_secret(machine, secret_path)
         needs_update = current_recipients != wanted_recipients
         recipients_to_add = wanted_recipients - current_recipients
         var_id = f"{generator.name}/{name}"
@@ -295,20 +306,23 @@ class SecretStore(StoreBase):
             f"One or more recipient keys were added to secret{' shared' if generator.share else ''} var '{var_id}', but it was never re-encrypted.\n"
             f"This could have been a malicious actor trying to add their keys, please investigate.\n"
             f"Added keys: {', '.join(f'{r.key_type.name}:{r.pubkey}' for r in recipients_to_add)}\n"
-            f"If this is intended, run 'clan vars fix {self.machine}' to re-encrypt the secret."
+            f"If this is intended, run 'clan vars fix {machine}' to re-encrypt the secret."
         )
         return needs_update, msg
 
     @override
     def fix(
-        self, generator: Generator | None = None, file_name: str | None = None
+        self,
+        machine: str,
+        generator: Generator | None = None,
+        file_name: str | None = None,
     ) -> None:
         from clan_cli.secrets.secrets import update_keys
 
         if generator is None:
             from clan_cli.vars.generate import Generator
 
-            generators = Generator.generators_from_flake(self.machine, self.flake)
+            generators = Generator.generators_from_flake(machine, self.flake)
         else:
             generators = [generator]
         file_found = False
@@ -327,8 +341,9 @@ class SecretStore(StoreBase):
 
                 age_plugins = load_age_plugins(self.flake)
 
+                gen_machine = self.get_machine(generator)
                 for group in self.flake.select_machine(
-                    self.machine, "config.clan.core.sops.defaultGroups"
+                    gen_machine, "config.clan.core.sops.defaultGroups"
                 ):
                     allow_member(
                         groups_folder(secret_path),

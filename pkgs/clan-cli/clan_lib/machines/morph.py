@@ -81,7 +81,9 @@ def morph_machine(
         generate_vars([machine], generator_name=None, regenerate=False)
 
         machine.secret_vars_store.populate_dir(
-            output_dir=Path("/run/secrets"), phases=["activation", "users", "services"]
+            machine.name,
+            output_dir=Path("/run/secrets"),
+            phases=["activation", "users", "services"],
         )
 
         # run(["nixos-facter", "-o", f"{flakedir}/machines/{name}/facter.json"]).stdout

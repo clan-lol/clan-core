@@ -533,8 +533,12 @@ def create_machine_vars_interactive(
                 _generator = generator
                 break
 
-    pub_healtcheck_msg = machine.public_vars_store.health_check(_generator)
-    sec_healtcheck_msg = machine.secret_vars_store.health_check(_generator)
+    pub_healtcheck_msg = machine.public_vars_store.health_check(
+        machine.name, _generator
+    )
+    sec_healtcheck_msg = machine.secret_vars_store.health_check(
+        machine.name, _generator
+    )
 
     if pub_healtcheck_msg or sec_healtcheck_msg:
         msg = f"Health check failed for machine {machine.name}:\n"

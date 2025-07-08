@@ -18,21 +18,26 @@ class FactStore(StoreBase):
     def is_secret_store(self) -> bool:
         return False
 
-    def __init__(self, machine: str, flake: Flake) -> None:
-        super().__init__(machine, flake)
+    def __init__(self, flake: Flake) -> None:
+        super().__init__(flake)
         self.works_remotely = False
-        self.dir = vm_state_dir(flake.identifier, machine) / "facts"
-        log.debug(
-            f"FactStore initialized with dir {self.dir}",
-            extra={"command_prefix": machine},
-        )
 
     @property
     def store_name(self) -> str:
         return "vm"
 
+    def get_dir(self, machine: str) -> Path:
+        """Get the directory for a given machine."""
+        vars_dir = vm_state_dir(self.flake.identifier, machine) / "facts"
+        log.debug(
+            f"FactStore using dir {vars_dir}",
+            extra={"command_prefix": machine},
+        )
+        return vars_dir
+
     def exists(self, generator: Generator, name: str) -> bool:
-        fact_path = self.dir / generator.name / name
+        machine = self.get_machine(generator)
+        fact_path = self.get_dir(machine) / generator.name / name
         return fact_path.exists()
 
     def _set(
@@ -41,21 +46,24 @@ class FactStore(StoreBase):
         var: Var,
         value: bytes,
     ) -> Path | None:
-        fact_path = self.dir / generator.name / var.name
+        machine = self.get_machine(generator)
+        fact_path = self.get_dir(machine) / generator.name / var.name
         fact_path.parent.mkdir(parents=True, exist_ok=True)
         fact_path.write_bytes(value)
         return None
 
     # get a single fact
     def get(self, generator: Generator, name: str) -> bytes:
-        fact_path = self.dir / generator.name / name
+        machine = self.get_machine(generator)
+        fact_path = self.get_dir(machine) / generator.name / name
         if fact_path.exists():
             return fact_path.read_bytes()
         msg = f"Fact {name} for service {generator.name} not found"
         raise ClanError(msg)
 
     def delete(self, generator: Generator, name: str) -> Iterable[Path]:
-        fact_dir = self.dir / generator.name
+        machine = self.get_machine(generator)
+        fact_dir = self.get_dir(machine) / generator.name
         fact_file = fact_dir / name
         fact_file.unlink()
         empty = None
@@ -63,16 +71,17 @@ class FactStore(StoreBase):
             fact_dir.rmdir()
         return [fact_file]
 
-    def delete_store(self) -> Iterable[Path]:
-        if not self.dir.exists():
+    def delete_store(self, machine: str) -> Iterable[Path]:
+        vars_dir = self.get_dir(machine)
+        if not vars_dir.exists():
             return []
-        shutil.rmtree(self.dir)
-        return [self.dir]
+        shutil.rmtree(vars_dir)
+        return [vars_dir]
 
-    def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
+    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
         msg = "populate_dir is not implemented for public vars stores"
         raise NotImplementedError(msg)
 
-    def upload(self, host: Remote, phases: list[str]) -> None:
+    def upload(self, machine: str, host: Remote, phases: list[str]) -> None:
         msg = "upload is not implemented for public vars stores"
         raise NotImplementedError(msg)
