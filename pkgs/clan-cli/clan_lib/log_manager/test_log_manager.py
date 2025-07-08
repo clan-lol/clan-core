@@ -723,21 +723,21 @@ class TestLogFileSorting:
             expected_order
         ):
             actual = sorted_files[i]
-            assert (
-                actual.op_key == exp_op
-            ), f"Position {i}: expected op_key {exp_op}, got {actual.op_key}"
-            assert (
-                actual.date_day == exp_date
-            ), f"Position {i}: expected date {exp_date}, got {actual.date_day}"
-            assert (
-                actual.group == exp_group
-            ), f"Position {i}: expected group {exp_group}, got {actual.group}"
-            assert (
-                actual.func_name == exp_func
-            ), f"Position {i}: expected func {exp_func}, got {actual.func_name}"
-            assert (
-                actual.date_second == exp_time
-            ), f"Position {i}: expected time {exp_time}, got {actual.date_second}"
+            assert actual.op_key == exp_op, (
+                f"Position {i}: expected op_key {exp_op}, got {actual.op_key}"
+            )
+            assert actual.date_day == exp_date, (
+                f"Position {i}: expected date {exp_date}, got {actual.date_day}"
+            )
+            assert actual.group == exp_group, (
+                f"Position {i}: expected group {exp_group}, got {actual.group}"
+            )
+            assert actual.func_name == exp_func, (
+                f"Position {i}: expected func {exp_func}, got {actual.func_name}"
+            )
+            assert actual.date_second == exp_time, (
+                f"Position {i}: expected time {exp_time}, got {actual.date_second}"
+            )
 
     def test_get_log_file_returns_newest_when_multiple_exist(
         self, configured_log_manager: LogManager
