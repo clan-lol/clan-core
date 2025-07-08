@@ -14,6 +14,7 @@ If the hostname is **static**, like `server.example.com`, set it in the **invent
   outputs =
     { self, clan-core, ... }:
     let
+      # Sometimes this attribute set is defined in clan.nix
       clan = clan-core.lib.clan {
         inventory.machines.jon = {
             deploy.targetHost = "root@server.example.com";
@@ -41,6 +42,7 @@ If your target host depends on a **dynamic expression** (like using the machineâ
   outputs =
     { self, clan-core, ... }:
     let
+      # Sometimes this attribute set is defined in clan.nix
       clan = clan-core.lib.clan {
         machines.jon = {config, ...}: {
             clan.core.networking.targetHost = "jon@${config.networking.fqdn}";

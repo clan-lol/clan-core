@@ -28,6 +28,7 @@ To learn more: [Guide about clanService](../clanServices.md)
         inputs@{ flake-parts, ... }:
         flake-parts.lib.mkFlake { inherit inputs; } {
             imports = [ inputs.clan-core.flakeModules.default ];
+            # Sometimes this attribute set is defined in clan.nix
             clan = {
                 inventory.machines = {
                     jon = {
@@ -76,6 +77,7 @@ Adding the following services is recommended for most users:
         inputs@{ flake-parts, ... }:
         flake-parts.lib.mkFlake { inherit inputs; } {
             imports = [ inputs.clan-core.flakeModules.default ];
+            # Sometimes this attribute set is defined in clan.nix
             clan = {
                 inventory.machines = {
                     jon = {
