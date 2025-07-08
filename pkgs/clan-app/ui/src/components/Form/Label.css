@@ -12,7 +12,7 @@ div.form-label {
     @apply flex items-center gap-1;
   }
 
-  & > label[data-required] & not(label[data-readonly]) {
+  & > label[data-required]:not(label[data-readonly]) {
     span.typography::after {
       @apply fg-def-4 ml-1;
 

@@ -1,11 +1,7 @@
 import { TagProps } from "@/src/components/Tag/Tag";
 import { Meta, StoryObj } from "@kachurun/storybook-solid";
 import { fn } from "storybook/test";
-import {
-  Modal,
-  ModalContext,
-  ModalProps,
-} from "@/src/components/Modal/Modal";
+import { Modal, ModalContext, ModalProps } from "@/src/components/Modal/Modal";
 import { Fieldset } from "@/src/components/Form/Fieldset";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { TextArea } from "@/src/components/Form/TextArea";
