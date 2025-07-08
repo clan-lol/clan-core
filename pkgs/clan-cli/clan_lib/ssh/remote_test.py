@@ -103,7 +103,7 @@ def test_parse_deployment_address(
     else:
 
         @contextlib.contextmanager
-        def noop() -> Generator[None, Any, None]:
+        def noop() -> Generator[None, Any]:
             yield
 
         maybe_check_exception = noop()  # type: ignore
