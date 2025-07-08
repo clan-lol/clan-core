@@ -301,7 +301,7 @@ class LogManager:
         return current_config
 
     def create_log_file(
-        self, func: Callable, op_key: str, group_path: list[str] | None = None
+        self, func: Callable | str, op_key: str, group_path: list[str] | None = None
     ) -> LogFile:
         """Create a new log file for the given function and operation.
 
@@ -339,12 +339,15 @@ class LogManager:
         # Convert encoded path to string for LogFile
         group_str = "/".join(encoded_group_path)
 
+        # Use function name or string directly
+        func_name = func.__name__ if callable(func) else func
+
         log_file = LogFile(
             op_key=op_key,
             date_day=now_utc.strftime("%Y-%m-%d"),
             group=group_str,
             date_second=now_utc.strftime("%H-%M-%S"),  # Corrected original's %H-$M-%S
-            func_name=func.__name__,
+            func_name=func_name,
             _base_dir=self.base_dir,
         )
 
