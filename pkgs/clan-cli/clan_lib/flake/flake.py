@@ -747,7 +747,7 @@ class Flake:
             ClanError: If the number of outputs does not match the number of selectors.
             AssertionError: If the cache or flake cache path is not properly initialized.
         """
-        from clan_lib.cmd import run, RunOpts, Log
+        from clan_lib.cmd import Log, RunOpts, run
         from clan_lib.dirs import select_source
         from clan_lib.nix import (
             nix_build,

@@ -9,7 +9,6 @@ from types import ModuleType
 from typing import (
     Annotated,
     Any,
-    Generic,
     Literal,
     TypeVar,
     get_type_hints,
@@ -17,6 +16,7 @@ from typing import (
 
 from clan_lib.api.util import JSchemaTypeError
 from clan_lib.errors import ClanError
+
 from .serde import dataclass_to_dict, from_dict, sanitize_string
 
 log = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class ApiError:
 
 
 @dataclass
-class SuccessDataClass(Generic[ResponseDataType]):
+class SuccessDataClass[ResponseDataType]:
     op_key: str
     status: Annotated[Literal["success"], "The status of the response."]
     data: ResponseDataType

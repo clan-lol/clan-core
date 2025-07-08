@@ -4,9 +4,9 @@ import sys
 
 from clan_cli.profiler import profile
 
-log = logging.getLogger(__name__)
-
 from clan_app.app import ClanAppOptions, app_run
+
+log = logging.getLogger(__name__)
 
 
 @profile

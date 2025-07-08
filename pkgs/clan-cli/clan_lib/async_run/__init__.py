@@ -5,7 +5,7 @@ import types
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import IO, Any, Generic, ParamSpec, TypeVar
+from typing import IO, Any, ParamSpec, TypeVar
 
 from clan_lib.errors import ClanError
 
@@ -39,7 +39,7 @@ Q = TypeVar("Q")  # Data type for the async_opts.data field
 
 
 @dataclass
-class AsyncResult(Generic[R]):
+class AsyncResult[R]:
     _result: R | Exception
 
     @property
@@ -120,7 +120,7 @@ def set_async_ctx(ctx: AsyncContext) -> None:
     ASYNC_CTX_THREAD_LOCAL.async_ctx = ctx
 
 
-class AsyncThread(threading.Thread, Generic[P, R]):
+class AsyncThread[**P, R](threading.Thread):
     function: Callable[P, R]
     args: tuple[Any, ...]
     kwargs: dict[str, Any]
@@ -169,7 +169,7 @@ class AsyncThread(threading.Thread, Generic[P, R]):
 
 
 @dataclass
-class AsyncFuture(Generic[R]):
+class AsyncFuture[R]:
     _tid: str
     _runtime: "AsyncRuntime"
 
@@ -214,11 +214,11 @@ class AsyncFuture(Generic[R]):
 
 
 @dataclass
-class AsyncFutureRef(AsyncFuture[R], Generic[R, Q]):
+class AsyncFutureRef[R, Q](AsyncFuture[R]):
     ref: Q | None
 
 
-class AsyncOptsRef(AsyncOpts, Generic[Q]):
+class AsyncOptsRef[Q](AsyncOpts):
     ref: Q | None = None
 
 
