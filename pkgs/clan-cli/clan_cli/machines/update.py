@@ -9,7 +9,7 @@ from clan_lib.machines.actions import list_machines
 from clan_lib.machines.list import instantiate_inventory_to_machines
 from clan_lib.machines.machines import Machine
 from clan_lib.machines.suggestions import validate_machine_names
-from clan_lib.machines.update import run_machine_deploy
+from clan_lib.machines.update import run_machine_update
 from clan_lib.nix import nix_config
 from clan_lib.ssh.remote import Remote
 
@@ -144,7 +144,7 @@ def update_command(args: argparse.Namespace) -> None:
                         tid=machine.name,
                         async_ctx=AsyncContext(prefix=machine.name),
                     ),
-                    run_machine_deploy,
+                    run_machine_update,
                     machine=machine,
                     target_host=target_host,
                     build_host=machine.build_host(),
