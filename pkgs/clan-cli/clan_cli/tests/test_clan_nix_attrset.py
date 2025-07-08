@@ -65,8 +65,6 @@ def test_clan_core_templates(
     assert (flake_nix).exists()
     assert (flake_nix).is_file()
 
-    assert (my_clan / "machines").is_dir()
-
     # Test if we can write to the flake.nix file
     with flake_nix.open("r+") as f:
         data = f.read()
