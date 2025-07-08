@@ -65,6 +65,7 @@ def vars_status(
                     missing_secret_vars.append(file)
                 else:
                     msg = machine.secret_vars_store.health_check(
+                        machine=machine.name,
                         generator=generator,
                         file_name=file.name,
                     )
