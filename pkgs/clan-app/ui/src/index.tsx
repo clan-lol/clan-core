@@ -3,6 +3,7 @@ import { render } from "solid-js/web";
 
 import "./index.css";
 import { QueryClient } from "@tanstack/solid-query";
+import { CubeScene } from "./scene/qubes";
 
 export const client = new QueryClient();
 
@@ -19,4 +20,4 @@ if (import.meta.env.DEV) {
   await import("solid-devtools");
 }
 
-render(() => <h1>Hello World</h1>, root!);
+render(() => <CubeScene />, root!);
