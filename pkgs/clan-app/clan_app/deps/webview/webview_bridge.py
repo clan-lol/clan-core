@@ -8,7 +8,8 @@ from clan_lib.api import dataclass_to_dict
 from clan_lib.api.tasks import WebThread
 from clan_lib.async_run import set_should_cancel
 
-from .api_bridge import ApiBridge, ApiRequest, ApiResponse
+from clan_app.api.api_bridge import ApiBridge, BackendRequest, BackendResponse
+
 from .webview import FuncStatus
 
 if TYPE_CHECKING:
@@ -24,24 +25,15 @@ class WebviewBridge(ApiBridge):
     webview: "Webview"
     threads: dict[str, WebThread] = field(default_factory=dict)
 
-    def send_response(self, response: ApiResponse) -> None:
+    def send_response(self, response: BackendResponse) -> None:
         """Send response back to the webview client."""
 
-        if response.success:
-            serialized = json.dumps(
-                dataclass_to_dict(response.data), indent=4, ensure_ascii=False
-            )
-            status = FuncStatus.SUCCESS
-        else:
-            serialized = json.dumps(
-                dataclass_to_dict(response.data), indent=4, ensure_ascii=False
-            )
-            status = FuncStatus.SUCCESS  # Even errors are sent as SUCCESS to webview
-
-        log.debug(
-            f"Sending response for op_key {response.op_key} with status {status.name} and data: {serialized}"
+        serialized = json.dumps(
+            dataclass_to_dict(response), indent=4, ensure_ascii=False
         )
-        self.webview.return_(response.op_key, status, serialized)
+
+        log.debug(f"Sending response: {serialized}")
+        self.webview.return_(response._op_key, FuncStatus.SUCCESS, serialized)  # noqa: SLF001
 
     def handle_webview_call(
         self,
@@ -77,7 +69,7 @@ class WebviewBridge(ApiBridge):
                 raise ValueError(msg)
 
             # Create API request
-            api_request = ApiRequest(
+            api_request = BackendRequest(
                 method_name=method_name, args=args, header=header, op_key=op_key
             )
 
