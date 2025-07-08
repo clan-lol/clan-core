@@ -16,8 +16,8 @@ export function CubeScene() {
   let renderer: THREE.WebGLRenderer;
   let raycaster: THREE.Raycaster;
 
-  let meshMap = new Map<string, THREE.Mesh>();
-  let baseMap = new Map<string, THREE.Mesh>(); // Map for cube bases
+  const meshMap = new Map<string, THREE.Mesh>();
+  const baseMap = new Map<string, THREE.Mesh>(); // Map for cube bases
 
   let sharedCubeGeometry: THREE.BoxGeometry;
   let sharedBaseGeometry: THREE.BoxGeometry;
@@ -129,9 +129,13 @@ export function CubeScene() {
   }
 
   function toggleSelection(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+    setSelectedIds((curr) => {
+      const next = new Set(curr);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
@@ -246,7 +250,7 @@ export function CubeScene() {
     // Basic OrbitControls implementation (simplified)
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
-    let spherical = new THREE.Spherical();
+    const spherical = new THREE.Spherical();
     spherical.setFromVector3(camera.position);
 
     // Function to update camera info
