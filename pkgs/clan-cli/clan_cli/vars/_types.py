@@ -29,14 +29,26 @@ class GeneratorUpdate:
 
 
 class StoreBase(ABC):
-    def __init__(self, machine: str, flake: Flake) -> None:
-        self.machine = machine
+    def __init__(self, flake: Flake) -> None:
         self.flake = flake
 
     @property
     @abstractmethod
     def store_name(self) -> str:
         pass
+
+    def get_machine(self, generator: "Generator") -> str:
+        """Get machine name from generator, asserting it's not None for now."""
+        if generator.machine is None:
+            if generator.share:
+                # Shared generators don't need a machine for most operations
+                # but some operations (like SOPS key management) might still need one
+                # This is a temporary workaround - we should handle this better
+                msg = f"Shared generator '{generator.name}' requires a machine context for this operation"
+                raise ClanError(msg)
+            msg = f"Generator '{generator.name}' has no machine associated"
+            raise ClanError(msg)
+        return generator.machine
 
     # get a single fact
     @abstractmethod
@@ -65,6 +77,7 @@ class StoreBase(ABC):
 
     def health_check(
         self,
+        machine: str,
         generator: "Generator | None" = None,
         file_name: str | None = None,
     ) -> str | None:
@@ -72,6 +85,7 @@ class StoreBase(ABC):
 
     def fix(
         self,
+        machine: str,
         generator: "Generator | None" = None,
         file_name: str | None = None,
     ) -> None:
@@ -87,7 +101,8 @@ class StoreBase(ABC):
     def rel_dir(self, generator: "Generator", var_name: str) -> Path:
         if generator.share:
             return Path("shared") / generator.name / var_name
-        return Path("per-machine") / self.machine / generator.name / var_name
+        machine = self.get_machine(generator)
+        return Path("per-machine") / machine / generator.name / var_name
 
     def directory(self, generator: "Generator", var_name: str) -> Path:
         return self.flake.path / "vars" / self.rel_dir(generator, var_name)
@@ -134,7 +149,7 @@ class StoreBase(ABC):
         """
 
     @abstractmethod
-    def delete_store(self) -> Iterable[Path]:
+    def delete_store(self, machine: str) -> Iterable[Path]:
         """Delete the store (all vars) for this machine.
 
         .. note::
@@ -181,9 +196,9 @@ class StoreBase(ABC):
         return stored_hash == target_hash
 
     @abstractmethod
-    def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
+    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
         pass
 
     @abstractmethod
-    def upload(self, host: Remote, phases: list[str]) -> None:
+    def upload(self, machine: str, host: Remote, phases: list[str]) -> None:
         pass

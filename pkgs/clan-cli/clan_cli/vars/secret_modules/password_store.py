@@ -20,8 +20,8 @@ class SecretStore(StoreBase):
     def is_secret_store(self) -> bool:
         return True
 
-    def __init__(self, machine: str, flake: Flake) -> None:
-        super().__init__(machine, flake)
+    def __init__(self, flake: Flake) -> None:
+        super().__init__(flake)
         self.entry_prefix = "clan-vars"
         self._store_dir: Path | None = None
 
@@ -29,25 +29,25 @@ class SecretStore(StoreBase):
     def store_name(self) -> str:
         return "password_store"
 
-    @property
-    def store_dir(self) -> Path:
-        """Get the password store directory, cached after first access."""
-        if self._store_dir is None:
-            result = self._run_pass("git", "rev-parse", "--show-toplevel", check=False)
+    def store_dir(self, machine: str) -> Path:
+        """Get the password store directory, cached per machine."""
+        if not self._store_dir:
+            result = self._run_pass(
+                machine, "git", "rev-parse", "--show-toplevel", check=False
+            )
             if result.returncode != 0:
                 msg = "Password store must be a git repository"
                 raise ValueError(msg)
             self._store_dir = Path(result.stdout.strip().decode())
         return self._store_dir
 
-    @property
-    def _pass_command(self) -> str:
+    def _pass_command(self, machine: str) -> str:
         out_path = self.flake.select_machine(
-            self.machine, "config.clan.core.vars.password-store.passPackage.outPath"
+            machine, "config.clan.core.vars.password-store.passPackage.outPath"
         )
         main_program = (
             self.flake.select_machine(
-                self.machine,
+                machine,
                 "config.clan.core.vars.password-store.passPackage.?meta.?mainProgram",
             )
             .get("meta", {})
@@ -80,11 +80,12 @@ class SecretStore(StoreBase):
 
     def _run_pass(
         self,
+        machine: str,
         *args: str,
         input: bytes | None = None,  # noqa: A002
         check: bool = True,
     ) -> subprocess.CompletedProcess[bytes]:
-        cmd = [self._pass_command, *args]
+        cmd = [self._pass_command(machine), *args]
         # We need bytes support here, so we can not use clan cmd.
         # If you change this to run( add bytes support to it first!
         # otherwise we mangle binary secrets (which is annoying to debug)
@@ -101,37 +102,44 @@ class SecretStore(StoreBase):
         var: Var,
         value: bytes,
     ) -> Path | None:
+        machine = self.get_machine(generator)
         pass_call = ["insert", "-m", str(self.entry_dir(generator, var.name))]
-        self._run_pass(*pass_call, input=value, check=True)
+        self._run_pass(machine, *pass_call, input=value, check=True)
         return None  # we manage the files outside of the git repo
 
     def get(self, generator: Generator, name: str) -> bytes:
+        machine = self.get_machine(generator)
         pass_name = str(self.entry_dir(generator, name))
-        return self._run_pass("show", pass_name).stdout
+        return self._run_pass(machine, "show", pass_name).stdout
 
     def exists(self, generator: Generator, name: str) -> bool:
+        machine = self.get_machine(generator)
         pass_name = str(self.entry_dir(generator, name))
         # Check if the file exists with either .age or .gpg extension
-        age_file = self.store_dir / f"{pass_name}.age"
-        gpg_file = self.store_dir / f"{pass_name}.gpg"
+        store_dir = self.store_dir(machine)
+        age_file = store_dir / f"{pass_name}.age"
+        gpg_file = store_dir / f"{pass_name}.gpg"
         return age_file.exists() or gpg_file.exists()
 
     def delete(self, generator: Generator, name: str) -> Iterable[Path]:
+        machine = self.get_machine(generator)
         pass_name = str(self.entry_dir(generator, name))
-        self._run_pass("rm", "--force", pass_name, check=True)
+        self._run_pass(machine, "rm", "--force", pass_name, check=True)
         return []
 
-    def delete_store(self) -> Iterable[Path]:
-        machine_dir = Path(self.entry_prefix) / "per-machine" / self.machine
+    def delete_store(self, machine: str) -> Iterable[Path]:
+        machine_dir = Path(self.entry_prefix) / "per-machine" / machine
         # Check if the directory exists in the password store before trying to delete
-        result = self._run_pass("ls", str(machine_dir), check=False)
+        result = self._run_pass(machine, "ls", str(machine_dir), check=False)
         if result.returncode == 0:
-            self._run_pass("rm", "--force", "--recursive", str(machine_dir), check=True)
+            self._run_pass(
+                machine, "rm", "--force", "--recursive", str(machine_dir), check=True
+            )
         return []
 
-    def generate_hash(self) -> bytes:
+    def generate_hash(self, machine: str) -> bytes:
         result = self._run_pass(
-            "git", "log", "-1", "--format=%H", self.entry_prefix, check=False
+            machine, "git", "log", "-1", "--format=%H", self.entry_prefix, check=False
         )
         git_hash = result.stdout.strip()
 
@@ -141,7 +149,7 @@ class SecretStore(StoreBase):
         from clan_cli.vars.generate import Generator
 
         manifest = []
-        generators = Generator.generators_from_flake(self.machine, self.flake)
+        generators = Generator.generators_from_flake(machine, self.flake)
         for generator in generators:
             for file in generator.files:
                 manifest.append(f"{generator.name}/{file.name}".encode())
@@ -149,8 +157,8 @@ class SecretStore(StoreBase):
         manifest.append(git_hash)
         return b"\n".join(manifest)
 
-    def needs_upload(self, host: Remote) -> bool:
-        local_hash = self.generate_hash()
+    def needs_upload(self, machine: str, host: Remote) -> bool:
+        local_hash = self.generate_hash(machine)
         if not local_hash:
             return True
 
@@ -159,7 +167,7 @@ class SecretStore(StoreBase):
         remote_hash = host.run(
             [
                 "cat",
-                f"{self.flake.select_machine(self.machine, 'config.clan.core.vars.password-store.secretLocation')}/.pass_info",
+                f"{self.flake.select_machine(machine, 'config.clan.core.vars.password-store.secretLocation')}/.pass_info",
             ],
             RunOpts(log=Log.STDERR, check=False),
         ).stdout.strip()
@@ -169,10 +177,10 @@ class SecretStore(StoreBase):
 
         return local_hash != remote_hash.encode()
 
-    def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
+    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
         from clan_cli.vars.generate import Generator
 
-        vars_generators = Generator.generators_from_flake(self.machine, self.flake)
+        vars_generators = Generator.generators_from_flake(machine, self.flake)
         if "users" in phases:
             with tarfile.open(
                 output_dir / "secrets_for_users.tar.gz", "w:gz"
@@ -231,23 +239,23 @@ class SecretStore(StoreBase):
                         out_file.parent.mkdir(parents=True, exist_ok=True)
                         out_file.write_bytes(self.get(generator, file.name))
 
-        hash_data = self.generate_hash()
+        hash_data = self.generate_hash(machine)
         if hash_data:
             (output_dir / ".pass_info").write_bytes(hash_data)
 
-    def upload(self, host: Remote, phases: list[str]) -> None:
+    def upload(self, machine: str, host: Remote, phases: list[str]) -> None:
         if "partitioning" in phases:
             msg = "Cannot upload partitioning secrets"
             raise NotImplementedError(msg)
-        if not self.needs_upload(host):
+        if not self.needs_upload(machine, host):
             log.info("Secrets already uploaded")
             return
         with TemporaryDirectory(prefix="vars-upload-") as _tempdir:
             pass_dir = Path(_tempdir).resolve()
-            self.populate_dir(pass_dir, phases)
+            self.populate_dir(machine, pass_dir, phases)
             upload_dir = Path(
                 self.flake.select_machine(
-                    self.machine, "config.clan.core.vars.password-store.secretLocation"
+                    machine, "config.clan.core.vars.password-store.secretLocation"
                 )
             )
             upload(host, pass_dir, upload_dir)

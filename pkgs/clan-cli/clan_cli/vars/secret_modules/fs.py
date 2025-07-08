@@ -13,8 +13,8 @@ class SecretStore(StoreBase):
     def is_secret_store(self) -> bool:
         return True
 
-    def __init__(self, machine: str, flake: Flake) -> None:
-        super().__init__(machine, flake)
+    def __init__(self, flake: Flake) -> None:
+        super().__init__(flake)
         self.dir = Path(tempfile.gettempdir()) / "clan_secrets"
         self.dir.mkdir(parents=True, exist_ok=True)
 
@@ -40,7 +40,7 @@ class SecretStore(StoreBase):
         secret_file = self.dir / generator.name / name
         return secret_file.read_bytes()
 
-    def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
+    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
         if output_dir.exists():
             shutil.rmtree(output_dir)
         shutil.copytree(self.dir, output_dir)
@@ -52,11 +52,11 @@ class SecretStore(StoreBase):
             secret_file.unlink()
         return []
 
-    def delete_store(self) -> list[Path]:
+    def delete_store(self, machine: str) -> list[Path]:
         if self.dir.exists():
             shutil.rmtree(self.dir)
         return []
 
-    def upload(self, host: Remote, phases: list[str]) -> None:
+    def upload(self, machine: str, host: Remote, phases: list[str]) -> None:
         msg = "Cannot upload secrets with FS backend"
         raise NotImplementedError(msg)

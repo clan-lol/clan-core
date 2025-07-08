@@ -104,13 +104,13 @@ class Machine:
     def secret_vars_store(self) -> StoreBase:
         secret_module = self.select("config.clan.core.vars.settings.secretModule")
         module = importlib.import_module(secret_module)
-        return module.SecretStore(machine=self.name, flake=self.flake)
+        return module.SecretStore(flake=self.flake)
 
     @cached_property
     def public_vars_store(self) -> StoreBase:
         public_module = self.select("config.clan.core.vars.settings.publicModule")
         module = importlib.import_module(public_module)
-        return module.FactStore(machine=self.name, flake=self.flake)
+        return module.FactStore(flake=self.flake)
 
     @property
     def facts_data(self) -> dict[str, dict[str, Any]]:

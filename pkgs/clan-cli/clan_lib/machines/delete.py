@@ -58,8 +58,8 @@ def delete_machine(machine: Machine) -> None:
         changed_paths.append(secret_path)
         shutil.rmtree(secret_path)
 
-    changed_paths.extend(machine.public_vars_store.delete_store())
-    changed_paths.extend(machine.secret_vars_store.delete_store())
+    changed_paths.extend(machine.public_vars_store.delete_store(machine.name))
+    changed_paths.extend(machine.secret_vars_store.delete_store(machine.name))
     # Remove the machine's key, and update secrets & vars that referenced it:
     if secrets_has_machine(machine.flake.path, machine.name):
         secrets_machine_remove(machine.flake.path, machine.name)
