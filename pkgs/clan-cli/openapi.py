@@ -118,6 +118,32 @@ def make_schema_name(func_name: str, part: str) -> str:
     return f"{func_name}_{part}"
 
 
+def get_tag_key(tags: list[str]) -> tuple:
+    """Convert list of tags to a tuple key for sorting."""
+    return tuple(tags)
+
+
+def sort_openapi_paths_by_tag_tree(openapi: dict) -> None:
+    # Extract (tags, path, method, operation) tuples
+    operations = []
+
+    for path, methods in openapi["paths"].items():
+        for method, operation in methods.items():
+            tag_path = operation.get("tags", [])
+            operations.append((tag_path, path, method, operation))
+
+    # Sort by the tag hierarchy
+    operations.sort(key=lambda x: get_tag_key(x[0]))
+
+    # Rebuild sorted openapi["paths"]
+    sorted_paths: dict = {}
+    for _tag_path, path, method, operation in operations:
+        sorted_paths[path] = sorted_paths.get(path, {})
+        sorted_paths[path][method] = operation
+
+    openapi["paths"] = dict(sorted_paths)  # Ensure it's a plain dict
+
+
 def main() -> None:
     input_path = Path(os.environ["INPUT_PATH"])
 
@@ -202,6 +228,8 @@ def main() -> None:
                 },
             }
         }
+
+    sort_openapi_paths_by_tag_tree(openapi)
 
     # === Add global definitions from $defs ===
     for def_name, def_schema in defs.items():
