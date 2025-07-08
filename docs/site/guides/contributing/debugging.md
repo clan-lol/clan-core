@@ -105,7 +105,7 @@ git+file:///home/lhebendanz/Projects/clan-core
 │       ├───editor omitted (use '--all-systems' to show)
 └───templates
     ├───default: template: Initialize a new clan flake
-    └───new-clan: template: Initialize a new clan flake
+    └───default: template: Initialize a new clan flake
 ```
 
 You can execute every test separately by following the tree path `nix run .#checks.x86_64-linux.clan-pytest -L` for example.
