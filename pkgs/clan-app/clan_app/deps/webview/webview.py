@@ -13,7 +13,8 @@ from clan_lib.log_manager import LogManager
 from ._webview_ffi import _encode_c_string, _webview_lib
 
 if TYPE_CHECKING:
-    from .middleware import Middleware
+    from clan_app.api.middleware import Middleware
+
     from .webview_bridge import WebviewBridge
 
 log = logging.getLogger(__name__)

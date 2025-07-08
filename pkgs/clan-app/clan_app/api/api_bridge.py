@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
-class ApiRequest:
+class BackendRequest:
     method_name: str
     args: dict[str, Any]
     header: dict[str, Any]
@@ -19,11 +19,10 @@ class ApiRequest:
 
 
 @dataclass(frozen=True)
-class ApiResponse:
-    op_key: str
-    success: bool
-    data: Any
-    error: str | None = None
+class BackendResponse:
+    body: Any
+    header: dict[str, Any]
+    _op_key: str
 
 
 @dataclass
@@ -33,10 +32,10 @@ class ApiBridge(ABC):
     middleware_chain: tuple["Middleware", ...]
 
     @abstractmethod
-    def send_response(self, response: ApiResponse) -> None:
+    def send_response(self, response: BackendResponse) -> None:
         """Send response back to the client."""
 
-    def process_request(self, request: ApiRequest) -> None:
+    def process_request(self, request: BackendRequest) -> None:
         """Process an API request through the middleware chain."""
         from .middleware import MiddlewareContext
 
@@ -79,8 +78,10 @@ class ApiBridge(ABC):
             ],
         )
 
-        response = ApiResponse(
-            op_key=op_key, success=False, data=error_data, error=error_message
+        response = BackendResponse(
+            body=error_data,
+            header={},
+            _op_key=op_key,
         )
 
         self.send_response(response)

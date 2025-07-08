@@ -38,7 +38,6 @@ def long_blocking_task(somearg: str) -> str:
     time.sleep(1)
     ctx = get_async_ctx()
     log.debug(f"Thread ID: {threading.get_ident()}")
-
     for i in range(30):
         if is_async_cancelled():
             log.debug("Task was cancelled")

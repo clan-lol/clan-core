@@ -11,7 +11,7 @@ from clan_lib.log_manager import LogGroupConfig, LogManager
 from clan_lib.log_manager import api as log_manager_api
 
 from clan_app.api.file_gtk import open_file
-from clan_app.deps.webview.middleware import (
+from clan_app.api.middleware import (
     ArgumentParsingMiddleware,
     LoggingMiddleware,
     MethodExecutionMiddleware,
