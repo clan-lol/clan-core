@@ -19,9 +19,4 @@ if (import.meta.env.DEV) {
   await import("solid-devtools");
 }
 
-render(
-  () => (
-    <h1>Hello World</h1>
-  ),
-  root!,
-);
+render(() => <h1>Hello World</h1>, root!);

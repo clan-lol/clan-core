@@ -4,10 +4,7 @@ import { DropdownMenu } from "@kobalte/core/dropdown-menu";
 import { useNavigate } from "@solidjs/router";
 import { Typography } from "../Typography/Typography";
 import { createSignal, For } from "solid-js";
-import {
-  ClanLinkProps,
-  ClanProps,
-} from "@/src/components/Sidebar/SidebarNav";
+import { ClanLinkProps, ClanProps } from "@/src/components/Sidebar/SidebarNav";
 
 export interface SidebarHeaderProps {
   clanDetail: ClanProps;
