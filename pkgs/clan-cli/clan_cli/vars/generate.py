@@ -54,7 +54,8 @@ class Generator:
 
     @cached_property
     def exists(self) -> bool:
-        assert self.machine is not None and self._flake is not None
+        assert self.machine is not None
+        assert self._flake is not None
         return check_vars(self.machine, self._flake, generator_name=self.name)
 
     @classmethod
@@ -116,7 +117,8 @@ class Generator:
         return generators
 
     def final_script(self) -> Path:
-        assert self.machine is not None and self._flake is not None
+        assert self.machine is not None
+        assert self._flake is not None
         from clan_lib.machines.machines import Machine
         from clan_lib.nix import nix_test_store
 
@@ -131,7 +133,8 @@ class Generator:
         return output
 
     def validation(self) -> str | None:
-        assert self.machine is not None and self._flake is not None
+        assert self.machine is not None
+        assert self._flake is not None
         from clan_lib.machines.machines import Machine
 
         machine = Machine(name=self.machine, flake=self._flake)

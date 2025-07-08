@@ -9,10 +9,10 @@ from clan_cli.secrets.secrets import (
     list_secrets,
 )
 
-from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.api import API
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.machines.machines import Machine
+from clan_lib.persist.inventory_store import InventoryStore
 
 log = logging.getLogger(__name__)
 

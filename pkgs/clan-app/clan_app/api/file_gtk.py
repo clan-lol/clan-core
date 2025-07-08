@@ -1,16 +1,14 @@
-import gi
-
-gi.require_version("Gtk", "4.0")
-
 import logging
 import time
 from pathlib import Path
 from typing import Any
 
+import gi
 from clan_lib.api import ApiError, ErrorDataClass, SuccessDataClass
 from clan_lib.api.directory import FileRequest
 from gi.repository import Gio, GLib, Gtk
 
+gi.require_version("Gtk", "4.0")
 log = logging.getLogger(__name__)
 
 

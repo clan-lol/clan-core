@@ -22,7 +22,6 @@ from clan_lib.cmd import RunOpts, run
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_command
 from clan_lib.nix_models.clan import (
@@ -32,6 +31,7 @@ from clan_lib.nix_models.clan import (
     Unknown,
 )
 from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
+from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path
 from clan_lib.ssh.remote import Remote, check_machine_ssh_login
 

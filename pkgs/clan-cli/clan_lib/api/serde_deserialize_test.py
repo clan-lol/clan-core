@@ -6,9 +6,9 @@ import pytest
 
 # Functions to test
 from clan_lib.api import dataclass_to_dict, from_dict
+from clan_lib.api.serde import is_type_in_union
 from clan_lib.errors import ClanError
 from clan_lib.machines import machines
-from clan_lib.api.serde import is_type_in_union
 
 
 def test_simple() -> None:

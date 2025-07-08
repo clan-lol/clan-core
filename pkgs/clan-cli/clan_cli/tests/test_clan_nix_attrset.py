@@ -1,11 +1,10 @@
-import pytest
 from pathlib import Path
 
+import pytest
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_lib.cmd import run
 from clan_lib.flake import Flake
 from clan_lib.nix import nix_command
-
 from clan_lib.templates import list_templates
 from clan_lib.templates.filesystem import copy_from_nixstore
 

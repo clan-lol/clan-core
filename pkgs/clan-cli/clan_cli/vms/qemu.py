@@ -139,7 +139,7 @@ def qemu_command(
         "-chardev", f"socket,path={qga_socket_file},server=on,wait=off,id=qga0",
         "-device", "virtio-serial",
         "-device", "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
-    ]  # fmt: on
+    ]
     if interactive:
         command.extend(
             [
@@ -187,7 +187,7 @@ class QMPWrapper:
         self._qga_socket: Path = state_dir / "qga.sock"
 
     @contextmanager
-    def qmp_ctx(self) -> Generator[QEMUMonitorProtocol, None, None]:
+    def qmp_ctx(self) -> Generator[QEMUMonitorProtocol]:
         rpath = self._qmp_socket.resolve()
         if not rpath.exists():
             msg = f"qmp socket {rpath} does not exist. Is the VM running?"
