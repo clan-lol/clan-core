@@ -1,0 +1,5 @@
+div.form-field.host-file {
+  button {
+    @apply w-1/2;
+  }
+}

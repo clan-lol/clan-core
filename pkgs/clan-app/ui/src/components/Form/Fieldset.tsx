@@ -12,23 +12,27 @@ export type FieldsetFieldProps = Pick<
   disabled?: boolean;
 };
 
-export interface FieldsetProps
-  extends Pick<FieldProps, "orientation" | "inverted"> {
+export type FieldsetProps = Pick<FieldProps, "orientation" | "inverted"> & {
   legend?: string;
-  disabled?: boolean;
   error?: string;
-  children: (props: FieldsetFieldProps) => JSX.Element;
-}
+  disabled?: boolean;
+  name?: string;
+  children: JSX.Element | ((props: FieldsetFieldProps) => JSX.Element);
+};
 
 export const Fieldset = (props: FieldsetProps) => {
-  const orientation = () => props.orientation || "vertical";
-
   const [fieldProps] = splitProps(props, [
     "orientation",
     "inverted",
     "disabled",
     "error",
+    "children",
   ]);
+
+  const children = () =>
+    typeof props.children === "function"
+      ? props.children(fieldProps)
+      : props.children;
 
   return (
     <fieldset
@@ -51,7 +55,7 @@ export const Fieldset = (props: FieldsetProps) => {
           </Typography>
         </legend>
       )}
-      <div class="fields">{props.children(fieldProps)}</div>
+      <div class="fields">{children()}</div>
       {props.error && (
         <div class="error" role="alert">
           <Typography

@@ -29,7 +29,7 @@
     box-shadow: 0.125rem 0.125rem 0 0 theme(colors.bg.inv.acc.3) inset;
 
     &.ghost {
-      @apply bg-transparent border-none shadow-none;
+      @apply bg-transparent border-transparent shadow-none;
     }
 
     &:hover {
@@ -71,7 +71,7 @@
       0.125rem 0.125rem 0 0 theme(colors.off.white) inset;
 
     &.ghost {
-      @apply bg-transparent border-none shadow-none;
+      @apply bg-transparent border-transparent shadow-none;
     }
 
     &:hover {
