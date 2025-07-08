@@ -6,7 +6,7 @@ import { Color, fgClass } from "@/src/components/v2/colors";
 
 export type Tag = "span" | "p" | "h1" | "h2" | "h3" | "h4" | "div";
 export type Hierarchy = "body" | "title" | "headline" | "label" | "teaser";
-export type Weight = "normal" | "medium" | "bold";
+export type Weight = "normal" | "medium" | "bold" | "light";
 export type Family = "regular" | "condensed" | "mono";
 export type Transform = "uppercase" | "lowercase" | "capitalize";
 
@@ -80,9 +80,10 @@ const defaultFamilyMap: Record<Hierarchy, Family> = {
 };
 
 const weightMap: Record<Weight, string> = {
-  normal: cx("weight-normal"),
-  medium: cx("weight-medium"),
-  bold: cx("weight-bold"),
+  normal: "weight-normal",
+  medium: "weight-medium",
+  bold: "weight-bold",
+  light: "weight-light",
 };
 
 interface _TypographyProps<H extends Hierarchy> {

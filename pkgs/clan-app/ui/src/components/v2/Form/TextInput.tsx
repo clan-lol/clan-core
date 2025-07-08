@@ -33,7 +33,7 @@ export const TextInput = (props: TextInputProps) => (
         {...props}
       />
       <div class="input-container">
-        {props.icon && (
+        {props.icon && !props.readOnly && (
           <Icon
             icon={props.icon}
             inverted={props.inverted}
@@ -42,7 +42,7 @@ export const TextInput = (props: TextInputProps) => (
         )}
         <TextField.Input
           {...props.input}
-          classList={{ "has-icon": props.icon }}
+          classList={{ "has-icon": props.icon && !props.readOnly }}
         />
       </div>
     </Orienter>

@@ -124,6 +124,7 @@ export const ReadOnly: Story = {
   args: {
     ...Tooltip.args,
     readOnly: true,
+    defaultValue: "foo",
   },
 };
 

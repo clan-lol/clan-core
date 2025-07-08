@@ -34,7 +34,13 @@ div.form-field {
     }
 
     &[data-readonly] {
-      @apply outline-def-2 cursor-not-allowed;
+      @apply outline-none border-none bg-inherit p-0 cursor-auto resize-none;
+    }
+  }
+
+  &.textarea textarea {
+    &[data-readonly] {
+      @apply overflow-y-hidden;
     }
   }
 
@@ -72,6 +78,10 @@ div.form-field {
     &.textarea textarea {
       @apply px-1.5 py-1;
       font-size: 0.75rem;
+
+      &[data-readonly] {
+        @apply p-0;
+      }
     }
 
     &.text div.input-container {
@@ -113,6 +123,11 @@ div.form-field {
 
       &[data-invalid] {
         @apply outline-semantic-error-4;
+      }
+
+      &[data-readonly] {
+        @apply outline-def-2 cursor-auto;
+        @apply outline-none border-none bg-inherit;
       }
     }
   }
