@@ -161,7 +161,7 @@ def test_generate_public_and_secret_vars(
     assert check_vars(machine.name, machine.flake)
     # get last commit message
     commit_message = run(
-        ["git", "log", "-3", "--pretty=%B"],
+        ["git", "log", "-5", "--pretty=%B"],
     ).stdout.strip()
     assert (
         "Update vars via generator my_generator for machine my_machine"
@@ -184,18 +184,18 @@ def test_generate_public_and_secret_vars(
         == "shared"
     )
     vars_text = stringify_all_vars(machine)
-    in_repo_store = in_repo.FactStore(
-        machine="my_machine", flake=Flake(str(flake.path))
+    flake_obj = Flake(str(flake.path))
+    my_generator = Generator("my_generator", machine="my_machine", _flake=flake_obj)
+    dependent_generator = Generator(
+        "dependent_generator", machine="my_machine", _flake=flake_obj
     )
-    assert not in_repo_store.exists(Generator("my_generator"), "my_secret")
-    sops_store = sops.SecretStore(machine="my_machine", flake=Flake(str(flake.path)))
-    assert sops_store.exists(Generator("my_generator"), "my_secret")
-    assert sops_store.get(Generator("my_generator"), "my_secret").decode() == "secret"
-    assert sops_store.exists(Generator("dependent_generator"), "my_secret")
-    assert (
-        sops_store.get(Generator("dependent_generator"), "my_secret").decode()
-        == "shared"
-    )
+    in_repo_store = in_repo.FactStore(flake=flake_obj)
+    assert not in_repo_store.exists(my_generator, "my_secret")
+    sops_store = sops.SecretStore(flake=flake_obj)
+    assert sops_store.exists(my_generator, "my_secret")
+    assert sops_store.get(my_generator, "my_secret").decode() == "secret"
+    assert sops_store.exists(dependent_generator, "my_secret")
+    assert sops_store.get(dependent_generator, "my_secret").decode() == "shared"
 
     assert "my_generator/my_value: public" in vars_text
     assert "my_generator/my_secret" in vars_text
@@ -262,19 +262,20 @@ def test_generate_secret_var_sops_with_default_group(
     monkeypatch.chdir(flake.path)
     cli.run(["secrets", "groups", "add-user", "my_group", sops_setup.user])
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    in_repo_store = in_repo.FactStore(
-        machine="my_machine", flake=Flake(str(flake.path))
+    flake_obj = Flake(str(flake.path))
+    first_generator = Generator(
+        "first_generator", machine="my_machine", _flake=flake_obj
     )
-    assert not in_repo_store.exists(Generator("first_generator"), "my_secret")
-    sops_store = sops.SecretStore(machine="my_machine", flake=Flake(str(flake.path)))
-    assert sops_store.exists(Generator("first_generator"), "my_secret")
-    assert (
-        sops_store.get(Generator("first_generator"), "my_secret").decode() == "hello\n"
+    second_generator = Generator(
+        "second_generator", machine="my_machine", _flake=flake_obj
     )
-    assert sops_store.exists(Generator("second_generator"), "my_secret")
-    assert (
-        sops_store.get(Generator("second_generator"), "my_secret").decode() == "hello\n"
-    )
+    in_repo_store = in_repo.FactStore(flake=flake_obj)
+    assert not in_repo_store.exists(first_generator, "my_secret")
+    sops_store = sops.SecretStore(flake=flake_obj)
+    assert sops_store.exists(first_generator, "my_secret")
+    assert sops_store.get(first_generator, "my_secret").decode() == "hello\n"
+    assert sops_store.exists(second_generator, "my_secret")
+    assert sops_store.get(second_generator, "my_secret").decode() == "hello\n"
 
     # add another user to the group and check if secret gets re-encrypted
     pubkey_user2 = sops_setup.keys[1]
@@ -292,12 +293,14 @@ def test_generate_secret_var_sops_with_default_group(
     cli.run(["secrets", "groups", "add-user", "my_group", "user2"])
     # check if new user can access the secret
     monkeypatch.setenv("USER", "user2")
-    assert sops_store.user_has_access(
-        "user2", Generator("first_generator", share=False), "my_secret"
+    first_generator_with_share = Generator(
+        "first_generator", share=False, machine="my_machine", _flake=flake_obj
     )
-    assert sops_store.user_has_access(
-        "user2", Generator("second_generator", share=False), "my_secret"
+    second_generator_with_share = Generator(
+        "second_generator", share=False, machine="my_machine", _flake=flake_obj
     )
+    assert sops_store.user_has_access("user2", first_generator_with_share, "my_secret")
+    assert sops_store.user_has_access("user2", second_generator_with_share, "my_secret")
 
     # Rotate key of a user
     pubkey_user3 = sops_setup.keys[2]
@@ -314,12 +317,8 @@ def test_generate_secret_var_sops_with_default_group(
         ]
     )
     monkeypatch.setenv("USER", "user2")
-    assert sops_store.user_has_access(
-        "user2", Generator("first_generator", share=False), "my_secret"
-    )
-    assert sops_store.user_has_access(
-        "user2", Generator("second_generator", share=False), "my_secret"
-    )
+    assert sops_store.user_has_access("user2", first_generator_with_share, "my_secret")
+    assert sops_store.user_has_access("user2", second_generator_with_share, "my_secret")
 
 
 @pytest.mark.with_core
@@ -351,20 +350,20 @@ def test_generated_shared_secret_sops(
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine2"])
     assert check_vars(machine2.name, machine2.flake)
     assert check_vars(machine2.name, machine2.flake)
-    m1_sops_store = sops.SecretStore(machine1.name, machine1.flake)
-    m2_sops_store = sops.SecretStore(machine2.name, machine2.flake)
-    assert m1_sops_store.exists(
-        Generator("my_shared_generator", share=True), "my_shared_secret"
+    m1_sops_store = sops.SecretStore(machine1.flake)
+    m2_sops_store = sops.SecretStore(machine2.flake)
+    # Create generators with machine context for testing
+    generator_m1 = Generator(
+        "my_shared_generator", share=True, machine="machine1", _flake=machine1.flake
     )
-    assert m2_sops_store.exists(
-        Generator("my_shared_generator", share=True), "my_shared_secret"
+    generator_m2 = Generator(
+        "my_shared_generator", share=True, machine="machine2", _flake=machine2.flake
     )
-    assert m1_sops_store.machine_has_access(
-        Generator("my_shared_generator", share=True), "my_shared_secret"
-    )
-    assert m2_sops_store.machine_has_access(
-        Generator("my_shared_generator", share=True), "my_shared_secret"
-    )
+
+    assert m1_sops_store.exists(generator_m1, "my_shared_secret")
+    assert m2_sops_store.exists(generator_m2, "my_shared_secret")
+    assert m1_sops_store.machine_has_access(generator_m1, "my_shared_secret")
+    assert m2_sops_store.machine_has_access(generator_m2, "my_shared_secret")
 
 
 @pytest.mark.with_core
@@ -412,43 +411,72 @@ def test_generate_secret_var_password_store(
         ["git", "config", "user.name", "Test User"], cwd=password_store_dir, check=True
     )
 
-    machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
+    flake_obj = Flake(str(flake.path))
+    machine = Machine(name="my_machine", flake=flake_obj)
     assert not check_vars(machine.name, machine.flake)
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
     assert check_vars(machine.name, machine.flake)
-    store = password_store.SecretStore(
-        machine="my_machine", flake=Flake(str(flake.path))
+    store = password_store.SecretStore(flake=flake_obj)
+    my_generator = Generator(
+        "my_generator", share=False, files=[], machine="my_machine", _flake=flake_obj
     )
-    assert store.exists(Generator("my_generator", share=False, files=[]), "my_secret")
-    assert not store.exists(
-        Generator("my_generator", share=True, files=[]), "my_secret"
+    my_generator_shared = Generator(
+        "my_generator", share=True, files=[], machine="my_machine", _flake=flake_obj
     )
-    assert store.exists(
-        Generator("my_shared_generator", share=True, files=[]), "my_shared_secret"
+    my_shared_generator = Generator(
+        "my_shared_generator",
+        share=True,
+        files=[],
+        machine="my_machine",
+        _flake=flake_obj,
     )
-    assert not store.exists(
-        Generator("my_shared_generator", share=False, files=[]), "my_shared_secret"
+    my_shared_generator_not_shared = Generator(
+        "my_shared_generator",
+        share=False,
+        files=[],
+        machine="my_machine",
+        _flake=flake_obj,
     )
+    assert store.exists(my_generator, "my_secret")
+    assert not store.exists(my_generator_shared, "my_secret")
+    assert store.exists(my_shared_generator, "my_shared_secret")
+    assert not store.exists(my_shared_generator_not_shared, "my_shared_secret")
 
-    generator = Generator(name="my_generator", share=False, files=[])
+    generator = Generator(
+        name="my_generator",
+        share=False,
+        files=[],
+        machine="my_machine",
+        _flake=flake_obj,
+    )
     assert store.get(generator, "my_secret").decode() == "hello\n"
     vars_text = stringify_all_vars(machine)
     assert "my_generator/my_secret" in vars_text
 
-    my_generator = Generator("my_generator", share=False, files=[])
+    my_generator = Generator(
+        "my_generator", share=False, files=[], machine="my_machine", _flake=flake_obj
+    )
     var_name = "my_secret"
     store.delete(my_generator, var_name)
     assert not store.exists(my_generator, var_name)
 
-    store.delete_store()
-    store.delete_store()  # check idempotency
-    my_generator2 = Generator("my_generator2", share=False, files=[])
+    store.delete_store("my_machine")
+    store.delete_store("my_machine")  # check idempotency
+    my_generator2 = Generator(
+        "my_generator2", share=False, files=[], machine="my_machine", _flake=flake_obj
+    )
     var_name = "my_secret2"
     assert not store.exists(my_generator2, var_name)
 
     # The shared secret should still be there,
     # not sure if we can delete those automatically:
-    my_shared_generator = Generator("my_shared_generator", share=True, files=[])
+    my_shared_generator = Generator(
+        "my_shared_generator",
+        share=True,
+        files=[],
+        machine="my_machine",
+        _flake=flake_obj,
+    )
     var_name = "my_shared_secret"
     assert store.exists(my_shared_generator, var_name)
 
@@ -492,29 +520,25 @@ def test_generate_secret_for_multiple_machines(
     monkeypatch.chdir(flake.path)
     cli.run(["vars", "generate", "--flake", str(flake.path)])
     # check if public vars have been created correctly
-    in_repo_store1 = in_repo.FactStore(machine="machine1", flake=Flake(str(flake.path)))
-    in_repo_store2 = in_repo.FactStore(machine="machine2", flake=Flake(str(flake.path)))
-    assert in_repo_store1.exists(Generator("my_generator"), "my_value")
-    assert in_repo_store2.exists(Generator("my_generator"), "my_value")
-    assert (
-        in_repo_store1.get(Generator("my_generator"), "my_value").decode()
-        == "machine1\n"
-    )
-    assert (
-        in_repo_store2.get(Generator("my_generator"), "my_value").decode()
-        == "machine2\n"
-    )
+    flake_obj = Flake(str(flake.path))
+    in_repo_store1 = in_repo.FactStore(flake=flake_obj)
+    in_repo_store2 = in_repo.FactStore(flake=flake_obj)
+
+    # Create generators for each machine
+    gen1 = Generator("my_generator", machine="machine1", _flake=flake_obj)
+    gen2 = Generator("my_generator", machine="machine2", _flake=flake_obj)
+
+    assert in_repo_store1.exists(gen1, "my_value")
+    assert in_repo_store2.exists(gen2, "my_value")
+    assert in_repo_store1.get(gen1, "my_value").decode() == "machine1\n"
+    assert in_repo_store2.get(gen2, "my_value").decode() == "machine2\n"
     # check if secret vars have been created correctly
-    sops_store1 = sops.SecretStore(machine="machine1", flake=Flake(str(flake.path)))
-    sops_store2 = sops.SecretStore(machine="machine2", flake=Flake(str(flake.path)))
-    assert sops_store1.exists(Generator("my_generator"), "my_secret")
-    assert sops_store2.exists(Generator("my_generator"), "my_secret")
-    assert (
-        sops_store1.get(Generator("my_generator"), "my_secret").decode() == "machine1\n"
-    )
-    assert (
-        sops_store2.get(Generator("my_generator"), "my_secret").decode() == "machine2\n"
-    )
+    sops_store1 = sops.SecretStore(flake=flake_obj)
+    sops_store2 = sops.SecretStore(flake=flake_obj)
+    assert sops_store1.exists(gen1, "my_secret")
+    assert sops_store2.exists(gen2, "my_secret")
+    assert sops_store1.get(gen1, "my_secret").decode() == "machine1\n"
+    assert sops_store2.get(gen2, "my_secret").decode() == "machine2\n"
 
 
 @pytest.mark.with_core
@@ -550,28 +574,27 @@ def test_prompt(
         iter(["line input", "my\nmultiline\ninput\n", "prompt_persist"]),
     )
     cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
-    in_repo_store = in_repo.FactStore(
-        machine="my_machine", flake=Flake(str(flake.path))
+    flake_obj = Flake(str(flake.path))
+    my_generator = Generator("my_generator", machine="my_machine", _flake=flake_obj)
+    my_generator_with_details = Generator(
+        name="my_generator",
+        share=False,
+        files=[],
+        machine="my_machine",
+        _flake=flake_obj,
     )
-    assert in_repo_store.exists(Generator("my_generator"), "line_value")
-    assert (
-        in_repo_store.get(Generator("my_generator"), "line_value").decode()
-        == "line input"
-    )
+    in_repo_store = in_repo.FactStore(flake=flake_obj)
+    assert in_repo_store.exists(my_generator, "line_value")
+    assert in_repo_store.get(my_generator, "line_value").decode() == "line input"
 
-    assert in_repo_store.exists(Generator("my_generator"), "multiline_value")
+    assert in_repo_store.exists(my_generator, "multiline_value")
     assert (
-        in_repo_store.get(Generator("my_generator"), "multiline_value").decode()
+        in_repo_store.get(my_generator, "multiline_value").decode()
         == "my\nmultiline\ninput\n"
     )
-    sops_store = sops.SecretStore(machine="my_machine", flake=Flake(str(flake.path)))
-    assert sops_store.exists(
-        Generator(name="my_generator", share=False, files=[]), "prompt_persist"
-    )
-    assert (
-        sops_store.get(Generator(name="my_generator"), "prompt_persist").decode()
-        == "prompt_persist"
-    )
+    sops_store = sops.SecretStore(flake=flake_obj)
+    assert sops_store.exists(my_generator_with_details, "prompt_persist")
+    assert sops_store.get(my_generator, "prompt_persist").decode() == "prompt_persist"
 
 
 @pytest.mark.with_core
@@ -606,21 +629,27 @@ def test_multi_machine_shared_vars(
     monkeypatch.chdir(flake.path)
     machine1 = Machine(name="machine1", flake=Flake(str(flake.path)))
     machine2 = Machine(name="machine2", flake=Flake(str(flake.path)))
-    sops_store_1 = sops.SecretStore(machine1.name, machine1.flake)
-    sops_store_2 = sops.SecretStore(machine2.name, machine2.flake)
-    in_repo_store_1 = in_repo.FactStore(machine1.name, machine1.flake)
-    in_repo_store_2 = in_repo.FactStore(machine2.name, machine2.flake)
-    generator = Generator("shared_generator", share=True)
+    sops_store_1 = sops.SecretStore(machine1.flake)
+    sops_store_2 = sops.SecretStore(machine2.flake)
+    in_repo_store_1 = in_repo.FactStore(machine1.flake)
+    in_repo_store_2 = in_repo.FactStore(machine2.flake)
+    # Create generators with machine context for testing
+    generator_m1 = Generator(
+        "shared_generator", share=True, machine="machine1", _flake=machine1.flake
+    )
+    generator_m2 = Generator(
+        "shared_generator", share=True, machine="machine2", _flake=machine2.flake
+    )
     # generate for machine 1
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine1"])
     # read out values for machine 1
-    m1_secret = sops_store_1.get(generator, "my_secret")
-    m1_value = in_repo_store_1.get(generator, "my_value")
+    m1_secret = sops_store_1.get(generator_m1, "my_secret")
+    m1_value = in_repo_store_1.get(generator_m1, "my_value")
     # generate for machine 2
     cli.run(["vars", "generate", "--flake", str(flake.path), "machine2"])
     # ensure values are the same for both machines
-    assert sops_store_2.get(generator, "my_secret") == m1_secret
-    assert in_repo_store_2.get(generator, "my_value") == m1_value
+    assert sops_store_2.get(generator_m2, "my_secret") == m1_secret
+    assert in_repo_store_2.get(generator_m2, "my_value") == m1_value
 
     # ensure shared secret stays available for all machines after regeneration
     # regenerate for machine 1
@@ -628,15 +657,15 @@ def test_multi_machine_shared_vars(
         ["vars", "generate", "--flake", str(flake.path), "machine1", "--regenerate"]
     )
     # ensure values changed
-    new_secret_1 = sops_store_1.get(generator, "my_secret")
-    new_value_1 = in_repo_store_1.get(generator, "my_value")
-    new_secret_2 = sops_store_2.get(generator, "my_secret")
+    new_secret_1 = sops_store_1.get(generator_m1, "my_secret")
+    new_value_1 = in_repo_store_1.get(generator_m1, "my_value")
+    new_secret_2 = sops_store_2.get(generator_m2, "my_secret")
     assert new_secret_1 != m1_secret
     assert new_value_1 != m1_value
     # ensure that both machines still have access to the same secret
     assert new_secret_1 == new_secret_2
-    assert sops_store_1.machine_has_access(generator, "my_secret")
-    assert sops_store_2.machine_has_access(generator, "my_secret")
+    assert sops_store_1.machine_has_access(generator_m1, "my_secret")
+    assert sops_store_2.machine_has_access(generator_m2, "my_secret")
 
 
 @pytest.mark.with_core
@@ -665,9 +694,10 @@ def test_api_set_prompts(
         },
     )
     machine = Machine(name="my_machine", flake=Flake(str(flake.path)))
-    store = in_repo.FactStore(machine.name, machine.flake)
-    assert store.exists(Generator("my_generator"), "prompt1")
-    assert store.get(Generator("my_generator"), "prompt1").decode() == "input1"
+    store = in_repo.FactStore(machine.flake)
+    my_generator = Generator("my_generator", machine="my_machine", _flake=machine.flake)
+    assert store.exists(my_generator, "prompt1")
+    assert store.get(my_generator, "prompt1").decode() == "input1"
     run_generators(
         machine_name="my_machine",
         base_dir=flake.path,
@@ -678,7 +708,7 @@ def test_api_set_prompts(
             }
         },
     )
-    assert store.get(Generator("my_generator"), "prompt1").decode() == "input2"
+    assert store.get(my_generator, "prompt1").decode() == "input2"
 
     generators = get_generators(
         machine_name="my_machine",
@@ -815,19 +845,21 @@ def test_migration(
 
     assert "Migrated var my_generator/my_value" in caplog.text
     assert "Migrated secret var my_generator/my_secret" in caplog.text
-    in_repo_store = in_repo.FactStore(
-        machine="my_machine", flake=Flake(str(flake.path))
+    flake_obj = Flake(str(flake.path))
+    my_generator = Generator("my_generator", machine="my_machine", _flake=flake_obj)
+    other_generator = Generator(
+        "other_generator", machine="my_machine", _flake=flake_obj
     )
-    sops_store = sops.SecretStore(machine="my_machine", flake=Flake(str(flake.path)))
-    assert in_repo_store.exists(Generator("my_generator"), "my_value")
-    assert in_repo_store.get(Generator("my_generator"), "my_value").decode() == "hello"
-    assert sops_store.exists(Generator("my_generator"), "my_secret")
-    assert sops_store.get(Generator("my_generator"), "my_secret").decode() == "hello"
+    in_repo_store = in_repo.FactStore(flake=flake_obj)
+    sops_store = sops.SecretStore(flake=flake_obj)
+    assert in_repo_store.exists(my_generator, "my_value")
+    assert in_repo_store.get(my_generator, "my_value").decode() == "hello"
+    assert sops_store.exists(my_generator, "my_secret")
+    assert sops_store.get(my_generator, "my_secret").decode() == "hello"
 
-    assert in_repo_store.exists(Generator("other_generator"), "other_value")
+    assert in_repo_store.exists(other_generator, "other_value")
     assert (
-        in_repo_store.get(Generator("other_generator"), "other_value").decode()
-        == "value-from-vars"
+        in_repo_store.get(other_generator, "other_value").decode() == "value-from-vars"
     )
 
 

@@ -14,8 +14,8 @@ class FactStore(StoreBase):
     def is_secret_store(self) -> bool:
         return False
 
-    def __init__(self, machine: str, flake: Flake) -> None:
-        super().__init__(machine, flake)
+    def __init__(self, flake: Flake) -> None:
+        super().__init__(flake)
         self.works_remotely = False
 
     @property
@@ -61,18 +61,18 @@ class FactStore(StoreBase):
         fact_folder.rmdir()
         return [fact_folder]
 
-    def delete_store(self) -> Iterable[Path]:
+    def delete_store(self, machine: str) -> Iterable[Path]:
         flake_root = self.flake.path
-        store_folder = flake_root / "vars/per-machine" / self.machine
+        store_folder = flake_root / "vars/per-machine" / machine
         if not store_folder.exists():
             return []
         shutil.rmtree(store_folder)
         return [store_folder]
 
-    def populate_dir(self, output_dir: Path, phases: list[str]) -> None:
+    def populate_dir(self, machine: str, output_dir: Path, phases: list[str]) -> None:
         msg = "populate_dir is not implemented for public vars stores"
         raise NotImplementedError(msg)
 
-    def upload(self, host: Remote, phases: list[str]) -> None:
+    def upload(self, machine: str, host: Remote, phases: list[str]) -> None:
         msg = "upload is not implemented for public vars stores"
         raise NotImplementedError(msg)

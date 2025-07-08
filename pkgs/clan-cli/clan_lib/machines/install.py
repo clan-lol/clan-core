@@ -66,13 +66,13 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         upload_dir.mkdir(parents=True)
         machine.secret_facts_store.upload(upload_dir)
         machine.secret_vars_store.populate_dir(
-            upload_dir, phases=["activation", "users", "services"]
+            machine.name, upload_dir, phases=["activation", "users", "services"]
         )
 
         partitioning_secrets = base_directory / "partitioning_secrets"
         partitioning_secrets.mkdir(parents=True)
         machine.secret_vars_store.populate_dir(
-            partitioning_secrets, phases=["partitioning"]
+            machine.name, partitioning_secrets, phases=["partitioning"]
         )
 
         if opts.password:
