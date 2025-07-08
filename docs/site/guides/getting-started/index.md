@@ -103,10 +103,15 @@ Don’t worry if your output looks different—the template evolves over time.
     run `nix develop` every time, we recommend setting up [direnv](https://direnv.net/).
 
 ```
-clan machines list
+clan show
 ```
 
-If you see no output yet, that’s expected — [add machines](./add-machines.md) to populate it.
+You should see something like this:
+
+```terminal-session
+Name: my-clan
+Description: None
+```
 
 ---
 
