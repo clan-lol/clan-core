@@ -1,6 +1,5 @@
 import type { Preview } from "@kachurun/storybook-solid-vite";
 
-import "@/src/components/v2/index.css";
 import "../src/index.css";
 import "./preview.css";
 

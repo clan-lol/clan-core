@@ -1,96 +1,115 @@
-import { splitProps, type JSX } from "solid-js";
+import { splitProps, type JSX, createSignal } from "solid-js";
 import cx from "classnames";
-import { Typography } from "../Typography";
+import { Typography } from "../Typography/Typography";
+import { Button as KobalteButton } from "@kobalte/core/button";
 
-import "./Button-Base.css";
+import "./Button.css";
+import Icon, { IconVariant } from "@/src/components/Icon/Icon";
+import { Loader } from "@/src/components/Loader/Loader";
 
-type Variants = "dark" | "light" | "ghost";
-type Size = "default" | "s";
+export type Size = "default" | "s";
+export type Hierarchy = "primary" | "secondary";
 
-const variantColors: (
-  disabled: boolean | undefined,
-) => Record<Variants, string> = (disabled) => ({
-  dark: cx(
-    "button--dark",
-    !disabled && "button--dark-hover", // Hover state
-    !disabled && "button--dark-focus", // Focus state
-    !disabled && "button--dark-active", // Active state
-    // Disabled
-    "disabled:bg-secondary-200 disabled:text-secondary-700 disabled:border-secondary-300",
-  ),
-  light: cx(
-    "button--light",
+export type Action = () => Promise<void>;
 
-    !disabled && "button--light-hover", // Hover state
-    !disabled && "button--light-focus", // Focus state
-    !disabled && "button--light-active", // Active state
-  ),
-  ghost: cx(
-    !disabled && "button--ghost-hover", // Hover state
-    !disabled && "button--ghost-focus", // Focus state
-    !disabled && "button--ghost-active", // Active state
-  ),
-});
-
-const sizePaddings: Record<Size, string> = {
-  default: cx("button--default"),
-  s: cx("button button--small"), //cx("rounded-sm py-[0.375rem] px-3"),
-};
-
-const sizeFont: Record<Size, string> = {
-  default: cx("text-[0.8125rem]"),
-  s: cx("text-[0.75rem]"),
-};
-
-interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variants;
+export interface ButtonProps
+  extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+  hierarchy?: Hierarchy;
   size?: Size;
+  ghost?: boolean;
   children?: JSX.Element;
-  startIcon?: JSX.Element;
-  endIcon?: JSX.Element;
+  icon?: IconVariant;
+  startIcon?: IconVariant;
+  endIcon?: IconVariant;
   class?: string;
+  onAction?: Action;
 }
+
+const iconSizes: Record<Size, string> = {
+  default: "1rem",
+  s: "0.8125rem",
+};
+
 export const Button = (props: ButtonProps) => {
   const [local, other] = splitProps(props, [
     "children",
-    "variant",
+    "hierarchy",
     "size",
+    "ghost",
+    "icon",
     "startIcon",
     "endIcon",
     "class",
+    "onAction",
   ]);
 
-  const buttonInvertion = (variant: Variants) => {
-    return !(!variant || variant === "ghost" || variant === "light");
+  const size = local.size || "default";
+  const hierarchy = local.hierarchy || "primary";
+
+  const [loading, setLoading] = createSignal(false);
+
+  const onClick = async () => {
+    if (!local.onAction) {
+      console.error("this should not be possible");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await local.onAction();
+    } catch (error) {
+      console.error("Error while executing action", error);
+    }
+
+    setLoading(false);
   };
 
+  const iconSize = iconSizes[local.size || "default"];
+
   return (
-    <button
+    <KobalteButton
       class={cx(
         local.class,
         "button", // default button class
-        variantColors(props.disabled)[local.variant || "dark"], // button appereance
-        sizePaddings[local.size || "default"], // button size
+        size,
+        hierarchy,
+        {
+          icon: local.icon,
+          loading: loading(),
+          ghost: local.ghost,
+        },
       )}
+      onClick={local.onAction ? onClick : undefined}
       {...other}
     >
+      <Loader hierarchy={hierarchy} />
+
       {local.startIcon && (
-        <span class="button__icon--start">{local.startIcon}</span>
+        <Icon icon={local.startIcon} class="icon-start" size={iconSize} />
       )}
-      {local.children && (
+
+      {local.icon && !local.children && (
+        <Icon icon={local.icon} class="icon" size={iconSize} />
+      )}
+
+      {local.children && !local.icon && (
         <Typography
-          class="button__label"
+          class="label"
           hierarchy="label"
+          family="mono"
           size={local.size || "default"}
-          color="inherit"
-          inverted={buttonInvertion(local.variant || "dark")}
-          weight="medium"
+          inverted={local.hierarchy === "primary"}
+          weight="bold"
           tag="span"
         >
           {local.children}
         </Typography>
       )}
-      {local.endIcon && <span class="button__icon--end">{local.endIcon}</span>}
-    </button>
+
+      {local.endIcon && (
+        <Icon icon={local.endIcon} class="icon-end" size={iconSize} />
+      )}
+    </KobalteButton>
   );
 };

@@ -1,6 +1,3 @@
-/* Material icons removed - using custom icons */
-/* @import url(./components/Typography/css/typography.css); */
-
 @config "../tailwind.config.ts";
 
 @tailwind base;
@@ -10,25 +7,43 @@
 @font-face {
   font-family: "Archivo";
   font-weight: 400;
-  src: url(../.fonts/ArchivoSemiCondensed-Regular.woff2) format("woff2");
+  src: url(../.fonts/Archivo-Regular.woff2) format("woff2");
 }
 
 @font-face {
   font-family: "Archivo";
   font-weight: 500;
-  src: url(../.fonts/ArchivoSemiCondensed-Medium.woff2) format("woff2");
+  src: url(../.fonts/Archivo-Medium.woff2) format("woff2");
 }
 
 @font-face {
   font-family: "Archivo";
   font-weight: 600;
+  src: url(../.fonts/Archivo-SemiBold.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "Archivo SemiCondensed";
+  font-weight: 400;
+  src: url(../.fonts/ArchivoSemiCondensed-Regular.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "Archivo SemiCondensed";
+  font-weight: 500;
+  src: url(../.fonts/ArchivoSemiCondensed-Medium.woff2) format("woff2");
+}
+
+@font-face {
+  font-family: "Archivo SemiCondensed";
+  font-weight: 600;
   src: url(../.fonts/ArchivoSemiCondensed-SemiBold.woff2) format("woff2");
 }
 
-@keyframes slide {
-  to {
-    background-position: 200% 0;
-  }
+@font-face {
+  font-family: "Commit Mono";
+  font-weight: 400;
+  src: url(../.fonts/CommitMono-400-Regular.otf) format("otf");
 }
 
 html {
@@ -46,113 +61,12 @@ html {
   /* Standard */
 }
 
-.accordeon {
-  display: flex;
-  flex-direction: column;
-  gap: theme(gap.3);
-}
-
-.accordeon__header {
-  padding: theme(padding.2) theme(padding[1.5]) theme(padding.1);
-  cursor: pointer;
-}
-
-summary {
-  list-style: none;
-}
-
-summary::-webkit-details-marker {
-  display: none;
-}
-
-summary::marker {
-  display: none;
-}
-
-.accordeon__body {
-}
-
-.machine-item-loader {
-  @apply col-span-1 flex flex-col items-center;
-
-  display: flex;
-  justify-content: center;
-  position: relative;
-  padding: theme(padding.2);
-  border-radius: theme(borderRadius.md);
-
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.machine-item-loader__thumb-wrapper {
-  position: relative;
-  z-index: 20;
-  padding: theme(padding.4);
-
-  border-radius: theme(borderRadius.md);
-  overflow: hidden;
-}
-
-.machine-item-loader__thumb {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  background: theme(backgroundColor.secondary.100);
-  border-radius: theme(borderRadius.md);
-  overflow: hidden;
-}
-
-.machine-item-loader__headline {
-  position: relative;
-  z-index: 20;
-  width: 90%;
-  height: 20px;
-
-  background: theme(backgroundColor.secondary.100);
-  border-radius: theme(borderRadius.sm);
-  overflow: hidden;
-}
-
-.machine-item-loader__cover {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-}
-
-.machine-item-loader__loader {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    to right,
-    transparent 20%,
-    theme(backgroundColor.secondary.200) 50%,
-    transparent 80%
-  );
-  background-size: 400px 100%;
-
-  animation: loader 4s linear infinite;
-  transition: all 0.56s ease;
-}
-
-.machine-item-loader__cover .machine-item-loader__loader {
-  background: linear-gradient(
-    to right,
-    transparent 20%,
-    theme(backgroundColor.secondary.50) 50%,
-    transparent 80%
-  );
-}
-
-@keyframes loader {
-  0% {
-    background-position: -1000px 0;
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
-  100% {
-    background-position: 1000px 0;
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

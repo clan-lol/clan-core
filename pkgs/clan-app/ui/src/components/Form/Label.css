@@ -1,0 +1,61 @@
+div.form-label {
+  @apply flex flex-col gap-1 w-full;
+
+  & > label,
+  & > div {
+    @apply w-full;
+    /* remove line height which messes with sizing */
+    @apply leading-none;
+  }
+
+  & > label {
+    @apply flex items-center gap-1;
+  }
+
+  & > label[data-required]:not(label[data-readonly]) {
+    span.typography::after {
+      @apply fg-def-4 ml-1;
+
+      content: "*";
+      font-family: "Commit Mono", monospace;
+      font-size: 0.6875rem;
+    }
+  }
+}
+
+div.tooltip-content {
+  @apply z-50 px-2 py-0.5 bg-inv-4 rounded-[0.125rem] leading-none;
+
+  max-width: min(calc(100vw - 16px), 380px);
+  transform-origin: var(--kb-tooltip-content-transform-origin);
+  animation: tooltipHide 250ms ease-in forwards;
+
+  &[data-expanded] {
+    animation: tooltipShow 250ms ease-out;
+  }
+
+  &.inverted {
+    @apply bg-def-2;
+  }
+}
+
+@keyframes tooltipShow {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes tooltipHide {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
