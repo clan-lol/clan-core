@@ -14,7 +14,7 @@ from clan_cli.machines.create import create_machine
 from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import maybe_get_admin_public_keys
 from clan_cli.secrets.users import add_user
-from clan_cli.vars.generate import run_generators, get_generators
+from clan_cli.vars.generate import get_generators, run_generators
 
 from clan_lib.api.disk import hw_main_disk_options, set_machine_disk_schema
 from clan_lib.api.modules import list_modules

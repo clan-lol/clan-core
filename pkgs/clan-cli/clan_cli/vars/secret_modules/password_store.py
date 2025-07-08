@@ -79,7 +79,10 @@ class SecretStore(StoreBase):
         return Path(self.entry_prefix) / self.rel_dir(generator, name)
 
     def _run_pass(
-        self, *args: str, input: bytes | None = None, check: bool = True # noqa: A002
+        self,
+        *args: str,
+        input: bytes | None = None,  # noqa: A002
+        check: bool = True,
     ) -> subprocess.CompletedProcess[bytes]:
         cmd = [self._pass_command, *args]
         # We need bytes support here, so we can not use clan cmd.
