@@ -83,14 +83,18 @@ export const DefaultItemControl = <Option,>(
         </For>
       </div>
     </Show>
-    <div class="input-container">
-      <KCombobox.Input />
-      <KCombobox.Trigger class="trigger">
-        <KCombobox.Icon class="icon">
-          <Icon icon="Expand" inverted={props.inverted} size="100%" />
-        </KCombobox.Icon>
-      </KCombobox.Trigger>
-    </div>
+    {!(props.readOnly && props.multiple) && (
+      <div class="input-container">
+        <KCombobox.Input />
+        {!props.readOnly && (
+          <KCombobox.Trigger class="trigger">
+            <KCombobox.Icon class="icon">
+              <Icon icon="Expand" inverted={props.inverted} size="100%" />
+            </KCombobox.Icon>
+          </KCombobox.Trigger>
+        )}
+      </div>
+    )}
   </>
 );
 
@@ -101,7 +105,13 @@ export const Combobox = <Option, OptGroup = never>(
   const itemControl = () => props.itemControl || DefaultItemControl;
   const itemComponent = () => props.itemComponent || DefaultItemComponent;
 
-  const align = () => (props.orientation === "horizontal" ? "start" : "center");
+  const align = () => {
+    if (props.readOnly) {
+      return "center";
+    } else {
+      return props.orientation === "horizontal" ? "start" : "center";
+    }
+  };
 
   return (
     <KCombobox

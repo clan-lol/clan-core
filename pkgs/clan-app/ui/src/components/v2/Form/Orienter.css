@@ -5,7 +5,7 @@ div.orienter {
   }
 
   &.horizontal {
-    @apply flex-row gap-2 justify-between;
+    @apply flex-row justify-start;
 
     & > div.form-label {
       @apply w-1/2 shrink;
