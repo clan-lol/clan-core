@@ -20,4 +20,4 @@ if (import.meta.env.DEV) {
   await import("solid-devtools");
 }
 
-render(() => <CubeScene/>, root!);
+render(() => <CubeScene />, root!);
