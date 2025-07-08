@@ -452,7 +452,6 @@ Each `clanService`:
 * Is a module of class **`clan.service`**
 * Can define **roles** (e.g., `client`, `server`)
 * Uses **`inventory.instances`** to configure where and how it is deployed
-* Replaces the legacy `clanModules` and `inventory.services` system altogether
 
 !!! Note
     `clanServices` are part of Clan's next-generation service model and are intended to replace `clanModules`.
