@@ -33,7 +33,7 @@ def cancel_task(task_id: str) -> None:
 
 
 @API.register
-def long_blocking_task(somearg: str) -> str:
+def run_blocking_task(somearg: str) -> str:
     """A long blocking task that simulates a long-running operation."""
     time.sleep(1)
     ctx = get_async_ctx()
