@@ -30,7 +30,7 @@ class LoggingMiddleware(Middleware):
             if log_group is not None:
                 if not isinstance(log_group, list):
                     msg = f"Expected log_group to be a list, got {type(log_group)}"
-                    raise TypeError(msg)
+                    raise TypeError(msg) # noqa: TRY301
                 log.warning(
                     f"Using log group {log_group} for {context.request.method_name} with op_key {context.request.op_key}"
                 )

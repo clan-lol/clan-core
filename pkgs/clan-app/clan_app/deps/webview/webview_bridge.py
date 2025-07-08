@@ -56,17 +56,17 @@ class WebviewBridge(ApiBridge):
                 header = request.get("header", {})
                 if not isinstance(header, dict):
                     msg = f"Expected header to be a dict, got {type(header)}"
-                    raise TypeError(msg)
+                    raise TypeError(msg) # noqa: TRY301
 
                 body = request.get("body", {})
                 if not isinstance(body, dict):
                     msg = f"Expected body to be a dict, got {type(body)}"
-                    raise TypeError(msg)
+                    raise TypeError(msg) # noqa: TRY301
 
                 args = body
             elif len(raw_args) > 1:
                 msg = "Expected a single argument, got multiple arguments"
-                raise ValueError(msg)
+                raise ValueError(msg) # noqa: TRY301
 
             # Create API request
             api_request = BackendRequest(
