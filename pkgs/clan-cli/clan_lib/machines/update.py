@@ -103,7 +103,7 @@ def upload_sources(machine: Machine, ssh: Remote) -> str:
 
 
 @API.register
-def run_machine_deploy(
+def run_machine_update(
     machine: Machine, target_host: Remote, build_host: Remote | None
 ) -> None:
     """Update an existing machine using nixos-rebuild or darwin-rebuild.

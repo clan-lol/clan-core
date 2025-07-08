@@ -18,7 +18,7 @@ class FlashOptions(TypedDict):
 
 
 @API.register
-def get_flash_options() -> FlashOptions:
+def get_machine_flash_options() -> FlashOptions:
     """Retrieve available languages and keymaps for flash configuration.
     Returns:
         FlashOptions: A dictionary containing lists of available languages and keymaps.
