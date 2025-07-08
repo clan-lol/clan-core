@@ -43,10 +43,11 @@ class WebviewBridge(ApiBridge):
         arg: int,
     ) -> None:
         """Handle a call from webview's JavaScript bridge."""
-        op_key = op_key_bytes.decode()
-        raw_args = json.loads(request_data.decode())
 
         try:
+            op_key = op_key_bytes.decode()
+            raw_args = json.loads(request_data.decode())
+
             # Parse the webview-specific request format
             header = {}
             args = {}
@@ -56,17 +57,17 @@ class WebviewBridge(ApiBridge):
                 header = request.get("header", {})
                 if not isinstance(header, dict):
                     msg = f"Expected header to be a dict, got {type(header)}"
-                    raise TypeError(msg) # noqa: TRY301
+                    raise TypeError(msg)  # noqa: TRY301
 
                 body = request.get("body", {})
                 if not isinstance(body, dict):
                     msg = f"Expected body to be a dict, got {type(body)}"
-                    raise TypeError(msg) # noqa: TRY301
+                    raise TypeError(msg)  # noqa: TRY301
 
                 args = body
             elif len(raw_args) > 1:
                 msg = "Expected a single argument, got multiple arguments"
-                raise ValueError(msg) # noqa: TRY301
+                raise ValueError(msg)  # noqa: TRY301
 
             # Create API request
             api_request = BackendRequest(
@@ -74,6 +75,8 @@ class WebviewBridge(ApiBridge):
             )
 
         except Exception as e:
+            msg = f"Error while handling webview call {method_name} with op_key {op_key_bytes}"
+            log.exception(msg)
             self.send_error_response(op_key, str(e), ["webview_bridge", method_name])
             return
 
