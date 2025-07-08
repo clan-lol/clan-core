@@ -15,9 +15,19 @@ export function CubeScene() {
   let camera: THREE.PerspectiveCamera;
   let renderer: THREE.WebGLRenderer;
   let raycaster: THREE.Raycaster;
-  let controls: any; // OrbitControls type
+
   let meshMap = new Map<string, THREE.Mesh>();
   let baseMap = new Map<string, THREE.Mesh>(); // Map for cube bases
+
+  let sharedCubeGeometry: THREE.BoxGeometry;
+  let sharedBaseGeometry: THREE.BoxGeometry;
+
+  // Used for development purposes
+  // Vite does hot-reload but we need to ensure the animation loop doesn't run multiple times
+  // This flag prevents multiple animation loops from running simultaneously
+  // It is set to true when the component mounts and false when it unmounts
+  let isAnimating = false; // Flag to prevent multiple loops
+  let frameCount = 0;
 
   const [cubes, setCubes] = createSignal<CubeData[]>([]);
   const [selectedIds, setSelectedIds] = createSignal<Set<string>>(new Set());
@@ -66,9 +76,8 @@ export function CubeScene() {
 
   // Create white base for cube
   function createCubeBase(cube_pos: [number, number, number]) {
-    const baseGeometry = new THREE.BoxGeometry(1.2, 0.05, 1.2); // 1.2 times cube size, thin height
     const baseMaterials = createBaseMaterials();
-    const base = new THREE.Mesh(baseGeometry, baseMaterials);
+    const base = new THREE.Mesh(sharedBaseGeometry, baseMaterials);
     // tranlate_y = - cube_height / 2 - base_height / 2
     base.position.set(cube_pos[0], cube_pos[1] - 0.5 - 0.025, cube_pos[2]); // Position below cube
     base.receiveShadow = true;
@@ -88,14 +97,35 @@ export function CubeScene() {
   }
 
   function deleteCube(id: string) {
-    setCubes((prev) => prev.filter((c) => c.id !== id));
+    // Remove cube mesh
     const mesh = meshMap.get(id);
     if (mesh) {
       scene.remove(mesh);
       mesh.geometry.dispose();
-      (mesh.material as THREE.Material).dispose();
+      // Dispose materials properly
+      if (Array.isArray(mesh.material)) {
+        mesh.material.forEach((material) => material.dispose());
+      } else {
+        mesh.material.dispose();
+      }
       meshMap.delete(id);
     }
+
+    // Remove base mesh - THIS WAS MISSING!
+    const base = baseMap.get(id);
+    if (base) {
+      scene.remove(base);
+      base.geometry.dispose();
+      // Dispose base materials properly
+      if (Array.isArray(base.material)) {
+        base.material.forEach((material) => material.dispose());
+      } else {
+        base.material.dispose();
+      }
+      baseMap.delete(id);
+    }
+
+    setCubes((prev) => prev.filter((c) => c.id !== id));
   }
 
   function toggleSelection(id: string) {
@@ -134,6 +164,18 @@ export function CubeScene() {
           );
         });
       }
+    }
+  }
+
+  function logMemoryUsage() {
+    if (renderer && renderer.info) {
+      console.log("Three.js Memory:", {
+        geometries: renderer.info.memory.geometries,
+        textures: renderer.info.memory.textures,
+        programs: renderer.info.programs?.length || 0,
+        calls: renderer.info.render.calls,
+        triangles: renderer.info.render.triangles,
+      });
     }
   }
 
@@ -195,6 +237,11 @@ export function CubeScene() {
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = 0; // Keep at ground level for reference
     scene.add(floor);
+
+    // Shared geometries for cubes and bases
+    // This allows us to reuse the same geometry for all cubes and bases
+    sharedCubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+    sharedBaseGeometry = new THREE.BoxGeometry(1.2, 0.05, 1.2);
 
     // Basic OrbitControls implementation (simplified)
     let isDragging = false;
@@ -288,11 +335,18 @@ export function CubeScene() {
 
     renderer.domElement.addEventListener("click", onClick);
 
-    // Animation loop
     const animate = () => {
+      if (!isAnimating) return; // Exit if component is unmounted
+
       requestAnimationFrame(animate);
+
+      frameCount++;
       renderer.render(scene, camera);
+
+      // Uncomment for memory debugging:
+      if (frameCount % 60 === 0) logMemoryUsage(); // Log every 60 frames
     };
+    isAnimating = true;
     animate();
 
     // Handle window resize
@@ -305,12 +359,18 @@ export function CubeScene() {
 
     // Cleanup function
     onCleanup(() => {
+      // Stop animation loop
+      isAnimating = false;
       renderer.domElement.removeEventListener("mousedown", onMouseDown);
       renderer.domElement.removeEventListener("mouseup", onMouseUp);
       renderer.domElement.removeEventListener("mousemove", onMouseMove);
       renderer.domElement.removeEventListener("wheel", onWheel);
       renderer.domElement.removeEventListener("click", onClick);
       window.removeEventListener("resize", handleResize);
+
+      if (container) {
+        container.innerHTML = "";
+      }
     });
   });
 
@@ -322,9 +382,8 @@ export function CubeScene() {
     cubes().forEach((cube) => {
       if (!meshMap.has(cube.id)) {
         // Create cube mesh
-        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
         const cubeMaterials = createCubeMaterials();
-        const mesh = new THREE.Mesh(cubeGeometry, cubeMaterials);
+        const mesh = new THREE.Mesh(sharedCubeGeometry, cubeMaterials);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.position.set(...cube.position);
@@ -356,9 +415,7 @@ export function CubeScene() {
   });
 
   onCleanup(() => {
-    renderer?.dispose();
     for (const mesh of meshMap.values()) {
-      mesh.geometry.dispose();
       // Handle both single material and material array
       if (Array.isArray(mesh.material)) {
         mesh.material.forEach((material) => material.dispose());
@@ -367,8 +424,8 @@ export function CubeScene() {
       }
     }
     meshMap.clear();
+
     for (const mesh of baseMap.values()) {
-      mesh.geometry.dispose();
       // Handle both single material and material array
       if (Array.isArray(mesh.material)) {
         mesh.material.forEach((material) => material.dispose());
@@ -377,6 +434,12 @@ export function CubeScene() {
       }
     }
     baseMap.clear();
+
+    // Dispose shared geometries
+    sharedCubeGeometry?.dispose();
+    sharedBaseGeometry?.dispose();
+
+    renderer?.dispose();
   });
 
   return (
