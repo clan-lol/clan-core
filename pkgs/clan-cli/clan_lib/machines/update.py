@@ -119,10 +119,8 @@ def run_machine_deploy(
     with ExitStack() as stack:
         target_host = stack.enter_context(target_host.ssh_control_master())
 
-        if build_host is not None:
+        if build_host:
             build_host = stack.enter_context(build_host.ssh_control_master())
-
-        host = build_host or target_host
 
         sudo_host = stack.enter_context(target_host.become_root())
 
@@ -132,7 +130,10 @@ def run_machine_deploy(
         upload_secrets(machine, sudo_host)
         upload_secret_vars(machine, sudo_host)
 
-        path = upload_sources(machine, sudo_host)
+        if build_host:
+            path = upload_sources(machine, build_host)
+        else:
+            path = upload_sources(machine, target_host)
 
         nix_options = machine.flake.nix_options if machine.flake.nix_options else []
 
@@ -174,11 +175,13 @@ def run_machine_deploy(
                 *nix_options,
             ]
 
-        if become_root:
-            host = sudo_host
+        if become_root and not build_host:
+            target_host = sudo_host
 
-        remote_env = host.nix_ssh_env(control_master=False)
-        ret = host.run(
+        deploy_host = build_host if build_host else target_host
+
+        remote_env = deploy_host.nix_ssh_env(control_master=False)
+        ret = deploy_host.run(
             switch_cmd,
             RunOpts(
                 check=False,
@@ -205,7 +208,7 @@ def run_machine_deploy(
                 machine.info(
                     "Mobile machine detected, applying workaround deployment method"
                 )
-            ret = host.run(
+            ret = deploy_host.run(
                 ["nixos--rebuild", "test", *nix_options] if is_mobile else switch_cmd,
                 RunOpts(
                     log=Log.BOTH,
