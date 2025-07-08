@@ -8,21 +8,7 @@
       # Usage see: https://docs.clan.lol
       clan = clan-core.lib.clan {
         inherit self;
-        # Ensure this is unique among all clans you want to use.
-        meta.name = "__CHANGE_ME__";
-
-        # All machines in ./machines will be imported.
-
-        # Prerequisite: boot into the installer.
-        # See: https://docs.clan.lol/guides/getting-started/installer
-        # local> mkdir -p ./machines/machine1
-        # local> Edit ./machines/<machine>/configuration.nix to your liking.
-        machines = {
-          # You can also specify additional machines here.
-          # somemachine = {
-          #  imports = [ ./some-machine/configuration.nix ];
-          # }
-        };
+        imports = [ ./clan.nix ];
       };
     in
     {
