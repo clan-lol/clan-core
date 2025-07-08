@@ -4,6 +4,9 @@ from pathlib import Path
 from typing import Any
 
 import gi
+
+gi.require_version("Gtk", "4.0")
+
 from clan_lib.api import ApiError, ErrorDataClass, SuccessDataClass
 from clan_lib.api.directory import FileRequest
 from gi.repository import Gio, GLib, Gtk
