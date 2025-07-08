@@ -1,1 +1,0 @@
-../ui/stylelint.config.js
