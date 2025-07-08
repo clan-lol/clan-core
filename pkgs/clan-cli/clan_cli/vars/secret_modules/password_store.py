@@ -1,7 +1,7 @@
 import io
 import logging
-import tarfile
 import subprocess
+import tarfile
 from collections.abc import Iterable
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -79,7 +79,10 @@ class SecretStore(StoreBase):
         return Path(self.entry_prefix) / self.rel_dir(generator, name)
 
     def _run_pass(
-        self, *args: str, input: bytes | None = None, check: bool = True
+        self,
+        *args: str,
+        input: bytes | None = None,  # noqa: A002
+        check: bool = True,
     ) -> subprocess.CompletedProcess[bytes]:
         cmd = [self._pass_command, *args]
         # We need bytes support here, so we can not use clan cmd.
@@ -88,8 +91,7 @@ class SecretStore(StoreBase):
         return subprocess.run(
             cmd,
             input=input,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             check=check,
         )
 
@@ -152,7 +154,7 @@ class SecretStore(StoreBase):
         if not local_hash:
             return True
 
-        from clan_lib.cmd import RunOpts, Log
+        from clan_lib.cmd import Log, RunOpts
 
         remote_hash = host.run(
             [

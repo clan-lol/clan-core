@@ -156,12 +156,10 @@ def is_type_in_union(union_type: type | UnionType, target_type: type) -> bool:
                     return True
             # For generic types like dict[str, str], check their origin
             elif get_origin(arg) is not None:
-                if get_origin(arg) == target_type:
-                    return True
-                # Also check if target_type is a generic with same origin
-                elif get_origin(target_type) is not None and get_origin(
-                    arg
-                ) == get_origin(target_type):
+                if get_origin(arg) == target_type or (
+                    get_origin(target_type) is not None
+                    and get_origin(arg) == get_origin(target_type)
+                ):
                     return True
             # For actual classes, use issubclass
             elif inspect.isclass(arg) and inspect.isclass(target_type):
@@ -329,7 +327,7 @@ def construct_value(
     raise ClanError(msg)
 
 
-def construct_dataclass(
+def construct_dataclass[T: Any](
     t: type[T], data: dict[str, Any], path: list[str] | None = None
 ) -> T:
     """

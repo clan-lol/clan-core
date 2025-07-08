@@ -1,11 +1,11 @@
 import argparse
 import logging
+from typing import TYPE_CHECKING
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_lib.errors import ClanError
-from clan_lib.machines.machines import Machine
 from clan_lib.flake import Flake
-from typing import TYPE_CHECKING
+from clan_lib.machines.machines import Machine
 
 if TYPE_CHECKING:
     from .generate import Var

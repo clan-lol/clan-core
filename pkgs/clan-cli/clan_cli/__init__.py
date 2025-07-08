@@ -15,8 +15,8 @@ from . import (
     clan,
     secrets,
     select,
-    templates,
     state,
+    templates,
     vms,
 )
 from .arg_actions import AppendOptionAction

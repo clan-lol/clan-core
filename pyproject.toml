@@ -49,7 +49,9 @@ lint.ignore = [
   # A005 Module `inspect` shadows a Python standard-library module
   # We might actually want to fix this.
   "A005",
+  "TRY301",
   "ANN401",
+  "RUF100",
   "TRY400",
   "E402",
   "E501",

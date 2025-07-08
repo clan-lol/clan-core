@@ -10,9 +10,9 @@ from clan_cli.tests.helpers import cli
 from clan_cli.vars.check import check_vars
 from clan_cli.vars.generate import (
     Generator,
-    run_generators,
     create_machine_vars_interactive,
     get_generators,
+    run_generators,
 )
 from clan_cli.vars.get import get_machine_var
 from clan_cli.vars.graph import all_missing_closure, requested_closure
