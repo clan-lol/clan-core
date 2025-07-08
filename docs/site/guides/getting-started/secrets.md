@@ -152,6 +152,7 @@ are loaded when using Clan:
   outputs =
     { self, clan-core, ... }:
     let
+      # Sometimes this attribute set is defined in clan.nix
       clan = clan-core.lib.clan {
         inherit self;
 

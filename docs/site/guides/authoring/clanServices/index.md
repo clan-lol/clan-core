@@ -27,6 +27,7 @@ i.e. `@hsjobeki/customNetworking`
 outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } ({
     imports = [ inputs.clan-core.flakeModules.default ];
     # ...
+    # Sometimes this attribute set is defined in clan.nix
     clan = {
         # If needed: Exporting the module for other people
         modules."@hsjobeki/customNetworking" = import ./service-modules/networking.nix;
@@ -218,6 +219,7 @@ To import the module use `importApply`
 outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}: {
     imports = [ inputs.clan-core.flakeModules.default ];
     # ...
+    # Sometimes this attribute set is defined in clan.nix
     clan = {
         # Register the module
         modules."@hsjobeki/messaging" = lib.importApply ./service-modules/messaging.nix { inherit self; };
@@ -244,6 +246,7 @@ Then wrap the module and forward the variable `self` from the outer context into
 outputs = inputs: flake-parts.lib.mkFlake { inherit inputs; } ({self, lib, ...}: {
     imports = [ inputs.clan-core.flakeModules.default ];
     # ...
+    # Sometimes this attribute set is defined in clan.nix
     clan = {
         # Register the module
         modules."@hsjobeki/messaging" = {

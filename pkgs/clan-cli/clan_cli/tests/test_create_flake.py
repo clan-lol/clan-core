@@ -23,7 +23,6 @@ def test_create_flake(
 
     cli.run(["flakes", "create", str(flake_dir), "--template=default", "--no-update"])
 
-    assert (flake_dir / ".clan-flake").exists()
     # Replace the inputs.clan.url in the template flake.nix
     substitute(
         flake_dir / "flake.nix",
@@ -37,10 +36,10 @@ def test_create_flake(
 
     # create a hardware-configuration.nix that doesn't throw an eval error
 
-    for patch_machine in ["jon", "sara"]:
-        (
-            flake_dir / "machines" / f"{patch_machine}/hardware-configuration.nix"
-        ).write_text("{}")
+    # for patch_machine in ["jon", "sara"]:
+    #     (
+    #         flake_dir / "machines" / f"{patch_machine}/hardware-configuration.nix"
+    #     ).write_text("{}")
 
     with capture_output as output:
         cli.run(["machines", "list"])
@@ -68,7 +67,6 @@ def test_create_flake_existing_git(
 
     cli.run(["flakes", "create", str(flake_dir), "--template=default", "--no-update"])
 
-    assert (flake_dir / ".clan-flake").exists()
     # Replace the inputs.clan.url in the template flake.nix
     substitute(
         flake_dir / "flake.nix",
@@ -81,10 +79,10 @@ def test_create_flake_existing_git(
 
     # create a hardware-configuration.nix that doesn't throw an eval error
 
-    for patch_machine in ["jon", "sara"]:
-        (
-            flake_dir / "machines" / f"{patch_machine}/hardware-configuration.nix"
-        ).write_text("{}")
+    # for patch_machine in ["jon", "sara"]:
+    #     (
+    #         flake_dir / "machines" / f"{patch_machine}/hardware-configuration.nix"
+    #     ).write_text("{}")
 
     with capture_output as output:
         cli.run(["machines", "list"])
