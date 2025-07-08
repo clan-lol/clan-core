@@ -1,1 +1,0 @@
-../ui/vitest.config.ts

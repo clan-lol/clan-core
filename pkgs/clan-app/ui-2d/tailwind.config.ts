@@ -1,1 +1,0 @@
-../ui/tailwind.config.ts
