@@ -17,15 +17,13 @@ export function CubeScene() {
   let raycaster: THREE.Raycaster;
   let controls: any; // OrbitControls type
   let meshMap = new Map<string, THREE.Mesh>();
-
   let baseMap = new Map<string, THREE.Mesh>(); // Map for cube bases
-  let ambientLightMap = new Map<string, THREE.PointLight>(); // Map for pink ambient lights
 
   const [cubes, setCubes] = createSignal<CubeData[]>([]);
   const [selectedIds, setSelectedIds] = createSignal<Set<string>>(new Set());
   const [cameraInfo, setCameraInfo] = createSignal({
     position: { x: 0, y: 0, z: 0 },
-    spherical: { radius: 0, theta: 0, phi: 0 }
+    spherical: { radius: 0, theta: 0, phi: 0 },
   });
 
   // Grid configuration
@@ -34,8 +32,11 @@ export function CubeScene() {
 
   // Calculate grid position for a cube index with floating effect
   function getGridPosition(index: number): [number, number, number] {
-    const x = (index % GRID_SIZE) * CUBE_SPACING - (GRID_SIZE * CUBE_SPACING) / 2;
-    const z = Math.floor(index / GRID_SIZE) * CUBE_SPACING - (GRID_SIZE * CUBE_SPACING) / 2;
+    const x =
+      (index % GRID_SIZE) * CUBE_SPACING - (GRID_SIZE * CUBE_SPACING) / 2;
+    const z =
+      Math.floor(index / GRID_SIZE) * CUBE_SPACING -
+      (GRID_SIZE * CUBE_SPACING) / 2;
     return [x, 0.5, z];
   }
 
@@ -53,22 +54,23 @@ export function CubeScene() {
   }
   function createBaseMaterials() {
     const materials = [
-      new THREE.MeshStandardMaterial({ color: 0xDCE4E5 }), // Right face - medium
-      new THREE.MeshStandardMaterial({ color: 0xA4B3B5 }), // Left face - dark shadow
-      new THREE.MeshStandardMaterial({ color: 0xF2F5F5 }), // Top face - light
-      new THREE.MeshStandardMaterial({ color: 0xA4B3B5 }), // Bottom face - dark shadow
-      new THREE.MeshStandardMaterial({ color: 0xDCE4E5 }), // Front face - medium
-      new THREE.MeshStandardMaterial({ color: 0xA4B3B5 }), // Back face - dark shadow
+      new THREE.MeshBasicMaterial({ color: 0xdce4e5 }), // Right face - medium
+      new THREE.MeshBasicMaterial({ color: 0xa4b3b5 }), // Left face - dark shadow
+      new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x303030 }), // Top face - light
+      new THREE.MeshBasicMaterial({ color: 0xa4b3b5 }), // Bottom face - dark shadow
+      new THREE.MeshBasicMaterial({ color: 0xdce4e5 }), // Front face - medium
+      new THREE.MeshBasicMaterial({ color: 0xa4b3b5 }), // Back face - dark shadow
     ];
     return materials;
   }
 
   // Create white base for cube
-  function createCubeBase(position: [number, number, number]) {
+  function createCubeBase(cube_pos: [number, number, number]) {
     const baseGeometry = new THREE.BoxGeometry(1.2, 0.05, 1.2); // 1.2 times cube size, thin height
     const baseMaterials = createBaseMaterials();
     const base = new THREE.Mesh(baseGeometry, baseMaterials);
-    base.position.set(position[0], position[1] - 0.55, position[2]); // Position below cube
+    // tranlate_y = - cube_height / 2 - base_height / 2
+    base.position.set(cube_pos[0], cube_pos[1] - 0.5 - 0.025, cube_pos[2]); // Position below cube
     base.receiveShadow = true;
     return base;
   }
@@ -105,26 +107,30 @@ export function CubeScene() {
   }
 
   function updateMeshColors() {
-    for (const [id, mesh] of meshMap.entries()) {
+    for (const [id, base] of baseMap.entries()) {
       const selected = selectedIds().has(id);
-      const materials = mesh.material as THREE.Material[];
+      const materials = base.material as THREE.Material[];
 
       if (selected) {
         // When selected, make all faces red-ish but maintain the lighting difference
         materials.forEach((material, index) => {
           (material as THREE.MeshBasicMaterial).color.set(
-            index === 2 ? 0xff6666 : // Top face - lighter red
-            index === 0 || index === 4 ? 0xff4444 : // Front/right faces - medium red
-            0xcc2222 // Shadow faces - darker red
+            index === 2
+              ? 0xff6666 // Top face - lighter red
+              : index === 0 || index === 4
+                ? 0xdce4e5 // Front/right faces - keep
+                : 0xa4b3b5, // Shadow faces - keep
           );
         });
       } else {
         // Normal colors - restore original face colors
         materials.forEach((material, index) => {
           (material as THREE.MeshBasicMaterial).color.set(
-            index === 2 ? 0xdce4e5 : // Top face - light
-            index === 0 || index === 4 ? 0xb0c0c2 : // Front/right faces - medium
-            0x4d6a6b // Shadow faces - dark
+            index === 2
+              ? 0xffffff // Top face - light
+              : index === 0 || index === 4
+                ? 0xdce4e5 // Front/right faces - medium
+                : 0xa4b3b5, // Shadow faces - dark
           );
         });
       }
@@ -141,9 +147,9 @@ export function CubeScene() {
       75,
       container!.clientWidth / container!.clientHeight,
       0.1,
-      1000
+      1000,
     );
-    camera.position.set(10, 8, 10);
+    camera.position.set(11, 8, -11);
     camera.lookAt(0, 0, 0);
 
     // Renderer setup
@@ -153,24 +159,28 @@ export function CubeScene() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
-    // Lighting - Position directional light like the sun (very far away)
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); // Bright
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    // Position the light very far away to simulate sun-like parallel rays
-    directionalLight.position.set(50, 100, 50);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    // Position light at 30 degree angle (30 degrees from vertical)
+    // For 30 degree angle: tan(30°) = opposite/adjacent = x/y
+    // If y = 100, then x = 100 * tan(30°) = 100 * 0.577 = 57.7
+    directionalLight.position.set(57.7, 100, 57.7);
     directionalLight.castShadow = true;
 
-    // Configure shadow camera for a larger area with parallel shadows
-    directionalLight.shadow.camera.left = -50;
-    directionalLight.shadow.camera.right = 50;
-    directionalLight.shadow.camera.top = 50;
-    directionalLight.shadow.camera.bottom = -50;
+    // Configure shadow camera for hard, crisp shadows
+    directionalLight.shadow.camera.left = -30;
+    directionalLight.shadow.camera.right = 30;
+    directionalLight.shadow.camera.top = 30;
+    directionalLight.shadow.camera.bottom = -30;
     directionalLight.shadow.camera.near = 0.1;
     directionalLight.shadow.camera.far = 200;
-    directionalLight.shadow.mapSize.width = 2048;
-    directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.mapSize.width = 4096; // Higher resolution for sharper shadows
+    directionalLight.shadow.mapSize.height = 4096;
+    directionalLight.shadow.radius = 1; // Hard shadows (low radius)
+    directionalLight.shadow.blurSamples = 4; // Fewer samples for harder edges
     scene.add(directionalLight);
 
     // Floor/Ground - Make it invisible but keep it for reference
@@ -179,7 +189,7 @@ export function CubeScene() {
       color: 0xcccccc,
       transparent: true,
       opacity: 0, // Make completely invisible
-      visible: false // Also hide it completely
+      visible: false, // Also hide it completely
     });
     const floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2;
@@ -198,13 +208,13 @@ export function CubeScene() {
         position: {
           x: Math.round(camera.position.x * 100) / 100,
           y: Math.round(camera.position.y * 100) / 100,
-          z: Math.round(camera.position.z * 100) / 100
+          z: Math.round(camera.position.z * 100) / 100,
         },
         spherical: {
           radius: Math.round(spherical.radius * 100) / 100,
           theta: Math.round(spherical.theta * 100) / 100,
-          phi: Math.round(spherical.phi * 100) / 100
-        }
+          phi: Math.round(spherical.phi * 100) / 100,
+        },
       });
     };
 
@@ -247,10 +257,10 @@ export function CubeScene() {
     };
 
     // Event listeners
-    renderer.domElement.addEventListener('mousedown', onMouseDown);
-    renderer.domElement.addEventListener('mouseup', onMouseUp);
-    renderer.domElement.addEventListener('mousemove', onMouseMove);
-    renderer.domElement.addEventListener('wheel', onWheel);
+    renderer.domElement.addEventListener("mousedown", onMouseDown);
+    renderer.domElement.addEventListener("mouseup", onMouseUp);
+    renderer.domElement.addEventListener("mousemove", onMouseMove);
+    renderer.domElement.addEventListener("wheel", onWheel);
 
     // Raycaster for clicking
     raycaster = new THREE.Raycaster();
@@ -262,12 +272,12 @@ export function CubeScene() {
       const rect = renderer.domElement.getBoundingClientRect();
       const mouse = new THREE.Vector2(
         ((event.clientX - rect.left) / rect.width) * 2 - 1,
-        -((event.clientY - rect.top) / rect.height) * 2 + 1
+        -((event.clientY - rect.top) / rect.height) * 2 + 1,
       );
 
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObjects(
-        Array.from(meshMap.values())
+        Array.from(meshMap.values()),
       );
 
       if (intersects.length > 0) {
@@ -276,7 +286,7 @@ export function CubeScene() {
       }
     };
 
-    renderer.domElement.addEventListener('click', onClick);
+    renderer.domElement.addEventListener("click", onClick);
 
     // Animation loop
     const animate = () => {
@@ -291,16 +301,16 @@ export function CubeScene() {
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     };
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     // Cleanup function
     onCleanup(() => {
-      renderer.domElement.removeEventListener('mousedown', onMouseDown);
-      renderer.domElement.removeEventListener('mouseup', onMouseUp);
-      renderer.domElement.removeEventListener('mousemove', onMouseMove);
-      renderer.domElement.removeEventListener('wheel', onWheel);
-      renderer.domElement.removeEventListener('click', onClick);
-      window.removeEventListener('resize', handleResize);
+      renderer.domElement.removeEventListener("mousedown", onMouseDown);
+      renderer.domElement.removeEventListener("mouseup", onMouseUp);
+      renderer.domElement.removeEventListener("mousemove", onMouseMove);
+      renderer.domElement.removeEventListener("wheel", onWheel);
+      renderer.domElement.removeEventListener("click", onClick);
+      window.removeEventListener("resize", handleResize);
     });
   });
 
@@ -326,7 +336,7 @@ export function CubeScene() {
         const base = createCubeBase(cube.position);
         base.userData.id = cube.id;
         scene.add(base);
-        // baseMap.set(cube.id, base);
+        baseMap.set(cube.id, base);
       }
       existing.delete(cube.id);
     });
@@ -351,12 +361,22 @@ export function CubeScene() {
       mesh.geometry.dispose();
       // Handle both single material and material array
       if (Array.isArray(mesh.material)) {
-        mesh.material.forEach(material => material.dispose());
+        mesh.material.forEach((material) => material.dispose());
       } else {
         mesh.material.dispose();
       }
     }
     meshMap.clear();
+    for (const mesh of baseMap.values()) {
+      mesh.geometry.dispose();
+      // Handle both single material and material array
+      if (Array.isArray(mesh.material)) {
+        mesh.material.forEach((material) => material.dispose());
+      } else {
+        mesh.material.dispose();
+      }
+    }
+    baseMap.clear();
   });
 
   return (
@@ -369,18 +389,28 @@ export function CubeScene() {
       </div>
 
       {/* Camera Information Display */}
-      <div style={{
-        "margin-bottom": "10px",
-        "font-family": "monospace",
-        "font-size": "12px",
-        "background-color": "#f5f5f5",
-        "padding": "8px",
-        "border-radius": "4px",
-        "border": "1px solid #ddd"
-      }}>
-        <div><strong>Camera Info:</strong></div>
-        <div>Position: ({cameraInfo().position.x}, {cameraInfo().position.y}, {cameraInfo().position.z})</div>
-        <div>Spherical: radius={cameraInfo().spherical.radius}, θ={cameraInfo().spherical.theta}, φ={cameraInfo().spherical.phi}</div>
+      <div
+        style={{
+          "margin-bottom": "10px",
+          "font-family": "monospace",
+          "font-size": "12px",
+          "background-color": "#f5f5f5",
+          padding: "8px",
+          "border-radius": "4px",
+          border: "1px solid #ddd",
+        }}
+      >
+        <div>
+          <strong>Camera Info:</strong>
+        </div>
+        <div>
+          Position: ({cameraInfo().position.x}, {cameraInfo().position.y},{" "}
+          {cameraInfo().position.z})
+        </div>
+        <div>
+          Spherical: radius={cameraInfo().spherical.radius}, θ=
+          {cameraInfo().spherical.theta}, φ={cameraInfo().spherical.phi}
+        </div>
       </div>
 
       <div
@@ -389,7 +419,7 @@ export function CubeScene() {
           width: "100%",
           height: "500px",
           border: "1px solid #ccc",
-          cursor: "grab"
+          cursor: "grab",
         }}
       />
     </div>
