@@ -73,9 +73,16 @@ templates: dict[str, dict[str, Callable[[dict[str, Any]], Placeholder]]] = {
 
 
 @API.register
-def get_disk_schemas(machine: Machine) -> dict[str, DiskSchema]:
+def get_machine_disk_schemas(machine: Machine) -> dict[str, DiskSchema]:
     """
-    Get the available disk schemas
+    Get the available disk schemas.
+    This function reads the disk schemas from the templates directory and returns them as a dictionary.
+    Offering options based on the hardware report of the machine.
+
+    :param machine: The machine to get the disk schemas for
+    :return: A dictionary of disk schemas, keyed by schema name
+
+    :raises ClanError: If the hardware configuration is missing or invalid
     """
     disk_templates = clan_templates(TemplateType.DISK)
     disk_schemas = {}
@@ -155,7 +162,7 @@ def set_machine_disk_schema(
         raise ClanError(msg)
 
     # Check that the placeholders are valid
-    disk_schema = get_disk_schemas(machine)[schema_name]
+    disk_schema = get_machine_disk_schemas(machine)[schema_name]
     # check that all required placeholders are present
     for placeholder_name, schema_placeholder in disk_schema.placeholders.items():
         if schema_placeholder.required and placeholder_name not in placeholders:
