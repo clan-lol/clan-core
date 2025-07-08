@@ -26,7 +26,6 @@ COMMON_VERBS = {
     "open",  # initiate session, shell, file, etc.
     "check",  # validate, probe, or assert
     "run",  # start imperative task or action; machine-deploy etc.
-    "cancel"
 }
 
 

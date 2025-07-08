@@ -75,7 +75,9 @@ class WebviewBridge(ApiBridge):
             )
 
         except Exception as e:
-            msg = f"Error while handling webview call {method_name} with op_key {op_key_bytes}"
+            msg = (
+                f"Error while handling webview call {method_name} with op_key {op_key}"
+            )
             log.exception(msg)
             self.send_error_response(op_key, str(e), ["webview_bridge", method_name])
             return
