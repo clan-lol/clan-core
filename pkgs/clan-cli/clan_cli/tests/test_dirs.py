@@ -13,7 +13,6 @@
 #     subdir = temporary_home / "subdir"
 #     subdir.mkdir()
 #     monkeypatch.chdir(subdir)
-#     (subdir / ".clan-flake").touch()
 #     assert _get_clan_flake_toplevel() == subdir
 
 from clan_lib.dirs import clan_key_safe, vm_state_dir

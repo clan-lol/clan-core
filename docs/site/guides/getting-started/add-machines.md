@@ -90,6 +90,7 @@ See the complete [list](../../guides/more-machines.md#automatic-registration) of
     The option: `machines.<name>` is used to add extra *nixosConfiguration* to a machine
 
 ```{.nix .annotate title="flake.nix" hl_lines="3-13 18-22"}
+# Sometimes this attribute set is defined in clan.nix
 clan = {
     inventory.machines = {
         jon = {
