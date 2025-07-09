@@ -20,7 +20,7 @@ def list_command(args: argparse.Namespace) -> None:
         if not builtin_template_set:
             continue
 
-        print(f"Avilable '{template_type}' templates")
+        print(f"Available '{template_type}' templates")
         print("├── <builtin>")
         for i, (name, template) in enumerate(builtin_template_set.items()):
             description = template.get("description", "no description")
