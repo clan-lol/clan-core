@@ -59,7 +59,7 @@
           name = "flash";
           nodes.target = {
             virtualisation.emptyDiskImages = [ 4096 ];
-            virtualisation.memorySize = 3000;
+            virtualisation.memorySize = 4096;
             environment.systemPackages = [ self.packages.${pkgs.system}.clan-cli ];
             environment.etc."install-closure".source = "${closureInfo}/store-paths";
 
