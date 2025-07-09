@@ -32,7 +32,12 @@
 
       devShells.clan-app = pkgs.callPackage ./shell.nix {
         inherit self';
-        inherit (self'.packages) clan-app webview-lib clan-app-ui;
+        inherit (self'.packages)
+          clan-app
+          webview-lib
+          clan-app-ui
+          clan-lib-openapi
+          ;
         inherit (config.packages) clan-ts-api;
       };
 

@@ -36,15 +36,15 @@ class LoggingMiddleware(Middleware):
                 )
             # Create log file
             log_file = self.log_manager.create_log_file(
-                method, op_key=context.request.op_key, group_path=log_group
+                method, op_key=context.request.op_key or "unknown", group_path=log_group
             ).get_file_path()
 
         except Exception as e:
             log.exception(
                 f"Error while handling request header of {context.request.method_name}"
             )
-            context.bridge.send_error_response(
-                context.request.op_key,
+            context.bridge.send_api_error_response(
+                context.request.op_key or "unknown",
                 str(e),
                 ["header_middleware", context.request.method_name],
             )
