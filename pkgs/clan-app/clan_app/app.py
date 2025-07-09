@@ -63,8 +63,13 @@ def app_run(app_opts: ClanAppOptions) -> int:
     if app_opts.http_api:
         from clan_app.deps.http.http_server import HttpApiServer
 
+        openapi_file = os.getenv("OPENAPI_FILE", None)
+        swagger_dist = os.getenv("SWAGGER_UI_DIST", None)
+
         http_server = HttpApiServer(
             api=API,
+            openapi_file=Path(openapi_file) if openapi_file else None,
+            swagger_dist=Path(swagger_dist) if swagger_dist else None,
             host=app_opts.http_host,
             port=app_opts.http_port,
         )
@@ -85,6 +90,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
         log.info(
             f"Example request: curl -X POST http://{app_opts.http_host}:{app_opts.http_port}/api/v1/list_log_days"
         )
+
         log.info("Press Ctrl+C to stop the server")
         try:
             # Keep the main thread alive

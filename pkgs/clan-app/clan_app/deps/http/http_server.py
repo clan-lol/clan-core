@@ -1,6 +1,7 @@
 import logging
 import threading
 from http.server import HTTPServer
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from clan_lib.api import MethodRegistry
@@ -21,8 +22,12 @@ class HttpApiServer:
         api: MethodRegistry,
         host: str = "127.0.0.1",
         port: int = 8080,
+        openapi_file: Path | None = None,
+        swagger_dist: Path | None = None,
     ) -> None:
         self.api = api
+        self.openapi = openapi_file
+        self.swagger_dist = swagger_dist
         self.host = host
         self.port = port
         self._server: HTTPServer | None = None
@@ -51,6 +56,8 @@ class HttpApiServer:
         """Create a request handler class with injected dependencies."""
         api = self.api
         middleware_chain = tuple(self._middleware)
+        openapi_file = self.openapi
+        swagger_dist = self.swagger_dist
 
         class RequestHandler(HttpBridge):
             def __init__(self, request: Any, client_address: Any, server: Any) -> None:
@@ -60,6 +67,8 @@ class HttpApiServer:
                     request=request,
                     client_address=client_address,
                     server=server,
+                    openapi_file=openapi_file,
+                    swagger_dist=swagger_dist,
                 )
 
         return RequestHandler
