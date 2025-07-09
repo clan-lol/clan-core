@@ -12,9 +12,9 @@ def test_templates_list(
     with capture_output as output:
         cli.run(["templates", "list", "--flake", str(test_flake_with_core.path)])
     print(output.out)
-    assert "Avilable 'clan' templates" in output.out
-    assert "Avilable 'disko' templates" in output.out
-    assert "Avilable 'machine' templates" in output.out
+    assert "Available 'clan' templates" in output.out
+    assert "Available 'disko' templates" in output.out
+    assert "Available 'machine' templates" in output.out
     assert "single-disk" in output.out
     assert "<builtin>" in output.out
     assert "default:" in output.out
