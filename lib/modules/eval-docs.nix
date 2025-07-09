@@ -9,9 +9,11 @@ let
       clan-core.modules.clan.default
     ];
   };
+
   evalDocs = pkgs.nixosOptionsDoc {
     options = eval.options;
     warningsAreErrors = false;
+    transformOptions = clan-core.clanLib.docs.stripStorePathsFromDeclarations;
   };
 in
 {
