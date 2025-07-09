@@ -45,6 +45,7 @@ lib.fix (
     introspection = import ./introspection { inherit lib; };
     jsonschema = import ./jsonschema { inherit lib; };
     facts = import ./facts.nix { inherit lib; };
+    docs = import ./docs.nix { inherit lib; };
 
     # flakes
     flakes = clanLib.callLib ./flakes.nix { };

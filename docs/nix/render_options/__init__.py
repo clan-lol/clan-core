@@ -62,14 +62,11 @@ def sanitize(text: str) -> str:
     return text.replace(">", "\\>")
 
 
-def replace_store_path(text: str) -> tuple[str, str]:
+def replace_git_url(text: str) -> tuple[str, str]:
     res = text
-    if text.startswith("/nix/store/"):
-        res = "https://git.clan.lol/clan/clan-core/src/branch/main/" + str(
-            Path(*Path(text).parts[4:])
-        )
-    # name = Path(res).name
-    name = str(Path(*Path(text).parts[4:]))
+    name = Path(res).name
+    if text.startswith("https://git.clan.lol/clan/clan-core/src/branch/main/"):
+        name = str(Path(*Path(text).parts[7:]))
     return (res, name)
 
 
@@ -159,7 +156,7 @@ def render_option(
 
     decls = option.get("declarations", [])
     if decls:
-        source_path, name = replace_store_path(decls[0])
+        source_path, name = replace_git_url(decls[0])
 
         name = name.split(",")[0]
         source_path = source_path.split(",")[0]

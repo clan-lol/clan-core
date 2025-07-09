@@ -7,6 +7,10 @@
   pkgs,
   clan-core,
 }:
+let
+  inherit (clan-core.clanLib.docs) stripStorePathsFromDeclarations;
+  transformOptions = stripStorePathsFromDeclarations;
+in
 {
   # clanModules docs
   clanModulesViaNix = lib.mapAttrs (
@@ -20,6 +24,7 @@
           }).options
           ).clan.${name} or { };
         warningsAreErrors = true;
+        inherit transformOptions;
       }).optionsJSON
     else
       { }
@@ -32,6 +37,7 @@
       (nixosOptionsDoc {
         inherit options;
         warningsAreErrors = true;
+        inherit transformOptions;
       }).optionsJSON
     ) rolesOptions
   ) modulesRolesOptions;
@@ -52,7 +58,15 @@
 
         (nixosOptionsDoc {
           transformOptions =
-            opt: if lib.strings.hasPrefix "_" opt.name then opt // { visible = false; } else opt;
+            opt:
+            let
+              # Apply store path stripping first
+              transformed = transformOptions opt;
+            in
+            if lib.strings.hasPrefix "_" transformed.name then
+              transformed // { visible = false; }
+            else
+              transformed;
           options = (lib.evalModules { modules = [ role.interface ]; }).options;
           warningsAreErrors = true;
         }).optionsJSON
@@ -72,5 +86,6 @@
         }).options
         ).clan.core or { };
       warningsAreErrors = true;
+      inherit transformOptions;
     }).optionsJSON;
 }
