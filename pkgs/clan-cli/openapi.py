@@ -29,6 +29,25 @@ COMMON_VERBS = {
 }
 
 
+# !!! IMPORTANT !!!
+# AVOID ADDING RESOUCRCES IN THIS LIST
+# Think twice before adding a new resource.
+# If you need a new resource, consider if it can be a sub-resource of an existing
+# resource instead.
+# If you need a new top-level resource, create an issue to discuss it first.
+TOP_LEVEL_RESOURCES = {
+    "clan",  # clan management
+    "machine",  # machine management
+    "task",  # task management
+    "file",  # file operations
+    "secret",  # sops & key operations
+    "log",  # log operations
+    "generator",  # vars generators operations
+    "module",  # module (clan.service) management
+    "system",  # system operations
+}
+
+
 def is_verb(word: str) -> bool:
     return word in COMMON_VERBS
 
@@ -60,12 +79,19 @@ def normalize_op_name(op_name: str) -> list[str]:
 
 def check_operation_name(op_name: str, normalized: list[str]) -> list[str]:
     verb = normalized[0]
-    _nouns = normalized[1:]
+    nouns = normalized[1:]
     warnings = []
     if not is_verb(verb):
         warnings.append(
             f"""Verb '{verb}' of API operation {op_name} is not allowed.
 Use one of: {", ".join(COMMON_VERBS)}
+"""
+        )
+    top_level_noun = nouns[0] if nouns else None
+    if top_level_noun is None or top_level_noun.lower() not in TOP_LEVEL_RESOURCES:
+        warnings.append(
+            f"""Top-level resource '{top_level_noun}' of API operation {op_name} is not allowed.
+Use one of: {", ".join(TOP_LEVEL_RESOURCES)}
 """
         )
     return warnings
