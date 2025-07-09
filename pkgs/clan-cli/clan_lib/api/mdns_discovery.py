@@ -88,7 +88,7 @@ def parse_avahi_output(output: str) -> DNSInfo:
 
 
 @API.register
-def list_mdns_services() -> DNSInfo:
+def list_system_services_mdns() -> DNSInfo:
     """List mDNS/DNS-SD services on the local network.
     Returns:
         DNSInfo: A dictionary containing discovered mDNS/DNS-SD services.
@@ -111,7 +111,7 @@ def list_mdns_services() -> DNSInfo:
 
 
 def mdns_command(args: argparse.Namespace) -> None:
-    dns_info = list_mdns_services()
+    dns_info = list_system_services_mdns()
     for name, info in dns_info.services.items():
         print(f"Hostname: {name} - ip: {info.ip}")
 
