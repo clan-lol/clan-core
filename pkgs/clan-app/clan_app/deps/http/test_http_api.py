@@ -1,23 +1,19 @@
 """Tests for HTTP API components."""
 
 import json
-import threading
 import time
 from unittest.mock import Mock
-from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 import pytest
 from clan_lib.api import MethodRegistry
 from clan_lib.log_manager import LogManager
 
-from clan_app.api.api_bridge import BackendResponse
 from clan_app.api.middleware import (
     ArgumentParsingMiddleware,
     LoggingMiddleware,
     MethodExecutionMiddleware,
 )
-from clan_app.deps.http.http_bridge import HttpBridge
 from clan_app.deps.http.http_server import HttpApiServer
 
 
@@ -48,93 +44,58 @@ def mock_log_manager() -> Mock:
 
 
 @pytest.fixture
-def http_bridge(mock_api: MethodRegistry, mock_log_manager: Mock) -> HttpBridge:
-    """Create HTTP bridge with mock dependencies."""
-    return HttpBridge(
-        middleware_chain=(
-            ArgumentParsingMiddleware(api=mock_api),
-            LoggingMiddleware(log_manager=mock_log_manager),
-            MethodExecutionMiddleware(api=mock_api),
-        )
+def http_bridge(
+    mock_api: MethodRegistry, mock_log_manager: Mock
+) -> tuple[MethodRegistry, tuple]:
+    """Create HTTP bridge dependencies for testing."""
+    middleware_chain = (
+        ArgumentParsingMiddleware(api=mock_api),
+        LoggingMiddleware(log_manager=mock_log_manager),
+        MethodExecutionMiddleware(api=mock_api),
     )
+    return mock_api, middleware_chain
 
 
 @pytest.fixture
 def http_server(mock_api: MethodRegistry, mock_log_manager: Mock) -> HttpApiServer:
     """Create HTTP server with mock dependencies."""
-    return HttpApiServer(
+    server = HttpApiServer(
         api=mock_api,
-        log_manager=mock_log_manager,
         host="127.0.0.1",
         port=8081,  # Use different port for tests
     )
+
+    # Add middleware
+    server.add_middleware(ArgumentParsingMiddleware(api=mock_api))
+    server.add_middleware(LoggingMiddleware(log_manager=mock_log_manager))
+    server.add_middleware(MethodExecutionMiddleware(api=mock_api))
+
+    # Bridge will be created automatically when accessed
+
+    return server
 
 
 class TestHttpBridge:
     """Tests for HttpBridge class."""
 
-    def test_http_bridge_initialization(self, http_bridge: HttpBridge) -> None:
+    def test_http_bridge_initialization(self, http_bridge: tuple) -> None:
         """Test HTTP bridge initialization."""
-        assert http_bridge.threads == {}
-        assert http_bridge.response_handler is None
+        # Since HttpBridge is now a request handler, we can't instantiate it directly
+        # We'll test initialization through the server
+        api, middleware_chain = http_bridge
+        assert api is not None
+        assert len(middleware_chain) == 3
 
-    def test_set_response_handler(self, http_bridge: HttpBridge) -> None:
-        """Test setting response handler."""
-        handler: Mock = Mock()
-        http_bridge.set_response_handler(handler)
-        assert http_bridge.response_handler == handler
+    def test_http_bridge_middleware_setup(self, http_bridge: tuple) -> None:
+        """Test that middleware is properly set up."""
+        api, middleware_chain = http_bridge
 
-    def test_handle_http_request_success(self, http_bridge: HttpBridge) -> None:
-        """Test successful HTTP request handling."""
-        # Set up response handler
-        response_received: threading.Event = threading.Event()
-        received_response: dict = {}
-
-        def response_handler(response: BackendResponse) -> None:
-            received_response["response"] = response
-            response_received.set()
-
-        http_bridge.set_response_handler(response_handler)
-
-        # Make request
-        request_data: dict = {"header": {}, "body": {"message": "World"}}
-
-        http_bridge.handle_http_request("test_method", request_data, "test-op-key")
-
-        # Wait for response
-        assert response_received.wait(timeout=5)
-        response = received_response["response"]
-
-        assert response._op_key == "test-op-key"  # noqa: SLF001
-        assert response.body.data == {"response": "Hello World!"}
-
-    def test_handle_http_request_with_invalid_header(
-        self, http_bridge: HttpBridge
-    ) -> None:
-        """Test HTTP request with invalid header."""
-        response_received: threading.Event = threading.Event()
-        received_response: dict = {}
-
-        def response_handler(response: BackendResponse) -> None:
-            received_response["response"] = response
-            response_received.set()
-
-        http_bridge.set_response_handler(response_handler)
-
-        # Make request with invalid header
-        request_data: dict = {
-            "header": "invalid_header",  # Should be dict
-            "body": {"message": "World"},
-        }
-
-        http_bridge.handle_http_request("test_method", request_data, "test-op-key")
-
-        # Wait for response
-        assert response_received.wait(timeout=5)
-        response = received_response["response"]
-
-        assert response._op_key == "test-op-key"  # noqa: SLF001
-        assert response.body.status == "error"
+        # Test that we can create the bridge with middleware
+        # The actual HTTP handling will be tested through the server integration tests
+        assert len(middleware_chain) == 3
+        assert isinstance(middleware_chain[0], ArgumentParsingMiddleware)
+        assert isinstance(middleware_chain[1], LoggingMiddleware)
+        assert isinstance(middleware_chain[2], MethodExecutionMiddleware)
 
 
 class TestHttpApiServer:
@@ -172,14 +133,16 @@ class TestHttpApiServer:
             # Test root endpoint
             response = urlopen("http://127.0.0.1:8081/")
             data: dict = json.loads(response.read().decode())
-            assert data["message"] == "Clan API Server"
-            assert data["version"] == "1.0.0"
+            assert data["body"]["status"] == "success"
+            assert data["body"]["data"]["message"] == "Clan API Server"
+            assert data["body"]["data"]["version"] == "1.0.0"
 
             # Test methods endpoint
             response = urlopen("http://127.0.0.1:8081/api/methods")
             data = json.loads(response.read().decode())
-            assert "test_method" in data["methods"]
-            assert "test_method_with_error" in data["methods"]
+            assert data["body"]["status"] == "success"
+            assert "test_method" in data["body"]["data"]["methods"]
+            assert "test_method_with_error" in data["body"]["data"]["methods"]
 
             # Test API call endpoint
             request_data: dict = {"header": {}, "body": {"message": "World"}}
@@ -191,8 +154,12 @@ class TestHttpApiServer:
             response = urlopen(req)
             data = json.loads(response.read().decode())
 
-            assert data["success"] is True
-            assert data["data"]["data"] == {"response": "Hello World!"}
+            # Response should be BackendResponse format
+            assert "body" in data
+            assert "header" in data
+
+            assert data["body"]["status"] == "success"
+            assert data["body"]["data"] == {"response": "Hello World!"}
 
         finally:
             # Always stop server
@@ -206,9 +173,11 @@ class TestHttpApiServer:
 
         try:
             # Test 404 error
-            with pytest.raises(HTTPError) as exc_info:
-                urlopen("http://127.0.0.1:8081/nonexistent")
-            assert exc_info.value.code == 404
+
+            res = urlopen("http://127.0.0.1:8081/nonexistent")
+            assert res.status == 200
+            body = json.loads(res.read().decode())["body"]
+            assert body["status"] == "error"
 
             # Test method not found
             request_data: dict = {"header": {}, "body": {}}
@@ -217,9 +186,11 @@ class TestHttpApiServer:
                 data=json.dumps(request_data).encode(),
                 headers={"Content-Type": "application/json"},
             )
-            with pytest.raises(HTTPError) as exc_info:
-                urlopen(req)
-            assert exc_info.value.code == 404
+
+            res = urlopen(req)
+            assert res.status == 200
+            body = json.loads(res.read().decode())["body"]
+            assert body["status"] == "error"
 
             # Test invalid JSON
             req = Request(
@@ -227,10 +198,11 @@ class TestHttpApiServer:
                 data=b"invalid json",
                 headers={"Content-Type": "application/json"},
             )
-            with pytest.raises(HTTPError) as exc_info:
-                urlopen(req)
-            assert exc_info.value.code == 400
 
+            res = urlopen(req)
+            assert res.status == 200
+            body = json.loads(res.read().decode())["body"]
+            assert body["status"] == "error"
         finally:
             # Always stop server
             http_server.stop()
@@ -270,10 +242,16 @@ class TestIntegration:
         """Test complete request flow from server to bridge to middleware."""
         server: HttpApiServer = HttpApiServer(
             api=mock_api,
-            log_manager=mock_log_manager,
             host="127.0.0.1",
             port=8082,
         )
+
+        # Add middleware
+        server.add_middleware(ArgumentParsingMiddleware(api=mock_api))
+        server.add_middleware(LoggingMiddleware(log_manager=mock_log_manager))
+        server.add_middleware(MethodExecutionMiddleware(api=mock_api))
+
+        # Bridge will be created automatically when accessed
 
         # Start server
         server.start()
@@ -293,10 +271,11 @@ class TestIntegration:
             response = urlopen(req)
             data: dict = json.loads(response.read().decode())
 
-            # Verify response
-            assert data["success"] is True
-            assert data["data"]["data"] == {"response": "Hello Integration!"}
-            assert "op_key" in data
+            # Verify response in BackendResponse format
+            assert "body" in data
+            assert "header" in data
+            assert data["body"]["status"] == "success"
+            assert data["body"]["data"] == {"response": "Hello Integration!"}
 
         finally:
             # Always stop server

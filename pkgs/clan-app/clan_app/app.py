@@ -65,11 +65,37 @@ def app_run(app_opts: ClanAppOptions) -> int:
 
         http_server = HttpApiServer(
             api=API,
-            log_manager=log_manager,
             host=app_opts.http_host,
             port=app_opts.http_port,
         )
+
+        # Add middleware to HTTP server
+        http_server.add_middleware(ArgumentParsingMiddleware(api=API))
+        http_server.add_middleware(LoggingMiddleware(log_manager=log_manager))
+        http_server.add_middleware(MethodExecutionMiddleware(api=API))
+
+        # Start the server (bridge will be created automatically)
         http_server.start()
+
+        # HTTP-only mode - keep the server running
+        log.info("HTTP API server running...")
+        log.info(
+            f"Available API methods at: http://{app_opts.http_host}:{app_opts.http_port}/api/methods"
+        )
+        log.info(
+            f"Example request: curl -X POST http://{app_opts.http_host}:{app_opts.http_port}/api/v1/list_log_days"
+        )
+        log.info("Press Ctrl+C to stop the server")
+        try:
+            # Keep the main thread alive
+            import time
+
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            log.info("Shutting down HTTP API server...")
+            if http_server:
+                http_server.stop()
 
     # Create webview if not running in HTTP-only mode
     if not app_opts.http_api:
@@ -91,25 +117,5 @@ def app_run(app_opts: ClanAppOptions) -> int:
         webview.bind_jsonschema_api(API, log_manager=log_manager)
         webview.navigate(content_uri)
         webview.run()
-    else:
-        # HTTP-only mode - keep the server running
-        log.info("HTTP API server running...")
-        log.info(
-            f"Available API methods at: http://{app_opts.http_host}:{app_opts.http_port}/api/methods"
-        )
-        log.info(
-            f"Example request: curl -X POST http://{app_opts.http_host}:{app_opts.http_port}/api/call/list_log_days"
-        )
-        log.info("Press Ctrl+C to stop the server")
-        try:
-            # Keep the main thread alive
-            import time
-
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            log.info("Shutting down HTTP API server...")
-            if http_server:
-                http_server.stop()
 
     return 0
