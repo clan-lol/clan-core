@@ -7,9 +7,10 @@
   webview-lib,
   clan-app-ui,
   clan-ts-api,
+  clan-lib-openapi,
   ps,
+  fetchzip,
   process-compose,
-  go-swagger,
   json2ts,
   playwright-driver,
   luakit,
@@ -18,6 +19,12 @@
 let
   GREEN = "\\033[1;32m";
   NC = "\\033[0m";
+
+  swagger-ui-dist = fetchzip {
+    url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.26.2.zip";
+    sha256 = "sha256-KoFOsCheR1N+7EigFDV3r7frMMQtT43HE5H1/xsKLG4=";
+  };
+
 in
 
 mkShell {
@@ -43,7 +50,6 @@ mkShell {
   nativeBuildInputs = clan-app.nativeBuildInputs ++ [
     ps
     process-compose
-    go-swagger
   ];
 
   buildInputs = [
@@ -77,6 +83,8 @@ mkShell {
 
       export XDG_DATA_DIRS=$GSETTINGS_SCHEMAS_PATH:$XDG_DATA_DIRS
       export WEBVIEW_LIB_DIR=${webview-lib}/lib
+      export OPENAPI_FILE="${clan-lib-openapi}"
+      export SWAGGER_UI_DIST="${swagger-ui-dist}/dist"
 
       ## Webview UI
       # Add clan-app-ui scripts to PATH

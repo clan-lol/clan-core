@@ -3,6 +3,7 @@ import logging
 import threading
 import uuid
 from http.server import BaseHTTPRequestHandler
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
@@ -31,36 +32,43 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         request: Any,
         client_address: Any,
         server: Any,
+        *,
+        openapi_file: Path | None = None,
+        swagger_dist: Path | None = None,
     ) -> None:
         # Initialize the API bridge fields
         self.api = api
+        self.openapi_file = openapi_file
+        self.swagger_dist = swagger_dist
         self.middleware_chain = middleware_chain
         self.threads: dict[str, WebThread] = {}
-        self._current_response: BackendResponse | None = None
 
         # Initialize the HTTP handler
         super(BaseHTTPRequestHandler, self).__init__(request, client_address, server)
 
     def send_api_response(self, response: BackendResponse) -> None:
         """Send HTTP response directly to the client."""
-        self._current_response = response
 
-        # Send HTTP response
-        self.send_response_only(200)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
+        try:
+            # Send HTTP response
+            self.send_response_only(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            self.end_headers()
 
-        # Write response data
-        response_data = json.dumps(
-            dataclass_to_dict(response), indent=2, ensure_ascii=False
-        )
-        self.wfile.write(response_data.encode("utf-8"))
+            # Write response data
+            response_data = json.dumps(
+                dataclass_to_dict(response), indent=2, ensure_ascii=False
+            )
+            self.wfile.write(response_data.encode("utf-8"))
 
-        # Log the response for debugging
-        log.debug(f"HTTP response for {response._op_key}: {response_data}")  # noqa: SLF001
+            # Log the response for debugging
+            log.debug(f"HTTP response for {response._op_key}: {response_data}")  # noqa: SLF001
+        except BrokenPipeError as e:
+            # Handle broken pipe errors gracefully
+            log.warning(f"Client disconnected before we could send a response: {e!s}")
 
     def do_OPTIONS(self) -> None:  # noqa: N802
         """Handle CORS preflight requests."""
@@ -86,6 +94,65 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
                 _op_key="info",
             )
             self.send_api_response(response)
+        elif path.startswith("/api/swagger"):
+            if self.swagger_dist and self.swagger_dist.exists():
+                # Serve static files from swagger_dist
+                rel_path = parsed_url.path[len("/api/swagger") :].lstrip("/")
+                # Redirect /api/swagger (no trailing slash or file) to /api/swagger/index.html
+                if rel_path == "":
+                    self.send_response(302)
+                    self.send_header("Location", "/api/swagger/index.html")
+                    self.end_headers()
+                    return
+                file_path = self.swagger_dist / rel_path
+                if rel_path == "index.html":
+                    file_path = Path(__file__).parent / "swagger.html"
+                elif rel_path == "openapi.json":
+                    if not self.openapi_file:
+                        self.send_error(404, "OpenAPI file not found")
+                        return
+                    file_path = self.openapi_file
+
+                if file_path.exists() and file_path.is_file():
+                    try:
+                        # Guess content type
+                        if file_path.suffix == ".html":
+                            content_type = "text/html"
+                        elif file_path.suffix == ".js":
+                            content_type = "application/javascript"
+                        elif file_path.suffix == ".css":
+                            content_type = "text/css"
+                        elif file_path.suffix == ".json":
+                            content_type = "application/json"
+                        elif file_path.suffix == ".png":
+                            content_type = "image/png"
+                        elif file_path.suffix == ".svg":
+                            content_type = "image/svg+xml"
+                        else:
+                            content_type = "application/octet-stream"
+                        with file_path.open("rb") as f:
+                            file_data = f.read()
+                        if rel_path == "openapi.json":
+                            json_data = json.loads(file_data.decode("utf-8"))
+                            json_data["servers"] = [
+                                {
+                                    "url": f"http://{getattr(self.server, 'server_address', ('localhost', 80))[0]}:{getattr(self.server, 'server_address', ('localhost', 80))[1]}/api/v1/"
+                                }
+                            ]
+                            file_data = json.dumps(json_data, indent=2).encode("utf-8")
+                        self.send_response(200)
+                        self.send_header("Content-Type", content_type)
+                        self.end_headers()
+
+                        self.wfile.write(file_data)
+                    except Exception as e:
+                        log.error(f"Error reading Swagger file: {e!s}")
+                        self.send_error(500, "Internal Server Error")
+                else:
+                    self.send_error(404, "Swagger file not found")
+            else:
+                self.send_error(404, "Swagger file not found")
+
         elif path == "/api/methods":
             response = BackendResponse(
                 body=SuccessDataClass(
@@ -97,8 +164,6 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
                 _op_key="methods",
             )
             self.send_api_response(response)
-        else:
-            self.send_api_error_response("info", "Not Found", ["http_bridge", "GET"])
 
     def do_POST(self) -> None:  # noqa: N802
         """Handle POST requests."""
@@ -107,7 +172,9 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
 
         # Check if this is an API call
         if not path.startswith("/api/v1/"):
-            self.send_api_error_response("post", "Not Found", ["http_bridge", "POST"])
+            self.send_api_error_response(
+                "post", f"Path not found  {path}", ["http_bridge", "POST"]
+            )
             return
 
         # Extract method name from path
@@ -151,15 +218,15 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
             return
 
         # Generate a unique operation key
-        op_key = str(uuid.uuid4())
+        gen_op_key = str(uuid.uuid4())
 
         # Handle the API request
         try:
-            self._handle_api_request(method_name, request_data, op_key)
+            self._handle_api_request(method_name, request_data, gen_op_key)
         except Exception as e:
             log.exception(f"Error processing API request {method_name}")
             self.send_api_error_response(
-                op_key,
+                gen_op_key,
                 f"Internal server error: {e!s}",
                 ["http_bridge", "POST", method_name],
             )
@@ -168,7 +235,7 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         self,
         method_name: str,
         request_data: dict[str, Any],
-        op_key: str,
+        gen_op_key: str,
     ) -> None:
         """Handle an API request by processing it through middleware."""
         try:
@@ -182,6 +249,22 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
             if not isinstance(body, dict):
                 msg = f"Expected body to be a dict, got {type(body)}"
                 raise TypeError(msg)
+
+            op_key = header.get("op_key", gen_op_key)
+            if not isinstance(op_key, str):
+                msg = f"Expected op_key to be a string, got {type(op_key)}"
+                raise TypeError(msg)
+
+            # Check if op_key is a valid UUID
+            try:
+                uuid.UUID(op_key)
+            except ValueError as e:
+                msg = f"op_key '{op_key}' is not a valid UUID"
+                raise TypeError(msg) from e
+
+            if op_key in self.threads:
+                msg = f"Operation key '{op_key}' is already in use. Please try again."
+                raise ValueError(msg)
 
             # Create API request
             api_request = BackendRequest(
