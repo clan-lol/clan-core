@@ -62,19 +62,18 @@ class Generator:
     def generators_from_flake(
         cls: type["Generator"], machine_name: str, flake: "Flake"
     ) -> list["Generator"]:
-        config = nix_config()
-        system = config["system"]
-
         # Get all generator metadata in one select (safe fields only)
-        generators_data = flake.select(
-            f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.generators.*.{{share,dependencies,migrateFact,prompts}}'
+        generators_data = flake.select_machine(
+            machine_name,
+            "config.clan.core.vars.generators.*.{share,dependencies,migrateFact,prompts}",
         )
         if not generators_data:
             return []
 
         # Get all file metadata in one select
-        files_data = flake.select(
-            f'clanInternals.machines."{system}"."{machine_name}".config.clan.core.vars.generators.*.files.*.{{secret,deploy,owner,group,mode,neededFor}}'
+        files_data = flake.select_machine(
+            machine_name,
+            "config.clan.core.vars.generators.*.files.*.{secret,deploy,owner,group,mode,neededFor}",
         )
 
         generators = []
