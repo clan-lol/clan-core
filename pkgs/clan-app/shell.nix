@@ -9,6 +9,7 @@
   clan-ts-api,
   ps,
   process-compose,
+  go-swagger,
   json2ts,
   playwright-driver,
   luakit,
@@ -42,6 +43,7 @@ mkShell {
   nativeBuildInputs = clan-app.nativeBuildInputs ++ [
     ps
     process-compose
+    go-swagger
   ];
 
   buildInputs = [

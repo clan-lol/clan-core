@@ -4,6 +4,8 @@ from contextlib import ExitStack
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from clan_lib.api import ApiResponse
+
 if TYPE_CHECKING:
     from .middleware import Middleware
 
@@ -15,12 +17,12 @@ class BackendRequest:
     method_name: str
     args: dict[str, Any]
     header: dict[str, Any]
-    op_key: str
+    op_key: str | None
 
 
 @dataclass(frozen=True)
 class BackendResponse:
-    body: Any
+    body: ApiResponse
     header: dict[str, Any]
     _op_key: str
 
@@ -32,7 +34,7 @@ class ApiBridge(ABC):
     middleware_chain: tuple["Middleware", ...]
 
     @abstractmethod
-    def send_response(self, response: BackendResponse) -> None:
+    def send_api_response(self, response: BackendResponse) -> None:
         """Send response back to the client."""
 
     def process_request(self, request: BackendRequest) -> None:
@@ -55,12 +57,12 @@ class ApiBridge(ABC):
                     middleware.process(context)
                 except Exception as e:
                     # If middleware fails, handle error
-                    self.send_error_response(
-                        request.op_key, str(e), ["middleware_error"]
+                    self.send_api_error_response(
+                        request.op_key or "unknown", str(e), ["middleware_error"]
                     )
                     return
 
-    def send_error_response(
+    def send_api_error_response(
         self, op_key: str, error_message: str, location: list[str]
     ) -> None:
         """Send an error response."""
@@ -84,4 +86,4 @@ class ApiBridge(ABC):
             _op_key=op_key,
         )
 
-        self.send_response(response)
+        self.send_api_response(response)

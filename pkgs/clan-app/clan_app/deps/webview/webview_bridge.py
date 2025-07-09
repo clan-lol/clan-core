@@ -25,7 +25,7 @@ class WebviewBridge(ApiBridge):
     webview: "Webview"
     threads: dict[str, WebThread] = field(default_factory=dict)
 
-    def send_response(self, response: BackendResponse) -> None:
+    def send_api_response(self, response: BackendResponse) -> None:
         """Send response back to the webview client."""
 
         serialized = json.dumps(
@@ -79,7 +79,9 @@ class WebviewBridge(ApiBridge):
                 f"Error while handling webview call {method_name} with op_key {op_key}"
             )
             log.exception(msg)
-            self.send_error_response(op_key, str(e), ["webview_bridge", method_name])
+            self.send_api_error_response(
+                op_key, str(e), ["webview_bridge", method_name]
+            )
             return
 
         # Process in a separate thread
