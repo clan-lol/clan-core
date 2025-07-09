@@ -16,9 +16,32 @@ def main(argv: list[str] = sys.argv) -> int:
         "--content-uri", type=str, help="The URI of the content to display"
     )
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    parser.add_argument(
+        "--http-api",
+        action="store_true",
+        help="Enable HTTP API mode (default: False)",
+    )
+    parser.add_argument(
+        "--http-host",
+        type=str,
+        default="localhost",
+        help="The host for the HTTP API server (default: localhost)",
+    )
+    parser.add_argument(
+        "--http-port",
+        type=int,
+        default=8080,
+        help="The host and port for the HTTP API server (default: 8080)",
+    )
     args = parser.parse_args(argv[1:])
 
-    app_opts = ClanAppOptions(content_uri=args.content_uri, debug=args.debug)
+    app_opts = ClanAppOptions(
+        content_uri=args.content_uri,
+        http_api=args.http_api,
+        http_host=args.http_host,
+        http_port=args.http_port,
+        debug=args.debug,
+    )
     try:
         app_run(app_opts)
     except KeyboardInterrupt:
