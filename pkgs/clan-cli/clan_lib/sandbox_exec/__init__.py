@@ -1,5 +1,8 @@
+import contextlib
 import os
 import shutil
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -93,11 +96,12 @@ def create_sandbox_profile() -> str:
     return profile_content
 
 
-def sandbox_exec_cmd(generator: str, tmpdir: Path) -> tuple[list[str], str]:
+@contextmanager
+def sandbox_exec_cmd(generator: str, tmpdir: Path) -> Iterator[list[str]]:
     """Create a sandbox-exec command for running a generator.
 
-    Returns:
-        tuple: (command_list, profile_path) where profile_path should be cleaned up after use
+    Yields:
+        list[str]: The command to execute
     """
     profile_content = create_sandbox_profile()
 
@@ -106,23 +110,28 @@ def sandbox_exec_cmd(generator: str, tmpdir: Path) -> tuple[list[str], str]:
         f.write(profile_content)
         profile_path = f.name
 
-    real_bash_path = Path("bash")
-    if os.environ.get("IN_NIX_SANDBOX"):
-        bash_executable_path = Path(str(shutil.which("bash")))
-        real_bash_path = bash_executable_path.resolve()
+    try:
+        real_bash_path = Path("bash")
+        if os.environ.get("IN_NIX_SANDBOX"):
+            bash_executable_path = Path(str(shutil.which("bash")))
+            real_bash_path = bash_executable_path.resolve()
 
-    # Use the sandbox profile parameter to define TMPDIR and execute from within it
-    # Resolve the tmpdir to handle macOS symlinks (/var/folders -> /private/var/folders)
-    resolved_tmpdir = tmpdir.resolve()
-    cmd = [
-        "/usr/bin/sandbox-exec",
-        "-f",
-        profile_path,
-        "-D",
-        f"_TMPDIR={resolved_tmpdir}",
-        str(real_bash_path),
-        "-c",
-        generator,
-    ]
+        # Use the sandbox profile parameter to define TMPDIR and execute from within it
+        # Resolve the tmpdir to handle macOS symlinks (/var/folders -> /private/var/folders)
+        resolved_tmpdir = tmpdir.resolve()
+        cmd = [
+            "/usr/bin/sandbox-exec",
+            "-f",
+            profile_path,
+            "-D",
+            f"_TMPDIR={resolved_tmpdir}",
+            str(real_bash_path),
+            "-c",
+            generator,
+        ]
 
-    return cmd, profile_path
+        yield cmd
+    finally:
+        # Clean up the profile file
+        with contextlib.suppress(OSError):
+            Path(profile_path).unlink()
