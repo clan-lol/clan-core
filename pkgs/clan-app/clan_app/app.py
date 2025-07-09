@@ -25,6 +25,9 @@ log = logging.getLogger(__name__)
 class ClanAppOptions:
     content_uri: str
     debug: bool
+    http_api: bool = False
+    http_host: str = "127.0.0.1"
+    http_port: int = 8080
 
 
 @profile
@@ -55,19 +58,67 @@ def app_run(app_opts: ClanAppOptions) -> int:
     load_in_all_api_functions()
     API.overwrite_fn(open_file)
 
-    webview = Webview(
-        debug=app_opts.debug, title="Clan App", size=Size(1280, 1024, SizeHint.NONE)
-    )
+    # Start HTTP API server if requested
+    http_server = None
+    if app_opts.http_api:
+        from clan_app.deps.http.http_server import HttpApiServer
 
-    # Add middleware to the webview
-    webview.add_middleware(ArgumentParsingMiddleware(api=API))
-    webview.add_middleware(LoggingMiddleware(log_manager=log_manager))
-    webview.add_middleware(MethodExecutionMiddleware(api=API))
+        openapi_file = os.getenv("OPENAPI_FILE", None)
+        swagger_dist = os.getenv("SWAGGER_UI_DIST", None)
 
-    # Init BAKEND_THREADS global in tasks module
-    tasks.BAKEND_THREADS = webview.threads
+        http_server = HttpApiServer(
+            api=API,
+            openapi_file=Path(openapi_file) if openapi_file else None,
+            swagger_dist=Path(swagger_dist) if swagger_dist else None,
+            host=app_opts.http_host,
+            port=app_opts.http_port,
+        )
 
-    webview.bind_jsonschema_api(API, log_manager=log_manager)
-    webview.navigate(content_uri)
-    webview.run()
+        # Add middleware to HTTP server
+        http_server.add_middleware(ArgumentParsingMiddleware(api=API))
+        http_server.add_middleware(LoggingMiddleware(log_manager=log_manager))
+        http_server.add_middleware(MethodExecutionMiddleware(api=API))
+
+        # Start the server (bridge will be created automatically)
+        http_server.start()
+
+        # HTTP-only mode - keep the server running
+        log.info("HTTP API server running...")
+        log.info(
+            f"Swagger: http://{app_opts.http_host}:{app_opts.http_port}/api/swagger"
+        )
+
+        log.info("Press Ctrl+C to stop the server")
+        try:
+            # Keep the main thread alive
+            import time
+
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            log.info("Shutting down HTTP API server...")
+            if http_server:
+                http_server.stop()
+
+    # Create webview if not running in HTTP-only mode
+    if not app_opts.http_api:
+        webview = Webview(
+            debug=app_opts.debug, title="Clan App", size=Size(1280, 1024, SizeHint.NONE)
+        )
+
+        # Add middleware to the webview
+        webview.add_middleware(ArgumentParsingMiddleware(api=API))
+        webview.add_middleware(LoggingMiddleware(log_manager=log_manager))
+        webview.add_middleware(MethodExecutionMiddleware(api=API))
+
+        # Create the bridge
+        webview.create_bridge()
+
+        # Init BAKEND_THREADS global in tasks module
+        tasks.BAKEND_THREADS = webview.threads
+
+        webview.bind_jsonschema_api(API, log_manager=log_manager)
+        webview.navigate(content_uri)
+        webview.run()
+
     return 0

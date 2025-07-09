@@ -47,8 +47,8 @@ class ArgumentParsingMiddleware(Middleware):
             log.exception(
                 f"Error while parsing arguments for {context.request.method_name}"
             )
-            context.bridge.send_error_response(
-                context.request.op_key,
+            context.bridge.send_api_error_response(
+                context.request.op_key or "unknown",
                 str(e),
                 ["argument_parsing", context.request.method_name],
             )
