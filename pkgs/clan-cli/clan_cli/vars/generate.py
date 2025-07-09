@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import sys
+from contextlib import ExitStack
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
@@ -179,12 +180,6 @@ def bubblewrap_cmd(generator: str, tmpdir: Path) -> list[str]:
     # fmt: on
 
 
-def sandbox_exec_cmd(generator: str, tmpdir: Path) -> tuple[list[str], str]:
-    from clan_lib.sandbox_exec import sandbox_exec_cmd as _sandbox_exec_cmd
-
-    return _sandbox_exec_cmd(generator, tmpdir)
-
-
 # TODO: implement caching to not decrypt the same secret multiple times
 def decrypt_dependencies(
     machine: "Machine",
@@ -262,7 +257,8 @@ def execute_generator(
             raise ClanError(msg) from e
 
     env = os.environ.copy()
-    with TemporaryDirectory(prefix="vars-") as _tmpdir:
+    with ExitStack() as stack:
+        _tmpdir = stack.enter_context(TemporaryDirectory(prefix="vars-"))
         tmpdir = Path(_tmpdir).resolve()
         tmpdir_in = tmpdir / "in"
         tmpdir_prompts = tmpdir / "prompts"
@@ -286,11 +282,12 @@ def execute_generator(
 
         final_script = generator.final_script()
 
-        profile_path = None
         if sys.platform == "linux" and bwrap.bubblewrap_works():
             cmd = bubblewrap_cmd(str(final_script), tmpdir)
         elif sys.platform == "darwin":
-            cmd, profile_path = sandbox_exec_cmd(str(final_script), tmpdir)
+            from clan_lib.sandbox_exec import sandbox_exec_cmd
+
+            cmd = stack.enter_context(sandbox_exec_cmd(str(final_script), tmpdir))
         else:
             # For non-sandboxed execution (Linux without bubblewrap or other platforms)
             if not no_sandbox:
@@ -301,15 +298,7 @@ def execute_generator(
                 raise ClanError(msg)
             cmd = ["bash", "-c", str(final_script)]
 
-        try:
-            run(cmd, RunOpts(env=env, cwd=tmpdir))
-        finally:
-            # Clean up the temporary profile file if needed
-            if profile_path:
-                try:
-                    os.unlink(profile_path)
-                except OSError:
-                    pass
+        run(cmd, RunOpts(env=env, cwd=tmpdir))
         files_to_commit = []
         # store secrets
         files = generator.files
