@@ -44,6 +44,41 @@ def get_machine_names(repo_root: Path, check_attr: str, system: str) -> list[str
     return json.loads(out.stdout.strip())
 
 
+class TestFlake(Flake):
+    """
+    Flake class which is able to deal with not having an actual flake.
+    All nix build and eval calls will be forwarded to:
+      clan-core#checks.<system>.<test_name>
+    """
+
+    def __init__(self, check_attr: str, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the TestFlake with the check attribute.
+        """
+        super().__init__(*args, **kwargs)
+        self.check_attr = check_attr
+
+    def select_machine(self, machine_name: str, selector: str) -> Any:
+        """
+        Select a nix attribute for a specific machine.
+
+        Args:
+            machine_name: The name of the machine
+            selector: The attribute selector string relative to the machine config
+            apply: Optional function to apply to the result
+        """
+        from clan_lib.nix import nix_config
+
+        config = nix_config()
+        system = config["system"]
+        test_system = system
+        if system.endswith("-darwin"):
+            test_system = system.rstrip("darwin") + "linux"
+
+        full_selector = f'checks."{test_system}".{self.check_attr}.machinesCross.{system}."{machine_name}".{selector}'
+        return self.select(full_selector)
+
+
 class TestMachine(Machine):
     """
     Machine class which is able to deal with not having an actual flake.
@@ -151,7 +186,7 @@ def main() -> None:
     if system.endswith("-darwin"):
         test_system = system.rstrip("darwin") + "linux"
 
-    flake = Flake(str(opts.repo_root))
+    flake = TestFlake(opts.check_attr, str(opts.repo_root))
     machine_names = get_machine_names(
         opts.repo_root,
         opts.check_attr,
@@ -163,6 +198,9 @@ def main() -> None:
             f"checks.{test_system}.{opts.check_attr}.machinesCross.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
         ]
     )
+
+    # This hack is necessary because the sops store uses flake.path to find the machine keys
+    flake._path = opts.test_dir  # noqa: SLF001
 
     machines = [
         TestMachine(name, flake, test_dir, opts.check_attr) for name in machine_names
