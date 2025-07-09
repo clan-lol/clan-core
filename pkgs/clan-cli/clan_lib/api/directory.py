@@ -69,7 +69,7 @@ def blk_from_dict(data: dict) -> BlkInfo:
 
 
 @API.register
-def list_block_devices() -> Blockdevices:
+def list_system_storage_devices() -> Blockdevices:
     """
     List local block devices by running `lsblk`.
 
