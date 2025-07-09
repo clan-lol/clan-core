@@ -74,8 +74,8 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         response_dict = dataclass_to_dict(response)
         self._send_json_response_with_status(response_dict, 200)
         log.debug(
-            f"HTTP response for {response._op_key}: {json.dumps(response_dict, indent=2)}"
-        )  # noqa: SLF001
+            f"HTTP response for {response._op_key}: {json.dumps(response_dict, indent=2)}"  # noqa: SLF001
+        )
 
     def _create_success_response(
         self, op_key: str, data: dict[str, Any]
