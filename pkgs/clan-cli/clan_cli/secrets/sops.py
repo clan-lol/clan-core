@@ -235,7 +235,7 @@ def sops_run(
     call: Operation,
     secret_path: Path,
     public_keys: Iterable[SopsKey],
-    age_plugins: list[str] | None,
+    age_plugins: list[str],
     run_opts: RunOpts | None = None,
 ) -> tuple[int, str]:
     """Call the sops binary for the given operation."""
@@ -243,8 +243,6 @@ def sops_run(
     # one place because calling into sops needs to be done with a carefully
     # setup context, and I don't feel good about the idea of having that logic
     # exist in multiple places.
-    if age_plugins is None:
-        age_plugins = []
     sops_cmd = ["sops"]
     environ = os.environ.copy()
     with NamedTemporaryFile(delete=False, mode="w") as manifest:
@@ -463,7 +461,7 @@ def ensure_admin_public_keys(flake_dir: Path) -> set[SopsKey]:
 def update_keys(
     secret_path: Path,
     keys: Iterable[SopsKey],
-    age_plugins: list[str] | None = None,
+    age_plugins: list[str],
 ) -> list[Path]:
     secret_path = secret_path / "secret"
     error_msg = f"Could not update keys for {secret_path}"
@@ -483,7 +481,7 @@ def encrypt_file(
     secret_path: Path,
     content: str | IO[bytes] | bytes | None,
     pubkeys: list[SopsKey],
-    age_plugins: list[str] | None = None,
+    age_plugins: list[str],
 ) -> None:
     folder = secret_path.parent
     folder.mkdir(parents=True, exist_ok=True)
@@ -545,7 +543,7 @@ def encrypt_file(
             Path(source.name).unlink()
 
 
-def decrypt_file(secret_path: Path, age_plugins: list[str] | None = None) -> str:
+def decrypt_file(secret_path: Path, age_plugins: list[str]) -> str:
     # decryption uses private keys from the environment or default paths:
     no_public_keys_needed: list[SopsKey] = []
 

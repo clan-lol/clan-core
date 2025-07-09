@@ -42,7 +42,7 @@ def add_user(
     updated_paths = [path]
 
     filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
-    updated_paths.extend(update_secrets(flake_dir, filter_user_secrets))
+    updated_paths.extend(update_secrets(flake_dir, [], filter_user_secrets))
     commit_files(
         updated_paths,
         flake_dir,
@@ -50,7 +50,7 @@ def add_user(
     )
 
 
-def remove_user(flake_dir: Path, name: str) -> None:
+def remove_user(flake_dir: Path, name: str, age_plugins: list[str]) -> None:
     updated_paths: list[Path] = []
     # Remove the user from any group where it belonged:
     groups_dir = sops_groups_folder(flake_dir)
@@ -64,13 +64,15 @@ def remove_user(flake_dir: Path, name: str) -> None:
                 continue
             log.info(f"Removing user {name} from group {group}")
             updated_paths.extend(
-                groups.remove_member(flake_dir, group.name, groups.users_folder, name),
+                groups.remove_member(
+                    flake_dir, group.name, groups.users_folder, name, age_plugins
+                ),
             )
     # Remove the user's key:
     updated_paths.extend(remove_object(sops_users_folder(flake_dir), name))
     # Remove the user from any secret where it was used:
     filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
-    updated_paths.extend(update_secrets(flake_dir, filter_user_secrets))
+    updated_paths.extend(update_secrets(flake_dir, age_plugins, filter_user_secrets))
     commit_files(updated_paths, flake_dir, f"Remove user {name}")
 
 
@@ -97,7 +99,7 @@ def add_secret(
     flake_dir: Path,
     user: str,
     secret: str,
-    age_plugins: list[str] | None,
+    age_plugins: list[str],
 ) -> None:
     updated_paths = secrets.allow_member(
         secrets.users_folder(sops_secrets_folder(flake_dir) / secret),
@@ -116,7 +118,7 @@ def remove_secret(
     flake_dir: Path,
     user: str,
     secret: str,
-    age_plugins: list[str] | None,
+    age_plugins: list[str],
 ) -> None:
     updated_paths = secrets.disallow_member(
         secrets.users_folder(sops_secrets_folder(flake_dir) / secret),
@@ -141,6 +143,7 @@ def add_user_key(
     flake_dir: Path,
     name: str,
     keys: Iterable[sops.SopsKey],
+    age_plugins: list[str],
 ) -> None:
     path = sops_users_folder(flake_dir) / name
 
@@ -148,7 +151,7 @@ def add_user_key(
     updated_paths = [path]
 
     filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
-    updated_paths.extend(update_secrets(flake_dir, filter_user_secrets))
+    updated_paths.extend(update_secrets(flake_dir, age_plugins, filter_user_secrets))
     commit_files(
         updated_paths,
         flake_dir,
@@ -160,6 +163,7 @@ def remove_user_key(
     flake_dir: Path,
     name: str,
     keys: Iterable[sops.SopsKey],
+    age_plugins: list[str],
 ) -> None:
     path = sops_users_folder(flake_dir) / name
 
@@ -167,7 +171,7 @@ def remove_user_key(
     updated_paths = [path]
 
     filter_user_secrets = get_secrets_filter_for_user(flake_dir, name)
-    updated_paths.extend(update_secrets(flake_dir, filter_user_secrets))
+    updated_paths.extend(update_secrets(flake_dir, age_plugins, filter_user_secrets))
     commit_files(
         updated_paths,
         flake_dir,
@@ -219,7 +223,7 @@ def get_command(args: argparse.Namespace) -> None:
 
 def remove_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
-    remove_user(flake.path, args.user)
+    remove_user(flake.path, args.user, load_age_plugins(flake))
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
@@ -245,13 +249,13 @@ def remove_secret_command(args: argparse.Namespace) -> None:
 def add_key_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
 
-    add_user_key(flake.path, args.user, _key_args(args))
+    add_user_key(flake.path, args.user, _key_args(args), load_age_plugins(flake))
 
 
 def remove_key_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
 
-    remove_user_key(flake.path, args.user, _key_args(args))
+    remove_user_key(flake.path, args.user, _key_args(args), load_age_plugins(flake))
 
 
 def register_users_parser(parser: argparse.ArgumentParser) -> None:

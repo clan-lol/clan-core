@@ -8,6 +8,7 @@ from clan_cli.secrets.machines import remove_machine as secrets_machine_remove
 from clan_cli.secrets.secrets import (
     list_secrets,
 )
+from clan_cli.secrets.sops import load_age_plugins
 
 from clan_lib.api import API
 from clan_lib.dirs import specific_machine_dir
@@ -68,4 +69,8 @@ def delete_machine(machine: Machine) -> None:
     changed_paths.extend(machine.secret_vars_store.delete_store(machine.name))
     # Remove the machine's key, and update secrets & vars that referenced it:
     if secrets_has_machine(machine.flake.path, machine.name):
-        secrets_machine_remove(machine.flake.path, machine.name)
+        secrets_machine_remove(
+            machine.flake.path,
+            machine.name,
+            age_plugins=load_age_plugins(machine.flake),
+        )

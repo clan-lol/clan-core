@@ -70,17 +70,18 @@ class SecretStore(StoreBase):
         if has_machine(self.flake.path, machine):
             return
         priv_key, pub_key = sops.generate_private_key()
+        age_plugins = load_age_plugins(self.flake)
         encrypt_secret(
             self.flake.path,
             sops_secrets_folder(self.flake.path) / f"{machine}-age.key",
+            age_plugins,
             priv_key,
             add_groups=self.flake.select_machine(
                 machine,
                 "config.clan.core.sops.defaultGroups",
             ),
-            age_plugins=load_age_plugins(self.flake),
         )
-        add_machine(self.flake.path, machine, pub_key, False)
+        add_machine(self.flake.path, machine, pub_key, False, age_plugins)
 
     @property
     def store_name(self) -> str:
@@ -187,6 +188,7 @@ class SecretStore(StoreBase):
         encrypt_secret(
             self.flake.path,
             secret_folder,
+            load_age_plugins(self.flake),
             value,
             add_machines=[machine] if var.deploy else [],
             add_groups=self.flake.select_machine(
@@ -194,7 +196,6 @@ class SecretStore(StoreBase):
                 "config.clan.core.sops.defaultGroups",
             ),
             git_commit=False,
-            age_plugins=load_age_plugins(self.flake),
         )
         return secret_folder
 

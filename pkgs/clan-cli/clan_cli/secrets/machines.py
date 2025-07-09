@@ -19,7 +19,9 @@ from .sops import load_age_plugins, read_key, write_key
 from .types import public_or_private_age_key_type, secret_name_type
 
 
-def add_machine(flake_dir: Path, name: str, pubkey: str, force: bool) -> None:
+def add_machine(
+    flake_dir: Path, name: str, pubkey: str, force: bool, age_plugins: list[str]
+) -> None:
     machine_path = sops_machines_folder(flake_dir) / name
     write_key(
         machine_path,
@@ -29,7 +31,7 @@ def add_machine(flake_dir: Path, name: str, pubkey: str, force: bool) -> None:
     paths = [machine_path]
 
     filter_machine_secrets = get_secrets_filter_for_machine(flake_dir, name)
-    paths.extend(update_secrets(flake_dir, filter_machine_secrets))
+    paths.extend(update_secrets(flake_dir, age_plugins, filter_machine_secrets))
     commit_files(
         paths,
         flake_dir,
@@ -37,10 +39,10 @@ def add_machine(flake_dir: Path, name: str, pubkey: str, force: bool) -> None:
     )
 
 
-def remove_machine(flake_dir: Path, name: str) -> None:
+def remove_machine(flake_dir: Path, name: str, age_plugins: list[str]) -> None:
     removed_paths = remove_object(sops_machines_folder(flake_dir), name)
     filter_machine_secrets = get_secrets_filter_for_machine(flake_dir, name)
-    removed_paths.extend(update_secrets(flake_dir, filter_machine_secrets))
+    removed_paths.extend(update_secrets(flake_dir, age_plugins, filter_machine_secrets))
     commit_files(
         removed_paths,
         flake_dir,
@@ -72,7 +74,7 @@ def add_secret(
     flake_dir: Path,
     machine: str,
     secret_path: Path,
-    age_plugins: list[str] | None,
+    age_plugins: list[str],
 ) -> None:
     paths = secrets.allow_member(
         secrets.machines_folder(secret_path),
@@ -91,7 +93,7 @@ def remove_secret(
     flake_dir: Path,
     machine: str,
     secret: str,
-    age_plugins: list[str] | None,
+    age_plugins: list[str],
 ) -> None:
     updated_paths = secrets.disallow_member(
         secrets.machines_folder(sops_secrets_folder(flake_dir) / secret),
@@ -114,7 +116,13 @@ def list_command(args: argparse.Namespace) -> None:
 
 def add_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
-    add_machine(flake.path, args.machine, args.key, args.force)
+    add_machine(
+        flake.path,
+        args.machine,
+        args.key,
+        args.force,
+        age_plugins=load_age_plugins(flake),
+    )
 
 
 def get_command(args: argparse.Namespace) -> None:
@@ -124,7 +132,7 @@ def get_command(args: argparse.Namespace) -> None:
 
 def remove_command(args: argparse.Namespace) -> None:
     flake = require_flake(args.flake)
-    remove_machine(flake.path, args.machine)
+    remove_machine(flake.path, args.machine, age_plugins=load_age_plugins(flake))
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
