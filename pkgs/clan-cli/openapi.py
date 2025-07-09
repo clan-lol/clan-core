@@ -78,6 +78,15 @@ def operation_to_tag(op_name: str) -> str:
 
 def fix_nullables(schema: dict) -> dict:
     if isinstance(schema, dict):
+        if "type" in schema and schema["type"] == "null":
+            # Convert 'type: null' to 'nullable: true'
+            new_schema = {"nullable": True}
+            # Merge any other keys from original schema except type
+            for k, v in schema.items():
+                if k != "type":
+                    new_schema[k] = v
+            return fix_nullables(new_schema)
+
         # If 'oneOf' present
         if "oneOf" in schema and isinstance(schema["oneOf"], list):
             # Filter out 'type:null' schemas
@@ -98,6 +107,38 @@ def fix_nullables(schema: dict) -> dict:
         return {k: fix_nullables(v) for k, v in schema.items()}
     if isinstance(schema, list):
         return [fix_nullables(i) for i in schema]
+    return schema
+
+
+def fix_empty_required(schema: dict) -> dict:
+    """
+    Recursively remove "required: []" from schemas
+    This is valid in json schema, but leads to errors in some OpenAPI 3.0 renderers.
+    """
+
+    if isinstance(schema, dict):
+        if "required" in schema and schema["required"] == []:
+            # Remove empty required list
+            new_schema = {k: v for k, v in schema.items() if k != "required"}
+            return fix_empty_required(new_schema)
+
+        # If 'oneOf' present
+        if "oneOf" in schema and isinstance(schema["oneOf"], list):
+            # Recursively fix each schema in oneOf
+            schema["oneOf"] = [fix_empty_required(s) for s in schema["oneOf"]]
+            # Remove empty required from each oneOf schema
+            schema["oneOf"] = [
+                s
+                for s in schema["oneOf"]
+                if not (isinstance(s, dict) and s.get("required") == [])
+            ]
+            return schema
+
+        return {k: fix_empty_required(v) for k, v in schema.items()}
+
+    if isinstance(schema, list):
+        return schema  # ignore lists
+
     return schema
 
 
@@ -193,6 +234,9 @@ def main() -> None:
         args_schema = fix_nullables(deepcopy(func_schema["properties"]["arguments"]))
         return_schema = fix_nullables(deepcopy(func_schema["properties"]["return"]))
         fix_error_refs(return_schema)
+
+        args_schema = fix_empty_required(args_schema)
+        return_schema = fix_empty_required(return_schema)
         # Register schemas under components
         args_name = make_schema_name(func_name, "args")
         return_name = make_schema_name(func_name, "return")
