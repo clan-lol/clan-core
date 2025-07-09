@@ -50,6 +50,7 @@ lint.ignore = [
   # We might actually want to fix this.
   "A005",
   "TRY301",
+  "TRY300",
   "ANN401",
   "RUF100",
   "TRY400",

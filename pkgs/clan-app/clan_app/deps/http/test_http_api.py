@@ -147,7 +147,7 @@ class TestHttpApiServer:
             # Test API call endpoint
             request_data: dict = {"header": {}, "body": {"message": "World"}}
             req: Request = Request(
-                "http://127.0.0.1:8081/api/call/test_method",
+                "http://127.0.0.1:8081/api/v1/test_method",
                 data=json.dumps(request_data).encode(),
                 headers={"Content-Type": "application/json"},
             )
@@ -182,7 +182,7 @@ class TestHttpApiServer:
             # Test method not found
             request_data: dict = {"header": {}, "body": {}}
             req: Request = Request(
-                "http://127.0.0.1:8081/api/call/nonexistent_method",
+                "http://127.0.0.1:8081/api/v1/nonexistent_method",
                 data=json.dumps(request_data).encode(),
                 headers={"Content-Type": "application/json"},
             )
@@ -194,7 +194,7 @@ class TestHttpApiServer:
 
             # Test invalid JSON
             req = Request(
-                "http://127.0.0.1:8081/api/call/test_method",
+                "http://127.0.0.1:8081/api/v1/test_method",
                 data=b"invalid json",
                 headers={"Content-Type": "application/json"},
             )
@@ -264,7 +264,7 @@ class TestIntegration:
                 "body": {"message": "Integration"},
             }
             req: Request = Request(
-                "http://127.0.0.1:8082/api/call/test_method",
+                "http://127.0.0.1:8082/api/v1/test_method",
                 data=json.dumps(request_data).encode(),
                 headers={"Content-Type": "application/json"},
             )
