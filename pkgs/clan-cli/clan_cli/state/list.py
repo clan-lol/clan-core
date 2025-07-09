@@ -1,11 +1,11 @@
 import argparse
 import json
 import logging
-from pathlib import Path
 
 from clan_lib.cmd import RunOpts, run
 from clan_lib.dirs import get_clan_flake_toplevel_or_env
 from clan_lib.errors import ClanCmdError, ClanError
+from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_eval
 
@@ -19,11 +19,8 @@ log = logging.getLogger(__name__)
 
 
 def list_state_folders(machine: Machine, service: None | str = None) -> None:
-    uri = "TODO"
-    if (clan_dir_result := get_clan_flake_toplevel_or_env()) is not None:
-        flake = clan_dir_result
-    else:
-        flake = Path()
+    # Use the flake from the machine object (which comes from CLI --flake argument)
+    flake = machine.flake.path
     cmd = nix_eval(
         [
             f"{flake}#nixosConfigurations.{machine.name}.config.clan.core.state",
@@ -36,11 +33,11 @@ def list_state_folders(machine: Machine, service: None | str = None) -> None:
         proc = run(cmd, RunOpts(prefix=machine.name))
         res = proc.stdout.strip()
     except ClanCmdError as e:
-        msg = "Clan might not have meta attributes"
+        msg = "Failed to evaluate machine state configuration"
         raise ClanError(
             msg,
-            location=f"show_clan {uri}",
-            description="Evaluation failed on clanInternals.meta attribute",
+            location=f"clan state list {machine.name}",
+            description="Evaluation failed on clan.core.state attribute",
         ) from e
 
     state = json.loads(res)
@@ -87,9 +84,20 @@ def list_state_folders(machine: Machine, service: None | str = None) -> None:
 
 
 def list_command(args: argparse.Namespace) -> None:
-    list_state_folders(
-        Machine(name=args.machine, flake=args.flake), service=args.service
-    )
+    if args.flake:
+        flake = args.flake
+    else:
+        tmp = get_clan_flake_toplevel_or_env()
+        flake = Flake(str(tmp)) if tmp else None
+
+    if not flake:
+        msg = "No clan found."
+        description = (
+            "Run this command in a clan directory or specify the --flake option"
+        )
+        raise ClanError(msg, description=description)
+
+    list_state_folders(Machine(name=args.machine, flake=flake), service=args.service)
 
 
 def register_state_parser(parser: argparse.ArgumentParser) -> None:
