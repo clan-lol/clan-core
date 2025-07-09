@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import sys
+from contextlib import ExitStack
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
@@ -119,7 +120,6 @@ class Generator:
         assert self.machine is not None
         assert self._flake is not None
         from clan_lib.machines.machines import Machine
-        from clan_lib.nix import nix_test_store
 
         machine = Machine(name=self.machine, flake=self._flake)
         output = Path(
@@ -257,7 +257,8 @@ def execute_generator(
             raise ClanError(msg) from e
 
     env = os.environ.copy()
-    with TemporaryDirectory(prefix="vars-") as _tmpdir:
+    with ExitStack() as stack:
+        _tmpdir = stack.enter_context(TemporaryDirectory(prefix="vars-"))
         tmpdir = Path(_tmpdir).resolve()
         tmpdir_in = tmpdir / "in"
         tmpdir_prompts = tmpdir / "prompts"
@@ -281,21 +282,23 @@ def execute_generator(
 
         final_script = generator.final_script()
 
-        if sys.platform == "linux":
-            if bwrap.bubblewrap_works():
-                cmd = bubblewrap_cmd(str(final_script), tmpdir)
-            else:
-                if not no_sandbox:
-                    msg = (
-                        f"Cannot safely execute generator {generator.name}: Sandboxing is not available on this system\n"
-                        f"Re-run 'vars generate' with '--no-sandbox' to disable sandboxing"
-                    )
-                    raise ClanError(msg)
-                cmd = ["bash", "-c", str(final_script)]
+        if sys.platform == "linux" and bwrap.bubblewrap_works():
+            cmd = bubblewrap_cmd(str(final_script), tmpdir)
+        elif sys.platform == "darwin":
+            from clan_lib.sandbox_exec import sandbox_exec_cmd
+
+            cmd = stack.enter_context(sandbox_exec_cmd(str(final_script), tmpdir))
         else:
-            # TODO: implement sandboxing for macOS using sandbox-exec
+            # For non-sandboxed execution (Linux without bubblewrap or other platforms)
+            if not no_sandbox:
+                msg = (
+                    f"Cannot safely execute generator {generator.name}: Sandboxing is not available on this system\n"
+                    f"Re-run 'vars generate' with '--no-sandbox' to disable sandboxing"
+                )
+                raise ClanError(msg)
             cmd = ["bash", "-c", str(final_script)]
-        run(cmd, RunOpts(env=env))
+
+        run(cmd, RunOpts(env=env, cwd=tmpdir))
         files_to_commit = []
         # store secrets
         files = generator.files
