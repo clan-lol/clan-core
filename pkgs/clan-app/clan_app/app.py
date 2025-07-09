@@ -85,10 +85,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
         # HTTP-only mode - keep the server running
         log.info("HTTP API server running...")
         log.info(
-            f"Available API methods at: http://{app_opts.http_host}:{app_opts.http_port}/api/methods"
-        )
-        log.info(
-            f"Example request: curl -X POST http://{app_opts.http_host}:{app_opts.http_port}/api/v1/list_log_days"
+            f"Swagger: http://{app_opts.http_host}:{app_opts.http_port}/api/swagger"
         )
 
         log.info("Press Ctrl+C to stop the server")
