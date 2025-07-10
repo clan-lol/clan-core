@@ -103,16 +103,16 @@ class MethodRegistry:
 ---
 # Example
 
-The function 'open_file()' depends on the platform.
+The function 'get_system_file()' depends on the platform.
 
-def open_file(file_request: FileRequest) -> str | None:
+def get_system_file(file_request: FileRequest) -> str | None:
     # In GTK we open a file dialog window
     # In Android we open a file picker dialog
     # and so on.
     pass
 
 # At runtime the clan-app must override platform specific functions
-API.register(open_file)
+API.register(get_system_file)
 ---
                 """
             raise NotImplementedError(msg)
