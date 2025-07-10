@@ -97,7 +97,7 @@ class MethodRegistry:
 
     def register_abstract(self, fn: Callable[..., T]) -> Callable[..., T]:
         @wraps(fn)
-        def wrapper(*args: Any, op_key: str, **kwargs: Any) -> ApiResponse[T]:
+        def wrapper(*args: Any, **kwargs: Any) -> ApiResponse[T]:
             msg = f"""{fn.__name__} - The platform didn't implement this function.
 
 ---

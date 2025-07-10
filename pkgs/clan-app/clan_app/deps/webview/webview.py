@@ -126,7 +126,7 @@ class Webview:
             )
         else:
             bridge = WebviewBridge(
-                webview=self, middleware_chain=tuple(self._middleware)
+                webview=self, middleware_chain=tuple(self._middleware), threads={}
             )
         self._bridge = bridge
         return bridge
