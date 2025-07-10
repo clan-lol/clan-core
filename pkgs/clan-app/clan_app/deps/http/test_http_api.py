@@ -1,13 +1,16 @@
 """Tests for HTTP API components."""
 
 import json
+import logging
 import time
 from unittest.mock import Mock
 from urllib.request import Request, urlopen
-
+import threading
 import pytest
 from clan_lib.api import MethodRegistry
+from clan_lib.async_run import is_async_cancelled
 from clan_lib.log_manager import LogManager
+from clan_lib.api import tasks
 
 from clan_app.api.middleware import (
     ArgumentParsingMiddleware,
@@ -15,6 +18,8 @@ from clan_app.api.middleware import (
     MethodExecutionMiddleware,
 )
 from clan_app.deps.http.http_server import HttpApiServer
+
+log = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -30,6 +35,21 @@ def mock_api() -> MethodRegistry:
     def test_method_with_error() -> dict[str, str]:
         msg = "Test error"
         raise ValueError(msg)
+
+    @api.register
+    def run_task_blocking(wtime: int) -> str:
+        """A long blocking task that simulates a long-running operation."""
+        time.sleep(1)
+
+        for i in range(wtime):
+            if is_async_cancelled():
+                log.debug("Task was cancelled")
+                return "Task was cancelled"
+            log.debug(
+                f"Processing {i} for {wtime}"
+            )
+            time.sleep(1)
+        return f"Task completed with wtime: {wtime}"
 
     return api
 
@@ -280,6 +300,78 @@ class TestIntegration:
         finally:
             # Always stop server
             server.stop()
+
+
+    def test_blocking_task(
+        self, mock_api: MethodRegistry, mock_log_manager: Mock
+    ) -> None:
+
+        shared_threads: dict[str, tasks.WebThread] = {}
+        tasks.BAKEND_THREADS = shared_threads
+
+        """Test a long-running blocking task."""
+        server: HttpApiServer = HttpApiServer(
+                    api=mock_api,
+                    host="127.0.0.1",
+                    port=8083,
+                    shared_threads=shared_threads,
+                )
+
+        # Add middleware
+        server.add_middleware(ArgumentParsingMiddleware(api=mock_api))
+        server.add_middleware(LoggingMiddleware(log_manager=mock_log_manager))
+        server.add_middleware(MethodExecutionMiddleware(api=mock_api))
+
+        # Start server
+        server.start()
+        time.sleep(0.1)  # Give server time to start
+
+
+        sucess = threading.Event()
+        def parallel_task() -> None:
+
+            time.sleep(1)
+            request_data: dict = {
+                "body": {"message": "Integration"},
+            }
+            req: Request = Request(
+                "http://127.0.0.1:8083/api/v1/test_method",
+                data=json.dumps(request_data).encode(),
+                headers={"Content-Type": "application/json"},
+            )
+            response = urlopen(req)
+            data: dict = json.loads(response.read().decode())
+
+            assert "body" in data
+            assert "header" in data
+            assert data["body"]["status"] == "success"
+            assert data["body"]["data"] == {"response": "Hello Integration!"}
+            sucess.set()
+
+        thread = threading.Thread(
+            target=parallel_task,
+            name="ParallelTaskThread",
+            daemon=True,
+        )
+        thread.start()
+
+        # Make API call
+        request_data: dict = {
+            "body": {"wtime": 3},
+        }
+        req: Request = Request(
+            "http://127.0.0.1:8083/api/v1/run_task_blocking",
+            data=json.dumps(request_data).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        response = urlopen(req)
+        data: dict = json.loads(response.read().decode())
+
+        # thread.join()
+        assert "body" in data
+        assert data["body"]["status"] == "success"
+        assert data["body"]["data"] == "Task completed with wtime: 3"
+        assert sucess.is_set(), "Parallel task did not complete successfully"
 
 
 if __name__ == "__main__":
