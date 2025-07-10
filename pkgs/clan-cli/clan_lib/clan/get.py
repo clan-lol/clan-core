@@ -1,8 +1,12 @@
+import logging
+
 from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.nix_models.clan import InventoryMeta
 from clan_lib.persist.inventory_store import InventoryStore
+
+log = logging.getLogger(__name__)
 
 
 @API.register

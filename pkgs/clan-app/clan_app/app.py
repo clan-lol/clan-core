@@ -10,7 +10,7 @@ from clan_lib.dirs import user_data_dir
 from clan_lib.log_manager import LogGroupConfig, LogManager
 from clan_lib.log_manager import api as log_manager_api
 
-from clan_app.api.file_gtk import open_file
+from clan_app.api.file_gtk import open_clan_folder, open_file
 from clan_app.api.middleware import (
     ArgumentParsingMiddleware,
     LoggingMiddleware,
@@ -56,10 +56,9 @@ def app_run(app_opts: ClanAppOptions) -> int:
 
     # Populate the API global with all functions
     load_in_all_api_functions()
-    API.overwrite_fn(open_file)
 
     # Create a shared threads dictionary for both HTTP and Webview modes
-    shared_threads = {}
+    shared_threads: dict[str, tasks.WebThread] = {}
     tasks.BAKEND_THREADS = shared_threads
 
     # Start HTTP API server if requested
@@ -113,6 +112,9 @@ def app_run(app_opts: ClanAppOptions) -> int:
             size=Size(1280, 1024, SizeHint.NONE),
             shared_threads=shared_threads,
         )
+
+        API.overwrite_fn(open_file)
+        API.overwrite_fn(open_clan_folder)
 
         # Add middleware to the webview
         webview.add_middleware(ArgumentParsingMiddleware(api=API))

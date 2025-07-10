@@ -1,11 +1,13 @@
 from pathlib import Path
 
+import pytest
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 
 from clan_lib.clan.check import check_clan_valid
 from clan_lib.flake import Flake
 
 
+@pytest.mark.with_core
 def test_check_clan_valid(
     temporary_home: Path, test_flake_with_core: FlakeForTest, test_flake: FlakeForTest
 ) -> None:
