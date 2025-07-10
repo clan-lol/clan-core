@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Swagger UI</title>
+    <title>Swagger UI with Interceptors</title>
+    <!-- Assuming these files are in the same directory -->
     <link rel="stylesheet" type="text/css" href="./swagger-ui.css" />
     <link rel="stylesheet" type="text/css" href="index.css" />
     <link
@@ -23,14 +24,90 @@
     <div id="swagger-ui"></div>
     <script src="./swagger-ui-bundle.js" charset="UTF-8"></script>
     <script src="./swagger-ui-standalone-preset.js" charset="UTF-8"></script>
-    <script src="./swagger-initializer.js" charset="UTF-8"></script>
+    <!-- Your swagger-initializer.js is not needed if you configure directly in the HTML -->
     <script>
       window.onload = () => {
         SwaggerUIBundle({
-          url: "./openapi.json", // Path to your OpenAPI 3 spec (YAML or JSON)
+          url: "./openapi.json", // Path to your OpenAPI 3 spec
           dom_id: "#swagger-ui",
           presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
           layout: "StandaloneLayout",
+          tryItOutEnabled: true,
+          deepLinking: true,
+          displayOperationId: true,
+
+          // --- INTERCEPTORS START HERE ---
+
+          /**
+           * requestInterceptor
+           * This function is called before a request is sent.
+           * It takes the request object and must return a modified request object.
+           * We will use it to wrap the user's input.
+           */
+          requestInterceptor: (request) => {
+            console.log("Intercepting request:", request);
+            
+            // Only modify requests that have a body (like POST, PUT)
+            if (request.body) {
+              try {
+                // The body from the UI is a string, so we parse it to an object.
+                const originalBody = JSON.parse(request.body);
+
+                // Create the new, nested structure.
+                const newBody = {
+                  body: originalBody,
+                  header: {} // Add an empty header object as per your example
+                };
+
+                // Replace the original body with the new, stringified, nested structure.
+                request.body = JSON.stringify(newBody);
+                
+                // Update the 'Content-Length' header to match the new body size.
+                request.headers['Content-Length'] = new Blob([request.body]).size;
+
+                console.log("Modified request body:", request.body);
+              } catch (e) {
+                // If the user's input isn't valid JSON, don't modify the request.
+                console.error("Request Interceptor: Could not parse body as JSON.", e);
+              }
+            }
+            return request; // Always return the request object
+          },
+
+          /**
+           * responseInterceptor
+           * This function is called after a response is received, but before it's displayed.
+           * It takes the response object and must return a modified response object.
+           * We will use it to un-nest the data for display.
+           */
+          responseInterceptor: (response) => {
+            console.log("Intercepting response:", response);
+
+            // Check if the response was successful and has data to process.
+            if (response.ok && response.data) {
+              try {
+                // The response data is a string, so we parse it into an object.
+                const fullResponse = JSON.parse(response.data);
+
+                // Check if the expected 'body' property exists.
+                if (fullResponse && typeof fullResponse.body !== 'undefined') {
+                  console.log("Found nested 'body' property. Un-nesting for display.");
+                  
+                  // Replace the response's data with JUST the nested 'body' object.
+                  // We stringify it with pretty-printing (2-space indentation) for readability in the UI.
+                  response.data = JSON.stringify(fullResponse.body, null, 2);
+                  response.text = response.data; // Also update the 'text' property
+                }
+              } catch (e) {
+                // If the response isn't the expected JSON structure, do nothing.
+                // This prevents errors on other endpoints that have a normal response.
+                console.error("Response Interceptor: Could not parse response or un-nest data.", e);
+              }
+            }
+            return response; // Always return the response object
+          }
+
+          // --- INTERCEPTORS END HERE ---
         });
       };
     </script>
