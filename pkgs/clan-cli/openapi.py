@@ -23,7 +23,6 @@ COMMON_VERBS = {
     "create",  # instantiate resource
     "set",  # update or configure
     "delete",  # remove resource
-    "open",  # initiate session, shell, file, etc.
     "check",  # validate, probe, or assert
     "run",  # start imperative task or action; machine-deploy etc.
 }
@@ -39,7 +38,6 @@ TOP_LEVEL_RESOURCES = {
     "clan",  # clan management
     "machine",  # machine management
     "task",  # task management
-    "file",  # file operations
     "secret",  # sops & key operations
     "log",  # log operations
     "generator",  # vars generators operations
