@@ -1,5 +1,5 @@
-// Working SolidJS + Three.js cube scene with grid arrangement
-import { createSignal, createEffect, onCleanup, onMount } from "solid-js";
+// Working SolidJS + Three.js cube scene with reactive positioning
+import { createSignal, createEffect, onCleanup, onMount, createMemo } from "solid-js";
 import * as THREE from "three";
 
 // Cube Data Model
@@ -29,7 +29,7 @@ export function CubeScene() {
   let isAnimating = false; // Flag to prevent multiple loops
   let frameCount = 0;
 
-  const [cubes, setCubes] = createSignal<CubeData[]>([]);
+  const [ids, setIds] = createSignal<string[]>([]);
   const [selectedIds, setSelectedIds] = createSignal<Set<string>>(new Set());
   const [cameraInfo, setCameraInfo] = createSignal({
     position: { x: 0, y: 0, z: 0 },
@@ -50,6 +50,15 @@ export function CubeScene() {
     return [x, 0.5, z];
   }
 
+  // Reactive cubes memo - this recalculates whenever ids() changes
+  const cubes = createMemo(() => {
+    return ids().map((id, index) => ({
+      id,
+      position: getGridPosition(index),
+      color: "blue",
+    }));
+  });
+
   // Create multi-colored cube materials for different faces
   function createCubeMaterials() {
     const materials = [
@@ -62,6 +71,7 @@ export function CubeScene() {
     ];
     return materials;
   }
+
   function createBaseMaterials() {
     const materials = [
       new THREE.MeshBasicMaterial({ color: 0xdce4e5 }), // Right face - medium
@@ -87,52 +97,25 @@ export function CubeScene() {
   // === Add/Delete Cube API ===
   function addCube() {
     const id = crypto.randomUUID();
-    const currentCount = cubes().length;
-    const cube: CubeData = {
-      id,
-      position: getGridPosition(currentCount),
-      color: "blue",
-    };
-    setCubes((prev) => [...prev, cube]);
+    setIds((prev) => [...prev, id]);
   }
 
-  function deleteSelectedCubes(ids: Set<string>) {
-    ids.forEach((id) => {
-      deleteCube(id);
-    });
+  function deleteSelectedCubes(selectedSet: Set<string>) {
+    if (selectedSet.size === 0) return;
+
+    setIds((prev) => prev.filter(id => !selectedSet.has(id)));
     setSelectedIds(new Set<string>()); // Clear selection after deletion
   }
 
   function deleteCube(id: string) {
-    // Remove cube mesh
-    const mesh = meshMap.get(id);
-    if (mesh) {
-      scene.remove(mesh);
-      mesh.geometry.dispose();
-      // Dispose materials properly
-      if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((material) => material.dispose());
-      } else {
-        mesh.material.dispose();
-      }
-      meshMap.delete(id);
-    }
+    setIds((prev) => prev.filter(cubeId => cubeId !== id));
 
-    // Remove base mesh - THIS WAS MISSING!
-    const base = baseMap.get(id);
-    if (base) {
-      scene.remove(base);
-      base.geometry.dispose();
-      // Dispose base materials properly
-      if (Array.isArray(base.material)) {
-        base.material.forEach((material) => material.dispose());
-      } else {
-        base.material.dispose();
-      }
-      baseMap.delete(id);
-    }
-
-    setCubes((prev) => prev.filter((c) => c.id !== id));
+    // Also remove from selection if it was selected
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   }
 
   function toggleSelection(id: string) {
@@ -385,14 +368,18 @@ export function CubeScene() {
     });
   });
 
-  // Effect to manage cube meshes
+  // Effect to manage cube meshes - this runs whenever cubes() changes
   createEffect(() => {
+    const currentCubes = cubes();
     const existing = new Set(meshMap.keys());
 
     // Update existing cubes and create new ones
-    cubes().forEach((cube) => {
-      if (!meshMap.has(cube.id)) {
-        // Create cube mesh
+    currentCubes.forEach((cube) => {
+      const existingMesh = meshMap.get(cube.id);
+      const existingBase = baseMap.get(cube.id);
+
+      if (!existingMesh) {
+        // Create new cube mesh
         const cubeMaterials = createCubeMaterials();
         const mesh = new THREE.Mesh(sharedCubeGeometry, cubeMaterials);
         mesh.castShadow = true;
@@ -402,18 +389,51 @@ export function CubeScene() {
         scene.add(mesh);
         meshMap.set(cube.id, mesh);
 
-        // Create base mesh
+        // Create new base mesh
         const base = createCubeBase(cube.position);
         base.userData.id = cube.id;
         scene.add(base);
         baseMap.set(cube.id, base);
+      } else {
+        // Update existing mesh position
+        existingMesh.position.set(...cube.position);
+        if (existingBase) {
+          existingBase.position.set(cube.position[0], cube.position[1] - 0.5 - 0.025, cube.position[2]);
+        }
       }
+
       existing.delete(cube.id);
     });
 
     // Remove cubes that are no longer in the state
     existing.forEach((id) => {
-      deleteCube(id);
+      // Remove cube mesh
+      const mesh = meshMap.get(id);
+      if (mesh) {
+        scene.remove(mesh);
+        mesh.geometry.dispose();
+        // Dispose materials properly
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach((material) => material.dispose());
+        } else {
+          mesh.material.dispose();
+        }
+        meshMap.delete(id);
+      }
+
+      // Remove base mesh
+      const base = baseMap.get(id);
+      if (base) {
+        scene.remove(base);
+        base.geometry.dispose();
+        // Dispose base materials properly
+        if (Array.isArray(base.material)) {
+          base.material.forEach((material) => material.dispose());
+        } else {
+          base.material.dispose();
+        }
+        baseMap.delete(id);
+      }
     });
 
     updateMeshColors();
@@ -457,9 +477,9 @@ export function CubeScene() {
     <div>
       <div style={{ "margin-bottom": "10px" }}>
         <button onClick={addCube}>Add Cube</button>
-        <button onClick={()=>deleteSelectedCubes(selectedIds())}>Delete Cube</button>
+        <button onClick={()=>deleteSelectedCubes(selectedIds())}>Delete Selected</button>
         <span style={{ "margin-left": "10px" }}>
-          Selected: {selectedIds().size} cubes
+          Selected: {selectedIds().size} cubes | Total: {ids().length} cubes
         </span>
       </div>
 
