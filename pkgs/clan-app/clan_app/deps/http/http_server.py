@@ -1,6 +1,6 @@
 import logging
 import threading
-from http.server import HTTPServer
+from http.server import HTTPServer, ThreadingHTTPServer
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -36,7 +36,7 @@ class HttpApiServer:
         self._server_thread: threading.Thread | None = None
         # Bridge is now the request handler itself, no separate instance needed
         self._middleware: list[Middleware] = []
-        self.shared_threads = shared_threads or {}
+        self.shared_threads = shared_threads if shared_threads is not None else {}
 
     def add_middleware(self, middleware: "Middleware") -> None:
         """Add middleware to the middleware chain."""
@@ -84,9 +84,9 @@ class HttpApiServer:
             log.warning("HTTP server is already running")
             return
 
-        # Create the server
+        # Create the server using ThreadingHTTPServer for concurrent request handling
         handler_class = self._create_request_handler()
-        self._server = HTTPServer((self.host, self.port), handler_class)
+        self._server = ThreadingHTTPServer((self.host, self.port), handler_class)
 
         def run_server() -> None:
             if self._server:
