@@ -32,6 +32,7 @@ export function CubeScene() {
   const [ids, setIds] = createSignal<string[]>([]);
   const [selectedIds, setSelectedIds] = createSignal<Set<string>>(new Set());
   const [deletingIds, setDeletingIds] = createSignal<Set<string>>(new Set());
+  const [creatingIds, setCreatingIds] = createSignal<Set<string>>(new Set());
   const [cameraInfo, setCameraInfo] = createSignal({
     position: { x: 0, y: 0, z: 0 },
     spherical: { radius: 0, theta: 0, phi: 0 },
@@ -40,6 +41,7 @@ export function CubeScene() {
   // Animation configuration
   const ANIMATION_DURATION = 800; // milliseconds
   const DELETE_ANIMATION_DURATION = 400; // milliseconds
+  const CREATE_ANIMATION_DURATION = 600; // milliseconds
 
   // Grid configuration
   const GRID_SIZE = 10;
@@ -59,12 +61,14 @@ export function CubeScene() {
   const cubes = createMemo(() => {
     const currentIds = ids();
     const deleting = deletingIds();
+    const creating = creatingIds();
 
     // Include both active and deleting cubes for smooth transitions
     const allIds = [...new Set([...currentIds, ...Array.from(deleting)])];
 
     return allIds.map((id, index) => {
       const isDeleting = deleting.has(id);
+      const isCreating = creating.has(id);
       const activeIndex = currentIds.indexOf(id);
 
       return {
@@ -72,6 +76,7 @@ export function CubeScene() {
         position: getGridPosition(isDeleting ? -1 : activeIndex >= 0 ? activeIndex : index),
         color: "blue",
         isDeleting,
+        isCreating,
         targetPosition: activeIndex >= 0 ? getGridPosition(activeIndex) : getGridPosition(index),
       };
     });
@@ -118,6 +123,68 @@ export function CubeScene() {
       mesh.position.lerpVectors(startPosition, endPosition, easeProgress);
 
       if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    animate();
+  }
+
+  // Create animation helper
+  function animateCreate(mesh: THREE.Mesh, baseMesh: THREE.Mesh, onComplete: () => void) {
+    const startTime = Date.now();
+
+    // Start with zero scale and full opacity
+    mesh.scale.setScalar(0);
+    baseMesh.scale.setScalar(0);
+
+    // Ensure materials are fully opaque
+    if (Array.isArray(mesh.material)) {
+      mesh.material.forEach((material) => {
+        (material as THREE.MeshBasicMaterial).opacity = 1;
+        material.transparent = false;
+      });
+    } else {
+      (mesh.material as THREE.MeshBasicMaterial).opacity = 1;
+      mesh.material.transparent = false;
+    }
+
+    if (Array.isArray(baseMesh.material)) {
+      baseMesh.material.forEach((material) => {
+        (material as THREE.MeshBasicMaterial).opacity = 1;
+        material.transparent = false;
+      });
+    } else {
+      (baseMesh.material as THREE.MeshBasicMaterial).opacity = 1;
+      baseMesh.material.transparent = false;
+    }
+
+    function animate() {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / CREATE_ANIMATION_DURATION, 1);
+
+      // Smooth easing function with slight overshoot effect
+      let easeProgress;
+      if (progress < 0.8) {
+        // First 80% - smooth scale up
+        easeProgress = 1 - Math.pow(1 - progress / 0.8, 3);
+      } else {
+        // Last 20% - slight overshoot and settle
+        const overshootProgress = (progress - 0.8) / 0.2;
+        const overshoot = Math.sin(overshootProgress * Math.PI) * 0.1;
+        easeProgress = 1 + overshoot;
+      }
+
+      const scale = easeProgress;
+      mesh.scale.setScalar(scale);
+      baseMesh.scale.setScalar(scale);
+
+      if (progress >= 1) {
+        // Ensure final scale is exactly 1
+        mesh.scale.setScalar(1);
+        baseMesh.scale.setScalar(1);
+        onComplete();
+      } else {
         requestAnimationFrame(animate);
       }
     }
@@ -175,6 +242,7 @@ export function CubeScene() {
 
     animate();
   }
+
   function createCubeBase(cube_pos: [number, number, number]) {
     const baseMaterials = createBaseMaterials();
     const base = new THREE.Mesh(sharedBaseGeometry, baseMaterials);
@@ -187,7 +255,21 @@ export function CubeScene() {
   // === Add/Delete Cube API ===
   function addCube() {
     const id = crypto.randomUUID();
+
+    // Add to creating set first
+    setCreatingIds(prev => new Set([...prev, id]));
+
+    // Add to ids
     setIds((prev) => [...prev, id]);
+
+    // Remove from creating set after animation completes
+    setTimeout(() => {
+      setCreatingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, CREATE_ANIMATION_DURATION);
   }
 
   function deleteSelectedCubes(selectedSet: Set<string>) {
@@ -479,6 +561,7 @@ export function CubeScene() {
     const currentCubes = cubes();
     const existing = new Set(meshMap.keys());
     const deleting = deletingIds();
+    const creating = creatingIds();
 
     // Update existing cubes and create new ones
     currentCubes.forEach((cube) => {
@@ -501,6 +584,13 @@ export function CubeScene() {
         base.userData.id = cube.id;
         scene.add(base);
         baseMap.set(cube.id, base);
+
+        // Start create animation if this cube is being created
+        if (creating.has(cube.id)) {
+          animateCreate(mesh, base, () => {
+            // Animation complete callback - could add additional logic here
+          });
+        }
       } else if (!deleting.has(cube.id)) {
         // Only animate position if not being deleted
         const targetPosition = cube.targetPosition || cube.position;
@@ -596,6 +686,7 @@ export function CubeScene() {
       }
     });
   });
+
   createEffect(() => {
     selectedIds(); // Track the signal
     updateMeshColors();
