@@ -96,6 +96,13 @@ export function CubeScene() {
     setCubes((prev) => [...prev, cube]);
   }
 
+  function deleteSelectedCubes(ids: Set<string>) {
+    ids.forEach((id) => {
+      deleteCube(id);
+    });
+    setSelectedIds(new Set<string>()); // Clear selection after deletion
+  }
+
   function deleteCube(id: string) {
     // Remove cube mesh
     const mesh = meshMap.get(id);
@@ -450,6 +457,7 @@ export function CubeScene() {
     <div>
       <div style={{ "margin-bottom": "10px" }}>
         <button onClick={addCube}>Add Cube</button>
+        <button onClick={()=>deleteSelectedCubes(selectedIds())}>Delete Cube</button>
         <span style={{ "margin-left": "10px" }}>
           Selected: {selectedIds().size} cubes
         </span>
