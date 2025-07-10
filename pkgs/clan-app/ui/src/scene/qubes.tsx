@@ -1,5 +1,11 @@
 // Working SolidJS + Three.js cube scene with reactive positioning
-import { createSignal, createEffect, onCleanup, onMount, createMemo } from "solid-js";
+import {
+  createSignal,
+  createEffect,
+  onCleanup,
+  onMount,
+  createMemo,
+} from "solid-js";
 import * as THREE from "three";
 
 // Cube Data Model
@@ -44,16 +50,67 @@ export function CubeScene() {
   const CREATE_ANIMATION_DURATION = 600; // milliseconds
 
   // Grid configuration
-  const GRID_SIZE = 10;
+  const GRID_SIZE = 2;
   const CUBE_SPACING = 2;
 
   // Calculate grid position for a cube index with floating effect
-  function getGridPosition(index: number): [number, number, number] {
-    const x =
-      (index % GRID_SIZE) * CUBE_SPACING - (GRID_SIZE * CUBE_SPACING) / 2;
-    const z =
-      Math.floor(index / GRID_SIZE) * CUBE_SPACING -
-      (GRID_SIZE * CUBE_SPACING) / 2;
+  // function getGridPosition(index: number): [number, number, number] {
+  //   const x =
+  //     (index % GRID_SIZE) * CUBE_SPACING - (GRID_SIZE * CUBE_SPACING) / 2;
+  //   const z =
+  //     Math.floor(index / GRID_SIZE) * CUBE_SPACING -
+  //     (GRID_SIZE * CUBE_SPACING) / 2;
+  //   return [x, 0.5, z];
+  // }
+  // function getGridPosition(index: number): [number, number, number] {
+  //   if (index === 0) return [0, 0.5, 0];
+
+  //   let x = 0, z = 0;
+  //   let layer = 1;
+  //   let value = 1;
+
+  //   while (true) {
+  //     // right
+  //     for (let i = 0; i < layer; i++) {
+  //       x += 1;
+  //       if (value++ === index) return [x * CUBE_SPACING, 0.5, z * CUBE_SPACING];
+  //     }
+  //     // down
+  //     for (let i = 0; i < layer; i++) {
+  //       z += 1;
+  //       if (value++ === index) return [x * CUBE_SPACING, 0.5, z * CUBE_SPACING];
+  //     }
+  //     layer++;
+  //     // left
+  //     for (let i = 0; i < layer; i++) {
+  //       x -= 1;
+  //       if (value++ === index) return [x * CUBE_SPACING, 0.5, z * CUBE_SPACING];
+  //     }
+  //     // up
+  //     for (let i = 0; i < layer; i++) {
+  //       z -= 1;
+  //       if (value++ === index) return [x * CUBE_SPACING, 0.5, z * CUBE_SPACING];
+  //     }
+  //     layer++;
+
+  //     if (layer > 100) {
+  //       console.warn("Exceeded grid size, returning last position");
+  //       // If we exceed the index, return the last position
+  //       return [x * CUBE_SPACING, 0.5, z * CUBE_SPACING];
+  //     }
+  //   }
+  // }
+
+  // Circle IDEA:
+  // Need to talk with timo and W about this
+  function getCirclePosition(
+    index: number,
+    total: number,
+  ): [number, number, number] {
+    const r = Math.sqrt(total) * CUBE_SPACING; // Radius based on total cubes
+    const x = Math.cos((index / total) * 2 * Math.PI) * r;
+    const z = Math.sin((index / total) * 2 * Math.PI) * r;
+    // Position cubes at y = 0.5 to float above the ground
     return [x, 0.5, z];
   }
 
@@ -73,11 +130,18 @@ export function CubeScene() {
 
       return {
         id,
-        position: getGridPosition(isDeleting ? -1 : activeIndex >= 0 ? activeIndex : index),
-        color: "blue",
+        position: getCirclePosition(
+          isDeleting ? -1 : activeIndex >= 0 ? activeIndex : index,
+          currentIds.length,
+        ),
+        // position: getGridPosition(isDeleting ? -1 : activeIndex >= 0 ? activeIndex : index),
         isDeleting,
         isCreating,
-        targetPosition: activeIndex >= 0 ? getGridPosition(activeIndex) : getGridPosition(index),
+        // targetPosition: activeIndex >= 0 ? getGridPosition(activeIndex) : getGridPosition(index),
+        targetPosition:
+          activeIndex >= 0
+            ? getCirclePosition(activeIndex, currentIds.length)
+            : getCirclePosition(index, currentIds.length),
       };
     });
   });
@@ -108,7 +172,11 @@ export function CubeScene() {
   }
 
   // Animation helper function
-  function animateToPosition(mesh: THREE.Mesh, targetPosition: [number, number, number], duration: number = ANIMATION_DURATION) {
+  function animateToPosition(
+    mesh: THREE.Mesh,
+    targetPosition: [number, number, number],
+    duration: number = ANIMATION_DURATION,
+  ) {
     const startPosition = mesh.position.clone();
     const endPosition = new THREE.Vector3(...targetPosition);
     const startTime = Date.now();
@@ -131,7 +199,11 @@ export function CubeScene() {
   }
 
   // Create animation helper
-  function animateCreate(mesh: THREE.Mesh, baseMesh: THREE.Mesh, onComplete: () => void) {
+  function animateCreate(
+    mesh: THREE.Mesh,
+    baseMesh: THREE.Mesh,
+    onComplete: () => void,
+  ) {
     const startTime = Date.now();
 
     // Start with zero scale and full opacity
@@ -193,12 +265,16 @@ export function CubeScene() {
   }
 
   // Delete animation helper
-  function animateDelete(mesh: THREE.Mesh, baseMesh: THREE.Mesh, onComplete: () => void) {
+  function animateDelete(
+    mesh: THREE.Mesh,
+    baseMesh: THREE.Mesh,
+    onComplete: () => void,
+  ) {
     const startTime = Date.now();
     const startScale = mesh.scale.clone();
-    const startOpacity = Array.isArray(mesh.material) ?
-      (mesh.material[0] as THREE.MeshBasicMaterial).opacity :
-      (mesh.material as THREE.MeshBasicMaterial).opacity;
+    const startOpacity = Array.isArray(mesh.material)
+      ? (mesh.material[0] as THREE.MeshBasicMaterial).opacity
+      : (mesh.material as THREE.MeshBasicMaterial).opacity;
 
     function animate() {
       const elapsed = Date.now() - startTime;
@@ -257,14 +333,14 @@ export function CubeScene() {
     const id = crypto.randomUUID();
 
     // Add to creating set first
-    setCreatingIds(prev => new Set([...prev, id]));
+    setCreatingIds((prev) => new Set([...prev, id]));
 
     // Add to ids
     setIds((prev) => [...prev, id]);
 
     // Remove from creating set after animation completes
     setTimeout(() => {
-      setCreatingIds(prev => {
+      setCreatingIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
@@ -279,14 +355,14 @@ export function CubeScene() {
     setDeletingIds(selectedSet);
 
     // Start delete animations
-    selectedSet.forEach(id => {
+    selectedSet.forEach((id) => {
       const mesh = meshMap.get(id);
       const base = baseMap.get(id);
 
       if (mesh && base) {
         animateDelete(mesh, base, () => {
           // Remove from deleting set when animation completes
-          setDeletingIds(prev => {
+          setDeletingIds((prev) => {
             const next = new Set(prev);
             next.delete(id);
             return next;
@@ -297,7 +373,7 @@ export function CubeScene() {
 
     // Remove from ids after a short delay to allow animation to start
     setTimeout(() => {
-      setIds((prev) => prev.filter(id => !selectedSet.has(id)));
+      setIds((prev) => prev.filter((id) => !selectedSet.has(id)));
       setSelectedIds(new Set<string>()); // Clear selection after deletion
     }, 50);
   }
@@ -364,7 +440,8 @@ export function CubeScene() {
   onMount(() => {
     // Scene setup
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0);
+    // Transparent background
+    scene.background = null;
 
     // Camera setup
     camera = new THREE.PerspectiveCamera(
@@ -377,7 +454,7 @@ export function CubeScene() {
     camera.lookAt(0, 0, 0);
 
     // Renderer setup
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -594,18 +671,27 @@ export function CubeScene() {
       } else if (!deleting.has(cube.id)) {
         // Only animate position if not being deleted
         const targetPosition = cube.targetPosition || cube.position;
-        const currentPosition = existingMesh.position.toArray() as [number, number, number];
+        const currentPosition = existingMesh.position.toArray() as [
+          number,
+          number,
+          number,
+        ];
         const target = targetPosition;
 
         // Check if position actually changed
-        if (Math.abs(currentPosition[0] - target[0]) > 0.01 ||
-            Math.abs(currentPosition[1] - target[1]) > 0.01 ||
-            Math.abs(currentPosition[2] - target[2]) > 0.01) {
-
+        if (
+          Math.abs(currentPosition[0] - target[0]) > 0.01 ||
+          Math.abs(currentPosition[1] - target[1]) > 0.01 ||
+          Math.abs(currentPosition[2] - target[2]) > 0.01
+        ) {
           animateToPosition(existingMesh, target);
 
           if (existingBase) {
-            animateToPosition(existingBase, [target[0], target[1] - 0.5 - 0.025, target[2]]);
+            animateToPosition(existingBase, [
+              target[0],
+              target[1] - 0.5 - 0.025,
+              target[2],
+            ]);
           }
         }
       }
@@ -655,7 +741,7 @@ export function CubeScene() {
     const currentIds = ids();
 
     // Clean up cubes that finished their delete animation
-    deleting.forEach(id => {
+    deleting.forEach((id) => {
       if (!currentIds.includes(id)) {
         // Check if this cube has finished its animation
         const mesh = meshMap.get(id);
@@ -724,7 +810,9 @@ export function CubeScene() {
     <div>
       <div style={{ "margin-bottom": "10px" }}>
         <button onClick={addCube}>Add Cube</button>
-        <button onClick={()=>deleteSelectedCubes(selectedIds())}>Delete Selected</button>
+        <button onClick={() => deleteSelectedCubes(selectedIds())}>
+          Delete Selected
+        </button>
         <span style={{ "margin-left": "10px" }}>
           Selected: {selectedIds().size} cubes | Total: {ids().length} cubes
         </span>
@@ -759,7 +847,7 @@ export function CubeScene() {
         ref={(el) => (container = el)}
         style={{
           width: "100%",
-          height: "500px",
+          height: "1000px",
           border: "1px solid #ccc",
           cursor: "grab",
         }}
