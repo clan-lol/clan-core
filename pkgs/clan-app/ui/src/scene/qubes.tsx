@@ -31,10 +31,15 @@ export function CubeScene() {
 
   const [ids, setIds] = createSignal<string[]>([]);
   const [selectedIds, setSelectedIds] = createSignal<Set<string>>(new Set());
+  const [deletingIds, setDeletingIds] = createSignal<Set<string>>(new Set());
   const [cameraInfo, setCameraInfo] = createSignal({
     position: { x: 0, y: 0, z: 0 },
     spherical: { radius: 0, theta: 0, phi: 0 },
   });
+
+  // Animation configuration
+  const ANIMATION_DURATION = 800; // milliseconds
+  const DELETE_ANIMATION_DURATION = 400; // milliseconds
 
   // Grid configuration
   const GRID_SIZE = 10;
@@ -52,11 +57,24 @@ export function CubeScene() {
 
   // Reactive cubes memo - this recalculates whenever ids() changes
   const cubes = createMemo(() => {
-    return ids().map((id, index) => ({
-      id,
-      position: getGridPosition(index),
-      color: "blue",
-    }));
+    const currentIds = ids();
+    const deleting = deletingIds();
+
+    // Include both active and deleting cubes for smooth transitions
+    const allIds = [...new Set([...currentIds, ...Array.from(deleting)])];
+
+    return allIds.map((id, index) => {
+      const isDeleting = deleting.has(id);
+      const activeIndex = currentIds.indexOf(id);
+
+      return {
+        id,
+        position: getGridPosition(isDeleting ? -1 : activeIndex >= 0 ? activeIndex : index),
+        color: "blue",
+        isDeleting,
+        targetPosition: activeIndex >= 0 ? getGridPosition(activeIndex) : getGridPosition(index),
+      };
+    });
   });
 
   // Create multi-colored cube materials for different faces
@@ -84,7 +102,79 @@ export function CubeScene() {
     return materials;
   }
 
-  // Create white base for cube
+  // Animation helper function
+  function animateToPosition(mesh: THREE.Mesh, targetPosition: [number, number, number], duration: number = ANIMATION_DURATION) {
+    const startPosition = mesh.position.clone();
+    const endPosition = new THREE.Vector3(...targetPosition);
+    const startTime = Date.now();
+
+    function animate() {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Smooth easing function
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+      mesh.position.lerpVectors(startPosition, endPosition, easeProgress);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    animate();
+  }
+
+  // Delete animation helper
+  function animateDelete(mesh: THREE.Mesh, baseMesh: THREE.Mesh, onComplete: () => void) {
+    const startTime = Date.now();
+    const startScale = mesh.scale.clone();
+    const startOpacity = Array.isArray(mesh.material) ?
+      (mesh.material[0] as THREE.MeshBasicMaterial).opacity :
+      (mesh.material as THREE.MeshBasicMaterial).opacity;
+
+    function animate() {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / DELETE_ANIMATION_DURATION, 1);
+
+      // Smooth easing function
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      const scale = 1 - easeProgress;
+      const opacity = startOpacity * (1 - easeProgress);
+
+      mesh.scale.setScalar(scale);
+      baseMesh.scale.setScalar(scale);
+
+      // Update opacity for all materials
+      if (Array.isArray(mesh.material)) {
+        mesh.material.forEach((material) => {
+          (material as THREE.MeshBasicMaterial).opacity = opacity;
+          material.transparent = true;
+        });
+      } else {
+        (mesh.material as THREE.MeshBasicMaterial).opacity = opacity;
+        mesh.material.transparent = true;
+      }
+
+      if (Array.isArray(baseMesh.material)) {
+        baseMesh.material.forEach((material) => {
+          (material as THREE.MeshBasicMaterial).opacity = opacity;
+          material.transparent = true;
+        });
+      } else {
+        (baseMesh.material as THREE.MeshBasicMaterial).opacity = opacity;
+        baseMesh.material.transparent = true;
+      }
+
+      if (progress >= 1) {
+        onComplete();
+      } else {
+        requestAnimationFrame(animate);
+      }
+    }
+
+    animate();
+  }
   function createCubeBase(cube_pos: [number, number, number]) {
     const baseMaterials = createBaseMaterials();
     const base = new THREE.Mesh(sharedBaseGeometry, baseMaterials);
@@ -103,19 +193,35 @@ export function CubeScene() {
   function deleteSelectedCubes(selectedSet: Set<string>) {
     if (selectedSet.size === 0) return;
 
-    setIds((prev) => prev.filter(id => !selectedSet.has(id)));
-    setSelectedIds(new Set<string>()); // Clear selection after deletion
+    // Add to deleting set to start animation
+    setDeletingIds(selectedSet);
+
+    // Start delete animations
+    selectedSet.forEach(id => {
+      const mesh = meshMap.get(id);
+      const base = baseMap.get(id);
+
+      if (mesh && base) {
+        animateDelete(mesh, base, () => {
+          // Remove from deleting set when animation completes
+          setDeletingIds(prev => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+        });
+      }
+    });
+
+    // Remove from ids after a short delay to allow animation to start
+    setTimeout(() => {
+      setIds((prev) => prev.filter(id => !selectedSet.has(id)));
+      setSelectedIds(new Set<string>()); // Clear selection after deletion
+    }, 50);
   }
 
   function deleteCube(id: string) {
-    setIds((prev) => prev.filter(cubeId => cubeId !== id));
-
-    // Also remove from selection if it was selected
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
+    deleteSelectedCubes(new Set([id]));
   }
 
   function toggleSelection(id: string) {
@@ -372,6 +478,7 @@ export function CubeScene() {
   createEffect(() => {
     const currentCubes = cubes();
     const existing = new Set(meshMap.keys());
+    const deleting = deletingIds();
 
     // Update existing cubes and create new ones
     currentCubes.forEach((cube) => {
@@ -394,52 +501,101 @@ export function CubeScene() {
         base.userData.id = cube.id;
         scene.add(base);
         baseMap.set(cube.id, base);
-      } else {
-        // Update existing mesh position
-        existingMesh.position.set(...cube.position);
-        if (existingBase) {
-          existingBase.position.set(cube.position[0], cube.position[1] - 0.5 - 0.025, cube.position[2]);
+      } else if (!deleting.has(cube.id)) {
+        // Only animate position if not being deleted
+        const targetPosition = cube.targetPosition || cube.position;
+        const currentPosition = existingMesh.position.toArray() as [number, number, number];
+        const target = targetPosition;
+
+        // Check if position actually changed
+        if (Math.abs(currentPosition[0] - target[0]) > 0.01 ||
+            Math.abs(currentPosition[1] - target[1]) > 0.01 ||
+            Math.abs(currentPosition[2] - target[2]) > 0.01) {
+
+          animateToPosition(existingMesh, target);
+
+          if (existingBase) {
+            animateToPosition(existingBase, [target[0], target[1] - 0.5 - 0.025, target[2]]);
+          }
         }
       }
 
       existing.delete(cube.id);
     });
 
-    // Remove cubes that are no longer in the state
+    // Remove cubes that are no longer in the state and not being deleted
     existing.forEach((id) => {
-      // Remove cube mesh
-      const mesh = meshMap.get(id);
-      if (mesh) {
-        scene.remove(mesh);
-        mesh.geometry.dispose();
-        // Dispose materials properly
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach((material) => material.dispose());
-        } else {
-          mesh.material.dispose();
+      if (!deleting.has(id)) {
+        // Remove cube mesh
+        const mesh = meshMap.get(id);
+        if (mesh) {
+          scene.remove(mesh);
+          mesh.geometry.dispose();
+          // Dispose materials properly
+          if (Array.isArray(mesh.material)) {
+            mesh.material.forEach((material) => material.dispose());
+          } else {
+            mesh.material.dispose();
+          }
+          meshMap.delete(id);
         }
-        meshMap.delete(id);
-      }
 
-      // Remove base mesh
-      const base = baseMap.get(id);
-      if (base) {
-        scene.remove(base);
-        base.geometry.dispose();
-        // Dispose base materials properly
-        if (Array.isArray(base.material)) {
-          base.material.forEach((material) => material.dispose());
-        } else {
-          base.material.dispose();
+        // Remove base mesh
+        const base = baseMap.get(id);
+        if (base) {
+          scene.remove(base);
+          base.geometry.dispose();
+          // Dispose base materials properly
+          if (Array.isArray(base.material)) {
+            base.material.forEach((material) => material.dispose());
+          } else {
+            base.material.dispose();
+          }
+          baseMap.delete(id);
         }
-        baseMap.delete(id);
       }
     });
 
     updateMeshColors();
   });
 
-  // Effect to update colors when selection changes
+  // Effect to clean up deleted cubes after animation
+  createEffect(() => {
+    const deleting = deletingIds();
+    const currentIds = ids();
+
+    // Clean up cubes that finished their delete animation
+    deleting.forEach(id => {
+      if (!currentIds.includes(id)) {
+        // Check if this cube has finished its animation
+        const mesh = meshMap.get(id);
+        if (mesh && mesh.scale.x <= 0.01) {
+          // Remove cube mesh
+          scene.remove(mesh);
+          mesh.geometry.dispose();
+          if (Array.isArray(mesh.material)) {
+            mesh.material.forEach((material) => material.dispose());
+          } else {
+            mesh.material.dispose();
+          }
+          meshMap.delete(id);
+
+          // Remove base mesh
+          const base = baseMap.get(id);
+          if (base) {
+            scene.remove(base);
+            base.geometry.dispose();
+            if (Array.isArray(base.material)) {
+              base.material.forEach((material) => material.dispose());
+            } else {
+              base.material.dispose();
+            }
+            baseMap.delete(id);
+          }
+        }
+      }
+    });
+  });
   createEffect(() => {
     selectedIds(); // Track the signal
     updateMeshColors();
