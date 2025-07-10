@@ -4,6 +4,7 @@
   manifest.name = "clan-core/emergency-access";
   manifest.description = "Set recovery password for emergency access to machine";
   manifest.categories = [ "System" ];
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.default.perInstance = {
     nixosModule =
