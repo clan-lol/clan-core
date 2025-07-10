@@ -23,6 +23,7 @@ def delete_task(task_id: str) -> None:
     """Cancel a task by its op_key."""
     assert BAKEND_THREADS is not None, "Backend threads not initialized"
     future = BAKEND_THREADS.get(task_id)
+
     log.debug(f"Thread ID: {threading.get_ident()}")
     if future:
         future.stop_event.set()

@@ -126,6 +126,7 @@ class ApiBridge(ABC):
             target=thread_task, args=(stop_event,), name=thread_name
         )
         thread.start()
+
         self.threads[op_key] = WebThread(thread=thread, stop_event=stop_event)
 
         if wait_for_completion:
