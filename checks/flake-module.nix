@@ -94,7 +94,6 @@ in
 
             service-dummy-test = import ./service-dummy-test nixosTestArgs;
             service-dummy-test-from-flake = import ./service-dummy-test-from-flake nixosTestArgs;
-            service-data-mesher = import ./data-mesher nixosTestArgs;
           };
 
           packagesToBuild = lib.removeAttrs self'.packages [
