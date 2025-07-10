@@ -21,7 +21,7 @@ exclude = ["result", "**/__pycache__"]
 clan_app = ["**/assets/*"]
 
 [tool.pytest.ini_options]
-testpaths = "tests"
+testpaths = [ "tests", "clan_app" ]
 faulthandler_timeout = 60
 log_level = "DEBUG"
 log_format = "%(levelname)s: %(message)s\n       %(pathname)s:%(lineno)d::%(funcName)s"
