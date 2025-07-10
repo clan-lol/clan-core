@@ -10,7 +10,7 @@ from clan_lib.dirs import user_data_dir
 from clan_lib.log_manager import LogGroupConfig, LogManager
 from clan_lib.log_manager import api as log_manager_api
 
-from clan_app.api.file_gtk import open_file
+from clan_app.api.file_gtk import open_clan_folder, open_file
 from clan_app.api.middleware import (
     ArgumentParsingMiddleware,
     LoggingMiddleware,
@@ -56,7 +56,10 @@ def app_run(app_opts: ClanAppOptions) -> int:
 
     # Populate the API global with all functions
     load_in_all_api_functions()
-    API.overwrite_fn(open_file)
+
+    # Create a shared threads dictionary for both HTTP and Webview modes
+    shared_threads: dict[str, tasks.WebThread] = {}
+    tasks.BAKEND_THREADS = shared_threads
 
     # Start HTTP API server if requested
     http_server = None
@@ -72,6 +75,7 @@ def app_run(app_opts: ClanAppOptions) -> int:
             swagger_dist=Path(swagger_dist) if swagger_dist else None,
             host=app_opts.http_host,
             port=app_opts.http_port,
+            shared_threads=shared_threads,
         )
 
         # Add middleware to HTTP server
@@ -103,19 +107,19 @@ def app_run(app_opts: ClanAppOptions) -> int:
     # Create webview if not running in HTTP-only mode
     if not app_opts.http_api:
         webview = Webview(
-            debug=app_opts.debug, title="Clan App", size=Size(1280, 1024, SizeHint.NONE)
+            debug=app_opts.debug,
+            title="Clan App",
+            size=Size(1280, 1024, SizeHint.NONE),
+            shared_threads=shared_threads,
         )
+
+        API.overwrite_fn(open_file)
+        API.overwrite_fn(open_clan_folder)
 
         # Add middleware to the webview
         webview.add_middleware(ArgumentParsingMiddleware(api=API))
         webview.add_middleware(LoggingMiddleware(log_manager=log_manager))
         webview.add_middleware(MethodExecutionMiddleware(api=API))
-
-        # Create the bridge
-        webview.create_bridge()
-
-        # Init BAKEND_THREADS global in tasks module
-        tasks.BAKEND_THREADS = webview.threads
 
         webview.bind_jsonschema_api(API, log_manager=log_manager)
         webview.navigate(content_uri)

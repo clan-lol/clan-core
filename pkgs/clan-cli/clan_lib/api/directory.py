@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from clan_lib.cmd import RunOpts, run
+from clan_lib.flake import Flake
 from clan_lib.nix import nix_shell
 
 from . import API
@@ -35,6 +36,16 @@ def open_file(file_request: FileRequest) -> list[str] | None:
     It must return the name of the selected file or None if no file was selected.
     """
     msg = "open_file() is not implemented"
+    raise NotImplementedError(msg)
+
+
+@API.register_abstract
+def open_clan_folder() -> Flake:
+    """
+    Abstract api method to open the clan folder.
+    It must return the path to the clan folder.
+    """
+    msg = "open_clan_folder() is not implemented"
     raise NotImplementedError(msg)
 
 
