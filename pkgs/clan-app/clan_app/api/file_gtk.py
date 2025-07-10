@@ -9,6 +9,8 @@ gi.require_version("Gtk", "4.0")
 
 from clan_lib.api import ApiError, ErrorDataClass, SuccessDataClass
 from clan_lib.api.directory import FileRequest
+from clan_lib.clan.check import check_clan_valid
+from clan_lib.flake import Flake
 from gi.repository import Gio, GLib, Gtk
 
 gi.require_version("Gtk", "4.0")
@@ -22,13 +24,58 @@ def remove_none(_list: list) -> list:
 RESULT: dict[str, SuccessDataClass[list[str] | None] | ErrorDataClass] = {}
 
 
+def open_clan_folder(*, op_key: str) -> SuccessDataClass[Flake] | ErrorDataClass:
+    """
+    Opens the clan folder using the GTK file dialog.
+    Returns the path to the clan folder or an error if it fails.
+    """
+    file_request = FileRequest(
+        mode="select_folder",
+        title="Select Clan Folder",
+        initial_folder=str(Path.home()),
+    )
+    response = open_file(file_request, op_key=op_key)
+
+    if isinstance(response, ErrorDataClass):
+        return response
+
+    if not response.data or len(response.data) == 0:
+        return ErrorDataClass(
+            op_key=op_key,
+            status="error",
+            errors=[
+                ApiError(
+                    message="No folder selected",
+                    description="You must select a folder to open.",
+                    location=["open_clan_folder"],
+                )
+            ],
+        )
+
+    clan_folder = Flake(response.data[0])
+    if not check_clan_valid(clan_folder):
+        return ErrorDataClass(
+            op_key=op_key,
+            status="error",
+            errors=[
+                ApiError(
+                    message="Invalid clan folder",
+                    description=f"The selected folder '{clan_folder}' is not a valid clan folder.",
+                    location=["open_clan_folder"],
+                )
+            ],
+        )
+
+    return SuccessDataClass(op_key=op_key, data=clan_folder, status="success")
+
+
 def open_file(
     file_request: FileRequest, *, op_key: str
 ) -> SuccessDataClass[list[str] | None] | ErrorDataClass:
     GLib.idle_add(gtk_open_file, file_request, op_key)
 
     while RESULT.get(op_key) is None:
-        time.sleep(0.2)
+        time.sleep(0.1)
     response = RESULT[op_key]
     del RESULT[op_key]
     return response
