@@ -4,6 +4,7 @@
   manifest.name = "clan-core/trusted-nix-caches";
   manifest.description = "This module sets the `clan.lol` and `nix-community` cache up as a trusted cache.";
   manifest.categories = [ "System" ];
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
 
