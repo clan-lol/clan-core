@@ -71,8 +71,8 @@ def substitute(
 
     with file.open() as f:
         for line in f:
+            line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
             if clan_core_replacement:
-                line = line.replace("__NIXPKGS__", str(nixpkgs_source()))
                 line = line.replace("__CLAN_CORE__", clan_core_replacement)
                 line = line.replace(
                     "git+https://git.clan.lol/clan/clan-core", clan_core_replacement
@@ -385,6 +385,7 @@ def test_flake(
         flake_template="test_flake",
         monkeypatch=monkeypatch,
     )
+
     # check that git diff on ./sops is empty
     if (temporary_home / "test_flake" / "sops").exists():
         git_proc = sp.run(
