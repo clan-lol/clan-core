@@ -1,12 +1,10 @@
 import json
 import logging
-import threading
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from clan_lib.api import dataclass_to_dict
 from clan_lib.api.tasks import WebThread
-from clan_lib.async_run import set_should_cancel
 
 from clan_app.api.api_bridge import ApiBridge, BackendRequest, BackendResponse
 
@@ -23,7 +21,7 @@ class WebviewBridge(ApiBridge):
     """Webview-specific implementation of the API bridge."""
 
     webview: "Webview"
-    threads: dict[str, WebThread] = field(default_factory=dict)
+    threads: dict[str, WebThread]  # Inherited from ApiBridge
 
     def send_api_response(self, response: BackendResponse) -> None:
         """Send response back to the webview client."""
@@ -84,21 +82,9 @@ class WebviewBridge(ApiBridge):
             )
             return
 
-        # Process in a separate thread
-        def thread_task(stop_event: threading.Event) -> None:
-            set_should_cancel(lambda: stop_event.is_set())
-
-            try:
-                log.debug(
-                    f"Calling {method_name}({json.dumps(api_request.args, indent=4)}) with header {json.dumps(api_request.header, indent=4)} and op_key {op_key}"
-                )
-                self.process_request(api_request)
-            finally:
-                self.threads.pop(op_key, None)
-
-        stop_event = threading.Event()
-        thread = threading.Thread(
-            target=thread_task, args=(stop_event,), name="WebviewThread"
+        # Process in a separate thread using the inherited method
+        self.process_request_in_thread(
+            api_request,
+            thread_name="WebviewThread",
+            wait_for_completion=False,
         )
-        thread.start()
-        self.threads[op_key] = WebThread(thread=thread, stop_event=stop_event)

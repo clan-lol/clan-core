@@ -28,7 +28,7 @@ def open_file(
     GLib.idle_add(gtk_open_file, file_request, op_key)
 
     while RESULT.get(op_key) is None:
-        time.sleep(0.2)
+        time.sleep(0.1)
     response = RESULT[op_key]
     del RESULT[op_key]
     return response
