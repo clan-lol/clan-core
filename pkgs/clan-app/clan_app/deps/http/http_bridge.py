@@ -1,6 +1,5 @@
 import json
 import logging
-import threading
 import uuid
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
@@ -9,7 +8,6 @@ from urllib.parse import urlparse
 
 from clan_lib.api import MethodRegistry, SuccessDataClass, dataclass_to_dict
 from clan_lib.api.tasks import WebThread
-from clan_lib.async_run import set_should_cancel
 
 from clan_app.api.api_bridge import ApiBridge, BackendRequest, BackendResponse
 
@@ -35,11 +33,12 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         *,
         openapi_file: Path | None = None,
         swagger_dist: Path | None = None,
+        shared_threads: dict[str, WebThread] | None = None,
     ) -> None:
         # Initialize API bridge fields
         self.api = api
         self.middleware_chain = middleware_chain
-        self.threads: dict[str, WebThread] = {}
+        self.threads = shared_threads if shared_threads is not None else {}
 
         # Initialize OpenAPI/Swagger fields
         self.openapi_file = openapi_file
@@ -329,31 +328,13 @@ class HttpBridge(ApiBridge, BaseHTTPRequestHandler):
         self, api_request: BackendRequest, method_name: str
     ) -> None:
         """Process the API request in a separate thread."""
-        op_key = api_request.op_key or "unknown"
-
-        def thread_task(stop_event: threading.Event) -> None:
-            set_should_cancel(lambda: stop_event.is_set())
-            try:
-                self.process_request(api_request)
-            finally:
-                self.threads.pop(op_key, None)
-
-        stop_event = threading.Event()
-        thread = threading.Thread(
-            target=thread_task, args=(stop_event,), name="HttpThread"
+        # Use the inherited thread processing method
+        self.process_request_in_thread(
+            api_request,
+            thread_name="HttpThread",
+            wait_for_completion=True,
+            timeout=60.0,
         )
-        thread.start()
-        self.threads[op_key] = WebThread(thread=thread, stop_event=stop_event)
-
-        # Wait for the thread to complete (this blocks until response is sent)
-        thread.join(timeout=60.0)
-
-        # Handle timeout
-        if thread.is_alive():
-            stop_event.set()  # Cancel the thread
-            self.send_api_error_response(
-                op_key, "Request timeout", ["http_bridge", method_name]
-            )
 
     def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
         """Override default logging to use our logger."""

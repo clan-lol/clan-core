@@ -45,6 +45,7 @@ class Webview:
     debug: bool = False
     size: Size | None = None
     window: int | None = None
+    shared_threads: dict[str, WebThread] | None = None
 
     # initialized later
     _bridge: "WebviewBridge | None" = None
@@ -116,7 +117,17 @@ class Webview:
         """Create and initialize the WebviewBridge with current middleware."""
         from .webview_bridge import WebviewBridge
 
-        bridge = WebviewBridge(webview=self, middleware_chain=tuple(self._middleware))
+        # Use shared_threads if provided, otherwise let WebviewBridge use its default
+        if self.shared_threads is not None:
+            bridge = WebviewBridge(
+                webview=self,
+                middleware_chain=tuple(self._middleware),
+                threads=self.shared_threads,
+            )
+        else:
+            bridge = WebviewBridge(
+                webview=self, middleware_chain=tuple(self._middleware)
+            )
         self._bridge = bridge
         return bridge
 

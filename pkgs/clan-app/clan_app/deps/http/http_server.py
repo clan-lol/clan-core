@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from clan_lib.api import MethodRegistry
+from clan_lib.api.tasks import WebThread
 
 if TYPE_CHECKING:
     from clan_app.api.middleware import Middleware
@@ -24,6 +25,7 @@ class HttpApiServer:
         port: int = 8080,
         openapi_file: Path | None = None,
         swagger_dist: Path | None = None,
+        shared_threads: dict[str, WebThread] | None = None,
     ) -> None:
         self.api = api
         self.openapi = openapi_file
@@ -34,6 +36,7 @@ class HttpApiServer:
         self._server_thread: threading.Thread | None = None
         # Bridge is now the request handler itself, no separate instance needed
         self._middleware: list[Middleware] = []
+        self.shared_threads = shared_threads or {}
 
     def add_middleware(self, middleware: "Middleware") -> None:
         """Add middleware to the middleware chain."""
@@ -58,6 +61,7 @@ class HttpApiServer:
         middleware_chain = tuple(self._middleware)
         openapi_file = self.openapi
         swagger_dist = self.swagger_dist
+        shared_threads = self.shared_threads
 
         class RequestHandler(HttpBridge):
             def __init__(self, request: Any, client_address: Any, server: Any) -> None:
@@ -69,6 +73,7 @@ class HttpApiServer:
                     server=server,
                     openapi_file=openapi_file,
                     swagger_dist=swagger_dist,
+                    shared_threads=shared_threads,
                 )
 
         return RequestHandler
