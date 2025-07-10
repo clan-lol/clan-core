@@ -4,6 +4,7 @@
   manifest.name = "clan-core/users";
   manifest.description = "Automatically generates and configures a password for the specified user account.";
   manifest.categories = [ "System" ];
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
     interface =
