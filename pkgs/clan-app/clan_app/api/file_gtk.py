@@ -24,7 +24,7 @@ def remove_none(_list: list) -> list:
 RESULT: dict[str, SuccessDataClass[list[str] | None] | ErrorDataClass] = {}
 
 
-def open_clan_folder(*, op_key: str) -> SuccessDataClass[Flake] | ErrorDataClass:
+def get_clan_folder(*, op_key: str) -> SuccessDataClass[Flake] | ErrorDataClass:
     """
     Opens the clan folder using the GTK file dialog.
     Returns the path to the clan folder or an error if it fails.
@@ -34,7 +34,7 @@ def open_clan_folder(*, op_key: str) -> SuccessDataClass[Flake] | ErrorDataClass
         title="Select Clan Folder",
         initial_folder=str(Path.home()),
     )
-    response = open_file(file_request, op_key=op_key)
+    response = get_system_file(file_request, op_key=op_key)
 
     if isinstance(response, ErrorDataClass):
         return response
@@ -47,7 +47,7 @@ def open_clan_folder(*, op_key: str) -> SuccessDataClass[Flake] | ErrorDataClass
                 ApiError(
                     message="No folder selected",
                     description="You must select a folder to open.",
-                    location=["open_clan_folder"],
+                    location=["get_clan_folder"],
                 )
             ],
         )
@@ -61,7 +61,7 @@ def open_clan_folder(*, op_key: str) -> SuccessDataClass[Flake] | ErrorDataClass
                 ApiError(
                     message="Invalid clan folder",
                     description=f"The selected folder '{clan_folder}' is not a valid clan folder.",
-                    location=["open_clan_folder"],
+                    location=["get_clan_folder"],
                 )
             ],
         )
@@ -69,7 +69,7 @@ def open_clan_folder(*, op_key: str) -> SuccessDataClass[Flake] | ErrorDataClass
     return SuccessDataClass(op_key=op_key, data=clan_folder, status="success")
 
 
-def open_file(
+def get_system_file(
     file_request: FileRequest, *, op_key: str
 ) -> SuccessDataClass[list[str] | None] | ErrorDataClass:
     GLib.idle_add(gtk_open_file, file_request, op_key)
@@ -106,7 +106,7 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                         ApiError(
                             message=e.__class__.__name__,
                             description=str(e),
-                            location=["open_file"],
+                            location=["get_system_file"],
                         )
                     ],
                 )
@@ -134,7 +134,7 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                         ApiError(
                             message=e.__class__.__name__,
                             description=str(e),
-                            location=["open_file"],
+                            location=["get_system_file"],
                         )
                     ],
                 )
@@ -162,7 +162,7 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                         ApiError(
                             message=e.__class__.__name__,
                             description=str(e),
-                            location=["open_file"],
+                            location=["get_system_file"],
                         )
                     ],
                 )
@@ -190,7 +190,7 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
                         ApiError(
                             message=e.__class__.__name__,
                             description=str(e),
-                            location=["open_file"],
+                            location=["get_system_file"],
                         )
                     ],
                 )
@@ -239,7 +239,7 @@ def gtk_open_file(file_request: FileRequest, op_key: str) -> bool:
         dialog.select_folder(callback=on_folder_select)
     if file_request.mode == "open_multiple_files":
         dialog.open_multiple(callback=on_file_select_multiple)
-    elif file_request.mode == "open_file":
+    elif file_request.mode == "get_system_file":
         dialog.open(callback=on_file_select)
     elif file_request.mode == "save":
         dialog.save(callback=on_save_finish)

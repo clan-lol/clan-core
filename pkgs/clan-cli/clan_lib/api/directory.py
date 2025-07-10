@@ -20,7 +20,7 @@ class FileFilter:
 @dataclass
 class FileRequest:
     # Mode of the os dialog window
-    mode: Literal["open_file", "select_folder", "save", "open_multiple_files"]
+    mode: Literal["get_system_file", "select_folder", "save", "open_multiple_files"]
     # Title of the os dialog window
     title: str | None = field(default=None)
     # Pre-applied filters for the file dialog
@@ -30,25 +30,25 @@ class FileRequest:
 
 
 @API.register_abstract
-def open_file(file_request: FileRequest) -> list[str] | None:
+def get_system_file(file_request: FileRequest) -> list[str] | None:
     """
     Api method to open a file dialog window.
 
     Implementations is specific to the platform and
     returns the name of the selected file or None if no file was selected.
     """
-    msg = "open_file() is not implemented"
+    msg = "get_system_file() is not implemented"
     raise NotImplementedError(msg)
 
 
 @API.register_abstract
-def open_clan_folder() -> Flake:
+def get_clan_folder() -> Flake:
     """
     Api method to open the clan folder.
 
     Implementations is specific to the platform and returns the path to the clan folder.
     """
-    msg = "open_clan_folder() is not implemented"
+    msg = "get_clan_folder() is not implemented"
     raise NotImplementedError(msg)
 
 
