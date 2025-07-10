@@ -32,8 +32,10 @@ class FileRequest:
 @API.register_abstract
 def open_file(file_request: FileRequest) -> list[str] | None:
     """
-    Abstract api method to open a file dialog window.
-    It must return the name of the selected file or None if no file was selected.
+    Api method to open a file dialog window.
+
+    Implementations is specific to the platform and
+    returns the name of the selected file or None if no file was selected.
     """
     msg = "open_file() is not implemented"
     raise NotImplementedError(msg)
@@ -42,8 +44,9 @@ def open_file(file_request: FileRequest) -> list[str] | None:
 @API.register_abstract
 def open_clan_folder() -> Flake:
     """
-    Abstract api method to open the clan folder.
-    It must return the path to the clan folder.
+    Api method to open the clan folder.
+
+    Implementations is specific to the platform and returns the path to the clan folder.
     """
     msg = "open_clan_folder() is not implemented"
     raise NotImplementedError(msg)
