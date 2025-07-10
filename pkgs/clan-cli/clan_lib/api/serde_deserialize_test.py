@@ -324,10 +324,10 @@ def test_private_public_fields() -> None:
 def test_literal_field() -> None:
     @dataclass
     class Person:
-        name: Literal["open_file", "select_folder", "save"]
+        name: Literal["get_system_file", "select_folder", "save"]
 
-    data = {"name": "open_file"}
-    expected = Person(name="open_file")
+    data = {"name": "get_system_file"}
+    expected = Person(name="get_system_file")
     assert from_dict(Person, data) == expected
 
     assert dataclass_to_dict(expected) == data

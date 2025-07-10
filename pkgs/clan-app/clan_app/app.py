@@ -10,7 +10,7 @@ from clan_lib.dirs import user_data_dir
 from clan_lib.log_manager import LogGroupConfig, LogManager
 from clan_lib.log_manager import api as log_manager_api
 
-from clan_app.api.file_gtk import open_clan_folder, open_file
+from clan_app.api.file_gtk import get_clan_folder, get_system_file
 from clan_app.api.middleware import (
     ArgumentParsingMiddleware,
     LoggingMiddleware,
@@ -113,8 +113,8 @@ def app_run(app_opts: ClanAppOptions) -> int:
             shared_threads=shared_threads,
         )
 
-        API.overwrite_fn(open_file)
-        API.overwrite_fn(open_clan_folder)
+        API.overwrite_fn(get_system_file)
+        API.overwrite_fn(get_clan_folder)
 
         # Add middleware to the webview
         webview.add_middleware(ArgumentParsingMiddleware(api=API))
