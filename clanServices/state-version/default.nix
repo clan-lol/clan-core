@@ -4,6 +4,7 @@
   manifest.name = "clan-core/state-version";
   manifest.description = "Automatically generate the state version of the nixos installation.";
   manifest.categories = [ "System" ];
+  manifest.readme = builtins.readFile ./README.md;
 
   roles.default = {
 
@@ -24,7 +25,7 @@
             warnings = [
               ''
                 The clan.state-version service is deprecated and will be
-                removed on 2025-07-15 in favor of a nix option. 
+                removed on 2025-07-15 in favor of a nix option.
 
                 Please migrate your configuration to use `clan.core.settings.state-version.enable = true` instead.
               ''
