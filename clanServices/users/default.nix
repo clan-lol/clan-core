@@ -1,8 +1,11 @@
 { ... }:
 {
   _class = "clan.service";
-  manifest.name = "clan-core/users";
-  manifest.description = "Automatically generates and configures a password for the specified user account.";
+  manifest.name = "clan-core/user";
+  manifest.description = ''
+    An instance of this module will create a user account on the added machines,
+    along with a generated password that is constant across machines and user settings.
+  '';
   manifest.categories = [ "System" ];
   manifest.readme = builtins.readFile ./README.md;
 
@@ -22,25 +25,21 @@
             example = false;
             description = "Whether the user should be prompted.";
           };
-          extraGroups = lib.mkOption {
+          groups = lib.mkOption {
             type = lib.types.listOf lib.types.str;
-            default = [
+            default = [ ];
+            example = [
               "wheel"
               "networkmanager"
               "video"
               "input"
             ];
-            example = [
-              "wheel"
-              "networkmanager"
-            ];
             description = ''
               Additional groups the user should be added to.
-              Defaults to: [ "wheel" "networkmanager" "video" "input" ].
+              You can add any group that exists on your system.
+              Make sure these group exists on all machines where the user is enabled.
 
-              Attention: Setting this option will clear the default groups!
-
-              Explanation of the default groups:
+              Commonly used groups:
 
               - "wheel" - Allows the user to run commands as root using `sudo`.
               - "networkmanager" - Allows the user to manage network connections.
@@ -63,11 +62,11 @@
           }:
           {
             users.mutableUsers = false;
-            users.users.${settings.user}.hashedPasswordFile =
-              config.clan.core.vars.generators."user-password-${settings.user}".files.user-password-hash.path;
-
             users.users.${settings.user} = {
-              extraGroups = settings.extraGroups;
+              extraGroups = settings.groups;
+
+              hashedPasswordFile =
+                config.clan.core.vars.generators."user-password-${settings.user}".files.user-password-hash.path;
             };
 
             clan.core.vars.generators."user-password-${settings.user}" = {
