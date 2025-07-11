@@ -22,6 +22,7 @@ in
       type = attrsWith {
         placeholder = "mappedServiceName";
         elemType = submoduleWith {
+          class = "clan.service";
           modules = [
             (
               { name, ... }:
