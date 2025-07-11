@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   ...
 }:
@@ -9,9 +8,14 @@
   config = {
 
     warnings = [
-      "The clan.disk-id module is deprecated and will be removed on 2025-07-15.
-      Please migrate to user-maintained configuration or the new equivalent clan services
-      (https://docs.clan.lol/reference/clanServices)."
+      ''
+        The clan.disk-id module is deprecated and will be removed on 2025-07-15.
+        For migration see: https://docs.clan.lol/guides/migrations/disk-id/
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        !!! Please migrate. Otherwise you may not be able to boot your system after that date.  !!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      ''
     ];
     clan.core.vars.generators.disk-id = {
       files.diskId.secret = false;
