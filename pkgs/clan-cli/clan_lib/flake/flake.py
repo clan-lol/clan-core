@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import textwrap
 from dataclasses import asdict, dataclass, field
 from enum import Enum
 from hashlib import sha1
@@ -588,7 +589,6 @@ class FlakeCache:
 
     def load_from_file(self, path: Path) -> None:
         with path.open("r") as f:
-            log.debug(f"Loading cache from {path}")
             data = json.load(f)
             self.cache = FlakeCacheEntry.from_json(data["cache"])
 
@@ -662,7 +662,7 @@ class Flake:
         """
         Loads the flake into the store and populates self.store_path and self.hash such that the flake can evaluate locally and offline
         """
-        from clan_lib.cmd import run
+        from clan_lib.cmd import RunOpts, run
         from clan_lib.nix import (
             nix_command,
         )
@@ -681,7 +681,8 @@ class Flake:
             self.identifier,
         ]
 
-        flake_prefetch = run(nix_command(cmd))
+        trace_prefetch = os.environ.get("CLAN_DEBUG_NIX_PREFETCH", "0") == "1"
+        flake_prefetch = run(nix_command(cmd), RunOpts(trace=trace_prefetch))
         flake_metadata = json.loads(flake_prefetch.stdout)
         self.store_path = flake_metadata["storePath"]
         self.hash = flake_metadata["hash"]
@@ -697,8 +698,6 @@ class Flake:
         from clan_lib.nix import (
             nix_metadata,
         )
-
-        log.debug(f"Invalidating cache for {self.identifier}")
 
         self.prefetch()
 
@@ -813,36 +812,42 @@ class Flake:
                 ];
               }}
         """
-        if len(selectors) > 1:
-            log.debug(f"""
-selecting: {selectors}
-to debug run:
-nix repl --expr 'rec {{
-  flake = builtins.getFlake "self.identifier";
-  selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
-  query = [
-      {" ".join(
-         [
-             f"(selectLib.select ''{selector}'' flake)"
-             for selector in selectors
-         ]
-      )}
-  ];
-}}'
-            """)
+        if len(selectors) > 1 :
+            msg = textwrap.dedent(f"""
+                clan select "{selectors}"
+            """).lstrip("\n").rstrip("\n")
+            if os.environ.get("CLAN_DEBUG_NIX_SELECTORS"):
+                msg += textwrap.dedent(f"""
+                    to debug run:
+                    nix repl --expr 'rec {{
+                    flake = builtins.getFlake "{self.identifier}";
+                    selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
+                    query = [
+                        {" ".join(
+                            [
+                                f"(selectLib.select ''{selector}'' flake)"
+                                for selector in selectors
+                            ]
+                        )}
+                    ];
+                    }}'
+                """).lstrip("\n")
+            log.debug(msg)
         # fmt: on
         elif len(selectors) == 1:
-            log.debug(
-                f"""
-selecting: {selectors[0]}
-to debug run:
-nix repl --expr 'rec {{
-  flake = builtins.getFlake "{self.identifier}";
-  selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
-  query = selectLib.select '"''{selectors[0]}''"' flake;
-}}'
-            """
-            )
+            msg = textwrap.dedent(f"""
+               $ clan select "{selectors[0]}"
+            """).lstrip("\n").rstrip("\n")
+            if os.environ.get("CLAN_DEBUG_NIX_SELECTORS"):
+                msg += textwrap.dedent(f"""
+                to debug run:
+                    nix repl --expr 'rec {{
+                    flake = builtins.getFlake "{self.identifier}";
+                    selectLib = (builtins.getFlake "path:{select_source()}?narHash={select_hash}").lib;
+                    query = selectLib.select '"''{selectors[0]}''"' flake;
+                    }}'
+                    """).lstrip("\n")
+            log.debug(msg)
 
         build_output = Path(
             run(
