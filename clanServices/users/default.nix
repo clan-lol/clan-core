@@ -22,6 +22,32 @@
             example = false;
             description = "Whether the user should be prompted.";
           };
+          extraGroups = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [
+              "wheel"
+              "networkmanager"
+              "video"
+              "input"
+            ];
+            example = [
+              "wheel"
+              "networkmanager"
+            ];
+            description = ''
+              Additional groups the user should be added to.
+              Defaults to: [ "wheel" "networkmanager" "video" "input" ].
+
+              Attention: Setting this option will clear the default groups!
+
+              Explanation of the default groups:
+
+              - "wheel" - Allows the user to run commands as root using `sudo`.
+              - "networkmanager" - Allows the user to manage network connections.
+              - "video" - Allows the user to access video devices.
+              - "input" - Allows the user to access input devices.
+            '';
+          };
         };
       };
 
@@ -39,6 +65,10 @@
             users.mutableUsers = false;
             users.users.${settings.user}.hashedPasswordFile =
               config.clan.core.vars.generators."user-password-${settings.user}".files.user-password-hash.path;
+
+            users.users.${settings.user} = {
+              extraGroups = settings.extraGroups;
+            };
 
             clan.core.vars.generators."user-password-${settings.user}" = {
 
