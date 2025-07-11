@@ -73,8 +73,8 @@
             ...
           }:
           {
-            users.mutableUsers = false;
             users.users.${settings.user} = {
+              isNormalUser = true;
               extraGroups = settings.groups;
 
               hashedPasswordFile =
@@ -121,5 +121,12 @@
             };
           };
       };
+  };
+
+  perMachine = {
+    nixosModule = {
+      # Immutable users to ensure that this module has exclusive control over the users.
+      users.mutableUsers = false;
+    };
   };
 }
