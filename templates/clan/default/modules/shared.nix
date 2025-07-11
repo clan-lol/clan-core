@@ -1,5 +1,4 @@
 {
-  config,
   clan-core,
   # Optional, if you want to access other flakes:
   # self,
@@ -7,14 +6,7 @@
 }:
 {
   imports = [
-    # Enables the OpenSSH server for remote access
-    clan-core.clanModules.sshd
-    # Set a root password
-    clan-core.clanModules.root-password
     clan-core.clanModules.user-password
-
-    # You can access other flakes imported in your flake via `self` like this:
-    # self.inputs.nix-index-database.nixosModules.nix-index
   ];
 
   # Locale service discovery and mDNS
@@ -32,6 +24,5 @@
       "input"
     ];
     uid = 1000;
-    openssh.authorizedKeys.keys = config.users.users.root.openssh.authorizedKeys.keys;
   };
 }

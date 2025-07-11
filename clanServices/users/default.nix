@@ -23,7 +23,19 @@
             type = lib.types.bool;
             default = true;
             example = false;
-            description = "Whether the user should be prompted.";
+            description = ''
+              Whether the user should be prompted for a password.
+
+              Effects:
+
+              - *enabled* (`true`) - Prompt for a passwort during the machine installation or update workflow.
+              - *disabled* (`false`) - Generate a passwort during the machine installation or update workflow.
+
+              The password can be shown in two steps:
+
+              - `clan vars list <machine-name>`
+              - `clan vars get <machine-name> <name-of-password-variable>`
+            '';
           };
           groups = lib.mkOption {
             type = lib.types.listOf lib.types.str;
