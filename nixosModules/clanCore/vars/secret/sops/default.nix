@@ -7,7 +7,7 @@
 }:
 let
 
-  inherit (import ./funcs.nix { inherit lib; }) collectFiles;
+  collectFiles = import ./collectFiles.nix { inherit lib; };
 
   machineName = config.clan.core.settings.machine.name;
 
