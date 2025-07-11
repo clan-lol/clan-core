@@ -1,5 +1,4 @@
 {
-  config,
   clan-core,
   # Optional, if you want to access other flakes:
   # self,
