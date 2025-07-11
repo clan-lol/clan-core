@@ -589,6 +589,7 @@ class FlakeCache:
 
     def load_from_file(self, path: Path) -> None:
         with path.open("r") as f:
+            log.debug("Loading flake cache from file")
             data = json.load(f)
             self.cache = FlakeCacheEntry.from_json(data["cache"])
 
@@ -682,6 +683,8 @@ class Flake:
         ]
 
         trace_prefetch = os.environ.get("CLAN_DEBUG_NIX_PREFETCH", "0") == "1"
+        if not trace_prefetch:
+            log.debug(f"Prefetching flake {self.identifier}")
         flake_prefetch = run(nix_command(cmd), RunOpts(trace=trace_prefetch))
         flake_metadata = json.loads(flake_prefetch.stdout)
         self.store_path = flake_metadata["storePath"]
