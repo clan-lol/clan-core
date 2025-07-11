@@ -35,5 +35,7 @@ def copy_from_nixstore(src: Path, dest: Path) -> None:
     Uses `cp -r` to recursively copy the directory.
     Ensures the destination directory is writable by the user.
     """
-    run(["cp", "-r", str(src), str(dest)])
-    run(["chmod", "-R", "u+w", str(dest)])
+    run(["cp", "-r", str(src / "."), str(dest)])  # Copy contents of src to dest
+    run(
+        ["chmod", "-R", "u+w", str(dest)]
+    )  # Ensure the destination is writable by the user
