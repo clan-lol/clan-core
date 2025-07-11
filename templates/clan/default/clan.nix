@@ -35,10 +35,10 @@
   };
 
   # Additional NixOS configuration can be added here.
-  # machines/machine1/configuration.nix will be automatically imported.
+  # machines/jon/configuration.nix will be automatically imported.
   # See: https://docs.clan.lol/guides/more-machines/#automatic-registration
   machines = {
-    # machine1 = { config, ... }: {
+    # jon = { config, ... }: {
     #   environment.systemPackages = [ pkgs.asciinema ];
     # };
   };
