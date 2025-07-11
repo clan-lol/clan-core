@@ -1,6 +1,7 @@
 # !/usr/bin/env python3
 import argparse
 
+from .apply import register_apply_parser
 from .list import register_list_parser
 
 
@@ -13,4 +14,8 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
         required=True,
     )
     list_parser = subparser.add_parser("list", help="List avilable templates")
+    apply_parser = subparser.add_parser(
+        "apply", help="Apply a template of the specified type"
+    )
     register_list_parser(list_parser)
+    register_apply_parser(apply_parser)
