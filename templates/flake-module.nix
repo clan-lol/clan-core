@@ -5,6 +5,27 @@
   };
 
   flake = {
+    checks.x86_64-linux.equal-templates =
+      inputs.nixpkgs.legacyPackages.x86_64-linux.runCommand "minimal-clan-flake" { }
+        ''
+          file1=${./clan/default/clan.nix}
+          file2=${./clan/flake-parts/clan.nix}
+
+          echo "Comparing $file1 and $file2"
+          if cmp -s "$file1" "$file2"; then
+            echo "clan.nix files are identical"
+          else
+            echo "clan.nix files are out of sync"
+            echo "Please make sure to keep templates clan.nix files in sync."
+            echo "files: templates/clan/default/clan.nix templates/clan/flake-parts/clan.nix"
+            echo "--------------------------------\n"
+            diff "$file1" "$file2"
+            echo "--------------------------------\n\n"
+            exit 1
+          fi
+
+          touch $out
+        '';
     checks.x86_64-linux.template-minimal =
       let
         path = self.clan.templates.clan.minimal.path;
