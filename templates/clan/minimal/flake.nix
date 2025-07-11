@@ -3,10 +3,15 @@
   inputs.nixpkgs.follows = "clan-core/nixpkgs";
 
   outputs =
-    { self, clan-core, ... }:
+    inputs@{ self, clan-core, ... }:
     let
       # Usage see: https://docs.clan.lol
-      clan = clan-core.lib.clan { inherit self; };
+      clan = clan-core.lib.clan {
+        inherit self;
+        # Change this to your clan name
+        # Setting a name is required
+        meta.name = inputs.nixpkgs.lib.mkDefault "__clan__";
+      };
     in
     {
       # all machines managed by Clan
