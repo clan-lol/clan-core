@@ -65,14 +65,14 @@ def get_machine(flake: Flake, name: str) -> InventoryMachine:
         InventoryMachine: An instance representing the machine's inventory details.
 
     Raises:
-        ClanError: If the machine with the specified name is not found in the inventory.
+        ClanError: If the machine with the specified name is not found in the clan
     """
     inventory_store = InventoryStore(flake=flake)
     inventory = inventory_store.read()
 
     machine_inv = inventory.get("machines", {}).get(name)
     if machine_inv is None:
-        msg = f"Machine {name} not found in inventory"
+        msg = f"Machine {name} does not exist"
         raise ClanError(msg)
 
     return InventoryMachine(**machine_inv)
