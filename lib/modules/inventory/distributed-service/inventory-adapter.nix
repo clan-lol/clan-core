@@ -122,6 +122,7 @@ in
       evalServices =
         { modules, prefix }:
         lib.evalModules {
+          class = "clan";
           specialArgs = {
             inherit clanLib;
             _ctx = prefix;
