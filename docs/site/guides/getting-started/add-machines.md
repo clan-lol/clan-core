@@ -82,6 +82,21 @@ This example demonstrates what is needed based on a machine called `jon`:
 2. Add your *ssh key* here - That will ensure you can always login to your machine via *ssh* in case something goes wrong.
 3. Tags can be used to automatically add this machine to services later on. - You dont need to set this now.
 
+### (Optional) Create a `configuration.nix`
+
+```nix title="./machines/jon/configuration.nix"
+{
+    imports = [
+        # enables GNOME desktop (optional)
+        ../../modules/gnome.nix
+    ];
+
+    # Set nixosOptions here
+    # Or import your own modules via 'imports'
+    # ...
+}
+```
+
 ### (Optional) Renaming a Machine
 
 Older templates included static machine folders like `jon` and `sara`.
