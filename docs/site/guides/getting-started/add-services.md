@@ -17,15 +17,11 @@ To learn more: [Guide about clanService](../clanServices.md)
 
 ## Configure a Zerotier Network (recommended)
 
-```{.nix title="clan.nix" hl_lines="12-20"}
+```{.nix title="clan.nix" hl_lines="8-16"}
 {
     inventory.machines = {
-        jon = {
-            targetHost = "root@jon";
-        };
-        sara = {
-            targetHost = "root@jon";
-        };
+        jon = { };
+        sara = { };
     };
 
     inventory.instances = {
@@ -55,31 +51,27 @@ To learn more: [Guide about clanService](../clanServices.md)
 
 Adding the following services is recommended for most users:
 
-```{.nix title="clan.nix" hl_lines="11-26"}
+```{.nix title="clan.nix" hl_lines="7-22"}
 {
     inventory.machines = {
-        jon = {
-            targetHost = "root@jon";
-        };
-        sara = {
-            targetHost = "root@jon";
-        };
+        jon = { };
+        sara = { };
     };
     inventory.instances = {
         admin = { # (1)
             roles.default.tags.all = { };
             roles.default.settings = {
                 allowedKeys = {
-                    "my-user" = "ssh-ed25519 AAAAC3N..."; # elided
+                    "my-user" = "ssh-ed25519 AAAAC3N..."; # (2)
                 };
             };
         };
-        jon-user = { # (2)
+        jon-user = { # (3)
             module.name = "users";
 
             roles.default.tags.all = { };
             roles.default.settings = {
-                user = "jon"; # (3)
+                user = "jon";
             };
         };
         # ...
@@ -90,4 +82,5 @@ Adding the following services is recommended for most users:
 ```
 
 1. The `admin` service will generate a **root-password** and **add your ssh-key** that allows for convienient administration.
-2. Adds `jon` as a user on all machines. Will create a `home` directory, and prompt for a password before deployment.
+2. Equivalent to directly setting `authorizedKeys` like in [configuring a machine](./add-machines.md#configuring-a-machine)
+3. Adds `user = jon` as a user on all machines. Will create a `home` directory, and prompt for a password before deployment.
