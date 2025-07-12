@@ -51,15 +51,12 @@ See the complete [list](../../guides/more-machines.md#automatic-registration) of
 Add the following to your `clan.nix` file for each machine.
 This example demonstrates what is needed based on a machine called `jon`:
 
-```{.nix .annotate title="clan.nix" hl_lines="3-9 18-22"}
+```{.nix .annotate title="clan.nix" hl_lines="3-6 15-19"}
 {
     inventory.machines = {
         jon = {
-            # Define targetHost here
-            # Required before deployment
-            deploy.targetHost = "root@jon"; # (1)
             # Define tags here (optional)
-            tags = [ ]; # (3)
+            tags = [ ]; # (1)
         };
         sara = {
             deploy.targetHost = "root@sara";
@@ -78,9 +75,8 @@ This example demonstrates what is needed based on a machine called `jon`:
 }
 ```
 
-1. It is required to define a *targetHost* for each machine before deploying. Best practice has been, to use the zerotier ip/hostname or the ip from the from overlay network you decided to use.
+1. Tags can be used to automatically add this machine to services later on. - You dont need to set this now.
 2. Add your *ssh key* here - That will ensure you can always login to your machine via *ssh* in case something goes wrong.
-3. Tags can be used to automatically add this machine to services later on. - You dont need to set this now.
 
 ### (Optional) Create a `configuration.nix`
 
