@@ -190,25 +190,25 @@ You can have a look and customize it if needed.
 #### Using password auth
 
 ```bash
-clan machines install [MACHINE] --target-host <IP> --update-hardware-config nixos-facter
+clan machines install [MACHINE] --target-host <IP>
 ```
 
 #### Using QR JSON
 
 ```bash
-clan machines install [MACHINE] --json "[JSON]" --update-hardware-config nixos-facter
+clan machines install [MACHINE] --json "[JSON]"
 ```
 
 #### Using QR image file
 
 ```bash
-clan machines install [MACHINE] --png [PATH] --update-hardware-config nixos-facter
+clan machines install [MACHINE] --png [PATH]
 ```
 
 #### Option B: Cloud VM
 
 ```bash
-clan machines install [MACHINE] --target-host <IP> --update-hardware-config nixos-facter
+clan machines install [MACHINE] --target-host <IP>
 ```
 
 !!! success
