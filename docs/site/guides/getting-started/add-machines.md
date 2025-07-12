@@ -10,64 +10,23 @@ See the complete [list](../../guides/more-machines.md#automatic-registration) of
 
 ## Create a machine
 
-=== "flake.nix (flake-parts)"
+=== "clan.nix (declarative)"
 
-    ```{.nix hl_lines=12-15}
+    ```{.nix hl_lines="3-4"}
     {
-        inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-        inputs.nixpkgs.follows = "clan-core/nixpkgs";
-        inputs.flake-parts.follows = "clan-core/flake-parts";
-        inputs.flake-parts.inputs.nixpkgs-lib.follows = "clan-core/nixpkgs";
-
-        outputs =
-            inputs@{ flake-parts, ... }:
-            flake-parts.lib.mkFlake { inherit inputs; } {
-                imports = [ inputs.clan-core.flakeModules.default ];
-                clan = {
-                    inventory.machines = {
-                        # Define a machine
-                        jon = { };
-                    };
-                };
-
-                systems = [
-                    "x86_64-linux"
-                    "aarch64-linux"
-                    "x86_64-darwin"
-                    "aarch64-darwin"
-                ];
+        inventory.machines = {
+            # Define a machine
+            jon = { };
         };
-    }
-    ```
 
-=== "flake.nix (classic)"
-
-    ```{.nix hl_lines=11-14}
-    {
-        inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-        inputs.nixpkgs.follows = "clan-core/nixpkgs";
-
-        outputs =
-            { self, clan-core, ... }:
-            let
-                clan = clan-core.lib.clan {
-                    inherit self;
-
-                    inventory.machines = {
-                        # Define a machine
-                        jon = { };
-                    };
-                };
-            in
-            {
-                inherit (clan.config)
-                    nixosConfigurations
-                    nixosModules
-                    clanInternals
-                    darwinConfigurations
-                    darwinModules
-                    ;
-            };
+        # Additional NixOS configuration can be added here.
+        # machines/jon/configuration.nix will be automatically imported.
+        # See: https://docs.clan.lol/guides/more-machines/#automatic-registration
+        machines = {
+            # jon = { config, ... }: {
+            #   environment.systemPackages = [ pkgs.asciinema ];
+            # };
+        };
     }
     ```
 
@@ -89,16 +48,18 @@ See the complete [list](../../guides/more-machines.md#automatic-registration) of
 
     The option: `machines.<name>` is used to add extra *nixosConfiguration* to a machine
 
-```{.nix .annotate title="flake.nix" hl_lines="3-13 18-22"}
-# Sometimes this attribute set is defined in clan.nix
-clan = {
+Add the following to your `clan.nix` file for each machine.
+This example demonstrates what is needed based on a machine called `jon`:
+
+```{.nix .annotate title="clan.nix" hl_lines="3-9 18-22"}
+{
     inventory.machines = {
         jon = {
             # Define targetHost here
             # Required before deployment
             deploy.targetHost = "root@jon"; # (1)
-            # Define tags here
-            tags = [ ];
+            # Define tags here (optional)
+            tags = [ ]; # (3)
         };
         sara = {
             deploy.targetHost = "root@sara";
@@ -119,6 +80,7 @@ clan = {
 
 1. It is required to define a *targetHost* for each machine before deploying. Best practice has been, to use the zerotier ip/hostname or the ip from the from overlay network you decided to use.
 2. Add your *ssh key* here - That will ensure you can always login to your machine via *ssh* in case something goes wrong.
+3. Tags can be used to automatically add this machine to services later on. - You dont need to set this now.
 
 ### (Optional) Renaming a Machine
 
