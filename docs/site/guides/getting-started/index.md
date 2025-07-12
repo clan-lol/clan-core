@@ -48,7 +48,7 @@ nix shell git+https://git.clan.lol/clan/clan-core#clan-cli --refresh
 clan --help
 ```
 
-Should print the avilable commands.
+Should print the available commands.
 
 Also checkout the [cli-reference documentation](../../reference/cli/index.md).
 
