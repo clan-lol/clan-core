@@ -188,7 +188,7 @@ def set_machine_disk_schema(
     # check that all required placeholders are present
     for placeholder_name, schema_placeholder in disk_schema.placeholders.items():
         if schema_placeholder.required and placeholder_name not in placeholders:
-            msg = f"Required placeholder {placeholder_name} - {schema_placeholder} missing"
+            msg = f"Required to set template variable {placeholder_name}"
             raise ClanError(msg)
 
     # For every placeholder check that the value is valid

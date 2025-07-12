@@ -199,6 +199,26 @@ For more detailed information, visit: {help_hyperlink("getting-started", "https:
     parser_templates = subparsers.add_parser(
         "templates",
         help="Interact with templates",
+        description="Interact with templates",
+        epilog=(
+            """
+This subcommand provides an interface to templates provided by clan.
+
+Examples:
+
+  $ clan templates list
+  List all the machines managed by Clan.
+
+  $ clan templates apply disk [TEMPLATE] [MACHINE]
+  Will apply the specified [TEMPLATE] to the [MACHINE]
+
+  Many templates require to *set* variables via the `--set` flag.
+  $ clan templates apply disk [TEMPLATE] [MACHINE] --set key1 value1 --set key2 value2
+
+  Real world example
+  $ clan templates apply disk single-disk jon --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
+"""
+        ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
     templates.register_parser(parser_templates)

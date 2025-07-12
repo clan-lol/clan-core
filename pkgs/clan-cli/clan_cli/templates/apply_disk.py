@@ -37,29 +37,27 @@ def apply_command(args: argparse.Namespace) -> None:
     placeholders = dict(set_tuples)
 
     set_machine_disk_schema(
-        Machine(args.to_machine, args.flake),
+        Machine(args.machine, args.flake),
         args.template,
         placeholders,
         force=args.force,
         check_hw=not args.skip_hardware_check,
     )
-    log.info(f"Applied disk template '{args.template}' to machine '{args.to_machine}' ")
+    log.info(f"Applied disk template '{args.template}' to machine '{args.machine}' ")
 
 
 def register_apply_disk_template_parser(parser: argparse.ArgumentParser) -> None:
-    machine_action = parser.add_argument(
-        "--to-machine",
+    parser.add_argument(
+        "template",
         type=str,
-        required=True,
+        help="The name of the disk template to apply",
+    )
+    machine_action = parser.add_argument(
+        "machine",
+        type=str,
         help="The machine to apply the template to",
     )
     add_dynamic_completer(machine_action, complete_machines)
-    parser.add_argument(
-        "--template",
-        type=str,
-        required=True,
-        help="The name of the disk template to apply",
-    )
     parser.add_argument(
         "--set",
         help="Set a placeholder in the template to a value",
