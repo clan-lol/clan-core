@@ -101,7 +101,7 @@ clan show
 
 You should see something like this:
 
-```terminal-session
+```shellSession
 Name: __CHANGE_ME__
 Description: None
 ```
