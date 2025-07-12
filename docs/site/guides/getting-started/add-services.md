@@ -17,104 +17,77 @@ To learn more: [Guide about clanService](../clanServices.md)
 
 ## Configure a Zerotier Network (recommended)
 
-```{.nix title="flake.nix" hl_lines="20-28"}
+```{.nix title="clan.nix" hl_lines="12-20"}
 {
-    inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-    inputs.nixpkgs.follows = "clan-core/nixpkgs";
-    inputs.flake-parts.follows = "clan-core/flake-parts";
-    inputs.flake-parts.inputs.nixpkgs-lib.follows = "clan-core/nixpkgs";
-
-    outputs =
-        inputs@{ flake-parts, ... }:
-        flake-parts.lib.mkFlake { inherit inputs; } {
-            imports = [ inputs.clan-core.flakeModules.default ];
-            # Sometimes this attribute set is defined in clan.nix
-            clan = {
-                inventory.machines = {
-                    jon = {
-                        targetHost = "root@jon";
-                    };
-                    sara = {
-                        targetHost = "root@jon";
-                    };
-                };
-                inventory.instances = {
-                    zerotier = { # (1)
-                        # Defines 'jon' as the controller
-                        roles.controller.machines.jon = {};
-                        # Defines all machines as networking peer.
-                        # The 'all' tag is a clan builtin.
-                        roles.peer.tags.all = {};
-                    };
-                }
-            };
-
-            systems = [
-                "x86_64-linux"
-                "aarch64-linux"
-                "x86_64-darwin"
-                "aarch64-darwin"
-            ];
+    inventory.machines = {
+        jon = {
+            targetHost = "root@jon";
+        };
+        sara = {
+            targetHost = "root@jon";
+        };
     };
+
+    inventory.instances = {
+        zerotier = { # (1)
+            # Replace with the name (string) of your machine that you will use as zerotier-controller
+            # See: https://docs.zerotier.com/controller/
+            # Deploy this machine first to create the network secrets
+            roles.controller.machines."jon" = { }; # (2)
+            # Peers of the network
+            # this line means 'all' clan machines will be 'peers'
+            roles.peer.tags.all = { }; # (3)
+        };
+    };
+    # ...
+    # elided
 }
 ```
 
 1. See [reference/clanServices](../../reference/clanServices/index.md) for all available services and how to configure them.
    Or read [authoring/clanServices](../authoring/clanServices/index.md) if you want to bring your own
 
+2. Replace `__YOUR_CONTROLLER_` with the *name* of your machine.
+
+3. This line will add all machines of your clan as `peer` to zerotier
+
 ## Adding more recommended defaults
 
 Adding the following services is recommended for most users:
 
-```{.nix title="flake.nix" hl_lines="25-35"}
+```{.nix title="clan.nix" hl_lines="11-26"}
 {
-    inputs.clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-    inputs.nixpkgs.follows = "clan-core/nixpkgs";
-    inputs.flake-parts.follows = "clan-core/flake-parts";
-    inputs.flake-parts.inputs.nixpkgs-lib.follows = "clan-core/nixpkgs";
-
-    outputs =
-        inputs@{ flake-parts, ... }:
-        flake-parts.lib.mkFlake { inherit inputs; } {
-            imports = [ inputs.clan-core.flakeModules.default ];
-            # Sometimes this attribute set is defined in clan.nix
-            clan = {
-                inventory.machines = {
-                    jon = {
-                        targetHost = "root@jon";
-                    };
-                    sara = {
-                        targetHost = "root@jon";
-                    };
-                };
-                inventory.instances = {
-                    zerotier = {
-                        roles.controller.machines.jon = {};
-                        roles.peer.tags.all = {};
-                    };
-                    admin = { # (1)
-                        roles.default.tags.all = { };
-                        roles.default.settings = {
-                            allowedKeys = {
-                                "my-user" = "ssh-ed25519 AAAAC3N..."; # elided
-                            };
-                        };
-                    };
-                    state-version = { # (2)
-                        roles.default.tags.all = { };
-                    };
+    inventory.machines = {
+        jon = {
+            targetHost = "root@jon";
+        };
+        sara = {
+            targetHost = "root@jon";
+        };
+    };
+    inventory.instances = {
+        admin = { # (1)
+            roles.default.tags.all = { };
+            roles.default.settings = {
+                allowedKeys = {
+                    "my-user" = "ssh-ed25519 AAAAC3N..."; # elided
                 };
             };
-            systems = [
-                "x86_64-linux"
-                "aarch64-linux"
-                "x86_64-darwin"
-                "aarch64-darwin"
-            ];
+        };
+        jon-user = { # (2)
+            module.name = "users";
+
+            roles.default.tags.all = { };
+            roles.default.settings = {
+                user = "jon"; # (3)
+            };
+        };
+        # ...
+        # elided
     };
 }
+
 ```
 
 1. The `admin` service will generate a **root-password** and **add your ssh-key** that allows for convienient administration.
-
-2. The `state-version` service will generate a [nixos state version](https://wiki.nixos.org/wiki/FAQ/When_do_I_update_stateVersion) for each system once it is deployed.
+2. Adds `jon` as a user on all machines. Will create a `home` directory, and prompt for a password before deployment.
