@@ -52,7 +52,7 @@ clan vars list <machineName>
 Which should print the generated `disk-id/diskId` value in clear text
 You should see output like:
 
-```terminal-session
+```shellSession
 disk-id/diskId: fcef30a749f8451d8f60c46e1ead726f
 # ...
 # elided
