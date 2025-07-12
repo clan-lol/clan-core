@@ -72,8 +72,18 @@ templates: dict[str, dict[str, Callable[[dict[str, Any]], Placeholder]]] = {
 }
 
 
+def get_empty_placeholder(label: str) -> Placeholder:
+    return Placeholder(
+        label,
+        options=None,
+        required=not label.endswith("*"),
+    )
+
+
 @API.register
-def get_machine_disk_schemas(machine: Machine) -> dict[str, DiskSchema]:
+def get_machine_disk_schemas(
+    machine: Machine, check_hw: bool = True
+) -> dict[str, DiskSchema]:
     """
     Get the available disk schemas.
     This function reads the disk schemas from the templates directory and returns them as a dictionary.
@@ -89,11 +99,13 @@ def get_machine_disk_schemas(machine: Machine) -> dict[str, DiskSchema]:
     hw_report = {}
 
     hw_report_path = HardwareConfig.NIXOS_FACTER.config_path(machine)
-    if not hw_report_path.exists():
+    if check_hw and not hw_report_path.exists():
         msg = "Hardware configuration missing"
         raise ClanError(msg)
-    with hw_report_path.open("r") as hw_report_file:
-        hw_report = json.load(hw_report_file)
+
+    if hw_report_path.exists():
+        with hw_report_path.open("r") as hw_report_file:
+            hw_report = json.load(hw_report_file)
 
     for disk_template in disk_templates.iterdir():
         if disk_template.is_dir():
@@ -109,7 +121,10 @@ def get_machine_disk_schemas(machine: Machine) -> dict[str, DiskSchema]:
             placeholders = {}
 
             if placeholder_getters:
-                placeholders = {k: v(hw_report) for k, v in placeholder_getters.items()}
+                placeholders = {
+                    k: v(hw_report) if hw_report else get_empty_placeholder(k)
+                    for k, v in placeholder_getters.items()
+                }
 
             raw_readme = (disk_template / "README.md").read_text()
             frontmatter, readme = extract_frontmatter(
@@ -139,30 +154,37 @@ def set_machine_disk_schema(
     # Use get disk schemas to get the placeholders and their options
     placeholders: dict[str, str],
     force: bool = False,
+    check_hw: bool = True,
 ) -> None:
     """
     Set the disk placeholders of the template
     """
+    # Ensure the machine exists
+    machine.get_inv_machine()
+
     # Assert the hw-config must exist before setting the disk
     hw_config = get_machine_hardware_config(machine)
     hw_config_path = hw_config.config_path(machine)
 
-    if not hw_config_path.exists():
-        msg = "Hardware configuration must exist before applying disk schema"
-        raise ClanError(msg)
+    if check_hw:
+        if not hw_config_path.exists():
+            msg = "Hardware configuration must exist for checking."
+            msg += f"\nrun 'clan machines update-hardware-config {machine.name}' to generate a hardware report. Alternatively disable hardware checking to skip this check"
+            raise ClanError(msg)
 
-    if hw_config != HardwareConfig.NIXOS_FACTER:
-        msg = "Hardware configuration must use type FACTER for applying disk schema automatically"
-        raise ClanError(msg)
+        if hw_config != HardwareConfig.NIXOS_FACTER:
+            msg = "Hardware configuration must use type FACTER for applying disk schema automatically"
+            raise ClanError(msg)
 
     disk_schema_path = clan_templates(TemplateType.DISK) / f"{schema_name}/default.nix"
 
     if not disk_schema_path.exists():
-        msg = f"Disk schema not found at {disk_schema_path}"
+        msg = f"Disk schema '{schema_name}' not found at {disk_schema_path}"
+        msg += f"\nAvailable schemas: {', '.join([p.name for p in clan_templates(TemplateType.DISK).iterdir()])}"
         raise ClanError(msg)
 
     # Check that the placeholders are valid
-    disk_schema = get_machine_disk_schemas(machine)[schema_name]
+    disk_schema = get_machine_disk_schemas(machine, check_hw)[schema_name]
     # check that all required placeholders are present
     for placeholder_name, schema_placeholder in disk_schema.placeholders.items():
         if schema_placeholder.required and placeholder_name not in placeholders:
@@ -183,12 +205,15 @@ def set_machine_disk_schema(
                 description=f"Available placeholders: {disk_schema.placeholders.keys()}",
             )
 
-        # Invalid value. Check if the value is one of the provided options
-        if ph.options and placeholder_value not in ph.options:
+        # Checking invalid value: if the value is one of the provided options
+        if check_hw and ph.options and placeholder_value not in ph.options:
             msg = (
                 f"Invalid value {placeholder_value} for placeholder {placeholder_name}"
             )
-            raise ClanError(msg, description=f"Valid options: {ph.options}")
+            raise ClanError(
+                msg,
+                description=f"Valid options: \n{'\n'.join(ph.options)}",
+            )
 
     placeholders_toml = "\n".join(
         [f"""# {k} = "{v}" """ for k, v in placeholders.items() if v is not None]
@@ -221,6 +246,9 @@ def set_machine_disk_schema(
             disk_config.write(header)
             disk_config.write(config_str)
 
+        # TODO: return files to commit
+        # Don't commit here
+        # The top level command will usually collect files and commit them in batches
         commit_file(
             disko_file_path,
             machine.flake.path,
