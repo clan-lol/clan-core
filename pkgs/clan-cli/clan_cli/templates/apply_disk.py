@@ -6,6 +6,11 @@ from typing import Any
 from clan_lib.api.disk import set_machine_disk_schema
 from clan_lib.machines.machines import Machine
 
+from clan_cli.completions import (
+    add_dynamic_completer,
+    complete_machines,
+)
+
 log = logging.getLogger(__name__)
 
 
@@ -42,12 +47,13 @@ def apply_command(args: argparse.Namespace) -> None:
 
 
 def register_apply_disk_template_parser(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument(
+    machine_action = parser.add_argument(
         "--to-machine",
         type=str,
         required=True,
         help="The machine to apply the template to",
     )
+    add_dynamic_completer(machine_action, complete_machines)
     parser.add_argument(
         "--template",
         type=str,
