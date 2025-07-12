@@ -38,31 +38,24 @@ By the end of this guide, you'll have a fresh NixOS configuration ready to push 
 
 ## Add Clan CLI to Your Shell
 
-Add the Clan CLI into your environment:
+Create a new clan
 
 ```bash
-nix shell git+https://git.clan.lol/clan/clan-core#clan-cli --refresh
+nix run git+https://git.clan.lol/clan/clan-core#clan-cli --refresh -- flakes create
 ```
+
+This should prompt for a *name*:
 
 ```terminalSession
-clan --help
+Enter a name for the new clan: my-clan
 ```
 
-Should print the available commands.
+Enter a *name*, confirm with *enter*. A directory with that name will be created and initialized.
 
-Also checkout the [cli-reference documentation](../../reference/cli/index.md).
+!!! Note
+    This command uses the `default` template
 
-## Initialize Your Project
-
-If you want to migrate an existing project, follow this [guide](../migrations/migration-guide.md).
-
-Set the foundation of your Clan project by initializing it by running:
-
-```bash
-clan flakes create my-clan
-```
-
-This command creates a `flake.nix` and some other files for your project.
+    See `clan templates list` and the `--help` reference for how to use other templates.
 
 ## Explore the Project Structure
 
@@ -83,25 +76,24 @@ For example, you might see something like:
 └── README.md
 ```
 
-Don’t worry if your output looks different—the template evolves over time.
+Don’t worry if your output looks different — Clan templates evolves over time.
 
-??? info "Recommended way of sourcing the `clan` CLI tool"
+To interact with your newly created clan the you need to load the `clan` cli-package it into your environment by running:
 
-    The default template adds the `clan` CLI tool to the development shell.
-    This means that you can access the `clan` CLI tool directly from the folder
-    you are in right now.
+=== "Automatic (direnv, recommended)"
+    Prerequisite: [Install Direnv](https://direnv.net/docs/installation.html)
 
-    In the `my-clan` directory, run the following command:
+    ```
+    direnv allow
+    ```
+
+=== "Manual (nix develop)"
 
     ```
     nix develop
     ```
 
-    This will ensure the `clan` CLI tool is available in your shell environment.
-
-    To automatically add the `clan` CLI tool to your environment without having to
-    run `nix develop` every time, we recommend setting up [direnv](https://direnv.net/).
-
+verify that you can run `clan` commands:
 ```
 clan show
 ```
@@ -109,8 +101,20 @@ clan show
 You should see something like this:
 
 ```terminal-session
-Name: my-clan
+Name: __CHANGE_ME__
 Description: None
+```
+
+To change the name of your clan edit `meta.name` in the `clan.nix` or `flake.nix` file
+
+```{.nix title="clan.nix" hl_lines="3"}
+{
+  # Ensure this is unique among all clans you want to use.
+  meta.name = "__CHANGE_ME__";
+
+  # ...
+  # elided
+}
 ```
 
 ---
