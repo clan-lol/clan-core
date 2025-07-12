@@ -6,7 +6,6 @@
 
   outputs =
     inputs@{
-      self,
       flake-parts,
       ...
     }:
@@ -22,7 +21,9 @@
       ];
 
       # https://docs.clan.lol/guides/getting-started/flake-parts/
-      clan = import ./clan.nix { inherit self; };
+      clan = {
+        imports = [ ./clan.nix ];
+      };
 
       perSystem =
         { pkgs, inputs', ... }:
