@@ -13,6 +13,8 @@
           roles.default.machines."server".settings = {
             user = "root";
             prompt = false;
+            # Important: 'root' must not be a regular user. See: https://github.com/NixOS/nixpkgs/issues/424404
+            regularUser = false;
           };
         };
         user-password-test = {
@@ -31,7 +33,6 @@
     server = {
       users.users.testuser.group = "testuser";
       users.groups.testuser = { };
-      users.users.testuser.isNormalUser = true;
     };
   };
 
