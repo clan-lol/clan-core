@@ -76,12 +76,12 @@ For example, you might see something like:
 └── README.md
 ```
 
-Don’t worry if your output looks different — Clan templates evolves over time.
+Don’t worry if your output looks different — Clan templates evolve over time.
 
 To interact with your newly created clan the you need to load the `clan` cli-package it into your environment by running:
 
 === "Automatic (direnv, recommended)"
-    Prerequisite: [Install Direnv](https://direnv.net/docs/installation.html)
+    - prerequisite: [install nix-direnv](https://github.com/nix-community/nix-direnv)
 
     ```
     direnv allow
@@ -94,7 +94,8 @@ To interact with your newly created clan the you need to load the `clan` cli-pac
     ```
 
 verify that you can run `clan` commands:
-```
+
+```bash
 clan show
 ```
 
