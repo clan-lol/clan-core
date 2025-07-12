@@ -37,6 +37,22 @@
               - `clan vars get <machine-name> <name-of-password-variable>`
             '';
           };
+          regularUser = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            example = false;
+            description = ''
+              Whether the user should be a regular user or a system user.
+
+              Regular users are normal users that can log in and have a home directory.
+
+              System users are used for system services and do not have a home directory.
+
+              !!! Warning
+                  `root` cannot be a regular user.
+                  You must set this to `false` for `root`
+            '';
+          };
           groups = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
@@ -74,7 +90,7 @@
           }:
           {
             users.users.${settings.user} = {
-              isNormalUser = true;
+              isNormalUser = settings.regularUser;
               extraGroups = settings.groups;
 
               hashedPasswordFile =
