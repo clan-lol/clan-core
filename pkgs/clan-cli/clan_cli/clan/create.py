@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 from clan_lib.clan.create import CreateOptions, create_clan
+from clan_lib.errors import ClanError
 
 log = logging.getLogger(__name__)
 
@@ -28,8 +29,8 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "path",
         type=Path,
+        nargs="?",
         help="Path where to write the clan template to",
-        default=Path(),
     )
 
     parser.add_argument(
@@ -40,6 +41,15 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
     )
 
     def create_flake_command(args: argparse.Namespace) -> None:
+        # Ask for a path interactively if none provided
+        if args.path is None:
+            user_input = input("Enter a name for the new clan: ").strip()
+            if not user_input:
+                msg = "Error: name is required."
+                raise ClanError(msg)
+
+            args.path = Path(user_input)
+
         create_clan(
             CreateOptions(
                 dest=args.path,
