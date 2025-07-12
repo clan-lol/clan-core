@@ -2,6 +2,11 @@
   # Ensure this is unique among all clans you want to use.
   meta.name = "__CHANGE_ME__";
 
+  inventory.machines = {
+    # Define machines here.
+    # jon = { };
+  };
+
   # Docs: See https://docs.clan.lol/reference/clanServices
   inventory.instances = {
 
