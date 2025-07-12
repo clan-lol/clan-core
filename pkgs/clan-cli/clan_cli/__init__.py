@@ -198,7 +198,7 @@ For more detailed information, visit: {help_hyperlink("getting-started", "https:
 
     parser_templates = subparsers.add_parser(
         "templates",
-        help="Subcommands to interact with templates",
+        help="Interact with templates",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     templates.register_parser(parser_templates)
