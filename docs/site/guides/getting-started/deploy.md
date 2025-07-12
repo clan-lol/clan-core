@@ -153,7 +153,7 @@ By default clan uses [disko](https://github.com/nix-community/disko) which allow
 To setup a disk schema for a machine run
 
 ```bash
-clan templates apply disk --to-machine jon --template single-disk --set mainDisk ""
+clan templates apply disk single-disk jon --set mainDisk ""
 ```
 
 Which should fail and give the valid options for the specific hardware:
@@ -166,7 +166,7 @@ Invalid value  for placeholder mainDisk - Valid options:
 Re-run the command with the correct disk:
 
 ```bash
-clan templates apply disk --to-machine jon --template single-disk --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
+clan templates apply disk single-disk jon --set mainDisk "/dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368"
 ```
 
 Should now be succesfull
