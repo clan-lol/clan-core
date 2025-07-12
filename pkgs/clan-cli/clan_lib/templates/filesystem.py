@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 from clan_lib.flake import Flake
@@ -35,7 +36,7 @@ def copy_from_nixstore(src: Path, dest: Path) -> None:
     Uses `cp -r` to recursively copy the directory.
     Ensures the destination directory is writable by the user.
     """
-    run(["cp", "-r", str(src / "."), str(dest)])  # Copy contents of src to dest
+    shutil.copytree(src, dest, dirs_exist_ok=True, symlinks=True)
     run(
         ["chmod", "-R", "u+w", str(dest)]
     )  # Ensure the destination is writable by the user
