@@ -158,7 +158,7 @@ clan templates apply disk --to-machine jon --template single-disk --set mainDisk
 
 Which should fail and give the valid options for the specific hardware:
 
-```terminal-session
+```shellSession
 Invalid value  for placeholder mainDisk - Valid options:
 /dev/disk/by-id/nvme-WD_PC_SN740_SDDQNQD-512G-1201_232557804368
 ```
@@ -171,7 +171,7 @@ clan templates apply disk --to-machine jon --template single-disk --set mainDisk
 
 Should now be succesfull
 
-```terminal-session
+```shellSession
 Applied disk template 'single-disk' to machine 'jon'
 ```
 
