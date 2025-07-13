@@ -154,22 +154,19 @@ class ModuleInfo(TypedDict):
     roles: dict[str, None]
 
 
-class ModuleLists(TypedDict):
-    modulesPerSource: dict[str, dict[str, ModuleInfo]]
-    localModules: dict[str, ModuleInfo]
+class ModuleList(TypedDict):
+    modules: dict[str, dict[str, ModuleInfo]]
 
 
 @API.register
-def list_modules(base_path: str) -> ModuleLists:
+def list_modules(base_path: str) -> ModuleList:
     """
     Show information about a module
     """
     flake = Flake(base_path)
-    modules = flake.select(
-        "clanInternals.inventoryClass.{?modulesPerSource,?localModules}"
-    )
+    modules = flake.select("clanInternals.inventoryClass.modulesPerSource")
 
-    return modules
+    return ModuleList({"modules": modules})
 
 
 @dataclass

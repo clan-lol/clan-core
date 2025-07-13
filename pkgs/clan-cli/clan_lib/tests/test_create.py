@@ -208,7 +208,7 @@ def test_clan_create_api(
 
     modules = list_modules(str(clan_dir_flake.path))
     assert (
-        modules["modulesPerSource"]["clan-core"]["admin"]["manifest"]["name"]
+        modules["modules"]["clan-core"]["admin"]["manifest"]["name"]
         == "clan-core/admin"
     )
 

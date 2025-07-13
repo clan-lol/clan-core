@@ -29,8 +29,7 @@ def test_list_modules(test_flake_with_core: FlakeForTest) -> None:
     base_path = test_flake_with_core.path
     modules_info = list_modules(str(base_path))
 
-    assert "localModules" in modules_info
-    assert "modulesPerSource" in modules_info
+    assert "modules" in modules_info
 
 
 @pytest.mark.impure

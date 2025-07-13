@@ -35,11 +35,6 @@ in
         inputName: v: lib.mapAttrs (inspectModule inputName) v.clan.modules
       ) inputsWithModules;
   };
-  options.localModules = lib.mkOption {
-    readOnly = true;
-    type = lib.types.raw;
-    default = config.modulesPerSource.self;
-  };
   options.templatesPerSource = lib.mkOption {
     # { sourceName :: { moduleName :: {} }}
     readOnly = true;
