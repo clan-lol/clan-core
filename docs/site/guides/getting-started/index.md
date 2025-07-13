@@ -128,6 +128,7 @@ You can continue with **any** of the following steps at your own pace:
 - [x] [Initialize Clan](./index.md#initialize-your-project)
 - [ ] [Create USB Installer (optional)](./installer.md)
 - [ ] [Add Machines](./add-machines.md)
+- [ ] [Add a User](./add-user.md)
 - [ ] [Add Services](./add-services.md)
 - [ ] [Configure Secrets](./secrets.md)
 - [ ] [Deploy](./deploy.md) - Requires configured secrets
