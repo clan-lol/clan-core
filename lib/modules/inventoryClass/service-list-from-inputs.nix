@@ -35,6 +35,21 @@ in
         inputName: v: lib.mapAttrs (inspectModule inputName) v.clan.modules
       ) inputsWithModules;
   };
+  options.moduleSchemas = lib.mkOption {
+    # { sourceName :: { moduleName :: { roleName :: Schema }}}
+    readOnly = true;
+    type = lib.types.raw;
+    default = lib.mapAttrs (
+      _inputName: moduleSet:
+      lib.mapAttrs (
+        _moduleName: module:
+        (clanLib.evalService {
+          modules = [ module ];
+          prefix = [ ];
+        }).config.result.api.schema
+      ) moduleSet
+    ) config.modulesPerSource;
+  };
   options.templatesPerSource = lib.mkOption {
     # { sourceName :: { moduleName :: {} }}
     readOnly = true;
