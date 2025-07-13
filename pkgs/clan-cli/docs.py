@@ -4,7 +4,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from clan_cli import create_parser
+from clan_cli.cli import create_parser
 
 hidden_subcommands = ["machine", "b", "f", "m", "se", "st", "va"]
 

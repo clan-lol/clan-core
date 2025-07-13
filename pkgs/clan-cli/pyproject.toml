@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "clan"
 description = "clan cli tool"
 dynamic = ["version"]
-scripts = { clan = "clan_cli:main" }
+scripts = { clan = "clan_cli.cli:main" }
 license = { text = "MIT" }
 
 [project.urls]
