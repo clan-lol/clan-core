@@ -297,6 +297,8 @@ For more detailed information, visit: {help_hyperlink("secrets", "https://docs.c
         description="Manage facts",
         epilog=(
             f"""
+Note: Facts are being deprecated, please use Vars instead.
+For a migration guide visit: {help_hyperlink("vars", "https://docs.clan.lol/guides/migrations/migration-facts-vars")}
 
 This subcommand provides an interface to facts of clan machines.
 Facts are artifacts that a service can generate.
