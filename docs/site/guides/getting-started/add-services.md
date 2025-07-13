@@ -51,7 +51,7 @@ To learn more: [Guide about clanService](../clanServices.md)
 
 Adding the following services is recommended for most users:
 
-```{.nix title="clan.nix" hl_lines="7-22"}
+```{.nix title="clan.nix" hl_lines="7-14"}
 {
     inventory.machines = {
         jon = { };
@@ -66,19 +66,10 @@ Adding the following services is recommended for most users:
                 };
             };
         };
-        jon-user = { # (3)
-            module.name = "users";
-
-            roles.default.tags.all = { };
-            roles.default.settings = {
-                user = "jon";
-            };
-        };
         # ...
         # elided
     };
 }
-
 ```
 
 1. The `admin` service will generate a **root-password** and **add your ssh-key** that allows for convienient administration.
