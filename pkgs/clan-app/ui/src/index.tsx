@@ -3,7 +3,7 @@ import { render } from "solid-js/web";
 
 import "./index.css";
 import { QueryClient } from "@tanstack/solid-query";
-import { CubeScene } from "./scene/qubes";
+import { CubeScene } from "./scene/cubes";
 
 export const client = new QueryClient();
 
