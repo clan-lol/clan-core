@@ -6,12 +6,12 @@ from typing import Any, TypedDict
 from uuid import uuid4
 
 from clan_lib.api import API
-from clan_lib.api.modules import Frontmatter, extract_frontmatter
 from clan_lib.dirs import TemplateType, clan_templates
 from clan_lib.errors import ClanError
 from clan_lib.git import commit_file
 from clan_lib.machines.hardware import HardwareConfig, get_machine_hardware_config
 from clan_lib.machines.machines import Machine
+from clan_lib.services.modules import Frontmatter, extract_frontmatter
 
 log = logging.getLogger(__name__)
 
