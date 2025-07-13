@@ -32,10 +32,10 @@ The example shows how to add a user called `jon`:
             roles.default.settings = {
                 user = "jon"; # (3)
                 groups = [
-                    "wheel"
-                    "networkmanager"
-                    "video"
-                    "input"
+                    "wheel" # Allow using 'sudo'
+                    "networkmanager" # Allows to manage network connections.
+                    "video" # Allows to access video devices.
+                    "input" # Allows to access input devices.
                 ];
             };
         };
