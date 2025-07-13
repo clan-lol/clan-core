@@ -7,6 +7,7 @@ from typing import Any, TypedDict
 from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.nix_models.clan import InventoryInstanceModuleType
 
 
 class CategoryInfo(TypedDict):
@@ -165,6 +166,84 @@ def list_service_modules(flake: Flake) -> ModuleList:
     modules = flake.select("clanInternals.inventoryClass.modulesPerSource")
 
     return ModuleList({"modules": modules})
+
+
+@API.register
+def get_service_module(
+    flake: Flake, module_ref: InventoryInstanceModuleType
+) -> ModuleInfo:
+    """
+    Returns the module information for a given module reference
+
+    :param module_ref: The module reference to get the information for
+    :return: Dict of module information
+    :raises ClanError: If the module_ref is invalid or missing required fields
+    """
+
+    input_name, module_name = check_service_module_ref(flake, module_ref)
+
+    avilable_modules = list_service_modules(flake)
+    module_set = avilable_modules.get("modules", {}).get(input_name)
+
+    assert module_set is not None  # Since check_service_module_ref already checks this
+
+    module = module_set.get(module_name)
+
+    assert module is not None  # Since check_service_module_ref already checks this
+
+    return module
+
+
+def check_service_module_ref(
+    flake: Flake,
+    module_ref: InventoryInstanceModuleType,
+) -> tuple[str, str]:
+    """
+    Checks if the module reference is valid
+
+    :param module_ref: The module reference to check
+    :raises ClanError: If the module_ref is invalid or missing required fields
+    """
+    avilable_modules = list_service_modules(flake)
+
+    input_ref = module_ref.get("input", None)
+    if input_ref is None:
+        msg = "Setting module_ref.input is currently required"
+        raise ClanError(msg)
+
+    module_set = avilable_modules.get("modules", {}).get(input_ref)
+
+    if module_set is None:
+        msg = f"module set for input '{input_ref}' not found"
+        msg += f"\nAvilable input_refs: {avilable_modules.get('modules', {}).keys()}"
+        raise ClanError(msg)
+
+    module_name = module_ref.get("name")
+    assert module_name
+    module = module_set.get(module_name)
+    if module is None:
+        msg = f"module with name '{module_name}' not found"
+        raise ClanError(msg)
+
+    return (input_ref, module_name)
+
+
+@API.register
+def get_service_module_schema(
+    flake: Flake, module_ref: InventoryInstanceModuleType
+) -> dict[str, Any]:
+    """
+    Returns the schema for a service module
+
+    :param module_ref: The module reference to get the schema for
+    :return: Dict of schemas for the service module roles
+    :raises ClanError: If the module_ref is invalid or missing required fields
+    """
+    input_name, module_name = check_service_module_ref(flake, module_ref)
+
+    return flake.select(
+        f"clanInternals.inventoryClass.moduleSchemas.{input_name}.{module_name}"
+    )
 
 
 @dataclass

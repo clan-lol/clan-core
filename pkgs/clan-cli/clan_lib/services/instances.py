@@ -11,7 +11,9 @@ from clan_lib.nix_models.clan import (
 )
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path
-from clan_lib.services.modules import list_service_modules
+from clan_lib.services.modules import (
+    get_service_module,
+)
 
 # TODO: move imports out of cli/__init__.py causing import cycles
 # from clan_lib.machines.actions import list_machines
@@ -49,27 +51,7 @@ def create_service_instance(
     instance_name: str,
     instance_config: InstanceConfig,
 ) -> None:
-    # TODO: Should take a flake
-    avilable_modules = list_service_modules(flake)
-
-    input_ref = module_ref.get("input", None)
-    if input_ref is None:
-        msg = "Setting module_ref.input is currently required"
-        raise ClanError(msg)
-
-    module_set = avilable_modules.get("modules", {}).get(input_ref)
-
-    if module_set is None:
-        msg = f"module set for input '{input_ref}' not found"
-        msg += f"\nAvilable input_refs: {avilable_modules.get('modules', {}).keys()}"
-        raise ClanError(msg)
-
-    module_name = module_ref.get("name")
-    assert module_name
-    module = module_set.get(module_name)
-    if module is None:
-        msg = f"module with name '{module_name}' not found"
-        raise ClanError(msg)
+    module = get_service_module(flake, module_ref)
 
     inventory_store = InventoryStore(flake)
     inventory = inventory_store.read()
