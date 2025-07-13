@@ -158,7 +158,7 @@ class ModuleList(TypedDict):
 
 
 @API.register
-def list_modules(base_path: str) -> ModuleList:
+def list_service_modules(base_path: str) -> ModuleList:
     """
     Show information about a module
     """

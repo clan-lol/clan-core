@@ -31,7 +31,7 @@ from clan_lib.nix_models.clan import (
 from clan_lib.nix_models.clan import InventoryMachineDeploy as MachineDeploy
 from clan_lib.persist.inventory_store import InventoryStore
 from clan_lib.persist.util import set_value_by_path
-from clan_lib.services.modules import list_modules
+from clan_lib.services.modules import list_service_modules
 from clan_lib.ssh.remote import Remote, check_machine_ssh_login
 from clan_lib.templates.disk import hw_main_disk_options, set_machine_disk_schema
 
@@ -206,7 +206,7 @@ def test_clan_create_api(
     store = InventoryStore(clan_dir_flake)
     inventory = store.read()
 
-    modules = list_modules(str(clan_dir_flake.path))
+    modules = list_service_modules(str(clan_dir_flake.path))
     assert (
         modules["modules"]["clan-core"]["admin"]["manifest"]["name"]
         == "clan-core/admin"
