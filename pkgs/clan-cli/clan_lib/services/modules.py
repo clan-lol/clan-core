@@ -158,11 +158,10 @@ class ModuleList(TypedDict):
 
 
 @API.register
-def list_service_modules(base_path: str) -> ModuleList:
+def list_service_modules(flake: Flake) -> ModuleList:
     """
     Show information about a module
     """
-    flake = Flake(base_path)
     modules = flake.select("clanInternals.inventoryClass.modulesPerSource")
 
     return ModuleList({"modules": modules})

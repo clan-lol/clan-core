@@ -206,7 +206,7 @@ def test_clan_create_api(
     store = InventoryStore(clan_dir_flake)
     inventory = store.read()
 
-    modules = list_service_modules(str(clan_dir_flake.path))
+    modules = list_service_modules(clan_dir_flake)
     assert (
         modules["modules"]["clan-core"]["admin"]["manifest"]["name"]
         == "clan-core/admin"

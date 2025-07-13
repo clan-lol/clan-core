@@ -27,7 +27,7 @@ from clan_lib.machines.machines import Machine as MachineMachine
 @pytest.mark.with_core
 def test_list_modules(test_flake_with_core: FlakeForTest) -> None:
     base_path = test_flake_with_core.path
-    modules_info = list_service_modules(str(base_path))
+    modules_info = list_service_modules(Flake(str(base_path)))
 
     assert "modules" in modules_info
 
