@@ -402,24 +402,16 @@ export function CubeScene() {
       if (selected) {
         // When selected, make all faces red-ish but maintain the lighting difference
         materials.forEach((material, index) => {
-          (material as THREE.MeshBasicMaterial).color.set(
-            index === 2
-              ? 0xff6666 // Top face - lighter red
-              : index === 0 || index === 4
-                ? 0xdce4e5 // Front/right faces - keep
-                : 0xa4b3b5, // Shadow faces - keep
-          );
+          if (index === 2) {
+            (material as THREE.MeshBasicMaterial).color.set(0xff6666);
+          }
         });
       } else {
         // Normal colors - restore original face colors
         materials.forEach((material, index) => {
-          (material as THREE.MeshBasicMaterial).color.set(
-            index === 2
-              ? 0xffffff // Top face - light
-              : index === 0 || index === 4
-                ? 0xdce4e5 // Front/right faces - medium
-                : 0xa4b3b5, // Shadow faces - dark
-          );
+          if (index === 2) {
+            (material as THREE.MeshBasicMaterial).color.set(0xffffff);
+          }
         });
       }
     }
