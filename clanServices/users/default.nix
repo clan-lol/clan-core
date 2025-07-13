@@ -11,7 +11,7 @@
 
   roles.default = {
     interface =
-      { lib, ... }:
+      { config, lib, ... }:
       {
         options = {
           user = lib.mkOption {
@@ -28,8 +28,8 @@
 
               Effects:
 
-              - *enabled* (`true`) - Prompt for a passwort during the machine installation or update workflow.
-              - *disabled* (`false`) - Generate a passwort during the machine installation or update workflow.
+              - *enabled* (`true`) - Prompt for a password during the machine installation or update workflow.
+              - *disabled* (`false`) - Generate a password during the machine installation or update workflow.
 
               The password can be shown in two steps:
 
@@ -39,7 +39,8 @@
           };
           regularUser = lib.mkOption {
             type = lib.types.bool;
-            default = true;
+            default = config.user != "root";
+            defaultText = lib.literalExpression "config.user != \"root\"";
             example = false;
             description = ''
               Whether the user should be a regular user or a system user.
