@@ -181,6 +181,13 @@ You can have a look and customize it if needed.
 !!! tip
     For advanced partitioning, see [Disko templates](https://github.com/nix-community/disko-templates) or [Disko examples](https://github.com/nix-community/disko/tree/master/example).
 
+!!! Danger
+    Don't change the `disko.nix` after the machine is installed for the first time.
+
+    Changing disko configuration requires wiping and reinstalling the machine.
+
+    Unless you really know what you are doing.
+
 ## Deploy the machine
 
 **Finally deployment time!** Use one of the following commands to build and deploy the image via SSH onto your machine.
@@ -267,4 +274,3 @@ clan {
 ```
 
 This is useful for machines that are not always online or are not part of the regular update cycle.
-
