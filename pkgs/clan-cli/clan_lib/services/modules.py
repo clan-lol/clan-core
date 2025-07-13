@@ -4,10 +4,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypedDict
 
+from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-
-from . import API
 
 
 class CategoryInfo(TypedDict):

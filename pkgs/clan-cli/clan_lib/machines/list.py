@@ -6,12 +6,12 @@ from clan_cli.machines.hardware import HardwareConfig
 
 from clan_lib.api import API
 from clan_lib.api.disk import MachineDiskMatter
-from clan_lib.api.modules import parse_frontmatter
 from clan_lib.dirs import specific_machine_dir
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import get_machine, list_machines
 from clan_lib.machines.machines import Machine
 from clan_lib.nix_models.clan import InventoryMachine
+from clan_lib.services.modules import parse_frontmatter
 
 log = logging.getLogger(__name__)
 
