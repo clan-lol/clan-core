@@ -4,10 +4,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TypedDict
 
+from clan_lib.api import API
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-
-from . import API
 
 
 class CategoryInfo(TypedDict):
@@ -154,22 +153,18 @@ class ModuleInfo(TypedDict):
     roles: dict[str, None]
 
 
-class ModuleLists(TypedDict):
-    modulesPerSource: dict[str, dict[str, ModuleInfo]]
-    localModules: dict[str, ModuleInfo]
+class ModuleList(TypedDict):
+    modules: dict[str, dict[str, ModuleInfo]]
 
 
 @API.register
-def list_modules(base_path: str) -> ModuleLists:
+def list_service_modules(flake: Flake) -> ModuleList:
     """
     Show information about a module
     """
-    flake = Flake(base_path)
-    modules = flake.select(
-        "clanInternals.inventoryClass.{?modulesPerSource,?localModules}"
-    )
+    modules = flake.select("clanInternals.inventoryClass.modulesPerSource")
 
-    return modules
+    return ModuleList({"modules": modules})
 
 
 @dataclass

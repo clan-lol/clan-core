@@ -3,8 +3,8 @@ import logging
 from collections.abc import Sequence
 from typing import Any
 
-from clan_lib.api.disk import set_machine_disk_schema
 from clan_lib.machines.machines import Machine
+from clan_lib.templates.disk import set_machine_disk_schema
 
 from clan_cli.completions import (
     add_dynamic_completer,

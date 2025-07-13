@@ -41,7 +41,7 @@ TOP_LEVEL_RESOURCES = {
     "secret",  # sops & key operations
     "log",  # log operations
     "generator",  # vars generators operations
-    "module",  # module (clan.service) management
+    "service",  # clan.service management
     "system",  # system operations
 }
 
