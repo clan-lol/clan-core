@@ -22,6 +22,7 @@ let
     package
     path
     str
+    strMatching
     submoduleWith
     ;
   # the original types.submodule has strange behavior
@@ -47,7 +48,7 @@ in
           imports = [ ./generator.nix ];
           options = {
             name = lib.mkOption {
-              type = lib.types.str;
+              type = str;
               description = ''
                 The name of the generator.
                 This name will be used to refer to the generator in other generators.
@@ -153,7 +154,7 @@ in
                   options =
                     {
                       name = lib.mkOption {
-                        type = lib.types.str;
+                        type = str;
                         description = ''
                           name of the public fact
                         '';
@@ -162,7 +163,7 @@ in
                         defaultText = "Name of the file";
                       };
                       generatorName = lib.mkOption {
-                        type = lib.types.str;
+                        type = str;
                         description = ''
                           name of the generator
                         '';
@@ -171,7 +172,7 @@ in
                         defaultText = "Name of the generator that generates this file";
                       };
                       share = lib.mkOption {
-                        type = lib.types.bool;
+                        type = bool;
                         description = ''
                           Whether the generated vars should be shared between machines.
                           Shared vars are only generated once, when the first machine using it is deployed.
@@ -233,7 +234,7 @@ in
                           By setting this to `user`, the secret will be deployed prior to users and groups are created, allowing
                           users' passwords to be managed by vars. The secret will be stored in `/run/secrets-for-users` and `owner` and `group` must be `root`.
                         '';
-                        type = lib.types.enum [
+                        type = enum [
                           "partitioning"
                           "activation"
                           "users"
@@ -251,7 +252,7 @@ in
                         defaultText = lib.literalExpression ''if _class == "darwin" then "wheel" else "root"'';
                       };
                       mode = lib.mkOption {
-                        type = lib.types.strMatching "^[0-7]{4}$";
+                        type = strMatching "^[0-7]{4}$";
                         description = "The unix file mode of the file. Must be a 4-digit octal number.";
                         default = "0400";
                       };
@@ -375,7 +376,7 @@ in
                   - all required programs are in PATH
                   - sandbox is set up correctly
               '';
-              type = lib.types.path;
+              type = path;
               readOnly = true;
               internal = true;
             };
