@@ -23,8 +23,5 @@ jobs:
       - name: Update flake inputs
         uses: Mic92/update-flake-inputs-gitea@main
         env:
-          GITEA_URL: ${{ gitea.server_url }}
-          GITEA_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          GITEA_REPOSITORY: ${{ gitea.repository }}
           # Exclude private flakes and update-clan-core checks flake
           EXCLUDE_PATTERNS: "devFlake/private/flake.nix,checks/impure/flake.nix"
