@@ -1,0 +1,30 @@
+name: Update Flake Inputs
+
+on:
+  schedule:
+    # Run weekly on Sunday at 4:00 AM UTC
+    - cron: "0 4 * * 0"
+  workflow_dispatch:
+  repository_dispatch:
+
+jobs:
+  update-flake-inputs:
+    runs-on: nix
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config --global user.email "clan-bot@clan.lol"
+          git config --global user.name "clan-bot"
+
+      - name: Update flake inputs
+        uses: Mic92/update-flake-inputs-gitea@main
+        env:
+          GITEA_URL: ${{ gitea.server_url }}
+          GITEA_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          GITEA_REPOSITORY: ${{ gitea.repository }}
+          # Exclude private flakes and update-clan-core checks flake
+          EXCLUDE_PATTERNS: "devFlake/private/flake.nix,checks/impure/flake.nix"
