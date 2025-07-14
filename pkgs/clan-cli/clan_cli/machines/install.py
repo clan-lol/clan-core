@@ -24,12 +24,14 @@ def install_command(args: argparse.Namespace) -> None:
         # Only if the caller did not specify a target_host via args.target_host
         # Find a suitable target_host that is reachable
         target_host_str = args.target_host
-        deploy_info: DeployInfo | None = ssh_command_parse(args)
+        deploy_info: DeployInfo | None = (
+            ssh_command_parse(args) if target_host_str is None else None
+        )
 
         use_tor = False
-        if deploy_info and not args.target_host:
+        if deploy_info:
             host = find_reachable_host(deploy_info)
-            if host is None:
+            if host is None or host.tor_socks:
                 use_tor = True
                 target_host_str = deploy_info.tor.target
             else:

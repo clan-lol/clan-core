@@ -154,6 +154,7 @@ def ssh_shell_from_deploy(
 def ssh_command_parse(args: argparse.Namespace) -> DeployInfo | None:
     host_key_check = args.host_key_check
     deploy = None
+
     if args.json:
         json_file = Path(args.json)
         if json_file.is_file():
@@ -161,23 +162,25 @@ def ssh_command_parse(args: argparse.Namespace) -> DeployInfo | None:
             return DeployInfo.from_json(data, host_key_check)
         data = json.loads(args.json)
         deploy = DeployInfo.from_json(data, host_key_check)
-    if args.png:
+    elif args.png:
         deploy = DeployInfo.from_qr_code(Path(args.png), host_key_check)
-
-    if hasattr(args, "machine") and args.machine:
+    elif hasattr(args, "machine") and args.machine:
         machine = Machine(args.machine, args.flake)
         target = machine.target_host().override(
             command_prefix=machine.name, host_key_check=host_key_check
         )
         deploy = DeployInfo(addrs=[target])
-
-    if deploy is None:
+    else:
         return None
 
-    ssh_options = {}
-    for name, value in args.ssh_option or []:
-        ssh_options[name] = value
+    ssh_options = None
+    if hasattr(args, "ssh_option") and args.ssh_option:
+        for name, value in args.ssh_option:
+            ssh_options = {}
+            ssh_options[name] = value
+
     deploy = deploy.overwrite_remotes(ssh_options=ssh_options)
+
     return deploy
 
 

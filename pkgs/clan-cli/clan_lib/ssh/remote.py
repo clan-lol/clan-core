@@ -454,7 +454,7 @@ class Remote:
 @dataclass(frozen=True)
 class ConnectionOptions:
     timeout: int = 2
-    retries: int = 10
+    retries: int = 5
 
 
 @dataclass
@@ -526,6 +526,10 @@ def check_machine_ssh_reachable(
     """
     if opts is None:
         opts = ConnectionOptions()
+
+    cmdlog.debug(
+        f"Checking SSH reachability for {remote.target} on port {remote.port or 22}",
+    )
 
     address_family = socket.AF_INET6 if ":" in remote.address else socket.AF_INET
     for _ in range(opts.retries):

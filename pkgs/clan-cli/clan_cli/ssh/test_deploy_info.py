@@ -9,8 +9,6 @@ from clan_lib.ssh.remote import Remote
 from clan_cli.ssh.deploy_info import DeployInfo, find_reachable_host
 from clan_cli.tests.fixtures_flakes import ClanFlake
 from clan_cli.tests.helpers import cli
-from clan_cli.tests.nix_config import ConfigItem
-from clan_cli.tests.stdout import CaptureOutput
 
 
 def test_qrcode_scan(temp_dir: Path) -> None:
@@ -90,13 +88,11 @@ def test_find_reachable_host(hosts: list[Remote]) -> None:
 def test_ssh_shell_from_deploy(
     hosts: list[Remote],
     flake: ClanFlake,
-    nix_config: dict[str, ConfigItem],
-    capture_output: CaptureOutput,
 ) -> None:
     host = hosts[0]
 
     machine1_config = flake.machines["m1_machine"]
-    machine1_config["nixpkgs"]["hostPlatform"] = nix_config["system"].value
+    machine1_config["nixpkgs"]["hostPlatform"] = "x86_64-linux"
     machine1_config["clan"]["networking"]["targetHost"] = host.ssh_url()
     flake.refresh()
 
