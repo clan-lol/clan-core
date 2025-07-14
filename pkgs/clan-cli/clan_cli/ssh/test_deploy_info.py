@@ -7,6 +7,10 @@ from clan_lib.nix import nix_shell
 from clan_lib.ssh.remote import Remote
 
 from clan_cli.ssh.deploy_info import DeployInfo, find_reachable_host
+from clan_cli.tests.fixtures_flakes import ClanFlake
+from clan_cli.tests.helpers import cli
+from clan_cli.tests.nix_config import ConfigItem
+from clan_cli.tests.stdout import CaptureOutput
 
 
 def test_qrcode_scan(temp_dir: Path) -> None:
@@ -69,7 +73,10 @@ def test_from_json() -> None:
 @pytest.mark.with_core
 def test_find_reachable_host(hosts: list[Remote]) -> None:
     host = hosts[0]
-    deploy_info = DeployInfo.from_hostnames(["172.19.1.2", host.ssh_url()], "none")
+
+    uris = ["172.19.1.2", host.ssh_url()]
+    remotes = [Remote.from_ssh_uri(machine_name="some", address=uri) for uri in uris]
+    deploy_info = DeployInfo(addrs=remotes)
 
     assert deploy_info.addrs[0].address == "172.19.1.2"
 
@@ -77,3 +84,42 @@ def test_find_reachable_host(hosts: list[Remote]) -> None:
 
     assert remote is not None
     assert remote.ssh_url() == host.ssh_url()
+
+
+@pytest.mark.with_core
+def test_ssh_shell_from_deploy(
+    hosts: list[Remote],
+    flake: ClanFlake,
+    nix_config: dict[str, ConfigItem],
+    capture_output: CaptureOutput,
+) -> None:
+    host = hosts[0]
+
+    machine1_config = flake.machines["m1_machine"]
+    machine1_config["nixpkgs"]["hostPlatform"] = nix_config["system"].value
+    machine1_config["clan"]["networking"]["targetHost"] = host.ssh_url()
+    flake.refresh()
+
+    assert host.private_key
+
+    success_txt = flake.path / "success.txt"
+    assert not success_txt.exists()
+    cli.run(
+        [
+            "ssh",
+            "--flake",
+            str(flake.path),
+            "m1_machine",
+            "--host-key-check=none",
+            "--ssh-option",
+            "IdentityFile",
+            str(host.private_key),
+            "--remote-command",
+            "touch",
+            str(success_txt),
+            "&&",
+            "exit 0",
+        ]
+    )
+
+    assert success_txt.exists()
