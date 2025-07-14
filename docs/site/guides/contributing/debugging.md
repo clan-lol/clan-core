@@ -55,9 +55,37 @@ If you're using VSCode, it has a handy feature that makes paths to source code f
 
 ## Finding Print Messages
 
-To identify where a specific print message comes from, you can enable a helpful feature. Simply set the environment variable `export TRACE_PRINT=1`. When you run commands with `--debug` mode, each print message will include information about its source location.
+To trace the origin of print messages in `clan-cli`, you can enable special debugging features using environment variables:
 
-If you need more details, you can expand the stack trace information that appears with each print by setting the environment variable `export TRACE_DEPTH=3`.
+- Set `TRACE_PRINT=1` to include the source location with each print message:
+    ```bash
+    export TRACE_PRINT=1
+    ```
+    When running commands with `--debug`, every print will show where it was triggered in the code.
+
+- To see a deeper stack trace for each print, set `TRACE_DEPTH` to the desired number of stack frames (e.g., 3):
+    ```bash
+    export TRACE_DEPTH=3
+    ```
+
+### Additional Debug Logging
+
+You can enable more detailed logging for specific components by setting these environment variables:
+
+- `CLAN_DEBUG_NIX_SELECTORS=1` — verbose logs for flake.select operations
+- `CLAN_DEBUG_NIX_PREFETCH=1` — verbose logs for flake.prefetch operations
+- `CLAN_DEBUG_COMMANDS=1` — print the diffed environment of executed commands
+
+Example:
+```bash
+export CLAN_DEBUG_NIX_SELECTORS=1
+export CLAN_DEBUG_NIX_PREFETCH=1
+export CLAN_DEBUG_COMMANDS=1
+```
+
+These options help you pinpoint the source and context of print messages and debug logs during development.
+
+
 
 ## Analyzing Performance
 
