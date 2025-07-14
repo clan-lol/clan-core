@@ -16,7 +16,7 @@ from tempfile import TemporaryDirectory
 from clan_lib.api import API
 from clan_lib.cmd import ClanCmdError, ClanCmdTimeoutError, CmdOut, RunOpts, run
 from clan_lib.colors import AnsiColor
-from clan_lib.errors import ClanError  # Assuming these are available
+from clan_lib.errors import ClanError, indent_command  # Assuming these are available
 from clan_lib.nix import nix_shell
 from clan_lib.ssh.host_key import HostKeyCheck, hostkey_to_ssh_opts
 from clan_lib.ssh.parse import parse_ssh_uri
@@ -61,6 +61,9 @@ class Remote:
         private_key: Path | None = None,
         password: str | None = None,
         tor_socks: bool | None = None,
+        command_prefix: str | None = None,
+        port: int | None = None,
+        ssh_options: dict[str, str] | None = None,
     ) -> "Remote":
         """
         Returns a new Remote instance with the same data but with a different host_key_check.
@@ -68,8 +71,8 @@ class Remote:
         return Remote(
             address=self.address,
             user=self.user,
-            command_prefix=self.command_prefix,
-            port=self.port,
+            command_prefix=command_prefix or self.command_prefix,
+            port=port or self.port,
             private_key=private_key if private_key is not None else self.private_key,
             password=password if password is not None else self.password,
             forward_agent=self.forward_agent,
@@ -77,7 +80,7 @@ class Remote:
                 host_key_check if host_key_check is not None else self.host_key_check
             ),
             verbose_ssh=self.verbose_ssh,
-            ssh_options=self.ssh_options,
+            ssh_options=ssh_options or self.ssh_options,
             tor_socks=tor_socks if tor_socks is not None else self.tor_socks,
             _control_path_dir=self._control_path_dir,
             _askpass_path=self._askpass_path,
@@ -418,11 +421,31 @@ class Remote:
                 msg = f"SSH command failed with return code {res.returncode}"
                 raise ClanError(msg)
 
-    def interactive_ssh(self) -> None:
-        cmd_list = self.ssh_cmd(tty=True, control_master=False)
-        res = subprocess.run(cmd_list, check=False)
+    def interactive_ssh(self, command: list[str] | None = None) -> None:
+        ssh_cmd = self.ssh_cmd(tty=True, control_master=False)
+        if command:
+            ssh_cmd = [
+                *self.ssh_cmd(tty=True, control_master=False),
+                "--",
+                "bash",
+                "-c",
+                quote('exec "$@"'),
+                "--",
+                " ".join(map(quote, command)),
+            ]
+        cmdlog.info(
+            f"{indent_command(ssh_cmd)}",
+            extra={
+                "command_prefix": self.command_prefix,
+                "color": AnsiColor.GREEN.value,
+            },
+        )
+        res = subprocess.run(ssh_cmd, check=False)
 
-        self.check_sshpass_errorcode(res)
+        # We only check the error code if a password is set, as sshpass is used.
+        # AS sshpass swallows all output.
+        if self.password:
+            self.check_sshpass_errorcode(res)
 
     def check_machine_ssh_reachable(self) -> bool:
         return check_machine_ssh_reachable(self).ok
@@ -431,7 +454,7 @@ class Remote:
 @dataclass(frozen=True)
 class ConnectionOptions:
     timeout: int = 2
-    retries: int = 10
+    retries: int = 5
 
 
 @dataclass
@@ -503,6 +526,10 @@ def check_machine_ssh_reachable(
     """
     if opts is None:
         opts = ConnectionOptions()
+
+    cmdlog.debug(
+        f"Checking SSH reachability for {remote.target} on port {remote.port or 22}",
+    )
 
     address_family = socket.AF_INET6 if ":" in remote.address else socket.AF_INET
     for _ in range(opts.retries):

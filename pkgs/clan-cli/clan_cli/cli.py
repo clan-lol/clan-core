@@ -250,12 +250,12 @@ This subcommand allows seamless ssh access to the nixos-image builders or a mach
 
 Examples:
 
-  $ clan ssh [ssh_args ...] berlin`
+  $ clan ssh berlin
 
   Will ssh in to the machine called `berlin`, using the
   `clan.core.networking.targetHost` specified in its configuration
 
-  $ clan ssh [ssh_args ...] --json [JSON]
+  $ clan ssh --json [JSON] --host-key-check none
   Will ssh in to the machine based on the deployment information contained in
   the json string. [JSON] can either be a json formatted string itself, or point
   towards a file containing the deployment information
