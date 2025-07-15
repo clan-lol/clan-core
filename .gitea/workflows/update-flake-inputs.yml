@@ -15,11 +15,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Configure git
-        run: |
-          git config --global user.email "clan-bot@clan.lol"
-          git config --global user.name "clan-bot"
-
       - name: Update flake inputs
         uses: Mic92/update-flake-inputs-gitea@main
         with:
