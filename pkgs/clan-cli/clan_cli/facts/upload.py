@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
 from clan_lib.ssh.remote import Remote
 
@@ -25,7 +26,8 @@ def upload_secrets(machine: Machine, host: Remote) -> None:
 
 
 def upload_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake=args.flake)
+    flake = require_flake(args.flake)
+    machine = Machine(name=args.machine, flake=flake)
     with machine.target_host().ssh_control_master() as host:
         upload_secrets(machine, host)
 

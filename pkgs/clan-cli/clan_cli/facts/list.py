@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 
+from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
@@ -10,7 +11,8 @@ log = logging.getLogger(__name__)
 
 
 def get_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake=args.flake)
+    flake = require_flake(args.flake)
+    machine = Machine(name=args.machine, flake=flake)
 
     # the raw_facts are bytestrings making them not json serializable
     raw_facts = machine.public_facts_store.get_all()

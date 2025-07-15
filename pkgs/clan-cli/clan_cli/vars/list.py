@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
-from clan_lib.flake import Flake
+from clan_lib.flake import Flake, require_flake
 from clan_lib.machines.machines import Machine
 
 from .generate import Var
@@ -37,7 +37,8 @@ def stringify_all_vars(machine: Machine) -> str:
 
 
 def list_command(args: argparse.Namespace) -> None:
-    machine = Machine(name=args.machine, flake=args.flake)
+    flake = require_flake(args.flake)
+    machine = Machine(name=args.machine, flake=flake)
     print(stringify_all_vars(machine))
 
 

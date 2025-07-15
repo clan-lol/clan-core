@@ -3,6 +3,7 @@ import logging
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_lib.errors import ClanError
+from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
 
 log = logging.getLogger(__name__)
@@ -29,9 +30,10 @@ def fix_vars(machine: Machine, generator_name: None | str = None) -> None:
 
 
 def fix_command(args: argparse.Namespace) -> None:
+    flake = require_flake(args.flake)
     machine = Machine(
         name=args.machine,
-        flake=args.flake,
+        flake=flake,
     )
     fix_vars(machine, generator_name=args.generator)
 
