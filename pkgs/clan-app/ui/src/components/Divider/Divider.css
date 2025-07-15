@@ -1,5 +1,5 @@
 hr {
-  @apply border-none outline-none bg-inv-2;
+  @apply border-none outline-none bg-inv-2 self-stretch;
 
   &.inverted {
     @apply bg-def-3;
