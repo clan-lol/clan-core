@@ -2,8 +2,8 @@ name: Update Flake Inputs
 
 on:
   schedule:
-    # Run weekly on Sunday at 4:00 AM UTC
-    - cron: "0 4 * * 0"
+    # Run every 5 hours
+    - cron: "0 */5 * * *"
   workflow_dispatch:
   repository_dispatch:
 
