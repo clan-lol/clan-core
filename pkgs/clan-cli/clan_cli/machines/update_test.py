@@ -1,10 +1,12 @@
+from pathlib import Path
+
 import pytest
+from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 
 from clan_cli.machines.update import get_machines_for_update
-
-# Functions to test
 from clan_cli.tests.fixtures_flakes import FlakeForTest
+from clan_cli.tests.helpers import cli
 
 
 @pytest.mark.parametrize(
@@ -157,6 +159,15 @@ def test_get_machines_for_update_implicit_all(
 
     print(explicit_names, filter_tags)
     assert names == expected_names
+
+
+def test_update_command_no_flake(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(ClanError):
+        cli.run(["machines", "update", "machine1"])
 
 
 # TODO: Add more tests for requireExplicitUpdate

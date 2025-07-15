@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from clan_lib.errors import ClanError
+from clan_lib.flake import require_flake
 from clan_lib.machines.install import BuildOn, InstallOptions, run_machine_install
 from clan_lib.machines.machines import Machine
 from clan_lib.ssh.remote import Remote
@@ -21,6 +22,7 @@ log = logging.getLogger(__name__)
 
 def install_command(args: argparse.Namespace) -> None:
     try:
+        flake = require_flake(args.flake)
         # Only if the caller did not specify a target_host via args.target_host
         # Find a suitable target_host that is reachable
         target_host_str = args.target_host
@@ -44,7 +46,7 @@ def install_command(args: argparse.Namespace) -> None:
         else:
             password = None
 
-        machine = Machine(name=args.machine, flake=args.flake)
+        machine = Machine(name=args.machine, flake=flake)
         host_key_check = args.host_key_check
 
         if target_host_str is not None:
@@ -56,10 +58,6 @@ def install_command(args: argparse.Namespace) -> None:
 
         if machine._class_ == "darwin":
             msg = "Installing macOS machines is not yet supported"
-            raise ClanError(msg)
-
-        if args.flake is None:
-            msg = "Could not find clan flake toplevel directory"
             raise ClanError(msg)
 
         if not args.yes:
