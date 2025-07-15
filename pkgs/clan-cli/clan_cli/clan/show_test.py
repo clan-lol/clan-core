@@ -1,4 +1,7 @@
+from pathlib import Path
+
 import pytest
+from clan_lib.errors import ClanError
 
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_cli.tests.helpers import cli
@@ -14,3 +17,19 @@ def test_clan_show(
     assert "Name:" in output.out
     assert "Name: test_flake_with_core" in output.out
     assert "Description:" in output.out
+
+
+def test_clan_show_no_flake(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capture_output: CaptureOutput
+) -> None:
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(ClanError) as exc_info:
+        cli.run(["show"])
+
+    assert "No clan flake found in the current directory or its parents" in str(
+        exc_info.value
+    )
+    assert "Use the --flake flag to specify a clan flake path or URL" in str(
+        exc_info.value
+    )
