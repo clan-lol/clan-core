@@ -10,6 +10,9 @@ let
     hashString
     toJSON
     ;
+  inherit (lib)
+    mkOption
+    ;
   inherit (lib.types)
     attrsOf
     bool
@@ -35,14 +38,16 @@ let
   submoduleWithPkgs =
     module:
     submoduleWith {
-      specialArgs.pkgs = pkgs;
-      modules = [ module ];
+      modules = [
+        module
+        { config._module.args.pkgs = pkgs; }
+      ];
     };
 in
 {
   options = {
     settings = import ./settings-opts.nix { inherit lib; };
-    generators = lib.mkOption {
+    generators = mkOption {
       description = ''
         A set of generators that can be used to generate files.
         Generators are scripts that produce files based on the values of other generators and user input.
@@ -53,7 +58,7 @@ in
         submoduleWithPkgs (generator: {
           imports = [ ./generator.nix ];
           options = {
-            name = lib.mkOption {
+            name = mkOption {
               type = str;
               description = ''
                 The name of the generator.
@@ -64,7 +69,7 @@ in
               defaultText = "Name of the generator";
             };
 
-            dependencies = lib.mkOption {
+            dependencies = mkOption {
               description = ''
                 A list of other generators that this generator depends on.
                 The output values of these generators will be available to the generator script as files.
@@ -76,7 +81,7 @@ in
               type = listOf str;
               default = [ ];
             };
-            migrateFact = lib.mkOption {
+            migrateFact = mkOption {
               description = ''
                 The fact service name to import the files from.
 
@@ -86,7 +91,7 @@ in
               example = "my_service";
               default = null;
             };
-            validation = lib.mkOption {
+            validation = mkOption {
               description = ''
                 A set of values that invalidate the generated values.
                 If any of these values change, the generated values will be re-generated.
@@ -113,7 +118,7 @@ in
               ]);
             };
             # the validationHash is the validation interface to the outside world
-            validationHash = lib.mkOption {
+            validationHash = mkOption {
               internal = true;
               description = ''
                 A hash of the invalidation data.
@@ -129,7 +134,7 @@ in
                   hashString "sha256" (toJSON generator.config.validation);
               defaultText = "Hash of the invalidation data";
             };
-            files = lib.mkOption {
+            files = mkOption {
               description = ''
                 A set of files to generate.
                 The generator 'script' is expected to produce exactly these files under $out.
@@ -159,7 +164,7 @@ in
                   ];
                   options =
                     {
-                      name = lib.mkOption {
+                      name = mkOption {
                         type = str;
                         description = ''
                           name of the public fact
@@ -168,7 +173,7 @@ in
                         default = file.config._module.args.name;
                         defaultText = "Name of the file";
                       };
-                      generatorName = lib.mkOption {
+                      generatorName = mkOption {
                         type = str;
                         description = ''
                           name of the generator
@@ -177,7 +182,7 @@ in
                         default = generator.config._module.args.name;
                         defaultText = "Name of the generator that generates this file";
                       };
-                      share = lib.mkOption {
+                      share = mkOption {
                         type = bool;
                         description = ''
                           Whether the generated vars should be shared between machines.
@@ -189,7 +194,7 @@ in
                         default = generator.config.share;
                         defaultText = "Mirror of the share flag of the generator";
                       };
-                      deploy = lib.mkOption {
+                      deploy = mkOption {
                         description = ''
                           Whether the file should be deployed to the target machine.
 
@@ -198,14 +203,14 @@ in
                         type = bool;
                         default = true;
                       };
-                      secret = lib.mkOption {
+                      secret = mkOption {
                         description = ''
                           Whether the file should be treated as a secret.
                         '';
                         type = bool;
                         default = true;
                       };
-                      flakePath = lib.mkOption {
+                      flakePath = mkOption {
                         description = ''
                           The path to the file containing the content of the generated value.
                           This will be set automatically
@@ -213,7 +218,7 @@ in
                         type = nullOr path;
                         default = null;
                       };
-                      path = lib.mkOption {
+                      path = mkOption {
                         description = ''
                           The path to the file containing the content of the generated value.
                           This will be set automatically
@@ -230,7 +235,7 @@ in
                           path = file.config.flakePath;
                         };
                       };
-                      neededFor = lib.mkOption {
+                      neededFor = mkOption {
                         description = ''
                           This option determines when the secret will be decrypted and deployed to the target machine.
 
@@ -248,22 +253,22 @@ in
                         ];
                         default = "services";
                       };
-                      owner = lib.mkOption {
+                      owner = mkOption {
                         description = "The user name or id that will own the file.";
                         default = "root";
                       };
-                      group = lib.mkOption {
+                      group = mkOption {
                         description = "The group name or id that will own the file.";
                         default = if _class == "darwin" then "wheel" else "root";
                         defaultText = lib.literalExpression ''if _class == "darwin" then "wheel" else "root"'';
                       };
-                      mode = lib.mkOption {
+                      mode = mkOption {
                         type = strMatching "^[0-7]{4}$";
                         description = "The unix file mode of the file. Must be a 4-digit octal number.";
                         default = "0400";
                       };
                       value =
-                        lib.mkOption {
+                        mkOption {
                           description = ''
                             The content of the generated value.
                             Only available if the file is not secret.
@@ -276,7 +281,7 @@ in
                         };
                     }
                     // (lib.optionalAttrs (_class == "nixos") {
-                      restartUnits = lib.mkOption {
+                      restartUnits = mkOption {
                         description = ''
                           A list of systemd units that should be restarted after the file is deployed.
                           This is useful for services that need to reload their configuration after the file is updated.
@@ -290,7 +295,7 @@ in
                 })
               );
             };
-            prompts = lib.mkOption {
+            prompts = mkOption {
               description = ''
                 A set of prompts to ask the user for values.
                 Prompts are available to the generator script as files.
@@ -300,7 +305,7 @@ in
               type = attrsOf (
                 submodule (prompt: {
                   options = {
-                    name = lib.mkOption {
+                    name = mkOption {
                       description = ''
                         The name of the prompt.
                         This name will be used to refer to the prompt in the generator script.
@@ -309,7 +314,7 @@ in
                       default = prompt.config._module.args.name;
                       defaultText = "Name of the prompt";
                     };
-                    persist = lib.mkOption {
+                    persist = mkOption {
                       description = ''
                         Whether the prompted value should be stored in a file with the same name as the prompt.
 
@@ -324,7 +329,7 @@ in
                       type = bool;
                       default = false;
                     };
-                    description = lib.mkOption {
+                    description = mkOption {
                       description = ''
                         The description of the prompted value
                       '';
@@ -333,7 +338,7 @@ in
                       default = prompt.config._module.args.name;
                       defaultText = "Name of the prompt";
                     };
-                    type = lib.mkOption {
+                    type = mkOption {
                       description = ''
                         The input type of the prompt.
                         The following types are available:
@@ -354,7 +359,7 @@ in
                 })
               );
             };
-            runtimeInputs = lib.mkOption {
+            runtimeInputs = mkOption {
               description = ''
                 A list of packages that the generator script requires.
                 These packages will be available in the PATH when the script is run.
@@ -362,7 +367,7 @@ in
               type = listOf package;
               default = [ ];
             };
-            script = lib.mkOption {
+            script = mkOption {
               description = ''
                 The script to run to generate the files.
                 The script will be run with the following environment variables:
@@ -376,7 +381,7 @@ in
               type = either str path;
               default = "";
             };
-            finalScript = lib.mkOption {
+            finalScript = mkOption {
               description = ''
                 The final generator script, wrapped, so:
                   - all required programs are in PATH
@@ -386,7 +391,7 @@ in
               readOnly = true;
               internal = true;
             };
-            share = lib.mkOption {
+            share = mkOption {
               description = ''
                 Whether the generated vars should be shared between machines.
                 Shared vars are only generated once, when the first machine using it is deployed.
