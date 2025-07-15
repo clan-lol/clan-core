@@ -1,1 +1,1 @@
-from .flake import Flake  # noqa
+from .flake import Flake, require_flake  # noqa

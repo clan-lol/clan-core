@@ -2,13 +2,13 @@ import argparse
 import logging
 
 from clan_lib.clan.get import get_clan_details
-from clan_lib.flake import Flake
+from clan_lib.flake import require_flake
 
 log = logging.getLogger(__name__)
 
 
 def show_command(args: argparse.Namespace) -> None:
-    flake: Flake = args.flake
+    flake = require_flake(args.flake)
     meta = get_clan_details(flake)
 
     print(f"Name: {meta.get('name')}")
