@@ -65,4 +65,14 @@
       Set it to pkgs.pass for GPG or pkgs.passage for age encryption.
     '';
   };
+
+  dependenciesType = lib.mkOption {
+    type = lib.types.raw;
+    description = ''
+      The type of the `dependencies` option.
+    '';
+    internal = true;
+    readOnly = true;
+    visible = false;
+  };
 }

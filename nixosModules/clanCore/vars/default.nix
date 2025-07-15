@@ -26,6 +26,7 @@ in
     ++ lib.optionals (_class == "nixos") [
       ./secret/password-store.nix
     ];
+
   options.clan.core.vars = lib.mkOption {
     description = ''
       Generated Variables
@@ -36,7 +37,14 @@ in
         - generate secrets like private keys automatically when they are needed
         - output multiple values like private and public keys simultaneously
     '';
-    type = submodule { imports = [ ./interface.nix ]; };
+    type = submodule {
+      imports = [
+        ./interface.nix
+        {
+          settings.dependenciesType = lib.types.listOf lib.types.str;
+        }
+      ];
+    };
   };
 
   config = {

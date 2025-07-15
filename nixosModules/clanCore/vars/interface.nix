@@ -68,7 +68,6 @@ in
               default = generator.config._module.args.name;
               defaultText = "Name of the generator";
             };
-
             dependencies = mkOption {
               description = ''
                 A list of other generators that this generator depends on.
@@ -78,7 +77,7 @@ in
 
                 **A file `file1` of a generator named `dep1` will be available via `$in/dep1/file1`**
               '';
-              type = listOf str;
+              type = config.settings.dependenciesType;
               default = [ ];
             };
             migrateFact = mkOption {
