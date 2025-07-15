@@ -8,6 +8,9 @@
   imports = [
     ./disko.nix
     clan-core.nixosModules.installer
+    clan-core.clanModules.trusted-nix-caches
+    clan-core.clanModules.disk-id
+    clan-core.clanModules.iwd
   ];
 
   clan.core.deployment.requireExplicitUpdate = true;
