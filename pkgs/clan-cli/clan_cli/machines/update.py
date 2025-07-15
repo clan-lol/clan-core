@@ -4,6 +4,7 @@ import sys
 
 from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime
 from clan_lib.errors import ClanError
+from clan_lib.flake import require_flake
 from clan_lib.flake.flake import Flake
 from clan_lib.machines.actions import list_machines
 from clan_lib.machines.list import instantiate_inventory_to_machines
@@ -95,13 +96,8 @@ def get_machines_for_update(
 
 def update_command(args: argparse.Namespace) -> None:
     try:
-        if args.flake is None:
-            msg = "Could not find clan flake toplevel directory"
-            raise ClanError(msg)
-
-        machines_to_update = get_machines_for_update(
-            args.flake, args.machines, args.tags
-        )
+        flake = require_flake(args.flake)
+        machines_to_update = get_machines_for_update(flake, args.machines, args.tags)
 
         if args.target_host is not None and len(machines_to_update) > 1:
             msg = "Target Host can only be set for one machines"
@@ -111,7 +107,7 @@ def update_command(args: argparse.Namespace) -> None:
         config = nix_config()
         system = config["system"]
         machine_names = [machine.name for machine in machines_to_update]
-        args.flake.precache(
+        flake.precache(
             [
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
                 f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.deployment.requireExplicitUpdate",

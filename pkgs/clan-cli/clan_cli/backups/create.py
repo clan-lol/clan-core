@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from clan_lib.backups.create import create_backup
-from clan_lib.errors import ClanError
+from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
 
 from clan_cli.completions import (
@@ -15,10 +15,8 @@ log = logging.getLogger(__name__)
 
 
 def create_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
-    machine = Machine(name=args.machine, flake=args.flake)
+    flake = require_flake(args.flake)
+    machine = Machine(name=args.machine, flake=flake)
     create_backup(machine=machine, provider=args.provider)
 
 

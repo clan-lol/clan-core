@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from clan_lib.errors import ClanError
+from clan_lib.flake import require_flake
 from clan_lib.git import commit_files
 
 from clan_cli.completions import (
@@ -108,56 +108,44 @@ def remove_secret(
 
 
 def list_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
-    lst = list_sops_machines(args.flake.path)
+    flake = require_flake(args.flake)
+    lst = list_sops_machines(flake.path)
     if len(lst) > 0:
         print("\n".join(lst))
 
 
 def add_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
-    add_machine(args.flake.path, args.machine, args.key, args.force)
+    flake = require_flake(args.flake)
+    add_machine(flake.path, args.machine, args.key, args.force)
 
 
 def get_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
-    print(get_machine_pubkey(args.flake.path, args.machine))
+    flake = require_flake(args.flake)
+    print(get_machine_pubkey(flake.path, args.machine))
 
 
 def remove_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
-    remove_machine(args.flake.path, args.machine)
+    flake = require_flake(args.flake)
+    remove_machine(flake.path, args.machine)
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
+    flake = require_flake(args.flake)
     add_secret(
-        args.flake.path,
+        flake.path,
         args.machine,
-        sops_secrets_folder(args.flake.path) / args.secret,
-        age_plugins=load_age_plugins(args.flake),
+        sops_secrets_folder(flake.path) / args.secret,
+        age_plugins=load_age_plugins(flake),
     )
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
+    flake = require_flake(args.flake)
     remove_secret(
-        args.flake.path,
+        flake.path,
         args.machine,
         args.secret,
-        age_plugins=load_age_plugins(args.flake),
+        age_plugins=load_age_plugins(flake),
     )
 
 

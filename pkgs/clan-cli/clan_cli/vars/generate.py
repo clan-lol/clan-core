@@ -20,7 +20,7 @@ from clan_cli.vars.migration import check_can_migrate, migrate_files
 from clan_lib.api import API
 from clan_lib.cmd import RunOpts, run
 from clan_lib.errors import ClanError
-from clan_lib.flake import Flake
+from clan_lib.flake import Flake, require_flake
 from clan_lib.git import commit_files
 from clan_lib.machines.list import list_full_machines
 from clan_lib.nix import nix_config, nix_shell, nix_test_store
@@ -603,11 +603,8 @@ def generate_vars(
 
 
 def generate_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
-
-    machines: list[Machine] = list(list_full_machines(args.flake).values())
+    flake = require_flake(args.flake)
+    machines: list[Machine] = list(list_full_machines(flake).values())
 
     if len(args.machines) > 0:
         machines = list(
@@ -622,7 +619,7 @@ def generate_command(args: argparse.Namespace) -> None:
     system = config["system"]
     machine_names = [machine.name for machine in machines]
     # test
-    args.flake.precache(
+    flake.precache(
         [
             f"clanInternals.machines.{system}.{{{','.join(machine_names)}}}.config.clan.core.vars.generators.*.validationHash",
         ]
@@ -635,7 +632,7 @@ def generate_command(args: argparse.Namespace) -> None:
         fake_prompts=args.fake_prompts,
     )
     if has_changed:
-        args.flake.invalidate_cache()
+        flake.invalidate_cache()
 
 
 def register_generate_parser(parser: argparse.ArgumentParser) -> None:

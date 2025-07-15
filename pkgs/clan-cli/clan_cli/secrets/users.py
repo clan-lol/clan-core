@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from clan_lib.errors import ClanError
+from clan_lib.flake import require_flake
 from clan_lib.git import commit_files
 
 from clan_cli.completions import add_dynamic_completer, complete_secrets, complete_users
@@ -122,10 +123,8 @@ def remove_secret(
 
 
 def list_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
-    lst = list_users(args.flake.path)
+    flake = require_flake(args.flake)
+    lst = list_users(flake.path)
     if len(lst) > 0:
         print("\n".join(lst))
 
@@ -193,66 +192,52 @@ def _key_args(args: argparse.Namespace) -> Iterable[sops.SopsKey]:
 
 
 def add_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
+    flake = require_flake(args.flake)
 
-    add_user(args.flake.path, args.user, _key_args(args), args.force)
+    add_user(flake.path, args.user, _key_args(args), args.force)
 
 
 def get_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
-    keys = get_user(args.flake.path, args.user)
+    flake = require_flake(args.flake)
+    keys = get_user(flake.path, args.user)
     json.dump([key.as_dict() for key in keys], sys.stdout, indent=2, sort_keys=True)
 
 
 def remove_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
-    remove_user(args.flake.path, args.user)
+    flake = require_flake(args.flake)
+    remove_user(flake.path, args.user)
 
 
 def add_secret_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
+    flake = require_flake(args.flake)
     add_secret(
-        args.flake.path,
+        flake.path,
         args.user,
         args.secret,
-        age_plugins=load_age_plugins(args.flake),
+        age_plugins=load_age_plugins(flake),
     )
 
 
 def remove_secret_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
+    flake = require_flake(args.flake)
     remove_secret(
-        args.flake.path,
+        flake.path,
         args.user,
         args.secret,
-        age_plugins=load_age_plugins(args.flake),
+        age_plugins=load_age_plugins(flake),
     )
 
 
 def add_key_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
+    flake = require_flake(args.flake)
 
-    add_user_key(args.flake.path, args.user, _key_args(args))
+    add_user_key(flake.path, args.user, _key_args(args))
 
 
 def remove_key_command(args: argparse.Namespace) -> None:
-    if args.flake is None:
-        msg = "Could not find clan flake toplevel directory"
-        raise ClanError(msg)
+    flake = require_flake(args.flake)
 
-    remove_user_key(args.flake.path, args.user, _key_args(args))
+    remove_user_key(flake.path, args.user, _key_args(args))
 
 
 def register_users_parser(parser: argparse.ArgumentParser) -> None:
