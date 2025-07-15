@@ -88,6 +88,7 @@ let
     instances."instance_zaza" = {
       module = {
         name = "B";
+        input = null;
       };
       roles.peer.tags.all = { };
     };

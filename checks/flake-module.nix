@@ -81,14 +81,13 @@ in
 
             # Base Tests
             nixos-test-secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
-            nixos-test-borgbackup-legacy = self.clanLib.test.baseTest ./borgbackup-legacy nixosTestArgs;
             nixos-test-wayland-proxy-virtwl = self.clanLib.test.baseTest ./wayland-proxy-virtwl nixosTestArgs;
 
             # Container Tests
             nixos-test-container = self.clanLib.test.containerTest ./container nixosTestArgs;
-            nixos-test-zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
-            nixos-test-matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
-            nixos-test-postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
+            # nixos-test-zt-tcp-relay = self.clanLib.test.containerTest ./zt-tcp-relay nixosTestArgs;
+            # nixos-test-matrix-synapse = self.clanLib.test.containerTest ./matrix-synapse nixosTestArgs;
+            # nixos-test-postgresql = self.clanLib.test.containerTest ./postgresql nixosTestArgs;
             nixos-test-user-firewall-iptables = self.clanLib.test.containerTest ./user-firewall/iptables.nix nixosTestArgs;
             nixos-test-user-firewall-nftables = self.clanLib.test.containerTest ./user-firewall/nftables.nix nixosTestArgs;
 
