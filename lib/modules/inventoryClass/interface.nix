@@ -161,7 +161,7 @@ in
             ```
       '';
 
-      apply =_: {};
+      apply = _: { };
     };
 
     assertions = lib.mkOption {

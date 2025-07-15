@@ -15,12 +15,6 @@
             meta.name = "foo";
             machines.peer1 = { };
             machines.admin1 = { };
-            services = {
-              legacy-module.default = {
-                roles.peer.machines = [ "peer1" ];
-                roles.admin.machines = [ "admin1" ];
-              };
-            };
 
             instances."test" = {
               module.name = "new-service";
@@ -28,9 +22,6 @@
               roles.peer.machines.peer1 = { };
             };
 
-            modules = {
-              legacy-module = ./legacy-module;
-            };
           };
 
         modules.new-service = {
