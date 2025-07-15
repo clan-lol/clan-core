@@ -26,5 +26,6 @@ jobs:
           # Exclude private flakes and update-clan-core checks flake
 
           exclude-patterns: "devFlake/private/flake.nix,checks/impure/flake.nix"
+          auto-merge: true
           gitea-token: ${{ secrets.CI_BOT_TOKEN }}
           github-token: ${{ secrets.CI_BOT_GITHUB_TOKEN }}
