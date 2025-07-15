@@ -1,6 +1,7 @@
 import argparse
 import logging
 
+from clan_lib.flake import require_flake
 from clan_lib.machines.machines import Machine
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
@@ -37,9 +38,10 @@ def check_secrets(machine: Machine, service: None | str = None) -> bool:
 
 
 def check_command(args: argparse.Namespace) -> None:
+    flake = require_flake(args.flake)
     machine = Machine(
         name=args.machine,
-        flake=args.flake,
+        flake=flake,
     )
     check_secrets(machine, service=args.service)
 

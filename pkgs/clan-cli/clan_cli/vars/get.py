@@ -4,7 +4,7 @@ import sys
 
 from clan_cli.completions import add_dynamic_completer, complete_machines
 from clan_lib.errors import ClanError
-from clan_lib.flake import Flake
+from clan_lib.flake import Flake, require_flake
 
 from .generate import Var
 from .list import get_machine_vars
@@ -52,10 +52,11 @@ def get_command(machine_name: str, var_id: str, flake: Flake) -> None:
 def _get_command(
     args: argparse.Namespace,
 ) -> None:
+    flake = require_flake(args.flake)
     get_command(
         machine_name=args.machine,
         var_id=args.var_id,
-        flake=args.flake,
+        flake=flake,
     )
 
 
