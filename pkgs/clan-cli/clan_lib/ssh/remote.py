@@ -433,7 +433,7 @@ class Remote:
                 "--",
                 " ".join(map(quote, command)),
             ]
-        cmdlog.info(
+        cmdlog.debug(
             f"{indent_command(ssh_cmd)}",
             extra={
                 "command_prefix": self.command_prefix,
