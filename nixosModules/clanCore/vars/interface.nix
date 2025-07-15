@@ -29,6 +29,12 @@ let
   submodule =
     module:
     submoduleWith {
+      modules = [ module ];
+    };
+
+  submoduleWithPkgs =
+    module:
+    submoduleWith {
       specialArgs.pkgs = pkgs;
       modules = [ module ];
     };
@@ -44,7 +50,7 @@ in
       '';
       default = { };
       type = attrsOf (
-        submodule (generator: {
+        submoduleWithPkgs (generator: {
           imports = [ ./generator.nix ];
           options = {
             name = lib.mkOption {
