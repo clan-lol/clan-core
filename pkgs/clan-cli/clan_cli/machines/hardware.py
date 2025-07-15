@@ -2,6 +2,7 @@ import argparse
 import logging
 from pathlib import Path
 
+from clan_lib.flake import require_flake
 from clan_lib.machines.hardware import (
     HardwareConfig,
     HardwareGenerateOptions,
@@ -19,8 +20,9 @@ log = logging.getLogger(__name__)
 
 
 def update_hardware_config_command(args: argparse.Namespace) -> None:
-    validate_machine_names([args.machine], args.flake)
-    machine = Machine(flake=args.flake, name=args.machine)
+    flake = require_flake(args.flake)
+    validate_machine_names([args.machine], flake)
+    machine = Machine(flake=flake, name=args.machine)
     opts = HardwareGenerateOptions(
         machine=machine,
         password=args.password,
