@@ -32,7 +32,7 @@ let
     let
       inventory = evalInventory inventoryModule;
       flakeInputsFixture = {
-        self.clan.modules = inventoryModule.modules or {};
+        self.clan.modules = inventoryModule.modules or { };
         # Example upstream module
         upstream.clan.modules = {
           uzzi = {
