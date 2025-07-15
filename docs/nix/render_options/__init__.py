@@ -985,7 +985,7 @@ if __name__ == "__main__":  #
 
     produce_clan_service_author_docs()
 
-    # produce_clan_modules_docs()
+    produce_clan_modules_docs()
     produce_clan_service_docs()
 
-    # produce_clan_modules_frontmatter_docs()
+    produce_clan_modules_frontmatter_docs()

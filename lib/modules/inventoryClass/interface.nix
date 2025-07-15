@@ -161,7 +161,27 @@ in
             ```
       '';
 
-      apply = _: { };
+      apply =
+        moduleSet:
+        let
+          allowedNames = lib.attrNames config._legacyModules;
+        in
+        if builtins.all (moduleName: builtins.elem moduleName allowedNames) (lib.attrNames moduleSet) then
+          moduleSet
+        else
+          lib.warn ''
+            `inventory.modules` will be deprecated soon.
+
+            Please migrate the following modules into `clan.service` modules
+            and register them in `clan.modules`
+
+            ${lib.concatStringsSep "\n" (
+              map (m: "'${m}'") (lib.attrNames (lib.filterAttrs (n: _v: !builtins.elem n allowedNames) moduleSet))
+            )}
+
+            See: https://docs.clan.lol/guides/clanServices/
+            And: https://docs.clan.lol/guides/authoring/clanServices/
+          '' moduleSet;
     };
 
     assertions = lib.mkOption {

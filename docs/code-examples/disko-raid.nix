@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  clan-core,
   ...
 }:
 let
@@ -40,7 +41,9 @@ let
   };
 in
 {
-  imports = [ ];
+  imports = [
+    clan-core.clanModules.disk-id
+  ];
 
   config = {
     boot.loader.systemd-boot.enable = true;
