@@ -101,19 +101,15 @@ let
       system:
       lib.nameValuePair system (
         lib.mapAttrs (
-          name: _:
-          moduleSystemConstructor.${machineClasses.${name}} {
+          _: machine:
+          machine.extendModules {
             modules = [
-              (config.outputs.moduleForMachine.${name} or { })
               (lib.modules.importApply ../machineModules/overridePkgs.nix {
                 pkgs = pkgsFor.${system};
               })
             ];
-            specialArgs = {
-              inherit clan-core;
-            } // specialArgs;
           }
-        ) allMachines
+        ) configurations
       )
     ) supportedSystems
   );
