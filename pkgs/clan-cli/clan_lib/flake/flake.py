@@ -931,3 +931,28 @@ class Flake:
 
         full_selector = f'clanInternals.machines."{system}"."{machine_name}".{selector}'
         return self.select(full_selector)
+
+
+def require_flake(flake: Flake | None) -> Flake:
+    """
+    Require that a flake argument is provided, if not in a clan flake.
+
+    This should be called by commands that require a flake but don't have
+    a sensible default when no clan flake is found locally.
+
+    Args:
+        flake: The flake object to check, may be None
+
+    Returns:
+        The validated flake object
+
+    Raises:
+        ClanError: If the flake is None
+    """
+    if flake is None:
+        msg = "No clan flake found in the current directory or its parents"
+        raise ClanError(
+            msg,
+            description="Use the --flake flag to specify a clan flake path or URL",
+        )
+    return flake
