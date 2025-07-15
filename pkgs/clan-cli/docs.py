@@ -6,7 +6,7 @@ from pathlib import Path
 
 from clan_cli.cli import create_parser
 
-hidden_subcommands = ["machine", "b", "f", "m", "se", "st", "va"]
+hidden_subcommands = ["machine", "b", "f", "m", "se", "st", "va", "net", "network"]
 
 
 @dataclass

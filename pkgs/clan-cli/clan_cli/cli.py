@@ -25,6 +25,7 @@ from .facts import cli as facts
 from .flash import cli as flash_cli
 from .hyperlink import help_hyperlink
 from .machines import cli as machines
+from .network import cli as network_cli
 from .profiler import profile
 from .ssh import deploy_info as ssh_cli
 from .vars import cli as vars_cli
@@ -428,6 +429,26 @@ Examples:
     )
     select.register_parser(parser_select)
 
+    parser_network = subparsers.add_parser(
+        "network",
+        aliases=["net"],
+        # TODO: Add help="Manage networks" when network code is ready
+        # help="Manage networks",
+        description="Manage networks",
+        epilog=(
+            """
+show information about configured networks
+
+Examples:
+
+    $ clan network list
+    Will list networks
+        """
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    network_cli.register_parser(parser_network)
+
     parser_state = subparsers.add_parser(
         "state",
         aliases=["st"],
@@ -462,7 +483,7 @@ For more detailed information, visit: {help_hyperlink("getting-started", "https:
     state.register_parser(parser_state)
 
     if argcomplete:
-        argcomplete.autocomplete(parser, exclude=["morph"])
+        argcomplete.autocomplete(parser, exclude=["morph", "network", "net"])
 
     register_common_flags(parser)
 
