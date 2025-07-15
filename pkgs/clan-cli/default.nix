@@ -258,6 +258,8 @@ pythonRuntime.pkgs.buildPythonApplication {
   # leading to a different NAR hash and copying it here would also lead to `patchShebangs`
   # changing the contents
   postInstall = ''
+    cp -arf clan_lib/clan_core_templates/* $out/${pythonRuntime.sitePackages}/clan_lib/clan_core_templates
+
     cp -r ${nixpkgs'} $out/${pythonRuntime.sitePackages}/clan_lib/nixpkgs
     ln -sf ${nix-select} $out/${pythonRuntime.sitePackages}/clan_lib/select
     installShellCompletion --bash --name clan \
