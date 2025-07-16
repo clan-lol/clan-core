@@ -1,9 +1,9 @@
 import logging
 import os
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Literal
 
 from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.hardware import HardwareConfig
@@ -18,10 +18,7 @@ from clan_lib.ssh.remote import Remote
 log = logging.getLogger(__name__)
 
 
-class BuildOn(Enum):
-    AUTO = "auto"
-    LOCAL = "local"
-    REMOTE = "remote"
+BuildOn = Literal["auto", "local", "remote"]
 
 
 @dataclass
@@ -33,9 +30,6 @@ class InstallOptions:
     phases: str | None = None
     build_on: BuildOn | None = None
     update_hardware_config: HardwareConfig = HardwareConfig.NONE
-    password: str | None = None
-    identity_file: Path | None = None
-    use_tor: bool = False
 
 
 @API.register
@@ -75,8 +69,8 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             machine.name, partitioning_secrets, phases=["partitioning"]
         )
 
-        if opts.password:
-            os.environ["SSHPASS"] = opts.password
+        if target_host.password:
+            os.environ["SSHPASS"] = target_host.password
 
         cmd = [
             "nixos-anywhere",
@@ -114,18 +108,18 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
                 ]
             )
 
-        if opts.password:
+        if target_host.password:
             cmd += [
                 "--env-password",
                 "--ssh-option",
                 "IdentitiesOnly=yes",
             ]
 
-        if opts.identity_file:
-            cmd += ["-i", str(opts.identity_file)]
+        if target_host.private_key:
+            cmd += ["-i", str(target_host.private_key)]
 
         if opts.build_on:
-            cmd += ["--build-on", opts.build_on.value]
+            cmd += ["--build-on", opts.build_on]
 
         if target_host.port:
             cmd += ["--ssh-port", str(target_host.port)]
@@ -139,7 +133,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         cmd.extend(opts.machine.flake.nix_options or [])
 
         cmd.append(target_host.target)
-        if opts.use_tor:
+        if target_host.tor_socks:
             # nix copy does not support tor socks proxy
             # cmd.append("--ssh-option")
             # cmd.append("ProxyCommand=nc -x 127.0.0.1:9050 -X 5 %h %p")

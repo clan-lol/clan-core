@@ -4,7 +4,7 @@ import logging
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
 
 from clan_lib.cmd import run
 from clan_lib.errors import ClanError
@@ -220,7 +220,7 @@ def register_parser(parser: argparse.ArgumentParser) -> None:
 
     parser.add_argument(
         "--host-key-check",
-        choices=["strict", "ask", "tofu", "none"],
+        choices=list(get_args(HostKeyCheck)),
         default="tofu",
         help="Host key (.ssh/known_hosts) check mode.",
     )

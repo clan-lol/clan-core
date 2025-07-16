@@ -2,11 +2,13 @@ import argparse
 import logging
 import sys
 from pathlib import Path
+from typing import get_args
 
 from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
 from clan_lib.machines.install import BuildOn, InstallOptions, run_machine_install
 from clan_lib.machines.machines import Machine
+from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import (
@@ -65,6 +67,15 @@ def install_command(args: argparse.Namespace) -> None:
             if ask != "y":
                 return None
 
+        if args.identity_file:
+            target_host = target_host.override(private_key=args.identity_file)
+
+        if password:
+            target_host = target_host.override(password=password)
+
+        if use_tor:
+            target_host = target_host.override(tor_socks=True)
+
         return run_machine_install(
             InstallOptions(
                 machine=machine,
@@ -72,11 +83,8 @@ def install_command(args: argparse.Namespace) -> None:
                 phases=args.phases,
                 debug=args.debug,
                 no_reboot=args.no_reboot,
-                build_on=BuildOn(args.build_on) if args.build_on is not None else None,
+                build_on=args.build_on if args.build_on is not None else None,
                 update_hardware_config=HardwareConfig(args.update_hardware_config),
-                password=password,
-                identity_file=args.identity_file,
-                use_tor=use_tor,
             ),
             target_host=target_host,
         )
@@ -99,13 +107,14 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "--host-key-check",
-        choices=["strict", "ask", "tofu", "none"],
+        choices=list(get_args(HostKeyCheck)),
         default="ask",
         help="Host key (.ssh/known_hosts) check mode.",
     )
+
     parser.add_argument(
         "--build-on",
-        choices=[x.value for x in BuildOn],
+        choices=list(get_args(BuildOn)),
         default=None,
         help="where to build the NixOS configuration",
     )

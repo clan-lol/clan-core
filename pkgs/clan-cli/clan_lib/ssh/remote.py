@@ -531,7 +531,7 @@ def check_machine_ssh_reachable(
         f"Checking SSH reachability for {remote.target} on port {remote.port or 22}",
     )
 
-    address_family = socket.AF_INET6 if ":" in remote.address else socket.AF_INET
+    address_family = socket.AF_INET6 if remote.is_ipv6() else socket.AF_INET
     for _ in range(opts.retries):
         with socket.socket(address_family, socket.SOCK_STREAM) as sock:
             sock.settimeout(opts.timeout)

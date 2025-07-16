@@ -1,6 +1,7 @@
 import argparse
 import logging
 import sys
+from typing import get_args
 
 from clan_lib.async_run import AsyncContext, AsyncOpts, AsyncRuntime
 from clan_lib.errors import ClanError
@@ -12,6 +13,7 @@ from clan_lib.machines.machines import Machine
 from clan_lib.machines.suggestions import validate_machine_names
 from clan_lib.machines.update import run_machine_update
 from clan_lib.nix import nix_config
+from clan_lib.ssh.host_key import HostKeyCheck
 from clan_lib.ssh.remote import Remote
 
 from clan_cli.completions import (
@@ -174,7 +176,7 @@ def register_update_parser(parser: argparse.ArgumentParser) -> None:
 
     parser.add_argument(
         "--host-key-check",
-        choices=["strict", "ask", "tofu", "none"],
+        choices=list(get_args(HostKeyCheck)),
         default="ask",
         help="Host key (.ssh/known_hosts) check mode.",
     )
