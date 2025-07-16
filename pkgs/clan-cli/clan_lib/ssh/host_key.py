@@ -7,7 +7,7 @@ from clan_lib.errors import ClanError
 HostKeyCheck = Literal[
     "strict",  # Strictly check ssh host keys, prompt for unknown ones
     "ask",  # Ask for confirmation on first use
-    "tofu",  # Trust on ssh keys on first use
+    "accept-new",  # Trust on ssh keys on first use
     "none",  # Do not check ssh host keys
 ]
 
@@ -21,7 +21,7 @@ def hostkey_to_ssh_opts(host_key_check: HostKeyCheck) -> list[str]:
             return ["-o", "StrictHostKeyChecking=yes"]
         case "ask":
             return []
-        case "tofu":
+        case "accept-new" | "tofu":
             return ["-o", "StrictHostKeyChecking=accept-new"]
         case "none":
             return [
