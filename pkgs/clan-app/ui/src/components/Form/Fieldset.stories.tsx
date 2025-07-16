@@ -1,5 +1,9 @@
 import type { Meta, StoryContext, StoryObj } from "@kachurun/storybook-solid";
-import { Fieldset, FieldsetProps } from "@/src/components/Form/Fieldset";
+import {
+  Fieldset,
+  FieldsetFieldProps,
+  FieldsetProps,
+} from "@/src/components/Form/Fieldset";
 import cx from "classnames";
 import { TextInput } from "@/src/components/Form/TextInput";
 import { TextArea } from "@/src/components/Form/TextArea";
@@ -40,7 +44,7 @@ export type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     legend: "Signup",
-    children: (props: FieldProps) => (
+    children: (props: FieldsetFieldProps) => (
       <>
         <TextInput
           {...props}

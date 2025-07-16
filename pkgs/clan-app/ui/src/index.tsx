@@ -3,7 +3,9 @@ import { render } from "solid-js/web";
 
 import "./index.css";
 import { QueryClient } from "@tanstack/solid-query";
-import { CubeScene } from "./scene/cubes";
+import { Routes } from "@/src/routes";
+import { Router } from "@solidjs/router";
+import { Layout } from "@/src/routes/Layout";
 
 export const client = new QueryClient();
 
@@ -20,4 +22,4 @@ if (import.meta.env.DEV) {
   await import("solid-devtools");
 }
 
-render(() => <CubeScene />, root!);
+render(() => <Router root={Layout}>{Routes}</Router>, root!);

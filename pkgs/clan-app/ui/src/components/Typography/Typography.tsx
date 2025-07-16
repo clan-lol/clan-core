@@ -28,6 +28,8 @@ interface SizeForHierarchy {
     default: string;
     m: string;
     l: string;
+    xl: string;
+    xxl: string;
   };
   title: {
     default: string;
@@ -52,6 +54,8 @@ const sizeHierarchyMap: SizeForHierarchy = {
     default: cx("size-default"),
     m: cx("size-m"),
     l: cx("size-l"),
+    xl: cx("size-xl"),
+    xxl: cx("size-xxl"),
   },
   title: {
     default: cx("size-default"),
@@ -97,6 +101,7 @@ interface _TypographyProps<H extends Hierarchy> {
   tag?: Tag;
   class?: string;
   transform?: Transform;
+  align?: "left" | "center" | "right";
 }
 
 export const Typography = <H extends Hierarchy>(props: _TypographyProps<H>) => {
@@ -106,6 +111,7 @@ export const Typography = <H extends Hierarchy>(props: _TypographyProps<H>) => {
   const size = () => sizeHierarchyMap[props.hierarchy][props.size] as string;
   const weight = () => weightMap[props.weight || "normal"];
   const color = () => fgClass(props.color, props.inverted);
+  const align = () => `align-${props.align || "left"}`;
 
   return (
     <Dynamic
@@ -116,6 +122,7 @@ export const Typography = <H extends Hierarchy>(props: _TypographyProps<H>) => {
         weight(),
         size(),
         color(),
+        align(),
         props.transform,
         props.class,
       )}

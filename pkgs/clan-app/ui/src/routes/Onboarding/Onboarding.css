@@ -1,0 +1,85 @@
+main#welcome {
+  @apply absolute top-0 left-0;
+  @apply flex items-center justify-center;
+  @apply min-h-screen w-full;
+
+  div.background {
+    .layer-1 {
+      @apply -z-30;
+      background:
+        url("./background.png") 0 -69.032px / 100% 119.049% no-repeat,
+        url("./background.png") 50% / cover no-repeat;
+    }
+
+    .layer-2 {
+      @apply -z-20;
+      background: #103131;
+      mix-blend-mode: screen;
+    }
+
+    .layer-3 {
+      @apply -z-10;
+      background: #749095;
+      mix-blend-mode: soft-light;
+    }
+
+    .layer-1,
+    .layer-2,
+    .layer-3 {
+      @apply absolute top-0 left-0 w-full h-full;
+    }
+
+    svg[data-logo-name="Darknet"] {
+      @apply w-52;
+      @apply absolute top-28 left-1/2 transform -translate-x-1/2;
+    }
+
+    svg[data-logo-name="Clan"] {
+      @apply w-16;
+      @apply absolute bottom-28 left-1/2 transform -translate-x-1/2;
+    }
+
+    div.darknet-info {
+      @apply absolute bottom-[6.5rem] left-12;
+      @apply flex flex-col gap-y-2;
+
+      span.darknet-label {
+        color: theme(colors.off.darknet_label);
+      }
+
+      span.darknet-name {
+        color: theme(colors.off.darknet_name);
+      }
+    }
+  }
+
+  & > div.container {
+    @apply flex flex-col items-center justify-evenly gap-y-20;
+    @apply size-fit;
+
+    & > div.welcome {
+      @apply flex flex-col min-w-80 gap-y-6;
+
+      & > div.separator {
+        @apply grid grid-cols-3 grid-rows-1 gap-x-4 items-center;
+      }
+    }
+
+    & > div.setup {
+      @apply flex flex-col min-w-[520px] gap-y-5;
+      @apply pt-10 px-8 pb-8 bg-def-1 rounded-lg;
+
+      & > div.header {
+        @apply flex items-center justify-start gap-x-2;
+      }
+
+      form {
+        @apply flex flex-col gap-y-5;
+
+        & > div.form-controls {
+          @apply flex justify-end pt-6;
+        }
+      }
+    }
+  }
+}

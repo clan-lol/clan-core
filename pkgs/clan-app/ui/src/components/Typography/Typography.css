@@ -148,6 +148,18 @@
       line-height: 116%;
       letter-spacing: 0.06rem;
     }
+
+    &.size-xl {
+      font-size: 2.5rem;
+      line-height: 104%;
+      letter-spacing: -0.06rem;
+    }
+
+    &.size-xxl {
+      font-size: 3rem;
+      line-height: 104%;
+      letter-spacing: -0.06rem;
+    }
   }
 
   &.teaser {
@@ -160,5 +172,17 @@
       line-height: normal;
       letter-spacing: -0.06rem;
     }
+  }
+
+  &.align-left {
+    text-align: left;
+  }
+
+  &.align-center {
+    text-align: center;
+  }
+
+  &.align-right {
+    text-align: right;
   }
 }
