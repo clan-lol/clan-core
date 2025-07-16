@@ -6,7 +6,13 @@ import {
   createMemo,
   on,
 } from "solid-js";
+import "./cubes.css";
+
 import * as THREE from "three";
+
+import { Toolbar } from "../components/Toolbar/Toolbar";
+import { ToolbarButton } from "../components/Toolbar/ToolbarButton";
+import { Divider } from "../components/Divider/Divider";
 
 function garbageCollectGroup(group: THREE.Group) {
   for (const child of group.children) {
@@ -75,7 +81,7 @@ export function CubeScene() {
 
   const [ids, setIds] = createSignal<string[]>([]);
   const [positionMode, setPositionMode] = createSignal<"grid" | "circle">(
-    "circle",
+    "grid",
   );
   const [nextBasePosition, setNextPosition] =
     createSignal<THREE.Vector3 | null>(null);
@@ -104,15 +110,26 @@ export function CubeScene() {
   const GRID_SIZE = 2;
   const CUBE_SPACING = 2;
 
-  const BASE_SIZE = 1; // Height of the cube above the ground
-  const CUBE_SIZE = BASE_SIZE / 1.2; // Height of the cube above the ground
+  const BASE_SIZE = 0.9; // Height of the cube above the ground
+  const CUBE_SIZE = BASE_SIZE / 1.5; //
   const BASE_HEIGHT = 0.05; // Height of the cube above the ground
   const CUBE_Y = 0 + CUBE_SIZE / 2 + BASE_HEIGHT / 2; // Y position of the cube above the ground
+  const CUBE_SEGMENT_HEIGHT = CUBE_SIZE / 1;
 
   const FLOOR_COLOR = 0xcdd8d9;
 
-  const BASE_COLOR = 0x9cbcff;
+  const CUBE_COLOR = 0xd7e0e1;
+  const CUBE_EMISSIVE = 0x303030; // Emissive color for cubes
+
+  const CUBE_SELECTED_COLOR = 0x4b6767;
+
+  const BASE_COLOR = 0xecfdff;
   const BASE_EMISSIVE = 0x0c0c0c;
+  const BASE_SELECTED_COLOR = 0x69b0e3;
+  const BASE_SELECTED_EMISSIVE = 0x666666; // Emissive color for selected bases
+
+  const CREATE_BASE_COLOR = 0x636363;
+  const CREATE_BASE_EMISSIVE = 0xc5fad7;
 
   function getGridPosition(
     id: string,
@@ -191,29 +208,6 @@ export function CubeScene() {
     });
   });
 
-  // Create multi-colored cube materials for different faces
-  function createCubeMaterials() {
-    const materials = [
-      new THREE.MeshLambertMaterial({ color: 0xb0c0cf, emissive: 0x303030 }), // Right face - medium
-      new THREE.MeshLambertMaterial({ color: 0xb0c0cf, emissive: 0x303030 }), // Left face - dark shadow
-      new THREE.MeshBasicMaterial({ color: 0xdce4e5 }), // Top face - light
-      new THREE.MeshLambertMaterial({ color: 0xb0c0cf, emissive: 0x303030 }), // Bottom face - dark shadow
-      new THREE.MeshLambertMaterial({ color: 0xb0c0cf, emissive: 0x303030 }), // Front face - medium
-      new THREE.MeshLambertMaterial({ color: 0xb0c0cf, emissive: 0x303030 }), // Back face - dark shadow
-    ];
-    return materials;
-  }
-
-  function createBaseMaterials(opacity: number) {
-    return new THREE.MeshLambertMaterial({
-      color: BASE_COLOR,
-      emissive: BASE_EMISSIVE,
-      flatShading: true,
-      transparent: true,
-      opacity,
-    });
-  }
-
   // Animation helper function
   function animateToPosition(
     thing: THREE.Object3D,
@@ -254,25 +248,25 @@ export function CubeScene() {
     baseMesh.scale.setScalar(0);
 
     // Ensure materials are fully opaque
-    if (Array.isArray(mesh.material)) {
-      mesh.material.forEach((material) => {
-        (material as THREE.MeshBasicMaterial).opacity = 1;
-        material.transparent = false;
-      });
-    } else {
-      (mesh.material as THREE.MeshBasicMaterial).opacity = 1;
-      mesh.material.transparent = false;
-    }
+    // if (Array.isArray(mesh.material)) {
+    //   mesh.material.forEach((material) => {
+    //     (material as THREE.MeshBasicMaterial).opacity = 1;
+    //     material.transparent = false;
+    //   });
+    // } else {
+    //   (mesh.material as THREE.MeshBasicMaterial).opacity = 1;
+    //   mesh.material.transparent = false;
+    // }
 
-    if (Array.isArray(baseMesh.material)) {
-      baseMesh.material.forEach((material) => {
-        (material as THREE.MeshBasicMaterial).opacity = 1;
-        material.transparent = false;
-      });
-    } else {
-      (baseMesh.material as THREE.MeshBasicMaterial).opacity = 1;
-      baseMesh.material.transparent = false;
-    }
+    // if (Array.isArray(baseMesh.material)) {
+    //   baseMesh.material.forEach((material) => {
+    //     (material as THREE.MeshBasicMaterial).opacity = 1;
+    //     material.transparent = false;
+    //   });
+    // } else {
+    //   (baseMesh.material as THREE.MeshBasicMaterial).opacity = 1;
+    //   baseMesh.material.transparent = false;
+    // }
 
     function animate() {
       const elapsed = Date.now() - startTime;
@@ -336,12 +330,19 @@ export function CubeScene() {
 
   function createCubeBase(
     cube_pos: [number, number, number],
-    opacity: number = 1,
+    opacity = 1,
+    color: THREE.ColorRepresentation = BASE_COLOR,
+    emissive: THREE.ColorRepresentation = BASE_EMISSIVE,
   ) {
-    const baseMaterial = createBaseMaterials(opacity);
+    const baseMaterial = new THREE.MeshPhongMaterial({
+      opacity,
+      color,
+      emissive,
+      // flatShading: true,
+      transparent: true,
+    });
     const base = new THREE.Mesh(sharedBaseGeometry, baseMaterial);
-    // tranlate_y = - cube_height / 2 - base_height / 2
-    base.position.set(cube_pos[0], BASE_HEIGHT / 2, cube_pos[2]); // Position Y=0 on the floor
+    base.position.set(cube_pos[0], BASE_HEIGHT / 2, cube_pos[2]);
     base.receiveShadow = true;
     return base;
   }
@@ -419,27 +420,62 @@ export function CubeScene() {
     });
   }
 
-  function updateMeshColors() {
-    for (const [id, group] of groupMap.entries()) {
-      const selected = selectedIds().has(id);
+  function updateMeshColors(
+    selected: Set<string>,
+    prev: Set<string> | undefined,
+  ) {
+    for (const id of selected) {
+      const group = groupMap.get(id);
+      if (!group) {
+        console.warn(`UPDATE COLORS: Group not found for id: ${id}`);
+        continue;
+      }
       const base = group.children.find((child) => child.name === "base");
-
       if (!base || !(base instanceof THREE.Mesh)) {
-        // console.warn(`UPDATE COLORS: Base mesh not found for id: ${id}`);
+        console.warn(`UPDATE COLORS: Base mesh not found for id: ${id}`);
+        continue;
+      }
+      const cube = group.children.find((child) => child.name === "cube");
+      if (!cube || !(cube instanceof THREE.Mesh)) {
+        console.warn(`UPDATE COLORS: Cube mesh not found for id: ${id}`);
         continue;
       }
 
-      const material = base.material as THREE.MeshLambertMaterial;
+      const baseMaterial = base.material as THREE.MeshPhongMaterial;
+      const cubeMaterial = cube.material as THREE.MeshPhongMaterial;
 
-      if (selected) {
-        // When selected, make all faces red-ish but maintain the lighting difference
-        material.color.set(0xffffff);
-        material.emissive.set(0xff6666);
-      } else {
-        // Normal colors - restore original face colors
-        material.color.set(BASE_COLOR);
-        material.emissive.set(BASE_EMISSIVE);
+      baseMaterial.color.set(BASE_SELECTED_COLOR);
+      baseMaterial.emissive.set(BASE_SELECTED_EMISSIVE);
+
+      cubeMaterial.color.set(CUBE_SELECTED_COLOR);
+    }
+
+    const deselected = Array.from(prev || []).filter((s) => !selected.has(s));
+
+    for (const id of deselected) {
+      const group = groupMap.get(id);
+      if (!group) {
+        console.warn(`UPDATE COLORS: Group not found for id: ${id}`);
+        continue;
       }
+      const base = group.children.find((child) => child.name === "base");
+      if (!base || !(base instanceof THREE.Mesh)) {
+        console.warn(`UPDATE COLORS: Base mesh not found for id: ${id}`);
+        continue;
+      }
+      const cube = group.children.find((child) => child.name === "cube");
+      if (!cube || !(cube instanceof THREE.Mesh)) {
+        console.warn(`UPDATE COLORS: Cube mesh not found for id: ${id}`);
+        continue;
+      }
+
+      const baseMaterial = base.material as THREE.MeshPhongMaterial;
+      const cubeMaterial = cube.material as THREE.MeshPhongMaterial;
+
+      baseMaterial.color.set(BASE_COLOR);
+      baseMaterial.emissive.set(BASE_EMISSIVE);
+
+      cubeMaterial.color.set(CUBE_COLOR);
     }
   }
 
@@ -455,7 +491,7 @@ export function CubeScene() {
     }
   }
 
-  const initialCameraPosition = { x: 2.8, y: 3.6, z: -2 };
+  const initialCameraPosition = { x: 2.8, y: 4, z: -2 };
   const initialSphericalCameraPosition = new THREE.Spherical();
   initialSphericalCameraPosition.setFromVector3(
     new THREE.Vector3(
@@ -479,8 +515,8 @@ export function CubeScene() {
     // Create a fullscreen quad with a gradient shader
     // TODO: Recalculate gradient depending on container size
     const uniforms = {
-      colorTop: { value: new THREE.Color("#E6EAEA") }, // Top color
-      colorBottom: { value: new THREE.Color("#C5D1D2") }, // Bottom color
+      colorTop: { value: new THREE.Color("#edf1f1") }, // Top color
+      colorBottom: { value: new THREE.Color("#e3e7e7") }, // Bottom color
       resolution: {
         value: new THREE.Vector2(window.innerWidth, window.innerHeight),
       },
@@ -530,18 +566,21 @@ export function CubeScene() {
     container.appendChild(renderer.domElement);
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Bright
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
 
+    // scene.add(new THREE.DirectionalLightHelper(directionalLight));
+    // scene.add(new THREE.CameraHelper(directionalLight.shadow.camera));
+    // scene.add(new THREE.CameraHelper(camera));
     const lightPos = new THREE.Spherical(
       100,
       initialSphericalCameraPosition.phi,
-      initialSphericalCameraPosition.theta,
+      initialSphericalCameraPosition.theta - Math.PI / 2,
     );
-    lightPos.theta = initialSphericalCameraPosition.theta - Math.PI / 2; // 90 degrees offset
     directionalLight.position.setFromSpherical(lightPos);
+    directionalLight.target.position.set(0, 0, 0); // Point light at the center
 
     // initialSphericalCameraPosition
     directionalLight.castShadow = true;
@@ -558,14 +597,14 @@ export function CubeScene() {
     directionalLight.shadow.radius = 1; // Hard shadows (low radius)
     directionalLight.shadow.blurSamples = 4; // Fewer samples for harder edges
     scene.add(directionalLight);
+    scene.add(directionalLight.target);
 
     // Floor/Ground - Make it invisible but keep it for reference
     const floorGeometry = new THREE.PlaneGeometry(1000, 1000);
     const floorMaterial = new THREE.MeshBasicMaterial({
       color: FLOOR_COLOR,
       transparent: true,
-      opacity: 0.1, // Make completely invisible
-      // visible: false, // Also hide it completely
+      opacity: 0.0, // Make completely invisible
     });
     floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2;
@@ -582,7 +621,11 @@ export function CubeScene() {
 
     // Shared geometries for cubes and bases
     // This allows us to reuse the same geometry for all cubes and bases
-    sharedCubeGeometry = new THREE.BoxGeometry(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE);
+    sharedCubeGeometry = new THREE.BoxGeometry(
+      CUBE_SIZE,
+      CUBE_SEGMENT_HEIGHT,
+      CUBE_SIZE,
+    );
     sharedBaseGeometry = new THREE.BoxGeometry(
       BASE_SIZE,
       BASE_HEIGHT,
@@ -651,7 +694,9 @@ export function CubeScene() {
             // Create initial base mesh if it doesn't exist
             initBase = createCubeBase(
               [snapped.x, BASE_HEIGHT / 2, snapped.z],
-              0.5,
+              1,
+              CREATE_BASE_COLOR,
+              CREATE_BASE_EMISSIVE, // Emissive color
             );
           } else {
             initBase.position.set(snapped.x, BASE_HEIGHT / 2, snapped.z);
@@ -676,12 +721,12 @@ export function CubeScene() {
         // spherical.phi += deltaY * 0.01;
         // spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
 
-        const lightPos = new THREE.Spherical();
-        lightPos.setFromVector3(directionalLight.position);
-        lightPos.theta = spherical.theta - Math.PI / 2; // 90 degrees offset
-        directionalLight.position.setFromSpherical(lightPos);
+        // const lightPos = new THREE.Spherical();
+        // lightPos.setFromVector3(directionalLight.position);
+        // lightPos.theta = spherical.theta - Math.PI / 2; // 90 degrees offset
+        // directionalLight.position.setFromSpherical(lightPos);
 
-        directionalLight.lookAt(0, 0, 0);
+        // directionalLight.lookAt(0, 0, 0);
 
         camera.position.setFromSpherical(spherical);
         camera.lookAt(0, 0, 0);
@@ -756,7 +801,7 @@ export function CubeScene() {
       const intersects = raycaster.intersectObjects(
         Array.from(groupMap.values()),
       );
-
+      console.log("Intersects:", intersects);
       if (intersects.length > 0) {
         const id = intersects[0].object.userData.id;
         toggleSelection(id);
@@ -805,8 +850,11 @@ export function CubeScene() {
 
       if (initBase) {
         initBase.geometry.dispose();
-        // @ts-ignore: Not sure why this is needed
-        initBase.material.dispose();
+        if (Array.isArray(initBase.material)) {
+          initBase.material.forEach((material) => material.dispose());
+        } else {
+          initBase.material.dispose();
+        }
       }
 
       if (container) {
@@ -839,12 +887,17 @@ export function CubeScene() {
 
   function createCube(
     gridPosition: [number, number],
-    userData: { id: string; [key: string]: any },
+    userData: { id: string },
   ) {
     // Creates a cube, base, and other visuals
     // Groups them together in the scene
-    const cubeMaterials = createCubeMaterials();
-    const cubeMesh = new THREE.Mesh(sharedCubeGeometry, cubeMaterials);
+    const cubeMaterial = new THREE.MeshPhongMaterial({
+      color: CUBE_COLOR,
+      emissive: CUBE_EMISSIVE,
+      // specular: 0xffffff,
+      shininess: 100,
+    });
+    const cubeMesh = new THREE.Mesh(sharedCubeGeometry, cubeMaterial);
     cubeMesh.castShadow = true;
     cubeMesh.receiveShadow = true;
     cubeMesh.userData = userData;
@@ -921,9 +974,15 @@ export function CubeScene() {
         }
       }
     });
-
-    updateMeshColors();
   });
+
+  createEffect(
+    on(selectedIds, (curr, prev) => {
+      console.log("Selected cubes:", curr);
+      // Update colors of selected cubes
+      updateMeshColors(curr, prev);
+    }),
+  );
 
   // Effect to clean up deleted cubes after animation
   createEffect(() => {
@@ -955,7 +1014,7 @@ export function CubeScene() {
 
   createEffect(() => {
     selectedIds(); // Track the signal
-    updateMeshColors();
+    // updateMeshColors();
   });
 
   onCleanup(() => {
@@ -981,7 +1040,12 @@ export function CubeScene() {
 
     if (!initBase) {
       // Create initial base mesh if it doesn't exist
-      initBase = createCubeBase([0, BASE_HEIGHT / 2, 0], 0.5);
+      initBase = createCubeBase(
+        [0, BASE_HEIGHT / 2, 0],
+        1,
+        CREATE_BASE_COLOR,
+        CREATE_BASE_EMISSIVE,
+      ); // Emissive color
     }
     if (inside) {
       scene.add(initBase);
@@ -996,79 +1060,37 @@ export function CubeScene() {
   };
 
   return (
-    <div style="width: 100%; height: 100%; position: relative;">
-      <div style={{ "margin-bottom": "10px" }}>
-        <span style={{ "margin-left": "10px" }}>
-          Selected: {selectedIds().size} cubes | Total: {ids().length} cubes
-        </span>
-        <span>
-          {" | "}
-          World Mode: {worldMode()}
-          {" | "}
-          Position Mode: {positionMode()}
-        </span>
-      </div>
-
-      <div
-        ref={(el) => (container = el)}
-        style={{
-          width: "100%",
-          height: "80vh",
-          cursor: "pointer",
-        }}
-      />
-
-      {/* Camera Information Display */}
-      <div
-        style={{
-          "margin-bottom": "10px",
-          "font-family": "monospace",
-          "font-size": "12px",
-          "background-color": "#f5f5f5",
-          padding: "8px",
-          "border-radius": "4px",
-          border: "1px solid #ddd",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            bottom: "70px",
-            left: "0",
-            display: "flex",
-            "flex-direction": "row",
-            width: "100%",
-          }}
-        >
-          <button
-            onClick={onAddClick}
+    <>
+      <div class="cubes-scene-container" ref={(el) => (container = el)} />
+      <div class="toolbar-container">
+        <Toolbar>
+          <ToolbarButton
+            name="new-machine"
+            icon="NewMachine"
             onMouseEnter={onHover(true)}
             onMouseLeave={onHover(false)}
-          >
-            Add Cube
-          </button>
-          <button onClick={() => deleteSelectedCubes(selectedIds())}>
-            Delete Selected
-          </button>
-          <button onClick={() => setPositionMode("grid")}>
-            Grid Positioning
-          </button>
-          <button onClick={() => setPositionMode("circle")}>
-            Circle Positioning
-          </button>
-        </div>
-        <div>
-          <strong>Camera Info:</strong>
-        </div>
-        <div>
-          Position: ({cameraInfo().position.x}, {cameraInfo().position.y},{" "}
-          {cameraInfo().position.z})
-        </div>
-        <div>
-          Spherical: radius={cameraInfo().spherical.radius}, θ=
-          {cameraInfo().spherical.theta}, φ={cameraInfo().spherical.phi}
-        </div>
+            onClick={onAddClick}
+            selected={worldMode() === "create"}
+          />
+          <Divider orientation="vertical" />
+          <ToolbarButton
+            name="modules"
+            icon="Modules"
+            onClick={() => {
+              if (positionMode() === "grid") {
+                setPositionMode("circle");
+              } else {
+                setPositionMode("grid");
+              }
+            }}
+          />
+          <ToolbarButton
+            name="delete"
+            icon="Trash"
+            onClick={() => deleteSelectedCubes(selectedIds())}
+          />
+        </Toolbar>
       </div>
-    </div>
+    </>
   );
 }
