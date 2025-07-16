@@ -1,9 +1,9 @@
 import logging
 import os
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Literal
 
 from clan_cli.facts.generate import generate_facts
 from clan_cli.machines.hardware import HardwareConfig
@@ -18,10 +18,7 @@ from clan_lib.ssh.remote import Remote
 log = logging.getLogger(__name__)
 
 
-class BuildOn(Enum):
-    AUTO = "auto"
-    LOCAL = "local"
-    REMOTE = "remote"
+BuildOn = Literal["auto", "local", "remote"]
 
 
 @dataclass
@@ -125,7 +122,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
             cmd += ["-i", str(opts.identity_file)]
 
         if opts.build_on:
-            cmd += ["--build-on", opts.build_on.value]
+            cmd += ["--build-on", opts.build_on]
 
         if target_host.port:
             cmd += ["--ssh-port", str(target_host.port)]

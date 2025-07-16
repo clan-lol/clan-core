@@ -2,6 +2,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
+from typing import get_args
 
 from clan_lib.errors import ClanError
 from clan_lib.flake import require_flake
@@ -72,7 +73,7 @@ def install_command(args: argparse.Namespace) -> None:
                 phases=args.phases,
                 debug=args.debug,
                 no_reboot=args.no_reboot,
-                build_on=BuildOn(args.build_on) if args.build_on is not None else None,
+                build_on=args.build_on if args.build_on is not None else None,
                 update_hardware_config=HardwareConfig(args.update_hardware_config),
                 password=password,
                 identity_file=args.identity_file,
@@ -103,9 +104,10 @@ def register_install_parser(parser: argparse.ArgumentParser) -> None:
         default="ask",
         help="Host key (.ssh/known_hosts) check mode.",
     )
+
     parser.add_argument(
         "--build-on",
-        choices=[x.value for x in BuildOn],
+        choices=list(get_args(BuildOn)),
         default=None,
         help="where to build the NixOS configuration",
     )
