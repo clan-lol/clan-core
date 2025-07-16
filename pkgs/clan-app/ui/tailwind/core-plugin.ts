@@ -13,6 +13,7 @@ const primaries = {
     black: toRGB("#000000"),
     darknet_name: toRGB("#00ff57"),
     darknet_label: toRGB("#2cff74"),
+    toolbar_border: toRGB("#2e4a4b"),
   },
   primary: {
     50: toRGB("#f4f9f9"),

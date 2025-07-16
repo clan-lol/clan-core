@@ -102,6 +102,7 @@ export type IconVariant = keyof typeof icons;
 const viewBoxes: Partial<Record<IconVariant, string>> = {
   ClanIcon: "0 0 72 89",
   Offline: "0 0 38 27",
+  Cursor: "0 0 35 42",
 };
 
 export interface IconProps extends JSX.SvgSVGAttributes<SVGElement> {
